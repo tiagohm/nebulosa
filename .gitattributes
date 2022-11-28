@@ -7,3 +7,7 @@
 # These are Windows script files and should use crlf
 *.bat           text eol=crlf
 
+*.dat           binary
+*.bsp           binary
+*.bpc           binary
+*.jar           binary
