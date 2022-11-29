@@ -119,10 +119,6 @@ class DeviceProtocolHandler : INDIProtocolParser {
     override fun handleMessage(message: INDIProtocol) {
         if (closed) return
 
-        if (message !is SetBLOBVector) {
-            println("${message.javaClass}: $message")
-        }
-
         if (message is Message) {
             return
         } else if (message is DelProperty) {

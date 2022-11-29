@@ -14,7 +14,6 @@ internal class INDIProtocolXStream(val driver: HierarchicalStreamDriver = StaxDr
     init {
         processAnnotations(DefBLOB::class.java)
         processAnnotations(DefBLOBVector::class.java)
-        processAnnotations(DefElement::class.java)
         processAnnotations(DefLight::class.java)
         processAnnotations(DefLightVector::class.java)
         processAnnotations(DefNumber::class.java)
@@ -23,7 +22,6 @@ internal class INDIProtocolXStream(val driver: HierarchicalStreamDriver = StaxDr
         processAnnotations(DefSwitchVector::class.java)
         processAnnotations(DefText::class.java)
         processAnnotations(DefTextVector::class.java)
-        processAnnotations(DefVector::class.java)
         processAnnotations(DelProperty::class.java)
         processAnnotations(EnableBLOB::class.java)
         processAnnotations(GetProperties::class.java)
@@ -34,9 +32,7 @@ internal class INDIProtocolXStream(val driver: HierarchicalStreamDriver = StaxDr
         processAnnotations(NewNumberVector::class.java)
         processAnnotations(NewSwitchVector::class.java)
         processAnnotations(NewTextVector::class.java)
-        processAnnotations(NewVector::class.java)
         processAnnotations(OneBLOB::class.java)
-        processAnnotations(OneElement::class.java)
         processAnnotations(OneLight::class.java)
         processAnnotations(OneNumber::class.java)
         processAnnotations(OneSwitch::class.java)
@@ -46,9 +42,8 @@ internal class INDIProtocolXStream(val driver: HierarchicalStreamDriver = StaxDr
         processAnnotations(SetNumberVector::class.java)
         processAnnotations(SetSwitchVector::class.java)
         processAnnotations(SetTextVector::class.java)
-        processAnnotations(SetVector::class.java)
 
-        allowTypesByWildcard(arrayOf("nebula.indi.protocol.*"))
+        allowTypesByWildcard(arrayOf("nebulosa.indi.protocol.**"))
 
         registerConverter(textableEnumConverter<SwitchRule>())
         registerConverter(textableEnumConverter<SwitchState>())

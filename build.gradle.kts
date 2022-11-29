@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 buildscript {
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.22")
+        classpath("io.objectbox:objectbox-gradle-plugin:3.4.0")
     }
 
     repositories {
@@ -43,20 +44,12 @@ subprojects {
     }
 
     tasks.withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
-        kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=all")
+        kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
+        kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=all", "-Xjsr305=strict")
     }
-
-    val testJavaVersion = System.getProperty("test.java.version", "11").toInt()
 
     tasks.withType<Test> {
         useJUnitPlatform()
-
-        val javaToolchains = project.extensions.getByType<JavaToolchainService>()
-
-        javaLauncher.set(javaToolchains.launcherFor {
-            languageVersion.set(JavaLanguageVersion.of(testJavaVersion))
-        })
 
         maxParallelForks = Runtime.getRuntime().availableProcessors() * 2
 
@@ -68,8 +61,8 @@ subprojects {
     }
 
     tasks.withType<JavaCompile> {
-        sourceCompatibility = JavaVersion.VERSION_11.toString()
-        targetCompatibility = JavaVersion.VERSION_11.toString()
+        sourceCompatibility = JavaVersion.VERSION_17.toString()
+        targetCompatibility = JavaVersion.VERSION_17.toString()
     }
 }
 
