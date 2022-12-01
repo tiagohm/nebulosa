@@ -14,6 +14,9 @@ open class FitsImage private constructor(
 
     val data: FloatArray = (raster.dataBuffer as FitsDataBuffer).data
 
+    var isMono = false
+        private set
+
     constructor(fits: Fits, bayerPattern: CfaPattern? = null) : this(fits, bayerPattern, true)
 
     init {
@@ -23,6 +26,7 @@ open class FitsImage private constructor(
             val pixels = hdu.kernel as Array<*>
             val bitpix = hdu.bitpix
             val bayer = bayerPattern ?: hdu.header.getStringValue(MaxImDLExt.BAYERPAT)?.trim()?.let(CfaPattern::valueOf)
+            isMono = axes.size == 2
 
             if (axes.size == 2) {
                 when (bitpix.numberType) {
@@ -46,22 +50,20 @@ open class FitsImage private constructor(
         }
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    inline fun writePixel(x: Int, y: Int, channel: ImageChannel, color: Float) {
-        val index = y * width * 3 + x * 3
+    fun writePixel(x: Int, y: Int, channel: ImageChannel, color: Float) {
+        val pixelStride = if (isMono) 1 else 3
+        val index = y * width * pixelStride + x * pixelStride
 
         if (channel == ImageChannel.GRAY) {
             this.data[index] = color
-            this.data[index + 1] = color
-            this.data[index + 2] = color
         } else {
             this.data[index + channel.ordinal] = color
         }
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    inline fun readPixel(x: Int, y: Int, channel: ImageChannel): Float {
-        val index = y * width * 3 + x * 3
+    fun readPixel(x: Int, y: Int, channel: ImageChannel): Float {
+        val pixelStride = if (isMono) 1 else 3
+        val index = y * width * pixelStride + x * pixelStride
         return this.data[index + if (channel == ImageChannel.GRAY) 0 else channel.ordinal]
     }
 
@@ -113,6 +115,7 @@ open class FitsImage private constructor(
     fun clone(): FitsImage {
         val image = FitsImage(fits)
         data.copyInto(image.data)
+        image.isMono = isMono
         return image
     }
 
@@ -122,16 +125,24 @@ open class FitsImage private constructor(
 
         @JvmStatic
         private fun Fits.createColorModel(): ColorModel {
-            val space = ColorSpace.getInstance(ColorSpace.CS_sRGB)
+            val hdu = getImageHDU(0)!!
+            val axes = hdu.axes
+            val isMono = axes.size == 2
+            val space = ColorSpace.getInstance(if (isMono) ColorSpace.CS_GRAY else ColorSpace.CS_sRGB)
             return ComponentColorModel(space, false, false, OPAQUE, DataBuffer.TYPE_BYTE)
         }
 
         @JvmStatic
         private fun Fits.createRaster(): WritableRaster {
-            val width = getImageHDU(0)!!.getNAXIS(1)
-            val height = getImageHDU(0)!!.getNAXIS(2)
-            val sampleModel = PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, width, height, 3, width * 3, intArrayOf(0, 1, 2))
-            val buffer = FitsDataBuffer(width * height * 3)
+            val hdu = getImageHDU(0)!!
+            val width = hdu.getNAXIS(1)
+            val height = hdu.getNAXIS(2)
+            val axes = hdu.axes
+            val isMono = axes.size == 2
+            val pixeStride = if (isMono) 1 else 3
+            val bandOffsets = if (isMono) intArrayOf(0) else intArrayOf(0, 1, 2)
+            val sampleModel = PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, width, height, pixeStride, width * pixeStride, bandOffsets)
+            val buffer = FitsDataBuffer(width * height * pixeStride)
             return Raster.createWritableRaster(sampleModel, buffer, null)
         }
     }
