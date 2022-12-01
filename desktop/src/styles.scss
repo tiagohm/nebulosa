@@ -1,0 +1,20 @@
+@import "@angular/material/prebuilt-themes/purple-green.css";
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+
+  height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.mat-form-field-subscript-wrapper {
+  font-size: 60%;
+  margin-top: 0.02rem;
+  text-align: start;
+}
+
+.cdk-overlay-backdrop {
+  backdrop-filter: blur(2px);
+}

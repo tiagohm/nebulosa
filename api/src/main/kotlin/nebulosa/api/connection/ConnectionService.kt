@@ -5,6 +5,8 @@ import nebulosa.indi.devices.Device
 import nebulosa.indi.devices.DeviceEventHandler
 import nebulosa.indi.devices.DeviceProtocolHandler
 import nebulosa.indi.devices.events.DeviceEvent
+import nebulosa.indi.protocol.connection.INDIProccessConnection
+import nebulosa.indi.protocol.connection.INDISocketConnection
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
@@ -59,7 +61,11 @@ class ConnectionService : DeviceEventHandler {
     }
 
     fun status(): ConnectionStatusRes {
-        return ConnectionStatusRes(client != null)
+        return when (val connection = client?.connection) {
+            is INDISocketConnection -> ConnectionStatusRes(true, connection.host, connection.port)
+            is INDIProccessConnection -> ConnectionStatusRes(true, "", 0)
+            else -> ConnectionStatusRes(false, "", 0)
+        }
     }
 
     override fun onEventReceived(device: Device, event: DeviceEvent<*>) {

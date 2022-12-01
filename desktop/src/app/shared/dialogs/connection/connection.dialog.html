@@ -1,0 +1,48 @@
+<h1 mat-dialog-title>
+  INDI Server Connection
+
+  <button mat-icon-button mat-dialog-close>
+    <mat-icon svgIcon="close"></mat-icon>
+  </button>
+</h1>
+
+<div mat-dialog-content class="d-flex flex-column">
+  <div class="d-flex justify-content-between align-items-start">
+    <mat-form-field appearance="fill">
+      <mat-label>Connection</mat-label>
+      <mat-select [formControl]="connection" (selectionChange)="connectionSelected()">
+        <mat-option [value]="newConnection">New Connection</mat-option>
+        <mat-option *ngFor="let connection of connections" [value]="connection">
+          {{ connection.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-icon-button class="mt-2" (click)="delete()">
+      <mat-icon svgIcon="delete"></mat-icon>
+    </button>
+  </div>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Name</mat-label>
+    <input matInput [formControl]="name">
+    <mat-error>Required</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Host</mat-label>
+    <input matInput [formControl]="host">
+    <mat-error>Required</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Port</mat-label>
+    <input matInput type="number" [formControl]="port" min="1" max="65535">
+    <mat-error>Required</mat-error>
+  </mat-form-field>
+</div>
+
+<div mat-dialog-actions>
+  <button mat-button mat-dialog-close>CLOSE</button>
+  <button mat-button cdkFocusInitial (click)="connect()">CONNECT</button>
+</div>

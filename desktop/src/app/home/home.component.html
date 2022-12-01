@@ -1,0 +1,39 @@
+<mat-toolbar>
+  <span class="ms-1">Nebulosa</span>
+
+  <span class="spacer"></span>
+
+  <button mat-flat-button (click)="connectOrDisconnect()" class="me-1">
+    <mat-icon svgIcon="{{ connected ? 'close-circle' : 'connection' }}"></mat-icon>
+    {{ connected ? 'Disconnect' : 'Connect' }}
+  </button>
+
+  <button mat-flat-button>
+    <mat-icon svgIcon="cog"></mat-icon>
+    Settings
+  </button>
+</mat-toolbar>
+
+<mat-sidenav-container style="height: calc(100vh - 64px);">
+  <mat-sidenav>Start</mat-sidenav>
+  <mat-sidenav-content>
+    <mat-tab-group>
+      <mat-tab label="Camera">
+        <camera></camera>
+      </mat-tab>
+      <mat-tab label="Mount"></mat-tab>
+      <mat-tab label="Auto Guiding"></mat-tab>
+      <mat-tab label="Filter Wheel"></mat-tab>
+      <mat-tab label="Focuser"></mat-tab>
+      <mat-tab label="Rotator"></mat-tab>
+      <mat-tab label="Dome"></mat-tab>
+      <mat-tab label="Switch"></mat-tab>
+      <mat-tab label="Atlas"></mat-tab>
+      <mat-tab label="Plate Solving"></mat-tab>
+      <mat-tab label="Alignment"></mat-tab>
+      <mat-tab label="Sequencer"></mat-tab>
+      <mat-tab label="Framing"></mat-tab>
+      <mat-tab label="Flat Wizard"></mat-tab>
+    </mat-tab-group>
+  </mat-sidenav-content>
+</mat-sidenav-container>
