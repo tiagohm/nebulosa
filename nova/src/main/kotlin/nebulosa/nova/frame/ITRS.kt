@@ -4,7 +4,6 @@ import nebulosa.constants.ANGULAR_VELOCITY
 import nebulosa.constants.DAYSEC
 import nebulosa.erfa.eraC2teqx
 import nebulosa.math.Matrix3D
-import nebulosa.time.IERS
 import nebulosa.time.InstantOfTime
 
 /**

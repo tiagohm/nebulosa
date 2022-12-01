@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":io"))
+    api(project(":fits"))
     implementation(libs.xstream)
     testImplementation(libs.bundles.kotest)
 }

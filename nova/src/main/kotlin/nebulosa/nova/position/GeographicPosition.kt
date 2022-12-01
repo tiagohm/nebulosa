@@ -2,11 +2,9 @@ package nebulosa.nova.position
 
 import nebulosa.constants.ANGULAR_VELOCITY
 import nebulosa.constants.DAYSEC
-import nebulosa.erfa.eraRefco
 import nebulosa.erfa.eraSp00
 import nebulosa.math.*
 import nebulosa.math.Pressure.Companion.pressure
-import nebulosa.math.Temperature.Companion.celsius
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.ITRS
 import nebulosa.time.InstantOfTime

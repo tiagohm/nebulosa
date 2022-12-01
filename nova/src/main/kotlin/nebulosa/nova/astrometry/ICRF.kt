@@ -213,7 +213,7 @@ open class ICRF protected constructor(
             // TODO: return if (position.center is GeographicPosition) {
             //    SphericalRepresentation(position.center.refract(h.a2.rad, temperature, pressure), h.a1.rad, h.a3.au)
             //} else {
-                return SphericalRepresentation(h)
+            return SphericalRepresentation(h)
             //}
         }
     }

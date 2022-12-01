@@ -1,5 +1,6 @@
 package nebulosa.indi.devices.cameras
 
+import nebulosa.fits.CfaPattern
 import nebulosa.indi.INDIClient
 import nebulosa.indi.devices.Device
 import nebulosa.indi.devices.DeviceProtocolHandler

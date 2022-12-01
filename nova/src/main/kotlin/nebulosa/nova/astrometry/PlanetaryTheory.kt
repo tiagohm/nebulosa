@@ -1,6 +1,5 @@
 package nebulosa.nova.astrometry
 
-import nebulosa.constants.AU_KM
 import nebulosa.constants.TAU
 import nebulosa.math.Vector3D
 import kotlin.math.*

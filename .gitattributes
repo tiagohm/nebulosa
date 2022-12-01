@@ -11,3 +11,4 @@
 *.bsp           binary
 *.bpc           binary
 *.jar           binary
+*.fits          binary
