@@ -4,7 +4,10 @@ import nebulosa.indi.INDIClient
 import nebulosa.indi.devices.cameras.Camera
 import nebulosa.indi.devices.events.*
 import nebulosa.indi.devices.mounts.Mount
-import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.DefTextVector
+import nebulosa.indi.protocol.DelProperty
+import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.Message
 import nebulosa.indi.protocol.io.INDIInputStream
 import nebulosa.indi.protocol.parser.INDIProtocolParser
 import nebulosa.indi.protocol.parser.INDIProtocolReader
@@ -23,7 +26,10 @@ class DeviceProtocolHandler : INDIProtocolParser {
 
     override val input = object : INDIInputStream {
 
-        override fun readINDIProtocol() = messageReorderingQueue.take()
+        override fun readINDIProtocol(): INDIProtocol {
+            Thread.sleep(1)
+            return messageReorderingQueue.take()
+        }
 
         override fun close() = Unit
     }

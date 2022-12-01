@@ -46,6 +46,7 @@ open class Mount(
             "indi_lx200gemini",
             "indi_lx200gotonova",
             "indi_lx200gps",
+            "indi_lx200_OpenAstroTech",
             "indi_lx200pulsar2",
             "indi_lx200ss2000pc",
             "indi_lx200stargo",

@@ -12,20 +12,23 @@ abstract class Device(
     val name: String,
 ) : INDIProtocolHandler {
 
-    @Volatile private var isConnected = false
+    var isConnected = false
+        private set
 
     override fun handleMessage(message: INDIProtocol) {
         if (message is SwitchVector<*>) {
             if (message.name == "CONNECTION") {
                 val connected = message.firstOnSwitch().name == "CONNECT"
 
-                if (connected) {
-                    handler.fireOnEventReceived(this, DeviceConnectedEvent(this))
-                } else if (isConnected) {
-                    handler.fireOnEventReceived(this, DeviceDisconnectedEvent(this))
+                if (connected != isConnected) {
+                    if (connected) {
+                        isConnected = true
+                        handler.fireOnEventReceived(this, DeviceConnectedEvent(this))
+                    } else if (isConnected) {
+                        isConnected = false
+                        handler.fireOnEventReceived(this, DeviceDisconnectedEvent(this))
+                    }
                 }
-
-                isConnected = connected
             }
         }
     }
@@ -38,8 +41,9 @@ abstract class Device(
         sendNewSwitch("CONNECTION", "DISCONNECT" to true)
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    inline fun sendMessageToServer(message: INDIProtocol) = client.sendMessageToServer(message)
+    fun sendMessageToServer(message: INDIProtocol) = client.sendMessageToServer(message)
+
+    fun enableBlob() = sendMessageToServer(EnableBLOB().also { it.device = name })
 
     protected fun sendNewSwitch(
         name: String,

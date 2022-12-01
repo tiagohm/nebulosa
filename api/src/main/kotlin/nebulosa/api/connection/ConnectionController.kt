@@ -1,9 +1,6 @@
-package nebulosa.api.controllers
+package nebulosa.api.connection
 
 import jakarta.validation.Valid
-import nebulosa.api.controllers.dtos.ConnectionReq
-import nebulosa.api.controllers.dtos.ConnectionStatusRes
-import nebulosa.api.services.ConnectionService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 

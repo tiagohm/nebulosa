@@ -1,4 +1,4 @@
-package nebulosa.api.controllers.dtos
+package nebulosa.api.connection
 
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive

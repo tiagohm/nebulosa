@@ -1,4 +1,4 @@
-package nebulosa.api.events
+package nebulosa.api.connection
 
 import nebulosa.indi.INDIClient
 

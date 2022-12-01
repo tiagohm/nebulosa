@@ -1,4 +1,4 @@
-package nebulosa.api.controllers.dtos
+package nebulosa.api.connection
 
 data class ConnectionStatusRes(
     val connected: Boolean,

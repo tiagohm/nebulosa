@@ -1,9 +1,5 @@
-package nebulosa.api.services
+package nebulosa.api.connection
 
-import nebulosa.api.controllers.dtos.ConnectionReq
-import nebulosa.api.controllers.dtos.ConnectionStatusRes
-import nebulosa.api.events.ConnectedEvent
-import nebulosa.api.events.DisconnectedEvent
 import nebulosa.indi.INDIClient
 import nebulosa.indi.devices.Device
 import nebulosa.indi.devices.DeviceEventHandler
@@ -67,8 +63,6 @@ class ConnectionService : DeviceEventHandler {
     }
 
     override fun onEventReceived(device: Device, event: DeviceEvent<*>) {
-        println(event)
-
         if (device.client === client) {
             eventBus.publishEvent(event)
         }

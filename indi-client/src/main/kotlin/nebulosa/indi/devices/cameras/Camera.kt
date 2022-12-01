@@ -14,25 +14,115 @@ class Camera(
     name: String,
 ) : Device(client, handler, name) {
 
+    var hasCoolerControl = false
+        private set
+
+    var isCoolerOn = false
+        private set
+
+    var frameFormats = emptyList<FrameFormat>()
+        private set
+
+    var canAbort = false
+        private set
+
+    var cfaOffsetX = 0
+        private set
+
+    var cfaOffsetY = 0
+        private set
+
+    var cfaType = CfaPattern.RGGB
+        private set
+
+    var exposureMin = 0L
+        private set
+
+    var exposureMax = 0L
+        private set
+
+    var exposureState = PropertyState.IDLE
+        private set
+
+    var hasCooler = false
+        private set
+
+    var canSetTemperature = false
+        private set
+
+    var temperature = 0.0
+        private set
+
+    var canSubframe = false
+        private set
+
+    var x = 0
+        private set
+
+    var minX = 0
+        private set
+
+    var maxX = 0
+        private set
+
+    var y = 0
+        private set
+
+    var minY = 0
+        private set
+
+    var maxY = 0
+        private set
+
+    var width = 0
+        private set
+
+    var minWidth = 0
+        private set
+
+    var maxWidth = 0
+        private set
+
+    var height = 0
+        private set
+
+    var minHeight = 0
+        private set
+
+    var maxHeight = 0
+        private set
+
+    var canBin = false
+        private set
+
+    var maxBinX = 1
+        private set
+
+    var maxBinY = 1
+        private set
+
+    var binX = 1
+        private set
+
+    var binY = 1
+        private set
+
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
             is SwitchVector<*> -> {
                 when (message.name) {
                     "CCD_COOLER" -> {
-                        handler.fireOnEventReceived(this, CameraHasCoolerControlEvent(this))
-                        val enabled = message["COOLER_ON"]!!.isOn()
-                        handler.fireOnEventReceived(this, CameraCoolerToggledEvent(this, enabled))
+                        hasCoolerControl = true
+                        isCoolerOn = message["COOLER_ON"]!!.isOn()
                     }
                     "CCD_CAPTURE_FORMAT" -> {
                         if (message is DefSwitchVector) {
-                            val formats = message.map { CaptureFormat(it.name, it.label) }
-                            handler.fireOnEventReceived(this, CameraCaptureFormatEvent(this, formats))
+                            frameFormats = message.map { FrameFormat(it.name, it.label) }
                         }
                     }
                     "CCD_ABORT_EXPOSURE" -> {
                         if (message is DefSwitchVector) {
-                            val enabled = message.perm != PropertyPermission.RO
-                            handler.fireOnEventReceived(this, CameraCanAbortEvent(this, enabled))
+                            canAbort = message.perm != PropertyPermission.RO
                         }
                     }
                 }
@@ -40,10 +130,9 @@ class Camera(
             is TextVector<*> -> {
                 when (message.name) {
                     "CCD_CFA" -> {
-                        val offsetX = message["CFA_OFFSET_X"]!!.value.toInt()
-                        val offsetY = message["CFA_OFFSET_Y"]!!.value.toInt()
-                        val type = CfaPattern.valueOf(message["CFA_TYPE"]!!.value)
-                        handler.fireOnEventReceived(this, CameraCfaEvent(this, offsetX, offsetY, type))
+                        cfaOffsetX = message["CFA_OFFSET_X"]!!.value.toInt()
+                        cfaOffsetY = message["CFA_OFFSET_Y"]!!.value.toInt()
+                        cfaType = CfaPattern.valueOf(message["CFA_TYPE"]!!.value)
                     }
                 }
             }
@@ -53,12 +142,14 @@ class Camera(
                         val element = message["CCD_EXPOSURE_VALUE"]!!
 
                         if (element is DefNumber) {
-                            val min = (element.min * 1000000.0).toLong()
-                            val max = (element.max * 1000000.0).toLong()
-                            handler.fireOnEventReceived(this, CameraExposureMinMaxEvent(this, min, max))
+                            exposureMin = (element.min * 1000000.0).toLong()
+                            exposureMax = (element.max * 1000000.0).toLong()
                         }
 
-                        when (message.state) {
+                        val prevExposureState = exposureState
+                        exposureState = message.state
+
+                        when (exposureState) {
                             PropertyState.BUSY -> {
                                 val exposure = (element.value * 1000000.0).toLong()
                                 handler.fireOnEventReceived(this, CameraExposureBusyEvent(this, exposure))
@@ -70,24 +161,23 @@ class Camera(
                                 handler.fireOnEventReceived(this, CameraExposureOkEvent(this))
                             }
                             PropertyState.IDLE -> {
-                                handler.fireOnEventReceived(this, CameraExposureAbortedEvent(this))
+                                if (prevExposureState != PropertyState.IDLE) {
+                                    handler.fireOnEventReceived(this, CameraExposureAbortedEvent(this))
+                                }
                             }
                         }
                     }
                     "CCD_TEMPERATURE" -> {
                         if (message is DefNumberVector) {
-                            handler.fireOnEventReceived(this, CameraHasCoolerEvent(this))
-                            val enabled = message.perm != PropertyPermission.RO
-                            handler.fireOnEventReceived(this, CameraCanSetTemperatureEvent(this, enabled))
+                            hasCooler = true
+                            canSetTemperature = message.perm != PropertyPermission.RO
                         }
 
-                        val temperature = message["CCD_TEMPERATURE_VALUE"]!!.value
-                        handler.fireOnEventReceived(this, CameraTemperatureChangedEvent(this, temperature))
+                        temperature = message["CCD_TEMPERATURE_VALUE"]!!.value
                     }
                     "CCD_FRAME" -> {
                         if (message is DefNumberVector) {
-                            val enabled = message.perm != PropertyPermission.RO
-                            handler.fireOnEventReceived(this, CameraCanSubframeEvent(this, enabled))
+                            canSubframe = message.perm != PropertyPermission.RO
                         }
 
                         val minX = message["X"]!!.min.toInt()
@@ -99,37 +189,31 @@ class Camera(
                         val minHeight = message["HEIGHT"]!!.min.toInt()
                         val maxHeight = message["HEIGHT"]!!.max.toInt()
 
-                        if (maxX != 0 && maxY != 0 &&
-                            maxWidth != 0 && maxHeight != 0
-                        ) {
-                            handler.fireOnEventReceived(
-                                this,
-                                CameraSubframeMinMaxEvent(
-                                    this, minX, maxX, minY, maxY, minWidth, maxWidth, minHeight, maxHeight
-                                )
-                            )
+                        if (maxX != 0 && maxY != 0 && maxWidth != 0 && maxHeight != 0) {
+                            this.minX = minX
+                            this.maxX = maxX
+                            this.minY = minY
+                            this.maxY = maxY
+                            this.minWidth = minWidth
+                            this.maxWidth = maxWidth
+                            this.minHeight = minHeight
+                            this.maxHeight = maxHeight
                         }
 
-                        val x = message["X"]!!.value.toInt()
-                        val y = message["Y"]!!.value.toInt()
-                        val width = message["WIDTH"]!!.value.toInt()
-                        val height = message["HEIGHT"]!!.value.toInt()
-
-                        handler.fireOnEventReceived(this, CameraSubframeChangedEvent(this, x, y, width, height))
+                        x = message["X"]!!.value.toInt()
+                        y = message["Y"]!!.value.toInt()
+                        width = message["WIDTH"]!!.value.toInt()
+                        height = message["HEIGHT"]!!.value.toInt()
                     }
                     "CCD_BINNING" -> {
                         if (message is DefNumberVector) {
-                            val enabled = message.perm != PropertyPermission.RO
-                            handler.fireOnEventReceived(this, CameraCanBinEvent(this, enabled))
-
-                            val maxX = message["HOR_BIN"]!!.max.toInt()
-                            val maxY = message["VER_BIN"]!!.max.toInt()
-                            handler.fireOnEventReceived(this, CameraBinMinMaxEvent(this, maxX, maxY))
+                            canBin = message.perm != PropertyPermission.RO
+                            maxBinX = message["HOR_BIN"]!!.max.toInt()
+                            maxBinY = message["VER_BIN"]!!.max.toInt()
                         }
 
-                        val x = message["HOR_BIN"]!!.value.toInt()
-                        val y = message["VER_BIN"]!!.value.toInt()
-                        handler.fireOnEventReceived(this, CameraBinChangedEvent(this, x, y))
+                        binX = message["HOR_BIN"]!!.value.toInt()
+                        binY = message["VER_BIN"]!!.value.toInt()
                     }
                 }
             }
@@ -154,14 +238,18 @@ class Camera(
     }
 
     fun cooler(enable: Boolean) {
-        sendNewSwitch("CCD_COOLER", "COOLER_ON" to enable, "COOLER_OFF" to !enable)
+        if (hasCoolerControl) {
+            sendNewSwitch("CCD_COOLER", "COOLER_ON" to enable, "COOLER_OFF" to !enable)
+        }
     }
 
     fun temperature(value: Double) {
-        sendNewNumber("CCD_TEMPERATURE", "CCD_TEMPERATURE_VALUE" to value)
+        if (canSetTemperature) {
+            sendNewNumber("CCD_TEMPERATURE", "CCD_TEMPERATURE_VALUE" to value)
+        }
     }
 
-    fun frameFormat(format: CaptureFormat) {
+    fun frameFormat(format: FrameFormat) {
         sendNewSwitch("CCD_CAPTURE_FORMAT", format.name to true)
     }
 
@@ -170,10 +258,12 @@ class Camera(
     }
 
     fun frame(x: Int, y: Int, width: Int, height: Int) {
-        sendNewNumber(
-            "CCD_FRAME", "X" to x.toDouble(), "Y" to y.toDouble(),
-            "WIDTH" to width.toDouble(), "HEIGHT" to height.toDouble(),
-        )
+        if (canSubframe) {
+            sendNewNumber(
+                "CCD_FRAME", "X" to x.toDouble(), "Y" to y.toDouble(),
+                "WIDTH" to width.toDouble(), "HEIGHT" to height.toDouble(),
+            )
+        }
     }
 
     fun bin(x: Int, y: Int) {
@@ -186,15 +276,16 @@ class Camera(
     }
 
     fun abortCapture() {
-        sendNewSwitch("CCD_ABORT_EXPOSURE", "ABORT" to true)
+        if (canAbort) {
+            sendNewSwitch("CCD_ABORT_EXPOSURE", "ABORT" to true)
+        }
     }
 
     override fun toString() = name
 
     companion object {
 
-        @JvmStatic
-        val DRIVERS = setOf(
+        @JvmStatic val DRIVERS = setOf(
             "indi_altair_ccd",
             "indi_apogee_ccd",
             "indi_asi_ccd",
@@ -228,11 +319,12 @@ class Camera(
             "indi_simulator_guide",
             "indi_sony_ccd",
             "indi_starshootg_ccd",
-            "indi_sv305_ccd",
+            "indi_svbony_ccd",
             "indi_sx_ccd",
             "indi_toupcam_ccd",
             "indi_v4l2_ccd",
             "indi_webcam_ccd",
+            "indi_kepler_ccd",
         )
     }
 }
