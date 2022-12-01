@@ -11,17 +11,15 @@ class ScreenTransformFunction(
     private val rangeFactor = if (shadow == highlight) 1f else (1f / (highlight - shadow))
     private val k1 = (midtone - 1f) * rangeFactor
     private val k2 = ((2f * midtone) - 1f) * rangeFactor
-    private val lut = FloatArray(256)
+    private val lut = FloatArray(65536)
 
     fun transform(image: FitsImage): FitsImage {
         lut.fill(Float.NaN)
 
         for (i in image.data.indices) {
             val pixel = image.data[i]
-            val red = ((pixel ushr 16) and 0xff).df(midtone, shadow, highlight, k1, k2)
-            val green = ((pixel ushr 8) and 0xff).df(midtone, shadow, highlight, k1, k2)
-            val blue = (pixel and 0xff).df(midtone, shadow, highlight, k1, k2)
-            image.data[i] = (red shl 16) or (green shl 8) or blue
+            val color = pixel.df(midtone, shadow, highlight, k1, k2)
+            image.data[i] = color
         }
 
         return image
@@ -30,14 +28,14 @@ class ScreenTransformFunction(
     // https://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html#__XISF_Data_Objects_:_XISF_Image_:_Display_Function__
     // https://pixinsight.com/tutorials/24-bit-stf/
 
-    private fun Int.df(midtone: Float, s: Float, h: Float, k1: Float, k2: Float): Int {
-        if (!lut[this].isNaN()) return (lut[this] * 255f).toInt()
-        val p = this / 255f
-        if (p < s) return 0
-        if (p > h) return 255
-        val i = p - s
+    private fun Float.df(midtone: Float, s: Float, h: Float, k1: Float, k2: Float): Float {
+        val p = (this * 65535f).toInt()
+        if (!lut[p].isNaN()) return lut[p]
+        if (this < s) return 0f
+        if (this > h) return 1f
+        val i = this - s
         val value = (i * k1) / (i * k2 - midtone)
-        lut[this] = value
-        return (value * 255f).toInt()
+        lut[p] = value
+        return value
     }
 }

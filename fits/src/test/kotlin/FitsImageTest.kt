@@ -104,5 +104,20 @@ class FitsImageTest : StringSpec() {
             val image = ScreenTransformFunction(0.9f, 0.4f, 0.6f).transform(FitsImage(fits))
             ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Color.STF7.png"))
         }
+        "CCD Simulator - Stretch" {
+            val fits = Fits("src/test/resources/CCD Simulator.Gray.fits")
+            val image = ScreenTransformFunction(5.8e-5f).transform(FitsImage(fits))
+            ImageIO.write(image, "PNG", File("src/test/resources/CCD Simulator.Gray.png"))
+        }
+        "CCD Simulator - JPG" {
+            val fits = Fits("src/test/resources/CCD Simulator.Gray.fits")
+            val image = ScreenTransformFunction(5.8e-5f).transform(FitsImage(fits))
+            ImageIO.write(image, "JPG", File("src/test/resources/CCD Simulator.Gray.jpg"))
+        }
+        "HorseHead" {
+            val fits = Fits("src/test/resources/HorseHead.fits")
+            val image = ScreenTransformFunction(0.74937f, 0.36090f, 0.79313f).transform(FitsImage(fits))
+            ImageIO.write(image, "JPG", File("src/test/resources/HorseHead.jpg"))
+        }
     }
 }
