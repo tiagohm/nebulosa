@@ -55,6 +55,10 @@ import { WebviewDirective } from './directives/webview/webview.directive'
     MatTabsModule,
     MatSelectModule,
     MatSidenavModule,
+    MatSlideToggleModule,
+    MatButtonToggleModule,
+    MatMenuModule,
+    MatRadioModule,
   ]
 })
 export class SharedModule {

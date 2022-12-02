@@ -18,3 +18,12 @@ body {
 .cdk-overlay-backdrop {
   backdrop-filter: blur(2px);
 }
+
+.mat-tab-group,
+.mat-tab-body-wrapper {
+  height: 100%;
+}
+
+.fs-7 {
+  font-size: 0.75rem !important;
+}

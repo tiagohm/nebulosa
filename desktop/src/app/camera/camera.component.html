@@ -1,0 +1,75 @@
+<div class="d-flex">
+  <div class="w-75">
+
+  </div>
+
+  <div class="w-25 p-4 text-center">
+    <div class="d-flex flex-row align-items-center">
+      <mat-form-field appearance="fill">
+        <mat-label>Cameras</mat-label>
+        <mat-select [(value)]="camera" (valueChange)="cameraSelecionada()">
+          <mat-option *ngFor="let camera of cameras.value" [value]="camera">
+            {{ camera.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-icon-button *ngIf="!camera?.isConnected" [disabled]="!camera" (click)="connectCamera()" class="mb-4 ms-3">
+        <mat-icon svgIcon="connection"></mat-icon>
+      </button>
+
+      <button mat-icon-button *ngIf="camera?.isConnected" (click)="disconnectCamera()" class="mb-4 ms-3">
+        <mat-icon svgIcon="close-circle"></mat-icon>
+      </button>
+    </div>
+
+    <div class="d-flex flex-row justify-content-evenly align-items-center">
+      <div class="d-flex flex-column text-center">
+        <span class="fs-7">Cooler</span>
+        <mat-slide-toggle [disabled]="!camera?.hasCooler"></mat-slide-toggle>
+      </div>
+
+      <div class="d-flex flex-column text-center">
+        <mat-form-field appearance="fill" class="mt-2" style="max-width: 172px">
+          <mat-label>Temperature {{camera?.temperature ?? 0}} °C</mat-label>
+          <input matInput type="number" [readonly]="!camera?.canSetTemperature" min="-50" max="50" step="0.1" [formControl]="temperatureSetpoint">
+          <button mat-icon-button matSuffix [disabled]="!camera?.hasCooler">
+            <mat-icon svgIcon="check"></mat-icon>
+          </button>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="d-flex flex-row justify-content-evenly align-items-center">
+      <div class="d-flex flex-column">
+        <mat-form-field appearance="fill" class="mt-2" style="max-width: 172px">
+          <mat-label>Exposure ({{exposureUnitType}})</mat-label>
+          <input matInput type="number" [readonly]="!camera"
+            [min]="exposureMin" [max]="exposureMax" step="1" [formControl]="exposure">
+
+          <button mat-icon-button matSuffix [disabled]="!camera" [matMenuTriggerFor]="exposureUnitTypeMenu">
+            <mat-icon svgIcon="dots-vertical"></mat-icon>
+          </button>
+
+          <mat-menu #exposureUnitTypeMenu="matMenu">
+            <button mat-menu-item (click)="updateExposureUnitType('s')">s</button>
+            <button mat-menu-item (click)="updateExposureUnitType('ms')">ms</button>
+            <button mat-menu-item (click)="updateExposureUnitType('µs')">µs</button>
+          </mat-menu>
+        </mat-form-field>
+      </div>
+
+      <div class="ms-2 d-flex flex-column">
+        <mat-radio-group class="d-flex flex-column" [(ngModel)]="exposureType">
+          <mat-radio-button class="mb-1" value="SINGLE">Single</mat-radio-button>
+          <mat-radio-button value="CONTINUOUS">Continuous</mat-radio-button>
+        </mat-radio-group>
+
+        <mat-form-field appearance="fill"class="mt-2" style="max-width: 128px">
+          <mat-label>Delay (ms)</mat-label>
+          <input matInput type="number" min="100" max="30000" step="1" [readonly]="exposureType !== 'CONTINUOUS'" [(ngModel)]="exposureDelay">
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+</div>

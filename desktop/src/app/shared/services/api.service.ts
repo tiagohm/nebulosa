@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
+import { Camera } from '../models/camera.model'
 import { ConnectionStatus } from '../models/connection-status.model'
 
 export const API_URL = 'http://localhost:7000'
@@ -29,5 +30,17 @@ export class ApiService {
 
   async connectionStatus() {
     return this.get<ConnectionStatus>(`connection/status`)
+  }
+
+  async cameras() {
+    return this.get<Camera[]>(`cameras`)
+  }
+
+  async connectCamera(camera: Camera) {
+    return this.post<void>(`cameras/${camera.name}/connect`)
+  }
+
+  async disconnectCamera(camera: Camera) {
+    return this.post<void>(`cameras/${camera.name}/disconnect`)
   }
 }
