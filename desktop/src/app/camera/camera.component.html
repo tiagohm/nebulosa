@@ -30,7 +30,7 @@
         <div class="d-flex flex-row align-items-center justify-content-center">
           <mat-form-field appearance="outline">
             <mat-label class="fs-7">Cameras</mat-label>
-            <mat-select [(value)]="camera" (valueChange)="updateCamera()">
+            <mat-select [disabled]="!connected" [(value)]="camera" (valueChange)="updateCamera()">
               <mat-option *ngFor="let camera of cameras" [value]="camera">
                 {{ camera.name }}
               </mat-option>
@@ -176,11 +176,35 @@
     </mat-tab>
 
     <mat-tab label="Frame">
-      <div class="p-4">
-        <mat-slider [min]="0" [max]="65535" [step]="1">
-          <input value="0" matSliderStartThumb>
-          <input value="65535" matSliderEndThumb>
-        </mat-slider>
+      <div class="p-4 d-flex flex-column">
+        <div class="d-flex flex-row align-items-center justify-content-center">
+          <mat-form-field appearance="outline" style="max-width: 136px">
+            <mat-label class="fs-7">Format</mat-label>
+            <mat-select [disabled]="!selectedFrame" [(value)]="format">
+              <mat-option value="JPEG">JPEG</mat-option>
+              <mat-option value="PNG">PNG</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="d-flex flex-row align-items-center">
+          <mat-label class="w-25 fs-7">Shadow: ({{shadow}})</mat-label>
+          <mat-slider [disabled]="!selectedFrame" class="ms-1 w-100" [min]="0" [max]="65535" [(value)]="shadow" [step]="1"></mat-slider>
+        </div>
+        <div class="d-flex flex-row align-items-center">
+          <mat-label class="w-25 fs-7">Highlight: ({{highlight}})</mat-label>
+          <mat-slider [disabled]="!selectedFrame" class="ms-1 w-100" [min]="0" [max]="65535" [(value)]="highlight" [step]="1"></mat-slider>
+        </div>
+        <div class="d-flex flex-row align-items-center">
+          <mat-label class="w-25 fs-7">Midtone: ({{midtone}})</mat-label>
+          <mat-slider [disabled]="!selectedFrame" class="ms-1 w-100" [min]="0" [max]="65535" [(value)]="midtone" [step]="1"></mat-slider>
+        </div>
+        <div class="text-center">
+          <button mat-flat-button [disabled]="!selectedFrame" (click)="applySTF()">
+            <mat-icon svgIcon="check" class="me-1"></mat-icon>
+            Apply
+          </button>
+        </div>
       </div>
     </mat-tab>
   </mat-tab-group>

@@ -57,6 +57,10 @@ export class CameraTab implements OnInit, OnDestroy {
 
   frames: CameraFrame[] = []
   selectedFrame?: CameraFrame
+  format = 'JPEG'
+  midtone = 32767
+  shadow = 0
+  highlight = 65535
 
   private eventSubscription: Subscription
   private updateCameraListTimer = null
@@ -69,12 +73,12 @@ export class CameraTab implements OnInit, OnDestroy {
   ) {
     this.eventSubscription = eventService.subscribe((e) => this.eventReceived(e))
 
-    electronService.ipcRenderer.on('fits-open', (event, data) => this.createFrameFromPath(data))
+    electronService.ipcRenderer.on('fits-open', (event, data) => this.newFrameFromPath(data))
   }
 
   ngOnInit() {
-    this.refreshCameraList()
-    this.updateCameraListTimer = setInterval(() => this.refreshCameraList(), 30000)
+    this.refreshCameras()
+    this.updateCameraListTimer = setInterval(() => this.refreshCameras(), 30000)
   }
 
   ngOnDestroy() {
@@ -85,7 +89,7 @@ export class CameraTab implements OnInit, OnDestroy {
   private eventReceived(event: INDIEvent) {
     if (event instanceof ConnectedEvent) {
       this.connected = true
-      this.refreshCameraList()
+      this.refreshCameras()
     } else if (event instanceof DisconnectedEvent) {
       this.connected = false
       this.cameras = []
@@ -93,7 +97,7 @@ export class CameraTab implements OnInit, OnDestroy {
     }
   }
 
-  private async refreshCameraList() {
+  private async refreshCameras() {
     const cameras = await this.apiService.cameras()
 
     for (let i = 0; i < cameras.length; i++) {
@@ -115,19 +119,21 @@ export class CameraTab implements OnInit, OnDestroy {
   }
 
   frameLoaded(image: Event, frame: CameraFrame) {
-    const e = image.target as HTMLElement
-    const panZoom = createPanZoom(e, {
-      minZoom: 0.1,
-      maxZoom: 500,
-    })
-    frame.panZoom = panZoom
+    if (!frame.panZoom) {
+      const e = image.target as HTMLElement
+      const panZoom = createPanZoom(e, {
+        minZoom: 0.1,
+        maxZoom: 500,
+      })
+      frame.panZoom = panZoom
+    }
   }
 
   openFile() {
     this.electronService.ipcRenderer.send('open-fits')
   }
 
-  private createFrameFromPath(path: string) {
+  private newFrameFromPath(path: string) {
     this.ngZone.run(() => {
       const frame = new CameraFrame()
       frame.label = path.substring(path.lastIndexOf('/') + 1)
@@ -143,12 +149,27 @@ export class CameraTab implements OnInit, OnDestroy {
       this.frames.splice(idx, 1)
       frame.panZoom?.dispose()
     }
+
+    if (this.frames.length === 0) {
+      this.selectedFrame = undefined
+    }
   }
 
   frameSelected(event: MatTabChangeEvent) {
     if (event.index >= 0 && event.index < this.frames.length) {
       this.selectedFrame = this.frames[event.index]
+      this.format = this.selectedFrame.format
+      this.midtone = Math.trunc(this.selectedFrame.midtone * 65535)
+      this.shadow = Math.trunc(this.selectedFrame.shadow * 65535)
+      this.highlight = Math.trunc(this.selectedFrame.highlight * 65535)
     }
+  }
+
+  applySTF() {
+    this.selectedFrame.format = this.format
+    this.selectedFrame.midtone = this.midtone / 65535
+    this.selectedFrame.shadow = this.shadow / 65535
+    this.selectedFrame.highlight = this.highlight / 65535
   }
 
   updateCamera() {
