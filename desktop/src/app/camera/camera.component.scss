@@ -1,0 +1,13 @@
+.frame-area {
+  overflow: hidden;
+  max-height: calc(100vh - 113px);
+}
+
+.frame-wrap {
+  overflow: hidden;
+  height: calc(100vh - 162px);
+}
+
+img.frame {
+  image-rendering: pixelated;
+}

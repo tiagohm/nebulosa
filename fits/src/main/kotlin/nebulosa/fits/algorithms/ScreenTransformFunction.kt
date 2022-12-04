@@ -8,12 +8,15 @@ class ScreenTransformFunction(
     private val highlight: Float = 1f,
 ) {
 
+    private val canTransform = midtone != 0.5f || shadow != 0f || highlight != 1f
     private val rangeFactor = if (shadow == highlight) 1f else (1f / (highlight - shadow))
     private val k1 = (midtone - 1f) * rangeFactor
     private val k2 = ((2f * midtone) - 1f) * rangeFactor
-    private val lut = FloatArray(65536)
+    private val lut = if (canTransform) FloatArray(65536) else FloatArray(0)
 
     fun transform(image: FitsImage): FitsImage {
+        if (!canTransform) return image
+
         lut.fill(Float.NaN)
 
         for (i in image.data.indices) {

@@ -1,5 +1,6 @@
 package nebulosa.api.scheduler
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.Future
@@ -8,12 +9,10 @@ import java.util.concurrent.atomic.AtomicReference
 
 abstract class ScheduledTask<T> : Runnable {
 
-    private val running = AtomicBoolean(false)
-    private val future = AtomicReference<Future<*>>(null)
+    @JsonIgnore private val running = AtomicBoolean(false)
+    @JsonIgnore private val future = AtomicReference<Future<*>>(null)
 
     abstract val name: String
-
-    abstract val data: Map<String, Any?>
 
     @Volatile var progress = 0.0
         protected set

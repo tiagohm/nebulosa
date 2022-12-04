@@ -1,6 +1,6 @@
 package nebulosa.api.connection
 
-data class ConnectionStatusRes(
+data class ConnectionStatus(
     val connected: Boolean,
     val host: String,
     val port: Int,

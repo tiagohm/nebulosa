@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, screen } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -75,6 +75,17 @@ try {
     // dock icon is clicked and there are no other windows open.
     if (win === null) {
       createWindow()
+    }
+  })
+
+  ipcMain.on('open-fits', async (event) => {
+    const data = await dialog.showOpenDialog(null, {
+      filters: [{ name: 'FITS files', extensions: ['fits', 'fit'] }],
+      properties: ['openFile']
+    })
+
+    if (!data.canceled) {
+      event.sender.send('fits-open', data.filePaths[0])
     }
   })
 } catch (e) {

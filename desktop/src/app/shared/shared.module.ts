@@ -39,7 +39,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { WebviewDirective } from './directives/webview/webview.directive'
 
 @NgModule({
-  declarations: [WebviewDirective],
+  declarations: [
+    WebviewDirective
+  ],
   imports: [CommonModule, FormsModule],
   exports: [
     WebviewDirective,
@@ -59,6 +61,8 @@ import { WebviewDirective } from './directives/webview/webview.directive'
     MatButtonToggleModule,
     MatMenuModule,
     MatRadioModule,
+    MatCheckboxModule,
+    MatSliderModule,
   ]
 })
 export class SharedModule {

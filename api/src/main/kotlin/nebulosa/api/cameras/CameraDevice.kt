@@ -5,7 +5,7 @@ import nebulosa.indi.devices.cameras.Camera
 import nebulosa.indi.devices.cameras.FrameFormat
 import nebulosa.indi.protocol.PropertyState
 
-data class CameraRes(
+data class CameraDevice(
     val isConnected: Boolean,
     val name: String,
     val hasCoolerControl: Boolean,
@@ -44,7 +44,7 @@ data class CameraRes(
     companion object {
 
         @JvmStatic
-        fun from(camera: Camera) = CameraRes(
+        fun from(camera: Camera) = CameraDevice(
             camera.isConnected,
             camera.name,
             camera.hasCoolerControl,

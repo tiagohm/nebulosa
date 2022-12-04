@@ -1,9 +1,32 @@
-import { Component, OnDestroy, OnInit } from '@angular/core'
-import { FormControl } from '@angular/forms'
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core'
+import { MatTabChangeEvent } from '@angular/material/tabs'
+import { Base64 } from 'js-base64'
+import createPanZoom, { PanZoom } from 'panzoom'
 import { Subscription } from 'rxjs'
+import { ElectronService } from '../core/services/electron/electron.service'
+import { FrameType } from '../shared/enums/frame-type.enum'
 import { Camera } from '../shared/models/camera.model'
-import { ApiService } from '../shared/services/api.service'
-import { ConnectedEvent, DisconnectedEvent, Event, EventService } from '../shared/services/event.service'
+import { FrameFormat } from '../shared/models/frame-format.model'
+import { ApiService, API_URL } from '../shared/services/api.service'
+import { ConnectedEvent, DisconnectedEvent, EventService, INDIEvent } from '../shared/services/event.service'
+
+export class CameraFrame {
+  label: string
+  camera?: Camera
+  panZoom?: PanZoom
+  closeable = true
+  path?: string
+  format = 'JPEG'
+  midtone = 0.5
+  shadow = 0.0
+  highlight = 1.0
+
+  get src() {
+    return `${API_URL}/fits/${Base64.encode(this.path, true)}` +
+      `?format=${this.format}&midtone=${this.midtone}&shadow=${this.shadow}` +
+      `&highlight=${this.highlight}`
+  }
+}
 
 @Component({
   selector: 'camera',
@@ -13,16 +36,27 @@ import { ConnectedEvent, DisconnectedEvent, Event, EventService } from '../share
 export class CameraTab implements OnInit, OnDestroy {
 
   connected = false
+  cameras: Camera[] = []
   camera?: Camera = undefined
-  exposureUnitType = 'µs'
-  exposureType = 'SINGLE'
+  temperatureSetpoint = 0
+  exposure = 0
   exposureMin = 0
   exposureMax = 0
+  exposureUnitType = 'µs'
+  exposureType = 'SINGLE'
   exposureDelay = 100
+  x = 0
+  y = 0
+  width = 0
+  height = 0
+  subframeOn = false
+  frameType: FrameType = 'LIGHT'
+  frameFormat?: FrameFormat = undefined
+  binX = 1
+  binY = 1
 
-  readonly temperatureSetpoint = new FormControl<number>(0)
-  readonly exposure = new FormControl<number>(0)
-  readonly cameras = new FormControl<Camera[]>([])
+  frames: CameraFrame[] = []
+  selectedFrame?: CameraFrame
 
   private eventSubscription: Subscription
   private updateCameraListTimer = null
@@ -30,13 +64,17 @@ export class CameraTab implements OnInit, OnDestroy {
   constructor(
     private apiService: ApiService,
     private eventService: EventService,
+    private electronService: ElectronService,
+    private ngZone: NgZone,
   ) {
     this.eventSubscription = eventService.subscribe((e) => this.eventReceived(e))
+
+    electronService.ipcRenderer.on('fits-open', (event, data) => this.createFrameFromPath(data))
   }
 
   ngOnInit() {
-    this.updateCameraList()
-    this.updateCameraListTimer = setInterval(() => this.updateCameraList(), 30000)
+    this.refreshCameraList()
+    this.updateCameraListTimer = setInterval(() => this.refreshCameraList(), 30000)
   }
 
   ngOnDestroy() {
@@ -44,37 +82,79 @@ export class CameraTab implements OnInit, OnDestroy {
     this.eventSubscription.unsubscribe()
   }
 
-  private eventReceived(event: Event) {
+  private eventReceived(event: INDIEvent) {
     if (event instanceof ConnectedEvent) {
       this.connected = true
-      this.updateCameraList()
+      this.refreshCameraList()
     } else if (event instanceof DisconnectedEvent) {
       this.connected = false
-      this.cameras.setValue([])
+      this.cameras = []
       this.camera = undefined
     }
   }
 
-  private async updateCameraList() {
+  private async refreshCameraList() {
     const cameras = await this.apiService.cameras()
 
-    this.cameras.setValue(cameras)
+    for (let i = 0; i < cameras.length; i++) {
+      const camera = cameras[i]
+      const idx = this.cameras.findIndex((e) => e.name === camera.name)
 
-    if (this.camera) {
-      for (const camera of cameras) {
-        if (camera.name === this.camera.name) {
-          this.camera = camera
-          return
-        }
+      if (idx >= 0) {
+        Object.assign(this.cameras[idx], camera)
+      } else {
+        this.cameras.push(camera)
+        const frame = new CameraFrame()
+        frame.label = camera.name
+        frame.camera = camera
+        this.frames.push(frame)
       }
     }
 
-    this.camera = undefined
-    this.updateExposureUnitType()
+    this.updateCamera()
   }
 
-  cameraSelecionada() {
+  frameLoaded(image: Event, frame: CameraFrame) {
+    const e = image.target as HTMLElement
+    const panZoom = createPanZoom(e, {
+      minZoom: 0.1,
+      maxZoom: 500,
+    })
+    frame.panZoom = panZoom
+  }
+
+  openFile() {
+    this.electronService.ipcRenderer.send('open-fits')
+  }
+
+  private createFrameFromPath(path: string) {
+    this.ngZone.run(() => {
+      const frame = new CameraFrame()
+      frame.label = path.substring(path.lastIndexOf('/') + 1)
+      frame.path = path
+      this.frames.push(frame)
+    })
+  }
+
+  closeFrame(frame: CameraFrame) {
+    const idx = this.frames.indexOf(frame)
+
+    if (idx >= 0) {
+      this.frames.splice(idx, 1)
+      frame.panZoom?.dispose()
+    }
+  }
+
+  frameSelected(event: MatTabChangeEvent) {
+    if (event.index >= 0 && event.index < this.frames.length) {
+      this.selectedFrame = this.frames[event.index]
+    }
+  }
+
+  updateCamera() {
     this.updateExposureUnitType()
+
+    this.frameFormat = this.camera?.frameFormats?.[0]
   }
 
   async connectCamera() {
@@ -89,7 +169,7 @@ export class CameraTab implements OnInit, OnDestroy {
     if (!this.camera) {
       this.exposureMin = 0
       this.exposureMax = 0
-      this.exposure.setValue(0)
+      this.exposure = 0
       return
     }
 
@@ -97,28 +177,28 @@ export class CameraTab implements OnInit, OnDestroy {
       case 's':
         {
           const factor = this.exposureUnitType === 'µs' ? 1000000 : this.exposureUnitType === 'ms' ? 1000 : 1
-          const value = this.exposure.value / factor
+          const value = this.exposure / factor
           this.exposureMin = Math.max(1, this.camera.exposureMin / 1000000)
           this.exposureMax = this.camera.exposureMax / 1000000
-          this.exposure.setValue(Math.max(this.exposureMin, Math.min(value, this.exposureMax)))
+          this.exposure = Math.max(this.exposureMin, Math.min(value, this.exposureMax))
           break
         }
       case 'ms':
         {
           const factor = this.exposureUnitType === 'µs' ? 1000 : this.exposureUnitType === 's' ? 1e-3 : 1
-          const value = this.exposure.value / factor
+          const value = this.exposure / factor
           this.exposureMin = Math.max(1, this.camera.exposureMin / 1000)
           this.exposureMax = this.camera.exposureMax / 1000
-          this.exposure.setValue(Math.max(this.exposureMin, Math.min(value, this.exposureMax)))
+          this.exposure = Math.max(this.exposureMin, Math.min(value, this.exposureMax))
           break
         }
       case 'µs':
         {
           const factor = this.exposureUnitType === 'ms' ? 1000 : this.exposureUnitType === 's' ? 1000000 : 1e-3
-          const value = this.exposure.value * factor
+          const value = this.exposure * factor
           this.exposureMin = Math.max(1, this.camera.exposureMin)
           this.exposureMax = this.camera.exposureMax
-          this.exposure.setValue(Math.max(this.exposureMin, Math.min(value, this.exposureMax)))
+          this.exposure = Math.max(this.exposureMin, Math.min(value, this.exposureMax))
           break
         }
     }

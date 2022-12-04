@@ -7,8 +7,8 @@ import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.indi.devices.cameras.FrameType
 import org.jetbrains.annotations.NotNull
 
-data class StartCaptureReq(
-    @field:NotNull @field:Positive val exposureInMicros: Long,
+data class StartCapture(
+    @field:NotNull @field:Positive val exposure: Long,
     @field:NotNull @field:Positive val amount: Int,
     @field:NotNull @field:Min(100L) val delay: Long,
     @field:NotNull @field:PositiveOrZero val x: Int,

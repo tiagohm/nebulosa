@@ -8,7 +8,7 @@
 
 <div mat-dialog-content class="d-flex flex-column">
   <div class="d-flex justify-content-between align-items-start">
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="outline">
       <mat-label>Connection</mat-label>
       <mat-select [formControl]="connection" (selectionChange)="connectionSelected()">
         <mat-option [value]="newConnection">New Connection</mat-option>
@@ -23,19 +23,19 @@
     </button>
   </div>
 
-  <mat-form-field appearance="fill">
+  <mat-form-field appearance="outline">
     <mat-label>Name</mat-label>
     <input matInput [formControl]="name">
     <mat-error>Required</mat-error>
   </mat-form-field>
 
-  <mat-form-field appearance="fill">
+  <mat-form-field appearance="outline">
     <mat-label>Host</mat-label>
     <input matInput [formControl]="host">
     <mat-error>Required</mat-error>
   </mat-form-field>
 
-  <mat-form-field appearance="fill">
+  <mat-form-field appearance="outline">
     <mat-label>Port</mat-label>
     <input matInput type="number" [formControl]="port" min="1" max="65535">
     <mat-error>Required</mat-error>

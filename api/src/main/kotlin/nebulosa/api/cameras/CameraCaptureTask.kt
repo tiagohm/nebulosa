@@ -1,5 +1,6 @@
 package nebulosa.api.cameras
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import nebulosa.api.scheduler.ScheduledTask
 import nebulosa.indi.devices.cameras.Camera
 import nebulosa.indi.devices.cameras.FrameFormat
@@ -7,8 +8,8 @@ import nebulosa.indi.devices.cameras.FrameType
 import nebulosa.indi.devices.events.*
 import java.util.concurrent.Phaser
 
-class CameraCaptureTask(
-    val camera: Camera,
+data class CameraCaptureTask(
+    @JsonIgnore val camera: Camera,
     val exposure: Long,
     val amount: Int,
     val delay: Long,
@@ -27,30 +28,15 @@ class CameraCaptureTask(
 
     override val name = "${camera.name} Capture"
 
-    override val data = mapOf(
-        "exposure" to exposure,
-        "amount" to amount,
-        "delay" to delay,
-        "x" to x,
-        "y" to y,
-        "width" to width,
-        "height" to height,
-        "frameFormat" to frameFormat,
-        "frameType" to frameType,
-        "binX" to binX,
-        "binY" to binY,
-    )
-
-    internal fun onCameraEventReceived(event: CameraEvent) {
-        println("$name: $event")
-
+    internal fun onCameraEventReceived(event: CameraEvent): Any? {
         when (event) {
             is CameraExposureFailedEvent -> {
                 finishedWithError = true
                 cancel()
             }
-            is CameraExposureOkEvent -> {
+            is CameraExposureFrameEvent -> {
                 phaser.arriveAndDeregister()
+                return CameraCaptureSavedEvent(event.device)
             }
             is CameraExposureAbortedEvent -> {
                 phaser.forceTermination()
@@ -59,9 +45,10 @@ class CameraCaptureTask(
             is CameraExposureBusyEvent -> {
                 progress = ((amount - remaining - 1).toDouble() / amount) +
                     ((exposure - event.exposure).toDouble() / exposure) * (1.0 / amount)
-                println(progress)
             }
         }
+
+        return null
     }
 
     override fun execute() {

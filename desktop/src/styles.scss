@@ -27,3 +27,32 @@ body {
 .fs-7 {
   font-size: 0.75rem !important;
 }
+
+.mat-form-field-appearance-outline .mat-form-field-wrapper {
+  margin: 0 !important;
+}
+
+.mat-form-field-wrapper {
+  padding-bottom: 0.8em !important;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(100 100 100 / 50%);
+  border-radius: 10px;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-button,
+::-webkit-scrollbar-corner {
+  display: none;
+}
