@@ -182,6 +182,11 @@ gradle-app.setting
 ### Gradle Cache ###
 .cache
 
+### ObjectBox ###
+objectbox*.dll
+libobjectbox*.so
+libobjectbox*.dylib
+
 ### Project Assets ###
 /assets
 !/assets/65803 Didymos.bsp

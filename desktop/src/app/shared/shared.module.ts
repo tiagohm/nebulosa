@@ -63,6 +63,7 @@ import { WebviewDirective } from './directives/webview/webview.directive'
     MatRadioModule,
     MatCheckboxModule,
     MatSliderModule,
+    MatTooltipModule,
   ]
 })
 export class SharedModule {

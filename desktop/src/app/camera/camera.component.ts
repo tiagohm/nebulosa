@@ -1,14 +1,19 @@
-import { Component, NgZone, OnDestroy, OnInit } from '@angular/core'
+import { Component, OnDestroy, OnInit } from '@angular/core'
+import { MatCheckboxChange } from '@angular/material/checkbox'
 import { MatTabChangeEvent } from '@angular/material/tabs'
 import { Base64 } from 'js-base64'
 import createPanZoom, { PanZoom } from 'panzoom'
 import { Subscription } from 'rxjs'
 import { ElectronService } from '../core/services/electron/electron.service'
+import { AutoSubFolderMode } from '../shared/enums/auto-subfolder.enum'
+import { ExposureType } from '../shared/enums/exposure-type.enum'
 import { FrameType } from '../shared/enums/frame-type.enum'
+import { CameraCaptureHistory } from '../shared/models/camera-capture-history.model'
 import { Camera } from '../shared/models/camera.model'
 import { FrameFormat } from '../shared/models/frame-format.model'
 import { ApiService, API_URL } from '../shared/services/api.service'
 import { ConnectedEvent, DisconnectedEvent, EventService, INDIEvent } from '../shared/services/event.service'
+import { StorageService } from '../shared/services/storage.service'
 
 export class CameraFrame {
   label: string
@@ -22,6 +27,7 @@ export class CameraFrame {
   highlight = 1.0
 
   get src() {
+    if (!this.path) return null
     return `${API_URL}/fits/${Base64.encode(this.path, true)}` +
       `?format=${this.format}&midtone=${this.midtone}&shadow=${this.shadow}` +
       `&highlight=${this.highlight}`
@@ -43,13 +49,13 @@ export class CameraTab implements OnInit, OnDestroy {
   exposureMin = 0
   exposureMax = 0
   exposureUnitType = 'µs'
-  exposureType = 'SINGLE'
+  exposureType: ExposureType = 'SINGLE'
   exposureDelay = 100
   x = 0
   y = 0
   width = 0
   height = 0
-  subframeOn = false
+  subFrameOn = false
   frameType: FrameType = 'LIGHT'
   frameFormat?: FrameFormat = undefined
   binX = 1
@@ -62,27 +68,37 @@ export class CameraTab implements OnInit, OnDestroy {
   shadow = 0
   highlight = 65535
 
+  // Options.
+  autoSaveAllExposures = false
+  imageSavePath = ''
+  autoSubFolder = true
+  autoSubFolderMode: AutoSubFolderMode = 'NOON'
+
+  // History.
+  cameraHistory: CameraCaptureHistory[] = []
+
   private eventSubscription: Subscription
-  private updateCameraListTimer = null
+  private refreshCamerasTimer = null
+  private cameraHistoryTimer = null
 
   constructor(
     private apiService: ApiService,
     private eventService: EventService,
     private electronService: ElectronService,
-    private ngZone: NgZone,
+    private storageService: StorageService,
   ) {
     this.eventSubscription = eventService.subscribe((e) => this.eventReceived(e))
-
-    electronService.ipcRenderer.on('fits-open', (event, data) => this.newFrameFromPath(data))
   }
 
   ngOnInit() {
     this.refreshCameras()
-    this.updateCameraListTimer = setInterval(() => this.refreshCameras(), 30000)
+    this.refreshCamerasTimer = setInterval(() => this.refreshCameras(), 5000)
+    this.cameraHistoryTimer = setInterval(() => this.refreshCameraHistory(), 1000)
   }
 
   ngOnDestroy() {
-    clearTimeout(this.updateCameraListTimer)
+    clearTimeout(this.refreshCamerasTimer)
+    clearTimeout(this.cameraHistoryTimer)
     this.eventSubscription.unsubscribe()
   }
 
@@ -94,6 +110,13 @@ export class CameraTab implements OnInit, OnDestroy {
       this.connected = false
       this.cameras = []
       this.camera = undefined
+
+      for (let i = 0; i < this.frames.length; i++) {
+        if (this.frames[i].camera) {
+          this.frames.splice(i, 1)
+          i--
+        }
+      }
     }
   }
 
@@ -115,7 +138,20 @@ export class CameraTab implements OnInit, OnDestroy {
       }
     }
 
-    this.updateCamera()
+    this.cameraUpdated()
+  }
+
+  private async refreshCameraHistory() {
+    if (this.selectedFrame?.camera) {
+      const history = await this.apiService.cameraHistory(this.selectedFrame.camera)
+
+      if (this.cameraHistory.length === 0 ||
+        (history.length > 0 && this.cameraHistory[0].id != history[0].id)) {
+        this.cameraHistory = history
+      }
+    } else {
+      this.cameraHistory = []
+    }
   }
 
   frameLoaded(image: Event, frame: CameraFrame) {
@@ -129,17 +165,16 @@ export class CameraTab implements OnInit, OnDestroy {
     }
   }
 
-  openFile() {
-    this.electronService.ipcRenderer.send('open-fits')
+  async openFits() {
+    const data = await this.electronService.ipcRenderer?.invoke('open-fits')
+    this.newFrameFromPath(data)
   }
 
   private newFrameFromPath(path: string) {
-    this.ngZone.run(() => {
-      const frame = new CameraFrame()
-      frame.label = path.substring(path.lastIndexOf('/') + 1)
-      frame.path = path
-      this.frames.push(frame)
-    })
+    const frame = new CameraFrame()
+    frame.label = path.substring(path.lastIndexOf('/') + 1)
+    frame.path = path
+    this.frames.push(frame)
   }
 
   closeFrame(frame: CameraFrame) {
@@ -148,6 +183,7 @@ export class CameraTab implements OnInit, OnDestroy {
     if (idx >= 0) {
       this.frames.splice(idx, 1)
       frame.panZoom?.dispose()
+      frame.panZoom = undefined
     }
 
     if (this.frames.length === 0) {
@@ -156,7 +192,8 @@ export class CameraTab implements OnInit, OnDestroy {
   }
 
   frameSelected(event: MatTabChangeEvent) {
-    if (event.index >= 0 && event.index < this.frames.length) {
+    if (event.index >= 0 &&
+      event.index < this.frames.length) {
       this.selectedFrame = this.frames[event.index]
       this.format = this.selectedFrame.format
       this.midtone = Math.trunc(this.selectedFrame.midtone * 65535)
@@ -165,17 +202,17 @@ export class CameraTab implements OnInit, OnDestroy {
     }
   }
 
-  applySTF() {
+  applyImageProcessing() {
     this.selectedFrame.format = this.format
     this.selectedFrame.midtone = this.midtone / 65535
     this.selectedFrame.shadow = this.shadow / 65535
     this.selectedFrame.highlight = this.highlight / 65535
   }
 
-  updateCamera() {
-    this.updateExposureUnitType()
-
+  cameraUpdated() {
     this.frameFormat = this.camera?.frameFormats?.[0]
+
+    this.loadCameraOptions()
   }
 
   async connectCamera() {
@@ -184,6 +221,22 @@ export class CameraTab implements OnInit, OnDestroy {
 
   async disconnectCamera() {
     this.apiService.disconnectCamera(this.camera)
+  }
+
+  updateROI(fullsize: boolean = false) {
+    if (this.camera) {
+      if (fullsize) {
+        this.x = this.camera.minX
+        this.y = this.camera.minY
+        this.width = this.camera.maxWidth
+        this.height = this.camera.maxHeight
+      } else {
+        this.x = Math.max(this.x, this.camera.minX)
+        this.y = Math.max(this.y, this.camera.minY)
+        this.width = this.width === 0 ? this.camera.maxWidth : Math.min(this.width, this.camera.maxWidth)
+        this.height = this.height === 0 ? this.camera.maxHeight : Math.min(this.height, this.camera.maxHeight)
+      }
+    }
   }
 
   updateExposureUnitType(type: string = this.exposureUnitType) {
@@ -225,5 +278,90 @@ export class CameraTab implements OnInit, OnDestroy {
     }
 
     this.exposureUnitType = type
+
+    this.saveCameraOptions()
+  }
+
+  autoSaveAllExposuresChanged(event: MatCheckboxChange) {
+    this.autoSaveAllExposures = event.checked
+    this.saveCameraOptions()
+  }
+
+  async openDirectoryForImageSavePath() {
+    const data = await this.electronService.ipcRenderer.invoke('open-directory')
+    this.imageSavePath = data
+    this.saveCameraOptions()
+  }
+
+  autoSubFolderChanged(event: MatCheckboxChange) {
+    this.autoSubFolder = event.checked
+    this.saveCameraOptions()
+  }
+
+  autoSubFolderModeChanged(mode: AutoSubFolderMode) {
+    this.autoSubFolderMode = mode
+    this.saveCameraOptions()
+  }
+
+  loadCameraOptions() {
+    if (this.camera) {
+      this.autoSaveAllExposures = this.storageService.bool(`${this.camera.name}.autoSaveAllExposures`) ?? false
+      this.autoSubFolderMode = (this.storageService.string(`${this.camera.name}.autoSubFolderMode`) as AutoSubFolderMode) ?? 'NOON'
+      this.imageSavePath = this.storageService.string(`${this.camera.name}.imageSavePath`) ?? ''
+
+      this.exposure = this.storageService.number(`${this.camera.name}.exposure`) ?? 0
+      this.exposureUnitType = this.storageService.string(`${this.camera.name}.exposureUnitType`) ?? 'µs'
+      this.exposureType = (this.storageService.string(`${this.camera.name}.exposureType`) as ExposureType) ?? 'SINGLE'
+      this.subFrameOn = this.storageService.bool(`${this.camera.name}.subFrameOn`) ?? false
+      this.x = this.storageService.number(`${this.camera.name}.x`) ?? 0
+      this.y = this.storageService.number(`${this.camera.name}.y`) ?? 0
+      this.width = this.storageService.number(`${this.camera.name}.width`) ?? this.camera.maxWidth
+      this.height = this.storageService.number(`${this.camera.name}.height`) ?? this.camera.maxHeight
+      this.frameType = (this.storageService.string(`${this.camera.name}.frameType`) as FrameType) ?? 'DARK'
+      this.binX = this.storageService.number(`${this.camera.name}.binX`) ?? 1
+      this.binY = this.storageService.number(`${this.camera.name}.binY`) ?? 1
+
+      this.updateExposureUnitType()
+      this.updateROI()
+    }
+  }
+
+  saveCameraOptions() {
+    if (this.camera) {
+      this.storageService.bool(`${this.camera.name}.autoSaveAllExposures`, this.autoSaveAllExposures)
+      this.storageService.string(`${this.camera.name}.autoSubFolderMode`, this.autoSubFolderMode)
+      this.storageService.string(`${this.camera.name}.imageSavePath`, this.imageSavePath)
+
+      this.storageService.number(`${this.camera.name}.exposure`, this.exposure)
+      this.storageService.string(`${this.camera.name}.exposureUnitType`, this.exposureUnitType)
+      this.storageService.string(`${this.camera.name}.exposureType`, this.exposureType)
+      this.storageService.bool(`${this.camera.name}.subFrameOn`, this.subFrameOn)
+      this.storageService.number(`${this.camera.name}.x`, this.x)
+      this.storageService.number(`${this.camera.name}.y`, this.y)
+      this.storageService.number(`${this.camera.name}.width`, this.width)
+      this.storageService.number(`${this.camera.name}.height`, this.height)
+      this.storageService.string(`${this.camera.name}.frameType`, this.frameType)
+      this.storageService.number(`${this.camera.name}.binX`, this.binX)
+      this.storageService.number(`${this.camera.name}.binY`, this.binY)
+    }
+  }
+
+  loadHistory(history: CameraCaptureHistory) {
+    if (this.selectedFrame && this.selectedFrame.camera?.name === history.name) {
+      this.selectedFrame.path = history.path
+    }
+  }
+
+  async startCapture() {
+    const amount = this.exposureType === 'SINGLE' ? 1 : 2147483648
+
+    this.saveCameraOptions()
+
+    this.camera!.isCapturing = true
+
+    await this.apiService.cameraStartCapture(this.camera, this.exposure, amount, this.exposureDelay,
+      this.x, this.y, this.width, this.height, this.frameFormat.name, this.frameType,
+      this.binX, this.binY, this.autoSaveAllExposures, this.imageSavePath,
+      this.autoSubFolder ? this.autoSubFolderMode : 'OFF')
   }
 }

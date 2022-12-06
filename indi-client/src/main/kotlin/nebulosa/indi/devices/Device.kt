@@ -10,9 +10,9 @@ abstract class Device(
     val client: INDIClient,
     val handler: DeviceProtocolHandler,
     val name: String,
-) : INDIProtocolHandler {
+) : INDIProtocolHandler, LinkedHashMap<String, Any?>() {
 
-    var isConnected = false
+    @Volatile var isConnected = false
         private set
 
     override fun handleMessage(message: INDIProtocol) {
@@ -23,10 +23,10 @@ abstract class Device(
                 if (connected != isConnected) {
                     if (connected) {
                         isConnected = true
-                        handler.fireOnEventReceived(this, DeviceConnectedEvent(this))
+                        handler.fireOnEventReceived(DeviceConnectedEvent(this))
                     } else if (isConnected) {
                         isConnected = false
-                        handler.fireOnEventReceived(this, DeviceDisconnectedEvent(this))
+                        handler.fireOnEventReceived(DeviceDisconnectedEvent(this))
                     }
                 }
             }

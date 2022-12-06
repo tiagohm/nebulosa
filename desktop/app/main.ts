@@ -78,14 +78,24 @@ try {
     }
   })
 
-  ipcMain.on('open-fits', async (event) => {
+  ipcMain.handle('open-fits', async () => {
     const data = await dialog.showOpenDialog(null, {
       filters: [{ name: 'FITS files', extensions: ['fits', 'fit'] }],
       properties: ['openFile']
     })
 
     if (!data.canceled) {
-      event.sender.send('fits-open', data.filePaths[0])
+      return data.filePaths[0]
+    }
+  })
+
+  ipcMain.handle('open-directory', async () => {
+    const data = await dialog.showOpenDialog(null, {
+      properties: ['openDirectory']
+    })
+
+    if (!data.canceled) {
+      return data.filePaths[0]
     }
   })
 } catch (e) {

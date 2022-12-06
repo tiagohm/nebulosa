@@ -16,7 +16,7 @@
           <mat-icon svgIcon="image"></mat-icon>
         </ng-template>
 
-        <div (dblclick)="openFile()" class="d-flex flex-column justify-content-center align-items-center h-100">
+        <div (dblclick)="openFits()" class="d-flex flex-column justify-content-center align-items-center h-100">
           <mat-icon svgIcon="image" style="width: 128px; height: 128px; opacity: 0.4"></mat-icon>
           <mat-label class="fs-7">Double click to open file</mat-label>
         </div>
@@ -24,13 +24,23 @@
     </mat-tab-group>
   </div>
 
-  <mat-tab-group style="height: calc(100vh - 113px); min-width: 434px;">
-    <mat-tab label="Capture">
+  <mat-tab-group style="height: calc(100vh - 113px); min-width: 434px; max-width: 434px;">
+    <mat-tab>
+      <ng-template mat-tab-label>
+        Capture
+        <button mat-icon-button class="mx-1" (click)="startCapture()" [disabled]="!camera?.isConnected || camera.isCapturing" (click)="$event.stopPropagation();">
+          <mat-icon svgIcon="play"></mat-icon>
+        </button>
+        <button mat-icon-button class="me-1" [disabled]="!camera?.isConnected || !camera.isCapturing" (click)="$event.stopPropagation();">
+          <mat-icon svgIcon="stop"></mat-icon>
+        </button>
+      </ng-template>
+
       <div class="p-4 text-center">
         <div class="d-flex flex-row align-items-center justify-content-center">
           <mat-form-field appearance="outline">
             <mat-label class="fs-7">Cameras</mat-label>
-            <mat-select [disabled]="!connected" [(value)]="camera" (valueChange)="updateCamera()">
+            <mat-select [disabled]="!connected" [(value)]="camera" (valueChange)="cameraUpdated()">
               <mat-option *ngFor="let camera of cameras" [value]="camera">
                 {{ camera.name }}
               </mat-option>
@@ -41,14 +51,44 @@
             <mat-icon svgIcon="connection"></mat-icon>
           </button>
 
-          <button mat-icon-button *ngIf="camera?.isConnected" (click)="disconnectCamera()" class="mb-4 ms-3">
+          <button mat-icon-button *ngIf="camera?.isConnected" (click)="disconnectCamera()" class="mb-3 ms-3">
             <mat-icon svgIcon="close-circle"></mat-icon>
           </button>
+
+          <button mat-icon-button [mat-menu-trigger-for]="cameraOptionsMenu" [disabled]="!camera" class="mb-3 ms-3">
+            <mat-icon svgIcon="dots-vertical"></mat-icon>
+          </button>
+
+          <mat-menu #cameraOptionsMenu="matMenu">
+            <button mat-menu-item>
+              <mat-checkbox (click)="$event.stopPropagation();" (change)="autoSaveAllExposuresChanged($event)" [checked]="autoSaveAllExposures">Auto Save All Exposures</mat-checkbox>
+            </button>
+            <button mat-menu-item [matTooltip]="imageSavePath" matTooltipPosition="before" (click)="openDirectoryForImageSavePath()">Image Save Path...</button>
+            <button mat-menu-item>
+              <mat-checkbox (click)="$event.stopPropagation()" (change)="autoSubFolderChanged($event)" [checked]="autoSubFolder">Auto Sub Folder</mat-checkbox>
+            </button>
+            <button mat-menu-item [matMenuTriggerFor]="autoSubFolderModeMenu">New Sub Folder At</button>
+          </mat-menu>
+
+          <mat-menu #autoSubFolderModeMenu="matMenu">
+            <button mat-menu-item (click)="autoSubFolderModeChanged('NOON')">
+              <mat-icon [svgIcon]="autoSubFolderMode === 'NOON' ? 'radiobox-marked' : 'radiobox-blank'"></mat-icon>Noon
+            </button>
+            <button mat-menu-item (click)="autoSubFolderModeChanged('MIDNIGHT')">
+              <mat-icon [svgIcon]="autoSubFolderMode === 'MIDNIGHT' ? 'radiobox-marked' : 'radiobox-blank'"></mat-icon>Midnight
+            </button>
+          </mat-menu>
         </div>
 
         <div class="d-flex flex-row justify-content-evenly align-items-center">
           <div class="d-flex flex-column text-center align-items-center mb-3">
             <mat-label class="fs-7">Cooler</mat-label>
+            <mat-slide-toggle [disabled]="!camera?.hasCooler"></mat-slide-toggle>
+            <mat-label class="fs-7 mt-1">0.0%</mat-label>
+          </div>
+
+          <div class="d-flex flex-column text-center align-items-center mb-3">
+            <mat-label class="fs-7">Dew Heater</mat-label>
             <mat-slide-toggle [disabled]="!camera?.hasCooler"></mat-slide-toggle>
           </div>
 
@@ -67,10 +107,10 @@
           <div class="d-flex flex-column">
             <mat-form-field appearance="outline" class="mt-2" style="max-width: 172px">
               <mat-label>Exposure ({{exposureUnitType}})</mat-label>
-              <input matInput type="number" [disabled]="!camera"
+              <input matInput type="number" [disabled]="!camera?.isConnected" (change)="saveCameraOptions()"
                 [min]="exposureMin" [max]="exposureMax" step="1" [(ngModel)]="exposure">
 
-              <button mat-icon-button matSuffix [disabled]="!camera" [matMenuTriggerFor]="exposureUnitTypeMenu">
+              <button mat-icon-button matSuffix [disabled]="!camera?.isConnected" [matMenuTriggerFor]="exposureUnitTypeMenu">
                 <mat-icon svgIcon="dots-vertical"></mat-icon>
               </button>
 
@@ -83,11 +123,11 @@
 
             <div class="d-flex flex-row justify-content-center align-items-center">
               <div class="d-flex flex-column text-center align-items-center">
-                <mat-label class="fs-7">Subframe</mat-label>
-                <mat-slide-toggle [(ngModel)]="subframeOn" [disabled]="!camera"></mat-slide-toggle>
+                <mat-label class="fs-7">SubFrame</mat-label>
+                <mat-slide-toggle [(ngModel)]="subFrameOn" (change)="saveCameraOptions()" [disabled]="!camera?.isConnected"></mat-slide-toggle>
               </div>
 
-              <button mat-icon-button class="ms-2" [disabled]="!camera">
+              <button mat-icon-button class="ms-2" (click)="updateROI(true)" [disabled]="!camera?.isConnected">
                 <mat-icon svgIcon="fullscreen"></mat-icon>
               </button>
             </div>
@@ -95,13 +135,13 @@
 
           <div class="ms-2 d-flex flex-column">
             <mat-radio-group class="d-flex flex-column" [(ngModel)]="exposureType">
-              <mat-radio-button [disabled]="!camera" class="mb-1 fs-7" value="SINGLE">Single</mat-radio-button>
-              <mat-radio-button [disabled]="!camera" class="fs-7" value="CONTINUOUS">Continuous</mat-radio-button>
+              <mat-radio-button [disabled]="!camera?.isConnected" (change)="saveCameraOptions()" class="mb-1 fs-7" value="SINGLE">Single</mat-radio-button>
+              <mat-radio-button [disabled]="!camera?.isConnected" (change)="saveCameraOptions()" class="fs-7" value="CONTINUOUS">Continuous</mat-radio-button>
             </mat-radio-group>
 
             <mat-form-field appearance="outline" class="mt-2" style="max-width: 128px">
               <mat-label>Delay (ms)</mat-label>
-              <input matInput type="number" min="100" max="30000" step="1" [disabled]="exposureType !== 'CONTINUOUS'" [(ngModel)]="exposureDelay">
+              <input matInput type="number" min="100" max="30000" step="1" [disabled]="exposureType !== 'CONTINUOUS'" (change)="saveCameraOptions()" [(ngModel)]="exposureDelay">
             </mat-form-field>
           </div>
         </div>
@@ -109,29 +149,29 @@
         <div class="d-flex flex-row justify-content-center align-items-center mt-1">
           <mat-form-field appearance="outline" class="ms-2 me-1" style="max-width: 81px">
             <mat-label>X</mat-label>
-            <input matInput type="number" [min]="camera?.minX ?? 0" [max]="camera?.maxX ?? 0" step="1" [disabled]="!camera || !subframeOn" [(ngModel)]="x">
+            <input matInput type="number" [min]="camera?.minX ?? 0" [max]="camera?.maxX ?? 0" step="1" [disabled]="!camera?.isConnected || !subFrameOn" (change)="saveCameraOptions()" [(ngModel)]="x">
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="me-1" style="max-width: 81px">
             <mat-label>Y</mat-label>
-            <input matInput type="number" [min]="camera?.minY ?? 0" [max]="camera?.maxY ?? 0" step="1" [disabled]="!camera || !subframeOn" [(ngModel)]="y">
+            <input matInput type="number" [min]="camera?.minY ?? 0" [max]="camera?.maxY ?? 0" step="1" [disabled]="!camera?.isConnected || !subFrameOn" (change)="saveCameraOptions()" [(ngModel)]="y">
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="me-1" style="max-width: 81px">
             <mat-label>Width</mat-label>
-            <input matInput type="number" [min]="camera?.minWidth ?? 0" [max]="camera?.maxWidth ?? 0" step="1" [disabled]="!camera || !subframeOn" [(ngModel)]="width">
+            <input matInput type="number" [min]="camera?.minWidth ?? 0" [max]="camera?.maxWidth ?? 0" step="1" [disabled]="!camera?.isConnected || !subFrameOn" (change)="saveCameraOptions()" [(ngModel)]="width">
           </mat-form-field>
 
           <mat-form-field appearance="outline" style="max-width: 81px">
             <mat-label>Height</mat-label>
-            <input matInput type="number" [min]="camera?.minHeight ?? 0" [max]="camera?.maxHeight ?? 0" step="1" [disabled]="!camera || !subframeOn" [(ngModel)]="height">
+            <input matInput type="number" [min]="camera?.minHeight ?? 0" [max]="camera?.maxHeight ?? 0" step="1" [disabled]="!camera?.isConnected || !subFrameOn" (change)="saveCameraOptions()" [(ngModel)]="height">
           </mat-form-field>
         </div>
 
         <div class="d-flex flex-row justify-content-center align-items-center mt-1">
           <mat-form-field appearance="outline" style="max-width: 136px">
             <mat-label class="fs-7">Frame Type</mat-label>
-            <mat-select [disabled]="!camera" [(value)]="frameType">
+            <mat-select [disabled]="!camera?.isConnected" (change)="saveCameraOptions()" [(value)]="frameType">
               <mat-option value="LIGHT">Light</mat-option>
               <mat-option value="DARK">Dark</mat-option>
               <mat-option value="FLAT">Flat</mat-option>
@@ -141,33 +181,33 @@
 
           <mat-form-field appearance="outline" class="ms-3 me-1" style="max-width: 81px">
             <mat-label>Bin X</mat-label>
-            <input matInput type="number" [min]="1" [max]="camera?.maxBinX ?? 1" step="1" [disabled]="!camera" [(ngModel)]="binX">
+            <input matInput type="number" [min]="1" [max]="camera?.maxBinX ?? 1" step="1" [disabled]="!camera?.isConnected" (change)="saveCameraOptions()" [(ngModel)]="binX">
           </mat-form-field>
 
           <mat-form-field appearance="outline" style="max-width: 81px">
             <mat-label>Bin Y</mat-label>
-            <input matInput type="number" [min]="1" [max]="camera?.maxBinY ?? 1" step="1" [disabled]="!camera" [(ngModel)]="binY">
+            <input matInput type="number" [min]="1" [max]="camera?.maxBinY ?? 1" step="1" [disabled]="!camera?.isConnected" (change)="saveCameraOptions()" [(ngModel)]="binY">
           </mat-form-field>
         </div>
 
         <div class="d-flex flex-row justify-content-center align-items-center mt-1">
           <mat-form-field appearance="outline" style="max-width: 124px">
             <mat-label class="fs-7">Frame Format</mat-label>
-            <mat-select [disabled]="!camera" [(value)]="frameFormat">
+            <mat-select [disabled]="!camera?.isConnected" [(value)]="frameFormat">
               <mat-option *ngFor="let format of camera?.frameFormats" [value]="format">{{format.label}}</mat-option>
             </mat-select>
           </mat-form-field>
 
           <mat-form-field appearance="outline" style="max-width: 124px" class="ms-1">
             <mat-label class="fs-7">Speed</mat-label>
-            <mat-select [disabled]="!camera">
+            <mat-select [disabled]="!camera?.isConnected">
               <mat-option *ngFor="let format of camera?.frameFormats">Bias</mat-option>
             </mat-select>
           </mat-form-field>
 
           <mat-form-field appearance="outline" style="max-width: 124px" class="ms-1">
             <mat-label class="fs-7">Filter</mat-label>
-            <mat-select [disabled]="!camera">
+            <mat-select [disabled]="!camera?.isConnected">
               <mat-option *ngFor="let format of camera?.frameFormats">Bias</mat-option>
             </mat-select>
           </mat-form-field>
@@ -200,10 +240,18 @@
           <mat-slider [disabled]="!selectedFrame" class="ms-1 w-100" [min]="0" [max]="65535" [(value)]="midtone" [step]="1"></mat-slider>
         </div>
         <div class="text-center">
-          <button mat-flat-button [disabled]="!selectedFrame" (click)="applySTF()">
+          <button mat-flat-button [disabled]="!selectedFrame" (click)="applyImageProcessing()">
             <mat-icon svgIcon="check" class="me-1"></mat-icon>
             Apply
           </button>
+        </div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="History" [disabled]="!selectedFrame || !selectedFrame.camera">
+      <div class="d-flex flex-column p-4">
+        <div class="d-flex flex-row w-100 p-1" (click)="loadHistory(history)" *ngFor="let history of cameraHistory">
+          <mat-label class="fs-7">{{history.path}}</mat-label>
         </div>
       </div>
     </mat-tab>

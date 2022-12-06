@@ -1,9 +1,10 @@
 package nebulosa.api.cameras
 
+import io.objectbox.Box
 import jakarta.validation.Valid
 import nebulosa.api.scheduler.ScheduledTaskFinishedEvent
 import nebulosa.api.scheduler.ScheduledTaskStartedEvent
-import nebulosa.api.scheduler.SchedulerController
+import nebulosa.api.scheduler.SchedulerService
 import nebulosa.indi.devices.cameras.Camera
 import nebulosa.indi.devices.events.CameraAttachedEvent
 import nebulosa.indi.devices.events.CameraDetachedEvent
@@ -11,6 +12,7 @@ import nebulosa.indi.devices.events.CameraEvent
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.event.EventListener
 import org.springframework.web.bind.annotation.*
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 
@@ -23,7 +25,13 @@ class CameraController {
     private val runningTasks = ArrayList<CameraCaptureTask>(8)
 
     @Autowired
-    private lateinit var schedulerController: SchedulerController
+    private lateinit var schedulerService: SchedulerService
+
+    @Autowired
+    private lateinit var appDirectory: Path
+
+    @Autowired
+    private lateinit var box: Box<CameraCaptureHistory>
 
     @EventListener
     fun onCameraEventReceived(event: CameraEvent) {
@@ -33,6 +41,19 @@ class CameraController {
             }
             is CameraDetachedEvent -> {
                 cameras.remove(event.device.name)
+            }
+            is CameraCaptureStartedEvent -> {
+
+            }
+            is CameraCaptureSavedEvent -> {
+                val latestCapturePath = "${event.path}"
+                val latestCaptureDate = System.currentTimeMillis()
+                event.device["latestCapturePath"] = latestCapturePath
+                event.device["latestCaptureDate"] = latestCaptureDate
+                box.put(CameraCaptureHistory(name = event.device.name, path = latestCapturePath, savedAt = latestCaptureDate))
+            }
+            is CameraCaptureFinishedEvent -> {
+
             }
             else -> {
                 val task = runningTask.get() ?: return
@@ -91,10 +112,12 @@ class CameraController {
             startCapture.x, startCapture.y, startCapture.width, startCapture.height,
             camera.frameFormats.first { it.name == startCapture.frameFormat },
             startCapture.frameType, startCapture.binX, startCapture.binY,
+            startCapture.save, startCapture.savePath.ifBlank { appDirectory.toString() },
+            startCapture.autoSubFolderMode,
         )
 
         runningTasks.add(task)
-        schedulerController.add(task)
+        schedulerService.add(task)
     }
 
     @Synchronized
@@ -102,5 +125,13 @@ class CameraController {
     fun stopCapture(@PathVariable name: String) {
         runningTasks.forEach { it.cancel() }
         runningTask.set(null)
+    }
+
+    @GetMapping("{name}/history")
+    fun history(@PathVariable name: String): List<CameraCaptureHistory> {
+        val query = box.query(CameraCaptureHistory_.name.equal(name))
+            .orderDesc(CameraCaptureHistory_.savedAt)
+            .build()
+        return query.use { query.find() }
     }
 }

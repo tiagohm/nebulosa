@@ -39,6 +39,9 @@ data class CameraDevice(
     val maxBinY: Int,
     val binX: Int,
     val binY: Int,
+    val isCapturing: Boolean,
+    val latestCapturePath: String?,
+    val latestCaptureDate: Long,
 ) {
 
     companion object {
@@ -78,6 +81,9 @@ data class CameraDevice(
             camera.maxBinY,
             camera.binX,
             camera.binY,
+            camera.isCapturing,
+            camera["latestCapturePath"] as? String,
+            camera["latestCaptureDate"] as? Long ?: 0L,
         )
     }
 }

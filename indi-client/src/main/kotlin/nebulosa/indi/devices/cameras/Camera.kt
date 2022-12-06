@@ -15,97 +15,100 @@ class Camera(
     name: String,
 ) : Device(client, handler, name) {
 
-    var hasCoolerControl = false
+    @Volatile var hasCoolerControl = false
         private set
 
-    var isCoolerOn = false
+    @Volatile var isCoolerOn = false
         private set
 
-    var frameFormats = emptyList<FrameFormat>()
+    @Volatile var frameFormats = emptyList<FrameFormat>()
         private set
 
-    var canAbort = false
+    @Volatile var canAbort = false
         private set
 
-    var cfaOffsetX = 0
+    @Volatile var cfaOffsetX = 0
         private set
 
-    var cfaOffsetY = 0
+    @Volatile var cfaOffsetY = 0
         private set
 
-    var cfaType = CfaPattern.RGGB
+    @Volatile var cfaType = CfaPattern.RGGB
         private set
 
-    var exposureMin = 0L
+    @Volatile var exposureMin = 0L
         private set
 
-    var exposureMax = 0L
+    @Volatile var exposureMax = 0L
         private set
 
-    var exposureState = PropertyState.IDLE
+    @Volatile var exposureState = PropertyState.IDLE
         private set
 
-    var hasCooler = false
+    @Volatile var hasCooler = false
         private set
 
-    var canSetTemperature = false
+    @Volatile var canSetTemperature = false
         private set
 
-    var temperature = 0.0
+    @Volatile var temperature = 0.0
         private set
 
-    var canSubframe = false
+    @Volatile var canSubframe = false
         private set
 
-    var x = 0
+    @Volatile var x = 0
         private set
 
-    var minX = 0
+    @Volatile var minX = 0
         private set
 
-    var maxX = 0
+    @Volatile var maxX = 0
         private set
 
-    var y = 0
+    @Volatile var y = 0
         private set
 
-    var minY = 0
+    @Volatile var minY = 0
         private set
 
-    var maxY = 0
+    @Volatile var maxY = 0
         private set
 
-    var width = 0
+    @Volatile var width = 0
         private set
 
-    var minWidth = 0
+    @Volatile var minWidth = 0
         private set
 
-    var maxWidth = 0
+    @Volatile var maxWidth = 0
         private set
 
-    var height = 0
+    @Volatile var height = 0
         private set
 
-    var minHeight = 0
+    @Volatile var minHeight = 0
         private set
 
-    var maxHeight = 0
+    @Volatile var maxHeight = 0
         private set
 
-    var canBin = false
+    @Volatile var canBin = false
         private set
 
-    var maxBinX = 1
+    @Volatile var maxBinX = 1
         private set
 
-    var maxBinY = 1
+    @Volatile var maxBinY = 1
         private set
 
-    var binX = 1
+    @Volatile var binX = 1
         private set
 
-    var binY = 1
+    @Volatile var binY = 1
+        private set
+
+    @Volatile var isCapturing = false
         private set
 
     override fun handleMessage(message: INDIProtocol) {
@@ -152,18 +155,23 @@ class Camera(
 
                         when (exposureState) {
                             PropertyState.BUSY -> {
+                                isCapturing = true
                                 val exposure = (element.value * 1000000.0).toLong()
-                                handler.fireOnEventReceived(this, CameraExposureBusyEvent(this, exposure))
+                                handler.fireOnEventReceived(CameraExposureBusyEvent(this, exposure))
                             }
                             PropertyState.ALERT -> {
-                                handler.fireOnEventReceived(this, CameraExposureFailedEvent(this))
+                                isCapturing = false
+                                handler.fireOnEventReceived(CameraExposureFailedEvent(this))
                             }
                             PropertyState.OK -> {
-                                handler.fireOnEventReceived(this, CameraExposureOkEvent(this))
+                                isCapturing = false
+                                handler.fireOnEventReceived(CameraExposureOkEvent(this))
                             }
                             PropertyState.IDLE -> {
+                                isCapturing = false
+
                                 if (prevExposureState != PropertyState.IDLE) {
-                                    handler.fireOnEventReceived(this, CameraExposureAbortedEvent(this))
+                                    handler.fireOnEventReceived(CameraExposureAbortedEvent(this))
                                 }
                             }
                         }
@@ -224,7 +232,7 @@ class Camera(
                         val ccd1 = message["CCD1"]!!
                         // TODO: Handle zipped format.
                         val fits = Base64InputStream(ccd1.value)
-                        handler.fireOnEventReceived(this, CameraExposureFrameEvent(this, fits))
+                        handler.fireOnEventReceived(CameraExposureFrameEvent(this, fits))
                     }
                 }
             }

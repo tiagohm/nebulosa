@@ -39,10 +39,6 @@ subprojects {
     val project = this@subprojects
     if (project.name == "nebulosa-bom") return@subprojects
 
-    tasks.withType<JavaCompile> {
-        options.encoding = Charsets.UTF_8.toString()
-    }
-
     tasks.withType<KotlinCompile> {
         kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
         kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=all", "-Xjsr305=strict")
@@ -61,6 +57,8 @@ subprojects {
     }
 
     tasks.withType<JavaCompile> {
+        options.encoding = Charsets.UTF_8.toString()
+        options.compilerArgs.add("-Aobjectbox.myObjectBoxPackage=nebula.api")
         sourceCompatibility = JavaVersion.VERSION_17.toString()
         targetCompatibility = JavaVersion.VERSION_17.toString()
     }

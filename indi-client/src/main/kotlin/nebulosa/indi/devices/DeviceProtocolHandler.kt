@@ -42,8 +42,8 @@ class DeviceProtocolHandler : INDIProtocolParser {
         handlers.remove(handler)
     }
 
-    internal fun fireOnEventReceived(device: Device, event: DeviceEvent<*>) {
-        handlers.forEach { it.onEventReceived(device, event) }
+    fun fireOnEventReceived(event: DeviceEvent<*>) {
+        handlers.forEach { it.onEventReceived(event) }
     }
 
     fun start() {
@@ -59,11 +59,11 @@ class DeviceProtocolHandler : INDIProtocolParser {
             protocolReader.close()
         } finally {
             for (camera in cameras) {
-                fireOnEventReceived(camera.value, CameraDetachedEvent(camera.value))
+                fireOnEventReceived(CameraDetachedEvent(camera.value))
             }
 
             for (mount in mounts) {
-                fireOnEventReceived(mount.value, MountDetachedEvent(mount.value))
+                fireOnEventReceived(MountDetachedEvent(mount.value))
             }
 
             cameras.clear()
@@ -90,7 +90,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
                     if (message.device !in cameras) {
                         val camera = Camera(client, this, message.device)
                         cameras[message.device] = camera
-                        fireOnEventReceived(camera, CameraAttachedEvent(camera))
+                        fireOnEventReceived(CameraAttachedEvent(camera))
                         registered = true
                     } else {
                         registered = true
@@ -101,7 +101,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
                     if (message.device !in mounts) {
                         val mount = Mount(client, this, message.device)
                         mounts[message.device] = mount
-                        fireOnEventReceived(mount, MountAttachedEvent(mount))
+                        fireOnEventReceived(MountAttachedEvent(mount))
                         registered = true
                     } else {
                         registered = true

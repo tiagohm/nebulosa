@@ -19,4 +19,7 @@ data class StartCapture(
     @field:NotNull val frameType: FrameType,
     @field:NotNull @field:Positive val binX: Int,
     @field:NotNull @field:Positive val binY: Int,
+    @field:NotNull val save: Boolean,
+    @field:NotNull val savePath: String,
+    @field:NotNull val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
 )
