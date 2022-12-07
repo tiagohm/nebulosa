@@ -91,9 +91,11 @@ export class CameraTab implements OnInit, OnDestroy {
 
       if (idx >= 0) {
         const frameFormat = cameras[i].frameFormats.find((e) => e.name === this.frames[idx].frameFormat?.name)
+        const connectionChanged = this.frames[idx].camera.isConnected != cameras[i].isConnected
         Object.assign(this.frames[idx].camera, cameras[i])
+        if (connectionChanged) this.frames[idx].updateROI()
         this.frames[idx].frameFormat = frameFormat
-        this.frames[idx].path = cameras[i].latestCapturePath
+        if (cameras[i].latestCapturePath) this.frames[idx].path = cameras[i].latestCapturePath
       } else {
         const frame = new CameraFrame()
         frame.closeable = false

@@ -126,8 +126,8 @@ class CameraController {
     @Synchronized
     @PostMapping("{name}/stopcapture")
     fun stopCapture(@PathVariable name: String) {
-        runningTasks.forEach { it.cancel() }
-        runningTask.set(null)
+        val camera = cameras[name]!!
+        camera.abortCapture()
     }
 
     @GetMapping("{name}/history")

@@ -1,4 +1,4 @@
-@import "@angular/material/prebuilt-themes/purple-green.css";
+@import "@angular/material/prebuilt-themes/pink-bluegrey.css";
 
 html,
 body {
@@ -6,11 +6,14 @@ body {
   padding: 0;
 
   height: 100%;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Roboto, sans-serif;
 }
 
-.mat-form-field-subscript-wrapper {
-  font-size: 60%;
+body * {
+  letter-spacing: 0px;
+}
+
+.mat-mdc-text-field-wrapper {
   margin-top: 0.02rem;
   text-align: start;
 }
@@ -19,27 +22,67 @@ body {
   backdrop-filter: blur(2px);
 }
 
-.mat-tab-group,
-.mat-tab-body-wrapper {
+.mat-mdc-tab-group,
+.mat-mdc-tab-body-wrapper {
   height: 100%;
 }
 
-.mat-tab-label {
-  height: 42px !important;
-  min-width: 96px !important;
-  padding: 0px 12px !important;
+.mdc-tab {
+  padding-right: 12px !important;
+  padding-left: 12px !important;
+
+  .mdc-tab__text-label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .mdc-tab__content {
+    pointer-events: all;
+  }
+}
+
+.mat-mdc-radio-group {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+
+  .mat-mdc-radio-button {
+    height: 32px;
+
+    .mdc-form-field {
+      height: 32px;
+    }
+  }
+}
+
+.mat-mdc-unelevated-button > .mat-icon,
+.mat-mdc-raised-button > .mat-icon,
+.mat-mdc-outlined-button > .mat-icon {
+  height: 1.425rem !important;
+}
+
+.mat-mdc-dialog-surface {
+  padding: 16px;
+}
+
+.mat-mdc-dialog-content {
+  overflow: visible !important;
+}
+
+.mat-mdc-form-field {
+  font-size: 14px !important;
+}
+
+.mat-mdc-form-field-hint-wrapper,
+.mat-mdc-form-field-error-wrapper {
+  top: -4px !important;
+  padding: 0 0px !important;
+  font-size: smaller !important;
 }
 
 .fs-7 {
   font-size: 0.75rem !important;
-}
-
-.mat-form-field-appearance-outline .mat-form-field-wrapper {
-  margin: 0 !important;
-}
-
-.mat-form-field-wrapper {
-  padding-bottom: 0.8em !important;
 }
 
 ::-webkit-scrollbar {

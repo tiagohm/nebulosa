@@ -1,6 +1,6 @@
 <div class="d-flex">
   <div class="flex-fill frame-area">
-    <mat-tab-group (selectedTabChange)="frameSelected($event)">
+    <mat-tab-group (selectedTabChange)="frameSelected($event)" mat-stretch-tabs="false" mat-align-tabs="start">
       <mat-tab *ngFor="let frame of frames">
         <ng-template mat-tab-label>
           {{frame.label}}
@@ -13,7 +13,7 @@
 
       <mat-tab>
         <ng-template mat-tab-label>
-          <mat-icon svgIcon="image"></mat-icon>
+          <mat-icon svgIcon="image-plus"></mat-icon>
         </ng-template>
 
         <div (dblclick)="openFits()" class="d-flex flex-column justify-content-center align-items-center h-100">
@@ -27,7 +27,7 @@
   <mat-tab-group style="height: calc(100vh - 113px); min-width: 434px; max-width: 434px;">
     <mat-tab>
       <ng-template mat-tab-label>
-        Capture
+        <mat-label>Capture</mat-label>
         <button mat-icon-button class="mx-1" (click)="startCapture()" [disabled]="!frame.camera?.isConnected || frame.camera?.isCapturing" (click)="$event.stopPropagation();">
           <mat-icon svgIcon="play"></mat-icon>
         </button>
@@ -37,18 +37,18 @@
       </ng-template>
 
       <div class="p-4 text-center">
-        <div class="d-flex flex-row align-items-center justify-content-center">
-          <button mat-flat-button *ngIf="!frame.camera?.isConnected" [disabled]="!frame.camera" (click)="connectCamera()" class="mb-3 ms-3">
+        <div class="d-flex flex-row align-items-center justify-content-center mb-3">
+          <button mat-flat-button *ngIf="!frame.camera?.isConnected" [disabled]="!frame.camera" (click)="connectCamera()">
             <mat-icon svgIcon="connection"></mat-icon>
             <mat-label class="ms-1">Connect</mat-label>
           </button>
 
-          <button mat-flat-button *ngIf="frame.camera?.isConnected" (click)="disconnectCamera()" class="mb-3 ms-3">
+          <button mat-flat-button *ngIf="frame.camera?.isConnected" (click)="disconnectCamera()">
             <mat-icon svgIcon="close-circle"></mat-icon>
             <mat-label class="ms-1">Disconnect</mat-label>
           </button>
 
-          <button mat-icon-button [mat-menu-trigger-for]="cameraOptionsMenu" [disabled]="!frame.camera" class="mb-3 ms-3">
+          <button mat-icon-button [mat-menu-trigger-for]="cameraOptionsMenu" [disabled]="!frame.camera" class="ms-1">
             <mat-icon svgIcon="dots-vertical"></mat-icon>
           </button>
 
@@ -75,13 +75,13 @@
 
         <div class="d-flex flex-row justify-content-evenly align-items-center">
           <div class="d-flex flex-column text-center align-items-center mb-3">
-            <mat-label class="fs-7">Cooler</mat-label>
+            <mat-label class="fs-7 mb-1">Cooler</mat-label>
             <mat-slide-toggle [disabled]="!frame.camera?.hasCooler"></mat-slide-toggle>
             <mat-label class="fs-7 mt-1">0.0%</mat-label>
           </div>
 
           <div class="d-flex flex-column text-center align-items-center mb-3">
-            <mat-label class="fs-7">Dew Heater</mat-label>
+            <mat-label class="fs-7 mb-1">Dew Heater</mat-label>
             <mat-slide-toggle [disabled]="!frame.camera?.hasCooler"></mat-slide-toggle>
           </div>
 
@@ -120,15 +120,15 @@
                 <mat-slide-toggle [(ngModel)]="frame.subFrameOn" [disabled]="!frame.camera?.isConnected"></mat-slide-toggle>
               </div>
 
-              <button mat-icon-button class="ms-2" (click)="frame.updateROI(true)" [disabled]="!frame.camera?.isConnected">
+              <button mat-icon-button matTooltip="Fullsize" matTooltipPosition="above" class="ms-2" (click)="frame.updateROI(true)" [disabled]="!frame.camera?.isConnected">
                 <mat-icon svgIcon="fullscreen"></mat-icon>
               </button>
             </div>
           </div>
 
           <div class="ms-2 d-flex flex-column">
-            <mat-radio-group class="d-flex flex-column" [(ngModel)]="frame.exposureType">
-              <mat-radio-button [disabled]="!frame.camera?.isConnected" class="mb-1 fs-7" value="SINGLE">Single</mat-radio-button>
+            <mat-radio-group [(ngModel)]="frame.exposureType">
+              <mat-radio-button [disabled]="!frame.camera?.isConnected" class="fs-7" value="SINGLE">Single</mat-radio-button>
               <mat-radio-button [disabled]="!frame.camera?.isConnected" class="fs-7" value="CONTINUOUS">Continuous</mat-radio-button>
             </mat-radio-group>
 
@@ -220,15 +220,15 @@
 
         <div class="d-flex flex-row align-items-center">
           <mat-label class="w-25 fs-7">Shadow: ({{frame.shadow}})</mat-label>
-          <mat-slider [disabled]="!frame.path" class="ms-1 w-100" [min]="0" [max]="65535" [(value)]="frame.shadow" [step]="1"></mat-slider>
+          <mat-slider [disabled]="!frame.path" class="ms-1 w-100" [min]="0" [max]="65535" [step]="1"><input matSliderThumb (dragEnd)="frame.shadow = $event.value" [value]="frame.shadow"></mat-slider>
         </div>
         <div class="d-flex flex-row align-items-center">
           <mat-label class="w-25 fs-7">Highlight: ({{frame.highlight}})</mat-label>
-          <mat-slider [disabled]="!frame.path" class="ms-1 w-100" [min]="0" [max]="65535" [(value)]="frame.highlight" [step]="1"></mat-slider>
+          <mat-slider [disabled]="!frame.path" class="ms-1 w-100" [min]="0" [max]="65535" [step]="1"><input matSliderThumb (dragEnd)="frame.highlight = $event.value" [value]="frame.highlight"></mat-slider>
         </div>
         <div class="d-flex flex-row align-items-center">
           <mat-label class="w-25 fs-7">Midtone: ({{frame.midtone}})</mat-label>
-          <mat-slider [disabled]="!frame.path" class="ms-1 w-100" [min]="0" [max]="65535" [(value)]="frame.midtone" [step]="1"></mat-slider>
+          <mat-slider [disabled]="!frame.path" class="ms-1 w-100" [min]="0" [max]="65535" [step]="1"><input matSliderThumb (dragEnd)="frame.midtone = $event.value" [value]="frame.midtone"></mat-slider>
         </div>
         <div class="d-flex flex-row align-items-center justify-content-around mt-2">
           <mat-checkbox [disabled]="!frame.path" [(ngModel)]="frame.flipH">Horizontal Mirror</mat-checkbox>
