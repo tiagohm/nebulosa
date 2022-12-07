@@ -50,7 +50,10 @@ class CameraController {
                 val latestCaptureDate = System.currentTimeMillis()
                 event.device["latestCapturePath"] = latestCapturePath
                 event.device["latestCaptureDate"] = latestCaptureDate
-                box.put(CameraCaptureHistory(name = event.device.name, path = latestCapturePath, savedAt = latestCaptureDate))
+
+                if (!event.isTemporary) {
+                    box.put(CameraCaptureHistory(name = event.device.name, path = latestCapturePath, savedAt = latestCaptureDate))
+                }
             }
             is CameraCaptureFinishedEvent -> {
 

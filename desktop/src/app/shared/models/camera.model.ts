@@ -38,4 +38,6 @@ export interface Camera {
   binY: number
   temperatureSetpoint: number
   isCapturing: boolean
+  latestCaptureDate: number
+  latestCapturePath: string
 }

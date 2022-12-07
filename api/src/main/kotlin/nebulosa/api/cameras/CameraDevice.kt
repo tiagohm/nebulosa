@@ -81,7 +81,7 @@ data class CameraDevice(
             camera.maxBinY,
             camera.binX,
             camera.binY,
-            camera.isCapturing,
+            camera["isCapturing"] as? Boolean ?: false,
             camera["latestCapturePath"] as? String,
             camera["latestCaptureDate"] as? Long ?: 0L,
         )

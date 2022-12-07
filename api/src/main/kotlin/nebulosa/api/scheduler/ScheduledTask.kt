@@ -32,6 +32,8 @@ abstract class ScheduledTask<T> : Runnable {
         this.future.set(future)
     }
 
+    open fun finishGracefully() = Unit
+
     fun isRunning() = running.get()
 
     fun isCancelled() = future.get()?.isCancelled ?: false

@@ -22,7 +22,7 @@ class SchedulerService {
     private val pauser = Phaser(1)
 
     init {
-        workerExecutor.submit(SchduledTaskWorker())
+        workerExecutor.submit(ScheduledTaskWorker())
     }
 
     val isPaused get() = pauser.registeredParties > 0
@@ -63,7 +63,7 @@ class SchedulerService {
         return tasks
     }
 
-    private inner class SchduledTaskWorker : Thread() {
+    private inner class ScheduledTaskWorker : Thread("Scheduled Task Worker") {
 
         override fun run() {
             while (true) {
@@ -83,6 +83,7 @@ class SchedulerService {
                     e.printStackTrace()
                 } finally {
                     val task = runningTask.getAndSet(null)
+                    task.finishGracefully()
                     finishedTasks.add(task)
                     applicationEventPublisher.publishEvent(ScheduledTaskFinishedEvent(task))
                 }

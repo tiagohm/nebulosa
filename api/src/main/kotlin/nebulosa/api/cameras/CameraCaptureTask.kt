@@ -69,21 +69,25 @@ data class CameraCaptureTask(
     override fun execute() {
         camera.enableBlob()
 
+        camera["isCapturing"] = true
+
         while (remaining.get() > 0) {
-            phaser.register()
+            synchronized(camera) {
+                phaser.register()
 
-            remaining.decrementAndGet()
+                remaining.decrementAndGet()
 
-            camera.frame(x, y, width, height)
-            camera.frameType(frameType)
-            camera.frameFormat(frameFormat)
-            camera.bin(binX, binY)
-            camera.startCapture(exposure)
+                camera.frame(x, y, width, height)
+                camera.frameType(frameType)
+                camera.frameFormat(frameFormat)
+                camera.bin(binX, binY)
+                camera.startCapture(exposure)
 
-            phaser.arriveAndAwaitAdvance()
+                phaser.arriveAndAwaitAdvance()
 
-            if (remaining.get() > 0 && delay > 0) {
-                Thread.sleep(delay)
+                if (remaining.get() > 0 && delay > 0) {
+                    Thread.sleep(delay)
+                }
             }
         }
 
@@ -92,17 +96,29 @@ data class CameraCaptureTask(
         }
     }
 
+    override fun finishGracefully() {
+        camera["isCapturing"] = false
+        remaining.set(0)
+    }
+
     private fun save(fits: InputStream) {
         if (save && savePath.isNotBlank()) {
             val subFolderName = autoSubFolderMode.subFolderName()
-            // TODO: Filter Name
-            val fileName = "%d_%s.fits".format(System.currentTimeMillis(), frameType)
             val fileDirectory = Paths.get(savePath, subFolderName).normalize()
             fileDirectory.createDirectories()
+            // TODO: Filter Name
+            val fileName = "%d_%s.fits".format(System.currentTimeMillis(), frameType)
             val filePath = Paths.get("$fileDirectory", fileName)
-            println("Saving FITS at $fileDirectory...")
+            println("Saving FITS at $filePath...")
             filePath.outputStream().use { output -> fits.use { it.transferTo(output) } }
             camera.handler.fireOnEventReceived(CameraCaptureSavedEvent(this, filePath))
+        } else {
+            val fileDirectory = Paths.get(System.getProperty("java.io.tmpdir"))
+            val fileName = "%s.fits".format(camera.name)
+            val filePath = Paths.get("$fileDirectory", fileName)
+            println("Saving temporary FITS at $filePath...")
+            filePath.outputStream().use { output -> fits.use { it.transferTo(output) } }
+            camera.handler.fireOnEventReceived(CameraCaptureSavedEvent(this, filePath, true))
         }
     }
 }

@@ -108,9 +108,6 @@ class Camera(
     @Volatile var binY = 1
         private set
 
-    @Volatile var isCapturing = false
-        private set
-
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
             is SwitchVector<*> -> {
@@ -155,21 +152,16 @@ class Camera(
 
                         when (exposureState) {
                             PropertyState.BUSY -> {
-                                isCapturing = true
                                 val exposure = (element.value * 1000000.0).toLong()
                                 handler.fireOnEventReceived(CameraExposureBusyEvent(this, exposure))
                             }
                             PropertyState.ALERT -> {
-                                isCapturing = false
                                 handler.fireOnEventReceived(CameraExposureFailedEvent(this))
                             }
                             PropertyState.OK -> {
-                                isCapturing = false
                                 handler.fireOnEventReceived(CameraExposureOkEvent(this))
                             }
                             PropertyState.IDLE -> {
-                                isCapturing = false
-
                                 if (prevExposureState != PropertyState.IDLE) {
                                     handler.fireOnEventReceived(CameraExposureAbortedEvent(this))
                                 }
