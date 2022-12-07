@@ -19,11 +19,19 @@ class FitsController {
         @RequestParam(required = false, defaultValue = "32767") midtone: Long = 32767L,
         @RequestParam(required = false, defaultValue = "0") shadow: Long = 0L,
         @RequestParam(required = false, defaultValue = "65535") highlight: Long = 65535L,
+        @RequestParam(required = false, defaultValue = "false") flipH: Boolean = false,
+        @RequestParam(required = false, defaultValue = "false") flipV: Boolean = false,
+        @RequestParam(required = false, defaultValue = "false") invert: Boolean = false,
         response: HttpServletResponse,
     ) {
         val decodedPath = Base64.getUrlDecoder().decode(path).decodeToString()
         response.setHeader("Content-Type", "image/${format.lowercase()}")
-        fitsService.open(decodedPath, format, midtone / 65535f, shadow / 65535f, highlight / 65535f, response.outputStream)
+        fitsService.open(
+            decodedPath, format,
+            midtone / 65535f, shadow / 65535f, highlight / 65535f,
+            flipH, flipV, invert,
+            response.outputStream,
+        )
         response.flushBuffer()
     }
 }

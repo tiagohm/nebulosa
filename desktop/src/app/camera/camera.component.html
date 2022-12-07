@@ -7,7 +7,7 @@
           <mat-icon *ngIf="frame.closeable" class="ms-1" (click)="closeFrame(frame)" svgIcon="close"></mat-icon>
         </ng-template>
         <div class="frame-wrap">
-          <img loading="lazy" class="frame" (load)="frameLoaded($event, frame)" [src]="frame.src" />
+          <img [class.pixelated]="true" loading="lazy" (load)="frameLoaded($event, frame)" [src]="frame.src" />
         </div>
       </mat-tab>
 
@@ -229,6 +229,11 @@
         <div class="d-flex flex-row align-items-center">
           <mat-label class="w-25 fs-7">Midtone: ({{frame.midtone}})</mat-label>
           <mat-slider [disabled]="!frame.path" class="ms-1 w-100" [min]="0" [max]="65535" [(value)]="frame.midtone" [step]="1"></mat-slider>
+        </div>
+        <div class="d-flex flex-row align-items-center justify-content-around mt-2">
+          <mat-checkbox [disabled]="!frame.path" [(ngModel)]="frame.flipH">Horizontal Mirror</mat-checkbox>
+          <mat-checkbox [disabled]="!frame.path" [(ngModel)]="frame.flipV">Vertical Mirror</mat-checkbox>
+          <mat-checkbox [disabled]="!frame.path" [(ngModel)]="frame.invert">Invert</mat-checkbox>
         </div>
       </div>
     </mat-tab>

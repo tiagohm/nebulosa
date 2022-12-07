@@ -1,5 +1,7 @@
 import io.kotest.core.spec.style.StringSpec
 import nebulosa.fits.FitsImage
+import nebulosa.fits.algorithms.Flip
+import nebulosa.fits.algorithms.Invert
 import nebulosa.fits.algorithms.ScreenTransformFunction
 import nom.tam.fits.Fits
 import java.io.File
@@ -118,6 +120,26 @@ class FitsImageTest : StringSpec() {
             val fits = Fits("src/test/resources/HorseHead.fits")
             val image = ScreenTransformFunction(0.74937f, 0.36090f, 0.79313f).transform(FitsImage(fits))
             ImageIO.write(image, "JPG", File("src/test/resources/HorseHead.jpg"))
+        }
+        "Flip Vertical" {
+            val fits = Fits("src/test/resources/M51.8.Color.fits")
+            val image = Flip(vertical = true).transform(FitsImage(fits))
+            ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Color.FlipV.png"))
+        }
+        "Flip Horizontal" {
+            val fits = Fits("src/test/resources/M51.8.Color.fits")
+            val image = Flip(horizontal = true).transform(FitsImage(fits))
+            ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Color.FlipH.png"))
+        }
+        "Flip Vertical & Horizontal" {
+            val fits = Fits("src/test/resources/M51.8.Color.fits")
+            val image = Flip(horizontal = true, vertical = true).transform(FitsImage(fits))
+            ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Color.FlipVH.png"))
+        }
+        "Invert" {
+            val fits = Fits("src/test/resources/M51.8.Color.fits")
+            val image = Invert().transform(FitsImage(fits))
+            ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Color.Invert.png"))
         }
     }
 }

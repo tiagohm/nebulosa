@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core'
 import { MatCheckboxChange } from '@angular/material/checkbox'
 import { MatTabChangeEvent } from '@angular/material/tabs'
-import createPanZoom from 'panzoom'
+import panzoom from '@panzoom/panzoom'
 import { Subscription } from 'rxjs'
 import { ElectronService } from '../core/services/electron/electron.service'
 import { AutoSubFolderMode } from '../shared/enums/auto-subfolder.enum'
@@ -77,8 +77,10 @@ export class CameraTab implements OnInit, OnDestroy {
 
     if (cameras.length === 0) {
       for (let i = 0; i < this.frames.length; i++) {
-        this.closeFrame(this.frames[i])
-        i--
+        if (this.frames[i].camera) {
+          this.closeFrame(this.frames[i])
+          i--
+        }
       }
 
       return
@@ -116,10 +118,21 @@ export class CameraTab implements OnInit, OnDestroy {
   }
 
   frameLoaded(image: Event, frame: CameraFrame) {
-    frame.panZoom ??= createPanZoom(image.target as HTMLElement, {
-      minZoom: 0.1,
-      maxZoom: 500,
-    })
+    if (!frame.panzoom) {
+      const e = image.target as HTMLImageElement
+      frame.image = e
+      frame.panzoom = panzoom(e, {
+        animate: true,
+        pinchAndPan: true,
+        minScale: 0.1,
+        maxScale: 500,
+        step: 0.5,
+        cursor: 'default',
+        contain: 'outside',
+      })
+
+      e.addEventListener('wheel', frame.panzoom.zoomWithWheel)
+    }
   }
 
   async openFits() {
@@ -138,8 +151,9 @@ export class CameraTab implements OnInit, OnDestroy {
 
     if (idx >= 0) {
       this.frames.splice(idx, 1)
-      frame.panZoom?.dispose()
-      frame.panZoom = undefined
+      frame.image?.removeEventListener('wheel', frame.panzoom?.zoomWithWheel)
+      frame.panzoom?.destroy()
+      frame.panzoom = undefined
     }
 
     if (this.frames.length === 0) {

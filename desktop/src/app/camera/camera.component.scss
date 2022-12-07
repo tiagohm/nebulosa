@@ -8,6 +8,8 @@
   height: calc(100vh - 156px);
 }
 
-img.frame {
-  image-rendering: pixelated;
+img {
+  &.pixelated {
+    image-rendering: pixelated;
+  }
 }

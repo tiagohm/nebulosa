@@ -1,5 +1,5 @@
+import { PanzoomObject } from '@panzoom/panzoom'
 import { Base64 } from 'js-base64'
-import { PanZoom } from 'panzoom'
 import { AutoSubFolderMode } from '../shared/enums/auto-subfolder.enum'
 import { ExposureType } from '../shared/enums/exposure-type.enum'
 import { FrameType } from '../shared/enums/frame-type.enum'
@@ -13,7 +13,8 @@ export class CameraFrame {
   camera?: Camera
   closeable = true
   path?: string
-  panZoom?: PanZoom
+  image?: HTMLImageElement
+  panzoom?: PanzoomObject
   // Capture.
   autoSaveAllExposures = false
   imageSavePath = ''
@@ -40,6 +41,9 @@ export class CameraFrame {
   midtone = 32767
   shadow = 0
   highlight = 65535
+  flipH = false
+  flipV = false
+  invert = false
 
   static readonly EMPTY = new CameraFrame()
 
@@ -51,7 +55,9 @@ export class CameraFrame {
     if (!this.path) return null
     return `${API_URL}/fits/${Base64.encode(this.path, true)}` +
       `?format=${this.format}&midtone=${this.midtone}&shadow=${this.shadow}` +
-      `&highlight=${this.highlight}&ts=${this.camera?.latestCaptureDate}`
+      `&highlight=${this.highlight}&flipH=${this.flipH}&flipV=${this.flipV}` +
+      `&invert=${this.invert}` +
+      `&ts=${this.camera?.latestCaptureDate}`
   }
 
   get exposureInMicroseconds() {
