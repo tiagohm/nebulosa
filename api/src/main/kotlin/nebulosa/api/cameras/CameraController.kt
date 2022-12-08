@@ -77,8 +77,8 @@ class CameraController {
 
     @EventListener
     fun onScheduledTaskFinishedEvent(event: ScheduledTaskFinishedEvent) {
-        if (event.task in runningTasks) {
-            runningTask.set(null)
+        if (event.task is CameraCaptureTask) {
+            runningTask.compareAndSet(event.task, null)
         }
     }
 

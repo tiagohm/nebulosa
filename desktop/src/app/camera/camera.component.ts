@@ -124,6 +124,7 @@ export class CameraTab implements OnInit, OnDestroy {
       const e = image.target as HTMLImageElement
       frame.image = e
       frame.panzoom = panzoom(e, {
+        noBind: true,
         animate: true,
         pinchAndPan: true,
         minScale: 0.1,
@@ -134,6 +135,9 @@ export class CameraTab implements OnInit, OnDestroy {
       })
 
       e.addEventListener('wheel', frame.panzoom.zoomWithWheel)
+      e.addEventListener('pointerdown', (event) => event.buttons === 1 && frame.panzoom?.handleDown(event))
+      document.addEventListener('pointermove', (event) => frame.panzoom?.handleMove(event), { passive: true })
+      document.addEventListener('pointerup', (event) => frame.panzoom?.handleUp(event), { passive: true })
     }
   }
 
@@ -153,7 +157,9 @@ export class CameraTab implements OnInit, OnDestroy {
 
     if (idx >= 0) {
       this.frames.splice(idx, 1)
-      frame.image?.removeEventListener('wheel', frame.panzoom?.zoomWithWheel)
+      frame.image?.removeAllListeners('wheel')
+      frame.image?.removeAllListeners('pointerdown')
+      frame.image = undefined
       frame.panzoom?.destroy()
       frame.panzoom = undefined
     }
