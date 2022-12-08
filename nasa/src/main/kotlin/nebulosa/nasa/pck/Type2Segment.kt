@@ -86,7 +86,7 @@ internal data class Type2Segment(
         time: InstantOfTime,
         derivative: Boolean,
     ): Pair<Vector3D, Vector3D> {
-        val seconds = ((time.whole - J2000) * DAYSEC - initialEpoch) + time.fraction * DAYSEC
+        val seconds = ((time.tdb.whole - J2000) * DAYSEC - initialEpoch) + time.tdb.fraction * DAYSEC
         val (idx, offset) = seconds divmod intervalLength
         val index = idx.toInt()
 

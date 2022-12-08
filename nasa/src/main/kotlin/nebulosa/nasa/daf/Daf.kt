@@ -1,18 +1,23 @@
 package nebulosa.nasa.daf
 
 import nebulosa.io.*
-import okio.Buffer
 import okio.BufferedSource
 import okio.buffer
 import java.io.Closeable
 import java.io.IOException
 
-class Daf(private val source: SeekableSource) : Closeable by source {
+abstract class Daf : Closeable {
 
-    var record: FileRecord
+    lateinit var record: FileRecord
         private set
 
-    init {
+    @Suppress("NOTHING_TO_INLINE")
+    inline operator fun component1() = record
+
+    @Suppress("NOTHING_TO_INLINE")
+    inline operator fun component2() = summaries
+
+    open fun initialize() {
         // File record.
         val source = readRecord(1)
         // Gets the file format.
@@ -47,11 +52,9 @@ class Daf(private val source: SeekableSource) : Closeable by source {
         }
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    inline operator fun component1() = record
+    abstract fun read(start: Int, end: Int): DoubleArray
 
-    @Suppress("NOTHING_TO_INLINE")
-    inline operator fun component2() = summaries
+    protected abstract fun readRecord(index: Int): SeekableSource
 
     val summaries: List<Summary> by lazy {
         val summaries = ArrayList<Summary>()
@@ -68,21 +71,6 @@ class Daf(private val source: SeekableSource) : Closeable by source {
         }
 
         summaries
-    }
-
-    fun read(start: Int, end: Int): DoubleArray {
-        source.seek(8L * (start - 1))
-        val length = 1 + end - start
-        val buffer = Buffer()
-        source.read(buffer, length * 8L)
-        return DoubleArray(length) { buffer.readDouble(record.order) }
-    }
-
-    private fun readRecord(index: Int): SeekableSource {
-        source.seek((index - 1) * 1024L)
-        val record = Buffer()
-        source.read(record, 1024L)
-        return record.readByteArray().source()
     }
 
     private fun parseSummaries(

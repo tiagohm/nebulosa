@@ -15,7 +15,7 @@ import java.io.IOException
  * @see <a href="https://www.imcce.fr/inpop/calceph">CALCEPH</a>
  */
 internal data class Type21Segment(
-    private val daf: Daf,
+    override val spk: Spk,
     override val source: String,
     override val start: Double,
     override val end: Double,
@@ -47,14 +47,14 @@ internal data class Type21Segment(
     private val coefficients: MutableMap<Int, Coefficient>
 
     init {
-        val (a, b) = daf.read(endIndex - 1, endIndex)
+        val (a, b) = spk.daf.read(endIndex - 1, endIndex)
         maxdim = a.toInt() // Difference line size.
         dlsize = 4 * maxdim + 11
         n = b.toInt() // The number of records in a segment.
         // Epochs for all records in this segment.
-        epochTable = daf.read(startIndex + n * dlsize, startIndex + n * dlsize + n - 1)
+        epochTable = spk.daf.read(startIndex + n * dlsize, startIndex + n * dlsize + n - 1)
         epochDirCount = n / 100
-        epochDir = if (epochDirCount > 0) daf.read(endIndex - epochDirCount - 1, endIndex - 2) else DoubleArray(0)
+        epochDir = if (epochDirCount > 0) spk.daf.read(endIndex - epochDirCount - 1, endIndex - 2) else DoubleArray(0)
         coefficients = HashMap(n)
     }
 
@@ -97,7 +97,7 @@ internal data class Type21Segment(
     private fun computeCoefficient(recordIndex: Int): Boolean {
         if (recordIndex in coefficients) return true
 
-        val mdaRecord = daf.read(
+        val mdaRecord = spk.daf.read(
             startIndex + recordIndex * dlsize,
             startIndex + ((recordIndex + 1) * dlsize) - 1,
         )

@@ -2,8 +2,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.constants.J2000
-import nebulosa.io.seekableSource
-import nebulosa.nasa.daf.Daf
+import nebulosa.nasa.daf.SourceDaf
 import nebulosa.nasa.spk.Spk
 import nebulosa.time.TDB
 import nebulosa.time.TimeJD
@@ -17,8 +16,8 @@ class SpkTest : StringSpec() {
 
         // https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp
         "DE421: SSB - Earth Barycenter" {
-            val source = File("../assets/DE421.bsp").seekableSource()
-            val spk = Spk(Daf(source))
+            val source = File("../assets/DE421.bsp")
+            val spk = Spk(SourceDaf(source))
 
             val data = arrayOf(
                 doubleArrayOf(
@@ -52,8 +51,8 @@ class SpkTest : StringSpec() {
         }
         // https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de405.bsp
         "DE405: SSB - Earth Barycenter" {
-            val source = File("../assets/DE405.bsp").seekableSource()
-            val spk = Spk(Daf(source))
+            val source = File("../assets/DE405.bsp")
+            val spk = Spk(SourceDaf(source))
 
             val data = arrayOf(
                 doubleArrayOf(
@@ -86,8 +85,8 @@ class SpkTest : StringSpec() {
             }
         }
         "65803 Didymos (Type 21)" {
-            val source = File("../assets/65803 Didymos.bsp").seekableSource()
-            val spk = Spk(Daf(source))
+            val source = File("../assets/65803 Didymos.bsp")
+            val spk = Spk(SourceDaf(source))
             val (p, v) = spk[0, 2065803]!!.compute(TDB(TimeJD(J2000, 0.7065000000000000E+04)))
             p[0] shouldBe (-0.3182740418953450E+09 plusOrMinus 1e-8)
             p[1] shouldBe (-0.4181692099565738E+08 plusOrMinus 1e-8)

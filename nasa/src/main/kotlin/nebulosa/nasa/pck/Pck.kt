@@ -7,6 +7,10 @@ import java.io.IOException
 
 class Pck(private val daf: Daf) : Closeable by daf {
 
+    init {
+        daf.initialize()
+    }
+
     private val segments by lazy {
         daf.summaries
             .map { it.segment(daf) }

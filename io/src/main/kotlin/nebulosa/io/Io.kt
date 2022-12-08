@@ -47,6 +47,9 @@ inline fun BufferedSource.readDoubleArray(size: Int) = DoubleArray(size) { readD
 inline fun BufferedSource.readDoubleArrayLe(size: Int) = DoubleArray(size) { readDoubleLe() }
 
 @Suppress("NOTHING_TO_INLINE")
+inline fun BufferedSource.readDoubleArray(size: Int, order: ByteOrder) = DoubleArray(size) { readDouble(order) }
+
+@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readAscii() = readString(Charsets.US_ASCII)
 
 @Suppress("NOTHING_TO_INLINE")

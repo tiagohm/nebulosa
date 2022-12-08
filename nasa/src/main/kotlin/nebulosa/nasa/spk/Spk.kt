@@ -11,11 +11,15 @@ import java.io.IOException
  * @see <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html">SPK Reference</a>
  * @see <a href="https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/">SPK Files</a>
  */
-class Spk(private val daf: Daf) : Closeable, Collection<SpkSegment> {
+class Spk(val daf: Daf) : Closeable, Collection<SpkSegment> {
+
+    init {
+        daf.initialize()
+    }
 
     private val segments by lazy {
         daf.summaries
-            .map { it.makeSegment(daf) }
+            .map { it.makeSegment(this) }
             .associateBy { it.center to it.target }
     }
 
@@ -36,7 +40,7 @@ class Spk(private val daf: Daf) : Closeable, Collection<SpkSegment> {
     companion object {
 
         @JvmStatic
-        private fun Summary.makeSegment(daf: Daf): SpkSegment {
+        private fun Summary.makeSegment(spk: Spk): SpkSegment {
             val start = doubleAt(0)
             val end = doubleAt(1)
             val target = intAt(0)
@@ -47,9 +51,9 @@ class Spk(private val daf: Daf) : Closeable, Collection<SpkSegment> {
             val endIndex = intAt(5)
 
             return when (type) {
-                9 -> Type9Segment(daf, name, start, end, center, target, frame, type, startIndex, endIndex)
-                2, 3 -> Type2And3Segment(daf, name, start, end, center, target, frame, type, startIndex, endIndex)
-                21 -> Type21Segment(daf, name, start, end, center, target, frame, type, startIndex, endIndex)
+                9 -> Type9Segment(spk, name, start, end, center, target, frame, type, startIndex, endIndex)
+                2, 3 -> Type2And3Segment(spk, name, start, end, center, target, frame, type, startIndex, endIndex)
+                21 -> Type21Segment(spk, name, start, end, center, target, frame, type, startIndex, endIndex)
                 else -> throw IOException("Only binary SPK data types 2, 3 and 9 are supported")
             }
         }

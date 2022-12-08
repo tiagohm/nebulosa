@@ -1,14 +1,13 @@
 package nebulosa.nasa.spk
 
 import nebulosa.math.Vector3D
-import nebulosa.nasa.daf.Daf
 import nebulosa.time.InstantOfTime
 
 /**
  * Lagrange Interpolation - Unequal Time Steps.
  */
 internal data class Type9Segment(
-    private val daf: Daf,
+    override val spk: Spk,
     override val source: String,
     override val start: Double,
     override val end: Double,

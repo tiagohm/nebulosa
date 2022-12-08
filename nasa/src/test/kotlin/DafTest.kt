@@ -1,8 +1,7 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.io.seekableSource
-import nebulosa.nasa.daf.Daf
+import nebulosa.nasa.daf.SourceDaf
 import java.io.File
 
 class DafTest : StringSpec() {
@@ -13,8 +12,8 @@ class DafTest : StringSpec() {
 
         // https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de405.bsp
         "NAIF/DAF" {
-            val source = File("../assets/DE405.bsp").seekableSource()
-            val summaries = Daf(source).summaries
+            val source = File("../assets/DE405.bsp")
+            val summaries = SourceDaf(source).summaries
 
             summaries.size shouldBeExactly 15
 
@@ -51,8 +50,8 @@ class DafTest : StringSpec() {
         }
         // https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp
         "DAF/SPK" {
-            val source = File("../assets/DE421.bsp").seekableSource()
-            val summaries = Daf(source).summaries
+            val source = File("../assets/DE421.bsp")
+            val summaries = SourceDaf(source).summaries
 
             summaries.size shouldBeExactly 15
 
@@ -88,8 +87,8 @@ class DafTest : StringSpec() {
             }
         }
         "DAF/PCK" {
-            val source = File("../assets/MOON_PA_DE421_1900-2050.bpc").seekableSource()
-            val summaries = Daf(source).summaries
+            val source = File("../assets/MOON_PA_DE421_1900-2050.bpc")
+            val summaries = SourceDaf(source).summaries
 
             summaries.size shouldBeExactly 1
             summaries[0].name shouldBe "de421.nio"

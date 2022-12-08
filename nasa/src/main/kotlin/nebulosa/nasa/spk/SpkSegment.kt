@@ -9,6 +9,11 @@ import nebulosa.time.InstantOfTime
 interface SpkSegment {
 
     /**
+     * SPK file source.
+     */
+    val spk: Spk
+
+    /**
      * Official ephemeris name, like 'DE-0430LE-0430'.
      */
     val source: String

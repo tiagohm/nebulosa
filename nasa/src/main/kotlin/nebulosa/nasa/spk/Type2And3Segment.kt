@@ -4,7 +4,6 @@ import nebulosa.constants.DAYSEC
 import nebulosa.constants.J2000
 import nebulosa.math.Vector3D
 import nebulosa.math.divmod
-import nebulosa.nasa.daf.Daf
 import nebulosa.time.InstantOfTime
 import java.io.IOException
 
@@ -13,7 +12,7 @@ import java.io.IOException
  * of the body as a function of time.
  */
 internal data class Type2And3Segment(
-    private val daf: Daf,
+    override val spk: Spk,
     override val source: String,
     override val start: Double,
     override val end: Double,
@@ -45,7 +44,7 @@ internal data class Type2And3Segment(
         // INTLEN: is the length of the interval covered by each record, in seconds.
         // RSIZE: is the total size of (number of array elements in) each record.
         // N: is the number of records contained in the segment.
-        val (a, b, c, d) = daf.read(endIndex - 3, endIndex)
+        val (a, b, c, d) = spk.daf.read(endIndex - 3, endIndex)
         initialEpoch = a
         intervalLength = b
         rsize = c.toInt()
@@ -62,7 +61,7 @@ internal data class Type2And3Segment(
         val b = a + rsize
 
         return if (a in startIndex until b && b <= endIndex - 3) {
-            val coefficients = daf.read(a, b)
+            val coefficients = spk.daf.read(a, b)
 
             // val mid = coefficients[0]
             // val radius = coefficients[1]
@@ -139,13 +138,15 @@ internal data class Type2And3Segment(
             dw0[2] = 2.0 * w1[2] + dw1[2] * ss - dw2[2]
         }
 
+        // km
         val c0 = c.x[0] + (s * w0[0] - w1[0])
         val c1 = c.y[0] + (s * w0[1] - w1[1])
         val c2 = c.z[0] + (s * w0[2] - w1[2])
 
-        val r0 = ((w0[0] + s * dw0[0] - dw1[0]) / intervalLength) * (2.0 * DAYSEC)
-        val r1 = ((w0[1] + s * dw0[1] - dw1[1]) / intervalLength) * (2.0 * DAYSEC)
-        val r2 = ((w0[2] + s * dw0[2] - dw1[2]) / intervalLength) * (2.0 * DAYSEC)
+        // km/s
+        val r0 = ((w0[0] + s * dw0[0] - dw1[0]) / intervalLength) * 2.0
+        val r1 = ((w0[1] + s * dw0[1] - dw1[1]) / intervalLength) * 2.0
+        val r2 = ((w0[2] + s * dw0[2] - dw1[2]) / intervalLength) * 2.0
 
         return Vector3D(c0, c1, c2) to Vector3D(r0, r1, r2)
     }
