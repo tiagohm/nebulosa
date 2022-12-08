@@ -8,6 +8,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":nova"))
     implementation(project(":indi-client"))
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")

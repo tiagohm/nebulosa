@@ -25,8 +25,8 @@ internal data class Type2And3Segment(
 ) : SpkSegment {
 
     private class Coefficient(
-        // val mid: Double,
-        // val radius: Double,
+        val mid: Double,
+        val radius: Double,
         val x: DoubleArray,
         val y: DoubleArray,
         val z: DoubleArray,
@@ -58,25 +58,24 @@ internal data class Type2And3Segment(
         val componentCount = (type - 1) * 3
         val coefficientCount = (rsize - 2) / componentCount
         val a = startIndex + index * rsize
-        val b = a + rsize
+        val b = a + rsize - 1
 
-        return if (a in startIndex until b && b <= endIndex - 3) {
+        return if (a in startIndex until b && b <= endIndex - 4) {
             val coefficients = spk.daf.read(a, b)
 
-            // val mid = coefficients[0]
-            // val radius = coefficients[1]
+            val mid = coefficients[0]
+            val radius = coefficients[1]
             val x = DoubleArray(coefficientCount)
             val y = DoubleArray(coefficientCount)
             val z = DoubleArray(coefficientCount)
 
             for (k in 0 until coefficientCount) {
-                val m = 2 + k
-                x[k] = coefficients[m]
-                y[k] = coefficients[m + 1 * coefficientCount]
-                z[k] = coefficients[m + 2 * coefficientCount]
+                x[k] = coefficients[2 + k]
+                y[k] = coefficients[2 + k + coefficientCount]
+                z[k] = coefficients[2 + k + 2 * coefficientCount]
             }
 
-            this.coefficients[index] = Coefficient(x, y, z, coefficientCount)
+            this.coefficients[index] = Coefficient(mid, radius, x, y, z, coefficientCount)
 
             true
         } else {
@@ -90,12 +89,17 @@ internal data class Type2And3Segment(
         val (d, offset) = (p + q) divmod intervalLength
         val index = (a + b + d).toInt()
 
+        // val t = (time.tdb.whole - J2000 + time.tdb.fraction) * DAYSEC
+        // val index = ((t - initialEpoch) / intervalLength).toInt()
+
         if (!computeCoefficient(index)) {
             throw IOException("cannot find a segment that covers the date: ${time.value}")
         }
 
-        // Chebyshev polynomial & differentiation.
+        // Chebyshev polynomial & differentiation. 158904.183237831
+        val c = coefficients[index]!!
 
+        // val s = 2.0 * (t - (c.mid - c.radius)) / intervalLength - 1.0
         val s = 2.0 * offset / intervalLength - 1.0
         val ss = 2.0 * s
 
@@ -105,8 +109,6 @@ internal data class Type2And3Segment(
         val dw0 = DoubleArray(3)
         val dw1 = DoubleArray(3)
         val dw2 = DoubleArray(3)
-
-        val c = coefficients[index]!!
 
         for (i in c.count - 1 downTo 1) {
             // Polynomial.

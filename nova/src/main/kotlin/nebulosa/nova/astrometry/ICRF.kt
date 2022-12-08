@@ -6,8 +6,10 @@ import nebulosa.coordinates.SphericalRepresentation
 import nebulosa.math.*
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance.Companion.au
+import nebulosa.math.Distance.Companion.km
 import nebulosa.math.Pressure.Companion.mbar
 import nebulosa.math.Temperature.Companion.celsius
+import nebulosa.math.Velocity.Companion.kms
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.ITRS
 import nebulosa.nova.position.*
@@ -42,33 +44,36 @@ open class ICRF protected constructor(
     @Suppress("NOTHING_TO_INLINE")
     inline operator fun component2() = velocity
 
-    /**
-     * Distance in km from [center] to [target] at [time].
-     */
-    inline val distance get() = position.length
+    @Suppress("NOTHING_TO_INLINE")
+    inline operator fun component3() = time
 
     /**
-     * Speed in km/s at [time].
+     * Distance from [center] to [target] at [time].
      */
-    inline val speed get() = velocity.length
+    inline val distance get() = position.length.km
+
+    /**
+     * Speed at [time].
+     */
+    inline val speed get() = velocity.length.kms
 
     /**
      * Length of this vector in days of light travel time.
      */
-    inline val lightTime get() = distance * (1000.0 / (SPEED_OF_LIGHT * DAYSEC))
+    inline val lightTime get() = position.length * (1000.0 / (SPEED_OF_LIGHT * DAYSEC))
 
     /**
      * Computes the equatorial (RA, declination, distance)
      * with respect to the fixed axes of the ICRF.
      */
-    fun equatorial() = SphericalRepresentation(position)
+    fun equatorial() = SphericalRepresentation.of(position)
 
     /**
      * Computes the equatorial (RA, declination, distance)
      * referenced to the dynamical system defined by
      * the Earth's true equator and equinox at specific [epoch] time.
      */
-    fun equatorialAtEpoch(epoch: InstantOfTime) = SphericalRepresentation(epoch.m * position)
+    fun equatorialAtEpoch(epoch: InstantOfTime) = SphericalRepresentation.of(epoch.m * position)
 
     /**
      * Computes the equatorial (RA, declination, distance)

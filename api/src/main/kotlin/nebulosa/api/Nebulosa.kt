@@ -5,7 +5,9 @@ import io.objectbox.BoxStore
 import nebulosa.api.cameras.CameraCaptureHistory
 import nebulosa.api.cameras.MyObjectBox
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
+import org.springframework.web.client.RestTemplate
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.nio.file.Path
@@ -19,7 +21,7 @@ class Nebulosa {
     fun appDirectory(): Path {
         val userHomeDir = Paths.get(System.getProperty("user.home"))
         // TODO: Use different directory name based on current OS.
-        val appDirectory = Paths.get("$userHomeDir", ".nebula")
+        val appDirectory = Paths.get("$userHomeDir", ".nebulosa")
         appDirectory.createDirectories()
         return appDirectory
     }
@@ -35,6 +37,11 @@ class Nebulosa {
     @Bean
     fun boxForCameraCaptureHistory(boxStore: BoxStore): Box<CameraCaptureHistory> {
         return boxStore.boxFor(CameraCaptureHistory::class.java)
+    }
+
+    @Bean
+    fun restTemplate(builder: RestTemplateBuilder): RestTemplate {
+        return builder.build()
     }
 
     @Bean

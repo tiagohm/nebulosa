@@ -34,8 +34,8 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
         }
 
         return if (observer.target.toInt() == Int.MIN_VALUE) {
-            val pv = compute(observer.time)
-            (pv.first - observer.position) to (pv.second - observer.velocity)
+            val (p, v) = compute(observer.time)
+            (p - observer.position) to (v - observer.velocity)
         } else {
             correctForLightTravelTime(observer, this)
         }
@@ -126,10 +126,7 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
          * Computes the light travel time correction
          * from [observer]'s position to [body]'s position.
          */
-        internal fun correctForLightTravelTime(
-            observer: ICRF,
-            body: Body,
-        ): Pair<Vector3D, Vector3D> {
+        internal fun correctForLightTravelTime(observer: ICRF, body: Body): Pair<Vector3D, Vector3D> {
             var time = observer.time.tdb
             val whole = time.whole
             val fraction = time.fraction
