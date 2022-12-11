@@ -2,17 +2,23 @@ package nebulosa.fits.algorithms
 
 import nebulosa.fits.Image
 
-class Debayer(val pattern: CfaPattern = CfaPattern.GRGB) : PartialTransformAlgorithm {
+class Debayer(val pattern: CfaPattern = CfaPattern.GRGB) : TransformAlgorithm {
+
+    private var red = FloatArray(0) // Prevent clone image.
 
     override fun transform(source: Image): Image {
+        red = FloatArray(source.width * source.height)
+
         if (source.mono) {
-            TODO("") // create RGB image, copy gray to red channel e call super.transform.
+            TODO("") // create RGB image, copy gray to red channel e call transform.
         } else {
-            return super.transform(source)
+            process(source)
         }
+
+        return source
     }
 
-    override fun transform(source: Image, destination: Image) {
+    private fun process(source: Image) {
         val width = source.width
         val height = source.height
         val widthM1 = width - 1
@@ -24,6 +30,7 @@ class Debayer(val pattern: CfaPattern = CfaPattern.GRGB) : PartialTransformAlgor
         for (y in 0 until height) {
             for (x in 0 until width) {
                 val pixelIndex = y * source.stride + x * source.pixelStride
+                val redPixelIndex = pixelIndex / 3
 
                 rgbValues.fill(0f)
                 rgbCounters.fill(0)
@@ -80,8 +87,12 @@ class Debayer(val pattern: CfaPattern = CfaPattern.GRGB) : PartialTransformAlgor
                     }
                 }
 
-                for (i in 0..2) destination.data[pixelIndex + i] = rgbValues[i] / rgbCounters[i]
+                red[redPixelIndex] = rgbValues[0] / rgbCounters[0]
+                source.data[pixelIndex + 1] = rgbValues[1] / rgbCounters[1]
+                source.data[pixelIndex + 2] = rgbValues[2] / rgbCounters[2]
             }
         }
+
+        for (i in red.indices) source.data[i * 3] = red[i]
     }
 }

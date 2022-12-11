@@ -14,18 +14,18 @@ class ScreenTransformFunction(
     private val k2 = ((2f * midtone) - 1f) * rangeFactor
     private val lut = if (canTransform) FloatArray(65536) else FloatArray(0)
 
-    override fun transform(image: Image): Image {
-        if (!canTransform) return image
+    override fun transform(source: Image): Image {
+        if (!canTransform) return source
 
         lut.fill(Float.NaN)
 
-        for (i in image.data.indices) {
-            val pixel = image.data[i]
+        for (i in source.data.indices) {
+            val pixel = source.data[i]
             val color = pixel.df(midtone, shadow, highlight, k1, k2)
-            image.data[i] = color
+            source.data[i] = color
         }
 
-        return image
+        return source
     }
 
     // https://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html#__XISF_Data_Objects_:_XISF_Image_:_Display_Function__
