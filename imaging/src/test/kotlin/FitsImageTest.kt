@@ -1,6 +1,7 @@
 import io.kotest.core.spec.style.StringSpec
 import nebulosa.fits.FitsImage
 import nebulosa.fits.algorithms.Flip
+import nebulosa.fits.algorithms.Grayscale
 import nebulosa.fits.algorithms.Invert
 import nebulosa.fits.algorithms.ScreenTransformFunction
 import nom.tam.fits.Fits
@@ -14,56 +15,67 @@ class FitsImageTest : StringSpec() {
         "8-bits mono" {
             val fits = Fits("src/test/resources/M51.8.Mono.fits")
             val image = FitsImage(fits)
+            image.read()
             ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Mono.png"))
         }
         "16-bits mono" {
             val fits = Fits("src/test/resources/M51.16.Mono.fits")
             val image = FitsImage(fits)
+            image.read()
             ImageIO.write(image, "PNG", File("src/test/resources/M51.16.Mono.png"))
         }
         "32-bits mono" {
             val fits = Fits("src/test/resources/M51.32.Mono.fits")
             val image = FitsImage(fits)
+            image.read()
             ImageIO.write(image, "PNG", File("src/test/resources/M51.32.Mono.png"))
         }
         "32-bits floating point mono" {
             val fits = Fits("src/test/resources/M51.F32.Mono.fits")
             val image = FitsImage(fits)
+            image.read()
             ImageIO.write(image, "PNG", File("src/test/resources/M51.F32.Mono.png"))
         }
         "64-bits floating point mono" {
             val fits = Fits("src/test/resources/M51.F64.Mono.fits")
             val image = FitsImage(fits)
+            image.read()
             ImageIO.write(image, "PNG", File("src/test/resources/M51.F64.Mono.png"))
         }
         "8-bits color" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
             val image = FitsImage(fits)
+            image.read()
             ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Color.png"))
         }
         "16-bits color" {
             val fits = Fits("src/test/resources/M51.16.Color.fits")
             val image = FitsImage(fits)
+            image.read()
             ImageIO.write(image, "PNG", File("src/test/resources/M51.16.Color.png"))
         }
         "32-bits color" {
             val fits = Fits("src/test/resources/M51.32.Color.fits")
             val image = FitsImage(fits)
+            image.read()
             ImageIO.write(image, "PNG", File("src/test/resources/M51.32.Color.png"))
         }
         "32-bits floating point color" {
             val fits = Fits("src/test/resources/M51.F32.Color.fits")
             val image = FitsImage(fits)
+            image.read()
             ImageIO.write(image, "PNG", File("src/test/resources/M51.F32.Color.png"))
         }
         "64-bits floating point color" {
             val fits = Fits("src/test/resources/M51.F64.Color.fits")
             val image = FitsImage(fits)
+            image.read()
             ImageIO.write(image, "PNG", File("src/test/resources/M51.F64.Color.png"))
         }
         "8-bits color full (ICC Profile + Properties + Thumbnail)" {
             val fits = Fits("src/test/resources/M51.8.Color.Full.fits")
             val image = FitsImage(fits)
+            image.read()
             ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Color.Full.png"))
         }
         "STF midtone = 0.1, shadow = 0.0, highlight = 1.0" {
@@ -116,11 +128,6 @@ class FitsImageTest : StringSpec() {
             val image = ScreenTransformFunction(5.8e-5f).transform(FitsImage(fits))
             ImageIO.write(image, "JPG", File("src/test/resources/CCD Simulator.Gray.jpg"))
         }
-        "HorseHead" {
-            val fits = Fits("src/test/resources/HorseHead.fits")
-            val image = ScreenTransformFunction(0.74937f, 0.36090f, 0.79313f).transform(FitsImage(fits))
-            ImageIO.write(image, "JPG", File("src/test/resources/HorseHead.jpg"))
-        }
         "Flip Vertical" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
             val image = Flip(vertical = true).transform(FitsImage(fits))
@@ -138,8 +145,19 @@ class FitsImageTest : StringSpec() {
         }
         "Invert" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = Invert().transform(FitsImage(fits))
+            val image = Invert.transform(FitsImage(fits))
             ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Color.Invert.png"))
+        }
+        "Grayscale" {
+            val fits = Fits("src/test/resources/M51.8.Color.fits")
+            val image = Grayscale.BT709.transform(FitsImage(fits))
+            ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Color.Grayscale.BT709.png"))
+        }
+        "Debayer - GRBG" {
+            val fits = Fits("src/test/resources/Debayer.GRBG.fits")
+            val image = FitsImage(fits)
+            image.read()
+            ImageIO.write(image, "PNG", File("src/test/resources/Debayer.GRBG.png"))
         }
     }
 }

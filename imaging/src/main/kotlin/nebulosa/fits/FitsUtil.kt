@@ -6,7 +6,7 @@ import nom.tam.fits.ImageHDU
 import nom.tam.fits.header.Standard
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun Fits.getImageHDU(n: Int) = read().filterIsInstance<ImageHDU>().getOrNull(n)
+inline fun Fits.imageHDU(n: Int) = read().filterIsInstance<ImageHDU>().getOrNull(n)
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun BasicHDU<*>.getNAXIS(n: Int) = header.getIntValue(Standard.NAXISn.n(n))
+inline fun BasicHDU<*>.naxis(n: Int) = header.getIntValue(Standard.NAXISn.n(n))

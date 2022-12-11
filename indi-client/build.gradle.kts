@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":fits"))
+    api(project(":imaging"))
     implementation(libs.xstream)
     testImplementation(libs.bundles.kotest)
 }

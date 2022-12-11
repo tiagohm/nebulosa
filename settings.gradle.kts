@@ -26,7 +26,7 @@ dependencyResolutionManagement {
 include(":constants")
 include(":erfa")
 include(":io")
-include(":fits")
+include(":imaging")
 include(":time")
 include(":coordinates")
 include(":nasa")

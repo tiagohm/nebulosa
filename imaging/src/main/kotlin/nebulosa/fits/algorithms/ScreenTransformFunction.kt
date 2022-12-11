@@ -1,6 +1,6 @@
 package nebulosa.fits.algorithms
 
-import nebulosa.fits.FitsImage
+import nebulosa.fits.Image
 
 class ScreenTransformFunction(
     private val midtone: Float,
@@ -14,7 +14,7 @@ class ScreenTransformFunction(
     private val k2 = ((2f * midtone) - 1f) * rangeFactor
     private val lut = if (canTransform) FloatArray(65536) else FloatArray(0)
 
-    override fun transform(image: FitsImage): FitsImage {
+    override fun transform(image: Image): Image {
         if (!canTransform) return image
 
         lut.fill(Float.NaN)

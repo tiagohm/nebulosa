@@ -6,6 +6,8 @@ import nebulosa.nasa.daf.SourceDaf
 import nebulosa.nasa.spk.Spk
 import nebulosa.time.TDB
 import nebulosa.time.TimeJD
+import nebulosa.time.TimeYMDHMS
+import nebulosa.time.UTC
 import java.io.File
 
 class SpkTest : StringSpec() {
@@ -87,13 +89,13 @@ class SpkTest : StringSpec() {
         "65803 Didymos (Type 21)" {
             val source = File("../assets/65803 Didymos.bsp")
             val spk = Spk(SourceDaf(source))
-            val (p, v) = spk[0, 2065803]!!.compute(TDB(TimeJD(J2000, 0.7065000000000000E+04)))
-            p[0] shouldBe (-0.3182740418953450E+09 plusOrMinus 1e-8)
-            p[1] shouldBe (-0.4181692099565738E+08 plusOrMinus 1e-8)
-            p[2] shouldBe (0.8948716100331508E+06 plusOrMinus 1e-8)
-            v[0] shouldBe (-0.2156253652003626E+01 plusOrMinus 1e-8)
-            v[1] shouldBe (-0.1536768916314177E+02 plusOrMinus 1e-8)
-            v[2] shouldBe (-0.6844721896204574E+01 plusOrMinus 1e-8)
+            val (p, v) = spk[10, 2065803]!!.compute(UTC(TimeYMDHMS(2022, 12, 8, 20, 7, 15.0)))
+            p[0] shouldBe (1.977326646612401E+07 plusOrMinus 1e-2)
+            p[1] shouldBe (1.529845025867495E+08 plusOrMinus 1e-2)
+            p[2] shouldBe (6.828350871499234E+07 plusOrMinus 1e-2)
+            v[0] shouldBe (-3.012395780604859E+01 plusOrMinus 1e-2)
+            v[1] shouldBe (9.382987541257533E+00 plusOrMinus 1e-2)
+            v[2] shouldBe (6.151509354276194E+00 plusOrMinus 1e-2)
         }
     }
 }
