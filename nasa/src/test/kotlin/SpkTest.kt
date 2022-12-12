@@ -1,10 +1,8 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.constants.J2000
 import nebulosa.nasa.daf.SourceDaf
 import nebulosa.nasa.spk.Spk
-import nebulosa.time.TDB
 import nebulosa.time.TimeJD
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC

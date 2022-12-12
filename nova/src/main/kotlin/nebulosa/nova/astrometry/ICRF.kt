@@ -2,7 +2,7 @@ package nebulosa.nova.astrometry
 
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.SPEED_OF_LIGHT
-import nebulosa.coordinates.SphericalRepresentation
+import nebulosa.coordinates.SphericalCoordinate
 import nebulosa.math.*
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance.Companion.au
@@ -66,14 +66,14 @@ open class ICRF protected constructor(
      * Computes the equatorial (RA, declination, distance)
      * with respect to the fixed axes of the ICRF.
      */
-    fun equatorial() = SphericalRepresentation.of(position)
+    fun equatorial() = SphericalCoordinate.of(position[0].km, position[1].km, position[2].km)
 
     /**
      * Computes the equatorial (RA, declination, distance)
      * referenced to the dynamical system defined by
      * the Earth's true equator and equinox at specific [epoch] time.
      */
-    fun equatorialAtEpoch(epoch: InstantOfTime) = SphericalRepresentation.of(epoch.m * position)
+    fun equatorialAtEpoch(epoch: InstantOfTime) = (epoch.m * position).let { SphericalCoordinate.of(it[0].km, it[1].km, it[2].km) }
 
     /**
      * Computes the equatorial (RA, declination, distance)
@@ -104,7 +104,7 @@ open class ICRF protected constructor(
      * the horizon.
      */
     @Suppress("LocalVariableName")
-    fun hourAngle(): SphericalRepresentation {
+    fun hourAngle(): SphericalCoordinate {
         require(center is GeographicPosition) { "the center must be a GeographicPosition" }
 
         val R = ITRS.rotationAt(time)
@@ -113,7 +113,7 @@ open class ICRF protected constructor(
 
         val ha = (center.longitude - sublongitude).normalized
 
-        return SphericalRepresentation(ha, dec.rad, distance.au)
+        return SphericalCoordinate(ha, dec.rad, distance.au)
     }
 
     /**
@@ -135,7 +135,7 @@ open class ICRF protected constructor(
     /**
      * Gets spherical CIRS coordinates at a given [epoch] (ra, dec, distance).
      */
-    fun sphericalCIRS(epoch: InstantOfTime = time) = SphericalRepresentation(cirs(epoch))
+    fun sphericalCIRS(epoch: InstantOfTime = time) = cirs(epoch).let { SphericalCoordinate.of(it[0].km, it[1].km, it[2].km) }
 
     /**
      * Returns the [position] as an |xyz| position and velocity vector in a reference [frame].
@@ -154,8 +154,8 @@ open class ICRF protected constructor(
     /**
      * Returns the longitude, latitude and distance in the given [frame].
      */
-    fun latLon(frame: Frame): SphericalRepresentation {
-        return SphericalRepresentation(frame.rotationAt(time) * position)
+    fun latLon(frame: Frame): SphericalCoordinate {
+        return (frame.rotationAt(time) * position).let { SphericalCoordinate.of(it[0].km, it[1].km, it[2].km) }
     }
 
     /**
@@ -201,7 +201,7 @@ open class ICRF protected constructor(
             position: ICRF,
             temperature: Temperature = 10.0.celsius,
             pressure: Pressure = 1013.0.mbar,
-        ): SphericalRepresentation {
+        ): SphericalCoordinate {
             val r = when {
                 position is Astrometric -> position.barycenter.horizontalRotation
                 position is Apparent -> position.barycenter.horizontalRotation
@@ -218,7 +218,7 @@ open class ICRF protected constructor(
             // TODO: return if (position.center is GeographicPosition) {
             //    SphericalRepresentation(position.center.refract(h.a2.rad, temperature, pressure), h.a1.rad, h.a3.au)
             //} else {
-            return SphericalRepresentation(h)
+            return SphericalCoordinate.of(h[0].km, h[1].km, h[2].km)
             //}
         }
     }

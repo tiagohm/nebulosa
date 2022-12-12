@@ -1,6 +1,6 @@
 package nebulosa.coordinates
 
-interface Representation {
+interface Coordinate {
 
     operator fun component1(): Double
 

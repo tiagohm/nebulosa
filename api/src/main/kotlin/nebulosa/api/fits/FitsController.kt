@@ -22,6 +22,7 @@ class FitsController {
         @RequestParam(required = false, defaultValue = "false") flipH: Boolean = false,
         @RequestParam(required = false, defaultValue = "false") flipV: Boolean = false,
         @RequestParam(required = false, defaultValue = "false") invert: Boolean = false,
+        @RequestParam(required = false, defaultValue = "true") debayer: Boolean = true,
         response: HttpServletResponse,
     ) {
         val decodedPath = Base64.getUrlDecoder().decode(path).decodeToString()
@@ -29,7 +30,7 @@ class FitsController {
         fitsService.open(
             decodedPath, format,
             midtone / 65535f, shadow / 65535f, highlight / 65535f,
-            flipH, flipV, invert,
+            flipH, flipV, invert, debayer,
             response.outputStream,
         )
         response.flushBuffer()

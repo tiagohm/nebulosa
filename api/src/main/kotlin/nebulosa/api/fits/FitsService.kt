@@ -26,7 +26,7 @@ class FitsService {
         val file = File(path)
         val fits = Fits(file)
         val algorithms = ArrayList<TransformAlgorithm>(4)
-        if(invert) algorithms.add(Invert)
+        if (invert) algorithms.add(Invert)
         algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
         algorithms.add(Flip(horizontal = flipH, vertical = flipV))
         val image = algorithms.transform(FitsImage(fits, debayer))

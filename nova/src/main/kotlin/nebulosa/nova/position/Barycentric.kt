@@ -1,7 +1,7 @@
 package nebulosa.nova.position
 
 import nebulosa.constants.TAU
-import nebulosa.coordinates.CartesianRepresentation
+import nebulosa.coordinates.CartesianCoordinate
 import nebulosa.math.Angle
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.au
@@ -90,7 +90,7 @@ class Barycentric internal constructor(
         )
 
         val R = frame.rotationAt(time)
-        val p = R.transpose() * CartesianRepresentation.of(azimuth, altitude, distance)
+        val p = R.transpose() * CartesianCoordinate.of(azimuth, altitude, distance)
 
         return Apparent(p, Vector3D.EMPTY, time, center, target, this)
     }

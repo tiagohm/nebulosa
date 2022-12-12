@@ -3,7 +3,6 @@ package nebulosa.nasa.spk
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.J2000
 import nebulosa.math.Vector3D
-import nebulosa.nasa.daf.Daf
 import nebulosa.time.InstantOfTime
 import java.io.IOException
 

@@ -2,7 +2,7 @@ package nebulosa.nova.position
 
 import nebulosa.constants.ANGULAR_VELOCITY
 import nebulosa.constants.DAYSEC
-import nebulosa.coordinates.Representation
+import nebulosa.coordinates.Coordinate
 import nebulosa.math.Vector3D
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.frame.ITRS
@@ -11,7 +11,7 @@ import nebulosa.time.InstantOfTime
 /**
  * An |xyz| position in the Earth-centered Earth-fixed (ECEF) ITRS frame.
  */
-interface ITRSPosition : Body, Representation {
+interface ITRSPosition : Body, Coordinate {
 
     val itrs: Vector3D
 
