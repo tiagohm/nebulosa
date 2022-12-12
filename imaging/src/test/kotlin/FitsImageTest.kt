@@ -1,14 +1,12 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import nebulosa.fits.FitsImage
-import nebulosa.fits.algorithms.Flip
-import nebulosa.fits.algorithms.Grayscale
-import nebulosa.fits.algorithms.Invert
-import nebulosa.fits.algorithms.ScreenTransformFunction
+import nebulosa.fits.algorithms.*
 import nom.tam.fits.Fits
 import okio.buffer
 import okio.source
 import java.io.File
+import java.util.*
 import javax.imageio.ImageIO
 
 @Suppress("BlockingMethodInNonBlockingContext")
@@ -203,6 +201,48 @@ class FitsImageTest : StringSpec() {
             val outputFile = File("src/test/resources/Debayer.GRBG.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "dad1a430e41e4846f0c6a9c594e5d57d"
+        }
+        "Salt & Pepper Noise" {
+            val fits = Fits("src/test/resources/Flower.fits")
+            val image = SaltAndPepperNoise(0.1f, Random(0)).transform(FitsImage(fits).also(FitsImage::read))
+            val outputFile = File("src/test/resources/Flower.SaltPepperNoise.png")
+            ImageIO.write(image, "PNG", outputFile)
+            outputFile.md5() shouldBe "7d15259b367ea973be204038f0972159"
+        }
+        "Blur" {
+            val fits = Fits("src/test/resources/Flower.fits")
+            val image = Blur().transform(FitsImage(fits).also(FitsImage::read))
+            val outputFile = File("src/test/resources/Flower.Blur.png")
+            ImageIO.write(image, "PNG", outputFile)
+            outputFile.md5() shouldBe "ed3bda2192ea3298e33790715808de91"
+        }
+        "Gaussian Blur" {
+            val fits = Fits("src/test/resources/Flower.fits")
+            val image = GaussianBlur(sigma = 5.0, size = 9).transform(FitsImage(fits).also(FitsImage::read))
+            val outputFile = File("src/test/resources/Flower.GaussianBlur.png")
+            ImageIO.write(image, "PNG", outputFile)
+            outputFile.md5() shouldBe "bc43543e671a1201f71f5619a2e56463"
+        }
+        "Edges" {
+            val fits = Fits("src/test/resources/Flower.fits")
+            val image = Edges().transform(FitsImage(fits).also(FitsImage::read))
+            val outputFile = File("src/test/resources/Flower.Edges.png")
+            ImageIO.write(image, "PNG", outputFile)
+            outputFile.md5() shouldBe "077818d1344d2b453ceed5caecbf657a"
+        }
+        "Sharpen" {
+            val fits = Fits("src/test/resources/Flower.fits")
+            val image = Sharpen().transform(FitsImage(fits).also(FitsImage::read))
+            val outputFile = File("src/test/resources/Flower.Sharpen.png")
+            ImageIO.write(image, "PNG", outputFile)
+            outputFile.md5() shouldBe "bca1608df7b4bf9bb2d1b80d04c5fad0"
+        }
+        "Mean" {
+            val fits = Fits("src/test/resources/Flower.fits")
+            val image = TransformAlgorithm.of(SaltAndPepperNoise(0.1f, Random(0)), Mean()).transform(FitsImage(fits).also(FitsImage::read))
+            val outputFile = File("src/test/resources/Flower.Mean.png")
+            ImageIO.write(image, "PNG", outputFile)
+            outputFile.md5() shouldBe "8a348a8393125ae35ad5478113c30c1e"
         }
     }
 
