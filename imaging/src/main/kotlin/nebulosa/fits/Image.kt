@@ -4,8 +4,7 @@ import java.awt.color.ColorSpace
 import java.awt.image.*
 
 open class Image(
-    width: Int,
-    height: Int,
+    width: Int, height: Int,
     val mono: Boolean,
 ) : BufferedImage(colorModel(mono), raster(width, height, mono), false, null) {
 
@@ -13,21 +12,18 @@ open class Image(
 
     @JvmField val stride = width * pixelStride
 
-    @JvmField val data = (raster.dataBuffer as FitsDataBuffer).data
+    @JvmField val data = (raster.dataBuffer as Float8bppDataBuffer).data
 
-    fun writePixel(x: Int, y: Int, channel: ImageChannel, color: Float) {
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun writePixel(x: Int, y: Int, channel: ImageChannel, color: Float) {
         val index = y * width * pixelStride + x * pixelStride
-
-        if (channel == ImageChannel.GRAY) {
-            this.data[index] = color
-        } else {
-            this.data[index + channel.ordinal] = color
-        }
+        this.data[index + channel.offset] = color
     }
 
-    fun readPixel(x: Int, y: Int, channel: ImageChannel): Float {
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun readPixel(x: Int, y: Int, channel: ImageChannel): Float {
         val index = y * width * pixelStride + x * pixelStride
-        return this.data[index + if (channel == ImageChannel.GRAY) 0 else channel.ordinal]
+        return this.data[index + channel.offset]
     }
 
     fun writeByteArray(channel: ImageChannel, data: Array<ByteArray>) {
@@ -60,8 +56,7 @@ open class Image(
     fun writeFloatArray(channel: ImageChannel, data: Array<FloatArray>) {
         for (y in data.indices) {
             for (x in 0 until data[y].size) {
-                val color = data[y][x]
-                writePixel(x, y, channel, color)
+                writePixel(x, y, channel, data[y][x])
             }
         }
     }
@@ -94,7 +89,7 @@ open class Image(
             val pixelStride = if (mono) 1 else 3
             val bandOffsets = if (mono) intArrayOf(0) else intArrayOf(0, 1, 2)
             val sampleModel = PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, width, height, pixelStride, width * pixelStride, bandOffsets)
-            val buffer = FitsDataBuffer(width * height * pixelStride)
+            val buffer = Float8bppDataBuffer(width * height * pixelStride)
             return Raster.createWritableRaster(sampleModel, buffer, null)
         }
     }

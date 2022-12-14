@@ -2,9 +2,9 @@ package nebulosa.fits
 
 import java.awt.image.DataBuffer
 
-class FitsDataBuffer(size: Int) : DataBuffer(TYPE_FLOAT, size) {
+class Float8bppDataBuffer(@JvmField val data: FloatArray) : DataBuffer(TYPE_FLOAT, data.size) {
 
-    val data = FloatArray(size)
+    constructor(size: Int) : this(FloatArray(size))
 
     override fun getElem(i: Int): Int {
         return (data[i + offset] * 255f).toInt()
@@ -27,7 +27,7 @@ class FitsDataBuffer(size: Int) : DataBuffer(TYPE_FLOAT, size) {
     }
 
     override fun getElemFloat(bank: Int, i: Int): Float {
-        return data[i + offsets[bank]] * 255f
+        return data[i + offsets[bank]]
     }
 
     override fun setElemFloat(i: Int, value: Float) {
@@ -43,7 +43,7 @@ class FitsDataBuffer(size: Int) : DataBuffer(TYPE_FLOAT, size) {
     }
 
     override fun getElemDouble(bank: Int, i: Int): Double {
-        return (data[i + offsets[bank]] * 255f).toDouble()
+        return data[i + offsets[bank]].toDouble()
     }
 
     override fun setElemDouble(i: Int, value: Double) {
