@@ -41,6 +41,12 @@ open class Vector3D(@PublishedApi internal val vector: DMatrix3) {
 
     inline fun dot(other: Vector3D) = CommonOps_DDF3.dot(vector, other.vector)
 
+    inline fun cross(other: Vector3D) = Vector3D(
+        this[1] * other[2] - this[2] * other[1],
+        this[2] * other[0] - this[0] * other[2],
+        this[0] * other[1] - this[1] * other[0],
+    )
+
     inline val length get() = sqrt(dot(this))
 
     inline val normalized get() = length.let { if (it == 0.0) this else this / it }

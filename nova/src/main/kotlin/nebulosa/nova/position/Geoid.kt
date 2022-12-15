@@ -98,6 +98,10 @@ data class Geoid(
 
     companion object {
 
+        @JvmStatic val GRS80 = Geoid("GRS80", 6378137.0.m, 298.257222101)
+
+        @JvmStatic val WGS72 = Geoid("WGS72", 6378135.0.m, 298.26)
+
         /**
          * World Geodetic System 1984 [Geoid].
          *

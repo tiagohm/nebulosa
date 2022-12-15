@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 buildscript {
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.22")
-        classpath("io.objectbox:objectbox-gradle-plugin:3.4.0")
+        classpath("io.objectbox:objectbox-gradle-plugin:3.5.0")
     }
 
     repositories {

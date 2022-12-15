@@ -14,7 +14,7 @@ dependencyResolutionManagement {
         create("libs") {
             library("xstream", "com.thoughtworks.xstream:xstream:1.4.19")
             library("okio", "com.squareup.okio:okio:3.2.0")
-            library("ejml", "org.ejml:ejml-ddense:0.41")
+            library("ejml", "org.ejml:ejml-ddense:0.41.1")
             library("fits", "gov.nasa.gsfc.heasarc:nom-tam-fits:1.17.0")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.5.4")
             library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.5.4")

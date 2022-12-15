@@ -1,3 +1,5 @@
+@file:Suppress("PrivatePropertyName")
+
 package nebulosa.erfa
 
 import nebulosa.constants.*
@@ -30,23 +32,13 @@ fun eraAb(pnat: Vector3D, v: Vector3D, s: Distance, bm1: Double): Vector3D {
     val pdv = pnat.dot(v)
     val w1 = 1.0 + pdv / (1.0 + bm1)
     val w2 = SCHWARZSCHILD_RADIUS_OF_THE_SUN / s.value
-    var r2 = 0.0
+    val p = DoubleArray(3)
 
-    var w = pnat.a1 * bm1 + w1 * v.a1 + w2 * (v.a1 - pdv * pnat.a1)
-    val px = w
-    r2 += w * w
+    for (i in 0..2) {
+        p[i] = pnat[i] * bm1 + w1 * v[i] + w2 * (v[i] - pdv * pnat[i])
+    }
 
-    w = pnat.a2 * bm1 + w1 * v.a2 + w2 * (v.a2 - pdv * pnat.a2)
-    val py = w
-    r2 += w * w
-
-    w = pnat.a3 * bm1 + w1 * v.a3 + w2 * (v.a3 - pdv * pnat.a3)
-    val pz = w
-    r2 += w * w
-
-    val r = sqrt(r2)
-
-    return Vector3D(px / r, py / r, pz / r)
+    return Vector3D(p).normalized
 }
 
 /**
@@ -171,16 +163,11 @@ fun eraDtDb(
     // TOPOCENTRIC TERMS: Moyer 1981 and Murray 1983.
     val ukm = u.km
     val vkm = v.km
-    val wt = 0.00029E-10 * ukm * sin(tsol + elsun - els) +
-        0.00100E-10 * ukm * sin(tsol - 2.0 * emsun) +
-        0.00133E-10 * ukm * sin(tsol - d) +
-        0.00133E-10 * ukm * sin(tsol + elsun - elj) -
-        0.00229E-10 * ukm * sin(tsol + 2.0 * elsun + emsun) -
-        0.02200E-10 * vkm * cos(elsun + emsun) +
-        0.05312E-10 * ukm * sin(tsol - emsun) -
-        0.13677E-10 * ukm * sin(tsol + 2.0 * elsun) -
-        1.31840E-10 * vkm * cos(elsun) +
-        3.17679E-10 * ukm * sin(tsol)
+    val wt = 0.00029E-10 * ukm * sin(tsol + elsun - els) + 0.00100E-10 * ukm * sin(tsol - 2.0 * emsun) + 0.00133E-10 * ukm * sin(tsol - d) + 0.00133E-10 * ukm * sin(
+        tsol + elsun - elj
+    ) - 0.00229E-10 * ukm * sin(tsol + 2.0 * elsun + emsun) - 0.02200E-10 * vkm * cos(elsun + emsun) + 0.05312E-10 * ukm * sin(tsol - emsun) - 0.13677E-10 * ukm * sin(
+        tsol + 2.0 * elsun
+    ) - 1.31840E-10 * vkm * cos(elsun) + 3.17679E-10 * ukm * sin(tsol)
 
     val coefficients = FAIRHEAD
     val wn = DoubleArray(5)
@@ -214,11 +201,9 @@ fun eraDtDb(
     val wf = t * (t * (t * (t * wn[4] + wn[3]) + wn[2]) + wn[1]) + wn[0]
 
     // Adjustments to use JPL planetary masses instead of IAU.
-    val wj = 0.00065E-6 * sin(6069.776754 * t + 4.021194) +
-        0.00033E-6 * sin(213.299095 * t + 5.543132) +
-        (-0.00196E-6 * sin(6208.294251 * t + 5.696701)) +
-        (-0.00173E-6 * sin(74.781599 * t + 2.435900)) +
-        0.03638E-6 * t * t
+    val wj = 0.00065E-6 * sin(6069.776754 * t + 4.021194) + 0.00033E-6 * sin(213.299095 * t + 5.543132) + (-0.00196E-6 * sin(6208.294251 * t + 5.696701)) + (-0.00173E-6 * sin(
+        74.781599 * t + 2.435900
+    )) + 0.03638E-6 * t * t
 
     // TDB-TT in seconds.
     return wt + wf + wj
@@ -351,8 +336,7 @@ fun eraC2ixys(
     return Matrix3D.IDENTITY.rotateZ(e).rotateY(d).rotateZ(-(e + s))
 }
 
-@Suppress("FloatingPointLiteralPrecision")
-private const val OM = 1.00273781191135448 * TAU / DAYSEC
+@Suppress("FloatingPointLiteralPrecision") private const val OM = 1.00273781191135448 * TAU / DAYSEC
 
 /**
  * Form the matrix of polar motion for a given date, IAU 2000.
@@ -499,18 +483,27 @@ fun eraApcs(
  *
  * @param tdb1   TDB as a 2-part...
  * @param tdb2   ...Julian Date (Note 1)
- * @param ebpv   Earth barycentric PV (au, au/day)
- * @param ehp    Earth heliocentric P (au)
- * @param x,y    CIP X,Y (components of unit vector)
- * @param s      the CIO locator s (radians)
+ * @param ebpx   Earth barycentric position (au)
+ * @param ebpy   Earth barycentric position (au)
+ * @param ebpz   Earth barycentric position (au)
+ * @param ebvx   Earth barycentric velocity (au/day)
+ * @param ebvy   Earth barycentric velocity (au/day)
+ * @param ebvz   Earth barycentric velocity (au/day)
+ * @param ehpx   Earth heliocentric position (au)
+ * @param ehpy   Earth heliocentric position (au)
+ * @param ehpz   Earth heliocentric position (au)
+ * @param x      CIP X (components of unit vector)
+ * @param y      CIP Y (components of unit vector)
+ * @param s      The CIO locator s (radians)
  * @param theta  Earth rotation angle (radians)
- * @param elong  longitude (radians, east +ve)
- * @param phi    latitude (geodetic, radians)
- * @param hm     height above ellipsoid (m, geodetic)
- * @param xp,yp  polar motion coordinates (radians)
- * @param sp     the TIO locator s' (radians)
- * @param refa   refraction constant A (radians)
- * @param refb   refraction constant B (radians)
+ * @param elong  Longitude (radians, east +ve)
+ * @param phi    Latitude (geodetic, radians)
+ * @param hm     Height above ellipsoid (m, geodetic)
+ * @param xp     Polar motion coordinates (radians)
+ * @param yp     Polar motion coordinates (radians)
+ * @param sp     The TIO locator s' (radians)
+ * @param refa   Refraction constant A (radians)
+ * @param refb   Refraction constant B (radians)
  */
 fun eraApco(
     tdb1: Double, tdb2: Double,
@@ -766,22 +759,14 @@ fun eraNut00a(tt1: Double, tt2: Double): Pair<Angle, Angle> {
     val el = eraFal03(t)
 
     // Mean anomaly of the Sun (MHB2000).
-    val elp = (1287104.79305 +
-        t * (129596581.0481 +
-        t * (-0.5532 +
-        t * (0.000136 +
-        t * (-0.00001149))))).mod(TURNAS).arcsec
+    val elp = (1287104.79305 + t * (129596581.0481 + t * (-0.5532 + t * (0.000136 + t * (-0.00001149))))).mod(TURNAS).arcsec
 
     // Mean longitude of the Moon minus that of the ascending node (IERS 2003).
     val f = eraFaf03(t)
 
     // Mean elongation of the Moon from the Sun (MHB2000).
 
-    val d = (1072260.70369 +
-        t * (1602961601.2090 +
-        t * (-6.3706 +
-        t * (0.006593 +
-        t * (-0.00003169))))).mod(TURNAS).arcsec
+    val d = (1072260.70369 + t * (1602961601.2090 + t * (-6.3706 + t * (0.006593 + t * (-0.00003169))))).mod(TURNAS).arcsec
 
     // Mean longitude of the ascending node of the Moon (IERS 2003).
     val om = eraFaom03(t)
@@ -791,11 +776,7 @@ fun eraNut00a(tt1: Double, tt2: Double): Pair<Angle, Angle> {
 
     // Summation of luni-solar nutation series (in reverse order).
     for (i in XLS.indices.reversed()) {
-        val arg = (XLS[i].nl * el.value +
-            XLS[i].nlp * elp.value +
-            XLS[i].nf * f.value +
-            XLS[i].nd * d.value +
-            XLS[i].nom * om.value).mod(TAU)
+        val arg = (XLS[i].nl * el.value + XLS[i].nlp * elp.value + XLS[i].nf * f.value + XLS[i].nd * d.value + XLS[i].nom * om.value).mod(TAU)
 
         val sarg = sin(arg)
         val carg = cos(arg)
@@ -838,19 +819,9 @@ fun eraNut00a(tt1: Double, tt2: Double): Pair<Angle, Angle> {
     de = 0.0
 
     for (i in XPL.indices.reversed()) {
-        val arg = (XPL[i].nl * al +
-            XPL[i].nf * af +
-            XPL[i].nd * ad +
-            XPL[i].nom * aom +
-            XPL[i].nme * alme.value +
-            XPL[i].nve * alve.value +
-            XPL[i].nea * alea.value +
-            XPL[i].nma * alma.value +
-            XPL[i].nju * alju.value +
-            XPL[i].nsa * alsa.value +
-            XPL[i].nur * alur.value +
-            XPL[i].nne * alne +
-            XPL[i].npa * apa.value).mod(TAU)
+        val arg = (XPL[i].nl * al + XPL[i].nf * af + XPL[i].nd * ad + XPL[i].nom * aom + XPL[i].nme * alme.value + XPL[i].nve * alve.value + XPL[i].nea * alea.value + XPL[i].nma * alma.value + XPL[i].nju * alju.value + XPL[i].nsa * alsa.value + XPL[i].nur * alur.value + XPL[i].nne * alne + XPL[i].npa * apa.value).mod(
+            TAU
+        )
 
         val sarg = sin(arg)
         val carg = cos(arg)
@@ -1179,9 +1150,9 @@ fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): Pair<Angle, Angl
  * @param ebvx  Earth barycentric velocity (au/day)
  * @param ebvy  Earth barycentric velocity (au/day)
  * @param ebvz  Earth barycentric velocity (au/day)
- * @param ehpx   Earth heliocentric position (au)
- * @param ehpy   Earth heliocentric position (au)
- * @param ehpz   Earth heliocentric position (au)
+ * @param ehpx  Earth heliocentric position (au)
+ * @param ehpy  Earth heliocentric position (au)
+ * @param ehpz  Earth heliocentric position (au)
  */
 fun eraApcg(
     tdb1: Double, tdb2: Double,
@@ -1190,10 +1161,7 @@ fun eraApcg(
     ehpx: Distance, ehpy: Distance, ehpz: Distance,
 ): AstrometryParameters {
     return eraApcs(
-        tdb1, tdb2,
-        Distance.ZERO, Distance.ZERO, Distance.ZERO, 0.0, 0.0, 0.0,
-        ebpx, ebpy, ebpz, ebvx, ebvy, ebvz,
-        ehpx, ehpy, ehpz
+        tdb1, tdb2, Distance.ZERO, Distance.ZERO, Distance.ZERO, 0.0, 0.0, 0.0, ebpx, ebpy, ebpz, ebvx, ebvy, ebvz, ehpx, ehpy, ehpz
     )
 }
 
@@ -1600,8 +1568,10 @@ fun eraGmst06(ut11: Double, ut12: Double, tt1: Double, tt2: Double): Angle {
     val t = ((tt1 - J2000) + tt2) / DAYSPERJC
 
     // Greenwich Mean Sidereal Time, IAU 2006.
-    return (eraEra00(ut11, ut12) +
-        (0.014506 + (4612.156534 + (1.3915817 + (-0.00000044 + (-0.000029956 + (-0.0000000368) * t) * t) * t) * t) * t).arcsec).normalized
+    return (eraEra00(
+        ut11,
+        ut12
+    ) + (0.014506 + (4612.156534 + (1.3915817 + (-0.00000044 + (-0.000029956 + (-0.0000000368) * t) * t) * t) * t) * t).arcsec).normalized
 }
 
 /**
@@ -1886,11 +1856,7 @@ fun eraNut00b(tt1: Double, tt2: Double): Pair<Angle, Angle> {
 
     for (i in X.indices.reversed()) {
         // Argument and functions.
-        val arg = (X[i].nl * el +
-            X[i].nlp * elp +
-            X[i].nf * f +
-            X[i].nd * d +
-            X[i].nom * om).mod(TAU)
+        val arg = (X[i].nl * el + X[i].nlp * elp + X[i].nf * f + X[i].nd * d + X[i].nom * om).mod(TAU)
 
         val sarg = sin(arg)
         val carg = cos(arg)

@@ -3,7 +3,7 @@ package nebulosa.nova.frame
 import nebulosa.math.Matrix3D
 import nebulosa.time.InstantOfTime
 
-abstract class InertialFrame(protected val matrix: Matrix3D) : Frame {
+abstract class InertialFrame(val matrix: Matrix3D) : Frame {
 
     constructor(
         a11: Double = 0.0, a12: Double = 0.0, a13: Double = 0.0,
@@ -16,10 +16,10 @@ abstract class InertialFrame(protected val matrix: Matrix3D) : Frame {
     /**
      * Gets the transposed frame.
      */
-    open val transpose: InertialFrame by lazy { Transposed(this) }
+    open val transposed: InertialFrame by lazy { Transposed(this) }
 
-    private data class Transposed(val frame: InertialFrame) : InertialFrame(frame.matrix.transpose()) {
+    protected data class Transposed(val frame: InertialFrame) : InertialFrame(frame.matrix.transpose()) {
 
-        override val transpose get() = frame
+        override val transposed get() = frame
     }
 }
