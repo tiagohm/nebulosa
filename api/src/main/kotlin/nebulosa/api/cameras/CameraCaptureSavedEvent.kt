@@ -1,6 +1,6 @@
 package nebulosa.api.cameras
 
-import nebulosa.indi.devices.events.CameraEvent
+import nebulosa.indi.devices.cameras.CameraEvent
 import java.nio.file.Path
 
 data class CameraCaptureSavedEvent(

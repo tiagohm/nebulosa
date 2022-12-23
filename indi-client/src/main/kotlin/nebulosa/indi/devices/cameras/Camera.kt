@@ -4,7 +4,6 @@ import nebulosa.fits.algorithms.CfaPattern
 import nebulosa.indi.INDIClient
 import nebulosa.indi.devices.Device
 import nebulosa.indi.devices.DeviceProtocolHandler
-import nebulosa.indi.devices.events.*
 import nebulosa.indi.devices.isOn
 import nebulosa.indi.protocol.*
 import nebulosa.io.Base64InputStream
@@ -43,6 +42,9 @@ class Camera(
         private set
 
     @Volatile var exposureState = PropertyState.IDLE
+        private set
+
+    @Volatile var exposure = 0L
         private set
 
     @Volatile var hasCooler = false
@@ -115,15 +117,20 @@ class Camera(
                     "CCD_COOLER" -> {
                         hasCoolerControl = true
                         isCoolerOn = message["COOLER_ON"]!!.isOn()
+
+                        handler.fireOnEventReceived(CameraCoolerControlChanged(this))
+                        handler.fireOnEventReceived(CameraCoolerChanged(this))
                     }
                     "CCD_CAPTURE_FORMAT" -> {
                         if (message is DefSwitchVector) {
                             frameFormats = message.map { FrameFormat(it.name, it.label) }
+                            handler.fireOnEventReceived(CameraFrameFormatListed(this))
                         }
                     }
                     "CCD_ABORT_EXPOSURE" -> {
                         if (message is DefSwitchVector) {
                             canAbort = message.perm != PropertyPermission.RO
+                            handler.fireOnEventReceived(CameraCanAbortChanged(this))
                         }
                     }
                 }
@@ -134,6 +141,7 @@ class Camera(
                         cfaOffsetX = message["CFA_OFFSET_X"]!!.value.toInt()
                         cfaOffsetY = message["CFA_OFFSET_Y"]!!.value.toInt()
                         cfaType = CfaPattern.valueOf(message["CFA_TYPE"]!!.value)
+                        handler.fireOnEventReceived(CameraCfaChanged(this))
                     }
                 }
             }
@@ -145,40 +153,31 @@ class Camera(
                         if (element is DefNumber) {
                             exposureMin = (element.min * 1000000.0).toLong()
                             exposureMax = (element.max * 1000000.0).toLong()
+                            handler.fireOnEventReceived(CameraExposureMinMaxChanged(this))
                         }
 
                         val prevExposureState = exposureState
                         exposureState = message.state
+                        exposure = (element.value * 1000000.0).toLong()
 
-                        when (exposureState) {
-                            PropertyState.BUSY -> {
-                                val exposure = (element.value * 1000000.0).toLong()
-                                handler.fireOnEventReceived(CameraExposureBusyEvent(this, exposure))
-                            }
-                            PropertyState.ALERT -> {
-                                handler.fireOnEventReceived(CameraExposureFailedEvent(this))
-                            }
-                            PropertyState.OK -> {
-                                handler.fireOnEventReceived(CameraExposureOkEvent(this))
-                            }
-                            PropertyState.IDLE -> {
-                                if (prevExposureState != PropertyState.IDLE) {
-                                    handler.fireOnEventReceived(CameraExposureAbortedEvent(this))
-                                }
-                            }
-                        }
+                        handler.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
                     }
                     "CCD_TEMPERATURE" -> {
                         if (message is DefNumberVector) {
                             hasCooler = true
                             canSetTemperature = message.perm != PropertyPermission.RO
+
+                            handler.fireOnEventReceived(CameraHasCoolerChanged(this))
+                            handler.fireOnEventReceived(CameraCanSetTemperatureChanged(this))
                         }
 
                         temperature = message["CCD_TEMPERATURE_VALUE"]!!.value
+                        handler.fireOnEventReceived(CameraTemperatureChanged(this))
                     }
                     "CCD_FRAME" -> {
                         if (message is DefNumberVector) {
                             canSubframe = message.perm != PropertyPermission.RO
+                            handler.fireOnEventReceived(CameraCanSubFrameChanged(this))
                         }
 
                         val minX = message["X"]!!.min.toInt()
@@ -205,16 +204,22 @@ class Camera(
                         y = message["Y"]!!.value.toInt()
                         width = message["WIDTH"]!!.value.toInt()
                         height = message["HEIGHT"]!!.value.toInt()
+
+                        handler.fireOnEventReceived(CameraFrameChanged(this))
                     }
                     "CCD_BINNING" -> {
                         if (message is DefNumberVector) {
                             canBin = message.perm != PropertyPermission.RO
                             maxBinX = message["HOR_BIN"]!!.max.toInt()
                             maxBinY = message["VER_BIN"]!!.max.toInt()
+
+                            handler.fireOnEventReceived(CameraCanBinChanged(this))
                         }
 
                         binX = message["HOR_BIN"]!!.value.toInt()
                         binY = message["VER_BIN"]!!.value.toInt()
+
+                        handler.fireOnEventReceived(CameraBinChanged(this))
                     }
                 }
             }
@@ -224,7 +229,7 @@ class Camera(
                         val ccd1 = message["CCD1"]!!
                         // TODO: Handle zipped format.
                         val fits = Base64InputStream(ccd1.value)
-                        handler.fireOnEventReceived(CameraExposureFrameEvent(this, fits))
+                        handler.fireOnEventReceived(CameraExposureFrame(this, fits))
                     }
                 }
             }

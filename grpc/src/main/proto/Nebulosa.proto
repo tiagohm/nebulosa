@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option java_multiple_files = true;
+option java_package = "nebulosa.grpc";
+option java_outer_classname = "NebulosaRpc";
+
+// https://developers.google.com/protocol-buffers/docs/proto3
+// https://grpc.io/docs/languages/java/basics/
+
+enum FrameType {
+    FRAME_LIGHT = 0;
+    FRAME_DARK = 1;
+    FRAME_FLAT = 2;
+    FRAME_BIAS = 3;
+}
+
+enum ConnectionType {
+    CONNECTION_NONE = 0;
+    CONNECTION_SERIAL = 1;
+    CONNECTION_TCP = 2;
+    CONNECTION_USB = 3;
+}
+
+enum Parity {
+    PARITY_NONE = 0;
+    PARITY_ODD = 1;
+    PARITY_EVEN = 2;
+    PARITY_MARK = 3;
+    PARITY_SPACE = 4;
+}
+
+enum StopBits {
+    STOP_BITS_NONE = 0;
+    STOP_BITS_ONE = 1;
+    STOP_BITS_ONE_POINT_FIVE = 2;
+    STOP_BITS_TWO = 3;
+}
+
+message ConnectRequest {
+    string host = 1;
+    int32 port = 2;
+}
+
+message ConnectResponse {
+    bool connected = 1;
+}
+
+message SerialConnection {
+    string portName = 1;
+    int32 baudRate = 2;
+    optional int32 dataBits = 3;
+    optional Parity parity = 4;
+    optional StopBits stopBits = 5;
+}
+
+message TcpConnection {
+    string host = 1;
+    int32 port = 2;
+}
+
+message OpenRequest {
+    string name = 1;
+    ConnectionType connectionType = 2;
+    oneof connection {
+        SerialConnection serial = 3;
+        TcpConnection tcp = 4;
+    }
+}
+
+message CloseRequest {
+    string name = 1;
+}
+
+message Device {
+    bool connected = 1;
+}
+
+enum AutoSubFolderMode {
+    SUBFOLDER_OFF = 0;
+    SUBFOLDER_NOON = 1;
+    SUBFOLDER_MIDNIGHT = 2;
+}
+
+message CameraExposureStartRequest {
+    string camera = 1;
+    int64 exposure = 2;
+    int32 amount = 3;
+    int64 delay = 4;
+    int32 x = 5;
+    int32 y = 6;
+    int32 width = 7;
+    int32 height = 8;
+    string frameFormat = 9;
+    FrameType frameType = 10;
+    int32 binX = 11;
+    int32 binY = 12;
+    optional bool save = 13;
+    optional string savePath = 14;
+    optional AutoSubFolderMode autoSubFolderMode = 15;
+}
+
+enum PropertyState {
+    STATE_IDLE = 0;
+    STATE_BUSY = 1;
+    STATE_OK = 2;
+    STATE_ALERT = 3;
+}
+
+message CameraExposureTaskResponse {
+    PropertyState state = 1;
+    double progress = 2;
+    optional string imagePath = 3;
+    bool finishedWithError = 4;
+    bool capturing = 5;
+    bool aborted = 6;
+    bool finished = 7;
+}
+
+message CameraExposureStopRequest {
+    string camera = 1;
+}
+
+service Nebulosa {
+    rpc Connect(ConnectRequest) returns (ConnectResponse);
+    rpc IsConnected(google.protobuf.Empty) returns (ConnectResponse);
+    rpc Disconnect(google.protobuf.Empty) returns (ConnectResponse);
+
+    rpc Open(OpenRequest) returns (Device);
+    rpc Close(CloseRequest) returns (google.protobuf.Empty);
+
+    rpc CameraExposureStart(CameraExposureStartRequest) returns (CameraExposureTaskResponse);
+    rpc CameraExposureStop(CameraExposureStopRequest) returns (google.protobuf.Empty);
+}

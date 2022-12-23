@@ -55,8 +55,9 @@ sealed class VSOP87A(
                 vel[i] += v * t[k] + if (k > 0) k * t[k - 1] * p else 0.0
             }
 
-            pos[i] *= AU_KM
-            vel[i] *= AU_KM / DAYSPERJM
+            // pos[i] *= AU_KM
+            // vel[i] *= AU_KM / DAYSPERJM
+            vel[i] /= DAYSPERJM
         }
 
         return Vector3D(pos) to Vector3D(vel)

@@ -59,7 +59,7 @@ interface SpkSegment {
     val endIndex: Int
 
     /**
-     * Computes the component and differentials values for the TDB [time].
+     * Computes the component (au) and differentials (au/day) values for the TDB [time].
      */
     fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D>
 }

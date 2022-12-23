@@ -9,7 +9,7 @@ import nebulosa.math.Vector3D
 import nebulosa.time.InstantOfTime
 import kotlin.math.*
 
-class KeplerOrbit(
+data class KeplerOrbit(
     val position: Vector3D,
     val velocity: Vector3D,
     val epoch: InstantOfTime,
@@ -39,6 +39,7 @@ class KeplerOrbit(
         /**
          * Creates a [KeplerOrbit] from orbital elements using mean anomaly.
          */
+        @JvmStatic
         internal fun meanAnomaly(
             semilatusRectum: Distance,
             eccentricity: Double,
@@ -75,6 +76,7 @@ class KeplerOrbit(
         /**
          * Creates a [KeplerOrbit] from orbital elements using true anomaly.
          */
+        @JvmStatic
         internal fun trueAnomaly(
             semilatusRectum: Distance,
             eccentricity: Double,
@@ -113,6 +115,7 @@ class KeplerOrbit(
          * Based on the algorithm in section 8.10.2 of the Explanatory Supplement
          * to the Astronomical Almanac, 3rd ed.
          */
+        @JvmStatic
         fun eccentricAnomaly(e: Double, M: Angle): Angle {
             val m = (M + PI) % TAU - PI
             var E = m + e * m.sin
@@ -263,14 +266,13 @@ class KeplerOrbit(
 
             var lower = if (dt < 0) x else 0.0
             var upper = if (dt > 0) x else 0.0
-            var oldx = 0.0
 
             while (dt < 0.0 && kfun > dt) {
-                if (dt < 0.0) upper = lower
+                upper = lower
 
                 lower *= 2.0
 
-                if (dt < 0.0) oldx = x
+                val oldx = x
                 x = max(-bound, min(lower, bound))
                 if (x == oldx) throw IllegalStateException("The delta time $dt is beyond the range")
 
@@ -278,11 +280,11 @@ class KeplerOrbit(
             }
 
             while (dt > 0.0 && kfun < dt) {
-                if (dt > 0.0) lower = upper
+                lower = upper
 
                 upper *= 2
 
-                if (dt > 0) oldx = x
+                val oldx = x
                 x = max(-bound, min(upper, bound))
                 if (x == oldx) throw IllegalStateException("The delta time $dt is beyond the range")
 
@@ -357,12 +359,9 @@ class KeplerOrbit(
             var c3 = 0.0
 
             if (x in -1.0..1.0) {
-                val numerators = DoubleArray(9)
-
-                for (i in numerators.indices) numerators[i] = if (i % 2 == 0) x else -x
-
-                for (i in numerators.indices) {
-                    val k = numerators[i].pow(i)
+                for (i in 0..8) {
+                    val n = if (i % 2 == 0) x else -x
+                    val k = n.pow(i)
                     c3 += k / ODD_FACTORIALS[i]
                     c2 += k / EVEN_FACTORIALS[i]
                 }

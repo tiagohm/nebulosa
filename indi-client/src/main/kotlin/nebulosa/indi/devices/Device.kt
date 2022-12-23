@@ -10,7 +10,7 @@ abstract class Device(
     val client: INDIClient,
     val handler: DeviceProtocolHandler,
     val name: String,
-) : INDIProtocolHandler, LinkedHashMap<String, Any?>() {
+) : INDIProtocolHandler {
 
     @Volatile var isConnected = false
         private set

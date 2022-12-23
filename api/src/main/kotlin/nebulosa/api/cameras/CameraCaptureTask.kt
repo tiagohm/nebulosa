@@ -2,10 +2,7 @@ package nebulosa.api.cameras
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import nebulosa.api.scheduler.ScheduledTask
-import nebulosa.indi.devices.cameras.Camera
-import nebulosa.indi.devices.cameras.FrameFormat
-import nebulosa.indi.devices.cameras.FrameType
-import nebulosa.indi.devices.events.*
+import nebulosa.indi.devices.cameras.*
 import java.io.InputStream
 import java.nio.file.Paths
 import java.util.concurrent.Phaser
@@ -40,22 +37,22 @@ data class CameraCaptureTask(
 
     internal fun onCameraEventReceived(event: CameraEvent) {
         when (event) {
-            is CameraExposureFailedEvent -> {
+            is CameraExposureFailed -> {
                 capturing.set(false)
                 finishedWithError = true
                 cancel()
             }
-            is CameraExposureFrameEvent -> {
+            is CameraExposureFrame -> {
                 capturing.set(false)
                 phaser.arriveAndDeregister()
                 save(event.fits)
             }
-            is CameraExposureAbortedEvent -> {
+            is CameraExposureAborted -> {
                 capturing.set(false)
                 phaser.forceTermination()
                 cancel()
             }
-            is CameraExposureBusyEvent -> {
+            is CameraExposureStateChanged -> {
                 if (capturing.compareAndSet(false, true)) {
                     event.device.handler.fireOnEventReceived(CameraCaptureStartedEvent(event.device))
                 }

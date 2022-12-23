@@ -1,5 +1,6 @@
 package nebulosa.nasa.spk
 
+import nebulosa.constants.AU_KM
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.J2000
 import nebulosa.math.Vector3D
@@ -140,15 +141,15 @@ internal data class Type2And3Segment(
             dw0[2] = 2.0 * w1[2] + dw1[2] * ss - dw2[2]
         }
 
-        // km
-        val c0 = c.x[0] + (s * w0[0] - w1[0])
-        val c1 = c.y[0] + (s * w0[1] - w1[1])
-        val c2 = c.z[0] + (s * w0[2] - w1[2])
+        // au
+        val c0 = (c.x[0] + (s * w0[0] - w1[0])) / AU_KM
+        val c1 = (c.y[0] + (s * w0[1] - w1[1])) / AU_KM
+        val c2 = (c.z[0] + (s * w0[2] - w1[2])) / AU_KM
 
-        // km/s
-        val r0 = ((w0[0] + s * dw0[0] - dw1[0]) / intervalLength) * 2.0
-        val r1 = ((w0[1] + s * dw0[1] - dw1[1]) / intervalLength) * 2.0
-        val r2 = ((w0[2] + s * dw0[2] - dw1[2]) / intervalLength) * 2.0
+        // au/day
+        val r0 = ((w0[0] + s * dw0[0] - dw1[0]) / intervalLength) * 2.0 * DAYSEC / AU_KM
+        val r1 = ((w0[1] + s * dw0[1] - dw1[1]) / intervalLength) * 2.0 * DAYSEC / AU_KM
+        val r2 = ((w0[2] + s * dw0[2] - dw1[2]) / intervalLength) * 2.0 * DAYSEC / AU_KM
 
         return Vector3D(c0, c1, c2) to Vector3D(r0, r1, r2)
     }

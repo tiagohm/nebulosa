@@ -6,9 +6,9 @@ import nebulosa.api.scheduler.ScheduledTaskFinishedEvent
 import nebulosa.api.scheduler.ScheduledTaskStartedEvent
 import nebulosa.api.scheduler.SchedulerService
 import nebulosa.indi.devices.cameras.Camera
-import nebulosa.indi.devices.events.CameraAttachedEvent
-import nebulosa.indi.devices.events.CameraDetachedEvent
-import nebulosa.indi.devices.events.CameraEvent
+import nebulosa.indi.devices.cameras.CameraAttached
+import nebulosa.indi.devices.cameras.CameraDetached
+import nebulosa.indi.devices.cameras.CameraEvent
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.event.EventListener
 import org.springframework.web.bind.annotation.*
@@ -36,10 +36,10 @@ class CameraController {
     @EventListener
     fun onCameraEventReceived(event: CameraEvent) {
         when (event) {
-            is CameraAttachedEvent -> {
+            is CameraAttached -> {
                 cameras[event.device.name] = event.device
             }
-            is CameraDetachedEvent -> {
+            is CameraDetached -> {
                 cameras.remove(event.device.name)
             }
             is CameraCaptureStartedEvent -> {

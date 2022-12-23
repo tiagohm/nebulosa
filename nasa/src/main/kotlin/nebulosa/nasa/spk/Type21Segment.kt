@@ -1,5 +1,6 @@
 package nebulosa.nasa.spk
 
+import nebulosa.constants.AU_KM
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.J2000
 import nebulosa.math.Vector3D
@@ -206,7 +207,7 @@ internal data class Type21Segment(
                 sum += c.dt[j][i] * w[j + ks]
             }
 
-            state[i] = c.refPos[i] + delta * (c.refVel[i] + delta * sum)
+            state[i] = (c.refPos[i] + delta * (c.refVel[i] + delta * sum)) / AU_KM
         }
 
         // Again we need to compute the W(K) coefficients that are
@@ -228,7 +229,7 @@ internal data class Type21Segment(
                 sum += c.dt[j][i] * w[j + ks]
             }
 
-            state[i + 3] = c.refVel[i] + delta * sum
+            state[i + 3] = (c.refVel[i] + delta * sum) * DAYSEC / AU_KM
         }
 
         return Vector3D(state) to Vector3D(state, 3)
