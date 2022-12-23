@@ -1,18 +1,19 @@
 package nebulosa.server
 
 import com.google.protobuf.Empty
-import com.google.protobuf.StringValue
 import io.grpc.Server
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc.stub.StreamObserver
 import nebulosa.grpc.*
 import nebulosa.grpc.NebulosaGrpc.NebulosaImplBase
 import nebulosa.indi.devices.ConnectionType
+import nebulosa.indi.devices.cameras.FrameType
 import nebulosa.server.connection.ConnectionService
 import nebulosa.server.equipments.EquipmentService
+import nebulosa.server.equipments.EquipmentService.Companion.toCameraEquipment
 import nebulosa.server.equipments.EquipmentType
+import nebulosa.server.equipments.cameras.AutoSubFolderMode
 import nebulosa.server.equipments.cameras.CameraService
-import nebulosa.server.equipments.toCameraEquipment
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.Closeable
@@ -85,10 +86,10 @@ class NebulosaServer(
     }
 
     override fun cameraByName(
-        request: StringValue,
+        request: CameraByNameRequest,
         responseObserver: StreamObserver<CameraEquipment>,
     ) {
-        val camera = cameraService.list().firstOrNull { it.name == request.value }
+        val camera = cameraService.list().firstOrNull { it.name == request.name }
         if (camera == null) responseObserver.onError(IllegalArgumentException("camera not found"))
         else responseObserver.onNext(camera.toCameraEquipment())
         responseObserver.onCompleted()
@@ -101,7 +102,7 @@ class NebulosaServer(
         try {
             equipmentService.open(
                 request.name,
-                EquipmentType.valueOf(request.deviceType),
+                EquipmentType.valueOf(request.equipmentType),
                 ConnectionType.valueOf(request.connectionType),
                 null,
             )
@@ -119,6 +120,30 @@ class NebulosaServer(
         } finally {
             responseObserver.onCompleted()
         }
+    }
+
+    override fun cameraExposureStart(
+        request: CameraExposureStartRequest,
+        responseObserver: StreamObserver<CameraExposureTaskResponse>,
+    ) {
+        equipmentService.cameraStartExposure(
+            EquipmentType.valueOf(request.equipmentType),
+            request.exposure, request.amount, request.delay,
+            request.x, request.y, request.width, request.height,
+            request.frameFormat, FrameType.valueOf(request.frameType),
+            request.binX, request.binY,
+            request.save, request.savePath, AutoSubFolderMode.valueOf(request.autoSubFolderMode),
+            responseObserver,
+        )
+    }
+
+    override fun cameraExposureStop(
+        request: CameraExposureStopRequest,
+        responseObserver: StreamObserver<Empty>,
+    ) {
+        equipmentService.cameraStopExposure(EquipmentType.valueOf(request.equipmentType))
+        responseObserver.onNext(Empty.getDefaultInstance())
+        responseObserver.onCompleted()
     }
 
     @Synchronized

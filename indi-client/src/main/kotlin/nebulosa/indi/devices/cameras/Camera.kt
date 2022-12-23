@@ -16,7 +16,7 @@ class Camera(
 
     @Volatile @JvmField var hasCoolerControl = false
     @Volatile @JvmField var isCoolerOn = false
-    @Volatile @JvmField var frameFormats = emptyList<FrameFormat>()
+    @Volatile @JvmField var frameFormats = emptyList<String>()
     @Volatile @JvmField var canAbort = false
     @Volatile @JvmField var cfaOffsetX = 0
     @Volatile @JvmField var cfaOffsetY = 0
@@ -60,7 +60,7 @@ class Camera(
                     }
                     "CCD_CAPTURE_FORMAT" -> {
                         if (message is DefSwitchVector) {
-                            frameFormats = message.map { FrameFormat(it.name, it.label) }
+                            frameFormats = message.map { it.name }
                         }
                     }
                     "CCD_ABORT_EXPOSURE" -> {
@@ -191,8 +191,8 @@ class Camera(
         }
     }
 
-    fun frameFormat(format: FrameFormat) {
-        sendNewSwitch("CCD_CAPTURE_FORMAT", format.name to true)
+    fun frameFormat(format: String) {
+        sendNewSwitch("CCD_CAPTURE_FORMAT", format to true)
     }
 
     fun frameType(type: FrameType) {

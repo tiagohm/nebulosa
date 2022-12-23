@@ -1,20 +1,21 @@
 package nebulosa.server.equipments.cameras
 
-import nebulosa.indi.devices.cameras.Camera
-import nebulosa.indi.devices.cameras.CameraAttached
-import nebulosa.indi.devices.cameras.CameraDetached
-import nebulosa.indi.devices.cameras.CameraEvent
+import io.grpc.stub.StreamObserver
+import nebulosa.grpc.CameraExposureTaskResponse
+import nebulosa.indi.devices.cameras.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutorService
 
 class CameraService : KoinComponent {
 
     private val eventBus by inject<EventBus>()
+    private val executor by inject<ExecutorService>()
     private val cameras = ConcurrentHashMap<String, Camera>(4)
-    private val cameraTasks = ConcurrentHashMap<Camera, MutableList<CameraExposureTask>>(2)
+    private val imagingCameraTasks = ConcurrentHashMap<Camera, MutableList<CameraExposureTask>>(2)
 
     init {
         eventBus.register(this)
@@ -28,33 +29,33 @@ class CameraService : KoinComponent {
             }
             is CameraDetached -> {
                 cameras.remove(event.device.name)
-                cameraTasks.remove(event.device)
+                imagingCameraTasks.remove(event.device)
             }
-//            is CameraCaptureStartedEvent -> {
-//
-//            }
-//            is CameraCaptureSavedEvent -> {
-//                val latestCapturePath = "${event.path}"
-//                val latestCaptureDate = System.currentTimeMillis()
-//                event.device["latestCapturePath"] = latestCapturePath
-//                event.device["latestCaptureDate"] = latestCaptureDate
-//
-//                if (!event.isTemporary) {
-//                    box.put(CameraCaptureHistory(name = event.device.name, path = latestCapturePath, savedAt = latestCaptureDate))
-//                }
-//            }
-//            is CameraCaptureFinishedEvent -> {
-//
-//            }
-//            else -> {
-//                val task = runningTask.get() ?: return
-//
-//                if (task.camera === event.device) {
-//                    task.onCameraEventReceived(event)
-//                }
-//            }
         }
     }
 
     fun list() = cameras.values.toList()
+
+    fun startExposure(
+        camera: Camera,
+        exposure: Long, amount: Int, delay: Long,
+        x: Int, y: Int, width: Int, height: Int,
+        frameFormat: String, frameType: FrameType,
+        binX: Int, binY: Int,
+        save: Boolean, savePath: String, autoSubFolderMode: AutoSubFolderMode,
+        responseObserver: StreamObserver<CameraExposureTaskResponse>,
+    ) {
+        val task = CameraExposureTask(
+            camera, exposure, amount, delay, x, y, width, height,
+            frameFormat, frameType, binX, binY, save, savePath,
+            autoSubFolderMode, responseObserver,
+        )
+
+        executor.submit(task)
+    }
+
+    @Synchronized
+    fun stopExposure(camera: Camera) {
+        camera.abortCapture()
+    }
 }

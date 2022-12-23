@@ -10,6 +10,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.Executors
 import kotlin.io.path.createDirectories
 
 private fun appDirectory(): Path {
@@ -32,6 +33,8 @@ private fun injection() = module {
             .logSubscriberExceptions(false)
             .build()
     }
+
+    single { Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()) }
 
     single(createdAtStart = true) { ConnectionService() }
     single(createdAtStart = true) { CameraService() }
