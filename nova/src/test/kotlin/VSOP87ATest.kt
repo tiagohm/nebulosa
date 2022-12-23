@@ -1,7 +1,6 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.constants.AU_KM
 import nebulosa.nova.astrometry.ICRF
 import nebulosa.nova.astrometry.VSOP87A
 import nebulosa.nova.position.Geocentric

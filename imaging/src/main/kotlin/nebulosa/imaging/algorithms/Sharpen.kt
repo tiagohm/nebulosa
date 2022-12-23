@@ -1,4 +1,4 @@
-package nebulosa.fits.algorithms
+package nebulosa.imaging.algorithms
 
 class Sharpen : Convolution(KERNEL) {
 

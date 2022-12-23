@@ -1,4 +1,4 @@
-package nebulosa.fits
+package nebulosa.imaging
 
 import nom.tam.fits.BasicHDU
 import nom.tam.fits.Fits

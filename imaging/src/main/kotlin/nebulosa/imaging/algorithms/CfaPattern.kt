@@ -1,6 +1,6 @@
-package nebulosa.fits.algorithms
+package nebulosa.imaging.algorithms
 
-import nebulosa.fits.ImageChannel
+import nebulosa.imaging.ImageChannel
 import nom.tam.fits.BasicHDU
 import nom.tam.fits.header.extra.MaxImDLExt
 

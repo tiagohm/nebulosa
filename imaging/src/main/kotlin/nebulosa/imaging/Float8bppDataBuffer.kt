@@ -1,4 +1,4 @@
-package nebulosa.fits
+package nebulosa.imaging
 
 import java.awt.image.DataBuffer
 

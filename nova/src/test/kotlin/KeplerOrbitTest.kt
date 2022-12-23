@@ -5,7 +5,10 @@ import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Distance.Companion.au
 import nebulosa.nova.astrometry.Asteroid
 import nebulosa.nova.astrometry.ICRF
-import nebulosa.time.*
+import nebulosa.time.TDB
+import nebulosa.time.TT
+import nebulosa.time.TimeJD
+import nebulosa.time.TimeYMDHMS
 
 class KeplerOrbitTest : StringSpec() {
 

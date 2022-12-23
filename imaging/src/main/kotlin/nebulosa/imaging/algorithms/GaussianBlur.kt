@@ -1,4 +1,4 @@
-package nebulosa.fits.algorithms
+package nebulosa.imaging.algorithms
 
 class GaussianBlur(
     val sigma: Double = 1.4,

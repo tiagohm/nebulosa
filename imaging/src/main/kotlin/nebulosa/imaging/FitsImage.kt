@@ -1,7 +1,7 @@
-package nebulosa.fits
+package nebulosa.imaging
 
-import nebulosa.fits.algorithms.CfaPattern.Companion.cfaPattern
-import nebulosa.fits.algorithms.Debayer
+import nebulosa.imaging.algorithms.CfaPattern.Companion.cfaPattern
+import nebulosa.imaging.algorithms.Debayer
 import nom.tam.fits.Fits
 import java.awt.image.*
 

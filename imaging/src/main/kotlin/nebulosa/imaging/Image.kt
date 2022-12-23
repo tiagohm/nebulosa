@@ -1,4 +1,4 @@
-package nebulosa.fits
+package nebulosa.imaging
 
 import java.awt.color.ColorSpace
 import java.awt.image.*

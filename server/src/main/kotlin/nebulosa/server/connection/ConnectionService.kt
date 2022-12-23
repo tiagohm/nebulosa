@@ -1,9 +1,9 @@
 package nebulosa.server.connection
 
 import nebulosa.indi.INDIClient
+import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.DeviceEventHandler
 import nebulosa.indi.devices.DeviceProtocolHandler
-import nebulosa.indi.devices.DeviceEvent
 import org.greenrobot.eventbus.EventBus
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

@@ -1,11 +1,11 @@
 package nebulosa.api.fits
 
-import nebulosa.fits.FitsImage
-import nebulosa.fits.algorithms.Flip
-import nebulosa.fits.algorithms.Invert
-import nebulosa.fits.algorithms.ScreenTransformFunction
-import nebulosa.fits.algorithms.TransformAlgorithm
-import nebulosa.fits.algorithms.TransformAlgorithm.Companion.transform
+import nebulosa.imaging.FitsImage
+import nebulosa.imaging.algorithms.Flip
+import nebulosa.imaging.algorithms.Invert
+import nebulosa.imaging.algorithms.ScreenTransformFunction
+import nebulosa.imaging.algorithms.TransformAlgorithm
+import nebulosa.imaging.algorithms.TransformAlgorithm.Companion.transform
 import nom.tam.fits.Fits
 import org.springframework.stereotype.Service
 import java.io.File

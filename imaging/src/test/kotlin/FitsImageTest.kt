@@ -1,7 +1,7 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
-import nebulosa.fits.FitsImage
-import nebulosa.fits.algorithms.*
+import nebulosa.imaging.FitsImage
+import nebulosa.imaging.algorithms.*
 import nom.tam.fits.Fits
 import okio.buffer
 import okio.source

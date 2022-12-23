@@ -1,4 +1,4 @@
-package nebulosa.fits
+package nebulosa.imaging
 
 enum class ImageChannel(@JvmField val offset: Int) {
     RED(0),

@@ -1,6 +1,6 @@
 package nebulosa.api.cameras
 
-import nebulosa.fits.algorithms.CfaPattern
+import nebulosa.imaging.algorithms.CfaPattern
 import nebulosa.indi.devices.cameras.Camera
 import nebulosa.indi.devices.cameras.FrameFormat
 import nebulosa.indi.protocol.PropertyState

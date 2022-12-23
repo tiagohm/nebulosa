@@ -1,6 +1,6 @@
-package nebulosa.fits.algorithms
+package nebulosa.imaging.algorithms
 
-import nebulosa.fits.Image
+import nebulosa.imaging.Image
 
 object Invert : TransformAlgorithm {
 
