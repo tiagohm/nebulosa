@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 
 option java_multiple_files = true;
 option java_package = "nebulosa.grpc";
@@ -8,35 +9,6 @@ option java_outer_classname = "NebulosaRpc";
 
 // https://developers.google.com/protocol-buffers/docs/proto3
 // https://grpc.io/docs/languages/java/basics/
-
-enum FrameType {
-    FRAME_LIGHT = 0;
-    FRAME_DARK = 1;
-    FRAME_FLAT = 2;
-    FRAME_BIAS = 3;
-}
-
-enum ConnectionType {
-    CONNECTION_NONE = 0;
-    CONNECTION_SERIAL = 1;
-    CONNECTION_TCP = 2;
-    CONNECTION_USB = 3;
-}
-
-enum Parity {
-    PARITY_NONE = 0;
-    PARITY_ODD = 1;
-    PARITY_EVEN = 2;
-    PARITY_MARK = 3;
-    PARITY_SPACE = 4;
-}
-
-enum StopBits {
-    STOP_BITS_NONE = 0;
-    STOP_BITS_ONE = 1;
-    STOP_BITS_ONE_POINT_FIVE = 2;
-    STOP_BITS_TWO = 3;
-}
 
 message ConnectRequest {
     string host = 1;
@@ -51,8 +23,8 @@ message SerialConnection {
     string portName = 1;
     int32 baudRate = 2;
     optional int32 dataBits = 3;
-    optional Parity parity = 4;
-    optional StopBits stopBits = 5;
+    optional string parity = 4; // NONE = 0; ODD = 1; EVEN = 2; MARK = 3; SPACE = 4;
+    optional string stopBits = 5; // NONE = 0; ONE = 1; ONE_POINT_FIVE = 2; TWO = 3;
 }
 
 message TcpConnection {
@@ -62,10 +34,11 @@ message TcpConnection {
 
 message OpenRequest {
     string name = 1;
-    ConnectionType connectionType = 2;
+    string connectionType = 2; // NONE = 0; SERIAL = 1; TCP = 2; USB = 3;
+    string deviceType = 3; // IMAGING_CAMERA = 0; MOUNT = 1; GUIDING_CAMERA = 2; FILTER_WHEEL = 3; FOCUSER = 4; ROTATOR = 5; SWITCH = 6; DOME = 7; WEATHER = 8; FLAT_PANEL = 9; SAFETY_MONITOR = 10;
     oneof connection {
-        SerialConnection serial = 3;
-        TcpConnection tcp = 4;
+        SerialConnection serial = 4;
+        TcpConnection tcp = 5;
     }
 }
 
@@ -73,14 +46,8 @@ message CloseRequest {
     string name = 1;
 }
 
-message Device {
+message OpenResponse {
     bool connected = 1;
-}
-
-enum AutoSubFolderMode {
-    SUBFOLDER_OFF = 0;
-    SUBFOLDER_NOON = 1;
-    SUBFOLDER_MIDNIGHT = 2;
 }
 
 message CameraExposureStartRequest {
@@ -93,23 +60,16 @@ message CameraExposureStartRequest {
     int32 width = 7;
     int32 height = 8;
     string frameFormat = 9;
-    FrameType frameType = 10;
+    string frameType = 10; // LIGHT = 0; DARK = 1; FLAT = 2; BIAS = 3;
     int32 binX = 11;
     int32 binY = 12;
     optional bool save = 13;
     optional string savePath = 14;
-    optional AutoSubFolderMode autoSubFolderMode = 15;
-}
-
-enum PropertyState {
-    STATE_IDLE = 0;
-    STATE_BUSY = 1;
-    STATE_OK = 2;
-    STATE_ALERT = 3;
+    optional string autoSubFolderMode = 15; // OFF = 0; NOON = 1; MIDNIGHT = 2;
 }
 
 message CameraExposureTaskResponse {
-    PropertyState state = 1;
+    string state = 1; // IDLE = 0; BUSY = 1; OK = 2; ALERT = 3;
     double progress = 2;
     optional string imagePath = 3;
     bool finishedWithError = 4;
@@ -122,12 +82,45 @@ message CameraExposureStopRequest {
     string camera = 1;
 }
 
+message CameraEquipment {
+    string name = 1;
+    bool connected = 2;
+    bool hasCoolerControl = 3;
+    bool isCoolerOn = 4;
+    repeated string frameFormats = 5;
+    bool canAbort = 6;
+    int32 cfaOffsetX = 7;
+    int32 cfaOffsetY = 8;
+    string cfaType = 9; // RGGB = 0; BGGR = 1; GBRG = 2; GRBG = 3; GRGB = 4; GBGR = 5; RGBG = 6; BGRG = 7;
+    int64 exposureMin = 10;
+    int64 exposureMax = 11;
+    string exposureState = 12; // IDLE = 0; BUSY = 1; OK = 2; ALERT = 3;
+    bool hasCooler = 13;
+    bool canSetTemperature = 14;
+    double temperature = 15;
+    bool canSubframe = 16;
+    int32 minX = 17;
+    int32 maxX = 18;
+    int32 minY = 19;
+    int32 maxY = 20;
+    int32 minWidth = 21;
+    int32 maxWidth = 22;
+    int32 minHeight = 23;
+    int32 maxHeight = 24;
+    bool canBin = 25;
+    int32 maxBinX = 26;
+    int32 maxBinY = 27;
+}
+
 service Nebulosa {
     rpc Connect(ConnectRequest) returns (ConnectResponse);
     rpc IsConnected(google.protobuf.Empty) returns (ConnectResponse);
     rpc Disconnect(google.protobuf.Empty) returns (ConnectResponse);
 
-    rpc Open(OpenRequest) returns (Device);
+    rpc ListCameras(google.protobuf.Empty) returns (stream CameraEquipment);
+    rpc CameraByName(google.protobuf.StringValue) returns (CameraEquipment);
+
+    rpc Open(OpenRequest) returns (OpenResponse);
     rpc Close(CloseRequest) returns (google.protobuf.Empty);
 
     rpc CameraExposureStart(CameraExposureStartRequest) returns (CameraExposureTaskResponse);

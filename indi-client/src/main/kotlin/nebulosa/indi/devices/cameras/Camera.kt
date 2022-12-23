@@ -14,101 +14,38 @@ class Camera(
     name: String,
 ) : Device(client, handler, name) {
 
-    @Volatile var hasCoolerControl = false
-        private set
-
-    @Volatile var isCoolerOn = false
-        private set
-
-    @Volatile var frameFormats = emptyList<FrameFormat>()
-        private set
-
-    @Volatile var canAbort = false
-        private set
-
-    @Volatile var cfaOffsetX = 0
-        private set
-
-    @Volatile var cfaOffsetY = 0
-        private set
-
-    @Volatile var cfaType = CfaPattern.RGGB
-        private set
-
-    @Volatile var exposureMin = 0L
-        private set
-
-    @Volatile var exposureMax = 0L
-        private set
-
-    @Volatile var exposureState = PropertyState.IDLE
-        private set
-
-    @Volatile var exposure = 0L
-        private set
-
-    @Volatile var hasCooler = false
-        private set
-
-    @Volatile var canSetTemperature = false
-        private set
-
-    @Volatile var temperature = 0.0
-        private set
-
-    @Volatile var canSubframe = false
-        private set
-
-    @Volatile var x = 0
-        private set
-
-    @Volatile var minX = 0
-        private set
-
-    @Volatile var maxX = 0
-        private set
-
-    @Volatile var y = 0
-        private set
-
-    @Volatile var minY = 0
-        private set
-
-    @Volatile var maxY = 0
-        private set
-
-    @Volatile var width = 0
-        private set
-
-    @Volatile var minWidth = 0
-        private set
-
-    @Volatile var maxWidth = 0
-        private set
-
-    @Volatile var height = 0
-        private set
-
-    @Volatile var minHeight = 0
-        private set
-
-    @Volatile var maxHeight = 0
-        private set
-
-    @Volatile var canBin = false
-        private set
-
-    @Volatile var maxBinX = 1
-        private set
-
-    @Volatile var maxBinY = 1
-        private set
-
-    @Volatile var binX = 1
-        private set
-
-    @Volatile var binY = 1
-        private set
+    @Volatile @JvmField var hasCoolerControl = false
+    @Volatile @JvmField var isCoolerOn = false
+    @Volatile @JvmField var frameFormats = emptyList<FrameFormat>()
+    @Volatile @JvmField var canAbort = false
+    @Volatile @JvmField var cfaOffsetX = 0
+    @Volatile @JvmField var cfaOffsetY = 0
+    @Volatile @JvmField var cfaType = CfaPattern.RGGB
+    @Volatile @JvmField var exposureMin = 0L
+    @Volatile @JvmField var exposureMax = 0L
+    @Volatile @JvmField var exposureState = PropertyState.IDLE
+    @Volatile @JvmField var exposure = 0L
+    @Volatile @JvmField var hasCooler = false
+    @Volatile @JvmField var canSetTemperature = false
+    @Volatile @JvmField var temperature = 0.0
+    @Volatile @JvmField var canSubframe = false
+    @Volatile @JvmField var x = 0
+    @Volatile @JvmField var minX = 0
+    @Volatile @JvmField var maxX = 0
+    @Volatile @JvmField var y = 0
+    @Volatile @JvmField var minY = 0
+    @Volatile @JvmField var maxY = 0
+    @Volatile @JvmField var width = 0
+    @Volatile @JvmField var minWidth = 0
+    @Volatile @JvmField var maxWidth = 0
+    @Volatile @JvmField var height = 0
+    @Volatile @JvmField var minHeight = 0
+    @Volatile @JvmField var maxHeight = 0
+    @Volatile @JvmField var canBin = false
+    @Volatile @JvmField var maxBinX = 1
+    @Volatile @JvmField var maxBinY = 1
+    @Volatile @JvmField var binX = 1
+    @Volatile @JvmField var binY = 1
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -124,7 +61,6 @@ class Camera(
                     "CCD_CAPTURE_FORMAT" -> {
                         if (message is DefSwitchVector) {
                             frameFormats = message.map { FrameFormat(it.name, it.label) }
-                            handler.fireOnEventReceived(CameraFrameFormatListed(this))
                         }
                     }
                     "CCD_ABORT_EXPOSURE" -> {

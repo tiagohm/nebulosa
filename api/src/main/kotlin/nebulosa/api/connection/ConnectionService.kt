@@ -3,7 +3,7 @@ package nebulosa.api.connection
 import nebulosa.indi.INDIClient
 import nebulosa.indi.devices.DeviceEventHandler
 import nebulosa.indi.devices.DeviceProtocolHandler
-import nebulosa.indi.devices.events.DeviceEvent
+import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.protocol.connection.INDIProccessConnection
 import nebulosa.indi.protocol.connection.INDISocketConnection
 import org.springframework.beans.factory.annotation.Autowired

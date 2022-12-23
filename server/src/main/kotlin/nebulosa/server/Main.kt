@@ -1,6 +1,8 @@
 package nebulosa.server
 
 import nebulosa.server.connection.ConnectionService
+import nebulosa.server.equipments.EquipmentService
+import nebulosa.server.equipments.cameras.CameraService
 import org.greenrobot.eventbus.EventBus
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.withOptions
@@ -31,7 +33,9 @@ private fun injection() = module {
             .build()
     }
 
-    single { ConnectionService() }
+    single(createdAtStart = true) { ConnectionService() }
+    single(createdAtStart = true) { CameraService() }
+    single(createdAtStart = true) { EquipmentService() }
 }
 
 fun main(args: Array<String>) {

@@ -1,8 +1,6 @@
 package nebulosa.indi.devices
 
 import nebulosa.indi.INDIClient
-import nebulosa.indi.devices.events.DeviceConnectedEvent
-import nebulosa.indi.devices.events.DeviceDisconnectedEvent
 import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.parser.INDIProtocolHandler
 
@@ -10,10 +8,9 @@ abstract class Device(
     val client: INDIClient,
     val handler: DeviceProtocolHandler,
     val name: String,
-) : INDIProtocolHandler {
+) : LinkedHashMap<String, Any?>(), INDIProtocolHandler {
 
-    @Volatile var isConnected = false
-        private set
+    @Volatile @JvmField var isConnected = false
 
     override fun handleMessage(message: INDIProtocol) {
         if (message is SwitchVector<*>) {
@@ -23,10 +20,10 @@ abstract class Device(
                 if (connected != isConnected) {
                     if (connected) {
                         isConnected = true
-                        handler.fireOnEventReceived(DeviceConnectedEvent(this))
+                        handler.fireOnEventReceived(DeviceConnected(this))
                     } else if (isConnected) {
                         isConnected = false
-                        handler.fireOnEventReceived(DeviceDisconnectedEvent(this))
+                        handler.fireOnEventReceived(DeviceDisconnected(this))
                     }
                 }
             }

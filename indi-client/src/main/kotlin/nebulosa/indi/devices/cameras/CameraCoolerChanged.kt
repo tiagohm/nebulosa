@@ -1,3 +1,5 @@
 package nebulosa.indi.devices.cameras
 
-data class CameraCoolerChanged(override val device: Camera) : CameraEvent
+import nebulosa.indi.devices.PropertyChangedEvent
+
+data class CameraCoolerChanged(override val device: Camera) : CameraEvent, PropertyChangedEvent

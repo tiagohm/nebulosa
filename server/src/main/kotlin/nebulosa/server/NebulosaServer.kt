@@ -1,14 +1,18 @@
 package nebulosa.server
 
 import com.google.protobuf.Empty
+import com.google.protobuf.StringValue
 import io.grpc.Server
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc.stub.StreamObserver
-import nebulosa.grpc.ConnectRequest
-import nebulosa.grpc.ConnectResponse
+import nebulosa.grpc.*
 import nebulosa.grpc.NebulosaGrpc.NebulosaImplBase
-import nebulosa.grpc.connectResponse
+import nebulosa.indi.devices.ConnectionType
 import nebulosa.server.connection.ConnectionService
+import nebulosa.server.equipments.EquipmentService
+import nebulosa.server.equipments.EquipmentType
+import nebulosa.server.equipments.cameras.CameraService
+import nebulosa.server.equipments.toCameraEquipment
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.Closeable
@@ -20,7 +24,10 @@ class NebulosaServer(
 ) : NebulosaImplBase(), Closeable, KoinComponent {
 
     private val connectionService by inject<ConnectionService>()
-    private var server: Server? = null
+    private val equipmentService by inject<EquipmentService>()
+    private val cameraService by inject<CameraService>()
+
+    @Volatile private var server: Server? = null
 
     @Synchronized
     fun start() {
@@ -49,7 +56,10 @@ class NebulosaServer(
         request: Empty?,
         responseObserver: StreamObserver<ConnectResponse>,
     ) {
-        responseObserver.onNext(connectResponse { connected = connectionService.isConnected() })
+        ConnectResponse.newBuilder()
+            .setConnected(connectionService.isConnected())
+            .build()
+            .also(responseObserver::onNext)
         responseObserver.onCompleted()
     }
 
@@ -59,6 +69,56 @@ class NebulosaServer(
     ) {
         connectionService.disconnect()
         isConnected(null, responseObserver)
+    }
+
+    override fun listCameras(
+        request: Empty?,
+        responseObserver: StreamObserver<CameraEquipment>,
+    ) {
+        for (camera in cameraService.list()) {
+            if (equipmentService.imagingCamera == null || equipmentService.imagingCamera !== camera) {
+                responseObserver.onNext(camera.toCameraEquipment())
+            }
+        }
+
+        responseObserver.onCompleted()
+    }
+
+    override fun cameraByName(
+        request: StringValue,
+        responseObserver: StreamObserver<CameraEquipment>,
+    ) {
+        val camera = cameraService.list().firstOrNull { it.name == request.value }
+        if (camera == null) responseObserver.onError(IllegalArgumentException("camera not found"))
+        else responseObserver.onNext(camera.toCameraEquipment())
+        responseObserver.onCompleted()
+    }
+
+    override fun open(
+        request: OpenRequest,
+        responseObserver: StreamObserver<OpenResponse>,
+    ) {
+        try {
+            equipmentService.open(
+                request.name,
+                EquipmentType.valueOf(request.deviceType),
+                ConnectionType.valueOf(request.connectionType),
+                null,
+            )
+
+            OpenResponse.newBuilder()
+                .setConnected(true)
+                .build()
+                .also(responseObserver::onNext)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            OpenResponse.newBuilder()
+                .setConnected(false)
+                .build()
+                .also(responseObserver::onNext)
+        } finally {
+            responseObserver.onCompleted()
+        }
     }
 
     @Synchronized

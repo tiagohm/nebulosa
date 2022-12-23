@@ -1,4 +1,4 @@
-package nebulosa.server.cameras
+package nebulosa.server.equipments.cameras
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -8,7 +8,7 @@ enum class AutoSubFolderMode {
     NOON,
     MIDNIGHT;
 
-    fun subFolderName(): String {
+    fun folderName(): String {
         if (this == OFF) return ""
 
         val now = LocalDateTime.now()

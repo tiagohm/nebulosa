@@ -1,4 +1,4 @@
-package nebulosa.server.cameras
+package nebulosa.server.equipments.cameras
 
 import io.grpc.stub.StreamObserver
 import nebulosa.grpc.CameraExposureTaskResponse
@@ -12,8 +12,6 @@ import org.koin.core.component.inject
 import java.io.InputStream
 import java.nio.file.Paths
 import java.util.concurrent.Phaser
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.createDirectories
 import kotlin.io.path.outputStream
 
@@ -37,8 +35,8 @@ data class CameraExposureTask(
 ) : ArrayList<CameraExposureTaskResponse>(64), Runnable, KoinComponent {
 
     private val eventBus by inject<EventBus>()
-    private val remaining = AtomicInteger(amount)
-    private val capturing = AtomicBoolean(false)
+    @Volatile private var remaining = amount
+    @Volatile private var capturing = false
     private val phaser = Phaser(1)
 
     @Synchronized
@@ -51,27 +49,18 @@ data class CameraExposureTask(
         aborted: Boolean? = null,
         finished: Boolean? = null,
     ) {
-        val response = firstOrNull()?.newBuilderForType()
-            ?: CameraExposureTaskResponse.newBuilder()
+        val response = firstOrNull()?.newBuilderForType() ?: CameraExposureTaskResponse.newBuilder()
 
-        response
-            .setState(if (state != null) nebulosa.grpc.PropertyState.valueOf(state.name) else response.state)
-            .setProgress(progress ?: response.progress)
-            .setImagePath(imagePath ?: response.imagePath)
-            .setFinishedWithError(finishedWithError ?: response.finishedWithError)
-            .setCapturing(capturing ?: response.capturing)
-            .setAborted(aborted ?: response.aborted)
-            .setFinished(finished ?: response.finished)
-            .build()
-            .also(responseObserver::onNext)
-            .also(::add)
+        response.setState(state?.name ?: response.state).setProgress(progress ?: response.progress).setImagePath(imagePath ?: response.imagePath)
+            .setFinishedWithError(finishedWithError ?: response.finishedWithError).setCapturing(capturing ?: response.capturing)
+            .setAborted(aborted ?: response.aborted).setFinished(finished ?: response.finished).build().also(responseObserver::onNext).also(::add)
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onCameraEventReceived(event: CameraEvent) {
         when (event) {
             is CameraExposureFrame -> {
-                capturing.set(false)
+                capturing = false
                 phaser.arriveAndDeregister()
                 save(event.fits)
             }
@@ -80,23 +69,22 @@ data class CameraExposureTask(
                     PropertyState.IDLE -> {
                         // Aborted.
                         if (event.prevState == PropertyState.BUSY) {
-                            capturing.set(false)
+                            capturing = false
                             phaser.forceTermination()
                             response(state, aborted = true)
                             finishGracefully()
                         }
                     }
                     PropertyState.BUSY -> {
-                        capturing.set(true)
+                        capturing = true
 
-                        val progress = ((amount - remaining.get() - 1).toDouble() / amount) +
-                            ((exposure - camera.exposure).toDouble() / exposure) * (1.0 / amount)
+                        val progress = ((amount - remaining - 1).toDouble() / amount) + ((exposure - camera.exposure).toDouble() / exposure) * (1.0 / amount)
 
                         response(state, progress = progress, capturing = true)
                     }
                     PropertyState.ALERT -> {
                         // Failed.
-                        capturing.set(false)
+                        capturing = false
                         response(state, finishedWithError = true)
                         finishGracefully()
                     }
@@ -112,11 +100,11 @@ data class CameraExposureTask(
         eventBus.register(this)
 
         try {
-            while (remaining.get() > 0) {
+            while (remaining > 0) {
                 synchronized(camera) {
                     phaser.register()
 
-                    remaining.decrementAndGet()
+                    remaining--
 
                     camera.frame(x, y, width, height)
                     camera.frameType(frameType)
@@ -130,20 +118,20 @@ data class CameraExposureTask(
                 }
             }
         } finally {
-            capturing.set(false)
+            capturing = false
             eventBus.unregister(this)
             response(finished = true, capturing = false)
         }
     }
 
     fun finishGracefully() {
-        remaining.set(0)
+        remaining = 0
     }
 
     private fun sleep() {
         var remainingTime = delay
 
-        while (remaining.get() > 0 && remainingTime > 0L) {
+        while (remaining > 0 && remainingTime > 0L) {
             Thread.sleep(1000L)
             remainingTime -= 1000L
         }
@@ -151,8 +139,8 @@ data class CameraExposureTask(
 
     private fun save(fits: InputStream) {
         if (save && savePath.isNotBlank()) {
-            val subFolderName = autoSubFolderMode.subFolderName()
-            val fileDirectory = Paths.get(savePath, subFolderName).normalize()
+            val folderName = autoSubFolderMode.folderName()
+            val fileDirectory = Paths.get(savePath, folderName).normalize()
             fileDirectory.createDirectories()
             // TODO: Filter Name
             val fileName = "%d_%s.fits".format(System.currentTimeMillis(), frameType)

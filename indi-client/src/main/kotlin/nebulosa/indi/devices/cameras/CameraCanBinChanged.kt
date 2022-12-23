@@ -1,3 +1,5 @@
 package nebulosa.indi.devices.cameras
 
-data class CameraCanBinChanged(override val device: Camera) : CameraEvent
+import nebulosa.indi.devices.PropertyChangedEvent
+
+data class CameraCanBinChanged(override val device: Camera) : CameraEvent, PropertyChangedEvent

@@ -4,8 +4,9 @@ import nebulosa.indi.INDIClient
 import nebulosa.indi.devices.cameras.Camera
 import nebulosa.indi.devices.cameras.CameraAttached
 import nebulosa.indi.devices.cameras.CameraDetached
-import nebulosa.indi.devices.events.*
 import nebulosa.indi.devices.mounts.Mount
+import nebulosa.indi.devices.mounts.MountAttached
+import nebulosa.indi.devices.mounts.MountDetached
 import nebulosa.indi.protocol.DefTextVector
 import nebulosa.indi.protocol.DelProperty
 import nebulosa.indi.protocol.INDIProtocol
@@ -65,7 +66,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
             }
 
             for (mount in mounts) {
-                fireOnEventReceived(MountDetachedEvent(mount.value))
+                fireOnEventReceived(MountDetached(mount.value))
             }
 
             cameras.clear()
@@ -103,7 +104,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
                     if (message.device !in mounts) {
                         val mount = Mount(client, this, message.device)
                         mounts[message.device] = mount
-                        fireOnEventReceived(MountAttachedEvent(mount))
+                        fireOnEventReceived(MountAttached(mount))
                         registered = true
                     } else {
                         registered = true
