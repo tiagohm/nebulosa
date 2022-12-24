@@ -1,5 +1,6 @@
 package nebulosa.nova.astrometry
 
+import nebulosa.constants.AU_M
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.SPEED_OF_LIGHT
 import nebulosa.math.Vector3D
@@ -30,10 +31,10 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
     override fun observe(observer: ICRF): Pair<Vector3D, Vector3D> {
         require(center.toInt() == 0) {
             "you can only observe a body whose vector's center is the Solar System Barycenter," +
-                " but this vector has the center $center"
+                    " but this vector has the center $center"
         }
 
-        return if (observer.target.toInt() == Int.MIN_VALUE) {
+        return if (observer.target.toInt() < 0) {
             val (p, v) = compute(observer.time)
             (p - observer.position) to (v - observer.velocity)
         } else {
@@ -61,15 +62,15 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
         if (target != body.center) {
             require(body.target == center) {
                 "you can only add two vectors " +
-                    "if the target where one of the vectors ends " +
-                    "is the center where the other vector starts"
+                        "if the target where one of the vectors ends " +
+                        "is the center where the other vector starts"
             }
 
             a = body
             b = this
         }
 
-        return Sum(a.center, b.target, a + b)
+        return Sum(a.center, b.target, listOf(a, b))
     }
 
     /**
@@ -136,7 +137,7 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
             for (i in 0..9) {
                 val position = pv.first - observer.position
                 val distance = position.length
-                val lightTime = distance * (1000.0 / (SPEED_OF_LIGHT * DAYSEC))
+                val lightTime = distance * (AU_M / (SPEED_OF_LIGHT * DAYSEC))
 
                 if (abs(lightTime - value) <= 1E-12) break
 

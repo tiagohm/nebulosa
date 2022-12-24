@@ -16,6 +16,17 @@ import nebulosa.math.Velocity.Companion.auDay
 class ErfaTest : StringSpec() {
 
     init {
+        "eraC2s" {
+            val (theta, phi) = eraC2s(100.0, -50.0, 25.0)
+            theta.value shouldBe (-0.4636476090008061162 plusOrMinus 1e-14)
+            phi.value shouldBe (0.2199879773954594463 plusOrMinus 1e-14)
+        }
+        "eraP2s" {
+            val (theta, phi, r) = eraP2s(100.0, -50.0, 25.0)
+            theta.value shouldBe (-0.4636476090008061162 plusOrMinus 1e-12)
+            phi.value shouldBe (0.2199879773954594463 plusOrMinus 1e-12)
+            r shouldBe (114.5643923738960002 plusOrMinus 1e-9)
+        }
         "eraAnpm" {
             eraAnpm((-4.0).rad).value shouldBe (2.283185307179586477 plusOrMinus 1e-12)
         }

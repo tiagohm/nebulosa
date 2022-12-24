@@ -89,7 +89,7 @@ abstract class InstantOfTime {
     /**
      * Returns 3×3 rotation matrix: ICRS -> equinox of this date.
      */
-    val m by lazy { nutationMatrix * precessionMatrix * ICRSToJ2000 }
+    val m by lazy { eraPnm06a(tt.whole, tt.fraction) }
 
     /**
      * Returns the nutation angles for this date.

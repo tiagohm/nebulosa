@@ -187,10 +187,4 @@ objectbox*.dll
 libobjectbox*.so
 libobjectbox*.dylib
 
-### Project Assets ###
-/assets
-!/assets/65803 Didymos.bsp
-!/assets/finals2000A.all
-!/assets/MOON_PA_DE421_1900-2050.bpc
-
 # End of https://www.toptal.com/developers/gitignore/api/intellij,kotlin,java,gradle

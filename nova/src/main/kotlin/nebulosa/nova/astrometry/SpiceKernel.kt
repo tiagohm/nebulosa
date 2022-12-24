@@ -23,7 +23,7 @@ class SpiceKernel(
             spk.map {
                 val p = when (it.type) {
                     2 -> ChebyshevPosition(it)
-                    3 -> ChebyshevPositionAndVelocity(it)
+                    3, 21 -> ChebyshevPositionAndVelocity(it)
                     else -> throw IOException("SPK data type ${it.type} is not yet supported")
                 }
 

@@ -19,6 +19,25 @@ import kotlin.math.*
 import kotlin.math.PI
 
 /**
+ * P-vector to spherical polar coordinates.
+ */
+fun eraP2s(x: Double, y: Double, z: Double): Triple<Angle, Angle, Double> {
+    val (theta, phi) = eraC2s(x, y, z)
+    val r = x * x + y * y + z * z
+    return Triple(theta, phi, r)
+}
+
+/**
+ * P-vector to spherical coordinates.
+ */
+fun eraC2s(x: Double, y: Double, z: Double): Pair<Angle, Angle> {
+    val d2 = x * x + y * y
+    val theta = if (d2 == 0.0) 0.0 else atan2(y, x)
+    val phi = if (z == 0.0) 0.0 else atan2(z, sqrt(d2))
+    return theta.rad to phi.rad
+}
+
+/**
  * Apply aberration to transform natural direction into proper direction.
  *
  * @param pnat Natural direction to the source (unit vector).
@@ -163,11 +182,12 @@ fun eraDtDb(
     // TOPOCENTRIC TERMS: Moyer 1981 and Murray 1983.
     val ukm = u.km
     val vkm = v.km
-    val wt = 0.00029E-10 * ukm * sin(tsol + elsun - els) + 0.00100E-10 * ukm * sin(tsol - 2.0 * emsun) + 0.00133E-10 * ukm * sin(tsol - d) + 0.00133E-10 * ukm * sin(
-        tsol + elsun - elj
-    ) - 0.00229E-10 * ukm * sin(tsol + 2.0 * elsun + emsun) - 0.02200E-10 * vkm * cos(elsun + emsun) + 0.05312E-10 * ukm * sin(tsol - emsun) - 0.13677E-10 * ukm * sin(
-        tsol + 2.0 * elsun
-    ) - 1.31840E-10 * vkm * cos(elsun) + 3.17679E-10 * ukm * sin(tsol)
+    val wt =
+        0.00029E-10 * ukm * sin(tsol + elsun - els) + 0.00100E-10 * ukm * sin(tsol - 2.0 * emsun) + 0.00133E-10 * ukm * sin(tsol - d) + 0.00133E-10 * ukm * sin(
+            tsol + elsun - elj
+        ) - 0.00229E-10 * ukm * sin(tsol + 2.0 * elsun + emsun) - 0.02200E-10 * vkm * cos(elsun + emsun) + 0.05312E-10 * ukm * sin(tsol - emsun) - 0.13677E-10 * ukm * sin(
+            tsol + 2.0 * elsun
+        ) - 1.31840E-10 * vkm * cos(elsun) + 3.17679E-10 * ukm * sin(tsol)
 
     val coefficients = FAIRHEAD
     val wn = DoubleArray(5)
@@ -201,9 +221,10 @@ fun eraDtDb(
     val wf = t * (t * (t * (t * wn[4] + wn[3]) + wn[2]) + wn[1]) + wn[0]
 
     // Adjustments to use JPL planetary masses instead of IAU.
-    val wj = 0.00065E-6 * sin(6069.776754 * t + 4.021194) + 0.00033E-6 * sin(213.299095 * t + 5.543132) + (-0.00196E-6 * sin(6208.294251 * t + 5.696701)) + (-0.00173E-6 * sin(
-        74.781599 * t + 2.435900
-    )) + 0.03638E-6 * t * t
+    val wj =
+        0.00065E-6 * sin(6069.776754 * t + 4.021194) + 0.00033E-6 * sin(213.299095 * t + 5.543132) + (-0.00196E-6 * sin(6208.294251 * t + 5.696701)) + (-0.00173E-6 * sin(
+            74.781599 * t + 2.435900
+        )) + 0.03638E-6 * t * t
 
     // TDB-TT in seconds.
     return wt + wf + wj
@@ -819,9 +840,10 @@ fun eraNut00a(tt1: Double, tt2: Double): Pair<Angle, Angle> {
     de = 0.0
 
     for (i in XPL.indices.reversed()) {
-        val arg = (XPL[i].nl * al + XPL[i].nf * af + XPL[i].nd * ad + XPL[i].nom * aom + XPL[i].nme * alme.value + XPL[i].nve * alve.value + XPL[i].nea * alea.value + XPL[i].nma * alma.value + XPL[i].nju * alju.value + XPL[i].nsa * alsa.value + XPL[i].nur * alur.value + XPL[i].nne * alne + XPL[i].npa * apa.value).mod(
-            TAU
-        )
+        val arg =
+            (XPL[i].nl * al + XPL[i].nf * af + XPL[i].nd * ad + XPL[i].nom * aom + XPL[i].nme * alme.value + XPL[i].nve * alve.value + XPL[i].nea * alea.value + XPL[i].nma * alma.value + XPL[i].nju * alju.value + XPL[i].nsa * alsa.value + XPL[i].nur * alur.value + XPL[i].nne * alne + XPL[i].npa * apa.value).mod(
+                TAU
+            )
 
         val sarg = sin(arg)
         val carg = cos(arg)

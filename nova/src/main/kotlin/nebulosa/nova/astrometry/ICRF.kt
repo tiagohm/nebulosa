@@ -66,14 +66,14 @@ open class ICRF protected constructor(
      * Computes the equatorial (RA, declination, distance)
      * with respect to the fixed axes of the ICRF.
      */
-    fun equatorial() = SphericalCoordinate.of(position[0].km, position[1].km, position[2].km)
+    fun equatorial() = SphericalCoordinate.of(position[0].au, position[1].au, position[2].au)
 
     /**
      * Computes the equatorial (RA, declination, distance)
      * referenced to the dynamical system defined by
      * the Earth's true equator and equinox at specific [epoch] time.
      */
-    fun equatorialAtEpoch(epoch: InstantOfTime) = (epoch.m * position).let { SphericalCoordinate.of(it[0].km, it[1].km, it[2].km) }
+    fun equatorialAtEpoch(epoch: InstantOfTime) = (epoch.m * position).let { SphericalCoordinate.of(it[0].au, it[1].au, it[2].au) }
 
     /**
      * Computes the equatorial (RA, declination, distance)
@@ -135,7 +135,7 @@ open class ICRF protected constructor(
     /**
      * Gets spherical CIRS coordinates at a given [epoch] (ra, dec, distance).
      */
-    fun sphericalCIRS(epoch: InstantOfTime = time) = cirs(epoch).let { SphericalCoordinate.of(it[0].km, it[1].km, it[2].km) }
+    fun sphericalCIRS(epoch: InstantOfTime = time) = cirs(epoch).let { SphericalCoordinate.of(it[0].au, it[1].au, it[2].au) }
 
     /**
      * Returns the [position] as an |xyz| position and velocity vector in a reference [frame].
@@ -155,7 +155,7 @@ open class ICRF protected constructor(
      * Returns the longitude, latitude and distance in the given [frame].
      */
     fun latLon(frame: Frame): SphericalCoordinate {
-        return (frame.rotationAt(time) * position).let { SphericalCoordinate.of(it[0].km, it[1].km, it[2].km) }
+        return (frame.rotationAt(time) * position).let { SphericalCoordinate.of(it[0].au, it[1].au, it[2].au) }
     }
 
     /**
@@ -169,8 +169,8 @@ open class ICRF protected constructor(
     val horizontalRotation by lazy {
         require(target is GeographicPosition || target is PlanetograhicPosition) {
             "to compute an altazimuth position, you must observe from " +
-                "a specific Earth location or from a position on another body loaded from a set " +
-                "of planetary constants"
+                    "a specific Earth location or from a position on another body loaded from a set " +
+                    "of planetary constants"
         }
 
         (target as Frame).rotationAt(time)
@@ -208,8 +208,8 @@ open class ICRF protected constructor(
                 position.center is Frame -> position.center.rotationAt(position.time)
                 else -> throw IllegalArgumentException(
                     "to compute an altazimuth position, you must observe from " +
-                        "a specific Earth location or from a position on another body loaded from a set " +
-                        "of planetary constants"
+                            "a specific Earth location or from a position on another body loaded from a set " +
+                            "of planetary constants"
                 )
             }
 

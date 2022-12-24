@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":math"))
+    api(project(":erfa"))
     testImplementation(libs.bundles.kotest)
 }
 
