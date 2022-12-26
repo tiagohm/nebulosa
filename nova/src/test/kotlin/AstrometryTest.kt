@@ -9,6 +9,7 @@ import nebulosa.nasa.daf.SourceDaf
 import nebulosa.nasa.spk.Spk
 import nebulosa.nova.astrometry.Asteroid
 import nebulosa.nova.astrometry.SpiceKernel
+import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
 import nebulosa.time.TDB
 import nebulosa.time.TimeJD
@@ -42,7 +43,15 @@ class AstrometryTest : StringSpec() {
             ra.rad.normalized.degrees shouldBe (68.127269738 plusOrMinus 1e-7)
             dec.rad.degrees shouldBe (24.681041544 plusOrMinus 1e-7)
         }
+        "mars VSOP87" {
+            val astrometric = VSOP87E.EARTH.at<Barycentric>(time).observe(VSOP87E.MARS)
+            val (ra, dec) = astrometric.equatorial()
+            // https://ssd.jpl.nasa.gov/horizons/app.html#/
+            ra.rad.normalized.degrees shouldBe (68.127269738 plusOrMinus 1e-4)
+            dec.rad.degrees shouldBe (24.681041544 plusOrMinus 1e-5)
+        }
         "ceres" {
+            // TODO: Failed ~0.5°
             val ceres = Asteroid(
                 semiMajorAxis = 2.769289292143484.au,
                 eccentricity = 0.07687465013145245,

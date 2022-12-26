@@ -1,7 +1,6 @@
 package nebulosa.nova.frame
 
 import nebulosa.math.Matrix3D
-import nebulosa.time.InstantOfTime
 
 /**
  * The International Coordinate Reference System (ICRS).
@@ -11,9 +10,4 @@ import nebulosa.time.InstantOfTime
  * precision of J2000 itself).  The ICRS also supersedes older
  * equinox-based systems like B1900 and B1950.
  */
-object ICRS : Frame {
-
-    private val IDENTITY = Matrix3D(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
-
-    override fun rotationAt(time: InstantOfTime) = IDENTITY
-}
+object ICRS : InertialFrame(Matrix3D(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0))
