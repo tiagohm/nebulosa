@@ -1,9 +1,6 @@
 package nebulosa.math
 
-import nebulosa.constants.DEG2RAD
-import nebulosa.constants.PI
-import nebulosa.constants.RAD2DEG
-import nebulosa.constants.TAU
+import nebulosa.constants.*
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -104,17 +101,17 @@ value class Angle(val value: Double) : Comparable<Angle> {
         /**
          * Creates [Angle] from milliarcseconds.
          */
-        inline val Number.mas get() = (toDouble() * (PI / 180.0 / 3600000.0)).rad
+        inline val Number.mas get() = (toDouble() * MILLIASEC2RAD).rad
 
         /**
          * Creates [Angle] from arcseconds.
          */
-        inline val Number.arcsec get() = (toDouble() * (PI / 180.0 / 3600.0)).rad
+        inline val Number.arcsec get() = (toDouble() * ASEC2RAD).rad
 
         /**
          * Creates [Angle] from arcminutes.
          */
-        inline val Number.arcmin get() = (toDouble() * (PI / 180.0 / 60.0)).rad
+        inline val Number.arcmin get() = (toDouble() * AMIN2RAD).rad
 
         /**
          * Creates [Angle] from degrees.

@@ -89,7 +89,7 @@ class VSOP87ETest : StringSpec() {
             val time = TDB(TimeJD(2459938.0, 0.5))
             val (p, v) = VSOP87E.URANUS.compute(time)
             // https://ssd.jpl.nasa.gov/horizons/app.html#/
-            p[0] shouldBe (1.338107802611238E+01  plusOrMinus 1e-4)
+            p[0] shouldBe (1.338107802611238E+01 plusOrMinus 1e-4)
             p[1] shouldBe (1.326832905623722E+01 plusOrMinus 1e-4)
             p[2] shouldBe (5.621910507435053E+00 plusOrMinus 1e-4)
             v[0] shouldBe (-2.910912382282302E-03 plusOrMinus 1e-7)

@@ -48,6 +48,8 @@ enum class VSOP87E(override val target: Int) : Body {
             terms[exp][xyz][index + 1] = b
             terms[exp][xyz][index + 2] = c
         }
+
+        buffer.close()
     }
 
     override val center = 0 // SSB.

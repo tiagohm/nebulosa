@@ -28,6 +28,21 @@ const val RAD2DEG = 180.0 / PI
 const val DEG2RAD = PI / 180.0
 
 /**
+ * Arcminutes to radians.
+ */
+const val AMIN2RAD = PI / 180.0 / 60.0
+
+/**
+ * Arcsecconds to radians.
+ */
+const val ASEC2RAD = PI / 180.0 / 3600.0
+
+/**
+ * Milliarcsecconds to radians.
+ */
+const val MILLIASEC2RAD = PI / 180.0 / 3600000.0
+
+/**
  * Angular velocity in radians/s.
  */
 const val ANGULAR_VELOCITY = 7.2921150E-5
