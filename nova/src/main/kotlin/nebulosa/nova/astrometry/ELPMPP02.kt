@@ -26,6 +26,7 @@ object ELPMPP02 : Body {
 
     override val target = 301 // Moon.
 
+    @Suppress("UnnecessaryVariable")
     override fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D> {
         val t = DoubleArray(5)
         t[0] = 1.0
@@ -178,17 +179,17 @@ object ELPMPP02 : Body {
     private const val W10 = (218.0 + 18.0 / 60.0 + (59.95571 + DW1_0) / 3600.0) * DEG2RAD
     private const val W11 = (1732559343.73604 + DW1_1) * ASEC2RAD
     private const val W12 = (-6.8084 + DW1_2) * ASEC2RAD
-    private const val W13 = 0.6604e-2 * ASEC2RAD - 0.00018865 * ASEC2RAD
-    private const val W14 = -0.3169e-4 * ASEC2RAD - 0.00001024 * ASEC2RAD
+    private const val W13 = 0.6604e-2 * ASEC2RAD + DW1_3 * ASEC2RAD
+    private const val W14 = -0.3169e-4 * ASEC2RAD + DW1_4 * ASEC2RAD
     private const val W20 = (83.0 + 21.0 / 60.0 + (11.67475 + DW2_0) / 3600.0) * DEG2RAD
     private const val W21 = (14643420.3171 + DW2_1) * ASEC2RAD
-    private const val W22 = -38.2631 * ASEC2RAD + 0.00470602 * ASEC2RAD
-    private const val W23 = -0.45047e-1 * ASEC2RAD - 0.00025213 * ASEC2RAD
+    private const val W22 = -38.2631 * ASEC2RAD + DW2_2 * ASEC2RAD
+    private const val W23 = -0.45047e-1 * ASEC2RAD + DW2_3 * ASEC2RAD
     private const val W24 = 0.21301e-3 * ASEC2RAD
     private const val W30 = (125.0 + 2.0 / 60.0 + (40.39816 + DW3_0) / 3600.0) * DEG2RAD
     private const val W31 = (-6967919.5383 + DW3_1) * ASEC2RAD
-    private const val W32 = 6.359 * ASEC2RAD - 0.00261070 * ASEC2RAD
-    private const val W33 = 0.7625e-2 * ASEC2RAD - 0.00010712 * ASEC2RAD
+    private const val W32 = 6.359 * ASEC2RAD + DW3_2 * ASEC2RAD
+    private const val W33 = 0.7625e-2 * ASEC2RAD + DW3_3 * ASEC2RAD
     private const val W34 = -0.3586e-4 * ASEC2RAD
 
     private const val EART0 = (100.0 + 27.0 / 60.0 + (59.13885 + DEART_0) / 3600.0) * DEG2RAD

@@ -101,10 +101,14 @@ open class Matrix3D(@PublishedApi internal val matrix: DMatrix3x3) {
     inline fun flipY() = Matrix3D(a13, a12, a11, a23, a22, a21, a33, a32, a31)
 
     fun isEmpty() = a11 == 0.0 && a12 == 0.0 && a13 == 0.0 &&
-        a21 == 0.0 && a22 == 0.0 && a23 == 0.0 &&
-        a31 == 0.0 && a32 == 0.0 && a33 == 0.0
+            a21 == 0.0 && a22 == 0.0 && a23 == 0.0 &&
+            a31 == 0.0 && a32 == 0.0 && a33 == 0.0
 
     inline fun isNotEmpty() = !isEmpty()
+
+    override fun toString(): String {
+        return "Matrix3D(a11=$a11, a12=$a12, a13=$a13, a21=$a21, a22=$a22, a23=$a23, a31=$a31, a32=$a32, a33=$a33)"
+    }
 
     companion object {
 

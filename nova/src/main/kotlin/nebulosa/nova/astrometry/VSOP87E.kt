@@ -29,27 +29,27 @@ enum class VSOP87E(override val target: Int) : Body {
         var xyz = 0
         var exp = 0
 
-        while (!buffer.exhausted()) {
-            val line = buffer.readUtf8Line()?.trimStart() ?: break
+        buffer.use {
+            while (!buffer.exhausted()) {
+                val line = buffer.readUtf8Line()?.trimStart() ?: break
 
-            if (line.startsWith("VSOP87")) {
-                xyz = line[40].code - 49
-                exp = line[58].code - 48
-                val size = line.substring(59..65).trim().toInt()
-                terms[exp][xyz] = DoubleArray(size * 3)
-                continue
+                if (line.startsWith("VSOP87")) {
+                    xyz = line[40].code - 49
+                    exp = line[58].code - 48
+                    val size = line.substring(59..65).trim().toInt()
+                    terms[exp][xyz] = DoubleArray(size * 3)
+                    continue
+                }
+
+                val index = (line.substring(4..8).trim().toInt() - 1) * 3
+                val a = line.substring(78..95).trim().toDouble()
+                val b = line.substring(96..109).trim().toDouble()
+                val c = line.substring(110..129).trim().toDouble()
+                terms[exp][xyz][index] = a
+                terms[exp][xyz][index + 1] = b
+                terms[exp][xyz][index + 2] = c
             }
-
-            val index = (line.substring(4..8).trim().toInt() - 1) * 3
-            val a = line.substring(78..95).trim().toDouble()
-            val b = line.substring(96..109).trim().toDouble()
-            val c = line.substring(110..129).trim().toDouble()
-            terms[exp][xyz][index] = a
-            terms[exp][xyz][index + 1] = b
-            terms[exp][xyz][index + 2] = c
         }
-
-        buffer.close()
     }
 
     override val center = 0 // SSB.
