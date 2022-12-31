@@ -1,48 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="539.0" prefWidth="432.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">
-   <children>
-      <VBox layoutX="116.0" layoutY="132.0" prefHeight="539.0" prefWidth="432.0" spacing="8.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <children>
-            <HBox alignment="CENTER" prefWidth="200.0">
-               <children>
-                  <ChoiceBox fx:id="cameras" maxWidth="1.7976931348623157E308" prefHeight="32.0" prefWidth="394.0">
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ChoiceBox>
-                  <Button fx:id="connect" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false">
-                     <graphic>
-                        <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@icons/connection.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                     <HBox.margin>
-                        <Insets left="16.0" />
-                     </HBox.margin>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Button>
-               </children>
-            </HBox>
-            <HBox prefWidth="200.0" />
-         </children>
-         <padding>
-            <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
-         </padding>
-      </VBox>
-   </children>
+<?import javafx.scene.layout.*?>
+<AnchorPane maxHeight="-Infinity"
+            maxWidth="-Infinity"
+            minHeight="-Infinity"
+            minWidth="-Infinity"
+            prefHeight="539.0"
+            prefWidth="432.0"
+            xmlns="http://javafx.com/javafx/19"
+            xmlns:fx="http://javafx.com/fxml/1">
+    <VBox layoutX="116.0"
+          layoutY="132.0"
+          prefHeight="539.0"
+          prefWidth="432.0"
+          spacing="8.0"
+          AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0"
+          AnchorPane.topAnchor="0.0">
+        <padding>
+            <Insets bottom="16.0"
+                    left="16.0"
+                    right="16.0"
+                    top="16.0"/>
+        </padding>
+        <HBox alignment="CENTER"
+              prefWidth="200.0">
+            <ChoiceBox fx:id="cameras"
+                       maxWidth="1.7976931348623157E308"
+                       prefHeight="32.0"
+                       prefWidth="394.0">
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </ChoiceBox>
+            <Button fx:id="connect"
+                    contentDisplay="GRAPHIC_ONLY"
+                    mnemonicParsing="false">
+                <graphic>
+                    <ImageView fitHeight="24.0"
+                               fitWidth="24.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/connection.png"/>
+                    </ImageView>
+                </graphic>
+                <HBox.margin>
+                    <Insets left="16.0"/>
+                </HBox.margin>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
+        </HBox>
+        <HBox prefWidth="200.0"/>
+    </VBox>
 </AnchorPane>

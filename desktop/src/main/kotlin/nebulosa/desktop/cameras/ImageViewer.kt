@@ -3,6 +3,7 @@ package nebulosa.desktop.cameras
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
+import javafx.scene.control.ContextMenu
 import javafx.scene.image.ImageView
 import javafx.scene.image.PixelBuffer
 import javafx.scene.image.PixelFormat
@@ -12,6 +13,9 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
 import nebulosa.desktop.internal.Window
 import nebulosa.imaging.FitsImage
+import nebulosa.imaging.Image
+import nebulosa.imaging.algorithms.ScreenTransformFunction
+import nebulosa.imaging.algorithms.TransformAlgorithm
 import nebulosa.indi.devices.cameras.Camera
 import nom.tam.fits.Fits
 import java.io.File
@@ -23,8 +27,10 @@ import kotlin.math.min
 class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeListener<Number> {
 
     @FXML private lateinit var image: ImageView
+    @FXML private lateinit var menu: ContextMenu
 
-    @Volatile private var fits: FitsImage? = null
+    @Volatile @JvmField internal var fits: Image? = null
+    @Volatile private var transformedFits: Image? = null
 
     @Volatile private var buffer = IntBuffer.allocate(1)
     @Volatile private var bufferSize = 1
@@ -35,6 +41,8 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
     @Volatile private var dragStartX = 0.0
     @Volatile private var dragStartY = 0.0
     @Volatile private var lastDrawTime = 0L
+
+    private val imageStretcher by lazy { ImageStretcher(this) }
 
     init {
         setTitleFromCameraAndFile()
@@ -75,7 +83,39 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
         image.addEventFilter(MouseEvent.MOUSE_RELEASED) {
             dragging = false
         }
+
+        image.parent.addEventFilter(MouseEvent.MOUSE_CLICKED) {
+            if (it.button == MouseButton.PRIMARY) {
+                menu.hide()
+                it.consume()
+            }
+        }
+
+        image.parent.setOnContextMenuRequested {
+            menu.show(image.parent, it.screenX, it.screenY)
+        }
     }
+
+    var shadow = 0f
+        set(value) {
+            field = value
+            applyTransformAlgorithms()
+            draw()
+        }
+
+    var highlight = 1f
+        set(value) {
+            field = value
+            applyTransformAlgorithms()
+            draw()
+        }
+
+    var midtone = 0.5f
+        set(value) {
+            field = value
+            applyTransformAlgorithms()
+            draw()
+        }
 
     override fun onStop() {
         fits = null
@@ -119,11 +159,16 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
 
         scale = newScale
 
-        startX -= ((toX - x) * scale).toInt()
-        startY -= ((toY - y) * scale).toInt()
+        if (scale == 1.0) {
+            startX = 0
+            startY = 0
+        } else {
+            startX -= ((toX - x) * scale).toInt()
+            startY -= ((toY - y) * scale).toInt()
 
-        startX = max(0, startX)
-        startY = max(0, startY)
+            startX = max(0, startX)
+            startY = max(0, startY)
+        }
 
         draw()
     }
@@ -151,6 +196,7 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
         val fits = FitsImage(Fits(file))
         fits.read()
         this.fits = fits
+        transformedFits = fits.clone()
 
         widthProperty().removeListener(this)
         heightProperty().removeListener(this)
@@ -165,8 +211,18 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
         draw()
     }
 
+    private fun applyTransformAlgorithms() {
+        fits!!.data.copyInto(transformedFits!!.data)
+
+        val algorithms = TransformAlgorithm.of(
+            ScreenTransformFunction(midtone, shadow, highlight),
+        )
+
+        transformedFits = algorithms.transform(transformedFits!!)
+    }
+
     private fun draw() {
-        val fits = fits ?: return
+        val fits = transformedFits ?: return
 
         val curTime = System.currentTimeMillis()
         if (curTime - lastDrawTime < 100) return
@@ -224,5 +280,10 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
         val pixelBuffer = PixelBuffer(areaWidth, areaHeight, buffer, PixelFormat.getIntArgbPreInstance())
         val writableImage = WritableImage(pixelBuffer)
         image.image = writableImage
+    }
+
+    @FXML
+    private fun showImageStretcher() {
+        imageStretcher.show()
     }
 }
