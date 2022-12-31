@@ -51,7 +51,7 @@ class PlanetograhicPosition(
         // then at least cache the product of these first two matrices.
         val m = Matrix3D.IDENTITY.rotateY((TAU / 4.0 - latitude.value).rad)
             .rotateZ((TAU / 2.0 - longitude.value).rad) *
-            frame.rotationAt(time)
+                frame.rotationAt(time)
 
         // Turn clockwise into counterclockwise.
         // Flip the sign of y so that azimuth reads north-east rather than the other direction.

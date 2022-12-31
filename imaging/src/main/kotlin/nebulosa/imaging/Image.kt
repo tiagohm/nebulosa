@@ -2,6 +2,7 @@ package nebulosa.imaging
 
 import java.awt.color.ColorSpace
 import java.awt.image.*
+import java.nio.IntBuffer
 
 open class Image(
     width: Int, height: Int,
@@ -12,17 +13,17 @@ open class Image(
 
     @JvmField val stride = width * pixelStride
 
-    @JvmField val data = (raster.dataBuffer as Float8bppDataBuffer).data
+    @JvmField val data = (raster.dataBuffer as Float8bitsDataBuffer).data
 
     @Suppress("NOTHING_TO_INLINE")
     inline fun writePixel(x: Int, y: Int, channel: ImageChannel, color: Float) {
-        val index = y * width * pixelStride + x * pixelStride
+        val index = y * stride + x * pixelStride
         this.data[index + channel.offset] = color
     }
 
     @Suppress("NOTHING_TO_INLINE")
     inline fun readPixel(x: Int, y: Int, channel: ImageChannel): Float {
-        val index = y * width * pixelStride + x * pixelStride
+        val index = y * stride + x * pixelStride
         return this.data[index + channel.offset]
     }
 
@@ -70,6 +71,26 @@ open class Image(
         }
     }
 
+    fun writeTo(output: IntBuffer) {
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                val index = y * stride + x * pixelStride
+
+                if (mono) {
+                    val c = (data[index] * 255f).toInt()
+                    val p = 0xFF000000.toInt() or (c shl 16) or (c shl 8) or c
+                    output.put(p)
+                } else {
+                    val a = (data[index] * 255f).toInt()
+                    val b = (data[index + 1] * 255f).toInt()
+                    val c = (data[index + 2] * 255f).toInt()
+                    val p = 0xFF000000.toInt() or (a shl 16) or (b shl 8) or c
+                    output.put(p)
+                }
+            }
+        }
+    }
+
     open fun clone(): Image {
         val image = Image(width, height, mono)
         data.copyInto(image.data)
@@ -89,7 +110,7 @@ open class Image(
             val pixelStride = if (mono) 1 else 3
             val bandOffsets = if (mono) intArrayOf(0) else intArrayOf(0, 1, 2)
             val sampleModel = PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, width, height, pixelStride, width * pixelStride, bandOffsets)
-            val buffer = Float8bppDataBuffer(width * height * pixelStride)
+            val buffer = Float8bitsDataBuffer(width * height * pixelStride)
             return Raster.createWritableRaster(sampleModel, buffer, null)
         }
     }

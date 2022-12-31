@@ -71,7 +71,7 @@ data class Geoid(
     fun subpoint(position: ICRF): GeographicPosition {
         require(position.center.toInt() == 399) {
             "a geographic subpoint can only be calculated for positions measured from 399," +
-                " the center of the Earth, but this' position has center ${position.center}"
+                    " the center of the Earth, but this' position has center ${position.center}"
         }
 
         val (xyz) = position.frame(ITRS)

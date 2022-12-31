@@ -14,7 +14,8 @@ class KeplerOrbitTest : StringSpec() {
 
     init {
         "asteroid MPC" {
-            val asteroid = Asteroid.parse("00001    3.33  0.15 K232P  17.21569   73.47045   80.26013   10.58634  0.0788175  0.21411523   2.7671817  0 MPO719049  7258 123 1801-2022 0.65 M-v 30l MPCLINUX   0000      (1) Ceres              20220916")
+            val asteroid =
+                Asteroid.parse("00001    3.33  0.15 K232P  17.21569   73.47045   80.26013   10.58634  0.0788175  0.21411523   2.7671817  0 MPO719049  7258 123 1801-2022 0.65 M-v 30l MPCLINUX   0000      (1) Ceres              20220916")
             val time = TT(TimeYMDHMS(2022, 12, 15, 22, 0, 0.0))
             val icrf = asteroid.at<ICRF>(time)
             // https://ssd.jpl.nasa.gov/horizons/app.html#/

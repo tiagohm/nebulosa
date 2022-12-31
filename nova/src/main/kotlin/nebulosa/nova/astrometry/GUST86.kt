@@ -7,10 +7,7 @@ import nebulosa.constants.DEG2RAD
 import nebulosa.math.Matrix3D
 import nebulosa.math.Vector3D
 import nebulosa.time.InstantOfTime
-import kotlin.math.abs
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 enum class GUST86(override val target: Int) : Body {
     ARIEL(701) {
@@ -253,7 +250,7 @@ enum class GUST86(override val target: Int) : Body {
         // From the above actually gives the mean motion, in radians
         // per day. Use Kepler's 3rd law to convert this to a semimajor
         // axis in kilometers.
-        elems[0] = Math.cbrt(rmu * DAYSEC * DAYSEC / (elems[0] * elems[0]))
+        elems[0] = cbrt(rmu * DAYSEC * DAYSEC / (elems[0] * elems[0]))
 
         val (ra, rl, rk, rh, rq) = elems
         val rp = elems[5]

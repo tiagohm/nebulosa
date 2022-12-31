@@ -1,6 +1,6 @@
 package nebulosa.io
 
-enum class ByteOrder(val isBigEndian: Boolean) {
+enum class ByteOrder(@JvmField val isBigEndian: Boolean) {
     BIG(true),
     LITTLE(false);
 }

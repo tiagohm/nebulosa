@@ -1,5 +1,7 @@
 package nebulosa.imaging.algorithms
 
+import kotlin.math.exp
+
 class GaussianBlur(
     val sigma: Double = 1.4,
     size: Int = 5,
@@ -11,6 +13,11 @@ class GaussianBlur(
     }
 
     companion object {
+
+        @JvmStatic
+        fun gaussian2D(sigmaSquared: Double, x: Int, y: Int): Double {
+            return exp((x * x + y * y) / (-2.0 * sigmaSquared)) / (2.0 * Math.PI * sigmaSquared)
+        }
 
         @JvmStatic
         private fun kernel2D(sigmaSquared: Double, size: Int): Array<FloatArray> {

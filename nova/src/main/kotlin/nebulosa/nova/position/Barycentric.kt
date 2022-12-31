@@ -85,8 +85,8 @@ class Barycentric internal constructor(
     ): Apparent {
         val frame = target as? Frame ?: throw IllegalArgumentException(
             "to compute an altazimuth position, you must observe from " +
-                "a specific Earth location or from a position on another body loaded from a set " +
-                "of planetary constants"
+                    "a specific Earth location or from a position on another body loaded from a set " +
+                    "of planetary constants"
         )
 
         val R = frame.rotationAt(time)

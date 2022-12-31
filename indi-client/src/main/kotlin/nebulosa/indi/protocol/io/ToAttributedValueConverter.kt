@@ -249,7 +249,7 @@ internal class ToAttributedValueConverter @JvmOverloads constructor(
 
     private fun fieldIsEqual(field: FastField): Boolean {
         return valueField!!.name == field.name &&
-            valueField!!.declaringClass.name == field.declaringClass
+                valueField!!.declaringClass.name == field.declaringClass
     }
 
     companion object {

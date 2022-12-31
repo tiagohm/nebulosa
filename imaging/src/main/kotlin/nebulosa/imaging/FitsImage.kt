@@ -46,6 +46,8 @@ class FitsImage(
                 }
             }
         }
+
+        fits.close()
     }
 
     override fun clone(): FitsImage {

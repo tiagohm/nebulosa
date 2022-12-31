@@ -161,7 +161,7 @@ data class KeplerOrbit(
             val dt = sqrt(2.0 * (p.value * p.value * p.value) / mu) * M.value
             val periapsis = p / 2.0
             val A = 1.5 * sqrt(mu / (2.0 * (periapsis.value * periapsis.value * periapsis.value))) * dt
-            val B = Math.cbrt(A + (A * A + 1.0))
+            val B = cbrt(A + (A * A + 1.0))
             return (2.0 * atan(B - 1.0 / B)).rad
         }
 

@@ -2,7 +2,7 @@ package nebulosa.imaging
 
 import java.awt.image.DataBuffer
 
-class Float8bppDataBuffer(@JvmField val data: FloatArray) : DataBuffer(TYPE_FLOAT, data.size) {
+internal class Float8bitsDataBuffer(@JvmField val data: FloatArray) : DataBuffer(TYPE_FLOAT, data.size) {
 
     constructor(size: Int) : this(FloatArray(size))
 

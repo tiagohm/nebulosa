@@ -1,11 +1,15 @@
 plugins {
     kotlin("jvm")
     id("maven-publish")
+    id("io.objectbox")
+    id("org.openjfx.javafxplugin")
 }
 
 dependencies {
-    api(project(":io"))
-    api(project(":math"))
+    implementation(project(":indi-client"))
+    implementation(project(":imaging"))
+    implementation(libs.eventbus)
+    implementation(libs.koin)
     testImplementation(libs.bundles.kotest)
 }
 
@@ -15,4 +19,9 @@ publishing {
             from(components["java"])
         }
     }
+}
+
+javafx {
+    version = "19"
+    modules = listOf("javafx.controls", "javafx.fxml")
 }
