@@ -1,35 +1,33 @@
 package nebulosa.nasa.daf
 
+import nebulosa.http.DEFAULT_HTTP_CLIENT
 import nebulosa.io.SeekableSource
 import nebulosa.io.readDoubleArray
 import nebulosa.io.source
+import okhttp3.Request
 import okio.buffer
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 
 class RemoteDaf(val uri: String) : Daf() {
 
     override fun initialize() {
-        val request = HttpRequest
-            .newBuilder(URI(uri))
-            .method("HEAD", HttpRequest.BodyPublishers.noBody())
+        val request = Request.Builder()
+            .url(uri)
+            .head()
             .build()
 
-        val response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.discarding())
+        DEFAULT_HTTP_CLIENT.newCall(request).execute().use {
+            if (it.code != 200) {
+                throw IllegalArgumentException("The given URL is inaccessible: $uri")
+            }
 
-        if (response.statusCode() != 200) {
-            throw IllegalArgumentException("The given URL is inaccessible: $uri")
+            val acceptRanges = it.header("Accept-Ranges")
+
+            if (acceptRanges != "bytes") {
+                throw IllegalArgumentException("The given URL not accept range requests: $uri")
+            }
+
+            super.initialize()
         }
-
-        val acceptRanges = response.headers().firstValue("Accept-Ranges")
-
-        if (!acceptRanges.isPresent || acceptRanges.get() != "bytes") {
-            throw IllegalArgumentException("The given URL not accept range requests: $uri")
-        }
-
-        super.initialize()
     }
 
     override fun read(start: Int, end: Int): DoubleArray {
@@ -46,20 +44,16 @@ class RemoteDaf(val uri: String) : Daf() {
     }
 
     private fun readSource(start: Long, end: Long): SeekableSource {
-        val request = HttpRequest
-            .newBuilder(URI(uri))
-            .GET()
-            .header("Range", "bytes=$start-$end")
+        val request = Request.Builder()
+            .url(uri)
+            .get()
+            .addHeader("Range", "bytes=$start-$end")
             .build()
 
-        val response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofByteArray())
-        return response.body().source()
+        return DEFAULT_HTTP_CLIENT.newCall(request).execute().use {
+            it.body.bytes().source()
+        }
     }
 
     override fun close() {}
-
-    companion object {
-
-        private val HTTP_CLIENT = HttpClient.newBuilder().build()
-    }
 }

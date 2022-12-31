@@ -7,9 +7,6 @@ import java.io.File
 class DafTest : StringSpec() {
 
     init {
-
-        timeout = 1000L
-
         // https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de405.bsp
         "NAIF/DAF" {
             val source = File("../assets/DE405.bsp")

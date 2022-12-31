@@ -94,8 +94,6 @@ class Home : Window("Home") {
     override fun onStart() {
         subscriber = eventBus.subscribe(this)
 
-        connections.items.clear()
-
         connected.set(connectionService.isConnected())
     }
 

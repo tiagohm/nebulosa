@@ -4,9 +4,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":io"))
-    api(project(":time"))
-    api(project(":http"))
+    api(libs.okhttp)
     testImplementation(libs.bundles.kotest)
 }
 
