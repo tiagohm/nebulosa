@@ -4,6 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
+<?import nebulosa.desktop.cameras.HistogramView?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -69,6 +70,19 @@
             </VBox>
         </Tab>
         <Tab closable="false"
-             text="Histogram"/>
+             text="Histogram">
+            <VBox prefHeight="200.0"
+                  prefWidth="100.0">
+                <AnchorPane prefHeight="200.0"
+                            prefWidth="200.0"
+                            VBox.vgrow="ALWAYS">
+                    <HistogramView fx:id="histogram"
+                                   AnchorPane.bottomAnchor="0.0"
+                                   AnchorPane.leftAnchor="0.0"
+                                   AnchorPane.rightAnchor="0.0"
+                                   AnchorPane.topAnchor="0.0"/>
+                </AnchorPane>
+            </VBox>
+        </Tab>
     </TabPane>
 </AnchorPane>

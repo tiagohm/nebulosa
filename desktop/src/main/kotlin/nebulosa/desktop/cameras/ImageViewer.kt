@@ -1,5 +1,7 @@
 package nebulosa.desktop.cameras
 
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleFloatProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
@@ -14,6 +16,8 @@ import javafx.scene.input.ScrollEvent
 import nebulosa.desktop.internal.Window
 import nebulosa.imaging.FitsImage
 import nebulosa.imaging.Image
+import nebulosa.imaging.algorithms.Flip
+import nebulosa.imaging.algorithms.Invert
 import nebulosa.imaging.algorithms.ScreenTransformFunction
 import nebulosa.imaging.algorithms.TransformAlgorithm
 import nebulosa.indi.devices.cameras.Camera
@@ -30,7 +34,7 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
     @FXML private lateinit var menu: ContextMenu
 
     @Volatile @JvmField internal var fits: Image? = null
-    @Volatile private var transformedFits: Image? = null
+    @Volatile @JvmField internal var transformedFits: Image? = null
 
     @Volatile private var buffer = IntBuffer.allocate(1)
     @Volatile private var bufferSize = 1
@@ -42,7 +46,14 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
     @Volatile private var dragStartY = 0.0
     @Volatile private var lastDrawTime = 0L
 
-    private val imageStretcher by lazy { ImageStretcher(this) }
+    private val imageStretcher = ImageStretcher(this)
+
+    val shadow = SimpleFloatProperty(0f)
+    val highlight = SimpleFloatProperty(1f)
+    val midtone = SimpleFloatProperty(0.5f)
+    val mirrorHorizontal = SimpleBooleanProperty(false)
+    val mirrorVertical = SimpleBooleanProperty(false)
+    val invert = SimpleBooleanProperty(false)
 
     init {
         setTitleFromCameraAndFile()
@@ -94,28 +105,14 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
         image.parent.setOnContextMenuRequested {
             menu.show(image.parent, it.screenX, it.screenY)
         }
+
+        shadow.addListener { _, _, _ -> applyTransformAlgorithms() }
+        highlight.addListener { _, _, _ -> applyTransformAlgorithms() }
+        midtone.addListener { _, _, _ -> applyTransformAlgorithms() }
+        mirrorHorizontal.addListener { _, _, _ -> applyTransformAlgorithms() }
+        mirrorVertical.addListener { _, _, _ -> applyTransformAlgorithms() }
+        invert.addListener { _, _, _ -> applyTransformAlgorithms() }
     }
-
-    var shadow = 0f
-        set(value) {
-            field = value
-            applyTransformAlgorithms()
-            draw()
-        }
-
-    var highlight = 1f
-        set(value) {
-            field = value
-            applyTransformAlgorithms()
-            draw()
-        }
-
-    var midtone = 0.5f
-        set(value) {
-            field = value
-            applyTransformAlgorithms()
-            draw()
-        }
 
     override fun onStop() {
         fits = null
@@ -130,6 +127,8 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
         dragStartX = 0.0
         dragStartY = 0.0
         lastDrawTime = 0L
+
+        imageStretcher.close()
     }
 
     private fun setTitleFromCameraAndFile(file: File? = null) {
@@ -209,24 +208,36 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
         heightProperty().addListener(this)
 
         draw()
+
+        imageStretcher.draw()
     }
 
     private fun applyTransformAlgorithms() {
+        if (!canDraw()) return
+
         fits!!.data.copyInto(transformedFits!!.data)
 
-        val algorithms = TransformAlgorithm.of(
-            ScreenTransformFunction(midtone, shadow, highlight),
-        )
+        val algorithms = arrayListOf<TransformAlgorithm>()
+        if (invert.value) algorithms.add(Invert)
+        algorithms.add(Flip(mirrorHorizontal.value, mirrorVertical.value))
+        algorithms.add(ScreenTransformFunction(midtone.value, shadow.value, highlight.value))
 
-        transformedFits = algorithms.transform(transformedFits!!)
+        transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)
+
+        draw()
+    }
+
+    private fun canDraw(): Boolean {
+        val curTime = System.currentTimeMillis()
+        return curTime - lastDrawTime >= 100
     }
 
     private fun draw() {
         val fits = transformedFits ?: return
 
-        val curTime = System.currentTimeMillis()
-        if (curTime - lastDrawTime < 100) return
-        lastDrawTime = curTime
+        if (!canDraw()) return
+
+        lastDrawTime = System.currentTimeMillis()
 
         val bounds = image.parent.boundsInLocal
         val areaWidth = bounds.width.toInt()
@@ -285,5 +296,20 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
     @FXML
     private fun showImageStretcher() {
         imageStretcher.show()
+    }
+
+    @FXML
+    private fun mirrorHorizontal() {
+        mirrorHorizontal.value = !mirrorHorizontal.value
+    }
+
+    @FXML
+    private fun mirrorVertical() {
+        mirrorVertical.value = !mirrorVertical.value
+    }
+
+    @FXML
+    private fun invert() {
+        invert.value = !invert.value
     }
 }

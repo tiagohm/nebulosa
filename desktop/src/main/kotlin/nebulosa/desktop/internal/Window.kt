@@ -23,7 +23,7 @@ abstract class Window(name: String) : Stage(), KoinComponent {
         val root = loader.load<Parent>()
         scene = Scene(root)
 
-        setOnShowing {
+        setOnShown {
             eventBus.register(this)
             onStart()
         }

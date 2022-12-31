@@ -9,14 +9,25 @@ class ImageStretcher(private val imageViewer: ImageViewer) : Window("ImageStretc
     @FXML private lateinit var shadow: Slider
     @FXML private lateinit var highlight: Slider
     @FXML private lateinit var midtone: Slider
+    @FXML private lateinit var histogram: HistogramView
 
     init {
         isResizable = false
 
         titleProperty().bind(imageViewer.titleProperty())
+    }
 
-        shadow.valueProperty().addListener { _, _, value -> imageViewer.shadow = value.toInt() / 255f }
-        highlight.valueProperty().addListener { _, _, value -> imageViewer.highlight = value.toInt() / 255f }
-        midtone.valueProperty().addListener { _, _, value -> imageViewer.midtone = value.toInt() / 255f }
+    override fun onStart() {
+        imageViewer.shadow.bind(shadow.valueProperty().divide(255.0))
+        imageViewer.highlight.bind(highlight.valueProperty().divide(255.0))
+        imageViewer.midtone.bind(midtone.valueProperty().divide(255.0))
+
+        draw()
+    }
+
+    fun draw() {
+        if (isShowing) {
+            histogram.draw(imageViewer.fits!!)
+        }
     }
 }

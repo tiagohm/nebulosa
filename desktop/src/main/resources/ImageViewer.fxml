@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ContextMenu?>
-<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <AnchorPane maxHeight="-Infinity"
@@ -17,6 +16,12 @@
             <items>
                 <MenuItem text="Stretch"
                           onAction="#showImageStretcher"/>
+                <CheckMenuItem text="Horizontal Mirror"
+                               onAction="#mirrorHorizontal"/>
+                <CheckMenuItem text="Vertical Mirror"
+                               onAction="#mirrorVertical"/>
+                <CheckMenuItem text="Invert"
+                               onAction="#invert"/>
             </items>
         </ContextMenu>
     </fx:define>
