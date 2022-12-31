@@ -1,5 +1,7 @@
 package nebulosa.desktop.cameras
 
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.scene.image.ImageView
 import javafx.scene.image.PixelBuffer
@@ -18,7 +20,7 @@ import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.min
 
-class ImageViewer(val camera: Camera? = null) : Window("ImageViewer") {
+class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeListener<Number> {
 
     @FXML private lateinit var image: ImageView
 
@@ -56,6 +58,9 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer") {
 
                     startX -= deltaX
                     startY -= deltaY
+
+                    startX = max(0, startX)
+                    startY = max(0, startY)
 
                     dragStartX = it.x
                     dragStartY = it.y
@@ -97,7 +102,7 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer") {
         val delta = if (event.deltaY == 0.0 && event.deltaX != 0.0) event.deltaX else event.deltaY
         val wheel = if (delta < 0) -1 else 1
         val newScale = scale * exp((wheel * 0.25) / 3)
-        zoomToPoint(min(max(newScale, 1.0), 10.0), event.x, event.y)
+        zoomToPoint(min(max(newScale, 1.0), 150.0), event.x, event.y)
     }
 
     private fun zoomToPoint(
@@ -106,20 +111,33 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer") {
     ) {
         val bounds = image.parent.boundsInLocal
 
-        val x = (pointX / bounds.width) * (bounds.width * newScale)
-        val y = (pointY / bounds.height) * (bounds.height * newScale)
+        val x = ((startX + pointX) / bounds.width) * (bounds.width * newScale)
+        val y = ((startY + pointY) / bounds.height) * (bounds.height * newScale)
 
         val toX = (x / newScale - x / scale + x * newScale) / newScale
         val toY = (y / newScale - y / scale + y * newScale) / newScale
 
-        // val x = pointX + startX
-        // val y = pointY + startY
-
         scale = newScale
-        startX -= (toX - x).toInt()
-        startY -= (toY - y).toInt()
 
-        println("$x $y $toX $toY $startX $startY")
+        startX -= ((toX - x) * scale).toInt()
+        startY -= ((toY - y) * scale).toInt()
+
+        startX = max(0, startX)
+        startY = max(0, startY)
+
+        draw()
+    }
+
+    override fun changed(
+        observable: ObservableValue<out Number>,
+        oldValue: Number, newValue: Number,
+    ) {
+        if (observable === widthProperty()) {
+            val factor = newValue.toDouble() / oldValue.toDouble()
+            scale *= factor
+            startX = (startX * factor).toInt()
+            startY = (startY * factor).toInt()
+        }
 
         draw()
     }
@@ -134,15 +152,25 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer") {
         fits.read()
         this.fits = fits
 
+        widthProperty().removeListener(this)
+        heightProperty().removeListener(this)
+
+        width = 640.0
+        val titleHeight = height - scene.height
+        height = fits.height * (width / fits.width) + titleHeight - 1
+
+        widthProperty().addListener(this)
+        heightProperty().addListener(this)
+
         draw()
     }
 
     private fun draw() {
-        if (System.currentTimeMillis() - lastDrawTime < 100) return
-
-        lastDrawTime = System.currentTimeMillis()
-
         val fits = fits ?: return
+
+        val curTime = System.currentTimeMillis()
+        if (curTime - lastDrawTime < 100) return
+        lastDrawTime = curTime
 
         val bounds = image.parent.boundsInLocal
         val areaWidth = bounds.width.toInt()
