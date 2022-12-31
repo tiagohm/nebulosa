@@ -6,6 +6,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0")
         classpath("io.objectbox:objectbox-gradle-plugin:3.5.0")
         classpath("org.openjfx:javafx-plugin:0.0.13")
+        classpath("gradle.plugin.com.github.johnrengelman:shadow:7.1.2")
     }
 
     repositories {

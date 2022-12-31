@@ -1,5 +1,6 @@
 package nebulosa.desktop.home
 
+import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.fxml.FXML
 import javafx.scene.control.Button
@@ -43,6 +44,8 @@ class Home : Window("Home") {
     private val attachedCameras = ArrayList<Camera>(4)
     private val connected = SimpleBooleanProperty(false)
     private val imageViewers = HashSet<ImageViewer>(8)
+
+    @Volatile private var subscriber: Disposable? = null
 
     init {
         title = "Nebulosa"
@@ -89,18 +92,23 @@ class Home : Window("Home") {
     }
 
     override fun onStart() {
+        subscriber = eventBus.subscribe(this)
+
         connections.items.clear()
 
         connected.set(connectionService.isConnected())
     }
 
     override fun onStop() {
+        subscriber?.dispose()
+        subscriber = null
+
         connectionService.disconnect()
 
         camerasPage.close()
     }
 
-    override fun onEventReceived(event: Any) {
+    override fun accept(event: Any) {
         when (event) {
             is CameraAttached -> attachedCameras.add(event.device)
             is CameraDetached -> attachedCameras.remove(event.device)

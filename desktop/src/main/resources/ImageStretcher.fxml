@@ -66,7 +66,7 @@
                 <Slider fx:id="midtone"
                         blockIncrement="1.0"
                         max="255.0"
-                        value="127.0"/>
+                        value="127.5"/>
             </VBox>
         </Tab>
         <Tab closable="false"

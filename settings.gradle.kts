@@ -18,10 +18,11 @@ dependencyResolutionManagement {
             library("fits", "gov.nasa.gsfc.heasarc:nom-tam-fits:1.17.0")
             library("jackson", "com.fasterxml.jackson.module:jackson-module-kotlin:2.14.1")
             library("koin", "io.insert-koin:koin-core:3.3.0")
-            library("eventbus", "org.greenrobot:eventbus-java:3.3.1")
+            library("rx-java", "io.reactivex.rxjava3:rxjava:3.1.5")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.5.4")
             library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.5.4")
             bundle("kotest", listOf("kotest-assertions-core", "kotest-runner-junit5"))
+            bundle("rx", listOf("rx-java"))
         }
     }
 }

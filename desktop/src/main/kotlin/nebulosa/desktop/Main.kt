@@ -3,8 +3,8 @@ package nebulosa.desktop
 import javafx.application.Application
 import nebulosa.desktop.cameras.CameraManager
 import nebulosa.desktop.connections.ConnectionService
+import nebulosa.desktop.eventbus.EventBus
 import nebulosa.desktop.home.Home
-import org.greenrobot.eventbus.EventBus
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.named
 import org.koin.core.module.dsl.withOptions
@@ -25,15 +25,7 @@ private fun appDirectory(): Path {
 private fun inject() = module {
     single { appDirectory() } withOptions { named("app") }
 
-    single {
-        EventBus.builder()
-            .sendNoSubscriberEvent(false)
-            .throwSubscriberException(false)
-            .sendSubscriberExceptionEvent(false)
-            .logNoSubscriberMessages(false)
-            .logSubscriberExceptions(false)
-            .build()
-    }
+    single { EventBus() }
 
     single { Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()) }
 

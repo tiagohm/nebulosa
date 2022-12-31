@@ -1,5 +1,6 @@
 package nebulosa.desktop.cameras
 
+import io.reactivex.rxjava3.disposables.Disposable
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.fxml.FXML
@@ -20,6 +21,8 @@ class CameraManager : Window("CameraManager") {
 
     private val connected = SimpleBooleanProperty(false)
 
+    @Volatile private var subscriber: Disposable? = null
+
     init {
         isResizable = false
 
@@ -33,17 +36,27 @@ class CameraManager : Window("CameraManager") {
     private val selectedCamera: Camera? get() = cameras.selectionModel.selectedItem
 
     override fun onStart() {
+        subscriber = eventBus.subscribe(this)
         eventBus.post(CamerasShouldBeListed)
     }
 
-    override fun onEventReceived(event: Any) {
+    override fun onStop() {
+        subscriber?.dispose()
+        subscriber = null
+    }
+
+    override fun accept(event: Any) {
         when (event) {
             is CamerasWereListed -> {
+                val camera = selectedCamera
+
                 cameras.items.clear()
                 cameras.items.addAll(event.cameras)
 
-                if (selectedCamera !in event.cameras) {
+                if (camera !in event.cameras) {
                     cameras.selectionModel.select(null)
+                } else {
+                    cameras.selectionModel.select(camera)
                 }
 
                 connected.set(selectedCamera?.isConnected == true)

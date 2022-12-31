@@ -1,7 +1,5 @@
 package nebulosa.desktop.cameras
 
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleFloatProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
@@ -48,12 +46,23 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
 
     private val imageStretcher = ImageStretcher(this)
 
-    val shadow = SimpleFloatProperty(0f)
-    val highlight = SimpleFloatProperty(1f)
-    val midtone = SimpleFloatProperty(0.5f)
-    val mirrorHorizontal = SimpleBooleanProperty(false)
-    val mirrorVertical = SimpleBooleanProperty(false)
-    val invert = SimpleBooleanProperty(false)
+    var shadow = 0f
+        private set
+
+    var highlight = 1f
+        private set
+
+    var midtone = 0.5f
+        private set
+
+    var mirrorHorizontal = false
+        private set
+
+    var mirrorVertical = false
+        private set
+
+    var invert = false
+        private set
 
     init {
         setTitleFromCameraAndFile()
@@ -105,13 +114,6 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
         image.parent.setOnContextMenuRequested {
             menu.show(image.parent, it.screenX, it.screenY)
         }
-
-        shadow.addListener { _, _, _ -> applyTransformAlgorithms() }
-        highlight.addListener { _, _, _ -> applyTransformAlgorithms() }
-        midtone.addListener { _, _, _ -> applyTransformAlgorithms() }
-        mirrorHorizontal.addListener { _, _, _ -> applyTransformAlgorithms() }
-        mirrorVertical.addListener { _, _, _ -> applyTransformAlgorithms() }
-        invert.addListener { _, _, _ -> applyTransformAlgorithms() }
     }
 
     override fun onStop() {
@@ -209,18 +211,29 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
 
         draw()
 
-        imageStretcher.draw()
+        imageStretcher.drawHistogram()
     }
 
-    private fun applyTransformAlgorithms() {
+    fun transformImage(
+        shadow: Float = this.shadow, highlight: Float = this.highlight, midtone: Float = this.midtone,
+        mirrorHorizontal: Boolean = this.mirrorHorizontal, mirrorVertical: Boolean = this.mirrorVertical,
+        invert: Boolean = this.invert,
+    ) {
+        this.shadow = shadow
+        this.highlight = highlight
+        this.midtone = midtone
+        this.mirrorHorizontal = mirrorHorizontal
+        this.mirrorVertical = mirrorVertical
+        this.invert = invert
+
         if (!canDraw()) return
 
         fits!!.data.copyInto(transformedFits!!.data)
 
         val algorithms = arrayListOf<TransformAlgorithm>()
-        if (invert.value) algorithms.add(Invert)
-        algorithms.add(Flip(mirrorHorizontal.value, mirrorVertical.value))
-        algorithms.add(ScreenTransformFunction(midtone.value, shadow.value, highlight.value))
+        if (invert) algorithms.add(Invert)
+        algorithms.add(Flip(mirrorHorizontal, mirrorVertical))
+        algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
 
         transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)
 
@@ -300,16 +313,16 @@ class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeLis
 
     @FXML
     private fun mirrorHorizontal() {
-        mirrorHorizontal.value = !mirrorHorizontal.value
+        transformImage(mirrorHorizontal = !mirrorHorizontal)
     }
 
     @FXML
     private fun mirrorVertical() {
-        mirrorVertical.value = !mirrorVertical.value
+        transformImage(mirrorVertical = !mirrorVertical)
     }
 
     @FXML
     private fun invert() {
-        invert.value = !invert.value
+        transformImage(invert = !invert)
     }
 }

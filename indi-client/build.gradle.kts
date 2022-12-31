@@ -6,7 +6,6 @@ plugins {
 dependencies {
     api(project(":imaging"))
     implementation(libs.xstream)
-    implementation(libs.eventbus)
     testImplementation(libs.bundles.kotest)
 }
 
