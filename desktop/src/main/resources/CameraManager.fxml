@@ -1,25 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.*?>
+<?import nebulosa.indi.devices.cameras.*?>
 <?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="539.0"
+            prefHeight="415.0"
             prefWidth="432.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <VBox layoutX="116.0"
-          layoutY="132.0"
-          prefHeight="539.0"
-          prefWidth="432.0"
-          spacing="8.0"
+    <VBox spacing="16.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
           AnchorPane.rightAnchor="0.0"
@@ -31,9 +29,8 @@
                     top="16.0"/>
         </padding>
         <HBox alignment="CENTER"
-              prefWidth="200.0">
+              spacing="8.0">
             <ChoiceBox fx:id="cameras"
-                       maxWidth="1.7976931348623157E308"
                        prefHeight="32.0"
                        prefWidth="394.0">
                 <cursor>
@@ -52,9 +49,6 @@
                         <Image url="@icons/connection.png"/>
                     </ImageView>
                 </graphic>
-                <HBox.margin>
-                    <Insets left="16.0"/>
-                </HBox.margin>
                 <cursor>
                     <Cursor fx:constant="HAND"/>
                 </cursor>
@@ -68,9 +62,6 @@
                         <Image url="@icons/dots-vertical.png"/>
                     </ImageView>
                 </graphic>
-                <HBox.margin>
-                    <Insets left="16.0"/>
-                </HBox.margin>
                 <cursor>
                     <Cursor fx:constant="HAND"/>
                 </cursor>
@@ -97,61 +88,47 @@
             </Label>
         </HBox>
         <HBox alignment="CENTER"
-              prefWidth="200.0">
-            <VBox.margin>
-                <Insets top="16.0"/>
-            </VBox.margin>
-            <VBox alignment="CENTER">
+              spacing="8.0">
+            <VBox alignment="CENTER"
+                  spacing="1.0">
                 <Label text="Cooler (100%)">
                     <font>
-                        <Font size="11.0"/>
+                        <Font size="12.0"/>
                     </font>
                 </Label>
                 <ToggleSwitch fx:id="cooler"
                               prefWidth="32.0"
                               prefHeight="32.0">
-                    <VBox.margin>
-                        <Insets top="1.0"/>
-                    </VBox.margin>
                     <cursor>
                         <Cursor fx:constant="HAND"/>
                     </cursor>
                 </ToggleSwitch>
             </VBox>
-            <VBox alignment="CENTER">
-                <HBox.margin>
-                    <Insets left="16.0"/>
-                </HBox.margin>
+            <VBox alignment="CENTER"
+                  spacing="1.0">
                 <Label text="Dew Heater">
                     <font>
-                        <Font size="11.0"/>
+                        <Font size="12.0"/>
                     </font>
                 </Label>
                 <ToggleSwitch fx:id="dewHeater"
                               prefWidth="32.0"
                               prefHeight="32.0">
-                    <VBox.margin>
-                        <Insets top="1.0"/>
-                    </VBox.margin>
                     <cursor>
                         <Cursor fx:constant="HAND"/>
                     </cursor>
                 </ToggleSwitch>
             </VBox>
-            <VBox alignment="CENTER">
-                <HBox.margin>
-                    <Insets left="16.0"/>
-                </HBox.margin>
+            <VBox alignment="CENTER"
+                  spacing="1.0">
                 <Label fx:id="temperature"
                        text="Temperature (-15.0 °C)">
                     <font>
-                        <Font size="11.0"/>
+                        <Font size="12.0"/>
                     </font>
                 </Label>
-                <HBox alignment="CENTER">
-                    <VBox.margin>
-                        <Insets top="1.0"/>
-                    </VBox.margin>
+                <HBox alignment="CENTER"
+                      spacing="4.0">
                     <Spinner fx:id="temperatureSetpoint"
                              editable="true"
                              min="-50.0"
@@ -171,15 +148,366 @@
                                 <Image url="@icons/check.png"/>
                             </ImageView>
                         </graphic>
-                        <HBox.margin>
-                            <Insets left="16.0"/>
-                        </HBox.margin>
                         <cursor>
                             <Cursor fx:constant="HAND"/>
                         </cursor>
                     </Button>
                 </HBox>
             </VBox>
+        </HBox>
+        <HBox alignment="CENTER"
+              spacing="8.0">
+            <VBox alignment="CENTER"
+                  spacing="4.0">
+                <Label text="Exposure">
+                    <font>
+                        <Font size="12.0"/>
+                    </font>
+                </Label>
+                <Spinner fx:id="exposure"
+                         editable="true"
+                         min="1.0"
+                         max="1000000.0"
+                         initialValue="1.0"
+                         prefWidth="144.0">
+                </Spinner>
+                <HBox alignment="CENTER"
+                      spacing="4.0">
+                    <fx:define>
+                        <ToggleGroup fx:id="exposureUnit"/>
+                    </fx:define>
+                    <RadioButton text="s"
+                                 toggleGroup="$exposureUnit"
+                                 userData="SECONDS"
+                                 onAction="#updateExposureUnit">
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                        <font>
+                            <Font size="12.0"/>
+                        </font>
+                    </RadioButton>
+                    <RadioButton text="ms"
+                                 toggleGroup="$exposureUnit"
+                                 userData="MILLISECONDS"
+                                 onAction="#updateExposureUnit">
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                        <font>
+                            <Font size="12.0"/>
+                        </font>
+                    </RadioButton>
+                    <RadioButton text="µs"
+                                 toggleGroup="$exposureUnit"
+                                 selected="true"
+                                 userData="MICROSECONDS"
+                                 onAction="#updateExposureUnit">
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                        <font>
+                            <Font size="12.0"/>
+                        </font>
+                    </RadioButton>
+                </HBox>
+            </VBox>
+            <VBox alignment="CENTER_LEFT"
+                  spacing="8.0">
+                <HBox alignment="CENTER"
+                      spacing="6.0">
+                    <fx:define>
+                        <ToggleGroup fx:id="exposureType"/>
+                    </fx:define>
+                    <RadioButton text="Single"
+                                 toggleGroup="$exposureType"
+                                 selected="true"
+                                 userData="SINGLE"
+                                 onAction="#updateExposureType">
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                        <font>
+                            <Font size="12.0"/>
+                        </font>
+                    </RadioButton>
+                    <RadioButton text="Fixed"
+                                 toggleGroup="$exposureType"
+                                 userData="FIXED"
+                                 onAction="#updateExposureType">
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                        <font>
+                            <Font size="12.0"/>
+                        </font>
+                    </RadioButton>
+                    <RadioButton text="Continuous"
+                                 toggleGroup="$exposureType"
+                                 userData="CONTINUOUS"
+                                 onAction="#updateExposureType">
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                        <font>
+                            <Font size="12.0"/>
+                        </font>
+                    </RadioButton>
+                </HBox>
+                <HBox alignment="CENTER"
+                      spacing="4.0">
+                    <VBox alignment="CENTER_LEFT"
+                          spacing="1.0">
+                        <Label text="Delay (ms)">
+                            <font>
+                                <Font size="12.0"/>
+                            </font>
+                        </Label>
+                        <Spinner fx:id="exposureDelay"
+                                 editable="true"
+                                 min="100.0"
+                                 max="30000.0"
+                                 initialValue="1000.0"
+                                 prefWidth="96.0">
+                        </Spinner>
+                    </VBox>
+                    <VBox alignment="CENTER_LEFT"
+                          spacing="1.0">
+                        <Label text="Count">
+                            <font>
+                                <Font size="12.0"/>
+                            </font>
+                        </Label>
+                        <Spinner fx:id="exposureCount"
+                                 editable="true"
+                                 min="1.0"
+                                 max="9999.0"
+                                 initialValue="100.0"
+                                 prefWidth="81.0">
+                        </Spinner>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </HBox>
+        <HBox alignment="CENTER"
+              spacing="24.0">
+            <VBox alignment="CENTER"
+                  spacing="4.0">
+                <Label text="Subframe">
+                    <font>
+                        <Font size="12.0"/>
+                    </font>
+                </Label>
+                <ToggleSwitch fx:id="subframe"
+                              prefWidth="32.0"
+                              prefHeight="32.0">
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </ToggleSwitch>
+                <Button fx:id="fullsize"
+                        onAction="#applyFullsize"
+                        contentDisplay="GRAPHIC_ONLY"
+                        mnemonicParsing="false">
+                    <graphic>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/fullscreen.png"/>
+                        </ImageView>
+                    </graphic>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </Button>
+            </VBox>
+            <VBox alignment="CENTER"
+                  spacing="4.0">
+                <HBox alignment="CENTER"
+                      spacing="4.0">
+                    <VBox alignment="CENTER_LEFT">
+                        <Label text="X">
+                            <font>
+                                <Font size="12.0"/>
+                            </font>
+                        </Label>
+                        <Spinner fx:id="x"
+                                 editable="true"
+                                 min="0.0"
+                                 max="1279.0"
+                                 initialValue="0.0"
+                                 prefWidth="81.0">
+                        </Spinner>
+                    </VBox>
+                    <VBox alignment="CENTER_LEFT">
+                        <Label text="Y">
+                            <font>
+                                <Font size="12.0"/>
+                            </font>
+                        </Label>
+                        <Spinner fx:id="y"
+                                 editable="true"
+                                 min="0.0"
+                                 max="1023.0"
+                                 initialValue="0.0"
+                                 prefWidth="81.0">
+                        </Spinner>
+                    </VBox>
+                    <VBox alignment="CENTER_LEFT">
+                        <Label text="Bin X">
+                            <font>
+                                <Font size="12.0"/>
+                            </font>
+                        </Label>
+                        <Spinner fx:id="binX"
+                                 editable="true"
+                                 min="1.0"
+                                 max="4.0"
+                                 initialValue="1.0"
+                                 prefWidth="64.0">
+                        </Spinner>
+                    </VBox>
+                </HBox>
+                <HBox alignment="CENTER"
+                      spacing="4.0">
+                    <VBox alignment="CENTER_LEFT">
+                        <Label text="Width">
+                            <font>
+                                <Font size="12.0"/>
+                            </font>
+                        </Label>
+                        <Spinner fx:id="width"
+                                 editable="true"
+                                 min="0.0"
+                                 max="1280.0"
+                                 initialValue="1280.0"
+                                 prefWidth="81.0">
+                        </Spinner>
+                    </VBox>
+                    <VBox alignment="CENTER_LEFT">
+                        <Label text="Height">
+                            <font>
+                                <Font size="12.0"/>
+                            </font>
+                        </Label>
+                        <Spinner fx:id="height"
+                                 editable="true"
+                                 min="0.0"
+                                 max="1024.0"
+                                 initialValue="1024.0"
+                                 prefWidth="81.0">
+                        </Spinner>
+                    </VBox>
+                    <VBox alignment="CENTER_LEFT">
+                        <Label text="Bin Y">
+                            <font>
+                                <Font size="12.0"/>
+                            </font>
+                        </Label>
+                        <Spinner fx:id="binY"
+                                 editable="true"
+                                 min="1.0"
+                                 max="4.0"
+                                 initialValue="1.0"
+                                 prefWidth="64.0">
+                        </Spinner>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </HBox>
+        <HBox alignment="CENTER"
+              spacing="8.0">
+            <fx:define>
+                <FrameType fx:id="frameTypeInitialValue"
+                           fx:constant="LIGHT"/>
+            </fx:define>
+            <VBox alignment="CENTER_LEFT"
+                  spacing="1.0">
+                <Label text="Frame Type">
+                    <font>
+                        <Font size="12.0"/>
+                    </font>
+                </Label>
+                <ChoiceBox fx:id="frameType"
+                           value="$frameTypeInitialValue">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <FrameType fx:value="LIGHT"/>
+                            <FrameType fx:value="DARK"/>
+                            <FrameType fx:value="FLAT"/>
+                            <FrameType fx:value="BIAS"/>
+                        </FXCollections>
+                    </items>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </ChoiceBox>
+            </VBox>
+            <VBox alignment="CENTER_LEFT"
+                  spacing="1.0">
+                <Label text="Frame Format">
+                    <font>
+                        <Font size="12.0"/>
+                    </font>
+                </Label>
+                <ChoiceBox fx:id="frameFormat"
+                           minWidth="96.0">
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </ChoiceBox>
+            </VBox>
+            <VBox alignment="CENTER_LEFT"
+                  spacing="1.0">
+                <Label text="Speed">
+                    <font>
+                        <Font size="12.0"/>
+                    </font>
+                </Label>
+                <ChoiceBox fx:id="speed"
+                           minWidth="96.0"
+                           disable="true">
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </ChoiceBox>
+            </VBox>
+        </HBox>
+        <HBox alignment="CENTER"
+              spacing="4.0">
+            <Button fx:id="startCapture"
+                    onAction="#startCapture"
+                    mnemonicParsing="false"
+                    text="Start">
+                <graphic>
+                    <ImageView fitHeight="24.0"
+                               fitWidth="24.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/play.png"/>
+                    </ImageView>
+                </graphic>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
+            <Button fx:id="abortCapture"
+                    onAction="#abortCapture"
+                    mnemonicParsing="false"
+                    text="Abort">
+                <graphic>
+                    <ImageView fitHeight="24.0"
+                               fitWidth="24.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/stop.png"/>
+                    </ImageView>
+                </graphic>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
         </HBox>
     </VBox>
 </AnchorPane>

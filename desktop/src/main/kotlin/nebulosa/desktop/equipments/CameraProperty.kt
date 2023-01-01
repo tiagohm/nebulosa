@@ -23,6 +23,8 @@ class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, C
     @JvmField val isConnected = SimpleBooleanProperty(false)
     @JvmField val hasCoolerControl = SimpleBooleanProperty(false)
     @JvmField val isCoolerOn = SimpleBooleanProperty(false)
+    @JvmField val hasDewHeater = SimpleBooleanProperty(false)
+    @JvmField val isDewHeaterOn = SimpleBooleanProperty(false)
     @JvmField val frameFormats = SimpleListProperty(FXCollections.observableArrayList<String>())
     @JvmField val canAbort = SimpleBooleanProperty(false)
     @JvmField val cfaOffsetX = SimpleIntegerProperty(0)
@@ -70,8 +72,9 @@ class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, C
             isConnected.value = newValue.isConnected
             hasCoolerControl.value = newValue.hasCoolerControl
             isCoolerOn.value = newValue.isCoolerOn
-            frameFormats.clear()
-            frameFormats.addAll(newValue.frameFormats)
+            hasDewHeater.value = newValue.hasDewHeater
+            isDewHeaterOn.value = newValue.isDewHeaterOn
+            frameFormats.setAll(newValue.frameFormats)
             canAbort.value = newValue.canAbort
             cfaOffsetX.value = newValue.cfaOffsetX
             cfaOffsetY.value = newValue.cfaOffsetY
@@ -108,6 +111,8 @@ class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, C
         isConnected.value = false
         hasCoolerControl.value = false
         isCoolerOn.value = false
+        hasDewHeater.value = false
+        isDewHeaterOn.value = false
         frameFormats.clear()
         canAbort.value = false
         cfaOffsetX.value = 0
@@ -148,6 +153,9 @@ class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, C
                     is DeviceDisconnected -> isConnected.value = value.isConnected
                     is CameraCoolerControlChanged -> hasCoolerControl.value = value.hasCoolerControl
                     is CameraCoolerChanged -> isCoolerOn.value = value.isCoolerOn
+                    is CameraHasDewHeaterChanged -> hasDewHeater.value = value.hasDewHeater
+                    is CameraDewHeaterChanged -> isDewHeaterOn.value = value.isDewHeaterOn
+                    is CameraFrameFormatsChanged -> frameFormats.setAll(value.frameFormats)
                     is CameraCanAbortChanged -> canAbort.value = value.canAbort
                     is CameraCfaChanged -> {
                         cfaOffsetX.value = value.cfaOffsetX
