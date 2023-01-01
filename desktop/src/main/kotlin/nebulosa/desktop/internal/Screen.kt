@@ -10,16 +10,16 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 @Suppress("LeakingThis")
-abstract class Window(name: String) : Stage(), Consumer<Any>, KoinComponent {
+abstract class Screen(name: String) : Stage(), Consumer<Any>, KoinComponent {
 
     protected val eventBus by inject<EventBus>()
 
     init {
-        title = name
         val resource = Thread.currentThread().contextClassLoader.getResource("$name.fxml")!!
         val loader = FXMLLoader(resource)
         loader.setController(this)
         val root = loader.load<Parent>()
+
         scene = Scene(root)
 
         setOnShown { onStart() }
@@ -30,5 +30,7 @@ abstract class Window(name: String) : Stage(), Consumer<Any>, KoinComponent {
 
     protected open fun onStop() = Unit
 
-    override fun accept(event: Any) = Unit
+    protected open fun onEvent(event: Any) = Unit
+
+    final override fun accept(event: Any) = onEvent(event)
 }

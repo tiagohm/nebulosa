@@ -6,7 +6,7 @@ plugins {
 dependencies {
     api(project(":io"))
     api(project(":time"))
-    api(project(":http"))
+    implementation(libs.okhttp)
     testImplementation(libs.bundles.kotest)
 }
 

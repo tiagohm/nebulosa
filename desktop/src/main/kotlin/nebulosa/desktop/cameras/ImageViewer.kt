@@ -11,7 +11,7 @@ import javafx.scene.image.WritableImage
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
-import nebulosa.desktop.internal.Window
+import nebulosa.desktop.internal.Screen
 import nebulosa.imaging.FitsImage
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.Flip
@@ -26,7 +26,7 @@ import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.min
 
-class ImageViewer(val camera: Camera? = null) : Window("ImageViewer"), ChangeListener<Number> {
+class ImageViewer(val camera: Camera? = null) : Screen("ImageViewer"), ChangeListener<Number> {
 
     @FXML private lateinit var image: ImageView
     @FXML private lateinit var menu: ContextMenu

@@ -1,21 +1,22 @@
 package nebulosa.nasa.daf
 
-import nebulosa.http.DEFAULT_HTTP_CLIENT
 import nebulosa.io.SeekableSource
 import nebulosa.io.readDoubleArray
 import nebulosa.io.source
+import okhttp3.ConnectionPool
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.buffer
+import java.util.concurrent.TimeUnit
 
 class RemoteDaf(val uri: String) : Daf() {
 
     override fun initialize() {
         val request = Request.Builder()
-            .url(uri)
-            .head()
+            .head().url(uri)
             .build()
 
-        DEFAULT_HTTP_CLIENT.newCall(request).execute().use {
+        HTTP_CLIENT.newCall(request).execute().use {
             if (it.code != 200) {
                 throw IllegalArgumentException("The given URL is inaccessible: $uri")
             }
@@ -45,15 +46,27 @@ class RemoteDaf(val uri: String) : Daf() {
 
     private fun readSource(start: Long, end: Long): SeekableSource {
         val request = Request.Builder()
-            .url(uri)
-            .get()
+            .get().url(uri)
             .addHeader("Range", "bytes=$start-$end")
             .build()
 
-        return DEFAULT_HTTP_CLIENT.newCall(request).execute().use {
+        return HTTP_CLIENT.newCall(request).execute().use {
             it.body.bytes().source()
         }
     }
 
     override fun close() {}
+
+    companion object {
+
+        @JvmStatic private val CONNECTION_POOL = ConnectionPool(32, 30, TimeUnit.MINUTES)
+
+        @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder()
+            .connectionPool(CONNECTION_POOL)
+            .callTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
 }

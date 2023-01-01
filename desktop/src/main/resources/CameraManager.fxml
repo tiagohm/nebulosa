@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.Cursor?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -41,6 +41,7 @@
                 </cursor>
             </ChoiceBox>
             <Button fx:id="connect"
+                    onAction="#connect"
                     contentDisplay="GRAPHIC_ONLY"
                     mnemonicParsing="false">
                 <graphic>
@@ -58,7 +59,131 @@
                     <Cursor fx:constant="HAND"/>
                 </cursor>
             </Button>
+            <Label fx:id="cameraMenuButton">
+                <graphic>
+                    <ImageView fitHeight="24.0"
+                               fitWidth="24.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/dots-vertical.png"/>
+                    </ImageView>
+                </graphic>
+                <HBox.margin>
+                    <Insets left="16.0"/>
+                </HBox.margin>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+                <fx:define>
+                    <ContextMenu fx:id="cameraMenu">
+                        <items>
+                            <CheckMenuItem text="Auto Save All Exposures"
+                                           onAction="#toggleAutoSaveAllExposures"/>
+                            <MenuItem text="Image Save Path..."
+                                      onAction="#openImageSavePath"/>
+                            <CheckMenuItem text="Auto Sub Folder"
+                                           onAction="#toggleAutoSubFolder"/>
+                            <Menu text="New Sub Folder At">
+                                <CheckMenuItem text="Noon"
+                                               userData="NOON"
+                                               onAction="#chooseNewSubFolderAt"/>
+                                <CheckMenuItem text="Midnight"
+                                               userData="MIDNIGHT"
+                                               onAction="#chooseNewSubFolderAt"/>
+                            </Menu>
+                        </items>
+                    </ContextMenu>
+                </fx:define>
+            </Label>
         </HBox>
-        <HBox prefWidth="200.0"/>
+        <HBox alignment="CENTER"
+              prefWidth="200.0">
+            <VBox.margin>
+                <Insets top="16.0"/>
+            </VBox.margin>
+            <VBox alignment="CENTER">
+                <Label text="Cooler (100%)">
+                    <font>
+                        <Font size="11.0"/>
+                    </font>
+                </Label>
+                <ToggleSwitch fx:id="cooler"
+                              prefWidth="32.0">
+                    <VBox.margin>
+                        <Insets top="1.0"/>
+                    </VBox.margin>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                    <font>
+                        <Font size="11.0"/>
+                    </font>
+                </ToggleSwitch>
+            </VBox>
+            <VBox alignment="CENTER">
+                <HBox.margin>
+                    <Insets left="16.0"/>
+                </HBox.margin>
+                <Label text="Dew Heater">
+                    <font>
+                        <Font size="11.0"/>
+                    </font>
+                </Label>
+                <ToggleSwitch fx:id="dewHeater"
+                              prefWidth="32.0">
+                    <VBox.margin>
+                        <Insets top="1.0"/>
+                    </VBox.margin>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </ToggleSwitch>
+            </VBox>
+            <VBox alignment="CENTER">
+                <HBox.margin>
+                    <Insets left="16.0"/>
+                </HBox.margin>
+                <Label text="Temperature">
+                    <font>
+                        <Font size="11.0"/>
+                    </font>
+                </Label>
+                <HBox alignment="CENTER">
+                    <VBox.margin>
+                        <Insets top="1.0"/>
+                    </VBox.margin>
+                    <Spinner fx:id="temperatureSetpoint"
+                             editable="true"
+                             min="-50.0"
+                             max="50.0"
+                             initialValue="0.0"
+                             prefWidth="72.0">
+                    </Spinner>
+
+                    <Label text=" / "/>
+                    <Label text="-10.0"/>
+                    <Label text="°C"/>
+
+                    <Button onAction="#applyTemperatureSetpoint"
+                            contentDisplay="GRAPHIC_ONLY"
+                            mnemonicParsing="false">
+                        <graphic>
+                            <ImageView fitHeight="24.0"
+                                       fitWidth="24.0"
+                                       pickOnBounds="true"
+                                       preserveRatio="true">
+                                <Image url="@icons/check.png"/>
+                            </ImageView>
+                        </graphic>
+                        <HBox.margin>
+                            <Insets left="16.0"/>
+                        </HBox.margin>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </Button>
+                </HBox>
+            </VBox>
+        </HBox>
     </VBox>
 </AnchorPane>

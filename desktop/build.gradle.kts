@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":imaging"))
     implementation(libs.koin)
     implementation(libs.bundles.rx)
+    implementation("org.controlsfx:controlsfx:11.1.2")
     testImplementation(libs.bundles.kotest)
 }
 

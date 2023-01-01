@@ -12,13 +12,13 @@ import nebulosa.desktop.cameras.ImageViewer
 import nebulosa.desktop.connections.ConnectionService
 import nebulosa.desktop.internal.Icon
 import nebulosa.desktop.internal.MessageDialog
-import nebulosa.desktop.internal.Window
+import nebulosa.desktop.internal.Screen
 import nebulosa.indi.devices.cameras.Camera
 import nebulosa.indi.devices.cameras.CameraAttached
 import nebulosa.indi.devices.cameras.CameraDetached
 import org.koin.core.component.inject
 
-class Home : Window("Home") {
+class Home : Screen("Home") {
 
     private val connectionService by inject<ConnectionService>()
     private val camerasPage by inject<CameraManager>()
@@ -41,9 +41,9 @@ class Home : Window("Home") {
     @FXML private lateinit var sequencer: Button
     @FXML private lateinit var imageViewer: Button
 
-    private val attachedCameras = ArrayList<Camera>(4)
-    private val connected = SimpleBooleanProperty(false)
-    private val imageViewers = HashSet<ImageViewer>(8)
+    @JvmField val attachedCameras = ArrayList<Camera>(4)
+    @JvmField val connected = SimpleBooleanProperty(false)
+    @JvmField val imageViewers = HashSet<ImageViewer>(8)
 
     @Volatile private var subscriber: Disposable? = null
 
@@ -106,11 +106,10 @@ class Home : Window("Home") {
         camerasPage.close()
     }
 
-    override fun accept(event: Any) {
+    override fun onEvent(event: Any) {
         when (event) {
             is CameraAttached -> attachedCameras.add(event.device)
             is CameraDetached -> attachedCameras.remove(event.device)
-            is CamerasShouldBeListed -> eventBus.post(CamerasWereListed(attachedCameras))
         }
     }
 
@@ -150,7 +149,7 @@ class Home : Window("Home") {
         chooser.title = "Open New Image"
         chooser.extensionFilters.add(FileChooser.ExtensionFilter("FITS Files", "*.fits", "*.fit"))
         val file = chooser.showOpenDialog(null) ?: return
-        val page = imageViewers.firstOrNull { !it.isShowing } ?: ImageViewer()
+        val page = imageViewers.firstOrNull { !it.isShowing && it.camera == null } ?: ImageViewer()
         imageViewers.add(page)
         page.open(file)
     }
