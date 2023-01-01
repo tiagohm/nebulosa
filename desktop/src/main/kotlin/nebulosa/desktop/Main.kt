@@ -1,10 +1,9 @@
 package nebulosa.desktop
 
 import javafx.application.Application
-import nebulosa.desktop.cameras.CameraManager
-import nebulosa.desktop.connections.ConnectionService
-import nebulosa.desktop.eventbus.EventBus
-import nebulosa.desktop.home.Home
+import nebulosa.desktop.connections.ConnectionManager
+import nebulosa.desktop.core.eventbus.EventBus
+import nebulosa.desktop.equipments.EquipmentManager
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.named
 import org.koin.core.module.dsl.withOptions
@@ -29,10 +28,8 @@ private fun inject() = module {
 
     single { Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()) }
 
-    single { ConnectionService() }
-
-    single { Home() }
-    single { CameraManager() }
+    single(createdAtStart = true) { ConnectionManager() }
+    single(createdAtStart = true) { EquipmentManager() }
 }
 
 fun main(args: Array<String>) {

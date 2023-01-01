@@ -11,7 +11,7 @@ import javafx.scene.image.WritableImage
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
-import nebulosa.desktop.internal.Screen
+import nebulosa.desktop.core.controls.Screen
 import nebulosa.imaging.FitsImage
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.Flip
@@ -26,7 +26,7 @@ import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.min
 
-class ImageViewer(val camera: Camera? = null) : Screen("ImageViewer"), ChangeListener<Number> {
+class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer"), ChangeListener<Number> {
 
     @FXML private lateinit var image: ImageView
     @FXML private lateinit var menu: ContextMenu
@@ -44,7 +44,7 @@ class ImageViewer(val camera: Camera? = null) : Screen("ImageViewer"), ChangeLis
     @Volatile private var dragStartY = 0.0
     @Volatile private var lastDrawTime = 0L
 
-    private val imageStretcher = ImageStretcher(this)
+    private val imageStretcher = ImageStretcherScreen(this)
 
     var shadow = 0f
         private set

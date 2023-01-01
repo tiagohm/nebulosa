@@ -1,6 +1,6 @@
 package nebulosa.desktop.connections
 
-import nebulosa.desktop.eventbus.EventBus
+import nebulosa.desktop.core.eventbus.EventBus
 import nebulosa.indi.INDIClient
 import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.DeviceEventHandler
@@ -8,7 +8,7 @@ import nebulosa.indi.devices.DeviceProtocolHandler
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class ConnectionService : DeviceEventHandler, KoinComponent {
+class ConnectionManager : DeviceEventHandler, KoinComponent {
 
     private val eventBus by inject<EventBus>()
 

@@ -2,15 +2,14 @@ package nebulosa.desktop
 
 import javafx.application.Application
 import javafx.stage.Stage
-import nebulosa.desktop.home.Home
+import nebulosa.desktop.home.HomeScreen
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 class Nebulosa : Application(), KoinComponent {
 
-    private val home by inject<Home>()
+    private val homeScreen by lazy { HomeScreen() }
 
     override fun start(primaryStage: Stage) {
-        home.show()
+        homeScreen.show()
     }
 }

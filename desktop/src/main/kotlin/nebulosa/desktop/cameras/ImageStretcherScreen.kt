@@ -2,9 +2,9 @@ package nebulosa.desktop.cameras
 
 import javafx.fxml.FXML
 import javafx.scene.control.Slider
-import nebulosa.desktop.internal.Screen
+import nebulosa.desktop.core.controls.Screen
 
-class ImageStretcher(private val imageViewer: ImageViewer) : Screen("ImageStretcher") {
+class ImageStretcherScreen(private val imageViewer: ImageViewerScreen) : Screen("ImageStretcher") {
 
     @FXML private lateinit var shadow: Slider
     @FXML private lateinit var highlight: Slider

@@ -59,7 +59,7 @@
                     <Cursor fx:constant="HAND"/>
                 </cursor>
             </Button>
-            <Label fx:id="cameraMenuButton">
+            <Label fx:id="cameraMenuIcon">
                 <graphic>
                     <ImageView fitHeight="24.0"
                                fitWidth="24.0"
@@ -108,16 +108,14 @@
                     </font>
                 </Label>
                 <ToggleSwitch fx:id="cooler"
-                              prefWidth="32.0">
+                              prefWidth="32.0"
+                              prefHeight="32.0">
                     <VBox.margin>
                         <Insets top="1.0"/>
                     </VBox.margin>
                     <cursor>
                         <Cursor fx:constant="HAND"/>
                     </cursor>
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
                 </ToggleSwitch>
             </VBox>
             <VBox alignment="CENTER">
@@ -130,7 +128,8 @@
                     </font>
                 </Label>
                 <ToggleSwitch fx:id="dewHeater"
-                              prefWidth="32.0">
+                              prefWidth="32.0"
+                              prefHeight="32.0">
                     <VBox.margin>
                         <Insets top="1.0"/>
                     </VBox.margin>
@@ -143,7 +142,8 @@
                 <HBox.margin>
                     <Insets left="16.0"/>
                 </HBox.margin>
-                <Label text="Temperature">
+                <Label fx:id="temperature"
+                       text="Temperature (-15.0 °C)">
                     <font>
                         <Font size="11.0"/>
                     </font>
@@ -159,12 +159,8 @@
                              initialValue="0.0"
                              prefWidth="72.0">
                     </Spinner>
-
-                    <Label text=" / "/>
-                    <Label text="-10.0"/>
-                    <Label text="°C"/>
-
-                    <Button onAction="#applyTemperatureSetpoint"
+                    <Button fx:id="applyTemperatureSetpoint"
+                            onAction="#applyTemperatureSetpoint"
                             contentDisplay="GRAPHIC_ONLY"
                             mnemonicParsing="false">
                         <graphic>

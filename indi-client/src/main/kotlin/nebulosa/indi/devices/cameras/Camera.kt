@@ -28,7 +28,7 @@ class Camera(
     @Volatile @JvmField var hasCooler = false
     @Volatile @JvmField var canSetTemperature = false
     @Volatile @JvmField var temperature = 0.0
-    @Volatile @JvmField var canSubframe = false
+    @Volatile @JvmField var canSubFrame = false
     @Volatile @JvmField var x = 0
     @Volatile @JvmField var minX = 0
     @Volatile @JvmField var maxX = 0
@@ -112,7 +112,7 @@ class Camera(
                     }
                     "CCD_FRAME" -> {
                         if (message is DefNumberVector) {
-                            canSubframe = message.perm != PropertyPermission.RO
+                            canSubFrame = message.perm != PropertyPermission.RO
                             handler.fireOnEventReceived(CameraCanSubFrameChanged(this))
                         }
 
@@ -200,7 +200,7 @@ class Camera(
     }
 
     fun frame(x: Int, y: Int, width: Int, height: Int) {
-        if (canSubframe) {
+        if (canSubFrame) {
             sendNewNumber(
                 "CCD_FRAME", "X" to x.toDouble(), "Y" to y.toDouble(),
                 "WIDTH" to width.toDouble(), "HEIGHT" to height.toDouble(),

@@ -1,4 +1,4 @@
-package nebulosa.desktop.internal
+package nebulosa.desktop.core.controls
 
 import javafx.scene.control.Alert
 

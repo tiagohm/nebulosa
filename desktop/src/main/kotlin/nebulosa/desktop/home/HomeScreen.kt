@@ -1,27 +1,24 @@
 package nebulosa.desktop.home
 
 import io.reactivex.rxjava3.disposables.Disposable
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.TextField
 import javafx.stage.FileChooser
-import nebulosa.desktop.cameras.CameraManager
-import nebulosa.desktop.cameras.ImageViewer
-import nebulosa.desktop.connections.ConnectionService
-import nebulosa.desktop.internal.Icon
-import nebulosa.desktop.internal.MessageDialog
-import nebulosa.desktop.internal.Screen
-import nebulosa.indi.devices.cameras.Camera
-import nebulosa.indi.devices.cameras.CameraAttached
-import nebulosa.indi.devices.cameras.CameraDetached
+import nebulosa.desktop.cameras.CameraManagerScreen
+import nebulosa.desktop.cameras.ImageViewerScreen
+import nebulosa.desktop.connections.ConnectionManager
+import nebulosa.desktop.core.controls.Icon
+import nebulosa.desktop.core.controls.MessageDialog
+import nebulosa.desktop.core.controls.Screen
+import nebulosa.desktop.equipments.EquipmentManager
 import org.koin.core.component.inject
 
-class Home : Screen("Home") {
+class HomeScreen : Screen("Home") {
 
-    private val connectionService by inject<ConnectionService>()
-    private val camerasPage by inject<CameraManager>()
+    private val connectionManager by inject<ConnectionManager>()
+    private val equipmentManager by inject<EquipmentManager>()
 
     @FXML private lateinit var connections: ChoiceBox<String>
     @FXML private lateinit var host: TextField
@@ -41,9 +38,8 @@ class Home : Screen("Home") {
     @FXML private lateinit var sequencer: Button
     @FXML private lateinit var imageViewer: Button
 
-    @JvmField val attachedCameras = ArrayList<Camera>(4)
-    @JvmField val connected = SimpleBooleanProperty(false)
-    @JvmField val imageViewers = HashSet<ImageViewer>(8)
+    @Volatile private var cameraManagerScreen: CameraManagerScreen? = null
+    private val imageViewers = HashSet<ImageViewerScreen>(8)
 
     @Volatile private var subscriber: Disposable? = null
 
@@ -66,21 +62,21 @@ class Home : Screen("Home") {
         sequencer.setOnAction { open("SEQUENCER") }
         imageViewer.setOnAction { open("OPEN_NEW_IMAGE") }
 
-        connections.disableProperty().bind(connected)
-        host.disableProperty().bind(connected)
-        port.disableProperty().bind(connected)
-        cameras.disableProperty().bind(connected.not())
-        mounts.disableProperty().bind(connected.not())
-        guiders.disableProperty().bind(connected.not())
-        filterWheels.disableProperty().bind(connected.not())
-        focusers.disableProperty().bind(connected.not())
-        domes.disableProperty().bind(connected.not())
-        rotators.disableProperty().bind(connected.not())
-        switches.disableProperty().bind(connected.not())
-        alignment.disableProperty().bind(connected.not())
-        sequencer.disableProperty().bind(connected.not())
+        connections.disableProperty().bind(equipmentManager.connected)
+        host.disableProperty().bind(equipmentManager.connected)
+        port.disableProperty().bind(equipmentManager.connected)
+        cameras.disableProperty().bind(equipmentManager.connected.not())
+        mounts.disableProperty().bind(equipmentManager.connected.not())
+        guiders.disableProperty().bind(equipmentManager.connected.not())
+        filterWheels.disableProperty().bind(equipmentManager.connected.not())
+        focusers.disableProperty().bind(equipmentManager.connected.not())
+        domes.disableProperty().bind(equipmentManager.connected.not())
+        rotators.disableProperty().bind(equipmentManager.connected.not())
+        switches.disableProperty().bind(equipmentManager.connected.not())
+        alignment.disableProperty().bind(equipmentManager.connected.not())
+        sequencer.disableProperty().bind(equipmentManager.connected.not())
 
-        connected.addListener { _, _, value ->
+        equipmentManager.connected.addListener { _, _, value ->
             if (value) {
                 connect.text = "Disconnect"
                 connect.graphic = Icon.closeCircle()
@@ -93,34 +89,24 @@ class Home : Screen("Home") {
 
     override fun onStart() {
         subscriber = eventBus.subscribe(this)
-
-        connected.set(connectionService.isConnected())
     }
 
     override fun onStop() {
         subscriber?.dispose()
         subscriber = null
 
-        connectionService.disconnect()
+        connectionManager.disconnect()
 
-        camerasPage.close()
-    }
-
-    override fun onEvent(event: Any) {
-        when (event) {
-            is CameraAttached -> attachedCameras.add(event.device)
-            is CameraDetached -> attachedCameras.remove(event.device)
-        }
+        cameraManagerScreen?.close()
     }
 
     @Synchronized
     private fun connect() {
-        if (!connectionService.isConnected()) {
+        if (!connectionManager.isConnected()) {
             try {
                 val host = host.text.trim().ifEmpty { "localhost" }
                 val port = port.text.trim().toIntOrNull() ?: 7624
-                connectionService.connect(host, port)
-                connected.set(true)
+                connectionManager.connect(host, port)
             } catch (e: Throwable) {
                 MessageDialog(
                     "A connection to the INDI Server could not be established. Check your connection or server configuration.",
@@ -128,15 +114,14 @@ class Home : Screen("Home") {
                 ).showAndWait()
             }
         } else {
-            connectionService.disconnect()
-            connected.set(false)
+            connectionManager.disconnect()
         }
     }
 
     @Synchronized
     private fun open(name: String) {
         val page = when (name) {
-            "CAMERA" -> camerasPage
+            "CAMERA" -> CameraManagerScreen().also { cameraManagerScreen = it }
             "OPEN_NEW_IMAGE" -> return openNewImage()
             else -> return
         }
@@ -149,7 +134,7 @@ class Home : Screen("Home") {
         chooser.title = "Open New Image"
         chooser.extensionFilters.add(FileChooser.ExtensionFilter("FITS Files", "*.fits", "*.fit"))
         val file = chooser.showOpenDialog(null) ?: return
-        val page = imageViewers.firstOrNull { !it.isShowing && it.camera == null } ?: ImageViewer()
+        val page = imageViewers.firstOrNull { !it.isShowing && it.camera == null } ?: ImageViewerScreen()
         imageViewers.add(page)
         page.open(file)
     }

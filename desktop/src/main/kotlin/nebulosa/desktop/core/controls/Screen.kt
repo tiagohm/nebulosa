@@ -1,11 +1,11 @@
-package nebulosa.desktop.internal
+package nebulosa.desktop.core.controls
 
 import io.reactivex.rxjava3.functions.Consumer
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.stage.Stage
-import nebulosa.desktop.eventbus.EventBus
+import nebulosa.desktop.core.eventbus.EventBus
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
