@@ -13,17 +13,17 @@ value class Distance(val value: Double) : Comparable<Distance> {
     /**
      * Converts this distance to meters.
      */
-    inline val m get() = value * AU_M
+    inline val meters get() = value * AU_M
 
     /**
      * Converts this distance to kilometers.
      */
-    inline val km get() = value * AU_KM
+    inline val kilometers get() = value * AU_KM
 
     /**
      * Converts this distance to light-years.
      */
-    inline val ly get() = value / (SPEED_OF_LIGHT * 31557600 / AU_M)
+    inline val lightYears get() = value / (SPEED_OF_LIGHT * 31557600 / AU_M)
 
     operator fun plus(temperature: Distance) = (value + temperature.value).au
 

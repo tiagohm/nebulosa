@@ -34,33 +34,33 @@ class ErfaTest : StringSpec() {
             val (e1, p1, h1) = eraGc2Gde(6378137.0.m, 1.0 / 298.257223563, 2e6.m, 3e6.m, 5.244e6.m)
             e1.value shouldBe (0.9827937232473290680 plusOrMinus 1e-14)
             p1.value shouldBe (0.97160184819075459 plusOrMinus 1e-14)
-            h1.m shouldBe (331.4172461426059892 plusOrMinus 1e-8)
+            h1.meters shouldBe (331.4172461426059892 plusOrMinus 1e-8)
 
             val (e2, p2, h2) = eraGc2Gde(6378137.0.m, 1.0 / 298.257222101, 2e6.m, 3e6.m, 5.244e6.m)
             e2.value shouldBe (0.9827937232473290680 plusOrMinus 1e-14)
             p2.value shouldBe (0.97160184820607853 plusOrMinus 1e-14)
-            h2.m shouldBe (331.41731754844348 plusOrMinus 1e-8)
+            h2.meters shouldBe (331.41731754844348 plusOrMinus 1e-8)
 
             val (e3, p3, h3) = eraGc2Gde(6378135.0.m, 1.0 / 298.26, 2e6.m, 3e6.m, 5.244e6.m)
             e3.value shouldBe (0.9827937232473290680 plusOrMinus 1e-14)
             p3.value shouldBe (0.9716018181101511937 plusOrMinus 1e-14)
-            h3.m shouldBe (333.2770726130318123 plusOrMinus 1e-8)
+            h3.meters shouldBe (333.2770726130318123 plusOrMinus 1e-8)
         }
         "eraGd2Gc" {
             val (x1, y1, z1) = eraGd2Gce(6378137.0.m, 1.0 / 298.257223563, 3.1.rad, (-0.5).rad, 2500.0.m)
-            x1.m shouldBe (-5599000.5577049947 plusOrMinus 1e-7)
-            y1.m shouldBe (233011.67223479203 plusOrMinus 1e-7)
-            z1.m shouldBe (-3040909.4706983363 plusOrMinus 1e-7)
+            x1.meters shouldBe (-5599000.5577049947 plusOrMinus 1e-7)
+            y1.meters shouldBe (233011.67223479203 plusOrMinus 1e-7)
+            z1.meters shouldBe (-3040909.4706983363 plusOrMinus 1e-7)
 
             val (x2, y2, z2) = eraGd2Gce(6378137.0.m, 1.0 / 298.257222101, 3.1.rad, (-0.5).rad, 2500.0.m)
-            x2.m shouldBe (-5599000.5577260984 plusOrMinus 1e-7)
-            y2.m shouldBe (233011.6722356702949 plusOrMinus 1e-7)
-            z2.m shouldBe (-3040909.4706095476 plusOrMinus 1e-7)
+            x2.meters shouldBe (-5599000.5577260984 plusOrMinus 1e-7)
+            y2.meters shouldBe (233011.6722356702949 plusOrMinus 1e-7)
+            z2.meters shouldBe (-3040909.4706095476 plusOrMinus 1e-7)
 
             val (x3, y3, z3) = eraGd2Gce(6378135.0.m, 1.0 / 298.26, 3.1.rad, (-0.5).rad, 2500.0.m)
-            x3.m shouldBe (-5598998.7626301490 plusOrMinus 1e-7)
-            y3.m shouldBe (233011.5975297822211 plusOrMinus 1e-7)
-            z3.m shouldBe (-3040908.6861467111 plusOrMinus 1e-7)
+            x3.meters shouldBe (-5598998.7626301490 plusOrMinus 1e-7)
+            y3.meters shouldBe (233011.5975297822211 plusOrMinus 1e-7)
+            z3.meters shouldBe (-3040908.6861467111 plusOrMinus 1e-7)
         }
         "eraC2ixys" {
             val m = eraC2ixys(0.5791308486706011000e-3, 0.4020579816732961219e-4, (-0.1220040848472271978e-7).rad)

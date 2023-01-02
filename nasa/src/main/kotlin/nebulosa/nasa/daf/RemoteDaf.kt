@@ -3,11 +3,9 @@ package nebulosa.nasa.daf
 import nebulosa.io.SeekableSource
 import nebulosa.io.readDoubleArray
 import nebulosa.io.source
-import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.buffer
-import java.util.concurrent.TimeUnit
 
 class RemoteDaf(val uri: String) : Daf() {
 
@@ -59,14 +57,6 @@ class RemoteDaf(val uri: String) : Daf() {
 
     companion object {
 
-        @JvmStatic private val CONNECTION_POOL = ConnectionPool(32, 30, TimeUnit.MINUTES)
-
-        @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder()
-            .connectionPool(CONNECTION_POOL)
-            .callTimeout(30, TimeUnit.SECONDS)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .build()
+        @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder().build()
     }
 }

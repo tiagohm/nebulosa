@@ -79,12 +79,12 @@ value class Pressure(val value: Double) : Comparable<Pressure> {
             val R = 8.31432
             val e = (g * M) / (8.31432 * -0.0065)
 
-            return if (m < 11000) {
-                (1013.25 * (k / (k + (-0.0065 * m))).pow(e)).mbar
+            return if (meters < 11000) {
+                (1013.25 * (k / (k + (-0.0065 * meters))).pow(e)).mbar
             } else {
                 val a = 1013.25 * (k / (k + (-0.0065 * 11000.0))).pow(e)
                 val c = k + (11000 * -0.0065)
-                (a * exp((-g * M * (m - 11000.0)) / (R * c))).mbar
+                (a * exp((-g * M * (meters - 11000.0)) / (R * c))).mbar
             }
         }
     }

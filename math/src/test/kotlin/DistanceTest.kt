@@ -12,14 +12,14 @@ class DistanceTest : StringSpec() {
         timeout = 1000L
 
         "au" {
-            1.au.km shouldBe (149597870.700 plusOrMinus 1e-8)
-            1.au.m shouldBe (149597870700.0 plusOrMinus 1e-8)
-            1.au.ly shouldBe (0.000015813 plusOrMinus 1e-8)
+            1.au.kilometers shouldBe (149597870.700 plusOrMinus 1e-8)
+            1.au.meters shouldBe (149597870700.0 plusOrMinus 1e-8)
+            1.au.lightYears shouldBe (0.000015813 plusOrMinus 1e-8)
         }
         "km" {
             8000.km.value shouldBe (0.00005348 plusOrMinus 1e-8)
-            8000.km.m shouldBe (8000000.0 plusOrMinus 1e-8)
-            8000.km.ly shouldBe (0.0000000008456 plusOrMinus 1e-12)
+            8000.km.meters shouldBe (8000000.0 plusOrMinus 1e-8)
+            8000.km.lightYears shouldBe (0.0000000008456 plusOrMinus 1e-12)
         }
         "plus" {
             (0.5.au + 0.5.au).value shouldBeExactly 1.0

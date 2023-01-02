@@ -180,8 +180,8 @@ fun eraDtDb(
     // Mean Longitude of Saturn.
     val els = ((50.07744430 + 44046398.47038 * w) pmod 360.0).deg.value
     // TOPOCENTRIC TERMS: Moyer 1981 and Murray 1983.
-    val ukm = u.km
-    val vkm = v.km
+    val ukm = u.kilometers
+    val vkm = v.kilometers
     val wt =
         0.00029E-10 * ukm * sin(tsol + elsun - els) + 0.00100E-10 * ukm * sin(tsol - 2.0 * emsun) + 0.00133E-10 * ukm * sin(tsol - d) + 0.00133E-10 * ukm * sin(
             tsol + elsun - elj
@@ -394,7 +394,7 @@ fun eraPvtob(
 
     // Polar motion and TIO position.
     val rpm = eraPom00(xp, yp, sp)
-    val (x, y, z) = rpm.transpose() * Vector3D(xyzm.first.m, xyzm.second.m, xyzm.third.m)
+    val (x, y, z) = rpm.transpose() * Vector3D(xyzm.first.meters, xyzm.second.meters, xyzm.third.meters)
 
     val s = theta.sin
     val c = theta.cos
