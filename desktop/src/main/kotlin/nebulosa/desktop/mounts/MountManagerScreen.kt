@@ -13,6 +13,14 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         isResizable = false
     }
 
+    override fun onCreate() {
+        preferences.double("mountManager.screen.x")?.let { x = it }
+        preferences.double("mountManager.screen.y")?.let { y = it }
+
+        xProperty().addListener { _, _, value -> preferences.double("mountManager.screen.x", value.toDouble()) }
+        yProperty().addListener { _, _, value -> preferences.double("mountManager.screen.y", value.toDouble()) }
+    }
+
     override fun onStart() {
         subscriber = eventBus.subscribe(this)
     }

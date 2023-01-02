@@ -117,6 +117,20 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         image.parent.setOnContextMenuRequested {
             menu.show(image.parent, it.screenX, it.screenY)
         }
+
+        if (camera != null) {
+            preferences.double("imageViewer.${camera.name}.screen.x")?.let { x = it }
+            preferences.double("imageViewer.${camera.name}.screen.y")?.let { y = it }
+
+            xProperty().addListener { _, _, value -> preferences.double("imageViewer.${camera.name}.screen.x", value.toDouble()) }
+            yProperty().addListener { _, _, value -> preferences.double("imageViewer.${camera.name}.screen.y", value.toDouble()) }
+        } else {
+            preferences.double("imageViewer.screen.x")?.let { x = it }
+            preferences.double("imageViewer.screen.y")?.let { y = it }
+
+            xProperty().addListener { _, _, value -> preferences.double("imageViewer.screen.x", value.toDouble()) }
+            yProperty().addListener { _, _, value -> preferences.double("imageViewer.screen.y", value.toDouble()) }
+        }
     }
 
     override fun onStart() {
@@ -126,6 +140,14 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         mirrorHorizontal = false
         mirrorVertical = false
         invert = false
+
+        if (camera != null) {
+            preferences.double("imageViewer.${camera.name}.screen.x")?.let { x = it }
+            preferences.double("imageViewer.${camera.name}.screen.y")?.let { y = it }
+        } else {
+            preferences.double("imageViewer.screen.x")?.let { x = it }
+            preferences.double("imageViewer.screen.y")?.let { y = it }
+        }
     }
 
     override fun onStop() {

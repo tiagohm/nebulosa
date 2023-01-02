@@ -13,6 +13,14 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
         isResizable = false
     }
 
+    override fun onCreate() {
+        preferences.double("focuserManager.screen.x")?.let { x = it }
+        preferences.double("focuserManager.screen.y")?.let { y = it }
+
+        xProperty().addListener { _, _, value -> preferences.double("focuserManager.screen.x", value.toDouble()) }
+        yProperty().addListener { _, _, value -> preferences.double("focuserManager.screen.y", value.toDouble()) }
+    }
+
     override fun onStart() {
         subscriber = eventBus.subscribe(this)
     }

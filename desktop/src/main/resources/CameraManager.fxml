@@ -329,7 +329,7 @@
                                 <Font size="12.0"/>
                             </font>
                         </Label>
-                        <Spinner fx:id="x"
+                        <Spinner fx:id="frameX"
                                  editable="true"
                                  min="0.0"
                                  max="1279.0"
@@ -343,7 +343,7 @@
                                 <Font size="12.0"/>
                             </font>
                         </Label>
-                        <Spinner fx:id="y"
+                        <Spinner fx:id="frameY"
                                  editable="true"
                                  min="0.0"
                                  max="1023.0"
@@ -374,7 +374,7 @@
                                 <Font size="12.0"/>
                             </font>
                         </Label>
-                        <Spinner fx:id="width"
+                        <Spinner fx:id="frameWidth"
                                  editable="true"
                                  min="0.0"
                                  max="1280.0"
@@ -388,7 +388,7 @@
                                 <Font size="12.0"/>
                             </font>
                         </Label>
-                        <Spinner fx:id="height"
+                        <Spinner fx:id="frameHeight"
                                  editable="true"
                                  min="0.0"
                                  max="1024.0"

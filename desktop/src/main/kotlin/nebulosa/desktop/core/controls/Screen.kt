@@ -7,6 +7,7 @@ import javafx.scene.Scene
 import javafx.scene.image.Image
 import javafx.stage.Stage
 import nebulosa.desktop.core.eventbus.EventBus
+import nebulosa.desktop.preferences.Preferences
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
 import org.koin.core.component.KoinComponent
@@ -21,6 +22,7 @@ abstract class Screen(
     private val created = AtomicBoolean(false)
 
     protected val eventBus by inject<EventBus>()
+    protected val preferences by inject<Preferences>()
 
     init {
         setOnShowing {

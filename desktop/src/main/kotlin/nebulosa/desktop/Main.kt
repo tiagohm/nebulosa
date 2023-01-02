@@ -1,5 +1,6 @@
 package nebulosa.desktop
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import javafx.application.Application
 import nebulosa.desktop.cameras.CameraManagerScreen
 import nebulosa.desktop.connections.ConnectionManager
@@ -8,6 +9,7 @@ import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.filterwheels.FilterWheelManagerScreen
 import nebulosa.desktop.focusers.FocuserManagerScreen
 import nebulosa.desktop.mounts.MountManagerScreen
+import nebulosa.desktop.preferences.Preferences
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.named
 import org.koin.core.module.dsl.withOptions
@@ -26,11 +28,14 @@ private fun appDirectory(): Path {
 }
 
 private fun inject() = module {
-    single { appDirectory() } withOptions { named("app") }
+    val appDirectory = appDirectory()
+
+    single { appDirectory } withOptions { named("app") }
 
     single { EventBus() }
-
     single { Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()) }
+    single { jacksonObjectMapper() }
+    single(createdAtStart = true) { Preferences(Paths.get("$appDirectory", "preferences.json")) }
 
     single { CameraManagerScreen() }
     single { MountManagerScreen() }

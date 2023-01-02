@@ -43,10 +43,10 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML private lateinit var exposureCount: Spinner<Double>
     @FXML private lateinit var subframe: ToggleSwitch
     @FXML private lateinit var fullsize: Button
-    @FXML private lateinit var x: Spinner<Double>
-    @FXML private lateinit var y: Spinner<Double>
-    @FXML private lateinit var width: Spinner<Double>
-    @FXML private lateinit var height: Spinner<Double>
+    @FXML private lateinit var frameX: Spinner<Double>
+    @FXML private lateinit var frameY: Spinner<Double>
+    @FXML private lateinit var frameWidth: Spinner<Double>
+    @FXML private lateinit var frameHeight: Spinner<Double>
     @FXML private lateinit var binX: Spinner<Double>
     @FXML private lateinit var binY: Spinner<Double>
     @FXML private lateinit var frameType: ChoiceBox<FrameType>
@@ -88,10 +88,10 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         exposureCount.disableProperty().bind(fixed.disableProperty().or(fixed.selectedProperty().not()))
         subframe.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canSubFrame.not()))
         fullsize.disableProperty().bind(subframe.disableProperty().or(subframe.selectedProperty().not()))
-        x.disableProperty().bind(fullsize.disableProperty())
-        y.disableProperty().bind(x.disableProperty())
-        width.disableProperty().bind(x.disableProperty())
-        height.disableProperty().bind(x.disableProperty())
+        frameX.disableProperty().bind(fullsize.disableProperty())
+        frameY.disableProperty().bind(frameX.disableProperty())
+        frameWidth.disableProperty().bind(frameX.disableProperty())
+        frameHeight.disableProperty().bind(frameX.disableProperty())
         binX.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canBin.not()))
         binY.disableProperty().bind(binX.disableProperty())
         frameType.disableProperty().bind(isNotConnectedOrCapturing)
@@ -127,6 +127,12 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         }
 
         exposure.userData = TimeUnit.MICROSECONDS
+
+        preferences.double("cameraManager.screen.x")?.let { x = it }
+        preferences.double("cameraManager.screen.y")?.let { y = it }
+
+        xProperty().addListener { _, _, value -> preferences.double("cameraManager.screen.x", value.toDouble()) }
+        yProperty().addListener { _, _, value -> preferences.double("cameraManager.screen.y", value.toDouble()) }
     }
 
     override fun onStart() {
@@ -276,22 +282,22 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     private fun updateFrame() {
         val camera = equipmentManager.selectedCamera.value ?: return
 
-        with(x.valueFactory as DoubleSpinnerValueFactory) {
+        with(frameX.valueFactory as DoubleSpinnerValueFactory) {
             max = camera.maxX.toDouble()
             min = camera.minX.toDouble()
             if (!subframe.isSelected) value = min
         }
-        with(y.valueFactory as DoubleSpinnerValueFactory) {
+        with(frameY.valueFactory as DoubleSpinnerValueFactory) {
             max = camera.maxY.toDouble()
             min = camera.minY.toDouble()
             if (!subframe.isSelected) value = min
         }
-        with(width.valueFactory as DoubleSpinnerValueFactory) {
+        with(frameWidth.valueFactory as DoubleSpinnerValueFactory) {
             max = camera.maxWidth.toDouble()
             min = camera.minWidth.toDouble()
             if (!subframe.isSelected) value = max
         }
-        with(height.valueFactory as DoubleSpinnerValueFactory) {
+        with(frameHeight.valueFactory as DoubleSpinnerValueFactory) {
             max = camera.maxHeight.toDouble()
             min = camera.minHeight.toDouble()
             if (!subframe.isSelected) value = max
@@ -318,10 +324,10 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     private fun applyFullsize() {
         val camera = equipmentManager.selectedCamera.value ?: return
 
-        (x.valueFactory as DoubleSpinnerValueFactory).value = camera.minX.toDouble()
-        (y.valueFactory as DoubleSpinnerValueFactory).value = camera.minY.toDouble()
-        (width.valueFactory as DoubleSpinnerValueFactory).value = camera.maxWidth.toDouble()
-        (height.valueFactory as DoubleSpinnerValueFactory).value = camera.maxHeight.toDouble()
+        (frameX.valueFactory as DoubleSpinnerValueFactory).value = camera.minX.toDouble()
+        (frameY.valueFactory as DoubleSpinnerValueFactory).value = camera.minY.toDouble()
+        (frameWidth.valueFactory as DoubleSpinnerValueFactory).value = camera.maxWidth.toDouble()
+        (frameHeight.valueFactory as DoubleSpinnerValueFactory).value = camera.maxHeight.toDouble()
     }
 
     @FXML
@@ -341,10 +347,10 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             CameraExposureTask(
                 camera,
                 exposureInMicros, amount, exposureDelay.value.toLong(),
-                if (subframe.isSelected) x.value.toInt() else camera.minX,
-                if (subframe.isSelected) y.value.toInt() else camera.minY,
-                if (subframe.isSelected) width.value.toInt() else camera.maxWidth,
-                if (subframe.isSelected) height.value.toInt() else camera.maxHeight,
+                if (subframe.isSelected) frameX.value.toInt() else camera.minX,
+                if (subframe.isSelected) frameY.value.toInt() else camera.minY,
+                if (subframe.isSelected) frameWidth.value.toInt() else camera.maxWidth,
+                if (subframe.isSelected) frameHeight.value.toInt() else camera.maxHeight,
                 frameFormat.value, frameType.value,
                 binX.value.toInt(), binY.value.toInt(),
             )

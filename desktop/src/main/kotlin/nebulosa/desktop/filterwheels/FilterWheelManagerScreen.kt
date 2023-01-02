@@ -13,6 +13,14 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         isResizable = false
     }
 
+    override fun onCreate() {
+        preferences.double("filterWheelManager.screen.x")?.let { x = it }
+        preferences.double("filterWheelManager.screen.y")?.let { y = it }
+
+        xProperty().addListener { _, _, value -> preferences.double("filterWheelManager.screen.x", value.toDouble()) }
+        yProperty().addListener { _, _, value -> preferences.double("filterWheelManager.screen.y", value.toDouble()) }
+    }
+
     override fun onStart() {
         subscriber = eventBus.subscribe(this)
     }

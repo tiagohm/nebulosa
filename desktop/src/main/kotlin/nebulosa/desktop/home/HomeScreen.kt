@@ -3,7 +3,6 @@ package nebulosa.desktop.home
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.fxml.FXML
 import javafx.scene.control.Button
-import javafx.scene.control.ChoiceBox
 import javafx.scene.control.TextField
 import javafx.stage.FileChooser
 import nebulosa.desktop.cameras.CameraManagerScreen
@@ -25,7 +24,6 @@ class HomeScreen : Screen("Home") {
     private val connectionManager by inject<ConnectionManager>()
     private val equipmentManager by inject<EquipmentManager>()
 
-    @FXML private lateinit var connections: ChoiceBox<String>
     @FXML private lateinit var host: TextField
     @FXML private lateinit var port: TextField
     @FXML private lateinit var connect: Button
@@ -69,7 +67,6 @@ class HomeScreen : Screen("Home") {
         sequencer.setOnAction { open("SEQUENCER") }
         imageViewer.setOnAction { open("OPEN_NEW_IMAGE") }
 
-        connections.disableProperty().bind(equipmentManager.connected)
         host.disableProperty().bind(equipmentManager.connected)
         port.disableProperty().bind(equipmentManager.connected)
         cameras.disableProperty().bind(equipmentManager.connected.not())
@@ -84,14 +81,17 @@ class HomeScreen : Screen("Home") {
         sequencer.disableProperty().bind(equipmentManager.connected.not())
 
         equipmentManager.connected.addListener { _, _, value ->
-            if (value) {
-                connect.text = "Disconnect"
-                connect.graphic = Icon.closeCircle()
-            } else {
-                connect.text = "Connect"
-                connect.graphic = Icon.connection()
-            }
+            connect.graphic = if (value) Icon.closeCircle() else Icon.connection()
         }
+
+        host.text = preferences.string("connection.last.host") ?: ""
+        port.text = preferences.string("connection.last.port") ?: ""
+
+        preferences.double("home.screen.x")?.let { x = it }
+        preferences.double("home.screen.y")?.let { y = it }
+
+        xProperty().addListener { _, _, value -> preferences.double("home.screen.x", value.toDouble()) }
+        yProperty().addListener { _, _, value -> preferences.double("home.screen.y", value.toDouble()) }
     }
 
     override fun onStart() {
@@ -114,6 +114,8 @@ class HomeScreen : Screen("Home") {
                 val host = host.text.trim().ifEmpty { "localhost" }
                 val port = port.text.trim().toIntOrNull() ?: 7624
                 connectionManager.connect(host, port)
+                preferences.string("connection.last.host", host)
+                preferences.int("connection.last.port", port)
             } catch (e: Throwable) {
                 MessageDialog(
                     "A connection to the INDI Server could not be established. Check your connection or server configuration.",
