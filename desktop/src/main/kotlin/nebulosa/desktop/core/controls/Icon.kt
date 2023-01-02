@@ -9,6 +9,15 @@ class Icon(name: String) : ImageView(Image(resource("icons/$name.png"), 24.0, 24
     companion object {
 
         @JvmStatic
+        fun camera() = Icon("camera")
+
+        @JvmStatic
+        fun image() = Icon("image")
+
+        @JvmStatic
+        fun nebulosa() = Icon("nebulosa")
+
+        @JvmStatic
         fun closeCircle() = Icon("close-circle")
 
         @JvmStatic

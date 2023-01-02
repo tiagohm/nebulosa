@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.image.*?>
@@ -10,14 +10,12 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="539.0"
+            prefHeight="390.0"
             prefWidth="432.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox layoutX="116.0"
           layoutY="132.0"
-          prefHeight="539.0"
-          prefWidth="432.0"
           spacing="8.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
@@ -30,35 +28,30 @@
                     top="16.0"/>
         </padding>
         <ChoiceBox fx:id="connections"
-                   maxWidth="1.7976931348623157E308"
                    prefHeight="32.0"
-                   prefWidth="394.0">
+                   prefWidth="Infinity">
             <cursor>
                 <Cursor fx:constant="HAND"/>
             </cursor>
-            <VBox.margin>
-                <Insets left="16.0"
-                        right="16.0"/>
-            </VBox.margin>
         </ChoiceBox>
-        <TextField fx:id="host"
-                   prefHeight="32.0"
-                   promptText="Host (default: localhost)">
-            <VBox.margin>
-                <Insets left="16.0"
-                        right="16.0"/>
-            </VBox.margin>
-        </TextField>
-        <TextField fx:id="port"
-                   prefHeight="32.0"
-                   promptText="Port (default: 7624)">
-            <VBox.margin>
-                <Insets left="16.0"
-                        right="16.0"/>
-            </VBox.margin>
-        </TextField>
         <HBox alignment="CENTER"
-              prefWidth="200.0">
+              spacing="8.0">
+            <TextField fx:id="host"
+                       prefHeight="32.0"
+                       HBox.hgrow="ALWAYS"
+                       promptText="Host (localhost)">
+                <font>
+                    <Font size="11.0"/>
+                </font>
+            </TextField>
+            <TextField fx:id="port"
+                       prefHeight="32.0"
+                       prefWidth="94.0"
+                       promptText="Port (7624)">
+                <font>
+                    <Font size="11.0"/>
+                </font>
+            </TextField>
             <Button fx:id="connect"
                     alignment="CENTER"
                     mnemonicParsing="false"
@@ -80,6 +73,9 @@
         <GridPane alignment="CENTER"
                   minHeight="1.0"
                   VBox.vgrow="NEVER">
+            <VBox.margin>
+                <Insets top="16.0"/>
+            </VBox.margin>
             <columnConstraints>
                 <ColumnConstraints halignment="CENTER"
                                    hgrow="SOMETIMES"
@@ -113,9 +109,6 @@
                                 prefHeight="64.0"
                                 vgrow="SOMETIMES"/>
             </rowConstraints>
-            <VBox.margin>
-                <Insets top="16.0"/>
-            </VBox.margin>
             <Button fx:id="cameras"
                     contentDisplay="TOP"
                     mnemonicParsing="false"

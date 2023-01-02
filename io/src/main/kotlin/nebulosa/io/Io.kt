@@ -6,6 +6,7 @@ import okio.*
 import java.io.File
 import java.io.InputStream
 import java.io.RandomAccessFile
+import java.net.URL
 import java.util.*
 
 val EMPTY_BYTE_ARRAY = ByteArray(0)
@@ -75,6 +76,9 @@ inline fun BufferedSink.writeDoubleLe(d: Double) = writeLongLe(d.toBits())
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun resource(name: String): InputStream? = Thread.currentThread().contextClassLoader.getResourceAsStream(name)
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun resourceUrl(name: String): URL? = Thread.currentThread().contextClassLoader.getResource(name)
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun bufferedResource(name: String) = resource(name)?.source()?.buffer()

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.*?>
+<AnchorPane maxHeight="-Infinity"
+            maxWidth="-Infinity"
+            minHeight="-Infinity"
+            minWidth="-Infinity"
+            prefHeight="539.0"
+            prefWidth="432.0"
+            xmlns="http://javafx.com/javafx/19"
+            xmlns:fx="http://javafx.com/fxml/1">
+    <VBox layoutX="116.0"
+          layoutY="132.0"
+          prefHeight="539.0"
+          prefWidth="432.0"
+          spacing="8.0"
+          AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0"
+          AnchorPane.topAnchor="0.0">
+        <padding>
+            <Insets bottom="16.0"
+                    left="16.0"
+                    right="16.0"
+                    top="16.0"/>
+        </padding>
+    </VBox>
+</AnchorPane>

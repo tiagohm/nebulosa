@@ -26,7 +26,7 @@ import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.min
 
-class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer"), ChangeListener<Number> {
+class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "nebulosa-image-viewer"), ChangeListener<Number> {
 
     @FXML private lateinit var image: ImageView
     @FXML private lateinit var menu: ContextMenu
@@ -66,7 +66,9 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer"), Cha
 
     init {
         setTitleFromCameraAndFile()
+    }
 
+    override fun onCreate() {
         image.addEventFilter(ScrollEvent.SCROLL) {
             if (it.deltaX != 0.0 || it.deltaY != 0.0) {
                 zoomWithWheel(it)

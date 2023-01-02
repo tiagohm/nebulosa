@@ -13,6 +13,11 @@ import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.controls.MessageDialog
 import nebulosa.desktop.core.controls.Screen
 import nebulosa.desktop.equipments.EquipmentManager
+import nebulosa.desktop.filterwheels.FilterWheelManagerScreen
+import nebulosa.desktop.focusers.FocuserManagerScreen
+import nebulosa.desktop.mounts.MountManagerScreen
+import nebulosa.desktop.platesolving.PlateSolverScreen
+import org.koin.core.component.get
 import org.koin.core.component.inject
 
 class HomeScreen : Screen("Home") {
@@ -38,7 +43,7 @@ class HomeScreen : Screen("Home") {
     @FXML private lateinit var sequencer: Button
     @FXML private lateinit var imageViewer: Button
 
-    @Volatile private var cameraManagerScreen: CameraManagerScreen? = null
+    private val screens = HashSet<Screen>()
     private val imageViewers = HashSet<ImageViewerScreen>(8)
 
     @Volatile private var subscriber: Disposable? = null
@@ -46,7 +51,9 @@ class HomeScreen : Screen("Home") {
     init {
         title = "Nebulosa"
         isResizable = false
+    }
 
+    override fun onCreate() {
         connect.setOnAction { connect() }
         cameras.setOnAction { open("CAMERA") }
         mounts.setOnAction { open("MOUNT") }
@@ -97,7 +104,7 @@ class HomeScreen : Screen("Home") {
 
         connectionManager.disconnect()
 
-        cameraManagerScreen?.close()
+        screens.forEach(Screen::close)
     }
 
     @Synchronized
@@ -121,10 +128,16 @@ class HomeScreen : Screen("Home") {
     @Synchronized
     private fun open(name: String) {
         val page = when (name) {
-            "CAMERA" -> CameraManagerScreen().also { cameraManagerScreen = it }
+            "CAMERA" -> get<CameraManagerScreen>()
+            "MOUNT" -> get<MountManagerScreen>()
+            "FOCUSER" -> get<FocuserManagerScreen>()
+            "FILTER_WHEEL" -> get<FilterWheelManagerScreen>()
+            "PLATE_SOLVING" -> PlateSolverScreen()
             "OPEN_NEW_IMAGE" -> return openNewImage()
             else -> return
         }
+
+        screens.add(page)
 
         page.show()
     }

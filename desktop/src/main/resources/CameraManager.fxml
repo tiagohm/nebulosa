@@ -14,7 +14,7 @@
             minHeight="-Infinity"
             minWidth="-Infinity"
             prefHeight="415.0"
-            prefWidth="432.0"
+            prefWidth="402.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="16.0"
@@ -88,7 +88,7 @@
             </Label>
         </HBox>
         <HBox alignment="CENTER"
-              spacing="8.0">
+              spacing="12.0">
             <VBox alignment="CENTER"
                   spacing="1.0">
                 <Label text="Cooler (100%)">
@@ -222,8 +222,7 @@
                     <RadioButton text="Single"
                                  toggleGroup="$exposureType"
                                  selected="true"
-                                 userData="SINGLE"
-                                 onAction="#updateExposureType">
+                                 userData="SINGLE">
                         <cursor>
                             <Cursor fx:constant="HAND"/>
                         </cursor>
@@ -233,8 +232,7 @@
                     </RadioButton>
                     <RadioButton text="Fixed"
                                  toggleGroup="$exposureType"
-                                 userData="FIXED"
-                                 onAction="#updateExposureType">
+                                 userData="FIXED">
                         <cursor>
                             <Cursor fx:constant="HAND"/>
                         </cursor>
@@ -244,8 +242,7 @@
                     </RadioButton>
                     <RadioButton text="Continuous"
                                  toggleGroup="$exposureType"
-                                 userData="CONTINUOUS"
-                                 onAction="#updateExposureType">
+                                 userData="CONTINUOUS">
                         <cursor>
                             <Cursor fx:constant="HAND"/>
                         </cursor>

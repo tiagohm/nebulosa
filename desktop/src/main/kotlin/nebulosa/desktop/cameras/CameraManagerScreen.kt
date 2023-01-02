@@ -13,17 +13,15 @@ import javafx.stage.DirectoryChooser
 import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.controls.Screen
 import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.indi.devices.DeviceConnected
-import nebulosa.indi.devices.DeviceDisconnected
-import nebulosa.indi.devices.cameras.Camera
-import nebulosa.indi.devices.cameras.FrameType
+import nebulosa.indi.devices.PropertyChangedEvent
+import nebulosa.indi.devices.cameras.*
 import org.controlsfx.control.ToggleSwitch
 import org.koin.core.component.inject
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
-class CameraManagerScreen : Screen("CameraManager") {
+class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     private val equipmentManager by inject<EquipmentManager>()
 
@@ -61,8 +59,11 @@ class CameraManagerScreen : Screen("CameraManager") {
     init {
         title = "Camera"
         isResizable = false
+    }
 
+    override fun onCreate() {
         val isNotConnected = equipmentManager.selectedCamera.isConnected.not()
+        cameras.disableProperty().bind(connecting)
         equipmentManager.selectedCamera.bind(cameras.selectionModel.selectedItemProperty())
         connect.disableProperty().bind(equipmentManager.selectedCamera.isNull.or(connecting))
         cameraMenuIcon.disableProperty().bind(isNotConnected)
@@ -94,19 +95,21 @@ class CameraManagerScreen : Screen("CameraManager") {
 
         cooler.selectedProperty().bind(equipmentManager.selectedCamera.isCoolerOn)
         dewHeater.selectedProperty().bind(equipmentManager.selectedCamera.isDewHeaterOn)
-        temperature.textProperty().bind(equipmentManager.selectedCamera.temperature.asString(Locale.ENGLISH, "Temperature %.1f °C"))
+        temperature.textProperty().bind(equipmentManager.selectedCamera.temperature.asString(Locale.ENGLISH, "Temperature (%.1f °C)"))
         frameFormat.itemsProperty().bind(equipmentManager.selectedCamera.frameFormats)
 
         equipmentManager.selectedCamera.addListener { _, _, value ->
             title = "Camera - ${value.name}"
 
-            val timeUnit = exposure.userData as TimeUnit
-            updateExposureUnit(timeUnit, timeUnit, exposure.value)
-
-            frameFormat.selectionModel.selectFirst()
+            updateExposure()
+            updateFrame()
+            updateFrameFormat()
+            updateBin()
         }
 
         equipmentManager.selectedCamera.isConnected.addListener { _, _, value ->
+            connecting.set(false)
+
             connect.graphic = if (value) Icon.closeCircle() else Icon.connection()
         }
 
@@ -121,7 +124,9 @@ class CameraManagerScreen : Screen("CameraManager") {
     }
 
     override fun onStart() {
-        subscriber = eventBus.subscribe(this)
+        subscriber = eventBus
+            .filter { it is CameraEvent && it is PropertyChangedEvent }
+            .subscribe(this)
 
         val camera = equipmentManager.selectedCamera.value
 
@@ -142,20 +147,10 @@ class CameraManagerScreen : Screen("CameraManager") {
 
     override fun onEvent(event: Any) {
         when (event) {
-            is DeviceConnected -> {
-                if (event.device === equipmentManager.selectedCamera.value) {
-                    Platform.runLater {
-                        connecting.set(false)
-                    }
-                }
-            }
-            is DeviceDisconnected -> {
-                if (event.device === equipmentManager.selectedCamera.value) {
-                    Platform.runLater {
-                        connecting.set(false)
-                    }
-                }
-            }
+            is CameraExposureMinMaxChanged -> Platform.runLater(::updateExposure)
+            is CameraFrameChanged -> Platform.runLater(::updateFrame)
+            is CameraCanBinChanged -> Platform.runLater(::updateBin)
+            is CameraFrameFormatsChanged -> Platform.runLater(::updateFrameFormat)
         }
     }
 
@@ -208,24 +203,73 @@ class CameraManagerScreen : Screen("CameraManager") {
         updateExposureUnit(prevTimeUnit, timeUnit, exposure.value)
     }
 
-    private fun updateExposureUnit(from: TimeUnit, to: TimeUnit, value: Double) {
-        val valueFactory = exposure.valueFactory as DoubleSpinnerValueFactory
-        val exposureValue = to.convert(value.toLong(), from)
-        val minValue = to.convert(equipmentManager.selectedCamera.exposureMin.value, TimeUnit.MICROSECONDS)
+    @Synchronized
+    private fun updateExposureUnit(from: TimeUnit, to: TimeUnit, exposureValue: Double) {
+        val minValue = max(1L, to.convert(equipmentManager.selectedCamera.exposureMin.value, TimeUnit.MICROSECONDS))
         val maxValue = to.convert(equipmentManager.selectedCamera.exposureMax.value, TimeUnit.MICROSECONDS)
-        valueFactory.min = max(1.0, minValue.toDouble())
-        valueFactory.max = maxValue.toDouble()
-        valueFactory.value = exposureValue.toDouble()
-        println("$minValue $exposureValue $maxValue")
-        exposure.userData = to
+        with(exposure.valueFactory as DoubleSpinnerValueFactory) {
+            max = maxValue.toDouble()
+            min = minValue.toDouble()
+            value = to.convert(exposureValue.toLong(), from).toDouble()
+            exposure.userData = to
+        }
     }
 
-    @FXML
-    private fun updateExposureType(event: ActionEvent) {
+    private fun updateExposure() {
+        val timeUnit = exposure.userData as TimeUnit
+        updateExposureUnit(timeUnit, timeUnit, exposure.value)
+    }
+
+    @Synchronized
+    private fun updateFrame() {
+        val camera = equipmentManager.selectedCamera.value ?: return
+
+        with(x.valueFactory as DoubleSpinnerValueFactory) {
+            max = camera.maxX.toDouble()
+            min = camera.minX.toDouble()
+            if (!subframe.isSelected) value = min
+        }
+        with(y.valueFactory as DoubleSpinnerValueFactory) {
+            max = camera.maxY.toDouble()
+            min = camera.minY.toDouble()
+            if (!subframe.isSelected) value = min
+        }
+        with(width.valueFactory as DoubleSpinnerValueFactory) {
+            max = camera.maxWidth.toDouble()
+            min = camera.minWidth.toDouble()
+            if (!subframe.isSelected) value = max
+        }
+        with(height.valueFactory as DoubleSpinnerValueFactory) {
+            max = camera.maxHeight.toDouble()
+            min = camera.minHeight.toDouble()
+            if (!subframe.isSelected) value = max
+        }
+    }
+
+    @Synchronized
+    private fun updateFrameFormat() {
+        val selectedFrameFormat = frameFormat.selectionModel.selectedItem
+
+        if (selectedFrameFormat == null || selectedFrameFormat !in equipmentManager.selectedCamera.frameFormats) {
+            frameFormat.selectionModel.selectFirst()
+        }
+    }
+
+    private fun updateBin() {
+        val camera = equipmentManager.selectedCamera.value ?: return
+
+        (binX.valueFactory as DoubleSpinnerValueFactory).max = camera.maxBinX.toDouble()
+        (binY.valueFactory as DoubleSpinnerValueFactory).max = camera.maxBinY.toDouble()
     }
 
     @FXML
     private fun applyFullsize() {
+        val camera = equipmentManager.selectedCamera.value ?: return
+
+        (x.valueFactory as DoubleSpinnerValueFactory).value = camera.minX.toDouble()
+        (y.valueFactory as DoubleSpinnerValueFactory).value = camera.minY.toDouble()
+        (width.valueFactory as DoubleSpinnerValueFactory).value = camera.maxWidth.toDouble()
+        (height.valueFactory as DoubleSpinnerValueFactory).value = camera.maxHeight.toDouble()
     }
 
     @FXML
