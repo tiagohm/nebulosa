@@ -113,11 +113,6 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
             }
         }
 
-        // TODO: Menu is not showing when reopen the image.
-        image.parent.setOnContextMenuRequested {
-            menu.show(image.parent, it.screenX, it.screenY)
-        }
-
         if (camera != null) {
             preferences.double("imageViewer.${camera.name}.screen.x")?.let { x = it }
             preferences.double("imageViewer.${camera.name}.screen.y")?.let { y = it }
@@ -140,6 +135,10 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         mirrorHorizontal = false
         mirrorVertical = false
         invert = false
+
+        image.parent.setOnContextMenuRequested {
+            menu.show(image.parent, it.screenX, it.screenY)
+        }
 
         if (camera != null) {
             preferences.double("imageViewer.${camera.name}.screen.x")?.let { x = it }

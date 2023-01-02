@@ -17,6 +17,7 @@ import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.cameras.*
 import org.controlsfx.control.ToggleSwitch
 import org.koin.core.component.inject
+import java.io.File
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -31,6 +32,11 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML private lateinit var connect: Button
     @FXML private lateinit var cameraMenuIcon: Label
     @FXML private lateinit var cameraMenu: ContextMenu
+    @FXML private lateinit var autoSaveAllExposures: CheckMenuItem
+    @FXML private lateinit var autoSubFolder: CheckMenuItem
+    @FXML private lateinit var newSubFolderAtNoon: CheckMenuItem
+    @FXML private lateinit var newSubFolderAtMidnight: CheckMenuItem
+    @FXML private lateinit var imageSavePath: Label
     @FXML private lateinit var cooler: ToggleSwitch
     @FXML private lateinit var dewHeater: ToggleSwitch
     @FXML private lateinit var temperature: Label
@@ -247,28 +253,35 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     @FXML
     private fun toggleAutoSaveAllExposures() {
-
+        val camera = equipmentManager.selectedCamera.value ?: return
+        preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures", autoSaveAllExposures.isSelected)
     }
 
     @FXML
     private fun toggleAutoSubFolder() {
-
+        val camera = equipmentManager.selectedCamera.value ?: return
+        preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder", autoSubFolder.isSelected)
     }
 
     @FXML
     private fun openImageSavePath() {
+        val camera = equipmentManager.selectedCamera.value ?: return
         val chooser = DirectoryChooser()
+        val initialDirectory = preferences.string("cameraManager.equipment.${camera.name}.imageSavePath")
+        if (!initialDirectory.isNullOrBlank()) chooser.initialDirectory = File(initialDirectory)
         chooser.title = "Open Image Save Path"
         val file = chooser.showDialog(null) ?: return
-        println(file)
+        preferences.string("cameraManager.equipment.${camera.name}.imageSavePath", file.toString())
+        imageSavePath.text = file.toString()
     }
 
     @FXML
     private fun chooseNewSubFolderAt(event: ActionEvent) {
+        val camera = equipmentManager.selectedCamera.value ?: return
         val menuItem = event.source as CheckMenuItem
-        val isNoon = menuItem.userData == "NOON"
+        val mode = AutoSubFolderMode.valueOf(menuItem.userData as String)
         menuItem.parentMenu.items.onEach { (it as CheckMenuItem).isSelected = it === menuItem }
-        println(isNoon)
+        preferences.enum("cameraManager.equipment.${camera.name}.newSubFolderAt", mode)
     }
 
     @FXML
@@ -316,6 +329,12 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             preferences.string("cameraManager.equipment.${camera.name}.frameFormat")?.also { frameFormat.value = it }
             preferences.double("cameraManager.equipment.${camera.name}.binX")?.also { binX.valueFactory.value = it }
             preferences.double("cameraManager.equipment.${camera.name}.binY")?.also { binY.valueFactory.value = it }
+            autoSaveAllExposures.isSelected = preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures")
+            autoSubFolder.isSelected = preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")
+            val mode = preferences.enum("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON
+            newSubFolderAtMidnight.isSelected = mode == AutoSubFolderMode.MIDNIGHT
+            newSubFolderAtNoon.isSelected = mode == AutoSubFolderMode.NOON
+            imageSavePath.text = preferences.string("cameraManager.equipment.${camera.name}.imageSavePath") ?: System.getProperty("java.io.tmpdir")
         }
     }
 
@@ -422,6 +441,10 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                 if (subFrame.isSelected) frameHeight.value.toInt() else camera.maxHeight,
                 frameFormat.value, frameType.value,
                 binX.value.toInt(), binY.value.toInt(),
+                preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures"),
+                preferences.string("cameraManager.equipment.${camera.name}.imageSavePath") ?: "",
+                if (!preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")) AutoSubFolderMode.OFF
+                else preferences.enum<AutoSubFolderMode>("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON,
             )
         )
     }

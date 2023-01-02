@@ -13,7 +13,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="435.0"
+            prefHeight="450.0"
             prefWidth="402.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
@@ -28,65 +28,88 @@
                     right="16.0"
                     top="16.0"/>
         </padding>
-        <HBox alignment="CENTER"
-              spacing="8.0">
-            <ChoiceBox fx:id="cameras"
-                       prefHeight="32.0"
-                       prefWidth="394.0">
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
-            </ChoiceBox>
-            <Button fx:id="connect"
-                    onAction="#connect"
-                    contentDisplay="GRAPHIC_ONLY"
-                    mnemonicParsing="false">
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/connection.png"/>
-                    </ImageView>
-                </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
-            </Button>
-            <Label fx:id="cameraMenuIcon">
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/dots-vertical.png"/>
-                    </ImageView>
-                </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
-                <fx:define>
-                    <ContextMenu fx:id="cameraMenu">
-                        <items>
-                            <CheckMenuItem text="Auto Save All Exposures"
-                                           onAction="#toggleAutoSaveAllExposures"/>
-                            <MenuItem text="Image Save Path..."
-                                      onAction="#openImageSavePath"/>
-                            <CheckMenuItem text="Auto Sub Folder"
-                                           onAction="#toggleAutoSubFolder"/>
-                            <Menu text="New Sub Folder At">
-                                <CheckMenuItem text="Noon"
-                                               userData="NOON"
-                                               onAction="#chooseNewSubFolderAt"/>
-                                <CheckMenuItem text="Midnight"
-                                               userData="MIDNIGHT"
-                                               onAction="#chooseNewSubFolderAt"/>
-                            </Menu>
-                        </items>
-                    </ContextMenu>
-                </fx:define>
-            </Label>
-        </HBox>
+        <VBox alignment="CENTER"
+              spacing="1.0">
+            <HBox alignment="CENTER"
+                  spacing="8.0">
+                <ChoiceBox fx:id="cameras"
+                           prefHeight="32.0"
+                           prefWidth="394.0">
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </ChoiceBox>
+                <Button fx:id="connect"
+                        onAction="#connect"
+                        contentDisplay="GRAPHIC_ONLY"
+                        mnemonicParsing="false">
+                    <graphic>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/connection.png"/>
+                        </ImageView>
+                    </graphic>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </Button>
+                <Label fx:id="cameraMenuIcon">
+                    <graphic>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/dots-vertical.png"/>
+                        </ImageView>
+                    </graphic>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                    <fx:define>
+                        <ContextMenu fx:id="cameraMenu">
+                            <items>
+                                <CheckMenuItem text="Auto Save All Exposures"
+                                               fx:id="autoSaveAllExposures"
+                                               onAction="#toggleAutoSaveAllExposures"/>
+                                <MenuItem text="Image Save Path..."
+                                          onAction="#openImageSavePath"/>
+                                <CheckMenuItem text="Auto Sub Folder"
+                                               fx:id="autoSubFolder"
+                                               onAction="#toggleAutoSubFolder"/>
+                                <Menu text="New Sub Folder At">
+                                    <CheckMenuItem text="Noon"
+                                                   fx:id="newSubFolderAtNoon"
+                                                   userData="NOON"
+                                                   onAction="#chooseNewSubFolderAt"/>
+                                    <CheckMenuItem text="Midnight"
+                                                   fx:id="newSubFolderAtMidnight"
+                                                   userData="MIDNIGHT"
+                                                   onAction="#chooseNewSubFolderAt"/>
+                                </Menu>
+                            </items>
+                        </ContextMenu>
+                    </fx:define>
+                </Label>
+            </HBox>
+            <HBox alignment="CENTER_LEFT">
+                <Label fx:id="imageSavePath"
+                       text="/tmp">
+                    <graphic>
+                        <ImageView fitHeight="16.0"
+                                   fitWidth="16.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/folder.png"/>
+                        </ImageView>
+                    </graphic>
+                    <font>
+                        <Font size="11.0"/>
+                    </font>
+                </Label>
+            </HBox>
+        </VBox>
         <HBox alignment="CENTER"
               spacing="12.0">
             <VBox alignment="CENTER"
