@@ -149,9 +149,11 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     }
 
     private fun setTitleFromCameraAndFile(file: File? = null) {
-        title = "Image"
-        if (camera != null) title += " - ${camera.name}"
-        if (file != null) title += " - ${file.name}"
+        title = buildString(64) {
+            append("Image")
+            if (camera != null) append(" | ${camera.name}")
+            if (file != null) append(" | ${file.name}")
+        }
     }
 
     private fun zoomWithWheel(event: ScrollEvent) {

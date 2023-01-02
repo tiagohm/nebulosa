@@ -13,7 +13,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="415.0"
+            prefHeight="435.0"
             prefWidth="402.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
@@ -505,6 +505,13 @@
                     <Cursor fx:constant="HAND"/>
                 </cursor>
             </Button>
+        </HBox>
+        <HBox alignment="CENTER_LEFT">
+            <Label fx:id="progress">
+                <font>
+                    <Font size="11.0"/>
+                </font>
+            </Label>
         </HBox>
     </VBox>
 </AnchorPane>

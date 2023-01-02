@@ -3,7 +3,6 @@ package nebulosa.desktop.cameras
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
 import javafx.scene.control.*
@@ -13,8 +12,6 @@ import javafx.scene.input.MouseEvent
 import javafx.stage.DirectoryChooser
 import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.controls.Screen
-import nebulosa.desktop.equipments.EquipmentJobFinished
-import nebulosa.desktop.equipments.EquipmentJobStarted
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.cameras.*
@@ -56,10 +53,10 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML private lateinit var frameFormat: ChoiceBox<String>
     @FXML private lateinit var startCapture: Button
     @FXML private lateinit var abortCapture: Button
+    @FXML private lateinit var progress: Label
 
     private val connecting = SimpleBooleanProperty(false)
     private val capturing = SimpleBooleanProperty(false)
-    private val cameraExposureTask = SimpleObjectProperty<CameraExposureTask>()
     private val imageViewers = HashSet<ImageViewerScreen>()
 
     @Volatile private var subscriber: Disposable? = null
@@ -108,7 +105,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         frameFormat.itemsProperty().bind(equipmentManager.selectedCamera.frameFormats)
 
         equipmentManager.selectedCamera.addListener { _, _, value ->
-            title = "Camera - ${value.name}"
+            title = "Camera | ${value.name}"
 
             updateExposure()
             updateFrame()
@@ -164,18 +161,34 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                 is CameraFrameChanged -> Platform.runLater(::updateFrame)
                 is CameraCanBinChanged -> Platform.runLater(::updateBin)
                 is CameraFrameFormatsChanged -> Platform.runLater(::updateFrameFormat)
-                is EquipmentJobStarted -> {
-                    if (event.task === cameraExposureTask.value) {
-                        Platform.runLater { capturing.value = true }
-                    }
-                }
-                is EquipmentJobFinished -> {
-                    if (event.task === cameraExposureTask.value) {
-                        Platform.runLater { capturing.value = false }
-                    }
-                }
                 is CameraExposureTaskProgress -> {
-                    println(event)
+                    Platform.runLater {
+                        capturing.value = event.isCapturing || !event.isFinished
+
+                        progress.text = buildString(128) {
+                            val task = event.task
+
+                            if (event.isCapturing) {
+                                val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000L} s"
+                                else if (task.exposure >= 1000L) "${task.exposure / 1000L} ms"
+                                else "${task.exposure} µs"
+
+                                append("capturing ")
+                                append("%d of %d (%s)".format(task.amount - event.remaining, task.amount, exposure))
+                                append(" | ")
+                                append("%.1f%%".format(Locale.ENGLISH, event.progress * 100.0))
+                                append(" | ")
+                                append("%s".format(Locale.ENGLISH, task.frameType))
+                                // TODO: Filter type.
+                            } else if (event.isAborted) {
+                                append("aborted")
+                            } else if (event.isFinished) {
+                                append("finished")
+                            } else {
+                                return@runLater
+                            }
+                        }
+                    }
 
                     if (event.imagePath != null) {
                         Platform.runLater {
@@ -334,11 +347,13 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                 if (subframe.isSelected) height.value.toInt() else camera.maxHeight,
                 frameFormat.value, frameType.value,
                 binX.value.toInt(), binY.value.toInt(),
-            ).also(cameraExposureTask::set)
+            )
         )
     }
 
     @FXML
     private fun abortCapture() {
+        val camera = equipmentManager.selectedCamera.value ?: return
+        camera.abortCapture()
     }
 }

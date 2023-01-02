@@ -3,8 +3,6 @@ package nebulosa.desktop.cameras
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.desktop.core.eventbus.EventBus
-import nebulosa.desktop.equipments.EquipmentJobFinished
-import nebulosa.desktop.equipments.EquipmentJobStarted
 import nebulosa.desktop.equipments.ThreadedTask
 import nebulosa.indi.devices.cameras.*
 import nebulosa.indi.protocol.PropertyState
@@ -50,8 +48,8 @@ data class CameraExposureTask(
     @Volatile private var isFinished = false
     @Volatile private var isCapturing = false
     @Volatile private var remaining = amount
-
     @Volatile private var subscriber: Disposable? = null
+
     private val phaser = Phaser(1)
 
     override var startedAt = LocalDateTime.now()!!
@@ -63,7 +61,7 @@ data class CameraExposureTask(
         eventBus.post(
             CameraExposureTaskProgress(
                 this, progress, state, imagePath, finishedWithError,
-                isAborted, isFinished, isCapturing,
+                isAborted, isFinished, isCapturing, remaining,
             )
         )
     }
@@ -121,8 +119,6 @@ data class CameraExposureTask(
 
             while (remaining > 0) {
                 synchronized(camera) {
-                    eventBus.post(EquipmentJobStarted(camera, this))
-
                     phaser.register()
 
                     remaining--
@@ -136,8 +132,6 @@ data class CameraExposureTask(
                     phaser.arriveAndAwaitAdvance()
 
                     sleep()
-
-                    eventBus.post(EquipmentJobFinished(camera, this))
                 }
             }
         } finally {
@@ -146,7 +140,6 @@ data class CameraExposureTask(
             subscriber?.dispose()
             subscriber = null
             isFinished = true
-            isCapturing = false
             reportProgress()
         }
     }

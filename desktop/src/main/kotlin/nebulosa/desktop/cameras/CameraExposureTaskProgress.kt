@@ -14,6 +14,7 @@ data class CameraExposureTaskProgress(
     @JvmField val isAborted: Boolean = false,
     @JvmField val isFinished: Boolean = false,
     @JvmField val isCapturing: Boolean = false,
+    @JvmField val remaining: Int = 0,
 ) : DeviceEvent<Camera> {
 
     override val device get() = task.camera
