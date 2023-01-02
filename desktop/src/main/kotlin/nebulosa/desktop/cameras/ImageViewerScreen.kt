@@ -113,14 +113,25 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
             }
         }
 
+        // TODO: Menu is not showing when reopen the image.
         image.parent.setOnContextMenuRequested {
             menu.show(image.parent, it.screenX, it.screenY)
         }
     }
 
+    override fun onStart() {
+        shadow = 0f
+        highlight = 1f
+        midtone = 0.5f
+        mirrorHorizontal = false
+        mirrorVertical = false
+        invert = false
+    }
+
     override fun onStop() {
         fits = null
         image.image = null
+        transformedFits = null
 
         buffer = IntBuffer.allocate(1)
         bufferSize = 1
@@ -133,6 +144,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         lastDrawTime = 0L
 
         imageStretcher.close()
+
+        System.gc()
     }
 
     private fun setTitleFromCameraAndFile(file: File? = null) {
@@ -180,6 +193,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         observable: ObservableValue<out Number>,
         oldValue: Number, newValue: Number,
     ) {
+        // TODO: Improve resizing scale.
         if (observable === widthProperty()) {
             val factor = newValue.toDouble() / oldValue.toDouble()
             scale *= factor
@@ -211,7 +225,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         widthProperty().addListener(this)
         heightProperty().addListener(this)
 
-        draw()
+        transformImage()
 
         imageStretcher.drawHistogram()
     }

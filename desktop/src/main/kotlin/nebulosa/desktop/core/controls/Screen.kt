@@ -32,8 +32,6 @@ abstract class Screen(
 
             icons.add(Image(resource("icons/$iconName.png")))
 
-            println("$name screen created")
-
             if (created.compareAndSet(false, true)) onCreate()
         }
 

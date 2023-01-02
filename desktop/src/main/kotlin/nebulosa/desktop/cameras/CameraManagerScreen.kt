@@ -3,6 +3,7 @@ package nebulosa.desktop.cameras
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
 import javafx.scene.control.*
@@ -12,18 +13,22 @@ import javafx.scene.input.MouseEvent
 import javafx.stage.DirectoryChooser
 import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.controls.Screen
+import nebulosa.desktop.equipments.EquipmentJobFinished
+import nebulosa.desktop.equipments.EquipmentJobStarted
 import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.indi.devices.PropertyChangedEvent
+import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.cameras.*
 import org.controlsfx.control.ToggleSwitch
 import org.koin.core.component.inject
 import java.util.*
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
 class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     private val equipmentManager by inject<EquipmentManager>()
+    private val executor by inject<ExecutorService>()
 
     @FXML private lateinit var cameras: ChoiceBox<Camera>
     @FXML private lateinit var connect: Button
@@ -53,6 +58,9 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML private lateinit var abortCapture: Button
 
     private val connecting = SimpleBooleanProperty(false)
+    private val capturing = SimpleBooleanProperty(false)
+    private val cameraExposureTask = SimpleObjectProperty<CameraExposureTask>()
+    private val imageViewers = HashSet<ImageViewerScreen>()
 
     @Volatile private var subscriber: Disposable? = null
 
@@ -63,15 +71,16 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     override fun onCreate() {
         val isNotConnected = equipmentManager.selectedCamera.isConnected.not()
-        cameras.disableProperty().bind(connecting)
+        val isNotConnectedOrCapturing = isNotConnected.or(capturing)
+        cameras.disableProperty().bind(connecting.or(capturing))
         equipmentManager.selectedCamera.bind(cameras.selectionModel.selectedItemProperty())
-        connect.disableProperty().bind(equipmentManager.selectedCamera.isNull.or(connecting))
-        cameraMenuIcon.disableProperty().bind(isNotConnected)
-        cooler.disableProperty().bind(isNotConnected.or(equipmentManager.selectedCamera.hasCooler.not()))
-        dewHeater.disableProperty().bind(isNotConnected.or(equipmentManager.selectedCamera.hasDewHeater.not()))
-        temperatureSetpoint.disableProperty().bind(isNotConnected.or(equipmentManager.selectedCamera.canSetTemperature.not()))
+        connect.disableProperty().bind(equipmentManager.selectedCamera.isNull.or(connecting).or(capturing))
+        cameraMenuIcon.disableProperty().bind(isNotConnectedOrCapturing)
+        cooler.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.hasCooler.not()))
+        dewHeater.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.hasDewHeater.not()))
+        temperatureSetpoint.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canSetTemperature.not()))
         applyTemperatureSetpoint.disableProperty().bind(temperatureSetpoint.disableProperty())
-        exposure.disableProperty().bind(isNotConnected)
+        exposure.disableProperty().bind(isNotConnectedOrCapturing)
         exposureUnit.toggles.forEach { (it as RadioButton).disableProperty().bind(exposure.disableProperty()) }
         exposureType.toggles.forEach { (it as RadioButton).disableProperty().bind(exposure.disableProperty()) }
         val fixed = exposureType.toggles.first { it.userData == "FIXED" } as RadioButton
@@ -80,17 +89,17 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             fixed.disableProperty().and(continuous.disableProperty()).or(fixed.selectedProperty().not().and(continuous.selectedProperty().not()))
         )
         exposureCount.disableProperty().bind(fixed.disableProperty().or(fixed.selectedProperty().not()))
-        subframe.disableProperty().bind(isNotConnected.or(equipmentManager.selectedCamera.canSubFrame.not()))
+        subframe.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canSubFrame.not()))
         fullsize.disableProperty().bind(subframe.disableProperty().or(subframe.selectedProperty().not()))
         x.disableProperty().bind(fullsize.disableProperty())
         y.disableProperty().bind(x.disableProperty())
         width.disableProperty().bind(x.disableProperty())
         height.disableProperty().bind(x.disableProperty())
-        binX.disableProperty().bind(isNotConnected.or(equipmentManager.selectedCamera.canBin.not()))
+        binX.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canBin.not()))
         binY.disableProperty().bind(binX.disableProperty())
-        frameType.disableProperty().bind(isNotConnected)
-        frameFormat.disableProperty().bind(isNotConnected)
-        startCapture.disableProperty().bind(isNotConnected)
+        frameType.disableProperty().bind(isNotConnectedOrCapturing)
+        frameFormat.disableProperty().bind(isNotConnectedOrCapturing)
+        startCapture.disableProperty().bind(isNotConnectedOrCapturing)
         abortCapture.disableProperty().bind(isNotConnected.or(startCapture.disableProperty().not()))
 
         cooler.selectedProperty().bind(equipmentManager.selectedCamera.isCoolerOn)
@@ -125,7 +134,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     override fun onStart() {
         subscriber = eventBus
-            .filter { it is CameraEvent && it is PropertyChangedEvent }
+            .filter { it is DeviceEvent<*> }
             .subscribe(this)
 
         val camera = equipmentManager.selectedCamera.value
@@ -143,14 +152,44 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     override fun onStop() {
         subscriber?.dispose()
         subscriber = null
+
+        imageViewers.forEach(Screen::close)
+        imageViewers.clear()
     }
 
     override fun onEvent(event: Any) {
-        when (event) {
-            is CameraExposureMinMaxChanged -> Platform.runLater(::updateExposure)
-            is CameraFrameChanged -> Platform.runLater(::updateFrame)
-            is CameraCanBinChanged -> Platform.runLater(::updateBin)
-            is CameraFrameFormatsChanged -> Platform.runLater(::updateFrameFormat)
+        if (event is DeviceEvent<*> && event.device === equipmentManager.selectedCamera.value) {
+            when (event) {
+                is CameraExposureMinMaxChanged -> Platform.runLater(::updateExposure)
+                is CameraFrameChanged -> Platform.runLater(::updateFrame)
+                is CameraCanBinChanged -> Platform.runLater(::updateBin)
+                is CameraFrameFormatsChanged -> Platform.runLater(::updateFrameFormat)
+                is EquipmentJobStarted -> {
+                    if (event.task === cameraExposureTask.value) {
+                        Platform.runLater { capturing.value = true }
+                    }
+                }
+                is EquipmentJobFinished -> {
+                    if (event.task === cameraExposureTask.value) {
+                        Platform.runLater { capturing.value = false }
+                    }
+                }
+                is CameraExposureTaskProgress -> {
+                    println(event)
+
+                    if (event.imagePath != null) {
+                        Platform.runLater {
+                            val viewer = imageViewers
+                                .firstOrNull { it.camera === event.device }
+                                ?: ImageViewerScreen(event.device)
+
+                            imageViewers.add(viewer)
+
+                            viewer.open(event.imagePath.toFile())
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -273,7 +312,30 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     }
 
     @FXML
+    @Synchronized
     private fun startCapture() {
+        val camera = equipmentManager.selectedCamera.value ?: return
+
+        val timeUnit = exposure.userData as TimeUnit
+        val exposureInMicros = TimeUnit.MICROSECONDS.convert(exposure.value.toLong(), timeUnit)
+
+        val amount = exposureType.toggles
+            .firstOrNull { it.isSelected }
+            ?.let { if (it.userData == "SINGLE") 1 else if (it.userData == "FIXED") exposureCount.value.toInt() else Int.MAX_VALUE }
+            ?: 1
+
+        executor.submit(
+            CameraExposureTask(
+                camera,
+                exposureInMicros, amount, exposureDelay.value.toLong(),
+                if (subframe.isSelected) x.value.toInt() else camera.minX,
+                if (subframe.isSelected) y.value.toInt() else camera.minY,
+                if (subframe.isSelected) width.value.toInt() else camera.maxWidth,
+                if (subframe.isSelected) height.value.toInt() else camera.maxHeight,
+                frameFormat.value, frameType.value,
+                binX.value.toInt(), binY.value.toInt(),
+            ).also(cameraExposureTask::set)
+        )
     }
 
     @FXML
