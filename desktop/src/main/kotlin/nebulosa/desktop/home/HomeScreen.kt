@@ -105,6 +105,7 @@ class HomeScreen : Screen("Home") {
         connectionManager.disconnect()
 
         screens.forEach(Screen::close)
+        screens.clear()
     }
 
     @Synchronized

@@ -186,6 +186,6 @@ data class CameraExposureTask(
 
         private const val DELAY_INTERVAL = 100L
 
-        @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmssSSS")
+        @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")
     }
 }

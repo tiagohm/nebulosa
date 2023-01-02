@@ -33,7 +33,6 @@ private fun inject() = module {
     single { appDirectory } withOptions { named("app") }
 
     single { EventBus() }
-    single { Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()) }
     single { jacksonObjectMapper() }
     single(createdAtStart = true) { Preferences(Paths.get("$appDirectory", "preferences.json")) }
 

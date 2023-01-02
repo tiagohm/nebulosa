@@ -8,7 +8,7 @@ abstract class Device(
     val client: INDIClient,
     val handler: DeviceProtocolHandler,
     val name: String,
-) : LinkedHashMap<String, Any?>(), INDIProtocolHandler {
+) : INDIProtocolHandler {
 
     @Volatile @JvmField var isConnected = false
 

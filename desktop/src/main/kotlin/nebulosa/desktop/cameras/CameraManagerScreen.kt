@@ -18,14 +18,14 @@ import nebulosa.indi.devices.cameras.*
 import org.controlsfx.control.ToggleSwitch
 import org.koin.core.component.inject
 import java.util.*
-import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
 class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     private val equipmentManager by inject<EquipmentManager>()
-    private val executor by inject<ExecutorService>()
+    private val executor = Executors.newSingleThreadExecutor()
 
     @FXML private lateinit var cameras: ChoiceBox<Camera>
     @FXML private lateinit var connect: Button
@@ -38,10 +38,10 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML private lateinit var applyTemperatureSetpoint: Button
     @FXML private lateinit var exposure: Spinner<Double>
     @FXML private lateinit var exposureUnit: ToggleGroup
-    @FXML private lateinit var exposureType: ToggleGroup
+    @FXML private lateinit var exposureMode: ToggleGroup
     @FXML private lateinit var exposureDelay: Spinner<Double>
     @FXML private lateinit var exposureCount: Spinner<Double>
-    @FXML private lateinit var subframe: ToggleSwitch
+    @FXML private lateinit var subFrame: ToggleSwitch
     @FXML private lateinit var fullsize: Button
     @FXML private lateinit var frameX: Spinner<Double>
     @FXML private lateinit var frameY: Spinner<Double>
@@ -79,15 +79,15 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         applyTemperatureSetpoint.disableProperty().bind(temperatureSetpoint.disableProperty())
         exposure.disableProperty().bind(isNotConnectedOrCapturing)
         exposureUnit.toggles.forEach { (it as RadioButton).disableProperty().bind(exposure.disableProperty()) }
-        exposureType.toggles.forEach { (it as RadioButton).disableProperty().bind(exposure.disableProperty()) }
-        val fixed = exposureType.toggles.first { it.userData == "FIXED" } as RadioButton
-        val continuous = exposureType.toggles.first { it.userData == "CONTINUOUS" } as RadioButton
+        exposureMode.toggles.forEach { (it as RadioButton).disableProperty().bind(exposure.disableProperty()) }
+        val fixed = exposureMode.toggles.first { it.userData == "FIXED" } as RadioButton
+        val continuous = exposureMode.toggles.first { it.userData == "CONTINUOUS" } as RadioButton
         exposureDelay.disableProperty().bind(
             fixed.disableProperty().and(continuous.disableProperty()).or(fixed.selectedProperty().not().and(continuous.selectedProperty().not()))
         )
         exposureCount.disableProperty().bind(fixed.disableProperty().or(fixed.selectedProperty().not()))
-        subframe.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canSubFrame.not()))
-        fullsize.disableProperty().bind(subframe.disableProperty().or(subframe.selectedProperty().not()))
+        subFrame.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canSubFrame.not()))
+        fullsize.disableProperty().bind(subFrame.disableProperty().or(subFrame.selectedProperty().not()))
         frameX.disableProperty().bind(fullsize.disableProperty())
         frameY.disableProperty().bind(frameX.disableProperty())
         frameWidth.disableProperty().bind(frameX.disableProperty())
@@ -104,13 +104,15 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         temperature.textProperty().bind(equipmentManager.selectedCamera.temperature.asString(Locale.ENGLISH, "Temperature (%.1f °C)"))
         frameFormat.itemsProperty().bind(equipmentManager.selectedCamera.frameFormats)
 
-        equipmentManager.selectedCamera.addListener { _, _, value ->
+        equipmentManager.selectedCamera.addListener { _, prev, value ->
             title = "Camera | ${value.name}"
 
-            updateExposure()
+            savePreferences(prev)
+            // updateExposure()
             updateFrame()
             updateFrameFormat()
             updateBin()
+            loadPreferences(value)
         }
 
         equipmentManager.selectedCamera.isConnected.addListener { _, _, value ->
@@ -142,8 +144,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
         val camera = equipmentManager.selectedCamera.value
 
-        cameras.items.clear()
-        cameras.items.addAll(equipmentManager.attachedCameras)
+        cameras.items.setAll(equipmentManager.attachedCameras)
 
         if (camera !in equipmentManager.attachedCameras) {
             cameras.selectionModel.select(null)
@@ -156,6 +157,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         subscriber?.dispose()
         subscriber = null
 
+        executor.shutdownNow()
+
         imageViewers.forEach(Screen::close)
         imageViewers.clear()
     }
@@ -163,10 +166,30 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     override fun onEvent(event: Any) {
         if (event is DeviceEvent<*> && event.device === equipmentManager.selectedCamera.value) {
             when (event) {
-                is CameraExposureMinMaxChanged -> Platform.runLater(::updateExposure)
-                is CameraFrameChanged -> Platform.runLater(::updateFrame)
-                is CameraCanBinChanged -> Platform.runLater(::updateBin)
-                is CameraFrameFormatsChanged -> Platform.runLater(::updateFrameFormat)
+                is CameraExposureMinMaxChanged -> {
+                    Platform.runLater {
+                        updateExposure()
+                        loadPreferences(event.device)
+                    }
+                }
+                is CameraFrameChanged -> {
+                    Platform.runLater {
+                        updateFrame()
+                        loadPreferences(event.device)
+                    }
+                }
+                is CameraCanBinChanged -> {
+                    Platform.runLater {
+                        updateBin()
+                        loadPreferences(event.device)
+                    }
+                }
+                is CameraFrameFormatsChanged -> {
+                    Platform.runLater {
+                        updateFrameFormat()
+                        loadPreferences(event.device)
+                    }
+                }
                 is CameraExposureTaskProgress -> {
                     Platform.runLater {
                         capturing.value = event.isCapturing || !event.isFinished
@@ -258,24 +281,68 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         val radio = event.source as RadioButton
         val timeUnit = TimeUnit.valueOf(radio.userData as String)
         val prevTimeUnit = exposure.userData as TimeUnit
-        updateExposureUnit(prevTimeUnit, timeUnit, exposure.value)
+        updateExposureUnit(prevTimeUnit, timeUnit, exposure.value.toLong())
     }
 
     @Synchronized
-    private fun updateExposureUnit(from: TimeUnit, to: TimeUnit, exposureValue: Double) {
+    private fun updateExposureUnit(from: TimeUnit, to: TimeUnit, exposureValue: Long) {
         val minValue = max(1L, to.convert(equipmentManager.selectedCamera.exposureMin.value, TimeUnit.MICROSECONDS))
         val maxValue = to.convert(equipmentManager.selectedCamera.exposureMax.value, TimeUnit.MICROSECONDS)
         with(exposure.valueFactory as DoubleSpinnerValueFactory) {
             max = maxValue.toDouble()
             min = minValue.toDouble()
-            value = to.convert(exposureValue.toLong(), from).toDouble()
+            value = to.convert(exposureValue, from).toDouble()
             exposure.userData = to
+        }
+    }
+
+    private fun loadPreferences(camera: Camera?) {
+        if (camera != null) {
+            preferences.double("cameraManager.equipment.${camera.name}.temperature")?.also { temperatureSetpoint.valueFactory.value = it }
+            val timeUnit = preferences.enum("cameraManager.equipment.${camera.name}.exposureUnit") ?: TimeUnit.MICROSECONDS
+            val exposure = preferences.long("cameraManager.equipment.${camera.name}.exposure") ?: camera.exposureMin
+            exposureUnit.selectToggle(exposureUnit.toggles.find { it.userData == timeUnit.name })
+            updateExposureUnit(TimeUnit.MICROSECONDS, timeUnit, exposure)
+            preferences.double("cameraManager.equipment.${camera.name}.amount")?.also { exposureCount.valueFactory.value = it }
+            preferences.string("cameraManager.equipment.${camera.name}.exposureMode")
+                ?.also { mode -> exposureMode.selectToggle(exposureMode.toggles.first { it.userData == mode }) }
+            preferences.double("cameraManager.equipment.${camera.name}.exposureDelay")?.also { exposureDelay.valueFactory.value = it }
+            preferences.bool("cameraManager.equipment.${camera.name}.subFrame").also { subFrame.isSelected = it }
+            preferences.double("cameraManager.equipment.${camera.name}.x")?.also { frameX.valueFactory.value = it }
+            preferences.double("cameraManager.equipment.${camera.name}.y")?.also { frameY.valueFactory.value = it }
+            preferences.double("cameraManager.equipment.${camera.name}.width")?.also { frameWidth.valueFactory.value = it }
+            preferences.double("cameraManager.equipment.${camera.name}.height")?.also { frameHeight.valueFactory.value = it }
+            preferences.enum<FrameType>("cameraManager.equipment.${camera.name}.frameType")?.also { frameType.value = it }
+            preferences.string("cameraManager.equipment.${camera.name}.frameFormat")?.also { frameFormat.value = it }
+            preferences.double("cameraManager.equipment.${camera.name}.binX")?.also { binX.valueFactory.value = it }
+            preferences.double("cameraManager.equipment.${camera.name}.binY")?.also { binY.valueFactory.value = it }
+        }
+    }
+
+    private fun savePreferences(camera: Camera?) {
+        if (camera != null) {
+            val timeUnit = exposure.userData as TimeUnit
+            preferences.double("cameraManager.equipment.${camera.name}.temperature", temperatureSetpoint.value)
+            preferences.enum("cameraManager.equipment.${camera.name}.exposureUnit", timeUnit)
+            preferences.long("cameraManager.equipment.${camera.name}.exposure", TimeUnit.MICROSECONDS.convert(exposure.value.toLong(), timeUnit))
+            preferences.double("cameraManager.equipment.${camera.name}.amount", exposureCount.value)
+            preferences.string("cameraManager.equipment.${camera.name}.exposureMode", exposureMode.selectedToggle.userData as String)
+            preferences.double("cameraManager.equipment.${camera.name}.exposureDelay", exposureDelay.value)
+            preferences.bool("cameraManager.equipment.${camera.name}.subFrame", subFrame.isSelected)
+            preferences.double("cameraManager.equipment.${camera.name}.x", frameX.value)
+            preferences.double("cameraManager.equipment.${camera.name}.y", frameY.value)
+            preferences.double("cameraManager.equipment.${camera.name}.width", frameWidth.value)
+            preferences.double("cameraManager.equipment.${camera.name}.height", frameHeight.value)
+            preferences.enum("cameraManager.equipment.${camera.name}.frameType", frameType.value)
+            preferences.string("cameraManager.equipment.${camera.name}.frameFormat", frameFormat.value)
+            preferences.double("cameraManager.equipment.${camera.name}.binX", binX.value)
+            preferences.double("cameraManager.equipment.${camera.name}.binY", binY.value)
         }
     }
 
     private fun updateExposure() {
         val timeUnit = exposure.userData as TimeUnit
-        updateExposureUnit(timeUnit, timeUnit, exposure.value)
+        updateExposureUnit(timeUnit, timeUnit, exposure.value.toLong())
     }
 
     @Synchronized
@@ -285,22 +352,22 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         with(frameX.valueFactory as DoubleSpinnerValueFactory) {
             max = camera.maxX.toDouble()
             min = camera.minX.toDouble()
-            if (!subframe.isSelected) value = min
+            if (!subFrame.isSelected) value = min
         }
         with(frameY.valueFactory as DoubleSpinnerValueFactory) {
             max = camera.maxY.toDouble()
             min = camera.minY.toDouble()
-            if (!subframe.isSelected) value = min
+            if (!subFrame.isSelected) value = min
         }
         with(frameWidth.valueFactory as DoubleSpinnerValueFactory) {
             max = camera.maxWidth.toDouble()
             min = camera.minWidth.toDouble()
-            if (!subframe.isSelected) value = max
+            if (!subFrame.isSelected) value = max
         }
         with(frameHeight.valueFactory as DoubleSpinnerValueFactory) {
             max = camera.maxHeight.toDouble()
             min = camera.minHeight.toDouble()
-            if (!subframe.isSelected) value = max
+            if (!subFrame.isSelected) value = max
         }
     }
 
@@ -338,19 +405,21 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         val timeUnit = exposure.userData as TimeUnit
         val exposureInMicros = TimeUnit.MICROSECONDS.convert(exposure.value.toLong(), timeUnit)
 
-        val amount = exposureType.toggles
+        val amount = exposureMode.toggles
             .firstOrNull { it.isSelected }
             ?.let { if (it.userData == "SINGLE") 1 else if (it.userData == "FIXED") exposureCount.value.toInt() else Int.MAX_VALUE }
             ?: 1
+
+        savePreferences(camera)
 
         executor.submit(
             CameraExposureTask(
                 camera,
                 exposureInMicros, amount, exposureDelay.value.toLong(),
-                if (subframe.isSelected) frameX.value.toInt() else camera.minX,
-                if (subframe.isSelected) frameY.value.toInt() else camera.minY,
-                if (subframe.isSelected) frameWidth.value.toInt() else camera.maxWidth,
-                if (subframe.isSelected) frameHeight.value.toInt() else camera.maxHeight,
+                if (subFrame.isSelected) frameX.value.toInt() else camera.minX,
+                if (subFrame.isSelected) frameY.value.toInt() else camera.minY,
+                if (subFrame.isSelected) frameWidth.value.toInt() else camera.maxWidth,
+                if (subFrame.isSelected) frameHeight.value.toInt() else camera.maxHeight,
                 frameFormat.value, frameType.value,
                 binX.value.toInt(), binY.value.toInt(),
             )

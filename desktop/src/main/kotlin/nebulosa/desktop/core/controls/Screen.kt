@@ -38,7 +38,7 @@ abstract class Screen(
         }
 
         setOnShown { onStart() }
-        setOnCloseRequest { onStop() }
+        setOnHiding { onStop() }
     }
 
     protected open fun onCreate() = Unit
