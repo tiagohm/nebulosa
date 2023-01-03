@@ -55,6 +55,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML private lateinit var frameHeight: Spinner<Double>
     @FXML private lateinit var binX: Spinner<Double>
     @FXML private lateinit var binY: Spinner<Double>
+    @FXML private lateinit var gain: Spinner<Double>
+    @FXML private lateinit var offset: Spinner<Double>
     @FXML private lateinit var frameType: ChoiceBox<FrameType>
     @FXML private lateinit var frameFormat: ChoiceBox<String>
     @FXML private lateinit var startCapture: Button
@@ -100,6 +102,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         frameHeight.disableProperty().bind(frameX.disableProperty())
         binX.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canBin.not()))
         binY.disableProperty().bind(binX.disableProperty())
+        gain.disableProperty().bind(isNotConnectedOrCapturing)
+        offset.disableProperty().bind(isNotConnectedOrCapturing)
         frameType.disableProperty().bind(isNotConnectedOrCapturing)
         frameFormat.disableProperty().bind(isNotConnectedOrCapturing)
         startCapture.disableProperty().bind(isNotConnectedOrCapturing)
@@ -118,6 +122,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             updateFrame()
             updateFrameFormat()
             updateBin()
+            updateGain()
+            updateOffset()
             loadPreferences(value)
         }
 
@@ -150,12 +156,11 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
         val camera = equipmentManager.selectedCamera.value
 
-        cameras.items.setAll(equipmentManager.attachedCameras)
+        cameras.items.addAll(equipmentManager.attachedCameras.filter { it !in cameras.items })
+        cameras.items.removeAll(cameras.items.filter { it !in equipmentManager.attachedCameras })
 
         if (camera !in equipmentManager.attachedCameras) {
             cameras.selectionModel.select(null)
-        } else {
-            cameras.selectionModel.select(camera)
         }
     }
 
@@ -187,6 +192,18 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                 is CameraCanBinChanged -> {
                     Platform.runLater {
                         updateBin()
+                        loadPreferences(event.device)
+                    }
+                }
+                is CameraGainMinMaxChanged -> {
+                    Platform.runLater {
+                        updateGain()
+                        loadPreferences(event.device)
+                    }
+                }
+                is CameraOffsetMinMaxChanged -> {
+                    Platform.runLater {
+                        updateOffset()
                         loadPreferences(event.device)
                     }
                 }
@@ -329,6 +346,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             preferences.string("cameraManager.equipment.${camera.name}.frameFormat")?.also { frameFormat.value = it }
             preferences.double("cameraManager.equipment.${camera.name}.binX")?.also { binX.valueFactory.value = it }
             preferences.double("cameraManager.equipment.${camera.name}.binY")?.also { binY.valueFactory.value = it }
+            preferences.double("cameraManager.equipment.${camera.name}.gain")?.also { gain.valueFactory.value = it }
+            preferences.double("cameraManager.equipment.${camera.name}.offset")?.also { offset.valueFactory.value = it }
             autoSaveAllExposures.isSelected = preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures")
             autoSubFolder.isSelected = preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")
             val mode = preferences.enum("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON
@@ -356,6 +375,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             preferences.string("cameraManager.equipment.${camera.name}.frameFormat", frameFormat.value)
             preferences.double("cameraManager.equipment.${camera.name}.binX", binX.value)
             preferences.double("cameraManager.equipment.${camera.name}.binY", binY.value)
+            preferences.double("cameraManager.equipment.${camera.name}.gain", gain.value)
+            preferences.double("cameraManager.equipment.${camera.name}.offset", offset.value)
         }
     }
 
@@ -406,6 +427,24 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         (binY.valueFactory as DoubleSpinnerValueFactory).max = camera.maxBinY.toDouble()
     }
 
+    private fun updateGain() {
+        val camera = equipmentManager.selectedCamera.value ?: return
+
+        with(gain.valueFactory as DoubleSpinnerValueFactory) {
+            max = camera.gainMax.toDouble()
+            min = camera.gainMin.toDouble()
+        }
+    }
+
+    private fun updateOffset() {
+        val camera = equipmentManager.selectedCamera.value ?: return
+
+        with(offset.valueFactory as DoubleSpinnerValueFactory) {
+            max = camera.offsetMax.toDouble()
+            min = camera.offsetMin.toDouble()
+        }
+    }
+
     @FXML
     private fun applyFullsize() {
         val camera = equipmentManager.selectedCamera.value ?: return
@@ -441,6 +480,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                 if (subFrame.isSelected) frameHeight.value.toInt() else camera.maxHeight,
                 frameFormat.value, frameType.value,
                 binX.value.toInt(), binY.value.toInt(),
+                gain.value.toInt(), offset.value.toInt(),
                 preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures"),
                 preferences.string("cameraManager.equipment.${camera.name}.imageSavePath") ?: "",
                 if (!preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")) AutoSubFolderMode.OFF

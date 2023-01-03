@@ -32,6 +32,8 @@ data class CameraExposureTask(
     val frameType: FrameType,
     val binX: Int,
     val binY: Int,
+    val gain: Int,
+    val offset: Int,
     val save: Boolean = false,
     val savePath: String = "",
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
@@ -127,6 +129,8 @@ data class CameraExposureTask(
                     camera.frameType(frameType)
                     camera.frameFormat(frameFormat)
                     camera.bin(binX, binY)
+                    camera.gain(gain)
+                    camera.offset(offset)
                     camera.startCapture(exposure)
 
                     phaser.arriveAndAwaitAdvance()

@@ -26,15 +26,17 @@ abstract class Screen(
 
     init {
         setOnShowing {
-            val loader = FXMLLoader(resourceUrl("$name.fxml")!!)
-            loader.setController(this)
-            val root = loader.load<Parent>()
+            if (created.compareAndSet(false, true)) {
+                val loader = FXMLLoader(resourceUrl("$name.fxml")!!)
+                loader.setController(this)
+                val root = loader.load<Parent>()
 
-            scene = Scene(root)
+                scene = Scene(root)
 
-            icons.add(Image(resource("icons/$iconName.png")))
+                icons.add(Image(resource("icons/$iconName.png")))
 
-            if (created.compareAndSet(false, true)) onCreate()
+                onCreate()
+            }
         }
 
         setOnShown { onStart() }

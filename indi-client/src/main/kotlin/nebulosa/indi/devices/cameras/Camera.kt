@@ -48,6 +48,12 @@ class Camera(
     @Volatile @JvmField var maxBinY = 1
     @Volatile @JvmField var binX = 1
     @Volatile @JvmField var binY = 1
+    @Volatile @JvmField var gain = 0
+    @Volatile @JvmField var gainMin = 0
+    @Volatile @JvmField var gainMax = 0
+    @Volatile @JvmField var offset = 0
+    @Volatile @JvmField var offsetMin = 0
+    @Volatile @JvmField var offsetMax = 0
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -160,6 +166,30 @@ class Camera(
 
                         handler.fireOnEventReceived(CameraBinChanged(this))
                     }
+                    "CCD_GAIN" -> {
+                        if (message is DefNumberVector) {
+                            gainMin = message["GAIN"]!!.min.toInt()
+                            gainMax = message["GAIN"]!!.max.toInt()
+
+                            handler.fireOnEventReceived(CameraGainMinMaxChanged(this))
+                        }
+
+                        gain = message["GAIN"]!!.value.toInt()
+
+                        handler.fireOnEventReceived(CameraGainChanged(this))
+                    }
+                    "CCD_OFFSET" -> {
+                        if (message is DefNumberVector) {
+                            offsetMin = message["OFFSET"]!!.min.toInt()
+                            offsetMax = message["OFFSET"]!!.max.toInt()
+
+                            handler.fireOnEventReceived(CameraOffsetMinMaxChanged(this))
+                        }
+
+                        offset = message["OFFSET"]!!.value.toInt()
+
+                        handler.fireOnEventReceived(CameraOffsetChanged(this))
+                    }
                 }
             }
             is SetBLOBVector -> {
@@ -213,6 +243,14 @@ class Camera(
 
     fun bin(x: Int, y: Int) {
         sendNewNumber("CCD_BINNING", "HOR_BIN" to x.toDouble(), "VER_BIN" to y.toDouble())
+    }
+
+    fun gain(value: Int) {
+        sendNewNumber("CCD_GAIN", "GAIN" to value.toDouble())
+    }
+
+    fun offset(value: Int) {
+        sendNewNumber("CCD_OFFSET", "OFFSET" to value.toDouble())
     }
 
     fun startCapture(exposureInMicros: Long) {

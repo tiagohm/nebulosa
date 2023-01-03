@@ -55,6 +55,12 @@ class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, C
     @JvmField val maxBinY = SimpleIntegerProperty(1)
     @JvmField val binX = SimpleIntegerProperty(1)
     @JvmField val binY = SimpleIntegerProperty(1)
+    @JvmField val gain = SimpleIntegerProperty(0)
+    @JvmField val gainMin = SimpleIntegerProperty(0)
+    @JvmField val gainMax = SimpleIntegerProperty(0)
+    @JvmField val offset = SimpleIntegerProperty(0)
+    @JvmField val offsetMin = SimpleIntegerProperty(0)
+    @JvmField val offsetMax = SimpleIntegerProperty(0)
 
     init {
         addListener(this)
@@ -104,6 +110,12 @@ class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, C
             maxBinY.value = newValue.maxBinY
             binX.value = newValue.binX
             binY.value = newValue.binY
+            gainMin.value = newValue.gainMin
+            gainMax.value = newValue.gainMax
+            gain.value = newValue.gain
+            offsetMin.value = newValue.offsetMin
+            offsetMax.value = newValue.offsetMax
+            offset.value = newValue.offset
         }
     }
 
@@ -143,13 +155,19 @@ class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, C
         maxBinY.value = 1
         binX.value = 1
         binY.value = 1
+        gainMin.value = 0
+        gainMax.value = 0
+        gain.value = 0
+        offsetMin.value = 0
+        offsetMax.value = 0
+        offset.value = 0
     }
 
     override fun accept(event: Any) {
         if (event is DeviceEvent<*> && event.device === value) {
             Platform.runLater {
                 when (event) {
-                    is DeviceConnected -> isConnected.value = value.isConnected
+                    is DeviceConnected,
                     is DeviceDisconnected -> isConnected.value = value.isConnected
                     is CameraCoolerControlChanged -> hasCoolerControl.value = value.hasCoolerControl
                     is CameraCoolerChanged -> isCoolerOn.value = value.isCoolerOn
@@ -165,6 +183,16 @@ class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, C
                     is CameraExposureMinMaxChanged -> {
                         exposureMin.value = value.exposureMin
                         exposureMax.value = value.exposureMax
+                    }
+                    is CameraGainChanged -> gain.value = value.gain
+                    is CameraGainMinMaxChanged -> {
+                        gainMin.value = value.gainMin
+                        gainMax.value = value.gainMax
+                    }
+                    is CameraOffsetChanged -> offset.value = value.offset
+                    is CameraOffsetMinMaxChanged -> {
+                        offsetMin.value = value.offsetMin
+                        offsetMax.value = value.offsetMax
                     }
                     is CameraExposureStateChanged -> exposureState.value = value.exposureState
                     is CameraHasCoolerChanged -> hasCooler.value = value.hasCooler
