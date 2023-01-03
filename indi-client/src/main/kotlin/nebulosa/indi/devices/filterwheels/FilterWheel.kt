@@ -48,7 +48,6 @@ open class FilterWheel(
         super.handleMessage(message)
     }
 
-    @Synchronized
     fun moveTo(slot: Int) {
         if (slot in 1..slotCount) {
             sendNewNumber("FILTER_SLOT", "FILTER_SLOT_VALUE" to slot.toDouble())

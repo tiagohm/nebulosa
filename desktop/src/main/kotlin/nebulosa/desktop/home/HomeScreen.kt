@@ -9,7 +9,6 @@ import nebulosa.desktop.cameras.CameraManagerScreen
 import nebulosa.desktop.cameras.ImageViewerScreen
 import nebulosa.desktop.connections.ConnectionManager
 import nebulosa.desktop.core.controls.Icon
-import nebulosa.desktop.core.controls.MessageDialog
 import nebulosa.desktop.core.controls.Screen
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.filterwheels.FilterWheelManagerScreen
@@ -121,10 +120,10 @@ class HomeScreen : Screen("Home") {
                 preferences.string("connection.last.host", host)
                 preferences.int("connection.last.port", port)
             } catch (e: Throwable) {
-                MessageDialog(
+                showAlert(
                     "A connection to the INDI Server could not be established. Check your connection or server configuration.",
                     "Connection failed"
-                ).showAndWait()
+                )
             }
         } else {
             connectionManager.disconnect()

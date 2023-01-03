@@ -5,5 +5,5 @@ import nebulosa.indi.protocol.PropertyState
 
 data class CameraExposureStateChanged(
     override val device: Camera,
-    val prevState: PropertyState,
+    val previousState: PropertyState,
 ) : CameraEvent, PropertyChangedEvent

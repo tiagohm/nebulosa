@@ -6,7 +6,7 @@ import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
-import nebulosa.desktop.core.eventbus.EventBus
+import nebulosa.desktop.core.EventBus
 import nebulosa.imaging.algorithms.CfaPattern
 import nebulosa.indi.devices.DeviceConnected
 import nebulosa.indi.devices.DeviceDisconnected

@@ -208,36 +208,30 @@ class Camera(
         super.handleMessage(message)
     }
 
-    @Synchronized
     fun ask() {
         client.sendMessageToServer(GetProperties().also { it.device = name })
     }
 
-    @Synchronized
     fun cooler(enable: Boolean) {
         if (hasCoolerControl) {
             sendNewSwitch("CCD_COOLER", "COOLER_ON" to enable, "COOLER_OFF" to !enable)
         }
     }
 
-    @Synchronized
     fun temperature(value: Double) {
         if (canSetTemperature) {
             sendNewNumber("CCD_TEMPERATURE", "CCD_TEMPERATURE_VALUE" to value)
         }
     }
 
-    @Synchronized
     fun frameFormat(format: String) {
         sendNewSwitch("CCD_CAPTURE_FORMAT", format to true)
     }
 
-    @Synchronized
     fun frameType(type: FrameType) {
         sendNewSwitch("CCD_FRAME_TYPE", "FRAME_$type" to true)
     }
 
-    @Synchronized
     fun frame(x: Int, y: Int, width: Int, height: Int) {
         if (canSubFrame) {
             sendNewNumber(
@@ -247,28 +241,23 @@ class Camera(
         }
     }
 
-    @Synchronized
     fun bin(x: Int, y: Int) {
         sendNewNumber("CCD_BINNING", "HOR_BIN" to x.toDouble(), "VER_BIN" to y.toDouble())
     }
 
-    @Synchronized
     fun gain(value: Int) {
         sendNewNumber("CCD_GAIN", "GAIN" to value.toDouble())
     }
 
-    @Synchronized
     fun offset(value: Int) {
         sendNewNumber("CCD_OFFSET", "OFFSET" to value.toDouble())
     }
 
-    @Synchronized
     fun startCapture(exposureInMicros: Long) {
         val exposureInSeconds = exposureInMicros / 1000000.0
         sendNewNumber("CCD_EXPOSURE", "CCD_EXPOSURE_VALUE" to exposureInSeconds)
     }
 
-    @Synchronized
     fun abortCapture() {
         if (canAbort) {
             sendNewSwitch("CCD_ABORT_EXPOSURE", "ABORT" to true)

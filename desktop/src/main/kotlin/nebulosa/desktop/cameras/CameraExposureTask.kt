@@ -2,7 +2,7 @@ package nebulosa.desktop.cameras
 
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.desktop.core.eventbus.EventBus
+import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.equipments.ThreadedTask
 import nebulosa.indi.devices.cameras.*
 import nebulosa.indi.protocol.PropertyState
@@ -37,7 +37,7 @@ data class CameraExposureTask(
     val save: Boolean = false,
     val savePath: String = "",
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
-) : ThreadedTask, Consumer<Any>, KoinComponent {
+) : ThreadedTask<Unit>(), Consumer<Any>, KoinComponent {
 
     private val eventBus by inject<EventBus>()
 
@@ -53,10 +53,6 @@ data class CameraExposureTask(
     @Volatile private var subscriber: Disposable? = null
 
     private val phaser = Phaser(1)
-
-    override var startedAt = LocalDateTime.now()!!
-
-    override var finishedAt = LocalDateTime.now()!!
 
     @Synchronized
     private fun reportProgress() {
@@ -82,7 +78,7 @@ data class CameraExposureTask(
                 when (state) {
                     PropertyState.IDLE -> {
                         // Aborted.
-                        if (event.prevState == PropertyState.BUSY) {
+                        if (event.previousState == PropertyState.BUSY) {
                             isCapturing = false
                             isAborted = true
                             phaser.forceTermination()
@@ -109,9 +105,7 @@ data class CameraExposureTask(
         }
     }
 
-    override fun run() {
-        startedAt = LocalDateTime.now()
-
+    override fun execute() {
         camera.enableBlob()
 
         try {
@@ -140,7 +134,6 @@ data class CameraExposureTask(
             }
         } finally {
             isCapturing = false
-            finishedAt = LocalDateTime.now()
             subscriber?.dispose()
             subscriber = null
             isFinished = true
@@ -150,6 +143,11 @@ data class CameraExposureTask(
 
     override fun finishGracefully() {
         remaining = 0
+    }
+
+    override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
+        camera.abortCapture()
+        return false
     }
 
     private fun sleep() {

@@ -5,9 +5,11 @@ import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
 import javafx.util.Callback
 
-fun interface ButtonValueFactory<S, T> : Callback<TableColumn<S, T>, TableCell<S, T>> {
+interface ButtonValueFactory<S, T> : Callback<TableColumn<S, T>, TableCell<S, T>> {
 
-    fun getCell(item: S, node: Node?): Node
+    fun cell(item: S, node: Node?): Node
+
+    fun dispose(node: Node)
 
     override fun call(param: TableColumn<S, T>) = object : TableCell<S, T>() {
 
@@ -15,10 +17,11 @@ fun interface ButtonValueFactory<S, T> : Callback<TableColumn<S, T>, TableCell<S
             super.updateItem(item, empty)
 
             if (empty) {
+                if (graphic != null) dispose(graphic)
                 graphic = null
                 text = null
             } else {
-                graphic = getCell(tableView.items[index], graphic)
+                graphic = cell(tableView.items[index], graphic)
                 text = null
             }
         }

@@ -1,12 +1,26 @@
 package nebulosa.desktop.equipments
 
-import java.time.LocalDateTime
+import java.util.concurrent.CompletableFuture
 
-interface ThreadedTask : Runnable {
+abstract class ThreadedTask<T> : CompletableFuture<T>(), Runnable {
 
-    val startedAt: LocalDateTime
+    abstract fun execute(): T
 
-    val finishedAt: LocalDateTime
+    abstract fun finishGracefully()
 
-    fun finishGracefully()
+    final override fun run() {
+        try {
+            complete(execute())
+        } catch (e: InterruptedException) {
+            println("${this::class} was interrupted")
+        } catch (e: Throwable) {
+            completeExceptionally(e)
+        }
+    }
+
+    fun runOnThread(): Thread {
+        val thread = Thread(this)
+        thread.start()
+        return thread
+    }
 }

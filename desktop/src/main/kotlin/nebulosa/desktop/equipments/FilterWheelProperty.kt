@@ -7,7 +7,7 @@ import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
-import nebulosa.desktop.core.eventbus.EventBus
+import nebulosa.desktop.core.EventBus
 import nebulosa.indi.devices.DeviceConnected
 import nebulosa.indi.devices.DeviceDisconnected
 import nebulosa.indi.devices.DeviceEvent

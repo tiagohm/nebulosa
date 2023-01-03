@@ -6,7 +6,7 @@ import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
 import nebulosa.desktop.connections.Connected
 import nebulosa.desktop.connections.Disconnected
-import nebulosa.desktop.core.eventbus.EventBus
+import nebulosa.desktop.core.EventBus
 import nebulosa.indi.devices.cameras.Camera
 import nebulosa.indi.devices.cameras.CameraAttached
 import nebulosa.indi.devices.cameras.CameraDetached

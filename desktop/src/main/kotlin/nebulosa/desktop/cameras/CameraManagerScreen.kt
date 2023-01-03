@@ -19,14 +19,12 @@ import org.controlsfx.control.ToggleSwitch
 import org.koin.core.component.inject
 import java.io.File
 import java.util.*
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
 class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     private val equipmentManager by inject<EquipmentManager>()
-    private val executor = Executors.newSingleThreadExecutor()
 
     @FXML private lateinit var cameras: ChoiceBox<Camera>
     @FXML private lateinit var connect: Button
@@ -68,6 +66,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     private val imageViewers = HashSet<ImageViewerScreen>()
 
     @Volatile private var subscriber: Disposable? = null
+    @Volatile private var captureTask: CameraExposureTask? = null
+    @Volatile private var captureThread: Thread? = null
 
     init {
         title = "Camera"
@@ -168,7 +168,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         subscriber?.dispose()
         subscriber = null
 
-        executor.shutdownNow()
+        captureThread?.interrupt()
+        captureThread = null
 
         imageViewers.forEach(Screen::close)
         imageViewers.clear()
@@ -237,6 +238,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                             } else if (event.isAborted) {
                                 append("aborted")
                             } else if (event.isFinished) {
+                                captureThread = null
+                                captureTask = null
                                 append("finished")
                             } else {
                                 return@runLater
@@ -461,6 +464,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @Synchronized
     private fun startCapture() {
         val camera = equipmentManager.selectedCamera.value ?: return
+        if (captureThread != null) return
 
         val timeUnit = exposure.userData as TimeUnit
         val exposureInMicros = TimeUnit.MICROSECONDS.convert(exposure.value.toLong(), timeUnit)
@@ -472,28 +476,30 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
         savePreferences(camera)
 
-        executor.submit(
-            CameraExposureTask(
-                camera,
-                exposureInMicros, amount, exposureDelay.value.toLong(),
-                if (subFrame.isSelected) frameX.value.toInt() else camera.minX,
-                if (subFrame.isSelected) frameY.value.toInt() else camera.minY,
-                if (subFrame.isSelected) frameWidth.value.toInt() else camera.maxWidth,
-                if (subFrame.isSelected) frameHeight.value.toInt() else camera.maxHeight,
-                frameFormat.value, frameType.value,
-                binX.value.toInt(), binY.value.toInt(),
-                gain.value.toInt(), offset.value.toInt(),
-                preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures"),
-                preferences.string("cameraManager.equipment.${camera.name}.imageSavePath") ?: "",
-                if (!preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")) AutoSubFolderMode.OFF
-                else preferences.enum<AutoSubFolderMode>("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON,
-            )
+        println("Starting capture...")
+
+        captureTask = CameraExposureTask(
+            camera,
+            exposureInMicros, amount, exposureDelay.value.toLong(),
+            if (subFrame.isSelected) frameX.value.toInt() else camera.minX,
+            if (subFrame.isSelected) frameY.value.toInt() else camera.minY,
+            if (subFrame.isSelected) frameWidth.value.toInt() else camera.maxWidth,
+            if (subFrame.isSelected) frameHeight.value.toInt() else camera.maxHeight,
+            frameFormat.value, frameType.value,
+            binX.value.toInt(), binY.value.toInt(),
+            gain.value.toInt(), offset.value.toInt(),
+            preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures"),
+            preferences.string("cameraManager.equipment.${camera.name}.imageSavePath") ?: "",
+            if (!preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")) AutoSubFolderMode.OFF
+            else preferences.enum<AutoSubFolderMode>("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON,
         )
+
+        captureThread = captureTask?.runOnThread()
     }
 
     @FXML
+    @Synchronized
     private fun abortCapture() {
-        val camera = equipmentManager.selectedCamera.value ?: return
-        camera.abortCapture()
+        captureTask?.cancel(true)
     }
 }

@@ -4,9 +4,10 @@ import io.reactivex.rxjava3.functions.Consumer
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
+import javafx.scene.control.Alert
 import javafx.scene.image.Image
 import javafx.stage.Stage
-import nebulosa.desktop.core.eventbus.EventBus
+import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
@@ -52,4 +53,18 @@ abstract class Screen(
     protected open fun onEvent(event: Any) = Unit
 
     final override fun accept(event: Any) = onEvent(event)
+
+    companion object {
+
+        @JvmStatic
+        fun showAlert(
+            message: String,
+            title: String = "Information"
+        ) = Alert(Alert.AlertType.INFORMATION).apply {
+            this.title = title
+            headerText = null
+            contentText = message
+            showAndWait()
+        }
+    }
 }

@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.scene.Cursor
+import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.TableColumn
@@ -20,12 +21,10 @@ import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.filterwheels.FilterWheel
 import org.koin.core.component.inject
-import java.util.concurrent.Executors
 
 class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manager") {
 
     private val equipmentManager by inject<EquipmentManager>()
-    private val executor = Executors.newSingleThreadExecutor()
 
     @FXML private lateinit var filterWheels: ChoiceBox<FilterWheel>
     @FXML private lateinit var connect: Button
@@ -52,6 +51,7 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         filterSlots.columns[0].cellValueFactory = FilterSlotValueFactory(0)
         filterSlots.columns[1].cellFactory = TextFieldTableCell.forTableColumn()
         filterSlots.columns[1].cellValueFactory = FilterSlotValueFactory(1)
+
         filterSlots.columns[1].setOnEditCommit {
             val label = it.newValue as? String
             if (label.isNullOrBlank()) return@setOnEditCommit
@@ -59,24 +59,30 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
             val position = it.tableView.items[it.tablePosition.row]
             preferences.string("filterWheelManager.equipment.${filterWheel.name}.filterSlot.$position.label", label)
         }
-        filterSlots.columns[2].cellFactory = ButtonValueFactory<Int, String> { position, node ->
-            val button = node as? Button
 
-            button?.apply {
-                disableProperty().unbind()
-                onAction = null
+        filterSlots.columns[2].cellFactory = object : ButtonValueFactory<Int, String> {
+
+            override fun cell(item: Int, node: Node?): Node {
+                val button = node as? Button
+
+                node?.also(::dispose)
+
+                return (button ?: Button("Move")).apply {
+                    cursor = Cursor.HAND
+                    disableProperty().bind(equipmentManager.selectedFilterWheel.position.isEqualTo(item))
+                    setOnAction { equipmentManager.selectedFilterWheel.value.moveTo(item) }
+                }
             }
 
-            (button ?: Button("Move")).apply {
-                cursor = Cursor.HAND
-                disableProperty().bind(equipmentManager.selectedFilterWheel.position.isEqualTo(position))
-                setOnAction { equipmentManager.selectedFilterWheel.value.moveTo(position) }
+            override fun dispose(node: Node) {
+                node as Button
+                node.disableProperty().unbind()
+                node.onAction = null
             }
         }
 
-        equipmentManager.selectedFilterWheel.addListener { _, _, value ->
-            title = "Filter Wheel · ${value.name}"
-        }
+        equipmentManager.selectedFilterWheel.addListener { _, _, _ -> updateTitle() }
+        equipmentManager.selectedFilterWheel.position.addListener { _, _, _ -> updateTitle() }
 
         equipmentManager.selectedFilterWheel.slotCount.addListener { _, _, count ->
             filterSlots.items.setAll((1..count.toInt()).toList())
@@ -114,18 +120,6 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
     override fun onStop() {
         subscriber?.dispose()
         subscriber = null
-
-        executor.shutdownNow()
-    }
-
-    override fun onEvent(event: Any) {
-        if (event is DeviceEvent<*>
-            && event.device === equipmentManager.selectedFilterWheel.value
-        ) {
-            when (event) {
-
-            }
-        }
     }
 
     @FXML
@@ -136,6 +130,15 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         } else {
             equipmentManager.selectedFilterWheel.value!!.disconnect()
         }
+    }
+
+    private fun updateTitle() {
+        val filterWheel = equipmentManager.selectedFilterWheel.value ?: return
+        val position = equipmentManager.selectedFilterWheel.position.value
+        if (position < 0) return
+        val label = preferences.string("filterWheelManager.equipment.${filterWheel.name}.filterSlot.$position.label") ?: ""
+        val filterName = label.ifEmpty { "Filter #$position" }
+        title = "Filter Wheel · ${filterWheel.name} · $filterName"
     }
 
     private inner class FilterSlotValueFactory(val index: Int) : Callback<TableColumn.CellDataFeatures<Int, Any>, ObservableValue<out Any>> {

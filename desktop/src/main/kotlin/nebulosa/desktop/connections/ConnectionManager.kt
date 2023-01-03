@@ -1,6 +1,6 @@
 package nebulosa.desktop.connections
 
-import nebulosa.desktop.core.eventbus.EventBus
+import nebulosa.desktop.core.EventBus
 import nebulosa.indi.INDIClient
 import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.DeviceEventHandler

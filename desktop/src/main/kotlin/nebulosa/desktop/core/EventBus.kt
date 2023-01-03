@@ -1,4 +1,4 @@
-package nebulosa.desktop.core.eventbus
+package nebulosa.desktop.core
 
 import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.functions.Consumer
