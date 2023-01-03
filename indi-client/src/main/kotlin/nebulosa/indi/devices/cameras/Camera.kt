@@ -14,6 +14,7 @@ class Camera(
     name: String,
 ) : Device(client, handler, name) {
 
+    @Volatile @JvmField var isCapturing = false
     @Volatile @JvmField var hasCoolerControl = false
     @Volatile @JvmField var isCoolerOn = false
     @Volatile @JvmField var hasDewHeater = false
@@ -106,6 +107,10 @@ class Camera(
                         exposure = (element.value * 1000000.0).toLong()
 
                         handler.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
+
+                        val prevIsCapturing = isCapturing
+                        isCapturing = exposureState == PropertyState.BUSY
+                        if (prevIsCapturing != isCapturing) handler.fireOnEventReceived(CameraIsCapturingChanged(this))
                     }
                     "CCD_TEMPERATURE" -> {
                         if (message is DefNumberVector) {

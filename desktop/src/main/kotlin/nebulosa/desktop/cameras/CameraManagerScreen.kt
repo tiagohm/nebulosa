@@ -61,8 +61,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML private lateinit var abortCapture: Button
     @FXML private lateinit var progress: Label
 
-    private val connecting = SimpleBooleanProperty(false)
-    private val capturing = SimpleBooleanProperty(false)
+    private val isConnecting = SimpleBooleanProperty(false)
+    private val isCapturing = SimpleBooleanProperty(false)
     private val imageViewers = HashSet<ImageViewerScreen>()
 
     @Volatile private var subscriber: Disposable? = null
@@ -76,10 +76,11 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     override fun onCreate() {
         val isNotConnected = equipmentManager.selectedCamera.isConnected.not()
-        val isNotConnectedOrCapturing = isNotConnected.or(capturing)
-        cameras.disableProperty().bind(connecting.or(capturing))
+        val isCapturing = equipmentManager.selectedCamera.isCapturing.or(this.isCapturing)
+        val isNotConnectedOrCapturing = isNotConnected.or(isCapturing)
+        cameras.disableProperty().bind(isConnecting.or(isCapturing))
         equipmentManager.selectedCamera.bind(cameras.selectionModel.selectedItemProperty())
-        connect.disableProperty().bind(equipmentManager.selectedCamera.isNull.or(connecting).or(capturing))
+        connect.disableProperty().bind(equipmentManager.selectedCamera.isNull.or(isConnecting).or(isCapturing))
         cameraMenuIcon.disableProperty().bind(isNotConnectedOrCapturing)
         cooler.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.hasCooler.not()))
         dewHeater.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.hasDewHeater.not()))
@@ -128,7 +129,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         }
 
         equipmentManager.selectedCamera.isConnected.addListener { _, _, value ->
-            connecting.set(false)
+            isConnecting.set(false)
 
             connect.graphic = if (value) Icon.closeCircle() else Icon.connection()
         }
@@ -218,7 +219,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                 }
                 is CameraExposureTaskProgress -> {
                     Platform.runLater {
-                        capturing.value = event.isCapturing || !event.isFinished
+                        isCapturing.value = event.isCapturing || !event.isFinished
 
                         progress.text = buildString(128) {
                             val task = event.task
@@ -266,7 +267,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML
     private fun connect() {
         if (!equipmentManager.selectedCamera.isConnected.value) {
-            connecting.set(true)
+            isConnecting.set(true)
             equipmentManager.selectedCamera.value!!.connect()
         } else {
             equipmentManager.selectedCamera.value!!.disconnect()

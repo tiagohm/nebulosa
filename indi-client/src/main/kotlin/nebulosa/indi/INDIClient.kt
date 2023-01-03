@@ -43,7 +43,6 @@ class INDIClient(val connection: INDIConnection) : INDIProtocolParser, Closeable
         handlers.remove(handler)
     }
 
-    @Synchronized
     fun sendMessageToServer(message: INDIProtocol) {
         connection.writeINDIProtocol(message)
     }

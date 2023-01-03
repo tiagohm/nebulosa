@@ -286,6 +286,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
         if (!canDraw()) return
 
+        // TODO: How to handle rotation transformation if data is copy but width/height is not?
+        // TODO: Reason: Image will be rotated for each draw.
         fits!!.data.copyInto(transformedFits!!.data)
 
         val algorithms = arrayListOf<TransformAlgorithm>()
@@ -322,7 +324,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
             buffer.clear()
         }
 
-        val factor = fits.width.toFloat() / areaWidth / scale
+        val factor = if (fits.width >= fits.height) fits.width.toFloat() / areaWidth / scale
+        else fits.height.toFloat() / areaHeight / scale
 
         var prevIndex = -1
         var prevColor = 0

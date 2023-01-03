@@ -21,6 +21,7 @@ class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, C
     private val eventBus by inject<EventBus>()
 
     @JvmField val isConnected = SimpleBooleanProperty(false)
+    @JvmField val isCapturing = SimpleBooleanProperty(false)
     @JvmField val hasCoolerControl = SimpleBooleanProperty(false)
     @JvmField val isCoolerOn = SimpleBooleanProperty(false)
     @JvmField val hasDewHeater = SimpleBooleanProperty(false)
@@ -76,6 +77,7 @@ class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, C
             reset()
         } else {
             isConnected.value = newValue.isConnected
+            isCapturing.value = newValue.isCapturing
             hasCoolerControl.value = newValue.hasCoolerControl
             isCoolerOn.value = newValue.isCoolerOn
             hasDewHeater.value = newValue.hasDewHeater
@@ -121,6 +123,7 @@ class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, C
 
     fun reset() {
         isConnected.value = false
+        isCapturing.value = false
         hasCoolerControl.value = false
         isCoolerOn.value = false
         hasDewHeater.value = false
@@ -169,6 +172,7 @@ class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, C
                 when (event) {
                     is DeviceConnected,
                     is DeviceDisconnected -> isConnected.value = value.isConnected
+                    is CameraIsCapturingChanged -> isCapturing.value = value.isCapturing
                     is CameraCoolerControlChanged -> hasCoolerControl.value = value.hasCoolerControl
                     is CameraCoolerChanged -> isCoolerOn.value = value.isCoolerOn
                     is CameraHasDewHeaterChanged -> hasDewHeater.value = value.hasDewHeater

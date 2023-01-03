@@ -10,9 +10,7 @@ open class Image(
 ) : BufferedImage(colorModel(mono), raster(width, height, mono), false, null) {
 
     @JvmField val pixelStride = if (mono) 1 else 3
-
     @JvmField val stride = width * pixelStride
-
     @JvmField val data = (raster.dataBuffer as Float8bitsDataBuffer).data
 
     @Suppress("NOTHING_TO_INLINE")
