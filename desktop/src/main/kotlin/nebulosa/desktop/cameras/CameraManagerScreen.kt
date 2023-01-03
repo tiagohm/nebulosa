@@ -175,7 +175,9 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     }
 
     override fun onEvent(event: Any) {
-        if (event is DeviceEvent<*> && event.device === equipmentManager.selectedCamera.value) {
+        if (event is DeviceEvent<*>
+            && event.device === equipmentManager.selectedCamera.value
+        ) {
             when (event) {
                 is CameraExposureMinMaxChanged -> {
                     Platform.runLater {

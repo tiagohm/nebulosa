@@ -16,7 +16,7 @@ import org.koin.core.module.dsl.withOptions
 import org.koin.dsl.module
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.concurrent.Executors
+import java.util.*
 import kotlin.io.path.createDirectories
 
 private fun appDirectory(): Path {
@@ -49,6 +49,8 @@ fun main(args: Array<String>) {
     startKoin {
         modules(inject())
     }
+
+    Locale.setDefault(Locale.ENGLISH)
 
     Application.launch(Nebulosa::class.java, *args)
 }

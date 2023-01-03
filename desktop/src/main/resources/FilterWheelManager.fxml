@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -11,9 +10,9 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="415.0"
-            prefWidth="402.0"
-            xmlns="http://javafx.com/javafx/19"
+            prefHeight="128.0"
+            prefWidth="342.0"
+            xmlns="http://javafx.com/javafx/17.0.2-ea"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="16.0"
           AnchorPane.bottomAnchor="0.0"
@@ -30,15 +29,15 @@
               spacing="8.0">
             <ChoiceBox fx:id="filterWheels"
                        prefHeight="32.0"
-                       prefWidth="394.0">
+                       prefWidth="360.0">
                 <cursor>
                     <Cursor fx:constant="HAND"/>
                 </cursor>
             </ChoiceBox>
             <Button fx:id="connect"
-                    onAction="#connect"
                     contentDisplay="GRAPHIC_ONLY"
-                    mnemonicParsing="false">
+                    mnemonicParsing="false"
+                    onAction="#connect">
                 <graphic>
                     <ImageView fitHeight="24.0"
                                fitWidth="24.0"
@@ -52,5 +51,25 @@
                 </cursor>
             </Button>
         </HBox>
+        <VBox alignment="TOP_CENTER">
+            <TableView fx:id="filterSlots"
+                       editable="true">
+                <columns>
+                    <TableColumn
+                            fx:id="position"
+                            text="Position"
+                            style="-fx-alignment: CENTER;"
+                            prefWidth="80.0"/>
+                    <TableColumn fx:id="name"
+                                 text="Name"
+                                 style="-fx-alignment: CENTER-LEFT;"
+                                 prefWidth="135.0"/>
+                    <TableColumn fx:id="action"
+                                 text="Action"
+                                 style="-fx-alignment: CENTER;"
+                                 prefWidth="92.0"/>
+                </columns>
+            </TableView>
+        </VBox>
     </VBox>
 </AnchorPane>

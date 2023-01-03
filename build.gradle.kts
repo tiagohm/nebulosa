@@ -60,7 +60,6 @@ subprojects {
 
     tasks.withType<JavaCompile> {
         options.encoding = Charsets.UTF_8.toString()
-        options.compilerArgs.add("-Aobjectbox.myObjectBoxPackage=nebula.api")
         sourceCompatibility = JavaVersion.VERSION_17.toString()
         targetCompatibility = JavaVersion.VERSION_17.toString()
     }

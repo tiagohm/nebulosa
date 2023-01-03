@@ -4,6 +4,9 @@ import nebulosa.indi.INDIClient
 import nebulosa.indi.devices.cameras.Camera
 import nebulosa.indi.devices.cameras.CameraAttached
 import nebulosa.indi.devices.cameras.CameraDetached
+import nebulosa.indi.devices.filterwheels.FilterWheel
+import nebulosa.indi.devices.filterwheels.FilterWheelAttached
+import nebulosa.indi.devices.filterwheels.FilterWheelDetached
 import nebulosa.indi.devices.mounts.Mount
 import nebulosa.indi.devices.mounts.MountAttached
 import nebulosa.indi.devices.mounts.MountDetached
@@ -21,6 +24,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
     @Volatile private var closed = false
     private val cameras = HashMap<String, Camera>(2)
     private val mounts = HashMap<String, Mount>(2)
+    private val filterWheels = HashMap<String, FilterWheel>(2)
     private val messageReorderingQueue = LinkedBlockingQueue<INDIProtocol>()
     private val notRegisteredDevices = HashSet<String>()
     private val protocolReader by lazy { INDIProtocolReader(this, Thread.MIN_PRIORITY) }
@@ -69,8 +73,13 @@ class DeviceProtocolHandler : INDIProtocolParser {
                 fireOnEventReceived(MountDetached(mount.value))
             }
 
+            for (filterWheel in filterWheels) {
+                fireOnEventReceived(FilterWheelDetached(filterWheel.value))
+            }
+
             cameras.clear()
             mounts.clear()
+            filterWheels.clear()
 
             notRegisteredDevices.clear()
             messageQueueCounter.clear()
@@ -111,7 +120,19 @@ class DeviceProtocolHandler : INDIProtocolParser {
                     }
                 }
 
+                if (executable in FilterWheel.DRIVERS) {
+                    if (message.device !in filterWheels) {
+                        val filterWheel = FilterWheel(client, this, message.device)
+                        filterWheels[message.device] = filterWheel
+                        fireOnEventReceived(FilterWheelAttached(filterWheel))
+                        registered = true
+                    } else {
+                        registered = true
+                    }
+                }
+
                 if (!registered) {
+                    println("Device is not registered: ${message.device}")
                     notRegisteredDevices.add(message.device)
                 }
 
@@ -151,6 +172,11 @@ class DeviceProtocolHandler : INDIProtocolParser {
         if (message.device in mounts) {
             found = true
             mounts[message.device]!!.handleMessage(message)
+        }
+
+        if (message.device in filterWheels) {
+            found = true
+            filterWheels[message.device]!!.handleMessage(message)
         }
 
         if (!found) {

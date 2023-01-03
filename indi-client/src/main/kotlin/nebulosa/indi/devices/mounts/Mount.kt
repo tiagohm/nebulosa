@@ -15,8 +15,7 @@ open class Mount(
 
     companion object {
 
-        @JvmStatic
-        val DRIVERS = setOf(
+        @JvmStatic val DRIVERS = setOf(
             "indi_astrotrac_telescope",
             "indi_azgti_telescope",
             "indi_bresserexos2",
