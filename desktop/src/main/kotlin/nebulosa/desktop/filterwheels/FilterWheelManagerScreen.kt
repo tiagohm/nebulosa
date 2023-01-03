@@ -8,10 +8,7 @@ import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.scene.Cursor
 import javafx.scene.Node
-import javafx.scene.control.Button
-import javafx.scene.control.ChoiceBox
-import javafx.scene.control.TableColumn
-import javafx.scene.control.TableView
+import javafx.scene.control.*
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.util.Callback
 import nebulosa.desktop.core.controls.ButtonValueFactory
@@ -28,6 +25,8 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
 
     @FXML private lateinit var filterWheels: ChoiceBox<FilterWheel>
     @FXML private lateinit var connect: Button
+    @FXML private lateinit var useFilterWheelAsShutter: CheckBox
+    @FXML private lateinit var filterAsShutter: ChoiceBox<String>
     @FXML private lateinit var filterSlots: TableView<Int>
 
     private val connecting = SimpleBooleanProperty(false)
@@ -47,6 +46,8 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         equipmentManager.selectedFilterWheel.bind(filterWheels.selectionModel.selectedItemProperty())
         connect.disableProperty().bind(equipmentManager.selectedFilterWheel.isNull.or(connecting).or(isMoving))
         filterSlots.disableProperty().bind(isNotConnectedOrMoving)
+        useFilterWheelAsShutter.disableProperty().bind(isNotConnectedOrMoving)
+        filterAsShutter.disableProperty().bind(useFilterWheelAsShutter.disableProperty().or(useFilterWheelAsShutter.selectedProperty().not()))
 
         filterSlots.columns[0].cellValueFactory = FilterSlotValueFactory(0)
         filterSlots.columns[1].cellFactory = TextFieldTableCell.forTableColumn()
@@ -58,6 +59,8 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
             val filterWheel = equipmentManager.selectedFilterWheel.value ?: return@setOnEditCommit
             val position = it.tableView.items[it.tablePosition.row]
             preferences.string("filterWheelManager.equipment.${filterWheel.name}.filterSlot.$position.label", label)
+            updateUseFilterWheelAsShutter()
+            updateFilterAsShutter()
         }
 
         filterSlots.columns[2].cellFactory = object : ButtonValueFactory<Int, String> {
@@ -81,12 +84,22 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
             }
         }
 
-        equipmentManager.selectedFilterWheel.addListener { _, _, _ -> updateTitle() }
+        filterAsShutter.selectionModel.selectedIndexProperty().addListener { _, _, index ->
+            val filterWheel = equipmentManager.selectedFilterWheel.value ?: return@addListener
+            preferences.int("filterWheelManager.equipment.${filterWheel.name}.filterAsShutter", index.toInt())
+        }
+
+        equipmentManager.selectedFilterWheel.addListener { _, _, _ ->
+            updateTitle()
+            updateUseFilterWheelAsShutter()
+            updateFilterAsShutter()
+        }
+
         equipmentManager.selectedFilterWheel.position.addListener { _, _, _ -> updateTitle() }
 
         equipmentManager.selectedFilterWheel.slotCount.addListener { _, _, count ->
             filterSlots.items.setAll((1..count.toInt()).toList())
-            height = 64.0 + (count.toInt() + 1) * 40.0
+            height = 180.0 + count.toInt() * 29.9
         }
 
         equipmentManager.selectedFilterWheel.isConnected.addListener { _, _, value ->
@@ -132,26 +145,46 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         }
     }
 
+    @FXML
+    private fun toggleUseFilterWheelAsShutter() {
+        val filterWheel = equipmentManager.selectedFilterWheel.value ?: return
+        preferences.bool("filterWheelManager.equipment.${filterWheel.name}.useFilterWheelAsShutter", useFilterWheelAsShutter.isSelected)
+    }
+
+    private fun computeFilterName(position: Int): String {
+        val filterWheel = equipmentManager.selectedFilterWheel.value ?: return "Filter #$position"
+        val label = preferences.string("filterWheelManager.equipment.${filterWheel.name}.filterSlot.$position.label") ?: ""
+        return label.ifEmpty { "Filter #$position" }
+    }
+
     private fun updateTitle() {
         val filterWheel = equipmentManager.selectedFilterWheel.value ?: return
         val position = equipmentManager.selectedFilterWheel.position.value
         if (position < 0) return
-        val label = preferences.string("filterWheelManager.equipment.${filterWheel.name}.filterSlot.$position.label") ?: ""
-        val filterName = label.ifEmpty { "Filter #$position" }
-        title = "Filter Wheel · ${filterWheel.name} · $filterName"
+        title = "Filter Wheel · ${filterWheel.name} · ${computeFilterName(position)}"
+    }
+
+    private fun updateUseFilterWheelAsShutter() {
+        val filterWheel = equipmentManager.selectedFilterWheel.value ?: return
+        useFilterWheelAsShutter.isSelected = preferences.bool("filterWheelManager.equipment.${filterWheel.name}.useFilterWheelAsShutter")
+        val selectedFilterAsShutter = preferences.int("filterWheelManager.equipment.${filterWheel.name}.filterAsShutter") ?: 0
+        filterAsShutter.items.setAll((1..filterWheel.slotCount).map(::computeFilterName))
+        filterAsShutter.selectionModel.select(selectedFilterAsShutter)
+    }
+
+    private fun updateFilterAsShutter() {
+        val filterWheel = equipmentManager.selectedFilterWheel.value ?: return
+        val selectedFilterAsShutter = preferences.int("filterWheelManager.equipment.${filterWheel.name}.filterAsShutter") ?: -1
+        if (selectedFilterAsShutter in filterAsShutter.items.indices) filterAsShutter.selectionModel.select(selectedFilterAsShutter)
+        else filterAsShutter.selectionModel.selectFirst()
     }
 
     private inner class FilterSlotValueFactory(val index: Int) : Callback<TableColumn.CellDataFeatures<Int, Any>, ObservableValue<out Any>> {
 
         override fun call(param: TableColumn.CellDataFeatures<Int, Any>): ObservableValue<out Any>? {
-            val filterWheel = equipmentManager.selectedFilterWheel.value ?: return null
-
             return when (index) {
                 0 -> ReadOnlyIntegerWrapper(param.value)
-                1 -> {
-                    val label = preferences.string("filterWheelManager.equipment.${filterWheel.name}.filterSlot.${param.value}.label") ?: ""
-                    ReadOnlyStringWrapper(label.ifBlank { "Filter #${param.value}" })
-                }
+                1 -> ReadOnlyStringWrapper(computeFilterName(param.value))
                 else -> null
             }
         }
