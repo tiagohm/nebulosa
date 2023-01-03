@@ -115,7 +115,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         frameFormat.itemsProperty().bind(equipmentManager.selectedCamera.frameFormats)
 
         equipmentManager.selectedCamera.addListener { _, prev, value ->
-            title = "Camera | ${value.name}"
+            title = "Camera · ${value.name}"
 
             savePreferences(prev)
             // updateExposure()
@@ -221,8 +221,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                             val task = event.task
 
                             if (event.isCapturing) {
-                                val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000L} s"
-                                else if (task.exposure >= 1000L) "${task.exposure / 1000L} ms"
+                                val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000.0} s"
+                                else if (task.exposure >= 1000L) "${task.exposure / 1000.0} ms"
                                 else "${task.exposure} µs"
 
                                 append("capturing ")
@@ -287,7 +287,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         val initialDirectory = preferences.string("cameraManager.equipment.${camera.name}.imageSavePath")
         if (!initialDirectory.isNullOrBlank()) chooser.initialDirectory = File(initialDirectory)
         chooser.title = "Open Image Save Path"
-        val file = chooser.showDialog(null) ?: return
+        val file = chooser.showDialog(this) ?: return
         preferences.string("cameraManager.equipment.${camera.name}.imageSavePath", file.toString())
         imageSavePath.text = file.toString()
     }

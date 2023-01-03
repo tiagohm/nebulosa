@@ -10,7 +10,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="390.0"
+            prefHeight="380.0"
             prefWidth="332.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
@@ -68,9 +68,6 @@
         <GridPane alignment="CENTER"
                   minHeight="1.0"
                   VBox.vgrow="NEVER">
-            <VBox.margin>
-                <Insets top="16.0"/>
-            </VBox.margin>
             <columnConstraints>
                 <ColumnConstraints halignment="CENTER"
                                    hgrow="SOMETIMES"

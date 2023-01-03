@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import nebulosa.imaging.algorithms.*?>
+<?import nebulosa.imaging.ImageChannel?>
+<?import org.controlsfx.control.ToggleSwitch?>
+<AnchorPane maxHeight="-Infinity"
+            maxWidth="-Infinity"
+            minHeight="-Infinity"
+            minWidth="-Infinity"
+            prefHeight="220.0"
+            prefWidth="340.0"
+            xmlns="http://javafx.com/javafx/19"
+            xmlns:fx="http://javafx.com/fxml/1">
+    <VBox alignment="TOP_CENTER"
+          spacing="8.0"
+          AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0"
+          AnchorPane.topAnchor="0.0">
+        <padding>
+            <Insets bottom="16.0"
+                    left="16.0"
+                    right="16.0"
+                    top="16.0"/>
+        </padding>
+        <VBox spacing="1.0">
+            <Label text="Channel">
+                <font>
+                    <Font size="12.0"/>
+                </font>
+            </Label>
+            <fx:define>
+                <ImageChannel fx:id="channelInitialValue"
+                              fx:constant="GREEN"/>
+            </fx:define>
+            <ChoiceBox fx:id="channel"
+                       prefWidth="308.0"
+                       value="$channelInitialValue">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <ImageChannel fx:value="RED"/>
+                        <ImageChannel fx:value="GREEN"/>
+                        <ImageChannel fx:value="BLUE"/>
+                    </FXCollections>
+                </items>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </ChoiceBox>
+        </VBox>
+        <VBox spacing="1.0">
+            <Label text="Protection method">
+                <font>
+                    <Font size="12.0"/>
+                </font>
+            </Label>
+            <fx:define>
+                <ProtectionMethod fx:id="protectionMethodInitialValue"
+                                  fx:constant="AVERAGE_NEUTRAL"/>
+            </fx:define>
+            <ChoiceBox fx:id="protectionMethod"
+                       prefWidth="308.0"
+                       value="$protectionMethodInitialValue">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <ProtectionMethod fx:value="MAXIMUM_MASK"/>
+                        <ProtectionMethod fx:value="ADDTIVIVE_MASK"/>
+                        <ProtectionMethod fx:value="AVERAGE_NEUTRAL"/>
+                        <ProtectionMethod fx:value="MAXIMUM_NEUTRAL"/>
+                    </FXCollections>
+                </items>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </ChoiceBox>
+        </VBox>
+        <HBox alignment="CENTER"
+              spacing="16.0">
+            <VBox alignment="CENTER_LEFT"
+                  spacing="1.0">
+                <Label text="Amount">
+                    <font>
+                        <Font size="12.0"/>
+                    </font>
+                </Label>
+                <Spinner fx:id="amount"
+                         editable="true"
+                         min="0.0"
+                         max="1.0"
+                         amountToStepBy="0.01"
+                         initialValue="0.5"
+                         prefWidth="144.0">
+                </Spinner>
+            </VBox>
+            <VBox alignment="CENTER"
+                  spacing="1.0">
+                <Label text="Auto apply">
+                    <font>
+                        <Font size="12.0"/>
+                    </font>
+                </Label>
+                <ToggleSwitch fx:id="autoApply"
+                              prefHeight="32.0"
+                              prefWidth="32.0">
+                    <font>
+                        <Font size="12.0"/>
+                    </font>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </ToggleSwitch>
+            </VBox>
+        </HBox>
+        <VBox alignment="CENTER"
+              spacing="1.0">
+            <VBox.margin>
+                <Insets top="16.0"/>
+            </VBox.margin>
+            <Button onAction="#apply"
+                    text="Apply"
+                    mnemonicParsing="false">
+                <graphic>
+                    <ImageView fitHeight="24.0"
+                               fitWidth="24.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/check.png"/>
+                    </ImageView>
+                </graphic>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
+        </VBox>
+    </VBox>
+</AnchorPane>

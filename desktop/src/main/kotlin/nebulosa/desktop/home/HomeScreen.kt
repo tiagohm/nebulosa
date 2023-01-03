@@ -104,6 +104,9 @@ class HomeScreen : Screen("Home") {
 
         connectionManager.disconnect()
 
+        imageViewers.forEach(Screen::close)
+        imageViewers.clear()
+
         screens.forEach(Screen::close)
         screens.clear()
     }
@@ -149,7 +152,7 @@ class HomeScreen : Screen("Home") {
         val chooser = FileChooser()
         chooser.title = "Open New Image"
         chooser.extensionFilters.add(FileChooser.ExtensionFilter("FITS Files", "*.fits", "*.fit"))
-        val file = chooser.showOpenDialog(null) ?: return
+        val file = chooser.showOpenDialog(this) ?: return
         val page = imageViewers.firstOrNull { !it.isShowing && it.camera == null } ?: ImageViewerScreen()
         imageViewers.add(page)
         page.open(file)

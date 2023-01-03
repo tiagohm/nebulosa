@@ -15,7 +15,9 @@
         <ContextMenu fx:id="menu">
             <items>
                 <MenuItem text="Stretch"
-                          onAction="#showImageStretcher"/>
+                          onAction="#openImageStretcher"/>
+                <MenuItem text="SCNR"
+                          onAction="#openSCNR"/>
                 <CheckMenuItem text="Horizontal Mirror"
                                onAction="#mirrorHorizontal"/>
                 <CheckMenuItem text="Vertical Mirror"

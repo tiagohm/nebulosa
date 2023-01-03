@@ -15,9 +15,8 @@ class ImageStretcherScreen(private val imageViewer: ImageViewerScreen) :
     @FXML private lateinit var histogram: HistogramView
 
     init {
+        title = "Image Stretcher"
         isResizable = false
-
-        titleProperty().bind(imageViewer.titleProperty())
     }
 
     override fun onStart() {

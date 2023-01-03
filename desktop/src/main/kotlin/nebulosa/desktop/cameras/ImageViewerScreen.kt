@@ -3,6 +3,7 @@ package nebulosa.desktop.cameras
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
+import javafx.scene.Cursor
 import javafx.scene.control.ContextMenu
 import javafx.scene.image.ImageView
 import javafx.scene.image.PixelBuffer
@@ -14,10 +15,8 @@ import javafx.scene.input.ScrollEvent
 import nebulosa.desktop.core.controls.Screen
 import nebulosa.imaging.FitsImage
 import nebulosa.imaging.Image
-import nebulosa.imaging.algorithms.Flip
-import nebulosa.imaging.algorithms.Invert
-import nebulosa.imaging.algorithms.ScreenTransformFunction
-import nebulosa.imaging.algorithms.TransformAlgorithm
+import nebulosa.imaging.ImageChannel
+import nebulosa.imaging.algorithms.*
 import nebulosa.indi.devices.cameras.Camera
 import nom.tam.fits.Fits
 import java.io.File
@@ -44,7 +43,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     @Volatile private var dragStartY = 0.0
     @Volatile private var lastDrawTime = 0L
 
-    private val imageStretcher = ImageStretcherScreen(this)
+    private val imageStretcherScreen = ImageStretcherScreen(this)
+    private val scnrScreen = SCNRScreen(this)
 
     var shadow = 0f
         private set
@@ -62,6 +62,17 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         private set
 
     var invert = false
+        private set
+
+    var scnrAutoApply = false
+
+    var scnrChannel = ImageChannel.GREEN
+        private set
+
+    var scnrProtectionMode = ProtectionMethod.AVERAGE_NEUTRAL
+        private set
+
+    var scnrAmount = 0.5f
         private set
 
     init {
@@ -82,6 +93,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
                     dragStartX = it.x
                     dragStartY = it.y
                     dragging = true
+                    image.cursor = Cursor.MOVE
                 } else {
                     val deltaX = (it.x - dragStartX).toInt()
                     val deltaY = (it.y - dragStartY).toInt()
@@ -104,6 +116,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
         image.addEventFilter(MouseEvent.MOUSE_RELEASED) {
             dragging = false
+            image.cursor = Cursor.DEFAULT
         }
 
         image.parent.addEventFilter(MouseEvent.MOUSE_CLICKED) {
@@ -164,7 +177,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         dragStartY = 0.0
         lastDrawTime = 0L
 
-        imageStretcher.close()
+        imageStretcherScreen.close()
+        scnrScreen.close()
 
         System.gc()
     }
@@ -172,8 +186,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     private fun setTitleFromCameraAndFile(file: File? = null) {
         title = buildString(64) {
             append("Image")
-            if (camera != null) append(" | ${camera.name}")
-            if (file != null) append(" | ${file.name}")
+            if (camera != null) append(" · ${camera.name}")
+            if (file != null) append(" · ${file.name}")
         }
     }
 
@@ -216,10 +230,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         observable: ObservableValue<out Number>,
         oldValue: Number, newValue: Number,
     ) {
-        // TODO: Improve resizing scale.
         if (observable === widthProperty()) {
             val factor = newValue.toDouble() / oldValue.toDouble()
-            scale *= factor
             startX = (startX * factor).toInt()
             startY = (startY * factor).toInt()
         }
@@ -250,13 +262,17 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
         transformImage()
 
-        imageStretcher.drawHistogram()
+        imageStretcherScreen.drawHistogram()
     }
 
+    @Synchronized
     fun transformImage(
         shadow: Float = this.shadow, highlight: Float = this.highlight, midtone: Float = this.midtone,
         mirrorHorizontal: Boolean = this.mirrorHorizontal, mirrorVertical: Boolean = this.mirrorVertical,
         invert: Boolean = this.invert,
+        scnr: Boolean = false, scnrChannel: ImageChannel = this.scnrChannel,
+        scnrProtectionMode: ProtectionMethod = this.scnrProtectionMode,
+        scnrAmount: Float = this.scnrAmount,
     ) {
         this.shadow = shadow
         this.highlight = highlight
@@ -264,6 +280,9 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         this.mirrorHorizontal = mirrorHorizontal
         this.mirrorVertical = mirrorVertical
         this.invert = invert
+        this.scnrChannel = scnrChannel
+        this.scnrProtectionMode = scnrProtectionMode
+        this.scnrAmount = scnrAmount
 
         if (!canDraw()) return
 
@@ -272,6 +291,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         val algorithms = arrayListOf<TransformAlgorithm>()
         if (invert) algorithms.add(Invert)
         algorithms.add(Flip(mirrorHorizontal, mirrorVertical))
+        if (scnr || scnrAutoApply) algorithms.add(SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode))
         algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
 
         transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)
@@ -291,9 +311,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
         lastDrawTime = System.currentTimeMillis()
 
-        val bounds = image.parent.boundsInLocal
-        val areaWidth = bounds.width.toInt()
-        val areaHeight = bounds.height.toInt()
+        val areaWidth = width.toInt()
+        val areaHeight = height.toInt()
         val area = areaWidth * areaHeight
 
         if (area > bufferSize) {
@@ -346,8 +365,13 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     }
 
     @FXML
-    private fun showImageStretcher() {
-        imageStretcher.show()
+    private fun openImageStretcher() {
+        imageStretcherScreen.show()
+    }
+
+    @FXML
+    private fun openSCNR() {
+        scnrScreen.show()
     }
 
     @FXML
