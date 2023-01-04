@@ -1,4 +1,4 @@
-package nebulosa.desktop.stellarium
+package nebulosa.desktop.telescopecontrol
 
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.fxml.FXML

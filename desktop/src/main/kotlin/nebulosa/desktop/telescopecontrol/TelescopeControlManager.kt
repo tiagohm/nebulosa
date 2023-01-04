@@ -1,4 +1,4 @@
-package nebulosa.desktop.stellarium
+package nebulosa.desktop.telescopecontrol
 
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.desktop.core.EventBus

@@ -6,13 +6,13 @@ import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import javafx.stage.FileChooser
 import nebulosa.desktop.cameras.CameraManagerScreen
-import nebulosa.desktop.cameras.ImageViewerScreen
 import nebulosa.desktop.connections.ConnectionManager
 import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.controls.Screen
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.filterwheels.FilterWheelManagerScreen
 import nebulosa.desktop.focusers.FocuserManagerScreen
+import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.desktop.mounts.MountManagerScreen
 import nebulosa.desktop.platesolving.PlateSolverScreen
 import org.koin.core.component.get

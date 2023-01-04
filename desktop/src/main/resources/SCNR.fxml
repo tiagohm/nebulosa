@@ -4,8 +4,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.Cursor?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 <?import nebulosa.imaging.algorithms.*?>
@@ -15,7 +13,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="220.0"
+            prefHeight="175.0"
             prefWidth="340.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
@@ -102,12 +100,12 @@
             </VBox>
             <VBox alignment="CENTER"
                   spacing="1.0">
-                <Label text="Auto apply">
+                <Label text="Enabled">
                     <font>
                         <Font size="12.0"/>
                     </font>
                 </Label>
-                <ToggleSwitch fx:id="autoApply"
+                <ToggleSwitch fx:id="enabled"
                               prefHeight="32.0"
                               prefWidth="32.0">
                     <font>
@@ -119,26 +117,5 @@
                 </ToggleSwitch>
             </VBox>
         </HBox>
-        <VBox alignment="CENTER"
-              spacing="1.0">
-            <VBox.margin>
-                <Insets top="16.0"/>
-            </VBox.margin>
-            <Button onAction="#apply"
-                    text="Apply"
-                    mnemonicParsing="false">
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/check.png"/>
-                    </ImageView>
-                </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
-            </Button>
-        </VBox>
     </VBox>
 </AnchorPane>

@@ -1,4 +1,4 @@
-package nebulosa.desktop.cameras
+package nebulosa.desktop.imageviewer
 
 import javafx.scene.canvas.Canvas
 import javafx.scene.paint.Color

@@ -1,4 +1,4 @@
-package nebulosa.desktop.cameras
+package nebulosa.desktop.imageviewer
 
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
@@ -64,7 +64,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     var invert = false
         private set
 
-    var scnrAutoApply = false
+    var scnrEnabled = false
+        private set
 
     var scnrChannel = ImageChannel.GREEN
         private set
@@ -270,7 +271,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         shadow: Float = this.shadow, highlight: Float = this.highlight, midtone: Float = this.midtone,
         mirrorHorizontal: Boolean = this.mirrorHorizontal, mirrorVertical: Boolean = this.mirrorVertical,
         invert: Boolean = this.invert,
-        scnr: Boolean = false, scnrChannel: ImageChannel = this.scnrChannel,
+        scnrEnabled: Boolean = this.scnrEnabled, scnrChannel: ImageChannel = this.scnrChannel,
         scnrProtectionMode: ProtectionMethod = this.scnrProtectionMode,
         scnrAmount: Float = this.scnrAmount,
     ) {
@@ -280,6 +281,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         this.mirrorHorizontal = mirrorHorizontal
         this.mirrorVertical = mirrorVertical
         this.invert = invert
+        this.scnrEnabled = scnrEnabled
         this.scnrChannel = scnrChannel
         this.scnrProtectionMode = scnrProtectionMode
         this.scnrAmount = scnrAmount
@@ -293,7 +295,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         val algorithms = arrayListOf<TransformAlgorithm>()
         if (invert) algorithms.add(Invert)
         algorithms.add(Flip(mirrorHorizontal, mirrorVertical))
-        if (scnr || scnrAutoApply) algorithms.add(SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode))
+        if (scnrEnabled) algorithms.add(SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode))
         algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
 
         transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)

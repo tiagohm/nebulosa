@@ -1,4 +1,4 @@
-package nebulosa.desktop.stellarium
+package nebulosa.desktop.telescopecontrol
 
 import nebulosa.math.Angle
 import java.io.Closeable

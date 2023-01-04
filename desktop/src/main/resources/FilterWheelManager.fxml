@@ -74,7 +74,7 @@
         <VBox alignment="TOP_CENTER">
             <TableView fx:id="filterSlots"
                        editable="true"
-                       stylesheets="@TableView.css">
+                       stylesheets="@TableViewWithoutScrollbar.css">
                 <columns>
                     <TableColumn fx:id="position"
                                  prefWidth="40.0"

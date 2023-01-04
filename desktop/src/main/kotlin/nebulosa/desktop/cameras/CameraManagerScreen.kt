@@ -13,6 +13,7 @@ import javafx.stage.DirectoryChooser
 import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.controls.Screen
 import nebulosa.desktop.equipments.EquipmentManager
+import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.cameras.*
 import org.controlsfx.control.ToggleSwitch

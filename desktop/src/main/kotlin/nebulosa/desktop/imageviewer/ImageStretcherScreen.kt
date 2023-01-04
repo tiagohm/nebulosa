@@ -1,4 +1,4 @@
-package nebulosa.desktop.cameras
+package nebulosa.desktop.imageviewer
 
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
