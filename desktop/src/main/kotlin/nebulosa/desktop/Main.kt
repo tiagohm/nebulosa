@@ -10,6 +10,7 @@ import nebulosa.desktop.filterwheels.FilterWheelManagerScreen
 import nebulosa.desktop.focusers.FocuserManagerScreen
 import nebulosa.desktop.mounts.MountManagerScreen
 import nebulosa.desktop.preferences.Preferences
+import nebulosa.desktop.stellarium.TelescopeControlManager
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.named
 import org.koin.core.module.dsl.withOptions
@@ -43,6 +44,7 @@ private fun inject() = module {
 
     single(createdAtStart = true) { ConnectionManager() }
     single(createdAtStart = true) { EquipmentManager() }
+    single(createdAtStart = true) { TelescopeControlManager() }
 }
 
 fun main(args: Array<String>) {

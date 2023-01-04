@@ -9,6 +9,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":nova"))
     implementation(project(":indi-client"))
     implementation(project(":imaging"))
     implementation(libs.koin)

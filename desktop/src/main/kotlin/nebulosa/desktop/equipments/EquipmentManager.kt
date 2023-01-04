@@ -13,6 +13,9 @@ import nebulosa.indi.devices.cameras.CameraDetached
 import nebulosa.indi.devices.filterwheels.FilterWheel
 import nebulosa.indi.devices.filterwheels.FilterWheelAttached
 import nebulosa.indi.devices.filterwheels.FilterWheelDetached
+import nebulosa.indi.devices.mounts.Mount
+import nebulosa.indi.devices.mounts.MountAttached
+import nebulosa.indi.devices.mounts.MountDetached
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -23,6 +26,8 @@ class EquipmentManager : KoinComponent, Consumer<Any> {
     @JvmField val connected = SimpleBooleanProperty(false)
     @JvmField val attachedCameras = SimpleListProperty(FXCollections.observableArrayList<Camera>())
     @JvmField val selectedCamera = CameraProperty()
+    @JvmField val attachedMounts = SimpleListProperty(FXCollections.observableArrayList<Mount>())
+    @JvmField val selectedMount = CameraProperty()
     @JvmField val attachedFilterWheels = SimpleListProperty(FXCollections.observableArrayList<FilterWheel>())
     @JvmField val selectedFilterWheel = FilterWheelProperty()
 
@@ -34,6 +39,8 @@ class EquipmentManager : KoinComponent, Consumer<Any> {
         when (event) {
             is CameraAttached -> attachedCameras.add(event.device)
             is CameraDetached -> attachedCameras.remove(event.device)
+            is MountAttached -> attachedMounts.add(event.device)
+            is MountDetached -> attachedMounts.remove(event.device)
             is FilterWheelAttached -> attachedFilterWheels.add(event.device)
             is FilterWheelDetached -> attachedFilterWheels.remove(event.device)
             is Connected -> connected.value = true

@@ -43,6 +43,7 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         val isMoving = equipmentManager.selectedFilterWheel.isMoving
         val isNotConnectedOrMoving = isNotConnected.or(isMoving)
         filterWheels.disableProperty().bind(connecting.or(isMoving))
+        filterWheels.itemsProperty().bind(equipmentManager.attachedFilterWheels)
         equipmentManager.selectedFilterWheel.bind(filterWheels.selectionModel.selectedItemProperty())
         connect.disableProperty().bind(equipmentManager.selectedFilterWheel.isNull.or(connecting).or(isMoving))
         filterSlots.disableProperty().bind(isNotConnectedOrMoving)
@@ -121,9 +122,6 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
             .subscribe(this)
 
         val filterWheel = equipmentManager.selectedFilterWheel.value
-
-        filterWheels.items.addAll(equipmentManager.attachedFilterWheels.filter { it !in filterWheels.items })
-        filterWheels.items.removeAll(filterWheels.items.filter { it !in equipmentManager.attachedFilterWheels })
 
         if (filterWheel !in equipmentManager.attachedFilterWheels) {
             filterWheels.selectionModel.select(null)

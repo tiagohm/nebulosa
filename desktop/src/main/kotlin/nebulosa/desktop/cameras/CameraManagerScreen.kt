@@ -79,6 +79,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         val isCapturing = equipmentManager.selectedCamera.isCapturing.or(this.isCapturing)
         val isNotConnectedOrCapturing = isNotConnected.or(isCapturing)
         cameras.disableProperty().bind(isConnecting.or(isCapturing))
+        cameras.itemsProperty().bind(equipmentManager.attachedCameras)
         equipmentManager.selectedCamera.bind(cameras.selectionModel.selectedItemProperty())
         connect.disableProperty().bind(equipmentManager.selectedCamera.isNull.or(isConnecting).or(isCapturing))
         cameraMenuIcon.disableProperty().bind(isNotConnectedOrCapturing)
@@ -92,7 +93,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         val fixed = exposureMode.toggles.first { it.userData == "FIXED" } as RadioButton
         val continuous = exposureMode.toggles.first { it.userData == "CONTINUOUS" } as RadioButton
         exposureDelay.disableProperty().bind(
-            fixed.disableProperty().and(continuous.disableProperty()).or(fixed.selectedProperty().not().and(continuous.selectedProperty().not()))
+            fixed.disableProperty().and(continuous.disableProperty())
+                .or(fixed.selectedProperty().not().and(continuous.selectedProperty().not()))
         )
         exposureCount.disableProperty().bind(fixed.disableProperty().or(fixed.selectedProperty().not()))
         subFrame.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canSubFrame.not()))
@@ -156,9 +158,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             .subscribe(this)
 
         val camera = equipmentManager.selectedCamera.value
-
-        cameras.items.addAll(equipmentManager.attachedCameras.filter { it !in cameras.items })
-        cameras.items.removeAll(cameras.items.filter { it !in equipmentManager.attachedCameras })
 
         if (camera !in equipmentManager.attachedCameras) {
             cameras.selectionModel.select(null)
@@ -481,6 +480,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
         captureTask = CameraExposureTask(
             camera,
+            equipmentManager.selectedFilterWheel.value,
             exposureInMicros, amount, exposureDelay.value.toLong(),
             if (subFrame.isSelected) frameX.value.toInt() else camera.minX,
             if (subFrame.isSelected) frameY.value.toInt() else camera.minY,

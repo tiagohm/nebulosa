@@ -4,7 +4,9 @@ import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.equipments.ThreadedTask
+import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.devices.cameras.*
+import nebulosa.indi.devices.filterwheels.FilterWheel
 import nebulosa.indi.protocol.PropertyState
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -21,6 +23,7 @@ import kotlin.math.min
 
 data class CameraExposureTask(
     val camera: Camera,
+    val filterWheel: FilterWheel?,
     val exposure: Long,
     val amount: Int,
     val delay: Long,
@@ -40,6 +43,7 @@ data class CameraExposureTask(
 ) : ThreadedTask<Unit>(), Consumer<Any>, KoinComponent {
 
     private val eventBus by inject<EventBus>()
+    private val preferences by inject<Preferences>()
 
     @Volatile private var progress = 0.0
     @Volatile private var state = PropertyState.IDLE
@@ -112,6 +116,13 @@ data class CameraExposureTask(
             subscriber = eventBus
                 .filter { it is CameraEvent && it.device === camera }
                 .subscribe(this)
+
+            if (filterWheel != null) {
+                synchronized(filterWheel) {
+                    val selectedFilterAsShutter = preferences.int("filterWheelManager.equipment.${filterWheel.name}.filterAsShutter") ?: -1
+                    filterWheel.moveTo(selectedFilterAsShutter)
+                }
+            }
 
             while (remaining > 0) {
                 synchronized(camera) {
