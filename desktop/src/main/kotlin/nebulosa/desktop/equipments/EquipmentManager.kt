@@ -27,7 +27,7 @@ class EquipmentManager : KoinComponent, Consumer<Any> {
     @JvmField val attachedCameras = SimpleListProperty(FXCollections.observableArrayList<Camera>())
     @JvmField val selectedCamera = CameraProperty()
     @JvmField val attachedMounts = SimpleListProperty(FXCollections.observableArrayList<Mount>())
-    @JvmField val selectedMount = CameraProperty()
+    @JvmField val selectedMount = MountProperty()
     @JvmField val attachedFilterWheels = SimpleListProperty(FXCollections.observableArrayList<FilterWheel>())
     @JvmField val selectedFilterWheel = FilterWheelProperty()
 

@@ -15,7 +15,7 @@
             minWidth="-Infinity"
             prefHeight="220.0"
             prefWidth="480.0"
-            xmlns="http://javafx.com/javafx/17.0.2-ea"
+            xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <TabPane layoutX="58.0"
              layoutY="-7.0"
@@ -52,6 +52,9 @@
                                 <Integer fx:value="16"/>
                             </FXCollections>
                         </items>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
                     </ChoiceBox>
                 </HBox>
                 <Label text="Shadow &amp; Highlight">

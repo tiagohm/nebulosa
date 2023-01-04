@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.Cursor?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import org.controlsfx.control.SegmentedButton?>
+<?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="415.0"
-            prefWidth="402.0"
+            prefHeight="515.0"
+            prefWidth="412.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="16.0"
@@ -36,9 +37,9 @@
                 </cursor>
             </ChoiceBox>
             <Button fx:id="connect"
-                    onAction="#connect"
                     contentDisplay="GRAPHIC_ONLY"
-                    mnemonicParsing="false">
+                    mnemonicParsing="false"
+                    onAction="#connect">
                 <graphic>
                     <ImageView fitHeight="24.0"
                                fitWidth="24.0"
@@ -51,6 +52,530 @@
                     <Cursor fx:constant="HAND"/>
                 </cursor>
             </Button>
+        </HBox>
+        <VBox alignment="CENTER"
+              spacing="4.0">
+            <HBox alignment="CENTER_LEFT"
+                  spacing="4.0">
+                <Label maxWidth="64.0"
+                       minWidth="64.0"
+                       prefWidth="64.0"
+                       text="RA">
+                    <font>
+                        <Font name="System Bold"
+                              size="11.0"/>
+                    </font>
+                </Label>
+                <Label alignment="CENTER_RIGHT"
+                       maxWidth="110.0"
+                       minWidth="110.0"
+                       prefWidth="110.0"
+                       text="00h 48m 15.56s">
+                    <font>
+                        <Font name="Monospaced Regular"
+                              size="11.0"/>
+                    </font>
+                </Label>
+                <Label maxWidth="64.0"
+                       minWidth="64.0"
+                       prefWidth="64.0"
+                       text="DEC">
+                    <HBox.margin>
+                        <Insets left="8.0"/>
+                    </HBox.margin>
+                    <font>
+                        <Font name="System Bold"
+                              size="11.0"/>
+                    </font>
+                </Label>
+                <Label alignment="CENTER_RIGHT"
+                       maxWidth="110.0"
+                       minWidth="110.0"
+                       prefWidth="110.0"
+                       text="+90° 00' 00.00&quot;">
+                    <font>
+                        <Font name="Monospaced Regular"
+                              size="11.0"/>
+                    </font>
+                </Label>
+            </HBox>
+            <HBox alignment="CENTER_LEFT"
+                  spacing="4.0">
+                <Label maxWidth="64.0"
+                       minWidth="64.0"
+                       prefWidth="64.0"
+                       text="Altitude">
+                    <font>
+                        <Font name="System Bold"
+                              size="11.0"/>
+                    </font>
+                </Label>
+                <Label alignment="CENTER_RIGHT"
+                       maxWidth="110.0"
+                       minWidth="110.0"
+                       prefWidth="110.0"
+                       text="+31° 15' 55.00&quot;">
+                    <font>
+                        <Font name="Monospaced Regular"
+                              size="11.0"/>
+                    </font>
+                </Label>
+                <Label maxWidth="64.0"
+                       minWidth="64.0"
+                       prefWidth="64.0"
+                       text="Azimuth">
+                    <HBox.margin>
+                        <Insets left="8.0"/>
+                    </HBox.margin>
+                    <font>
+                        <Font name="System Bold"
+                              size="11.0"/>
+                    </font>
+                </Label>
+                <Label alignment="CENTER_RIGHT"
+                       maxWidth="110.0"
+                       minWidth="110.0"
+                       prefWidth="110.0"
+                       text="180° 00' 00.00&quot;">
+                    <font>
+                        <Font name="Monospaced Regular"
+                              size="11.0"/>
+                    </font>
+                </Label>
+            </HBox>
+            <HBox alignment="CENTER_LEFT"
+                  spacing="4.0">
+                <Label maxWidth="64.0"
+                       minWidth="64.0"
+                       prefWidth="64.0"
+                       text="Pier">
+                    <font>
+                        <Font name="System Bold"
+                              size="11.0"/>
+                    </font>
+                </Label>
+                <Label alignment="CENTER"
+                       maxWidth="110.0"
+                       minWidth="110.0"
+                       prefWidth="110.0"
+                       text="N">
+                    <font>
+                        <Font name="Monospaced Regular"
+                              size="11.0"/>
+                    </font>
+                </Label>
+            </HBox>
+        </VBox>
+        <HBox alignment="CENTER"
+              spacing="8.0">
+            <VBox alignment="CENTER_LEFT"
+                  spacing="1.0">
+                <Label text="Latitude">
+                    <font>
+                        <Font size="12.0"/>
+                    </font>
+                </Label>
+                <Spinner fx:id="latitude"
+                         min="-90.0"
+                         max="90.0"
+                         initialValue="0.0"
+                         amountToStepBy="0.1">
+                </Spinner>
+            </VBox>
+            <VBox alignment="CENTER_LEFT"
+                  spacing="1.0">
+                <Label text="Longitude">
+                    <font>
+                        <Font size="12.0"/>
+                    </font>
+                </Label>
+                <Spinner fx:id="longitude"
+                         min="-180.0"
+                         max="180.0"
+                         initialValue="0.0"
+                         amountToStepBy="0.1">
+                </Spinner>
+            </VBox>
+        </HBox>
+        <HBox alignment="CENTER_LEFT"
+              spacing="8.0">
+            <Label text="Target Coordinates:">
+                <font>
+                    <Font size="12.0"/>
+                </font>
+            </Label>
+            <SegmentedButton>
+                <buttons>
+                    <ToggleButton text="JNow"
+                                  userData="JNOW">
+                        <font>
+                            <Font name="Monospaced Regular"
+                                  size="12.0"/>
+                        </font>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </ToggleButton>
+                    <ToggleButton text="J2000"
+                                  selected="true"
+                                  userData="J2000">
+                        <font>
+                            <Font name="Monospaced Regular"
+                                  size="12.0"/>
+                        </font>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </ToggleButton>
+                </buttons>
+            </SegmentedButton>
+        </HBox>
+        <HBox alignment="CENTER_LEFT"
+              spacing="8.0">
+            <VBox alignment="CENTER"
+                  spacing="8.0">
+                <HBox alignment="CENTER_LEFT"
+                      spacing="1.0">
+                    <Label text="RA"
+                           prefWidth="36.0">
+                        <font>
+                            <Font size="12.0"/>
+                        </font>
+                    </Label>
+                    <Spinner fx:id="raHours"
+                             min="0.0"
+                             max="23.0"
+                             amountToStepBy="1.0"
+                             initialValue="23.0"
+                             prefWidth="68.0">
+                    </Spinner>
+                    <Spinner fx:id="raMinutes"
+                             min="0.0"
+                             max="59.0"
+                             amountToStepBy="1.0"
+                             initialValue="23.0"
+                             prefWidth="64.0">
+                    </Spinner>
+                    <Spinner fx:id="raSeconds"
+                             min="0.0"
+                             max="59.99"
+                             amountToStepBy="0.01"
+                             initialValue="23.55"
+                             prefWidth="84.0">
+                    </Spinner>
+                </HBox>
+                <HBox alignment="CENTER_LEFT"
+                      spacing="1.0">
+                    <Label text="DEC"
+                           prefWidth="36.0">
+                        <font>
+                            <Font size="12.0"/>
+                        </font>
+                    </Label>
+                    <Spinner fx:id="decDegrees"
+                             min="-90.0"
+                             max="90.0"
+                             amountToStepBy="1.0"
+                             initialValue="-23.0"
+                             prefWidth="68.0">
+                    </Spinner>
+                    <Spinner fx:id="decMinutes"
+                             min="0.0"
+                             max="59.0"
+                             amountToStepBy="1.0"
+                             initialValue="23.0"
+                             prefWidth="64.0">
+                    </Spinner>
+                    <Spinner fx:id="decSeconds"
+                             min="0.0"
+                             max="59.99"
+                             amountToStepBy="0.01"
+                             initialValue="23.55"
+                             prefWidth="84.0">
+                    </Spinner>
+                </HBox>
+            </VBox>
+            <VBox alignment="TOP_CENTER"
+                  spacing="7.0">
+                <Button text="Go To"
+                        prefWidth="102.0">
+                    <graphic>
+                        <ImageView fitHeight="18.0"
+                                   fitWidth="18.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/check.png"/>
+                        </ImageView>
+                    </graphic>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </Button>
+                <Button text="Sync"
+                        prefWidth="102.0">
+                    <graphic>
+                        <ImageView fitHeight="18.0"
+                                   fitWidth="18.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/sync.png"/>
+                        </ImageView>
+                    </graphic>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </Button>
+            </VBox>
+        </HBox>
+        <HBox>
+            <Button text="Stellarium Telescope Control"
+                    prefWidth="242.0">
+                <graphic>
+                    <ImageView fitHeight="18.0"
+                               fitWidth="18.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/remote-tv.png"/>
+                    </ImageView>
+                </graphic>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
+        </HBox>
+        <HBox spacing="12.0">
+            <VBox spacing="2.0">
+                <HBox alignment="CENTER"
+                      spacing="2.0">
+                    <Button contentDisplay="GRAPHIC_ONLY"
+                            prefWidth="48.0"
+                            prefHeight="48.0"
+                            userData="NE">
+                        <graphic>
+                            <ImageView fitHeight="24.0"
+                                       fitWidth="24.0"
+                                       pickOnBounds="true"
+                                       preserveRatio="true">
+                                <Image url="@icons/arrow-top-left-thick.png"/>
+                            </ImageView>
+                        </graphic>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </Button>
+                    <Button contentDisplay="GRAPHIC_ONLY"
+                            prefWidth="48.0"
+                            prefHeight="48.0"
+                            userData="N">
+                        <graphic>
+                            <ImageView fitHeight="24.0"
+                                       fitWidth="24.0"
+                                       pickOnBounds="true"
+                                       preserveRatio="true">
+                                <Image url="@icons/arrow-up-thick.png"/>
+                            </ImageView>
+                        </graphic>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </Button>
+                    <Button contentDisplay="GRAPHIC_ONLY"
+                            prefWidth="48.0"
+                            prefHeight="48.0"
+                            userData="NW">
+                        <graphic>
+                            <ImageView fitHeight="24.0"
+                                       fitWidth="24.0"
+                                       pickOnBounds="true"
+                                       preserveRatio="true">
+                                <Image url="@icons/arrow-top-right-thick.png"/>
+                            </ImageView>
+                        </graphic>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </Button>
+                </HBox>
+                <HBox alignment="CENTER"
+                      spacing="2.0">
+                    <Button contentDisplay="GRAPHIC_ONLY"
+                            prefWidth="48.0"
+                            prefHeight="48.0"
+                            userData="E">
+                        <graphic>
+                            <ImageView fitHeight="24.0"
+                                       fitWidth="24.0"
+                                       pickOnBounds="true"
+                                       preserveRatio="true">
+                                <Image url="@icons/arrow-left-thick.png"/>
+                            </ImageView>
+                        </graphic>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </Button>
+                    <Button contentDisplay="GRAPHIC_ONLY"
+                            prefWidth="48.0"
+                            prefHeight="48.0">
+                        <graphic>
+                            <ImageView fitHeight="24.0"
+                                       fitWidth="24.0"
+                                       pickOnBounds="true"
+                                       preserveRatio="true">
+                                <Image url="@icons/close-circle.png"/>
+                            </ImageView>
+                        </graphic>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </Button>
+                    <Button contentDisplay="GRAPHIC_ONLY"
+                            prefWidth="48.0"
+                            prefHeight="48.0"
+                            userData="W">
+                        <graphic>
+                            <ImageView fitHeight="24.0"
+                                       fitWidth="24.0"
+                                       pickOnBounds="true"
+                                       preserveRatio="true">
+                                <Image url="@icons/arrow-right-thick.png"/>
+                            </ImageView>
+                        </graphic>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </Button>
+                </HBox>
+                <HBox alignment="CENTER"
+                      spacing="2.0">
+                    <Button contentDisplay="GRAPHIC_ONLY"
+                            prefWidth="48.0"
+                            prefHeight="48.0"
+                            userData="SE">
+                        <graphic>
+                            <ImageView fitHeight="24.0"
+                                       fitWidth="24.0"
+                                       pickOnBounds="true"
+                                       preserveRatio="true">
+                                <Image url="@icons/arrow-bottom-left-thick.png"/>
+                            </ImageView>
+                        </graphic>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </Button>
+                    <Button contentDisplay="GRAPHIC_ONLY"
+                            prefWidth="48.0"
+                            prefHeight="48.0"
+                            userData="S">
+                        <graphic>
+                            <ImageView fitHeight="24.0"
+                                       fitWidth="24.0"
+                                       pickOnBounds="true"
+                                       preserveRatio="true">
+                                <Image url="@icons/arrow-down-thick.png"/>
+                            </ImageView>
+                        </graphic>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </Button>
+                    <Button contentDisplay="GRAPHIC_ONLY"
+                            prefWidth="48.0"
+                            prefHeight="48.0"
+                            userData="SW">
+                        <graphic>
+                            <ImageView fitHeight="24.0"
+                                       fitWidth="24.0"
+                                       pickOnBounds="true"
+                                       preserveRatio="true">
+                                <Image url="@icons/arrow-bottom-right-thick.png"/>
+                            </ImageView>
+                        </graphic>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </Button>
+                </HBox>
+            </VBox>
+            <VBox alignment="TOP_CENTER"
+                  spacing="12.0"
+                  HBox.hgrow="ALWAYS">
+                <ToggleSwitch fx:id="tracking"
+                              text="Tracking">
+                    <font>
+                        <Font size="12.0"/>
+                    </font>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </ToggleSwitch>
+                <SegmentedButton fx:id="trackingMode">
+                    <buttons>
+                        <ToggleButton text="Sidereal"
+                                      selected="true"
+                                      userData="SIDEREAL">
+                            <font>
+                                <Font name="Monospaced Regular"
+                                      size="12.0"/>
+                            </font>
+                            <cursor>
+                                <Cursor fx:constant="HAND"/>
+                            </cursor>
+                        </ToggleButton>
+                        <ToggleButton text="Solar"
+                                      userData="SOLAR">
+                            <font>
+                                <Font name="Monospaced Regular"
+                                      size="12.0"/>
+                            </font>
+                            <cursor>
+                                <Cursor fx:constant="HAND"/>
+                            </cursor>
+                        </ToggleButton>
+                        <ToggleButton text="Lunar"
+                                      userData="LUNAR">
+                            <font>
+                                <Font name="Monospaced Regular"
+                                      size="12.0"/>
+                            </font>
+                            <cursor>
+                                <Cursor fx:constant="HAND"/>
+                            </cursor>
+                        </ToggleButton>
+                    </buttons>
+                </SegmentedButton>
+                <HBox alignment="CENTER"
+                      spacing="4.0">
+                    <Label text="Slew speed"
+                           HBox.hgrow="ALWAYS">
+                        <font>
+                            <Font size="12.0"/>
+                        </font>
+                    </Label>
+                    <ChoiceBox fx:id="slewSpeed"
+                               prefWidth="72.0">
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </ChoiceBox>
+                </HBox>
+                <HBox alignment="CENTER">
+                    <Button text="Park">
+                        <graphic>
+                            <ImageView fitHeight="24.0"
+                                       fitWidth="24.0"
+                                       pickOnBounds="true"
+                                       preserveRatio="true">
+                                <Image url="@icons/stop.png"/>
+                            </ImageView>
+                        </graphic>
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </Button>
+                </HBox>
+            </VBox>
         </HBox>
     </VBox>
 </AnchorPane>
