@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <?import nebulosa.desktop.imageviewer.HistogramView?>
+<?import org.controlsfx.control.RangeSlider?>
+<?import java.lang.Integer?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="190.0"
-            prefWidth="432.0"
-            xmlns="http://javafx.com/javafx/19"
+            prefHeight="220.0"
+            prefWidth="480.0"
+            xmlns="http://javafx.com/javafx/17.0.2-ea"
             xmlns:fx="http://javafx.com/fxml/1">
     <TabPane layoutX="58.0"
              layoutY="-7.0"
@@ -26,47 +30,104 @@
              text="Stretch">
             <VBox alignment="TOP_CENTER"
                   prefHeight="200.0"
-                  prefWidth="100.0">
+                  prefWidth="100.0"
+                  spacing="4.0">
                 <padding>
                     <Insets bottom="16.0"
-                            left="16.0"
-                            right="16.0"
+                            left="32.0"
+                            right="32.0"
                             top="16.0"/>
                 </padding>
-                <Label text="Shadow">
+                <HBox alignment="CENTER_RIGHT"
+                      spacing="4.0">
+                    <Label text="Bit depth:">
+                        <font>
+                            <Font size="12.0"/>
+                        </font>
+                    </Label>
+                    <ChoiceBox fx:id="bitDepth">
+                        <items>
+                            <FXCollections fx:factory="observableArrayList">
+                                <Integer fx:value="8"/>
+                                <Integer fx:value="16"/>
+                            </FXCollections>
+                        </items>
+                    </ChoiceBox>
+                </HBox>
+                <Label text="Shadow &amp; Highlight">
                     <font>
                         <Font size="11.0"/>
                     </font>
+                    <VBox.margin>
+                        <Insets bottom="4.0"/>
+                    </VBox.margin>
                 </Label>
-                <Slider fx:id="shadow"
-                        blockIncrement="1.0"
-                        max="255.0">
-                    <padding>
-                        <Insets bottom="16.0"/>
-                    </padding>
-                </Slider>
-                <Label text="Highlight">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
-                </Label>
-                <Slider fx:id="highlight"
-                        blockIncrement="1.0"
-                        max="255.0"
-                        value="255.0">
-                    <padding>
-                        <Insets bottom="16.0"/>
-                    </padding>
-                </Slider>
+                <HBox alignment="CENTER"
+                      spacing="8.0">
+                    <VBox alignment="CENTER"
+                          spacing="4.0">
+                        <Spinner fx:id="shadow"
+                                 editable="true"
+                                 initialValue="0.0"
+                                 min="0.0"
+                                 max="255.0"
+                                 amountToStepBy="0.1"
+                                 prefWidth="108.0">
+                        </Spinner>
+                        <Spinner fx:id="highlight"
+                                 editable="true"
+                                 initialValue="255.0"
+                                 min="0.0"
+                                 max="255.0"
+                                 amountToStepBy="0.1"
+                                 prefWidth="108.0">
+                        </Spinner>
+                    </VBox>
+                    <RangeSlider fx:id="shadowAndHighlight"
+                                 blockIncrement="1.0"
+                                 highValue="255.0"
+                                 lowValue="0.0"
+                                 majorTickUnit="32.0"
+                                 max="255.0"
+                                 min="0.0"
+                                 minorTickCount="3"
+                                 showTickMarks="true"
+                                 showTickLabels="true"
+                                 HBox.hgrow="ALWAYS">
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </RangeSlider>
+                </HBox>
                 <Label text="Midtone">
                     <font>
                         <Font size="11.0"/>
                     </font>
                 </Label>
-                <Slider fx:id="midtone"
-                        blockIncrement="1.0"
-                        max="255.0"
-                        value="127.5"/>
+                <HBox alignment="CENTER"
+                      spacing="8.0">
+                    <Spinner fx:id="midtoneSpinner"
+                             editable="true"
+                             initialValue="127.5"
+                             min="0.0"
+                             max="255.0"
+                             amountToStepBy="0.1"
+                             prefWidth="108.0">
+                    </Spinner>
+                    <Slider fx:id="midtone"
+                            HBox.hgrow="ALWAYS"
+                            blockIncrement="1.0"
+                            majorTickUnit="32.0"
+                            minorTickCount="3"
+                            showTickMarks="true"
+                            max="255.0"
+                            showTickLabels="true"
+                            value="127.5">
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </Slider>
+                </HBox>
             </VBox>
         </Tab>
         <Tab closable="false"

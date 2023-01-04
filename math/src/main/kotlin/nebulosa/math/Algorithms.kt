@@ -100,3 +100,31 @@ fun DoubleArray.search(
     val idx = binarySearch(element, fromIndex, toIndex)
     return if (idx < 0) -idx - 1 else if (rightSide) idx + 1 else idx
 }
+
+/**
+ * Remaps a number [x] from one range to another.
+ */
+fun map(x: Int, inMin: Int, inMax: Int, outMin: Int, outMax: Int): Int {
+    return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
+}
+
+/**
+ * Remaps a number [x] from one range to another.
+ */
+fun map(x: Long, inMin: Long, inMax: Long, outMin: Long, outMax: Long): Long {
+    return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
+}
+
+/**
+ * Remaps a number [x] from one range to another.
+ */
+fun map(x: Float, inMin: Float, inMax: Float, outMin: Float, outMax: Float): Float {
+    return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
+}
+
+/**
+ * Remaps a number [x] from one range to another.
+ */
+fun map(x: Double, inMin: Double, inMax: Double, outMin: Double, outMax: Double): Double {
+    return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
+}

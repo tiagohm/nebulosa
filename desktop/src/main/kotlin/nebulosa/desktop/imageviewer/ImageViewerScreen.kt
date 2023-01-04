@@ -5,6 +5,7 @@ import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.scene.Cursor
 import javafx.scene.control.ContextMenu
+import javafx.scene.control.MenuItem
 import javafx.scene.image.ImageView
 import javafx.scene.image.PixelBuffer
 import javafx.scene.image.PixelFormat
@@ -29,6 +30,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
     @FXML private lateinit var image: ImageView
     @FXML private lateinit var menu: ContextMenu
+    @FXML private lateinit var scnr: MenuItem
 
     @Volatile @JvmField internal var fits: Image? = null
     @Volatile @JvmField internal var transformedFits: Image? = null
@@ -250,6 +252,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         fits.read()
         this.fits = fits
         transformedFits = fits.clone()
+
+        scnr.disableProperty().set(fits.mono)
 
         widthProperty().removeListener(this)
         heightProperty().removeListener(this)

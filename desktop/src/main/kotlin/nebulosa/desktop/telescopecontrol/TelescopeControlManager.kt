@@ -15,7 +15,8 @@ class TelescopeControlManager private constructor(private val servers: MutableMa
     private val eventBus by inject<EventBus>()
 
     init {
-        eventBus.filter { it is MountEvent }
+        eventBus
+            .filter { it is MountEvent }
             .subscribe(this)
     }
 
@@ -45,5 +46,11 @@ class TelescopeControlManager private constructor(private val servers: MutableMa
     fun stop(mount: Mount) {
         servers[mount]?.close()
         servers.remove(mount)
+    }
+
+    @Synchronized
+    fun stopAll() {
+        servers.values.forEach(TelescopeControlServer::close)
+        servers.clear()
     }
 }

@@ -15,6 +15,7 @@ import nebulosa.desktop.focusers.FocuserManagerScreen
 import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.desktop.mounts.MountManagerScreen
 import nebulosa.desktop.platesolving.PlateSolverScreen
+import nebulosa.desktop.telescopecontrol.TelescopeControlManager
 import org.koin.core.component.get
 import org.koin.core.component.inject
 
@@ -22,6 +23,7 @@ class HomeScreen : Screen("Home") {
 
     private val connectionManager by inject<ConnectionManager>()
     private val equipmentManager by inject<EquipmentManager>()
+    private val telescopeControlManager by inject<TelescopeControlManager>()
 
     @FXML private lateinit var host: TextField
     @FXML private lateinit var port: TextField
@@ -108,6 +110,8 @@ class HomeScreen : Screen("Home") {
 
         screens.forEach(Screen::close)
         screens.clear()
+
+        telescopeControlManager.stopAll()
     }
 
     @Synchronized

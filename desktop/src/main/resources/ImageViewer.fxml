@@ -16,7 +16,8 @@
             <items>
                 <MenuItem text="Stretch"
                           onAction="#openImageStretcher"/>
-                <MenuItem text="SCNR"
+                <MenuItem fx:id="scnr"
+                          text="SCNR"
                           onAction="#openSCNR"/>
                 <CheckMenuItem text="Horizontal Mirror"
                                onAction="#mirrorHorizontal"/>
