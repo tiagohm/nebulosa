@@ -3,7 +3,6 @@ package nebulosa.desktop.filterwheels
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.ReadOnlyIntegerWrapper
 import javafx.beans.property.ReadOnlyStringWrapper
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.scene.Cursor
@@ -29,8 +28,6 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
     @FXML private lateinit var filterAsShutter: ChoiceBox<String>
     @FXML private lateinit var filterSlots: TableView<Int>
 
-    private val connecting = SimpleBooleanProperty(false)
-
     @Volatile private var subscriber: Disposable? = null
 
     init {
@@ -41,11 +38,12 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
     override fun onCreate() {
         val isNotConnected = equipmentManager.selectedFilterWheel.isConnected.not()
         val isMoving = equipmentManager.selectedFilterWheel.isMoving
+        val isConnecting = equipmentManager.selectedFilterWheel.isConnecting
         val isNotConnectedOrMoving = isNotConnected.or(isMoving)
-        filterWheels.disableProperty().bind(connecting.or(isMoving))
+        filterWheels.disableProperty().bind(isConnecting.or(isMoving))
         filterWheels.itemsProperty().bind(equipmentManager.attachedFilterWheels)
         equipmentManager.selectedFilterWheel.bind(filterWheels.selectionModel.selectedItemProperty())
-        connect.disableProperty().bind(equipmentManager.selectedFilterWheel.isNull.or(connecting).or(isMoving))
+        connect.disableProperty().bind(equipmentManager.selectedFilterWheel.isNull.or(isConnecting).or(isMoving))
         filterSlots.disableProperty().bind(isNotConnectedOrMoving)
         useFilterWheelAsShutter.disableProperty().bind(isNotConnectedOrMoving)
         filterAsShutter.disableProperty().bind(useFilterWheelAsShutter.disableProperty().or(useFilterWheelAsShutter.selectedProperty().not()))
@@ -71,7 +69,7 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
 
                 node?.also(::dispose)
 
-                return (button ?: Button("Move")).apply {
+                return (button ?: Button("Move To")).apply {
                     cursor = Cursor.HAND
                     disableProperty().bind(equipmentManager.selectedFilterWheel.position.isEqualTo(item))
                     setOnAction { equipmentManager.selectedFilterWheel.value.moveTo(item) }
@@ -104,9 +102,9 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         }
 
         equipmentManager.selectedFilterWheel.isConnected.addListener { _, _, value ->
-            connecting.set(false)
-
             connect.graphic = if (value) Icon.closeCircle() else Icon.connection()
+            updateUseFilterWheelAsShutter()
+            updateFilterAsShutter()
         }
 
         preferences.double("filterWheelManager.screen.x")?.let { x = it }
@@ -136,7 +134,6 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
     @FXML
     private fun connect() {
         if (!equipmentManager.selectedFilterWheel.isConnected.value) {
-            connecting.set(true)
             equipmentManager.selectedFilterWheel.value!!.connect()
         } else {
             equipmentManager.selectedFilterWheel.value!!.disconnect()

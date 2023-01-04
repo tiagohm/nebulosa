@@ -31,7 +31,7 @@ open class FilterWheel(
                         } else {
                             isMoving = message.state == PropertyState.BUSY
 
-                            handler.fireOnEventReceived(FilterWheelFilterIsMovingChanged(this))
+                            handler.fireOnEventReceived(FilterWheelIsMoving(this))
                         }
 
                         val position = slotValue.value.toInt()

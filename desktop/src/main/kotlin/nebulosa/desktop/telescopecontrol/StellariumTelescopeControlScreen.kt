@@ -33,7 +33,7 @@ class StellariumTelescopeControlScreen(private val mount: Mount) : Screen("Stell
         host.text = preferences.string("stellariumTelescopeControl.equipment.${mount.name}.host")
         port.text = preferences.string("stellariumTelescopeControl.equipment.${mount.name}.port")
         connectAtStartup.isSelected = preferences.bool("stellariumTelescopeControl.equipment.${mount.name}.connectAtStartup")
-        isConnected.value = mount in telescopeControlManager && !telescopeControlManager[mount]!!.isClosed
+        isConnected.set(mount in telescopeControlManager && !telescopeControlManager[mount]!!.isClosed)
     }
 
     @FXML
@@ -43,9 +43,9 @@ class StellariumTelescopeControlScreen(private val mount: Mount) : Screen("Stell
 
         if (server == null || server.isClosed) {
             try {
-                isConnecting.value = true
+                isConnecting.set(true)
                 telescopeControlManager.startTCP(mount, host.text.trim(), port.text.trim().toInt())
-                isConnected.value = true
+                isConnected.set(true)
                 preferences.string("stellariumTelescopeControl.equipment.${mount.name}.host", host.text.trim())
                 preferences.string("stellariumTelescopeControl.equipment.${mount.name}.port", host.text.trim())
             } catch (e: Throwable) {
@@ -54,11 +54,11 @@ class StellariumTelescopeControlScreen(private val mount: Mount) : Screen("Stell
                     "Connection failed"
                 )
             } finally {
-                isConnecting.value = false
+                isConnecting.set(false)
             }
         } else {
             telescopeControlManager[mount]?.close()
-            isConnected.value = false
+            isConnected.set(false)
         }
     }
 

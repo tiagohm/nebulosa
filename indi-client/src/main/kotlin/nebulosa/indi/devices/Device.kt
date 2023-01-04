@@ -11,11 +11,14 @@ abstract class Device(
 ) : INDIProtocolHandler {
 
     @Volatile @JvmField var isConnected = false
+    @Volatile @JvmField var isConnecting = false
 
     override fun handleMessage(message: INDIProtocol) {
         if (message is SwitchVector<*>) {
             if (message.name == "CONNECTION") {
                 val connected = message.firstOnSwitch().name == "CONNECT"
+
+                isConnecting = false
 
                 if (connected != isConnected) {
                     if (connected) {
@@ -31,7 +34,11 @@ abstract class Device(
     }
 
     fun connect() {
-        sendNewSwitch("CONNECTION", "CONNECT" to true)
+        if (!isConnected) {
+            isConnecting = true
+            handler.fireOnEventReceived(DeviceIsConnecting(this))
+            sendNewSwitch("CONNECTION", "CONNECT" to true)
+        }
     }
 
     fun disconnect() {

@@ -43,8 +43,8 @@ class EquipmentManager : KoinComponent, Consumer<Any> {
             is MountDetached -> attachedMounts.remove(event.device)
             is FilterWheelAttached -> attachedFilterWheels.add(event.device)
             is FilterWheelDetached -> attachedFilterWheels.remove(event.device)
-            is Connected -> connected.value = true
-            is Disconnected -> connected.value = false
+            is Connected -> connected.set(true)
+            is Disconnected -> connected.set(false)
         }
     }
 }

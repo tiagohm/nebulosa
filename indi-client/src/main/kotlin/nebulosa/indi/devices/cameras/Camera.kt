@@ -110,7 +110,7 @@ class Camera(
 
                         val prevIsCapturing = isCapturing
                         isCapturing = exposureState == PropertyState.BUSY
-                        if (prevIsCapturing != isCapturing) handler.fireOnEventReceived(CameraIsCapturingChanged(this))
+                        if (prevIsCapturing != isCapturing) handler.fireOnEventReceived(CameraIsCapturing(this))
                     }
                     "CCD_TEMPERATURE" -> {
                         if (message is DefNumberVector) {

@@ -1,26 +1,15 @@
 package nebulosa.desktop.equipments
 
-import io.reactivex.rxjava3.functions.Consumer
 import javafx.application.Platform
 import javafx.beans.property.*
-import javafx.beans.value.ChangeListener
-import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
-import nebulosa.desktop.core.EventBus
 import nebulosa.imaging.algorithms.CfaPattern
-import nebulosa.indi.devices.DeviceConnected
-import nebulosa.indi.devices.DeviceDisconnected
 import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.cameras.*
 import nebulosa.indi.protocol.PropertyState
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, Consumer<Any>, KoinComponent {
+class CameraProperty : DeviceProperty<Camera>() {
 
-    private val eventBus by inject<EventBus>()
-
-    @JvmField val isConnected = SimpleBooleanProperty(false)
     @JvmField val isCapturing = SimpleBooleanProperty(false)
     @JvmField val hasCoolerControl = SimpleBooleanProperty(false)
     @JvmField val isCoolerOn = SimpleBooleanProperty(false)
@@ -63,170 +52,149 @@ class CameraProperty : SimpleObjectProperty<Camera>(), ChangeListener<Camera>, C
     @JvmField val offsetMin = SimpleIntegerProperty(0)
     @JvmField val offsetMax = SimpleIntegerProperty(0)
 
-    init {
-        addListener(this)
-
-        eventBus.subscribe(this)
+    override fun changed(value: Camera) {
+        isCapturing.set(value.isCapturing)
+        hasCoolerControl.set(value.hasCoolerControl)
+        isCoolerOn.set(value.isCoolerOn)
+        hasDewHeater.set(value.hasDewHeater)
+        isDewHeaterOn.set(value.isDewHeaterOn)
+        frameFormats.setAll(value.frameFormats)
+        canAbort.set(value.canAbort)
+        cfaOffsetX.set(value.cfaOffsetX)
+        cfaOffsetY.set(value.cfaOffsetY)
+        cfaType.set(value.cfaType)
+        exposureMin.set(value.exposureMin)
+        exposureMax.set(value.exposureMax)
+        exposureState.set(value.exposureState)
+        exposure.set(value.exposure)
+        hasCooler.set(value.hasCooler)
+        canSetTemperature.set(value.canSetTemperature)
+        temperature.set(value.temperature)
+        canSubFrame.set(value.canSubFrame)
+        x.set(value.x)
+        minX.set(value.minX)
+        maxX.set(value.maxX)
+        y.set(value.y)
+        minY.set(value.minY)
+        maxY.set(value.maxY)
+        width.set(value.width)
+        minWidth.set(value.minWidth)
+        maxWidth.set(value.maxWidth)
+        height.set(value.height)
+        minHeight.set(value.minHeight)
+        maxHeight.set(value.maxHeight)
+        canBin.set(value.canBin)
+        maxBinX.set(value.maxBinX)
+        maxBinY.set(value.maxBinY)
+        binX.set(value.binX)
+        binY.set(value.binY)
+        gainMin.set(value.gainMin)
+        gainMax.set(value.gainMax)
+        gain.set(value.gain)
+        offsetMin.set(value.offsetMin)
+        offsetMax.set(value.offsetMax)
+        offset.set(value.offset)
     }
 
-    override fun changed(
-        observable: ObservableValue<out Camera>,
-        oldValue: Camera?, newValue: Camera?,
-    ) {
-        if (newValue == null) {
-            reset()
-        } else {
-            isConnected.value = newValue.isConnected
-            isCapturing.value = newValue.isCapturing
-            hasCoolerControl.value = newValue.hasCoolerControl
-            isCoolerOn.value = newValue.isCoolerOn
-            hasDewHeater.value = newValue.hasDewHeater
-            isDewHeaterOn.value = newValue.isDewHeaterOn
-            frameFormats.setAll(newValue.frameFormats)
-            canAbort.value = newValue.canAbort
-            cfaOffsetX.value = newValue.cfaOffsetX
-            cfaOffsetY.value = newValue.cfaOffsetY
-            cfaType.value = newValue.cfaType
-            exposureMin.value = newValue.exposureMin
-            exposureMax.value = newValue.exposureMax
-            exposureState.value = newValue.exposureState
-            exposure.value = newValue.exposure
-            hasCooler.value = newValue.hasCooler
-            canSetTemperature.value = newValue.canSetTemperature
-            temperature.value = newValue.temperature
-            canSubFrame.value = newValue.canSubFrame
-            x.value = newValue.x
-            minX.value = newValue.minX
-            maxX.value = newValue.maxX
-            y.value = newValue.y
-            minY.value = newValue.minY
-            maxY.value = newValue.maxY
-            width.value = newValue.width
-            minWidth.value = newValue.minWidth
-            maxWidth.value = newValue.maxWidth
-            height.value = newValue.height
-            minHeight.value = newValue.minHeight
-            maxHeight.value = newValue.maxHeight
-            canBin.value = newValue.canBin
-            maxBinX.value = newValue.maxBinX
-            maxBinY.value = newValue.maxBinY
-            binX.value = newValue.binX
-            binY.value = newValue.binY
-            gainMin.value = newValue.gainMin
-            gainMax.value = newValue.gainMax
-            gain.value = newValue.gain
-            offsetMin.value = newValue.offsetMin
-            offsetMax.value = newValue.offsetMax
-            offset.value = newValue.offset
-        }
-    }
-
-    fun reset() {
-        isConnected.value = false
-        isCapturing.value = false
-        hasCoolerControl.value = false
-        isCoolerOn.value = false
-        hasDewHeater.value = false
-        isDewHeaterOn.value = false
+    override fun reset() {
+        isCapturing.set(false)
+        hasCoolerControl.set(false)
+        isCoolerOn.set(false)
+        hasDewHeater.set(false)
+        isDewHeaterOn.set(false)
         frameFormats.clear()
-        canAbort.value = false
-        cfaOffsetX.value = 0
-        cfaOffsetY.value = 0
-        cfaType.value = CfaPattern.RGGB
-        exposureMin.value = 0L
-        exposureMax.value = 0L
-        exposureState.value = PropertyState.IDLE
-        exposure.value = 0L
-        hasCooler.value = false
-        canSetTemperature.value = false
-        temperature.value = 0.0
-        canSubFrame.value = false
-        x.value = 0
-        minX.value = 0
-        maxX.value = 0
-        y.value = 0
-        minY.value = 0
-        maxY.value = 0
-        width.value = 0
-        minWidth.value = 0
-        maxWidth.value = 0
-        height.value = 0
-        minHeight.value = 0
-        maxHeight.value = 0
-        canBin.value = false
-        maxBinX.value = 1
-        maxBinY.value = 1
-        binX.value = 1
-        binY.value = 1
-        gainMin.value = 0
-        gainMax.value = 0
-        gain.value = 0
-        offsetMin.value = 0
-        offsetMax.value = 0
-        offset.value = 0
+        canAbort.set(false)
+        cfaOffsetX.set(0)
+        cfaOffsetY.set(0)
+        cfaType.set(CfaPattern.RGGB)
+        exposureMin.set(0L)
+        exposureMax.set(0L)
+        exposureState.set(PropertyState.IDLE)
+        exposure.set(0L)
+        hasCooler.set(false)
+        canSetTemperature.set(false)
+        temperature.set(0.0)
+        canSubFrame.set(false)
+        x.set(0)
+        minX.set(0)
+        maxX.set(0)
+        y.set(0)
+        minY.set(0)
+        maxY.set(0)
+        width.set(0)
+        minWidth.set(0)
+        maxWidth.set(0)
+        height.set(0)
+        minHeight.set(0)
+        maxHeight.set(0)
+        canBin.set(false)
+        maxBinX.set(1)
+        maxBinY.set(1)
+        binX.set(1)
+        binY.set(1)
+        gainMin.set(0)
+        gainMax.set(0)
+        gain.set(0)
+        offsetMin.set(0)
+        offsetMax.set(0)
+        offset.set(0)
     }
 
-    override fun accept(event: Any) {
-        if (event is DeviceEvent<*> && event.device === value) {
-            Platform.runLater {
-                when (event) {
-                    is DeviceConnected,
-                    is DeviceDisconnected -> isConnected.value = value.isConnected
-                    is CameraIsCapturingChanged -> isCapturing.value = value.isCapturing
-                    is CameraCoolerControlChanged -> hasCoolerControl.value = value.hasCoolerControl
-                    is CameraCoolerChanged -> isCoolerOn.value = value.isCoolerOn
-                    is CameraHasDewHeaterChanged -> hasDewHeater.value = value.hasDewHeater
-                    is CameraDewHeaterChanged -> isDewHeaterOn.value = value.isDewHeaterOn
-                    is CameraFrameFormatsChanged -> frameFormats.setAll(value.frameFormats)
-                    is CameraCanAbortChanged -> canAbort.value = value.canAbort
-                    is CameraCfaChanged -> {
-                        cfaOffsetX.value = value.cfaOffsetX
-                        cfaOffsetY.value = value.cfaOffsetY
-                        cfaType.value = value.cfaType
-                    }
-                    is CameraExposureMinMaxChanged -> {
-                        exposureMin.value = value.exposureMin
-                        exposureMax.value = value.exposureMax
-                    }
-                    is CameraGainChanged -> gain.value = value.gain
-                    is CameraGainMinMaxChanged -> {
-                        gainMin.value = value.gainMin
-                        gainMax.value = value.gainMax
-                    }
-                    is CameraOffsetChanged -> offset.value = value.offset
-                    is CameraOffsetMinMaxChanged -> {
-                        offsetMin.value = value.offsetMin
-                        offsetMax.value = value.offsetMax
-                    }
-                    is CameraExposureStateChanged -> exposureState.value = value.exposureState
-                    is CameraHasCoolerChanged -> hasCooler.value = value.hasCooler
-                    is CameraCanSetTemperatureChanged -> canSetTemperature.value = value.canSetTemperature
-                    is CameraTemperatureChanged -> temperature.value = value.temperature
-                    is CameraCanSubFrameChanged -> canSubFrame.value = value.canSubFrame
-                    is CameraFrameChanged -> {
-                        minX.value = value.minX
-                        maxX.value = value.maxX
-                        minY.value = value.minY
-                        maxY.value = value.maxY
-                        minWidth.value = value.minWidth
-                        maxWidth.value = value.maxWidth
-                        minHeight.value = value.minHeight
-                        maxHeight.value = value.maxHeight
-                        x.value = value.x
-                        y.value = value.y
-                        width.value = value.width
-                        height.value = value.height
-                    }
-                    is CameraCanBinChanged -> {
-                        canBin.value = value.canBin
-                        maxBinX.value = value.maxBinX
-                        maxBinY.value = value.maxBinY
-                    }
-                    is CameraBinChanged -> {
-                        binX.value = value.binX
-                        binY.value = value.binY
-                    }
-                }
+    override fun accept(event: DeviceEvent<*>) {
+        when (event) {
+            is CameraIsCapturing -> Platform.runLater { isCapturing.set(value.isCapturing) }
+            is CameraCoolerControlChanged -> Platform.runLater { hasCoolerControl.set(value.hasCoolerControl) }
+            is CameraCoolerChanged -> Platform.runLater { isCoolerOn.set(value.isCoolerOn) }
+            is CameraHasDewHeaterChanged -> Platform.runLater { hasDewHeater.set(value.hasDewHeater) }
+            is CameraDewHeaterChanged -> Platform.runLater { isDewHeaterOn.set(value.isDewHeaterOn) }
+            is CameraFrameFormatsChanged -> Platform.runLater { frameFormats.setAll(value.frameFormats) }
+            is CameraCanAbortChanged -> Platform.runLater { canAbort.set(value.canAbort) }
+            is CameraCfaChanged -> Platform.runLater {
+                cfaOffsetX.set(value.cfaOffsetX)
+                cfaOffsetY.set(value.cfaOffsetY)
+                cfaType.set(value.cfaType)
+            }
+            is CameraExposureMinMaxChanged -> Platform.runLater {
+                exposureMin.set(value.exposureMin)
+                exposureMax.set(value.exposureMax)
+            }
+            is CameraGainChanged -> Platform.runLater { gain.set(value.gain) }
+            is CameraGainMinMaxChanged -> Platform.runLater {
+                gainMin.set(value.gainMin)
+                gainMax.set(value.gainMax)
+            }
+            is CameraOffsetChanged -> Platform.runLater { offset.set(value.offset) }
+            is CameraOffsetMinMaxChanged -> Platform.runLater {
+                offsetMin.set(value.offsetMin)
+                offsetMax.set(value.offsetMax)
+            }
+            is CameraExposureStateChanged -> Platform.runLater { exposureState.set(value.exposureState) }
+            is CameraHasCoolerChanged -> Platform.runLater { hasCooler.set(value.hasCooler) }
+            is CameraCanSetTemperatureChanged -> Platform.runLater { canSetTemperature.set(value.canSetTemperature) }
+            is CameraTemperatureChanged -> Platform.runLater { temperature.set(value.temperature) }
+            is CameraCanSubFrameChanged -> Platform.runLater { canSubFrame.set(value.canSubFrame) }
+            is CameraFrameChanged -> Platform.runLater {
+                minX.set(value.minX)
+                maxX.set(value.maxX)
+                minY.set(value.minY)
+                maxY.set(value.maxY)
+                minWidth.set(value.minWidth)
+                maxWidth.set(value.maxWidth)
+                minHeight.set(value.minHeight)
+                maxHeight.set(value.maxHeight)
+                x.set(value.x)
+                y.set(value.y)
+                width.set(value.width)
+                height.set(value.height)
+            }
+            is CameraCanBinChanged -> Platform.runLater {
+                canBin.set(value.canBin)
+                maxBinX.set(value.maxBinX)
+                maxBinY.set(value.maxBinY)
+            }
+            is CameraBinChanged -> Platform.runLater {
+                binX.set(value.binX)
+                binY.set(value.binY)
             }
         }
     }
