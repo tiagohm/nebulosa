@@ -10,7 +10,10 @@ import nebulosa.indi.devices.filterwheels.FilterWheelDetached
 import nebulosa.indi.devices.mounts.Mount
 import nebulosa.indi.devices.mounts.MountAttached
 import nebulosa.indi.devices.mounts.MountDetached
-import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.DefTextVector
+import nebulosa.indi.protocol.DelProperty
+import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.Message
 import nebulosa.indi.protocol.io.INDIInputStream
 import nebulosa.indi.protocol.parser.INDIProtocolParser
 import nebulosa.indi.protocol.parser.INDIProtocolReader
@@ -196,13 +199,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
             messageReorderingQueue.remove(message)
 
             if (LOG.isDebugEnabled) {
-                LOG.debug(
-                    "RECEIVED: {}: {}: {}: {}",
-                    message::class.simpleName,
-                    message.device,
-                    message.name,
-                    (message as? Vector<*>)?.joinToString(", ") { "${it.name}=${it.value}" },
-                )
+                LOG.debug("RECEIVED: {}", message)
             }
         }
     }

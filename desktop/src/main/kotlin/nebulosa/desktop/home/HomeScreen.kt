@@ -8,7 +8,7 @@ import javafx.stage.FileChooser
 import nebulosa.desktop.cameras.CameraManagerScreen
 import nebulosa.desktop.connections.ConnectionManager
 import nebulosa.desktop.core.controls.Icon
-import nebulosa.desktop.core.controls.Screen
+import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.filterwheels.FilterWheelManagerScreen
 import nebulosa.desktop.focusers.FocuserManagerScreen

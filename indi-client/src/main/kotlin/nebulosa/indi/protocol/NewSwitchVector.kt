@@ -9,4 +9,7 @@ class NewSwitchVector : NewVector<OneSwitch>(), SwitchVector<OneSwitch> {
     @XStreamAsAttribute
     @JvmField
     var rule = SwitchRule.ANY_OF_MANY
+
+    override fun toString() =
+        "NewSwitchVector(device=$device, name=$name, state=$state, message=$message, rule=$rule, timeout=$timeout, elements=$elements)"
 }

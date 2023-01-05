@@ -1,4 +1,4 @@
-package nebulosa.desktop.core.controls
+package nebulosa.desktop.core.scene.control
 
 import javafx.scene.Node
 import javafx.scene.control.TableCell

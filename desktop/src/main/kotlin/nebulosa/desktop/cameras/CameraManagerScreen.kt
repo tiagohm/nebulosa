@@ -11,7 +11,7 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.stage.DirectoryChooser
 import nebulosa.desktop.core.controls.Icon
-import nebulosa.desktop.core.controls.Screen
+import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.indi.devices.DeviceEvent
@@ -200,41 +200,29 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             && event.device === equipmentManager.selectedCamera.value
         ) {
             when (event) {
-                is CameraExposureMinMaxChanged -> {
-                    Platform.runLater {
-                        updateExposure()
-                        loadPreferences(event.device)
-                    }
+                is CameraExposureMinMaxChanged -> Platform.runLater {
+                    updateExposure()
+                    loadPreferences(event.device)
                 }
-                is CameraFrameChanged -> {
-                    Platform.runLater {
-                        updateFrame()
-                        loadPreferences(event.device)
-                    }
+                is CameraFrameChanged -> Platform.runLater {
+                    updateFrame()
+                    loadPreferences(event.device)
                 }
-                is CameraCanBinChanged -> {
-                    Platform.runLater {
-                        updateBin()
-                        loadPreferences(event.device)
-                    }
+                is CameraCanBinChanged -> Platform.runLater {
+                    updateBin()
+                    loadPreferences(event.device)
                 }
-                is CameraGainMinMaxChanged -> {
-                    Platform.runLater {
-                        updateGain()
-                        loadPreferences(event.device)
-                    }
+                is CameraGainMinMaxChanged -> Platform.runLater {
+                    updateGain()
+                    loadPreferences(event.device)
                 }
-                is CameraOffsetMinMaxChanged -> {
-                    Platform.runLater {
-                        updateOffset()
-                        loadPreferences(event.device)
-                    }
+                is CameraOffsetMinMaxChanged -> Platform.runLater {
+                    updateOffset()
+                    loadPreferences(event.device)
                 }
-                is CameraFrameFormatsChanged -> {
-                    Platform.runLater {
-                        updateFrameFormat()
-                        loadPreferences(event.device)
-                    }
+                is CameraFrameFormatsChanged -> Platform.runLater {
+                    updateFrameFormat()
+                    loadPreferences(event.device)
                 }
                 is CameraExposureTaskProgress -> {
                     Platform.runLater {
@@ -282,6 +270,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             }
         }
     }
+
 
     @FXML
     private fun connect() {

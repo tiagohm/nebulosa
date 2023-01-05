@@ -3,7 +3,6 @@ package nebulosa.indi
 import nebulosa.indi.devices.DeviceProtocolHandler
 import nebulosa.indi.protocol.GetProperties
 import nebulosa.indi.protocol.INDIProtocol
-import nebulosa.indi.protocol.Vector
 import nebulosa.indi.protocol.connection.INDIConnection
 import nebulosa.indi.protocol.connection.INDIProccessConnection
 import nebulosa.indi.protocol.connection.INDISocketConnection
@@ -47,12 +46,7 @@ class INDIClient(val connection: INDIConnection) : INDIProtocolParser, Closeable
 
     fun sendMessageToServer(message: INDIProtocol) {
         if (LOG.isDebugEnabled) {
-            LOG.debug(
-                "SENDING: {}: {}: {}: {}",
-                message::class.simpleName,
-                message.device,
-                message.name,
-                (message as? Vector<*>)?.joinToString(", ") { "${it.name}=${it.value}" })
+            LOG.debug("SENDING: {}", message)
         }
 
         connection.writeINDIProtocol(message)

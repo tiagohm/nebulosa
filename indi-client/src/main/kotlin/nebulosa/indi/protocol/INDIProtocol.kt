@@ -3,8 +3,13 @@ package nebulosa.indi.protocol
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute
 import java.io.Serializable
 
-// http://www.clearskyinstitute.com/INDI/INDI.pdf
-
+/**
+ * A simple XML-like communications protocol is described for
+ * interactive and automated remote control of
+ * diverse instrumentation.
+ *
+ * @see <a href="http://www.clearskyinstitute.com/INDI/INDI.pdf">Protocol</a>
+ */
 sealed class INDIProtocol : HasName, Serializable {
 
     @XStreamAsAttribute

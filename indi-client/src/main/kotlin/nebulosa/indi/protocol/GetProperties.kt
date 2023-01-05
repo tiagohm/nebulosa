@@ -9,4 +9,6 @@ class GetProperties : INDIProtocol() {
     @XStreamAsAttribute
     @JvmField
     val version = "1.7"
+
+    override fun toString() = "GetProperties(device=$device, name=$name, message=$message)"
 }

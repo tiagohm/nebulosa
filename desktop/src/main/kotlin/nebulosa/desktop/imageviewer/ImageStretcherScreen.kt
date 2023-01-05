@@ -8,7 +8,7 @@ import javafx.scene.control.Slider
 import javafx.scene.control.Spinner
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import javafx.util.StringConverter
-import nebulosa.desktop.core.controls.Screen
+import nebulosa.desktop.core.scene.Screen
 import nebulosa.math.map
 import org.controlsfx.control.RangeSlider
 

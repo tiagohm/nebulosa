@@ -11,6 +11,7 @@ import nebulosa.indi.devices.mounts.*
 
 class MountProperty : DeviceProperty<Mount>() {
 
+    @JvmField val isSlewing = SimpleBooleanProperty()
     @JvmField val isTracking = SimpleBooleanProperty()
     @JvmField val isParking = SimpleBooleanProperty()
     @JvmField val isParked = SimpleBooleanProperty()
@@ -22,10 +23,14 @@ class MountProperty : DeviceProperty<Mount>() {
     @JvmField val pierSide = SimpleObjectProperty(PierSide.NEITHER)
     @JvmField val canAbort = SimpleBooleanProperty()
     @JvmField val canSync = SimpleBooleanProperty()
+    @JvmField val canPark = SimpleBooleanProperty()
     @JvmField val guideRateWE = SimpleDoubleProperty()
     @JvmField val guideRateNS = SimpleDoubleProperty()
+    @JvmField val rightAscension = SimpleDoubleProperty()
+    @JvmField val declination = SimpleDoubleProperty()
 
     override fun changed(value: Mount) {
+        isSlewing.set(value.isSlewing)
         isTracking.set(value.isTracking)
         slewRates.setAll(value.slewRates)
         slewRate.set(value.slewRate)
@@ -37,11 +42,15 @@ class MountProperty : DeviceProperty<Mount>() {
         isParked.set(value.isParked)
         canAbort.set(value.canAbort)
         canSync.set(value.canSync)
+        canPark.set(value.canPark)
         guideRateWE.set(value.guideRateWE)
         guideRateNS.set(value.guideRateNS)
+        rightAscension.set(value.rightAscension)
+        declination.set(value.declination)
     }
 
     override fun reset() {
+        isSlewing.set(false)
         isTracking.set(false)
         slewRates.clear()
         slewRate.set(null)
@@ -53,12 +62,16 @@ class MountProperty : DeviceProperty<Mount>() {
         isParked.set(false)
         canAbort.set(false)
         canSync.set(false)
+        canPark.set(false)
         guideRateWE.set(0.0)
         guideRateNS.set(0.0)
+        rightAscension.set(0.0)
+        declination.set(0.0)
     }
 
     override fun accept(event: DeviceEvent<*>) {
         when (event) {
+            is MountSlewingChanged -> Platform.runLater { isSlewing.set(value.isSlewing) }
             is MountSlewRatesChanged -> Platform.runLater { slewRates.setAll(value.slewRates) }
             is MountSlewRateChanged -> Platform.runLater { slewRate.set(value.slewRate) }
             is MountTypeChanged -> Platform.runLater { mountType.set(value.mountType) }
@@ -68,6 +81,11 @@ class MountProperty : DeviceProperty<Mount>() {
             is MountPierSideChanged -> Platform.runLater { pierSide.set(value.pierSide) }
             is MountCanAbortChanged -> Platform.runLater { canAbort.set(value.canAbort) }
             is MountCanSyncChanged -> Platform.runLater { canSync.set(value.canSync) }
+            is MountCanParkChanged -> Platform.runLater { canPark.set(value.canPark) }
+            is MountEquatorialCoordinatesChanged -> Platform.runLater {
+                rightAscension.set(value.rightAscension)
+                declination.set(value.declination)
+            }
             is MountGuideRateChanged -> Platform.runLater {
                 guideRateWE.set(value.guideRateWE)
                 guideRateNS.set(value.guideRateNS)

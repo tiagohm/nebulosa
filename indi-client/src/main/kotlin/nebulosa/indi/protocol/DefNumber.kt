@@ -5,11 +5,11 @@ import com.thoughtworks.xstream.annotations.XStreamAsAttribute
 import com.thoughtworks.xstream.annotations.XStreamConverter
 import nebulosa.indi.protocol.io.ToAttributedValueConverter
 
-// TODO: Support sexagesimal format conversion.
 @XStreamAlias("defNumber")
 @XStreamConverter(value = ToAttributedValueConverter::class, strings = ["value"], types = [DefNumber::class])
 class DefNumber : DefElement<Double>(), NumberElement {
 
+    // TODO: Support sexagesimal format conversion.
     override var value = 0.0
 
     @XStreamAsAttribute
@@ -25,4 +25,6 @@ class DefNumber : DefElement<Double>(), NumberElement {
     @XStreamAsAttribute
     @JvmField
     var step = 0.0
+
+    override fun toString() = "DefNumber(name=$name, label=$label, message=$message, value=$value, max=$max, min=$min, step=$step, format=$format)"
 }

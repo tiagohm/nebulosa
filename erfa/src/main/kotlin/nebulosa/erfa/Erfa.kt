@@ -20,6 +20,8 @@ import kotlin.math.PI
 
 /**
  * P-vector to spherical polar coordinates.
+ *
+ * @return longitude angle (theta), latitude angle (phi) and radial distance.
  */
 fun eraP2s(x: Double, y: Double, z: Double): Triple<Angle, Angle, Double> {
     val (theta, phi) = eraC2s(x, y, z)
@@ -29,6 +31,8 @@ fun eraP2s(x: Double, y: Double, z: Double): Triple<Angle, Angle, Double> {
 
 /**
  * P-vector to spherical coordinates.
+ *
+ * @return longitude angle (theta) and latitude angle (phi).
  */
 fun eraC2s(x: Double, y: Double, z: Double): Pair<Angle, Angle> {
     val d2 = x * x + y * y
@@ -394,7 +398,7 @@ fun eraPvtob(
 
     // Polar motion and TIO position.
     val rpm = eraPom00(xp, yp, sp)
-    val (x, y, z) = rpm.transpose() * Vector3D(xyzm.first.meters, xyzm.second.meters, xyzm.third.meters)
+    val (x, y, z) = rpm.transposed * Vector3D(xyzm.first.meters, xyzm.second.meters, xyzm.third.meters)
 
     val s = theta.sin
     val c = theta.cos
@@ -568,7 +572,7 @@ fun eraApco(
     val pvc = eraPvtob(elong, phi, hm, xp, yp, sp, theta)
 
     // Rotate into GCRS.
-    val rt = r.transpose()
+    val rt = r.transposed
     val p = rt * pvc.first
     val v = rt * pvc.second
 

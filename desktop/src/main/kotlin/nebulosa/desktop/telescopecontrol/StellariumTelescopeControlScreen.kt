@@ -3,10 +3,10 @@ package nebulosa.desktop.telescopecontrol
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.fxml.FXML
 import javafx.scene.control.Button
-import javafx.scene.control.CheckBox
 import javafx.scene.control.TextField
+import nebulosa.desktop.core.beans.or
 import nebulosa.desktop.core.controls.Icon
-import nebulosa.desktop.core.controls.Screen
+import nebulosa.desktop.core.scene.Screen
 import nebulosa.indi.devices.mounts.Mount
 import org.koin.core.component.inject
 
@@ -19,35 +19,42 @@ class StellariumTelescopeControlScreen(private val mount: Mount) : Screen("Stell
 
     @FXML private lateinit var host: TextField
     @FXML private lateinit var port: TextField
-    @FXML private lateinit var connectAtStartup: CheckBox
     @FXML private lateinit var connect: Button
 
+    init {
+        title = "Stellarium Telescope Control"
+        isResizable = false
+    }
+
     override fun onCreate() {
-        host.disableProperty().bind(isConnecting.or(isConnected))
+        host.disableProperty().bind(isConnecting or isConnected)
         port.disableProperty().bind(host.disableProperty())
-        connectAtStartup.disableProperty().bind(host.disableProperty())
         connect.disableProperty().bind(isConnecting)
 
         isConnected.addListener { _, _, value -> connect.graphic = if (value) Icon.closeCircle() else Icon.connection() }
 
         host.text = preferences.string("stellariumTelescopeControl.equipment.${mount.name}.host")
         port.text = preferences.string("stellariumTelescopeControl.equipment.${mount.name}.port")
-        connectAtStartup.isSelected = preferences.bool("stellariumTelescopeControl.equipment.${mount.name}.connectAtStartup")
         isConnected.set(mount in telescopeControlManager && !telescopeControlManager[mount]!!.isClosed)
     }
 
     @FXML
-    @Synchronized
     private fun connect() {
         val server = telescopeControlManager[mount]
 
         if (server == null || server.isClosed) {
             try {
                 isConnecting.set(true)
-                telescopeControlManager.startTCP(mount, host.text.trim(), port.text.trim().toInt())
+
+                val host = host.text.trim().ifBlank { "localhost" }
+                val port = port.text.trim().toInt()
+
+                telescopeControlManager.startTCP(mount, host, port)
+
                 isConnected.set(true)
-                preferences.string("stellariumTelescopeControl.equipment.${mount.name}.host", host.text.trim())
-                preferences.string("stellariumTelescopeControl.equipment.${mount.name}.port", host.text.trim())
+
+                preferences.string("stellariumTelescopeControl.equipment.${mount.name}.host", host)
+                preferences.int("stellariumTelescopeControl.equipment.${mount.name}.port", port)
             } catch (e: Throwable) {
                 showAlert(
                     "A connection to the INDI Server could not be established. Check your connection or server configuration.",
@@ -60,10 +67,5 @@ class StellariumTelescopeControlScreen(private val mount: Mount) : Screen("Stell
             telescopeControlManager[mount]?.close()
             isConnected.set(false)
         }
-    }
-
-    @FXML
-    private fun toggleConnectAtStartup() {
-        preferences.bool("stellariumTelescopeControl.equipment.${mount.name}.connectAtStartup", connectAtStartup.isSelected)
     }
 }

@@ -8,6 +8,7 @@ import nebulosa.constants.SPEED_OF_LIGHT
  * Represents a distance [value] in AU.
  */
 @JvmInline
+@Suppress("FloatingPointLiteralPrecision")
 value class Distance(val value: Double) : Comparable<Distance> {
 
     /**
@@ -25,23 +26,28 @@ value class Distance(val value: Double) : Comparable<Distance> {
      */
     inline val lightYears get() = value / (SPEED_OF_LIGHT * 31557600 / AU_M)
 
-    operator fun plus(temperature: Distance) = (value + temperature.value).au
+    /**
+     * Converts this distance to parsecs.
+     */
+    inline val parsecs get() = value / 206264.806245480309552772371736702884
 
-    operator fun plus(temperature: Number) = (value + temperature.toDouble()).au
+    operator fun plus(distance: Distance) = (value + distance.value).au
 
-    operator fun minus(temperature: Distance) = (value - temperature.value).au
+    operator fun plus(distance: Number) = (value + distance.toDouble()).au
 
-    operator fun minus(temperature: Number) = (value - temperature.toDouble()).au
+    operator fun minus(distance: Distance) = (value - distance.value).au
 
-    operator fun times(temperature: Number) = (value * temperature.toDouble()).au
+    operator fun minus(distance: Number) = (value - distance.toDouble()).au
 
-    operator fun div(temperature: Distance) = value / temperature.value
+    operator fun times(distance: Number) = (value * distance.toDouble()).au
 
-    operator fun div(temperature: Number) = (value / temperature.toDouble()).au
+    operator fun div(distance: Distance) = value / distance.value
 
-    operator fun rem(temperature: Distance) = (value % temperature.value).au
+    operator fun div(distance: Number) = (value / distance.toDouble()).au
 
-    operator fun rem(temperature: Number) = (value % temperature.toDouble()).au
+    operator fun rem(distance: Distance) = (value % distance.value).au
+
+    operator fun rem(distance: Number) = (value % distance.toDouble()).au
 
     operator fun unaryMinus() = (-value).au
 
@@ -50,8 +56,9 @@ value class Distance(val value: Double) : Comparable<Distance> {
     companion object {
 
         @JvmStatic val ZERO = Distance(0.0)
-
         @JvmStatic val ONE = Distance(1.0)
+        @JvmStatic val PARSEC = 1.0.parsec
+        @JvmStatic val GIGAPARSEC = 1000000000.0.parsec
 
         /**
          * Creates [Distance] from AU.
@@ -69,8 +76,10 @@ value class Distance(val value: Double) : Comparable<Distance> {
         inline val Number.km get() = (toDouble() / AU_KM).au
 
         /**
-         * Creates [Distance] from light-years.
+         * Creates [Distance] from parsecs.
          */
         inline val Number.ly get() = (toDouble() * (SPEED_OF_LIGHT * 31557600 / AU_M)).au
+
+        inline val Number.parsec get() = (toDouble() * 206264.806245480309552772371736702884).au
     }
 }

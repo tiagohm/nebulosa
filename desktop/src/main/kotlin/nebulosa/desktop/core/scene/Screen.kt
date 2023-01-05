@@ -1,4 +1,4 @@
-package nebulosa.desktop.core.controls
+package nebulosa.desktop.core.scene
 
 import io.reactivex.rxjava3.functions.Consumer
 import javafx.fxml.FXMLLoader
@@ -60,11 +60,12 @@ abstract class Screen(
         fun showAlert(
             message: String,
             title: String = "Information"
-        ) = Alert(Alert.AlertType.INFORMATION).apply {
-            this.title = title
-            headerText = null
-            contentText = message
-            showAndWait()
+        ) {
+            val alert = Alert(Alert.AlertType.INFORMATION)
+            alert.title = title
+            alert.headerText = null
+            alert.contentText = message
+            alert.showAndWait()
         }
     }
 }

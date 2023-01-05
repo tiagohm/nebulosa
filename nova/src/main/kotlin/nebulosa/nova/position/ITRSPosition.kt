@@ -36,7 +36,7 @@ interface ITRSPosition : Body, Coordinate {
      * Computes GCRS position and velocity at the [time].
      */
     override fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D> {
-        val rt = ITRS.rotationAt(time).transpose()
+        val rt = ITRS.rotationAt(time).transposed
         val r = rt * itrs
         val v = rt * velocity
         return r to v

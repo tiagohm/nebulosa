@@ -113,7 +113,7 @@
                                fitWidth="24.0"
                                pickOnBounds="true"
                                preserveRatio="true">
-                        <Image url="@icons/camera.png"/>
+                        <Image url="@icons/camera-iris.png"/>
                     </ImageView>
                 </graphic>
                 <font>
@@ -297,7 +297,7 @@
                                fitWidth="24.0"
                                pickOnBounds="true"
                                preserveRatio="true">
-                        <Image url="@icons/skymap.png"/>
+                        <Image url="@icons/map.png"/>
                     </ImageView>
                 </graphic>
                 <font>
@@ -343,7 +343,7 @@
                                fitWidth="24.0"
                                pickOnBounds="true"
                                preserveRatio="true">
-                        <Image url="@icons/focuser.png"/>
+                        <Image url="@icons/image-filter-center-focus.png"/>
                     </ImageView>
                 </graphic>
                 <font>
@@ -366,7 +366,7 @@
                                fitWidth="24.0"
                                pickOnBounds="true"
                                preserveRatio="true">
-                        <Image url="@icons/sequencer.png"/>
+                        <Image url="@icons/table-clock.png"/>
                     </ImageView>
                 </graphic>
                 <font>

@@ -1,7 +1,7 @@
 package nebulosa.desktop.platesolving
 
 import io.reactivex.rxjava3.disposables.Disposable
-import nebulosa.desktop.core.controls.Screen
+import nebulosa.desktop.core.scene.Screen
 
 class PlateSolverScreen : Screen("PlateSolver", "nebulosa-plate-solver") {
 

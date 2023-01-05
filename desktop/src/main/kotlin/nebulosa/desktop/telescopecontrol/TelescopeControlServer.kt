@@ -1,20 +1,21 @@
 package nebulosa.desktop.telescopecontrol
 
+import nebulosa.indi.devices.mounts.Mount
 import nebulosa.math.Angle
 import java.io.Closeable
 
 interface TelescopeControlServer : Closeable {
 
-    fun interface MessageListener {
+    fun interface Listener {
 
-        fun onGoTo(ra: Angle, dec: Angle)
+        fun onGoTo(mount: Mount, ra: Angle, dec: Angle)
     }
 
     val isClosed: Boolean
 
-    fun registerListener(listener: MessageListener)
+    fun registerListener(listener: Listener)
 
-    fun unregisterListener(listener: MessageListener)
+    fun unregisterListener(listener: Listener)
 
     fun start()
 

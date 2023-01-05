@@ -16,4 +16,7 @@ sealed class NewVector<E : OneElement<*>> : INDIProtocol(), Vector<E> {
     var timeout = ""
 
     override fun get(name: String) = elements.firstOrNull { it.name == name }
+
+    override fun toString() =
+        "${this::class.simpleName}(device=$device, name=$name, state=$state, message=$message, timeout=$timeout, elements=$elements)"
 }

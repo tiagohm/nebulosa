@@ -18,7 +18,7 @@ abstract class InertialFrame(val matrix: Matrix3D) : Frame {
      */
     open val transposed: InertialFrame by lazy { Transposed(this) }
 
-    protected data class Transposed(val frame: InertialFrame) : InertialFrame(frame.matrix.transpose()) {
+    protected data class Transposed(val frame: InertialFrame) : InertialFrame(frame.matrix.transposed) {
 
         override val transposed get() = frame
     }

@@ -3,7 +3,7 @@ package nebulosa.desktop.imageviewer
 import javafx.fxml.FXML
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Spinner
-import nebulosa.desktop.core.controls.Screen
+import nebulosa.desktop.core.scene.Screen
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import org.controlsfx.control.ToggleSwitch

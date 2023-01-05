@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":math"))
+    api(project(":nova"))
     api(project(":imaging"))
     implementation(libs.xstream)
     implementation(libs.logback)

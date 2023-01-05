@@ -2,7 +2,7 @@ package nebulosa.desktop.focusers
 
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.fxml.FXML
-import nebulosa.desktop.core.controls.Screen
+import nebulosa.desktop.core.scene.Screen
 
 class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager") {
 

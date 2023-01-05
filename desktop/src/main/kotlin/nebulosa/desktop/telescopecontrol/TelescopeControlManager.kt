@@ -3,12 +3,16 @@ package nebulosa.desktop.telescopecontrol
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.desktop.core.EventBus
 import nebulosa.indi.devices.mounts.Mount
+import nebulosa.indi.devices.mounts.MountEquatorialCoordinatesChanged
 import nebulosa.indi.devices.mounts.MountEvent
+import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Angle.Companion.hours
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class TelescopeControlManager private constructor(private val servers: MutableMap<Mount, TelescopeControlServer>) :
-    KoinComponent, Consumer<Any>, Map<Mount, TelescopeControlServer> by servers {
+    KoinComponent, Consumer<Any>, TelescopeControlServer.Listener, Map<Mount, TelescopeControlServer> by servers {
 
     constructor() : this(HashMap<Mount, TelescopeControlServer>())
 
@@ -23,7 +27,8 @@ class TelescopeControlManager private constructor(private val servers: MutableMa
     @Synchronized
     override fun accept(event: Any) {
         when (event) {
-            // TODO: COORDINATES CHANGED. servers[mount]?.sendCurrentPosition()
+            is MountEquatorialCoordinatesChanged -> servers[event.device]
+                ?.sendCurrentPosition(event.device.rightAscension.hours, event.device.declination.deg)
         }
     }
 
@@ -32,14 +37,15 @@ class TelescopeControlManager private constructor(private val servers: MutableMa
         mount: Mount,
         host: String,
         port: Int,
-    ) {
+    ): TelescopeControlServer {
         stop(mount)
 
-        val server = TelescopeControlTCPServer(host, port)
+        val server = TelescopeControlTCPServer(mount, host, port)
         server.start()
-        // TODO: Ignore if is slewing.
-        // TODO: server.registerListener { ra, dec -> mount.goTo(ra, dec) }
+        server.registerListener(this)
         servers[mount] = server
+
+        return server
     }
 
     @Synchronized
@@ -52,5 +58,11 @@ class TelescopeControlManager private constructor(private val servers: MutableMa
     fun stopAll() {
         servers.values.forEach(TelescopeControlServer::close)
         servers.clear()
+    }
+
+    override fun onGoTo(mount: Mount, ra: Angle, dec: Angle) {
+        if (!mount.isSlewing) {
+            mount.goToJ2000(ra, dec)
+        }
     }
 }

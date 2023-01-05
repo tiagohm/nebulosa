@@ -90,7 +90,7 @@ class Barycentric internal constructor(
         )
 
         val R = frame.rotationAt(time)
-        val p = R.transpose() * CartesianCoordinate.of(azimuth, altitude, distance)
+        val p = R.transposed * CartesianCoordinate.of(azimuth, altitude, distance)
 
         return Apparent(p, Vector3D.EMPTY, time, center, target, this)
     }

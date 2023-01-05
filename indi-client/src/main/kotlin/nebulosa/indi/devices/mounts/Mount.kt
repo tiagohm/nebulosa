@@ -7,6 +7,8 @@ import nebulosa.indi.devices.firstOnSwitch
 import nebulosa.indi.devices.firstOnSwitchOrNull
 import nebulosa.indi.protocol.*
 import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.rad
+import nebulosa.nova.astrometry.ICRF
 
 open class Mount(
     client: INDIClient,
@@ -14,11 +16,13 @@ open class Mount(
     name: String,
 ) : Device(client, handler, name) {
 
+    @Volatile @JvmField var isSlewing = false
     @Volatile @JvmField var isTracking = false
     @Volatile @JvmField var isParking = false
     @Volatile @JvmField var isParked = false
     @Volatile @JvmField var canAbort = false
     @Volatile @JvmField var canSync = false
+    @Volatile @JvmField var canPark = false
     @Volatile @JvmField var slewRates = emptyList<SlewRate>()
     @Volatile @JvmField var slewRate: SlewRate? = null
     @Volatile @JvmField var mountType = MountType.EQ_GEM
@@ -27,6 +31,8 @@ open class Mount(
     @Volatile @JvmField var pierSide = PierSide.NEITHER
     @Volatile @JvmField var guideRateWE = 0.0
     @Volatile @JvmField var guideRateNS = 0.0
+    @Volatile @JvmField var rightAscension = 0.0
+    @Volatile @JvmField var declination = 0.0
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -74,8 +80,14 @@ open class Mount(
                         handler.fireOnEventReceived(MountPierSideChanged(this))
                     }
                     "TELESCOPE_PARK" -> {
+                        if (message is DefSwitchVector) {
+                            canPark = message.perm != PropertyPermission.RO
+
+                            handler.fireOnEventReceived(MountCanParkChanged(this))
+                        }
+
                         isParking = message.state == PropertyState.BUSY
-                        isParked = message.firstOnSwitch().name == "PARK"
+                        isParked = message.firstOnSwitchOrNull()?.name == "PARK"
 
                         handler.fireOnEventReceived(MountParkChanged(this))
                     }
@@ -99,6 +111,19 @@ open class Mount(
 
                         handler.fireOnEventReceived(MountGuideRateChanged(this))
                     }
+                    "EQUATORIAL_EOD_COORD" -> {
+                        val prevIsIslewing = isSlewing
+                        isSlewing = message.state == PropertyState.BUSY
+
+                        if (isSlewing != prevIsIslewing) {
+                            handler.fireOnEventReceived(MountSlewingChanged(this))
+                        }
+
+                        rightAscension = message["RA"]!!.value
+                        declination = message["DEC"]!!.value
+
+                        handler.fireOnEventReceived(MountEquatorialCoordinatesChanged(this))
+                    }
                 }
             }
             else -> Unit
@@ -118,14 +143,29 @@ open class Mount(
         sendNewNumber("EQUATORIAL_EOD_COORD", "RA" to ra.hours, "DEC" to dec.degrees)
     }
 
+    fun syncJ2000(ra: Angle, dec: Angle) {
+        val (raNow, decNow) = ICRF.equatorial(ra, dec).equatorialAtDate()
+        sync(raNow.rad.normalized, decNow.rad)
+    }
+
     fun slewTo(ra: Angle, dec: Angle) {
         sendNewSwitch("ON_COORD_SET", "SLEW" to true)
         sendNewNumber("EQUATORIAL_EOD_COORD", "RA" to ra.hours, "DEC" to dec.degrees)
     }
 
+    fun slewToJ2000(ra: Angle, dec: Angle) {
+        val (raNow, decNow) = ICRF.equatorial(ra, dec).equatorialAtDate()
+        slewTo(raNow.rad.normalized, decNow.rad)
+    }
+
     fun goTo(ra: Angle, dec: Angle) {
         sendNewSwitch("ON_COORD_SET", "TRACK" to true)
         sendNewNumber("EQUATORIAL_EOD_COORD", "RA" to ra.hours, "DEC" to dec.degrees)
+    }
+
+    fun goToJ2000(ra: Angle, dec: Angle) {
+        val (raNow, decNow) = ICRF.equatorial(ra, dec).equatorialAtDate()
+        goTo(raNow.rad.normalized, decNow.rad)
     }
 
     fun park() {
@@ -138,6 +178,10 @@ open class Mount(
 
     fun abortMotion() {
         sendNewSwitch("TELESCOPE_ABORT_MOTION", "ABORT" to true)
+    }
+
+    fun trackingMode(mode: TrackMode) {
+        sendNewSwitch("TELESCOPE_TRACK_MODE", "TRACK_$mode" to true)
     }
 
     override fun toString() = name

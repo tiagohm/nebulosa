@@ -82,9 +82,7 @@ value class Angle(val value: Double) : Comparable<Angle> {
     companion object : ClosedRange<Angle>, Comparator<Angle> {
 
         @JvmStatic val ZERO = Angle(0.0)
-
         @JvmStatic val SEMICIRCLE = Angle(PI)
-
         @JvmStatic val CIRCLE = Angle(TAU)
 
         override val start = ZERO

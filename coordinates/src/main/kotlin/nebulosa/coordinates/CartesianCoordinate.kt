@@ -2,7 +2,6 @@ package nebulosa.coordinates
 
 import nebulosa.math.Angle
 import nebulosa.math.Distance
-import nebulosa.math.Distance.Companion.au
 import nebulosa.math.Vector3D
 
 class CartesianCoordinate(
@@ -37,16 +36,21 @@ class CartesianCoordinate(
 
     companion object {
 
+        /**
+         * Given [theta] as longitude, [phi] as latitude and
+         * [r] as radial distance, converts spherical polar coordinates
+         * to [CartesianCoordinate].
+         */
         @JvmStatic
         fun of(
             theta: Angle,
             phi: Angle,
             r: Distance,
         ): CartesianCoordinate {
-            val rxy = r.value * theta.cos
-            val x = (rxy * phi.cos).au
-            val y = (rxy * phi.sin).au
-            val z = (r.value * theta.sin).au
+            val cp = phi.cos
+            val x = r * (theta.cos * cp)
+            val y = r * (theta.sin * cp)
+            val z = r * phi.sin
             return CartesianCoordinate(x, y, z)
         }
     }

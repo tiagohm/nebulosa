@@ -2,6 +2,7 @@ package nebulosa.nova.astrometry
 
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.SPEED_OF_LIGHT
+import nebulosa.coordinates.CartesianCoordinate
 import nebulosa.coordinates.SphericalCoordinate
 import nebulosa.math.*
 import nebulosa.math.Angle.Companion.rad
@@ -220,6 +221,57 @@ open class ICRF protected constructor(
             //} else {
             return SphericalCoordinate.of(h[0].km, h[1].km, h[2].km)
             //}
+        }
+
+        /**
+         * Builds a position from two vectors in a reference [frame] at the [time].
+         */
+        fun frame(
+            time: InstantOfTime,
+            frame: Frame,
+            distance: Vector3D,
+            velocity: Vector3D,
+            type: Class<out ICRF>? = null,
+        ): ICRF {
+            var r = distance
+            var v = velocity
+
+            frame.dRdtTimesRtAt(time)?.also {
+                v -= (it * r) // Subtract instead of transposing.
+            }
+
+            frame.rotationAt(time).transposed.also {
+                r = it * r
+                v = it * r
+            }
+
+            return of(r, v, time, Int.MIN_VALUE, Int.MIN_VALUE, type)
+        }
+
+        /**
+         * Builds a position object from a right ascension and declination.
+         *
+         * If a specific [distance] is not provided, It returns a
+         * position vector a gigaparsec in length. This puts the position at a
+         * great enough distance that it will stand at the same right ascension
+         * and declination from any viewing position in the Solar System, to
+         * very high precision (within a few hundredths of a microarcsecond).
+         *
+         * If an [epoch] is specified, the input coordinates are understood
+         * to be in the dynamical system of that particular date. Otherwise,
+         * they will be assumed to be ICRS (the modern replacement for J2000).
+         */
+        fun equatorial(
+            ra: Angle,
+            dec: Angle,
+            distance: Distance = Distance.GIGAPARSEC,
+            time: InstantOfTime = TimeJD.now(),
+            epoch: InstantOfTime? = null,
+            center: Number = Int.MIN_VALUE,
+            target: Number = Int.MIN_VALUE,
+        ): ICRF {
+            val position = CartesianCoordinate.of(ra, dec, distance)
+            return of(if (epoch != null) epoch.m.transposed * position else position, Vector3D.EMPTY, time, center, target)
         }
     }
 }

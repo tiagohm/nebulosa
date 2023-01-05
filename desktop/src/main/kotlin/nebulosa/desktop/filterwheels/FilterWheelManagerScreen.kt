@@ -10,9 +10,9 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.util.Callback
-import nebulosa.desktop.core.controls.ButtonValueFactory
 import nebulosa.desktop.core.controls.Icon
-import nebulosa.desktop.core.controls.Screen
+import nebulosa.desktop.core.scene.Screen
+import nebulosa.desktop.core.scene.control.ButtonValueFactory
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.filterwheels.FilterWheel
@@ -102,12 +102,17 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         equipmentManager.selectedFilterWheel.slotCount.addListener { _, _, count ->
             filterSlots.items.setAll((1..count.toInt()).toList())
             height = 180.0 + count.toInt() * 29.9
+            updateUseFilterWheelAsShutter()
+            updateFilterAsShutter()
         }
 
         equipmentManager.selectedFilterWheel.isConnected.addListener { _, _, value ->
             connect.graphic = if (value) Icon.closeCircle() else Icon.connection()
-            updateUseFilterWheelAsShutter()
-            updateFilterAsShutter()
+
+            if (value) {
+                updateUseFilterWheelAsShutter()
+                updateFilterAsShutter()
+            }
         }
 
         preferences.double("filterWheelManager.screen.x")?.let { x = it }

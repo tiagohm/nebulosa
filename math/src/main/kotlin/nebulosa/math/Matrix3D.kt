@@ -74,7 +74,7 @@ open class Matrix3D(@PublishedApi internal val matrix: DMatrix3x3) {
 
     inline operator fun div(scalar: Double) = Matrix3D().also { CommonOps_DDF3.divide(matrix, scalar, it.matrix) }
 
-    inline fun transpose() = Matrix3D().also { CommonOps_DDF3.transpose(matrix, it.matrix) }
+    val transposed by lazy { Matrix3D().also { CommonOps_DDF3.transpose(matrix, it.matrix) } }
 
     inline operator fun unaryMinus() = Matrix3D(-a11, -a12, -a13, -a21, -a22, -a23, -a31, -a32, -a33)
 

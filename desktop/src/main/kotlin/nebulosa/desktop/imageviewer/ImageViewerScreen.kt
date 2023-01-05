@@ -13,7 +13,7 @@ import javafx.scene.image.WritableImage
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
-import nebulosa.desktop.core.controls.Screen
+import nebulosa.desktop.core.scene.Screen
 import nebulosa.imaging.FitsImage
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel

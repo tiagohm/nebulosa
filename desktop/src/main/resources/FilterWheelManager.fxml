@@ -15,7 +15,7 @@
             prefWidth="342.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <VBox spacing="16.0"
+    <VBox spacing="8.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
           AnchorPane.rightAnchor="0.0"
@@ -55,10 +55,10 @@
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
             <CheckBox fx:id="useFilterWheelAsShutter"
-                      text="Use filter wheel as shutter"
+                      text="Use filter wheel as shutter:"
                       onAction="#toggleUseFilterWheelAsShutter">
                 <font>
-                    <Font size="12.0"/>
+                    <Font size="11.0"/>
                 </font>
                 <cursor>
                     <Cursor fx:constant="HAND"/>

@@ -13,11 +13,11 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="500.0"
+            prefHeight="470.0"
             prefWidth="402.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <VBox spacing="14.0"
+    <VBox spacing="8.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
           AnchorPane.rightAnchor="0.0"
@@ -116,7 +116,7 @@
                   spacing="1.0">
                 <Label text="Cooler (100%)">
                     <font>
-                        <Font size="12.0"/>
+                        <Font size="11.0"/>
                     </font>
                 </Label>
                 <ToggleSwitch fx:id="cooler"
@@ -131,7 +131,7 @@
                   spacing="1.0">
                 <Label text="Dew Heater">
                     <font>
-                        <Font size="12.0"/>
+                        <Font size="11.0"/>
                     </font>
                 </Label>
                 <ToggleSwitch fx:id="dewHeater"
@@ -147,7 +147,7 @@
                 <Label fx:id="temperature"
                        text="Temperature (-15.0 °C)">
                     <font>
-                        <Font size="12.0"/>
+                        <Font size="11.0"/>
                     </font>
                 </Label>
                 <HBox alignment="CENTER"
@@ -184,7 +184,7 @@
                   spacing="4.0">
                 <Label text="Exposure">
                     <font>
-                        <Font size="12.0"/>
+                        <Font size="11.0"/>
                     </font>
                 </Label>
                 <Spinner fx:id="exposure"
@@ -207,7 +207,7 @@
                             <Cursor fx:constant="HAND"/>
                         </cursor>
                         <font>
-                            <Font size="12.0"/>
+                            <Font size="11.0"/>
                         </font>
                     </RadioButton>
                     <RadioButton text="ms"
@@ -218,7 +218,7 @@
                             <Cursor fx:constant="HAND"/>
                         </cursor>
                         <font>
-                            <Font size="12.0"/>
+                            <Font size="11.0"/>
                         </font>
                     </RadioButton>
                     <RadioButton text="µs"
@@ -230,7 +230,7 @@
                             <Cursor fx:constant="HAND"/>
                         </cursor>
                         <font>
-                            <Font size="12.0"/>
+                            <Font size="11.0"/>
                         </font>
                     </RadioButton>
                 </HBox>
@@ -250,7 +250,7 @@
                             <Cursor fx:constant="HAND"/>
                         </cursor>
                         <font>
-                            <Font size="12.0"/>
+                            <Font size="11.0"/>
                         </font>
                     </RadioButton>
                     <RadioButton text="Fixed"
@@ -260,7 +260,7 @@
                             <Cursor fx:constant="HAND"/>
                         </cursor>
                         <font>
-                            <Font size="12.0"/>
+                            <Font size="11.0"/>
                         </font>
                     </RadioButton>
                     <RadioButton text="Continuous"
@@ -270,7 +270,7 @@
                             <Cursor fx:constant="HAND"/>
                         </cursor>
                         <font>
-                            <Font size="12.0"/>
+                            <Font size="11.0"/>
                         </font>
                     </RadioButton>
                 </HBox>
@@ -280,7 +280,7 @@
                           spacing="1.0">
                         <Label text="Delay (ms)">
                             <font>
-                                <Font size="12.0"/>
+                                <Font size="11.0"/>
                             </font>
                         </Label>
                         <Spinner fx:id="exposureDelay"
@@ -295,7 +295,7 @@
                           spacing="1.0">
                         <Label text="Count">
                             <font>
-                                <Font size="12.0"/>
+                                <Font size="11.0"/>
                             </font>
                         </Label>
                         <Spinner fx:id="exposureCount"
@@ -315,7 +315,7 @@
                   spacing="4.0">
                 <Label text="Subframe">
                     <font>
-                        <Font size="12.0"/>
+                        <Font size="11.0"/>
                     </font>
                 </Label>
                 <ToggleSwitch fx:id="subFrame"
@@ -349,7 +349,7 @@
                     <VBox alignment="CENTER_LEFT">
                         <Label text="X">
                             <font>
-                                <Font size="12.0"/>
+                                <Font size="11.0"/>
                             </font>
                         </Label>
                         <Spinner fx:id="frameX"
@@ -363,7 +363,7 @@
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Y">
                             <font>
-                                <Font size="12.0"/>
+                                <Font size="11.0"/>
                             </font>
                         </Label>
                         <Spinner fx:id="frameY"
@@ -377,7 +377,7 @@
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Bin X">
                             <font>
-                                <Font size="12.0"/>
+                                <Font size="11.0"/>
                             </font>
                         </Label>
                         <Spinner fx:id="binX"
@@ -394,7 +394,7 @@
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Width">
                             <font>
-                                <Font size="12.0"/>
+                                <Font size="11.0"/>
                             </font>
                         </Label>
                         <Spinner fx:id="frameWidth"
@@ -408,7 +408,7 @@
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Height">
                             <font>
-                                <Font size="12.0"/>
+                                <Font size="11.0"/>
                             </font>
                         </Label>
                         <Spinner fx:id="frameHeight"
@@ -422,7 +422,7 @@
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Bin Y">
                             <font>
-                                <Font size="12.0"/>
+                                <Font size="11.0"/>
                             </font>
                         </Label>
                         <Spinner fx:id="binY"
@@ -446,7 +446,7 @@
                   spacing="1.0">
                 <Label text="Frame Type">
                     <font>
-                        <Font size="12.0"/>
+                        <Font size="11.0"/>
                     </font>
                 </Label>
                 <ChoiceBox fx:id="frameType"
@@ -468,7 +468,7 @@
                   spacing="1.0">
                 <Label text="Frame Format">
                     <font>
-                        <Font size="12.0"/>
+                        <Font size="11.0"/>
                     </font>
                 </Label>
                 <ChoiceBox fx:id="frameFormat"
@@ -482,7 +482,7 @@
                   spacing="1.0">
                 <Label text="Speed">
                     <font>
-                        <Font size="12.0"/>
+                        <Font size="11.0"/>
                     </font>
                 </Label>
                 <ChoiceBox fx:id="speed"
@@ -500,7 +500,7 @@
                   spacing="1.0">
                 <Label text="Gain">
                     <font>
-                        <Font size="12.0"/>
+                        <Font size="11.0"/>
                     </font>
                 </Label>
                 <Spinner fx:id="gain"
@@ -515,7 +515,7 @@
                   spacing="1.0">
                 <Label text="Offset">
                     <font>
-                        <Font size="12.0"/>
+                        <Font size="11.0"/>
                     </font>
                 </Label>
                 <Spinner fx:id="offset"
@@ -563,7 +563,19 @@
             </Button>
         </HBox>
         <HBox alignment="CENTER_LEFT">
-            <Label fx:id="progress">
+            <VBox.margin>
+                <Insets top="8.0"/>
+            </VBox.margin>
+            <Label fx:id="progress"
+                   text="idle">
+                <graphic>
+                    <ImageView fitHeight="18.0"
+                               fitWidth="18.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/information.png"/>
+                    </ImageView>
+                </graphic>
                 <font>
                     <Font size="11.0"/>
                 </font>

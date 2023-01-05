@@ -12,11 +12,11 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="555.0"
+            prefHeight="460.0"
             prefWidth="412.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <VBox spacing="16.0"
+    <VBox spacing="8.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
           AnchorPane.rightAnchor="0.0"
@@ -66,7 +66,8 @@
                               size="11.0"/>
                     </font>
                 </Label>
-                <Label alignment="CENTER_RIGHT"
+                <Label fx:id="rightAscension"
+                       alignment="CENTER_RIGHT"
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
@@ -88,7 +89,8 @@
                               size="11.0"/>
                     </font>
                 </Label>
-                <Label alignment="CENTER_RIGHT"
+                <Label fx:id="declination"
+                       alignment="CENTER_RIGHT"
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
@@ -110,7 +112,8 @@
                               size="11.0"/>
                     </font>
                 </Label>
-                <Label alignment="CENTER_RIGHT"
+                <Label fx:id="altitude"
+                       alignment="CENTER_RIGHT"
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
@@ -132,7 +135,8 @@
                               size="11.0"/>
                     </font>
                 </Label>
-                <Label alignment="CENTER_RIGHT"
+                <Label fx:id="azimuth"
+                       alignment="CENTER_RIGHT"
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
@@ -159,7 +163,7 @@
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
-                       text="N">
+                       text="NEITHER">
                     <font>
                         <Font name="Monospaced Regular"
                               size="11.0"/>
@@ -167,51 +171,20 @@
                 </Label>
             </HBox>
         </VBox>
-        <HBox alignment="CENTER"
-              spacing="8.0">
-            <VBox alignment="CENTER_LEFT"
-                  spacing="1.0">
-                <Label text="Latitude">
-                    <font>
-                        <Font size="12.0"/>
-                    </font>
-                </Label>
-                <Spinner fx:id="latitude"
-                         min="-90.0"
-                         max="90.0"
-                         initialValue="0.0"
-                         amountToStepBy="0.1">
-                </Spinner>
-            </VBox>
-            <VBox alignment="CENTER_LEFT"
-                  spacing="1.0">
-                <Label text="Longitude">
-                    <font>
-                        <Font size="12.0"/>
-                    </font>
-                </Label>
-                <Spinner fx:id="longitude"
-                         min="-180.0"
-                         max="180.0"
-                         initialValue="0.0"
-                         amountToStepBy="0.1">
-                </Spinner>
-            </VBox>
-        </HBox>
         <HBox alignment="CENTER_LEFT"
               spacing="8.0">
             <Label text="Target Coordinates:">
                 <font>
-                    <Font size="12.0"/>
+                    <Font size="11.0"/>
                 </font>
             </Label>
-            <SegmentedButton>
+            <SegmentedButton fx:id="targetCoordinatesEquinox">
                 <buttons>
                     <ToggleButton text="JNow"
                                   userData="JNOW">
                         <font>
                             <Font name="Monospaced Regular"
-                                  size="12.0"/>
+                                  size="11.0"/>
                         </font>
                         <cursor>
                             <Cursor fx:constant="HAND"/>
@@ -222,7 +195,7 @@
                                   userData="J2000">
                         <font>
                             <Font name="Monospaced Regular"
-                                  size="12.0"/>
+                                  size="11.0"/>
                         </font>
                         <cursor>
                             <Cursor fx:constant="HAND"/>
@@ -231,75 +204,43 @@
                 </buttons>
             </SegmentedButton>
         </HBox>
-        <HBox alignment="CENTER_LEFT"
-              spacing="8.0">
-            <VBox alignment="CENTER"
+        <VBox alignment="CENTER_LEFT"
+              spacing="4.0">
+            <HBox alignment="CENTER_LEFT"
                   spacing="8.0">
-                <HBox alignment="CENTER_LEFT"
+                <VBox alignment="CENTER_LEFT"
                       spacing="1.0">
                     <Label text="RA"
                            prefWidth="36.0">
                         <font>
-                            <Font size="12.0"/>
+                            <Font size="11.0"/>
                         </font>
                     </Label>
-                    <Spinner fx:id="raHours"
-                             min="0.0"
-                             max="23.0"
-                             amountToStepBy="1.0"
-                             initialValue="23.0"
-                             prefWidth="68.0">
-                    </Spinner>
-                    <Spinner fx:id="raMinutes"
-                             min="0.0"
-                             max="59.0"
-                             amountToStepBy="1.0"
-                             initialValue="23.0"
-                             prefWidth="64.0">
-                    </Spinner>
-                    <Spinner fx:id="raSeconds"
-                             min="0.0"
-                             max="59.99"
-                             amountToStepBy="0.01"
-                             initialValue="23.55"
-                             prefWidth="84.0">
-                    </Spinner>
-                </HBox>
-                <HBox alignment="CENTER_LEFT"
+                    <TextField fx:id="ra"
+                               text="0.00"
+                               prefWidth="200.0">
+                    </TextField>
+                </VBox>
+                <VBox alignment="CENTER_LEFT"
                       spacing="1.0">
                     <Label text="DEC"
                            prefWidth="36.0">
                         <font>
-                            <Font size="12.0"/>
+                            <Font size="11.0"/>
                         </font>
                     </Label>
-                    <Spinner fx:id="decDegrees"
-                             min="-90.0"
-                             max="90.0"
-                             amountToStepBy="1.0"
-                             initialValue="-23.0"
-                             prefWidth="68.0">
-                    </Spinner>
-                    <Spinner fx:id="decMinutes"
-                             min="0.0"
-                             max="59.0"
-                             amountToStepBy="1.0"
-                             initialValue="23.0"
-                             prefWidth="64.0">
-                    </Spinner>
-                    <Spinner fx:id="decSeconds"
-                             min="0.0"
-                             max="59.99"
-                             amountToStepBy="0.01"
-                             initialValue="23.55"
-                             prefWidth="84.0">
-                    </Spinner>
-                </HBox>
-            </VBox>
-            <VBox alignment="TOP_CENTER"
-                  spacing="7.0">
-                <Button text="Go To"
-                        prefWidth="102.0">
+                    <TextField fx:id="dec"
+                               text="0.00"
+                               prefWidth="200.0">
+                    </TextField>
+                </VBox>
+            </HBox>
+            <HBox alignment="TOP_CENTER"
+                  spacing="4.0">
+                <Button fx:id="goTo"
+                        text="Go To"
+                        onAction="#goTo"
+                        prefWidth="92.0">
                     <graphic>
                         <ImageView fitHeight="18.0"
                                    fitWidth="18.0"
@@ -312,8 +253,26 @@
                         <Cursor fx:constant="HAND"/>
                     </cursor>
                 </Button>
-                <Button text="Sync"
-                        prefWidth="102.0">
+                <Button fx:id="slewTo"
+                        text="Slew To"
+                        onAction="#slewTo"
+                        prefWidth="92.0">
+                    <graphic>
+                        <ImageView fitHeight="18.0"
+                                   fitWidth="18.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/check.png"/>
+                        </ImageView>
+                    </graphic>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </Button>
+                <Button fx:id="sync"
+                        text="Sync"
+                        onAction="#sync"
+                        prefWidth="92.0">
                     <graphic>
                         <ImageView fitHeight="18.0"
                                    fitWidth="18.0"
@@ -326,11 +285,13 @@
                         <Cursor fx:constant="HAND"/>
                     </cursor>
                 </Button>
-            </VBox>
-        </HBox>
+            </HBox>
+        </VBox>
         <HBox>
-            <Button text="Stellarium Telescope Control"
-                    prefWidth="242.0">
+            <Button fx:id="stellariumTelescopeControl"
+                    text="Stellarium Telescope Control"
+                    prefWidth="242.0"
+                    onAction="#openStellariumTelescopeControl">
                 <graphic>
                     <ImageView fitHeight="18.0"
                                fitWidth="18.0"
@@ -348,7 +309,9 @@
             <VBox spacing="2.0">
                 <HBox alignment="CENTER"
                       spacing="2.0">
-                    <Button contentDisplay="GRAPHIC_ONLY"
+                    <Button fx:id="nudgeNE"
+                            contentDisplay="GRAPHIC_ONLY"
+                            onAction="#nudgeTo"
                             prefWidth="48.0"
                             prefHeight="48.0"
                             userData="NE">
@@ -364,7 +327,9 @@
                             <Cursor fx:constant="HAND"/>
                         </cursor>
                     </Button>
-                    <Button contentDisplay="GRAPHIC_ONLY"
+                    <Button fx:id="nudgeN"
+                            contentDisplay="GRAPHIC_ONLY"
+                            onAction="#nudgeTo"
                             prefWidth="48.0"
                             prefHeight="48.0"
                             userData="N">
@@ -380,7 +345,9 @@
                             <Cursor fx:constant="HAND"/>
                         </cursor>
                     </Button>
-                    <Button contentDisplay="GRAPHIC_ONLY"
+                    <Button fx:id="nudgeNW"
+                            contentDisplay="GRAPHIC_ONLY"
+                            onAction="#nudgeTo"
                             prefWidth="48.0"
                             prefHeight="48.0"
                             userData="NW">
@@ -399,7 +366,9 @@
                 </HBox>
                 <HBox alignment="CENTER"
                       spacing="2.0">
-                    <Button contentDisplay="GRAPHIC_ONLY"
+                    <Button fx:id="nudgeE"
+                            contentDisplay="GRAPHIC_ONLY"
+                            onAction="#nudgeTo"
                             prefWidth="48.0"
                             prefHeight="48.0"
                             userData="E">
@@ -415,7 +384,9 @@
                             <Cursor fx:constant="HAND"/>
                         </cursor>
                     </Button>
-                    <Button contentDisplay="GRAPHIC_ONLY"
+                    <Button fx:id="abort"
+                            contentDisplay="GRAPHIC_ONLY"
+                            onAction="#abort"
                             prefWidth="48.0"
                             prefHeight="48.0">
                         <graphic>
@@ -430,7 +401,9 @@
                             <Cursor fx:constant="HAND"/>
                         </cursor>
                     </Button>
-                    <Button contentDisplay="GRAPHIC_ONLY"
+                    <Button fx:id="nudgeW"
+                            contentDisplay="GRAPHIC_ONLY"
+                            onAction="#nudgeTo"
                             prefWidth="48.0"
                             prefHeight="48.0"
                             userData="W">
@@ -449,7 +422,9 @@
                 </HBox>
                 <HBox alignment="CENTER"
                       spacing="2.0">
-                    <Button contentDisplay="GRAPHIC_ONLY"
+                    <Button fx:id="nudgeSE"
+                            contentDisplay="GRAPHIC_ONLY"
+                            onAction="#nudgeTo"
                             prefWidth="48.0"
                             prefHeight="48.0"
                             userData="SE">
@@ -465,7 +440,9 @@
                             <Cursor fx:constant="HAND"/>
                         </cursor>
                     </Button>
-                    <Button contentDisplay="GRAPHIC_ONLY"
+                    <Button fx:id="nudgeS"
+                            contentDisplay="GRAPHIC_ONLY"
+                            onAction="#nudgeTo"
                             prefWidth="48.0"
                             prefHeight="48.0"
                             userData="S">
@@ -481,7 +458,9 @@
                             <Cursor fx:constant="HAND"/>
                         </cursor>
                     </Button>
-                    <Button contentDisplay="GRAPHIC_ONLY"
+                    <Button fx:id="nudgeSW"
+                            contentDisplay="GRAPHIC_ONLY"
+                            onAction="#nudgeTo"
                             prefWidth="48.0"
                             prefHeight="48.0"
                             userData="SW">
@@ -505,7 +484,7 @@
                 <ToggleSwitch fx:id="tracking"
                               text="Tracking">
                     <font>
-                        <Font size="12.0"/>
+                        <Font size="11.0"/>
                     </font>
                     <cursor>
                         <Cursor fx:constant="HAND"/>
@@ -516,31 +495,34 @@
                     <SegmentedButton fx:id="trackingMode">
                         <buttons>
                             <ToggleButton text="Sidereal"
+                                          userData="SIDEREAL"
                                           selected="true"
-                                          userData="SIDEREAL">
+                                          onAction="#toggleTrackingMode">
                                 <font>
                                     <Font name="Monospaced Regular"
-                                          size="12.0"/>
+                                          size="11.0"/>
                                 </font>
                                 <cursor>
                                     <Cursor fx:constant="HAND"/>
                                 </cursor>
                             </ToggleButton>
                             <ToggleButton text="Solar"
-                                          userData="SOLAR">
+                                          userData="SOLAR"
+                                          onAction="#toggleTrackingMode">
                                 <font>
                                     <Font name="Monospaced Regular"
-                                          size="12.0"/>
+                                          size="11.0"/>
                                 </font>
                                 <cursor>
                                     <Cursor fx:constant="HAND"/>
                                 </cursor>
                             </ToggleButton>
                             <ToggleButton text="Lunar"
-                                          userData="LUNAR">
+                                          userData="LUNAR"
+                                          onAction="#toggleTrackingMode">
                                 <font>
                                     <Font name="Monospaced Regular"
-                                          size="12.0"/>
+                                          size="11.0"/>
                                 </font>
                                 <cursor>
                                     <Cursor fx:constant="HAND"/>
@@ -548,23 +530,25 @@
                             </ToggleButton>
                         </buttons>
                     </SegmentedButton>
-                    <SegmentedButton fx:id="trackingModeOthers">
+                    <SegmentedButton fx:id="trackingModeAdditional">
                         <buttons>
                             <ToggleButton text="King"
-                                          userData="KING">
+                                          userData="KING"
+                                          onAction="#toggleTrackingMode">
                                 <font>
                                     <Font name="Monospaced Regular"
-                                          size="12.0"/>
+                                          size="11.0"/>
                                 </font>
                                 <cursor>
                                     <Cursor fx:constant="HAND"/>
                                 </cursor>
                             </ToggleButton>
                             <ToggleButton text="Custom"
-                                          userData="CUSTOM">
+                                          userData="CUSTOM"
+                                          onAction="#toggleTrackingMode">
                                 <font>
                                     <Font name="Monospaced Regular"
-                                          size="12.0"/>
+                                          size="11.0"/>
                                 </font>
                                 <cursor>
                                     <Cursor fx:constant="HAND"/>
@@ -578,7 +562,7 @@
                     <Label text="Slew speed"
                            HBox.hgrow="ALWAYS">
                         <font>
-                            <Font size="12.0"/>
+                            <Font size="11.0"/>
                         </font>
                     </Label>
                     <ChoiceBox fx:id="slewSpeed"
@@ -589,7 +573,9 @@
                     </ChoiceBox>
                 </HBox>
                 <HBox alignment="CENTER">
-                    <Button text="Park">
+                    <Button fx:id="park"
+                            text="Park"
+                            onAction="#park">
                         <graphic>
                             <ImageView fitHeight="24.0"
                                        fitWidth="24.0"
@@ -604,6 +590,25 @@
                     </Button>
                 </HBox>
             </VBox>
+        </HBox>
+        <HBox alignment="CENTER_LEFT">
+            <VBox.margin>
+                <Insets top="8.0"/>
+            </VBox.margin>
+            <Label fx:id="progress"
+                   text="idle">
+                <graphic>
+                    <ImageView fitHeight="18.0"
+                               fitWidth="18.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/information.png"/>
+                    </ImageView>
+                </graphic>
+                <font>
+                    <Font size="11.0"/>
+                </font>
+            </Label>
         </HBox>
     </VBox>
 </AnchorPane>

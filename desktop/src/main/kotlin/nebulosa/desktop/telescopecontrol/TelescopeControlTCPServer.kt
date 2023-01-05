@@ -1,8 +1,14 @@
 package nebulosa.desktop.telescopecontrol
 
 import nebulosa.constants.PI
+import nebulosa.erfa.eraAnpm
+import nebulosa.indi.devices.mounts.Mount
 import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Angle.Companion.rad
+import nebulosa.nova.astrometry.ICRF
+import nebulosa.time.TimeJD
 import okio.Buffer
 import okio.buffer
 import okio.sink
@@ -70,7 +76,8 @@ import java.net.Socket
  * @see <a href="https://free-astro.org/images/b/b7/Stellarium_telescope_protocol.txt">Protocol</a>
  * @see <a href="https://github.com/Stellarium/stellarium/blob/master/plugins/TelescopeControl/src/TelescopeClient.cpp">Stellarium Implementation</a>
  */
-class TelescopeControlTCPServer(
+internal class TelescopeControlTCPServer(
+    val mount: Mount,
     val host: String = "0.0.0.0",
     val port: Int = 10001,
 ) : TelescopeControlServer {
@@ -78,17 +85,17 @@ class TelescopeControlTCPServer(
     private val serverSocket = ServerSocket()
     private val acceptorThread = Thread(::acceptSocket)
     private val clients = ArrayList<TelescopeClient>(1)
-    private val listeners = HashSet<TelescopeControlServer.MessageListener>(1)
+    private val listeners = HashSet<TelescopeControlServer.Listener>(1)
 
     @Volatile private var closed = false
 
     override val isClosed get() = serverSocket.isClosed || closed
 
-    override fun registerListener(listener: TelescopeControlServer.MessageListener) {
+    override fun registerListener(listener: TelescopeControlServer.Listener) {
         listeners.add(listener)
     }
 
-    override fun unregisterListener(listener: TelescopeControlServer.MessageListener) {
+    override fun unregisterListener(listener: TelescopeControlServer.Listener) {
         listeners.remove(listener)
     }
 
@@ -114,6 +121,7 @@ class TelescopeControlTCPServer(
         }
     }
 
+    @Synchronized
     override fun sendCurrentPosition(ra: Angle, dec: Angle) {
         clients.forEach { it.sendCurrentPosition(ra, dec) }
     }
@@ -128,11 +136,13 @@ class TelescopeControlTCPServer(
                 clients.add(client)
                 client.start()
 
+                client.sendCurrentPosition(mount.rightAscension.hours, mount.declination.deg)
+
                 LOG.info("new client: $socket")
             }
         } catch (_: InterruptedException) {
         } catch (e: Throwable) {
-            LOG.error("socket error", e)
+            LOG.error("socket accept error", e)
         }
     }
 
@@ -142,13 +152,15 @@ class TelescopeControlTCPServer(
         private val output = socket.getOutputStream().sink().buffer()
 
         fun sendCurrentPosition(ra: Angle, dec: Angle) {
+            val (raJ2000, decJ2000) = ICRF.equatorial(ra, dec, epoch = TimeJD.now()).equatorialJ2000()
             output.writeShortLe(24) // LENGTH
             output.writeShortLe(0) // TYPE
             output.writeLongLe(System.currentTimeMillis() * 1000L) // TIME
-            output.writeIntLe((ra.value / PI * 0x80000000).toInt()) // RA
-            output.writeIntLe((dec.value / PI * 0x80000000).toInt()) // DEC
+            output.writeIntLe((eraAnpm(raJ2000.rad).value / PI * 0x80000000).toInt()) // RA
+            output.writeIntLe((decJ2000.rad.value / PI * 0x80000000).toInt()) // DEC
             output.writeIntLe(0) // STATUS=OK
             output.flush()
+            if (LOG.isDebugEnabled) LOG.debug("MessageCurrentPosition: ra=${ra.hours}, dec=${dec.degrees}")
         }
 
         override fun run() {
@@ -162,9 +174,10 @@ class TelescopeControlTCPServer(
                         buffer.readShortLe() // LENGTH
                         buffer.readShortLe() // TYPE
                         buffer.readLongLe() // TIME
-                        val ra = (buffer.readIntLe() * (PI / 0x80000000)).rad
+                        val ra = (buffer.readIntLe() * (PI / 0x80000000)).rad.normalized
                         val dec = (buffer.readIntLe() * (PI / 0x80000000)).rad
-                        listeners.forEach { it.onGoTo(ra, dec) }
+                        if (LOG.isDebugEnabled) LOG.debug("MessageGoto: ra=${ra.hours}, dec=${dec.degrees}")
+                        listeners.forEach { it.onGoTo(mount, ra, dec) }
                     } else if (readCount < 0L) {
                         break
                     }

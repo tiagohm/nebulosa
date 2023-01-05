@@ -10,4 +10,6 @@ class EnableBLOB : INDIProtocol() {
 
     @JvmField
     var value = BLOBEnable.ALSO
+
+    override fun toString() = "EnableBLOB(device=$device, name=$name, value=$value, message=$message)"
 }
