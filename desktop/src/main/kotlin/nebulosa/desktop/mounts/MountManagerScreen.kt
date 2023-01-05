@@ -167,10 +167,14 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     }
 
     override fun onEvent(event: Any) {
-        when (event) {
-            is MountParkChanged,
-            is MountTrackingChanged,
-            is MountSlewingChanged -> Platform.runLater { updateStatus() }
+        if (event is DeviceEvent<*>
+            && event.device === equipmentManager.selectedMount.value
+        ) {
+            when (event) {
+                is MountParkChanged,
+                is MountTrackingChanged,
+                is MountSlewingChanged -> Platform.runLater { updateStatus() }
+            }
         }
     }
 

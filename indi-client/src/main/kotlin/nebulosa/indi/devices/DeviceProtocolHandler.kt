@@ -199,7 +199,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
             messageReorderingQueue.remove(message)
 
             if (LOG.isDebugEnabled) {
-                LOG.debug("RECEIVED: {}", message)
+                LOG.debug("message received: {}", message)
             }
         }
     }

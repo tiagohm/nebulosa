@@ -10,6 +10,8 @@ import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.stage.DirectoryChooser
+import nebulosa.desktop.core.beans.and
+import nebulosa.desktop.core.beans.or
 import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.equipments.EquipmentManager
@@ -75,27 +77,27 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     }
 
     override fun onCreate() {
-        val isNotConnected = equipmentManager.selectedCamera.isConnected.not()
+        val isNotConnected = !equipmentManager.selectedCamera.isConnected
         val isConnecting = equipmentManager.selectedCamera.isConnecting
-        val isCapturing = equipmentManager.selectedCamera.isCapturing.or(this.isCapturing)
-        val isNotConnectedOrCapturing = isNotConnected.or(isCapturing)
+        val isCapturing = equipmentManager.selectedCamera.isCapturing or this.isCapturing
+        val isNotConnectedOrCapturing = isNotConnected or isCapturing
 
-        cameras.disableProperty().bind(isConnecting.or(isCapturing))
+        cameras.disableProperty().bind(isConnecting or isCapturing)
         cameras.itemsProperty().bind(equipmentManager.attachedCameras)
         equipmentManager.selectedCamera.bind(cameras.selectionModel.selectedItemProperty())
 
-        connect.disableProperty().bind(equipmentManager.selectedCamera.isNull.or(isConnecting).or(isCapturing))
+        connect.disableProperty().bind(equipmentManager.selectedCamera.isNull or isConnecting or isCapturing)
 
         cameraMenuIcon.disableProperty().bind(isNotConnectedOrCapturing)
 
-        cooler.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.hasCooler.not()))
+        cooler.disableProperty().bind(isNotConnectedOrCapturing or !equipmentManager.selectedCamera.hasCooler)
         cooler.selectedProperty().bind(equipmentManager.selectedCamera.isCoolerOn)
 
-        dewHeater.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.hasDewHeater.not()))
+        dewHeater.disableProperty().bind(isNotConnectedOrCapturing or !equipmentManager.selectedCamera.hasDewHeater)
         dewHeater.selectedProperty().bind(equipmentManager.selectedCamera.isDewHeaterOn)
 
         temperature.textProperty().bind(equipmentManager.selectedCamera.temperature.asString(Locale.ENGLISH, "Temperature (%.1f °C)"))
-        temperatureSetpoint.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canSetTemperature.not()))
+        temperatureSetpoint.disableProperty().bind(isNotConnectedOrCapturing or !equipmentManager.selectedCamera.canSetTemperature)
         applyTemperatureSetpoint.disableProperty().bind(temperatureSetpoint.disableProperty())
 
         exposure.disableProperty().bind(isNotConnectedOrCapturing)
@@ -106,22 +108,20 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         val fixed = exposureMode.toggles.first { it.userData == "FIXED" } as RadioButton
         val continuous = exposureMode.toggles.first { it.userData == "CONTINUOUS" } as RadioButton
 
-        exposureDelay.disableProperty().bind(
-            fixed.disableProperty().and(continuous.disableProperty())
-                .or(fixed.selectedProperty().not().and(continuous.selectedProperty().not()))
-        )
+        exposureDelay.disableProperty()
+            .bind((fixed.disableProperty() and continuous.disableProperty()) or (!fixed.selectedProperty() and !continuous.selectedProperty()))
 
-        exposureCount.disableProperty().bind(fixed.disableProperty().or(fixed.selectedProperty().not()))
+        exposureCount.disableProperty().bind(fixed.disableProperty() or !fixed.selectedProperty())
 
-        subFrame.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canSubFrame.not()))
-        fullsize.disableProperty().bind(subFrame.disableProperty().or(subFrame.selectedProperty().not()))
+        subFrame.disableProperty().bind(isNotConnectedOrCapturing or !equipmentManager.selectedCamera.canSubFrame)
+        fullsize.disableProperty().bind(subFrame.disableProperty() or !subFrame.selectedProperty())
 
         frameX.disableProperty().bind(fullsize.disableProperty())
         frameY.disableProperty().bind(frameX.disableProperty())
         frameWidth.disableProperty().bind(frameX.disableProperty())
         frameHeight.disableProperty().bind(frameX.disableProperty())
 
-        binX.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canBin.not()))
+        binX.disableProperty().bind(isNotConnectedOrCapturing or !equipmentManager.selectedCamera.canBin)
         binY.disableProperty().bind(binX.disableProperty())
 
         gain.disableProperty().bind(isNotConnectedOrCapturing)
@@ -135,7 +135,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
         startCapture.disableProperty().bind(isNotConnectedOrCapturing)
 
-        abortCapture.disableProperty().bind(isNotConnected.or(startCapture.disableProperty().not()).or(equipmentManager.selectedCamera.canAbort))
+        abortCapture.disableProperty().bind(isNotConnected or !startCapture.disableProperty() or !equipmentManager.selectedCamera.canAbort)
 
         equipmentManager.selectedCamera.addListener { _, prev, value ->
             title = "Camera · ${value.name}"
@@ -200,6 +200,23 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             && event.device === equipmentManager.selectedCamera.value
         ) {
             when (event) {
+                is CameraExposureAborted,
+                is CameraExposureFinished,
+                is CameraExposureFailed -> Platform.runLater {
+                    val isAborted = event is CameraExposureAborted
+                    this.isCapturing.set(captureTask!!.isCapturing && !isAborted)
+                    updateTitle()
+                }
+                is CameraExposureProgressChanged -> Platform.runLater { updateTitle() }
+                is CameraFrameSaved -> Platform.runLater {
+                    val viewer = imageViewers
+                        .firstOrNull { it.camera === event.device }
+                        ?: ImageViewerScreen(event.device)
+
+                    imageViewers.add(viewer)
+
+                    viewer.open(event.imagePath.toFile())
+                }
                 is CameraExposureMinMaxChanged -> Platform.runLater {
                     updateExposure()
                     loadPreferences(event.device)
@@ -223,49 +240,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                 is CameraFrameFormatsChanged -> Platform.runLater {
                     updateFrameFormat()
                     loadPreferences(event.device)
-                }
-                is CameraExposureTaskProgress -> {
-                    Platform.runLater {
-                        isCapturing.set(event.isCapturing || !event.isFinished)
-
-                        progress.text = buildString(128) {
-                            val task = event.task
-
-                            if (event.isCapturing) {
-                                val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000.0} s"
-                                else if (task.exposure >= 1000L) "${task.exposure / 1000.0} ms"
-                                else "${task.exposure} µs"
-
-                                append("capturing ")
-                                append("%d of %d (%s)".format(task.amount - event.remaining, task.amount, exposure))
-                                append(" | ")
-                                append("%.1f%%".format(Locale.ENGLISH, event.progress * 100.0))
-                                append(" | ")
-                                append("%s".format(Locale.ENGLISH, task.frameType))
-                                // TODO: Filter type.
-                            } else if (event.isAborted) {
-                                append("aborted")
-                            } else if (event.isFinished) {
-                                captureThread = null
-                                captureTask = null
-                                append("finished")
-                            } else {
-                                return@runLater
-                            }
-                        }
-                    }
-
-                    if (event.imagePath != null) {
-                        Platform.runLater {
-                            val viewer = imageViewers
-                                .firstOrNull { it.camera === event.device }
-                                ?: ImageViewerScreen(event.device)
-
-                            imageViewers.add(viewer)
-
-                            viewer.open(event.imagePath.toFile())
-                        }
-                    }
                 }
             }
         }
@@ -471,7 +445,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @Synchronized
     private fun startCapture() {
         val camera = equipmentManager.selectedCamera.value ?: return
-        if (captureThread != null) return
+
+        if (captureTask != null && !captureTask!!.isDone) return
 
         val timeUnit = exposure.userData as TimeUnit
         val exposureInMicros = TimeUnit.MICROSECONDS.convert(exposure.value.toLong(), timeUnit)
@@ -507,5 +482,30 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @Synchronized
     private fun abortCapture() {
         captureTask?.cancel(true)
+    }
+
+    private fun updateTitle() {
+        progress.text = buildString(128) {
+            val task = captureTask
+
+            if (task == null || task.camera !== equipmentManager.selectedCamera.get()) {
+                append("idle")
+            } else if (task.isCapturing) {
+                val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000.0} s"
+                else if (task.exposure >= 1000L) "${task.exposure / 1000.0} ms"
+                else "${task.exposure} µs"
+
+                append("capturing ")
+                append("%d of %d (%s)".format(task.amount - task.remaining, task.amount, exposure))
+                append(" | ")
+                append("%.1f%%".format(Locale.ENGLISH, task.progress * 100.0))
+                append(" | ")
+                append("%s".format(Locale.ENGLISH, task.frameType))
+            } else if (task.camera.isAborted) {
+                append("aborted")
+            } else {
+                append("finished")
+            }
+        }
     }
 }

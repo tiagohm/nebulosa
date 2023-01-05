@@ -46,7 +46,7 @@ class INDIClient(val connection: INDIConnection) : INDIProtocolParser, Closeable
 
     fun sendMessageToServer(message: INDIProtocol) {
         if (LOG.isDebugEnabled) {
-            LOG.debug("SENDING: {}", message)
+            LOG.debug("sending message: {}", message)
         }
 
         connection.writeINDIProtocol(message)

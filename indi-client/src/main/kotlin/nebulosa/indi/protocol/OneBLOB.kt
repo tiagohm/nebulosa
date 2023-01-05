@@ -19,6 +19,6 @@ class OneBLOB : OneElement<String>(), BLOBElement {
 
     override var value = ""
 
-    inline val isZipFormat get() = format.endsWith(".z", true) || format.endsWith(".zip", true)
+    override fun toString() = "OneBLOB(name=$name, message=$message, format=$format, size=$size)"
 }
 

@@ -15,6 +15,7 @@ class Camera(
 ) : Device(client, handler, name) {
 
     @Volatile @JvmField var isCapturing = false
+    @Volatile @JvmField var isAborted = false
     @Volatile @JvmField var hasCoolerControl = false
     @Volatile @JvmField var isCoolerOn = false
     @Volatile @JvmField var hasDewHeater = false
@@ -104,13 +105,33 @@ class Camera(
 
                         val prevExposureState = exposureState
                         exposureState = message.state
-                        exposure = (element.value * 1000000.0).toLong()
 
-                        handler.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
+                        if (exposureState == PropertyState.BUSY || exposureState == PropertyState.OK) {
+                            exposure = (element.value * 1000000.0).toLong()
+
+                            handler.fireOnEventReceived(CameraExposureProgressChanged(this))
+                        }
 
                         val prevIsCapturing = isCapturing
                         isCapturing = exposureState == PropertyState.BUSY
-                        if (prevIsCapturing != isCapturing) handler.fireOnEventReceived(CameraCapturingChanged(this))
+                        if (isCapturing) isAborted = false
+
+                        if (prevIsCapturing != isCapturing) {
+                            handler.fireOnEventReceived(CameraCapturingChanged(this))
+                        }
+
+                        if (exposureState == PropertyState.IDLE && prevExposureState == PropertyState.BUSY) {
+                            isAborted = true
+                            handler.fireOnEventReceived(CameraExposureAborted(this))
+                        } else if (exposureState == PropertyState.OK && prevExposureState == PropertyState.BUSY) {
+                            handler.fireOnEventReceived(CameraExposureFinished(this))
+                        } else if (exposureState == PropertyState.ALERT) {
+                            handler.fireOnEventReceived(CameraExposureFailed(this))
+                        }
+
+                        if (prevExposureState != exposureState) {
+                            handler.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
+                        }
                     }
                     "CCD_TEMPERATURE" -> {
                         if (message is DefNumberVector) {
@@ -203,7 +224,7 @@ class Camera(
                         val ccd1 = message["CCD1"]!!
                         // TODO: Handle zipped format.
                         val fits = Base64InputStream(ccd1.value)
-                        handler.fireOnEventReceived(CameraExposureFrame(this, fits))
+                        handler.fireOnEventReceived(CameraFrameCaptured(this, fits))
                     }
                 }
             }

@@ -7,7 +7,6 @@ import nebulosa.desktop.equipments.ThreadedTask
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.devices.cameras.*
 import nebulosa.indi.devices.filterwheels.FilterWheel
-import nebulosa.indi.protocol.PropertyState
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.slf4j.LoggerFactory
@@ -41,84 +40,56 @@ data class CameraExposureTask(
     val save: Boolean = false,
     val savePath: String = "",
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
-) : ThreadedTask<Unit>(), Consumer<Any>, KoinComponent {
+) : ThreadedTask<List<Path>>(), Consumer<Any>, KoinComponent {
 
     private val eventBus by inject<EventBus>()
     private val preferences by inject<Preferences>()
 
-    @Volatile private var progress = 0.0
-    @Volatile private var state = PropertyState.IDLE
+    @Volatile var isCapturing = false
+        private set
+
+    @Volatile var progress = 0.0
+        private set
+
+    @Volatile var remaining = amount
+        private set
+
     @Volatile private var imagePath: Path? = null
-    @Volatile private var lastImagePath: Path? = null
-    @Volatile private var finishedWithError = false
-    @Volatile private var isAborted = false
-    @Volatile private var isFinished = false
-    @Volatile private var isCapturing = false
-    @Volatile private var remaining = amount
     @Volatile private var subscriber: Disposable? = null
+    private val imageHistory = ArrayList<Path>(min(1000, amount))
 
     private val phaser = Phaser(1)
 
     @Synchronized
-    private fun reportProgress() {
-        eventBus.post(
-            CameraExposureTaskProgress(
-                this, progress, state, imagePath, finishedWithError,
-                isAborted, isFinished, isCapturing, remaining,
-            )
-        )
-    }
-
-    @Synchronized
     override fun accept(event: Any) {
         when (event) {
-            is CameraExposureFrame -> {
-                isCapturing = false
+            is CameraFrameCaptured -> {
                 phaser.arriveAndDeregister()
                 save(event.fits)
             }
-            is CameraExposureStateChanged -> {
-                state = event.device.exposureState
-
-                when (state) {
-                    PropertyState.IDLE -> {
-                        // Aborted.
-                        if (event.previousState == PropertyState.BUSY) {
-                            isCapturing = false
-                            isAborted = true
-                            phaser.forceTermination()
-                            reportProgress()
-                            finishGracefully()
-                        }
-                    }
-                    PropertyState.BUSY -> {
-                        isCapturing = true
-                        progress = ((amount - remaining - 1).toDouble() / amount) +
-                                ((exposure - camera.exposure).toDouble() / exposure) * (1.0 / amount)
-                        reportProgress()
-                    }
-                    PropertyState.ALERT -> {
-                        // Failed.
-                        isCapturing = false
-                        finishedWithError = true
-                        reportProgress()
-                        finishGracefully()
-                    }
-                    PropertyState.OK -> Unit
-                }
+            is CameraExposureAborted,
+            is CameraExposureFailed -> {
+                phaser.forceTermination()
+                finishGracefully()
+            }
+            is CameraExposureProgressChanged -> {
+                progress = ((amount - remaining - 1).toDouble() / amount) +
+                        ((exposure - camera.exposure).toDouble() / exposure) * (1.0 / amount)
             }
         }
     }
 
-    override fun execute() {
+    override fun execute(): List<Path> {
         camera.enableBlob()
+
+        isCapturing = true
 
         try {
             subscriber = eventBus
                 .filter { it is CameraEvent && it.device === camera }
                 .subscribe(this)
 
-            if (filterWheel != null) {
+            if (filterWheel != null && frameType == FrameType.DARK) {
                 synchronized(filterWheel) {
                     val selectedFilterAsShutter = preferences.int("filterWheelManager.equipment.${filterWheel.name}.filterAsShutter") ?: -1
                     filterWheel.moveTo(selectedFilterAsShutter)
@@ -146,11 +117,12 @@ data class CameraExposureTask(
             }
         } finally {
             isCapturing = false
+
             subscriber?.dispose()
             subscriber = null
-            isFinished = true
-            reportProgress()
         }
+
+        return imageHistory
     }
 
     override fun finishGracefully() {
@@ -177,23 +149,22 @@ data class CameraExposureTask(
             val folderName = autoSubFolderMode.folderName()
             val fileDirectory = Paths.get(savePath, folderName).normalize()
             fileDirectory.createDirectories()
-            // TODO: Concat filter name.
+
             val fileName = "%s-%s.fits".format(LocalDateTime.now().format(DATE_TIME_FORMAT), frameType)
             Paths.get("$fileDirectory", fileName)
         } else {
-            lastImagePath?.deleteIfExists()
+            imagePath?.deleteIfExists()
+
             val fileDirectory = Paths.get(System.getProperty("java.io.tmpdir"))
             val fileName = "%s-%s.fits".format(LocalDateTime.now().format(DATE_TIME_FORMAT), frameType)
             Paths.get("$fileDirectory", fileName)
         }
 
         LOG.info("saving FITS at $imagePath...")
+
         imagePath!!.outputStream().use { output -> fits.use { it.transferTo(output) } }
 
-        reportProgress()
-
-        lastImagePath = imagePath
-        imagePath = null
+        eventBus.post(CameraFrameSaved(camera, imagePath!!))
     }
 
     companion object {
