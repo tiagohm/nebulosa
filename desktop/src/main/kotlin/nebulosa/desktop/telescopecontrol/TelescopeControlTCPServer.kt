@@ -7,6 +7,7 @@ import okio.Buffer
 import okio.buffer
 import okio.sink
 import okio.source
+import org.slf4j.LoggerFactory
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
@@ -127,11 +128,11 @@ class TelescopeControlTCPServer(
                 clients.add(client)
                 client.start()
 
-                println("Telescope TCP Server new client: $socket")
+                LOG.info("new client: $socket")
             }
         } catch (_: InterruptedException) {
         } catch (e: Throwable) {
-            e.printStackTrace()
+            LOG.error("socket error", e)
         }
     }
 
@@ -170,10 +171,15 @@ class TelescopeControlTCPServer(
                 }
             } catch (_: InterruptedException) {
             } catch (e: Throwable) {
-                e.printStackTrace()
+                LOG.error("socket read error", e)
             } finally {
                 clients.remove(this)
             }
         }
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(TelescopeControlTCPServer::class.java)
     }
 }

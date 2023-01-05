@@ -10,6 +10,7 @@ import nebulosa.indi.devices.filterwheels.FilterWheel
 import nebulosa.indi.protocol.PropertyState
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -186,7 +187,7 @@ data class CameraExposureTask(
             Paths.get("$fileDirectory", fileName)
         }
 
-        println("Saving FITS at $imagePath...")
+        LOG.info("saving FITS at $imagePath...")
         imagePath!!.outputStream().use { output -> fits.use { it.transferTo(output) } }
 
         reportProgress()
@@ -200,5 +201,7 @@ data class CameraExposureTask(
         private const val DELAY_INTERVAL = 100L
 
         @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(CameraExposureTask::class.java)
     }
 }

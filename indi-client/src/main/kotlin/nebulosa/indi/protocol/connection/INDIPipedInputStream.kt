@@ -17,7 +17,6 @@ class INDIPipedInputStream(
         } else try {
             queue.take().takeIf { it !is EndMarker }
         } catch (e: InterruptedException) {
-            e.printStackTrace()
             close()
             null
         }

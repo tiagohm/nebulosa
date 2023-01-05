@@ -1,5 +1,6 @@
 package nebulosa.desktop.equipments
 
+import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 
 abstract class ThreadedTask<T> : CompletableFuture<T>(), Runnable {
@@ -12,8 +13,9 @@ abstract class ThreadedTask<T> : CompletableFuture<T>(), Runnable {
         try {
             complete(execute())
         } catch (e: InterruptedException) {
-            println("${this::class} was interrupted")
+            LOG.info("task was interrupted: {}", this::class.simpleName)
         } catch (e: Throwable) {
+            LOG.error("task error", e)
             completeExceptionally(e)
         }
     }
@@ -22,5 +24,10 @@ abstract class ThreadedTask<T> : CompletableFuture<T>(), Runnable {
         val thread = Thread(this)
         thread.start()
         return thread
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(ThreadedTask::class.java)
     }
 }

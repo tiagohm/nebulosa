@@ -12,3 +12,6 @@ inline fun SwitchElement.isOff() = value == SwitchState.OFF
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun <E : SwitchElement> SwitchVector<E>.firstOnSwitch() = elements.first(SwitchElement::isOn)
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun <E : SwitchElement> SwitchVector<E>.firstOnSwitchOrNull() = elements.firstOrNull(SwitchElement::isOn)

@@ -7,6 +7,7 @@ import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver
 import com.thoughtworks.xstream.io.xml.StaxDriver
 import nebulosa.indi.protocol.*
+import org.slf4j.LoggerFactory
 
 internal class INDIProtocolXStream(val driver: HierarchicalStreamDriver = StaxDriver()) :
     XStream(PureJavaReflectionProvider(), driver) {
@@ -58,20 +59,22 @@ internal class INDIProtocolXStream(val driver: HierarchicalStreamDriver = StaxDr
             override fun fromString(str: String?) = try {
                 converter.fromString(str?.trim())
             } catch (e: Throwable) {
-                e.printStackTrace()
+                LOG.error("protocol conversion error", e)
                 null
             }
 
             override fun toString(obj: Any?) = try {
                 converter.toString(if (obj == "") null else obj)
             } catch (e: Throwable) {
-                e.printStackTrace()
+                LOG.error("protocol conversion error", e)
                 null
             }
         } as SingleValueConverter, priority)
     }
 
     companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(INDIProtocolXStream::class.java)
 
         internal inline fun <reified T> textableEnumConverter(): TextableEnumConverter<T> where T : Enum<T>, T : HasText {
             return TextableEnumConverter(T::class.java)

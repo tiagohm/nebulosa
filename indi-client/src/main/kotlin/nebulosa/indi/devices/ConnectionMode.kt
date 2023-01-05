@@ -1,6 +1,6 @@
 package nebulosa.indi.devices
 
-enum class ConnectionType {
+enum class ConnectionMode {
     NONE,
     SERIAL,
     TCP,

@@ -1,5 +1,6 @@
 package nebulosa.indi.protocol.parser
 
+import org.slf4j.LoggerFactory
 import java.io.Closeable
 
 class INDIProtocolReader(
@@ -24,10 +25,9 @@ class INDIProtocolReader(
                 val message = input.readINDIProtocol() ?: break
                 parser.handleMessage(message)
             }
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
+        } catch (_: InterruptedException) {
         } catch (e: Throwable) {
-            e.printStackTrace()
+            LOG.error("protocol parser error", e)
             parser.close()
         }
     }
@@ -38,5 +38,10 @@ class INDIProtocolReader(
         running = false
 
         interrupt()
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(INDIProtocolReader::class.java)
     }
 }

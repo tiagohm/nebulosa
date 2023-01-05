@@ -79,13 +79,10 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
         data.clear()
 
         source.use {
-            try {
-                for (line in source.bufferedReader().lines()) {
-                    if (canUseThisLine(line)) {
-                        data.add(columns.map { line.substring(it.byteStart, it.byteEnd + 1).trim() })
-                    }
+            for (line in source.bufferedReader().lines()) {
+                if (canUseThisLine(line)) {
+                    data.add(columns.map { line.substring(it.byteStart, it.byteEnd + 1).trim() })
                 }
-            } catch (_: Throwable) {
             }
         }
     }

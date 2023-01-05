@@ -79,44 +79,63 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         val isConnecting = equipmentManager.selectedCamera.isConnecting
         val isCapturing = equipmentManager.selectedCamera.isCapturing.or(this.isCapturing)
         val isNotConnectedOrCapturing = isNotConnected.or(isCapturing)
+
         cameras.disableProperty().bind(isConnecting.or(isCapturing))
         cameras.itemsProperty().bind(equipmentManager.attachedCameras)
         equipmentManager.selectedCamera.bind(cameras.selectionModel.selectedItemProperty())
+
         connect.disableProperty().bind(equipmentManager.selectedCamera.isNull.or(isConnecting).or(isCapturing))
+
         cameraMenuIcon.disableProperty().bind(isNotConnectedOrCapturing)
+
         cooler.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.hasCooler.not()))
+        cooler.selectedProperty().bind(equipmentManager.selectedCamera.isCoolerOn)
+
         dewHeater.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.hasDewHeater.not()))
+        dewHeater.selectedProperty().bind(equipmentManager.selectedCamera.isDewHeaterOn)
+
+        temperature.textProperty().bind(equipmentManager.selectedCamera.temperature.asString(Locale.ENGLISH, "Temperature (%.1f °C)"))
         temperatureSetpoint.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canSetTemperature.not()))
         applyTemperatureSetpoint.disableProperty().bind(temperatureSetpoint.disableProperty())
+
         exposure.disableProperty().bind(isNotConnectedOrCapturing)
+
         exposureUnit.toggles.forEach { (it as RadioButton).disableProperty().bind(exposure.disableProperty()) }
+
         exposureMode.toggles.forEach { (it as RadioButton).disableProperty().bind(exposure.disableProperty()) }
         val fixed = exposureMode.toggles.first { it.userData == "FIXED" } as RadioButton
         val continuous = exposureMode.toggles.first { it.userData == "CONTINUOUS" } as RadioButton
+
         exposureDelay.disableProperty().bind(
             fixed.disableProperty().and(continuous.disableProperty())
                 .or(fixed.selectedProperty().not().and(continuous.selectedProperty().not()))
         )
+
         exposureCount.disableProperty().bind(fixed.disableProperty().or(fixed.selectedProperty().not()))
+
         subFrame.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canSubFrame.not()))
         fullsize.disableProperty().bind(subFrame.disableProperty().or(subFrame.selectedProperty().not()))
+
         frameX.disableProperty().bind(fullsize.disableProperty())
         frameY.disableProperty().bind(frameX.disableProperty())
         frameWidth.disableProperty().bind(frameX.disableProperty())
         frameHeight.disableProperty().bind(frameX.disableProperty())
+
         binX.disableProperty().bind(isNotConnectedOrCapturing.or(equipmentManager.selectedCamera.canBin.not()))
         binY.disableProperty().bind(binX.disableProperty())
-        gain.disableProperty().bind(isNotConnectedOrCapturing)
-        offset.disableProperty().bind(isNotConnectedOrCapturing)
-        frameType.disableProperty().bind(isNotConnectedOrCapturing)
-        frameFormat.disableProperty().bind(isNotConnectedOrCapturing)
-        startCapture.disableProperty().bind(isNotConnectedOrCapturing)
-        abortCapture.disableProperty().bind(isNotConnected.or(startCapture.disableProperty().not()))
 
-        cooler.selectedProperty().bind(equipmentManager.selectedCamera.isCoolerOn)
-        dewHeater.selectedProperty().bind(equipmentManager.selectedCamera.isDewHeaterOn)
-        temperature.textProperty().bind(equipmentManager.selectedCamera.temperature.asString(Locale.ENGLISH, "Temperature (%.1f °C)"))
+        gain.disableProperty().bind(isNotConnectedOrCapturing)
+
+        offset.disableProperty().bind(isNotConnectedOrCapturing)
+
+        frameType.disableProperty().bind(isNotConnectedOrCapturing)
+
+        frameFormat.disableProperty().bind(isNotConnectedOrCapturing)
         frameFormat.itemsProperty().bind(equipmentManager.selectedCamera.frameFormats)
+
+        startCapture.disableProperty().bind(isNotConnectedOrCapturing)
+
+        abortCapture.disableProperty().bind(isNotConnected.or(startCapture.disableProperty().not()).or(equipmentManager.selectedCamera.canAbort))
 
         equipmentManager.selectedCamera.addListener { _, prev, value ->
             title = "Camera · ${value.name}"
@@ -308,7 +327,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     @FXML
     private fun applyTemperatureSetpoint() {
-        println(temperatureSetpoint.value)
     }
 
     @FXML
@@ -475,8 +493,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             ?: 1
 
         savePreferences(camera)
-
-        println("Starting capture...")
 
         captureTask = CameraExposureTask(
             camera,

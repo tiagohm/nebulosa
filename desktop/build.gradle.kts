@@ -15,7 +15,8 @@ dependencies {
     implementation(libs.koin)
     implementation(libs.jackson)
     implementation(libs.bundles.rx)
-    implementation("org.controlsfx:controlsfx:11.1.2")
+    implementation(libs.controlsfx)
+    implementation(libs.logback)
     testImplementation(libs.bundles.kotest)
 }
 

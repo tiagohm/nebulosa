@@ -12,31 +12,71 @@ abstract class Device(
 
     @Volatile @JvmField var isConnected = false
     @Volatile @JvmField var isConnecting = false
+    @Volatile @JvmField var connectionMode = ConnectionMode.NONE
+
+    @Volatile @JvmField var devicePort = ""
+    @Volatile @JvmField var deviceBaudRate = 9600
 
     override fun handleMessage(message: INDIProtocol) {
-        if (message is SwitchVector<*>) {
-            if (message.name == "CONNECTION") {
-                val connected = message.firstOnSwitch().name == "CONNECT"
+        when (message) {
+            is SwitchVector<*> -> {
+                when (message.name) {
+                    "CONNECTION" -> {
+                        val connected = message["CONNECT"]?.isOn() == true
 
-                isConnecting = false
+                        isConnecting = false
 
-                if (connected != isConnected) {
-                    if (connected) {
-                        isConnected = true
-                        handler.fireOnEventReceived(DeviceConnected(this))
-                    } else if (isConnected) {
-                        isConnected = false
-                        handler.fireOnEventReceived(DeviceDisconnected(this))
+                        if (connected != isConnected) {
+                            if (connected) {
+                                isConnected = true
+
+                                handler.fireOnEventReceived(DeviceConnected(this))
+                            } else if (isConnected) {
+                                isConnected = false
+
+                                handler.fireOnEventReceived(DeviceDisconnected(this))
+                            }
+                        }
+                    }
+                    "CONNECTION_MODE" -> {
+                        connectionMode = message
+                            .firstOnSwitchOrNull()?.name?.replace("CONNECTION_", "")
+                            ?.let(ConnectionMode::valueOf)
+                            ?: ConnectionMode.NONE
+
+                        handler.fireOnEventReceived(DeviceConnectionModeChanged(this))
+                    }
+                    "DEVICE_BAUD_RATE" -> {
+                        deviceBaudRate = message.firstOnSwitchOrNull()?.name?.toIntOrNull() ?: 9600
                     }
                 }
             }
+            is TextVector<*> -> {
+                when (message.name) {
+                    "DEVICE_PORT" -> {
+                        devicePort = message["PORT"]?.value ?: ""
+                    }
+                }
+            }
+            else -> Unit
         }
     }
 
-    fun connect() {
+    fun connect(connection: Connection = Connection.NONE) {
         if (!isConnected) {
             isConnecting = true
+
             handler.fireOnEventReceived(DeviceIsConnecting(this))
+
+            sendNewSwitch("CONNECTION_MODE", "CONNECTION_${connection.mode}" to true)
+
+            if (connection.mode == ConnectionMode.SERIAL) {
+                require(connection.serialPort.isNotBlank()) { "invalid serial port: ${connection.serialPort}" }
+                require(connection.serialBaudRate in Connection.SERIAL_BAUD_RATES) { "invalid serial baud rate: ${connection.serialBaudRate}" }
+                sendNewText("DEVICE_PORT", "PORT" to connection.serialPort)
+                sendNewSwitch("DEVICE_BAUD_RATE", "${connection.serialBaudRate}" to true)
+            }
+
             sendNewSwitch("CONNECTION", "CONNECT" to true)
         }
     }

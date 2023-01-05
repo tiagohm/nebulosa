@@ -14,7 +14,6 @@ class INDIPipedOutputStream(
         try {
             queue.put(message)
         } catch (e: InterruptedException) {
-            e.printStackTrace()
             close()
         }
     }
@@ -24,8 +23,7 @@ class INDIPipedOutputStream(
     override fun close() {
         try {
             connection.close()
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
+        } catch (_: InterruptedException) {
         } finally {
             queue.put(EndMarker)
         }

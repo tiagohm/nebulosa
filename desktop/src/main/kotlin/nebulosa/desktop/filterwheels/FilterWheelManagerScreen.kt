@@ -37,16 +37,19 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
 
     override fun onCreate() {
         val isNotConnected = equipmentManager.selectedFilterWheel.isConnected.not()
-        val isMoving = equipmentManager.selectedFilterWheel.isMoving
         val isConnecting = equipmentManager.selectedFilterWheel.isConnecting
+        val isMoving = equipmentManager.selectedFilterWheel.isMoving
         val isNotConnectedOrMoving = isNotConnected.or(isMoving)
+
         filterWheels.disableProperty().bind(isConnecting.or(isMoving))
         filterWheels.itemsProperty().bind(equipmentManager.attachedFilterWheels)
         equipmentManager.selectedFilterWheel.bind(filterWheels.selectionModel.selectedItemProperty())
+
         connect.disableProperty().bind(equipmentManager.selectedFilterWheel.isNull.or(isConnecting).or(isMoving))
+
         filterSlots.disableProperty().bind(isNotConnectedOrMoving)
         useFilterWheelAsShutter.disableProperty().bind(isNotConnectedOrMoving)
-        filterAsShutter.disableProperty().bind(useFilterWheelAsShutter.disableProperty().or(useFilterWheelAsShutter.selectedProperty().not()))
+        filterAsShutter.disableProperty().bind(isNotConnectedOrMoving.or(useFilterWheelAsShutter.selectedProperty().not()))
 
         filterSlots.columns[0].cellValueFactory = FilterSlotValueFactory(0)
         filterSlots.columns[1].cellFactory = TextFieldTableCell.forTableColumn()

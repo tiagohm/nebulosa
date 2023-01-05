@@ -10,13 +10,11 @@ import nebulosa.indi.devices.filterwheels.FilterWheelDetached
 import nebulosa.indi.devices.mounts.Mount
 import nebulosa.indi.devices.mounts.MountAttached
 import nebulosa.indi.devices.mounts.MountDetached
-import nebulosa.indi.protocol.DefTextVector
-import nebulosa.indi.protocol.DelProperty
-import nebulosa.indi.protocol.INDIProtocol
-import nebulosa.indi.protocol.Message
+import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.io.INDIInputStream
 import nebulosa.indi.protocol.parser.INDIProtocolParser
 import nebulosa.indi.protocol.parser.INDIProtocolReader
+import org.slf4j.LoggerFactory
 import java.util.concurrent.LinkedBlockingQueue
 
 class DeviceProtocolHandler : INDIProtocolParser {
@@ -132,7 +130,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
                 }
 
                 if (!registered) {
-                    println("Device is not registered: ${message.device}")
+                    LOG.warn("device is not registered: ${message.device}")
                     notRegisteredDevices.add(message.device)
                 }
 
@@ -188,7 +186,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
                     messageReorderingQueue.offer(message)
                 } else {
                     messageReorderingQueue.remove(message)
-                    println("message looping detected: $message")
+                    LOG.warn("message looping detected: $message")
                 }
             } else {
                 messageQueueCounter[message] = 1
@@ -196,6 +194,21 @@ class DeviceProtocolHandler : INDIProtocolParser {
             }
         } else {
             messageReorderingQueue.remove(message)
+
+            if (LOG.isDebugEnabled) {
+                LOG.debug(
+                    "RECEIVED: {}: {}: {}: {}",
+                    message::class.simpleName,
+                    message.device,
+                    message.name,
+                    (message as? Vector<*>)?.joinToString(", ") { "${it.name}=${it.value}" },
+                )
+            }
         }
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(DeviceProtocolHandler::class.java)
     }
 }
