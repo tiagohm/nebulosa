@@ -1,6 +1,6 @@
 package nebulosa.desktop
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.application.Application
 import nebulosa.desktop.cameras.CameraManagerScreen
 import nebulosa.desktop.connections.ConnectionManager
@@ -34,7 +34,7 @@ private fun inject() = module {
     single { appDirectory } withOptions { named("app") }
 
     single { EventBus() }
-    single { jacksonObjectMapper() }
+    single { ObjectMapper() }
     single(createdAtStart = true) { Preferences(Paths.get("$appDirectory", "preferences.json")) }
 
     single { CameraManagerScreen() }

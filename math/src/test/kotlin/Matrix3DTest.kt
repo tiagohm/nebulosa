@@ -111,7 +111,7 @@ class Matrix3DTest : StringSpec() {
         }
         "transpose" {
             val m = Matrix3D(2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 3.0, 4.0, 5.0)
-            val r = m.transpose()
+            val r = m.transposed
 
             r[0, 0] shouldBeExactly 2.0
             r[0, 1] shouldBeExactly 3.0

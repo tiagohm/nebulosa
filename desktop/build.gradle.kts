@@ -3,7 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     kotlin("jvm")
     id("maven-publish")
-    id("io.objectbox")
+    // id("io.objectbox")
     id("org.openjfx.javafxplugin")
     id("com.github.johnrengelman.shadow")
 }
