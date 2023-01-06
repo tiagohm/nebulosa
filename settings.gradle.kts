@@ -22,6 +22,7 @@ dependencyResolutionManagement {
             library("rx-java", "io.reactivex.rxjava3:rxjava:3.1.5")
             library("controlsfx", "org.controlsfx:controlsfx:11.1.2")
             library("logback", "ch.qos.logback:logback-classic:1.4.5")
+            library("apache-codec", "commons-codec:commons-codec:1.15")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.5.4")
             library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.5.4")
             bundle("kotest", listOf("kotest-assertions-core", "kotest-runner-junit5"))

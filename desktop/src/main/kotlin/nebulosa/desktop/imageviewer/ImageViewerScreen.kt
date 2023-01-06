@@ -297,10 +297,10 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         fits!!.data.copyInto(transformedFits!!.data)
 
         val algorithms = arrayListOf<TransformAlgorithm>()
-        if (invert) algorithms.add(Invert)
         algorithms.add(Flip(mirrorHorizontal, mirrorVertical))
         if (scnrEnabled) algorithms.add(SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode))
         algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
+        if (invert) algorithms.add(Invert)
 
         transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)
 

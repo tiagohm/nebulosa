@@ -10,7 +10,9 @@ class DafTest : StringSpec() {
         // https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de405.bsp
         "NAIF/DAF" {
             val source = File("../assets/DE405.bsp")
-            val summaries = SourceDaf(source).summaries
+            val daf = SourceDaf(source)
+            daf.initialize()
+            val summaries = daf.summaries
 
             summaries.size shouldBeExactly 15
 
@@ -48,7 +50,9 @@ class DafTest : StringSpec() {
         // https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp
         "DAF/SPK" {
             val source = File("../assets/DE421.bsp")
-            val summaries = SourceDaf(source).summaries
+            val daf = SourceDaf(source)
+            daf.initialize()
+            val summaries = daf.summaries
 
             summaries.size shouldBeExactly 15
 
@@ -85,7 +89,9 @@ class DafTest : StringSpec() {
         }
         "DAF/PCK" {
             val source = File("../assets/MOON_PA_DE421_1900-2050.bpc")
-            val summaries = SourceDaf(source).summaries
+            val daf = SourceDaf(source)
+            daf.initialize()
+            val summaries = daf.summaries
 
             summaries.size shouldBeExactly 1
             summaries[0].name shouldBe "de421.nio"

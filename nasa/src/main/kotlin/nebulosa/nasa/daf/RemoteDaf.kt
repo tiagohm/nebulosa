@@ -6,27 +6,39 @@ import nebulosa.io.source
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.buffer
+import org.apache.commons.codec.binary.Hex
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.security.MessageDigest
+import kotlin.io.path.exists
+import kotlin.io.path.readBytes
+import kotlin.io.path.writeBytes
 
-class RemoteDaf(val uri: String) : Daf() {
+class RemoteDaf(
+    val uri: String,
+    private val cacheDirectory: Path? = null,
+) : Daf() {
 
     override fun initialize() {
         val request = Request.Builder()
             .head().url(uri)
             .build()
 
-        HTTP_CLIENT.newCall(request).execute().use {
-            if (it.code != 200) {
-                throw IllegalArgumentException("The given URL is inaccessible: $uri")
+        if (cacheDirectory == null) {
+            HTTP_CLIENT.newCall(request).execute().use {
+                if (it.code != 200) {
+                    throw IllegalArgumentException("The given URL is inaccessible: $uri")
+                }
+
+                val acceptRanges = it.header("Accept-Ranges")
+
+                if (acceptRanges != "bytes") {
+                    throw IllegalArgumentException("The given URL not accept range requests: $uri")
+                }
             }
-
-            val acceptRanges = it.header("Accept-Ranges")
-
-            if (acceptRanges != "bytes") {
-                throw IllegalArgumentException("The given URL not accept range requests: $uri")
-            }
-
-            super.initialize()
         }
+
+        super.initialize()
     }
 
     override fun read(start: Int, end: Int): DoubleArray {
@@ -43,13 +55,34 @@ class RemoteDaf(val uri: String) : Daf() {
     }
 
     private fun readSource(start: Long, end: Long): SeekableSource {
+        return if (cacheDirectory == null) {
+            readSourceFromUri(start, end)
+        } else {
+            val hash = Hex.encodeHexString(MD5.digest(uri.toByteArray()), true)
+            val filePath = Paths.get("$cacheDirectory", "$hash-$start-$end.cache")
+
+            if (filePath.exists()) {
+                // filePath.toFile().seekableSource()
+                filePath.readBytes().source()
+            } else {
+                readSourceFromUri(start, end, filePath)
+            }
+        }
+    }
+
+    private fun readSourceFromUri(
+        start: Long, end: Long,
+        cacheFilePath: Path? = null,
+    ): SeekableSource {
         val request = Request.Builder()
             .get().url(uri)
             .addHeader("Range", "bytes=$start-$end")
             .build()
 
         return HTTP_CLIENT.newCall(request).execute().use {
-            it.body.bytes().source()
+            val bytes = it.body.bytes()
+            cacheFilePath?.writeBytes(bytes)
+            bytes.source()
         }
     }
 
@@ -58,5 +91,6 @@ class RemoteDaf(val uri: String) : Daf() {
     companion object {
 
         @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder().build()
+        @JvmStatic private val MD5 = MessageDigest.getInstance("MD5")!!
     }
 }

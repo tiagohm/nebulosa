@@ -7,6 +7,7 @@ dependencies {
     api(project(":io"))
     api(project(":time"))
     implementation(libs.okhttp)
+    implementation(libs.apache.codec)
     testImplementation(libs.bundles.kotest)
 }
 
