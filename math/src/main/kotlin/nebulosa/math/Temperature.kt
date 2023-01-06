@@ -4,6 +4,7 @@ package nebulosa.math
  * Represents a temperature [value] in celsius.
  */
 @JvmInline
+@Suppress("NOTHING_TO_INLINE")
 value class Temperature(val value: Double) : Comparable<Temperature> {
 
     /**
@@ -16,27 +17,37 @@ value class Temperature(val value: Double) : Comparable<Temperature> {
      */
     inline val kelvin get() = value + 273.15
 
-    operator fun plus(temperature: Temperature) = (value + temperature.value).celsius
+    inline operator fun plus(temperature: Temperature) = (value + temperature.value).celsius
 
-    operator fun plus(temperature: Number) = (value + temperature.toDouble()).celsius
+    inline operator fun plus(temperature: Double) = (value + temperature).celsius
 
-    operator fun minus(temperature: Temperature) = (value - temperature.value).celsius
+    inline operator fun plus(temperature: Int) = (value + temperature).celsius
 
-    operator fun minus(temperature: Number) = (value - temperature.toDouble()).celsius
+    inline operator fun minus(temperature: Temperature) = (value - temperature.value).celsius
 
-    operator fun times(temperature: Temperature) = (value * temperature.value).celsius
+    inline operator fun minus(temperature: Double) = (value - temperature).celsius
 
-    operator fun times(temperature: Number) = (value * temperature.toDouble()).celsius
+    inline operator fun minus(temperature: Int) = (value - temperature).celsius
 
-    operator fun div(temperature: Temperature) = value / temperature.value
+    inline operator fun times(temperature: Temperature) = (value * temperature.value).celsius
 
-    operator fun div(temperature: Number) = (value / temperature.toDouble()).celsius
+    inline operator fun times(temperature: Double) = (value * temperature).celsius
 
-    operator fun rem(temperature: Temperature) = (value % temperature.value).celsius
+    inline operator fun times(temperature: Int) = (value * temperature).celsius
 
-    operator fun rem(temperature: Number) = (value % temperature.toDouble()).celsius
+    inline operator fun div(temperature: Temperature) = value / temperature.value
 
-    operator fun unaryMinus() = (-value).celsius
+    inline operator fun div(temperature: Double) = (value / temperature).celsius
+
+    inline operator fun div(temperature: Int) = (value / temperature).celsius
+
+    inline operator fun rem(temperature: Temperature) = (value % temperature.value).celsius
+
+    inline operator fun rem(temperature: Double) = (value % temperature).celsius
+
+    inline operator fun rem(temperature: Int) = (value % temperature).celsius
+
+    inline operator fun unaryMinus() = (-value).celsius
 
     override fun compareTo(other: Temperature) = value.compareTo(other.value)
 
@@ -47,16 +58,31 @@ value class Temperature(val value: Double) : Comparable<Temperature> {
         /**
          * Creates [Temperature] from celsius.
          */
-        inline val Number.celsius get() = Temperature(toDouble())
+        inline val Double.celsius get() = Temperature(this)
+
+        /**
+         * Creates [Temperature] from celsius.
+         */
+        inline val Int.celsius get() = Temperature(toDouble())
 
         /**
          * Creates [Temperature] from fahrenheit.
          */
-        inline val Number.fahrenheit get() = ((toDouble() - 32.0) / 1.8).celsius
+        inline val Double.fahrenheit get() = ((this - 32.0) / 1.8).celsius
+
+        /**
+         * Creates [Temperature] from fahrenheit.
+         */
+        inline val Int.fahrenheit get() = ((this - 32.0) / 1.8).celsius
 
         /**
          * Creates [Temperature] from kelvin.
          */
-        inline val Number.kelvin get() = (toDouble() - 273.15).celsius
+        inline val Double.kelvin get() = (this - 273.15).celsius
+
+        /**
+         * Creates [Temperature] from kelvin.
+         */
+        inline val Int.kelvin get() = (this - 273.15).celsius
     }
 }

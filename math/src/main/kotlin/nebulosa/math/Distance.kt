@@ -8,7 +8,7 @@ import nebulosa.constants.SPEED_OF_LIGHT
  * Represents a distance [value] in AU.
  */
 @JvmInline
-@Suppress("FloatingPointLiteralPrecision")
+@Suppress("FloatingPointLiteralPrecision", "NOTHING_TO_INLINE")
 value class Distance(val value: Double) : Comparable<Distance> {
 
     /**
@@ -31,25 +31,35 @@ value class Distance(val value: Double) : Comparable<Distance> {
      */
     inline val parsecs get() = value / 206264.806245480309552772371736702884
 
-    operator fun plus(distance: Distance) = (value + distance.value).au
+    inline operator fun plus(distance: Distance) = (value + distance.value).au
 
-    operator fun plus(distance: Number) = (value + distance.toDouble()).au
+    inline operator fun plus(distance: Double) = (value + distance).au
 
-    operator fun minus(distance: Distance) = (value - distance.value).au
+    inline operator fun plus(distance: Int) = (value + distance).au
 
-    operator fun minus(distance: Number) = (value - distance.toDouble()).au
+    inline operator fun minus(distance: Distance) = (value - distance.value).au
 
-    operator fun times(distance: Number) = (value * distance.toDouble()).au
+    inline operator fun minus(distance: Double) = (value - distance).au
 
-    operator fun div(distance: Distance) = value / distance.value
+    inline operator fun minus(distance: Int) = (value - distance).au
 
-    operator fun div(distance: Number) = (value / distance.toDouble()).au
+    inline operator fun times(distance: Double) = (value * distance).au
 
-    operator fun rem(distance: Distance) = (value % distance.value).au
+    inline operator fun times(distance: Int) = (value * distance).au
 
-    operator fun rem(distance: Number) = (value % distance.toDouble()).au
+    inline operator fun div(distance: Distance) = value / distance.value
 
-    operator fun unaryMinus() = (-value).au
+    inline operator fun div(distance: Double) = (value / distance).au
+
+    inline operator fun div(distance: Int) = (value / distance).au
+
+    inline operator fun rem(distance: Distance) = (value % distance.value).au
+
+    inline operator fun rem(distance: Double) = (value % distance).au
+
+    inline operator fun rem(distance: Int) = (value % distance).au
+
+    inline operator fun unaryMinus() = (-value).au
 
     override fun compareTo(other: Distance) = value.compareTo(other.value)
 
@@ -63,23 +73,51 @@ value class Distance(val value: Double) : Comparable<Distance> {
         /**
          * Creates [Distance] from AU.
          */
-        inline val Number.au get() = Distance(toDouble())
+        inline val Double.au get() = Distance(this)
+
+        /**
+         * Creates [Distance] from AU.
+         */
+        inline val Int.au get() = Distance(toDouble())
 
         /**
          * Creates [Distance] from meters.
          */
-        inline val Number.m get() = (toDouble() / AU_M).au
+        inline val Double.m get() = (this / AU_M).au
+
+        /**
+         * Creates [Distance] from meters.
+         */
+        inline val Int.m get() = (this / AU_M).au
 
         /**
          * Creates [Distance] from kilometers.
          */
-        inline val Number.km get() = (toDouble() / AU_KM).au
+        inline val Double.km get() = (this / AU_KM).au
+
+        /**
+         * Creates [Distance] from kilometers.
+         */
+        inline val Int.km get() = (this / AU_KM).au
+
+        /**
+         * Creates [Distance] from light-years.
+         */
+        inline val Double.ly get() = (this * (SPEED_OF_LIGHT * 31557600 / AU_M)).au
+
+        /**
+         * Creates [Distance] from light-years.
+         */
+        inline val Int.ly get() = (this * (SPEED_OF_LIGHT * 31557600 / AU_M)).au
 
         /**
          * Creates [Distance] from parsecs.
          */
-        inline val Number.ly get() = (toDouble() * (SPEED_OF_LIGHT * 31557600 / AU_M)).au
+        inline val Double.parsec get() = (this * 206264.806245480309552772371736702884).au
 
-        inline val Number.parsec get() = (toDouble() * 206264.806245480309552772371736702884).au
+        /**
+         * Creates [Distance] from parsecs.
+         */
+        inline val Int.parsec get() = (this * 206264.806245480309552772371736702884).au
     }
 }

@@ -11,8 +11,8 @@ import nebulosa.desktop.cameras.CameraManagerScreen
 import nebulosa.desktop.connections.ConnectionManager
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
-import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.scene.Screen
+import nebulosa.desktop.core.scene.image.Icon
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.filterwheels.FilterWheelManagerScreen
 import nebulosa.desktop.focusers.FocuserManagerScreen
@@ -70,7 +70,7 @@ class HomeScreen : Screen("Home") {
         alignment.disableProperty().bind(!equipmentManager.connected)
         sequencer.disableProperty().bind(!equipmentManager.connected)
 
-        connect.graphicProperty().bind(equipmentManager.connected.between(Icon.closeCircle(), Icon.connection()))
+        connect.graphicProperty().bind(equipmentManager.connected.between(Icon.closeCircle.view, Icon.connection.view))
 
         host.text = preferences.string("connection.last.host") ?: ""
         port.text = preferences.string("connection.last.port") ?: ""

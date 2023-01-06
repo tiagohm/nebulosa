@@ -11,8 +11,9 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.stage.DirectoryChooser
 import nebulosa.desktop.core.beans.*
-import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.scene.Screen
+import nebulosa.desktop.core.scene.image.Icon
+import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.indi.devices.cameras.*
@@ -80,6 +81,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         val isCapturing = equipmentManager.selectedCamera.isCapturing or this.isCapturing
         val isNotConnectedOrCapturing = isNotConnected or isCapturing
 
+        cameras.converter = DeviceStringConverter()
         cameras.disableProperty().bind(isConnecting or isCapturing)
         cameras.itemsProperty().bind(equipmentManager.attachedCameras)
         equipmentManager.selectedCamera.bind(cameras.selectionModel.selectedItemProperty())
@@ -148,9 +150,9 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             loadPreferences(value)
         }
 
-        equipmentManager.selectedCamera.isConnected.bondTo(isConnecting)
+        equipmentManager.selectedCamera.isConnected.on { if (it) isConnecting.set(false) }
 
-        connect.graphicProperty().bind(equipmentManager.selectedCamera.isConnected.between(Icon.closeCircle(), Icon.connection()))
+        connect.graphicProperty().bind(equipmentManager.selectedCamera.isConnected.between(Icon.closeCircle.view, Icon.connection.view))
 
         cameraMenuIcon.addEventFilter(MouseEvent.MOUSE_CLICKED) {
             if (it.button == MouseButton.PRIMARY) {
@@ -196,7 +198,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             is CameraExposureAborted,
             is CameraExposureFinished,
             is CameraExposureFailed -> Platform.runLater {
-                val isAborted = event is CameraExposureAborted
+                val isAborted = event is CameraExposureAborted || event is CameraExposureFailed
                 this.isCapturing.set(captureTask!!.isCapturing && !isAborted)
                 updateTitle()
             }
@@ -467,7 +469,9 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             else preferences.enum<AutoSubFolderMode>("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON,
         )
 
-        captureThread = captureTask?.runOnThread()
+        captureThread = captureTask!!.runOnThread()
+
+        isCapturing.set(true)
     }
 
     @FXML
@@ -476,13 +480,18 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         captureTask?.cancel(true)
     }
 
+    @Synchronized
     private fun updateTitle() {
         status.text = buildString(128) {
             val task = captureTask
 
             if (task == null || task.camera !== equipmentManager.selectedCamera.get()) {
                 append("idle")
-            } else if (task.isCapturing) {
+            } else if (task.camera.isFailed) {
+                append("failed")
+            } else if (task.camera.isAborted) {
+                append("aborted")
+            } else if (isCapturing.get()) {
                 val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000.0} s"
                 else if (task.exposure >= 1000L) "${task.exposure / 1000.0} ms"
                 else "${task.exposure} µs"
@@ -493,8 +502,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                 append("%.1f%%".format(Locale.ENGLISH, task.progress * 100.0))
                 append(" | ")
                 append("%s".format(Locale.ENGLISH, task.frameType))
-            } else if (task.camera.isAborted) {
-                append("aborted")
             } else {
                 append("finished")
             }

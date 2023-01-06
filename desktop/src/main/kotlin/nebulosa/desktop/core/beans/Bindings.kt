@@ -80,25 +80,3 @@ infix fun ObservableBooleanValue.xor(other: ObservableBooleanValue): ObservableB
 fun <E> ObservableBooleanValue.between(onTrue: E?, onFalse: E?): ObservableValue<out E?> {
     return Bindings.createObjectBinding({ if (value) onTrue else onFalse }, this)
 }
-
-// Bond.
-
-inline fun <E> ObservableObjectValue<E>.bondTo(property: WritableObjectValue<E>) {
-    onZero { property.set(get()) }
-}
-
-inline fun ObservableBooleanValue.bondTo(property: WritableBooleanValue) {
-    on { property.set(get()) }
-}
-
-inline fun ObservableDoubleValue.bondTo(property: WritableDoubleValue) {
-    on { property.set(get()) }
-}
-
-inline fun ObservableIntegerValue.bondTo(property: WritableIntegerValue) {
-    on { property.set(get()) }
-}
-
-inline fun ObservableLongValue.bondTo(property: WritableLongValue) {
-    on { property.set(get()) }
-}

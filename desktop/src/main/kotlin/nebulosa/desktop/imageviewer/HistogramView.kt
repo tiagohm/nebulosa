@@ -3,10 +3,11 @@ package nebulosa.desktop.imageviewer
 import javafx.scene.canvas.Canvas
 import javafx.scene.paint.Color
 import nebulosa.imaging.Image
-import kotlin.math.floor
 import kotlin.math.max
 
 class HistogramView : Canvas() {
+
+    @Volatile private var lastDrawTime = 0L
 
     override fun isResizable() = true
 
@@ -27,14 +28,23 @@ class HistogramView : Canvas() {
         this.height = height
     }
 
+    private fun canDraw(): Boolean {
+        val curTime = System.currentTimeMillis()
+        return curTime - lastDrawTime >= 100
+    }
+
     @Synchronized
     fun draw(fits: Image) {
+        if (!canDraw()) return
+
+        lastDrawTime = System.currentTimeMillis()
+
         val gc = graphicsContext2D
 
         gc.fill = BACKGROUND_COLOR
         gc.fillRect(0.0, 0.0, width, height)
 
-        var maxHeight = 0
+        var maxHeight = 1
 
         val histogramData = IntArray(256)
 
@@ -47,29 +57,27 @@ class HistogramView : Canvas() {
                     histogramData[i]++
                     max(maxHeight, histogramData[i])
                 } else {
-                    val a = (fits.data[index] * 255f).toInt()
-                    val b = (fits.data[index + 1] * 255f).toInt()
-                    val c = (fits.data[index + 2] * 255f).toInt()
-                    val i = (a + b + c) / 3
+                    val i = ((fits.data[index] + fits.data[index + 1] + fits.data[index + 2]) * 85f).toInt()
                     histogramData[i]++
                     max(maxHeight, histogramData[i])
                 }
             }
         }
 
-        val lineWidth = width / 256.0
-        gc.lineWidth = lineWidth
-
+        gc.lineWidth = 1.0
         gc.stroke = Color.BLACK
 
-        for (k in 0..255) {
-            val x = floor(k * lineWidth + lineWidth / 2)
-            gc.strokeLine(x, height - histogramData[k] * height / maxHeight, x, height)
+        val factor = 255f / width
+
+        for (k in 0 until width.toInt()) {
+            val x = k.toDouble() - 0.5
+            val i = (k * factor).toInt()
+            gc.strokeLine(x, height - histogramData[i] * height / maxHeight, x, height)
         }
     }
 
     companion object {
 
-        private val BACKGROUND_COLOR = Color(0.957, 0.957, 0.957, 1.0) // #F4F4F4
+        @JvmStatic private val BACKGROUND_COLOR = Color(0.957, 0.957, 0.957, 1.0) // #F4F4F4
     }
 }

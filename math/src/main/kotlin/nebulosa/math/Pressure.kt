@@ -8,6 +8,7 @@ import kotlin.math.pow
  * Represents a pressure [value] in millibars.
  */
 @JvmInline
+@Suppress("NOTHING_TO_INLINE")
 value class Pressure(val value: Double) : Comparable<Pressure> {
 
     /**
@@ -20,27 +21,37 @@ value class Pressure(val value: Double) : Comparable<Pressure> {
      */
     inline val atm get() = value / 1013.25
 
-    operator fun plus(pressure: Pressure) = (value + pressure.value).mbar
+    inline operator fun plus(pressure: Pressure) = (value + pressure.value).mbar
 
-    operator fun plus(pressure: Number) = (value + pressure.toDouble()).mbar
+    inline operator fun plus(pressure: Double) = (value + pressure).mbar
 
-    operator fun minus(pressure: Pressure) = (value - pressure.value).mbar
+    inline operator fun plus(pressure: Int) = (value + pressure).mbar
 
-    operator fun minus(pressure: Number) = (value - pressure.toDouble()).mbar
+    inline operator fun minus(pressure: Pressure) = (value - pressure.value).mbar
 
-    operator fun times(pressure: Pressure) = (value * pressure.value).mbar
+    inline operator fun minus(pressure: Double) = (value - pressure).mbar
 
-    operator fun times(pressure: Number) = (value * pressure.toDouble()).mbar
+    inline operator fun minus(pressure: Int) = (value - pressure).mbar
 
-    operator fun div(pressure: Pressure) = value / pressure.value
+    inline operator fun times(pressure: Pressure) = (value * pressure.value).mbar
 
-    operator fun div(pressure: Number) = (value / pressure.toDouble()).mbar
+    inline operator fun times(pressure: Double) = (value * pressure).mbar
 
-    operator fun rem(pressure: Pressure) = (value % pressure.value).mbar
+    inline operator fun times(pressure: Int) = (value * pressure).mbar
 
-    operator fun rem(pressure: Number) = (value % pressure.toDouble()).mbar
+    inline operator fun div(pressure: Pressure) = value / pressure.value
 
-    operator fun unaryMinus() = (-value).mbar
+    inline operator fun div(pressure: Double) = (value / pressure).mbar
+
+    inline operator fun div(pressure: Int) = (value / pressure).mbar
+
+    inline operator fun rem(pressure: Pressure) = (value % pressure.value).mbar
+
+    inline operator fun rem(pressure: Double) = (value % pressure).mbar
+
+    inline operator fun rem(pressure: Int) = (value % pressure).mbar
+
+    inline operator fun unaryMinus() = (-value).mbar
 
     override fun compareTo(other: Pressure) = value.compareTo(other.value)
 
@@ -51,17 +62,32 @@ value class Pressure(val value: Double) : Comparable<Pressure> {
         /**
          * Creates [Pressure] from millibar.
          */
-        inline val Number.mbar get() = Pressure(toDouble())
+        inline val Double.mbar get() = Pressure(this)
+
+        /**
+         * Creates [Pressure] from millibar.
+         */
+        inline val Int.mbar get() = Pressure(toDouble())
 
         /**
          * Creates [Pressure] from pascal.
          */
-        inline val Number.pascal get() = (toDouble() / 100.0).mbar
+        inline val Double.pascal get() = (this / 100.0).mbar
+
+        /**
+         * Creates [Pressure] from pascal.
+         */
+        inline val Int.pascal get() = (this / 100.0).mbar
 
         /**
          * Creates [Pressure] from atmosphere.
          */
-        inline val Number.atm get() = (toDouble() * 1013.25).mbar
+        inline val Double.atm get() = (this * 1013.25).mbar
+
+        /**
+         * Creates [Pressure] from atmosphere.
+         */
+        inline val Int.atm get() = (this * 1013.25).mbar
 
         override fun compare(a: Pressure?, b: Pressure?) = compareValues(a, b)
 

@@ -14,9 +14,10 @@ import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.onZero
 import nebulosa.desktop.core.beans.or
-import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.scene.control.ButtonValueFactory
+import nebulosa.desktop.core.scene.image.Icon
+import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.indi.devices.filterwheels.FilterWheel
 import org.koin.core.component.inject
@@ -44,6 +45,7 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         val isMoving = equipmentManager.selectedFilterWheel.isMoving
         val isNotConnectedOrMoving = isNotConnected or isMoving
 
+        filterWheels.converter = DeviceStringConverter()
         filterWheels.disableProperty().bind(isConnecting or isMoving)
         filterWheels.itemsProperty().bind(equipmentManager.attachedFilterWheels)
         equipmentManager.selectedFilterWheel.bind(filterWheels.selectionModel.selectedItemProperty())
@@ -109,7 +111,7 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
             updateFilterAsShutter()
         }
 
-        connect.graphicProperty().bind(equipmentManager.selectedFilterWheel.isConnected.between(Icon.closeCircle(), Icon.connection()))
+        connect.graphicProperty().bind(equipmentManager.selectedFilterWheel.isConnected.between(Icon.closeCircle.view, Icon.connection.view))
 
         equipmentManager.selectedFilterWheel.isConnected.on {
             if (it) {

@@ -3,12 +3,15 @@ package nebulosa.indi.devices
 import nebulosa.indi.INDIClient
 import nebulosa.indi.devices.cameras.Camera
 import nebulosa.indi.devices.cameras.CameraAttached
+import nebulosa.indi.devices.cameras.CameraBase
 import nebulosa.indi.devices.cameras.CameraDetached
 import nebulosa.indi.devices.filterwheels.FilterWheel
 import nebulosa.indi.devices.filterwheels.FilterWheelAttached
+import nebulosa.indi.devices.filterwheels.FilterWheelBase
 import nebulosa.indi.devices.filterwheels.FilterWheelDetached
 import nebulosa.indi.devices.mounts.Mount
 import nebulosa.indi.devices.mounts.MountAttached
+import nebulosa.indi.devices.mounts.MountBase
 import nebulosa.indi.devices.mounts.MountDetached
 import nebulosa.indi.protocol.DefTextVector
 import nebulosa.indi.protocol.DelProperty
@@ -101,7 +104,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
 
                 if (executable in Camera.DRIVERS) {
                     if (message.device !in cameras) {
-                        val camera = Camera(client, this, message.device)
+                        val camera = CameraBase(client, this, message.device)
                         cameras[message.device] = camera
                         fireOnEventReceived(CameraAttached(camera))
                         registered = true
@@ -112,7 +115,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
 
                 if (executable in Mount.DRIVERS) {
                     if (message.device !in mounts) {
-                        val mount = Mount(client, this, message.device)
+                        val mount = MountBase(client, this, message.device)
                         mounts[message.device] = mount
                         fireOnEventReceived(MountAttached(mount))
                         registered = true
@@ -123,7 +126,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
 
                 if (executable in FilterWheel.DRIVERS) {
                     if (message.device !in filterWheels) {
-                        val filterWheel = FilterWheel(client, this, message.device)
+                        val filterWheel = FilterWheelBase(client, this, message.device)
                         filterWheels[message.device] = filterWheel
                         fireOnEventReceived(FilterWheelAttached(filterWheel))
                         registered = true

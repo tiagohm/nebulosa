@@ -1,190 +1,65 @@
 package nebulosa.indi.devices.mounts
 
-import nebulosa.indi.INDIClient
 import nebulosa.indi.devices.Device
-import nebulosa.indi.devices.DeviceProtocolHandler
-import nebulosa.indi.devices.firstOnSwitch
-import nebulosa.indi.devices.firstOnSwitchOrNull
-import nebulosa.indi.protocol.*
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.nova.astrometry.ICRF
 
-open class Mount(
-    client: INDIClient,
-    handler: DeviceProtocolHandler,
-    name: String,
-) : Device(client, handler, name) {
+interface Mount : Device {
 
-    @Volatile @JvmField var isSlewing = false
-    @Volatile @JvmField var isTracking = false
-    @Volatile @JvmField var isParking = false
-    @Volatile @JvmField var isParked = false
-    @Volatile @JvmField var canAbort = false
-    @Volatile @JvmField var canSync = false
-    @Volatile @JvmField var canPark = false
-    @Volatile @JvmField var slewRates = emptyList<SlewRate>()
-    @Volatile @JvmField var slewRate: SlewRate? = null
-    @Volatile @JvmField var mountType = MountType.EQ_GEM
-    @Volatile @JvmField var trackModes = emptyList<TrackMode>()
-    @Volatile @JvmField var trackMode = TrackMode.SIDEREAL
-    @Volatile @JvmField var pierSide = PierSide.NEITHER
-    @Volatile @JvmField var guideRateWE = 0.0
-    @Volatile @JvmField var guideRateNS = 0.0
-    @Volatile @JvmField var rightAscension = 0.0
-    @Volatile @JvmField var declination = 0.0
+    val isSlewing: Boolean
 
-    override fun handleMessage(message: INDIProtocol) {
-        when (message) {
-            is SwitchVector<*> -> {
-                when (message.name) {
-                    "TELESCOPE_SLEW_RATE" -> {
-                        if (message is DefSwitchVector) {
-                            slewRates = message.map { SlewRate(it.name, it.label) }
+    val isTracking: Boolean
 
-                            handler.fireOnEventReceived(MountSlewRatesChanged(this))
-                        }
+    val isParking: Boolean
 
-                        slewRate = slewRates.first { it.name == message.firstOnSwitch().name }
+    val isParked: Boolean
 
-                        handler.fireOnEventReceived(MountSlewRateChanged(this))
-                    }
-                    "MOUNT_TYPE" -> {
-                        mountType = MountType.valueOf(message.firstOnSwitch().name)
+    val canAbort: Boolean
 
-                        handler.fireOnEventReceived(MountTypeChanged(this))
-                    }
-                    "TELESCOPE_TRACK_MODE" -> {
-                        if (message is DefSwitchVector) {
-                            trackModes = message.map { TrackMode.valueOf(it.name.replace("TRACK_", "")) }
+    val canSync: Boolean
 
-                            handler.fireOnEventReceived(MountTrackModesChanged(this))
-                        }
+    val canPark: Boolean
 
-                        trackMode = TrackMode.valueOf(message.firstOnSwitch().name.replace("TRACK_", ""))
+    val slewRates: List<SlewRate>
 
-                        handler.fireOnEventReceived(MountTrackModeChanged(this))
-                    }
-                    "TELESCOPE_TRACK_STATE" -> {
-                        isTracking = message.firstOnSwitch().name == "TRACK_ON"
+    val slewRate: SlewRate?
 
-                        handler.fireOnEventReceived(MountTrackingChanged(this))
-                    }
-                    "TELESCOPE_PIER_SIDE" -> {
-                        val side = message.firstOnSwitchOrNull()
+    val mountType: MountType
 
-                        pierSide = if (side == null) PierSide.NEITHER
-                        else if (side.name == "PIER_WEST") PierSide.WEST
-                        else PierSide.EAST
+    val trackModes: List<TrackMode>
 
-                        handler.fireOnEventReceived(MountPierSideChanged(this))
-                    }
-                    "TELESCOPE_PARK" -> {
-                        if (message is DefSwitchVector) {
-                            canPark = message.perm != PropertyPermission.RO
+    val trackMode: TrackMode
 
-                            handler.fireOnEventReceived(MountCanParkChanged(this))
-                        }
+    val pierSide: PierSide
 
-                        isParking = message.state == PropertyState.BUSY
-                        isParked = message.firstOnSwitchOrNull()?.name == "PARK"
+    val guideRateWE: Double
 
-                        handler.fireOnEventReceived(MountParkChanged(this))
-                    }
-                    "TELESCOPE_ABORT_MOTION" -> {
-                        canAbort = true
+    val guideRateNS: Double
 
-                        handler.fireOnEventReceived(MountCanAbortChanged(this))
-                    }
-                    "ON_COORD_SET" -> {
-                        canSync = message.any { it.name == "SYNC" }
+    val rightAscension: Double
 
-                        handler.fireOnEventReceived(MountCanSyncChanged(this))
-                    }
-                }
-            }
-            is NumberVector<*> -> {
-                when (message.name) {
-                    "GUIDE_RATE" -> {
-                        guideRateWE = message["GUIDE_RATE_WE"]!!.value
-                        guideRateNS = message["GUIDE_RATE_NS"]!!.value
+    val declination: Double
 
-                        handler.fireOnEventReceived(MountGuideRateChanged(this))
-                    }
-                    "EQUATORIAL_EOD_COORD" -> {
-                        val prevIsIslewing = isSlewing
-                        isSlewing = message.state == PropertyState.BUSY
+    fun tracking(enable: Boolean)
 
-                        if (isSlewing != prevIsIslewing) {
-                            handler.fireOnEventReceived(MountSlewingChanged(this))
-                        }
+    fun sync(ra: Angle, dec: Angle)
 
-                        rightAscension = message["RA"]!!.value
-                        declination = message["DEC"]!!.value
+    fun syncJ2000(ra: Angle, dec: Angle)
 
-                        handler.fireOnEventReceived(MountEquatorialCoordinatesChanged(this))
-                    }
-                }
-            }
-            else -> Unit
-        }
+    fun slewTo(ra: Angle, dec: Angle)
 
-        super.handleMessage(message)
-    }
+    fun slewToJ2000(ra: Angle, dec: Angle)
 
-    fun tracking(enable: Boolean) {
-        if (isTracking != enable) {
-            sendNewSwitch("TELESCOPE_TRACK_STATE", (if (enable) "TRACK_ON" else "TRACK_OFF") to true)
-        }
-    }
+    fun goTo(ra: Angle, dec: Angle)
 
-    fun sync(ra: Angle, dec: Angle) {
-        sendNewSwitch("ON_COORD_SET", "SYNC" to true)
-        sendNewNumber("EQUATORIAL_EOD_COORD", "RA" to ra.hours, "DEC" to dec.degrees)
-    }
+    fun goToJ2000(ra: Angle, dec: Angle)
 
-    fun syncJ2000(ra: Angle, dec: Angle) {
-        val (raNow, decNow) = ICRF.equatorial(ra, dec).equatorialAtDate()
-        sync(raNow.rad.normalized, decNow.rad)
-    }
+    fun park()
 
-    fun slewTo(ra: Angle, dec: Angle) {
-        sendNewSwitch("ON_COORD_SET", "SLEW" to true)
-        sendNewNumber("EQUATORIAL_EOD_COORD", "RA" to ra.hours, "DEC" to dec.degrees)
-    }
+    fun unpark()
 
-    fun slewToJ2000(ra: Angle, dec: Angle) {
-        val (raNow, decNow) = ICRF.equatorial(ra, dec).equatorialAtDate()
-        slewTo(raNow.rad.normalized, decNow.rad)
-    }
+    fun abortMotion()
 
-    fun goTo(ra: Angle, dec: Angle) {
-        sendNewSwitch("ON_COORD_SET", "TRACK" to true)
-        sendNewNumber("EQUATORIAL_EOD_COORD", "RA" to ra.hours, "DEC" to dec.degrees)
-    }
-
-    fun goToJ2000(ra: Angle, dec: Angle) {
-        val (raNow, decNow) = ICRF.equatorial(ra, dec).equatorialAtDate()
-        goTo(raNow.rad.normalized, decNow.rad)
-    }
-
-    fun park() {
-        sendNewSwitch("TELESCOPE_PARK", "PARK" to true)
-    }
-
-    fun unpark() {
-        sendNewSwitch("TELESCOPE_PARK", "UNPARK" to true)
-    }
-
-    fun abortMotion() {
-        sendNewSwitch("TELESCOPE_ABORT_MOTION", "ABORT" to true)
-    }
-
-    fun trackingMode(mode: TrackMode) {
-        sendNewSwitch("TELESCOPE_TRACK_MODE", "TRACK_$mode" to true)
-    }
-
-    override fun toString() = name
+    fun trackingMode(mode: TrackMode)
 
     companion object {
 

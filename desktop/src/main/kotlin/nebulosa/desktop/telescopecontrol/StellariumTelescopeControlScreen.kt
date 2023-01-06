@@ -6,8 +6,8 @@ import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.or
-import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.scene.Screen
+import nebulosa.desktop.core.scene.image.Icon
 import nebulosa.indi.devices.mounts.Mount
 import org.koin.core.component.inject
 
@@ -32,7 +32,7 @@ class StellariumTelescopeControlScreen(private val mount: Mount) : Screen("Stell
         port.disableProperty().bind(host.disableProperty())
         connect.disableProperty().bind(isConnecting)
 
-        connect.graphicProperty().bind(isConnected.between(Icon.closeCircle(), Icon.connection()))
+        connect.graphicProperty().bind(isConnected.between(Icon.closeCircle.view, Icon.connection.view))
 
         host.text = preferences.string("stellariumTelescopeControl.equipment.${mount.name}.host")
         port.text = preferences.string("stellariumTelescopeControl.equipment.${mount.name}.port")

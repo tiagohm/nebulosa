@@ -10,6 +10,7 @@ import kotlin.math.tan
  * Represents an Angle [value] in radians.
  */
 @JvmInline
+@Suppress("NOTHING_TO_INLINE")
 value class Angle(val value: Double) : Comparable<Angle> {
 
     /**
@@ -57,25 +58,35 @@ value class Angle(val value: Double) : Comparable<Angle> {
      */
     inline val tan get() = tan(value)
 
-    operator fun plus(angle: Angle) = (value + angle.value).rad
+    inline operator fun plus(angle: Angle) = (value + angle.value).rad
 
-    operator fun plus(angle: Number) = (value + angle.toDouble()).rad
+    inline operator fun plus(angle: Double) = (value + angle).rad
 
-    operator fun minus(angle: Angle) = (value - angle.value).rad
+    inline operator fun plus(angle: Int) = (value + angle).rad
 
-    operator fun minus(angle: Number) = (value - angle.toDouble()).rad
+    inline operator fun minus(angle: Angle) = (value - angle.value).rad
 
-    operator fun times(angle: Number) = (value * angle.toDouble()).rad
+    inline operator fun minus(angle: Double) = (value - angle).rad
 
-    operator fun div(angle: Angle) = value / angle.value
+    inline operator fun minus(angle: Int) = (value - angle).rad
 
-    operator fun div(angle: Number) = (value / angle.toDouble()).rad
+    inline operator fun times(angle: Double) = (value * angle).rad
 
-    operator fun rem(angle: Angle) = (value % angle.value).rad
+    inline operator fun times(angle: Int) = (value * angle).rad
 
-    operator fun rem(angle: Number) = (value % angle.toDouble()).rad
+    inline operator fun div(angle: Angle) = value / angle.value
 
-    operator fun unaryMinus() = (-value).rad
+    inline operator fun div(angle: Double) = (value / angle).rad
+
+    inline operator fun div(angle: Int) = (value / angle).rad
+
+    inline operator fun rem(angle: Angle) = (value % angle.value).rad
+
+    inline operator fun rem(angle: Double) = (value % angle).rad
+
+    inline operator fun rem(angle: Int) = (value % angle).rad
+
+    inline operator fun unaryMinus() = (-value).rad
 
     override fun compareTo(other: Angle) = value.compareTo(other.value)
 
@@ -91,35 +102,84 @@ value class Angle(val value: Double) : Comparable<Angle> {
 
         override fun compare(a: Angle?, b: Angle?) = compareValues(a?.value, b?.value)
 
+        @JvmStatic
+        fun formatHMS(angle: Angle, format: String = "%02dh %02dm %05.02fs"): String {
+            val value = angle.hours
+            val hours = value.toInt()
+            val minutes = (value - hours) * 60.0
+            val seconds = (minutes - minutes.toInt()) * 60.0
+            return format.format(hours, minutes.toInt(), seconds)
+        }
+
+        @JvmStatic
+        fun formatDMS(angle: Angle, format: String = "%s%02d° %02d' %05.02f\""): String {
+            val value = angle.degrees
+            val degrees = abs(value)
+            val minutes = (degrees - degrees.toInt()) * 60.0
+            val seconds = (minutes - minutes.toInt()) * 60.0
+            val sign = if (value < 0.0) "-" else "+"
+            return format.format(sign, degrees.toInt(), minutes.toInt(), seconds)
+        }
+
         /**
          * Creates [Angle] from radians.
          */
-        inline val Number.rad get() = Angle(toDouble())
+        inline val Double.rad get() = Angle(this)
+
+        /**
+         * Creates [Angle] from radians.
+         */
+        inline val Int.rad get() = Angle(toDouble())
 
         /**
          * Creates [Angle] from milliarcseconds.
          */
-        inline val Number.mas get() = (toDouble() * MILLIASEC2RAD).rad
+        inline val Double.mas get() = (this * MILLIASEC2RAD).rad
+
+        /**
+         * Creates [Angle] from milliarcseconds.
+         */
+        inline val Int.mas get() = (this * MILLIASEC2RAD).rad
 
         /**
          * Creates [Angle] from arcseconds.
          */
-        inline val Number.arcsec get() = (toDouble() * ASEC2RAD).rad
+        inline val Double.arcsec get() = (this * ASEC2RAD).rad
+
+        /**
+         * Creates [Angle] from arcseconds.
+         */
+        inline val Int.arcsec get() = (this * ASEC2RAD).rad
 
         /**
          * Creates [Angle] from arcminutes.
          */
-        inline val Number.arcmin get() = (toDouble() * AMIN2RAD).rad
+        inline val Double.arcmin get() = (this * AMIN2RAD).rad
+
+        /**
+         * Creates [Angle] from arcminutes.
+         */
+        inline val Int.arcmin get() = (this * AMIN2RAD).rad
 
         /**
          * Creates [Angle] from degrees.
          */
-        inline val Number.deg get() = (toDouble() * DEG2RAD).rad
+        inline val Double.deg get() = (this * DEG2RAD).rad
+
+        /**
+         * Creates [Angle] from degrees.
+         */
+        inline val Int.deg get() = (this * DEG2RAD).rad
 
         /**
          * Creates [Angle] from hours.
          */
-        inline val Number.hours get() = (toDouble() * PI / 12.0).rad
+        inline val Double.hours get() = (this * PI / 12.0).rad
+
+        /**
+         * Creates [Angle] from hours.
+         */
+        inline val Int.hours get() = (this * PI / 12.0).rad
 
         /**
          * Creates the [Angle] from [hour], [minute] and [second].

@@ -5,11 +5,11 @@ import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Slider
 import javafx.scene.control.Spinner
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
-import javafx.util.StringConverter
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.onOne
 import nebulosa.desktop.core.beans.onTwo
 import nebulosa.desktop.core.scene.Screen
+import nebulosa.desktop.core.util.BitDepthStringConverter
 import nebulosa.math.map
 import org.controlsfx.control.RangeSlider
 
@@ -100,30 +100,26 @@ class ImageStretcherScreen(private val imageViewer: ImageViewerScreen) :
         val bitDepthFactor = if (bitDepth.value == 16) 65535f else 255f
         shadow.valueFactory.value = value
         imageViewer.transformImage(shadow = value.toFloat() / bitDepthFactor)
+        drawHistogram()
     }
 
     private fun onHighValueChanged(value: Double) {
         val bitDepthFactor = if (bitDepth.value == 16) 65535f else 255f
         highlight.valueFactory.value = value
         imageViewer.transformImage(highlight = value.toFloat() / bitDepthFactor)
+        drawHistogram()
     }
 
     private fun onMidtoneValueChanged(value: Double) {
         val bitDepthFactor = if (bitDepth.value == 16) 65535f else 255f
         midtoneSpinner.valueFactory.value = value
         imageViewer.transformImage(midtone = value.toFloat() / bitDepthFactor)
+        drawHistogram()
     }
 
     fun drawHistogram() {
         if (isShowing) {
-            histogram.draw(imageViewer.fits!!)
+            histogram.draw(imageViewer.transformedFits!!)
         }
-    }
-
-    private object BitDepthStringConverter : StringConverter<Int>() {
-
-        override fun toString(o: Int?) = if (o == null) "" else "$o bits"
-
-        override fun fromString(string: String?) = string?.replace(" bits", "")?.toInt()
     }
 }

@@ -5,5 +5,5 @@ data class SlewRate(
     val label: String,
 ) {
 
-    override fun toString() = label
+    override fun toString() = "$label [$name]"
 }

@@ -12,7 +12,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="460.0"
+            prefHeight="480.0"
             prefWidth="412.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
@@ -63,7 +63,7 @@
                        text="RA">
                     <font>
                         <Font name="System Bold"
-                              size="11.0"/>
+                              size="9.0"/>
                     </font>
                 </Label>
                 <Label fx:id="rightAscension"
@@ -71,7 +71,7 @@
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
-                       text="00h 48m 15.56s">
+                       text="00h 00m 00.00s">
                     <font>
                         <Font name="Monospaced Regular"
                               size="11.0"/>
@@ -86,7 +86,7 @@
                     </HBox.margin>
                     <font>
                         <Font name="System Bold"
-                              size="11.0"/>
+                              size="9.0"/>
                     </font>
                 </Label>
                 <Label fx:id="declination"
@@ -94,7 +94,53 @@
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
-                       text="+90° 00' 00.00&quot;">
+                       text="+00° 00' 00.00&quot;">
+                    <font>
+                        <Font name="Monospaced Regular"
+                              size="11.0"/>
+                    </font>
+                </Label>
+            </HBox>
+            <HBox alignment="CENTER_LEFT"
+                  spacing="4.0">
+                <Label maxWidth="64.0"
+                       minWidth="64.0"
+                       prefWidth="64.0"
+                       text="RA (J2000)">
+                    <font>
+                        <Font name="System Bold"
+                              size="9.0"/>
+                    </font>
+                </Label>
+                <Label fx:id="rightAscensionJ2000"
+                       alignment="CENTER_RIGHT"
+                       maxWidth="110.0"
+                       minWidth="110.0"
+                       prefWidth="110.0"
+                       text="00h 00m 00.00s">
+                    <font>
+                        <Font name="Monospaced Regular"
+                              size="11.0"/>
+                    </font>
+                </Label>
+                <Label maxWidth="64.0"
+                       minWidth="64.0"
+                       prefWidth="64.0"
+                       text="DEC (J2000)">
+                    <HBox.margin>
+                        <Insets left="8.0"/>
+                    </HBox.margin>
+                    <font>
+                        <Font name="System Bold"
+                              size="9.0"/>
+                    </font>
+                </Label>
+                <Label fx:id="declinationJ2000"
+                       alignment="CENTER_RIGHT"
+                       maxWidth="110.0"
+                       minWidth="110.0"
+                       prefWidth="110.0"
+                       text="+00° 00' 00.00&quot;">
                     <font>
                         <Font name="Monospaced Regular"
                               size="11.0"/>
@@ -109,7 +155,7 @@
                        text="Altitude">
                     <font>
                         <Font name="System Bold"
-                              size="11.0"/>
+                              size="9.0"/>
                     </font>
                 </Label>
                 <Label fx:id="altitude"
@@ -117,7 +163,7 @@
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
-                       text="+31° 15' 55.00&quot;">
+                       text="+00° 00' 00.00&quot;">
                     <font>
                         <Font name="Monospaced Regular"
                               size="11.0"/>
@@ -132,7 +178,7 @@
                     </HBox.margin>
                     <font>
                         <Font name="System Bold"
-                              size="11.0"/>
+                              size="9.0"/>
                     </font>
                 </Label>
                 <Label fx:id="azimuth"
@@ -140,7 +186,7 @@
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
-                       text="180° 00' 00.00&quot;">
+                       text="+00° 00' 00.00&quot;">
                     <font>
                         <Font name="Monospaced Regular"
                               size="11.0"/>
@@ -155,7 +201,7 @@
                        text="Pier">
                     <font>
                         <Font name="System Bold"
-                              size="11.0"/>
+                              size="9.0"/>
                     </font>
                 </Label>
                 <Label fx:id="pierSide"
@@ -210,26 +256,24 @@
                   spacing="8.0">
                 <VBox alignment="CENTER_LEFT"
                       spacing="1.0">
-                    <Label text="RA"
-                           prefWidth="36.0">
+                    <Label text="RA (hours)">
                         <font>
                             <Font size="11.0"/>
                         </font>
                     </Label>
-                    <TextField fx:id="ra"
+                    <TextField fx:id="targetRightAscension"
                                text="0.00"
                                prefWidth="200.0">
                     </TextField>
                 </VBox>
                 <VBox alignment="CENTER_LEFT"
                       spacing="1.0">
-                    <Label text="DEC"
-                           prefWidth="36.0">
+                    <Label text="DEC (degrees)">
                         <font>
                             <Font size="11.0"/>
                         </font>
                     </Label>
-                    <TextField fx:id="dec"
+                    <TextField fx:id="targetDeclination"
                                text="0.00"
                                prefWidth="200.0">
                     </TextField>
@@ -290,8 +334,11 @@
         <HBox>
             <Button fx:id="stellariumTelescopeControl"
                     text="Stellarium Telescope Control"
-                    prefWidth="242.0"
+                    prefWidth="202.0"
                     onAction="#openStellariumTelescopeControl">
+                <font>
+                    <Font size="11.0"/>
+                </font>
                 <graphic>
                     <ImageView fitHeight="18.0"
                                fitWidth="18.0"
@@ -566,7 +613,7 @@
                         </font>
                     </Label>
                     <ChoiceBox fx:id="slewSpeed"
-                               prefWidth="72.0">
+                               prefWidth="122.0">
                         <cursor>
                             <Cursor fx:constant="HAND"/>
                         </cursor>
