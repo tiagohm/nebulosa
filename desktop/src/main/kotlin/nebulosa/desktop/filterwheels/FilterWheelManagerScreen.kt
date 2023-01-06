@@ -10,11 +10,14 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.util.Callback
+import nebulosa.desktop.core.beans.between
+import nebulosa.desktop.core.beans.on
+import nebulosa.desktop.core.beans.onZero
+import nebulosa.desktop.core.beans.or
 import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.scene.control.ButtonValueFactory
 import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.filterwheels.FilterWheel
 import org.koin.core.component.inject
 
@@ -39,17 +42,17 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         val isNotConnected = equipmentManager.selectedFilterWheel.isConnected.not()
         val isConnecting = equipmentManager.selectedFilterWheel.isConnecting
         val isMoving = equipmentManager.selectedFilterWheel.isMoving
-        val isNotConnectedOrMoving = isNotConnected.or(isMoving)
+        val isNotConnectedOrMoving = isNotConnected or isMoving
 
-        filterWheels.disableProperty().bind(isConnecting.or(isMoving))
+        filterWheels.disableProperty().bind(isConnecting or isMoving)
         filterWheels.itemsProperty().bind(equipmentManager.attachedFilterWheels)
         equipmentManager.selectedFilterWheel.bind(filterWheels.selectionModel.selectedItemProperty())
 
-        connect.disableProperty().bind(equipmentManager.selectedFilterWheel.isNull.or(isConnecting).or(isMoving))
+        connect.disableProperty().bind(equipmentManager.selectedFilterWheel.isNull or isConnecting or isMoving)
 
         filterSlots.disableProperty().bind(isNotConnectedOrMoving)
         useFilterWheelAsShutter.disableProperty().bind(isNotConnectedOrMoving)
-        filterAsShutter.disableProperty().bind(isNotConnectedOrMoving.or(useFilterWheelAsShutter.selectedProperty().not()))
+        filterAsShutter.disableProperty().bind(isNotConnectedOrMoving or !useFilterWheelAsShutter.selectedProperty())
 
         filterSlots.columns[0].cellValueFactory = FilterSlotValueFactory(0)
         filterSlots.columns[1].cellFactory = TextFieldTableCell.forTableColumn()
@@ -58,7 +61,7 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         filterSlots.columns[1].setOnEditCommit {
             val label = it.newValue as? String
             if (label.isNullOrBlank()) return@setOnEditCommit
-            val filterWheel = equipmentManager.selectedFilterWheel.value ?: return@setOnEditCommit
+            val filterWheel = equipmentManager.selectedFilterWheel.get() ?: return@setOnEditCommit
             val position = it.tableView.items[it.tablePosition.row]
             preferences.string("filterWheelManager.equipment.${filterWheel.name}.filterSlot.$position.label", label)
             updateUseFilterWheelAsShutter()
@@ -75,7 +78,7 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
                 return (button ?: Button("Move To")).apply {
                     cursor = Cursor.HAND
                     disableProperty().bind(equipmentManager.selectedFilterWheel.position.isEqualTo(item))
-                    setOnAction { equipmentManager.selectedFilterWheel.value.moveTo(item) }
+                    setOnAction { equipmentManager.selectedFilterWheel.get().moveTo(item) }
                 }
             }
 
@@ -86,30 +89,30 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
             }
         }
 
-        filterAsShutter.selectionModel.selectedIndexProperty().addListener { _, _, index ->
-            val filterWheel = equipmentManager.selectedFilterWheel.value ?: return@addListener
-            preferences.int("filterWheelManager.equipment.${filterWheel.name}.filterAsShutter", index.toInt())
+        filterAsShutter.selectionModel.selectedIndexProperty().on {
+            val filterWheel = equipmentManager.selectedFilterWheel.get() ?: return@on
+            preferences.int("filterWheelManager.equipment.${filterWheel.name}.filterAsShutter", it)
         }
 
-        equipmentManager.selectedFilterWheel.addListener { _, _, _ ->
+        equipmentManager.selectedFilterWheel.onZero {
             updateTitle()
             updateUseFilterWheelAsShutter()
             updateFilterAsShutter()
         }
 
-        equipmentManager.selectedFilterWheel.position.addListener { _, _, _ -> updateTitle() }
+        equipmentManager.selectedFilterWheel.position.onZero(::updateTitle)
 
-        equipmentManager.selectedFilterWheel.slotCount.addListener { _, _, count ->
-            filterSlots.items.setAll((1..count.toInt()).toList())
-            height = 180.0 + count.toInt() * 29.9
+        equipmentManager.selectedFilterWheel.slotCount.on {
+            filterSlots.items.setAll((1..it).toList())
+            height = 180.0 + it * 29.9
             updateUseFilterWheelAsShutter()
             updateFilterAsShutter()
         }
 
-        equipmentManager.selectedFilterWheel.isConnected.addListener { _, _, value ->
-            connect.graphic = if (value) Icon.closeCircle() else Icon.connection()
+        connect.graphicProperty().bind(equipmentManager.selectedFilterWheel.isConnected.between(Icon.closeCircle(), Icon.connection()))
 
-            if (value) {
+        equipmentManager.selectedFilterWheel.isConnected.on {
+            if (it) {
                 updateUseFilterWheelAsShutter()
                 updateFilterAsShutter()
             }
@@ -118,16 +121,12 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         preferences.double("filterWheelManager.screen.x")?.let { x = it }
         preferences.double("filterWheelManager.screen.y")?.let { y = it }
 
-        xProperty().addListener { _, _, value -> preferences.double("filterWheelManager.screen.x", value.toDouble()) }
-        yProperty().addListener { _, _, value -> preferences.double("filterWheelManager.screen.y", value.toDouble()) }
+        xProperty().on { preferences.double("filterWheelManager.screen.x", it) }
+        yProperty().on { preferences.double("filterWheelManager.screen.y", it) }
     }
 
     override fun onStart() {
-        subscriber = eventBus
-            .filter { it is DeviceEvent<*> }
-            .subscribe(this)
-
-        val filterWheel = equipmentManager.selectedFilterWheel.value
+        val filterWheel = equipmentManager.selectedFilterWheel.get()
 
         if (filterWheel !in equipmentManager.attachedFilterWheels) {
             filterWheels.selectionModel.select(null)
@@ -141,34 +140,34 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
 
     @FXML
     private fun connect() {
-        if (!equipmentManager.selectedFilterWheel.isConnected.value) {
-            equipmentManager.selectedFilterWheel.value!!.connect()
+        if (!equipmentManager.selectedFilterWheel.isConnected.get()) {
+            equipmentManager.selectedFilterWheel.get().connect()
         } else {
-            equipmentManager.selectedFilterWheel.value!!.disconnect()
+            equipmentManager.selectedFilterWheel.get().disconnect()
         }
     }
 
     @FXML
     private fun toggleUseFilterWheelAsShutter() {
-        val filterWheel = equipmentManager.selectedFilterWheel.value ?: return
+        val filterWheel = equipmentManager.selectedFilterWheel.get() ?: return
         preferences.bool("filterWheelManager.equipment.${filterWheel.name}.useFilterWheelAsShutter", useFilterWheelAsShutter.isSelected)
     }
 
     private fun computeFilterName(position: Int): String {
-        val filterWheel = equipmentManager.selectedFilterWheel.value ?: return "Filter #$position"
+        val filterWheel = equipmentManager.selectedFilterWheel.get() ?: return "Filter #$position"
         val label = preferences.string("filterWheelManager.equipment.${filterWheel.name}.filterSlot.$position.label") ?: ""
         return label.ifEmpty { "Filter #$position" }
     }
 
     private fun updateTitle() {
-        val filterWheel = equipmentManager.selectedFilterWheel.value ?: return
-        val position = equipmentManager.selectedFilterWheel.position.value
+        val filterWheel = equipmentManager.selectedFilterWheel.get() ?: return
+        val position = equipmentManager.selectedFilterWheel.position.get()
         if (position < 0) return
         title = "Filter Wheel · ${filterWheel.name} · ${computeFilterName(position)}"
     }
 
     private fun updateUseFilterWheelAsShutter() {
-        val filterWheel = equipmentManager.selectedFilterWheel.value ?: return
+        val filterWheel = equipmentManager.selectedFilterWheel.get() ?: return
         useFilterWheelAsShutter.isSelected = preferences.bool("filterWheelManager.equipment.${filterWheel.name}.useFilterWheelAsShutter")
         val selectedFilterAsShutter = preferences.int("filterWheelManager.equipment.${filterWheel.name}.filterAsShutter") ?: 0
         filterAsShutter.items.setAll((1..filterWheel.slotCount).map(::computeFilterName))
@@ -176,7 +175,7 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
     }
 
     private fun updateFilterAsShutter() {
-        val filterWheel = equipmentManager.selectedFilterWheel.value ?: return
+        val filterWheel = equipmentManager.selectedFilterWheel.get() ?: return
         val selectedFilterAsShutter = preferences.int("filterWheelManager.equipment.${filterWheel.name}.filterAsShutter") ?: -1
         if (selectedFilterAsShutter in filterAsShutter.items.indices) filterAsShutter.selectionModel.select(selectedFilterAsShutter)
         else filterAsShutter.selectionModel.selectFirst()

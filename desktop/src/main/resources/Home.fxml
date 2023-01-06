@@ -48,6 +48,7 @@
                 </font>
             </TextField>
             <Button fx:id="connect"
+                    onAction="#connect"
                     alignment="CENTER"
                     mnemonicParsing="false"
                     contentDisplay="GRAPHIC_ONLY"
@@ -101,6 +102,8 @@
                                 vgrow="SOMETIMES"/>
             </rowConstraints>
             <Button fx:id="cameras"
+                    onAction="#open"
+                    userData="CAMERA"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"
@@ -124,6 +127,8 @@
                 </cursor>
             </Button>
             <Button fx:id="mounts"
+                    onAction="#open"
+                    userData="MOUNT"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"
@@ -147,6 +152,8 @@
                 </cursor>
             </Button>
             <Button fx:id="guiders"
+                    onAction="#open"
+                    userData="GUIDER"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"
@@ -170,6 +177,8 @@
                 </cursor>
             </Button>
             <Button fx:id="filterWheels"
+                    onAction="#open"
+                    userData="FILTER_WHEEL"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"
@@ -193,6 +202,8 @@
                 </cursor>
             </Button>
             <Button fx:id="focusers"
+                    onAction="#open"
+                    userData="FOCUSER"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"
@@ -216,6 +227,8 @@
                 </cursor>
             </Button>
             <Button fx:id="domes"
+                    onAction="#open"
+                    userData="DOME"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"
@@ -239,6 +252,8 @@
                 </cursor>
             </Button>
             <Button fx:id="rotators"
+                    onAction="#open"
+                    userData="ROTATOR"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"
@@ -262,6 +277,8 @@
                 </cursor>
             </Button>
             <Button fx:id="switches"
+                    onAction="#open"
+                    userData="SWTICH"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"
@@ -285,6 +302,8 @@
                 </cursor>
             </Button>
             <Button fx:id="atlas"
+                    onAction="#open"
+                    userData="ATLAS"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"
@@ -308,6 +327,8 @@
                 </cursor>
             </Button>
             <Button fx:id="plateSolving"
+                    onAction="#open"
+                    userData="PLATE_SOLVING"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"
@@ -331,6 +352,8 @@
                 </cursor>
             </Button>
             <Button fx:id="alignment"
+                    onAction="#open"
+                    userData="ALIGNMENT"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"
@@ -354,6 +377,8 @@
                 </cursor>
             </Button>
             <Button fx:id="sequencer"
+                    onAction="#open"
+                    userData="SEQUENCER"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"
@@ -377,6 +402,8 @@
                 </cursor>
             </Button>
             <Button fx:id="imageViewer"
+                    onAction="#open"
+                    userData="NEW_IMAGE"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"

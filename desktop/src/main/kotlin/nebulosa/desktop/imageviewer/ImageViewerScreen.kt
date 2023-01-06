@@ -13,6 +13,7 @@ import javafx.scene.image.WritableImage
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
+import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.imaging.FitsImage
 import nebulosa.imaging.Image
@@ -137,14 +138,14 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
             preferences.double("imageViewer.${camera.name}.screen.x")?.let { x = it }
             preferences.double("imageViewer.${camera.name}.screen.y")?.let { y = it }
 
-            xProperty().addListener { _, _, value -> preferences.double("imageViewer.${camera.name}.screen.x", value.toDouble()) }
-            yProperty().addListener { _, _, value -> preferences.double("imageViewer.${camera.name}.screen.y", value.toDouble()) }
+            xProperty().on { preferences.double("imageViewer.${camera.name}.screen.x", it) }
+            yProperty().on { preferences.double("imageViewer.${camera.name}.screen.y", it) }
         } else {
             preferences.double("imageViewer.screen.x")?.let { x = it }
             preferences.double("imageViewer.screen.y")?.let { y = it }
 
-            xProperty().addListener { _, _, value -> preferences.double("imageViewer.screen.x", value.toDouble()) }
-            yProperty().addListener { _, _, value -> preferences.double("imageViewer.screen.y", value.toDouble()) }
+            xProperty().on { preferences.double("imageViewer.screen.x", it) }
+            yProperty().on { preferences.double("imageViewer.screen.y", it) }
         }
     }
 

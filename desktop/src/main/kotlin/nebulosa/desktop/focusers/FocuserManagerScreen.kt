@@ -2,6 +2,7 @@ package nebulosa.desktop.focusers
 
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.fxml.FXML
+import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.scene.Screen
 
 class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager") {
@@ -17,13 +18,11 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
         preferences.double("focuserManager.screen.x")?.let { x = it }
         preferences.double("focuserManager.screen.y")?.let { y = it }
 
-        xProperty().addListener { _, _, value -> preferences.double("focuserManager.screen.x", value.toDouble()) }
-        yProperty().addListener { _, _, value -> preferences.double("focuserManager.screen.y", value.toDouble()) }
+        xProperty().on { preferences.double("focuserManager.screen.x", it) }
+        yProperty().on { preferences.double("focuserManager.screen.y", it) }
     }
 
-    override fun onStart() {
-        subscriber = eventBus.subscribe(this)
-    }
+    override fun onStart() {}
 
     override fun onStop() {
         subscriber?.dispose()

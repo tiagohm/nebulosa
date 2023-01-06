@@ -9,14 +9,11 @@ import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
-import nebulosa.desktop.core.beans.notContains
-import nebulosa.desktop.core.beans.or
-import nebulosa.desktop.core.beans.transformed
+import nebulosa.desktop.core.beans.*
 import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.telescopecontrol.StellariumTelescopeControlScreen
-import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.mounts.*
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
@@ -59,7 +56,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     @FXML private lateinit var trackingModeAdditional: SegmentedButton
     @FXML private lateinit var slewSpeed: ChoiceBox<SlewRate>
     @FXML private lateinit var park: Button
-    @FXML private lateinit var progress: Label
+    @FXML private lateinit var status: Label
 
     @Volatile private var subscriber: Disposable? = null
 
@@ -107,8 +104,8 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         nudgeSW.disableProperty().bind(isNotConnectedOrSlewing)
 
         tracking.disableProperty().bind(isNotConnectedOrSlewing)
-        equipmentManager.selectedMount.isTracking.addListener { _, _, value -> tracking.isSelected = value }
-        tracking.selectedProperty().addListener { _, _, value -> equipmentManager.selectedMount.value.tracking(value) }
+        equipmentManager.selectedMount.isTracking.on(tracking::setSelected)
+        tracking.selectedProperty().on(equipmentManager.selectedMount.get()::tracking)
 
         trackingMode.disableProperty().bind(isNotConnectedOrSlewing)
         trackingMode.buttons.forEach {
@@ -122,39 +119,37 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
             it.disableProperty().bind(equipmentManager.selectedMount.trackModes notContains mode)
         }
 
-        equipmentManager.selectedMount.trackMode.addListener { _, _, value ->
-            trackingMode.buttons.forEach { it.isSelected = it.userData == value.name }
-            trackingModeAdditional.buttons.forEach { it.isSelected = it.userData == value.name }
+        equipmentManager.selectedMount.trackMode.onOne { mode ->
+            trackingMode.buttons.forEach { it.isSelected = it.userData == mode?.name }
+            trackingModeAdditional.buttons.forEach { it.isSelected = it.userData == mode?.name }
         }
 
         slewSpeed.disableProperty().bind(isNotConnectedOrSlewing)
         slewSpeed.itemsProperty().bind(equipmentManager.selectedMount.slewRates)
-        equipmentManager.selectedMount.slewRate.addListener { _, _, value -> slewSpeed.value = value }
+        equipmentManager.selectedMount.slewRate.onOne(slewSpeed::setValue)
 
         park.disableProperty().bind(isNotConnectedOrSlewing or !equipmentManager.selectedMount.canPark)
 
-        equipmentManager.selectedMount.addListener { _, _, value ->
-            title = "Mount · ${value.name}"
+        equipmentManager.selectedMount.onOne {
+            title = "Mount · ${it?.name}"
             updateStatus()
         }
 
-        equipmentManager.selectedMount.isConnected.addListener { _, _, value ->
-            connect.graphic = if (value) Icon.closeCircle() else Icon.connection()
-        }
+        connect.graphicProperty().bind(equipmentManager.selectedMount.isConnected.between(Icon.closeCircle(), Icon.connection()))
 
         preferences.double("mountManager.screen.x")?.let { x = it }
         preferences.double("mountManager.screen.y")?.let { y = it }
 
-        xProperty().addListener { _, _, value -> preferences.double("mountManager.screen.x", value.toDouble()) }
-        yProperty().addListener { _, _, value -> preferences.double("mountManager.screen.y", value.toDouble()) }
+        xProperty().on { preferences.double("mountManager.screen.x", it) }
+        yProperty().on { preferences.double("mountManager.screen.y", it) }
     }
 
     override fun onStart() {
         subscriber = eventBus
-            .filter { it is DeviceEvent<*> }
-            .subscribe(this)
+            .filterIsInstance<MountEvent> { it.device === equipmentManager.selectedMount.get() }
+            .subscribe(::onMountEvent)
 
-        val mount = equipmentManager.selectedMount.value
+        val mount = equipmentManager.selectedMount.get()
 
         if (mount !in equipmentManager.attachedMounts) {
             mounts.selectionModel.select(null)
@@ -166,37 +161,33 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         subscriber = null
     }
 
-    override fun onEvent(event: Any) {
-        if (event is DeviceEvent<*>
-            && event.device === equipmentManager.selectedMount.value
-        ) {
-            when (event) {
-                is MountParkChanged,
-                is MountTrackingChanged,
-                is MountSlewingChanged -> Platform.runLater { updateStatus() }
-            }
+    private fun onMountEvent(event: MountEvent) {
+        when (event) {
+            is MountParkChanged,
+            is MountTrackingChanged,
+            is MountSlewingChanged -> Platform.runLater { updateStatus() }
         }
     }
 
     @FXML
     private fun connect() {
-        if (!equipmentManager.selectedMount.isConnected.value) {
-            equipmentManager.selectedMount.value!!.connect()
+        if (!equipmentManager.selectedMount.isConnected.get()) {
+            equipmentManager.selectedMount.get().connect()
         } else {
-            equipmentManager.selectedMount.value!!.disconnect()
+            equipmentManager.selectedMount.get().disconnect()
         }
     }
 
     @FXML
     private fun openStellariumTelescopeControl() {
-        val mount = equipmentManager.selectedMount.value ?: return
+        val mount = equipmentManager.selectedMount.get() ?: return
         val screen = StellariumTelescopeControlScreen(mount)
         screen.showAndWait()
     }
 
     @FXML
     private fun park() {
-        val mount = equipmentManager.selectedMount.value ?: return
+        val mount = equipmentManager.selectedMount.get() ?: return
 
         if (mount.isParked) {
             mount.unpark()
@@ -221,7 +212,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
     @FXML
     private fun goTo() {
-        val mount = equipmentManager.selectedMount.value ?: return
+        val mount = equipmentManager.selectedMount.get() ?: return
         val (ra, dec) = targetCoordinates ?: return showAlert("Invalid target coordinates")
         val isJ2000 = targetCoordinatesEquinox.toggleGroup.selectedToggle.userData == "J2000"
         if (isJ2000) mount.goToJ2000(ra, dec)
@@ -230,7 +221,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
     @FXML
     private fun slewTo() {
-        val mount = equipmentManager.selectedMount.value ?: return
+        val mount = equipmentManager.selectedMount.get() ?: return
         val (ra, dec) = targetCoordinates ?: return showAlert("Invalid target coordinates")
         val isJ2000 = targetCoordinatesEquinox.toggleGroup.selectedToggle.userData == "J2000"
         if (isJ2000) mount.slewToJ2000(ra, dec)
@@ -239,7 +230,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
     @FXML
     private fun sync() {
-        val mount = equipmentManager.selectedMount.value ?: return
+        val mount = equipmentManager.selectedMount.get() ?: return
         val (ra, dec) = targetCoordinates ?: return showAlert("Invalid target coordinates")
         val isJ2000 = targetCoordinatesEquinox.toggleGroup.selectedToggle.userData == "J2000"
         if (isJ2000) mount.syncJ2000(ra, dec)
@@ -252,15 +243,15 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
     @FXML
     private fun toggleTrackingMode(event: ActionEvent) {
-        val mount = equipmentManager.selectedMount.value ?: return
+        val mount = equipmentManager.selectedMount.get() ?: return
         val mode = TrackMode.valueOf((event.source as Node).userData as String)
         mount.trackingMode(mode)
     }
 
     private fun updateStatus() {
-        val mount = equipmentManager.selectedMount.value ?: return
+        val mount = equipmentManager.selectedMount.get() ?: return
 
-        progress.text = if (mount.isParking) "parking"
+        status.text = if (mount.isParking) "parking"
         else if (mount.isParked) "parked"
         else if (mount.isSlewing) "slewing"
         else if (mount.isTracking) "tracking"

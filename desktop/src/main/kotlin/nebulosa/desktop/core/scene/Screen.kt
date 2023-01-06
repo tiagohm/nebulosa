@@ -1,6 +1,5 @@
 package nebulosa.desktop.core.scene
 
-import io.reactivex.rxjava3.functions.Consumer
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -18,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 abstract class Screen(
     name: String,
     iconName: String = "nebulosa",
-) : Stage(), Consumer<Any>, KoinComponent {
+) : Stage(), KoinComponent {
 
     private val created = AtomicBoolean(false)
 
@@ -49,10 +48,6 @@ abstract class Screen(
     protected open fun onStart() = Unit
 
     protected open fun onStop() = Unit
-
-    protected open fun onEvent(event: Any) = Unit
-
-    final override fun accept(event: Any) = onEvent(event)
 
     companion object {
 

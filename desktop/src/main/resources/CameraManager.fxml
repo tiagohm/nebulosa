@@ -566,7 +566,7 @@
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
-            <Label fx:id="progress"
+            <Label fx:id="status"
                    text="idle">
                 <graphic>
                     <ImageView fitHeight="18.0"

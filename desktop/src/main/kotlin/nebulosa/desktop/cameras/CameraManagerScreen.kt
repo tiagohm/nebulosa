@@ -10,13 +10,11 @@ import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.stage.DirectoryChooser
-import nebulosa.desktop.core.beans.and
-import nebulosa.desktop.core.beans.or
+import nebulosa.desktop.core.beans.*
 import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.imageviewer.ImageViewerScreen
-import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.cameras.*
 import org.controlsfx.control.ToggleSwitch
 import org.koin.core.component.inject
@@ -62,7 +60,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML private lateinit var frameFormat: ChoiceBox<String>
     @FXML private lateinit var startCapture: Button
     @FXML private lateinit var abortCapture: Button
-    @FXML private lateinit var progress: Label
+    @FXML private lateinit var status: Label
 
     private val isCapturing = SimpleBooleanProperty(false)
     private val imageViewers = HashSet<ImageViewerScreen>()
@@ -137,8 +135,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
         abortCapture.disableProperty().bind(isNotConnected or !startCapture.disableProperty() or !equipmentManager.selectedCamera.canAbort)
 
-        equipmentManager.selectedCamera.addListener { _, prev, value ->
-            title = "Camera · ${value.name}"
+        equipmentManager.selectedCamera.onTwo { prev, value ->
+            title = "Camera · ${value?.name}"
 
             savePreferences(prev)
             // updateExposure()
@@ -150,11 +148,9 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             loadPreferences(value)
         }
 
-        equipmentManager.selectedCamera.isConnected.addListener { _, _, value ->
-            isConnecting.set(false)
+        equipmentManager.selectedCamera.isConnected.bondTo(isConnecting)
 
-            connect.graphic = if (value) Icon.closeCircle() else Icon.connection()
-        }
+        connect.graphicProperty().bind(equipmentManager.selectedCamera.isConnected.between(Icon.closeCircle(), Icon.connection()))
 
         cameraMenuIcon.addEventFilter(MouseEvent.MOUSE_CLICKED) {
             if (it.button == MouseButton.PRIMARY) {
@@ -168,16 +164,16 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         preferences.double("cameraManager.screen.x")?.let { x = it }
         preferences.double("cameraManager.screen.y")?.let { y = it }
 
-        xProperty().addListener { _, _, value -> preferences.double("cameraManager.screen.x", value.toDouble()) }
-        yProperty().addListener { _, _, value -> preferences.double("cameraManager.screen.y", value.toDouble()) }
+        xProperty().on { preferences.double("cameraManager.screen.x", it) }
+        yProperty().on { preferences.double("cameraManager.screen.y", it) }
     }
 
     override fun onStart() {
         subscriber = eventBus
-            .filter { it is DeviceEvent<*> }
-            .subscribe(this)
+            .filterIsInstance<CameraEvent> { it.device === equipmentManager.selectedCamera.get() }
+            .subscribe(::onCameraEvent)
 
-        val camera = equipmentManager.selectedCamera.value
+        val camera = equipmentManager.selectedCamera.get()
 
         if (camera !in equipmentManager.attachedCameras) {
             cameras.selectionModel.select(null)
@@ -195,52 +191,48 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         imageViewers.clear()
     }
 
-    override fun onEvent(event: Any) {
-        if (event is DeviceEvent<*>
-            && event.device === equipmentManager.selectedCamera.value
-        ) {
-            when (event) {
-                is CameraExposureAborted,
-                is CameraExposureFinished,
-                is CameraExposureFailed -> Platform.runLater {
-                    val isAborted = event is CameraExposureAborted
-                    this.isCapturing.set(captureTask!!.isCapturing && !isAborted)
-                    updateTitle()
-                }
-                is CameraExposureProgressChanged -> Platform.runLater { updateTitle() }
-                is CameraFrameSaved -> Platform.runLater {
-                    val viewer = imageViewers
-                        .firstOrNull { it.camera === event.device }
-                        ?: ImageViewerScreen(event.device)
+    private fun onCameraEvent(event: CameraEvent) {
+        when (event) {
+            is CameraExposureAborted,
+            is CameraExposureFinished,
+            is CameraExposureFailed -> Platform.runLater {
+                val isAborted = event is CameraExposureAborted
+                this.isCapturing.set(captureTask!!.isCapturing && !isAborted)
+                updateTitle()
+            }
+            is CameraExposureProgressChanged -> Platform.runLater { updateTitle() }
+            is CameraFrameSaved -> Platform.runLater {
+                val viewer = imageViewers
+                    .firstOrNull { it.camera === event.device }
+                    ?: ImageViewerScreen(event.device)
 
-                    imageViewers.add(viewer)
+                imageViewers.add(viewer)
 
-                    viewer.open(event.imagePath.toFile())
-                }
-                is CameraExposureMinMaxChanged -> Platform.runLater {
-                    updateExposure()
-                    loadPreferences(event.device)
-                }
-                is CameraFrameChanged -> Platform.runLater {
-                    updateFrame()
-                    loadPreferences(event.device)
-                }
-                is CameraCanBinChanged -> Platform.runLater {
-                    updateBin()
-                    loadPreferences(event.device)
-                }
-                is CameraGainMinMaxChanged -> Platform.runLater {
-                    updateGain()
-                    loadPreferences(event.device)
-                }
-                is CameraOffsetMinMaxChanged -> Platform.runLater {
-                    updateOffset()
-                    loadPreferences(event.device)
-                }
-                is CameraFrameFormatsChanged -> Platform.runLater {
-                    updateFrameFormat()
-                    loadPreferences(event.device)
-                }
+                viewer.open(event.imagePath.toFile())
+            }
+            is CameraExposureMinMaxChanged -> Platform.runLater {
+                updateExposure()
+                loadPreferences(event.device)
+            }
+            is CameraFrameChanged -> Platform.runLater {
+                updateFrame()
+                loadPreferences(event.device)
+            }
+            is CameraCanBinChanged -> Platform.runLater {
+                updateBin()
+                loadPreferences(event.device)
+            }
+            is CameraGainMinMaxChanged -> Platform.runLater {
+                updateGain()
+                loadPreferences(event.device)
+            }
+            is CameraOffsetMinMaxChanged -> Platform.runLater {
+                updateOffset()
+                loadPreferences(event.device)
+            }
+            is CameraFrameFormatsChanged -> Platform.runLater {
+                updateFrameFormat()
+                loadPreferences(event.device)
             }
         }
     }
@@ -248,28 +240,28 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     @FXML
     private fun connect() {
-        if (!equipmentManager.selectedCamera.isConnected.value) {
-            equipmentManager.selectedCamera.value!!.connect()
+        if (!equipmentManager.selectedCamera.isConnected.get()) {
+            equipmentManager.selectedCamera.get().connect()
         } else {
-            equipmentManager.selectedCamera.value!!.disconnect()
+            equipmentManager.selectedCamera.get().disconnect()
         }
     }
 
     @FXML
     private fun toggleAutoSaveAllExposures() {
-        val camera = equipmentManager.selectedCamera.value ?: return
+        val camera = equipmentManager.selectedCamera.get() ?: return
         preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures", autoSaveAllExposures.isSelected)
     }
 
     @FXML
     private fun toggleAutoSubFolder() {
-        val camera = equipmentManager.selectedCamera.value ?: return
+        val camera = equipmentManager.selectedCamera.get() ?: return
         preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder", autoSubFolder.isSelected)
     }
 
     @FXML
     private fun openImageSavePath() {
-        val camera = equipmentManager.selectedCamera.value ?: return
+        val camera = equipmentManager.selectedCamera.get() ?: return
         val chooser = DirectoryChooser()
         val initialDirectory = preferences.string("cameraManager.equipment.${camera.name}.imageSavePath")
         if (!initialDirectory.isNullOrBlank()) chooser.initialDirectory = File(initialDirectory)
@@ -281,7 +273,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     @FXML
     private fun chooseNewSubFolderAt(event: ActionEvent) {
-        val camera = equipmentManager.selectedCamera.value ?: return
+        val camera = equipmentManager.selectedCamera.get() ?: return
         val menuItem = event.source as CheckMenuItem
         val mode = AutoSubFolderMode.valueOf(menuItem.userData as String)
         menuItem.parentMenu.items.onEach { (it as CheckMenuItem).isSelected = it === menuItem }
@@ -373,7 +365,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     @Synchronized
     private fun updateFrame() {
-        val camera = equipmentManager.selectedCamera.value ?: return
+        val camera = equipmentManager.selectedCamera.get() ?: return
 
         with(frameX.valueFactory as DoubleSpinnerValueFactory) {
             max = camera.maxX.toDouble()
@@ -407,14 +399,14 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     }
 
     private fun updateBin() {
-        val camera = equipmentManager.selectedCamera.value ?: return
+        val camera = equipmentManager.selectedCamera.get() ?: return
 
         (binX.valueFactory as DoubleSpinnerValueFactory).max = camera.maxBinX.toDouble()
         (binY.valueFactory as DoubleSpinnerValueFactory).max = camera.maxBinY.toDouble()
     }
 
     private fun updateGain() {
-        val camera = equipmentManager.selectedCamera.value ?: return
+        val camera = equipmentManager.selectedCamera.get() ?: return
 
         with(gain.valueFactory as DoubleSpinnerValueFactory) {
             max = camera.gainMax.toDouble()
@@ -423,7 +415,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     }
 
     private fun updateOffset() {
-        val camera = equipmentManager.selectedCamera.value ?: return
+        val camera = equipmentManager.selectedCamera.get() ?: return
 
         with(offset.valueFactory as DoubleSpinnerValueFactory) {
             max = camera.offsetMax.toDouble()
@@ -433,7 +425,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     @FXML
     private fun applyFullsize() {
-        val camera = equipmentManager.selectedCamera.value ?: return
+        val camera = equipmentManager.selectedCamera.get() ?: return
 
         (frameX.valueFactory as DoubleSpinnerValueFactory).value = camera.minX.toDouble()
         (frameY.valueFactory as DoubleSpinnerValueFactory).value = camera.minY.toDouble()
@@ -444,7 +436,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML
     @Synchronized
     private fun startCapture() {
-        val camera = equipmentManager.selectedCamera.value ?: return
+        val camera = equipmentManager.selectedCamera.get() ?: return
 
         if (captureTask != null && !captureTask!!.isDone) return
 
@@ -485,7 +477,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     }
 
     private fun updateTitle() {
-        progress.text = buildString(128) {
+        status.text = buildString(128) {
             val task = captureTask
 
             if (task == null || task.camera !== equipmentManager.selectedCamera.get()) {

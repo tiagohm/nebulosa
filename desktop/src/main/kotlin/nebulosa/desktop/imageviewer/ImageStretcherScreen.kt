@@ -1,19 +1,20 @@
 package nebulosa.desktop.imageviewer
 
-import javafx.beans.value.ChangeListener
-import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Slider
 import javafx.scene.control.Spinner
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import javafx.util.StringConverter
+import nebulosa.desktop.core.beans.on
+import nebulosa.desktop.core.beans.onOne
+import nebulosa.desktop.core.beans.onTwo
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.math.map
 import org.controlsfx.control.RangeSlider
 
 class ImageStretcherScreen(private val imageViewer: ImageViewerScreen) :
-    Screen("ImageStretcher", "nebulosa-image-stretcher"), ChangeListener<Number> {
+    Screen("ImageStretcher", "nebulosa-image-stretcher") {
 
     @FXML private lateinit var bitDepth: ChoiceBox<Int>
     @FXML private lateinit var shadow: Spinner<Double>
@@ -31,12 +32,12 @@ class ImageStretcherScreen(private val imageViewer: ImageViewerScreen) :
     override fun onCreate() {
         bitDepth.converter = BitDepthStringConverter
 
-        shadowAndHighlight.lowValueProperty().addListener(this)
-        shadowAndHighlight.highValueProperty().addListener(this)
-        midtone.valueProperty().addListener(this)
-        shadow.valueProperty().addListener(this)
-        highlight.valueProperty().addListener(this)
-        midtoneSpinner.valueProperty().addListener(this)
+        shadowAndHighlight.lowValueProperty().on(::onLowValueChanged)
+        shadowAndHighlight.highValueProperty().on(::onHighValueChanged)
+        midtone.valueProperty().on(::onMidtoneValueChanged)
+        shadow.valueProperty().onOne { shadowAndHighlight.lowValue = it!!.toDouble() }
+        highlight.valueProperty().onOne { shadowAndHighlight.highValue = it!!.toDouble() }
+        midtoneSpinner.valueProperty().onOne { midtone.value = it!!.toDouble() }
 
         with(shadow.valueFactory as DoubleSpinnerValueFactory) {
             minProperty().bind(shadowAndHighlight.minProperty())
@@ -53,7 +54,7 @@ class ImageStretcherScreen(private val imageViewer: ImageViewerScreen) :
             maxProperty().bind(midtone.maxProperty())
         }
 
-        bitDepth.valueProperty().addListener { _, prev, value ->
+        bitDepth.valueProperty().onTwo { prev, value ->
             val shadowValue = shadowAndHighlight.lowValue
             val highlightValue = shadowAndHighlight.highValue
             val midtoneValue = midtone.value
@@ -95,28 +96,22 @@ class ImageStretcherScreen(private val imageViewer: ImageViewerScreen) :
         drawHistogram()
     }
 
-    override fun changed(
-        observable: ObservableValue<out Number>,
-        oldValue: Number, newValue: Number,
-    ) {
+    private fun onLowValueChanged(value: Double) {
         val bitDepthFactor = if (bitDepth.value == 16) 65535f else 255f
+        shadow.valueFactory.value = value
+        imageViewer.transformImage(shadow = value.toFloat() / bitDepthFactor)
+    }
 
-        if (observable === shadowAndHighlight.lowValueProperty()) {
-            shadow.valueFactory.value = newValue.toDouble()
-            imageViewer.transformImage(shadow = newValue.toFloat() / bitDepthFactor)
-        } else if (observable === shadowAndHighlight.highValueProperty()) {
-            highlight.valueFactory.value = newValue.toDouble()
-            imageViewer.transformImage(highlight = newValue.toFloat() / bitDepthFactor)
-        } else if (observable === midtone.valueProperty()) {
-            midtoneSpinner.valueFactory.value = newValue.toDouble()
-            imageViewer.transformImage(midtone = newValue.toFloat() / bitDepthFactor)
-        } else if (observable === shadow.valueProperty()) {
-            shadowAndHighlight.lowValue = newValue.toDouble()
-        } else if (observable === highlight.valueProperty()) {
-            shadowAndHighlight.highValue = newValue.toDouble()
-        } else if (observable === midtoneSpinner.valueProperty()) {
-            midtone.value = newValue.toDouble()
-        }
+    private fun onHighValueChanged(value: Double) {
+        val bitDepthFactor = if (bitDepth.value == 16) 65535f else 255f
+        highlight.valueFactory.value = value
+        imageViewer.transformImage(highlight = value.toFloat() / bitDepthFactor)
+    }
+
+    private fun onMidtoneValueChanged(value: Double) {
+        val bitDepthFactor = if (bitDepth.value == 16) 65535f else 255f
+        midtoneSpinner.valueFactory.value = value
+        imageViewer.transformImage(midtone = value.toFloat() / bitDepthFactor)
     }
 
     fun drawHistogram() {

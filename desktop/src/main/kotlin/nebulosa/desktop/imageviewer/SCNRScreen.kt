@@ -3,6 +3,8 @@ package nebulosa.desktop.imageviewer
 import javafx.fxml.FXML
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Spinner
+import nebulosa.desktop.core.beans.isAnyOf
+import nebulosa.desktop.core.beans.onZero
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
@@ -21,16 +23,12 @@ class SCNRScreen(private val imageViewer: ImageViewerScreen) : Screen("SCNR", "n
     }
 
     override fun onCreate() {
-        amount.disableProperty().bind(
-            protectionMethod.valueProperty().isEqualTo(ProtectionMethod.AVERAGE_NEUTRAL).or(
-                protectionMethod.valueProperty().isEqualTo(ProtectionMethod.MAXIMUM_NEUTRAL)
-            )
-        )
+        amount.disableProperty().bind(protectionMethod.valueProperty().isAnyOf(ProtectionMethod.AVERAGE_NEUTRAL, ProtectionMethod.MAXIMUM_NEUTRAL))
 
-        channel.valueProperty().addListener { _, _, _ -> apply() }
-        protectionMethod.valueProperty().addListener { _, _, _ -> apply() }
-        amount.valueProperty().addListener { _, _, _ -> apply() }
-        enabled.selectedProperty().addListener { _, _, _ -> apply() }
+        channel.valueProperty().onZero(::apply)
+        protectionMethod.valueProperty().onZero(::apply)
+        amount.valueProperty().onZero(::apply)
+        enabled.selectedProperty().onZero(::apply)
     }
 
     override fun onStart() {

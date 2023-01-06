@@ -1,12 +1,16 @@
 package nebulosa.desktop.home
 
 import io.reactivex.rxjava3.disposables.Disposable
+import javafx.event.ActionEvent
 import javafx.fxml.FXML
+import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import javafx.stage.FileChooser
 import nebulosa.desktop.cameras.CameraManagerScreen
 import nebulosa.desktop.connections.ConnectionManager
+import nebulosa.desktop.core.beans.between
+import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.controls.Icon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.equipments.EquipmentManager
@@ -53,37 +57,20 @@ class HomeScreen : Screen("Home") {
     }
 
     override fun onCreate() {
-        connect.setOnAction { connect() }
-        cameras.setOnAction { open("CAMERA") }
-        mounts.setOnAction { open("MOUNT") }
-        guiders.setOnAction { open("GUIDER") }
-        filterWheels.setOnAction { open("FILTER_WHEEL") }
-        focusers.setOnAction { open("FOCUSER") }
-        domes.setOnAction { open("DOME") }
-        rotators.setOnAction { open("ROTATOR") }
-        switches.setOnAction { open("SWTICH") }
-        atlas.setOnAction { open("ATLAS") }
-        plateSolving.setOnAction { open("PLATE_SOLVING") }
-        alignment.setOnAction { open("ALIGNMENT") }
-        sequencer.setOnAction { open("SEQUENCER") }
-        imageViewer.setOnAction { open("OPEN_NEW_IMAGE") }
-
         host.disableProperty().bind(equipmentManager.connected)
         port.disableProperty().bind(equipmentManager.connected)
-        cameras.disableProperty().bind(equipmentManager.connected.not())
-        mounts.disableProperty().bind(equipmentManager.connected.not())
-        guiders.disableProperty().bind(equipmentManager.connected.not())
-        filterWheels.disableProperty().bind(equipmentManager.connected.not())
-        focusers.disableProperty().bind(equipmentManager.connected.not())
-        domes.disableProperty().bind(equipmentManager.connected.not())
-        rotators.disableProperty().bind(equipmentManager.connected.not())
-        switches.disableProperty().bind(equipmentManager.connected.not())
-        alignment.disableProperty().bind(equipmentManager.connected.not())
-        sequencer.disableProperty().bind(equipmentManager.connected.not())
+        cameras.disableProperty().bind(!equipmentManager.connected)
+        mounts.disableProperty().bind(!equipmentManager.connected)
+        guiders.disableProperty().bind(!equipmentManager.connected)
+        filterWheels.disableProperty().bind(!equipmentManager.connected)
+        focusers.disableProperty().bind(!equipmentManager.connected)
+        domes.disableProperty().bind(!equipmentManager.connected)
+        rotators.disableProperty().bind(!equipmentManager.connected)
+        switches.disableProperty().bind(!equipmentManager.connected)
+        alignment.disableProperty().bind(!equipmentManager.connected)
+        sequencer.disableProperty().bind(!equipmentManager.connected)
 
-        equipmentManager.connected.addListener { _, _, value ->
-            connect.graphic = if (value) Icon.closeCircle() else Icon.connection()
-        }
+        connect.graphicProperty().bind(equipmentManager.connected.between(Icon.closeCircle(), Icon.connection()))
 
         host.text = preferences.string("connection.last.host") ?: ""
         port.text = preferences.string("connection.last.port") ?: ""
@@ -91,13 +78,11 @@ class HomeScreen : Screen("Home") {
         preferences.double("home.screen.x")?.let { x = it }
         preferences.double("home.screen.y")?.let { y = it }
 
-        xProperty().addListener { _, _, value -> preferences.double("home.screen.x", value.toDouble()) }
-        yProperty().addListener { _, _, value -> preferences.double("home.screen.y", value.toDouble()) }
+        xProperty().on { preferences.double("home.screen.x", it) }
+        yProperty().on { preferences.double("home.screen.y", it) }
     }
 
-    override fun onStart() {
-        subscriber = eventBus.subscribe(this)
-    }
+    override fun onStart() {}
 
     override fun onStop() {
         subscriber?.dispose()
@@ -114,13 +99,16 @@ class HomeScreen : Screen("Home") {
         telescopeControlManager.stopAll()
     }
 
+    @FXML
     @Synchronized
     private fun connect() {
         if (!connectionManager.isConnected()) {
             try {
                 val host = host.text.trim().ifEmpty { "localhost" }
                 val port = port.text.trim().toIntOrNull() ?: 7624
+
                 connectionManager.connect(host, port)
+
                 preferences.string("connection.last.host", host)
                 preferences.int("connection.last.port", port)
             } catch (e: Throwable) {
@@ -134,15 +122,16 @@ class HomeScreen : Screen("Home") {
         }
     }
 
+    @FXML
     @Synchronized
-    private fun open(name: String) {
-        val page = when (name) {
+    private fun open(event: ActionEvent) {
+        val page = when ((event.source as Node).userData as String) {
             "CAMERA" -> get<CameraManagerScreen>()
             "MOUNT" -> get<MountManagerScreen>()
             "FOCUSER" -> get<FocuserManagerScreen>()
             "FILTER_WHEEL" -> get<FilterWheelManagerScreen>()
             "PLATE_SOLVING" -> PlateSolverScreen()
-            "OPEN_NEW_IMAGE" -> return openNewImage()
+            "NEW_IMAGE" -> return openNewImage()
             else -> return
         }
 
