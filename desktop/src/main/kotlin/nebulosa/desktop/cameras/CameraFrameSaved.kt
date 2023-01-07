@@ -7,4 +7,5 @@ import java.nio.file.Path
 data class CameraFrameSaved(
     override val device: Camera,
     val imagePath: Path,
+    val temporary: Boolean = false,
 ) : CameraEvent

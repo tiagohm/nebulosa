@@ -67,8 +67,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     private val imageViewers = HashSet<ImageViewerScreen>()
 
     @Volatile private var subscriber: Disposable? = null
-    @Volatile private var captureTask: CameraExposureTask? = null
-    @Volatile private var captureThread: Thread? = null
 
     init {
         title = "Camera"
@@ -187,9 +185,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         subscriber?.dispose()
         subscriber = null
 
-        captureThread?.interrupt()
-        captureThread = null
-
         imageViewers.forEach(Screen::close)
         imageViewers.clear()
     }
@@ -199,8 +194,9 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             is CameraExposureAborted,
             is CameraExposureFinished,
             is CameraExposureFailed -> Platform.runLater {
-                val isAborted = event is CameraExposureAborted || event is CameraExposureFailed
-                this.isCapturing.set(captureTask!!.isCapturing && !isAborted)
+                val isFinished = event is CameraExposureAborted || event is CameraExposureFailed
+                val isCapturing = equipmentManager.imagingCameraTask?.isCapturing ?: false
+                this.isCapturing.set(isCapturing && !isFinished)
                 updateTitle()
             }
             is CameraExposureProgressChanged -> Platform.runLater { updateTitle() }
@@ -335,7 +331,9 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             val mode = preferences.enum("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON
             newSubFolderAtMidnight.isSelected = mode == AutoSubFolderMode.MIDNIGHT
             newSubFolderAtNoon.isSelected = mode == AutoSubFolderMode.NOON
-            imageSavePath.text = preferences.string("cameraManager.equipment.${camera.name}.imageSavePath") ?: System.getProperty("java.io.tmpdir")
+            imageSavePath.text = equipmentManager.cameraImageSavePath(camera).toString()
+        } else {
+            imageSavePath.text = "-"
         }
     }
 
@@ -440,9 +438,9 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML
     @Synchronized
     private fun startCapture() {
-        val camera = equipmentManager.selectedCamera.get() ?: return
+        if (isCapturing.get()) return
 
-        if (captureTask != null && !captureTask!!.isDone) return
+        val camera = equipmentManager.selectedCamera.get() ?: return
 
         val timeUnit = exposure.userData as TimeUnit
         val exposureInMicros = TimeUnit.MICROSECONDS.convert(exposure.value.toLong(), timeUnit)
@@ -452,26 +450,25 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             ?.let { if (it.userData == "SINGLE") 1 else if (it.userData == "FIXED") exposureCount.value.toInt() else Int.MAX_VALUE }
             ?: 1
 
+        equipmentManager
+            .startImagingCapture(
+                camera,
+                equipmentManager.selectedFilterWheel.value,
+                exposureInMicros, amount, exposureDelay.value.toLong(),
+                if (subFrame.isSelected) frameX.value.toInt() else camera.minX,
+                if (subFrame.isSelected) frameY.value.toInt() else camera.minY,
+                if (subFrame.isSelected) frameWidth.value.toInt() else camera.maxWidth,
+                if (subFrame.isSelected) frameHeight.value.toInt() else camera.maxHeight,
+                frameFormat.value, frameType.value,
+                binX.value.toInt(), binY.value.toInt(),
+                gain.value.toInt(), offset.value.toInt(),
+                preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures"),
+                equipmentManager.cameraImageSavePath(camera),
+                if (!preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")) AutoSubFolderMode.OFF
+                else preferences.enum<AutoSubFolderMode>("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON,
+            ) ?: return
+
         savePreferences(camera)
-
-        captureTask = CameraExposureTask(
-            camera,
-            equipmentManager.selectedFilterWheel.value,
-            exposureInMicros, amount, exposureDelay.value.toLong(),
-            if (subFrame.isSelected) frameX.value.toInt() else camera.minX,
-            if (subFrame.isSelected) frameY.value.toInt() else camera.minY,
-            if (subFrame.isSelected) frameWidth.value.toInt() else camera.maxWidth,
-            if (subFrame.isSelected) frameHeight.value.toInt() else camera.maxHeight,
-            frameFormat.value, frameType.value,
-            binX.value.toInt(), binY.value.toInt(),
-            gain.value.toInt(), offset.value.toInt(),
-            preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures"),
-            preferences.string("cameraManager.equipment.${camera.name}.imageSavePath") ?: "",
-            if (!preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")) AutoSubFolderMode.OFF
-            else preferences.enum<AutoSubFolderMode>("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON,
-        )
-
-        captureThread = captureTask!!.runOnThread()
 
         isCapturing.set(true)
     }
@@ -479,21 +476,15 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML
     @Synchronized
     private fun abortCapture() {
-        captureTask?.cancel(true)
+        equipmentManager.imagingCameraTask?.cancel(true)
     }
 
     @Synchronized
     private fun updateTitle() {
         status.text = buildString(128) {
-            val task = captureTask
+            val task = equipmentManager.imagingCameraTask
 
-            if (task == null || task.camera !== equipmentManager.selectedCamera.get()) {
-                append("idle")
-            } else if (task.camera.isFailed) {
-                append("failed")
-            } else if (task.camera.isAborted) {
-                append("aborted")
-            } else if (isCapturing.get()) {
+            if (task != null && isCapturing.get()) {
                 val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000.0} s"
                 else if (task.exposure >= 1000L) "${task.exposure / 1000.0} ms"
                 else "${task.exposure} µs"
@@ -505,7 +496,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                 append(" | ")
                 append("%s".format(Locale.ENGLISH, task.frameType))
             } else {
-                append("finished")
+                append("idle")
             }
         }
     }

@@ -5,8 +5,9 @@ import nebulosa.indi.protocol.EnableBLOB
 import nebulosa.indi.protocol.GetProperties
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.parser.INDIProtocolHandler
+import java.io.Closeable
 
-interface Device : INDIProtocolHandler {
+interface Device : INDIProtocolHandler, Closeable {
 
     val client: INDIClient
 

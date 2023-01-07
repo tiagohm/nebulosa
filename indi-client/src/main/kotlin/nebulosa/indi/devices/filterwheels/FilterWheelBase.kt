@@ -53,4 +53,6 @@ internal open class FilterWheelBase(
             sendNewNumber("FILTER_SLOT", "FILTER_SLOT_VALUE" to slot.toDouble())
         }
     }
+
+    override fun close() {}
 }

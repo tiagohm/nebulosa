@@ -8,10 +8,6 @@ interface Camera : Device {
 
     val isCapturing: Boolean
 
-    val isFailed: Boolean
-
-    val isAborted: Boolean
-
     val hasCoolerControl: Boolean
 
     val isCoolerOn: Boolean

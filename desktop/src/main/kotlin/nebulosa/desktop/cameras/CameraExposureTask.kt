@@ -17,7 +17,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.Phaser
 import kotlin.io.path.createDirectories
-import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 import kotlin.math.min
 
@@ -38,7 +37,7 @@ data class CameraExposureTask(
     val gain: Int,
     val offset: Int,
     val save: Boolean = false,
-    val savePath: String = "",
+    val savePath: Path? = null,
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
 ) : ThreadedTask<List<Path>>(), Consumer<Any>, KoinComponent {
 
@@ -79,7 +78,7 @@ data class CameraExposureTask(
         }
     }
 
-    override fun execute(): List<Path> {
+    override fun get(): List<Path> {
         camera.enableBlob()
 
         isCapturing = true
@@ -145,34 +144,29 @@ data class CameraExposureTask(
 
     @Synchronized
     private fun save(fits: InputStream) {
-        imagePath = if (save && savePath.isNotBlank()) {
+        imagePath = if (save) {
             val folderName = autoSubFolderMode.folderName()
-            val fileDirectory = Paths.get(savePath, folderName).normalize()
-            fileDirectory.createDirectories()
-
             val fileName = "%s-%s.fits".format(LocalDateTime.now().format(DATE_TIME_FORMAT), frameType)
+            val fileDirectory = Paths.get("$savePath", folderName).normalize()
             Paths.get("$fileDirectory", fileName)
         } else {
-            imagePath?.deleteIfExists()
-
-            val fileDirectory = Paths.get(System.getProperty("java.io.tmpdir"))
-            val fileName = "%s-%s.fits".format(LocalDateTime.now().format(DATE_TIME_FORMAT), frameType)
-            Paths.get("$fileDirectory", fileName)
+            val fileName = "%s.fits".format(camera.name)
+            Paths.get("$savePath", fileName)
         }
 
         LOG.info("saving FITS at $imagePath...")
 
+        imagePath!!.parent.createDirectories()
         imagePath!!.outputStream().use { output -> fits.use { it.transferTo(output) } }
 
-        eventBus.post(CameraFrameSaved(camera, imagePath!!))
+        eventBus.post(CameraFrameSaved(camera, imagePath!!, !save))
     }
 
     companion object {
 
         private const val DELAY_INTERVAL = 100L
 
-        @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")
-
         @JvmStatic private val LOG = LoggerFactory.getLogger(CameraExposureTask::class.java)
+        @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")
     }
 }

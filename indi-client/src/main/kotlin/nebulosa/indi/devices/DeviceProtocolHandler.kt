@@ -74,20 +74,24 @@ class DeviceProtocolHandler : INDIProtocolParser {
         try {
             protocolReader.close()
         } finally {
-            for (camera in cameras) {
-                fireOnEventReceived(CameraDetached(camera.value))
+            for ((_, camera) in cameras) {
+                camera.close()
+                fireOnEventReceived(CameraDetached(camera))
             }
 
-            for (mount in mounts) {
-                fireOnEventReceived(MountDetached(mount.value))
+            for ((_, mount) in mounts) {
+                mount.close()
+                fireOnEventReceived(MountDetached(mount))
             }
 
-            for (filterWheel in filterWheels) {
-                fireOnEventReceived(FilterWheelDetached(filterWheel.value))
+            for ((_, filterWheel) in filterWheels) {
+                filterWheel.close()
+                fireOnEventReceived(FilterWheelDetached(filterWheel))
             }
 
-            for (focuser in focusers) {
-                fireOnEventReceived(FocuserDetached(focuser.value))
+            for ((_, focuser) in focusers) {
+                focuser.close()
+                fireOnEventReceived(FocuserDetached(focuser))
             }
 
             cameras.clear()

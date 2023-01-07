@@ -15,8 +15,6 @@ internal open class CameraBase(
 ) : AbstractDevice(client, handler, name), Camera {
 
     override var isCapturing = false
-    override var isFailed = false
-    override var isAborted = false
     override var hasCoolerControl = false
     override var isCoolerOn = false
     override var hasDewHeater = false
@@ -116,11 +114,6 @@ internal open class CameraBase(
                         val prevIsCapturing = isCapturing
                         isCapturing = exposureState == PropertyState.BUSY
 
-                        if (isCapturing) {
-                            isAborted = false
-                            isFailed = false
-                        }
-
                         if (prevIsCapturing != isCapturing) {
                             handler.fireOnEventReceived(CameraCapturingChanged(this))
                         }
@@ -128,12 +121,10 @@ internal open class CameraBase(
                         if (exposureState == PropertyState.IDLE
                             && (prevExposureState == PropertyState.BUSY || isCapturing)
                         ) {
-                            isAborted = true
                             handler.fireOnEventReceived(CameraExposureAborted(this))
                         } else if (exposureState == PropertyState.OK && prevExposureState == PropertyState.BUSY) {
                             handler.fireOnEventReceived(CameraExposureFinished(this))
-                        } else if (exposureState == PropertyState.ALERT) {
-                            isFailed = true
+                        } else if (exposureState == PropertyState.ALERT && prevExposureState != PropertyState.ALERT) {
                             handler.fireOnEventReceived(CameraExposureFailed(this))
                         }
 
@@ -293,4 +284,6 @@ internal open class CameraBase(
             sendNewSwitch("CCD_ABORT_EXPOSURE", "ABORT" to true)
         }
     }
+
+    override fun close() {}
 }

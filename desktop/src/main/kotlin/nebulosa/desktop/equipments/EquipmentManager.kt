@@ -4,12 +4,16 @@ import io.reactivex.rxjava3.functions.Consumer
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
+import nebulosa.desktop.cameras.AutoSubFolderMode
+import nebulosa.desktop.cameras.CameraExposureTask
 import nebulosa.desktop.connections.Connected
 import nebulosa.desktop.connections.Disconnected
 import nebulosa.desktop.core.EventBus
+import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.devices.cameras.Camera
 import nebulosa.indi.devices.cameras.CameraAttached
 import nebulosa.indi.devices.cameras.CameraDetached
+import nebulosa.indi.devices.cameras.FrameType
 import nebulosa.indi.devices.filterwheels.FilterWheel
 import nebulosa.indi.devices.filterwheels.FilterWheelAttached
 import nebulosa.indi.devices.filterwheels.FilterWheelDetached
@@ -24,10 +28,16 @@ import nebulosa.indi.devices.thermometers.ThermometerAttached
 import nebulosa.indi.devices.thermometers.ThermometerDetached
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.koin.core.qualifier.named
+import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.io.path.exists
 
 class EquipmentManager : KoinComponent, Consumer<Any> {
 
     private val eventBus by inject<EventBus>()
+    private val preferences by inject<Preferences>()
+    private val appDirectory by inject<Path>(named("app"))
 
     @JvmField val connected = SimpleBooleanProperty(false)
 
@@ -42,6 +52,9 @@ class EquipmentManager : KoinComponent, Consumer<Any> {
     @JvmField val selectedMount = MountProperty()
     @JvmField val selectedFilterWheel = FilterWheelProperty()
     @JvmField val selectedFocuser = FocuserProperty()
+
+    @Volatile var imagingCameraTask: CameraExposureTask? = null
+        private set
 
     init {
         eventBus.subscribe(this)
@@ -63,4 +76,47 @@ class EquipmentManager : KoinComponent, Consumer<Any> {
             is Disconnected -> connected.set(false)
         }
     }
+
+    fun cameraImageSavePath(camera: Camera): Path {
+        return preferences.string("cameraManager.equipment.${camera.name}.imageSavePath")
+            ?.ifBlank { null }
+            ?.let(Paths::get)
+            ?.takeIf { it.exists() }
+            ?: Paths.get("$appDirectory", "captures", camera.name)
+    }
+
+    @Synchronized
+    fun startImagingCapture(
+        camera: Camera,
+        filterWheel: FilterWheel?,
+        exposure: Long, amount: Int, delay: Long,
+        x: Int, y: Int, width: Int, height: Int,
+        frameFormat: String, frameType: FrameType,
+        binX: Int, binY: Int,
+        gain: Int, offset: Int,
+        save: Boolean = false, savePath: Path? = null,
+        autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
+    ): CameraExposureTask? {
+        return if (imagingCameraTask == null || imagingCameraTask!!.isDone) {
+            val task = CameraExposureTask(
+                camera, filterWheel,
+                exposure, amount, delay,
+                x, y, width, height,
+                frameFormat, frameType,
+                binX, binY,
+                gain, offset,
+                save, savePath, autoSubFolderMode,
+            )
+
+            imagingCameraTask = task
+
+            task.execute()
+                .whenComplete { _, _ -> imagingCameraTask = null }
+
+            task
+        } else {
+            null
+        }
+    }
+
 }

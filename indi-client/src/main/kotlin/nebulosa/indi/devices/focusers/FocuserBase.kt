@@ -6,6 +6,7 @@ import nebulosa.indi.devices.DeviceProtocolHandler
 import nebulosa.indi.devices.firstOnSwitch
 import nebulosa.indi.devices.thermometers.Thermometer
 import nebulosa.indi.devices.thermometers.ThermometerAttached
+import nebulosa.indi.devices.thermometers.ThermometerDetached
 import nebulosa.indi.devices.thermometers.ThermometerTemperatureChanged
 import nebulosa.indi.protocol.*
 
@@ -27,6 +28,8 @@ internal open class FocuserBase(
     override var maxPosition = 0
 
     override var temperature = 0.0
+
+    @Volatile private var hasThermometer = false
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -113,8 +116,8 @@ internal open class FocuserBase(
                     }
                     "FOCUS_TEMPERATURE" -> {
                         if (message is DefNumberVector) {
+                            hasThermometer = true
                             handler.fireOnEventReceived(ThermometerAttached(this))
-                            // TODO: Detach thermometer on DelProperty?
                         }
 
                         temperature = message["TEMPERATURE"]!!.value
@@ -164,6 +167,13 @@ internal open class FocuserBase(
     override fun syncFocusTo(steps: Int) {
         if (canSync) {
             sendNewNumber("FOCUS_SYNC", "FOCUS_SYNC_VALUE" to steps.toDouble())
+        }
+    }
+
+    override fun close() {
+        if (hasThermometer) {
+            hasThermometer = false
+            handler.fireOnEventReceived(ThermometerDetached(this))
         }
     }
 }

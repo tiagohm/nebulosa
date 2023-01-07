@@ -183,4 +183,6 @@ internal open class MountBase(
     override fun trackingMode(mode: TrackMode) {
         sendNewSwitch("TELESCOPE_TRACK_MODE", "TRACK_$mode" to true)
     }
+
+    override fun close() {}
 }

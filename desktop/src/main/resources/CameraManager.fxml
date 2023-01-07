@@ -95,7 +95,7 @@
             </HBox>
             <HBox alignment="CENTER_LEFT">
                 <Label fx:id="imageSavePath"
-                       text="/tmp">
+                       text="-">
                     <graphic>
                         <ImageView fitHeight="16.0"
                                    fitWidth="16.0"
