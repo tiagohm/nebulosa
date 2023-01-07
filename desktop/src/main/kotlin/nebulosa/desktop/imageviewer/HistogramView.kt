@@ -7,7 +7,8 @@ import kotlin.math.max
 
 class HistogramView : Canvas() {
 
-    @Volatile private var lastDrawTime = 0L
+    private val histogramData = IntArray(256)
+    private var maxHeight = 1
 
     override fun isResizable() = true
 
@@ -28,25 +29,10 @@ class HistogramView : Canvas() {
         this.height = height
     }
 
-    private fun canDraw(): Boolean {
-        val curTime = System.currentTimeMillis()
-        return curTime - lastDrawTime >= 100
-    }
-
     @Synchronized
     fun draw(fits: Image) {
-        if (!canDraw()) return
-
-        lastDrawTime = System.currentTimeMillis()
-
-        val gc = graphicsContext2D
-
-        gc.fill = BACKGROUND_COLOR
-        gc.fillRect(0.0, 0.0, width, height)
-
-        var maxHeight = 1
-
-        val histogramData = IntArray(256)
+        maxHeight = 1
+        histogramData.fill(0)
 
         for (y in 0 until fits.height) {
             for (x in 0 until fits.width) {
@@ -63,6 +49,15 @@ class HistogramView : Canvas() {
                 }
             }
         }
+
+        draw()
+    }
+
+    fun draw() {
+        val gc = graphicsContext2D
+
+        gc.fill = BACKGROUND_COLOR
+        gc.fillRect(0.0, 0.0, width, height)
 
         gc.lineWidth = 1.0
         gc.stroke = Color.BLACK

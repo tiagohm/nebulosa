@@ -13,6 +13,7 @@ import nebulosa.desktop.core.util.BitDepthStringConverter
 import nebulosa.math.map
 import org.controlsfx.control.RangeSlider
 
+// TODO: Stretch by channels: R, G, B, K(both)
 class ImageStretcherScreen(private val imageViewer: ImageViewerScreen) :
     Screen("ImageStretcher", "nebulosa-image-stretcher") {
 

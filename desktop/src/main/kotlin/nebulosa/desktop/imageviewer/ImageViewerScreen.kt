@@ -1,5 +1,7 @@
 package nebulosa.desktop.imageviewer
 
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
@@ -23,7 +25,7 @@ import nebulosa.indi.devices.cameras.Camera
 import nom.tam.fits.Fits
 import java.io.File
 import java.nio.IntBuffer
-import kotlin.math.exp
+import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.min
 
@@ -38,16 +40,19 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
     @Volatile private var buffer = IntBuffer.allocate(1)
     @Volatile private var bufferSize = 1
-    @Volatile private var scale = 1.0
+    @Volatile private var scale = 1f
+    @Volatile private var scaleFactor = 0
     @Volatile private var startX = 0
     @Volatile private var startY = 0
     @Volatile private var dragging = false
     @Volatile private var dragStartX = 0.0
     @Volatile private var dragStartY = 0.0
-    @Volatile private var lastDrawTime = 0L
 
     private val imageStretcherScreen = ImageStretcherScreen(this)
     private val scnrScreen = SCNRScreen(this)
+    private val transformImagePublisher = BehaviorSubject.create<Unit>()
+    private val drawPublisher = BehaviorSubject.create<Unit>()
+    private val subscribers = arrayOfNulls<Disposable>(2)
 
     var shadow = 0f
         private set
@@ -111,7 +116,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
                     dragStartX = it.x
                     dragStartY = it.y
 
-                    draw()
+                    drawPublisher.onNext(Unit)
                 }
 
                 it.consume()
@@ -150,6 +155,18 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     }
 
     override fun onStart() {
+        subscribers[0] = transformImagePublisher.debounce(850L, TimeUnit.MILLISECONDS)
+            .subscribe {
+                transformImage()
+                drawPublisher.onNext(Unit)
+            }
+
+        subscribers[1] = drawPublisher.debounce(80L, TimeUnit.MILLISECONDS)
+            .subscribe {
+                draw()
+                imageStretcherScreen.drawHistogram()
+            }
+
         shadow = 0f
         highlight = 1f
         midtone = 0.5f
@@ -173,13 +190,16 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
         buffer = IntBuffer.allocate(1)
         bufferSize = 1
-        scale = 1.0
+        scale = 1f
+        scaleFactor = 0
         startX = 0
         startY = 0
         dragging = false
         dragStartX = 0.0
         dragStartY = 0.0
-        lastDrawTime = 0L
+
+        subscribers[0]?.dispose()
+        subscribers[1]?.dispose()
 
         imageStretcherScreen.close()
         scnrScreen.close()
@@ -198,8 +218,13 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     private fun zoomWithWheel(event: ScrollEvent) {
         val delta = if (event.deltaY == 0.0 && event.deltaX != 0.0) event.deltaX else event.deltaY
         val wheel = if (delta < 0) -1 else 1
-        val newScale = scale * exp((wheel * 0.25) / 3)
-        zoomToPoint(min(max(newScale, 1.0), 150.0), event.x, event.y)
+        val scaleFactor = max(0, min(scaleFactor + wheel, SCALE_FACTORS.size - 1))
+
+        if (scaleFactor != this.scaleFactor) {
+            this.scaleFactor = scaleFactor
+            val newScale = SCALE_FACTORS[scaleFactor]
+            zoomToPoint(newScale, event.x, event.y)
+        }
     }
 
     private fun zoomToPoint(
@@ -214,9 +239,9 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         val toX = (x / newScale - x / scale + x * newScale) / newScale
         val toY = (y / newScale - y / scale + y * newScale) / newScale
 
-        scale = newScale
+        scale = newScale.toFloat()
 
-        if (scale == 1.0) {
+        if (scale == 1f) {
             startX = 0
             startY = 0
         } else {
@@ -227,7 +252,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
             startY = max(0, startY)
         }
 
-        draw()
+        drawPublisher.onNext(Unit)
     }
 
     override fun changed(
@@ -240,7 +265,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
             startY = (startY * factor).toInt()
         }
 
-        draw()
+        drawPublisher.onNext(Unit)
     }
 
     @Synchronized
@@ -259,16 +284,19 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         widthProperty().removeListener(this)
         heightProperty().removeListener(this)
 
-        width = 640.0
-        val titleHeight = height - scene.height
-        height = fits.height * (width / fits.width) + titleHeight - 1
+        if (fits.width >= fits.height) {
+            width = 640.0
+            val titleHeight = height - scene.height
+            height = fits.height * (width / fits.width) + titleHeight - 1
+        } else {
+            height = 640.0
+            width = fits.width * (height / fits.height)
+        }
 
         widthProperty().addListener(this)
         heightProperty().addListener(this)
 
-        transformImage()
-
-        imageStretcherScreen.drawHistogram()
+        transformImagePublisher.onNext(Unit)
     }
 
     @Synchronized
@@ -291,8 +319,10 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         this.scnrProtectionMode = scnrProtectionMode
         this.scnrAmount = scnrAmount
 
-        if (!canDraw()) return
+        transformImagePublisher.onNext(Unit)
+    }
 
+    private fun transformImage() {
         // TODO: How to handle rotation transformation if data is copy but width/height is not?
         // TODO: Reason: Image will be rotated for each draw.
         fits!!.data.copyInto(transformedFits!!.data)
@@ -304,24 +334,13 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         if (invert) algorithms.add(Invert)
 
         transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)
-
-        draw()
-    }
-
-    private fun canDraw(): Boolean {
-        val curTime = System.currentTimeMillis()
-        return curTime - lastDrawTime >= 100
     }
 
     private fun draw() {
         val fits = transformedFits ?: return
 
-        if (!canDraw()) return
-
-        lastDrawTime = System.currentTimeMillis()
-
-        val areaWidth = width.toInt()
-        val areaHeight = height.toInt()
+        val areaWidth = scene.width.toInt()
+        val areaHeight = scene.height.toInt()
         val area = areaWidth * areaHeight
 
         if (area > bufferSize) {
@@ -331,8 +350,9 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
             buffer.clear()
         }
 
-        val factor = if (fits.width >= fits.height) fits.width.toFloat() / areaWidth / scale
-        else fits.height.toFloat() / areaHeight / scale
+        val factorW = fits.width.toFloat() / areaWidth
+        val factorH = fits.height.toFloat() / areaHeight
+        val factor = max(factorW, factorH) / scale
 
         var prevIndex = -1
         var prevColor = 0
@@ -397,5 +417,14 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     @FXML
     private fun invert() {
         transformImage(invert = !invert)
+    }
+
+    companion object {
+
+        @JvmStatic private val SCALE_FACTORS = doubleArrayOf(
+            1.0, 1.25, 1.5, 1.75, 2.0, 2.5,
+            3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0,
+            10.0, 15.0, 20.0, 25.0, 50.0, 75.0, 100.0, 200.0, 500.0,
+        )
     }
 }
