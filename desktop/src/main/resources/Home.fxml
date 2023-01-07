@@ -51,19 +51,17 @@
                     onAction="#connect"
                     alignment="CENTER"
                     mnemonicParsing="false"
-                    contentDisplay="GRAPHIC_ONLY"
+                    contentDisplay="TEXT_ONLY"
+                    text="&#xF1616;"
+                    textFill="#455A64"
                     prefHeight="32.0">
+                <font>
+                    <Font name="Material Design Icons"
+                          size="18.0"/>
+                </font>
                 <cursor>
                     <Cursor fx:constant="HAND"/>
                 </cursor>
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/connection.png"/>
-                    </ImageView>
-                </graphic>
             </Button>
         </HBox>
         <GridPane alignment="CENTER"
@@ -112,12 +110,13 @@
                     GridPane.rowIndex="0"
                     GridPane.columnIndex="0">
                 <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/camera-iris.png"/>
-                    </ImageView>
+                    <Label text="&#xF0104;"
+                           textFill="#212121">
+                        <font>
+                            <Font name="Material Design Icons"
+                                  size="24.0"/>
+                        </font>
+                    </Label>
                 </graphic>
                 <font>
                     <Font size="11.0"/>
@@ -137,12 +136,13 @@
                     GridPane.rowIndex="0"
                     GridPane.columnIndex="1">
                 <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/telescope.png"/>
-                    </ImageView>
+                    <Label text="&#xF0B4E;"
+                           textFill="#212121">
+                        <font>
+                            <Font name="Material Design Icons"
+                                  size="24.0"/>
+                        </font>
+                    </Label>
                 </graphic>
                 <font>
                     <Font size="11.0"/>
@@ -212,12 +212,13 @@
                     GridPane.rowIndex="1"
                     GridPane.columnIndex="1">
                 <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/image-filter-center-focus.png"/>
-                    </ImageView>
+                    <Label text="&#xF02F1;"
+                           textFill="#212121">
+                        <font>
+                            <Font name="Material Design Icons"
+                                  size="24.0"/>
+                        </font>
+                    </Label>
                 </graphic>
                 <font>
                     <Font size="11.0"/>
@@ -312,12 +313,13 @@
                     GridPane.rowIndex="2"
                     GridPane.columnIndex="2">
                 <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/map.png"/>
-                    </ImageView>
+                    <Label text="&#xF034D;"
+                           textFill="#212121">
+                        <font>
+                            <Font name="Material Design Icons"
+                                  size="24.0"/>
+                        </font>
+                    </Label>
                 </graphic>
                 <font>
                     <Font size="11.0"/>
@@ -362,12 +364,13 @@
                     GridPane.rowIndex="3"
                     GridPane.columnIndex="1">
                 <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/star.png"/>
-                    </ImageView>
+                    <Label text="&#xF04CE;"
+                           textFill="#212121">
+                        <font>
+                            <Font name="Material Design Icons"
+                                  size="24.0"/>
+                        </font>
+                    </Label>
                 </graphic>
                 <font>
                     <Font size="11.0"/>
@@ -387,12 +390,13 @@
                     GridPane.rowIndex="3"
                     GridPane.columnIndex="2">
                 <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/table-clock.png"/>
-                    </ImageView>
+                    <Label text="&#xF13C1;"
+                           textFill="#212121">
+                        <font>
+                            <Font name="Material Design Icons"
+                                  size="24.0"/>
+                        </font>
+                    </Label>
                 </graphic>
                 <font>
                     <Font size="11.0"/>
@@ -412,12 +416,13 @@
                     GridPane.rowIndex="4"
                     GridPane.columnIndex="0">
                 <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/image.png"/>
-                    </ImageView>
+                    <Label text="&#xF02E9;"
+                           textFill="#212121">
+                        <font>
+                            <Font name="Material Design Icons"
+                                  size="24.0"/>
+                        </font>
+                    </Label>
                 </graphic>
                 <font>
                     <Font size="11.0"/>

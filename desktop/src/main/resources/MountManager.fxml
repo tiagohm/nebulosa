@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.image.*?>
@@ -37,17 +37,17 @@
                 </cursor>
             </ChoiceBox>
             <Button fx:id="connect"
-                    contentDisplay="GRAPHIC_ONLY"
+                    onAction="#connect"
+                    alignment="CENTER"
                     mnemonicParsing="false"
-                    onAction="#connect">
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/connection.png"/>
-                    </ImageView>
-                </graphic>
+                    contentDisplay="TEXT_ONLY"
+                    text="&#xF1616;"
+                    textFill="#455A64"
+                    prefHeight="32.0">
+                <font>
+                    <Font name="Material Design Icons"
+                          size="18.0"/>
+                </font>
                 <cursor>
                     <Cursor fx:constant="HAND"/>
                 </cursor>
@@ -286,12 +286,13 @@
                         onAction="#goTo"
                         prefWidth="92.0">
                     <graphic>
-                        <ImageView fitHeight="18.0"
-                                   fitWidth="18.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/check.png"/>
-                        </ImageView>
+                        <Label text="&#xF012C;"
+                               textFill="#388E3C">
+                            <font>
+                                <Font name="Material Design Icons"
+                                      size="18.0"/>
+                            </font>
+                        </Label>
                     </graphic>
                     <cursor>
                         <Cursor fx:constant="HAND"/>
@@ -302,12 +303,13 @@
                         onAction="#slewTo"
                         prefWidth="92.0">
                     <graphic>
-                        <ImageView fitHeight="18.0"
-                                   fitWidth="18.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/check.png"/>
-                        </ImageView>
+                        <Label text="&#xF012C;"
+                               textFill="#388E3C">
+                            <font>
+                                <Font name="Material Design Icons"
+                                      size="18.0"/>
+                            </font>
+                        </Label>
                     </graphic>
                     <cursor>
                         <Cursor fx:constant="HAND"/>
@@ -318,12 +320,13 @@
                         onAction="#sync"
                         prefWidth="92.0">
                     <graphic>
-                        <ImageView fitHeight="18.0"
-                                   fitWidth="18.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/sync.png"/>
-                        </ImageView>
+                        <Label text="&#xF04E6;"
+                               textFill="#1976D2">
+                            <font>
+                                <Font name="Material Design Icons"
+                                      size="18.0"/>
+                            </font>
+                        </Label>
                     </graphic>
                     <cursor>
                         <Cursor fx:constant="HAND"/>
@@ -340,12 +343,13 @@
                     <Font size="11.0"/>
                 </font>
                 <graphic>
-                    <ImageView fitHeight="18.0"
-                               fitWidth="18.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/remote-tv.png"/>
-                    </ImageView>
+                    <Label text="&#xF0EC5;"
+                           textFill="#7B1FA2">
+                        <font>
+                            <Font name="Material Design Icons"
+                                  size="18.0"/>
+                        </font>
+                    </Label>
                 </graphic>
                 <cursor>
                     <Cursor fx:constant="HAND"/>
@@ -363,12 +367,13 @@
                             prefHeight="48.0"
                             userData="NE">
                         <graphic>
-                            <ImageView fitHeight="24.0"
-                                       fitWidth="24.0"
-                                       pickOnBounds="true"
-                                       preserveRatio="true">
-                                <Image url="@icons/arrow-top-left-thick.png"/>
-                            </ImageView>
+                            <Label text="&#xF09C4;"
+                                   textFill="#1976D2">
+                                <font>
+                                    <Font name="Material Design Icons"
+                                          size="24.0"/>
+                                </font>
+                            </Label>
                         </graphic>
                         <cursor>
                             <Cursor fx:constant="HAND"/>
@@ -381,12 +386,13 @@
                             prefHeight="48.0"
                             userData="N">
                         <graphic>
-                            <ImageView fitHeight="24.0"
-                                       fitWidth="24.0"
-                                       pickOnBounds="true"
-                                       preserveRatio="true">
-                                <Image url="@icons/arrow-up-thick.png"/>
-                            </ImageView>
+                            <Label text="&#xF0737;"
+                                   textFill="#1976D2">
+                                <font>
+                                    <Font name="Material Design Icons"
+                                          size="24.0"/>
+                                </font>
+                            </Label>
                         </graphic>
                         <cursor>
                             <Cursor fx:constant="HAND"/>
@@ -399,12 +405,13 @@
                             prefHeight="48.0"
                             userData="NW">
                         <graphic>
-                            <ImageView fitHeight="24.0"
-                                       fitWidth="24.0"
-                                       pickOnBounds="true"
-                                       preserveRatio="true">
-                                <Image url="@icons/arrow-top-right-thick.png"/>
-                            </ImageView>
+                            <Label text="&#xF09C6;"
+                                   textFill="#1976D2">
+                                <font>
+                                    <Font name="Material Design Icons"
+                                          size="24.0"/>
+                                </font>
+                            </Label>
                         </graphic>
                         <cursor>
                             <Cursor fx:constant="HAND"/>
@@ -420,12 +427,13 @@
                             prefHeight="48.0"
                             userData="E">
                         <graphic>
-                            <ImageView fitHeight="24.0"
-                                       fitWidth="24.0"
-                                       pickOnBounds="true"
-                                       preserveRatio="true">
-                                <Image url="@icons/arrow-left-thick.png"/>
-                            </ImageView>
+                            <Label text="&#xF0731;"
+                                   textFill="#1976D2">
+                                <font>
+                                    <Font name="Material Design Icons"
+                                          size="24.0"/>
+                                </font>
+                            </Label>
                         </graphic>
                         <cursor>
                             <Cursor fx:constant="HAND"/>
@@ -437,12 +445,13 @@
                             prefWidth="48.0"
                             prefHeight="48.0">
                         <graphic>
-                            <ImageView fitHeight="24.0"
-                                       fitWidth="24.0"
-                                       pickOnBounds="true"
-                                       preserveRatio="true">
-                                <Image url="@icons/close-circle.png"/>
-                            </ImageView>
+                            <Label text="&#xF0159;"
+                                   textFill="#D32F2F">
+                                <font>
+                                    <Font name="Material Design Icons"
+                                          size="24.0"/>
+                                </font>
+                            </Label>
                         </graphic>
                         <cursor>
                             <Cursor fx:constant="HAND"/>
@@ -455,12 +464,13 @@
                             prefHeight="48.0"
                             userData="W">
                         <graphic>
-                            <ImageView fitHeight="24.0"
-                                       fitWidth="24.0"
-                                       pickOnBounds="true"
-                                       preserveRatio="true">
-                                <Image url="@icons/arrow-right-thick.png"/>
-                            </ImageView>
+                            <Label text="&#xF0734;"
+                                   textFill="#1976D2">
+                                <font>
+                                    <Font name="Material Design Icons"
+                                          size="24.0"/>
+                                </font>
+                            </Label>
                         </graphic>
                         <cursor>
                             <Cursor fx:constant="HAND"/>
@@ -476,12 +486,13 @@
                             prefHeight="48.0"
                             userData="SE">
                         <graphic>
-                            <ImageView fitHeight="24.0"
-                                       fitWidth="24.0"
-                                       pickOnBounds="true"
-                                       preserveRatio="true">
-                                <Image url="@icons/arrow-bottom-left-thick.png"/>
-                            </ImageView>
+                            <Label text="&#xF09B8;"
+                                   textFill="#1976D2">
+                                <font>
+                                    <Font name="Material Design Icons"
+                                          size="24.0"/>
+                                </font>
+                            </Label>
                         </graphic>
                         <cursor>
                             <Cursor fx:constant="HAND"/>
@@ -494,12 +505,13 @@
                             prefHeight="48.0"
                             userData="S">
                         <graphic>
-                            <ImageView fitHeight="24.0"
-                                       fitWidth="24.0"
-                                       pickOnBounds="true"
-                                       preserveRatio="true">
-                                <Image url="@icons/arrow-down-thick.png"/>
-                            </ImageView>
+                            <Label text="&#xF072E;"
+                                   textFill="#1976D2">
+                                <font>
+                                    <Font name="Material Design Icons"
+                                          size="24.0"/>
+                                </font>
+                            </Label>
                         </graphic>
                         <cursor>
                             <Cursor fx:constant="HAND"/>
@@ -512,12 +524,13 @@
                             prefHeight="48.0"
                             userData="SW">
                         <graphic>
-                            <ImageView fitHeight="24.0"
-                                       fitWidth="24.0"
-                                       pickOnBounds="true"
-                                       preserveRatio="true">
-                                <Image url="@icons/arrow-bottom-right-thick.png"/>
-                            </ImageView>
+                            <Label text="&#xF09BA;"
+                                   textFill="#1976D2">
+                                <font>
+                                    <Font name="Material Design Icons"
+                                          size="24.0"/>
+                                </font>
+                            </Label>
                         </graphic>
                         <cursor>
                             <Cursor fx:constant="HAND"/>
@@ -624,12 +637,13 @@
                             text="Park"
                             onAction="#park">
                         <graphic>
-                            <ImageView fitHeight="24.0"
-                                       fitWidth="24.0"
-                                       pickOnBounds="true"
-                                       preserveRatio="true">
-                                <Image url="@icons/stop.png"/>
-                            </ImageView>
+                            <Label text="&#xF04DB;"
+                                   textFill="#D32F2F">
+                                <font>
+                                    <Font name="Material Design Icons"
+                                          size="18.0"/>
+                                </font>
+                            </Label>
                         </graphic>
                         <cursor>
                             <Cursor fx:constant="HAND"/>
@@ -645,12 +659,13 @@
             <Label fx:id="status"
                    text="idle">
                 <graphic>
-                    <ImageView fitHeight="18.0"
-                               fitWidth="18.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/information.png"/>
-                    </ImageView>
+                    <Label text="&#xF02FC;"
+                           textFill="#1976D2">
+                        <font>
+                            <Font name="Material Design Icons"
+                                  size="18.0"/>
+                        </font>
+                    </Label>
                 </graphic>
                 <font>
                     <Font size="11.0"/>

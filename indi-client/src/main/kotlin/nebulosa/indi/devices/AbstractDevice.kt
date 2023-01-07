@@ -7,14 +7,44 @@ internal abstract class AbstractDevice(
     override val client: INDIClient,
     internal val handler: DeviceProtocolHandler,
     override val name: String,
-) : Device {
+    protected val properties: LinkedHashMap<String, PropertyVector<*, *>> = linkedMapOf(),
+) : Device, Map<String, PropertyVector<*, *>> by properties {
 
     override var isConnected = false
-    override var isConnecting = false
-    override var connectionMode = ConnectionMode.NONE
 
-    @Volatile @JvmField var devicePort = ""
-    @Volatile @JvmField var deviceBaudRate = 9600
+    private fun handleVectorMessage(message: Vector<*>) {
+        when (message) {
+            is DefVector<*> -> {
+                val property = when (message) {
+                    is DefBLOBVector -> return
+                    is DefLightVector -> return
+                    is DefNumberVector -> return
+                    is DefSwitchVector -> {
+                        val properties = LinkedHashMap<String, SwitchProperty>()
+
+                        for (e in message) {
+                            val property = SwitchProperty(e.name, e.label, e.value == SwitchState.ON)
+                            properties[property.name] = property
+                        }
+
+                        SwitchPropertyVector(
+                            message.name, message.label, message.group,
+                            message.perm, message.rule, message.state,
+                            properties,
+                        )
+                    }
+                    is DefTextVector -> return
+                }
+
+                properties[property.name] = property
+
+                handler.fireOnEventReceived(DevicePropertyChanged(this, property))
+            }
+            is SetVector<*> -> return
+            else -> return
+        }
+
+    }
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -22,8 +52,6 @@ internal abstract class AbstractDevice(
                 when (message.name) {
                     "CONNECTION" -> {
                         val connected = message["CONNECT"]?.isOn() == true
-
-                        isConnecting = false
 
                         if (connected != isConnected) {
                             if (connected) {
@@ -37,27 +65,13 @@ internal abstract class AbstractDevice(
                             }
                         }
                     }
-                    "CONNECTION_MODE" -> {
-                        connectionMode = message
-                            .firstOnSwitchOrNull()?.name?.replace("CONNECTION_", "")
-                            ?.let(ConnectionMode::valueOf)
-                            ?: ConnectionMode.NONE
-
-                        handler.fireOnEventReceived(DeviceConnectionModeChanged(this))
-                    }
-                    "DEVICE_BAUD_RATE" -> {
-                        deviceBaudRate = message.firstOnSwitchOrNull()?.name?.toIntOrNull() ?: 9600
-                    }
-                }
-            }
-            is TextVector<*> -> {
-                when (message.name) {
-                    "DEVICE_PORT" -> {
-                        devicePort = message["PORT"]?.value ?: ""
-                    }
                 }
             }
             else -> Unit
+        }
+
+        if (message is Vector<*>) {
+            handleVectorMessage(message)
         }
     }
 
@@ -65,22 +79,9 @@ internal abstract class AbstractDevice(
         client.sendMessageToServer(message)
     }
 
-    override fun connect(connection: Connection) {
+    override fun connect() {
         if (!isConnected) {
-            isConnecting = true
-
             handler.fireOnEventReceived(DeviceIsConnecting(this))
-
-            if (connection != Connection.NONE) {
-                sendNewSwitch("CONNECTION_MODE", "CONNECTION_${connection.mode}" to true)
-            }
-
-            if (connection.mode == ConnectionMode.SERIAL) {
-                require(connection.serialPort.isNotBlank()) { "invalid serial port: ${connection.serialPort}" }
-                require(connection.serialBaudRate in Connection.SERIAL_BAUD_RATES) { "invalid serial baud rate: ${connection.serialBaudRate}" }
-                sendNewText("DEVICE_PORT", "PORT" to connection.serialPort)
-                sendNewSwitch("DEVICE_BAUD_RATE", "${connection.serialBaudRate}" to true)
-            }
 
             sendNewSwitch("CONNECTION", "CONNECT" to true)
         }

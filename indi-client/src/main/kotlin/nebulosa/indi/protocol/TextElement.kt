@@ -1,3 +1,3 @@
 package nebulosa.indi.protocol
 
-interface TextElement : Element<String>
+sealed interface TextElement : Element<String>

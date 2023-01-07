@@ -1,3 +1,3 @@
 package nebulosa.indi.protocol
 
-interface LightElement : Element<PropertyState>
+sealed interface LightElement : Element<PropertyState>

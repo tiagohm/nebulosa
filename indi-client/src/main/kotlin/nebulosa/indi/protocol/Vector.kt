@@ -1,6 +1,6 @@
 package nebulosa.indi.protocol
 
-interface Vector<E : Element<*>> : List<E> {
+sealed interface Vector<E : Element<*>> : List<E> {
 
     var state: PropertyState
 

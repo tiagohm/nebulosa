@@ -14,9 +14,10 @@ import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.onZero
 import nebulosa.desktop.core.beans.or
+import nebulosa.desktop.core.scene.MaterialColor
+import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.scene.control.ButtonValueFactory
-import nebulosa.desktop.core.scene.image.Icon
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.indi.devices.filterwheels.FilterWheel
@@ -51,7 +52,8 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         equipmentManager.selectedFilterWheel.bind(filterWheels.selectionModel.selectedItemProperty())
 
         connect.disableProperty().bind(equipmentManager.selectedFilterWheel.isNull or isConnecting or isMoving)
-        connect.graphicProperty().bind(equipmentManager.selectedFilterWheel.isConnected.between(Icon.closeCircle.view, Icon.connection.view))
+        connect.textProperty().bind(equipmentManager.selectedFilterWheel.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
+        connect.textFillProperty().bind(equipmentManager.selectedFilterWheel.isConnected.between(MaterialColor.RED_700, MaterialColor.BLUE_GREY_700))
 
         filterSlots.disableProperty().bind(isNotConnectedOrMoving)
         useFilterWheelAsShutter.disableProperty().bind(isNotConnectedOrMoving)

@@ -1,3 +1,3 @@
 package nebulosa.indi.protocol
 
-interface BLOBVector<E : BLOBElement> : Vector<E>
+sealed interface BLOBVector<E : BLOBElement> : Vector<E>

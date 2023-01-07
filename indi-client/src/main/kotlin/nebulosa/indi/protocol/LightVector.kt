@@ -1,3 +1,3 @@
 package nebulosa.indi.protocol
 
-interface LightVector<E : LightElement> : Vector<E>
+sealed interface LightVector<E : LightElement> : Vector<E>

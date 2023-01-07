@@ -33,14 +33,16 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
 
     protected abstract fun accept(event: DeviceEvent<T>)
 
-    final override fun changed(observable: ObservableValue<out T>, oldValue: T?, newValue: T?) {
+    final override fun changed(
+        observable: ObservableValue<out T>,
+        oldValue: T?, newValue: T?,
+    ) {
         if (newValue == null) {
             isConnected.set(false)
             isConnecting.set(false)
             reset()
         } else {
             isConnected.set(newValue.isConnected)
-            isConnecting.set(newValue.isConnecting)
             changed(newValue)
         }
     }

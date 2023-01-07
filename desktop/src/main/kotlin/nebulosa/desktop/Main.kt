@@ -2,6 +2,7 @@ package nebulosa.desktop
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.application.Application
+import javafx.scene.text.Font
 import nebulosa.desktop.cameras.CameraManagerScreen
 import nebulosa.desktop.connections.ConnectionManager
 import nebulosa.desktop.core.EventBus
@@ -11,6 +12,7 @@ import nebulosa.desktop.focusers.FocuserManagerScreen
 import nebulosa.desktop.mounts.MountManagerScreen
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.desktop.telescopecontrol.TelescopeControlManager
+import nebulosa.io.resource
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.named
 import org.koin.core.module.dsl.withOptions
@@ -53,6 +55,8 @@ fun main(args: Array<String>) {
     }
 
     Locale.setDefault(Locale.ENGLISH)
+
+    resource("fonts/materialdesignicons-webfont.ttf")!!.use { Font.loadFont(it, 32.0) }
 
     Application.launch(Nebulosa::class.java, *args)
 }

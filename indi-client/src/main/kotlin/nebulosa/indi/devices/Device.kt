@@ -7,7 +7,7 @@ import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.parser.INDIProtocolHandler
 import java.io.Closeable
 
-interface Device : INDIProtocolHandler, Closeable {
+interface Device : INDIProtocolHandler, Closeable, Map<String, PropertyVector<*, *>> {
 
     val client: INDIClient
 
@@ -15,13 +15,9 @@ interface Device : INDIProtocolHandler, Closeable {
 
     val isConnected: Boolean
 
-    val isConnecting: Boolean
-
-    val connectionMode: ConnectionMode
-
     fun sendMessageToServer(message: INDIProtocol)
 
-    fun connect(connection: Connection = Connection.NONE)
+    fun connect()
 
     fun disconnect()
 

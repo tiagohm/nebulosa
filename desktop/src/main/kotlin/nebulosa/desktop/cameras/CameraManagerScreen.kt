@@ -11,8 +11,9 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.stage.DirectoryChooser
 import nebulosa.desktop.core.beans.*
+import nebulosa.desktop.core.scene.MaterialColor
+import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
-import nebulosa.desktop.core.scene.image.Icon
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.imageviewer.ImageViewerScreen
@@ -85,7 +86,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         equipmentManager.selectedCamera.bind(cameras.selectionModel.selectedItemProperty())
 
         connect.disableProperty().bind(equipmentManager.selectedCamera.isNull or isConnecting or isCapturing)
-        connect.graphicProperty().bind(equipmentManager.selectedCamera.isConnected.between(Icon.closeCircle.view, Icon.connection.view))
+        connect.textProperty().bind(equipmentManager.selectedCamera.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
+        connect.textFillProperty().bind(equipmentManager.selectedCamera.isConnected.between(MaterialColor.RED_700, MaterialColor.BLUE_GREY_700))
 
         cameraMenuIcon.disableProperty().bind(isNotConnectedOrCapturing)
 

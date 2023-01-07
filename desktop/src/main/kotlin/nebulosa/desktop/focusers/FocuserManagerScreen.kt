@@ -9,9 +9,11 @@ import javafx.scene.control.Spinner
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
+import nebulosa.desktop.core.beans.onOne
 import nebulosa.desktop.core.beans.or
+import nebulosa.desktop.core.scene.MaterialColor
+import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
-import nebulosa.desktop.core.scene.image.Icon
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.indi.devices.focusers.Focuser
@@ -56,7 +58,8 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
         equipmentManager.selectedFocuser.bind(focusers.selectionModel.selectedItemProperty())
 
         connect.disableProperty().bind(equipmentManager.selectedFocuser.isNull or isConnecting or isMoving)
-        connect.graphicProperty().bind(equipmentManager.selectedFocuser.isConnected.between(Icon.closeCircle.view, Icon.connection.view))
+        connect.textProperty().bind(equipmentManager.selectedFocuser.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
+        connect.textFillProperty().bind(equipmentManager.selectedFocuser.isConnected.between(MaterialColor.RED_700, MaterialColor.BLUE_GREY_700))
 
         position.textProperty().bind(equipmentManager.selectedFocuser.position.asString())
 
@@ -82,6 +85,10 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
         abort.disableProperty().bind(isNotConnectedOrMoving or !equipmentManager.selectedFocuser.canAbort)
 
         autoFocus.disableProperty().bind(isNotConnectedOrMoving)
+
+        equipmentManager.selectedFocuser.onOne {
+            title = "Focuser · ${it?.name}"
+        }
 
         preferences.double("focuserManager.screen.x")?.let { x = it }
         preferences.double("focuserManager.screen.y")?.let { y = it }

@@ -3,8 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.Cursor?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <AnchorPane maxHeight="-Infinity"
@@ -36,17 +34,17 @@
                 </cursor>
             </ChoiceBox>
             <Button fx:id="connect"
-                    contentDisplay="GRAPHIC_ONLY"
+                    onAction="#connect"
+                    alignment="CENTER"
                     mnemonicParsing="false"
-                    onAction="#connect">
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/connection.png"/>
-                    </ImageView>
-                </graphic>
+                    contentDisplay="TEXT_ONLY"
+                    text="&#xF1616;"
+                    textFill="#455A64"
+                    prefHeight="32.0">
+                <font>
+                    <Font name="Material Design Icons"
+                          size="18.0"/>
+                </font>
                 <cursor>
                     <Cursor fx:constant="HAND"/>
                 </cursor>

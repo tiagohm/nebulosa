@@ -1,3 +1,3 @@
 package nebulosa.indi.protocol
 
-interface BLOBElement : Element<String>
+sealed interface BLOBElement : Element<String>

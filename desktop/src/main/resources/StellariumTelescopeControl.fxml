@@ -48,22 +48,17 @@
                 </font>
             </TextField>
             <Button fx:id="connect"
-                    alignment="CENTER"
                     onAction="#connect"
+                    alignment="CENTER"
                     mnemonicParsing="false"
-                    contentDisplay="GRAPHIC_ONLY"
+                    contentDisplay="TEXT_ONLY"
+                    text="&#xF1616;"
+                    textFill="#455A64"
                     prefHeight="32.0">
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/connection.png"/>
-                    </ImageView>
-                </graphic>
+                <font>
+                    <Font name="Material Design Icons"
+                          size="18.0"/>
+                </font>
             </Button>
         </HBox>
     </VBox>

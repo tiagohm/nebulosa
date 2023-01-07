@@ -1,3 +1,3 @@
 package nebulosa.indi.protocol
 
-interface TextVector<E : TextElement> : Vector<E>
+sealed interface TextVector<E : TextElement> : Vector<E>
