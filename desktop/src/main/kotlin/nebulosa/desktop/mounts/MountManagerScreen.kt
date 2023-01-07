@@ -83,6 +83,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         equipmentManager.selectedMount.bind(mounts.selectionModel.selectedItemProperty())
 
         connect.disableProperty().bind(equipmentManager.selectedMount.isNull or isConnecting or isSlewing)
+        connect.graphicProperty().bind(equipmentManager.selectedMount.isConnected.between(Icon.closeCircle.view, Icon.connection.view))
 
         rightAscension.textProperty().bind(equipmentManager.selectedMount.rightAscension.transformed { Angle.formatHMS(it.hours) })
         declination.textProperty().bind(equipmentManager.selectedMount.declination.transformed { Angle.formatDMS(it.deg) })
@@ -143,8 +144,6 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
             updateStatus()
             updateCoordinatesJ2000()
         }
-
-        connect.graphicProperty().bind(equipmentManager.selectedMount.isConnected.between(Icon.closeCircle.view, Icon.connection.view))
 
         preferences.double("mountManager.screen.x")?.let { x = it }
         preferences.double("mountManager.screen.y")?.let { y = it }

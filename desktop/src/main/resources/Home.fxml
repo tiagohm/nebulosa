@@ -216,7 +216,7 @@
                                fitWidth="24.0"
                                pickOnBounds="true"
                                preserveRatio="true">
-                        <Image url="@icons/focuser.png"/>
+                        <Image url="@icons/image-filter-center-focus.png"/>
                     </ImageView>
                 </graphic>
                 <font>
@@ -366,7 +366,7 @@
                                fitWidth="24.0"
                                pickOnBounds="true"
                                preserveRatio="true">
-                        <Image url="@icons/image-filter-center-focus.png"/>
+                        <Image url="@icons/star.png"/>
                     </ImageView>
                 </graphic>
                 <font>

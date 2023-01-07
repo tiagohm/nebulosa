@@ -87,14 +87,17 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         equipmentManager.selectedCamera.bind(cameras.selectionModel.selectedItemProperty())
 
         connect.disableProperty().bind(equipmentManager.selectedCamera.isNull or isConnecting or isCapturing)
+        connect.graphicProperty().bind(equipmentManager.selectedCamera.isConnected.between(Icon.closeCircle.view, Icon.connection.view))
 
         cameraMenuIcon.disableProperty().bind(isNotConnectedOrCapturing)
 
         cooler.disableProperty().bind(isNotConnectedOrCapturing or !equipmentManager.selectedCamera.hasCooler)
         cooler.selectedProperty().bind(equipmentManager.selectedCamera.isCoolerOn)
+        cooler.selectedProperty().on { equipmentManager.selectedCamera.get().cooler(it) }
 
         dewHeater.disableProperty().bind(isNotConnectedOrCapturing or !equipmentManager.selectedCamera.hasDewHeater)
         dewHeater.selectedProperty().bind(equipmentManager.selectedCamera.isDewHeaterOn)
+        // TODO: Send dew heater command.
 
         temperature.textProperty().bind(equipmentManager.selectedCamera.temperature.asString(Locale.ENGLISH, "Temperature (%.1f °C)"))
         temperatureSetpoint.disableProperty().bind(isNotConnectedOrCapturing or !equipmentManager.selectedCamera.canSetTemperature)
@@ -151,8 +154,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         }
 
         equipmentManager.selectedCamera.isConnected.on { if (it) isConnecting.set(false) }
-
-        connect.graphicProperty().bind(equipmentManager.selectedCamera.isConnected.between(Icon.closeCircle.view, Icon.connection.view))
 
         cameraMenuIcon.addEventFilter(MouseEvent.MOUSE_CLICKED) {
             if (it.button == MouseButton.PRIMARY) {
@@ -239,7 +240,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         }
     }
 
-
     @FXML
     private fun connect() {
         if (!equipmentManager.selectedCamera.isConnected.get()) {
@@ -284,6 +284,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     @FXML
     private fun applyTemperatureSetpoint() {
+        val camera = equipmentManager.selectedCamera.get() ?: return
+        camera.temperature(temperatureSetpoint.value)
     }
 
     @FXML

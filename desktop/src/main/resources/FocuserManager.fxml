@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.Cursor?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="415.0"
-            prefWidth="402.0"
+            prefHeight="245.0"
+            prefWidth="381.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <VBox spacing="16.0"
+    <VBox spacing="8.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
           AnchorPane.rightAnchor="0.0"
@@ -45,6 +45,194 @@
                                pickOnBounds="true"
                                preserveRatio="true">
                         <Image url="@icons/connection.png"/>
+                    </ImageView>
+                </graphic>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
+        </HBox>
+        <VBox alignment="CENTER"
+              spacing="4.0">
+            <HBox alignment="CENTER_LEFT"
+                  spacing="8.0">
+                <Label text="Position:"
+                       prefWidth="81.0"
+                       maxWidth="81.0"
+                       minWidth="81.0">
+                    <font>
+                        <Font name="System Bold"
+                              size="9.0"/>
+                    </font>
+                </Label>
+                <Label fx:id="position"
+                       text="0"
+                       alignment="CENTER_RIGHT"
+                       prefWidth="81.0"
+                       maxWidth="81.0"
+                       minWidth="81.0">
+                    <font>
+                        <Font size="11.0"/>
+                    </font>
+                </Label>
+                <Label text="Temperature:"
+                       prefWidth="81.0"
+                       maxWidth="81.0"
+                       minWidth="81.0">
+                    <font>
+                        <Font name="System Bold"
+                              size="9.0"/>
+                    </font>
+                </Label>
+                <Label fx:id="temperature"
+                       text="0.0 °C"
+                       alignment="CENTER_RIGHT"
+                       prefWidth="81.0"
+                       maxWidth="81.0"
+                       minWidth="81.0">
+                    <font>
+                        <Font size="11.0"/>
+                    </font>
+                </Label>
+            </HBox>
+        </VBox>
+        <HBox alignment="CENTER_LEFT"
+              spacing="8.0">
+            <Spinner fx:id="increment"
+                     editable="true"
+                     min="1.0"
+                     max="10000.0"
+                     initialValue="100.0"
+                     amountToStepBy="1.0"
+                     prefWidth="120.0">
+            </Spinner>
+            <Button fx:id="moveIn"
+                    text="Move In"
+                    onAction="#moveIn">
+                <graphic>
+                    <ImageView fitHeight="18.0"
+                               fitWidth="18.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/arrow-left-thick.png"/>
+                    </ImageView>
+                </graphic>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
+            <Button fx:id="moveOut"
+                    text="Move Out"
+                    onAction="#moveOut">
+                <graphic>
+                    <ImageView fitHeight="18.0"
+                               fitWidth="18.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/arrow-right-thick.png"/>
+                    </ImageView>
+                </graphic>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
+        </HBox>
+        <HBox alignment="CENTER_LEFT"
+              spacing="8.0">
+            <Spinner fx:id="absolute"
+                     editable="true"
+                     min="0.0"
+                     max="10000.0"
+                     initialValue="1000.0"
+                     amountToStepBy="1.0"
+                     prefWidth="120.0">
+            </Spinner>
+            <Button fx:id="moveTo"
+                    text="Move To"
+                    onAction="#moveTo"
+                    prefWidth="144.0">
+                <graphic>
+                    <ImageView fitHeight="18.0"
+                               fitWidth="18.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/arrow-left-right-bold.png"/>
+                    </ImageView>
+                </graphic>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
+            <Button fx:id="sync"
+                    text="Sync"
+                    onAction="#sync"
+                    prefWidth="92.0">
+                <graphic>
+                    <ImageView fitHeight="18.0"
+                               fitWidth="18.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/sync.png"/>
+                    </ImageView>
+                </graphic>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
+        </HBox>
+        <HBox alignment="CENTER_LEFT"
+              spacing="4.0">
+            <ToggleSwitch fx:id="backlashCompensation"
+                          text="Backlash compensation:"
+                          prefWidth="172.0">
+                <font>
+                    <Font size="11.0"/>
+                </font>
+            </ToggleSwitch>
+            <Label text="Steps:">
+                <HBox.margin>
+                    <Insets left="16.0"/>
+                </HBox.margin>
+                <font>
+                    <Font size="11.0"/>
+                </font>
+            </Label>
+            <Spinner fx:id="backlashCompensationSteps"
+                     editable="true"
+                     min="0.0"
+                     max="1000.0"
+                     initialValue="100.0"
+                     amountToStepBy="1.0"
+                     prefWidth="84.0">
+            </Spinner>
+        </HBox>
+        <HBox alignment="CENTER_LEFT"
+              spacing="129.0">
+            <Button fx:id="abort"
+                    text="Abort"
+                    onAction="#abort">
+                <graphic>
+                    <ImageView fitHeight="18.0"
+                               fitWidth="18.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/stop.png"/>
+                    </ImageView>
+                </graphic>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
+            <Button fx:id="autoFocus"
+                    text="Auto focus..."
+                    onAction="#openAutoFocus"
+                    prefWidth="144.0">
+                <graphic>
+                    <ImageView fitHeight="18.0"
+                               fitWidth="18.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/focus-auto.png"/>
                     </ImageView>
                 </graphic>
                 <cursor>

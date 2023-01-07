@@ -23,15 +23,15 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
         addListener(this)
 
         eventBus
-            .filter { it is DeviceEvent<*> }
-            .subscribe(this)
+            .filter { it is DeviceEvent<*> && it.device === value }
+            .subscribe(::accept)
     }
 
     protected abstract fun reset()
 
     protected abstract fun changed(value: T)
 
-    protected abstract fun accept(event: DeviceEvent<*>)
+    protected abstract fun accept(event: DeviceEvent<T>)
 
     final override fun changed(observable: ObservableValue<out T>, oldValue: T?, newValue: T?) {
         if (newValue == null) {
@@ -45,17 +45,16 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
         }
     }
 
-    final override fun accept(event: Any) {
-        if (event is DeviceEvent<*> && event.device === value) {
-            when (event) {
-                is DeviceConnected,
-                is DeviceDisconnected -> Platform.runLater {
-                    isConnecting.set(false)
-                    isConnected.set(value.isConnected)
-                }
-                is DeviceIsConnecting -> Platform.runLater { isConnecting.set(true) }
-                else -> accept(event)
+    @Suppress("UNCHECKED_CAST")
+    override fun accept(event: Any) {
+        when (event) {
+            is DeviceConnected,
+            is DeviceDisconnected -> Platform.runLater {
+                isConnecting.set(false)
+                isConnected.set(value.isConnected)
             }
+            is DeviceIsConnecting -> Platform.runLater { isConnecting.set(true) }
+            else -> accept(event as DeviceEvent<T>)
         }
     }
 }

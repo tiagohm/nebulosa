@@ -27,7 +27,7 @@ class FilterWheelProperty : DeviceProperty<FilterWheel>() {
         isMoving.set(false)
     }
 
-    override fun accept(event: DeviceEvent<*>) {
+    override fun accept(event: DeviceEvent<FilterWheel>) {
         when (event) {
             is FilterWheelSlotCountChanged -> Platform.runLater { slotCount.set(value.slotCount) }
             is FilterWheelPositionChanged -> Platform.runLater { position.set(value.position) }

@@ -71,7 +71,9 @@ internal abstract class AbstractDevice(
 
             handler.fireOnEventReceived(DeviceIsConnecting(this))
 
-            sendNewSwitch("CONNECTION_MODE", "CONNECTION_${connection.mode}" to true)
+            if (connection != Connection.NONE) {
+                sendNewSwitch("CONNECTION_MODE", "CONNECTION_${connection.mode}" to true)
+            }
 
             if (connection.mode == ConnectionMode.SERIAL) {
                 require(connection.serialPort.isNotBlank()) { "invalid serial port: ${connection.serialPort}" }

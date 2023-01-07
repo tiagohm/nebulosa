@@ -140,7 +140,7 @@ class CameraProperty : DeviceProperty<Camera>() {
         offset.set(0)
     }
 
-    override fun accept(event: DeviceEvent<*>) {
+    override fun accept(event: DeviceEvent<Camera>) {
         when (event) {
             is CameraCapturingChanged -> Platform.runLater { isCapturing.set(value.isCapturing) }
             is CameraCoolerControlChanged -> Platform.runLater { hasCoolerControl.set(value.hasCoolerControl) }

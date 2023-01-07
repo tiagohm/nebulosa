@@ -51,6 +51,7 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         equipmentManager.selectedFilterWheel.bind(filterWheels.selectionModel.selectedItemProperty())
 
         connect.disableProperty().bind(equipmentManager.selectedFilterWheel.isNull or isConnecting or isMoving)
+        connect.graphicProperty().bind(equipmentManager.selectedFilterWheel.isConnected.between(Icon.closeCircle.view, Icon.connection.view))
 
         filterSlots.disableProperty().bind(isNotConnectedOrMoving)
         useFilterWheelAsShutter.disableProperty().bind(isNotConnectedOrMoving)
@@ -110,8 +111,6 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
             updateUseFilterWheelAsShutter()
             updateFilterAsShutter()
         }
-
-        connect.graphicProperty().bind(equipmentManager.selectedFilterWheel.isConnected.between(Icon.closeCircle.view, Icon.connection.view))
 
         equipmentManager.selectedFilterWheel.isConnected.on {
             if (it) {

@@ -9,6 +9,10 @@ import nebulosa.indi.devices.filterwheels.FilterWheel
 import nebulosa.indi.devices.filterwheels.FilterWheelAttached
 import nebulosa.indi.devices.filterwheels.FilterWheelBase
 import nebulosa.indi.devices.filterwheels.FilterWheelDetached
+import nebulosa.indi.devices.focusers.Focuser
+import nebulosa.indi.devices.focusers.FocuserAttached
+import nebulosa.indi.devices.focusers.FocuserBase
+import nebulosa.indi.devices.focusers.FocuserDetached
 import nebulosa.indi.devices.mounts.Mount
 import nebulosa.indi.devices.mounts.MountAttached
 import nebulosa.indi.devices.mounts.MountBase
@@ -27,8 +31,9 @@ class DeviceProtocolHandler : INDIProtocolParser {
 
     @Volatile private var closed = false
     private val cameras = HashMap<String, Camera>(2)
-    private val mounts = HashMap<String, Mount>(2)
-    private val filterWheels = HashMap<String, FilterWheel>(2)
+    private val mounts = HashMap<String, Mount>(1)
+    private val filterWheels = HashMap<String, FilterWheel>(1)
+    private val focusers = HashMap<String, Focuser>(2)
     private val messageReorderingQueue = LinkedBlockingQueue<INDIProtocol>()
     private val notRegisteredDevices = HashSet<String>()
     private val protocolReader by lazy { INDIProtocolReader(this, Thread.MIN_PRIORITY) }
@@ -81,9 +86,14 @@ class DeviceProtocolHandler : INDIProtocolParser {
                 fireOnEventReceived(FilterWheelDetached(filterWheel.value))
             }
 
+            for (focuser in focusers) {
+                fireOnEventReceived(FocuserDetached(focuser.value))
+            }
+
             cameras.clear()
             mounts.clear()
             filterWheels.clear()
+            focusers.clear()
 
             notRegisteredDevices.clear()
             messageQueueCounter.clear()
@@ -135,6 +145,17 @@ class DeviceProtocolHandler : INDIProtocolParser {
                     }
                 }
 
+                if (executable in Focuser.DRIVERS) {
+                    if (message.device !in focusers) {
+                        val focuser = FocuserBase(client, this, message.device)
+                        focusers[message.device] = focuser
+                        fireOnEventReceived(FocuserAttached(focuser))
+                        registered = true
+                    } else {
+                        registered = true
+                    }
+                }
+
                 if (!registered) {
                     LOG.warn("device is not registered: ${message.device}")
                     notRegisteredDevices.add(message.device)
@@ -154,10 +175,12 @@ class DeviceProtocolHandler : INDIProtocolParser {
         if (closed) return
 
         if (message is Message) {
+            LOG.info("message received: {}", message)
             return
         } else if (message is DelProperty) {
             // TODO: Handle delProperty (delete device or reset device property values)
-            // TODO: call deviceRemoved(device)
+            // TODO: if delete only properties, call device method to remove it.
+            // TODO: otherwise, call device detach method, send device detach event e remove from list.
             return
         }
 
@@ -181,6 +204,11 @@ class DeviceProtocolHandler : INDIProtocolParser {
         if (message.device in filterWheels) {
             found = true
             filterWheels[message.device]!!.handleMessage(message)
+        }
+
+        if (message.device in focusers) {
+            found = true
+            focusers[message.device]!!.handleMessage(message)
         }
 
         if (!found) {

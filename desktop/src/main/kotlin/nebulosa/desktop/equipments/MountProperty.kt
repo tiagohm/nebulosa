@@ -69,7 +69,7 @@ class MountProperty : DeviceProperty<Mount>() {
         declination.set(0.0)
     }
 
-    override fun accept(event: DeviceEvent<*>) {
+    override fun accept(event: DeviceEvent<Mount>) {
         when (event) {
             is MountSlewingChanged -> Platform.runLater { isSlewing.set(value.isSlewing) }
             is MountSlewRatesChanged -> Platform.runLater { slewRates.setAll(value.slewRates) }
