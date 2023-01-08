@@ -182,10 +182,37 @@ class DeviceProtocolHandler : INDIProtocolParser {
             LOG.info("message received: {}", message)
             return
         } else if (message is DelProperty) {
-            // TODO: Handle delProperty (delete device or reset device property values)
-            // TODO: if delete only properties, call device method to remove it.
-            // TODO: otherwise, call device detach method, send device detach event e remove from list.
-            return
+            if (message.name.isEmpty() && message.device.isNotEmpty()) {
+                if (message.device in cameras) {
+                    val device = cameras[message.device]!!
+                    device.close()
+                    handlers.forEach { it.onEventReceived(CameraDetached(device)) }
+                    cameras.remove(device.name)
+                }
+
+                if (message.device in mounts) {
+                    val device = mounts[message.device]!!
+                    device.close()
+                    handlers.forEach { it.onEventReceived(MountDetached(device)) }
+                    mounts.remove(device.name)
+                }
+
+                if (message.device in filterWheels) {
+                    val device = filterWheels[message.device]!!
+                    device.close()
+                    handlers.forEach { it.onEventReceived(FilterWheelDetached(device)) }
+                    filterWheels.remove(device.name)
+                }
+
+                if (message.device in focusers) {
+                    val device = focusers[message.device]!!
+                    device.close()
+                    handlers.forEach { it.onEventReceived(FocuserDetached(device)) }
+                    focusers.remove(device.name)
+                }
+
+                return
+            }
         }
 
         if (message.device.isEmpty() || message.device in notRegisteredDevices) {

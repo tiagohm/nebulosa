@@ -31,9 +31,10 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
     @FXML private lateinit var panelControl: AnchorPane
     @FXML private lateinit var groups: TabPane
 
-    private val cacheProperty = HashMap<String, HBox>(256)
+    private val cacheProperties = HashMap<Device, HashMap<String, HBox>>()
 
-    @Volatile private var subscriber: Disposable? = null
+    @Volatile private var subscriberForChanged: Disposable? = null
+    @Volatile private var subscriberForDeleted: Disposable? = null
 
     init {
         title = "INDI Panel Control"
@@ -41,7 +42,6 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
     override fun onCreate() {
         devices.converter = DeviceStringConverter()
-        // TODO: Cache panel control?
         devices.selectionModel.selectedItemProperty().onZero(::makePanelControl)
 
         equipmentManager.attachedCameras.onZero(::populateDevices)
@@ -51,16 +51,22 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
     }
 
     override fun onStart() {
-        subscriber = eventBus
+        subscriberForChanged = eventBus
             .filterIsInstance<DevicePropertyChanged> { it.device === devices.value }
+            .subscribe(::onEvent)
+
+        subscriberForDeleted = eventBus
+            .filterIsInstance<DevicePropertyDeleted> { it.device === devices.value }
             .subscribe(::onEvent)
 
         populateDevices()
     }
 
     override fun onStop() {
-        subscriber?.dispose()
-        subscriber = null
+        subscriberForChanged?.dispose()
+        subscriberForChanged = null
+        subscriberForDeleted?.dispose()
+        subscriberForDeleted = null
     }
 
     fun select(device: Device): Boolean {
@@ -72,9 +78,8 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         }
     }
 
-    // TODO: delProperty event. Use isVisible to hide/show vector.
     private fun onEvent(event: DevicePropertyChanged) {
-        val container = cacheProperty[event.property.name]
+        val container = cacheProperties[event.device]!![event.property.name]
 
         if (container != null) {
             Platform.runLater { container.updateProperty(event.property) }
@@ -82,8 +87,14 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
             val tab = groups.tabs
                 .firstOrNull { it.userData == event.property.group } ?: return
             val content = (tab.content as ScrollPane).content as VBox
-            Platform.runLater { content.makeGroupProperty(event.property) }
+            Platform.runLater { content.makeGroupProperty(event.device, event.property) }
         }
+    }
+
+    private fun onEvent(event: DevicePropertyDeleted) {
+        val container = cacheProperties[event.device]!![event.property.name]
+
+        Platform.runLater { container?.deleteProperty(event.property) }
     }
 
     private fun populateDevices() {
@@ -93,22 +104,25 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         devices.addAll(equipmentManager.attachedFilterWheels)
         devices.addAll(equipmentManager.attachedFocusers)
         devices.sortBy { it.name }
+        devices.forEach { if (it !in cacheProperties) cacheProperties[it] = HashMap(256) }
         this.devices.items.setAll(devices)
     }
 
     @Synchronized
     private fun makePanelControl() {
-        if (devices.value == null) return
+        val device = devices.value ?: return
 
-        cacheProperty.clear()
+        cacheProperties[device]!!.clear()
         groups.tabs.clear()
 
-        devices.value!!.values
+        device.values
             .groupBy { it.group }
-            .onEach { groups.makeGroup(it.key, it.value) }
+            .onEach { groups.makeGroup(device, it.key, it.value) }
+
+        System.gc()
     }
 
-    private fun TabPane.makeGroup(name: String, properties: List<PropertyVector<*, *>>) {
+    private fun TabPane.makeGroup(device: Device, name: String, properties: List<PropertyVector<*, *>>) {
         val tab = Tab()
 
         tab.text = name
@@ -121,7 +135,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         container.padding = PADDING_16
 
         for (property in properties) {
-            container.makeGroupProperty(property)
+            container.makeGroupProperty(device, property)
         }
 
         val scroll = ScrollPane(container)
@@ -137,14 +151,14 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
             is TextPropertyVector -> "text"
         }
 
-    private fun VBox.makeGroupProperty(property: PropertyVector<*, *>) {
+    private fun VBox.makeGroupProperty(device: Device, property: PropertyVector<*, *>) {
         val propertyContainer = HBox()
         propertyContainer.alignment = Pos.CENTER_LEFT
         propertyContainer.spacing = 2.0
         propertyContainer.makeProperty(property)
         propertyContainer.styleClass.addAll("vector", property.styleClassName)
         children.add(propertyContainer)
-        cacheProperty[property.name] = propertyContainer
+        cacheProperties[device]!![property.name] = propertyContainer
     }
 
     private fun Label.makeState(vector: PropertyVector<*, *>) {
@@ -176,11 +190,21 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
     }
 
     private fun HBox.updateProperty(vector: PropertyVector<*, *>) {
+        if (!isVisible) {
+            isVisible = true
+            isManaged = true
+        }
+
         when (vector) {
             is SwitchPropertyVector -> updateSwitchProperty(vector)
             is TextPropertyVector -> updateTextProperty(vector)
             is NumberPropertyVector -> updateNumberProperty(vector)
         }
+    }
+
+    private fun HBox.deleteProperty(vector: PropertyVector<*, *>) {
+        isVisible = false
+        isManaged = false
     }
 
     // SWITCH.

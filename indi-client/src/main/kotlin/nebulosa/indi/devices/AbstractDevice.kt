@@ -117,6 +117,10 @@ internal abstract class AbstractDevice(
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
+            is DelProperty -> {
+                val property = properties.remove(message.name) ?: return
+                handler.fireOnEventReceived(DevicePropertyDeleted(this, property))
+            }
             is SwitchVector<*> -> {
                 when (message.name) {
                     "CONNECTION" -> {
