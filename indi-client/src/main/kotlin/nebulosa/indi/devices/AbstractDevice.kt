@@ -16,9 +16,21 @@ internal abstract class AbstractDevice(
         when (message) {
             is DefVector<*> -> {
                 val property = when (message) {
-                    is DefBLOBVector -> return
                     is DefLightVector -> return
-                    is DefNumberVector -> return
+                    is DefNumberVector -> {
+                        val properties = LinkedHashMap<String, NumberProperty>()
+
+                        for (e in message) {
+                            val property = NumberProperty(e.name, e.label, e.value)
+                            properties[property.name] = property
+                        }
+
+                        NumberPropertyVector(
+                            message.name, message.label, message.group,
+                            message.perm, message.state,
+                            properties,
+                        )
+                    }
                     is DefSwitchVector -> {
                         val properties = LinkedHashMap<String, SwitchProperty>()
 
@@ -33,14 +45,71 @@ internal abstract class AbstractDevice(
                             properties,
                         )
                     }
-                    is DefTextVector -> return
+                    is DefTextVector -> {
+                        val properties = LinkedHashMap<String, TextProperty>()
+
+                        for (e in message) {
+                            val property = TextProperty(e.name, e.label, e.value)
+                            properties[property.name] = property
+                        }
+
+                        TextPropertyVector(
+                            message.name, message.label, message.group,
+                            message.perm, message.state,
+                            properties,
+                        )
+                    }
+                    else -> return
                 }
 
                 properties[property.name] = property
 
                 handler.fireOnEventReceived(DevicePropertyChanged(this, property))
             }
-            is SetVector<*> -> return
+            is SetVector<*> -> {
+                val property = when (message) {
+                    is SetLightVector -> return
+                    is SetNumberVector -> {
+                        val vector = properties[message.name] as? NumberPropertyVector ?: return
+
+                        vector.state = message.state
+
+                        for (e in message) {
+                            val property = vector[e.name] ?: continue
+                            property.value = e.value
+                        }
+
+                        vector
+                    }
+                    is SetSwitchVector -> {
+                        val vector = properties[message.name] as? SwitchPropertyVector ?: return
+
+                        vector.state = message.state
+
+                        for (e in message) {
+                            val property = vector[e.name] ?: continue
+                            property.value = e.value == SwitchState.ON
+                        }
+
+                        vector
+                    }
+                    is SetTextVector -> {
+                        val vector = properties[message.name] as? TextPropertyVector ?: return
+
+                        vector.state = message.state
+
+                        for (e in message) {
+                            val property = vector[e.name] ?: continue
+                            property.value = e.value
+                        }
+
+                        vector
+                    }
+                    else -> return
+                }
+
+                handler.fireOnEventReceived(DevicePropertyChanged(this, property))
+            }
             else -> return
         }
 
@@ -89,59 +158,5 @@ internal abstract class AbstractDevice(
 
     override fun disconnect() {
         sendNewSwitch("CONNECTION", "DISCONNECT" to true)
-    }
-
-    protected fun sendNewSwitch(
-        name: String,
-        vararg elements: Pair<String, Boolean>,
-    ) {
-        val vector = NewSwitchVector()
-        vector.device = this.name
-        vector.name = name
-
-        for (element in elements) {
-            val switch = OneSwitch()
-            switch.name = element.first
-            switch.value = if (element.second) SwitchState.ON else SwitchState.OFF
-            vector.elements.add(switch)
-        }
-
-        sendMessageToServer(vector)
-    }
-
-    protected fun sendNewNumber(
-        name: String,
-        vararg elements: Pair<String, Double>,
-    ) {
-        val vector = NewNumberVector()
-        vector.device = this.name
-        vector.name = name
-
-        for (element in elements) {
-            val switch = OneNumber()
-            switch.name = element.first
-            switch.value = element.second
-            vector.elements.add(switch)
-        }
-
-        sendMessageToServer(vector)
-    }
-
-    protected fun sendNewText(
-        name: String,
-        vararg elements: Pair<String, String>,
-    ) {
-        val vector = NewTextVector()
-        vector.device = this.name
-        vector.name = name
-
-        for (element in elements) {
-            val switch = OneText()
-            switch.name = element.first
-            switch.value = element.second
-            vector.elements.add(switch)
-        }
-
-        sendMessageToServer(vector)
     }
 }

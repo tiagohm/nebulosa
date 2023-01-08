@@ -431,6 +431,31 @@
                     <Cursor fx:constant="HAND"/>
                 </cursor>
             </Button>
+            <Button fx:id="indi"
+                    onAction="#open"
+                    userData="INDI"
+                    contentDisplay="TOP"
+                    mnemonicParsing="false"
+                    prefHeight="56.0"
+                    prefWidth="96.0"
+                    text="INDI"
+                    GridPane.rowIndex="4"
+                    GridPane.columnIndex="1">
+                <graphic>
+                    <ImageView fitHeight="24.0"
+                               fitWidth="24.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/indi.png"/>
+                    </ImageView>
+                </graphic>
+                <font>
+                    <Font size="11.0"/>
+                </font>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
         </GridPane>
     </VBox>
 </AnchorPane>

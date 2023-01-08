@@ -279,7 +279,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         this.fits = fits
         transformedFits = fits.clone()
 
-        scnr.disableProperty().set(fits.mono)
+        scnr.isDisable = fits.mono
 
         widthProperty().removeListener(this)
         heightProperty().removeListener(this)

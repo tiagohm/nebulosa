@@ -18,6 +18,7 @@ import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.filterwheels.FilterWheelManagerScreen
 import nebulosa.desktop.focusers.FocuserManagerScreen
 import nebulosa.desktop.imageviewer.ImageViewerScreen
+import nebulosa.desktop.indi.INDIPanelControlScreen
 import nebulosa.desktop.mounts.MountManagerScreen
 import nebulosa.desktop.platesolving.PlateSolverScreen
 import nebulosa.desktop.telescopecontrol.TelescopeControlManager
@@ -46,6 +47,7 @@ class HomeScreen : Screen("Home") {
     @FXML private lateinit var alignment: Button
     @FXML private lateinit var sequencer: Button
     @FXML private lateinit var imageViewer: Button
+    @FXML private lateinit var indi: Button
 
     private val screens = HashSet<Screen>()
     private val imageViewers = HashSet<ImageViewerScreen>(8)
@@ -70,6 +72,7 @@ class HomeScreen : Screen("Home") {
         switches.disableProperty().bind(!equipmentManager.connected)
         alignment.disableProperty().bind(!equipmentManager.connected)
         sequencer.disableProperty().bind(!equipmentManager.connected)
+        indi.disableProperty().bind(!equipmentManager.connected)
 
         connect.textProperty().bind(equipmentManager.connected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
         connect.textFillProperty().bind(equipmentManager.connected.between(MaterialColor.RED_700, MaterialColor.BLUE_GREY_700))
@@ -134,6 +137,7 @@ class HomeScreen : Screen("Home") {
             "FILTER_WHEEL" -> get<FilterWheelManagerScreen>()
             "PLATE_SOLVING" -> PlateSolverScreen()
             "NEW_IMAGE" -> return openNewImage()
+            "INDI" -> INDIPanelControlScreen()
             else -> return
         }
 

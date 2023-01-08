@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.layout.*?>
+<AnchorPane maxHeight="-Infinity"
+            maxWidth="-Infinity"
+            minHeight="-Infinity"
+            minWidth="-Infinity"
+            prefHeight="600.0"
+            prefWidth="900.0"
+            stylesheets="@css/INDIPanelControl.css"
+            xmlns="http://javafx.com/javafx/19"
+            xmlns:fx="http://javafx.com/fxml/1">
+    <VBox spacing="16.0"
+          AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0"
+          AnchorPane.topAnchor="0.0">
+        <HBox alignment="CENTER_RIGHT"
+              spacing="8.0">
+            <padding>
+                <Insets left="16.0"
+                        right="16.0"
+                        top="16.0"/>
+            </padding>
+            <ChoiceBox fx:id="devices"
+                       prefHeight="32.0"
+                       prefWidth="304.0">
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </ChoiceBox>
+        </HBox>
+        <AnchorPane fx:id="panelControl"
+                    VBox.vgrow="ALWAYS">
+            <TabPane fx:id="groups"
+                     AnchorPane.topAnchor="0.0"
+                     AnchorPane.bottomAnchor="0.0"
+                     AnchorPane.leftAnchor="0.0"
+                     AnchorPane.rightAnchor="0.0">
+            </TabPane>
+        </AnchorPane>
+    </VBox>
+</AnchorPane>

@@ -1,7 +1,7 @@
 package nebulosa.indi.devices
 
-data class SwitchProperty(
+data class NumberProperty(
     override val name: String,
     override val label: String,
-    override var value: Boolean,
-) : Property<Boolean>
+    override var value: Double,
+) : Property<Double>
