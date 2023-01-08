@@ -16,10 +16,8 @@ import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.desktop.indi.INDIPanelControlScreen
 import nebulosa.indi.devices.focusers.Focuser
 import org.controlsfx.control.ToggleSwitch
-import org.koin.core.component.get
 import org.koin.core.component.inject
 
 class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager") {
@@ -42,7 +40,6 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
     @FXML private lateinit var backlashCompensationSteps: Spinner<Double>
     @FXML private lateinit var autoFocus: Button
 
-    @Volatile private var indiPanelControlScreen: INDIPanelControlScreen? = null
     @Volatile private var subscriber: Disposable? = null
 
     init {
@@ -122,9 +119,7 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
     @FXML
     private fun openINDI() {
         val focuser = equipmentManager.selectedFocuser.get() ?: return
-        indiPanelControlScreen = get()
-        indiPanelControlScreen?.showAndFocus()
-        indiPanelControlScreen?.select(focuser)
+        screenManager.openINDIPanelControl(focuser)
     }
 
     @FXML

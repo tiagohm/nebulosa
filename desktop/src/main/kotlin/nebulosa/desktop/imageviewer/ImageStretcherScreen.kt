@@ -14,7 +14,7 @@ import nebulosa.math.map
 import org.controlsfx.control.RangeSlider
 
 // TODO: Stretch by channels: R, G, B, K(both)
-class ImageStretcherScreen(private val imageViewer: ImageViewerScreen) :
+class ImageStretcherScreen(private val imageViewerScreen: ImageViewerScreen) :
     Screen("ImageStretcher", "nebulosa-image-stretcher") {
 
     @FXML private lateinit var bitDepth: ChoiceBox<Int>
@@ -26,12 +26,15 @@ class ImageStretcherScreen(private val imageViewer: ImageViewerScreen) :
     @FXML private lateinit var histogram: HistogramView
 
     init {
-        title = "Image Stretcher"
         isResizable = false
     }
 
     override fun onCreate() {
         bitDepth.converter = BitDepthStringConverter
+
+        updateTitle()
+
+        imageViewerScreen.titleProperty().on { updateTitle() }
 
         shadowAndHighlight.lowValueProperty().on(::onLowValueChanged)
         shadowAndHighlight.highValueProperty().on(::onHighValueChanged)
@@ -88,9 +91,9 @@ class ImageStretcherScreen(private val imageViewer: ImageViewerScreen) :
 
     override fun onStart() {
         val bitDepthFactor = if (bitDepth.value == 16) 65535.0 else 255.0
-        shadowAndHighlight.lowValue = imageViewer.shadow * bitDepthFactor
-        shadowAndHighlight.highValue = imageViewer.highlight * bitDepthFactor
-        midtone.value = imageViewer.midtone * bitDepthFactor
+        shadowAndHighlight.lowValue = imageViewerScreen.shadow * bitDepthFactor
+        shadowAndHighlight.highValue = imageViewerScreen.highlight * bitDepthFactor
+        midtone.value = imageViewerScreen.midtone * bitDepthFactor
 
         if (bitDepth.value == null) bitDepth.selectionModel.selectFirst()
 
@@ -100,27 +103,32 @@ class ImageStretcherScreen(private val imageViewer: ImageViewerScreen) :
     private fun onLowValueChanged(value: Double) {
         val bitDepthFactor = if (bitDepth.value == 16) 65535f else 255f
         shadow.valueFactory.value = value
-        imageViewer.transformImage(shadow = value.toFloat() / bitDepthFactor)
+        imageViewerScreen.transformImage(shadow = value.toFloat() / bitDepthFactor)
         drawHistogram()
     }
 
     private fun onHighValueChanged(value: Double) {
         val bitDepthFactor = if (bitDepth.value == 16) 65535f else 255f
         highlight.valueFactory.value = value
-        imageViewer.transformImage(highlight = value.toFloat() / bitDepthFactor)
+        imageViewerScreen.transformImage(highlight = value.toFloat() / bitDepthFactor)
         drawHistogram()
     }
 
     private fun onMidtoneValueChanged(value: Double) {
         val bitDepthFactor = if (bitDepth.value == 16) 65535f else 255f
         midtoneSpinner.valueFactory.value = value
-        imageViewer.transformImage(midtone = value.toFloat() / bitDepthFactor)
+        imageViewerScreen.transformImage(midtone = value.toFloat() / bitDepthFactor)
         drawHistogram()
     }
 
     fun drawHistogram() {
         if (isShowing) {
-            histogram.draw(imageViewer.transformedFits!!)
+            histogram.draw(imageViewerScreen.transformedFits!!)
         }
+    }
+
+    private fun updateTitle() {
+        val name = imageViewerScreen.title.split("·").last().trim()
+        title = "Image Stretcher · $name"
     }
 }

@@ -4,14 +4,10 @@ import ch.qos.logback.classic.Level
 import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.application.Application
 import javafx.scene.text.Font
-import nebulosa.desktop.cameras.CameraManagerScreen
 import nebulosa.desktop.connections.ConnectionManager
 import nebulosa.desktop.core.EventBus
+import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.desktop.filterwheels.FilterWheelManagerScreen
-import nebulosa.desktop.focusers.FocuserManagerScreen
-import nebulosa.desktop.indi.INDIPanelControlScreen
-import nebulosa.desktop.mounts.MountManagerScreen
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.desktop.telescopecontrol.TelescopeControlManager
 import nebulosa.io.resource
@@ -43,15 +39,10 @@ private fun inject() = module {
     single { ObjectMapper() }
     single(createdAtStart = true) { Preferences(Paths.get("$appDirectory", "preferences.json")) }
 
-    single { CameraManagerScreen() }
-    single { MountManagerScreen() }
-    single { FocuserManagerScreen() }
-    single { FilterWheelManagerScreen() }
-    single { INDIPanelControlScreen() }
-
     single(createdAtStart = true) { ConnectionManager() }
     single(createdAtStart = true) { EquipmentManager() }
     single(createdAtStart = true) { TelescopeControlManager() }
+    single(createdAtStart = true) { ScreenManager() }
 }
 
 fun main(args: Array<String>) {

@@ -10,6 +10,7 @@ import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.stage.DirectoryChooser
+import nebulosa.desktop.Nebulosa
 import nebulosa.desktop.core.beans.*
 import nebulosa.desktop.core.scene.MaterialColor
 import nebulosa.desktop.core.scene.MaterialIcon
@@ -17,10 +18,8 @@ import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.imageviewer.ImageViewerScreen
-import nebulosa.desktop.indi.INDIPanelControlScreen
 import nebulosa.indi.devices.cameras.*
 import org.controlsfx.control.ToggleSwitch
-import org.koin.core.component.get
 import org.koin.core.component.inject
 import java.io.File
 import java.util.*
@@ -29,6 +28,7 @@ import kotlin.math.max
 
 class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
+    private val nebulosa by inject<Nebulosa>()
     private val equipmentManager by inject<EquipmentManager>()
 
     @FXML private lateinit var cameras: ChoiceBox<Camera>
@@ -40,7 +40,9 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML private lateinit var autoSubFolder: CheckMenuItem
     @FXML private lateinit var newSubFolderAtNoon: CheckMenuItem
     @FXML private lateinit var newSubFolderAtMidnight: CheckMenuItem
-    @FXML private lateinit var imageSavePath: Label
+    @FXML private lateinit var autoSaveAllExposuresIndicator: Label
+    @FXML private lateinit var autoSubFolderIndicator: Label
+    @FXML private lateinit var savePathIndicator: Label
     @FXML private lateinit var cooler: ToggleSwitch
     @FXML private lateinit var dewHeater: ToggleSwitch
     @FXML private lateinit var temperature: Label
@@ -70,7 +72,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     private val isCapturing = SimpleBooleanProperty(false)
     private val imageViewers = HashSet<ImageViewerScreen>()
 
-    @Volatile private var indiPanelControlScreen: INDIPanelControlScreen? = null
     @Volatile private var subscriber: Disposable? = null
 
     init {
@@ -254,21 +255,21 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML
     private fun openINDI() {
         val camera = equipmentManager.selectedCamera.get() ?: return
-        indiPanelControlScreen = get()
-        indiPanelControlScreen?.showAndFocus()
-        indiPanelControlScreen?.select(camera)
+        screenManager.openINDIPanelControl(camera)
     }
 
     @FXML
     private fun toggleAutoSaveAllExposures() {
         val camera = equipmentManager.selectedCamera.get() ?: return
         preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures", autoSaveAllExposures.isSelected)
+        updateIndicators()
     }
 
     @FXML
     private fun toggleAutoSubFolder() {
         val camera = equipmentManager.selectedCamera.get() ?: return
         preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder", autoSubFolder.isSelected)
+        updateIndicators()
     }
 
     @FXML
@@ -280,7 +281,16 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         chooser.title = "Open Image Save Path"
         val file = chooser.showDialog(this) ?: return
         preferences.string("cameraManager.equipment.${camera.name}.imageSavePath", file.toString())
-        imageSavePath.text = file.toString()
+        updateIndicators()
+    }
+
+    @FXML
+    private fun openFolderInFiles(event: MouseEvent) {
+        if (event.button == MouseButton.PRIMARY && event.clickCount == 2) {
+            val camera = equipmentManager.selectedCamera.get() ?: return
+            val path = equipmentManager.cameraImageSavePath(camera)
+            nebulosa.hostServices.showDocument(path.toString())
+        }
     }
 
     @FXML
@@ -344,10 +354,9 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             val mode = preferences.enum("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON
             newSubFolderAtMidnight.isSelected = mode == AutoSubFolderMode.MIDNIGHT
             newSubFolderAtNoon.isSelected = mode == AutoSubFolderMode.NOON
-            imageSavePath.text = equipmentManager.cameraImageSavePath(camera).toString()
-        } else {
-            imageSavePath.text = "-"
         }
+
+        updateIndicators()
     }
 
     private fun savePreferences(camera: Camera?) {
@@ -433,6 +442,31 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         with(offset.valueFactory as DoubleSpinnerValueFactory) {
             max = camera.offsetMax.toDouble()
             min = camera.offsetMin.toDouble()
+        }
+    }
+
+    private fun updateIndicators() {
+        val camera = equipmentManager.selectedCamera.get()
+
+        if (camera != null) {
+            val imageSavePath = equipmentManager.cameraImageSavePath(camera)
+            savePathIndicator.text = imageSavePath.toString()
+
+            val autoSaveAllExposures = preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures")
+            autoSaveAllExposuresIndicator.isVisible = autoSaveAllExposures
+            autoSaveAllExposuresIndicator.isManaged = autoSaveAllExposures
+
+            val autoSubFolder = preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")
+            autoSubFolderIndicator.isVisible = autoSubFolder
+            autoSubFolderIndicator.isManaged = autoSubFolder
+        } else {
+            savePathIndicator.text = "-"
+
+            autoSaveAllExposuresIndicator.isVisible = false
+            autoSaveAllExposuresIndicator.isManaged = false
+
+            autoSubFolderIndicator.isVisible = false
+            autoSubFolderIndicator.isManaged = false
         }
     }
 

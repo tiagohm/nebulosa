@@ -20,9 +20,7 @@ import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.scene.control.ButtonValueFactory
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.desktop.indi.INDIPanelControlScreen
 import nebulosa.indi.devices.filterwheels.FilterWheel
-import org.koin.core.component.get
 import org.koin.core.component.inject
 
 class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manager") {
@@ -36,7 +34,6 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
     @FXML private lateinit var filterAsShutter: ChoiceBox<String>
     @FXML private lateinit var filterSlots: TableView<Int>
 
-    @Volatile private var indiPanelControlScreen: INDIPanelControlScreen? = null
     @Volatile private var subscriber: Disposable? = null
 
     init {
@@ -159,9 +156,7 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
     @FXML
     private fun openINDI() {
         val filterWheel = equipmentManager.selectedFilterWheel.get() ?: return
-        indiPanelControlScreen = get()
-        indiPanelControlScreen?.showAndFocus()
-        indiPanelControlScreen?.select(filterWheel)
+        screenManager.openINDIPanelControl(filterWheel)
     }
 
     @FXML

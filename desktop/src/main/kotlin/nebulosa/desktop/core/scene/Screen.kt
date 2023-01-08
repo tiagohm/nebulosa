@@ -7,6 +7,7 @@ import javafx.scene.control.Alert
 import javafx.scene.image.Image
 import javafx.stage.Stage
 import nebulosa.desktop.core.EventBus
+import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
@@ -23,6 +24,7 @@ abstract class Screen(
 
     protected val eventBus by inject<EventBus>()
     protected val preferences by inject<Preferences>()
+    protected val screenManager by inject<ScreenManager>()
 
     init {
         setOnShowing {

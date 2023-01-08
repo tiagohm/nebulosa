@@ -110,7 +110,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
     }
 
     private fun populateDevices() {
-        val selectedDevice = devices.value
+        val device = devices.value
         val devices = ArrayList<Device>()
         devices.addAll(equipmentManager.attachedCameras)
         devices.addAll(equipmentManager.attachedMounts)
@@ -118,8 +118,11 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         devices.addAll(equipmentManager.attachedFocusers)
         devices.sortBy { it.name }
         devices.forEach { if (it !in cacheProperties) cacheProperties[it] = HashMap(256) }
+
         this.devices.items.setAll(devices)
-        this.devices.value = selectedDevice
+
+        if (device in devices) this.devices.value = device
+        else this.devices.selectionModel.selectFirst()
     }
 
     private fun makePanelControl() {
@@ -129,8 +132,15 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
             cacheProperties[device]!!.clear()
             groups.tabs.clear()
 
-            device.properties.values
-                .groupBy { it.group }
+            val groupedProperties = LinkedHashMap<String, MutableList<PropertyVector<*, *>>>(16)
+
+            for (property in device.properties.values) {
+                groupedProperties
+                    .getOrPut(property.group) { ArrayList() }
+                    .add(property)
+            }
+
+            groupedProperties
                 .onEach { groups.makeGroup(device, it.key, it.value) }
         }
 
@@ -486,12 +496,10 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
         @JvmStatic private val PADDING_16 = Insets(16.0)
         @JvmStatic private val PADDING_HORIZONTAL_16 = Insets(0.0, 16.0, 0.0, 16.0)
-        @JvmStatic private val PADDING_VERTICAL_16 = Insets(16.0, 0.0, 16.0, 0.0)
         @JvmStatic private val SYSTEM_REGULAR_11 = Font("System Regular", 11.0)
         @JvmStatic private val SYSTEM_BOLD_11 = Font("System Bold", 11.0)
         @JvmStatic private val MATERIAL_DESIGN_ICONS_18 = Font("Material Design Icons", 18.0)
         @JvmStatic private val MATERIAL_DESIGN_ICONS_24 = Font("Material Design Icons", 24.0)
-        @JvmStatic private val DECIMAL_NUMBER_REGEX = Regex("^-?\\d+(\\.\\d+)?\\$")
 
         @JvmStatic private val STATE_COLORS =
             arrayOf(MaterialColor.GREY_400, MaterialColor.GREEN_400, MaterialColor.BLUE_400, MaterialColor.RED_400)

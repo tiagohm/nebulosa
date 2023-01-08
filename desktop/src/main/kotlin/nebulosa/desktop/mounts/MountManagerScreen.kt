@@ -15,7 +15,6 @@ import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.desktop.indi.INDIPanelControlScreen
 import nebulosa.desktop.telescopecontrol.StellariumTelescopeControlScreen
 import nebulosa.indi.devices.mounts.*
 import nebulosa.math.Angle
@@ -26,7 +25,6 @@ import nebulosa.nova.astrometry.ICRF
 import nebulosa.time.TimeJD
 import org.controlsfx.control.SegmentedButton
 import org.controlsfx.control.ToggleSwitch
-import org.koin.core.component.get
 import org.koin.core.component.inject
 import java.util.*
 import kotlin.math.abs
@@ -68,7 +66,6 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     @FXML private lateinit var park: Button
     @FXML private lateinit var status: Label
 
-    @Volatile private var indiPanelControlScreen: INDIPanelControlScreen? = null
     @Volatile private var subscriber: Disposable? = null
 
     init {
@@ -138,7 +135,6 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         equipmentManager.selectedMount.trackMode.onOne { mode ->
             trackingMode.buttons.forEach { it.isSelected = it.userData == mode?.name }
             trackingModeAdditional.buttons.forEach { it.isSelected = it.userData == mode?.name }
-            stellariumTelescopeControl.text = "Stellarium Telescope Control"
         }
 
         slewSpeed.disableProperty().bind(isNotConnectedOrSlewing)
@@ -198,9 +194,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     @FXML
     private fun openINDI() {
         val mount = equipmentManager.selectedMount.get() ?: return
-        indiPanelControlScreen = get()
-        indiPanelControlScreen?.showAndFocus()
-        indiPanelControlScreen?.select(mount)
+        screenManager.openINDIPanelControl(mount)
     }
 
     @FXML

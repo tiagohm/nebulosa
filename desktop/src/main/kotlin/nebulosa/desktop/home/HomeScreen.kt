@@ -7,7 +7,6 @@ import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import javafx.stage.FileChooser
-import nebulosa.desktop.cameras.CameraManagerScreen
 import nebulosa.desktop.connections.ConnectionManager
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
@@ -15,14 +14,8 @@ import nebulosa.desktop.core.scene.MaterialColor
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.desktop.filterwheels.FilterWheelManagerScreen
-import nebulosa.desktop.focusers.FocuserManagerScreen
 import nebulosa.desktop.imageviewer.ImageViewerScreen
-import nebulosa.desktop.indi.INDIPanelControlScreen
-import nebulosa.desktop.mounts.MountManagerScreen
-import nebulosa.desktop.platesolving.PlateSolverScreen
 import nebulosa.desktop.telescopecontrol.TelescopeControlManager
-import org.koin.core.component.get
 import org.koin.core.component.inject
 
 class HomeScreen : Screen("Home") {
@@ -49,7 +42,6 @@ class HomeScreen : Screen("Home") {
     @FXML private lateinit var imageViewer: Button
     @FXML private lateinit var indi: Button
 
-    private val screens = HashSet<Screen>()
     private val imageViewers = HashSet<ImageViewerScreen>(8)
 
     @Volatile private var subscriber: Disposable? = null
@@ -98,8 +90,7 @@ class HomeScreen : Screen("Home") {
         imageViewers.forEach(Screen::close)
         imageViewers.clear()
 
-        screens.forEach(Screen::close)
-        screens.clear()
+        screenManager.closeAll()
 
         telescopeControlManager.stopAll()
     }
@@ -130,20 +121,10 @@ class HomeScreen : Screen("Home") {
     @FXML
     @Synchronized
     private fun open(event: ActionEvent) {
-        val page = when ((event.source as Node).userData as String) {
-            "CAMERA" -> get<CameraManagerScreen>()
-            "MOUNT" -> get<MountManagerScreen>()
-            "FOCUSER" -> get<FocuserManagerScreen>()
-            "FILTER_WHEEL" -> get<FilterWheelManagerScreen>()
-            "PLATE_SOLVING" -> PlateSolverScreen()
-            "NEW_IMAGE" -> return openNewImage()
-            "INDI" -> get<INDIPanelControlScreen>()
-            else -> return
+        when (val name = (event.source as Node).userData as String) {
+            "NEW_IMAGE" -> openNewImage()
+            else -> screenManager.openByName(name)
         }
-
-        screens.add(page)
-
-        page.showAndFocus()
     }
 
     private fun openNewImage() {
