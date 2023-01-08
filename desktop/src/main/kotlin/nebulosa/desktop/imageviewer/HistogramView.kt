@@ -29,7 +29,6 @@ class HistogramView : Canvas() {
         this.height = height
     }
 
-    @Synchronized
     fun draw(fits: Image) {
         maxHeight = 1
         histogramData.fill(0)

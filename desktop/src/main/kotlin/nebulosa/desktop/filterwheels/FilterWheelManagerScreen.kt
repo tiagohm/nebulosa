@@ -20,7 +20,9 @@ import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.scene.control.ButtonValueFactory
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
+import nebulosa.desktop.indi.INDIPanelControlScreen
 import nebulosa.indi.devices.filterwheels.FilterWheel
+import org.koin.core.component.get
 import org.koin.core.component.inject
 
 class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manager") {
@@ -29,10 +31,12 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
 
     @FXML private lateinit var filterWheels: ChoiceBox<FilterWheel>
     @FXML private lateinit var connect: Button
+    @FXML private lateinit var openINDI: Button
     @FXML private lateinit var useFilterWheelAsShutter: CheckBox
     @FXML private lateinit var filterAsShutter: ChoiceBox<String>
     @FXML private lateinit var filterSlots: TableView<Int>
 
+    @Volatile private var indiPanelControlScreen: INDIPanelControlScreen? = null
     @Volatile private var subscriber: Disposable? = null
 
     init {
@@ -54,6 +58,8 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         connect.disableProperty().bind(equipmentManager.selectedFilterWheel.isNull or isConnecting or isMoving)
         connect.textProperty().bind(equipmentManager.selectedFilterWheel.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
         connect.textFillProperty().bind(equipmentManager.selectedFilterWheel.isConnected.between(MaterialColor.RED_700, MaterialColor.BLUE_GREY_700))
+
+        openINDI.disableProperty().bind(connect.disableProperty())
 
         filterSlots.disableProperty().bind(isNotConnectedOrMoving)
         useFilterWheelAsShutter.disableProperty().bind(isNotConnectedOrMoving)
@@ -148,6 +154,14 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
         } else {
             equipmentManager.selectedFilterWheel.get().disconnect()
         }
+    }
+
+    @FXML
+    private fun openINDI() {
+        val filterWheel = equipmentManager.selectedFilterWheel.get() ?: return
+        indiPanelControlScreen = get()
+        indiPanelControlScreen?.showAndFocus()
+        indiPanelControlScreen?.select(filterWheel)
     }
 
     @FXML

@@ -17,8 +17,10 @@ import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.imageviewer.ImageViewerScreen
+import nebulosa.desktop.indi.INDIPanelControlScreen
 import nebulosa.indi.devices.cameras.*
 import org.controlsfx.control.ToggleSwitch
+import org.koin.core.component.get
 import org.koin.core.component.inject
 import java.io.File
 import java.util.*
@@ -31,6 +33,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     @FXML private lateinit var cameras: ChoiceBox<Camera>
     @FXML private lateinit var connect: Button
+    @FXML private lateinit var openINDI: Button
     @FXML private lateinit var cameraMenuIcon: Label
     @FXML private lateinit var cameraMenu: ContextMenu
     @FXML private lateinit var autoSaveAllExposures: CheckMenuItem
@@ -67,6 +70,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     private val isCapturing = SimpleBooleanProperty(false)
     private val imageViewers = HashSet<ImageViewerScreen>()
 
+    @Volatile private var indiPanelControlScreen: INDIPanelControlScreen? = null
     @Volatile private var subscriber: Disposable? = null
 
     init {
@@ -88,6 +92,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         connect.disableProperty().bind(equipmentManager.selectedCamera.isNull or isConnecting or isCapturing)
         connect.textProperty().bind(equipmentManager.selectedCamera.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
         connect.textFillProperty().bind(equipmentManager.selectedCamera.isConnected.between(MaterialColor.RED_700, MaterialColor.BLUE_GREY_700))
+
+        openINDI.disableProperty().bind(connect.disableProperty())
 
         cameraMenuIcon.disableProperty().bind(isNotConnectedOrCapturing)
 
@@ -248,6 +254,14 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     }
 
     @FXML
+    private fun openINDI() {
+        val camera = equipmentManager.selectedCamera.get() ?: return
+        indiPanelControlScreen = get()
+        indiPanelControlScreen?.showAndFocus()
+        indiPanelControlScreen?.select(camera)
+    }
+
+    @FXML
     private fun toggleAutoSaveAllExposures() {
         val camera = equipmentManager.selectedCamera.get() ?: return
         preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures", autoSaveAllExposures.isSelected)
@@ -294,7 +308,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         updateExposureUnit(prevTimeUnit, timeUnit, exposure.value.toLong())
     }
 
-    @Synchronized
     private fun updateExposureUnit(from: TimeUnit, to: TimeUnit, exposureValue: Long) {
         val minValue = max(1L, to.convert(equipmentManager.selectedCamera.exposureMin.value, TimeUnit.MICROSECONDS))
         val maxValue = to.convert(equipmentManager.selectedCamera.exposureMax.value, TimeUnit.MICROSECONDS)
@@ -367,7 +380,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         updateExposureUnit(timeUnit, timeUnit, exposure.value.toLong())
     }
 
-    @Synchronized
     private fun updateFrame() {
         val camera = equipmentManager.selectedCamera.get() ?: return
 
@@ -393,7 +405,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         }
     }
 
-    @Synchronized
     private fun updateFrameFormat() {
         val selectedFrameFormat = frameFormat.selectionModel.selectedItem
 
@@ -476,12 +487,10 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     }
 
     @FXML
-    @Synchronized
     private fun abortCapture() {
         equipmentManager.imagingCameraTask?.cancel(true)
     }
 
-    @Synchronized
     private fun updateTitle() {
         status.text = buildString(128) {
             val task = equipmentManager.imagingCameraTask

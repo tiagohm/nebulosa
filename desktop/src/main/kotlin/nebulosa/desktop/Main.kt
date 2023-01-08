@@ -9,6 +9,7 @@ import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.filterwheels.FilterWheelManagerScreen
 import nebulosa.desktop.focusers.FocuserManagerScreen
+import nebulosa.desktop.indi.INDIPanelControlScreen
 import nebulosa.desktop.mounts.MountManagerScreen
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.desktop.telescopecontrol.TelescopeControlManager
@@ -43,6 +44,7 @@ private fun inject() = module {
     single { MountManagerScreen() }
     single { FocuserManagerScreen() }
     single { FilterWheelManagerScreen() }
+    single { INDIPanelControlScreen() }
 
     single(createdAtStart = true) { ConnectionManager() }
     single(createdAtStart = true) { EquipmentManager() }

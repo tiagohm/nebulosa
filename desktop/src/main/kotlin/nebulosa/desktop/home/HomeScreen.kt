@@ -137,13 +137,13 @@ class HomeScreen : Screen("Home") {
             "FILTER_WHEEL" -> get<FilterWheelManagerScreen>()
             "PLATE_SOLVING" -> PlateSolverScreen()
             "NEW_IMAGE" -> return openNewImage()
-            "INDI" -> INDIPanelControlScreen()
+            "INDI" -> get<INDIPanelControlScreen>()
             else -> return
         }
 
         screens.add(page)
 
-        page.show()
+        page.showAndFocus()
     }
 
     private fun openNewImage() {

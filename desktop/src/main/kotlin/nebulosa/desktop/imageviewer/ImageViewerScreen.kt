@@ -299,7 +299,6 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         transformImagePublisher.onNext(Unit)
     }
 
-    @Synchronized
     fun transformImage(
         shadow: Float = this.shadow, highlight: Float = this.highlight, midtone: Float = this.midtone,
         mirrorHorizontal: Boolean = this.mirrorHorizontal, mirrorVertical: Boolean = this.mirrorVertical,
@@ -396,12 +395,12 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
     @FXML
     private fun openImageStretcher() {
-        imageStretcherScreen.show()
+        imageStretcherScreen.showAndFocus()
     }
 
     @FXML
     private fun openSCNR() {
-        scnrScreen.show()
+        scnrScreen.showAndFocus()
     }
 
     @FXML

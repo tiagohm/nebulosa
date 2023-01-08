@@ -59,7 +59,6 @@ data class CameraExposureTask(
 
     private val phaser = Phaser(1)
 
-    @Synchronized
     override fun accept(event: Any) {
         when (event) {
             is CameraFrameCaptured -> {

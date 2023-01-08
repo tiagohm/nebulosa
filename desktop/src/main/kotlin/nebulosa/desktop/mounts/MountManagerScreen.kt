@@ -15,6 +15,7 @@ import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
+import nebulosa.desktop.indi.INDIPanelControlScreen
 import nebulosa.desktop.telescopecontrol.StellariumTelescopeControlScreen
 import nebulosa.indi.devices.mounts.*
 import nebulosa.math.Angle
@@ -25,6 +26,7 @@ import nebulosa.nova.astrometry.ICRF
 import nebulosa.time.TimeJD
 import org.controlsfx.control.SegmentedButton
 import org.controlsfx.control.ToggleSwitch
+import org.koin.core.component.get
 import org.koin.core.component.inject
 import java.util.*
 import kotlin.math.abs
@@ -35,6 +37,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
     @FXML private lateinit var mounts: ChoiceBox<Mount>
     @FXML private lateinit var connect: Button
+    @FXML private lateinit var openINDI: Button
     @FXML private lateinit var rightAscension: Label
     @FXML private lateinit var declination: Label
     @FXML private lateinit var rightAscensionJ2000: Label
@@ -65,6 +68,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     @FXML private lateinit var park: Button
     @FXML private lateinit var status: Label
 
+    @Volatile private var indiPanelControlScreen: INDIPanelControlScreen? = null
     @Volatile private var subscriber: Disposable? = null
 
     init {
@@ -86,6 +90,8 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         connect.disableProperty().bind(equipmentManager.selectedMount.isNull or isConnecting or isSlewing)
         connect.textProperty().bind(equipmentManager.selectedMount.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
         connect.textFillProperty().bind(equipmentManager.selectedMount.isConnected.between(MaterialColor.RED_700, MaterialColor.BLUE_GREY_700))
+
+        openINDI.disableProperty().bind(connect.disableProperty())
 
         rightAscension.textProperty().bind(equipmentManager.selectedMount.rightAscension.transformed { Angle.formatHMS(it.hours) })
         declination.textProperty().bind(equipmentManager.selectedMount.declination.transformed { Angle.formatDMS(it.deg) })
@@ -187,6 +193,14 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         } else {
             equipmentManager.selectedMount.get().disconnect()
         }
+    }
+
+    @FXML
+    private fun openINDI() {
+        val mount = equipmentManager.selectedMount.get() ?: return
+        indiPanelControlScreen = get()
+        indiPanelControlScreen?.showAndFocus()
+        indiPanelControlScreen?.select(mount)
     }
 
     @FXML

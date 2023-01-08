@@ -3,6 +3,8 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 <?import org.controlsfx.control.SegmentedButton?>
@@ -42,11 +44,31 @@
                     contentDisplay="TEXT_ONLY"
                     text="&#xF1616;"
                     textFill="#455A64"
-                    prefHeight="32.0">
+                    prefHeight="32.0"
+                    minWidth="42.0">
                 <font>
                     <Font name="Material Design Icons"
                           size="18.0"/>
                 </font>
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
+            <Button fx:id="openINDI"
+                    onAction="#openINDI"
+                    alignment="CENTER"
+                    mnemonicParsing="false"
+                    contentDisplay="GRAPHIC_ONLY"
+                    prefHeight="32.0"
+                    minWidth="42.0">
+                <graphic>
+                    <ImageView fitHeight="16.0"
+                               fitWidth="16.0"
+                               pickOnBounds="true"
+                               preserveRatio="true">
+                        <Image url="@icons/indi.png"/>
+                    </ImageView>
+                </graphic>
                 <cursor>
                     <Cursor fx:constant="HAND"/>
                 </cursor>

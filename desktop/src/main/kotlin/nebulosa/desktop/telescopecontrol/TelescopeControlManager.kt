@@ -24,7 +24,6 @@ class TelescopeControlManager private constructor(private val servers: MutableMa
             .subscribe(this)
     }
 
-    @Synchronized
     override fun accept(event: Any) {
         when (event) {
             is MountEquatorialCoordinatesChanged -> servers[event.device]
@@ -32,7 +31,6 @@ class TelescopeControlManager private constructor(private val servers: MutableMa
         }
     }
 
-    @Synchronized
     fun startTCP(
         mount: Mount,
         host: String,
@@ -48,13 +46,11 @@ class TelescopeControlManager private constructor(private val servers: MutableMa
         return server
     }
 
-    @Synchronized
     fun stop(mount: Mount) {
         servers[mount]?.close()
         servers.remove(mount)
     }
 
-    @Synchronized
     fun stopAll() {
         servers.values.forEach(TelescopeControlServer::close)
         servers.clear()

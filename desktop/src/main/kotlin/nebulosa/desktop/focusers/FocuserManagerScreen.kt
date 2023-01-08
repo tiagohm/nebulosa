@@ -16,8 +16,10 @@ import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
+import nebulosa.desktop.indi.INDIPanelControlScreen
 import nebulosa.indi.devices.focusers.Focuser
 import org.controlsfx.control.ToggleSwitch
+import org.koin.core.component.get
 import org.koin.core.component.inject
 
 class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager") {
@@ -26,6 +28,7 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
 
     @FXML private lateinit var focusers: ChoiceBox<Focuser>
     @FXML private lateinit var connect: Button
+    @FXML private lateinit var openINDI: Button
     @FXML private lateinit var position: Label
     @FXML private lateinit var temperature: Label
     @FXML private lateinit var increment: Spinner<Double>
@@ -39,6 +42,7 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
     @FXML private lateinit var backlashCompensationSteps: Spinner<Double>
     @FXML private lateinit var autoFocus: Button
 
+    @Volatile private var indiPanelControlScreen: INDIPanelControlScreen? = null
     @Volatile private var subscriber: Disposable? = null
 
     init {
@@ -60,6 +64,8 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
         connect.disableProperty().bind(equipmentManager.selectedFocuser.isNull or isConnecting or isMoving)
         connect.textProperty().bind(equipmentManager.selectedFocuser.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
         connect.textFillProperty().bind(equipmentManager.selectedFocuser.isConnected.between(MaterialColor.RED_700, MaterialColor.BLUE_GREY_700))
+
+        openINDI.disableProperty().bind(connect.disableProperty())
 
         position.textProperty().bind(equipmentManager.selectedFocuser.position.asString())
 
@@ -111,6 +117,14 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
         } else {
             equipmentManager.selectedFocuser.get().disconnect()
         }
+    }
+
+    @FXML
+    private fun openINDI() {
+        val focuser = equipmentManager.selectedFocuser.get() ?: return
+        indiPanelControlScreen = get()
+        indiPanelControlScreen?.showAndFocus()
+        indiPanelControlScreen?.select(focuser)
     }
 
     @FXML

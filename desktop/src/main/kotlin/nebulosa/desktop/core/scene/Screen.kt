@@ -49,6 +49,12 @@ abstract class Screen(
 
     protected open fun onStop() = Unit
 
+    fun showAndFocus() {
+        show()
+        requestFocus()
+        toFront()
+    }
+
     companion object {
 
         @JvmStatic

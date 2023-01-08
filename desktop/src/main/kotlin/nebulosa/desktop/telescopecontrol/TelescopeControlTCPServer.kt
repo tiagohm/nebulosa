@@ -99,7 +99,6 @@ internal class TelescopeControlTCPServer(
         listeners.remove(listener)
     }
 
-    @Synchronized
     override fun start() {
         check(!isClosed) { "closed" }
         serverSocket.bind(InetSocketAddress(host, port))
@@ -121,7 +120,6 @@ internal class TelescopeControlTCPServer(
         }
     }
 
-    @Synchronized
     override fun sendCurrentPosition(ra: Angle, dec: Angle) {
         clients.forEach { it.sendCurrentPosition(ra, dec) }
     }

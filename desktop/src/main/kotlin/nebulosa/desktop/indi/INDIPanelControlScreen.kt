@@ -23,7 +23,7 @@ import nebulosa.indi.protocol.PropertyPermission
 import nebulosa.indi.protocol.SwitchRule
 import org.koin.core.component.inject
 
-class INDIPanelControlScreen(val device: Device? = null) : Screen("INDIPanelControl", "nebulosa-indi") {
+class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
     private val equipmentManager by inject<EquipmentManager>()
 
@@ -39,23 +39,21 @@ class INDIPanelControlScreen(val device: Device? = null) : Screen("INDIPanelCont
         title = "INDI Panel Control"
     }
 
-    override fun onStart() {
-        subscriber = eventBus
-            .filterIsInstance<DevicePropertyChanged> { it.device === devices.value }
-            .subscribe(::onEvent)
-
-        if (device != null && device in devices.items) {
-            devices.selectionModel.select(device)
-            makePanelControl()
-        }
-
+    override fun onCreate() {
         devices.converter = DeviceStringConverter()
+        // TODO: Cache panel control?
         devices.selectionModel.selectedItemProperty().onZero(::makePanelControl)
 
         equipmentManager.attachedCameras.onZero(::populateDevices)
         equipmentManager.attachedMounts.onZero(::populateDevices)
         equipmentManager.attachedFilterWheels.onZero(::populateDevices)
         equipmentManager.attachedFocusers.onZero(::populateDevices)
+    }
+
+    override fun onStart() {
+        subscriber = eventBus
+            .filterIsInstance<DevicePropertyChanged> { it.device === devices.value }
+            .subscribe(::onEvent)
 
         populateDevices()
     }
@@ -63,6 +61,15 @@ class INDIPanelControlScreen(val device: Device? = null) : Screen("INDIPanelCont
     override fun onStop() {
         subscriber?.dispose()
         subscriber = null
+    }
+
+    fun select(device: Device): Boolean {
+        return if (device in devices.items) {
+            devices.selectionModel.select(device)
+            true
+        } else {
+            false
+        }
     }
 
     // TODO: delProperty event. Use isVisible to hide/show vector.
