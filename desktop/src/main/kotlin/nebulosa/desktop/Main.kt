@@ -1,5 +1,6 @@
 package nebulosa.desktop
 
+import ch.qos.logback.classic.Level
 import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.application.Application
 import javafx.scene.text.Font
@@ -18,6 +19,8 @@ import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.named
 import org.koin.core.module.dsl.withOptions
 import org.koin.dsl.module
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
@@ -58,7 +61,11 @@ fun main(args: Array<String>) {
 
     Locale.setDefault(Locale.ENGLISH)
 
-    resource("fonts/materialdesignicons-webfont.ttf")!!.use { Font.loadFont(it, 32.0) }
+    resource("fonts/materialdesignicons-webfont.ttf")!!.use { Font.loadFont(it, 24.0) }
+
+    with(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger) {
+        level = Level.INFO
+    }
 
     Application.launch(Nebulosa::class.java, *args)
 }

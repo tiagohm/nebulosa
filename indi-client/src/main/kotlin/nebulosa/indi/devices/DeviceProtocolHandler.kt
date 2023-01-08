@@ -179,7 +179,10 @@ class DeviceProtocolHandler : INDIProtocolParser {
         if (closed) return
 
         if (message is Message) {
-            LOG.info("message received: {}", message)
+            if (LOG.isDebugEnabled) {
+                LOG.debug("message received: {}", message)
+            }
+
             return
         } else if (message is DelProperty) {
             if (message.name.isEmpty() && message.device.isNotEmpty()) {

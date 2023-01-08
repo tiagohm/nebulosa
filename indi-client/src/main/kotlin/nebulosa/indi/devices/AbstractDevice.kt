@@ -12,6 +12,39 @@ internal abstract class AbstractDevice(
 
     override var isConnected = false
 
+    override fun handleMessage(message: INDIProtocol) {
+        when (message) {
+            is DelProperty -> {
+                val property = properties.remove(message.name) ?: return
+                handler.fireOnEventReceived(DevicePropertyDeleted(this, property))
+            }
+            is SwitchVector<*> -> {
+                when (message.name) {
+                    "CONNECTION" -> {
+                        val connected = message["CONNECT"]?.isOn() == true
+
+                        if (connected != isConnected) {
+                            if (connected) {
+                                isConnected = true
+
+                                handler.fireOnEventReceived(DeviceConnected(this))
+                            } else if (isConnected) {
+                                isConnected = false
+
+                                handler.fireOnEventReceived(DeviceDisconnected(this))
+                            }
+                        }
+                    }
+                }
+            }
+            else -> Unit
+        }
+
+        if (message is Vector<*>) {
+            handleVectorMessage(message)
+        }
+    }
+
     private fun handleVectorMessage(message: Vector<*>) {
         when (message) {
             is DefVector<*> -> {
@@ -113,39 +146,6 @@ internal abstract class AbstractDevice(
             else -> return
         }
 
-    }
-
-    override fun handleMessage(message: INDIProtocol) {
-        when (message) {
-            is DelProperty -> {
-                val property = properties.remove(message.name) ?: return
-                handler.fireOnEventReceived(DevicePropertyDeleted(this, property))
-            }
-            is SwitchVector<*> -> {
-                when (message.name) {
-                    "CONNECTION" -> {
-                        val connected = message["CONNECT"]?.isOn() == true
-
-                        if (connected != isConnected) {
-                            if (connected) {
-                                isConnected = true
-
-                                handler.fireOnEventReceived(DeviceConnected(this))
-                            } else if (isConnected) {
-                                isConnected = false
-
-                                handler.fireOnEventReceived(DeviceDisconnected(this))
-                            }
-                        }
-                    }
-                }
-            }
-            else -> Unit
-        }
-
-        if (message is Vector<*>) {
-            handleVectorMessage(message)
-        }
     }
 
     override fun sendMessageToServer(message: INDIProtocol) {

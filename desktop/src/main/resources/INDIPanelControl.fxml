@@ -28,6 +28,7 @@
             </padding>
             <ChoiceBox fx:id="devices"
                        prefHeight="32.0"
+                       minHeight="32.0"
                        prefWidth="304.0">
                 <cursor>
                     <Cursor fx:constant="HAND"/>

@@ -33,8 +33,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
     private val cacheProperties = HashMap<Device, HashMap<String, HBox>>()
 
-    @Volatile private var subscriberForChanged: Disposable? = null
-    @Volatile private var subscriberForDeleted: Disposable? = null
+    @Volatile private var subscriber: Disposable? = null
 
     init {
         title = "INDI Panel Control"
@@ -51,22 +50,16 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
     }
 
     override fun onStart() {
-        subscriberForChanged = eventBus
-            .filterIsInstance<DevicePropertyChanged> { it.device === devices.value }
-            .subscribe(::onEvent)
-
-        subscriberForDeleted = eventBus
-            .filterIsInstance<DevicePropertyDeleted> { it.device === devices.value }
+        subscriber = eventBus
+            .filterIsInstance<DevicePropertyEvent> { it.device === devices.value }
             .subscribe(::onEvent)
 
         populateDevices()
     }
 
     override fun onStop() {
-        subscriberForChanged?.dispose()
-        subscriberForChanged = null
-        subscriberForDeleted?.dispose()
-        subscriberForDeleted = null
+        subscriber?.dispose()
+        subscriber = null
     }
 
     fun select(device: Device): Boolean {
@@ -78,23 +71,30 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         }
     }
 
-    private fun onEvent(event: DevicePropertyChanged) {
-        val container = cacheProperties[event.device]!![event.property.name]
+    private fun onEvent(event: DevicePropertyEvent) {
+        when (event) {
+            is DevicePropertyChanged -> Platform.runLater {
+                synchronized(cacheProperties) {
+                    val container = cacheProperties[event.device]!![event.property.name]
 
-        if (container != null) {
-            Platform.runLater { container.updateProperty(event.property) }
-        } else {
-            val tab = groups.tabs
-                .firstOrNull { it.userData == event.property.group } ?: return
-            val content = (tab.content as ScrollPane).content as VBox
-            Platform.runLater { content.makeGroupProperty(event.device, event.property) }
+                    if (container != null) {
+                        container.updateProperty(event.property)
+                    } else {
+                        val tab = groups.tabs
+                            .firstOrNull { it.userData == event.property.group } ?: return@synchronized
+                        val content = (tab.content as ScrollPane).content as VBox
+                        content.makeGroupProperty(event.device, event.property)
+                        if (event.property is SwitchPropertyVector) println(event.property)
+                    }
+                }
+            }
+            is DevicePropertyDeleted -> Platform.runLater {
+                synchronized(cacheProperties) {
+                    val container = cacheProperties[event.device]!![event.property.name]
+                    container?.deleteProperty(event.property)
+                }
+            }
         }
-    }
-
-    private fun onEvent(event: DevicePropertyDeleted) {
-        val container = cacheProperties[event.device]!![event.property.name]
-
-        Platform.runLater { container?.deleteProperty(event.property) }
     }
 
     private fun populateDevices() {
@@ -108,16 +108,17 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         this.devices.items.setAll(devices)
     }
 
-    @Synchronized
     private fun makePanelControl() {
         val device = devices.value ?: return
 
-        cacheProperties[device]!!.clear()
-        groups.tabs.clear()
+        synchronized(cacheProperties) {
+            cacheProperties[device]!!.clear()
+            groups.tabs.clear()
 
-        device.values
-            .groupBy { it.group }
-            .onEach { groups.makeGroup(device, it.key, it.value) }
+            device.values
+                .groupBy { it.group }
+                .onEach { groups.makeGroup(device, it.key, it.value) }
+        }
 
         System.gc()
     }
@@ -144,19 +145,12 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         tabs.add(tab)
     }
 
-    private val PropertyVector<*, *>.styleClassName
-        get() = when (this) {
-            is NumberPropertyVector -> "number"
-            is SwitchPropertyVector -> "switch"
-            is TextPropertyVector -> "text"
-        }
-
     private fun VBox.makeGroupProperty(device: Device, property: PropertyVector<*, *>) {
         val propertyContainer = HBox()
         propertyContainer.alignment = Pos.CENTER_LEFT
         propertyContainer.spacing = 2.0
         propertyContainer.makeProperty(property)
-        propertyContainer.styleClass.addAll("vector", property.styleClassName)
+        propertyContainer.styleClass.addAll("vector")
         children.add(propertyContainer)
         cacheProperties[device]!![property.name] = propertyContainer
     }
