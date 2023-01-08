@@ -1,14 +1,12 @@
 package nebulosa.desktop.imageviewer
 
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.subjects.BehaviorSubject
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.scene.Cursor
+import javafx.scene.canvas.Canvas
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
-import javafx.scene.image.ImageView
 import javafx.scene.image.PixelBuffer
 import javafx.scene.image.PixelFormat
 import javafx.scene.image.WritableImage
@@ -25,21 +23,19 @@ import nebulosa.indi.devices.cameras.Camera
 import nom.tam.fits.Fits
 import java.io.File
 import java.nio.IntBuffer
-import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.min
 
 class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "nebulosa-image-viewer"), ChangeListener<Number> {
 
-    @FXML private lateinit var image: ImageView
+    @FXML private lateinit var image: Canvas
     @FXML private lateinit var menu: ContextMenu
     @FXML private lateinit var scnr: MenuItem
 
     @Volatile @JvmField internal var fits: Image? = null
     @Volatile @JvmField internal var transformedFits: Image? = null
 
-    @Volatile private var buffer = IntBuffer.allocate(1)
-    @Volatile private var bufferSize = 1
+    @Volatile private var buffer = IntArray(0)
     @Volatile private var scale = 1f
     @Volatile private var scaleFactor = 0
     @Volatile private var startX = 0
@@ -47,12 +43,10 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     @Volatile private var dragging = false
     @Volatile private var dragStartX = 0.0
     @Volatile private var dragStartY = 0.0
+    @Volatile private var lastDrawTime = 0L
 
     private val imageStretcherScreen = ImageStretcherScreen(this)
     private val scnrScreen = SCNRScreen(this)
-    private val transformImagePublisher = BehaviorSubject.create<Unit>()
-    private val drawPublisher = BehaviorSubject.create<Unit>()
-    private val subscribers = arrayOfNulls<Disposable>(2)
 
     var shadow = 0f
         private set
@@ -116,7 +110,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
                     dragStartX = it.x
                     dragStartY = it.y
 
-                    drawPublisher.onNext(Unit)
+                    draw()
                 }
 
                 it.consume()
@@ -155,18 +149,6 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     }
 
     override fun onStart() {
-        subscribers[0] = transformImagePublisher.debounce(850L, TimeUnit.MILLISECONDS)
-            .subscribe {
-                transformImage()
-                drawPublisher.onNext(Unit)
-            }
-
-        subscribers[1] = drawPublisher.debounce(80L, TimeUnit.MILLISECONDS)
-            .subscribe {
-                draw()
-                imageStretcherScreen.drawHistogram()
-            }
-
         shadow = 0f
         highlight = 1f
         midtone = 0.5f
@@ -185,11 +167,9 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
     override fun onStop() {
         fits = null
-        image.image = null
         transformedFits = null
 
-        buffer = IntBuffer.allocate(1)
-        bufferSize = 1
+        buffer = IntArray(0)
         scale = 1f
         scaleFactor = 0
         startX = 0
@@ -197,9 +177,6 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         dragging = false
         dragStartX = 0.0
         dragStartY = 0.0
-
-        subscribers[0]?.dispose()
-        subscribers[1]?.dispose()
 
         imageStretcherScreen.close()
         scnrScreen.close()
@@ -252,7 +229,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
             startY = max(0, startY)
         }
 
-        drawPublisher.onNext(Unit)
+        draw()
     }
 
     override fun changed(
@@ -265,14 +242,14 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
             startY = (startY * factor).toInt()
         }
 
-        drawPublisher.onNext(Unit)
+        draw()
     }
 
     @Synchronized
     fun open(file: File) {
         setTitleFromCameraAndFile(file)
 
-        show()
+        showAndFocus()
 
         val fits = FitsImage(Fits(file))
         fits.read()
@@ -284,19 +261,22 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         widthProperty().removeListener(this)
         heightProperty().removeListener(this)
 
-        if (fits.width >= fits.height) {
+        val factor = fits.width.toFloat() / fits.height.toFloat()
+        val titleHeight = height - scene.height
+
+        if (factor >= 1) {
             width = 640.0
-            val titleHeight = height - scene.height
-            height = fits.height * (width / fits.width) + titleHeight - 1
+            height = 640.0 / factor + titleHeight - 1
         } else {
-            height = 640.0
-            width = fits.width * (height / fits.height)
+            width = 640.0 / factor
+            height = 640.0 + titleHeight - 1
         }
 
         widthProperty().addListener(this)
         heightProperty().addListener(this)
 
-        transformImagePublisher.onNext(Unit)
+        transformImage()
+        draw()
     }
 
     fun transformImage(
@@ -318,10 +298,13 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         this.scnrProtectionMode = scnrProtectionMode
         this.scnrAmount = scnrAmount
 
-        transformImagePublisher.onNext(Unit)
+        transformImage()
+        draw()
     }
 
     private fun transformImage() {
+        if (!canDraw()) return
+
         // TODO: How to handle rotation transformation if data is copy but width/height is not?
         // TODO: Reason: Image will be rotated for each draw.
         fits!!.data.copyInto(transformedFits!!.data)
@@ -335,18 +318,27 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)
     }
 
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun canDraw(): Boolean {
+        return (System.currentTimeMillis() - lastDrawTime) >= 10L
+    }
+
     private fun draw() {
+        if (!canDraw()) return
+
+        lastDrawTime = System.currentTimeMillis()
+
         val fits = transformedFits ?: return
 
         val areaWidth = scene.width.toInt()
         val areaHeight = scene.height.toInt()
         val area = areaWidth * areaHeight
 
-        if (area > bufferSize) {
-            bufferSize = area
-            buffer = IntBuffer.allocate(bufferSize)
-        } else {
-            buffer.clear()
+        image.width = scene.width
+        image.height = scene.height
+
+        if (area > buffer.size) {
+            buffer = IntArray(area)
         }
 
         val factorW = fits.width.toFloat() / areaWidth
@@ -355,6 +347,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
         var prevIndex = -1
         var prevColor = 0
+        var idx = 0
 
         for (y in 0 until areaHeight) {
             for (x in 0 until areaWidth) {
@@ -362,35 +355,39 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
                 val realY = ((startY + y) * factor).toInt()
 
                 if (realX < 0 || realY < 0 || realX >= fits.width || realY >= fits.height) {
-                    buffer.put(0)
+                    buffer[idx++] = 0
                     continue
                 }
 
                 val index = realY * fits.stride + realX * fits.pixelStride
 
                 if (prevIndex == index) {
-                    buffer.put(prevColor)
+                    buffer[idx++] = prevColor
                 } else if (fits.mono) {
                     val c = (fits.data[index] * 255f).toInt()
                     prevColor = 0xFF000000.toInt() or (c shl 16) or (c shl 8) or c
-                    buffer.put(prevColor)
+                    buffer[idx++] = prevColor
                 } else {
                     val a = (fits.data[index] * 255f).toInt()
                     val b = (fits.data[index + 1] * 255f).toInt()
                     val c = (fits.data[index + 2] * 255f).toInt()
                     prevColor = 0xFF000000.toInt() or (a shl 16) or (b shl 8) or c
-                    buffer.put(prevColor)
+                    buffer[idx++] = prevColor
                 }
 
                 prevIndex = index
             }
         }
 
-        buffer.flip()
-
-        val pixelBuffer = PixelBuffer(areaWidth, areaHeight, buffer, PixelFormat.getIntArgbPreInstance())
+        val intBuffer = IntBuffer.wrap(buffer, 0, idx)
+        val pixelBuffer = PixelBuffer(areaWidth, areaHeight, intBuffer, PixelFormat.getIntArgbPreInstance())
         val writableImage = WritableImage(pixelBuffer)
-        image.image = writableImage
+
+        val g = image.graphicsContext2D
+        g.clearRect(0.0, 0.0, image.width, image.height)
+        g.drawImage(writableImage, 0.0, 0.0)
+
+        imageStretcherScreen.drawHistogram()
     }
 
     @FXML
