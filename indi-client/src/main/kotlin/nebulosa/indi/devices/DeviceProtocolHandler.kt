@@ -174,11 +174,25 @@ class DeviceProtocolHandler : INDIProtocolParser {
         handleMessage(message)
     }
 
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun findDeviceByName(name: String): Device? {
+        return cameras[name] ?: mounts[name] ?: filterWheels[name] ?: focusers[name]
+    }
+
     @Synchronized
     override fun handleMessage(message: INDIProtocol) {
         if (closed) return
 
         if (message is Message) {
+            val device = findDeviceByName(message.device)
+
+            if (device == null) {
+                val text = "[%s]: %s\n".format(message.timestamp, message.message)
+                handlers.forEach { it.onEventReceived(DeviceMessageReceived(null, text)) }
+            } else {
+                device.handleMessage(message)
+            }
+
             if (LOG.isDebugEnabled) {
                 LOG.debug("message received: {}", message)
             }
@@ -186,32 +200,27 @@ class DeviceProtocolHandler : INDIProtocolParser {
             return
         } else if (message is DelProperty) {
             if (message.name.isEmpty() && message.device.isNotEmpty()) {
-                if (message.device in cameras) {
-                    val device = cameras[message.device]!!
-                    device.close()
-                    handlers.forEach { it.onEventReceived(CameraDetached(device)) }
-                    cameras.remove(device.name)
-                }
+                val device = findDeviceByName(message.device)
 
-                if (message.device in mounts) {
-                    val device = mounts[message.device]!!
-                    device.close()
-                    handlers.forEach { it.onEventReceived(MountDetached(device)) }
-                    mounts.remove(device.name)
-                }
+                device?.close()
 
-                if (message.device in filterWheels) {
-                    val device = filterWheels[message.device]!!
-                    device.close()
-                    handlers.forEach { it.onEventReceived(FilterWheelDetached(device)) }
-                    filterWheels.remove(device.name)
-                }
-
-                if (message.device in focusers) {
-                    val device = focusers[message.device]!!
-                    device.close()
-                    handlers.forEach { it.onEventReceived(FocuserDetached(device)) }
-                    focusers.remove(device.name)
+                when (device) {
+                    is Camera -> {
+                        handlers.forEach { it.onEventReceived(CameraDetached(device)) }
+                        cameras.remove(device.name)
+                    }
+                    is Mount -> {
+                        handlers.forEach { it.onEventReceived(MountDetached(device)) }
+                        mounts.remove(device.name)
+                    }
+                    is FilterWheel -> {
+                        handlers.forEach { it.onEventReceived(FilterWheelDetached(device)) }
+                        filterWheels.remove(device.name)
+                    }
+                    is Focuser -> {
+                        handlers.forEach { it.onEventReceived(FocuserDetached(device)) }
+                        focusers.remove(device.name)
+                    }
                 }
 
                 return
@@ -223,29 +232,17 @@ class DeviceProtocolHandler : INDIProtocolParser {
             return
         }
 
-        var found = false
+        val device = findDeviceByName(message.device)
 
-        if (message.device in cameras) {
-            found = true
-            cameras[message.device]!!.handleMessage(message)
-        }
+        if (device != null) {
+            device.handleMessage(message)
 
-        if (message.device in mounts) {
-            found = true
-            mounts[message.device]!!.handleMessage(message)
-        }
+            messageReorderingQueue.remove(message)
 
-        if (message.device in filterWheels) {
-            found = true
-            filterWheels[message.device]!!.handleMessage(message)
-        }
-
-        if (message.device in focusers) {
-            found = true
-            focusers[message.device]!!.handleMessage(message)
-        }
-
-        if (!found) {
+            if (LOG.isDebugEnabled) {
+                LOG.debug("message received: {}", message)
+            }
+        } else {
             if (message in messageQueueCounter) {
                 val counter = messageQueueCounter[message]!!
 
@@ -259,12 +256,6 @@ class DeviceProtocolHandler : INDIProtocolParser {
             } else {
                 messageQueueCounter[message] = 1
                 messageReorderingQueue.offer(message)
-            }
-        } else {
-            messageReorderingQueue.remove(message)
-
-            if (LOG.isDebugEnabled) {
-                LOG.debug("message received: {}", message)
             }
         }
     }

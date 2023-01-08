@@ -159,8 +159,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             loadPreferences(value)
         }
 
-        equipmentManager.selectedCamera.isConnected.on { if (it) isConnecting.set(false) }
-
         cameraMenuIcon.addEventFilter(MouseEvent.MOUSE_CLICKED) {
             if (it.button == MouseButton.PRIMARY) {
                 cameraMenu.show(cameraMenuIcon, it.screenX, it.screenY)

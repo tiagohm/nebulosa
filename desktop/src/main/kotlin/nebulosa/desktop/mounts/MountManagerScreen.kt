@@ -64,7 +64,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     @FXML private lateinit var tracking: ToggleSwitch
     @FXML private lateinit var trackingMode: SegmentedButton
     @FXML private lateinit var trackingModeAdditional: SegmentedButton
-    @FXML private lateinit var slewSpeed: ChoiceBox<SlewRate>
+    @FXML private lateinit var slewSpeed: ChoiceBox<String>
     @FXML private lateinit var park: Button
     @FXML private lateinit var status: Label
 

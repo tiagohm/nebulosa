@@ -2,22 +2,24 @@ package nebulosa.indi.devices
 
 import nebulosa.indi.INDIClient
 import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.Vector
+import java.util.*
 
 internal abstract class AbstractDevice(
     override val client: INDIClient,
     internal val handler: DeviceProtocolHandler,
     override val name: String,
-    protected val properties: LinkedHashMap<String, PropertyVector<*, *>> = linkedMapOf(),
-) : Device, Map<String, PropertyVector<*, *>> by properties {
+) : Device {
+
+    override val properties = linkedMapOf<String, PropertyVector<*, *>>()
+
+    override val messages = LinkedList<String>()
 
     override var isConnected = false
+        protected set
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
-            is DelProperty -> {
-                val property = properties.remove(message.name) ?: return
-                handler.fireOnEventReceived(DevicePropertyDeleted(this, property))
-            }
             is SwitchVector<*> -> {
                 when (message.name) {
                     "CONNECTION" -> {
@@ -36,6 +38,15 @@ internal abstract class AbstractDevice(
                         }
                     }
                 }
+            }
+            is DelProperty -> {
+                val property = properties.remove(message.name) ?: return
+                handler.fireOnEventReceived(DevicePropertyDeleted(this, property))
+            }
+            is Message -> {
+                val text = "[%s]: %s\n".format(message.timestamp, message.message)
+                messages.addFirst(text)
+                handler.fireOnEventReceived(DeviceMessageReceived(this, text))
             }
             else -> Unit
         }

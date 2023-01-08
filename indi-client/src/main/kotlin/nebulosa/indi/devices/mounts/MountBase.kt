@@ -23,8 +23,8 @@ internal open class MountBase(
     override var canAbort = false
     override var canSync = false
     override var canPark = false
-    override var slewRates = emptyList<SlewRate>()
-    override var slewRate: SlewRate? = null
+    override var slewRates = emptyList<String>()
+    override var slewRate: String? = null
     override var mountType = MountType.EQ_GEM
     override var trackModes = emptyList<TrackMode>()
     override var trackMode = TrackMode.SIDEREAL
@@ -40,12 +40,12 @@ internal open class MountBase(
                 when (message.name) {
                     "TELESCOPE_SLEW_RATE" -> {
                         if (message is DefSwitchVector) {
-                            slewRates = message.map { SlewRate(it.name, it.label) }
+                            slewRates = message.map { it.name }
 
                             handler.fireOnEventReceived(MountSlewRatesChanged(this))
                         }
 
-                        slewRate = slewRates.first { it.name == message.firstOnSwitch().name }
+                        slewRate = message.firstOnSwitch().name
 
                         handler.fireOnEventReceived(MountSlewRateChanged(this))
                     }

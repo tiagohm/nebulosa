@@ -141,60 +141,62 @@ class CameraProperty : DeviceProperty<Camera>() {
     }
 
     override fun accept(event: DeviceEvent<Camera>) {
+        val device = event.device!!
+
         when (event) {
-            is CameraCapturingChanged -> Platform.runLater { isCapturing.set(value.isCapturing) }
-            is CameraCoolerControlChanged -> Platform.runLater { hasCoolerControl.set(value.hasCoolerControl) }
-            is CameraCoolerChanged -> Platform.runLater { isCoolerOn.set(value.isCoolerOn) }
-            is CameraHasDewHeaterChanged -> Platform.runLater { hasDewHeater.set(value.hasDewHeater) }
-            is CameraDewHeaterChanged -> Platform.runLater { isDewHeaterOn.set(value.isDewHeaterOn) }
-            is CameraFrameFormatsChanged -> Platform.runLater { frameFormats.setAll(value.frameFormats) }
-            is CameraCanAbortChanged -> Platform.runLater { canAbort.set(value.canAbort) }
+            is CameraCapturingChanged -> Platform.runLater { isCapturing.set(device.isCapturing) }
+            is CameraCoolerControlChanged -> Platform.runLater { hasCoolerControl.set(device.hasCoolerControl) }
+            is CameraCoolerChanged -> Platform.runLater { isCoolerOn.set(device.isCoolerOn) }
+            is CameraHasDewHeaterChanged -> Platform.runLater { hasDewHeater.set(device.hasDewHeater) }
+            is CameraDewHeaterChanged -> Platform.runLater { isDewHeaterOn.set(device.isDewHeaterOn) }
+            is CameraFrameFormatsChanged -> Platform.runLater { frameFormats.setAll(device.frameFormats) }
+            is CameraCanAbortChanged -> Platform.runLater { canAbort.set(device.canAbort) }
             is CameraCfaChanged -> Platform.runLater {
-                cfaOffsetX.set(value.cfaOffsetX)
-                cfaOffsetY.set(value.cfaOffsetY)
-                cfaType.set(value.cfaType)
+                cfaOffsetX.set(device.cfaOffsetX)
+                cfaOffsetY.set(device.cfaOffsetY)
+                cfaType.set(device.cfaType)
             }
             is CameraExposureMinMaxChanged -> Platform.runLater {
-                exposureMin.set(value.exposureMin)
-                exposureMax.set(value.exposureMax)
+                exposureMin.set(device.exposureMin)
+                exposureMax.set(device.exposureMax)
             }
-            is CameraGainChanged -> Platform.runLater { gain.set(value.gain) }
+            is CameraGainChanged -> Platform.runLater { gain.set(device.gain) }
             is CameraGainMinMaxChanged -> Platform.runLater {
-                gainMin.set(value.gainMin)
-                gainMax.set(value.gainMax)
+                gainMin.set(device.gainMin)
+                gainMax.set(device.gainMax)
             }
-            is CameraOffsetChanged -> Platform.runLater { offset.set(value.offset) }
+            is CameraOffsetChanged -> Platform.runLater { offset.set(device.offset) }
             is CameraOffsetMinMaxChanged -> Platform.runLater {
-                offsetMin.set(value.offsetMin)
-                offsetMax.set(value.offsetMax)
+                offsetMin.set(device.offsetMin)
+                offsetMax.set(device.offsetMax)
             }
-            is CameraExposureStateChanged -> Platform.runLater { exposureState.set(value.exposureState) }
-            is CameraHasCoolerChanged -> Platform.runLater { hasCooler.set(value.hasCooler) }
-            is CameraCanSetTemperatureChanged -> Platform.runLater { canSetTemperature.set(value.canSetTemperature) }
-            is CameraTemperatureChanged -> Platform.runLater { temperature.set(value.temperature) }
-            is CameraCanSubFrameChanged -> Platform.runLater { canSubFrame.set(value.canSubFrame) }
+            is CameraExposureStateChanged -> Platform.runLater { exposureState.set(device.exposureState) }
+            is CameraHasCoolerChanged -> Platform.runLater { hasCooler.set(device.hasCooler) }
+            is CameraCanSetTemperatureChanged -> Platform.runLater { canSetTemperature.set(device.canSetTemperature) }
+            is CameraTemperatureChanged -> Platform.runLater { temperature.set(device.temperature) }
+            is CameraCanSubFrameChanged -> Platform.runLater { canSubFrame.set(device.canSubFrame) }
             is CameraFrameChanged -> Platform.runLater {
-                minX.set(value.minX)
-                maxX.set(value.maxX)
-                minY.set(value.minY)
-                maxY.set(value.maxY)
-                minWidth.set(value.minWidth)
-                maxWidth.set(value.maxWidth)
-                minHeight.set(value.minHeight)
-                maxHeight.set(value.maxHeight)
-                x.set(value.x)
-                y.set(value.y)
-                width.set(value.width)
-                height.set(value.height)
+                minX.set(device.minX)
+                maxX.set(device.maxX)
+                minY.set(device.minY)
+                maxY.set(device.maxY)
+                minWidth.set(device.minWidth)
+                maxWidth.set(device.maxWidth)
+                minHeight.set(device.minHeight)
+                maxHeight.set(device.maxHeight)
+                x.set(device.x)
+                y.set(device.y)
+                width.set(device.width)
+                height.set(device.height)
             }
             is CameraCanBinChanged -> Platform.runLater {
-                canBin.set(value.canBin)
-                maxBinX.set(value.maxBinX)
-                maxBinY.set(value.maxBinY)
+                canBin.set(device.canBin)
+                maxBinX.set(device.maxBinX)
+                maxBinY.set(device.maxBinY)
             }
             is CameraBinChanged -> Platform.runLater {
-                binX.set(value.binX)
-                binY.set(value.binY)
+                binX.set(device.binX)
+                binY.set(device.binY)
             }
         }
     }

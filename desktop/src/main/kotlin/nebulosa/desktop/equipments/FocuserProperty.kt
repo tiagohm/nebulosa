@@ -46,16 +46,18 @@ class FocuserProperty : DeviceProperty<Focuser>() {
     }
 
     override fun accept(event: DeviceEvent<Focuser>) {
+        val device = event.device!!
+
         when (event) {
-            is FocuserPositionChanged -> Platform.runLater { position.value = value.position }
-            is FocuserCanAbsoluteMoveChanged -> Platform.runLater { canAbsoluteMove.value = value.canAbsoluteMove }
-            is FocuserCanRelativeMoveChanged -> Platform.runLater { canRelativeMove.value = value.canRelativeMove }
-            is FocuserCanAbortChanged -> Platform.runLater { canAbort.value = value.canAbort }
-            is FocuserCanReverseChanged -> Platform.runLater { canReverse.value = value.canReverse }
-            is FocuserReverseChanged -> Platform.runLater { isReverse.value = value.isReverse }
-            is FocuserCanSyncChanged -> Platform.runLater { canSync.value = value.canSync }
-            is FocuserMaxPositionChanged -> Platform.runLater { maxPosition.value = value.maxPosition }
-            is FocuserMovingChanged -> Platform.runLater { isMoving.value = value.isMoving }
+            is FocuserPositionChanged -> Platform.runLater { position.set(device.position) }
+            is FocuserCanAbsoluteMoveChanged -> Platform.runLater { canAbsoluteMove.set(device.canAbsoluteMove) }
+            is FocuserCanRelativeMoveChanged -> Platform.runLater { canRelativeMove.set(device.canRelativeMove) }
+            is FocuserCanAbortChanged -> Platform.runLater { canAbort.set(device.canAbort) }
+            is FocuserCanReverseChanged -> Platform.runLater { canReverse.set(device.canReverse) }
+            is FocuserReverseChanged -> Platform.runLater { isReverse.set(device.isReverse) }
+            is FocuserCanSyncChanged -> Platform.runLater { canSync.set(device.canSync) }
+            is FocuserMaxPositionChanged -> Platform.runLater { maxPosition.set(device.maxPosition) }
+            is FocuserMovingChanged -> Platform.runLater { isMoving.set(device.isMoving) }
         }
     }
 }

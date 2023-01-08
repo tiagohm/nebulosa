@@ -8,7 +8,6 @@ import javafx.geometry.Pos
 import javafx.scene.Cursor
 import javafx.scene.control.*
 import javafx.scene.input.KeyEvent
-import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.scene.text.Font
@@ -28,12 +27,12 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
     private val equipmentManager by inject<EquipmentManager>()
 
     @FXML private lateinit var devices: ChoiceBox<Device>
-    @FXML private lateinit var panelControl: AnchorPane
     @FXML private lateinit var groups: TabPane
+    @FXML private lateinit var logs: TextArea
 
     private val cacheProperties = HashMap<Device, HashMap<String, HBox>>()
-
-    @Volatile private var subscriber: Disposable? = null
+    private val subscribers = arrayOfNulls<Disposable>(2)
+    private val logText = StringBuilder(100 * 150)
 
     init {
         title = "INDI Panel Control"
@@ -50,16 +49,21 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
     }
 
     override fun onStart() {
-        subscriber = eventBus
+        subscribers[0] = eventBus
             .filterIsInstance<DevicePropertyEvent> { it.device === devices.value }
+            .subscribe(::onEvent)
+
+        subscribers[1] = eventBus
+            .filterIsInstance<DeviceMessageReceived> { it.device === devices.value }
             .subscribe(::onEvent)
 
         populateDevices()
     }
 
     override fun onStop() {
-        subscriber?.dispose()
-        subscriber = null
+        subscribers[0]?.dispose()
+        subscribers[1]?.dispose()
+        subscribers.fill(null)
     }
 
     fun select(device: Device): Boolean {
@@ -84,7 +88,6 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
                             .firstOrNull { it.userData == event.property.group } ?: return@synchronized
                         val content = (tab.content as ScrollPane).content as VBox
                         content.makeGroupProperty(event.device, event.property)
-                        if (event.property is SwitchPropertyVector) println(event.property)
                     }
                 }
             }
@@ -97,7 +100,17 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         }
     }
 
+    private fun onEvent(event: DeviceMessageReceived) {
+        Platform.runLater {
+            synchronized(logText) {
+                logText.insert(0, event.message)
+                logs.text = logText.toString()
+            }
+        }
+    }
+
     private fun populateDevices() {
+        val selectedDevice = devices.value
         val devices = ArrayList<Device>()
         devices.addAll(equipmentManager.attachedCameras)
         devices.addAll(equipmentManager.attachedMounts)
@@ -106,6 +119,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         devices.sortBy { it.name }
         devices.forEach { if (it !in cacheProperties) cacheProperties[it] = HashMap(256) }
         this.devices.items.setAll(devices)
+        this.devices.value = selectedDevice
     }
 
     private fun makePanelControl() {
@@ -115,9 +129,15 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
             cacheProperties[device]!!.clear()
             groups.tabs.clear()
 
-            device.values
+            device.properties.values
                 .groupBy { it.group }
                 .onEach { groups.makeGroup(device, it.key, it.value) }
+        }
+
+        synchronized(logText) {
+            logText.clear()
+            device.messages.forEach(logText::append)
+            logs.text = logText.toString()
         }
 
         System.gc()

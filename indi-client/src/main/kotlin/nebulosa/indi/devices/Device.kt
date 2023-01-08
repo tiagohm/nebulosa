@@ -5,13 +5,17 @@ import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.parser.INDIProtocolHandler
 import java.io.Closeable
 
-interface Device : INDIProtocolHandler, Closeable, Map<String, PropertyVector<*, *>> {
+interface Device : INDIProtocolHandler, Closeable {
 
     val client: INDIClient
 
     val name: String
 
     val isConnected: Boolean
+
+    val properties: Map<String, PropertyVector<*, *>>
+
+    val messages: List<String>
 
     fun sendMessageToServer(message: INDIProtocol)
 

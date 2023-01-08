@@ -19,7 +19,7 @@ interface FilterWheel : Device {
             "indi_asi_wheel",
             "indi_atik_wheel",
             "indi_fli_wheel",
-            // "indi_manual_wheel",
+            "indi_manual_wheel",
             "indi_optec_wheel",
             "indi_qhycfw1_wheel",
             "indi_qhycfw2_wheel",

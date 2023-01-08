@@ -15,8 +15,8 @@ class MountProperty : DeviceProperty<Mount>() {
     @JvmField val isTracking = SimpleBooleanProperty()
     @JvmField val isParking = SimpleBooleanProperty()
     @JvmField val isParked = SimpleBooleanProperty()
-    @JvmField val slewRates = SimpleListProperty(FXCollections.observableArrayList<SlewRate>())
-    @JvmField val slewRate = SimpleObjectProperty<SlewRate>()
+    @JvmField val slewRates = SimpleListProperty(FXCollections.observableArrayList<String>())
+    @JvmField val slewRate = SimpleObjectProperty<String>()
     @JvmField val mountType = SimpleObjectProperty(MountType.EQ_GEM)
     @JvmField val trackModes = SimpleListProperty(FXCollections.observableArrayList<TrackMode>())
     @JvmField val trackMode = SimpleObjectProperty(TrackMode.SIDEREAL)
@@ -70,29 +70,36 @@ class MountProperty : DeviceProperty<Mount>() {
     }
 
     override fun accept(event: DeviceEvent<Mount>) {
+        val device = event.device!!
+
         when (event) {
-            is MountSlewingChanged -> Platform.runLater { isSlewing.set(value.isSlewing) }
-            is MountSlewRatesChanged -> Platform.runLater { slewRates.setAll(value.slewRates) }
-            is MountSlewRateChanged -> Platform.runLater { slewRate.set(value.slewRate) }
-            is MountTypeChanged -> Platform.runLater { mountType.set(value.mountType) }
-            is MountTrackModeChanged -> Platform.runLater { trackMode.set(value.trackMode) }
-            is MountTrackModesChanged -> Platform.runLater { trackModes.setAll(value.trackModes) }
-            is MountTrackingChanged -> Platform.runLater { isTracking.set(value.isTracking) }
-            is MountPierSideChanged -> Platform.runLater { pierSide.set(value.pierSide) }
-            is MountCanAbortChanged -> Platform.runLater { canAbort.set(value.canAbort) }
-            is MountCanSyncChanged -> Platform.runLater { canSync.set(value.canSync) }
-            is MountCanParkChanged -> Platform.runLater { canPark.set(value.canPark) }
+            is MountSlewingChanged -> Platform.runLater { isSlewing.set(device.isSlewing) }
+            is MountSlewRatesChanged -> Platform.runLater {
+                // Why needs set to null?
+                // Test: Disconnect and reconnect, the choicebox selected value is null/empty.
+                slewRate.set(null)
+                slewRates.setAll(device.slewRates)
+            }
+            is MountSlewRateChanged -> Platform.runLater { slewRate.set(device.slewRate) }
+            is MountTypeChanged -> Platform.runLater { mountType.set(device.mountType) }
+            is MountTrackModesChanged -> Platform.runLater { trackModes.setAll(device.trackModes) }
+            is MountTrackModeChanged -> Platform.runLater { trackMode.set(device.trackMode) }
+            is MountTrackingChanged -> Platform.runLater { isTracking.set(device.isTracking) }
+            is MountPierSideChanged -> Platform.runLater { pierSide.set(device.pierSide) }
+            is MountCanAbortChanged -> Platform.runLater { canAbort.set(device.canAbort) }
+            is MountCanSyncChanged -> Platform.runLater { canSync.set(device.canSync) }
+            is MountCanParkChanged -> Platform.runLater { canPark.set(device.canPark) }
             is MountEquatorialCoordinatesChanged -> Platform.runLater {
-                rightAscension.set(value.rightAscension)
-                declination.set(value.declination)
+                rightAscension.set(device.rightAscension)
+                declination.set(device.declination)
             }
             is MountGuideRateChanged -> Platform.runLater {
-                guideRateWE.set(value.guideRateWE)
-                guideRateNS.set(value.guideRateNS)
+                guideRateWE.set(device.guideRateWE)
+                guideRateNS.set(device.guideRateNS)
             }
             is MountParkChanged -> Platform.runLater {
-                isParking.set(value.isParking)
-                isParked.set(value.isParked)
+                isParking.set(device.isParking)
+                isParked.set(device.isParked)
             }
         }
     }

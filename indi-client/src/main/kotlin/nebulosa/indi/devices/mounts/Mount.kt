@@ -19,9 +19,9 @@ interface Mount : Device {
 
     val canPark: Boolean
 
-    val slewRates: List<SlewRate>
+    val slewRates: List<String>
 
-    val slewRate: SlewRate?
+    val slewRate: String?
 
     val mountType: MountType
 
