@@ -215,13 +215,9 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             }
             is CameraExposureProgressChanged -> Platform.runLater { updateTitle() }
             is CameraFrameSaved -> Platform.runLater {
-                val viewer = imageViewers
-                    .firstOrNull { it.camera === event.device }
-                    ?: ImageViewerScreen(event.device)
-
-                imageViewers.add(viewer)
-
-                viewer.open(event.imagePath.toFile())
+                screenManager
+                    .openImageViewer(event.imagePath.toFile(), event.device)
+                    .also(imageViewers::add)
             }
             is CameraExposureMinMaxChanged -> Platform.runLater {
                 updateExposure()

@@ -1,5 +1,3 @@
-@file:Suppress("NOTHING_TO_INLINE")
-
 package nebulosa.desktop.core.beans
 
 import javafx.beans.binding.Bindings
@@ -19,7 +17,7 @@ inline fun <E> ObservableValue<E>.onZero(crossinline action: () -> Unit) {
     addListener { _, _, _ -> action() }
 }
 
-inline fun <E> ObservableValue<E>.onOne(crossinline action: (E?) -> Unit) {
+inline fun <E> ObservableValue<E>.on(crossinline action: (E?) -> Unit) {
     addListener { _, _, value -> action(value) }
 }
 

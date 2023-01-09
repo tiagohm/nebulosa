@@ -51,10 +51,13 @@ abstract class Screen(
 
     protected open fun onStop() = Unit
 
-    fun showAndFocus() {
+    fun show(
+        requestFocus: Boolean = false,
+        bringToFront: Boolean = false,
+    ) {
         show()
-        requestFocus()
-        toFront()
+        if (requestFocus) requestFocus()
+        if (bringToFront) toFront()
     }
 
     companion object {

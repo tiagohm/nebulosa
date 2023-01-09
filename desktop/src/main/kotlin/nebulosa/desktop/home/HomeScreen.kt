@@ -43,8 +43,6 @@ class HomeScreen : Screen("Home") {
     @FXML private lateinit var imageViewer: Button
     @FXML private lateinit var indi: Button
 
-    private val imageViewers = HashSet<ImageViewerScreen>(8)
-
     @Volatile private var subscriber: Disposable? = null
 
     init {
@@ -88,12 +86,8 @@ class HomeScreen : Screen("Home") {
 
         connectionManager.disconnect()
 
-        imageViewers.forEach(Screen::close)
-        imageViewers.clear()
-
-        ImageViewerScreen.close()
-
         screenManager.closeAll()
+        ImageViewerScreen.close()
 
         telescopeControlManager.stopAll()
     }
@@ -137,11 +131,9 @@ class HomeScreen : Screen("Home") {
         chooser.extensionFilters.add(FileChooser.ExtensionFilter("FITS Files", "*.fits", "*.fit"))
         chooser.extensionFilters.add(FileChooser.ExtensionFilter("Extended Image Files", "*.png", "*.jpeg", "*.jpg", "*.bmp"))
         val file = chooser.showOpenDialog(this) ?: return
-        val page = imageViewers.firstOrNull { !it.isShowing && it.camera == null } ?: ImageViewerScreen()
-        imageViewers.add(page)
 
         try {
-            page.open(file)
+            screenManager.openImageViewer(file)
         } catch (e: Throwable) {
             LOG.error("image read error", e)
             showAlert("Unable to load this image.", "Image Error")

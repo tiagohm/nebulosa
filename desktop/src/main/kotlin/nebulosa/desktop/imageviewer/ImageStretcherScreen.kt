@@ -6,7 +6,6 @@ import javafx.scene.control.Slider
 import javafx.scene.control.Spinner
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import nebulosa.desktop.core.beans.on
-import nebulosa.desktop.core.beans.onOne
 import nebulosa.desktop.core.beans.onTwo
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.BitDepthStringConverter
@@ -39,9 +38,9 @@ class ImageStretcherScreen(private val imageViewerScreen: ImageViewerScreen) :
         shadowAndHighlight.lowValueProperty().on(::onLowValueChanged)
         shadowAndHighlight.highValueProperty().on(::onHighValueChanged)
         midtone.valueProperty().on(::onMidtoneValueChanged)
-        shadow.valueProperty().onOne { shadowAndHighlight.lowValue = it!!.toDouble() }
-        highlight.valueProperty().onOne { shadowAndHighlight.highValue = it!!.toDouble() }
-        midtoneSpinner.valueProperty().onOne { midtone.value = it!!.toDouble() }
+        shadow.valueProperty().on { shadowAndHighlight.lowValue = it!!.toDouble() }
+        highlight.valueProperty().on { shadowAndHighlight.highValue = it!!.toDouble() }
+        midtoneSpinner.valueProperty().on { midtone.value = it!!.toDouble() }
 
         with(shadow.valueFactory as DoubleSpinnerValueFactory) {
             minProperty().bind(shadowAndHighlight.minProperty())
@@ -123,7 +122,8 @@ class ImageStretcherScreen(private val imageViewerScreen: ImageViewerScreen) :
 
     fun drawHistogram() {
         if (isShowing) {
-            histogram.draw(imageViewerScreen.transformedFits!!)
+            val fits = imageViewerScreen.transformedFits ?: imageViewerScreen.fits ?: return
+            histogram.draw(fits)
         }
     }
 

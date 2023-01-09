@@ -9,7 +9,6 @@ import javafx.scene.control.Spinner
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
-import nebulosa.desktop.core.beans.onOne
 import nebulosa.desktop.core.beans.or
 import nebulosa.desktop.core.scene.MaterialColor
 import nebulosa.desktop.core.scene.MaterialIcon
@@ -89,7 +88,7 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
 
         autoFocus.disableProperty().bind(isNotConnectedOrMoving)
 
-        equipmentManager.selectedFocuser.onOne {
+        equipmentManager.selectedFocuser.on {
             title = "Focuser · ${it?.name}"
         }
 

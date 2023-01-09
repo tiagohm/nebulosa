@@ -132,18 +132,18 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
             it.disableProperty().bind(equipmentManager.selectedMount.trackModes notContains mode)
         }
 
-        equipmentManager.selectedMount.trackMode.onOne { mode ->
+        equipmentManager.selectedMount.trackMode.on { mode ->
             trackingMode.buttons.forEach { it.isSelected = it.userData == mode?.name }
             trackingModeAdditional.buttons.forEach { it.isSelected = it.userData == mode?.name }
         }
 
         slewSpeed.disableProperty().bind(isNotConnectedOrSlewing)
         slewSpeed.itemsProperty().bind(equipmentManager.selectedMount.slewRates)
-        equipmentManager.selectedMount.slewRate.onOne(slewSpeed::setValue)
+        equipmentManager.selectedMount.slewRate.on(slewSpeed::setValue)
 
         park.disableProperty().bind(isNotConnectedOrSlewing or !equipmentManager.selectedMount.canPark)
 
-        equipmentManager.selectedMount.onOne {
+        equipmentManager.selectedMount.on {
             title = "Mount · ${it?.name}"
             updateStatus()
             updateCoordinatesJ2000()

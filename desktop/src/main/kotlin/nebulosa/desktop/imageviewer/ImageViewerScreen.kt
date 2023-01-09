@@ -2,8 +2,6 @@ package nebulosa.desktop.imageviewer
 
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
-import javafx.beans.value.ChangeListener
-import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.scene.Cursor
 import javafx.scene.canvas.Canvas
@@ -33,7 +31,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "nebulosa-image-viewer"), ChangeListener<Number> {
+class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "nebulosa-image-viewer") {
 
     @FXML private lateinit var image: Canvas
     @FXML private lateinit var menu: ContextMenu
@@ -54,7 +52,13 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     private val imageStretcherScreen = ImageStretcherScreen(this)
     private val scnrScreen = SCNRScreen(this)
 
+    private val screenBounds = javafx.stage.Screen.getPrimary().bounds
     private val transformPublisher = BehaviorSubject.create<Unit>()
+
+    @Volatile private var borderSize = 0.0
+    @Volatile private var titleHeight = 0.0
+    @Volatile private var idealSceneWidth = 640.0
+    @Volatile private var idealSceneHeight = 640.0
     @Volatile private var transformSubscriber: Disposable? = null
 
     var shadow = 0f
@@ -132,21 +136,20 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         }
 
         image.parent.addEventFilter(MouseEvent.MOUSE_CLICKED) {
-            if (it.button == MouseButton.PRIMARY && it.clickCount == 2) {
-                startX = 0
-                startY = 0
-                scaleFactor = 0
-                scale = 1f
+            synchronized(this) {
+                if (it.button == MouseButton.PRIMARY && it.clickCount == 2) {
+                    startX = 0
+                    startY = 0
+                    scaleFactor = 0
+                    scale = 1f
 
-                adjustSceneSizeToFitImage()
+                    adjustSceneSizeToFitImage(false)
 
-                DRAW_EXECUTOR.submit {
-                    Thread.sleep(250L)
                     draw()
+                } else if (it.button == MouseButton.PRIMARY) {
+                    menu.hide()
+                    it.consume()
                 }
-            } else if (it.button == MouseButton.PRIMARY) {
-                menu.hide()
-                it.consume()
             }
         }
 
@@ -167,9 +170,15 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
             xProperty().on { preferences.double("imageViewer.screen.x", it) }
             yProperty().on { preferences.double("imageViewer.screen.y", it) }
         }
+
+        widthProperty().on(::widthChanged)
+        heightProperty().on(::heightChanged)
     }
 
     override fun onStart() {
+        borderSize = (width - scene.width) / 2.0
+        titleHeight = (height - scene.height) - borderSize
+
         transformSubscriber = transformPublisher
             .debounce(500L, TimeUnit.MILLISECONDS)
             .subscribe {
@@ -223,22 +232,62 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         }
     }
 
-    private fun adjustSceneSizeToFitImage() {
+    private fun widthChanged(value: Double) {
+        if (sizeChanged(value, true)) draw()
+    }
+
+    private fun heightChanged(value: Double) {
+        if (sizeChanged(value, false)) draw()
+    }
+
+    private fun sizeChanged(value: Double, isWidth: Boolean): Boolean {
+        val fits = fits ?: return false
+
+        if (value <= 0.0) return false
+
+        val factor = fits.width.toDouble() / fits.height.toDouble()
+
+        if (isWidth && factor >= 1.0) {
+            idealSceneWidth = value
+            idealSceneHeight = value / factor
+        } else if (!isWidth && factor < 1.0) {
+            val valueMinusTitleHeight = value - titleHeight
+            idealSceneHeight = valueMinusTitleHeight
+            idealSceneWidth = valueMinusTitleHeight * factor
+        } else {
+            return false
+        }
+
+        image.width = idealSceneWidth
+        image.height = idealSceneHeight
+
+        return true
+    }
+
+    private fun adjustSceneSizeToFitImage(defaultSize: Boolean) {
         val fits = fits ?: return
 
-        val factor = fits.width.toFloat() / fits.height.toFloat()
-        val titleHeight = height - scene.height
+        val factor = fits.width.toDouble() / fits.height.toDouble()
 
-        val standardSize = if (factor >= 1) scene.width
-        else scene.height
+        val sceneSize = if (factor >= 1.0)
+            if (defaultSize) screenBounds.width / 2
+            else min(screenBounds.width, width)
+        else if (defaultSize) screenBounds.height / 2
+        else min(screenBounds.height, height - titleHeight)
 
-        if (factor >= 1) {
-            width = standardSize + 1
-            height = standardSize / factor + (titleHeight - 1)
+        if (factor >= 1.0) {
+            idealSceneWidth = sceneSize
+            idealSceneHeight = sceneSize / factor
         } else {
-            height = standardSize + titleHeight
-            width = standardSize * factor + 1
+            idealSceneHeight = sceneSize
+            idealSceneWidth = sceneSize * factor
         }
+
+        width = idealSceneWidth
+        height = idealSceneHeight + titleHeight
+
+        image.width = idealSceneWidth
+        image.height = idealSceneHeight
     }
 
     private fun zoomWithWheel(event: ScrollEvent) {
@@ -302,39 +351,22 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         draw()
     }
 
-    override fun changed(
-        observable: ObservableValue<out Number>,
-        oldValue: Number, newValue: Number,
-    ) {
-        draw()
-    }
-
     @Synchronized
     fun open(file: File) {
         setTitleFromCameraAndFile(file)
-
-        showAndFocus()
 
         val fits = if (file.extension.startsWith("fit")) FitsImage(Fits(file))
         else ExtendedImage(file)
 
         this.fits = fits
+        this.transformedFits = null
 
         scnr.isDisable = fits.mono
 
-        widthProperty().removeListener(this)
-        heightProperty().removeListener(this)
+        adjustSceneSizeToFitImage(true)
 
-        adjustSceneSizeToFitImage()
-
-        widthProperty().addListener(this)
-        heightProperty().addListener(this)
-
-        DRAW_EXECUTOR.submit {
-            Thread.sleep(250L)
-            transformImage()
-            draw()
-        }
+        transformImage()
+        draw()
     }
 
     fun transformImage(
@@ -383,12 +415,9 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     private fun draw() {
         val fits = transformedFits ?: fits ?: return
 
-        val areaWidth = scene.width.toInt()
-        val areaHeight = scene.height.toInt()
+        val areaWidth = idealSceneWidth.toInt()
+        val areaHeight = idealSceneHeight.toInt()
         val area = areaWidth * areaHeight
-
-        image.width = scene.width
-        image.height = scene.height
 
         if (area > buffer.size) {
             buffer = IntArray(area)
@@ -471,12 +500,12 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
     @FXML
     private fun openImageStretcher() {
-        imageStretcherScreen.showAndFocus()
+        imageStretcherScreen.show(true, true)
     }
 
     @FXML
     private fun openSCNR() {
-        scnrScreen.showAndFocus()
+        scnrScreen.show(true, true)
     }
 
     @FXML
