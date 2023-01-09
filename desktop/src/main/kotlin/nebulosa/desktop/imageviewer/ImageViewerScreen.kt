@@ -24,6 +24,7 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.indi.devices.cameras.Camera
 import nom.tam.fits.Fits
+import java.io.Closeable
 import java.io.File
 import java.nio.IntBuffer
 import java.util.concurrent.Executors
@@ -318,7 +319,6 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         else ExtendedImage(file)
 
         this.fits = fits
-        transformedFits = fits.clone()
 
         scnr.isDisable = fits.mono
 
@@ -359,23 +359,29 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         transformPublisher.onNext(Unit)
     }
 
+    @Synchronized
     private fun transformImage() {
+        val shouldBeTransformed = this.shadow != 0f || this.highlight != 1f || this.midtone != 0.5f
+                || this.mirrorHorizontal || this.mirrorVertical || this.invert
+                || this.scnrEnabled
+
         // TODO: How to handle rotation transformation if data is copy but width/height is not?
         // TODO: Reason: Image will be rotated for each draw.
-        fits!!.data.copyInto(transformedFits!!.data)
+        transformedFits = if (shouldBeTransformed) fits!!.clone() else null
 
-        val algorithms = arrayListOf<TransformAlgorithm>()
-        algorithms.add(Flip(mirrorHorizontal, mirrorVertical))
-        if (scnrEnabled) algorithms.add(SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode))
-        algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
-        if (invert) algorithms.add(Invert)
+        if (transformedFits != null) {
+            val algorithms = arrayListOf<TransformAlgorithm>()
+            algorithms.add(Flip(mirrorHorizontal, mirrorVertical))
+            if (scnrEnabled) algorithms.add(SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode))
+            algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
+            if (invert) algorithms.add(Invert)
 
-        transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)
+            transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)
+        }
     }
 
-    @Synchronized
     private fun draw() {
-        val fits = transformedFits ?: return
+        val fits = transformedFits ?: fits ?: return
 
         val areaWidth = scene.width.toInt()
         val areaHeight = scene.height.toInt()
@@ -488,7 +494,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         transformImage(invert = !invert)
     }
 
-    companion object {
+    companion object : Closeable {
 
         @JvmStatic private val DRAW_EXECUTOR = Executors.newSingleThreadScheduledExecutor()
 
@@ -498,5 +504,9 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
             3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0,
             10.0, 15.0, 20.0, 25.0, 50.0, 75.0, 100.0, 200.0, 500.0,
         )
+
+        override fun close() {
+            DRAW_EXECUTOR.shutdownNow()
+        }
     }
 }

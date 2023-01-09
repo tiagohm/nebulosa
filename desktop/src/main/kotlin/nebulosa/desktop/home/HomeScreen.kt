@@ -91,6 +91,8 @@ class HomeScreen : Screen("Home") {
         imageViewers.forEach(Screen::close)
         imageViewers.clear()
 
+        ImageViewerScreen.close()
+
         screenManager.closeAll()
 
         telescopeControlManager.stopAll()
