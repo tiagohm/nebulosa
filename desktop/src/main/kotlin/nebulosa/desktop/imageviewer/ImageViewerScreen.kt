@@ -18,13 +18,13 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.scene.Screen
+import nebulosa.imaging.ExtendedImage
 import nebulosa.imaging.FitsImage
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.indi.devices.cameras.Camera
 import nom.tam.fits.Fits
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.IntBuffer
 import java.util.concurrent.TimeUnit
@@ -311,7 +311,9 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
         showAndFocus()
 
-        val fits = FitsImage(Fits(file))
+        val fits = if (file.extension.startsWith("fit")) FitsImage(Fits(file))
+        else ExtendedImage(file)
+
         fits.read()
         this.fits = fits
         transformedFits = fits.clone()

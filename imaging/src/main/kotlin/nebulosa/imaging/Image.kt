@@ -3,8 +3,6 @@ package nebulosa.imaging
 import java.awt.color.ColorSpace
 import java.awt.image.*
 import java.nio.IntBuffer
-import kotlin.math.max
-import kotlin.math.min
 
 open class Image(
     width: Int, height: Int,
@@ -14,6 +12,8 @@ open class Image(
     @JvmField val pixelStride = if (mono) 1 else 3
     @JvmField val stride = width * pixelStride
     @JvmField val data = (raster.dataBuffer as Float8bitsDataBuffer).data
+
+    open fun read() {}
 
     @Suppress("NOTHING_TO_INLINE")
     inline fun writePixel(x: Int, y: Int, channel: ImageChannel, color: Float) {
@@ -38,8 +38,8 @@ open class Image(
                 val color = (data[y][x].toInt() and 0xff) / 255f
                 // writePixel(x, y, channel, color)
                 this.data[idx] = color
-                max = max(max, color)
-                min = min(min, color)
+                if (color < min) min = color
+                else if (color > max) max = color
                 idx += pixelStride
             }
         }
@@ -58,8 +58,8 @@ open class Image(
                 val color = (data[y][x].toInt() + 32768) / 65535f
                 // writePixel(x, y, channel, color)
                 this.data[idx] = color
-                max = max(max, color)
-                min = min(min, color)
+                if (color < min) min = color
+                else if (color > max) max = color
                 idx += pixelStride
             }
         }
@@ -78,8 +78,8 @@ open class Image(
                 val color = ((data[y][x].toLong() + 2147483648) / 4294967295.0).toFloat()
                 // writePixel(x, y, channel, color)
                 this.data[idx] = color
-                max = max(max, color)
-                min = min(min, color)
+                if (color < min) min = color
+                else if (color > max) max = color
                 idx += pixelStride
             }
         }
@@ -98,8 +98,8 @@ open class Image(
                 val color = data[y][x]
                 // writePixel(x, y, channel, color)
                 this.data[idx] = color
-                max = max(max, color)
-                min = min(min, color)
+                if (color < min) min = color
+                else if (color > max) max = color
                 idx += pixelStride
             }
         }
@@ -118,8 +118,8 @@ open class Image(
                 val color = data[y][x].toFloat()
                 // writePixel(x, y, channel, color)
                 this.data[idx] = color
-                max = max(max, color)
-                min = min(min, color)
+                if (color < min) min = color
+                else if (color > max) max = color
                 idx += pixelStride
             }
         }

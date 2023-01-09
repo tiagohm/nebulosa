@@ -18,11 +18,13 @@ class FitsImage(
     fits.imageHDU(0)!!.let { it.axes.size != 3 && !(debayer && it.axes.size == 2 && it.cfaPattern != null) },
 ) {
 
-    fun read() {
+    override fun read() {
         val hdu = fits.imageHDU(0)!!
         val axes = hdu.axes
         val pixels = hdu.kernel as Array<*>
         val bitpix = hdu.bitpix
+
+        // TODO: DATA[i] = BZERO + BSCALE * DATA[i]
 
         if (axes.size == 2) {
             val bayer = hdu.cfaPattern

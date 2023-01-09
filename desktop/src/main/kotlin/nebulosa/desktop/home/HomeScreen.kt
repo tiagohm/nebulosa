@@ -17,6 +17,7 @@ import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.desktop.telescopecontrol.TelescopeControlManager
 import org.koin.core.component.inject
+import org.slf4j.LoggerFactory
 
 class HomeScreen : Screen("Home") {
 
@@ -130,10 +131,23 @@ class HomeScreen : Screen("Home") {
     private fun openNewImage() {
         val chooser = FileChooser()
         chooser.title = "Open New Image"
+        chooser.extensionFilters.add(FileChooser.ExtensionFilter("All Image Files", "*.fits", "*.fit", "*.png", "*.jpeg", "*.jpg", "*.bmp"))
         chooser.extensionFilters.add(FileChooser.ExtensionFilter("FITS Files", "*.fits", "*.fit"))
+        chooser.extensionFilters.add(FileChooser.ExtensionFilter("Extended Image Files", "*.png", "*.jpeg", "*.jpg", "*.bmp"))
         val file = chooser.showOpenDialog(this) ?: return
         val page = imageViewers.firstOrNull { !it.isShowing && it.camera == null } ?: ImageViewerScreen()
         imageViewers.add(page)
-        page.open(file)
+
+        try {
+            page.open(file)
+        } catch (e: Throwable) {
+            LOG.error("image read error", e)
+            showAlert("Unable to load this image.", "Image Error")
+        }
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(HomeScreen::class.java)
     }
 }
