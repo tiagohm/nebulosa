@@ -20,10 +20,17 @@ import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.indi.devices.cameras.*
 import org.controlsfx.control.ToggleSwitch
+import org.koin.core.component.get
 import org.koin.core.component.inject
+import org.koin.core.qualifier.named
 import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isWritable
 import kotlin.math.max
 
 class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
@@ -288,7 +295,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     private fun openFolderInFiles(event: MouseEvent) {
         if (event.button == MouseButton.PRIMARY && event.clickCount == 2) {
             val camera = equipmentManager.selectedCamera.get() ?: return
-            val path = equipmentManager.cameraImageSavePath(camera)
+            val path = cameraImageSavePath(camera)
             nebulosa.hostServices.showDocument(path.toString())
         }
     }
@@ -449,7 +456,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         val camera = equipmentManager.selectedCamera.get()
 
         if (camera != null) {
-            val imageSavePath = equipmentManager.cameraImageSavePath(camera)
+            val imageSavePath = cameraImageSavePath(camera)
             savePathIndicator.text = imageSavePath.toString()
 
             val autoSaveAllExposures = preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures")
@@ -508,7 +515,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                 binX.value.toInt(), binY.value.toInt(),
                 gain.value.toInt(), offset.value.toInt(),
                 preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures"),
-                equipmentManager.cameraImageSavePath(camera),
+                cameraImageSavePath(camera),
                 if (!preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")) AutoSubFolderMode.OFF
                 else preferences.enum<AutoSubFolderMode>("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON,
             ) ?: return
@@ -542,5 +549,13 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                 append("idle")
             }
         }
+    }
+
+    private fun cameraImageSavePath(camera: Camera): Path {
+        return preferences.string("cameraManager.equipment.${camera.name}.imageSavePath")
+            ?.ifBlank { null }
+            ?.let(Paths::get)
+            ?.takeIf { it.exists() && it.isDirectory() && it.isWritable() }
+            ?: Paths.get("${get<Path>(named("app"))}", "captures", camera.name)
     }
 }

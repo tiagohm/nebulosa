@@ -55,4 +55,8 @@ internal open class FilterWheelBase(
     }
 
     override fun close() {}
+
+    override fun toString(): String {
+        return "FilterWheel(name=$name, slotCount=$slotCount, position=$position, isMoving=$isMoving)"
+    }
 }

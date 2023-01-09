@@ -1,10 +1,11 @@
 package nebulosa.indi.devices.cameras
 
 import nebulosa.imaging.algorithms.CfaPattern
-import nebulosa.indi.devices.Device
+import nebulosa.indi.devices.guiders.Guider
+import nebulosa.indi.devices.thermometers.Thermometer
 import nebulosa.indi.protocol.PropertyState
 
-interface Camera : Device {
+interface Camera : Guider, Thermometer {
 
     val isCapturing: Boolean
 
@@ -37,8 +38,6 @@ interface Camera : Device {
     val hasCooler: Boolean
 
     val canSetTemperature: Boolean
-
-    val temperature: Double
 
     val canSubFrame: Boolean
 
@@ -87,6 +86,8 @@ interface Camera : Device {
     val offsetMin: Int
 
     val offsetMax: Int
+
+    val hasGuiderHead: Boolean
 
     fun cooler(enable: Boolean)
 

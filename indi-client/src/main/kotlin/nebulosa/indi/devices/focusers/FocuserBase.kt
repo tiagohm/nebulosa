@@ -27,9 +27,8 @@ internal open class FocuserBase(
     override var hasBackslash = false
     override var maxPosition = 0
 
+    override var hasThermometer = false
     override var temperature = 0.0
-
-    @Volatile private var hasThermometer = false
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -175,5 +174,14 @@ internal open class FocuserBase(
             hasThermometer = false
             handler.fireOnEventReceived(ThermometerDetached(this))
         }
+    }
+
+    override fun toString(): String {
+        return "Focuser(name=$name, isMoving=$isMoving, position=$position," +
+                " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
+                " canAbort=$canAbort, canReverse=$canReverse, isReverse=$isReverse," +
+                " canSync=$canSync, hasBackslash=$hasBackslash," +
+                " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
+                " temperature=$temperature)"
     }
 }

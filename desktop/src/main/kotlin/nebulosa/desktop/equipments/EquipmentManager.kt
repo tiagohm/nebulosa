@@ -20,6 +20,9 @@ import nebulosa.indi.devices.filterwheels.FilterWheelDetached
 import nebulosa.indi.devices.focusers.Focuser
 import nebulosa.indi.devices.focusers.FocuserAttached
 import nebulosa.indi.devices.focusers.FocuserDetached
+import nebulosa.indi.devices.guiders.Guider
+import nebulosa.indi.devices.guiders.GuiderAttached
+import nebulosa.indi.devices.guiders.GuiderDetached
 import nebulosa.indi.devices.mounts.Mount
 import nebulosa.indi.devices.mounts.MountAttached
 import nebulosa.indi.devices.mounts.MountDetached
@@ -29,15 +32,12 @@ import nebulosa.indi.devices.thermometers.ThermometerDetached
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
+import java.io.Closeable
 import java.nio.file.Path
-import java.nio.file.Paths
-import kotlin.io.path.exists
 
-class EquipmentManager : KoinComponent, Consumer<Any> {
+class EquipmentManager : KoinComponent, Consumer<Any>, Closeable {
 
     private val eventBus by inject<EventBus>()
-    private val preferences by inject<Preferences>()
-    private val appDirectory by inject<Path>(named("app"))
 
     @JvmField val connected = SimpleBooleanProperty(false)
 
@@ -46,6 +46,7 @@ class EquipmentManager : KoinComponent, Consumer<Any> {
     @JvmField val attachedFilterWheels = SimpleListProperty(FXCollections.observableArrayList<FilterWheel>())
     @JvmField val attachedFocusers = SimpleListProperty(FXCollections.observableArrayList<Focuser>())
 
+    @JvmField val attachedGuiders = SimpleListProperty(FXCollections.observableArrayList<Guider>())
     @JvmField val attachedThermometers = SimpleListProperty(FXCollections.observableArrayList<Thermometer>())
 
     @JvmField val selectedCamera = CameraProperty()
@@ -70,6 +71,8 @@ class EquipmentManager : KoinComponent, Consumer<Any> {
             is FilterWheelDetached -> attachedFilterWheels.remove(event.device)
             is FocuserAttached -> attachedFocusers.add(event.device)
             is FocuserDetached -> attachedFocusers.remove(event.device)
+            is GuiderAttached -> attachedGuiders.add(event.device)
+            is GuiderDetached -> attachedGuiders.remove(event.device)
             is ThermometerAttached -> attachedThermometers.add(event.device)
             is ThermometerDetached -> attachedThermometers.remove(event.device)
             is Connected -> connected.set(true)
@@ -77,12 +80,11 @@ class EquipmentManager : KoinComponent, Consumer<Any> {
         }
     }
 
-    fun cameraImageSavePath(camera: Camera): Path {
-        return preferences.string("cameraManager.equipment.${camera.name}.imageSavePath")
-            ?.ifBlank { null }
-            ?.let(Paths::get)
-            ?.takeIf { it.exists() }
-            ?: Paths.get("$appDirectory", "captures", camera.name)
+    override fun close() {
+        selectedCamera.close()
+        selectedMount.close()
+        selectedFilterWheel.close()
+        selectedFocuser.close()
     }
 
     @Synchronized
@@ -118,5 +120,4 @@ class EquipmentManager : KoinComponent, Consumer<Any> {
             null
         }
     }
-
 }

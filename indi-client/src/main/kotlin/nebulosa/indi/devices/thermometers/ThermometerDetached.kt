@@ -1,3 +1,3 @@
 package nebulosa.indi.devices.thermometers
 
-data class ThermometerDetached(override val device: Thermometer) : ThermometerEvent
+data class ThermometerDetached(override val device: Thermometer) : ThermometerEvent<Thermometer>

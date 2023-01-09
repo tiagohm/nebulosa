@@ -4,7 +4,12 @@ import nebulosa.imaging.algorithms.CfaPattern
 import nebulosa.indi.INDIClient
 import nebulosa.indi.devices.AbstractDevice
 import nebulosa.indi.devices.DeviceProtocolHandler
+import nebulosa.indi.devices.guiders.GuiderAttached
+import nebulosa.indi.devices.guiders.GuiderDetached
+import nebulosa.indi.devices.guiders.GuiderPulsingChanged
 import nebulosa.indi.devices.isOn
+import nebulosa.indi.devices.thermometers.ThermometerAttached
+import nebulosa.indi.devices.thermometers.ThermometerDetached
 import nebulosa.indi.protocol.*
 import nebulosa.io.Base64InputStream
 
@@ -30,7 +35,6 @@ internal open class CameraBase(
     override var exposure = 0L
     override var hasCooler = false
     override var canSetTemperature = false
-    override var temperature = 0.0
     override var canSubFrame = false
     override var x = 0
     override var minX = 0
@@ -55,6 +59,13 @@ internal open class CameraBase(
     override var offset = 0
     override var offsetMin = 0
     override var offsetMax = 0
+    override var hasGuiderHead = false // TODO: Handle guider head.
+
+    override var hasThermometer = false
+    override var temperature = 0.0
+
+    override var canPulseGuide = false
+    override var isPulseGuiding = false
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -139,6 +150,11 @@ internal open class CameraBase(
 
                             handler.fireOnEventReceived(CameraHasCoolerChanged(this))
                             handler.fireOnEventReceived(CameraCanSetTemperatureChanged(this))
+
+                            if (!hasThermometer) {
+                                hasThermometer = true
+                                handler.fireOnEventReceived(ThermometerAttached(this))
+                            }
                         }
 
                         temperature = message["CCD_TEMPERATURE_VALUE"]!!.value
@@ -215,6 +231,34 @@ internal open class CameraBase(
 
                         handler.fireOnEventReceived(CameraOffsetChanged(this))
                     }
+                    "TELESCOPE_TIMED_GUIDE_NS" -> {
+                        if (!canPulseGuide && message is DefNumberVector) {
+                            canPulseGuide = true
+
+                            handler.fireOnEventReceived(GuiderAttached(this))
+                        } else {
+                            val prevIsPulseGuiding = isPulseGuiding
+                            isPulseGuiding = message.state == PropertyState.BUSY
+
+                            if (isPulseGuiding != prevIsPulseGuiding) {
+                                handler.fireOnEventReceived(GuiderPulsingChanged(this))
+                            }
+                        }
+                    }
+                    "TELESCOPE_TIMED_GUIDE_WE" -> {
+                        if (!canPulseGuide && message is DefNumberVector) {
+                            canPulseGuide = true
+
+                            handler.fireOnEventReceived(GuiderAttached(this))
+                        } else {
+                            val prevIsPulseGuiding = isPulseGuiding
+                            isPulseGuiding = message.state == PropertyState.BUSY
+
+                            if (isPulseGuiding != prevIsPulseGuiding) {
+                                handler.fireOnEventReceived(GuiderPulsingChanged(this))
+                            }
+                        }
+                    }
                 }
             }
             is SetBLOBVector -> {
@@ -224,6 +268,9 @@ internal open class CameraBase(
                         // TODO: Handle zipped format.
                         val fits = Base64InputStream(ccd1.value)
                         handler.fireOnEventReceived(CameraFrameCaptured(this, fits))
+                    }
+                    "CCD2" -> {
+                        // TODO: Handle Guider Head frame.
                     }
                 }
             }
@@ -285,5 +332,59 @@ internal open class CameraBase(
         }
     }
 
-    override fun close() {}
+    override fun guideNorth(duration: Int) {
+        if (canPulseGuide) {
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_N" to duration.toDouble())
+        }
+    }
+
+    override fun guideSouth(duration: Int) {
+        if (canPulseGuide) {
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_S" to duration.toDouble())
+        }
+    }
+
+    override fun guideEast(duration: Int) {
+        if (canPulseGuide) {
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_E" to duration.toDouble())
+        }
+    }
+
+    override fun guideWest(duration: Int) {
+        if (canPulseGuide) {
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_W" to duration.toDouble())
+        }
+    }
+
+    override fun close() {
+        if (hasThermometer) {
+            hasThermometer = false
+            handler.fireOnEventReceived(ThermometerDetached(this))
+        }
+
+        if (canPulseGuide) {
+            canPulseGuide = false
+            handler.fireOnEventReceived(GuiderDetached(this))
+        }
+    }
+
+    override fun toString(): String {
+        return "Camera(name=$name, isCapturing=$isCapturing," +
+                " hasCoolerControl=$hasCoolerControl, isCoolerOn=$isCoolerOn," +
+                " hasDewHeater=$hasDewHeater, isDewHeaterOn=$isDewHeaterOn," +
+                " frameFormats=$frameFormats, canAbort=$canAbort," +
+                " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
+                " exposureMin=$exposureMin, exposureMax=$exposureMax," +
+                " exposureState=$exposureState, exposure=$exposure," +
+                " hasCooler=$hasCooler, canSetTemperature=$canSetTemperature," +
+                " temperature=$temperature, canSubFrame=$canSubFrame," +
+                " x=$x, minX=$minX, maxX=$maxX, y=$y, minY=$minY, maxY=$maxY," +
+                " width=$width, minWidth=$minWidth, maxWidth=$maxWidth, height=$height," +
+                " minHeight=$minHeight, maxHeight=$maxHeight," +
+                " canBin=$canBin, maxBinX=$maxBinX, maxBinY=$maxBinY," +
+                " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
+                " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
+                " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
+                " canPulseGuide=$canPulseGuide, isPulseGuiding=$isPulseGuiding)"
+    }
 }

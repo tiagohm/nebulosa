@@ -5,6 +5,9 @@ import nebulosa.indi.devices.AbstractDevice
 import nebulosa.indi.devices.DeviceProtocolHandler
 import nebulosa.indi.devices.firstOnSwitch
 import nebulosa.indi.devices.firstOnSwitchOrNull
+import nebulosa.indi.devices.guiders.GuiderAttached
+import nebulosa.indi.devices.guiders.GuiderDetached
+import nebulosa.indi.devices.guiders.GuiderPulsingChanged
 import nebulosa.indi.protocol.*
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
@@ -33,6 +36,9 @@ internal open class MountBase(
     override var guideRateNS = 0.0
     override var rightAscension = 0.0
     override var declination = 0.0
+
+    override var canPulseGuide = false
+    override var isPulseGuiding = false
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -124,6 +130,34 @@ internal open class MountBase(
 
                         handler.fireOnEventReceived(MountEquatorialCoordinatesChanged(this))
                     }
+                    "TELESCOPE_TIMED_GUIDE_NS" -> {
+                        if (!canPulseGuide && message is DefNumberVector) {
+                            canPulseGuide = true
+
+                            handler.fireOnEventReceived(GuiderAttached(this))
+                        } else {
+                            val prevIsPulseGuiding = isPulseGuiding
+                            isPulseGuiding = message.state == PropertyState.BUSY
+
+                            if (isPulseGuiding != prevIsPulseGuiding) {
+                                handler.fireOnEventReceived(GuiderPulsingChanged(this))
+                            }
+                        }
+                    }
+                    "TELESCOPE_TIMED_GUIDE_WE" -> {
+                        if (!canPulseGuide && message is DefNumberVector) {
+                            canPulseGuide = true
+
+                            handler.fireOnEventReceived(GuiderAttached(this))
+                        } else {
+                            val prevIsPulseGuiding = isPulseGuiding
+                            isPulseGuiding = message.state == PropertyState.BUSY
+
+                            if (isPulseGuiding != prevIsPulseGuiding) {
+                                handler.fireOnEventReceived(GuiderPulsingChanged(this))
+                            }
+                        }
+                    }
                 }
             }
             else -> Unit
@@ -177,12 +211,54 @@ internal open class MountBase(
     }
 
     override fun abortMotion() {
-        sendNewSwitch("TELESCOPE_ABORT_MOTION", "ABORT" to true)
+        if (canAbort) {
+            sendNewSwitch("TELESCOPE_ABORT_MOTION", "ABORT" to true)
+        }
     }
 
     override fun trackingMode(mode: TrackMode) {
         sendNewSwitch("TELESCOPE_TRACK_MODE", "TRACK_$mode" to true)
     }
 
-    override fun close() {}
+    override fun guideNorth(duration: Int) {
+        if (canPulseGuide) {
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_N" to duration.toDouble())
+        }
+    }
+
+    override fun guideSouth(duration: Int) {
+        if (canPulseGuide) {
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_S" to duration.toDouble())
+        }
+    }
+
+    override fun guideEast(duration: Int) {
+        if (canPulseGuide) {
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_E" to duration.toDouble())
+        }
+    }
+
+    override fun guideWest(duration: Int) {
+        if (canPulseGuide) {
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_W" to duration.toDouble())
+        }
+    }
+
+    override fun close() {
+        if (canPulseGuide) {
+            canPulseGuide = false
+            handler.fireOnEventReceived(GuiderDetached(this))
+        }
+    }
+
+    override fun toString(): String {
+        return "Mount(name=$name, isSlewing=$isSlewing, isTracking=$isTracking," +
+                " isParking=$isParking, isParked=$isParked, canAbort=$canAbort," +
+                " canSync=$canSync, canPark=$canPark, slewRates=$slewRates," +
+                " slewRate=$slewRate, mountType=$mountType, trackModes=$trackModes," +
+                " trackMode=$trackMode, pierSide=$pierSide, guideRateWE=$guideRateWE," +
+                " guideRateNS=$guideRateNS, rightAscension=$rightAscension," +
+                " declination=$declination, canPulseGuide=$canPulseGuide," +
+                " isPulseGuiding=$isPulseGuiding)"
+    }
 }
