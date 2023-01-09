@@ -143,7 +143,12 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
                     scaleFactor = 0
                     scale = 1f
 
-                    adjustSceneSizeToFitImage(false)
+                    if (isMaximized) {
+                        isMaximized = false
+                        adjustSceneSizeToFitImage(true)
+                    } else {
+                        adjustSceneSizeToFitImage(false)
+                    }
 
                     draw()
                 } else if (it.button == MouseButton.PRIMARY) {
@@ -427,16 +432,16 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         val factorH = fits.height.toFloat() / areaHeight
         val factor = max(factorW, factorH) / scale
 
-        val maxStartX = (fits.width / factor).roundToInt()
-        val maxStartY = (fits.height / factor).roundToInt()
+        val maxStartX = (fits.width / factor).toInt()
+        val maxStartY = (fits.height / factor).toInt()
 
         // Prevent move to left/up.
         if (-startX < 0 || -startY < 0) {
-            if (maxStartX - startX <= areaWidth) {
-                startX = maxStartX - areaWidth
+            if (maxStartX - startX <= scene.width.toInt()) {
+                startX = maxStartX - scene.width.toInt()
             }
-            if (maxStartY - startY <= areaHeight) {
-                startY = maxStartY - areaHeight
+            if (maxStartY - startY <= scene.height.toInt()) {
+                startY = maxStartY - scene.height.toInt()
             }
         }
 
