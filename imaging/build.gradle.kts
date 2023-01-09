@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     api(project(":io"))
+    api(project(":math"))
     api(libs.fits)
     testImplementation(libs.bundles.kotest)
 }

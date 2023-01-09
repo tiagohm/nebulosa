@@ -229,11 +229,11 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         else scene.height
 
         if (factor >= 1) {
-            width = standardSize
+            width = standardSize + 1
             height = standardSize / factor + (titleHeight - 1)
         } else {
             height = standardSize + titleHeight
-            width = standardSize * factor
+            width = standardSize * factor + 1
         }
     }
 
@@ -483,8 +483,6 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     }
 
     companion object {
-
-        @JvmStatic private val LOG = LoggerFactory.getLogger(ImageViewerScreen::class.java)
 
         @JvmStatic private val SCALE_FACTORS = doubleArrayOf(
             // 0.125, 0.25, 0.5, 0.75,

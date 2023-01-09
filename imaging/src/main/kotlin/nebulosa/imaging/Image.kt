@@ -3,6 +3,8 @@ package nebulosa.imaging
 import java.awt.color.ColorSpace
 import java.awt.image.*
 import java.nio.IntBuffer
+import kotlin.math.max
+import kotlin.math.min
 
 open class Image(
     width: Int, height: Int,
@@ -25,48 +27,104 @@ open class Image(
         return this.data[index + channel.offset]
     }
 
-    fun writeByteArray(channel: ImageChannel, data: Array<ByteArray>) {
+    fun writeByteArray(channel: ImageChannel, data: Array<ByteArray>): FloatArray {
+        var idx = channel.offset
+
+        var max = Float.MIN_VALUE
+        var min = Float.MAX_VALUE
+
         for (y in data.indices) {
             for (x in 0 until data[y].size) {
                 val color = (data[y][x].toInt() and 0xff) / 255f
-                writePixel(x, y, channel, color)
+                // writePixel(x, y, channel, color)
+                this.data[idx] = color
+                max = max(max, color)
+                min = min(min, color)
+                idx += pixelStride
             }
         }
+
+        return floatArrayOf(min, max)
     }
 
-    fun writeShortArray(channel: ImageChannel, data: Array<ShortArray>) {
+    fun writeShortArray(channel: ImageChannel, data: Array<ShortArray>): FloatArray {
+        var idx = channel.offset
+
+        var max = Float.MIN_VALUE
+        var min = Float.MAX_VALUE
+
         for (y in data.indices) {
             for (x in 0 until data[y].size) {
                 val color = (data[y][x].toInt() + 32768) / 65535f
-                writePixel(x, y, channel, color)
+                // writePixel(x, y, channel, color)
+                this.data[idx] = color
+                max = max(max, color)
+                min = min(min, color)
+                idx += pixelStride
             }
         }
+
+        return floatArrayOf(min, max)
     }
 
-    fun writeIntArray(channel: ImageChannel, data: Array<IntArray>) {
+    fun writeIntArray(channel: ImageChannel, data: Array<IntArray>): FloatArray {
+        var idx = channel.offset
+
+        var max = Float.MIN_VALUE
+        var min = Float.MAX_VALUE
+
         for (y in data.indices) {
             for (x in 0 until data[y].size) {
                 val color = ((data[y][x].toLong() + 2147483648) / 4294967295.0).toFloat()
-                writePixel(x, y, channel, color)
+                // writePixel(x, y, channel, color)
+                this.data[idx] = color
+                max = max(max, color)
+                min = min(min, color)
+                idx += pixelStride
             }
         }
+
+        return floatArrayOf(min, max)
     }
 
-    fun writeFloatArray(channel: ImageChannel, data: Array<FloatArray>) {
+    fun writeFloatArray(channel: ImageChannel, data: Array<FloatArray>): FloatArray {
+        var idx = channel.offset
+
+        var max = Float.MIN_VALUE
+        var min = Float.MAX_VALUE
+
         for (y in data.indices) {
             for (x in 0 until data[y].size) {
-                writePixel(x, y, channel, data[y][x])
+                val color = data[y][x]
+                // writePixel(x, y, channel, color)
+                this.data[idx] = color
+                max = max(max, color)
+                min = min(min, color)
+                idx += pixelStride
             }
         }
+
+        return floatArrayOf(min, max)
     }
 
-    fun writeDoubleArray(channel: ImageChannel, data: Array<DoubleArray>) {
+    fun writeDoubleArray(channel: ImageChannel, data: Array<DoubleArray>): FloatArray {
+        var idx = channel.offset
+
+        var max = Float.MIN_VALUE
+        var min = Float.MAX_VALUE
+
         for (y in data.indices) {
             for (x in 0 until data[y].size) {
                 val color = data[y][x].toFloat()
-                writePixel(x, y, channel, color)
+                // writePixel(x, y, channel, color)
+                this.data[idx] = color
+                max = max(max, color)
+                min = min(min, color)
+                idx += pixelStride
             }
         }
+
+        return floatArrayOf(min, max)
     }
 
     fun writeTo(output: IntBuffer) {
