@@ -35,6 +35,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     @FXML private lateinit var image: Canvas
     @FXML private lateinit var menu: ContextMenu
     @FXML private lateinit var scnr: MenuItem
+    @FXML private lateinit var fitsHeader: MenuItem
 
     @Volatile @JvmField internal var fits: Image? = null
     @Volatile @JvmField internal var transformedFits: Image? = null
@@ -50,6 +51,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
     private val imageStretcherScreen = ImageStretcherScreen(this)
     private val scnrScreen = SCNRScreen(this)
+    private val fitsHeaderScreen = FITSHeaderScreen()
 
     private val screenBounds = javafx.stage.Screen.getPrimary().bounds
     private val transformPublisher = BehaviorSubject.create<Unit>()
@@ -225,6 +227,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
         imageStretcherScreen.close()
         scnrScreen.close()
+        fitsHeaderScreen.close()
 
         transformSubscriber?.dispose()
         transformSubscriber = null
@@ -370,6 +373,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         this.transformedFits = null
 
         scnr.isDisable = fits.mono
+        fitsHeader.isDisable = fits !is FitsImage
 
         adjustSceneSizeToFitImage(true)
 
@@ -509,6 +513,16 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     @FXML
     private fun openSCNR() {
         scnrScreen.show(true, true)
+    }
+
+    @FXML
+    private fun openFITSHeader() {
+        val fits = fits ?: return
+
+        if (fits is FitsImage) {
+            fitsHeaderScreen.show(bringToFront = true)
+            fitsHeaderScreen.load(fits.header)
+        }
     }
 
     @FXML

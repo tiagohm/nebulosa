@@ -46,7 +46,7 @@
         </AnchorPane>
         <TextArea fx:id="logs"
                   editable="false"
-                  style="-fx-text-box-border: transparent; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;"
+                  stylesheets="@css/TextAreaWithoutFocus.css"
                   maxHeight="150.0"
                   minHeight="150.0"
                   prefHeight="150.0">

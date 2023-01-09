@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<AnchorPane maxHeight="-Infinity"
+            maxWidth="-Infinity"
+            minHeight="250.0"
+            minWidth="400.0"
+            prefHeight="250.0"
+            prefWidth="400.0"
+            xmlns="http://javafx.com/javafx/19"
+            xmlns:fx="http://javafx.com/fxml/1">
+    <TextArea
+            fx:id="cards"
+            AnchorPane.bottomAnchor="0.0"
+            AnchorPane.leftAnchor="0.0"
+            AnchorPane.rightAnchor="0.0"
+            AnchorPane.topAnchor="0.0"
+            editable="false"
+            stylesheets="@css/TextAreaWithoutFocus.css">
+        <font>
+            <Font name="Monospaced Regular"
+                  size="12.0"/>
+        </font>
+    </TextArea>
+</AnchorPane>

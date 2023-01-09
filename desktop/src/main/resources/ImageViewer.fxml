@@ -25,6 +25,9 @@
                                onAction="#mirrorVertical"/>
                 <CheckMenuItem text="Invert"
                                onAction="#invert"/>
+                <MenuItem fx:id="fitsHeader"
+                          text="FITS Header"
+                          onAction="#openFITSHeader"/>
             </items>
         </ContextMenu>
     </fx:define>
