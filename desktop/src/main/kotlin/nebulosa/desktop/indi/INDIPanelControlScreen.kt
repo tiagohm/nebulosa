@@ -21,6 +21,7 @@ import nebulosa.indi.devices.*
 import nebulosa.indi.protocol.PropertyPermission
 import nebulosa.indi.protocol.SwitchRule
 import org.koin.core.component.inject
+import java.util.*
 
 class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
@@ -85,9 +86,14 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
                         container.updateProperty(event.property)
                     } else {
                         val tab = groups.tabs
-                            .firstOrNull { it.userData == event.property.group } ?: return@synchronized
-                        val content = (tab.content as ScrollPane).content as VBox
-                        content.makeGroupProperty(event.device, event.property)
+                            .firstOrNull { it.userData == event.property.group }
+
+                        if (tab != null) {
+                            val content = (tab.content as ScrollPane).content as VBox
+                            content.makeGroupProperty(event.device, event.property)
+                        } else {
+                            groups.makeGroup(event.device, event.property.group, listOf(event.property))
+                        }
                     }
                 }
             }
@@ -132,7 +138,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
             cacheProperties[device]!!.clear()
             groups.tabs.clear()
 
-            val groupedProperties = LinkedHashMap<String, MutableList<PropertyVector<*, *>>>(16)
+            val groupedProperties = TreeMap<String, MutableList<PropertyVector<*, *>>>(GroupNameComparator)
 
             for (property in device.properties.values) {
                 groupedProperties
@@ -490,6 +496,16 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
         val device = devices.value ?: return
         device.sendNewNumber(vector.name, *data.toTypedArray())
+    }
+
+    private object GroupNameComparator : Comparator<String> {
+
+        override fun compare(a: String, b: String): Int {
+            return if (a == b) 0
+            else if (a == "Main Control") -1
+            else if (b == "Main Control") 1
+            else a.compareTo(b)
+        }
     }
 
     companion object {
