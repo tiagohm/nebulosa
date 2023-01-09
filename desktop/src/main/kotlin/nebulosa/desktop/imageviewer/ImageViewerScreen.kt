@@ -29,7 +29,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "nebulosa-image-viewer") {
 
@@ -181,6 +180,9 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     }
 
     override fun onStart() {
+        val area = (screenBounds.width * screenBounds.height).toInt()
+        buffer = IntArray(area)
+
         borderSize = (width - scene.width) / 2.0
         titleHeight = (height - scene.height) - borderSize
 
@@ -189,6 +191,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
             .subscribe {
                 transformImage()
                 draw()
+                imageStretcherScreen.drawHistogram()
             }
 
         shadow = 0f
@@ -372,6 +375,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
         transformImage()
         draw()
+        imageStretcherScreen.drawHistogram()
     }
 
     fun transformImage(
@@ -417,16 +421,12 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         }
     }
 
+    // TODO: Too slow when window is maximized.
     private fun draw() {
         val fits = transformedFits ?: fits ?: return
 
-        val areaWidth = idealSceneWidth.toInt()
-        val areaHeight = idealSceneHeight.toInt()
-        val area = areaWidth * areaHeight
-
-        if (area > buffer.size) {
-            buffer = IntArray(area)
-        }
+        val areaWidth = min(idealSceneWidth, screenBounds.width).toInt()
+        val areaHeight = min(idealSceneHeight, screenBounds.height).toInt()
 
         val factorW = fits.width.toFloat() / areaWidth
         val factorH = fits.height.toFloat() / areaHeight
@@ -497,10 +497,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         val writableImage = WritableImage(pixelBuffer)
 
         val g = image.graphicsContext2D
-        g.clearRect(0.0, 0.0, image.width, image.height)
+        // g.clearRect(0.0, 0.0, image.width, image.height)
         g.drawImage(writableImage, 0.0, 0.0)
-
-        imageStretcherScreen.drawHistogram()
     }
 
     @FXML
