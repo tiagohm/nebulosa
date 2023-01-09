@@ -13,8 +13,6 @@ open class Image(
     @JvmField val stride = width * pixelStride
     @JvmField val data = (raster.dataBuffer as Float8bitsDataBuffer).data
 
-    open fun read() {}
-
     @Suppress("NOTHING_TO_INLINE")
     inline fun writePixel(x: Int, y: Int, channel: ImageChannel, color: Float) {
         val index = y * stride + x * pixelStride

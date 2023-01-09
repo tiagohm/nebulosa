@@ -1,7 +1,6 @@
 import io.kotest.matchers.ints.shouldBeExactly
 import nebulosa.imaging.ExtendedImage
 import nebulosa.imaging.FitsImage
-import nebulosa.imaging.Image
 import nom.tam.fits.Fits
 import java.io.File
 import javax.imageio.ImageIO
@@ -12,13 +11,13 @@ class ExtendedImageTest : ImageTest() {
     init {
         beforeSpec {
             var fits = Fits("src/test/resources/M51.8.Mono.fits")
-            var image = FitsImage(fits).also(Image::read)
+            var image = FitsImage(fits)
             ImageIO.write(image, "JPEG", File("src/test/resources/M51.8.Mono.Extended.jpg"))
             ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Mono.Extended.png"))
             ImageIO.write(image, "BMP", File("src/test/resources/M51.8.Mono.Extended.bmp"))
 
             fits = Fits("src/test/resources/M51.8.Color.fits")
-            image = FitsImage(fits).also(Image::read)
+            image = FitsImage(fits)
             ImageIO.write(image, "JPEG", File("src/test/resources/M51.8.Color.Extended.jpg"))
             ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Color.Extended.png"))
             ImageIO.write(image, "BMP", File("src/test/resources/M51.8.Color.Extended.bmp"))
@@ -27,7 +26,6 @@ class ExtendedImageTest : ImageTest() {
         "jpeg mono" {
             val inputFile = File("src/test/resources/M51.8.Mono.Extended.jpg")
             val image = ExtendedImage(inputFile)
-            image.read()
             val outputFile = File("src/test/resources/M51.8.Mono.Extended-V2.jpg")
             ImageIO.write(image, "JPEG", outputFile)
 
@@ -36,7 +34,6 @@ class ExtendedImageTest : ImageTest() {
         "jpeg color" {
             val inputFile = File("src/test/resources/M51.8.Color.Extended.jpg")
             val image = ExtendedImage(inputFile)
-            image.read()
             val outputFile = File("src/test/resources/M51.8.Color.Extended-V2.jpg")
             ImageIO.write(image, "JPEG", outputFile)
 
@@ -45,7 +42,6 @@ class ExtendedImageTest : ImageTest() {
         "png mono" {
             val inputFile = File("src/test/resources/M51.8.Mono.Extended.png")
             val image = ExtendedImage(inputFile)
-            image.read()
             val outputFile = File("src/test/resources/M51.8.Mono.Extended-V2.png")
             ImageIO.write(image, "JPEG", outputFile)
 
@@ -54,7 +50,6 @@ class ExtendedImageTest : ImageTest() {
         "png color" {
             val inputFile = File("src/test/resources/M51.8.Color.Extended.png")
             val image = ExtendedImage(inputFile)
-            image.read()
             val outputFile = File("src/test/resources/M51.8.Color.Extended-V2.png")
             ImageIO.write(image, "JPEG", outputFile)
 
@@ -63,7 +58,6 @@ class ExtendedImageTest : ImageTest() {
         "bmp mono" {
             val inputFile = File("src/test/resources/M51.8.Mono.Extended.bmp")
             val image = ExtendedImage(inputFile)
-            image.read()
             val outputFile = File("src/test/resources/M51.8.Mono.Extended-V2.bmp")
             ImageIO.write(image, "JPEG", outputFile)
 
@@ -72,7 +66,6 @@ class ExtendedImageTest : ImageTest() {
         "bmp color" {
             val inputFile = File("src/test/resources/M51.8.Color.Extended.bmp")
             val image = ExtendedImage(inputFile)
-            image.read()
             val outputFile = File("src/test/resources/M51.8.Color.Extended-V2.bmp")
             ImageIO.write(image, "JPEG", outputFile)
 

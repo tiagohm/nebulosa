@@ -11,9 +11,7 @@ import javax.imageio.ImageIO
  *
  * @see <a href="https://github.com/haraldk/TwelveMonkeys">TwelveMonkeys: Additional plug-ins</a>
  */
-class ExtendedImage(
-    val image: BufferedImage,
-) : Image(
+class ExtendedImage(image: BufferedImage) : Image(
     image.width, image.height,
     image.type == TYPE_BYTE_GRAY || image.type == TYPE_USHORT_GRAY,
 ) {
@@ -24,7 +22,7 @@ class ExtendedImage(
 
     constructor(inputStream: InputStream) : this(ImageIO.read(inputStream))
 
-    override fun read() {
+    init {
         var idx = 0
 
         for (y in 0 until height) {

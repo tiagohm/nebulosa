@@ -2,7 +2,6 @@ package nebulosa.desktop.imageviewer
 
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
-import javafx.application.Platform
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
@@ -27,6 +26,7 @@ import nebulosa.indi.devices.cameras.Camera
 import nom.tam.fits.Fits
 import java.io.File
 import java.nio.IntBuffer
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.min
@@ -139,7 +139,10 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
                 adjustSceneSizeToFitImage()
 
-                draw()
+                DRAW_EXECUTOR.submit {
+                    Thread.sleep(250L)
+                    draw()
+                }
             } else if (it.button == MouseButton.PRIMARY) {
                 menu.hide()
                 it.consume()
@@ -314,7 +317,6 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         val fits = if (file.extension.startsWith("fit")) FitsImage(Fits(file))
         else ExtendedImage(file)
 
-        fits.read()
         this.fits = fits
         transformedFits = fits.clone()
 
@@ -328,7 +330,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         widthProperty().addListener(this)
         heightProperty().addListener(this)
 
-        Platform.runLater {
+        DRAW_EXECUTOR.submit {
+            Thread.sleep(250L)
             transformImage()
             draw()
         }
@@ -370,6 +373,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)
     }
 
+    @Synchronized
     private fun draw() {
         val fits = transformedFits ?: return
 
@@ -485,6 +489,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     }
 
     companion object {
+
+        @JvmStatic private val DRAW_EXECUTOR = Executors.newSingleThreadScheduledExecutor()
 
         @JvmStatic private val SCALE_FACTORS = doubleArrayOf(
             // 0.125, 0.25, 0.5, 0.75,
