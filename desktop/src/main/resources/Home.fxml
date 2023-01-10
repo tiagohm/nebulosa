@@ -32,14 +32,12 @@
                        prefHeight="32.0"
                        HBox.hgrow="ALWAYS"
                        focusTraversable="false"
-                       styleClass="text-md"
                        promptText="Host (localhost)">
             </TextField>
             <TextField fx:id="port"
                        prefHeight="32.0"
                        prefWidth="94.0"
                        focusTraversable="false"
-                       styleClass="text-md"
                        promptText="Port (7624)">
             </TextField>
             <Button fx:id="connect"
@@ -48,8 +46,7 @@
                     mnemonicParsing="false"
                     contentDisplay="TEXT_ONLY"
                     text="&#xF1616;"
-                    textFill="#455A64"
-                    styleClass="mdi,mdi-sm,cursor-hand"
+                    styleClass="text-blue-grey-700,mdi,mdi-sm"
                     prefHeight="32.0">
             </Button>
         </HBox>
@@ -96,13 +93,11 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Camera"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="0"
                     GridPane.columnIndex="0">
                 <graphic>
                     <Label text="&#xF0104;"
-                           textFill="#212121"
-                           styleClass="mdi">
+                           styleClass="text-grey-900,mdi">
                     </Label>
                 </graphic>
             </Button>
@@ -114,13 +109,11 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Mount"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="0"
                     GridPane.columnIndex="1">
                 <graphic>
                     <Label text="&#xF0B4E;"
-                           textFill="#212121"
-                           styleClass="mdi">
+                           styleClass="text-grey-900,mdi">
                     </Label>
                 </graphic>
             </Button>
@@ -132,7 +125,6 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Guider"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="0"
                     GridPane.columnIndex="2">
                 <graphic>
@@ -152,7 +144,6 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Filter Wheel"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="1"
                     GridPane.columnIndex="0">
                 <graphic>
@@ -172,13 +163,11 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Focuser"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="1"
                     GridPane.columnIndex="1">
                 <graphic>
                     <Label text="&#xF02F1;"
-                           textFill="#212121"
-                           styleClass="mdi">
+                           styleClass="text-grey-900,mdi">
                     </Label>
                 </graphic>
             </Button>
@@ -190,7 +179,6 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Dome"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="1"
                     GridPane.columnIndex="2">
                 <graphic>
@@ -210,7 +198,6 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Rotator"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="2"
                     GridPane.columnIndex="0">
                 <graphic>
@@ -230,7 +217,6 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Switch"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="2"
                     GridPane.columnIndex="1">
                 <graphic>
@@ -250,13 +236,11 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Atlas"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="2"
                     GridPane.columnIndex="2">
                 <graphic>
                     <Label text="&#xF034D;"
-                           textFill="#212121"
-                           styleClass="mdi">
+                           styleClass="text-grey-900,mdi">
                     </Label>
                 </graphic>
             </Button>
@@ -268,7 +252,6 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Plate Solving"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="3"
                     GridPane.columnIndex="0">
                 <graphic>
@@ -288,13 +271,11 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Alignment"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="3"
                     GridPane.columnIndex="1">
                 <graphic>
                     <Label text="&#xF04CE;"
-                           textFill="#212121"
-                           styleClass="mdi">
+                           styleClass="text-grey-900,mdi">
                     </Label>
                 </graphic>
             </Button>
@@ -306,13 +287,11 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Sequencer"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="3"
                     GridPane.columnIndex="2">
                 <graphic>
                     <Label text="&#xF13C1;"
-                           textFill="#212121"
-                           styleClass="mdi">
+                           styleClass="text-grey-900,mdi">
                     </Label>
                 </graphic>
             </Button>
@@ -324,13 +303,11 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Image Viewer"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="4"
                     GridPane.columnIndex="0">
                 <graphic>
                     <Label text="&#xF087C;"
-                           textFill="#212121"
-                           styleClass="mdi">
+                           styleClass="text-grey-900,mdi">
                     </Label>
                 </graphic>
             </Button>
@@ -342,7 +319,6 @@
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="INDI"
-                    styleClass="text-md,cursor-hand"
                     GridPane.rowIndex="4"
                     GridPane.columnIndex="1">
                 <graphic>

@@ -10,9 +10,9 @@ import javafx.stage.FileChooser
 import nebulosa.desktop.connections.ConnectionManager
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
-import nebulosa.desktop.core.scene.MaterialColor
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
+import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.desktop.telescopecontrol.TelescopeControlManager
@@ -66,7 +66,7 @@ class HomeScreen : Screen("Home") {
         indi.disableProperty().bind(!equipmentManager.connected)
 
         connect.textProperty().bind(equipmentManager.connected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        connect.textFillProperty().bind(equipmentManager.connected.between(MaterialColor.RED_700, MaterialColor.BLUE_GREY_700))
+        equipmentManager.connected.on { connect.styleClass.toggle("text-blue-grey-700", "text-red-700") }
 
         host.text = preferences.string("connection.last.host") ?: ""
         port.text = preferences.string("connection.last.port") ?: ""

@@ -2,7 +2,6 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
@@ -11,7 +10,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="162.0"
+            prefHeight="242.0"
             prefWidth="342.0"
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
@@ -32,9 +31,6 @@
             <ChoiceBox fx:id="filterWheels"
                        prefHeight="32.0"
                        prefWidth="360.0">
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </ChoiceBox>
             <Button fx:id="connect"
                     onAction="#connect"
@@ -49,9 +45,6 @@
                     <Font name="Material Design Icons"
                           size="18.0"/>
                 </font>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </Button>
             <Button fx:id="openINDI"
                     onAction="#openINDI"
@@ -68,10 +61,24 @@
                         <Image url="@icons/indi.png"/>
                     </ImageView>
                 </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </Button>
+            <Label text="&#xF01D9;"
+                   alignment="CENTER"
+                   prefWidth="32.0"
+                   minWidth="32.0"
+                   onMouseClicked="#openMenu"
+                   styleClass="text-grey-700,mdi,mdi-sm,cursor-hand">
+                <fx:define>
+                    <ContextMenu fx:id="menu"
+                                 styleClass="text-md">
+                        <items>
+                            <CheckMenuItem text="Compact Mode"
+                                           fx:id="compactMode"
+                                           onAction="#toggleCompactMode"/>
+                        </items>
+                    </ContextMenu>
+                </fx:define>
+            </Label>
         </HBox>
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
@@ -81,20 +88,15 @@
                 <font>
                     <Font size="11.0"/>
                 </font>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </CheckBox>
             <ChoiceBox fx:id="filterAsShutter"
                        prefWidth="120.0">
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </ChoiceBox>
         </HBox>
         <VBox alignment="TOP_CENTER">
             <TableView fx:id="filterSlots"
                        editable="true"
+                       fixedCellSize="28.0"
                        stylesheets="@css/TableViewWithoutScrollbar.css">
                 <columns>
                     <TableColumn fx:id="position"
@@ -112,5 +114,22 @@
                 </columns>
             </TableView>
         </VBox>
+        <HBox alignment="CENTER_LEFT"
+              spacing="8.0">
+            <ChoiceBox fx:id="filterSlot"
+                       prefWidth="207.0">
+            </ChoiceBox>
+            <Button fx:id="moveToSelectedFilterSlot"
+                    text="Move To"
+                    minHeight="28.0"
+                    prefHeight="28.0"
+                    onAction="#moveToSelectedFilterSlot">
+                <graphic>
+                    <Label text="&#xF0054;"
+                           styleClass="mdi,mdi-sm,text-blue-700">
+                    </Label>
+                </graphic>
+            </Button>
+        </HBox>
     </VBox>
 </AnchorPane>

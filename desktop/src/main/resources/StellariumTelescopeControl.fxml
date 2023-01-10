@@ -4,7 +4,6 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -32,31 +31,22 @@
                        HBox.hgrow="ALWAYS"
                        focusTraversable="false"
                        promptText="Host (localhost)">
-                <font>
-                    <Font size="11.0"/>
-                </font>
             </TextField>
             <TextField fx:id="port"
                        prefHeight="32.0"
                        prefWidth="94.0"
                        focusTraversable="false"
                        promptText="Port">
-                <font>
-                    <Font size="11.0"/>
-                </font>
             </TextField>
             <Button fx:id="connect"
                     onAction="#connect"
                     alignment="CENTER"
                     mnemonicParsing="false"
                     contentDisplay="TEXT_ONLY"
+                    styleClass="mdi,mdi-sm"
                     text="&#xF1616;"
                     textFill="#455A64"
                     prefHeight="32.0">
-                <font>
-                    <Font name="Material Design Icons"
-                          size="18.0"/>
-                </font>
             </Button>
         </HBox>
     </VBox>

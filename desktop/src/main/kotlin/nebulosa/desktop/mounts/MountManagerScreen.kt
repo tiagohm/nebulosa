@@ -10,10 +10,10 @@ import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
 import nebulosa.desktop.core.beans.*
-import nebulosa.desktop.core.scene.MaterialColor
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
+import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.telescopecontrol.StellariumTelescopeControlScreen
 import nebulosa.indi.devices.mounts.*
@@ -86,7 +86,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
         connect.disableProperty().bind(equipmentManager.selectedMount.isNull or isConnecting or isSlewing)
         connect.textProperty().bind(equipmentManager.selectedMount.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        connect.textFillProperty().bind(equipmentManager.selectedMount.isConnected.between(MaterialColor.RED_700, MaterialColor.BLUE_GREY_700))
+        equipmentManager.selectedMount.isConnected.on { connect.styleClass.toggle("text-blue-grey-700", "text-red-700") }
 
         openINDI.disableProperty().bind(connect.disableProperty())
 

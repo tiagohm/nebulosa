@@ -10,10 +10,10 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import nebulosa.desktop.core.beans.onZero
-import nebulosa.desktop.core.scene.MaterialColor
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
+import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.indi.devices.*
 import nebulosa.indi.protocol.PropertyPermission
@@ -231,8 +231,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
                 }
 
                 val icon = Label(MaterialIcon.SEND)
-                icon.textFill = MaterialColor.BLUE_700
-                icon.styleClass.addAll("mdi", "mdi-sm")
+                icon.styleClass.addAll("text-blue-700", "mdi", "mdi-sm")
                 send.graphic = icon
 
                 children.add(send)
@@ -344,7 +343,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         ) {
             isDisable = vector.perm == PropertyPermission.RO
             text = property.label
-            textFill = if (property.value) MaterialColor.GREEN_700 else MaterialColor.GREY_800
+            styleClass.toggle("text-green-700", "text-grey-800", property.value)
         }
 
         private fun sendSwitchPropertyVectorMessage(
@@ -534,8 +533,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
     companion object {
 
-        @JvmStatic private val STATE_COLORS =
-            arrayOf(MaterialColor.GREY_400, MaterialColor.GREEN_400, MaterialColor.BLUE_400, MaterialColor.RED_400)
+        @JvmStatic private val STATE_COLORS = arrayOf("text-grey-400", "text-green-400", "text-blue-400", "text-red-400")
 
         @JvmStatic
         private fun Label.withState(vector: PropertyVector<*, *>) = apply {
@@ -547,7 +545,10 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
         @JvmStatic
         private fun Label.updateState(vector: PropertyVector<*, *>) = apply {
-            (graphic as Label).textFill = STATE_COLORS[vector.state.ordinal]
+            with(graphic as Label) {
+                styleClass.removeAll(STATE_COLORS)
+                styleClass.add(STATE_COLORS[vector.state.ordinal])
+            }
         }
     }
 }

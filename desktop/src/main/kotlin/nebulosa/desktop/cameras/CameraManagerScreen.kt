@@ -5,6 +5,7 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import javafx.scene.input.MouseButton
@@ -12,10 +13,10 @@ import javafx.scene.input.MouseEvent
 import javafx.stage.DirectoryChooser
 import nebulosa.desktop.Nebulosa
 import nebulosa.desktop.core.beans.*
-import nebulosa.desktop.core.scene.MaterialColor
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
+import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.indi.devices.cameras.*
@@ -31,7 +32,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isWritable
-import kotlin.math.max
 
 class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
@@ -41,8 +41,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML private lateinit var cameras: ChoiceBox<Camera>
     @FXML private lateinit var connect: Button
     @FXML private lateinit var openINDI: Button
-    @FXML private lateinit var cameraMenuIcon: Label
-    @FXML private lateinit var cameraMenu: ContextMenu
+    @FXML private lateinit var menu: ContextMenu
     @FXML private lateinit var autoSaveAllExposures: CheckMenuItem
     @FXML private lateinit var autoSubFolder: CheckMenuItem
     @FXML private lateinit var newSubFolderAtNoon: CheckMenuItem
@@ -99,11 +98,13 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
         connect.disableProperty().bind(equipmentManager.selectedCamera.isNull or isConnecting or isCapturing)
         connect.textProperty().bind(equipmentManager.selectedCamera.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        connect.textFillProperty().bind(equipmentManager.selectedCamera.isConnected.between(MaterialColor.RED_700, MaterialColor.BLUE_GREY_700))
+        equipmentManager.selectedCamera.isConnected.on { connect.styleClass.toggle("text-blue-grey-700", "text-red-700") }
 
         openINDI.disableProperty().bind(connect.disableProperty())
 
-        cameraMenuIcon.disableProperty().bind(isNotConnectedOrCapturing)
+        menu.items
+            .filter { it.userData == "BIND_TO_SELECTED_CAMERA" }
+            .forEach { it.disableProperty().bind(isNotConnectedOrCapturing) }
 
         cooler.disableProperty().bind(isNotConnectedOrCapturing or !equipmentManager.selectedCamera.hasCooler)
         equipmentManager.selectedCamera.isCoolerOn.on(cooler::setSelected)
@@ -150,9 +151,9 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         frameFormat.disableProperty().bind(isNotConnectedOrCapturing)
         frameFormat.itemsProperty().bind(equipmentManager.selectedCamera.frameFormats)
 
-        startCapture.disableProperty().bind(isNotConnectedOrCapturing)
-
-        abortCapture.disableProperty().bind(isNotConnected or !startCapture.disableProperty() or !equipmentManager.selectedCamera.canAbort)
+        val invalidExposure = exposure.valueFactory.valueProperty().isEqualTo(0.0)
+        startCapture.disableProperty().bind(isNotConnectedOrCapturing or invalidExposure)
+        abortCapture.disableProperty().bind(isNotConnected or !isCapturing or invalidExposure or !equipmentManager.selectedCamera.canAbort)
 
         equipmentManager.selectedCamera.onTwo { prev, value ->
             title = "Camera · ${value?.name}"
@@ -165,13 +166,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             updateGain()
             updateOffset()
             loadPreferences(value)
-        }
-
-        cameraMenuIcon.addEventFilter(MouseEvent.MOUSE_CLICKED) {
-            if (it.button == MouseButton.PRIMARY) {
-                cameraMenu.show(cameraMenuIcon, it.screenX, it.screenY)
-                it.consume()
-            }
         }
 
         exposure.userData = TimeUnit.MICROSECONDS
@@ -256,6 +250,14 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     }
 
     @FXML
+    private fun openMenu(event: MouseEvent) {
+        if (event.button == MouseButton.PRIMARY) {
+            menu.show(event.source as Node, event.screenX, event.screenY)
+            event.consume()
+        }
+    }
+
+    @FXML
     private fun openINDI() {
         val camera = equipmentManager.selectedCamera.get() ?: return
         screenManager.openINDIPanelControl(camera)
@@ -315,12 +317,16 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     private fun updateExposureUnit(event: ActionEvent) {
         val radio = event.source as RadioButton
         val timeUnit = TimeUnit.valueOf(radio.userData as String)
+        updateExposureUnit(timeUnit)
+    }
+
+    private fun updateExposureUnit(to: TimeUnit) {
         val prevTimeUnit = exposure.userData as TimeUnit
-        updateExposureUnit(prevTimeUnit, timeUnit, exposure.value.toLong())
+        updateExposureUnit(prevTimeUnit, to, exposure.value.toLong())
     }
 
     private fun updateExposureUnit(from: TimeUnit, to: TimeUnit, exposureValue: Long) {
-        val minValue = max(1L, to.convert(equipmentManager.selectedCamera.exposureMin.value, TimeUnit.MICROSECONDS))
+        val minValue = to.convert(equipmentManager.selectedCamera.exposureMin.value, TimeUnit.MICROSECONDS)
         val maxValue = to.convert(equipmentManager.selectedCamera.exposureMax.value, TimeUnit.MICROSECONDS)
         with(exposure.valueFactory as DoubleSpinnerValueFactory) {
             max = maxValue.toDouble()

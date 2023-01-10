@@ -20,7 +20,9 @@ class Preferences(private val path: Path) : KoinComponent {
     init {
         load()
 
-        publisher.debounce(1L, TimeUnit.SECONDS).subscribe { save() }
+        publisher
+            .debounce(1L, TimeUnit.SECONDS)
+            .subscribe { save() }
     }
 
     @Suppress("UNCHECKED_CAST")

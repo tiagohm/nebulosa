@@ -5,10 +5,11 @@ import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import nebulosa.desktop.core.beans.between
+import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.or
-import nebulosa.desktop.core.scene.MaterialColor
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
+import nebulosa.desktop.core.util.toggle
 import nebulosa.indi.devices.mounts.Mount
 import org.koin.core.component.inject
 
@@ -34,7 +35,7 @@ class StellariumTelescopeControlScreen(private val mount: Mount) : Screen("Stell
         connect.disableProperty().bind(isConnecting)
 
         connect.textProperty().bind(isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        connect.textFillProperty().bind(isConnected.between(MaterialColor.RED_700, MaterialColor.BLUE_GREY_700))
+        isConnected.on { connect.styleClass.toggle("text-blue-grey-700", "text-red-700") }
 
         host.text = preferences.string("stellariumTelescopeControl.equipment.${mount.name}.host")
         port.text = preferences.string("stellariumTelescopeControl.equipment.${mount.name}.port")

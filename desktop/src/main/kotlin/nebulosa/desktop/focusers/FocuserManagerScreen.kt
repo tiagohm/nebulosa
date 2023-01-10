@@ -10,10 +10,10 @@ import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.or
-import nebulosa.desktop.core.scene.MaterialColor
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
+import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.indi.devices.focusers.Focuser
 import org.controlsfx.control.ToggleSwitch
@@ -59,7 +59,7 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
 
         connect.disableProperty().bind(equipmentManager.selectedFocuser.isNull or isConnecting or isMoving)
         connect.textProperty().bind(equipmentManager.selectedFocuser.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        connect.textFillProperty().bind(equipmentManager.selectedFocuser.isConnected.between(MaterialColor.RED_700, MaterialColor.BLUE_GREY_700))
+        equipmentManager.selectedFocuser.isConnected.on { connect.styleClass.toggle("text-blue-grey-700", "text-red-700") }
 
         openINDI.disableProperty().bind(connect.disableProperty())
 

@@ -52,10 +52,11 @@ fun main(args: Array<String>) {
 
     Locale.setDefault(Locale.ENGLISH)
 
-    resource("fonts/materialdesignicons-webfont.ttf")!!.use { Font.loadFont(it, 24.0) }
+    resource("fonts/Material-Design-Icons.ttf")!!.use { Font.loadFont(it, 24.0) }
+    resource("fonts/Roboto-Regular.ttf")!!.use { Font.loadFont(it, 11.0) }
 
     with(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger) {
-        level = Level.INFO
+        level = if ("-v" in args) Level.DEBUG else Level.INFO
     }
 
     Application.launch(Nebulosa::class.java, *args)

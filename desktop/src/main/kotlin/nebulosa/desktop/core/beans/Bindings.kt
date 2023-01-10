@@ -1,6 +1,7 @@
 package nebulosa.desktop.core.beans
 
 import javafx.beans.binding.Bindings
+import javafx.beans.binding.BooleanBinding
 import javafx.beans.value.*
 
 // Any.
@@ -53,25 +54,25 @@ infix fun ObservableDoubleValue.transformed(action: (Double) -> String): Observa
 
 // List.
 
-infix fun <E> ObservableListValue<E>.contains(element: E): ObservableBooleanValue {
+infix fun <E> ObservableListValue<E>.contains(element: E): BooleanBinding {
     return Bindings.createBooleanBinding({ element in this }, this)
 }
 
-infix fun <E> ObservableListValue<E>.notContains(element: E): ObservableBooleanValue {
+infix fun <E> ObservableListValue<E>.notContains(element: E): BooleanBinding {
     return Bindings.createBooleanBinding({ element !in this }, this)
 }
 
 // Boolean.
 
-infix fun ObservableBooleanValue.and(other: ObservableBooleanValue): ObservableBooleanValue {
+infix fun ObservableBooleanValue.and(other: ObservableBooleanValue): BooleanBinding {
     return Bindings.and(this, other)
 }
 
-infix fun ObservableBooleanValue.or(other: ObservableBooleanValue): ObservableBooleanValue {
+infix fun ObservableBooleanValue.or(other: ObservableBooleanValue): BooleanBinding {
     return Bindings.or(this, other)
 }
 
-infix fun ObservableBooleanValue.xor(other: ObservableBooleanValue): ObservableBooleanValue {
+infix fun ObservableBooleanValue.xor(other: ObservableBooleanValue): BooleanBinding {
     return Bindings.notEqual(this, other)
 }
 

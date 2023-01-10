@@ -3,19 +3,17 @@
 <?import javafx.collections.FXCollections?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 <?import nebulosa.indi.devices.cameras.*?>
 <?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="470.0"
-            prefWidth="402.0"
+            prefHeight="455.0"
+            prefWidth="390.0"
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
@@ -37,9 +35,6 @@
                 <ChoiceBox fx:id="cameras"
                            prefHeight="32.0"
                            prefWidth="394.0">
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
                 </ChoiceBox>
                 <Button fx:id="connect"
                         onAction="#connect"
@@ -47,16 +42,9 @@
                         mnemonicParsing="false"
                         contentDisplay="TEXT_ONLY"
                         text="&#xF1616;"
-                        textFill="#455A64"
                         prefHeight="32.0"
-                        minWidth="42.0">
-                    <font>
-                        <Font name="Material Design Icons"
-                              size="18.0"/>
-                    </font>
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
+                        minWidth="42.0"
+                        styleClass="text-blue-grey-700,mdi,mdi-sm">
                 </Button>
                 <Button fx:id="openINDI"
                         onAction="#openINDI"
@@ -73,35 +61,30 @@
                             <Image url="@icons/indi.png"/>
                         </ImageView>
                     </graphic>
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
                 </Button>
-                <Label fx:id="cameraMenuIcon"
-                       text="&#xF01D9;"
+                <Label text="&#xF01D9;"
                        alignment="CENTER"
-                       textFill="#616161"
                        prefWidth="32.0"
-                       minWidth="32.0">
-                    <font>
-                        <Font name="Material Design Icons"
-                              size="18.0"/>
-                    </font>
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
+                       minWidth="32.0"
+                       onMouseClicked="#openMenu"
+                       styleClass="text-grey-700,mdi,mdi-sm,cursor-hand">
                     <fx:define>
-                        <ContextMenu fx:id="cameraMenu">
+                        <ContextMenu fx:id="menu"
+                                     styleClass="text-md">
                             <items>
                                 <CheckMenuItem text="Auto Save All Exposures"
                                                fx:id="autoSaveAllExposures"
+                                               userData="BIND_TO_SELECTED_CAMERA"
                                                onAction="#toggleAutoSaveAllExposures"/>
                                 <MenuItem text="Image Save Path..."
+                                          userData="BIND_TO_SELECTED_CAMERA"
                                           onAction="#openImageSavePath"/>
                                 <CheckMenuItem text="Auto Sub Folder"
                                                fx:id="autoSubFolder"
+                                               userData="BIND_TO_SELECTED_CAMERA"
                                                onAction="#toggleAutoSubFolder"/>
-                                <Menu text="New Sub Folder At">
+                                <Menu text="New Sub Folder At"
+                                      userData="BIND_TO_SELECTED_CAMERA">
                                     <CheckMenuItem text="Noon"
                                                    fx:id="newSubFolderAtNoon"
                                                    userData="NOON"
@@ -124,46 +107,39 @@
                        visible="false"
                        managed="false"
                        text="&#xF0193;"
-                       textFill="#303F9F">
+                       styleClass="text-indigo-700,mdi,mdi-xs">
                     <HBox.margin>
                         <Insets right="8.0"/>
                     </HBox.margin>
-                    <font>
-                        <Font name="Material Design Icons"
-                              size="14.0"/>
-                    </font>
                 </Label>
                 <Label fx:id="autoSubFolderIndicator"
                        visible="false"
                        managed="false"
                        text="&#xF0257;"
-                       textFill="#388E3C">
+                       styleClass="text-green-700,mdi,mdi-xs">
                     <HBox.margin>
                         <Insets right="8.0"/>
                     </HBox.margin>
-                    <font>
-                        <Font name="Material Design Icons"
-                              size="14.0"/>
-                    </font>
                 </Label>
                 <Label fx:id="savePathIndicator"
                        text="-"
-                       onMouseClicked="#openFolderInFiles">
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
+                       onMouseClicked="#openFolderInFiles"
+                       styleClass="cursor-hand">
                     <graphic>
                         <Label text="&#xF024B;"
-                               textFill="#FFA000">
-                            <font>
-                                <Font name="Material Design Icons"
-                                      size="14.0"/>
-                            </font>
+                               styleClass="text-amber-700,mdi,mdi-xs">
                         </Label>
                     </graphic>
-                    <font>
-                        <Font size="10.0"/>
-                    </font>
+                </Label>
+            </HBox>
+            <HBox alignment="CENTER_LEFT">
+                <Label fx:id="status"
+                       text="idle">
+                    <graphic>
+                        <Label text="&#xF02FC;"
+                               styleClass="text-blue-700,mdi,mdi-xs">
+                        </Label>
+                    </graphic>
                 </Label>
             </HBox>
         </VBox>
@@ -175,40 +151,25 @@
             <VBox alignment="CENTER"
                   spacing="1.0">
                 <Label text="Cooler (100%)">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
                 </Label>
                 <ToggleSwitch fx:id="cooler"
                               prefWidth="32.0"
                               prefHeight="32.0">
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
                 </ToggleSwitch>
             </VBox>
             <VBox alignment="CENTER"
                   spacing="1.0">
                 <Label text="Dew Heater">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
                 </Label>
                 <ToggleSwitch fx:id="dewHeater"
                               prefWidth="32.0"
                               prefHeight="32.0">
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
                 </ToggleSwitch>
             </VBox>
             <VBox alignment="CENTER"
                   spacing="4.0">
                 <Label fx:id="temperature"
                        text="Temperature (-15.0 °C)">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
                 </Label>
                 <HBox alignment="CENTER"
                       spacing="4.0">
@@ -225,16 +186,9 @@
                             mnemonicParsing="false">
                         <graphic>
                             <Label text="&#xF012C;"
-                                   textFill="#388E3C">
-                                <font>
-                                    <Font name="Material Design Icons"
-                                          size="18.0"/>
-                                </font>
+                                   styleClass="text-green-700,mdi,mdi-sm">
                             </Label>
                         </graphic>
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
                     </Button>
                 </HBox>
             </VBox>
@@ -244,9 +198,6 @@
             <VBox alignment="CENTER"
                   spacing="4.0">
                 <Label text="Exposure">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
                 </Label>
                 <Spinner fx:id="exposure"
                          editable="true"
@@ -260,39 +211,26 @@
                     <fx:define>
                         <ToggleGroup fx:id="exposureUnit"/>
                     </fx:define>
+                    <RadioButton text="m"
+                                 toggleGroup="$exposureUnit"
+                                 userData="MINUTES"
+                                 onAction="#updateExposureUnit">
+                    </RadioButton>
                     <RadioButton text="s"
                                  toggleGroup="$exposureUnit"
                                  userData="SECONDS"
                                  onAction="#updateExposureUnit">
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
-                        <font>
-                            <Font size="11.0"/>
-                        </font>
                     </RadioButton>
                     <RadioButton text="ms"
                                  toggleGroup="$exposureUnit"
                                  userData="MILLISECONDS"
                                  onAction="#updateExposureUnit">
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
-                        <font>
-                            <Font size="11.0"/>
-                        </font>
                     </RadioButton>
                     <RadioButton text="µs"
                                  toggleGroup="$exposureUnit"
                                  selected="true"
                                  userData="MICROSECONDS"
                                  onAction="#updateExposureUnit">
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
-                        <font>
-                            <Font size="11.0"/>
-                        </font>
                     </RadioButton>
                 </HBox>
             </VBox>
@@ -307,32 +245,14 @@
                                  toggleGroup="$exposureMode"
                                  selected="true"
                                  userData="SINGLE">
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
-                        <font>
-                            <Font size="11.0"/>
-                        </font>
                     </RadioButton>
                     <RadioButton text="Fixed"
                                  toggleGroup="$exposureMode"
                                  userData="FIXED">
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
-                        <font>
-                            <Font size="11.0"/>
-                        </font>
                     </RadioButton>
                     <RadioButton text="Continuous"
                                  toggleGroup="$exposureMode"
                                  userData="CONTINUOUS">
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
-                        <font>
-                            <Font size="11.0"/>
-                        </font>
                     </RadioButton>
                 </HBox>
                 <HBox alignment="CENTER"
@@ -340,9 +260,6 @@
                     <VBox alignment="CENTER_LEFT"
                           spacing="1.0">
                         <Label text="Delay (ms)">
-                            <font>
-                                <Font size="11.0"/>
-                            </font>
                         </Label>
                         <Spinner fx:id="exposureDelay"
                                  editable="true"
@@ -355,9 +272,6 @@
                     <VBox alignment="CENTER_LEFT"
                           spacing="1.0">
                         <Label text="Count">
-                            <font>
-                                <Font size="11.0"/>
-                            </font>
                         </Label>
                         <Spinner fx:id="exposureCount"
                                  editable="true"
@@ -375,16 +289,10 @@
             <VBox alignment="CENTER"
                   spacing="4.0">
                 <Label text="Subframe">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
                 </Label>
                 <ToggleSwitch fx:id="subFrame"
                               prefWidth="32.0"
                               prefHeight="32.0">
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
                 </ToggleSwitch>
                 <Button fx:id="fullsize"
                         onAction="#applyFullsize"
@@ -392,16 +300,9 @@
                         mnemonicParsing="false">
                     <graphic>
                         <Label text="&#xF0293;"
-                               textFill="#1976D2">
-                            <font>
-                                <Font name="Material Design Icons"
-                                      size="18.0"/>
-                            </font>
+                               styleClass="text-purple-700,mdi,mdi-sm">
                         </Label>
                     </graphic>
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
                 </Button>
             </VBox>
             <VBox alignment="CENTER"
@@ -410,9 +311,6 @@
                       spacing="4.0">
                     <VBox alignment="CENTER_LEFT">
                         <Label text="X">
-                            <font>
-                                <Font size="11.0"/>
-                            </font>
                         </Label>
                         <Spinner fx:id="frameX"
                                  editable="true"
@@ -424,9 +322,6 @@
                     </VBox>
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Y">
-                            <font>
-                                <Font size="11.0"/>
-                            </font>
                         </Label>
                         <Spinner fx:id="frameY"
                                  editable="true"
@@ -438,9 +333,6 @@
                     </VBox>
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Bin X">
-                            <font>
-                                <Font size="11.0"/>
-                            </font>
                         </Label>
                         <Spinner fx:id="binX"
                                  editable="true"
@@ -455,9 +347,6 @@
                       spacing="4.0">
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Width">
-                            <font>
-                                <Font size="11.0"/>
-                            </font>
                         </Label>
                         <Spinner fx:id="frameWidth"
                                  editable="true"
@@ -469,9 +358,6 @@
                     </VBox>
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Height">
-                            <font>
-                                <Font size="11.0"/>
-                            </font>
                         </Label>
                         <Spinner fx:id="frameHeight"
                                  editable="true"
@@ -483,9 +369,6 @@
                     </VBox>
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Bin Y">
-                            <font>
-                                <Font size="11.0"/>
-                            </font>
                         </Label>
                         <Spinner fx:id="binY"
                                  editable="true"
@@ -507,9 +390,6 @@
             <VBox alignment="CENTER_LEFT"
                   spacing="1.0">
                 <Label text="Frame Type">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
                 </Label>
                 <ChoiceBox fx:id="frameType"
                            value="$frameTypeInitialValue">
@@ -521,38 +401,23 @@
                             <FrameType fx:value="BIAS"/>
                         </FXCollections>
                     </items>
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
                 </ChoiceBox>
             </VBox>
             <VBox alignment="CENTER_LEFT"
                   spacing="1.0">
                 <Label text="Frame Format">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
                 </Label>
                 <ChoiceBox fx:id="frameFormat"
                            minWidth="96.0">
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
                 </ChoiceBox>
             </VBox>
             <VBox alignment="CENTER_LEFT"
                   spacing="1.0">
                 <Label text="Speed">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
                 </Label>
                 <ChoiceBox fx:id="speed"
                            minWidth="96.0"
                            disable="true">
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
                 </ChoiceBox>
             </VBox>
         </HBox>
@@ -561,9 +426,6 @@
             <VBox alignment="CENTER_LEFT"
                   spacing="1.0">
                 <Label text="Gain">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
                 </Label>
                 <Spinner fx:id="gain"
                          editable="true"
@@ -576,9 +438,6 @@
             <VBox alignment="CENTER_LEFT"
                   spacing="1.0">
                 <Label text="Offset">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
                 </Label>
                 <Spinner fx:id="offset"
                          editable="true"
@@ -597,16 +456,9 @@
                     text="Start">
                 <graphic>
                     <Label text="&#xF040A;"
-                           textFill="#388E3C">
-                        <font>
-                            <Font name="Material Design Icons"
-                                  size="18.0"/>
-                        </font>
+                           styleClass="text-green-700,mdi,mdi-sm">
                     </Label>
                 </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </Button>
             <Button fx:id="abortCapture"
                     onAction="#abortCapture"
@@ -614,37 +466,10 @@
                     text="Abort">
                 <graphic>
                     <Label text="&#xF04DB;"
-                           textFill="#D32F2F">
-                        <font>
-                            <Font name="Material Design Icons"
-                                  size="18.0"/>
-                        </font>
+                           styleClass="text-red-700,mdi,mdi-sm">
                     </Label>
                 </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </Button>
-        </HBox>
-        <HBox alignment="CENTER_LEFT">
-            <VBox.margin>
-                <Insets top="8.0"/>
-            </VBox.margin>
-            <Label fx:id="status"
-                   text="idle">
-                <graphic>
-                    <Label text="&#xF02FC;"
-                           textFill="#1976D2">
-                        <font>
-                            <Font name="Material Design Icons"
-                                  size="18.0"/>
-                        </font>
-                    </Label>
-                </graphic>
-                <font>
-                    <Font size="11.0"/>
-                </font>
-            </Label>
         </HBox>
     </VBox>
 </AnchorPane>

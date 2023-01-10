@@ -247,11 +247,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         if (sizeChanged(value, true)) {
             draw()
 
-            if (camera != null) {
-                preferences.double("imageViewer.equipment.${camera.name}.screen.width", value)
-            } else {
-                preferences.double("imageViewer.screen.width", value)
-            }
+            camera?.also { preferences.double("imageViewer.equipment.${it.name}.screen.width", value) }
         }
     }
 
@@ -259,11 +255,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         if (sizeChanged(value, false)) {
             draw()
 
-            if (camera != null) {
-                preferences.double("imageViewer.equipment.${camera.name}.screen.height", value)
-            } else {
-                preferences.double("imageViewer.screen.height", value)
-            }
+            camera?.also { preferences.double("imageViewer.equipment.${it.name}.screen.height", value) }
         }
     }
 
@@ -296,11 +288,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
         val factor = fits.width.toDouble() / fits.height.toDouble()
 
-        val defaultWidth = (if (camera != null) preferences.double("imageViewer.equipment.${camera.name}.screen.width")
-        else preferences.double("imageViewer.screen.width")) ?: (screenBounds.width / 2)
-
-        val defaultHeight = (if (camera != null) preferences.double("imageViewer.equipment.${camera.name}.screen.height")
-        else preferences.double("imageViewer.screen.height")) ?: (screenBounds.height / 2)
+        val defaultWidth = camera?.let { preferences.double("imageViewer.equipment.${it.name}.screen.width") } ?: (screenBounds.width / 2)
+        val defaultHeight = camera?.let { preferences.double("imageViewer.equipment.${it.name}.screen.height") } ?: (screenBounds.height / 2)
 
         val sceneSize = if (factor >= 1.0)
             if (defaultSize) defaultWidth
