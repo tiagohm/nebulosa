@@ -44,7 +44,7 @@ internal abstract class AbstractDevice(
                 handler.fireOnEventReceived(DevicePropertyDeleted(this, property))
             }
             is Message -> {
-                val text = "[%s]: %s\n".format(message.timestamp, message.message)
+                val text = "[%s]: %s".format(message.timestamp, message.message)
                 messages.addFirst(text)
                 handler.fireOnEventReceived(DeviceMessageReceived(this, text))
             }

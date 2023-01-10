@@ -110,6 +110,8 @@ class DeviceProtocolHandler : INDIProtocolParser {
     internal fun handleMessage(client: INDIClient, message: INDIProtocol) {
         if (closed) return
 
+        if (message.device in notRegisteredDevices) return
+
         if (message is DefTextVector) {
             if (message.name == "DRIVER_INFO") {
                 val executable = message.elements.first { it.name == "DRIVER_EXEC" }.value
@@ -128,35 +130,32 @@ class DeviceProtocolHandler : INDIProtocolParser {
                 }
 
                 if (executable in Mount.DRIVERS) {
+                    registered = true
+
                     if (message.device !in mounts) {
                         val mount = MountBase(client, this, message.device)
                         mounts[message.device] = mount
                         fireOnEventReceived(MountAttached(mount))
-                        registered = true
-                    } else {
-                        registered = true
                     }
                 }
 
                 if (executable in FilterWheel.DRIVERS) {
+                    registered = true
+
                     if (message.device !in filterWheels) {
                         val filterWheel = FilterWheelBase(client, this, message.device)
                         filterWheels[message.device] = filterWheel
                         fireOnEventReceived(FilterWheelAttached(filterWheel))
-                        registered = true
-                    } else {
-                        registered = true
                     }
                 }
 
                 if (executable in Focuser.DRIVERS) {
+                    registered = true
+
                     if (message.device !in focusers) {
                         val focuser = FocuserBase(client, this, message.device)
                         focusers[message.device] = focuser
                         fireOnEventReceived(FocuserAttached(focuser))
-                        registered = true
-                    } else {
-                        registered = true
                     }
                 }
 

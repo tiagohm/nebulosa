@@ -22,18 +22,20 @@ import nebulosa.indi.protocol.PropertyPermission
 import nebulosa.indi.protocol.SwitchRule
 import org.koin.core.component.inject
 import java.util.*
+import kotlin.math.min
 
 class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
     private val equipmentManager by inject<EquipmentManager>()
 
     @FXML private lateinit var devices: ChoiceBox<Device>
-    @FXML private lateinit var groups: TabPane
+    @FXML private lateinit var tabs: TabPane
     @FXML private lateinit var logs: TextArea
 
-    private val cacheProperties = HashMap<Device, HashMap<String, HBox>>()
+    private val cacheProperties = HashMap<Device, HashMap<String, GroupPropertyVector>>()
+    private val groups = ArrayList<Group>()
     private val subscribers = arrayOfNulls<Disposable>(2)
-    private val logText = StringBuilder(100 * 150)
+    private val logText = StringBuilder(1000 * 150)
 
     init {
         title = "INDI Panel Control"
@@ -79,28 +81,27 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
     private fun onEvent(event: DevicePropertyEvent) {
         when (event) {
             is DevicePropertyChanged -> Platform.runLater {
-                synchronized(cacheProperties) {
+                synchronized(this) {
                     val container = cacheProperties[event.device]!![event.property.name]
 
                     if (container != null) {
-                        container.updateProperty(event.property)
+                        container.update(event.property)
                     } else {
-                        val tab = groups.tabs
-                            .firstOrNull { it.userData == event.property.group }
+                        val group = groups.firstOrNull { it.name == event.property.group }
 
-                        if (tab != null) {
-                            val content = (tab.content as ScrollPane).content as VBox
-                            content.makeGroupProperty(event.device, event.property)
+                        if (group != null) {
+                            group.add(event.property)
                         } else {
-                            groups.makeGroup(event.device, event.property.group, listOf(event.property))
+                            tabs.makeGroup(event.property.group, listOf(event.property))
                         }
                     }
                 }
             }
             is DevicePropertyDeleted -> Platform.runLater {
-                synchronized(cacheProperties) {
+                synchronized(this) {
                     val container = cacheProperties[event.device]!![event.property.name]
-                    container?.deleteProperty(event.property)
+                    container?.delete()
+                    cacheProperties[event.device]!!.remove(event.property.name)
                 }
             }
         }
@@ -109,7 +110,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
     private fun onEvent(event: DeviceMessageReceived) {
         Platform.runLater {
             synchronized(logText) {
-                logText.insert(0, event.message)
+                logText.insert(0, "${event.message}\n")
                 logs.text = logText.toString()
             }
         }
@@ -117,18 +118,19 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
     private fun populateDevices() {
         val device = devices.value
-        val devices = ArrayList<Device>()
-        devices.addAll(equipmentManager.attachedCameras)
-        devices.addAll(equipmentManager.attachedMounts)
-        devices.addAll(equipmentManager.attachedFilterWheels)
-        devices.addAll(equipmentManager.attachedFocusers)
-        devices.sortBy { it.name }
-        devices.forEach { if (it !in cacheProperties) cacheProperties[it] = HashMap(256) }
+        val attachedDevices = ArrayList<Device>()
+        attachedDevices.addAll(equipmentManager.attachedCameras)
+        attachedDevices.addAll(equipmentManager.attachedMounts)
+        attachedDevices.addAll(equipmentManager.attachedFilterWheels)
+        attachedDevices.addAll(equipmentManager.attachedFocusers)
+        attachedDevices.sortBy { it.name }
+        attachedDevices.forEach { if (it !in cacheProperties) cacheProperties[it] = HashMap(256) }
 
-        this.devices.items.setAll(devices)
-
-        if (device in devices) this.devices.value = device
-        else this.devices.selectionModel.selectFirst()
+        Platform.runLater {
+            devices.items.setAll(attachedDevices)
+            if (device in attachedDevices) devices.value = device
+            else devices.selectionModel.selectFirst()
+        }
     }
 
     private fun makePanelControl() {
@@ -136,7 +138,8 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
         synchronized(cacheProperties) {
             cacheProperties[device]!!.clear()
-            groups.tabs.clear()
+            tabs.tabs.clear()
+            groups.clear()
 
             val groupedProperties = TreeMap<String, MutableList<PropertyVector<*, *>>>(GroupNameComparator)
 
@@ -147,355 +150,380 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
             }
 
             groupedProperties
-                .onEach { groups.makeGroup(device, it.key, it.value) }
+                .onEach { tabs.makeGroup(it.key, it.value) }
         }
 
         synchronized(logText) {
             logText.clear()
-            device.messages.forEach(logText::append)
+            device.messages.forEach(logText::appendLine)
             logs.text = logText.toString()
         }
 
         System.gc()
     }
 
-    private fun TabPane.makeGroup(device: Device, name: String, properties: List<PropertyVector<*, *>>) {
+    private fun TabPane.makeGroup(name: String, vectors: List<PropertyVector<*, *>>) {
         val tab = Tab()
 
         tab.text = name
         tab.isClosable = false
-        tab.userData = name
 
-        val container = VBox()
-
-        container.spacing = 8.0
-        container.padding = PADDING_16
-
-        for (property in properties) {
-            container.makeGroupProperty(device, property)
-        }
-
-        val scroll = ScrollPane(container)
+        val group = Group(tab, name, vectors)
+        val scroll = ScrollPane(group)
         tab.content = scroll
 
         tabs.add(tab)
+        groups.add(group)
     }
 
-    private fun VBox.makeGroupProperty(device: Device, property: PropertyVector<*, *>) {
-        val propertyContainer = HBox()
-        propertyContainer.alignment = Pos.CENTER_LEFT
-        propertyContainer.spacing = 2.0
-        propertyContainer.makeProperty(property)
-        propertyContainer.styleClass.addAll("vector")
-        children.add(propertyContainer)
-        cacheProperties[device]!![property.name] = propertyContainer
-    }
+    private inner class Group(
+        @JvmField val tab: Tab,
+        @JvmField val name: String,
+        @JvmField val vectors: List<PropertyVector<*, *>>,
+    ) : VBox() {
 
-    private fun Label.makeState(vector: PropertyVector<*, *>) {
-        val icon = Label(MaterialIcon.CIRCLE)
-        icon.textFill = STATE_COLORS[vector.state.ordinal]
-        icon.font = MATERIAL_DESIGN_ICONS_24
-        graphic = icon
-    }
+        init {
+            spacing = 8.0
+            alignment = Pos.CENTER_LEFT
+            styleClass.addAll("group")
 
-    private fun HBox.makeProperty(vector: PropertyVector<*, *>) {
-        children.clear()
+            vectors.forEach(::add)
+        }
 
-        userData = vector
-
-        val name = Label()
-        name.text = "${vector.label}:"
-        name.makeState(vector)
-        name.minWidth = 192.0
-        name.maxWidth = 192.0
-        name.prefWidth = 192.0
-        name.font = SYSTEM_REGULAR_11
-        children.add(name)
-
-        when (vector) {
-            is SwitchPropertyVector -> makeSwitchProperty(vector)
-            is TextPropertyVector -> makeTextProperty(vector)
-            is NumberPropertyVector -> makeNumberProperty(vector)
+        fun add(vector: PropertyVector<*, *>) {
+            val device = devices.value!!
+            val container = GroupPropertyVector(vector)
+            children.add(container)
+            cacheProperties[device]!![vector.name] = container
         }
     }
 
-    private fun HBox.updateProperty(vector: PropertyVector<*, *>) {
-        if (!isVisible) {
+    private inner class GroupPropertyVector(vector: PropertyVector<*, *>) : HBox() {
+
+        init {
+            alignment = Pos.CENTER_LEFT
+            styleClass.addAll("vector")
+
+            // Label.
+            val name = Label("${vector.label}:").withState(vector)
+            name.font = SYSTEM_REGULAR_11
+            name.prefWidth = 192.0
+            name.minWidth = 192.0
+            name.maxWidth = 192.0
+            children.add(name)
+
+            // Properties.
+            val properties = GroupPropertyList(vector)
+            children.add(properties)
+
+            // Send button.
+            if (vector !is SwitchPropertyVector && vector.perm != PropertyPermission.RO) {
+                val send = Button("Send")
+                send.cursor = Cursor.HAND
+                send.minHeight = 22.0
+
+                setMargin(send, PADDING_HORIZONTAL_16)
+
+                send.setOnAction {
+                    val p = properties.children[0]
+
+                    if (p is NumberGroupProperty) {
+                        sendNumberPropertyVectorMessage(p.vector, p.inputs())
+                    } else if (p is TextGroupProperty) {
+                        sendTextPropertyVectorMessage(p.vector, p.inputs())
+                    }
+                }
+
+                val icon = Label(MaterialIcon.SEND)
+                icon.textFill = MaterialColor.BLUE_700
+                icon.font = MATERIAL_DESIGN_ICONS_18
+                send.graphic = icon
+
+                children.add(send)
+            }
+        }
+
+        fun update(vector: PropertyVector<*, *>) {
             isVisible = true
             isManaged = true
+
+            val label = children[0] as Label
+            label.updateState(vector)
+
+            val properties = children[1] as GroupPropertyList
+            properties.update(vector)
+
+            // TODO: Can permission be updated?
         }
 
-        when (vector) {
-            is SwitchPropertyVector -> updateSwitchProperty(vector)
-            is TextPropertyVector -> updateTextProperty(vector)
-            is NumberPropertyVector -> updateNumberProperty(vector)
-        }
-    }
+        fun delete() {
+            isVisible = false
+            isManaged = false
 
-    private fun HBox.deleteProperty(vector: PropertyVector<*, *>) {
-        isVisible = false
-        isManaged = false
-    }
+            val group = parent as Group
+            val shouldBeRemoved = group.children.all { !it.isVisible }
 
-    // SWITCH.
-
-    private fun HBox.makeSwitchProperty(vector: SwitchPropertyVector) {
-        for ((_, property) in vector) {
-            makeSwitchButton(vector, property)
-        }
-    }
-
-    private fun HBox.makeSwitchButton(vector: SwitchPropertyVector, property: SwitchProperty) {
-        val button = Button(property.label)
-        button.userData = property.name
-        button.cursor = Cursor.HAND
-        button.font = SYSTEM_BOLD_11
-        button.isDisable = vector.perm == PropertyPermission.RO
-        button.textFill = if (property.value) MaterialColor.GREEN_700 else MaterialColor.GREY_800
-        button.setOnAction { sendSwitchPropertyVectorMessage(vector, property) }
-        children.add(button)
-    }
-
-    private fun HBox.updateSwitchProperty(vector: SwitchPropertyVector) {
-        for ((_, property) in vector) {
-            val button = children.firstOrNull { it.userData == property.name } as? Button
-
-            if (button == null) {
-                makeSwitchButton(vector, property)
-                continue
+            if (shouldBeRemoved) {
+                group.tab.tabPane?.tabs?.remove(group.tab)
+                groups.remove(group)
             }
+        }
 
-            button.isDisable = vector.perm == PropertyPermission.RO
-            button.textFill = if (property.value) MaterialColor.GREEN_700 else MaterialColor.GREY_800
+        private fun sendNumberPropertyVectorMessage(
+            vector: NumberPropertyVector,
+            data: Array<Pair<String, Double>>,
+        ) {
+            if (vector.perm == PropertyPermission.RO) return
+
+            val device = devices.value!!
+            device.sendNewNumber(vector.name, *data)
+        }
+
+        private fun sendTextPropertyVectorMessage(
+            vector: TextPropertyVector,
+            data: Array<Pair<String, String>>,
+        ) {
+            if (vector.perm == PropertyPermission.RO) return
+
+            val device = devices.value!!
+            device.sendNewText(vector.name, *data)
         }
     }
 
-    private fun sendSwitchPropertyVectorMessage(
-        vector: SwitchPropertyVector,
-        property: SwitchProperty,
-    ) {
-        if (vector.perm == PropertyPermission.RO) return
+    private inner class GroupPropertyList(vector: PropertyVector<*, *>) : VBox() {
 
-        val device = devices.value ?: return
+        init {
+            spacing = 4.0
+            alignment = Pos.CENTER_LEFT
 
-        if (vector.rule == SwitchRule.ANY_OF_MANY) {
-            device.sendNewSwitch(vector.name, property.name to !property.value)
-        } else {
-            device.sendNewSwitch(vector.name, property.name to true)
-        }
-    }
-
-    // TEXT.
-
-    private fun HBox.makeTextProperty(vector: TextPropertyVector) {
-        val vectorContainer = VBox()
-
-        vectorContainer.spacing = 2.0
-        vectorContainer.alignment = Pos.CENTER
-        vectorContainer.userData = vector.name
-
-        val inputs = ArrayList<TextField>(vector.size)
-
-        // One property per line.
-        for ((_, property) in vector) {
-            val input = vectorContainer.makeTextFields(vector, property) ?: continue
-            inputs.add(input)
-        }
-
-        children.add(vectorContainer)
-
-        // Send button.
-        if (vector.perm != PropertyPermission.RO) {
-            val send = Button("Send")
-            send.cursor = Cursor.HAND
-            send.minHeight = 22.0
-            HBox.setMargin(send, PADDING_HORIZONTAL_16)
-            send.setOnAction {
-                val data = inputs.map { it.userData as String to it.text }
-                sendTextPropertyVectorMessage(vector, data)
+            when (vector) {
+                is SwitchPropertyVector -> children.add(SwitchGroupProperty(vector))
+                is NumberPropertyVector -> children.add(NumberGroupProperty(vector))
+                is TextPropertyVector -> children.add(TextGroupProperty(vector))
             }
-
-            val icon = Label(MaterialIcon.SEND)
-            icon.textFill = MaterialColor.BLUE_700
-            icon.font = MATERIAL_DESIGN_ICONS_18
-            send.graphic = icon
-
-            children.add(send)
-        }
-    }
-
-    private fun VBox.makeTextFields(vector: TextPropertyVector, property: TextProperty): TextField? {
-        val propertyContainer = HBox()
-
-        propertyContainer.spacing = 4.0
-        propertyContainer.alignment = Pos.CENTER_LEFT
-        propertyContainer.userData = property.name
-
-        // Label.
-        val label = Label("${property.label}:")
-        label.font = SYSTEM_BOLD_11
-        propertyContainer.children.add(label)
-
-        // Value.
-        val value = TextField(property.value)
-        value.isDisable = true
-        value.userData = property.name
-        propertyContainer.children.add(value)
-
-        // Input for new value.
-        val input = if (vector.perm != PropertyPermission.RO) {
-            val input = TextField(property.value)
-            input.userData = property.name
-            propertyContainer.children.add(input)
-            input
-        } else {
-            null
         }
 
-        children.add(propertyContainer)
-
-        return input
-    }
-
-    private fun HBox.updateTextProperty(vector: TextPropertyVector) {
-        val vectorContainer = children
-            .firstOrNull { it.userData == vector.name } as? VBox ?: return
-
-        for ((_, property) in vector) {
-            val propertyContainer = vectorContainer.children
-                .firstOrNull { it.userData == property.name } as? HBox
-
-            if (propertyContainer == null) {
-                vectorContainer.makeTextFields(vector, property)
-                continue
+        fun update(vector: PropertyVector<*, *>) {
+            when (vector) {
+                is SwitchPropertyVector -> (children[0] as SwitchGroupProperty).update(vector)
+                is NumberPropertyVector -> (children[0] as NumberGroupProperty).update(vector)
+                is TextPropertyVector -> (children[0] as TextGroupProperty).update(vector)
             }
-
-            val value = propertyContainer.children
-                .firstOrNull { it.userData == property.name } as? TextField ?: continue
-
-            value.text = property.value
         }
     }
 
-    private fun sendTextPropertyVectorMessage(
-        vector: TextPropertyVector,
-        data: List<Pair<String, String>>,
-    ) {
-        if (vector.perm == PropertyPermission.RO) return
+    private inner class SwitchGroupProperty(vector: SwitchPropertyVector) : HBox() {
 
-        val device = devices.value ?: return
-        device.sendNewText(vector.name, *data.toTypedArray())
-    }
+        init {
+            spacing = 2.0
+            alignment = Pos.CENTER_LEFT
 
-    // NUMBER.
-
-    private fun HBox.makeNumberProperty(vector: NumberPropertyVector) {
-        val vectorContainer = VBox()
-
-        vectorContainer.spacing = 2.0
-        vectorContainer.alignment = Pos.CENTER
-        vectorContainer.userData = vector.name
-
-        val inputs = ArrayList<TextField>(vector.size)
-
-        // One property per line.
-        for ((_, property) in vector) {
-            val input = vectorContainer.makeNumberFields(vector, property) ?: continue
-            inputs.add(input)
+            vector.values.forEach { makeButton(vector, it) }
         }
 
-        children.add(vectorContainer)
+        fun update(vector: SwitchPropertyVector) {
+            val size = min(children.size, vector.values.size)
+            val property = vector.values.iterator()
 
-        // Send button.
-        if (vector.perm != PropertyPermission.RO) {
-            val send = Button("Send")
-            send.cursor = Cursor.HAND
-            send.minHeight = 22.0
-            HBox.setMargin(send, PADDING_HORIZONTAL_16)
-            send.setOnAction {
-                val data = inputs.map { it.userData as String to (it.text.trim().toDoubleOrNull() ?: 0.0) }
-                sendNumberPropertyVectorMessage(vector, data)
+            repeat(size) { (children[it] as Button).updateButton(vector, property.next()) }
+            repeat(vector.size - children.size) { makeButton(vector, property.next()) }
+            repeat(children.size - vector.size) { children.removeAt(children.size - 1) }
+        }
+
+        private fun makeButton(
+            vector: SwitchPropertyVector,
+            property: SwitchProperty,
+        ) {
+            val button = Button(property.label)
+            button.cursor = Cursor.HAND
+            button.font = SYSTEM_BOLD_11
+            button.setOnAction { sendSwitchPropertyVectorMessage(vector, property) }
+            button.updateButton(vector, property)
+            children.add(button)
+        }
+
+        private fun Button.updateButton(
+            vector: SwitchPropertyVector,
+            property: SwitchProperty,
+        ) {
+            isDisable = vector.perm == PropertyPermission.RO
+            text = property.label
+            textFill = if (property.value) MaterialColor.GREEN_700 else MaterialColor.GREY_800
+        }
+
+        private fun sendSwitchPropertyVectorMessage(
+            vector: SwitchPropertyVector,
+            property: SwitchProperty,
+        ) {
+            if (vector.perm == PropertyPermission.RO) return
+
+            val device = devices.value!!
+
+            if (vector.rule == SwitchRule.ANY_OF_MANY) {
+                device.sendNewSwitch(vector.name, property.name to !property.value)
+            } else {
+                device.sendNewSwitch(vector.name, property.name to true)
             }
-
-            val icon = Label(MaterialIcon.SEND)
-            icon.textFill = MaterialColor.BLUE_700
-            icon.font = MATERIAL_DESIGN_ICONS_18
-            send.graphic = icon
-
-            children.add(send)
         }
     }
 
-    private fun VBox.makeNumberFields(vector: NumberPropertyVector, property: NumberProperty): TextField? {
-        val propertyContainer = HBox()
+    private inner class NumberGroupProperty(@Volatile @JvmField var vector: NumberPropertyVector) : VBox() {
 
-        propertyContainer.spacing = 4.0
-        propertyContainer.alignment = Pos.CENTER_LEFT
-        propertyContainer.userData = property.name
+        init {
+            spacing = 4.0
+            alignment = Pos.CENTER_LEFT
 
-        // Label.
-        val label = Label("${property.label}:")
-        label.font = SYSTEM_BOLD_11
-        propertyContainer.children.add(label)
-
-        // Value.
-        val value = TextField("%.8f".format(property.value))
-        value.isDisable = true
-        value.userData = property.name
-        propertyContainer.children.add(value)
-
-        // Input for new value.
-        val input = if (vector.perm != PropertyPermission.RO) {
-            val input = TextField("%.08f".format(property.value))
-            input.addEventFilter(KeyEvent.KEY_TYPED) {
-                try {
-                    val text = "${input.text}${it.character}".trim()
-                    if (text == "-") return@addEventFilter
-                    text.toDouble()
-                } catch (_: NumberFormatException) {
-                    it.consume()
-                }
-            }
-            input.userData = property.name
-            propertyContainer.children.add(input)
-            input
-        } else {
-            null
+            update(vector)
         }
 
-        children.add(propertyContainer)
+        fun update(vector: NumberPropertyVector) {
+            this.vector = vector
 
-        return input
+            val size = min(children.size, vector.values.size)
+            val property = vector.values.iterator()
+
+            repeat(size) { (children[it] as NumberGroupPropertyItem).update(vector, property.next()) }
+            repeat(vector.size - children.size) { children.add(NumberGroupPropertyItem(vector, property.next())) }
+            repeat(children.size - vector.size) { children.removeAt(children.size - 1) }
+        }
+
+        fun inputs() = Array(children.size) {
+            val item = children[it] as NumberGroupPropertyItem
+            item.property.name to (item.input!!.text.trim().toDoubleOrNull() ?: 0.0)
+        }
     }
 
-    private fun HBox.updateNumberProperty(vector: NumberPropertyVector) {
-        val vectorContainer = children
-            .firstOrNull { it.userData == vector.name } as? VBox ?: return
+    private inner class NumberGroupPropertyItem(
+        @Volatile @JvmField var vector: NumberPropertyVector,
+        @Volatile @JvmField var property: NumberProperty,
+    ) : HBox() {
 
-        for ((_, property) in vector) {
-            val propertyContainer = vectorContainer.children
-                .firstOrNull { it.userData == property.name } as? HBox
+        @JvmField val input: TextField?
 
-            if (propertyContainer == null) {
-                vectorContainer.makeNumberFields(vector, property)
-                continue
+        init {
+            spacing = 2.0
+            alignment = Pos.CENTER_LEFT
+
+            // Label.
+            val label = Label("${property.label}:")
+            label.minWidth = 175.0
+            label.maxWidth = 175.0
+            label.prefWidth = 175.0
+            label.font = SYSTEM_BOLD_11
+            children.add(label)
+
+            // Value.
+            val value = TextField("%.8f".format(property.value))
+            value.isDisable = true
+            children.add(value)
+
+            // Input.
+            if (vector.perm != PropertyPermission.RO) {
+                input = TextField("%.08f".format(property.value))
+                input.addEventFilter(KeyEvent.KEY_TYPED, ::onKeyTyped)
+                children.add(input)
+            } else {
+                input = null
             }
+        }
 
-            val value = propertyContainer.children
-                .firstOrNull { it.userData == property.name } as? TextField ?: continue
+        fun update(
+            vector: NumberPropertyVector,
+            property: NumberProperty,
+        ) {
+            this.vector = vector
+            this.property = property
 
+            val label = children[0] as Label
+            label.text = "${property.label}:"
+
+            val value = children[1] as TextField
             value.text = "%.8f".format(property.value)
         }
+
+        private fun onKeyTyped(event: KeyEvent) {
+            try {
+                val text = "${input!!.text}${event.character}".trim()
+                if (text == "-") return
+                text.toDouble()
+            } catch (_: NumberFormatException) {
+                event.consume()
+            }
+        }
     }
 
-    private fun sendNumberPropertyVectorMessage(
-        vector: NumberPropertyVector,
-        data: List<Pair<String, Double>>,
-    ) {
-        if (vector.perm == PropertyPermission.RO) return
+    private inner class TextGroupProperty(@Volatile @JvmField var vector: TextPropertyVector) : VBox() {
 
-        val device = devices.value ?: return
-        device.sendNewNumber(vector.name, *data.toTypedArray())
+        init {
+            spacing = 4.0
+            alignment = Pos.CENTER_LEFT
+
+            update(vector)
+        }
+
+        fun update(vector: TextPropertyVector) {
+            this.vector = vector
+
+            val size = min(children.size, vector.values.size)
+            val property = vector.values.iterator()
+
+            repeat(size) { (children[it] as TextGroupPropertyItem).update(vector, property.next()) }
+            repeat(vector.size - children.size) { children.add(TextGroupPropertyItem(vector, property.next())) }
+            repeat(children.size - vector.size) { children.removeAt(children.size - 1) }
+        }
+
+        fun inputs() = Array(children.size) {
+            val item = children[it] as TextGroupPropertyItem
+            item.property.name to (item.input!!.text?.trim() ?: "")
+        }
+    }
+
+    private inner class TextGroupPropertyItem(
+        @Volatile @JvmField var vector: TextPropertyVector,
+        @Volatile @JvmField var property: TextProperty,
+    ) : HBox() {
+
+        @JvmField val input: TextField?
+
+        init {
+            spacing = 2.0
+            alignment = Pos.CENTER_LEFT
+
+            // Label.
+            val label = Label("${property.label}:")
+            label.minWidth = 175.0
+            label.maxWidth = 175.0
+            label.prefWidth = 175.0
+            label.font = SYSTEM_BOLD_11
+            children.add(label)
+
+            // Value.
+            val value = TextField(property.value)
+            value.isDisable = true
+            children.add(value)
+
+            // Input.
+            if (vector.perm != PropertyPermission.RO) {
+                input = TextField(property.value)
+                children.add(input)
+            } else {
+                input = null
+            }
+        }
+
+        fun update(
+            vector: TextPropertyVector,
+            property: TextProperty,
+        ) {
+            this.vector = vector
+            this.property = property
+
+            val label = children[0] as Label
+            label.text = "${property.label}:"
+
+            val value = children[1] as TextField
+            value.text = property.value.trim()
+        }
     }
 
     private object GroupNameComparator : Comparator<String> {
@@ -510,7 +538,6 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
     companion object {
 
-        @JvmStatic private val PADDING_16 = Insets(16.0)
         @JvmStatic private val PADDING_HORIZONTAL_16 = Insets(0.0, 16.0, 0.0, 16.0)
         @JvmStatic private val SYSTEM_REGULAR_11 = Font("System Regular", 11.0)
         @JvmStatic private val SYSTEM_BOLD_11 = Font("System Bold", 11.0)
@@ -519,5 +546,18 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
         @JvmStatic private val STATE_COLORS =
             arrayOf(MaterialColor.GREY_400, MaterialColor.GREEN_400, MaterialColor.BLUE_400, MaterialColor.RED_400)
+
+        @JvmStatic
+        private fun Label.withState(vector: PropertyVector<*, *>) = apply {
+            val icon = Label(MaterialIcon.CIRCLE)
+            icon.font = MATERIAL_DESIGN_ICONS_24
+            graphic = icon
+            updateState(vector)
+        }
+
+        @JvmStatic
+        private fun Label.updateState(vector: PropertyVector<*, *>) = apply {
+            (graphic as Label).textFill = STATE_COLORS[vector.state.ordinal]
+        }
     }
 }

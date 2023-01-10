@@ -73,7 +73,7 @@ internal open class CameraBase(
                 when (message.name) {
                     "CCD_COOLER" -> {
                         hasCoolerControl = true
-                        isCoolerOn = message["COOLER_ON"]!!.isOn()
+                        isCoolerOn = message["COOLER_ON"]?.isOn() ?: false
 
                         handler.fireOnEventReceived(CameraCoolerControlChanged(this))
                         handler.fireOnEventReceived(CameraCoolerChanged(this))
@@ -281,7 +281,7 @@ internal open class CameraBase(
     }
 
     override fun cooler(enable: Boolean) {
-        if (hasCoolerControl) {
+        if (hasCoolerControl && isCoolerOn != enable) {
             sendNewSwitch("CCD_COOLER", "COOLER_ON" to enable, "COOLER_OFF" to !enable)
         }
     }

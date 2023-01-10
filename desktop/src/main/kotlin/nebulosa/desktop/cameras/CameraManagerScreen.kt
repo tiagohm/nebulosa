@@ -106,7 +106,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         cameraMenuIcon.disableProperty().bind(isNotConnectedOrCapturing)
 
         cooler.disableProperty().bind(isNotConnectedOrCapturing or !equipmentManager.selectedCamera.hasCooler)
-        cooler.selectedProperty().bind(equipmentManager.selectedCamera.isCoolerOn)
+        equipmentManager.selectedCamera.isCoolerOn.on(cooler::setSelected)
         cooler.selectedProperty().on { equipmentManager.selectedCamera.get().cooler(it) }
 
         dewHeater.disableProperty().bind(isNotConnectedOrCapturing or !equipmentManager.selectedCamera.hasDewHeater)
