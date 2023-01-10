@@ -16,6 +16,7 @@
             minWidth="-Infinity"
             prefHeight="470.0"
             prefWidth="402.0"
+            stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="8.0"

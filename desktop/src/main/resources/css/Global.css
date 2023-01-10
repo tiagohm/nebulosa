@@ -1,0 +1,104 @@
+.bold {
+    -fx-font-weight: bold;
+}
+
+.text-xs {
+    -fx-font-size: 7px;
+}
+
+.text-sm {
+    -fx-font-size: 9px;
+}
+
+.text-md {
+    -fx-font-size: 11px;
+}
+
+.p-0 {
+    -fx-padding: 0px;
+}
+
+.p-xs {
+    -fx-padding: 1px;
+}
+
+.p-sm {
+    -fx-padding: 4px;
+}
+
+.p-md {
+    -fx-padding: 8px;
+}
+
+.p-lg {
+    -fx-padding: 16px;
+}
+
+.px-xs {
+    -fx-padding: 0px 1px 0px 1px;
+}
+
+.px-sm {
+    -fx-padding: 0px 4px 0px 4px;
+}
+
+.px-md {
+    -fx-padding: 0px 8px 0px 8px;
+}
+
+.px-lg {
+    -fx-padding: 0px 16px 0px 16px;
+}
+
+.py-xs {
+    -fx-padding: 1px 0px 1px 0px;
+}
+
+.py-sm {
+    -fx-padding: 4px 0px 4px 0px;
+}
+
+.py-md {
+    -fx-padding: 8px 0px 8px 0px;
+}
+
+.py-lg {
+    -fx-padding: 16px 0px 16px 0px;
+}
+
+.s-xs {
+    -fx-spacing: 1px;
+}
+
+.s-sm {
+    -fx-spacing: 4px;
+}
+
+.s-md {
+    -fx-spacing: 8px;
+}
+
+.s-lg {
+    -fx-spacing: 16px;
+}
+
+.cursor-hand {
+    -fx-cursor: 'hand';
+}
+
+.mdi {
+    -fx-font-name: 'Material Design Icons';
+    -fx-font-size: 24px;
+}
+
+.mdi.mdi-xs {
+    -fx-font-size: 12px;
+}
+
+.mdi.mdi-sm {
+    -fx-font-size: 18px;
+}
+
+.mdi.mdi-md {
+    -fx-font-size: 24px;
+}

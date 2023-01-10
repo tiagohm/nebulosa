@@ -15,6 +15,7 @@
             minWidth="-Infinity"
             prefHeight="175.0"
             prefWidth="340.0"
+            stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox alignment="TOP_CENTER"

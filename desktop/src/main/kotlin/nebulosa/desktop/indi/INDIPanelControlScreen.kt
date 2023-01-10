@@ -3,14 +3,12 @@ package nebulosa.desktop.indi
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.application.Platform
 import javafx.fxml.FXML
-import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Cursor
 import javafx.scene.control.*
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
-import javafx.scene.text.Font
 import nebulosa.desktop.core.beans.onZero
 import nebulosa.desktop.core.scene.MaterialColor
 import nebulosa.desktop.core.scene.MaterialIcon
@@ -81,7 +79,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
     private fun onEvent(event: DevicePropertyEvent) {
         when (event) {
             is DevicePropertyChanged -> Platform.runLater {
-                synchronized(this) {
+                synchronized(cacheProperties) {
                     val container = cacheProperties[event.device]!![event.property.name]
 
                     if (container != null) {
@@ -98,7 +96,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
                 }
             }
             is DevicePropertyDeleted -> Platform.runLater {
-                synchronized(this) {
+                synchronized(cacheProperties) {
                     val container = cacheProperties[event.device]!![event.property.name]
                     container?.delete()
                     cacheProperties[event.device]!!.remove(event.property.name)
@@ -202,11 +200,11 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
         init {
             alignment = Pos.CENTER_LEFT
-            styleClass.addAll("vector")
+            styleClass.addAll("vector", "s-md")
 
             // Label.
             val name = Label("${vector.label}:").withState(vector)
-            name.font = SYSTEM_REGULAR_11
+            name.styleClass.add("text-md")
             name.prefWidth = 192.0
             name.minWidth = 192.0
             name.maxWidth = 192.0
@@ -220,9 +218,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
             if (vector !is SwitchPropertyVector && vector.perm != PropertyPermission.RO) {
                 val send = Button("Send")
                 send.cursor = Cursor.HAND
-                send.minHeight = 22.0
-
-                setMargin(send, PADDING_HORIZONTAL_16)
+                send.minHeight = 26.0
 
                 send.setOnAction {
                     val p = properties.children[0]
@@ -236,7 +232,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
                 val icon = Label(MaterialIcon.SEND)
                 icon.textFill = MaterialColor.BLUE_700
-                icon.font = MATERIAL_DESIGN_ICONS_18
+                icon.styleClass.addAll("mdi", "mdi-sm")
                 send.graphic = icon
 
                 children.add(send)
@@ -336,7 +332,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         ) {
             val button = Button(property.label)
             button.cursor = Cursor.HAND
-            button.font = SYSTEM_BOLD_11
+            button.styleClass.addAll("text-md", "bold")
             button.setOnAction { sendSwitchPropertyVectorMessage(vector, property) }
             button.updateButton(vector, property)
             children.add(button)
@@ -409,7 +405,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
             label.minWidth = 175.0
             label.maxWidth = 175.0
             label.prefWidth = 175.0
-            label.font = SYSTEM_BOLD_11
+            label.styleClass.addAll("text-md", "bold")
             children.add(label)
 
             // Value.
@@ -494,7 +490,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
             label.minWidth = 175.0
             label.maxWidth = 175.0
             label.prefWidth = 175.0
-            label.font = SYSTEM_BOLD_11
+            label.styleClass.addAll("text-md", "bold")
             children.add(label)
 
             // Value.
@@ -538,19 +534,13 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
     companion object {
 
-        @JvmStatic private val PADDING_HORIZONTAL_16 = Insets(0.0, 16.0, 0.0, 16.0)
-        @JvmStatic private val SYSTEM_REGULAR_11 = Font("System Regular", 11.0)
-        @JvmStatic private val SYSTEM_BOLD_11 = Font("System Bold", 11.0)
-        @JvmStatic private val MATERIAL_DESIGN_ICONS_18 = Font("Material Design Icons", 18.0)
-        @JvmStatic private val MATERIAL_DESIGN_ICONS_24 = Font("Material Design Icons", 24.0)
-
         @JvmStatic private val STATE_COLORS =
             arrayOf(MaterialColor.GREY_400, MaterialColor.GREEN_400, MaterialColor.BLUE_400, MaterialColor.RED_400)
 
         @JvmStatic
         private fun Label.withState(vector: PropertyVector<*, *>) = apply {
             val icon = Label(MaterialIcon.CIRCLE)
-            icon.font = MATERIAL_DESIGN_ICONS_24
+            icon.styleClass.addAll("mdi", "mdi-xs")
             graphic = icon
             updateState(vector)
         }

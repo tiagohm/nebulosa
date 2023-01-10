@@ -164,11 +164,11 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         }
 
         if (camera != null) {
-            preferences.double("imageViewer.${camera.name}.screen.x")?.let { x = it }
-            preferences.double("imageViewer.${camera.name}.screen.y")?.let { y = it }
+            preferences.double("imageViewer.equipment.${camera.name}.screen.x")?.let { x = it }
+            preferences.double("imageViewer.equipment.${camera.name}.screen.y")?.let { y = it }
 
-            xProperty().on { preferences.double("imageViewer.${camera.name}.screen.x", it) }
-            yProperty().on { preferences.double("imageViewer.${camera.name}.screen.y", it) }
+            xProperty().on { preferences.double("imageViewer.equipment.${camera.name}.screen.x", it) }
+            yProperty().on { preferences.double("imageViewer.equipment.${camera.name}.screen.y", it) }
         } else {
             preferences.double("imageViewer.screen.x")?.let { x = it }
             preferences.double("imageViewer.screen.y")?.let { y = it }
@@ -204,8 +204,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         invert = false
 
         if (camera != null) {
-            preferences.double("imageViewer.${camera.name}.screen.x")?.let { x = it }
-            preferences.double("imageViewer.${camera.name}.screen.y")?.let { y = it }
+            preferences.double("imageViewer.equipment.${camera.name}.screen.x")?.let { x = it }
+            preferences.double("imageViewer.equipment.${camera.name}.screen.y")?.let { y = it }
         } else {
             preferences.double("imageViewer.screen.x")?.let { x = it }
             preferences.double("imageViewer.screen.y")?.let { y = it }
@@ -244,11 +244,27 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     }
 
     private fun widthChanged(value: Double) {
-        if (sizeChanged(value, true)) draw()
+        if (sizeChanged(value, true)) {
+            draw()
+
+            if (camera != null) {
+                preferences.double("imageViewer.equipment.${camera.name}.screen.width", value)
+            } else {
+                preferences.double("imageViewer.screen.width", value)
+            }
+        }
     }
 
     private fun heightChanged(value: Double) {
-        if (sizeChanged(value, false)) draw()
+        if (sizeChanged(value, false)) {
+            draw()
+
+            if (camera != null) {
+                preferences.double("imageViewer.equipment.${camera.name}.screen.height", value)
+            } else {
+                preferences.double("imageViewer.screen.height", value)
+            }
+        }
     }
 
     private fun sizeChanged(value: Double, isWidth: Boolean): Boolean {
@@ -280,10 +296,16 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
         val factor = fits.width.toDouble() / fits.height.toDouble()
 
+        val defaultWidth = (if (camera != null) preferences.double("imageViewer.equipment.${camera.name}.screen.width")
+        else preferences.double("imageViewer.screen.width")) ?: (screenBounds.width / 2)
+
+        val defaultHeight = (if (camera != null) preferences.double("imageViewer.equipment.${camera.name}.screen.height")
+        else preferences.double("imageViewer.screen.height")) ?: (screenBounds.height / 2)
+
         val sceneSize = if (factor >= 1.0)
-            if (defaultSize) screenBounds.width / 2
+            if (defaultSize) defaultWidth
             else min(screenBounds.width, width)
-        else if (defaultSize) screenBounds.height / 2
+        else if (defaultSize) defaultHeight - titleHeight
         else min(screenBounds.height, height - titleHeight)
 
         if (factor >= 1.0) {
@@ -366,6 +388,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     fun open(file: File) {
         setTitleFromCameraAndFile(file)
 
+        val adjustToDefaultSize = this.fits == null
+
         val fits = if (file.extension.startsWith("fit")) FitsImage(Fits(file))
         else ExtendedImage(file)
 
@@ -375,7 +399,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         scnr.isDisable = fits.mono
         fitsHeader.isDisable = fits !is FitsImage
 
-        adjustSceneSizeToFitImage(true)
+        adjustSceneSizeToFitImage(adjustToDefaultSize)
 
         transformImage()
         draw()

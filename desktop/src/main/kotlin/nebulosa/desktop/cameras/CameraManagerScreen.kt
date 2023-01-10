@@ -459,7 +459,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             autoSaveAllExposuresIndicator.isVisible = autoSaveAllExposures
             autoSaveAllExposuresIndicator.isManaged = autoSaveAllExposures
 
-            val autoSubFolder = preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")
+            val autoSubFolder = autoSaveAllExposures && preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")
             autoSubFolderIndicator.isVisible = autoSubFolder
             autoSubFolderIndicator.isManaged = autoSubFolder
         } else {
