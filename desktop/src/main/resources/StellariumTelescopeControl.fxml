@@ -43,9 +43,8 @@
                     alignment="CENTER"
                     mnemonicParsing="false"
                     contentDisplay="TEXT_ONLY"
-                    styleClass="mdi,mdi-sm"
+                    styleClass="mdi,mdi-sm,text-blue-grey-700"
                     text="&#xF1616;"
-                    textFill="#455A64"
                     prefHeight="32.0">
             </Button>
         </HBox>

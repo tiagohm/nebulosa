@@ -75,14 +75,18 @@ class MountProperty : DeviceProperty<Mount>() {
         when (event) {
             is MountSlewingChanged -> Platform.runLater { isSlewing.set(device.isSlewing) }
             is MountSlewRatesChanged -> Platform.runLater {
-                // Why needs set to null?
-                // Test: Disconnect and reconnect, the choicebox selected value is null/empty.
+                // Workaround: choicebox removes the selected item when call setAll.
+                // So, unselect it to not be removed.
+                // Bug: Disconnect and reconnect, the choicebox selected value is null/empty.
                 slewRate.set(null)
                 slewRates.setAll(device.slewRates)
             }
             is MountSlewRateChanged -> Platform.runLater { slewRate.set(device.slewRate) }
             is MountTypeChanged -> Platform.runLater { mountType.set(device.mountType) }
-            is MountTrackModesChanged -> Platform.runLater { trackModes.setAll(device.trackModes) }
+            is MountTrackModesChanged -> Platform.runLater {
+                trackMode.set(null)
+                trackModes.setAll(device.trackModes)
+            }
             is MountTrackModeChanged -> Platform.runLater { trackMode.set(device.trackMode) }
             is MountTrackingChanged -> Platform.runLater { isTracking.set(device.isTracking) }
             is MountPierSideChanged -> Platform.runLater { pierSide.set(device.pierSide) }

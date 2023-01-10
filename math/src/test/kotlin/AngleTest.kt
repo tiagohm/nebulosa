@@ -80,5 +80,30 @@ class AngleTest : StringSpec() {
             Angle.CIRCLE.compareTo(Angle.ZERO) shouldBeExactly 1
             Angle.ZERO.compareTo(Angle.ZERO) shouldBeExactly 0
         }
+        "parse decimal coordinates" {
+            Angle.parseCoordinatesAsDouble("23.5634453") shouldBe 23.5634453
+        }
+        "parse sexagesimal coordinates" {
+            Angle.parseCoordinatesAsDouble("23 33 48.40308") shouldBe 23.5634453
+            Angle.parseCoordinatesAsDouble("23h 33 48.40308") shouldBe 23.5634453
+            Angle.parseCoordinatesAsDouble("23 33m 48.40308") shouldBe 23.5634453
+            Angle.parseCoordinatesAsDouble("23 33 48.40308s") shouldBe 23.5634453
+            Angle.parseCoordinatesAsDouble("23h 33m 48.40308") shouldBe 23.5634453
+            Angle.parseCoordinatesAsDouble("23 33m 48.40308s") shouldBe 23.5634453
+            Angle.parseCoordinatesAsDouble("23h 33m 48.40308s") shouldBe 23.5634453
+            Angle.parseCoordinatesAsDouble("-23° 33m 48.40308s") shouldBe -23.5634453
+            Angle.parseCoordinatesAsDouble("  -23   33m   48.40308s  ") shouldBe -23.5634453
+            Angle.parseCoordinatesAsDouble("-23 33.806718m") shouldBe -23.5634453
+            Angle.parseCoordinatesAsDouble("+23") shouldBe 23.0
+            Angle.parseCoordinatesAsDouble("-23") shouldBe -23.0
+            Angle.parseCoordinatesAsDouble("23h33m48.40308s") shouldBe 23.5634453
+            Angle.parseCoordinatesAsDouble("23h33m 48.40308\"") shouldBe 23.5634453
+            Angle.parseCoordinatesAsDouble("23h33'48.40308\"") shouldBe 23.5634453
+            Angle.parseCoordinatesAsDouble("-23°33'48.40308\"") shouldBe -23.5634453
+            Angle.parseCoordinatesAsDouble("-23°33'48.40308s 67.99") shouldBe -23.5634453
+            Angle.parseCoordinatesAsDouble("- 23°33'48.40308s 67.99") shouldBe -23.5634453
+            Angle.parseCoordinatesAsDouble("") shouldBe null
+            Angle.parseCoordinatesAsDouble("kkk") shouldBe null
+        }
     }
 }

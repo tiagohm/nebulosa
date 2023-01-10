@@ -1,6 +1,7 @@
 package nebulosa.math
 
 import nebulosa.constants.*
+import java.util.*
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -101,6 +102,44 @@ value class Angle(val value: Double) : Comparable<Angle> {
         override val endInclusive = CIRCLE
 
         override fun compare(a: Angle?, b: Angle?) = compareValues(a?.value, b?.value)
+
+        @JvmStatic private val PARSE_COORDINATES_FACTOR = doubleArrayOf(1.0, 60.0, 3600.0)
+        @JvmStatic private val PARSE_COORDINATES_NOT_NUMBER_REGEX = Regex("[^\\-\\d.]+")
+
+        @JvmStatic
+        fun parseCoordinatesAsDouble(input: String): Double {
+            val trimmedInput = input.trim()
+            val decimalInput = trimmedInput.toDoubleOrNull()
+            if (decimalInput != null) return decimalInput
+
+            val tokenizer = StringTokenizer(trimmedInput, " \t\n\rhms°'\"")
+            var res = 0.0
+            var idx = 0
+            var negative = false
+
+            while (idx < 3 && tokenizer.hasMoreElements()) {
+                val token = tokenizer.nextToken().replace(PARSE_COORDINATES_NOT_NUMBER_REGEX, "").trim()
+
+                if (token.isEmpty()) continue
+
+                if (idx == 0 && token == "-") {
+                    negative = true
+                    continue
+                }
+
+                val value = token.toDoubleOrNull() ?: continue
+
+                if (idx == 0 && value < 0.0) {
+                    negative = true
+                }
+
+                res += abs(value) / PARSE_COORDINATES_FACTOR[idx++]
+            }
+
+            return if (idx == 0) throw IllegalArgumentException("invalid coordinate: $input")
+            else if (negative) -res
+            else res
+        }
 
         @JvmStatic
         fun formatHMS(angle: Angle, format: String = "%02dh %02dm %05.02fs"): String {

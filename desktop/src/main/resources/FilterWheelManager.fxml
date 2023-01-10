@@ -5,7 +5,6 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -38,13 +37,9 @@
                     mnemonicParsing="false"
                     contentDisplay="TEXT_ONLY"
                     text="&#xF1616;"
-                    textFill="#455A64"
                     prefHeight="32.0"
-                    minWidth="42.0">
-                <font>
-                    <Font name="Material Design Icons"
-                          size="18.0"/>
-                </font>
+                    minWidth="42.0"
+                    styleClass="mdi,mdi-sm,text-blue-grey-700">
             </Button>
             <Button fx:id="openINDI"
                     onAction="#openINDI"
@@ -84,13 +79,11 @@
               spacing="4.0">
             <CheckBox fx:id="useFilterWheelAsShutter"
                       text="Use filter wheel as shutter:"
-                      onAction="#toggleUseFilterWheelAsShutter">
-                <font>
-                    <Font size="11.0"/>
-                </font>
+                      onAction="#toggleUseFilterWheelAsShutter"
+                      styleClass="text-sm">
             </CheckBox>
             <ChoiceBox fx:id="filterAsShutter"
-                       prefWidth="120.0">
+                       prefWidth="135.0">
             </ChoiceBox>
         </HBox>
         <VBox alignment="TOP_CENTER">
@@ -117,7 +110,7 @@
         <HBox alignment="CENTER_LEFT"
               spacing="8.0">
             <ChoiceBox fx:id="filterSlot"
-                       prefWidth="207.0">
+                       prefWidth="213.0">
             </ChoiceBox>
             <Button fx:id="moveToSelectedFilterSlot"
                     text="Move To"

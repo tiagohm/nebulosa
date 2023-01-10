@@ -3,9 +3,7 @@
 <?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.Cursor?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 <?import nebulosa.imaging.algorithms.*?>
 <?import nebulosa.imaging.ImageChannel?>
 <?import org.controlsfx.control.ToggleSwitch?>
@@ -13,7 +11,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="175.0"
+            prefHeight="120.0"
             prefWidth="340.0"
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
@@ -30,65 +28,56 @@
                     right="16.0"
                     top="16.0"/>
         </padding>
-        <VBox spacing="1.0">
-            <Label text="Channel">
-                <font>
-                    <Font size="12.0"/>
-                </font>
-            </Label>
-            <fx:define>
-                <ImageChannel fx:id="channelInitialValue"
-                              fx:constant="GREEN"/>
-            </fx:define>
-            <ChoiceBox fx:id="channel"
-                       prefWidth="308.0"
-                       value="$channelInitialValue">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <ImageChannel fx:value="RED"/>
-                        <ImageChannel fx:value="GREEN"/>
-                        <ImageChannel fx:value="BLUE"/>
-                    </FXCollections>
-                </items>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
-            </ChoiceBox>
-        </VBox>
-        <VBox spacing="1.0">
-            <Label text="Protection method">
-                <font>
-                    <Font size="12.0"/>
-                </font>
-            </Label>
-            <fx:define>
-                <ProtectionMethod fx:id="protectionMethodInitialValue"
-                                  fx:constant="AVERAGE_NEUTRAL"/>
-            </fx:define>
-            <ChoiceBox fx:id="protectionMethod"
-                       prefWidth="308.0"
-                       value="$protectionMethodInitialValue">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <ProtectionMethod fx:value="MAXIMUM_MASK"/>
-                        <ProtectionMethod fx:value="ADDTIVIVE_MASK"/>
-                        <ProtectionMethod fx:value="AVERAGE_NEUTRAL"/>
-                        <ProtectionMethod fx:value="MAXIMUM_NEUTRAL"/>
-                    </FXCollections>
-                </items>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
-            </ChoiceBox>
-        </VBox>
+        <HBox alignment="CENTER_LEFT"
+              spacing="8.0">
+            <VBox spacing="1.0">
+                <Label text="Channel"
+                       styleClass="text-md">
+                </Label>
+                <fx:define>
+                    <ImageChannel fx:id="channelInitialValue"
+                                  fx:constant="GREEN"/>
+                </fx:define>
+                <ChoiceBox fx:id="channel"
+                           prefWidth="308.0"
+                           value="$channelInitialValue">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <ImageChannel fx:value="RED"/>
+                            <ImageChannel fx:value="GREEN"/>
+                            <ImageChannel fx:value="BLUE"/>
+                        </FXCollections>
+                    </items>
+                </ChoiceBox>
+            </VBox>
+            <VBox spacing="1.0">
+                <Label text="Protection method"
+                       styleClass="text-md">
+                </Label>
+                <fx:define>
+                    <ProtectionMethod fx:id="protectionMethodInitialValue"
+                                      fx:constant="AVERAGE_NEUTRAL"/>
+                </fx:define>
+                <ChoiceBox fx:id="protectionMethod"
+                           prefWidth="308.0"
+                           value="$protectionMethodInitialValue">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <ProtectionMethod fx:value="MAXIMUM_MASK"/>
+                            <ProtectionMethod fx:value="ADDTIVIVE_MASK"/>
+                            <ProtectionMethod fx:value="AVERAGE_NEUTRAL"/>
+                            <ProtectionMethod fx:value="MAXIMUM_NEUTRAL"/>
+                        </FXCollections>
+                    </items>
+                </ChoiceBox>
+            </VBox>
+        </HBox>
         <HBox alignment="CENTER"
               spacing="16.0">
             <VBox alignment="CENTER_LEFT"
                   spacing="1.0">
-                <Label text="Amount">
-                    <font>
-                        <Font size="12.0"/>
-                    </font>
+                <Label text="Amount"
+                       styleClass="text-md">
                 </Label>
                 <Spinner fx:id="amount"
                          editable="true"
@@ -101,20 +90,13 @@
             </VBox>
             <VBox alignment="CENTER"
                   spacing="1.0">
-                <Label text="Enabled">
-                    <font>
-                        <Font size="12.0"/>
-                    </font>
+                <Label text="Enabled"
+                       styleClass="text-md">
                 </Label>
                 <ToggleSwitch fx:id="enabled"
                               prefHeight="32.0"
-                              prefWidth="32.0">
-                    <font>
-                        <Font size="12.0"/>
-                    </font>
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
+                              prefWidth="32.0"
+                              styleClass="text-md">
                 </ToggleSwitch>
             </VBox>
         </HBox>

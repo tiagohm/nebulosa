@@ -2,11 +2,9 @@
 
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 <?import org.controlsfx.control.SegmentedButton?>
 <?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
@@ -34,9 +32,6 @@
             <ChoiceBox fx:id="mounts"
                        prefHeight="32.0"
                        prefWidth="394.0">
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </ChoiceBox>
             <Button fx:id="connect"
                     onAction="#connect"
@@ -44,16 +39,9 @@
                     mnemonicParsing="false"
                     contentDisplay="TEXT_ONLY"
                     text="&#xF1616;"
-                    textFill="#455A64"
                     prefHeight="32.0"
-                    minWidth="42.0">
-                <font>
-                    <Font name="Material Design Icons"
-                          size="18.0"/>
-                </font>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
+                    minWidth="42.0"
+                    styleClass="mdi,mdi-sm,text-blue-grey-700">
             </Button>
             <Button fx:id="openINDI"
                     onAction="#openINDI"
@@ -70,9 +58,6 @@
                         <Image url="@icons/indi.png"/>
                     </ImageView>
                 </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </Button>
         </HBox>
         <VBox alignment="CENTER"
@@ -82,45 +67,33 @@
                 <Label maxWidth="64.0"
                        minWidth="64.0"
                        prefWidth="64.0"
-                       text="RA">
-                    <font>
-                        <Font name="System Bold"
-                              size="9.0"/>
-                    </font>
+                       text="RA"
+                       styleClass="text-sm,text-bold">
                 </Label>
                 <Label fx:id="rightAscension"
                        alignment="CENTER_RIGHT"
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
-                       text="00h 00m 00.00s">
-                    <font>
-                        <Font name="Monospaced Regular"
-                              size="11.0"/>
-                    </font>
+                       text="00h 00m 00.00s"
+                       styleClass="text-monospaced,text-sm">
                 </Label>
                 <Label maxWidth="64.0"
                        minWidth="64.0"
                        prefWidth="64.0"
-                       text="DEC">
+                       text="DEC"
+                       styleClass="text-sm,text-bold">
                     <HBox.margin>
                         <Insets left="8.0"/>
                     </HBox.margin>
-                    <font>
-                        <Font name="System Bold"
-                              size="9.0"/>
-                    </font>
                 </Label>
                 <Label fx:id="declination"
                        alignment="CENTER_RIGHT"
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
-                       text="+00° 00' 00.00&quot;">
-                    <font>
-                        <Font name="Monospaced Regular"
-                              size="11.0"/>
-                    </font>
+                       text="+00° 00' 00.00&quot;"
+                       styleClass="text-monospaced,text-sm">
                 </Label>
             </HBox>
             <HBox alignment="CENTER_LEFT"
@@ -128,45 +101,33 @@
                 <Label maxWidth="64.0"
                        minWidth="64.0"
                        prefWidth="64.0"
-                       text="RA (J2000)">
-                    <font>
-                        <Font name="System Bold"
-                              size="9.0"/>
-                    </font>
+                       text="RA (J2000)"
+                       styleClass="text-sm,text-bold">
                 </Label>
                 <Label fx:id="rightAscensionJ2000"
                        alignment="CENTER_RIGHT"
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
-                       text="00h 00m 00.00s">
-                    <font>
-                        <Font name="Monospaced Regular"
-                              size="11.0"/>
-                    </font>
+                       text="00h 00m 00.00s"
+                       styleClass="text-monospaced,text-sm">
                 </Label>
                 <Label maxWidth="64.0"
                        minWidth="64.0"
                        prefWidth="64.0"
-                       text="DEC (J2000)">
+                       text="DEC (J2000)"
+                       styleClass="text-sm,text-bold">
                     <HBox.margin>
                         <Insets left="8.0"/>
                     </HBox.margin>
-                    <font>
-                        <Font name="System Bold"
-                              size="9.0"/>
-                    </font>
                 </Label>
                 <Label fx:id="declinationJ2000"
                        alignment="CENTER_RIGHT"
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
-                       text="+00° 00' 00.00&quot;">
-                    <font>
-                        <Font name="Monospaced Regular"
-                              size="11.0"/>
-                    </font>
+                       text="+00° 00' 00.00&quot;"
+                       styleClass="text-monospaced,text-sm">
                 </Label>
             </HBox>
             <HBox alignment="CENTER_LEFT"
@@ -174,45 +135,33 @@
                 <Label maxWidth="64.0"
                        minWidth="64.0"
                        prefWidth="64.0"
-                       text="Altitude">
-                    <font>
-                        <Font name="System Bold"
-                              size="9.0"/>
-                    </font>
+                       text="Altitude"
+                       styleClass="text-sm,text-bold">
                 </Label>
                 <Label fx:id="altitude"
                        alignment="CENTER_RIGHT"
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
-                       text="+00° 00' 00.00&quot;">
-                    <font>
-                        <Font name="Monospaced Regular"
-                              size="11.0"/>
-                    </font>
+                       text="+00° 00' 00.00&quot;"
+                       styleClass="text-monospaced,text-sm">
                 </Label>
                 <Label maxWidth="64.0"
                        minWidth="64.0"
                        prefWidth="64.0"
-                       text="Azimuth">
+                       text="Azimuth"
+                       styleClass="text-sm,text-bold">
                     <HBox.margin>
                         <Insets left="8.0"/>
                     </HBox.margin>
-                    <font>
-                        <Font name="System Bold"
-                              size="9.0"/>
-                    </font>
                 </Label>
                 <Label fx:id="azimuth"
                        alignment="CENTER_RIGHT"
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
-                       text="+00° 00' 00.00&quot;">
-                    <font>
-                        <Font name="Monospaced Regular"
-                              size="11.0"/>
-                    </font>
+                       text="+00° 00' 00.00&quot;"
+                       styleClass="text-monospaced,text-sm">
                 </Label>
             </HBox>
             <HBox alignment="CENTER_LEFT"
@@ -220,68 +169,91 @@
                 <Label maxWidth="64.0"
                        minWidth="64.0"
                        prefWidth="64.0"
-                       text="Pier">
-                    <font>
-                        <Font name="System Bold"
-                              size="9.0"/>
-                    </font>
+                       text="Pier"
+                       styleClass="text-sm,text-bold">
                 </Label>
                 <Label fx:id="pierSide"
-                       alignment="CENTER"
+                       alignment="CENTER_RIGHT"
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
-                       text="NEITHER">
-                    <font>
-                        <Font name="Monospaced Regular"
-                              size="11.0"/>
-                    </font>
+                       text="NEITHER"
+                       styleClass="text-monospaced,text-sm">
+                </Label>
+                <Label maxWidth="64.0"
+                       minWidth="64.0"
+                       prefWidth="64.0"
+                       text="Meridian at"
+                       styleClass="text-sm,text-bold">
+                    <HBox.margin>
+                        <Insets left="8.0"/>
+                    </HBox.margin>
+                </Label>
+                <Label fx:id="meridianAt"
+                       alignment="CENTER_RIGHT"
+                       maxWidth="110.0"
+                       minWidth="110.0"
+                       prefWidth="110.0"
+                       text="00:00 (00:00)"
+                       styleClass="text-monospaced,text-sm">
+                </Label>
+            </HBox>
+            <HBox alignment="CENTER_LEFT"
+                  spacing="4.0">
+                <Label maxWidth="64.0"
+                       minWidth="64.0"
+                       prefWidth="64.0"
+                       text="Status"
+                       styleClass="text-sm,text-bold">
+                </Label>
+                <Label fx:id="status"
+                       alignment="CENTER_RIGHT"
+                       maxWidth="110.0"
+                       minWidth="110.0"
+                       prefWidth="110.0"
+                       text="IDLE"
+                       styleClass="text-monospaced,text-sm">
                 </Label>
             </HBox>
         </VBox>
         <HBox alignment="CENTER_LEFT"
               spacing="8.0">
-            <Label text="Target Coordinates:">
-                <font>
-                    <Font size="11.0"/>
-                </font>
+            <VBox.margin>
+                <Insets top="8.0"/>
+            </VBox.margin>
+            <Label text="Target Coordinates:"
+                   styleClass="text-md">
+                <graphic>
+                    <Label text="&#xF04FE;"
+                           styleClass="mdi,mdi-xs">
+                    </Label>
+                </graphic>
             </Label>
             <SegmentedButton fx:id="targetCoordinatesEquinox">
                 <buttons>
                     <ToggleButton text="JNow"
-                                  userData="JNOW">
-                        <font>
-                            <Font name="Monospaced Regular"
-                                  size="11.0"/>
-                        </font>
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
+                                  userData="JNOW"
+                                  styleClass="text-sm">
                     </ToggleButton>
                     <ToggleButton text="J2000"
                                   selected="true"
-                                  userData="J2000">
-                        <font>
-                            <Font name="Monospaced Regular"
-                                  size="11.0"/>
-                        </font>
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
+                                  userData="J2000"
+                                  styleClass="text-sm">
                     </ToggleButton>
                 </buttons>
             </SegmentedButton>
         </HBox>
         <VBox alignment="CENTER_LEFT"
               spacing="4.0">
+            <VBox.margin>
+                <Insets top="8.0"/>
+            </VBox.margin>
             <HBox alignment="CENTER_LEFT"
                   spacing="8.0">
                 <VBox alignment="CENTER_LEFT"
                       spacing="1.0">
-                    <Label text="RA (hours)">
-                        <font>
-                            <Font size="11.0"/>
-                        </font>
+                    <Label text="RA (hours)"
+                           styleClass="text-sm">
                     </Label>
                     <TextField fx:id="targetRightAscension"
                                text="0.00"
@@ -290,10 +262,8 @@
                 </VBox>
                 <VBox alignment="CENTER_LEFT"
                       spacing="1.0">
-                    <Label text="DEC (degrees)">
-                        <font>
-                            <Font size="11.0"/>
-                        </font>
+                    <Label text="DEC (degrees)"
+                           styleClass="text-sm">
                     </Label>
                     <TextField fx:id="targetDeclination"
                                text="0.00"
@@ -309,16 +279,10 @@
                         prefWidth="92.0">
                     <graphic>
                         <Label text="&#xF012C;"
-                               textFill="#388E3C">
-                            <font>
-                                <Font name="Material Design Icons"
-                                      size="18.0"/>
-                            </font>
+                               textFill="#388E3C"
+                               styleClass="mdi,mdi-sm">
                         </Label>
                     </graphic>
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
                 </Button>
                 <Button fx:id="slewTo"
                         text="Slew To"
@@ -326,16 +290,10 @@
                         prefWidth="92.0">
                     <graphic>
                         <Label text="&#xF012C;"
-                               textFill="#388E3C">
-                            <font>
-                                <Font name="Material Design Icons"
-                                      size="18.0"/>
-                            </font>
+                               textFill="#388E3C"
+                               styleClass="mdi,mdi-sm">
                         </Label>
                     </graphic>
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
                 </Button>
                 <Button fx:id="sync"
                         text="Sync"
@@ -343,16 +301,10 @@
                         prefWidth="92.0">
                     <graphic>
                         <Label text="&#xF04E6;"
-                               textFill="#1976D2">
-                            <font>
-                                <Font name="Material Design Icons"
-                                      size="18.0"/>
-                            </font>
+                               textFill="#1976D2"
+                               styleClass="mdi,mdi-sm">
                         </Label>
                     </graphic>
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
                 </Button>
             </HBox>
         </VBox>
@@ -360,22 +312,13 @@
             <Button fx:id="stellariumTelescopeControl"
                     text="Stellarium Telescope Control"
                     prefWidth="202.0"
-                    onAction="#openStellariumTelescopeControl">
-                <font>
-                    <Font size="11.0"/>
-                </font>
+                    onAction="#openStellariumTelescopeControl"
+                    styleClass="text-sm">
                 <graphic>
                     <Label text="&#xF0EC5;"
-                           textFill="#7B1FA2">
-                        <font>
-                            <Font name="Material Design Icons"
-                                  size="18.0"/>
-                        </font>
+                           styleClass="text-purple-700,mdi,mdi-sm">
                     </Label>
                 </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </Button>
         </HBox>
         <HBox spacing="12.0">
@@ -390,16 +333,9 @@
                             userData="NE">
                         <graphic>
                             <Label text="&#xF09C4;"
-                                   textFill="#1976D2">
-                                <font>
-                                    <Font name="Material Design Icons"
-                                          size="24.0"/>
-                                </font>
+                                   styleClass="text-blue-700,mdi,mdi-md">
                             </Label>
                         </graphic>
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
                     </Button>
                     <Button fx:id="nudgeN"
                             contentDisplay="GRAPHIC_ONLY"
@@ -409,16 +345,9 @@
                             userData="N">
                         <graphic>
                             <Label text="&#xF0737;"
-                                   textFill="#1976D2">
-                                <font>
-                                    <Font name="Material Design Icons"
-                                          size="24.0"/>
-                                </font>
+                                   styleClass="text-blue-700,mdi,mdi-md">
                             </Label>
                         </graphic>
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
                     </Button>
                     <Button fx:id="nudgeNW"
                             contentDisplay="GRAPHIC_ONLY"
@@ -428,16 +357,9 @@
                             userData="NW">
                         <graphic>
                             <Label text="&#xF09C6;"
-                                   textFill="#1976D2">
-                                <font>
-                                    <Font name="Material Design Icons"
-                                          size="24.0"/>
-                                </font>
+                                   styleClass="text-blue-700,mdi,mdi-md">
                             </Label>
                         </graphic>
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
                     </Button>
                 </HBox>
                 <HBox alignment="CENTER"
@@ -450,16 +372,9 @@
                             userData="E">
                         <graphic>
                             <Label text="&#xF0731;"
-                                   textFill="#1976D2">
-                                <font>
-                                    <Font name="Material Design Icons"
-                                          size="24.0"/>
-                                </font>
+                                   styleClass="text-blue-700,mdi,mdi-md">
                             </Label>
                         </graphic>
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
                     </Button>
                     <Button fx:id="abort"
                             contentDisplay="GRAPHIC_ONLY"
@@ -468,16 +383,9 @@
                             prefHeight="48.0">
                         <graphic>
                             <Label text="&#xF0159;"
-                                   textFill="#D32F2F">
-                                <font>
-                                    <Font name="Material Design Icons"
-                                          size="24.0"/>
-                                </font>
+                                   styleClass="mdi,mdi-md,text-red-700">
                             </Label>
                         </graphic>
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
                     </Button>
                     <Button fx:id="nudgeW"
                             contentDisplay="GRAPHIC_ONLY"
@@ -487,16 +395,9 @@
                             userData="W">
                         <graphic>
                             <Label text="&#xF0734;"
-                                   textFill="#1976D2">
-                                <font>
-                                    <Font name="Material Design Icons"
-                                          size="24.0"/>
-                                </font>
+                                   styleClass="text-blue-700,mdi,mdi-md">
                             </Label>
                         </graphic>
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
                     </Button>
                 </HBox>
                 <HBox alignment="CENTER"
@@ -509,16 +410,9 @@
                             userData="SE">
                         <graphic>
                             <Label text="&#xF09B8;"
-                                   textFill="#1976D2">
-                                <font>
-                                    <Font name="Material Design Icons"
-                                          size="24.0"/>
-                                </font>
+                                   styleClass="text-blue-700,mdi,mdi-md">
                             </Label>
                         </graphic>
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
                     </Button>
                     <Button fx:id="nudgeS"
                             contentDisplay="GRAPHIC_ONLY"
@@ -528,16 +422,9 @@
                             userData="S">
                         <graphic>
                             <Label text="&#xF072E;"
-                                   textFill="#1976D2">
-                                <font>
-                                    <Font name="Material Design Icons"
-                                          size="24.0"/>
-                                </font>
+                                   styleClass="text-blue-700,mdi,mdi-md">
                             </Label>
                         </graphic>
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
                     </Button>
                     <Button fx:id="nudgeSW"
                             contentDisplay="GRAPHIC_ONLY"
@@ -547,16 +434,9 @@
                             userData="SW">
                         <graphic>
                             <Label text="&#xF09BA;"
-                                   textFill="#1976D2">
-                                <font>
-                                    <Font name="Material Design Icons"
-                                          size="24.0"/>
-                                </font>
+                                   styleClass="text-blue-700,mdi,mdi-md">
                             </Label>
                         </graphic>
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
                     </Button>
                 </HBox>
             </VBox>
@@ -564,135 +444,54 @@
                   spacing="12.0"
                   HBox.hgrow="ALWAYS">
                 <ToggleSwitch fx:id="tracking"
-                              text="Tracking">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
-                    <cursor>
-                        <Cursor fx:constant="HAND"/>
-                    </cursor>
+                              text="Tracking"
+                              styleClass="text-md">
                 </ToggleSwitch>
-                <VBox alignment="CENTER"
-                      spacing="0.5">
-                    <SegmentedButton fx:id="trackingMode">
-                        <buttons>
-                            <ToggleButton text="Sidereal"
-                                          userData="SIDEREAL"
-                                          selected="true"
-                                          onAction="#toggleTrackingMode">
-                                <font>
-                                    <Font name="Monospaced Regular"
-                                          size="11.0"/>
-                                </font>
-                                <cursor>
-                                    <Cursor fx:constant="HAND"/>
-                                </cursor>
-                            </ToggleButton>
-                            <ToggleButton text="Solar"
-                                          userData="SOLAR"
-                                          onAction="#toggleTrackingMode">
-                                <font>
-                                    <Font name="Monospaced Regular"
-                                          size="11.0"/>
-                                </font>
-                                <cursor>
-                                    <Cursor fx:constant="HAND"/>
-                                </cursor>
-                            </ToggleButton>
-                            <ToggleButton text="Lunar"
-                                          userData="LUNAR"
-                                          onAction="#toggleTrackingMode">
-                                <font>
-                                    <Font name="Monospaced Regular"
-                                          size="11.0"/>
-                                </font>
-                                <cursor>
-                                    <Cursor fx:constant="HAND"/>
-                                </cursor>
-                            </ToggleButton>
-                        </buttons>
-                    </SegmentedButton>
-                    <SegmentedButton fx:id="trackingModeAdditional">
-                        <buttons>
-                            <ToggleButton text="King"
-                                          userData="KING"
-                                          onAction="#toggleTrackingMode">
-                                <font>
-                                    <Font name="Monospaced Regular"
-                                          size="11.0"/>
-                                </font>
-                                <cursor>
-                                    <Cursor fx:constant="HAND"/>
-                                </cursor>
-                            </ToggleButton>
-                            <ToggleButton text="Custom"
-                                          userData="CUSTOM"
-                                          onAction="#toggleTrackingMode">
-                                <font>
-                                    <Font name="Monospaced Regular"
-                                          size="11.0"/>
-                                </font>
-                                <cursor>
-                                    <Cursor fx:constant="HAND"/>
-                                </cursor>
-                            </ToggleButton>
-                        </buttons>
-                    </SegmentedButton>
-                </VBox>
-                <HBox alignment="CENTER"
+                <HBox alignment="CENTER_LEFT"
                       spacing="4.0">
-                    <Label text="Slew speed"
-                           HBox.hgrow="ALWAYS">
-                        <font>
-                            <Font size="11.0"/>
-                        </font>
-                    </Label>
-                    <ChoiceBox fx:id="slewSpeed"
-                               prefWidth="122.0">
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
-                    </ChoiceBox>
+                    <VBox alignment="CENTER_LEFT"
+                          spacing="1.0">
+                        <Label text="Tracking mode:"
+                               HBox.hgrow="ALWAYS"
+                               styleClass="text-md">
+                        </Label>
+                        <ChoiceBox fx:id="trackingMode"
+                                   prefWidth="114.0">
+                        </ChoiceBox>
+                    </VBox>
+                    <VBox alignment="CENTER_LEFT"
+                          spacing="1.0">
+                        <Label text="Slew speed:"
+                               HBox.hgrow="ALWAYS"
+                               styleClass="text-md">
+                        </Label>
+                        <ChoiceBox fx:id="slewSpeed"
+                                   prefWidth="114.0">
+                        </ChoiceBox>
+                    </VBox>
                 </HBox>
-                <HBox alignment="CENTER">
+                <HBox alignment="CENTER"
+                      spacing="16.0">
                     <Button fx:id="park"
                             text="Park"
                             onAction="#park">
                         <graphic>
                             <Label text="&#xF04DB;"
-                                   textFill="#D32F2F">
-                                <font>
-                                    <Font name="Material Design Icons"
-                                          size="18.0"/>
-                                </font>
+                                   styleClass="mdi,mdi-sm,text-red-700">
                             </Label>
                         </graphic>
-                        <cursor>
-                            <Cursor fx:constant="HAND"/>
-                        </cursor>
+                    </Button>
+                    <Button fx:id="home"
+                            text="Home"
+                            onAction="#home">
+                        <graphic>
+                            <Label text="&#xF02DC;"
+                                   styleClass="mdi,mdi-sm,text-blue-700">
+                            </Label>
+                        </graphic>
                     </Button>
                 </HBox>
             </VBox>
-        </HBox>
-        <HBox alignment="CENTER_LEFT">
-            <VBox.margin>
-                <Insets top="8.0"/>
-            </VBox.margin>
-            <Label fx:id="status"
-                   text="idle">
-                <graphic>
-                    <Label text="&#xF02FC;"
-                           textFill="#1976D2">
-                        <font>
-                            <Font name="Material Design Icons"
-                                  size="18.0"/>
-                        </font>
-                    </Label>
-                </graphic>
-                <font>
-                    <Font size="11.0"/>
-                </font>
-            </Label>
         </HBox>
     </VBox>
 </AnchorPane>

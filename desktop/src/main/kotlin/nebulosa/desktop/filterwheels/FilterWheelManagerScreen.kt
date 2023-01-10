@@ -62,7 +62,7 @@ class FilterWheelManagerScreen : Screen("FilterWheelManager", "nebulosa-fw-manag
 
         connect.disableProperty().bind(equipmentManager.selectedFilterWheel.isNull or isConnecting or isMoving)
         connect.textProperty().bind(equipmentManager.selectedFilterWheel.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        equipmentManager.selectedFilterWheel.isConnected.on { connect.styleClass.toggle("text-blue-grey-700", "text-red-700", !it) }
+        equipmentManager.selectedFilterWheel.isConnected.on { connect.styleClass.toggle("text-red-700", "text-blue-grey-700") }
 
         openINDI.disableProperty().bind(connect.disableProperty())
 

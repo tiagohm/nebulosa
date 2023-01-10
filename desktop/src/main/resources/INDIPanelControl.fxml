@@ -10,7 +10,7 @@
             maxWidth="300.0"
             minHeight="450.0"
             minWidth="-Infinity"
-            prefHeight="500.0"
+            prefHeight="495.0"
             prefWidth="865.0"
             stylesheets="@css/Global.css,@css/INDIPanelControl.css"
             xmlns="http://javafx.com/javafx/19"

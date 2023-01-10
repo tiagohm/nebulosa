@@ -12,3 +12,5 @@
 *.bpc           binary
 *.jar           binary
 *.fits          binary
+*.ttf           binary
+*.xcf           binary

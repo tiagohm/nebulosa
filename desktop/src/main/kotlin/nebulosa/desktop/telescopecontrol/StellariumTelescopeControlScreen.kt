@@ -35,7 +35,7 @@ class StellariumTelescopeControlScreen(private val mount: Mount) : Screen("Stell
         connect.disableProperty().bind(isConnecting)
 
         connect.textProperty().bind(isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        isConnected.on { connect.styleClass.toggle("text-blue-grey-700", "text-red-700") }
+        isConnected.on { connect.styleClass.toggle("text-red-700", "text-blue-grey-700") }
 
         host.text = preferences.string("stellariumTelescopeControl.equipment.${mount.name}.host")
         port.text = preferences.string("stellariumTelescopeControl.equipment.${mount.name}.port")

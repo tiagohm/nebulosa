@@ -3,22 +3,27 @@
 .root {
     -fx-font-family: 'Roboto';
     -fx-font-size: 12px;
+    -fx-font-smoothing-type: gray;
 }
 
-.bold {
+.text-bold {
     -fx-font-weight: bold;
 }
 
 .text-xs {
-    -fx-font-size: 8px;
+    -fx-font-size: 9px;
 }
 
 .text-sm {
-    -fx-font-size: 10px;
+    -fx-font-size: 11px;
 }
 
 .text-md {
     -fx-font-size: 12px;
+}
+
+.text-monospaced {
+    -fx-font-family: 'Monospaced';
 }
 
 .s-xs {
@@ -62,6 +67,8 @@
 .choice-box,
 .toggle-switch,
 .check-box,
-.radio-button {
+.radio-button,
+.toggle-button,
+.slider {
     -fx-cursor: 'hand';
 }

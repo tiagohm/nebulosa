@@ -220,6 +220,12 @@ internal open class MountBase(
         sendNewSwitch("TELESCOPE_TRACK_MODE", "TRACK_$mode" to true)
     }
 
+    override fun slewRate(rate: String) {
+        if (rate in slewRates) {
+            sendNewSwitch("TELESCOPE_SLEW_RATE", rate to true)
+        }
+    }
+
     override fun guideNorth(duration: Int) {
         if (canPulseGuide) {
             sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_N" to duration.toDouble())

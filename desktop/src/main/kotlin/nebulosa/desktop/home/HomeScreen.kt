@@ -16,8 +16,12 @@ import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.desktop.telescopecontrol.TelescopeControlManager
+import org.koin.core.component.get
 import org.koin.core.component.inject
+import org.koin.core.qualifier.named
 import org.slf4j.LoggerFactory
+import kotlin.io.path.Path
+import kotlin.io.path.exists
 
 class HomeScreen : Screen("Home") {
 
@@ -66,7 +70,7 @@ class HomeScreen : Screen("Home") {
         indi.disableProperty().bind(!equipmentManager.connected)
 
         connect.textProperty().bind(equipmentManager.connected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        equipmentManager.connected.on { connect.styleClass.toggle("text-blue-grey-700", "text-red-700") }
+        equipmentManager.connected.on { connect.styleClass.toggle("text-red-700", "text-blue-grey-700") }
 
         host.text = preferences.string("connection.last.host") ?: ""
         port.text = preferences.string("connection.last.port") ?: ""
@@ -125,8 +129,14 @@ class HomeScreen : Screen("Home") {
     }
 
     private fun openNewImage() {
+        val lastOpenDirectory = preferences
+            .string("homeScreen.imageViewer.lastOpenDirectory")
+            ?.let(::Path)?.takeIf { it.exists() }
+            ?: get(named("app"))
+
         val chooser = FileChooser()
         chooser.title = "Open New Image"
+        chooser.initialDirectory = lastOpenDirectory.toFile()
         chooser.extensionFilters.add(FileChooser.ExtensionFilter("All Image Files", "*.fits", "*.fit", "*.png", "*.jpeg", "*.jpg", "*.bmp"))
         chooser.extensionFilters.add(FileChooser.ExtensionFilter("FITS Files", "*.fits", "*.fit"))
         chooser.extensionFilters.add(FileChooser.ExtensionFilter("Extended Image Files", "*.png", "*.jpeg", "*.jpg", "*.bmp"))
@@ -134,6 +144,7 @@ class HomeScreen : Screen("Home") {
 
         try {
             screenManager.openImageViewer(file)
+            preferences.string("homeScreen.imageViewer.lastOpenDirectory", file.parent)
         } catch (e: Throwable) {
             LOG.error("image read error", e)
             showAlert("Unable to load this image.", "Image Error")

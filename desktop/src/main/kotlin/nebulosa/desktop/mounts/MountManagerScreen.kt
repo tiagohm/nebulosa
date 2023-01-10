@@ -9,7 +9,10 @@ import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
-import nebulosa.desktop.core.beans.*
+import nebulosa.desktop.core.beans.between
+import nebulosa.desktop.core.beans.on
+import nebulosa.desktop.core.beans.or
+import nebulosa.desktop.core.beans.transformed
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
@@ -26,8 +29,6 @@ import nebulosa.time.TimeJD
 import org.controlsfx.control.SegmentedButton
 import org.controlsfx.control.ToggleSwitch
 import org.koin.core.component.inject
-import java.util.*
-import kotlin.math.abs
 
 class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
@@ -60,10 +61,10 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     @FXML private lateinit var nudgeS: Button
     @FXML private lateinit var nudgeSW: Button
     @FXML private lateinit var tracking: ToggleSwitch
-    @FXML private lateinit var trackingMode: SegmentedButton
-    @FXML private lateinit var trackingModeAdditional: SegmentedButton
+    @FXML private lateinit var trackingMode: ChoiceBox<TrackMode>
     @FXML private lateinit var slewSpeed: ChoiceBox<String>
     @FXML private lateinit var park: Button
+    @FXML private lateinit var home: Button
     @FXML private lateinit var status: Label
 
     @Volatile private var subscriber: Disposable? = null
@@ -86,7 +87,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
         connect.disableProperty().bind(equipmentManager.selectedMount.isNull or isConnecting or isSlewing)
         connect.textProperty().bind(equipmentManager.selectedMount.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        equipmentManager.selectedMount.isConnected.on { connect.styleClass.toggle("text-blue-grey-700", "text-red-700") }
+        equipmentManager.selectedMount.isConnected.on { connect.styleClass.toggle("text-red-700", "text-blue-grey-700") }
 
         openINDI.disableProperty().bind(connect.disableProperty())
 
@@ -121,27 +122,21 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         tracking.selectedProperty().on { equipmentManager.selectedMount.get().tracking(it) }
 
         trackingMode.disableProperty().bind(isNotConnectedOrSlewing)
-        trackingMode.buttons.forEach {
-            val mode = TrackMode.valueOf(it.userData as String)
-            it.disableProperty().bind(equipmentManager.selectedMount.trackModes notContains mode)
-        }
-
-        trackingModeAdditional.disableProperty().bind(isNotConnectedOrSlewing)
-        trackingModeAdditional.buttons.forEach {
-            val mode = TrackMode.valueOf(it.userData as String)
-            it.disableProperty().bind(equipmentManager.selectedMount.trackModes notContains mode)
-        }
-
-        equipmentManager.selectedMount.trackMode.on { mode ->
-            trackingMode.buttons.forEach { it.isSelected = it.userData == mode?.name }
-            trackingModeAdditional.buttons.forEach { it.isSelected = it.userData == mode?.name }
-        }
+        trackingMode.itemsProperty().bind(equipmentManager.selectedMount.trackModes)
+        equipmentManager.selectedMount.trackMode.on { trackingMode.value = it }
+        trackingMode.valueProperty().on { if (it != null) equipmentManager.selectedMount.get().trackingMode(it) }
 
         slewSpeed.disableProperty().bind(isNotConnectedOrSlewing)
         slewSpeed.itemsProperty().bind(equipmentManager.selectedMount.slewRates)
-        equipmentManager.selectedMount.slewRate.on(slewSpeed::setValue)
+        equipmentManager.selectedMount.slewRate.on { slewSpeed.value = it }
+        slewSpeed.valueProperty().on { if (it != null) equipmentManager.selectedMount.get().slewRate(it) }
 
         park.disableProperty().bind(isNotConnectedOrSlewing or !equipmentManager.selectedMount.canPark)
+        park.textProperty().bind(equipmentManager.selectedMount.isParked.between("Unpark", "Park"))
+        (park.graphic as Label).textProperty().bind(equipmentManager.selectedMount.isParked.between(MaterialIcon.PLAY, MaterialIcon.STOP))
+        equipmentManager.selectedMount.isParked.on { (park.graphic as Label).styleClass.toggle("text-red-700", "text-blue-grey-700") }
+
+        home.disableProperty().set(true)
 
         equipmentManager.selectedMount.on {
             title = "Mount · ${it?.name}"
@@ -219,31 +214,39 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     private fun nudgeTo(event: ActionEvent) {
     }
 
-    val targetCoordinates: Pair<Angle, Angle>?
+    val targetCoordinates: Pair<Angle, Angle>
         get() {
-            val ra = parseCoordinates(targetRightAscension.text) ?: return null
-            val dec = parseCoordinates(targetDeclination.text) ?: return null
-            if (ra < 0.0 || ra >= 24.0) return null
-            if (dec < -90.0 || dec >= 90.0) return null
+            val ra = Angle.parseCoordinatesAsDouble(targetRightAscension.text)
+            val dec = Angle.parseCoordinatesAsDouble(targetDeclination.text)
+            require(ra in 0.0..24.0)
+            require(dec in -90.0..90.0)
             return ra.hours to dec.deg
         }
 
     @FXML
     private fun goTo() {
-        val mount = equipmentManager.selectedMount.get() ?: return
-        val (ra, dec) = targetCoordinates ?: return showAlert("Invalid target coordinates")
-        val isJ2000 = targetCoordinatesEquinox.toggleGroup.selectedToggle.userData == "J2000"
-        if (isJ2000) mount.goToJ2000(ra, dec)
-        else mount.goTo(ra, dec)
+        try {
+            val mount = equipmentManager.selectedMount.get() ?: return
+            val (ra, dec) = targetCoordinates
+            val isJ2000 = targetCoordinatesEquinox.toggleGroup.selectedToggle.userData == "J2000"
+            if (isJ2000) mount.goToJ2000(ra, dec)
+            else mount.goTo(ra, dec)
+        } catch (e: Throwable) {
+            showAlert("Invalid target coordinates")
+        }
     }
 
     @FXML
     private fun slewTo() {
-        val mount = equipmentManager.selectedMount.get() ?: return
-        val (ra, dec) = targetCoordinates ?: return showAlert("Invalid target coordinates")
-        val isJ2000 = targetCoordinatesEquinox.toggleGroup.selectedToggle.userData == "J2000"
-        if (isJ2000) mount.slewToJ2000(ra, dec)
-        else mount.slewTo(ra, dec)
+        try {
+            val mount = equipmentManager.selectedMount.get() ?: return
+            val (ra, dec) = targetCoordinates
+            val isJ2000 = targetCoordinatesEquinox.toggleGroup.selectedToggle.userData == "J2000"
+            if (isJ2000) mount.slewToJ2000(ra, dec)
+            else mount.slewTo(ra, dec)
+        } catch (e: Throwable) {
+            showAlert("Invalid target coordinates")
+        }
     }
 
     @FXML
@@ -260,6 +263,10 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     }
 
     @FXML
+    private fun home() {
+    }
+
+    @FXML
     private fun toggleTrackingMode(event: ActionEvent) {
         val mount = equipmentManager.selectedMount.get() ?: return
         val mode = TrackMode.valueOf((event.source as Node).userData as String)
@@ -269,11 +276,11 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     private fun updateStatus() {
         val mount = equipmentManager.selectedMount.get() ?: return
 
-        status.text = if (mount.isParking) "parking"
-        else if (mount.isParked) "parked"
-        else if (mount.isSlewing) "slewing"
-        else if (mount.isTracking) "tracking"
-        else "idle"
+        status.text = if (mount.isParking) "PARKING"
+        else if (mount.isParked) "PARKED"
+        else if (mount.isSlewing) "SLEWING"
+        else if (mount.isTracking) "TRACKING"
+        else "IDLE"
     }
 
     // TODO: Use timer (1s) to call this too (when tracking is on).
@@ -284,46 +291,5 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         val (raJ2000, decJ2000) = ICRF.equatorial(ra, dec, epoch = TimeJD.now()).equatorialJ2000()
         rightAscensionJ2000.text = Angle.formatHMS(raJ2000.rad.normalized)
         declinationJ2000.text = Angle.formatDMS(decJ2000.rad)
-    }
-
-    companion object {
-
-        @JvmStatic private val PARSE_COORDINATES_FACTOR = doubleArrayOf(1.0, 60.0, 3600.0)
-        @JvmStatic private val PARSE_COORDINATES_NOT_NUMBER_REGEX = Regex("[^\\-\\d.]+")
-
-        @JvmStatic
-        internal fun parseCoordinates(input: String): Double? {
-            val trimmedInput = input.trim()
-            val decimalInput = trimmedInput.toDoubleOrNull()
-            if (decimalInput != null) return decimalInput
-
-            val tokenizer = StringTokenizer(trimmedInput, " \t\n\rhms°'\"")
-            var res = 0.0
-            var idx = 0
-            var negative = false
-
-            while (idx < 3 && tokenizer.hasMoreElements()) {
-                val token = tokenizer.nextToken().replace(PARSE_COORDINATES_NOT_NUMBER_REGEX, "").trim()
-
-                if (token.isEmpty()) continue
-
-                if (idx == 0 && token == "-") {
-                    negative = true
-                    continue
-                }
-
-                val value = token.toDoubleOrNull() ?: continue
-
-                if (idx == 0 && value < 0.0) {
-                    negative = true
-                }
-
-                res += abs(value) / PARSE_COORDINATES_FACTOR[idx++]
-            }
-
-            return if (idx == 0) null
-            else if (negative) -res
-            else res
-        }
     }
 }

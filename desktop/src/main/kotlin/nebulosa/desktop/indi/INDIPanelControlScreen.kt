@@ -331,7 +331,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         ) {
             val button = Button(property.label)
             button.cursor = Cursor.HAND
-            button.styleClass.addAll("text-md", "bold")
+            button.styleClass.addAll("text-md", "text-bold")
             button.setOnAction { sendSwitchPropertyVectorMessage(vector, property) }
             button.updateButton(vector, property)
             children.add(button)
@@ -404,7 +404,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
             label.minWidth = 175.0
             label.maxWidth = 175.0
             label.prefWidth = 175.0
-            label.styleClass.addAll("text-md", "bold")
+            label.styleClass.addAll("text-md", "text-bold")
             children.add(label)
 
             // Value.
@@ -489,7 +489,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
             label.minWidth = 175.0
             label.maxWidth = 175.0
             label.prefWidth = 175.0
-            label.styleClass.addAll("text-md", "bold")
+            label.styleClass.addAll("text-md", "text-bold")
             children.add(label)
 
             // Value.

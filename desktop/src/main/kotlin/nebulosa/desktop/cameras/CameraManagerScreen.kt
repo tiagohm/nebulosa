@@ -98,7 +98,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
         connect.disableProperty().bind(equipmentManager.selectedCamera.isNull or isConnecting or isCapturing)
         connect.textProperty().bind(equipmentManager.selectedCamera.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        equipmentManager.selectedCamera.isConnected.on { connect.styleClass.toggle("text-blue-grey-700", "text-red-700") }
+        equipmentManager.selectedCamera.isConnected.on { connect.styleClass.toggle("text-red-700", "text-blue-grey-700") }
 
         openINDI.disableProperty().bind(connect.disableProperty())
 

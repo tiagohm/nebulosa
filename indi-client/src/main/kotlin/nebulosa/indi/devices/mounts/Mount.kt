@@ -61,6 +61,8 @@ interface Mount : Guider {
 
     fun trackingMode(mode: TrackMode)
 
+    fun slewRate(rate: String)
+
     companion object {
 
         @JvmStatic val DRIVERS = setOf(

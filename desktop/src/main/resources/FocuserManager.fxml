@@ -2,17 +2,15 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 <?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="245.0"
+            prefHeight="260.0"
             prefWidth="381.0"
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
@@ -33,25 +31,15 @@
             <ChoiceBox fx:id="focusers"
                        prefHeight="32.0"
                        prefWidth="394.0">
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </ChoiceBox>
             <Button fx:id="connect"
                     onAction="#connect"
                     alignment="CENTER"
                     contentDisplay="TEXT_ONLY"
                     text="&#xF1616;"
-                    textFill="#455A64"
+                    styleClass="text-blue-grey-700,mdi,mdi-sm"
                     prefHeight="32.0"
                     minWidth="42.0">
-                <font>
-                    <Font name="Material Design Icons"
-                          size="18.0"/>
-                </font>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </Button>
             <Button fx:id="openINDI"
                     onAction="#openINDI"
@@ -68,9 +56,6 @@
                         <Image url="@icons/indi.png"/>
                     </ImageView>
                 </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </Button>
         </HBox>
         <VBox alignment="CENTER"
@@ -80,147 +65,117 @@
                 <Label text="Position:"
                        prefWidth="81.0"
                        maxWidth="81.0"
-                       minWidth="81.0">
-                    <font>
-                        <Font name="System Bold"
-                              size="9.0"/>
-                    </font>
+                       minWidth="81.0"
+                       styleClass="text-sm,text-bold">
                 </Label>
                 <Label fx:id="position"
                        text="0"
                        alignment="CENTER_RIGHT"
                        prefWidth="81.0"
                        maxWidth="81.0"
-                       minWidth="81.0">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
+                       minWidth="81.0"
+                       styleClass="text-md">
                 </Label>
                 <Label text="Temperature:"
                        prefWidth="81.0"
                        maxWidth="81.0"
-                       minWidth="81.0">
-                    <font>
-                        <Font name="System Bold"
-                              size="9.0"/>
-                    </font>
+                       minWidth="81.0"
+                       styleClass="text-sm,text-bold">
                 </Label>
                 <Label fx:id="temperature"
                        text="0.0 °C"
                        alignment="CENTER_RIGHT"
                        prefWidth="81.0"
                        maxWidth="81.0"
-                       minWidth="81.0">
-                    <font>
-                        <Font size="11.0"/>
-                    </font>
+                       minWidth="81.0"
+                       styleClass="text-md">
                 </Label>
             </HBox>
         </VBox>
-        <HBox alignment="CENTER_LEFT"
-              spacing="8.0">
-            <Spinner fx:id="increment"
-                     editable="true"
-                     min="1.0"
-                     max="10000.0"
-                     initialValue="100.0"
-                     amountToStepBy="1.0"
-                     prefWidth="138.0">
-            </Spinner>
-            <Button fx:id="moveIn"
-                    text="Move In"
-                    onAction="#moveIn">
-                <graphic>
-                    <Label text="&#xF004D;"
-                           textFill="#1976D2">
-                        <font>
-                            <Font name="Material Design Icons"
-                                  size="18.0"/>
-                        </font>
-                    </Label>
-                </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
-            </Button>
-            <Button fx:id="moveOut"
-                    text="Move Out"
-                    onAction="#moveOut">
-                <graphic>
-                    <Label text="&#xF0054;"
-                           textFill="#1976D2">
-                        <font>
-                            <Font name="Material Design Icons"
-                                  size="18.0"/>
-                        </font>
-                    </Label>
-                </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
-            </Button>
-        </HBox>
-        <HBox alignment="CENTER_LEFT"
-              spacing="8.0">
-            <Spinner fx:id="absolute"
-                     editable="true"
-                     min="0.0"
-                     max="10000.0"
-                     initialValue="1000.0"
-                     amountToStepBy="1.0"
-                     prefWidth="120.0">
-            </Spinner>
-            <Button fx:id="moveTo"
-                    text="Move To"
-                    onAction="#moveTo"
-                    prefWidth="144.0">
-                <graphic>
-                    <Label text="&#xF0E73;"
-                           textFill="#1976D2">
-                        <font>
-                            <Font name="Material Design Icons"
-                                  size="18.0"/>
-                        </font>
-                    </Label>
-                </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
-            </Button>
-            <Button fx:id="sync"
-                    text="Sync"
-                    onAction="#sync"
-                    prefWidth="92.0">
-                <graphic>
-                    <Label text="&#xF04E6;"
-                           textFill="#1976D2">
-                        <font>
-                            <Font name="Material Design Icons"
-                                  size="18.0"/>
-                        </font>
-                    </Label>
-                </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
-            </Button>
-        </HBox>
+        <VBox alignment="CENTER_LEFT"
+              spacing="1.0">
+            <Label text="Relative:"
+                   styleClass="text-sm">
+            </Label>
+            <HBox alignment="CENTER_LEFT"
+                  spacing="8.0">
+                <Spinner fx:id="increment"
+                         editable="true"
+                         min="1.0"
+                         max="10000.0"
+                         initialValue="100.0"
+                         amountToStepBy="1.0"
+                         prefWidth="138.0">
+                </Spinner>
+                <Button fx:id="moveIn"
+                        text="Move In"
+                        onAction="#moveIn">
+                    <graphic>
+                        <Label text="&#xF004D;"
+                               styleClass="mdi,mdi-sm,text-blue-700">
+                        </Label>
+                    </graphic>
+                </Button>
+                <Button fx:id="moveOut"
+                        text="Move Out"
+                        onAction="#moveOut">
+                    <graphic>
+                        <Label text="&#xF0054;"
+                               styleClass="mdi,mdi-sm,text-blue-700">
+                        </Label>
+                    </graphic>
+                </Button>
+            </HBox>
+        </VBox>
+        <VBox alignment="CENTER_LEFT"
+              spacing="1.0">
+            <Label text="Absolute:"
+                   styleClass="text-sm">
+            </Label>
+            <HBox alignment="CENTER_LEFT"
+                  spacing="8.0">
+                <Spinner fx:id="absolute"
+                         editable="true"
+                         min="0.0"
+                         max="10000.0"
+                         initialValue="1000.0"
+                         amountToStepBy="1.0"
+                         prefWidth="120.0">
+                </Spinner>
+                <Button fx:id="moveTo"
+                        text="Move To"
+                        onAction="#moveTo"
+                        prefWidth="144.0">
+                    <graphic>
+                        <Label text="&#xF0E73;"
+                               styleClass="mdi,mdi-sm,text-blue-700">
+                        </Label>
+                    </graphic>
+                </Button>
+                <Button fx:id="sync"
+                        text="Sync"
+                        onAction="#sync"
+                        prefWidth="92.0">
+                    <graphic>
+                        <Label text="&#xF04E6;"
+                               styleClass="mdi,mdi-sm,text-blue-700">
+                        </Label>
+                    </graphic>
+                </Button>
+            </HBox>
+        </VBox>
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
             <ToggleSwitch fx:id="backlashCompensation"
                           text="Backlash compensation:"
-                          prefWidth="172.0">
-                <font>
-                    <Font size="11.0"/>
-                </font>
+                          prefWidth="172.0"
+                          styleClass="text-sm">
             </ToggleSwitch>
-            <Label text="Steps:">
+            <Label text="Steps:"
+                   styleClass="text-sm">
                 <HBox.margin>
                     <Insets left="16.0"/>
                 </HBox.margin>
-                <font>
-                    <Font size="11.0"/>
-                </font>
             </Label>
             <Spinner fx:id="backlashCompensationSteps"
                      editable="true"
@@ -238,16 +193,9 @@
                     onAction="#abort">
                 <graphic>
                     <Label text="&#xF04DB;"
-                           textFill="#D32F2F">
-                        <font>
-                            <Font name="Material Design Icons"
-                                  size="18.0"/>
-                        </font>
+                           styleClass="mdi,mdi-sm,text-red-700">
                     </Label>
                 </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </Button>
             <Button fx:id="autoFocus"
                     text="Auto focus..."
@@ -255,16 +203,10 @@
                     prefWidth="144.0">
                 <graphic>
                     <Label text="&#xF0F4E;"
-                           textFill="#388E3C">
-                        <font>
-                            <Font name="Material Design Icons"
-                                  size="18.0"/>
-                        </font>
+                           textFill="#388E3C"
+                           styleClass="mdi,mdi-sm,text-green-700">
                     </Label>
                 </graphic>
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </Button>
         </HBox>
     </VBox>

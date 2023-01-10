@@ -13,7 +13,8 @@
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <fx:define>
-        <ContextMenu fx:id="menu">
+        <ContextMenu fx:id="menu"
+                     styleClass="text-md">
             <items>
                 <MenuItem text="Stretch"
                           onAction="#openImageStretcher"/>

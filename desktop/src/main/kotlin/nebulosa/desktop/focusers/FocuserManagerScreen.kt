@@ -59,7 +59,7 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
 
         connect.disableProperty().bind(equipmentManager.selectedFocuser.isNull or isConnecting or isMoving)
         connect.textProperty().bind(equipmentManager.selectedFocuser.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        equipmentManager.selectedFocuser.isConnected.on { connect.styleClass.toggle("text-blue-grey-700", "text-red-700") }
+        equipmentManager.selectedFocuser.isConnected.on { connect.styleClass.toggle("text-red-700", "text-blue-grey-700") }
 
         openINDI.disableProperty().bind(connect.disableProperty())
 

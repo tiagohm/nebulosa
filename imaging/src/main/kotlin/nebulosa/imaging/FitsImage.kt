@@ -2,7 +2,6 @@ package nebulosa.imaging
 
 import nebulosa.imaging.algorithms.CfaPattern.Companion.cfaPattern
 import nebulosa.imaging.algorithms.Debayer
-import nebulosa.math.map
 import nom.tam.fits.Fits
 import nom.tam.fits.ImageHDU
 import java.awt.image.*
@@ -78,8 +77,10 @@ class FitsImage(
 
     private fun mapData(min: Float, max: Float) {
         if (min < 0f || max > 1f) {
+            val k = max - min
+
             for (i in data.indices) {
-                data[i] = map(data[i], min, max, 0f, 1f)
+                data[i] = (data[i] - min) / k
             }
         }
     }

@@ -53,7 +53,10 @@ fun main(args: Array<String>) {
     Locale.setDefault(Locale.ENGLISH)
 
     resource("fonts/Material-Design-Icons.ttf")!!.use { Font.loadFont(it, 24.0) }
-    resource("fonts/Roboto-Regular.ttf")!!.use { Font.loadFont(it, 11.0) }
+    resource("fonts/Roboto-Regular.ttf")!!.use { Font.loadFont(it, 12.0) }
+    resource("fonts/Roboto-Bold.ttf")!!.use { Font.loadFont(it, 12.0) }
+
+    System.setProperty("prism.lcdtext", "false")
 
     with(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger) {
         level = if ("-v" in args) Level.DEBUG else Level.INFO
