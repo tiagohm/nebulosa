@@ -4,6 +4,7 @@ import java.awt.color.ColorSpace
 import java.awt.image.*
 import java.nio.IntBuffer
 
+@Suppress("NOTHING_TO_INLINE")
 open class Image(
     width: Int, height: Int,
     val mono: Boolean,
@@ -13,16 +14,23 @@ open class Image(
     @JvmField val stride = width * pixelStride
     @JvmField val data = (raster.dataBuffer as Float8bitsDataBuffer).data
 
-    @Suppress("NOTHING_TO_INLINE")
+    inline fun indexAt(x: Int, y: Int) = y * stride + x * pixelStride
+
     inline fun writePixel(x: Int, y: Int, channel: ImageChannel, color: Float) {
-        val index = y * stride + x * pixelStride
-        this.data[index + channel.offset] = color
+        data[indexAt(x, y) + channel.offset] = color
     }
 
-    @Suppress("NOTHING_TO_INLINE")
     inline fun readPixel(x: Int, y: Int, channel: ImageChannel): Float {
-        val index = y * stride + x * pixelStride
-        return this.data[index + channel.offset]
+        return data[indexAt(x, y) + channel.offset]
+    }
+
+    inline fun readPixel(x: Int, y: Int): Float {
+        return readPixelAt(indexAt(x, y))
+    }
+
+    inline fun readPixelAt(index: Int): Float {
+        return if (mono) data[index]
+        else (data[index] + data[index + 1] + data[index + 2]) / 3f
     }
 
     fun writeByteArray(channel: ImageChannel, data: Array<ByteArray>): FloatArray {

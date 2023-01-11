@@ -168,6 +168,11 @@ value class Angle(val value: Double) : Comparable<Angle> {
         /**
          * Creates [Angle] from radians.
          */
+        inline val Float.rad get() = Angle(toDouble())
+
+        /**
+         * Creates [Angle] from radians.
+         */
         inline val Int.rad get() = Angle(toDouble())
 
         /**
