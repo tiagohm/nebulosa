@@ -6,7 +6,6 @@ import nebulosa.indi.devices.DeviceProtocolHandler
 import nebulosa.indi.protocol.DefNumberVector
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
-import nebulosa.indi.protocol.PropertyState
 
 internal open class FilterWheelBase(
     client: INDIClient,
@@ -29,7 +28,7 @@ internal open class FilterWheelBase(
                             slotCount = slotValue.max.toInt() - slotValue.min.toInt() + 1
                             handler.fireOnEventReceived(FilterWheelSlotCountChanged(this))
                         } else {
-                            isMoving = message.state == PropertyState.BUSY
+                            isMoving = message.isBusy
 
                             handler.fireOnEventReceived(FilterWheelIsMoving(this))
                         }
@@ -57,6 +56,7 @@ internal open class FilterWheelBase(
     override fun close() {}
 
     override fun toString(): String {
-        return "FilterWheel(name=$name, slotCount=$slotCount, position=$position, isMoving=$isMoving)"
+        return "FilterWheel(name=$name, slotCount=$slotCount, position=$position," +
+                " isMoving=$isMoving)"
     }
 }

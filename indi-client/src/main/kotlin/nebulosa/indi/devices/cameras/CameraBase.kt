@@ -86,7 +86,7 @@ internal open class CameraBase(
                     }
                     "CCD_ABORT_EXPOSURE" -> {
                         if (message is DefSwitchVector) {
-                            canAbort = message.perm != PropertyPermission.RO
+                            canAbort = message.isNotReadOnly
                             handler.fireOnEventReceived(CameraCanAbortChanged(this))
                         }
                     }
@@ -146,7 +146,7 @@ internal open class CameraBase(
                     "CCD_TEMPERATURE" -> {
                         if (message is DefNumberVector) {
                             hasCooler = true
-                            canSetTemperature = message.perm != PropertyPermission.RO
+                            canSetTemperature = message.isNotReadOnly
 
                             handler.fireOnEventReceived(CameraHasCoolerChanged(this))
                             handler.fireOnEventReceived(CameraCanSetTemperatureChanged(this))
@@ -162,7 +162,7 @@ internal open class CameraBase(
                     }
                     "CCD_FRAME" -> {
                         if (message is DefNumberVector) {
-                            canSubFrame = message.perm != PropertyPermission.RO
+                            canSubFrame = message.isNotReadOnly
                             handler.fireOnEventReceived(CameraCanSubFrameChanged(this))
                         }
 
@@ -195,7 +195,7 @@ internal open class CameraBase(
                     }
                     "CCD_BINNING" -> {
                         if (message is DefNumberVector) {
-                            canBin = message.perm != PropertyPermission.RO
+                            canBin = message.isNotReadOnly
                             maxBinX = message["HOR_BIN"]!!.max.toInt()
                             maxBinY = message["VER_BIN"]!!.max.toInt()
 
@@ -238,7 +238,7 @@ internal open class CameraBase(
                             handler.fireOnEventReceived(GuiderAttached(this))
                         } else {
                             val prevIsPulseGuiding = isPulseGuiding
-                            isPulseGuiding = message.state == PropertyState.BUSY
+                            isPulseGuiding = message.isBusy
 
                             if (isPulseGuiding != prevIsPulseGuiding) {
                                 handler.fireOnEventReceived(GuiderPulsingChanged(this))
@@ -252,7 +252,7 @@ internal open class CameraBase(
                             handler.fireOnEventReceived(GuiderAttached(this))
                         } else {
                             val prevIsPulseGuiding = isPulseGuiding
-                            isPulseGuiding = message.state == PropertyState.BUSY
+                            isPulseGuiding = message.isBusy
 
                             if (isPulseGuiding != prevIsPulseGuiding) {
                                 handler.fireOnEventReceived(GuiderPulsingChanged(this))

@@ -5,13 +5,21 @@ import nebulosa.indi.devices.AbstractDevice
 import nebulosa.indi.devices.DeviceProtocolHandler
 import nebulosa.indi.devices.firstOnSwitch
 import nebulosa.indi.devices.firstOnSwitchOrNull
+import nebulosa.indi.devices.gps.GPS
+import nebulosa.indi.devices.gps.GPSAttached
+import nebulosa.indi.devices.gps.GPSDetached
 import nebulosa.indi.devices.guiders.GuiderAttached
 import nebulosa.indi.devices.guiders.GuiderDetached
 import nebulosa.indi.devices.guiders.GuiderPulsingChanged
 import nebulosa.indi.protocol.*
 import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.Distance
+import nebulosa.math.Distance.Companion.m
 import nebulosa.nova.astrometry.ICRF
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 internal open class MountBase(
     client: INDIClient,
@@ -39,6 +47,12 @@ internal open class MountBase(
 
     override var canPulseGuide = false
     override var isPulseGuiding = false
+
+    override var hasGPS = false
+    override var longitude = Angle.ZERO
+    override var latitude = Angle.ZERO
+    override var elevation = Distance.ZERO
+    override var time = OffsetDateTime.MIN!!
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -87,12 +101,12 @@ internal open class MountBase(
                     }
                     "TELESCOPE_PARK" -> {
                         if (message is DefSwitchVector) {
-                            canPark = message.perm != PropertyPermission.RO
+                            canPark = message.isNotReadOnly
 
                             handler.fireOnEventReceived(MountCanParkChanged(this))
                         }
 
-                        isParking = message.state == PropertyState.BUSY
+                        isParking = message.isBusy
                         isParked = message.firstOnSwitchOrNull()?.name == "PARK"
 
                         handler.fireOnEventReceived(MountParkChanged(this))
@@ -119,7 +133,7 @@ internal open class MountBase(
                     }
                     "EQUATORIAL_EOD_COORD" -> {
                         val prevIsIslewing = isSlewing
-                        isSlewing = message.state == PropertyState.BUSY
+                        isSlewing = message.isBusy
 
                         if (isSlewing != prevIsIslewing) {
                             handler.fireOnEventReceived(MountSlewingChanged(this))
@@ -135,9 +149,11 @@ internal open class MountBase(
                             canPulseGuide = true
 
                             handler.fireOnEventReceived(GuiderAttached(this))
-                        } else {
+                        }
+
+                        if (canPulseGuide) {
                             val prevIsPulseGuiding = isPulseGuiding
-                            isPulseGuiding = message.state == PropertyState.BUSY
+                            isPulseGuiding = message.isBusy
 
                             if (isPulseGuiding != prevIsPulseGuiding) {
                                 handler.fireOnEventReceived(GuiderPulsingChanged(this))
@@ -149,14 +165,41 @@ internal open class MountBase(
                             canPulseGuide = true
 
                             handler.fireOnEventReceived(GuiderAttached(this))
-                        } else {
+                        }
+
+                        if (canPulseGuide) {
                             val prevIsPulseGuiding = isPulseGuiding
-                            isPulseGuiding = message.state == PropertyState.BUSY
+                            isPulseGuiding = message.isBusy
 
                             if (isPulseGuiding != prevIsPulseGuiding) {
                                 handler.fireOnEventReceived(GuiderPulsingChanged(this))
                             }
                         }
+                    }
+                    "GEOGRAPHIC_COORD" -> {
+                        if (!hasGPS && message is DefNumberVector && message.isReadOnly) {
+                            hasGPS = true
+
+                            handler.fireOnEventReceived(GPSAttached(this))
+                        }
+
+                        latitude = message["LAT"]!!.value.deg
+                        longitude = message["LAT"]!!.value.deg
+                        elevation = message["ELEV"]!!.value.m
+
+                        handler.fireOnEventReceived(MountCoordinateChanged(this))
+                    }
+                }
+            }
+            is TextVector<*> -> {
+                when (message.name) {
+                    "TIME_UTC" -> {
+                        val utcTime = GPS.extractTime(message["UTC"]!!.value) ?: return
+                        val utcOffset = message["OFFSET"]!!.value.toDoubleOrNull() ?: 0.0
+
+                        time = OffsetDateTime.of(utcTime, ZoneOffset.ofTotalSeconds((utcOffset * 60.0).toInt()))
+
+                        handler.fireOnEventReceived(MountTimeChanged(this))
                     }
                 }
             }
@@ -254,6 +297,11 @@ internal open class MountBase(
         if (canPulseGuide) {
             canPulseGuide = false
             handler.fireOnEventReceived(GuiderDetached(this))
+        }
+
+        if (hasGPS) {
+            hasGPS = false
+            handler.fireOnEventReceived(GPSDetached(this))
         }
     }
 

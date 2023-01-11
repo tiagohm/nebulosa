@@ -13,6 +13,10 @@ import nebulosa.indi.devices.focusers.Focuser
 import nebulosa.indi.devices.focusers.FocuserAttached
 import nebulosa.indi.devices.focusers.FocuserBase
 import nebulosa.indi.devices.focusers.FocuserDetached
+import nebulosa.indi.devices.gps.GPS
+import nebulosa.indi.devices.gps.GPSAttached
+import nebulosa.indi.devices.gps.GPSBase
+import nebulosa.indi.devices.gps.GPSDetached
 import nebulosa.indi.devices.mounts.Mount
 import nebulosa.indi.devices.mounts.MountAttached
 import nebulosa.indi.devices.mounts.MountBase
@@ -34,6 +38,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
     private val mounts = HashMap<String, Mount>(1)
     private val filterWheels = HashMap<String, FilterWheel>(1)
     private val focusers = HashMap<String, Focuser>(2)
+    private val gps = HashMap<String, GPS>(2)
     private val messageReorderingQueue = LinkedBlockingQueue<INDIProtocol>()
     private val notRegisteredDevices = HashSet<String>()
     private val protocolReader by lazy { INDIProtocolReader(this, Thread.MIN_PRIORITY) }
@@ -74,30 +79,36 @@ class DeviceProtocolHandler : INDIProtocolParser {
         try {
             protocolReader.close()
         } finally {
-            for ((_, camera) in cameras) {
-                camera.close()
-                fireOnEventReceived(CameraDetached(camera))
+            for ((_, device) in cameras) {
+                device.close()
+                fireOnEventReceived(CameraDetached(device))
             }
 
-            for ((_, mount) in mounts) {
-                mount.close()
-                fireOnEventReceived(MountDetached(mount))
+            for ((_, device) in mounts) {
+                device.close()
+                fireOnEventReceived(MountDetached(device))
             }
 
-            for ((_, filterWheel) in filterWheels) {
-                filterWheel.close()
-                fireOnEventReceived(FilterWheelDetached(filterWheel))
+            for ((_, device) in filterWheels) {
+                device.close()
+                fireOnEventReceived(FilterWheelDetached(device))
             }
 
-            for ((_, focuser) in focusers) {
-                focuser.close()
-                fireOnEventReceived(FocuserDetached(focuser))
+            for ((_, device) in focusers) {
+                device.close()
+                fireOnEventReceived(FocuserDetached(device))
+            }
+
+            for ((_, device) in gps) {
+                device.close()
+                fireOnEventReceived(GPSDetached(device))
             }
 
             cameras.clear()
             mounts.clear()
             filterWheels.clear()
             focusers.clear()
+            gps.clear()
 
             notRegisteredDevices.clear()
             messageQueueCounter.clear()
@@ -156,6 +167,16 @@ class DeviceProtocolHandler : INDIProtocolParser {
                         val focuser = FocuserBase(client, this, message.device)
                         focusers[message.device] = focuser
                         fireOnEventReceived(FocuserAttached(focuser))
+                    }
+                }
+
+                if (executable in GPS.DRIVERS) {
+                    registered = true
+
+                    if (message.device !in gps) {
+                        val device = GPSBase(client, this, message.device)
+                        gps[message.device] = device
+                        fireOnEventReceived(GPSAttached(device))
                     }
                 }
 
@@ -218,6 +239,10 @@ class DeviceProtocolHandler : INDIProtocolParser {
                     }
                     is Focuser -> {
                         handlers.forEach { it.onEventReceived(FocuserDetached(device)) }
+                        focusers.remove(device.name)
+                    }
+                    is GPS -> {
+                        handlers.forEach { it.onEventReceived(GPSDetached(device)) }
                         focusers.remove(device.name)
                     }
                 }

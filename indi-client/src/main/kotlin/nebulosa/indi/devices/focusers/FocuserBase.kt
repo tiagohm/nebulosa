@@ -73,7 +73,7 @@ internal open class FocuserBase(
                         }
 
                         val prevIsMoving = isMoving
-                        isMoving = message.state == PropertyState.BUSY
+                        isMoving = message.isBusy
 
                         if (prevIsMoving != isMoving) {
                             handler.fireOnEventReceived(FocuserMovingChanged(this))
@@ -97,7 +97,7 @@ internal open class FocuserBase(
                         handler.fireOnEventReceived(FocuserPositionChanged(this))
 
                         val prevIsMoving = isMoving
-                        isMoving = message.state == PropertyState.BUSY
+                        isMoving = message.isBusy
 
                         if (prevIsMoving != isMoving) {
                             handler.fireOnEventReceived(FocuserMovingChanged(this))

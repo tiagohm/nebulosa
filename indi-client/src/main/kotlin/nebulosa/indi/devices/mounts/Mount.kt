@@ -1,9 +1,10 @@
 package nebulosa.indi.devices.mounts
 
+import nebulosa.indi.devices.gps.GPS
 import nebulosa.indi.devices.guiders.Guider
 import nebulosa.math.Angle
 
-interface Mount : Guider {
+interface Mount : Guider, GPS {
 
     val isSlewing: Boolean
 
