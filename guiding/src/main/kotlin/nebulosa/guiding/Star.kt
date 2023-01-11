@@ -38,33 +38,15 @@ open class Star : Point {
     var lastFindResult = FindResult.ERROR
         private set
 
-    constructor(x: Float, y: Float) : super(x, y)
+    constructor(x: Int, y: Int) : super(x, y)
 
     constructor(point: Point) : super(point)
 
-    init {
-        invalidate()
-
-        // Star is a bit quirky in that we use X and Y after the star is invalidated.
-        x = 0f
-        y = 0f
-    }
-
     fun find(
         image: Image, searchRegion: Int,
-        mode: FindMode, minHfd: Double,
-    ) {
-
-    }
-
-    fun find(
-        image: Image, searchRegion: Int,
-        baseX: Int, baseY: Int,
-        mode: FindMode, minHfd: Double,
+        mode: FindMode, minHfd: Float,
     ): Boolean {
         var result = FindResult.OK
-        var newX = baseX.toFloat()
-        var newY = baseY.toFloat()
 
         val res = runCatching {
             val minX = 0
@@ -72,10 +54,10 @@ open class Star : Point {
             val maxX = image.width - 1
             val maxY = image.height - 1
 
-            var startX = max(baseX - searchRegion, minX)
-            var endX = min(baseX + searchRegion, maxX)
-            var startY = max(baseY - searchRegion, minY)
-            var endY = min(baseY + searchRegion, maxY)
+            var startX = max(x - searchRegion, minX)
+            var endX = min(x + searchRegion, maxX)
+            var startY = max(y - searchRegion, minY)
+            var endY = min(y + searchRegion, maxY)
 
             require(endX > startX && endY > startY) { "coordinates are invalid" }
 
@@ -87,7 +69,7 @@ open class Star : Point {
             if (mode == FindMode.PEAK) {
                 for (y in startY..endY) {
                     for (x in startX..endY) {
-                        val p = image.readPixel(x, y)
+                        val p = image.readPixel(x, y) * 65535f
 
                         if (p > peak) {
                             peak = p
@@ -102,21 +84,21 @@ open class Star : Point {
                 // Find the peak value within the search region
                 // using a smoothing function also check for saturation.
                 for (y in startY + 1 until endY) {
-                    for (x in startX + 1 until endY) {
-                        var p = image.readPixel(x, y)
+                    for (x in startX + 1 until endX) {
+                        var p = image.readPixel(x, y) * 65535f
 
                         // TODO: Optimize this using stride instead of call readPixel.
-                        val pv = 4 * p + image.readPixel(y - 1, x - 1) +
-                                image.readPixel(y - 1, x + 1) +
-                                image.readPixel(y + 1, x - 1) +
-                                image.readPixel(y + 1, x + 1) +
-                                2 * image.readPixel(y - 1, x + 0) +
-                                2 * image.readPixel(y + 0, x - 1) +
-                                2 * image.readPixel(y + 0, x + 1) +
-                                2 * image.readPixel(y + 1, x + 0)
+                        val pv = 4 * p + image.readPixel(y - 1, x - 1) * 65535f +
+                                image.readPixel(y - 1, x + 1) * 65535f +
+                                image.readPixel(y + 1, x - 1) * 65535f +
+                                image.readPixel(y + 1, x + 1) * 65535f +
+                                2 * image.readPixel(y - 1, x + 0) * 65535f +
+                                2 * image.readPixel(y + 0, x - 1) * 65535f +
+                                2 * image.readPixel(y + 0, x + 1) * 65535f +
+                                2 * image.readPixel(y + 1, x + 0) * 65535f
 
                         if (pv > peak) {
-                            peak = p
+                            peak = pv
                             peakX = x
                             peakY = y
                         }
@@ -173,9 +155,9 @@ open class Star : Point {
                         // Exclude points not in annulus.
                         if (r2 <= A2 || r2 > B2) continue
 
-                        val p = image.readPixel(x, y)
+                        val p = image.readPixel(x, y) * 65535f
 
-                        if (i > 0 && (p < meanBg - 2.0 * sigmaBg || p > meanBg + 2.0 * sigmaBg)) continue
+                        if (i > 0 && (p < meanBg - 2f * sigmaBg || p > meanBg + 2f * sigmaBg)) continue
 
                         sum += p
                         nbg++
@@ -187,7 +169,6 @@ open class Star : Point {
                 }
 
                 if (nbg < 10 && LOG.isDebugEnabled) {
-                    // Only possible after the first iteration.
                     LOG.debug("too few background points! nbg={} mean={} sigma={}", nbg, meanBg, sigmaBg)
                     break
                 }
@@ -200,7 +181,7 @@ open class Star : Point {
                 if (i > 0 && abs(meanBg - prevMeanBg) < 0.5) break
             }
 
-            var thresh = 0
+            var thresh = 0f
 
             var cx = 0f
             var cy = 0f
@@ -212,9 +193,9 @@ open class Star : Point {
             if (mode == FindMode.PEAK) {
                 mass = peak
                 n = 1
-                thresh = 0
+                thresh = 0f
             } else {
-                thresh = (meanBg + 3.0 * sigmaBg + 0.5).toInt()
+                thresh = meanBg + 3f * sigmaBg + 0.5f
 
                 // Find pixels over threshold within aperture; compute mass and centroid.
                 startX = max(peakX - A, minX)
@@ -234,10 +215,10 @@ open class Star : Point {
                         val dx = x - peakX
 
                         // Exclude points outside aperture.
-                        if (dx * dx + dy2 > A2) continue;
+                        if (dx * dx + dy2 > A2) continue
 
                         // Exclude points below threshold.
-                        val p = image.readPixel(x, y)
+                        val p = image.readPixel(x, y) * 65535f
 
                         if (p < thresh) continue
 
@@ -278,10 +259,10 @@ open class Star : Point {
                 return@runCatching
             }
 
-            newX = peakX + cx / mass
-            newY = peakY + cy / mass
+            x = (peakX + cx / mass).toInt()
+            y = (peakY + cy / mass).toInt()
 
-            hfd = 2f * HalfFluxRadius.compute(newX, newY, mass, hfrvec)
+            hfd = 2f * HalfFluxRadius.compute(x, y, mass, hfrvec)
 
             if (hfd < minHfd && mode != FindMode.PEAK) {
                 result = FindResult.LOWHFD
@@ -295,8 +276,6 @@ open class Star : Point {
             result = FindResult.ERROR
         }
 
-        x = newX
-        y = newY
         valid = true
         lastFindResult = result
 
@@ -309,7 +288,7 @@ open class Star : Point {
         }
 
         if (LOG.isDebugEnabled) {
-            LOG.debug("Find returns {} ({}), X={}, Y={}, Mass={}, SNR={}, Peak={} HFD={}", wasFound, Result, newX, newY, mass, snr, peak, hfd)
+            LOG.debug("Find returns {} ({}), X={}, Y={}, Mass={}, SNR={}, Peak={} HFD={}", wasFound, result, x, y, mass, snr, peak, hfd)
         }
 
         return wasFound
@@ -321,6 +300,12 @@ open class Star : Point {
         hfd = 0f
         lastFindResult = FindResult.ERROR
         super.invalidate()
+    }
+
+    override fun toString(): String {
+        return "Star(x=$x, y=$y, valid=$valid," +
+                " mass=$mass, snr=$snr, hfd=$hfd, peak=$peak," +
+                " lastFindResult=$lastFindResult)"
     }
 
     companion object {

@@ -8,21 +8,21 @@ class ShiftPoint : Point {
      */
     val rate = ZERO
 
-    private var x0 = 0f
-    private var y0 = 0f
+    private var x0 = 0
+    private var y0 = 0
     private var t0 = 0L
 
-    constructor(x: Float, y: Float) : super(x, y)
+    constructor(x: Int, y: Int) : super(x, y)
 
     constructor(point: Point) : super(point)
 
-    inline fun updateXY(x: Float, y: Float) {
+    inline fun updateXY(x: Int, y: Int) {
         this.x = x
         this.y = y
         beginShift()
     }
 
-    inline fun updateShiftRate(x: Float, y: Float) {
+    inline fun updateShiftRate(x: Int, y: Int) {
         rate.x = x
         rate.y = y
         beginShift()
@@ -43,8 +43,8 @@ class ShiftPoint : Point {
     fun updateShift() {
         if (valid && rate.valid) {
             val dt = (System.currentTimeMillis() - t0) / 1000f
-            x = x0 + rate.x * dt
-            y = y0 + rate.y * dt
+            x = (x0 + rate.x * dt).toInt()
+            y = (y0 + rate.y * dt).toInt()
         }
     }
 }

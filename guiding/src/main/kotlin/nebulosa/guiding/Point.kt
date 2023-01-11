@@ -10,8 +10,8 @@ import kotlin.math.hypot
  */
 @Suppress("NOTHING_TO_INLINE")
 open class Point(
-    @Volatile @JvmField var x: Float,
-    @Volatile @JvmField var y: Float,
+    @Volatile @JvmField var x: Int,
+    @Volatile @JvmField var y: Int,
     @Volatile @JvmField var valid: Boolean = true,
 ) {
 
@@ -21,16 +21,17 @@ open class Point(
 
     inline fun dY(point: Point) = y - point.y
 
-    inline val distance get() = hypot(x, y)
+    inline val distance get() = hypot(x.toFloat(), y.toFloat())
 
-    inline fun distance(point: Point) = hypot(dX(point), dY(point))
+    inline fun distance(point: Point) = hypot(dX(point).toFloat(), dY(point).toFloat())
 
     inline val angle get() = angle(ZERO)
 
     fun angle(point: Point): Angle {
         val dx = dX(point)
         val dy = dY(point)
-        return if (dx != 0f || dy != 0f) atan2(dy, dx).rad else Angle.ZERO
+        return if (dx != 0 || dy != 0) atan2(dy.toFloat(), dx.toFloat()).rad
+        else Angle.ZERO
     }
 
     open fun invalidate() {
@@ -39,8 +40,8 @@ open class Point(
 
     companion object {
 
-        @JvmStatic val NONE = Point(Float.MIN_VALUE, Float.MIN_VALUE)
+        @JvmStatic val NONE = Point(Int.MIN_VALUE, Int.MIN_VALUE)
 
-        @JvmStatic val ZERO = Point(0f, 0f)
+        @JvmStatic val ZERO = Point(0, 0)
     }
 }
