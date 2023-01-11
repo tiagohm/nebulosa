@@ -14,6 +14,9 @@ open class Image(
     @JvmField val stride = width * pixelStride
     @JvmField val data = (raster.dataBuffer as Float8bitsDataBuffer).data
 
+    var pedestal = 0f
+        private set
+
     inline fun indexAt(x: Int, y: Int) = y * stride + x * pixelStride
 
     inline fun writePixel(x: Int, y: Int, channel: ImageChannel, color: Float) {

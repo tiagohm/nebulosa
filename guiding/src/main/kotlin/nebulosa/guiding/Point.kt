@@ -10,38 +10,57 @@ import kotlin.math.hypot
  */
 @Suppress("NOTHING_TO_INLINE")
 open class Point(
-    @Volatile @JvmField var x: Int,
-    @Volatile @JvmField var y: Int,
-    @Volatile @JvmField var valid: Boolean = true,
+    x: Float,
+    y: Float,
 ) {
 
-    constructor(point: Point) : this(point.x, point.y, point.valid)
+    var x = x
+        internal set(value) {
+            field = value
+            isValid = true
+        }
+
+    var y = y
+        internal set(value) {
+            field = value
+            isValid = true
+        }
+
+    var isValid = true
+        internal set
+
+    constructor(point: Point) : this(point.x, point.y) {
+        isValid = point.isValid
+    }
 
     inline fun dX(point: Point) = x - point.x
 
     inline fun dY(point: Point) = y - point.y
 
-    inline val distance get() = hypot(x.toFloat(), y.toFloat())
+    inline val distance get() = hypot(x, y)
 
-    inline fun distance(point: Point) = hypot(dX(point).toFloat(), dY(point).toFloat())
+    inline fun distance(point: Point) = hypot(dX(point), dY(point))
 
     inline val angle get() = angle(ZERO)
 
     fun angle(point: Point): Angle {
         val dx = dX(point)
         val dy = dY(point)
-        return if (dx != 0 || dy != 0) atan2(dy.toFloat(), dx.toFloat()).rad
+        return if (dx != 0f || dy != 0f) atan2(dy, dx).rad
         else Angle.ZERO
     }
 
     open fun invalidate() {
-        valid = false
+        isValid = false
     }
+
+    inline operator fun plus(other: Point) = Point(x + other.x, y + other.y)
+
+    inline operator fun minus(other: Point) = Point(x - other.x, y - other.y)
 
     companion object {
 
-        @JvmStatic val NONE = Point(Int.MIN_VALUE, Int.MIN_VALUE)
-
-        @JvmStatic val ZERO = Point(0, 0)
+        @JvmStatic val NONE = Point(Float.NaN, Float.NaN)
+        @JvmStatic val ZERO = Point(0f, 0f)
     }
 }

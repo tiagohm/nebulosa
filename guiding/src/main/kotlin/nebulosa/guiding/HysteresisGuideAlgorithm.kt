@@ -2,14 +2,13 @@ package nebulosa.guiding
 
 import kotlin.math.abs
 
-// TODO: Somente capturar após finalizar a guiagem.
 class HysteresisGuideAlgorithm(
     override var minMove: Double = MIN_MOVE,
     val hysteresis: Double = HYSTERESIS,
     val aggression: Double = AGGRESSION,
 ) : GuideAlgorithm {
 
-    var lastMove = 0.0
+    @Volatile var lastMove = 0.0
         private set
 
     override fun compute(input: Double): Double {

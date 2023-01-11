@@ -2,10 +2,7 @@ package nebulosa.guiding
 
 import nebulosa.imaging.Image
 import org.slf4j.LoggerFactory
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.sqrt
+import kotlin.math.*
 
 /**
  * Represents a star.
@@ -21,6 +18,8 @@ open class Star : Point {
         TOO_NEAR_EDGE,
         MASSCHANGE,
         ERROR;
+
+        inline val wasFound get() = this == OK || this == SATURATED
     }
 
     var mass = 0f
@@ -38,26 +37,32 @@ open class Star : Point {
     var lastFindResult = FindResult.ERROR
         private set
 
-    constructor(x: Int, y: Int) : super(x, y)
+    constructor(x: Float, y: Float) : super(x, y)
 
     constructor(point: Point) : super(point)
 
     fun find(
-        image: Image, searchRegion: Int,
-        mode: FindMode, minHfd: Float,
+        image: Image, searchRegion: Float = 15f,
+        baseX: Float = x, baseY: Float = y,
+        mode: FindMode = FindMode.CENTROID, minHFD: Float = 1.5f,
     ): Boolean {
         var result = FindResult.OK
 
-        val res = runCatching {
+        var newX = baseX
+        var newY = baseY
+
+        val res = run {
             val minX = 0
             val minY = 0
             val maxX = image.width - 1
             val maxY = image.height - 1
 
-            var startX = max(x - searchRegion, minX)
-            var endX = min(x + searchRegion, maxX)
-            var startY = max(y - searchRegion, minY)
-            var endY = min(y + searchRegion, maxY)
+            var startX = max((x - searchRegion).toInt(), minX)
+            var endX = min((x + searchRegion).toInt(), maxX)
+            var startY = max((y - searchRegion).toInt(), minY)
+            var endY = min((y + searchRegion).toInt(), maxY)
+
+            // println("Star::Find startx=%d starty=%d endx=%d endy=%d".format(startX, startY, endX, endY))
 
             require(endX > startX && endY > startY) { "coordinates are invalid" }
 
@@ -87,20 +92,24 @@ open class Star : Point {
                     for (x in startX + 1 until endX) {
                         var p = image.readPixel(x, y) * 65535f
 
-                        // TODO: Optimize this using stride instead of call readPixel.
-                        val pv = 4 * p + image.readPixel(y - 1, x - 1) * 65535f +
-                                image.readPixel(y - 1, x + 1) * 65535f +
-                                image.readPixel(y + 1, x - 1) * 65535f +
-                                image.readPixel(y + 1, x + 1) * 65535f +
-                                2 * image.readPixel(y - 1, x + 0) * 65535f +
-                                2 * image.readPixel(y + 0, x - 1) * 65535f +
-                                2 * image.readPixel(y + 0, x + 1) * 65535f +
-                                2 * image.readPixel(y + 1, x + 0) * 65535f
+                        // TODO: Optimize this using stride instead of call readPixel
+                        // and remove 65535 multiplication.
+                        val pv = 4 * p + image.readPixel(x - 1, y - 1) * 65535f +
+                                image.readPixel(x + 1, y - 1) * 65535f +
+                                image.readPixel(x - 1, y + 1) * 65535f +
+                                image.readPixel(x + 1, y + 1) * 65535f +
+                                2 * image.readPixel(x + 0, y - 1) * 65535f +
+                                2 * image.readPixel(x - 1, y + 0) * 65535f +
+                                2 * image.readPixel(x + 1, y + 0) * 65535f +
+                                2 * image.readPixel(x + 0, y + 1) * 65535f
+
+                        // println("Star::Find p=%d val=%d".format(p.toInt(), pv.toInt()))
 
                         if (pv > peak) {
                             peak = pv
                             peakX = x
                             peakY = y
+                            // println("Star::Find peak_val=%d peak_x=%d peak_y=%d".format(peak.toInt(), peakX, peakY))
                         }
 
                         if (p > max3[0]) {
@@ -123,6 +132,7 @@ open class Star : Point {
 
                 this.peak = max3[0]   // Raw peak value.
                 peak /= 16 // Smoothed peak value.
+                // println("Star::Find PeakVal=%d peak_val/16=%d".format(this.peak.toInt(), peak.toInt()))
             }
 
             // Center window around peak value.
@@ -130,6 +140,8 @@ open class Star : Point {
             endX = min(peakX + B, maxX)
             startY = max(peakY - B, minY)
             endY = min(peakY + B, maxY)
+
+            // println("Star::Find startx=%d starty=%d endx=%d endy=%d".format(startX, startY, endX, endY))
 
             // Find the mean and stdev of the background.
             var nbg = 0
@@ -156,6 +168,7 @@ open class Star : Point {
                         if (r2 <= A2 || r2 > B2) continue
 
                         val p = image.readPixel(x, y) * 65535f
+                        // println("Star::Find val=%.4f x=%d y=%d".format(p, x, y))
 
                         if (i > 0 && (p < meanBg - 2f * sigmaBg || p > meanBg + 2f * sigmaBg)) continue
 
@@ -165,6 +178,7 @@ open class Star : Point {
                         val a0 = a
                         a += (p - a) / nbg
                         q += (p - a0) * (p - a)
+                        // println("Star::Find sum=%.4f a=%.4f q=%.4f nbg=%d".format(sum, a, q, nbg))
                     }
                 }
 
@@ -177,6 +191,9 @@ open class Star : Point {
                 meanBg = sum / nbg
                 sigma2Bg = q / (nbg - 1)
                 sigmaBg = sqrt(sigma2Bg)
+
+                val msg = "Star::Find iter=%d prev_mean_bg=%.4f mean_bg=%.4f sigma2_bg=%.4f sigma_bg=%.4f"
+                // println(msg.format(i, prevMeanBg, meanBg, sigma2Bg, sigmaBg))
 
                 if (i > 0 && abs(meanBg - prevMeanBg) < 0.5) break
             }
@@ -195,13 +212,17 @@ open class Star : Point {
                 n = 1
                 thresh = 0f
             } else {
-                thresh = meanBg + 3f * sigmaBg + 0.5f
+                thresh = truncate(meanBg + 3f * sigmaBg + 0.5f)
+
+                // println("Star::Find thresh=%.4f".format(thresh))
 
                 // Find pixels over threshold within aperture; compute mass and centroid.
                 startX = max(peakX - A, minX)
                 endX = min(peakX + A, maxX)
                 startY = max(peakY - A, minY)
                 endY = min(peakY + A, maxY)
+
+                // println("Star::Find startx=%d starty=%d endx=%d endy=%d".format(startX, startY, endX, endY))
 
                 n = 0
 
@@ -222,6 +243,8 @@ open class Star : Point {
 
                         if (p < thresh) continue
 
+                        // println("Star::Find val=%f x=%d y=%d".format(p, x, y))
+
                         val d = p - meanBg
 
                         cx += dx * d
@@ -229,7 +252,9 @@ open class Star : Point {
                         mass += d
                         n++
 
-                        hfrvec.add(R2M(x, y, d))
+                        // println("Star::Find cx=%.4f cy=%.4f mass=%.4f n=%d".format(cx, cy, mass, n))
+
+                        hfrvec.add(R2M(x.toFloat(), y.toFloat(), d))
                     }
                 }
             }
@@ -239,6 +264,8 @@ open class Star : Point {
             // SNR estimate from: Measuring the Signal-to-Noise Ratio S/N of the CCD Image of a Star or Nebula, J.H.Simonetti, 2004 January 8
             // http://www.phys.vt.edu/~jhs/phys3154/snr20040108.pdf
             snr = if (n > 0) mass / sqrt(mass / 0.5f + sigma2Bg * n * (1f + 1f / nbg)) else 0f
+
+            // println("Star::SNR=%.4f".format(snr))
 
             // A few scattered pixels over threshold can give a false positive
             // avoid this by requiring the smoothed peak value to be above the threshold.
@@ -250,42 +277,48 @@ open class Star : Point {
             if (mass < 10f) {
                 hfd = 0f
                 result = FindResult.LOWMASS
-                return@runCatching
+                return@run
             }
 
             if (snr < LOW_SNR) {
                 hfd = 0f
                 result = FindResult.LOWSNR
-                return@runCatching
+                return@run
             }
 
-            x = (peakX + cx / mass).toInt()
-            y = (peakY + cy / mass).toInt()
+            newX = peakX + cx / mass
+            newY = peakY + cy / mass
 
-            hfd = 2f * HalfFluxRadius.compute(x, y, mass, hfrvec)
+            hfd = 2f * HalfFluxRadius.compute(newX, newY, mass, hfrvec)
 
-            if (hfd < minHfd && mode != FindMode.PEAK) {
+            if (hfd < minHFD && mode != FindMode.PEAK) {
                 result = FindResult.LOWHFD
-                return@runCatching
+                return@run
             }
 
-            // TODO: Check for saturation.
+            val mx = max3[0]
+
+            // check for saturation.
+            if (mx >= 65535f) {
+                result = FindResult.SATURATED
+                return@run
+            }
+
+            // maxADU not known, use the "flat-top" hueristic
+            // even at saturation, the max values may vary a bit due to noise
+            // Call it saturated if the the top three values are within 32 parts per 65535 of max for 16-bit cameras,
+            // or within 1 part per 191 for 8-bit cameras
+            // val d = max3[0] - max3[2]
+
+            // if (d * 65535f < 32f * mx) {
+            //     result = FindResult.SATURATED
+            //     return@run
+            // }
         }
 
-        if (res.isFailure && result == FindResult.OK) {
-            result = FindResult.ERROR
-        }
-
-        valid = true
+        x = newX
+        y = newY
         lastFindResult = result
-
-        val wasFound = result == FindResult.OK || result == FindResult.SATURATED
-
-        if (!valid || result == FindResult.ERROR) {
-            mass = 0f
-            snr = 0f
-            hfd = 0f
-        }
 
         if (LOG.isDebugEnabled) {
             LOG.debug("Find returns {} ({}), X={}, Y={}, Mass={}, SNR={}, Peak={} HFD={}", wasFound, result, x, y, mass, snr, peak, hfd)
@@ -302,8 +335,10 @@ open class Star : Point {
         super.invalidate()
     }
 
+    inline val wasFound get() = isValid && lastFindResult.wasFound
+
     override fun toString(): String {
-        return "Star(x=$x, y=$y, valid=$valid," +
+        return "Star(x=$x, y=$y," +
                 " mass=$mass, snr=$snr, hfd=$hfd, peak=$peak," +
                 " lastFindResult=$lastFindResult)"
     }

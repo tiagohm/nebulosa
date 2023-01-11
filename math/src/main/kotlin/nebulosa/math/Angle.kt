@@ -63,15 +63,21 @@ value class Angle(val value: Double) : Comparable<Angle> {
 
     inline operator fun plus(angle: Double) = (value + angle).rad
 
+    inline operator fun plus(angle: Float) = this + angle.toDouble()
+
     inline operator fun plus(angle: Int) = (value + angle).rad
 
     inline operator fun minus(angle: Angle) = (value - angle.value).rad
 
     inline operator fun minus(angle: Double) = (value - angle).rad
 
+    inline operator fun minus(angle: Float) = this - angle.toDouble()
+
     inline operator fun minus(angle: Int) = (value - angle).rad
 
     inline operator fun times(angle: Double) = (value * angle).rad
+
+    inline operator fun times(angle: Float) = this * angle.toDouble()
 
     inline operator fun times(angle: Int) = (value * angle).rad
 
@@ -79,11 +85,15 @@ value class Angle(val value: Double) : Comparable<Angle> {
 
     inline operator fun div(angle: Double) = (value / angle).rad
 
+    inline operator fun div(angle: Float) = this / angle.toDouble()
+
     inline operator fun div(angle: Int) = (value / angle).rad
 
     inline operator fun rem(angle: Angle) = (value % angle.value).rad
 
     inline operator fun rem(angle: Double) = (value % angle).rad
+
+    inline operator fun rem(angle: Float) = this % angle.toDouble()
 
     inline operator fun rem(angle: Int) = (value % angle).rad
 
