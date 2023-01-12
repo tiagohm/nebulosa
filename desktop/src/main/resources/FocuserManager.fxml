@@ -10,7 +10,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="260.0"
+            prefHeight="275.0"
             prefWidth="381.0"
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
@@ -89,6 +89,16 @@
                        maxWidth="81.0"
                        minWidth="81.0"
                        styleClass="text-md">
+                </Label>
+            </HBox>
+            <HBox alignment="CENTER_LEFT">
+                <Label fx:id="status"
+                       text="idle">
+                    <graphic>
+                        <Label text="&#xF02FC;"
+                               styleClass="text-blue-700,mdi,mdi-xs">
+                        </Label>
+                    </graphic>
                 </Label>
             </HBox>
         </VBox>

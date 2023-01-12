@@ -200,11 +200,8 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     private fun onCameraEvent(event: CameraEvent) {
         when (event) {
             is CameraExposureAborted,
-            is CameraExposureFinished,
             is CameraExposureFailed -> Platform.runLater {
-                val isFinished = event is CameraExposureAborted || event is CameraExposureFailed
-                val isCapturing = equipmentManager.imagingCameraTask?.isCapturing ?: false
-                this.isCapturing.set(isCapturing && !isFinished)
+                isCapturing.set(false)
                 updateTitle()
             }
             is CameraExposureProgressChanged -> Platform.runLater { updateTitle() }
@@ -213,29 +210,18 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
                     .openImageViewer(event.imagePath.toFile(), event.device)
                     .also(imageViewers::add)
             }
-            is CameraExposureMinMaxChanged -> Platform.runLater {
-                updateExposure()
-                loadPreferences(event.device)
-            }
-            is CameraFrameChanged -> Platform.runLater {
-                updateFrame()
-                loadPreferences(event.device)
-            }
-            is CameraCanBinChanged -> Platform.runLater {
-                updateBin()
-                loadPreferences(event.device)
-            }
-            is CameraGainMinMaxChanged -> Platform.runLater {
-                updateGain()
-                loadPreferences(event.device)
-            }
-            is CameraOffsetMinMaxChanged -> Platform.runLater {
-                updateOffset()
-                loadPreferences(event.device)
-            }
-            is CameraFrameFormatsChanged -> Platform.runLater {
-                updateFrameFormat()
-                loadPreferences(event.device)
+            else -> {
+                when (event) {
+                    is CameraExposureMinMaxChanged -> Platform.runLater(::updateExposure)
+                    is CameraFrameChanged -> Platform.runLater(::updateFrame)
+                    is CameraCanBinChanged -> Platform.runLater(::updateBin)
+                    is CameraGainMinMaxChanged -> Platform.runLater(::updateGain)
+                    is CameraOffsetMinMaxChanged -> Platform.runLater(::updateOffset)
+                    is CameraFrameFormatsChanged -> Platform.runLater(::updateFrameFormat)
+                    else -> return
+                }
+
+                Platform.runLater { loadPreferences(event.device) }
             }
         }
     }
@@ -504,23 +490,24 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             ?.let { if (it.userData == "SINGLE") 1 else if (it.userData == "FIXED") exposureCount.value.toInt() else Int.MAX_VALUE }
             ?: 1
 
-        equipmentManager
-            .startImagingCapture(
-                camera,
-                equipmentManager.selectedFilterWheel.value,
-                exposureInMicros, amount, exposureDelay.value.toLong(),
-                if (subFrame.isSelected) frameX.value.toInt() else camera.minX,
-                if (subFrame.isSelected) frameY.value.toInt() else camera.minY,
-                if (subFrame.isSelected) frameWidth.value.toInt() else camera.maxWidth,
-                if (subFrame.isSelected) frameHeight.value.toInt() else camera.maxHeight,
-                frameFormat.value, frameType.value,
-                binX.value.toInt(), binY.value.toInt(),
-                gain.value.toInt(), offset.value.toInt(),
-                preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures"),
-                cameraImageSavePath(camera),
-                if (!preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")) AutoSubFolderMode.OFF
-                else preferences.enum<AutoSubFolderMode>("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON,
-            ) ?: return
+        val task = CameraExposureTask(
+            camera,
+            equipmentManager.selectedFilterWheel.value,
+            exposureInMicros, amount, exposureDelay.value.toLong(),
+            if (subFrame.isSelected) frameX.value.toInt() else camera.minX,
+            if (subFrame.isSelected) frameY.value.toInt() else camera.minY,
+            if (subFrame.isSelected) frameWidth.value.toInt() else camera.maxWidth,
+            if (subFrame.isSelected) frameHeight.value.toInt() else camera.maxHeight,
+            frameFormat.value, frameType.value,
+            binX.value.toInt(), binY.value.toInt(),
+            gain.value.toInt(), offset.value.toInt(),
+            preferences.bool("cameraManager.equipment.${camera.name}.autoSaveAllExposures"),
+            cameraImageSavePath(camera),
+            if (!preferences.bool("cameraManager.equipment.${camera.name}.autoSubFolder")) AutoSubFolderMode.OFF
+            else preferences.enum<AutoSubFolderMode>("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON,
+        )
+
+        if (!CameraExposureTask.execute(task) { isCapturing.set(false) }) return
 
         savePreferences(camera)
 
@@ -529,12 +516,12 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
 
     @FXML
     private fun abortCapture() {
-        equipmentManager.imagingCameraTask?.cancel(true)
+        CameraExposureTask.cancel()
     }
 
     private fun updateTitle() {
         status.text = buildString(128) {
-            val task = equipmentManager.imagingCameraTask
+            val task = CameraExposureTask.currentTask
 
             if (task != null && isCapturing.get()) {
                 val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000.0} s"

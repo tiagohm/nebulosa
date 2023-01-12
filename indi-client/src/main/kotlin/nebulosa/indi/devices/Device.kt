@@ -17,11 +17,13 @@ interface Device : INDIProtocolHandler, Closeable {
 
     val messages: List<String>
 
-    fun sendMessageToServer(message: INDIProtocol)
-
     fun connect()
 
     fun disconnect()
+
+    fun sendMessageToServer(message: INDIProtocol) {
+        client.sendMessageToServer(message)
+    }
 
     fun ask() {
         sendMessageToServer(GetProperties().also { it.device = name })
@@ -31,9 +33,18 @@ interface Device : INDIProtocolHandler, Closeable {
         sendMessageToServer(EnableBLOB().also { it.device = name })
     }
 
+    fun snoop(devices: Iterable<Device?>)
+
     fun sendNewSwitch(
         name: String,
         vararg elements: Pair<String, Boolean>,
+    ) {
+        sendNewSwitch(name, elements.asList())
+    }
+
+    fun sendNewSwitch(
+        name: String,
+        elements: Iterable<Pair<String, Boolean>>,
     ) {
         val vector = NewSwitchVector()
         vector.device = this.name
@@ -53,6 +64,13 @@ interface Device : INDIProtocolHandler, Closeable {
         name: String,
         vararg elements: Pair<String, Double>,
     ) {
+        sendNewNumber(name, elements.asList())
+    }
+
+    fun sendNewNumber(
+        name: String,
+        elements: Iterable<Pair<String, Double>>,
+    ) {
         val vector = NewNumberVector()
         vector.device = this.name
         vector.name = name
@@ -70,6 +88,13 @@ interface Device : INDIProtocolHandler, Closeable {
     fun sendNewText(
         name: String,
         vararg elements: Pair<String, String>,
+    ) {
+        sendNewText(name, elements.asList())
+    }
+
+    fun sendNewText(
+        name: String,
+        elements: Iterable<Pair<String, String>>,
     ) {
         val vector = NewTextVector()
         vector.device = this.name

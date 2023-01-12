@@ -5,7 +5,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.filterwheels.FilterWheel
-import nebulosa.indi.devices.filterwheels.FilterWheelIsMoving
+import nebulosa.indi.devices.filterwheels.FilterWheelMovingChanged
 import nebulosa.indi.devices.filterwheels.FilterWheelPositionChanged
 import nebulosa.indi.devices.filterwheels.FilterWheelSlotCountChanged
 
@@ -33,7 +33,7 @@ class FilterWheelProperty : DeviceProperty<FilterWheel>() {
         when (event) {
             is FilterWheelSlotCountChanged -> Platform.runLater { slotCount.set(device.slotCount) }
             is FilterWheelPositionChanged -> Platform.runLater { position.set(device.position) }
-            is FilterWheelIsMoving -> Platform.runLater { isMoving.set(device.isMoving) }
+            is FilterWheelMovingChanged -> Platform.runLater { isMoving.set(device.isMoving) }
         }
     }
 }

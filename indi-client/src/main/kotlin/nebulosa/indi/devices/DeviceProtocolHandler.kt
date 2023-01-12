@@ -81,26 +81,31 @@ class DeviceProtocolHandler : INDIProtocolParser {
         } finally {
             for ((_, device) in cameras) {
                 device.close()
+                LOG.info("camera detached: {}", device.name)
                 fireOnEventReceived(CameraDetached(device))
             }
 
             for ((_, device) in mounts) {
                 device.close()
+                LOG.info("mount detached: {}", device.name)
                 fireOnEventReceived(MountDetached(device))
             }
 
             for ((_, device) in filterWheels) {
                 device.close()
+                LOG.info("filter wheel detached: {}", device.name)
                 fireOnEventReceived(FilterWheelDetached(device))
             }
 
             for ((_, device) in focusers) {
                 device.close()
+                LOG.info("focuser detached: {}", device.name)
                 fireOnEventReceived(FocuserDetached(device))
             }
 
             for ((_, device) in gps) {
                 device.close()
+                LOG.info("gps detached: {}", device.name)
                 fireOnEventReceived(GPSDetached(device))
             }
 
@@ -130,13 +135,13 @@ class DeviceProtocolHandler : INDIProtocolParser {
                 var registered = false
 
                 if (executable in Camera.DRIVERS) {
+                    registered = true
+
                     if (message.device !in cameras) {
-                        val camera = CameraBase(client, this, message.device)
-                        cameras[message.device] = camera
-                        fireOnEventReceived(CameraAttached(camera))
-                        registered = true
-                    } else {
-                        registered = true
+                        val device = CameraBase(client, this, message.device)
+                        cameras[message.device] = device
+                        LOG.info("camera attached: {}", device.name)
+                        fireOnEventReceived(CameraAttached(device))
                     }
                 }
 
@@ -144,9 +149,10 @@ class DeviceProtocolHandler : INDIProtocolParser {
                     registered = true
 
                     if (message.device !in mounts) {
-                        val mount = MountBase(client, this, message.device)
-                        mounts[message.device] = mount
-                        fireOnEventReceived(MountAttached(mount))
+                        val device = MountBase(client, this, message.device)
+                        mounts[message.device] = device
+                        LOG.info("mount attached: {}", device.name)
+                        fireOnEventReceived(MountAttached(device))
                     }
                 }
 
@@ -154,9 +160,10 @@ class DeviceProtocolHandler : INDIProtocolParser {
                     registered = true
 
                     if (message.device !in filterWheels) {
-                        val filterWheel = FilterWheelBase(client, this, message.device)
-                        filterWheels[message.device] = filterWheel
-                        fireOnEventReceived(FilterWheelAttached(filterWheel))
+                        val device = FilterWheelBase(client, this, message.device)
+                        filterWheels[message.device] = device
+                        LOG.info("filter wheel attached: {}", device.name)
+                        fireOnEventReceived(FilterWheelAttached(device))
                     }
                 }
 
@@ -164,9 +171,10 @@ class DeviceProtocolHandler : INDIProtocolParser {
                     registered = true
 
                     if (message.device !in focusers) {
-                        val focuser = FocuserBase(client, this, message.device)
-                        focusers[message.device] = focuser
-                        fireOnEventReceived(FocuserAttached(focuser))
+                        val device = FocuserBase(client, this, message.device)
+                        focusers[message.device] = device
+                        LOG.info("focuser attached: {}", device.name)
+                        fireOnEventReceived(FocuserAttached(device))
                     }
                 }
 
@@ -176,19 +184,18 @@ class DeviceProtocolHandler : INDIProtocolParser {
                     if (message.device !in gps) {
                         val device = GPSBase(client, this, message.device)
                         gps[message.device] = device
+                        LOG.info("gps attached: {}", device.name)
                         fireOnEventReceived(GPSAttached(device))
                     }
                 }
 
                 if (!registered) {
-                    LOG.warn("device is not registered: ${message.device}")
+                    LOG.warn("device is not registered: {}", message.device)
                     notRegisteredDevices.add(message.device)
                 }
 
                 return
             }
-
-            // TODO: Handle Guider. See which properties are used.
         }
 
         handleMessage(message)
@@ -228,22 +235,27 @@ class DeviceProtocolHandler : INDIProtocolParser {
                 when (device) {
                     is Camera -> {
                         handlers.forEach { it.onEventReceived(CameraDetached(device)) }
+                        LOG.info("camera detached: {}", device.name)
                         cameras.remove(device.name)
                     }
                     is Mount -> {
                         handlers.forEach { it.onEventReceived(MountDetached(device)) }
+                        LOG.info("mount detached: {}", device.name)
                         mounts.remove(device.name)
                     }
                     is FilterWheel -> {
                         handlers.forEach { it.onEventReceived(FilterWheelDetached(device)) }
+                        LOG.info("filter wheel detached: {}", device.name)
                         filterWheels.remove(device.name)
                     }
                     is Focuser -> {
                         handlers.forEach { it.onEventReceived(FocuserDetached(device)) }
+                        LOG.info("focuser detached: {}", device.name)
                         focusers.remove(device.name)
                     }
                     is GPS -> {
                         handlers.forEach { it.onEventReceived(GPSDetached(device)) }
+                        LOG.info("gps detached: {}", device.name)
                         focusers.remove(device.name)
                     }
                 }

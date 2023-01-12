@@ -1,8 +1,15 @@
 package nebulosa.indi.devices
 
 import nebulosa.indi.INDIClient
+import nebulosa.indi.devices.cameras.Camera
+import nebulosa.indi.devices.domes.Dome
+import nebulosa.indi.devices.filterwheels.FilterWheel
+import nebulosa.indi.devices.focusers.Focuser
+import nebulosa.indi.devices.mounts.Mount
+import nebulosa.indi.devices.rotators.Rotator
 import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.Vector
+import org.slf4j.LoggerFactory
 import java.util.*
 
 internal abstract class AbstractDevice(
@@ -156,11 +163,26 @@ internal abstract class AbstractDevice(
             }
             else -> return
         }
-
     }
 
-    override fun sendMessageToServer(message: INDIProtocol) {
-        client.sendMessageToServer(message)
+    override fun snoop(devices: Iterable<Device?>) {
+        val message = devices.mapNotNull {
+            when (it) {
+                is Camera -> "ACTIVE_CCD"
+                is Mount -> "ACTIVE_TELESCOPE"
+                is Focuser -> "ACTIVE_FOCUSER"
+                is FilterWheel -> "ACTIVE_FILTER"
+                is Rotator -> "ACTIVE_ROTATOR"
+                is Dome -> "ACTIVE_DOME"
+                else -> return@mapNotNull null
+            } to it.name
+        }
+
+        // TODO:ACTIVE_SKYQUALITY, ACTIVE_WEATHER
+
+        LOG.info("$name is snooping the devices: $message")
+
+        sendNewText("ACTIVE_DEVICES", message)
     }
 
     override fun connect() {
@@ -173,5 +195,10 @@ internal abstract class AbstractDevice(
 
     override fun disconnect() {
         sendNewSwitch("CONNECTION", "DISCONNECT" to true)
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(AbstractDevice::class.java)
     }
 }

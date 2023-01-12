@@ -6,6 +6,7 @@ import nebulosa.indi.devices.DeviceProtocolHandler
 import nebulosa.indi.protocol.DefNumberVector
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
+import nebulosa.indi.protocol.PropertyState
 
 internal open class FilterWheelBase(
     client: INDIClient,
@@ -30,7 +31,11 @@ internal open class FilterWheelBase(
                         } else {
                             isMoving = message.isBusy
 
-                            handler.fireOnEventReceived(FilterWheelIsMoving(this))
+                            handler.fireOnEventReceived(FilterWheelMovingChanged(this))
+                        }
+
+                        if (message.state == PropertyState.ALERT) {
+                            handler.fireOnEventReceived(FilterWheelMoveFailed(this))
                         }
 
                         val position = slotValue.value.toInt()
@@ -47,10 +52,14 @@ internal open class FilterWheelBase(
         super.handleMessage(message)
     }
 
-    override fun moveTo(slot: Int) {
-        if (slot in 1..slotCount) {
-            sendNewNumber("FILTER_SLOT", "FILTER_SLOT_VALUE" to slot.toDouble())
+    override fun moveTo(position: Int) {
+        if (position in 1..slotCount) {
+            sendNewNumber("FILTER_SLOT", "FILTER_SLOT_VALUE" to position.toDouble())
         }
+    }
+
+    override fun filterNames(names: Iterable<String>) {
+        sendNewText("FILTER_NAME", names.mapIndexed { i, name -> "FILTER_SLOT_NAME_${i + 1}" to name })
     }
 
     override fun close() {}

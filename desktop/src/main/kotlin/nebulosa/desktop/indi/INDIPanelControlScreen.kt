@@ -53,11 +53,11 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
     override fun onStart() {
         subscribers[0] = eventBus
             .filterIsInstance<DevicePropertyEvent> { it.device === devices.value }
-            .subscribe(::onEvent)
+            .subscribe(::onPropertyEvent)
 
         subscribers[1] = eventBus
             .filterIsInstance<DeviceMessageReceived> { it.device === devices.value }
-            .subscribe(::onEvent)
+            .subscribe(::onMessageEvent)
 
         populateDevices()
     }
@@ -77,7 +77,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         }
     }
 
-    private fun onEvent(event: DevicePropertyEvent) {
+    private fun onPropertyEvent(event: DevicePropertyEvent) {
         when (event) {
             is DevicePropertyChanged -> Platform.runLater {
                 synchronized(cacheProperties) {
@@ -106,7 +106,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         }
     }
 
-    private fun onEvent(event: DeviceMessageReceived) {
+    private fun onMessageEvent(event: DeviceMessageReceived) {
         Platform.runLater {
             synchronized(logText) {
                 logText.insert(0, "${event.message}\n")
@@ -268,22 +268,22 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
         private fun sendNumberPropertyVectorMessage(
             vector: NumberPropertyVector,
-            data: Array<Pair<String, Double>>,
+            data: Iterable<Pair<String, Double>>,
         ) {
             if (vector.perm == PropertyPermission.RO) return
 
             val device = devices.value!!
-            device.sendNewNumber(vector.name, *data)
+            device.sendNewNumber(vector.name, data)
         }
 
         private fun sendTextPropertyVectorMessage(
             vector: TextPropertyVector,
-            data: Array<Pair<String, String>>,
+            data: Iterable<Pair<String, String>>,
         ) {
             if (vector.perm == PropertyPermission.RO) return
 
             val device = devices.value!!
-            device.sendNewText(vector.name, *data)
+            device.sendNewText(vector.name, data)
         }
     }
 
@@ -384,9 +384,9 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
             repeat(children.size - vector.size) { children.removeAt(children.size - 1) }
         }
 
-        fun inputs() = Array(children.size) {
-            val item = children[it] as NumberGroupPropertyItem
-            item.property.name to (item.input!!.text.trim().toDoubleOrNull() ?: 0.0)
+        fun inputs() = children.map {
+            it as NumberGroupPropertyItem
+            it.property.name to (it.input!!.text.trim().toDoubleOrNull() ?: 0.0)
         }
     }
 
@@ -469,9 +469,9 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
             repeat(children.size - vector.size) { children.removeAt(children.size - 1) }
         }
 
-        fun inputs() = Array(children.size) {
-            val item = children[it] as TextGroupPropertyItem
-            item.property.name to (item.input!!.text?.trim() ?: "")
+        fun inputs() = children.map {
+            it as TextGroupPropertyItem
+            it.property.name to (it.input!!.text?.trim() ?: "")
         }
     }
 

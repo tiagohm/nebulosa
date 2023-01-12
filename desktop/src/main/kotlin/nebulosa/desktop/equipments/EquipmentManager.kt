@@ -1,18 +1,17 @@
 package nebulosa.desktop.equipments
 
-import io.reactivex.rxjava3.functions.Consumer
+import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
-import nebulosa.desktop.cameras.AutoSubFolderMode
-import nebulosa.desktop.cameras.CameraExposureTask
 import nebulosa.desktop.connections.Connected
+import nebulosa.desktop.connections.ConnectionEvent
 import nebulosa.desktop.connections.Disconnected
 import nebulosa.desktop.core.EventBus
+import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.cameras.Camera
 import nebulosa.indi.devices.cameras.CameraAttached
 import nebulosa.indi.devices.cameras.CameraDetached
-import nebulosa.indi.devices.cameras.FrameType
 import nebulosa.indi.devices.filterwheels.FilterWheel
 import nebulosa.indi.devices.filterwheels.FilterWheelAttached
 import nebulosa.indi.devices.filterwheels.FilterWheelDetached
@@ -34,9 +33,8 @@ import nebulosa.indi.devices.thermometers.ThermometerDetached
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.Closeable
-import java.nio.file.Path
 
-class EquipmentManager : KoinComponent, Consumer<Any>, Closeable {
+class EquipmentManager : KoinComponent, Closeable {
 
     private val eventBus by inject<EventBus>()
 
@@ -57,14 +55,19 @@ class EquipmentManager : KoinComponent, Consumer<Any>, Closeable {
     @JvmField val selectedFocuser = FocuserProperty()
     @JvmField val selectedGPS = GPSProperty()
 
-    @Volatile var imagingCameraTask: CameraExposureTask? = null
-        private set
+    private val subscribers = arrayOfNulls<Disposable>(2)
 
     init {
-        eventBus.subscribe(this)
+        subscribers[0] = eventBus
+            .filterIsInstance<DeviceEvent<*>>()
+            .subscribe(::onDeviceEvent)
+
+        subscribers[1] = eventBus
+            .filterIsInstance<ConnectionEvent>()
+            .subscribe(::onConnectionEvent)
     }
 
-    override fun accept(event: Any) {
+    private fun onDeviceEvent(event: DeviceEvent<*>) {
         when (event) {
             is CameraAttached -> attachedCameras.add(event.device)
             is CameraDetached -> attachedCameras.remove(event.device)
@@ -80,49 +83,24 @@ class EquipmentManager : KoinComponent, Consumer<Any>, Closeable {
             is GPSDetached -> attachedGPSs.remove(event.device)
             is ThermometerAttached -> attachedThermometers.add(event.device)
             is ThermometerDetached -> attachedThermometers.remove(event.device)
+        }
+    }
+
+    private fun onConnectionEvent(event: ConnectionEvent) {
+        when (event) {
             is Connected -> connected.set(true)
             is Disconnected -> connected.set(false)
         }
     }
 
     override fun close() {
+        subscribers.forEach { it?.dispose() }
+        subscribers.fill(null)
+
         selectedCamera.close()
         selectedMount.close()
         selectedFilterWheel.close()
         selectedFocuser.close()
-    }
-
-    @Synchronized
-    fun startImagingCapture(
-        camera: Camera,
-        filterWheel: FilterWheel?,
-        exposure: Long, amount: Int, delay: Long,
-        x: Int, y: Int, width: Int, height: Int,
-        frameFormat: String, frameType: FrameType,
-        binX: Int, binY: Int,
-        gain: Int, offset: Int,
-        save: Boolean = false, savePath: Path? = null,
-        autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
-    ): CameraExposureTask? {
-        return if (imagingCameraTask == null || imagingCameraTask!!.isDone) {
-            val task = CameraExposureTask(
-                camera, filterWheel,
-                exposure, amount, delay,
-                x, y, width, height,
-                frameFormat, frameType,
-                binX, binY,
-                gain, offset,
-                save, savePath, autoSubFolderMode,
-            )
-
-            imagingCameraTask = task
-
-            task.execute()
-                .whenComplete { _, _ -> imagingCameraTask = null }
-
-            task
-        } else {
-            null
-        }
+        selectedGPS.close()
     }
 }

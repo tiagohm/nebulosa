@@ -5,10 +5,10 @@ import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Slider
 import javafx.scene.control.Spinner
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
+import javafx.util.StringConverter
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.onTwo
 import nebulosa.desktop.core.scene.Screen
-import nebulosa.desktop.core.util.BitDepthStringConverter
 import nebulosa.math.map
 import org.controlsfx.control.RangeSlider
 
@@ -130,5 +130,12 @@ class ImageStretcherScreen(private val imageViewerScreen: ImageViewerScreen) :
     private fun updateTitle() {
         val name = imageViewerScreen.title.split("·").last().trim()
         title = "Image Stretcher · $name"
+    }
+
+    private object BitDepthStringConverter : StringConverter<Int>() {
+
+        override fun toString(bitDepth: Int?) = if (bitDepth == null) "-" else "$bitDepth bits"
+
+        override fun fromString(text: String?) = null
     }
 }

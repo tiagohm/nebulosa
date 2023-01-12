@@ -10,7 +10,9 @@ interface FilterWheel : Device {
 
     val isMoving: Boolean
 
-    fun moveTo(slot: Int)
+    fun moveTo(position: Int)
+
+    fun filterNames(names: Iterable<String>)
 
     companion object {
 

@@ -2,8 +2,9 @@ package nebulosa.desktop.cameras
 
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.equipments.ThreadedTask
+import nebulosa.desktop.equipments.ThreadedTaskManager
+import nebulosa.desktop.filterwheels.FilterWheelMoveTask
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.devices.cameras.*
 import nebulosa.indi.devices.filterwheels.FilterWheel
@@ -15,7 +16,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.Phaser
 import kotlin.io.path.createDirectories
 import kotlin.io.path.outputStream
 import kotlin.math.min
@@ -39,13 +39,9 @@ data class CameraExposureTask(
     val save: Boolean = false,
     val savePath: Path? = null,
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
-) : ThreadedTask<List<Path>>(), Consumer<Any>, KoinComponent {
+) : ThreadedTask<List<Path>>(), Consumer<CameraEvent>, KoinComponent {
 
-    private val eventBus by inject<EventBus>()
     private val preferences by inject<Preferences>()
-
-    @Volatile var isCapturing = false
-        private set
 
     @Volatile var progress = 0.0
         private set
@@ -53,22 +49,18 @@ data class CameraExposureTask(
     @Volatile var remaining = amount
         private set
 
-    @Volatile private var imagePath: Path? = null
-    @Volatile private var subscriber: Disposable? = null
-    private val imageHistory = ArrayList<Path>(min(1000, amount))
+    private val imageHistory by lazy { ArrayList<Path>(min(1024, amount)) }
 
-    private val phaser = Phaser(1)
-
-    override fun accept(event: Any) {
+    override fun accept(event: CameraEvent) {
         when (event) {
             is CameraFrameCaptured -> {
-                phaser.arriveAndDeregister()
                 save(event.fits)
+                release()
             }
             is CameraExposureAborted,
-            is CameraExposureFailed -> {
-                phaser.forceTermination()
-                finishGracefully()
+            is CameraExposureFailed,
+            is CameraDetached -> {
+                finish()
             }
             is CameraExposureProgressChanged -> {
                 progress = ((amount - remaining - 1).toDouble() / amount) +
@@ -77,26 +69,47 @@ data class CameraExposureTask(
         }
     }
 
-    override fun get(): List<Path> {
-        camera.enableBlob()
-
-        isCapturing = true
+    override fun call(): List<Path> {
+        var subscriber: Disposable? = null
 
         try {
             subscriber = eventBus
-                .filter { it is CameraEvent && it.device === camera }
+                .filterIsInstance<CameraEvent> { it.device === camera }
                 .subscribe(this)
 
+            camera.snoop(listOf(filterWheel))
+
             if (filterWheel != null && frameType == FrameType.DARK) {
-                synchronized(filterWheel) {
-                    val selectedFilterAsShutter = preferences.int("filterWheelManager.equipment.${filterWheel.name}.filterAsShutter") ?: -1
-                    filterWheel.moveTo(selectedFilterAsShutter)
+                if (!filterWheel.isConnected) {
+                    LOG.warn("filter wheel ${filterWheel.name} is disconnected")
+                } else {
+                    acquire()
+
+                    // Sync filter names.
+                    (1..filterWheel.slotCount)
+                        .map { filterWheel.filterNameByPosition(it) }
+                        .also(filterWheel::filterNames)
+
+                    val position = preferences.int("filterWheelManager.equipment.${filterWheel.name}.filterAsShutter") ?: -1
+                    LOG.info("moving filter wheel ${filterWheel.name} to capture dark frame")
+                    val task = FilterWheelMoveTask(filterWheel, position + 1)
+                    FilterWheelMoveTask.execute(task) { release() }
+
+                    await()
                 }
             }
 
-            while (remaining > 0) {
+            LOG.info(
+                "starting capture of camera ${camera.name}: x=$x, y=$y, width=$width," +
+                        " height=$height, frameType=$frameType, frameFormat=$frameFormat," +
+                        " binX=$binX, binY=$binY, gain=$gain, offset=$offset"
+            )
+
+            camera.enableBlob()
+
+            while (camera.isConnected && remaining > 0) {
                 synchronized(camera) {
-                    phaser.register()
+                    acquire()
 
                     remaining--
 
@@ -108,16 +121,15 @@ data class CameraExposureTask(
                     camera.offset(offset)
                     camera.startCapture(exposure)
 
-                    phaser.arriveAndAwaitAdvance()
+                    LOG.info("exposuring camera ${camera.name} by $exposure µs")
+
+                    await()
 
                     sleep()
                 }
             }
         } finally {
-            isCapturing = false
-
             subscriber?.dispose()
-            subscriber = null
         }
 
         return imageHistory
@@ -141,9 +153,15 @@ data class CameraExposureTask(
         }
     }
 
+    private fun FilterWheel.filterNameByPosition(position: Int): String {
+        return preferences.string("filterWheelManager.equipment.$name.filterSlot.$position.label")
+            ?.ifBlank { null }
+            ?: "Filter#$position"
+    }
+
     @Synchronized
     private fun save(fits: InputStream) {
-        imagePath = if (save) {
+        val imagePath = if (save) {
             val folderName = autoSubFolderMode.folderName()
             val fileName = "%s-%s.fits".format(LocalDateTime.now().format(DATE_TIME_FORMAT), frameType)
             val fileDirectory = Paths.get("$savePath", folderName).normalize()
@@ -155,13 +173,15 @@ data class CameraExposureTask(
 
         LOG.info("saving FITS at $imagePath...")
 
-        imagePath!!.parent.createDirectories()
-        imagePath!!.outputStream().use { output -> fits.use { it.transferTo(output) } }
+        imagePath.parent.createDirectories()
+        imagePath.outputStream().use { output -> fits.use { it.transferTo(output) } }
 
-        eventBus.post(CameraFrameSaved(camera, imagePath!!, !save))
+        if (save) imageHistory.add(imagePath)
+
+        eventBus.post(CameraFrameSaved(camera, imagePath, !save))
     }
 
-    companion object {
+    companion object : ThreadedTaskManager<List<Path>, CameraExposureTask>() {
 
         private const val DELAY_INTERVAL = 100L
 

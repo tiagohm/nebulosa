@@ -1,6 +1,7 @@
 package nebulosa.desktop.focusers
 
 import io.reactivex.rxjava3.disposables.Disposable
+import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
@@ -15,6 +16,8 @@ import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
+import nebulosa.indi.devices.filterwheels.FilterWheelEvent
+import nebulosa.indi.devices.filterwheels.FilterWheelMovingChanged
 import nebulosa.indi.devices.focusers.Focuser
 import org.controlsfx.control.ToggleSwitch
 import org.koin.core.component.inject
@@ -28,6 +31,7 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
     @FXML private lateinit var openINDI: Button
     @FXML private lateinit var position: Label
     @FXML private lateinit var temperature: Label
+    @FXML private lateinit var status: Label
     @FXML private lateinit var increment: Spinner<Double>
     @FXML private lateinit var absolute: Spinner<Double>
     @FXML private lateinit var moveIn: Button
@@ -99,11 +103,21 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
         yProperty().on { preferences.double("focuserManager.screen.y", it) }
     }
 
-    override fun onStart() {}
+    override fun onStart() {
+        subscriber = eventBus
+            .filterIsInstance<FilterWheelEvent> { it.device === equipmentManager.selectedFilterWheel.get() }
+            .subscribe(::onFilterWheelEvent)
+    }
 
     override fun onStop() {
         subscriber?.dispose()
         subscriber = null
+    }
+
+    private fun onFilterWheelEvent(event: FilterWheelEvent) {
+        when (event) {
+            is FilterWheelMovingChanged -> Platform.runLater { updateStatus() }
+        }
     }
 
     @FXML
@@ -154,5 +168,14 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
     @FXML
     private fun openAutoFocus() {
 
+    }
+
+    private fun updateStatus() {
+        val filterWheel = equipmentManager.selectedFilterWheel.get() ?: return
+
+        status.text = when {
+            filterWheel.isMoving -> "moving"
+            else -> "idle"
+        }
     }
 }
