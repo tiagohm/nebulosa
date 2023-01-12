@@ -8,6 +8,7 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import nebulosa.indi.devices.DeviceEvent
 import nebulosa.indi.devices.mounts.*
+import java.time.OffsetDateTime
 
 class MountProperty : DeviceProperty<Mount>() {
 
@@ -28,6 +29,10 @@ class MountProperty : DeviceProperty<Mount>() {
     @JvmField val guideRateNS = SimpleDoubleProperty()
     @JvmField val rightAscension = SimpleDoubleProperty()
     @JvmField val declination = SimpleDoubleProperty()
+    @JvmField val longitude = SimpleDoubleProperty()
+    @JvmField val latitude = SimpleDoubleProperty()
+    @JvmField val elevation = SimpleDoubleProperty()
+    @JvmField val time = SimpleObjectProperty(OffsetDateTime.now())
 
     override fun changed(value: Mount) {
         isSlewing.set(value.isSlewing)
@@ -47,6 +52,10 @@ class MountProperty : DeviceProperty<Mount>() {
         guideRateNS.set(value.guideRateNS)
         rightAscension.set(value.rightAscension)
         declination.set(value.declination)
+        longitude.set(value.longitude.degrees)
+        latitude.set(value.latitude.degrees)
+        elevation.set(value.elevation.meters)
+        time.set(value.time)
     }
 
     override fun reset() {
@@ -67,6 +76,10 @@ class MountProperty : DeviceProperty<Mount>() {
         guideRateNS.set(0.0)
         rightAscension.set(0.0)
         declination.set(0.0)
+        longitude.set(0.0)
+        latitude.set(0.0)
+        elevation.set(0.0)
+        time.set(OffsetDateTime.now())
     }
 
     override fun accept(event: DeviceEvent<Mount>) {
@@ -104,6 +117,14 @@ class MountProperty : DeviceProperty<Mount>() {
             is MountParkChanged -> Platform.runLater {
                 isParking.set(device.isParking)
                 isParked.set(device.isParked)
+            }
+            is MountCoordinateChanged -> Platform.runLater {
+                longitude.set(device.longitude.degrees)
+                latitude.set(device.latitude.degrees)
+                elevation.set(device.elevation.meters)
+            }
+            is MountTimeChanged -> Platform.runLater {
+                time.set(device.time)
             }
         }
     }

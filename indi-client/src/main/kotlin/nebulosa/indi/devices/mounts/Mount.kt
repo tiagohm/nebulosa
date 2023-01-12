@@ -3,6 +3,8 @@ package nebulosa.indi.devices.mounts
 import nebulosa.indi.devices.gps.GPS
 import nebulosa.indi.devices.guiders.Guider
 import nebulosa.math.Angle
+import nebulosa.math.Distance
+import java.time.OffsetDateTime
 
 interface Mount : Guider, GPS {
 
@@ -63,6 +65,10 @@ interface Mount : Guider, GPS {
     fun trackingMode(mode: TrackMode)
 
     fun slewRate(rate: String)
+
+    fun coordinates(longitude: Angle, latitude: Angle, elevation: Distance)
+
+    fun time(time: OffsetDateTime)
 
     companion object {
 

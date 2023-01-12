@@ -51,7 +51,7 @@ open class Star : Point {
         var newX = baseX
         var newY = baseY
 
-        val res = run {
+        run {
             val minX = 0
             val minY = 0
             val maxX = image.width - 1
@@ -146,7 +146,7 @@ open class Star : Point {
             // Find the mean and stdev of the background.
             var nbg = 0
             var meanBg = 0f
-            var prevMeanBg = 0f
+            var prevMeanBg: Float
             var sigma2Bg = 0f
             var sigmaBg = 0f
 
@@ -192,18 +192,18 @@ open class Star : Point {
                 sigma2Bg = q / (nbg - 1)
                 sigmaBg = sqrt(sigma2Bg)
 
-                val msg = "Star::Find iter=%d prev_mean_bg=%.4f mean_bg=%.4f sigma2_bg=%.4f sigma_bg=%.4f"
+                // val msg = "Star::Find iter=%d prev_mean_bg=%.4f mean_bg=%.4f sigma2_bg=%.4f sigma_bg=%.4f"
                 // println(msg.format(i, prevMeanBg, meanBg, sigma2Bg, sigmaBg))
 
                 if (i > 0 && abs(meanBg - prevMeanBg) < 0.5) break
             }
 
-            var thresh = 0f
+            val thresh: Float
 
             var cx = 0f
             var cy = 0f
             var mass = 0f
-            var n = 0
+            var n: Int
 
             val hfrvec = ArrayList<R2M>()
 

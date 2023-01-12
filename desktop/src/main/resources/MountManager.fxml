@@ -242,6 +242,19 @@
                     </ToggleButton>
                 </buttons>
             </SegmentedButton>
+            <HBox alignment="CENTER"
+                  HBox.hgrow="ALWAYS">
+                <Button fx:id="siteAndTime"
+                        text="Site &amp; Time"
+                        styleClass="text-md"
+                        onAction="#openSiteAndTime">
+                    <graphic>
+                        <Label text="&#xF034E;"
+                               styleClass="mdi,mdi-sm,text-red-700">
+                        </Label>
+                    </graphic>
+                </Button>
+            </HBox>
         </HBox>
         <VBox alignment="CENTER_LEFT"
               spacing="4.0">
@@ -290,8 +303,7 @@
                         prefWidth="92.0">
                     <graphic>
                         <Label text="&#xF012C;"
-                               textFill="#388E3C"
-                               styleClass="mdi,mdi-sm">
+                               styleClass="mdi,mdi-sm,text-green-700">
                         </Label>
                     </graphic>
                 </Button>
@@ -301,8 +313,7 @@
                         prefWidth="92.0">
                     <graphic>
                         <Label text="&#xF04E6;"
-                               textFill="#1976D2"
-                               styleClass="mdi,mdi-sm">
+                               styleClass="mdi,mdi-sm,text-blue-700">
                         </Label>
                     </graphic>
                 </Button>

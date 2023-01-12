@@ -47,6 +47,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         equipmentManager.attachedMounts.onZero(::populateDevices)
         equipmentManager.attachedFilterWheels.onZero(::populateDevices)
         equipmentManager.attachedFocusers.onZero(::populateDevices)
+        equipmentManager.attachedGPSs.onZero(::populateDevices)
     }
 
     override fun onStart() {
@@ -121,6 +122,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         attachedDevices.addAll(equipmentManager.attachedMounts)
         attachedDevices.addAll(equipmentManager.attachedFilterWheels)
         attachedDevices.addAll(equipmentManager.attachedFocusers)
+        attachedDevices.addAll(equipmentManager.attachedGPSs)
         attachedDevices.sortBy { it.name }
         attachedDevices.forEach { if (it !in cacheProperties) cacheProperties[it] = HashMap(256) }
 

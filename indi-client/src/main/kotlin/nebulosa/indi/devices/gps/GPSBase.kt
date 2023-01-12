@@ -3,7 +3,6 @@ package nebulosa.indi.devices.gps
 import nebulosa.indi.INDIClient
 import nebulosa.indi.devices.AbstractDevice
 import nebulosa.indi.devices.DeviceProtocolHandler
-import nebulosa.indi.protocol.DefNumberVector
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
 import nebulosa.indi.protocol.TextVector
@@ -20,7 +19,7 @@ internal class GPSBase(
     name: String,
 ) : AbstractDevice(client, handler, name), GPS {
 
-    override var hasGPS = false
+    override val hasGPS = true
     override var longitude = Angle.ZERO
     override var latitude = Angle.ZERO
     override var elevation = Distance.ZERO
@@ -31,14 +30,8 @@ internal class GPSBase(
             is NumberVector<*> -> {
                 when (message.name) {
                     "GEOGRAPHIC_COORD" -> {
-                        if (!hasGPS && message is DefNumberVector && message.isReadOnly) {
-                            hasGPS = true
-
-                            handler.fireOnEventReceived(GPSAttached(this))
-                        }
-
                         latitude = message["LAT"]!!.value.deg
-                        longitude = message["LAT"]!!.value.deg
+                        longitude = message["LONG"]!!.value.deg
                         elevation = message["ELEV"]!!.value.m
 
                         handler.fireOnEventReceived(GPSCoordinateChanged(this))

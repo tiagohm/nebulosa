@@ -21,8 +21,8 @@ interface GPS : Device {
 
     companion object {
 
-        private val UTC_TIME_FORMAT_1 = DateTimeFormatter.ofPattern("yyyy/MM/ddTHH:mm:ss")
-        private val UTC_TIME_FORMAT_2 = DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss")
+        @JvmStatic val UTC_TIME_FORMAT_1 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss")!!
+        @JvmStatic val UTC_TIME_FORMAT_2 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")!!
 
         @JvmStatic
         fun extractTime(input: String): LocalDateTime? {

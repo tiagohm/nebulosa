@@ -6,7 +6,6 @@ import nebulosa.indi.devices.DeviceProtocolHandler
 import nebulosa.indi.devices.firstOnSwitch
 import nebulosa.indi.devices.firstOnSwitchOrNull
 import nebulosa.indi.devices.gps.GPS
-import nebulosa.indi.devices.gps.GPSAttached
 import nebulosa.indi.devices.gps.GPSDetached
 import nebulosa.indi.devices.guiders.GuiderAttached
 import nebulosa.indi.devices.guiders.GuiderDetached
@@ -177,14 +176,8 @@ internal open class MountBase(
                         }
                     }
                     "GEOGRAPHIC_COORD" -> {
-                        if (!hasGPS && message is DefNumberVector && message.isReadOnly) {
-                            hasGPS = true
-
-                            handler.fireOnEventReceived(GPSAttached(this))
-                        }
-
                         latitude = message["LAT"]!!.value.deg
-                        longitude = message["LAT"]!!.value.deg
+                        longitude = message["LONG"]!!.value.deg
                         elevation = message["ELEV"]!!.value.m
 
                         handler.fireOnEventReceived(MountCoordinateChanged(this))
@@ -291,6 +284,14 @@ internal open class MountBase(
         if (canPulseGuide) {
             sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_W" to duration.toDouble())
         }
+    }
+
+    override fun coordinates(longitude: Angle, latitude: Angle, elevation: Distance) {
+        sendNewNumber("GEOGRAPHIC_COORD", "LAT" to latitude.degrees, "LONG" to longitude.degrees, "ELEV" to elevation.meters)
+    }
+
+    override fun time(time: OffsetDateTime) {
+
     }
 
     override fun close() {

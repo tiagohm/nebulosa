@@ -45,6 +45,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     @FXML private lateinit var azimuth: Label
     @FXML private lateinit var pierSide: Label
     @FXML private lateinit var targetCoordinatesEquinox: SegmentedButton
+    @FXML private lateinit var siteAndTime: Button
     @FXML private lateinit var targetRightAscension: TextField
     @FXML private lateinit var targetDeclination: TextField
     @FXML private lateinit var goTo: Button
@@ -66,6 +67,8 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     @FXML private lateinit var park: Button
     @FXML private lateinit var home: Button
     @FXML private lateinit var status: Label
+
+    private val siteAndTimeScreen = SiteAndTimeScreen()
 
     @Volatile private var subscriber: Disposable? = null
 
@@ -96,6 +99,8 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         pierSide.textProperty().bind(equipmentManager.selectedMount.pierSide.asString())
 
         targetCoordinatesEquinox.disableProperty().bind(isNotConnectedOrSlewing)
+
+        siteAndTime.disableProperty().bind(isNotConnectedOrSlewing)
 
         targetRightAscension.disableProperty().bind(isNotConnectedOrSlewing)
 
@@ -212,6 +217,11 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
     @FXML
     private fun nudgeTo(event: ActionEvent) {
+    }
+
+    @FXML
+    private fun openSiteAndTime() {
+        siteAndTimeScreen.load(equipmentManager.selectedMount.get() ?: return)
     }
 
     val targetCoordinates: Pair<Angle, Angle>

@@ -9,7 +9,6 @@ import nebulosa.desktop.cameras.CameraExposureTask
 import nebulosa.desktop.connections.Connected
 import nebulosa.desktop.connections.Disconnected
 import nebulosa.desktop.core.EventBus
-import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.devices.cameras.Camera
 import nebulosa.indi.devices.cameras.CameraAttached
 import nebulosa.indi.devices.cameras.CameraDetached
@@ -20,6 +19,9 @@ import nebulosa.indi.devices.filterwheels.FilterWheelDetached
 import nebulosa.indi.devices.focusers.Focuser
 import nebulosa.indi.devices.focusers.FocuserAttached
 import nebulosa.indi.devices.focusers.FocuserDetached
+import nebulosa.indi.devices.gps.GPS
+import nebulosa.indi.devices.gps.GPSAttached
+import nebulosa.indi.devices.gps.GPSDetached
 import nebulosa.indi.devices.guiders.Guider
 import nebulosa.indi.devices.guiders.GuiderAttached
 import nebulosa.indi.devices.guiders.GuiderDetached
@@ -31,7 +33,6 @@ import nebulosa.indi.devices.thermometers.ThermometerAttached
 import nebulosa.indi.devices.thermometers.ThermometerDetached
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.core.qualifier.named
 import java.io.Closeable
 import java.nio.file.Path
 
@@ -45,6 +46,7 @@ class EquipmentManager : KoinComponent, Consumer<Any>, Closeable {
     @JvmField val attachedMounts = SimpleListProperty(FXCollections.observableArrayList<Mount>())
     @JvmField val attachedFilterWheels = SimpleListProperty(FXCollections.observableArrayList<FilterWheel>())
     @JvmField val attachedFocusers = SimpleListProperty(FXCollections.observableArrayList<Focuser>())
+    @JvmField val attachedGPSs = SimpleListProperty(FXCollections.observableArrayList<GPS>())
 
     @JvmField val attachedGuiders = SimpleListProperty(FXCollections.observableArrayList<Guider>())
     @JvmField val attachedThermometers = SimpleListProperty(FXCollections.observableArrayList<Thermometer>())
@@ -53,6 +55,7 @@ class EquipmentManager : KoinComponent, Consumer<Any>, Closeable {
     @JvmField val selectedMount = MountProperty()
     @JvmField val selectedFilterWheel = FilterWheelProperty()
     @JvmField val selectedFocuser = FocuserProperty()
+    @JvmField val selectedGPS = GPSProperty()
 
     @Volatile var imagingCameraTask: CameraExposureTask? = null
         private set
@@ -73,6 +76,8 @@ class EquipmentManager : KoinComponent, Consumer<Any>, Closeable {
             is FocuserDetached -> attachedFocusers.remove(event.device)
             is GuiderAttached -> attachedGuiders.add(event.device)
             is GuiderDetached -> attachedGuiders.remove(event.device)
+            is GPSAttached -> attachedGPSs.add(event.device)
+            is GPSDetached -> attachedGPSs.remove(event.device)
             is ThermometerAttached -> attachedThermometers.add(event.device)
             is ThermometerDetached -> attachedThermometers.remove(event.device)
             is Connected -> connected.set(true)
