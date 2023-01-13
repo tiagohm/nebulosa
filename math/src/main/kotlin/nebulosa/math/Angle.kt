@@ -1,11 +1,9 @@
 package nebulosa.math
 
 import nebulosa.constants.*
+import nebulosa.constants.PI
 import java.util.*
-import kotlin.math.abs
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.tan
+import kotlin.math.*
 
 /**
  * Represents an Angle [value] in radians.
@@ -58,6 +56,20 @@ value class Angle(val value: Double) : Comparable<Angle> {
      * Gets the tangent of this angle.
      */
     inline val tan get() = tan(value)
+
+    fun hms(): DoubleArray {
+        val hours = normalized.hours
+        val minutes = (hours - hours.toInt()) * 60.0
+        val seconds = (minutes - minutes.toInt()) * 60.0
+        return doubleArrayOf(hours, minutes, seconds)
+    }
+
+    fun dms(): DoubleArray {
+        val degrees = abs(degrees)
+        val minutes = (degrees - degrees.toInt()) * 60.0
+        val seconds = (minutes - minutes.toInt()) * 60.0
+        return doubleArrayOf(if (value < 0.0) -degrees else degrees, minutes, seconds)
+    }
 
     inline operator fun plus(angle: Angle) = (value + angle.value).rad
 
@@ -153,21 +165,15 @@ value class Angle(val value: Double) : Comparable<Angle> {
 
         @JvmStatic
         fun formatHMS(angle: Angle, format: String = "%02dh %02dm %05.02fs"): String {
-            val value = angle.hours
-            val hours = value.toInt()
-            val minutes = (value - hours) * 60.0
-            val seconds = (minutes - minutes.toInt()) * 60.0
-            return format.format(hours, minutes.toInt(), seconds)
+            val (hours, minutes, seconds) = angle.hms()
+            return format.format(hours.toInt(), minutes.toInt(), seconds)
         }
 
         @JvmStatic
         fun formatDMS(angle: Angle, format: String = "%s%02d° %02d' %05.02f\""): String {
-            val value = angle.degrees
-            val degrees = abs(value)
-            val minutes = (degrees - degrees.toInt()) * 60.0
-            val seconds = (minutes - minutes.toInt()) * 60.0
-            val sign = if (value < 0.0) "-" else "+"
-            return format.format(sign, degrees.toInt(), minutes.toInt(), seconds)
+            val (degrees, minutes, seconds) = angle.dms()
+            val sign = if (degrees < 0.0) "-" else "+"
+            return format.format(sign, abs(degrees).toInt(), minutes.toInt(), seconds)
         }
 
         /**

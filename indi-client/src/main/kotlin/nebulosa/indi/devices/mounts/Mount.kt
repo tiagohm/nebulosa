@@ -38,9 +38,13 @@ interface Mount : Guider, GPS {
 
     val guideRateNS: Double
 
-    val rightAscension: Double
+    val rightAscension: Angle
 
-    val declination: Double
+    val declination: Angle
+
+    val rightAscensionJ2000: Angle
+
+    val declinationJ2000: Angle
 
     fun tracking(enable: Boolean)
 

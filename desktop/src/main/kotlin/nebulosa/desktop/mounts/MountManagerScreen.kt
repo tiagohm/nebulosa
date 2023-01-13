@@ -18,14 +18,13 @@ import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.desktop.telescopecontrol.StellariumTelescopeControlScreen
+import nebulosa.desktop.telescopecontrol.TelescopeControlServerScreen
+import nebulosa.indi.devices.guiders.GuiderEvent
+import nebulosa.indi.devices.guiders.GuiderPulsingChanged
 import nebulosa.indi.devices.mounts.*
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.nova.astrometry.ICRF
-import nebulosa.time.TimeJD
 import org.controlsfx.control.SegmentedButton
 import org.controlsfx.control.ToggleSwitch
 import org.koin.core.component.inject
@@ -51,7 +50,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     @FXML private lateinit var goTo: Button
     @FXML private lateinit var slewTo: Button
     @FXML private lateinit var sync: Button
-    @FXML private lateinit var stellariumTelescopeControl: Button
+    @FXML private lateinit var telescopeControlServer: Button
     @FXML private lateinit var nudgeNE: Button
     @FXML private lateinit var nudgeN: Button
     @FXML private lateinit var nudgeNW: Button
@@ -70,7 +69,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
     private val siteAndTimeScreen = SiteAndTimeScreen()
 
-    @Volatile private var subscriber: Disposable? = null
+    private val subscribers = arrayOfNulls<Disposable>(2)
 
     init {
         title = "Mount"
@@ -96,6 +95,9 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
         rightAscension.textProperty().bind(equipmentManager.selectedMount.rightAscension.transformed { Angle.formatHMS(it.hours) })
         declination.textProperty().bind(equipmentManager.selectedMount.declination.transformed { Angle.formatDMS(it.deg) })
+        rightAscensionJ2000.textProperty().bind(equipmentManager.selectedMount.rightAscensionJ2000.transformed { Angle.formatHMS(it.hours) })
+        declinationJ2000.textProperty().bind(equipmentManager.selectedMount.declinationJ2000.transformed { Angle.formatDMS(it.deg) })
+
         pierSide.textProperty().bind(equipmentManager.selectedMount.pierSide.asString())
 
         targetCoordinatesEquinox.disableProperty().bind(isNotConnectedOrSlewing)
@@ -110,7 +112,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         slewTo.disableProperty().bind(isNotConnectedOrSlewing)
         sync.disableProperty().bind(isNotConnectedOrSlewing or !equipmentManager.selectedMount.canSync)
 
-        stellariumTelescopeControl.disableProperty().bind(isNotConnectedOrSlewing)
+        telescopeControlServer.disableProperty().bind(isNotConnectedOrSlewing)
 
         nudgeNE.disableProperty().bind(isNotConnectedOrSlewing)
         nudgeN.disableProperty().bind(isNotConnectedOrSlewing)
@@ -146,7 +148,6 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         equipmentManager.selectedMount.on {
             title = "Mount · ${it?.name}"
             updateStatus()
-            updateCoordinatesJ2000()
         }
 
         preferences.double("mountManager.screen.x")?.let { x = it }
@@ -157,9 +158,13 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     }
 
     override fun onStart() {
-        subscriber = eventBus
+        subscribers[0] = eventBus
             .filterIsInstance<MountEvent> { it.device === equipmentManager.selectedMount.get() }
             .subscribe(::onMountEvent)
+
+        subscribers[1] = eventBus
+            .filterIsInstance<GuiderEvent<*>> { it.device === equipmentManager.selectedMount.get() }
+            .subscribe(::onGuiderEvent)
 
         val mount = equipmentManager.selectedMount.get()
 
@@ -169,8 +174,8 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     }
 
     override fun onStop() {
-        subscriber?.dispose()
-        subscriber = null
+        subscribers.forEach { it?.dispose() }
+        subscribers.fill(null)
     }
 
     private fun onMountEvent(event: MountEvent) {
@@ -178,7 +183,12 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
             is MountParkChanged,
             is MountTrackingChanged,
             is MountSlewingChanged -> Platform.runLater { updateStatus() }
-            is MountEquatorialCoordinatesChanged -> Platform.runLater { updateCoordinatesJ2000() }
+        }
+    }
+
+    private fun onGuiderEvent(event: GuiderEvent<*>) {
+        when (event) {
+            is GuiderPulsingChanged -> Platform.runLater { updateStatus() }
         }
     }
 
@@ -198,9 +208,9 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     }
 
     @FXML
-    private fun openStellariumTelescopeControl() {
+    private fun openTelescopeControlServer() {
         val mount = equipmentManager.selectedMount.get() ?: return
-        val screen = StellariumTelescopeControlScreen(mount)
+        val screen = TelescopeControlServerScreen(mount)
         screen.showAndWait()
     }
 
@@ -270,6 +280,8 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
     @FXML
     private fun abort() {
+        val mount = equipmentManager.selectedMount.get() ?: return
+        mount.abortMotion()
     }
 
     @FXML
@@ -286,20 +298,11 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     private fun updateStatus() {
         val mount = equipmentManager.selectedMount.get() ?: return
 
-        status.text = if (mount.isParking) "PARKING"
-        else if (mount.isParked) "PARKED"
-        else if (mount.isSlewing) "SLEWING"
-        else if (mount.isTracking) "TRACKING"
-        else "IDLE"
-    }
-
-    // TODO: Use timer (1s) to call this too (when tracking is on).
-    private fun updateCoordinatesJ2000() {
-        val mount = equipmentManager.selectedMount.get() ?: return
-        val ra = mount.rightAscension.hours
-        val dec = mount.declination.deg
-        val (raJ2000, decJ2000) = ICRF.equatorial(ra, dec, epoch = TimeJD.now()).equatorialJ2000()
-        rightAscensionJ2000.text = Angle.formatHMS(raJ2000.rad.normalized)
-        declinationJ2000.text = Angle.formatDMS(decJ2000.rad)
+        status.text = if (mount.isParking) "parking"
+        else if (mount.isParked) "parked"
+        else if (mount.isSlewing) "slewing"
+        else if (mount.isTracking) "tracking"
+        else if (mount.isPulseGuiding) "guiding"
+        else "idle"
     }
 }

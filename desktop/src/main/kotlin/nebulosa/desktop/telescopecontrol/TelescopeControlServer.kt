@@ -6,16 +6,18 @@ import java.io.Closeable
 
 interface TelescopeControlServer : Closeable {
 
-    fun interface Listener {
+    fun interface CommandListener {
 
-        fun onGoTo(mount: Mount, ra: Angle, dec: Angle)
+        fun onGoTo(server: TelescopeControlServer, ra: Angle, dec: Angle, isJ2000: Boolean)
     }
+
+    val mount: Mount
 
     val isClosed: Boolean
 
-    fun registerListener(listener: Listener)
+    fun registerCommandListener(listener: CommandListener)
 
-    fun unregisterListener(listener: Listener)
+    fun unregisterCommandListener(listener: CommandListener)
 
     fun start()
 

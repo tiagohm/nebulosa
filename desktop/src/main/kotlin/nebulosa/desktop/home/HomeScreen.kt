@@ -15,7 +15,7 @@ import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.imageviewer.ImageViewerScreen
-import nebulosa.desktop.telescopecontrol.TelescopeControlManager
+import nebulosa.desktop.telescopecontrol.TelescopeControlServerManager
 import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
@@ -27,7 +27,7 @@ class HomeScreen : Screen("Home") {
 
     private val connectionManager by inject<ConnectionManager>()
     private val equipmentManager by inject<EquipmentManager>()
-    private val telescopeControlManager by inject<TelescopeControlManager>()
+    private val telescopeControlServerManager by inject<TelescopeControlServerManager>()
 
     @FXML private lateinit var host: TextField
     @FXML private lateinit var port: TextField
@@ -93,7 +93,7 @@ class HomeScreen : Screen("Home") {
         screenManager.closeAll()
         ImageViewerScreen.close()
 
-        telescopeControlManager.stopAll()
+        telescopeControlServerManager.stopAll()
     }
 
     @FXML

@@ -4,7 +4,6 @@
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
-<?import javafx.scene.Cursor?>
 <?import javafx.scene.layout.*?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="300.0"
@@ -31,9 +30,6 @@
                        prefHeight="32.0"
                        minHeight="32.0"
                        prefWidth="304.0">
-                <cursor>
-                    <Cursor fx:constant="HAND"/>
-                </cursor>
             </ChoiceBox>
         </HBox>
         <AnchorPane VBox.vgrow="ALWAYS">

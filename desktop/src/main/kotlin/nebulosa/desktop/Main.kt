@@ -9,7 +9,7 @@ import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.preferences.Preferences
-import nebulosa.desktop.telescopecontrol.TelescopeControlManager
+import nebulosa.desktop.telescopecontrol.TelescopeControlServerManager
 import nebulosa.io.resource
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.named
@@ -41,7 +41,7 @@ private fun inject() = module {
 
     single(createdAtStart = true) { ConnectionManager() }
     single(createdAtStart = true) { EquipmentManager() }
-    single(createdAtStart = true) { TelescopeControlManager() }
+    single(createdAtStart = true) { TelescopeControlServerManager() }
     single(createdAtStart = true) { ScreenManager() }
 }
 

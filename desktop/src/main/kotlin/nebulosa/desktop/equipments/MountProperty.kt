@@ -29,6 +29,8 @@ class MountProperty : DeviceProperty<Mount>() {
     @JvmField val guideRateNS = SimpleDoubleProperty()
     @JvmField val rightAscension = SimpleDoubleProperty()
     @JvmField val declination = SimpleDoubleProperty()
+    @JvmField val rightAscensionJ2000 = SimpleDoubleProperty()
+    @JvmField val declinationJ2000 = SimpleDoubleProperty()
     @JvmField val longitude = SimpleDoubleProperty()
     @JvmField val latitude = SimpleDoubleProperty()
     @JvmField val elevation = SimpleDoubleProperty()
@@ -50,8 +52,10 @@ class MountProperty : DeviceProperty<Mount>() {
         canPark.set(value.canPark)
         guideRateWE.set(value.guideRateWE)
         guideRateNS.set(value.guideRateNS)
-        rightAscension.set(value.rightAscension)
-        declination.set(value.declination)
+        rightAscension.set(value.rightAscension.hours)
+        declination.set(value.declination.degrees)
+        rightAscensionJ2000.set(value.rightAscensionJ2000.hours)
+        declinationJ2000.set(value.declinationJ2000.degrees)
         longitude.set(value.longitude.degrees)
         latitude.set(value.latitude.degrees)
         elevation.set(value.elevation.meters)
@@ -76,6 +80,8 @@ class MountProperty : DeviceProperty<Mount>() {
         guideRateNS.set(0.0)
         rightAscension.set(0.0)
         declination.set(0.0)
+        rightAscensionJ2000.set(0.0)
+        declinationJ2000.set(0.0)
         longitude.set(0.0)
         latitude.set(0.0)
         elevation.set(0.0)
@@ -107,8 +113,10 @@ class MountProperty : DeviceProperty<Mount>() {
             is MountCanSyncChanged -> Platform.runLater { canSync.set(device.canSync) }
             is MountCanParkChanged -> Platform.runLater { canPark.set(device.canPark) }
             is MountEquatorialCoordinatesChanged -> Platform.runLater {
-                rightAscension.set(device.rightAscension)
-                declination.set(device.declination)
+                rightAscension.set(device.rightAscension.hours)
+                declination.set(device.declination.degrees)
+                rightAscensionJ2000.set(device.rightAscensionJ2000.hours)
+                declinationJ2000.set(device.declinationJ2000.degrees)
             }
             is MountGuideRateChanged -> Platform.runLater {
                 guideRateWE.set(device.guideRateWE)

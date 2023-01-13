@@ -13,10 +13,12 @@ import nebulosa.indi.devices.guiders.GuiderPulsingChanged
 import nebulosa.indi.protocol.*
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.m
 import nebulosa.nova.astrometry.ICRF
+import nebulosa.time.TimeJD
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -41,8 +43,10 @@ internal open class MountBase(
     override var pierSide = PierSide.NEITHER
     override var guideRateWE = 0.0
     override var guideRateNS = 0.0
-    override var rightAscension = 0.0
-    override var declination = 0.0
+    override var rightAscension = Angle.ZERO
+    override var declination = Angle.ZERO
+    override var rightAscensionJ2000 = Angle.ZERO
+    override var declinationJ2000 = Angle.ZERO
 
     override var canPulseGuide = false
     override var isPulseGuiding = false
@@ -138,8 +142,12 @@ internal open class MountBase(
                             handler.fireOnEventReceived(MountSlewingChanged(this))
                         }
 
-                        rightAscension = message["RA"]!!.value
-                        declination = message["DEC"]!!.value
+                        rightAscension = message["RA"]!!.value.hours
+                        declination = message["DEC"]!!.value.deg
+
+                        val (ra, dec) = ICRF.equatorial(rightAscension, declination, time = TimeJD.now()).equatorialJ2000()
+                        rightAscensionJ2000 = ra.rad.normalized
+                        declinationJ2000 = dec.rad
 
                         handler.fireOnEventReceived(MountEquatorialCoordinatesChanged(this))
                     }

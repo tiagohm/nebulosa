@@ -200,19 +200,13 @@
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
-                <Label maxWidth="64.0"
-                       minWidth="64.0"
-                       prefWidth="64.0"
-                       text="Status"
-                       styleClass="text-sm,text-bold">
-                </Label>
                 <Label fx:id="status"
-                       alignment="CENTER_RIGHT"
-                       maxWidth="110.0"
-                       minWidth="110.0"
-                       prefWidth="110.0"
-                       text="IDLE"
-                       styleClass="text-monospaced,text-sm">
+                       text="idle">
+                    <graphic>
+                        <Label text="&#xF02FC;"
+                               styleClass="text-blue-700,mdi,mdi-xs">
+                        </Label>
+                    </graphic>
                 </Label>
             </HBox>
         </VBox>
@@ -246,7 +240,7 @@
                   HBox.hgrow="ALWAYS">
                 <Button fx:id="siteAndTime"
                         text="Site &amp; Time"
-                        styleClass="text-md"
+                        styleClass="text-sm"
                         onAction="#openSiteAndTime">
                     <graphic>
                         <Label text="&#xF034E;"
@@ -320,10 +314,9 @@
             </HBox>
         </VBox>
         <HBox>
-            <Button fx:id="stellariumTelescopeControl"
-                    text="Stellarium Telescope Control"
-                    prefWidth="202.0"
-                    onAction="#openStellariumTelescopeControl"
+            <Button fx:id="telescopeControlServer"
+                    text="Telescope Control Server"
+                    onAction="#openTelescopeControlServer"
                     styleClass="text-sm">
                 <graphic>
                     <Label text="&#xF0EC5;"
