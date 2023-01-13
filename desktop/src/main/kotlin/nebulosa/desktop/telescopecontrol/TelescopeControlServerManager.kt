@@ -2,6 +2,7 @@ package nebulosa.desktop.telescopecontrol
 
 import nebulosa.desktop.core.EventBus
 import nebulosa.indi.devices.mounts.Mount
+import nebulosa.indi.devices.mounts.MountDetached
 import nebulosa.indi.devices.mounts.MountEquatorialCoordinatesChanged
 import nebulosa.indi.devices.mounts.MountEvent
 import nebulosa.math.Angle
@@ -12,6 +13,7 @@ import java.util.*
 class TelescopeControlServerManager : KoinComponent, TelescopeControlServer.CommandListener {
 
     private val eventBus by inject<EventBus>()
+
     private val servers = HashMap<Mount, LinkedList<TelescopeControlServer>>()
 
     init {
@@ -24,6 +26,7 @@ class TelescopeControlServerManager : KoinComponent, TelescopeControlServer.Comm
         val device = event.device!!
 
         when (event) {
+            is MountDetached -> stopAll(event.device)
             is MountEquatorialCoordinatesChanged -> {
                 servers[event.device]
                     ?.forEach { it.sendCurrentPosition(device.rightAscensionJ2000, device.declinationJ2000) }

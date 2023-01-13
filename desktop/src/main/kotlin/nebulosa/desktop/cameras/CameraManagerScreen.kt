@@ -2,7 +2,6 @@ package nebulosa.desktop.cameras
 
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.application.Platform
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
 import javafx.scene.Node
@@ -75,7 +74,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML private lateinit var abortCapture: Button
     @FXML private lateinit var status: Label
 
-    private val isCapturing = SimpleBooleanProperty(false)
     private val imageViewers = HashSet<ImageViewerScreen>()
 
     @Volatile private var subscriber: Disposable? = null
@@ -88,7 +86,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     override fun onCreate() {
         val isNotConnected = !equipmentManager.selectedCamera.isConnected
         val isConnecting = equipmentManager.selectedCamera.isConnecting
-        val isCapturing = equipmentManager.selectedCamera.isCapturing or this.isCapturing
+        val isCapturing = CameraExposureTask.isCapturing
         val isNotConnectedOrCapturing = isNotConnected or isCapturing
 
         cameras.converter = DeviceStringConverter()
@@ -200,10 +198,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     private fun onCameraEvent(event: CameraEvent) {
         when (event) {
             is CameraExposureAborted,
-            is CameraExposureFailed -> Platform.runLater {
-                isCapturing.set(false)
-                updateTitle()
-            }
+            is CameraExposureFailed -> Platform.runLater { updateTitle() }
             is CameraExposureProgressChanged -> Platform.runLater { updateTitle() }
             is CameraFrameSaved -> Platform.runLater {
                 screenManager
@@ -478,8 +473,6 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
     @FXML
     @Synchronized
     private fun startCapture() {
-        if (isCapturing.get()) return
-
         val camera = equipmentManager.selectedCamera.get() ?: return
 
         val timeUnit = exposure.userData as TimeUnit
@@ -507,11 +500,9 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
             else preferences.enum<AutoSubFolderMode>("cameraManager.equipment.${camera.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON,
         )
 
-        if (!CameraExposureTask.execute(task) { isCapturing.set(false) }) return
+        if (!CameraExposureTask.execute(task)) return
 
         savePreferences(camera)
-
-        isCapturing.set(true)
     }
 
     @FXML
@@ -523,7 +514,7 @@ class CameraManagerScreen : Screen("CameraManager", "nebulosa-camera-manager") {
         status.text = buildString(128) {
             val task = CameraExposureTask.currentTask
 
-            if (task != null && isCapturing.get()) {
+            if (task != null && CameraExposureTask.isCapturing.get()) {
                 val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000.0} s"
                 else if (task.exposure >= 1000L) "${task.exposure / 1000.0} ms"
                 else "${task.exposure} µs"

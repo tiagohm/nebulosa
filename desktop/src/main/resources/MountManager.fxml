@@ -239,16 +239,23 @@
             <HBox alignment="CENTER"
                   HBox.hgrow="ALWAYS">
                 <Button fx:id="siteAndTime"
-                        text="Site &amp; Time"
-                        styleClass="text-sm"
+                        text="&#xF034E;"
+                        styleClass="mdi,mdi-sm,text-red-700"
                         onAction="#openSiteAndTime">
-                    <graphic>
-                        <Label text="&#xF034E;"
-                               styleClass="mdi,mdi-sm,text-red-700">
-                        </Label>
-                    </graphic>
                 </Button>
             </HBox>
+        </HBox>
+        <HBox>
+            <Button fx:id="telescopeControlServer"
+                    text="Telescope Control Server"
+                    onAction="#openTelescopeControlServer"
+                    styleClass="text-sm">
+                <graphic>
+                    <Label text="&#xF0EC5;"
+                           styleClass="text-purple-700,mdi,mdi-sm">
+                    </Label>
+                </graphic>
+            </Button>
         </HBox>
         <VBox alignment="CENTER_LEFT"
               spacing="4.0">
@@ -277,6 +284,38 @@
                                prefWidth="200.0">
                     </TextField>
                 </VBox>
+                <Label text="&#xF01D9;"
+                       alignment="CENTER"
+                       prefWidth="32.0"
+                       minWidth="32.0"
+                       onMouseClicked="#openTargetCoordinatesMenu"
+                       styleClass="text-grey-700,mdi,mdi-sm,cursor-hand">
+                    <HBox.margin>
+                        <Insets top="12.0"/>
+                    </HBox.margin>
+                    <fx:define>
+                        <ContextMenu fx:id="targetCoordinatesMenu"
+                                     styleClass="text-md">
+                            <items>
+                                <MenuItem text="Load current position"
+                                          userData="BIND_TO_SELECTED_MOUNT"
+                                          onAction="#loadCurrentPosition"/>
+                                <MenuItem text="Load current position (J2000)"
+                                          userData="BIND_TO_SELECTED_MOUNT"
+                                          onAction="#loadCurrentPositionJ2000"/>
+                                <MenuItem text="Load zenith position"
+                                          userData="BIND_TO_SELECTED_MOUNT"
+                                          onAction="#loadZenithPosition"/>
+                                <MenuItem text="Load north pole position"
+                                          userData="BIND_TO_SELECTED_MOUNT"
+                                          onAction="#loadNorthPolePosition"/>
+                                <MenuItem text="Load south pole position"
+                                          userData="BIND_TO_SELECTED_MOUNT"
+                                          onAction="#loadSouthPolePosition"/>
+                            </items>
+                        </ContextMenu>
+                    </fx:define>
+                </Label>
             </HBox>
             <HBox alignment="TOP_CENTER"
                   spacing="4.0">
@@ -313,18 +352,6 @@
                 </Button>
             </HBox>
         </VBox>
-        <HBox>
-            <Button fx:id="telescopeControlServer"
-                    text="Telescope Control Server"
-                    onAction="#openTelescopeControlServer"
-                    styleClass="text-sm">
-                <graphic>
-                    <Label text="&#xF0EC5;"
-                           styleClass="text-purple-700,mdi,mdi-sm">
-                    </Label>
-                </graphic>
-            </Button>
-        </HBox>
         <HBox spacing="12.0">
             <VBox spacing="2.0">
                 <HBox alignment="CENTER"

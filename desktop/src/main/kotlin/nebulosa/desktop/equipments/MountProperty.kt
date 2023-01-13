@@ -20,7 +20,7 @@ class MountProperty : DeviceProperty<Mount>() {
     @JvmField val slewRate = SimpleObjectProperty<String>()
     @JvmField val mountType = SimpleObjectProperty(MountType.EQ_GEM)
     @JvmField val trackModes = SimpleListProperty(FXCollections.observableArrayList<TrackMode>())
-    @JvmField val trackMode = SimpleObjectProperty(TrackMode.SIDEREAL)
+    @JvmField val trackMode = SimpleObjectProperty<TrackMode>()
     @JvmField val pierSide = SimpleObjectProperty(PierSide.NEITHER)
     @JvmField val canAbort = SimpleBooleanProperty()
     @JvmField val canSync = SimpleBooleanProperty()
@@ -68,7 +68,7 @@ class MountProperty : DeviceProperty<Mount>() {
         slewRates.clear()
         slewRate.set(null)
         mountType.set(MountType.EQ_GEM)
-        trackModes.clear()
+        trackModes.setAll(listOf(TrackMode.SIDEREAL))
         trackMode.set(TrackMode.SIDEREAL)
         pierSide.set(PierSide.NEITHER)
         isParking.set(false)
@@ -94,17 +94,16 @@ class MountProperty : DeviceProperty<Mount>() {
         when (event) {
             is MountSlewingChanged -> Platform.runLater { isSlewing.set(device.isSlewing) }
             is MountSlewRatesChanged -> Platform.runLater {
-                // Workaround: choicebox removes the selected item when call setAll.
-                // So, unselect it to not be removed.
-                // Bug: Disconnect and reconnect, the choicebox selected value is null/empty.
                 slewRate.set(null)
                 slewRates.setAll(device.slewRates)
+                slewRate.set(device.slewRate ?: device.slewRates.firstOrNull())
             }
             is MountSlewRateChanged -> Platform.runLater { slewRate.set(device.slewRate) }
             is MountTypeChanged -> Platform.runLater { mountType.set(device.mountType) }
             is MountTrackModesChanged -> Platform.runLater {
                 trackMode.set(null)
                 trackModes.setAll(device.trackModes)
+                trackMode.set(device.trackMode)
             }
             is MountTrackModeChanged -> Platform.runLater { trackMode.set(device.trackMode) }
             is MountTrackingChanged -> Platform.runLater { isTracking.set(device.isTracking) }

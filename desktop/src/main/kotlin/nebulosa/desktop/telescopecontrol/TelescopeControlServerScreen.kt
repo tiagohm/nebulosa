@@ -14,7 +14,7 @@ import nebulosa.desktop.core.util.toggle
 import nebulosa.indi.devices.mounts.Mount
 import org.koin.core.component.inject
 
-class TelescopeControlServerScreen(private val mount: Mount) : Screen("TelescopeControlServer", "nebulosa-stellarium") {
+class TelescopeControlServerScreen(private val mount: Mount) : Screen("TelescopeControlServer", "nebulosa-telescope-control") {
 
     private val telescopeControlServerManager by inject<TelescopeControlServerManager>()
 

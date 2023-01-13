@@ -9,11 +9,12 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.abs
 
 /**
  * Meade Telescope Serial Command Protocol.
  *
- * @see <a href="https://www.astro.louisville.edu/software/xmtel/archive/xmtel-indi-6.0/xmtel-6.0l/support/lx200/CommandSet.html">Documentation</a>
+ * @see <a href="http://www.company7.com/library/meade/LX200CommandSet.pdf">Meade Telescope Serial Command Protocol</a>
  */
 class TelescopeControlLX200Server(
     mount: Mount,
@@ -56,13 +57,14 @@ class TelescopeControlLX200Server(
             output.flush()
         }
 
-        fun sendLongitude(latitude: Angle) {
-            output.writeString(Angle.formatDMS(latitude, "%2$03d*%3$02d:%4$02.0f#"), Charsets.US_ASCII)
+        fun sendLongitude(longitude: Angle) {
+            // East is negative.
+            output.writeString(Angle.formatDMS(-longitude, "%s%03d*%02d#"), Charsets.US_ASCII)
             output.flush()
         }
 
         fun sendLatitude(latitude: Angle) {
-            output.writeString(Angle.formatDMS(latitude, "%s%02d*%02d:%02.0f#"), Charsets.US_ASCII)
+            output.writeString(Angle.formatDMS(latitude, "%s%02d*%02d#"), Charsets.US_ASCII)
             output.flush()
         }
 
@@ -79,13 +81,14 @@ class TelescopeControlLX200Server(
         }
 
         fun sendTimeOffset() {
-            val offset = ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds / 3600
-            output.writeString("%02d#".format(offset), Charsets.US_ASCII)
+            val offset = ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds / 3600.0
+            val sign = if (offset >= 0) "-" else "+"
+            output.writeString("%s%04.01f#".format(sign, abs(offset)), Charsets.US_ASCII)
             output.flush()
         }
 
         private fun sendSlewingStatus(slewing: Boolean) {
-            output.writeString(if (slewing) "1#" else "0#", Charsets.US_ASCII)
+            output.writeString(if (slewing) "|#" else "#", Charsets.US_ASCII)
             output.flush()
         }
 
@@ -114,13 +117,11 @@ class TelescopeControlLX200Server(
 
         private fun sendOk() {
             output.writeByte(49)
-            output.writeByte(35)
             output.flush()
         }
 
         private fun sendError() {
             output.writeByte(48)
-            output.writeByte(35)
             output.flush()
         }
 
@@ -166,7 +167,7 @@ class TelescopeControlLX200Server(
                 ":GC" -> sendCalendarDate()
                 ":GL" -> sendLocalTime()
                 ":GG" -> sendTimeOffset()
-                ":GW" -> sendOk()
+                // ":GW" -> sendOk()
                 ":D" -> sendSlewingStatus(server.mount.isSlewing)
                 // ":Me", ":Mn", ":Ms", ":Mw" -> return // TODO: move
                 // ":RC", ":RG", ":RM", ":RS" -> return // movement rate
@@ -175,9 +176,11 @@ class TelescopeControlLX200Server(
                 ":U" -> return
                 else -> {
                     when {
-                        c.startsWith(":SG") -> sendOk() // Hours From UTC
                         c.startsWith(":Sg") -> sendOk() // Longitude
                         c.startsWith(":St") -> sendOk() // Latitude
+                        c.startsWith(":SL") -> sendOk() // Local Time
+                        c.startsWith(":SC") -> sendOk() // Calendar Date
+                        c.startsWith(":SG") -> sendOk() // Time Offset
                         c.startsWith(":Sr") -> return updateRA(c.substring(3))
                         c.startsWith(":Sd") -> return updateDEC(c.substring(3))
                         else -> LOG.warn("received unknown command: $c")

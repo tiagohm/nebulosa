@@ -2,6 +2,7 @@ package nebulosa.desktop.cameras
 
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Consumer
+import javafx.beans.property.SimpleBooleanProperty
 import nebulosa.desktop.equipments.ThreadedTask
 import nebulosa.desktop.equipments.ThreadedTaskManager
 import nebulosa.desktop.filterwheels.FilterWheelMoveTask
@@ -16,6 +17,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 import kotlin.io.path.createDirectories
 import kotlin.io.path.outputStream
 import kotlin.math.min
@@ -49,7 +51,7 @@ data class CameraExposureTask(
     @Volatile var remaining = amount
         private set
 
-    private val imageHistory by lazy { ArrayList<Path>(min(1024, amount)) }
+    private val imageHistory = LinkedList<Path>()
 
     override fun accept(event: CameraEvent) {
         when (event) {
@@ -73,6 +75,8 @@ data class CameraExposureTask(
         var subscriber: Disposable? = null
 
         try {
+            isCapturing.set(true)
+
             subscriber = eventBus
                 .filterIsInstance<CameraEvent> { it.device === camera }
                 .subscribe(this)
@@ -129,6 +133,7 @@ data class CameraExposureTask(
                 }
             }
         } finally {
+            isCapturing.set(false)
             subscriber?.dispose()
         }
 
@@ -176,12 +181,14 @@ data class CameraExposureTask(
         imagePath.parent.createDirectories()
         imagePath.outputStream().use { output -> fits.use { it.transferTo(output) } }
 
-        if (save) imageHistory.add(imagePath)
+        if (save) imageHistory.addFirst(imagePath)
 
         eventBus.post(CameraFrameSaved(camera, imagePath, !save))
     }
 
     companion object : ThreadedTaskManager<List<Path>, CameraExposureTask>() {
+
+        val isCapturing = SimpleBooleanProperty(false)
 
         private const val DELAY_INTERVAL = 100L
 

@@ -164,13 +164,13 @@ value class Angle(val value: Double) : Comparable<Angle> {
         }
 
         @JvmStatic
-        fun formatHMS(angle: Angle, format: String = "%02dh %02dm %05.02fs"): String {
+        fun formatHMS(angle: Angle, format: String): String {
             val (hours, minutes, seconds) = angle.hms()
             return format.format(hours.toInt(), minutes.toInt(), seconds)
         }
 
         @JvmStatic
-        fun formatDMS(angle: Angle, format: String = "%s%02d° %02d' %05.02f\""): String {
+        fun formatDMS(angle: Angle, format: String): String {
             val (degrees, minutes, seconds) = angle.dms()
             val sign = if (degrees < 0.0) "-" else "+"
             return format.format(sign, abs(degrees).toInt(), minutes.toInt(), seconds)

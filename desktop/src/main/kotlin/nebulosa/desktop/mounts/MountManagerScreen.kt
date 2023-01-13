@@ -5,10 +5,9 @@ import javafx.application.Platform
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
 import javafx.scene.Node
-import javafx.scene.control.Button
-import javafx.scene.control.ChoiceBox
-import javafx.scene.control.Label
-import javafx.scene.control.TextField
+import javafx.scene.control.*
+import javafx.scene.input.MouseButton
+import javafx.scene.input.MouseEvent
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.or
@@ -50,6 +49,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     @FXML private lateinit var goTo: Button
     @FXML private lateinit var slewTo: Button
     @FXML private lateinit var sync: Button
+    @FXML private lateinit var targetCoordinatesMenu: ContextMenu
     @FXML private lateinit var telescopeControlServer: Button
     @FXML private lateinit var nudgeNE: Button
     @FXML private lateinit var nudgeN: Button
@@ -93,10 +93,15 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
         openINDI.disableProperty().bind(connect.disableProperty())
 
-        rightAscension.textProperty().bind(equipmentManager.selectedMount.rightAscension.transformed { Angle.formatHMS(it.hours) })
-        declination.textProperty().bind(equipmentManager.selectedMount.declination.transformed { Angle.formatDMS(it.deg) })
-        rightAscensionJ2000.textProperty().bind(equipmentManager.selectedMount.rightAscensionJ2000.transformed { Angle.formatHMS(it.hours) })
-        declinationJ2000.textProperty().bind(equipmentManager.selectedMount.declinationJ2000.transformed { Angle.formatDMS(it.deg) })
+        rightAscension.textProperty().bind(equipmentManager.selectedMount.rightAscension.transformed { Angle.formatHMS(it.hours, RA_FORMAT) })
+
+        declination.textProperty().bind(equipmentManager.selectedMount.declination.transformed { Angle.formatDMS(it.deg, DEC_FORMAT) })
+
+        rightAscensionJ2000.textProperty()
+            .bind(equipmentManager.selectedMount.rightAscensionJ2000.transformed { Angle.formatHMS(it.hours, RA_FORMAT) })
+
+        declinationJ2000.textProperty()
+            .bind(equipmentManager.selectedMount.declinationJ2000.transformed { Angle.formatDMS(it.deg, DEC_FORMAT) })
 
         pierSide.textProperty().bind(equipmentManager.selectedMount.pierSide.asString())
 
@@ -111,6 +116,10 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         goTo.disableProperty().bind(isNotConnectedOrSlewing)
         slewTo.disableProperty().bind(isNotConnectedOrSlewing)
         sync.disableProperty().bind(isNotConnectedOrSlewing or !equipmentManager.selectedMount.canSync)
+
+        targetCoordinatesMenu.items
+            .filter { it.userData == "BIND_TO_SELECTED_MOUNT" }
+            .forEach { it.disableProperty().bind(isNotConnectedOrSlewing) }
 
         telescopeControlServer.disableProperty().bind(isNotConnectedOrSlewing)
 
@@ -208,6 +217,14 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     }
 
     @FXML
+    private fun openTargetCoordinatesMenu(event: MouseEvent) {
+        if (event.button == MouseButton.PRIMARY) {
+            targetCoordinatesMenu.show(event.source as Node, event.screenX, event.screenY)
+            event.consume()
+        }
+    }
+
+    @FXML
     private fun openTelescopeControlServer() {
         val mount = equipmentManager.selectedMount.get() ?: return
         val screen = TelescopeControlServerScreen(mount)
@@ -279,6 +296,37 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     }
 
     @FXML
+    private fun loadCurrentPosition() {
+        targetRightAscension.text = rightAscension.text
+        targetDeclination.text = declination.text
+        targetCoordinatesEquinox.toggleGroup.selectToggle(targetCoordinatesEquinox.buttons[0])
+    }
+
+    @FXML
+    private fun loadCurrentPositionJ2000() {
+        targetRightAscension.text = rightAscensionJ2000.text
+        targetDeclination.text = declinationJ2000.text
+        targetCoordinatesEquinox.toggleGroup.selectToggle(targetCoordinatesEquinox.buttons[1])
+    }
+
+    // TODO: Prevent go to below horizon. Show warning.
+
+    @FXML
+    private fun loadZenithPosition() {
+        targetCoordinatesEquinox.toggleGroup.selectToggle(targetCoordinatesEquinox.buttons[0])
+    }
+
+    @FXML
+    private fun loadNorthPolePosition() {
+        targetCoordinatesEquinox.toggleGroup.selectToggle(targetCoordinatesEquinox.buttons[0])
+    }
+
+    @FXML
+    private fun loadSouthPolePosition() {
+        targetCoordinatesEquinox.toggleGroup.selectToggle(targetCoordinatesEquinox.buttons[0])
+    }
+
+    @FXML
     private fun abort() {
         val mount = equipmentManager.selectedMount.get() ?: return
         mount.abortMotion()
@@ -304,5 +352,11 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         else if (mount.isTracking) "tracking"
         else if (mount.isPulseGuiding) "guiding"
         else "idle"
+    }
+
+    companion object {
+
+        private const val RA_FORMAT = "%02dh %02dm %05.02fs"
+        private const val DEC_FORMAT = "%s%02d° %02d' %05.02f\""
     }
 }

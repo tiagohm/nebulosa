@@ -145,9 +145,10 @@ internal open class MountBase(
                         rightAscension = message["RA"]!!.value.hours
                         declination = message["DEC"]!!.value.deg
 
-                        val (ra, dec) = ICRF.equatorial(rightAscension, declination, time = TimeJD.now()).equatorialJ2000()
-                        rightAscensionJ2000 = ra.rad.normalized
-                        declinationJ2000 = dec.rad
+                        val epoch = TimeJD.now()
+                        val icrf = ICRF.equatorial(rightAscension, declination, time = epoch, epoch = epoch).equatorialJ2000()
+                        rightAscensionJ2000 = icrf.longitude.normalized
+                        declinationJ2000 = icrf.latitude
 
                         handler.fireOnEventReceived(MountEquatorialCoordinatesChanged(this))
                     }

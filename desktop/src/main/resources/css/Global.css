@@ -69,6 +69,11 @@
 .check-box,
 .radio-button,
 .toggle-button,
-.slider {
+.slider,
+.menu-item {
     -fx-cursor: 'hand';
+}
+
+.menu-item {
+    -fx-padding: 8px;
 }
