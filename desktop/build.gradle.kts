@@ -16,6 +16,7 @@ dependencies {
     implementation(libs.jackson)
     implementation(libs.bundles.rx)
     implementation(libs.controlsfx)
+    implementation(libs.okhttp)
     implementation(libs.logback)
     testImplementation(libs.bundles.kotest)
 }

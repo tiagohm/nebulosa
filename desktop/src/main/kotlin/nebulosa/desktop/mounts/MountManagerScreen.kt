@@ -15,6 +15,7 @@ import nebulosa.desktop.core.beans.transformed
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
+import nebulosa.desktop.core.util.concurrent.Ticker
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.telescopecontrol.TelescopeControlServerScreen
@@ -24,9 +25,14 @@ import nebulosa.indi.devices.mounts.*
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
+import nebulosa.nova.position.Geoid
+import nebulosa.time.TimeJD
+import nebulosa.time.UTC
 import org.controlsfx.control.SegmentedButton
 import org.controlsfx.control.ToggleSwitch
 import org.koin.core.component.inject
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
@@ -42,6 +48,8 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     @FXML private lateinit var altitude: Label
     @FXML private lateinit var azimuth: Label
     @FXML private lateinit var pierSide: Label
+    @FXML private lateinit var meridianAt: Label
+    @FXML private lateinit var lst: Label
     @FXML private lateinit var targetCoordinatesEquinox: SegmentedButton
     @FXML private lateinit var siteAndTime: Button
     @FXML private lateinit var targetRightAscension: TextField
@@ -70,6 +78,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     private val siteAndTimeScreen = SiteAndTimeScreen()
 
     private val subscribers = arrayOfNulls<Disposable>(2)
+    @Volatile private var ticker: Ticker? = null
 
     init {
         title = "Mount"
@@ -93,15 +102,16 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
         openINDI.disableProperty().bind(connect.disableProperty())
 
-        rightAscension.textProperty().bind(equipmentManager.selectedMount.rightAscension.transformed { Angle.formatHMS(it.hours, RA_FORMAT) })
+        rightAscension.textProperty()
+            .bind(equipmentManager.selectedMount.rightAscension.transformed { Angle.formatHMS(it.hours, "%02dh %02dm %05.02fs") })
 
-        declination.textProperty().bind(equipmentManager.selectedMount.declination.transformed { Angle.formatDMS(it.deg, DEC_FORMAT) })
+        declination.textProperty().bind(equipmentManager.selectedMount.declination.transformed { Angle.formatDMS(it.deg, "%s%02d° %02d' %05.02f\"") })
 
         rightAscensionJ2000.textProperty()
-            .bind(equipmentManager.selectedMount.rightAscensionJ2000.transformed { Angle.formatHMS(it.hours, RA_FORMAT) })
+            .bind(equipmentManager.selectedMount.rightAscensionJ2000.transformed { Angle.formatHMS(it.hours, "%02dh %02dm %05.02fs") })
 
         declinationJ2000.textProperty()
-            .bind(equipmentManager.selectedMount.declinationJ2000.transformed { Angle.formatDMS(it.deg, DEC_FORMAT) })
+            .bind(equipmentManager.selectedMount.declinationJ2000.transformed { Angle.formatDMS(it.deg, "%s%02d° %02d' %05.02f\"") })
 
         pierSide.textProperty().bind(equipmentManager.selectedMount.pierSide.asString())
 
@@ -180,11 +190,18 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         if (mount !in equipmentManager.attachedMounts) {
             mounts.selectionModel.select(null)
         }
+
+        ticker?.interrupt()
+        ticker = Ticker(::onTick, 1000L)
+        ticker!!.start()
     }
 
     override fun onStop() {
         subscribers.forEach { it?.dispose() }
         subscribers.fill(null)
+
+        ticker?.interrupt()
+        ticker = null
     }
 
     private fun onMountEvent(event: MountEvent) {
@@ -198,6 +215,26 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     private fun onGuiderEvent(event: GuiderEvent<*>) {
         when (event) {
             is GuiderPulsingChanged -> Platform.runLater { updateStatus() }
+        }
+    }
+
+    val localSiderealTime: Angle
+        get() {
+            val mount = equipmentManager.selectedMount.get() ?: return Angle.ZERO
+            val position = Geoid.IERS2010.latLon(mount.longitude, mount.latitude, mount.elevation)
+            return position.lstAt(UTC(TimeJD.now()))
+        }
+
+    private fun onTick() {
+        val mount = equipmentManager.selectedMount.get() ?: return
+        val computedLST = localSiderealTime
+        val timeLeftToMeridianFlip = (mount.rightAscension - computedLST).normalized
+        val timeToMeridianFlip = LocalDateTime.now().plusSeconds((timeLeftToMeridianFlip.hours * 3600.0).toLong())
+
+        Platform.runLater {
+            meridianAt.text =
+                "%s (%s)".format(timeToMeridianFlip.format(MERIDIAN_TIME_FORMAT), Angle.formatHMS(timeLeftToMeridianFlip, "-%02d:%02d:%02.0f"))
+            lst.text = Angle.formatHMS(computedLST, "%02d:%02d:%02.0f ")
         }
     }
 
@@ -313,16 +350,23 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
     @FXML
     private fun loadZenithPosition() {
+        val mount = equipmentManager.selectedMount.get() ?: return
+        targetRightAscension.text = Angle.formatHMS(localSiderealTime, "%02dh %02dm %05.02fs")
+        targetDeclination.text = Angle.formatDMS(mount.latitude, "%s%02d° %02d' %05.02f\"")
         targetCoordinatesEquinox.toggleGroup.selectToggle(targetCoordinatesEquinox.buttons[0])
     }
 
     @FXML
     private fun loadNorthPolePosition() {
+        targetRightAscension.text = Angle.formatHMS(localSiderealTime, "%02dh %02dm %05.02fs")
+        targetDeclination.text = "+90° 00' 00\""
         targetCoordinatesEquinox.toggleGroup.selectToggle(targetCoordinatesEquinox.buttons[0])
     }
 
     @FXML
     private fun loadSouthPolePosition() {
+        targetRightAscension.text = Angle.formatHMS(localSiderealTime, "%02dh %02dm %05.02fs")
+        targetDeclination.text = "-90° 00' 00\""
         targetCoordinatesEquinox.toggleGroup.selectToggle(targetCoordinatesEquinox.buttons[0])
     }
 
@@ -356,7 +400,6 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
     companion object {
 
-        private const val RA_FORMAT = "%02dh %02dm %05.02fs"
-        private const val DEC_FORMAT = "%s%02d° %02d' %05.02f\""
+        @JvmStatic private val MERIDIAN_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")
     }
 }

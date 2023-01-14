@@ -10,8 +10,8 @@ import nebulosa.nova.frame.ITRS
 import nebulosa.time.InstantOfTime
 
 class GeographicPosition(
-    val latitude: Angle,
     val longitude: Angle,
+    val latitude: Angle,
     val elevation: Distance,
     override val itrs: Vector3D,
     val model: Geoid,

@@ -26,14 +26,14 @@ data class Geoid(
     private val oneMinusFlatteningSquared = omf * omf
 
     /**
-     * Returns the geographic position of a given [latitude], [longitude] and [elevation].
+     * Returns the geographic position of a given [longitude], [latitude] and [elevation].
      *
      * Longitude is positive towards the east, so supply a negative
      * number for west.
      */
     fun latLon(
-        latitude: Angle,
         longitude: Angle,
+        latitude: Angle,
         elevation: Distance = Distance.ZERO,
     ): GeographicPosition {
         val sinphi = latitude.sin
@@ -51,7 +51,7 @@ data class Geoid(
 
         val itrs = Vector3D(accst.value, acsst.value, (ash * sinphi).value)
 
-        return GeographicPosition(latitude, longitude, elevation, itrs, this)
+        return GeographicPosition(longitude, latitude, elevation, itrs, this)
     }
 
     /**
@@ -93,7 +93,7 @@ data class Geoid(
 
         val elevation = ((r / cos(lat)) - a * c)
 
-        return GeographicPosition(lat.rad, lon.rad, elevation.au, xyz, this)
+        return GeographicPosition(lon.rad, lat.rad, elevation.au, xyz, this)
     }
 
     companion object {

@@ -7,6 +7,7 @@ import javafx.scene.text.Font
 import nebulosa.desktop.connections.ConnectionManager
 import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.core.ScreenManager
+import nebulosa.desktop.core.util.loader.IERSLoader
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.desktop.telescopecontrol.TelescopeControlServerManager
@@ -46,21 +47,29 @@ private fun inject() = module {
 }
 
 fun main(args: Array<String>) {
+    // Dependency injection.
     startKoin {
         modules(inject())
     }
 
+    // Sets default locale to en_US.
     Locale.setDefault(Locale.ENGLISH)
 
+    // Fonts.
     resource("fonts/Material-Design-Icons.ttf")!!.use { Font.loadFont(it, 24.0) }
     resource("fonts/Roboto-Regular.ttf")!!.use { Font.loadFont(it, 12.0) }
     resource("fonts/Roboto-Bold.ttf")!!.use { Font.loadFont(it, 12.0) }
 
     System.setProperty("prism.lcdtext", "false")
 
+    // Log level.
     with(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger) {
         level = if ("-v" in args) Level.DEBUG else Level.INFO
     }
 
+    // Loaders.
+    IERSLoader().start()
+
+    // Run the application.
     Application.launch(Nebulosa::class.java, *args)
 }

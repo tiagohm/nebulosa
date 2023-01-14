@@ -63,7 +63,7 @@ class TelescopeControlServerScreen(private val mount: Mount) : Screen("Telescope
 
             if (type == TelescopeControlServerType.STELLARIUM) {
                 if (telescopeControlServerManager.isClosed<TelescopeControlStellariumServer>(mount)) {
-                    telescopeControlServerManager.startStellarium(mount, host, port)
+                    telescopeControlServerManager.startStellariumServer(mount, host, port)
                     isConnected.set(true)
                 } else {
                     telescopeControlServerManager.stop<TelescopeControlStellariumServer>(mount)
@@ -71,7 +71,7 @@ class TelescopeControlServerScreen(private val mount: Mount) : Screen("Telescope
                 }
             } else if (type == TelescopeControlServerType.LX200) {
                 if (telescopeControlServerManager.isClosed<TelescopeControlLX200Server>(mount)) {
-                    telescopeControlServerManager.startLX200(mount, host, port)
+                    telescopeControlServerManager.startLX200Server(mount, host, port)
                     isConnected.set(true)
                 } else {
                     telescopeControlServerManager.stop<TelescopeControlLX200Server>(mount)

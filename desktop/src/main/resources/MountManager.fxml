@@ -174,9 +174,9 @@
                 </Label>
                 <Label fx:id="pierSide"
                        alignment="CENTER_RIGHT"
-                       maxWidth="110.0"
-                       minWidth="110.0"
-                       prefWidth="110.0"
+                       maxWidth="60.0"
+                       minWidth="60.0"
+                       prefWidth="60.0"
                        text="NEITHER"
                        styleClass="text-monospaced,text-sm">
                 </Label>
@@ -191,22 +191,40 @@
                 </Label>
                 <Label fx:id="meridianAt"
                        alignment="CENTER_RIGHT"
-                       maxWidth="110.0"
-                       minWidth="110.0"
-                       prefWidth="110.0"
-                       text="00:00 (00:00)"
+                       maxWidth="160.0"
+                       minWidth="160.0"
+                       prefWidth="160.0"
+                       text="00:00:00 (-00:00:00)"
                        styleClass="text-monospaced,text-sm">
                 </Label>
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
                 <Label fx:id="status"
-                       text="idle">
+                       text="idle"
+                       minWidth="128.0"
+                       prefWidth="128.0">
                     <graphic>
                         <Label text="&#xF02FC;"
                                styleClass="text-blue-700,mdi,mdi-xs">
                         </Label>
                     </graphic>
+                </Label>
+                <Label maxWidth="91.0"
+                       minWidth="91.0"
+                       prefWidth="91.0"
+                       text="LST"
+                       styleClass="text-sm,text-bold">
+                    <HBox.margin>
+                        <Insets left="8.0"/>
+                    </HBox.margin>
+                </Label>
+                <Label fx:id="lst"
+                       maxWidth="160.0"
+                       minWidth="160.0"
+                       prefWidth="160.0"
+                       text="00:00:00"
+                       styleClass="text-monospaced,text-sm">
                 </Label>
             </HBox>
         </VBox>
@@ -472,8 +490,11 @@
                 </HBox>
             </VBox>
             <VBox alignment="TOP_CENTER"
-                  spacing="12.0"
+                  spacing="8.0"
                   HBox.hgrow="ALWAYS">
+                <HBox.margin>
+                    <Insets top="16.0"/>
+                </HBox.margin>
                 <ToggleSwitch fx:id="tracking"
                               text="Tracking"
                               styleClass="text-md">
@@ -487,7 +508,9 @@
                                styleClass="text-md">
                         </Label>
                         <ChoiceBox fx:id="trackingMode"
-                                   prefWidth="114.0">
+                                   prefWidth="114.0"
+                                   minWidth="114.0"
+                                   maxWidth="114.0">
                         </ChoiceBox>
                     </VBox>
                     <VBox alignment="CENTER_LEFT"
@@ -497,15 +520,18 @@
                                styleClass="text-md">
                         </Label>
                         <ChoiceBox fx:id="slewSpeed"
-                                   prefWidth="114.0">
+                                   prefWidth="114.0"
+                                   minWidth="114.0"
+                                   maxWidth="114.0">
                         </ChoiceBox>
                     </VBox>
                 </HBox>
                 <HBox alignment="CENTER"
-                      spacing="16.0">
+                      spacing="4.0">
                     <Button fx:id="park"
                             text="Park"
-                            onAction="#park">
+                            onAction="#park"
+                            prefWidth="76.0">
                         <graphic>
                             <Label text="&#xF04DB;"
                                    styleClass="mdi,mdi-sm,text-red-700">

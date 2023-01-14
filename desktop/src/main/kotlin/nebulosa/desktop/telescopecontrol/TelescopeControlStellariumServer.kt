@@ -3,12 +3,7 @@ package nebulosa.desktop.telescopecontrol
 import nebulosa.constants.PI
 import nebulosa.erfa.eraAnpm
 import nebulosa.indi.devices.mounts.Mount
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Angle.Companion.rad
-import nebulosa.nova.astrometry.ICRF
-import nebulosa.time.TimeJD
 import org.slf4j.LoggerFactory
 import java.net.Socket
 
@@ -76,8 +71,8 @@ class TelescopeControlStellariumServer(
     port: Int = 10001,
 ) : TelescopeControlTCPServer(mount, host, port) {
 
-    override fun sendCurrentPosition(ra: Angle, dec: Angle) {
-        forEach { (it as TelescopeClient).sendCurrentPosition(ra, dec) }
+    override fun sendCurrentPosition() {
+        forEach { (it as TelescopeClient).sendCurrentPosition() }
     }
 
     override fun acceptSocket(socket: Socket): Client = TelescopeClient(this, socket)
@@ -87,7 +82,10 @@ class TelescopeControlStellariumServer(
         socket: Socket,
     ) : Client(socket) {
 
-        fun sendCurrentPosition(ra: Angle, dec: Angle) {
+        fun sendCurrentPosition() {
+            val ra = server.mount.rightAscensionJ2000
+            val dec = server.mount.declinationJ2000
+
             output.writeShortLe(24) // LENGTH
             output.writeShortLe(0) // TYPE
             output.writeLongLe(System.currentTimeMillis() * 1000L) // TIME
@@ -104,7 +102,7 @@ class TelescopeControlStellariumServer(
         override fun start() {
             super.start()
 
-            sendCurrentPosition(server.mount.rightAscensionJ2000, server.mount.declinationJ2000)
+            sendCurrentPosition()
         }
 
         override fun processMessage(): Boolean {
@@ -117,7 +115,7 @@ class TelescopeControlStellariumServer(
                 val ra = (buffer.readIntLe() * (PI / 0x80000000)).rad.normalized
                 val dec = (buffer.readIntLe() * (PI / 0x80000000)).rad
                 if (LOG.isDebugEnabled) LOG.debug("MessageGoto: ra=${ra.hours}, dec=${dec.degrees}")
-                server.commandListeners.forEach { it.onGoTo(server, ra, dec, true) }
+                server.mount.goToJ2000(ra, dec)
             } else if (readCount < 0L) {
                 return false
             }

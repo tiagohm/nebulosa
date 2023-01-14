@@ -22,8 +22,6 @@ class TelescopeControlLX200Server(
     port: Int = 10001,
 ) : TelescopeControlTCPServer(mount, host, port) {
 
-    override fun sendCurrentPosition(ra: Angle, dec: Angle) {}
-
     override fun acceptSocket(socket: Socket): Client = TelescopeClient(this, socket)
 
     private class TelescopeClient(
@@ -96,32 +94,32 @@ class TelescopeControlLX200Server(
             val parts = text.split(":")
             rightAscension = Angle.hms(parts[0].toInt(), parts[1].toInt(), parts[2].toDouble())
             sendOk()
-            updateRADEC()
+            updateRADEC = true
         }
 
         private fun updateDEC(text: String) {
             val parts = text.split(":")
             declination = Angle.dms(parts[0].toInt(), parts[1].toInt(), parts[2].toDouble())
             sendOk()
-            updateRADEC()
+            updateRADEC = true
         }
 
-        private fun updateRADEC() {
-            updateRADEC = if (updateRADEC) {
-                server.commandListeners.forEach { it.onGoTo(server, rightAscension, declination, true) }
-                false
-            } else {
-                true
+        private fun sync() {
+            if (updateRADEC) {
+                server.mount.syncJ2000(rightAscension, declination)
+                updateRADEC = false
+            }
+        }
+
+        private fun move() {
+            if (updateRADEC) {
+                server.mount.goToJ2000(rightAscension, declination)
+                updateRADEC = false
             }
         }
 
         private fun sendOk() {
             output.writeByte(49)
-            output.flush()
-        }
-
-        private fun sendError() {
-            output.writeByte(48)
             output.flush()
         }
 
@@ -168,12 +166,13 @@ class TelescopeControlLX200Server(
                 ":GL" -> sendLocalTime()
                 ":GG" -> sendTimeOffset()
                 // ":GW" -> sendOk()
-                ":D" -> sendSlewingStatus(server.mount.isSlewing)
-                // ":Me", ":Mn", ":Ms", ":Mw" -> return // TODO: move
+                ":CM" -> sync()
+                ":Me", ":Mn", ":Ms", ":Mw" -> move()
                 // ":RC", ":RG", ":RM", ":RS" -> return // movement rate
                 // ":Qe", ":Qn", ":Qs", ":Qw" -> return // abort move
                 // ":Q" -> return // stop slew
                 ":U" -> return
+                ":D" -> sendSlewingStatus(server.mount.isSlewing)
                 else -> {
                     when {
                         c.startsWith(":Sg") -> sendOk() // Longitude

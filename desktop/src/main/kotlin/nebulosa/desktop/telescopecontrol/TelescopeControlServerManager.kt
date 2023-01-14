@@ -5,12 +5,11 @@ import nebulosa.indi.devices.mounts.Mount
 import nebulosa.indi.devices.mounts.MountDetached
 import nebulosa.indi.devices.mounts.MountEquatorialCoordinatesChanged
 import nebulosa.indi.devices.mounts.MountEvent
-import nebulosa.math.Angle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.*
 
-class TelescopeControlServerManager : KoinComponent, TelescopeControlServer.CommandListener {
+class TelescopeControlServerManager : KoinComponent {
 
     private val eventBus by inject<EventBus>()
 
@@ -23,13 +22,10 @@ class TelescopeControlServerManager : KoinComponent, TelescopeControlServer.Comm
     }
 
     private fun onMountEvent(event: MountEvent) {
-        val device = event.device!!
-
         when (event) {
             is MountDetached -> stopAll(event.device)
             is MountEquatorialCoordinatesChanged -> {
-                servers[event.device]
-                    ?.forEach { it.sendCurrentPosition(device.rightAscensionJ2000, device.declinationJ2000) }
+                servers[event.device]?.forEach { it.sendCurrentPosition() }
             }
         }
     }
@@ -46,16 +42,14 @@ class TelescopeControlServerManager : KoinComponent, TelescopeControlServer.Comm
         return get(mount, type)?.isClosed ?: true
     }
 
-    fun startStellarium(
+    fun startStellariumServer(
         mount: Mount,
-        host: String,
-        port: Int,
+        host: String, port: Int,
     ): TelescopeControlServer {
         stop<TelescopeControlStellariumServer>(mount)
 
         val server = TelescopeControlStellariumServer(mount, host, port)
         server.start()
-        server.registerCommandListener(this)
 
         servers
             .getOrPut(mount) { LinkedList() }
@@ -64,16 +58,14 @@ class TelescopeControlServerManager : KoinComponent, TelescopeControlServer.Comm
         return server
     }
 
-    fun startLX200(
+    fun startLX200Server(
         mount: Mount,
-        host: String,
-        port: Int,
+        host: String, port: Int,
     ): TelescopeControlServer {
         stop<TelescopeControlLX200Server>(mount)
 
         val server = TelescopeControlLX200Server(mount, host, port)
         server.start()
-        server.registerCommandListener(this)
 
         servers
             .getOrPut(mount) { LinkedList() }
@@ -100,14 +92,5 @@ class TelescopeControlServerManager : KoinComponent, TelescopeControlServer.Comm
     fun stopAll() {
         servers.values.forEach { it.forEach(TelescopeControlServer::close) }
         servers.clear()
-    }
-
-    override fun onGoTo(server: TelescopeControlServer, ra: Angle, dec: Angle, isJ2000: Boolean) {
-        val mount = server.mount
-
-        if (!mount.isSlewing && !mount.isParking && !mount.isParked) {
-            if (isJ2000) server.mount.goToJ2000(ra, dec)
-            else server.mount.goTo(ra, dec)
-        }
     }
 }
