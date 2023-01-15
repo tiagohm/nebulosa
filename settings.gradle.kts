@@ -18,6 +18,7 @@ dependencyResolutionManagement {
             library("ejml", "org.ejml:ejml-ddense:0.41.1")
             library("fits", "gov.nasa.gsfc.heasarc:nom-tam-fits:1.17.0")
             library("jackson", "com.fasterxml.jackson.core:jackson-databind:2.14.1")
+            library("json", "org.json:json:20220924")
             library("koin", "io.insert-koin:koin-core:3.3.0")
             library("rx-java", "io.reactivex.rxjava3:rxjava:3.1.5")
             library("controlsfx", "org.controlsfx:controlsfx:11.1.2")

@@ -12,14 +12,13 @@ class AlpacaINDIConnection(
     val port: Int,
 ) : Thread(), INDIConnection, INDIProtocolHandler {
 
-    @Volatile private var running = false
     private val messageQueue = LinkedBlockingQueue<INDIProtocol>()
+
+    @Volatile private var running = false
 
     override val input = object : INDIInputStream {
 
-        override fun readINDIProtocol(): INDIProtocol? {
-            return if (!running) null else messageQueue.take()
-        }
+        override fun readINDIProtocol() = if (!running) null else messageQueue.take()
 
         override fun close() = this@AlpacaINDIConnection.close()
     }
@@ -36,7 +35,7 @@ class AlpacaINDIConnection(
     override val isOpen get() = running
 
     override fun handleMessage(message: INDIProtocol) {
-        TODO("Not yet implemented")
+
     }
 
     override fun run() {
@@ -47,7 +46,7 @@ class AlpacaINDIConnection(
         } catch (_: InterruptedException) {
 
         } catch (e: Throwable) {
-            
+
         }
     }
 

@@ -5,7 +5,8 @@ plugins {
 
 dependencies {
     api(project(":alpaca-discovery-protocol"))
-    api(project(":indi-client"))
+    implementation(libs.okhttp)
+    implementation(libs.json)
     implementation(libs.logback)
     testImplementation(libs.bundles.kotest)
 }

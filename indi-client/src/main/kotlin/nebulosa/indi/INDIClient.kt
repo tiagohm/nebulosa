@@ -13,10 +13,10 @@ import java.io.Closeable
 
 class INDIClient(val connection: INDIConnection) : INDIProtocolParser, Closeable {
 
-    private var started = false
-    private var closed = false
+    @Volatile private var closed = false
+
     private val reader by lazy { INDIProtocolReader(this) }
-    private var handlers = ArrayList<DeviceProtocolHandler>()
+    private val handlers = arrayListOf<DeviceProtocolHandler>()
 
     constructor(
         host: String,
@@ -30,10 +30,9 @@ class INDIClient(val connection: INDIConnection) : INDIProtocolParser, Closeable
     override val input get() = connection.input
 
     fun start() {
-        if (started) return
+        check(!closed) { "closed" }
         reader.start()
         sendMessageToServer(GetProperties())
-        started = true
     }
 
     fun registerDeviceProtocolHandler(handler: DeviceProtocolHandler) {
@@ -53,7 +52,7 @@ class INDIClient(val connection: INDIConnection) : INDIProtocolParser, Closeable
     }
 
     override fun handleMessage(message: INDIProtocol) {
-        synchronized(this) { handlers.forEach { it.handleMessage(this, message) } }
+        handlers.forEach { it.handleMessage(this, message) }
     }
 
     override fun close() {
@@ -77,7 +76,7 @@ class INDIClient(val connection: INDIConnection) : INDIProtocolParser, Closeable
             }
         }
 
-        handlers.forEach { it.close() }
+        handlers.forEach(Closeable::close)
         handlers.clear()
 
         if (thrown != null) {

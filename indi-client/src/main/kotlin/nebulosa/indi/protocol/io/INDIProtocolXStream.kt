@@ -46,11 +46,11 @@ internal class INDIProtocolXStream(val driver: HierarchicalStreamDriver = StaxDr
 
         allowTypesByWildcard(arrayOf("nebulosa.indi.protocol.**"))
 
-        registerConverter(textableEnumConverter<SwitchRule>())
-        registerConverter(textableEnumConverter<SwitchState>())
-        registerConverter(textableEnumConverter<PropertyPermission>())
-        registerConverter(textableEnumConverter<PropertyState>())
-        registerConverter(textableEnumConverter<BLOBEnable>())
+        registerConverter(hasTextEnumConverter<SwitchRule>())
+        registerConverter(hasTextEnumConverter<SwitchState>())
+        registerConverter(hasTextEnumConverter<PropertyPermission>())
+        registerConverter(hasTextEnumConverter<PropertyState>())
+        registerConverter(hasTextEnumConverter<BLOBEnable>())
     }
 
     override fun registerConverter(converter: SingleValueConverter, priority: Int) {
@@ -76,8 +76,8 @@ internal class INDIProtocolXStream(val driver: HierarchicalStreamDriver = StaxDr
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(INDIProtocolXStream::class.java)
 
-        internal inline fun <reified T> textableEnumConverter(): TextableEnumConverter<T> where T : Enum<T>, T : HasText {
-            return TextableEnumConverter(T::class.java)
+        internal inline fun <reified T> hasTextEnumConverter(): HasTextEnumConverter<T> where T : Enum<T>, T : HasText {
+            return HasTextEnumConverter(T::class.java)
         }
     }
 }
