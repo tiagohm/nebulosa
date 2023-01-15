@@ -1,6 +1,9 @@
 package nebulosa.horizons;
 
-enum class HorizonsQuantity(val code: Int, val size: Int) {
+enum class HorizonsQuantity(
+    @JvmField internal val code: Int,
+    @JvmField internal val size: Int,
+) {
     ASTROMETRIC_RA_DEC(1, 2),
     APPARENT_AZ_ALT(4, 2),
     VISUAL_MAGNITUDE_SURFACE_BRIGHTNESS(9, 2),
