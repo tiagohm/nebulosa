@@ -3,6 +3,7 @@ package nebulosa.indi.protocol.io
 import com.thoughtworks.xstream.core.util.CustomObjectOutputStream
 import com.thoughtworks.xstream.io.StatefulWriter
 import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.io.MinimalBlockingInputStream
 import java.io.*
 import java.util.*
 

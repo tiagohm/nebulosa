@@ -1,6 +1,5 @@
 package nebulosa.indi.protocol.connection
 
-import nebulosa.indi.protocol.EndMarker
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.io.INDIOutputStream
 import java.util.concurrent.BlockingQueue
@@ -13,19 +12,12 @@ class INDIPipedOutputStream(
     override fun writeINDIProtocol(message: INDIProtocol) {
         try {
             queue.put(message)
-        } catch (e: InterruptedException) {
+        } catch (e: Throwable) {
             close()
         }
     }
 
-    override fun flush() = Unit
+    override fun flush() {}
 
-    override fun close() {
-        try {
-            connection.close()
-        } catch (_: InterruptedException) {
-        } finally {
-            queue.put(EndMarker)
-        }
-    }
+    override fun close() = connection.close()
 }

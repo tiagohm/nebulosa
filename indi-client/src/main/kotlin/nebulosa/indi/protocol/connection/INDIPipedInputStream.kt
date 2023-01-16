@@ -1,6 +1,5 @@
 package nebulosa.indi.protocol.connection
 
-import nebulosa.indi.protocol.EndMarker
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.io.INDIInputStream
 import java.io.Closeable
@@ -12,11 +11,11 @@ class INDIPipedInputStream(
 ) : INDIInputStream, Closeable by connection {
 
     override fun readINDIProtocol(): INDIProtocol? {
-        return if (connection.isOpen) {
+        return if (!connection.isOpen) {
             null
         } else try {
-            queue.take().takeIf { it !is EndMarker }
-        } catch (e: InterruptedException) {
+            queue.take()
+        } catch (e: Throwable) {
             close()
             null
         }

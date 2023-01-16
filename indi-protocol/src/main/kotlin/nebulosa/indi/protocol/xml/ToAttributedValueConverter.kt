@@ -1,4 +1,4 @@
-package nebulosa.indi.protocol.io
+package nebulosa.indi.protocol.xml
 
 import com.thoughtworks.xstream.converters.*
 import com.thoughtworks.xstream.converters.reflection.AbstractReflectionConverter
@@ -21,7 +21,7 @@ internal class ToAttributedValueConverter @JvmOverloads constructor(
     valueDefinedIn: Class<*>? = null,
 ) : Converter {
 
-    private var valueField: Field? = null
+    private val valueField: Field?
 
     init {
         if (valueFieldName == null) {
@@ -37,7 +37,7 @@ internal class ToAttributedValueConverter @JvmOverloads constructor(
         }
     }
 
-    override fun canConvert(type: Class<*>) = this.type == type
+    override fun canConvert(type: Class<*>) = this.type === type
 
     override fun marshal(
         source: Any,
@@ -197,8 +197,8 @@ internal class ToAttributedValueConverter @JvmOverloads constructor(
         }
 
         if (valueField != null) {
-            val classDefiningField = valueField!!.declaringClass
-            val fieldName = valueField!!.name
+            val classDefiningField = valueField.declaringClass
+            val fieldName = valueField.name
             val field = reflectionProvider.getField(classDefiningField, fieldName)
 
             if (field == null) {
@@ -238,9 +238,7 @@ internal class ToAttributedValueConverter @JvmOverloads constructor(
             reflectionProvider.writeField(result, fieldName, value, classDefiningField)
 
             if (!seenFields.add(FastField(classDefiningField, fieldName))) {
-                throw AbstractReflectionConverter.DuplicateFieldException(
-                    "$fieldName [${classDefiningField.name}]"
-                )
+                throw AbstractReflectionConverter.DuplicateFieldException("$fieldName [${classDefiningField.name}]")
             }
         }
 
@@ -249,7 +247,7 @@ internal class ToAttributedValueConverter @JvmOverloads constructor(
 
     private fun fieldIsEqual(field: FastField): Boolean {
         return valueField!!.name == field.name &&
-                valueField!!.declaringClass.name == field.declaringClass
+                valueField.declaringClass.name == field.declaringClass
     }
 
     companion object {

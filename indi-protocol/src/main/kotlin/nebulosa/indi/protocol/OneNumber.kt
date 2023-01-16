@@ -3,7 +3,7 @@ package nebulosa.indi.protocol
 import com.thoughtworks.xstream.annotations.XStreamAlias
 import com.thoughtworks.xstream.annotations.XStreamConverter
 import com.thoughtworks.xstream.annotations.XStreamOmitField
-import nebulosa.indi.protocol.io.ToAttributedValueConverter
+import nebulosa.indi.protocol.xml.ToAttributedValueConverter
 
 @XStreamAlias("oneNumber")
 @XStreamConverter(value = ToAttributedValueConverter::class, strings = ["value"], types = [OneNumber::class])

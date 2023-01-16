@@ -9,8 +9,7 @@ import com.thoughtworks.xstream.io.xml.StaxDriver
 import nebulosa.indi.protocol.*
 import org.slf4j.LoggerFactory
 
-internal class INDIProtocolXStream(val driver: HierarchicalStreamDriver = StaxDriver()) :
-    XStream(PureJavaReflectionProvider(), driver) {
+internal class INDIProtocolXStream(internal val driver: HierarchicalStreamDriver = StaxDriver()) : XStream(PureJavaReflectionProvider(), driver) {
 
     init {
         processAnnotations(DefBLOB::class.java)

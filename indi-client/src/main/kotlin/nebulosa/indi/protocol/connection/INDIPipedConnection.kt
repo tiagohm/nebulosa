@@ -8,8 +8,7 @@ class INDIPipedConnection(
     output: BlockingQueue<INDIProtocol>,
 ) : INDIConnection {
 
-    @Volatile
-    private var closed = false
+    @Volatile private var closed = false
 
     override val input = INDIPipedInputStream(this, input)
 
@@ -18,8 +17,6 @@ class INDIPipedConnection(
     override val isOpen get() = !closed
 
     override fun close() {
-        if (closed) return
-
         closed = true
     }
 }
