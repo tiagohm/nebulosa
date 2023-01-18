@@ -1,6 +1,6 @@
 package nebulosa.desktop.telescopecontrol
 
-import nebulosa.indi.devices.mounts.Mount
+import nebulosa.indi.device.mounts.Mount
 import java.io.Closeable
 
 interface TelescopeControlServer : Closeable {

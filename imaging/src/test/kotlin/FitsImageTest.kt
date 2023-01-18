@@ -1,6 +1,5 @@
 import io.kotest.matchers.shouldBe
 import nebulosa.imaging.FitsImage
-import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.*
 import nom.tam.fits.Fits
 import java.io.File

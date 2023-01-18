@@ -18,7 +18,7 @@ import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.imageviewer.ImageViewerScreen
-import nebulosa.indi.devices.cameras.*
+import nebulosa.indi.device.cameras.*
 import org.controlsfx.control.ToggleSwitch
 import org.koin.core.component.get
 import org.koin.core.component.inject

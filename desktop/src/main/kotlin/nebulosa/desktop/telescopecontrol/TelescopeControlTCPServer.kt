@@ -1,7 +1,7 @@
 package nebulosa.desktop.telescopecontrol
 
 import nebulosa.desktop.tcp.TCPServer
-import nebulosa.indi.devices.mounts.Mount
+import nebulosa.indi.device.mounts.Mount
 
 abstract class TelescopeControlTCPServer(
     override val mount: Mount,

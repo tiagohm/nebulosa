@@ -19,9 +19,9 @@ import nebulosa.desktop.core.util.concurrent.Ticker
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.telescopecontrol.TelescopeControlServerScreen
-import nebulosa.indi.devices.guiders.GuiderEvent
-import nebulosa.indi.devices.guiders.GuiderPulsingChanged
-import nebulosa.indi.devices.mounts.*
+import nebulosa.indi.device.guiders.GuiderEvent
+import nebulosa.indi.device.guiders.GuiderPulsingChanged
+import nebulosa.indi.device.mounts.*
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours

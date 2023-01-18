@@ -2,9 +2,9 @@ package nebulosa.desktop.connections
 
 import nebulosa.desktop.core.EventBus
 import nebulosa.indi.INDIClient
-import nebulosa.indi.devices.DeviceEvent
-import nebulosa.indi.devices.DeviceEventHandler
-import nebulosa.indi.devices.DeviceProtocolHandler
+import nebulosa.indi.device.DeviceEvent
+import nebulosa.indi.device.DeviceEventHandler
+import nebulosa.indi.device.DeviceProtocolHandler
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -16,7 +16,7 @@ class ConnectionManager : DeviceEventHandler, KoinComponent {
     @Volatile private var deviceHandler: DeviceProtocolHandler? = null
 
     override fun onEventReceived(event: DeviceEvent<*>) {
-        if (event.device?.client === client) {
+        if (event.device?.sender === client) {
             eventBus.post(event)
         }
     }

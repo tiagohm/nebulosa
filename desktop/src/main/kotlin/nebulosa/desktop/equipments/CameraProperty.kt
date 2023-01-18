@@ -4,8 +4,8 @@ import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.collections.FXCollections
 import nebulosa.imaging.algorithms.CfaPattern
-import nebulosa.indi.devices.DeviceEvent
-import nebulosa.indi.devices.cameras.*
+import nebulosa.indi.device.DeviceEvent
+import nebulosa.indi.device.cameras.*
 import nebulosa.indi.protocol.PropertyState
 
 class CameraProperty : DeviceProperty<Camera>() {

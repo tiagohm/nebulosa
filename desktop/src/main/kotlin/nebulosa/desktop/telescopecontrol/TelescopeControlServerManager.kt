@@ -1,10 +1,10 @@
 package nebulosa.desktop.telescopecontrol
 
 import nebulosa.desktop.core.EventBus
-import nebulosa.indi.devices.mounts.Mount
-import nebulosa.indi.devices.mounts.MountDetached
-import nebulosa.indi.devices.mounts.MountEquatorialCoordinatesChanged
-import nebulosa.indi.devices.mounts.MountEvent
+import nebulosa.indi.device.mounts.Mount
+import nebulosa.indi.device.mounts.MountDetached
+import nebulosa.indi.device.mounts.MountEquatorialCoordinatesChanged
+import nebulosa.indi.device.mounts.MountEvent
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.*

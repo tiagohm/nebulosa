@@ -2,7 +2,7 @@ package nebulosa.desktop.telescopecontrol
 
 import nebulosa.constants.PI
 import nebulosa.erfa.eraAnpm
-import nebulosa.indi.devices.mounts.Mount
+import nebulosa.indi.device.mounts.Mount
 import nebulosa.math.Angle.Companion.rad
 import org.slf4j.LoggerFactory
 import java.net.Socket

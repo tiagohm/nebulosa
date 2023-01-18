@@ -6,8 +6,8 @@ import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
-import nebulosa.indi.devices.DeviceEvent
-import nebulosa.indi.devices.mounts.*
+import nebulosa.indi.device.DeviceEvent
+import nebulosa.indi.device.mounts.*
 import java.time.OffsetDateTime
 
 class MountProperty : DeviceProperty<Mount>() {

@@ -1,6 +1,6 @@
 package nebulosa.desktop.telescopecontrol
 
-import nebulosa.indi.devices.mounts.Mount
+import nebulosa.indi.device.mounts.Mount
 import nebulosa.math.Angle
 import org.slf4j.LoggerFactory
 import java.net.Socket

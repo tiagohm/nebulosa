@@ -8,7 +8,7 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import nebulosa.desktop.core.EventBus
-import nebulosa.indi.devices.*
+import nebulosa.indi.device.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.Closeable

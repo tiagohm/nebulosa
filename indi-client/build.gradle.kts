@@ -8,6 +8,7 @@ dependencies {
     api(project(":nova"))
     api(project(":imaging"))
     api(project(":indi-protocol"))
+    api(project(":indi-device"))
     implementation(libs.logback)
     testImplementation(libs.bundles.kotest)
 }

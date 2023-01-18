@@ -7,8 +7,8 @@ import nebulosa.desktop.equipments.ThreadedTask
 import nebulosa.desktop.equipments.ThreadedTaskManager
 import nebulosa.desktop.filterwheels.FilterWheelMoveTask
 import nebulosa.desktop.preferences.Preferences
-import nebulosa.indi.devices.cameras.*
-import nebulosa.indi.devices.filterwheels.FilterWheel
+import nebulosa.indi.device.cameras.*
+import nebulosa.indi.device.filterwheels.FilterWheel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.slf4j.LoggerFactory

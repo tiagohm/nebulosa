@@ -1,50 +1,62 @@
 package nebulosa.alpaca.client
 
-import retrofit2.Call
-import retrofit2.CallAdapter
-import retrofit2.Retrofit
-import retrofit2.converter.jackson.JacksonConverterFactory
-import java.lang.reflect.Type
+import nebulosa.alpaca.api.AlpacaService
+import nebulosa.indi.device.DeviceProtocolHandler
+import nebulosa.indi.device.MessageSender
+import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.io.INDIInputStream
+import nebulosa.indi.protocol.parser.INDIProtocolParser
+import nebulosa.indi.protocol.parser.INDIProtocolReader
+import java.io.Closeable
+import java.util.concurrent.LinkedBlockingQueue
 
-/**
- * The Alpaca API uses RESTful techniques and TCP/IP to enable ASCOM
- * applications and devices to communicate across modern network environments.
- *
- * @see <a href="https://ascom-standards.org/api/">ASCOM Alpaca Device API</a>
- */
-class AlpacaClient private constructor(retrofit: Retrofit) {
+class AlpacaClient(url: String) : INDIProtocolParser, MessageSender, Closeable {
 
-    val camera by lazy { retrofit.create(Camera::class.java) }
+    @Volatile private var closed = false
 
-    val telescope by lazy { retrofit.create(Telescope::class.java) }
+    private val service by lazy { AlpacaService(url) }
+    private val reader by lazy { INDIProtocolReader(this) }
+    private val handlers = arrayListOf<DeviceProtocolHandler>()
+    private val messageQueue = LinkedBlockingQueue<INDIProtocol>()
 
-    constructor(url: String) : this(
-        Retrofit.Builder().baseUrl(url)
-            .addCallAdapterFactory(AlpacaResponseCallAdapterFactory)
-            .addConverterFactory(JacksonConverterFactory.create())
-            .build()
-    )
+    override val input = object : INDIInputStream {
 
-    private object AlpacaResponseCallAdapterFactory : CallAdapter.Factory() {
+        override fun readINDIProtocol() = if (closed) null else messageQueue.take()
 
-        override fun get(
-            returnType: Type,
-            annotations: Array<out Annotation>,
-            retrofit: Retrofit
-        ): CallAdapter<*, *> {
-            return AlpacaResposeCallAdapter<Any>()
-        }
+        override fun close() = this@AlpacaClient.close()
     }
 
-    private class AlpacaResposeCallAdapter<T> : CallAdapter<AlpacaResponse<T>, AlpacaResponse<T>> {
+    fun start() {
+        check(!closed) { "closed" }
+        reader.start()
+    }
 
-        override fun responseType() = AlpacaResponse::class.java
+    override fun handleMessage(message: INDIProtocol) {
+        handlers.forEach { it.handleMessage(this, message) }
+    }
 
-        override fun adapt(call: Call<AlpacaResponse<T>>): AlpacaResponse<T> {
-            val response = call.execute()
+    override fun sendMessageToServer(message: INDIProtocol) {
+        TODO("Not yet implemented")
+    }
 
-            if (response.isSuccessful) return response.body()!!
-            else throw AlpacaException(response)
+    override fun close() {
+        if (closed) return
+
+        closed = true
+
+        var thrown: Throwable? = null
+
+        try {
+            reader.close()
+        } catch (e: Throwable) {
+            thrown = e
+        }
+
+        handlers.forEach(Closeable::close)
+        handlers.clear()
+
+        if (thrown != null) {
+            throw thrown
         }
     }
 }

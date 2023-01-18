@@ -9,10 +9,10 @@ import javafx.scene.control.TextField
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.indi.devices.gps.GPS
-import nebulosa.indi.devices.mounts.Mount
-import nebulosa.indi.devices.mounts.MountCoordinateChanged
-import nebulosa.indi.devices.mounts.MountEvent
+import nebulosa.indi.device.gps.GPS
+import nebulosa.indi.device.mounts.Mount
+import nebulosa.indi.device.mounts.MountCoordinateChanged
+import nebulosa.indi.device.mounts.MountEvent
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Distance.Companion.m

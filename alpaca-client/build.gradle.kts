@@ -4,6 +4,8 @@ plugins {
 }
 
 dependencies {
+    api(project(":indi-device"))
+    api(project(":alpaca-api"))
     implementation(libs.retrofit)
     implementation(libs.jackson)
     implementation(libs.logback)

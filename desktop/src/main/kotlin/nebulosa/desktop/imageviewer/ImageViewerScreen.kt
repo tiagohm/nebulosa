@@ -20,7 +20,7 @@ import nebulosa.imaging.FitsImage
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
-import nebulosa.indi.devices.cameras.Camera
+import nebulosa.indi.device.cameras.Camera
 import nom.tam.fits.Fits
 import java.io.Closeable
 import java.io.File

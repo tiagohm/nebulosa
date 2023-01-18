@@ -6,7 +6,7 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.indi.devices.cameras.*?>
+<?import nebulosa.indi.device.cameras.*?>
 <?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"

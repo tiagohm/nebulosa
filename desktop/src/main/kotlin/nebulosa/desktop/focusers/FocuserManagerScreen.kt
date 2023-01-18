@@ -16,9 +16,9 @@ import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.indi.devices.filterwheels.FilterWheelEvent
-import nebulosa.indi.devices.filterwheels.FilterWheelMovingChanged
-import nebulosa.indi.devices.focusers.Focuser
+import nebulosa.indi.device.filterwheels.FilterWheelEvent
+import nebulosa.indi.device.filterwheels.FilterWheelMovingChanged
+import nebulosa.indi.device.focusers.Focuser
 import org.controlsfx.control.ToggleSwitch
 import org.koin.core.component.inject
 

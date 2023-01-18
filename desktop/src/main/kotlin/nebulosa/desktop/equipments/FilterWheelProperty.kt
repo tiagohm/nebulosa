@@ -3,11 +3,11 @@ package nebulosa.desktop.equipments
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
-import nebulosa.indi.devices.DeviceEvent
-import nebulosa.indi.devices.filterwheels.FilterWheel
-import nebulosa.indi.devices.filterwheels.FilterWheelMovingChanged
-import nebulosa.indi.devices.filterwheels.FilterWheelPositionChanged
-import nebulosa.indi.devices.filterwheels.FilterWheelSlotCountChanged
+import nebulosa.indi.device.DeviceEvent
+import nebulosa.indi.device.filterwheels.FilterWheel
+import nebulosa.indi.device.filterwheels.FilterWheelMovingChanged
+import nebulosa.indi.device.filterwheels.FilterWheelPositionChanged
+import nebulosa.indi.device.filterwheels.FilterWheelSlotCountChanged
 
 class FilterWheelProperty : DeviceProperty<FilterWheel>() {
 

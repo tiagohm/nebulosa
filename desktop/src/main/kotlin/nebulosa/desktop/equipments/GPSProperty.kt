@@ -3,10 +3,10 @@ package nebulosa.desktop.equipments
 import javafx.application.Platform
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleObjectProperty
-import nebulosa.indi.devices.DeviceEvent
-import nebulosa.indi.devices.gps.GPS
-import nebulosa.indi.devices.gps.GPSCoordinateChanged
-import nebulosa.indi.devices.gps.GPSTimeChanged
+import nebulosa.indi.device.DeviceEvent
+import nebulosa.indi.device.gps.GPS
+import nebulosa.indi.device.gps.GPSCoordinateChanged
+import nebulosa.indi.device.gps.GPSTimeChanged
 import java.time.OffsetDateTime
 
 class GPSProperty : DeviceProperty<GPS>() {

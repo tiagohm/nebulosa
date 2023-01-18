@@ -1,6 +1,7 @@
 package nebulosa.indi
 
-import nebulosa.indi.devices.DeviceProtocolHandler
+import nebulosa.indi.device.DeviceProtocolHandler
+import nebulosa.indi.device.MessageSender
 import nebulosa.indi.protocol.GetProperties
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.connection.INDIConnection
@@ -11,7 +12,7 @@ import nebulosa.indi.protocol.parser.INDIProtocolReader
 import org.slf4j.LoggerFactory
 import java.io.Closeable
 
-class INDIClient(val connection: INDIConnection) : INDIProtocolParser, Closeable {
+class INDIClient(val connection: INDIConnection) : INDIProtocolParser, MessageSender, Closeable {
 
     @Volatile private var closed = false
 
@@ -43,7 +44,7 @@ class INDIClient(val connection: INDIConnection) : INDIProtocolParser, Closeable
         handlers.remove(handler)
     }
 
-    fun sendMessageToServer(message: INDIProtocol) {
+    override fun sendMessageToServer(message: INDIProtocol) {
         if (LOG.isDebugEnabled) {
             LOG.debug("sending message: {}", message)
         }

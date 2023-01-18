@@ -1,7 +1,7 @@
 package nebulosa.desktop.cameras
 
-import nebulosa.indi.devices.cameras.Camera
-import nebulosa.indi.devices.cameras.CameraEvent
+import nebulosa.indi.device.cameras.Camera
+import nebulosa.indi.device.cameras.CameraEvent
 import java.nio.file.Path
 
 data class CameraFrameSaved(

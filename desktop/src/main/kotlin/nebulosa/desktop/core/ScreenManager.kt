@@ -8,8 +8,8 @@ import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.desktop.indi.INDIPanelControlScreen
 import nebulosa.desktop.mounts.MountManagerScreen
 import nebulosa.desktop.platesolving.PlateSolverScreen
-import nebulosa.indi.devices.Device
-import nebulosa.indi.devices.cameras.Camera
+import nebulosa.indi.device.Device
+import nebulosa.indi.device.cameras.Camera
 import org.koin.core.component.KoinComponent
 import java.io.File
 

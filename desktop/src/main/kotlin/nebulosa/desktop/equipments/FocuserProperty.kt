@@ -3,8 +3,8 @@ package nebulosa.desktop.equipments
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
-import nebulosa.indi.devices.DeviceEvent
-import nebulosa.indi.devices.focusers.*
+import nebulosa.indi.device.DeviceEvent
+import nebulosa.indi.device.focusers.*
 
 class FocuserProperty : DeviceProperty<Focuser>() {
 

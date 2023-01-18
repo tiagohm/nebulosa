@@ -15,7 +15,7 @@ import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.indi.devices.*
+import nebulosa.indi.device.*
 import nebulosa.indi.protocol.PropertyPermission
 import nebulosa.indi.protocol.SwitchRule
 import org.koin.core.component.inject

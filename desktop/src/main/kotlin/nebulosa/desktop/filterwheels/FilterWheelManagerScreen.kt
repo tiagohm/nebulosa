@@ -22,7 +22,7 @@ import nebulosa.desktop.core.scene.control.ButtonValueFactory
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.indi.devices.filterwheels.FilterWheel
+import nebulosa.indi.device.filterwheels.FilterWheel
 import org.koin.core.component.inject
 import kotlin.math.max
 import kotlin.math.min

@@ -4,7 +4,7 @@ import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.desktop.equipments.ThreadedTask
 import nebulosa.desktop.equipments.ThreadedTaskManager
-import nebulosa.indi.devices.filterwheels.*
+import nebulosa.indi.device.filterwheels.*
 import org.slf4j.LoggerFactory
 
 class FilterWheelMoveTask(

@@ -1,7 +1,7 @@
 package nebulosa.desktop.core.util
 
 import javafx.util.StringConverter
-import nebulosa.indi.devices.Device
+import nebulosa.indi.device.Device
 
 open class DeviceStringConverter<D : Device>(private val emptyText: String = "No device selected") : StringConverter<D>() {
 
