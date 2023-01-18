@@ -1,18 +1,18 @@
 import io.kotest.core.spec.style.StringSpec
-import nebulosa.alpaca.discovery.AlpacaDiscoverer
-import nebulosa.alpaca.discovery.DiscoveredDevice
+import nebulosa.alpaca.discovery.AlpacaDiscoveryService
+import nebulosa.alpaca.discovery.DiscoveredServer
 import nebulosa.alpaca.discovery.DiscoveryListener
 
 class AlpacaDiscoveryProtocolTest : StringSpec(), DiscoveryListener {
 
     init {
         "run" {
-            val discoverer = AlpacaDiscoverer()
+            val discoverer = AlpacaDiscoveryService()
             discoverer.run()
         }
     }
 
-    override fun onDeviceFound(device: DiscoveredDevice) {
-        println(device)
+    override fun onServerFound(server: DiscoveredServer) {
+        println(server)
     }
 }

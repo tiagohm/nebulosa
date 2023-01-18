@@ -12,9 +12,10 @@ import java.net.*
  * @see <a href="https://ascom-standards.org/api/?urls.primaryName=ASCOM%20Alpaca%20Management%20API">ASCOM Alpaca Management API</a>
  * @see <a href="https://ascom-standards.org/api/?urls.primaryName=ASCOM%20Alpaca%20Device%20API">ASCOM Alpaca Device API</a>
  */
-class AlpacaDiscoverer : Runnable, Closeable {
+class AlpacaDiscoveryService : Runnable, Closeable {
 
     @Volatile private var running = false
+
     private val socket = DatagramSocket(0)
     private val listeners = arrayListOf<DiscoveryListener>()
 
@@ -79,18 +80,20 @@ class AlpacaDiscoverer : Runnable, Closeable {
                 break
             } catch (e: IOException) {
                 LOG.error("socket receive error", e)
+                break
             }
 
             val message = packet.data.decodeToString(0, packet.length)
             val port = ALPACA_PORT_REGEX.matchEntire(message)?.groupValues?.get(1)?.toIntOrNull() ?: continue
-            val device = DiscoveredDevice(packet.address, port)
-            LOG.info("device found: {}", device)
-            listeners.forEach { it.onDeviceFound(device) }
+            val server = DiscoveredServer(packet.address, port)
+            LOG.info("server found at {}:{}", server.address, server.port)
+            listeners.forEach { it.onServerFound(server) }
         }
     }
 
     override fun close() {
         running = false
+
         socket.close()
     }
 
@@ -99,6 +102,6 @@ class AlpacaDiscoverer : Runnable, Closeable {
         private const val ALPACA_DISCOVERY_MESSAGE = "alpacadiscovery1"
 
         @JvmStatic private val ALPACA_PORT_REGEX = Regex("\\{\"AlpacaPort\":(\\d+)\\}")
-        @JvmStatic private val LOG = LoggerFactory.getLogger(AlpacaDiscoverer::class.java)
+        @JvmStatic private val LOG = LoggerFactory.getLogger(AlpacaDiscoveryService::class.java)
     }
 }

@@ -14,6 +14,8 @@ import java.lang.reflect.Type
  */
 class AlpacaService private constructor(retrofit: Retrofit) {
 
+    val management by lazy { retrofit.create(Management::class.java) }
+
     val camera by lazy { retrofit.create(Camera::class.java) }
 
     val telescope by lazy { retrofit.create(Telescope::class.java) }

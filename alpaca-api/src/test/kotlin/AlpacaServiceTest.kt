@@ -12,5 +12,9 @@ class AlpacaServiceTest : StringSpec() {
             client.camera.isConnected(0).value!!.shouldBeTrue()
             client.camera.connect(0, true).value.shouldBeNull()
         }
+        "telescope" {
+            client.telescope.isConnected(0).value!!.shouldBeTrue()
+            client.telescope.connect(0, true).value.shouldBeNull()
+        }
     }
 }
