@@ -5,5 +5,5 @@ import nebulosa.indi.alpaca.device.Device
 
 internal class Camera(
     connection: AlpacaINDIConnection,
-    id: String, name: String,
-) : Device(connection, id, name)
+    id: String, name: String, number: Int,
+) : Device(connection, id, name, number)

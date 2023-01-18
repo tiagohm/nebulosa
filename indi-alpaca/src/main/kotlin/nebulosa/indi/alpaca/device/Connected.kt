@@ -1,12 +1,19 @@
 package nebulosa.indi.alpaca.device
 
 import nebulosa.indi.alpaca.AlpacaINDIConnection
-import nebulosa.indi.alpaca.BoolProperty
+import nebulosa.indi.alpaca.BoolCommand
+import nebulosa.indi.alpaca.device.camera.Camera
 
 internal class Connected(
     connection: AlpacaINDIConnection,
     device: Device,
-) : BoolProperty(connection, device) {
+) : BoolCommand(connection, device) {
 
-    override fun call() = requestGet("telescope/0/connected")
+    override fun set(value: Boolean) {
+        if (device is Camera) connection.client.camera.connect(device.number, value)
+    }
+
+    override fun run() {
+        value = connection.client.camera.isConnected(device.number).value!!
+    }
 }

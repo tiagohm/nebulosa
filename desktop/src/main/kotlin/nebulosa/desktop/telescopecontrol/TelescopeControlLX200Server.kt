@@ -118,6 +118,10 @@ class TelescopeControlLX200Server(
             }
         }
 
+        private fun abort() {
+            server.mount.abortMotion()
+        }
+
         private fun sendOk() {
             output.writeByte(49)
             output.flush()
@@ -167,10 +171,11 @@ class TelescopeControlLX200Server(
                 ":GG" -> sendTimeOffset()
                 // ":GW" -> sendOk()
                 ":CM" -> sync()
-                ":Me", ":Mn", ":Ms", ":Mw" -> move()
+                ":MS" -> move()
                 // ":RC", ":RG", ":RM", ":RS" -> return // movement rate
+                // ":Me", ":Mn", ":Ms", ":Mw" -> return // move
                 // ":Qe", ":Qn", ":Qs", ":Qw" -> return // abort move
-                // ":Q" -> return // stop slew
+                ":Q" -> abort()
                 ":U" -> return
                 ":D" -> sendSlewingStatus(server.mount.isSlewing)
                 else -> {

@@ -26,8 +26,8 @@ import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
 import nebulosa.nova.position.Geoid
+import nebulosa.time.InstantOfTime
 import nebulosa.time.TimeJD
-import nebulosa.time.UTC
 import org.controlsfx.control.SegmentedButton
 import org.controlsfx.control.ToggleSwitch
 import org.koin.core.component.inject
@@ -218,17 +218,22 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         }
     }
 
-    val localSiderealTime: Angle
-        get() {
-            val mount = equipmentManager.selectedMount.get() ?: return Angle.ZERO
-            val position = Geoid.IERS2010.latLon(mount.longitude, mount.latitude, mount.elevation)
-            return position.lstAt(UTC(TimeJD.now()))
-        }
+    private fun computeLST(time: InstantOfTime = TimeJD.now()): Angle {
+        val mount = equipmentManager.selectedMount.get() ?: return Angle.ZERO
+        val position = Geoid.IERS2010.latLon(mount.longitude, mount.latitude, mount.elevation)
+        return position.lstAt(time)
+    }
+
+    private fun computeTimeLeftToMeridianFlip(): Angle {
+        val mount = equipmentManager.selectedMount.get() ?: return Angle.ZERO
+        val timeLeft = mount.rightAscension - computeLST(TimeJD.now())
+        return if (timeLeft.value < 0) timeLeft - SIDEREAL_TIME_DIFF
+        else timeLeft
+    }
 
     private fun onTick() {
-        val mount = equipmentManager.selectedMount.get() ?: return
-        val computedLST = localSiderealTime
-        val timeLeftToMeridianFlip = (mount.rightAscension - computedLST).normalized
+        val computedLST = computeLST()
+        val timeLeftToMeridianFlip = computeTimeLeftToMeridianFlip()
         val timeToMeridianFlip = LocalDateTime.now().plusSeconds((timeLeftToMeridianFlip.hours * 3600.0).toLong())
 
         Platform.runLater {
@@ -239,11 +244,14 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     }
 
     @FXML
+    @Synchronized
     private fun connect() {
-        if (!equipmentManager.selectedMount.isConnected.get()) {
-            equipmentManager.selectedMount.get().connect()
+        val mount = equipmentManager.selectedMount.get() ?: return
+
+        if (mount.isConnected) {
+            mount.disconnect()
         } else {
-            equipmentManager.selectedMount.get().disconnect()
+            mount.connect()
         }
     }
 
@@ -347,25 +355,26 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     }
 
     // TODO: Prevent go to below horizon. Show warning.
+    // TODO: Prevent go to Sun. Show warning.
 
     @FXML
     private fun loadZenithPosition() {
         val mount = equipmentManager.selectedMount.get() ?: return
-        targetRightAscension.text = Angle.formatHMS(localSiderealTime, "%02dh %02dm %05.02fs")
+        targetRightAscension.text = Angle.formatHMS(computeLST(), "%02dh %02dm %05.02fs")
         targetDeclination.text = Angle.formatDMS(mount.latitude, "%s%02d° %02d' %05.02f\"")
         targetCoordinatesEquinox.toggleGroup.selectToggle(targetCoordinatesEquinox.buttons[0])
     }
 
     @FXML
     private fun loadNorthPolePosition() {
-        targetRightAscension.text = Angle.formatHMS(localSiderealTime, "%02dh %02dm %05.02fs")
+        targetRightAscension.text = Angle.formatHMS(computeLST(), "%02dh %02dm %05.02fs")
         targetDeclination.text = "+90° 00' 00\""
         targetCoordinatesEquinox.toggleGroup.selectToggle(targetCoordinatesEquinox.buttons[0])
     }
 
     @FXML
     private fun loadSouthPolePosition() {
-        targetRightAscension.text = Angle.formatHMS(localSiderealTime, "%02dh %02dm %05.02fs")
+        targetRightAscension.text = Angle.formatHMS(computeLST(), "%02dh %02dm %05.02fs")
         targetDeclination.text = "-90° 00' 00\""
         targetCoordinatesEquinox.toggleGroup.selectToggle(targetCoordinatesEquinox.buttons[0])
     }
@@ -401,5 +410,6 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     companion object {
 
         @JvmStatic private val MERIDIAN_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")
+        @JvmStatic private val SIDEREAL_TIME_DIFF = 0.0655304.hours
     }
 }

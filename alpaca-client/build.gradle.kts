@@ -4,12 +4,10 @@ plugins {
 }
 
 dependencies {
-    api(project(":alpaca-discovery-protocol"))
-    api(project(":alpaca-client"))
-    api(project(":indi-protocol"))
-    implementation(libs.okhttp)
+    implementation(libs.retrofit)
     implementation(libs.jackson)
     implementation(libs.logback)
+    implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
     testImplementation(libs.bundles.kotest)
 }
 

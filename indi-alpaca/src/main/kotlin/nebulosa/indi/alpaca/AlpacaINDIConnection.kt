@@ -1,5 +1,6 @@
 package nebulosa.indi.alpaca
 
+import nebulosa.alpaca.client.AlpacaClient
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.connection.INDIConnection
 import nebulosa.indi.protocol.io.INDIInputStream
@@ -12,6 +13,7 @@ class AlpacaINDIConnection(
     val port: Int,
 ) : Thread(), INDIConnection, INDIProtocolHandler {
 
+    @JvmField internal val client = AlpacaClient("$host:$port/")
     private val messageQueue = LinkedBlockingQueue<INDIProtocol>()
 
     @Volatile private var running = false
@@ -42,9 +44,8 @@ class AlpacaINDIConnection(
         running = true
 
         try {
-
+            // call all properties/endpoints.
         } catch (_: InterruptedException) {
-
         } catch (e: Throwable) {
 
         }
@@ -53,7 +54,7 @@ class AlpacaINDIConnection(
     override fun close() {
         if (!running) return
 
-        running = true
+        running = false
         messageQueue.clear()
 
         interrupt()

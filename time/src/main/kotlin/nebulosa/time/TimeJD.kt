@@ -51,7 +51,7 @@ open class TimeJD(
         @JvmStatic val B1950 = TimeJD(nebulosa.constants.B1950)
 
         @JvmStatic
-        fun now() = TimeUnix(System.currentTimeMillis() / 1000.0)
+        fun now(): TimeJD = TimeUnix(System.currentTimeMillis() / 1000.0)
 
         /**
          * Returns the sum of [whole] and [fraction] as two 64-bit floats.

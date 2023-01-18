@@ -1,7 +1,7 @@
 package nebulosa.indi.alpaca.device
 
 import nebulosa.indi.alpaca.AlpacaINDIConnection
-import nebulosa.indi.alpaca.Property
+import nebulosa.indi.alpaca.Command
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
@@ -11,6 +11,7 @@ internal abstract class Device(
     @JvmField protected val connection: AlpacaINDIConnection,
     @JvmField val id: String,
     @JvmField val name: String,
+    @JvmField val number: Int,
 ) {
 
     protected val connected by lazy { Connected(connection, this) }
@@ -19,17 +20,17 @@ internal abstract class Device(
         register(connected)
     }
 
-    protected fun register(property: Property<*>) {
+    protected fun register(command: Command<*>) {
         synchronized(REGISTERED_PROPERTIES) {
-            REGISTERED_PROPERTIES[property] = EXECUTOR.scheduleAtFixedRate(property, 1L, property.period, TimeUnit.SECONDS)
-            LOG.info("{} property registered at fixed rate of {}s", property::class.simpleName, property.period)
+            REGISTERED_PROPERTIES[command] = EXECUTOR.scheduleAtFixedRate(command, 1L, command.period, TimeUnit.SECONDS)
+            LOG.info("{} property registered at fixed rate of {}s", command::class.simpleName, command.period)
         }
     }
 
-    protected fun unregister(property: Property<*>) {
+    protected fun unregister(command: Command<*>) {
         synchronized(REGISTERED_PROPERTIES) {
-            REGISTERED_PROPERTIES[property]?.cancel(true) ?: return
-            REGISTERED_PROPERTIES.remove(property)
+            REGISTERED_PROPERTIES[command]?.cancel(true) ?: return
+            REGISTERED_PROPERTIES.remove(command)
         }
     }
 
@@ -37,6 +38,6 @@ internal abstract class Device(
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(Device::class.java)
         @JvmStatic private val EXECUTOR = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors())
-        @JvmStatic private val REGISTERED_PROPERTIES = HashMap<Property<*>, ScheduledFuture<*>>(512)
+        @JvmStatic private val REGISTERED_PROPERTIES = HashMap<Command<*>, ScheduledFuture<*>>(512)
     }
 }
