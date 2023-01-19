@@ -1,7 +1,6 @@
 package nebulosa.desktop.logic
 
 import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.functions.Consumer
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -14,7 +13,7 @@ import org.koin.core.component.inject
 import java.io.Closeable
 
 @Suppress("LeakingThis")
-abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeListener<T>, Consumer<Any>, Closeable, KoinComponent {
+abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeListener<T>, Closeable, KoinComponent {
 
     protected val eventBus by inject<EventBus>()
 
@@ -29,8 +28,8 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
         addListener(this)
 
         subscribers[0] = eventBus
-            .filter { it is DeviceEvent<*> && it.device === value }
-            .subscribe(::accept)
+            .filterIsInstance<DeviceEvent<T>> { it.device === value }
+            .subscribe(::onDeviceEvent)
     }
 
     protected abstract fun reset()
@@ -57,8 +56,7 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    override fun accept(event: Any) {
+    private fun onDeviceEvent(event: DeviceEvent<T>) {
         if (closed) return
 
         when (event) {
@@ -68,7 +66,7 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
                 isConnected.set(value.isConnected)
             }
             is DeviceIsConnecting -> Platform.runLater { isConnecting.set(true) }
-            else -> accept(event as DeviceEvent<T>)
+            else -> accept(event)
         }
     }
 

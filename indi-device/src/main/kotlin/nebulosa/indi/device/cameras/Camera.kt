@@ -7,7 +7,7 @@ import nebulosa.indi.protocol.PropertyState
 
 interface Camera : Guider, Thermometer {
 
-    val isCapturing: Boolean
+    val isExposuring: Boolean
 
     val hasCoolerControl: Boolean
 

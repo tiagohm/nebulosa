@@ -11,7 +11,7 @@ import nebulosa.indi.protocol.PropertyState
 
 open class CameraProperty : DeviceProperty<Camera>() {
 
-    @JvmField val isCapturing = SimpleBooleanProperty(false)
+    @JvmField val isExposuring = SimpleBooleanProperty(false)
     @JvmField val hasCoolerControl = SimpleBooleanProperty(false)
     @JvmField val isCoolerOn = SimpleBooleanProperty(false)
     @JvmField val hasDewHeater = SimpleBooleanProperty(false)
@@ -53,7 +53,7 @@ open class CameraProperty : DeviceProperty<Camera>() {
     @JvmField val offsetMax = SimpleIntegerProperty(0)
 
     override fun changed(prev: Camera?, new: Camera) {
-        isCapturing.set(new.isCapturing)
+        isExposuring.set(new.isExposuring)
         hasCoolerControl.set(new.hasCoolerControl)
         isCoolerOn.set(new.isCoolerOn)
         hasDewHeater.set(new.hasDewHeater)
@@ -96,7 +96,7 @@ open class CameraProperty : DeviceProperty<Camera>() {
     }
 
     override fun reset() {
-        isCapturing.set(false)
+        isExposuring.set(false)
         hasCoolerControl.set(false)
         isCoolerOn.set(false)
         hasDewHeater.set(false)
@@ -142,7 +142,7 @@ open class CameraProperty : DeviceProperty<Camera>() {
         val device = event.device!!
 
         when (event) {
-            is CameraCapturingChanged -> Platform.runLater { isCapturing.set(device.isCapturing) }
+            is CameraExposuringChanged -> Platform.runLater { isExposuring.set(device.isExposuring) }
             is CameraCoolerControlChanged -> Platform.runLater { hasCoolerControl.set(device.hasCoolerControl) }
             is CameraCoolerChanged -> Platform.runLater { isCoolerOn.set(device.isCoolerOn) }
             is CameraHasDewHeaterChanged -> Platform.runLater { hasDewHeater.set(device.hasDewHeater) }

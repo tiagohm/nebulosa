@@ -19,7 +19,7 @@ internal open class CameraBase(
     name: String,
 ) : AbstractDevice(sender, handler, name), Camera {
 
-    override var isCapturing = false
+    override var isExposuring = false
     override var hasCoolerControl = false
     override var isCoolerOn = false
     override var hasDewHeater = false
@@ -122,15 +122,15 @@ internal open class CameraBase(
                             handler.fireOnEventReceived(CameraExposureProgressChanged(this))
                         }
 
-                        val prevIsCapturing = isCapturing
-                        isCapturing = exposureState == PropertyState.BUSY
+                        val prevIsExposuring = isExposuring
+                        isExposuring = exposureState == PropertyState.BUSY
 
-                        if (prevIsCapturing != isCapturing) {
-                            handler.fireOnEventReceived(CameraCapturingChanged(this))
+                        if (prevIsExposuring != isExposuring) {
+                            handler.fireOnEventReceived(CameraExposuringChanged(this))
                         }
 
                         if (exposureState == PropertyState.IDLE
-                            && (prevExposureState == PropertyState.BUSY || isCapturing)
+                            && (prevExposureState == PropertyState.BUSY || isExposuring)
                         ) {
                             handler.fireOnEventReceived(CameraExposureAborted(this))
                         } else if (exposureState == PropertyState.OK && prevExposureState == PropertyState.BUSY) {
@@ -369,7 +369,7 @@ internal open class CameraBase(
     }
 
     override fun toString(): String {
-        return "Camera(name=$name, isCapturing=$isCapturing," +
+        return "Camera(name=$name, isCapturing=$isExposuring," +
                 " hasCoolerControl=$hasCoolerControl, isCoolerOn=$isCoolerOn," +
                 " hasDewHeater=$hasDewHeater, isDewHeaterOn=$isDewHeaterOn," +
                 " frameFormats=$frameFormats, canAbort=$canAbort," +

@@ -10,6 +10,7 @@ import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.core.util.loader.IERSLoader
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.logic.EquipmentController
+import nebulosa.desktop.logic.camera.CameraExposureTaskExecutor
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.desktop.telescopecontrol.TelescopeControlServerManager
 import nebulosa.io.resource
@@ -46,6 +47,8 @@ private fun inject() = module {
     single(createdAtStart = true) { EquipmentManager() }
     single(createdAtStart = true) { TelescopeControlServerManager() }
     single(createdAtStart = true) { ScreenManager() }
+
+    single { CameraExposureTaskExecutor() }
 }
 
 fun main(args: Array<String>) {

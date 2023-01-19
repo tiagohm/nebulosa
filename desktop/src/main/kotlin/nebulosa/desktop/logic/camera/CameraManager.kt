@@ -1,12 +1,16 @@
 package nebulosa.desktop.logic.camera
 
+import io.reactivex.rxjava3.disposables.Disposable
 import javafx.application.Platform
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
 import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.gui.camera.AutoSubFolderMode
 import nebulosa.desktop.gui.camera.CameraWindow
 import nebulosa.desktop.gui.camera.ExposureMode
 import nebulosa.desktop.logic.EquipmentController
+import nebulosa.desktop.logic.taskexecutor.TaskEvent
+import nebulosa.desktop.logic.taskexecutor.TaskStarted
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.cameras.*
@@ -20,12 +24,30 @@ import java.util.concurrent.TimeUnit
 
 class CameraManager(private val window: CameraWindow) : CameraProperty() {
 
+    @JvmField val isCapturing = SimpleBooleanProperty()
+
     private val preferences by inject<Preferences>()
     private val equipmentController by inject<EquipmentController>()
+    private val cameraExposureTaskExecutor by inject<CameraExposureTaskExecutor>()
     private val screenManager by inject<ScreenManager>()
     private val appDirectory by inject<Path>(named("app"))
+    private val subscribers = arrayOfNulls<Disposable>(1)
 
     val cameras get() = equipmentController.attachedCameras
+
+    init {
+        subscribers[0] = eventBus
+            .filterIsInstance<TaskEvent> {
+                it.task is CameraExposureTask
+                        && (it.task as CameraExposureTask).camera === value
+            }
+            .subscribe(::onTaskEvent)
+    }
+
+    private fun onTaskEvent(event: TaskEvent) {
+        Platform.runLater { isCapturing.set(event is TaskStarted) }
+        updateStatus()
+    }
 
     override fun changed(prev: Camera?, new: Camera) {
         super.changed(prev, new)
@@ -63,9 +85,9 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
 
     fun updateStatus() {
         val text = buildString(128) {
-            val task = CameraExposureTask.currentTask
+            val task = cameraExposureTaskExecutor.currentTask
 
-            if (task != null && CameraExposureTask.isCapturing.get()) {
+            if (task != null && isCapturing.get()) {
                 val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000.0} s"
                 else if (task.exposure >= 1000L) "${task.exposure / 1000.0} ms"
                 else "${task.exposure} µs"
@@ -139,7 +161,13 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
     }
 
     fun updateExposureMinMax() {
-        updateExposureUnit(window.exposureUnit)
+        val min = window.exposureUnit.convert(exposureMin.value, TimeUnit.MICROSECONDS)
+        val max = window.exposureUnit.convert(exposureMax.value, TimeUnit.MICROSECONDS)
+
+        Platform.runLater {
+            window.exposureMax = max
+            window.exposureMin = min
+        }
     }
 
     fun updateExposureUnit(from: TimeUnit, to: TimeUnit, exposure: Long) {
@@ -153,10 +181,6 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
             window.exposure = value
             window.exposureUnit = to
         }
-    }
-
-    fun updateExposureUnit(unit: TimeUnit) {
-        updateExposureUnit(TimeUnit.MICROSECONDS, unit, window.exposureInMicros)
     }
 
     fun autoSaveAllExposures(enable: Boolean) {
@@ -200,17 +224,18 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
             else -> Int.MAX_VALUE
         }
 
+        if (cameraExposureTaskExecutor.currentTask != null) return
+
         val task = CameraExposureTask(
             value,
-            null, // TODO
             window.exposureInMicros, amount, window.exposureDelay,
             if (window.isSubFrame) window.frameX else minX.get(),
             if (window.isSubFrame) window.frameY else minY.get(),
             if (window.isSubFrame) window.frameWidth else maxWidth.get(),
             if (window.isSubFrame) window.frameHeight else maxHeight.get(),
             window.frameFormat, window.frameType,
-            binX.value.toInt(), binY.value.toInt(),
-            gain.value.toInt(), offset.value.toInt(),
+            window.binX, window.binY,
+            window.gain, window.offset,
             window.isAutoSaveAllExposures,
             Paths.get(window.imageSavePath),
             if (!window.isAutoSubFolder) AutoSubFolderMode.OFF
@@ -218,9 +243,13 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
             else AutoSubFolderMode.MIDNIGHT,
         )
 
-        if (!CameraExposureTask.execute(task)) return
+        cameraExposureTaskExecutor.add(task)
 
         savePreferences()
+    }
+
+    fun abortCapture() {
+        value?.abortCapture()
     }
 
     fun saveScreenLocation(x: Double, y: Double) {
@@ -290,5 +319,12 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
             preferences.double("camera.screen.x")?.let { window.x = it }
             preferences.double("camera.screen.y")?.let { window.y = it }
         }
+    }
+
+    override fun close() {
+        super.close()
+
+        subscribers.forEach { it?.dispose() }
+        subscribers.fill(null)
     }
 }

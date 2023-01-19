@@ -15,7 +15,6 @@ import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.logic.camera.CameraExposureTask
 import nebulosa.desktop.logic.camera.CameraManager
 import nebulosa.indi.device.cameras.Camera
 import nebulosa.indi.device.cameras.FrameType
@@ -77,7 +76,7 @@ class CameraWindow : AbstractWindow() {
     override fun onCreate() {
         val isNotConnected = !cameraManager.isConnected
         val isConnecting = cameraManager.isConnecting
-        val isCapturing = CameraExposureTask.isCapturing
+        val isCapturing = cameraManager.isCapturing
         val isNotConnectedOrCapturing = isNotConnected or isCapturing
 
         camerasChoiceBox.converter = DeviceStringConverter()
@@ -161,6 +160,7 @@ class CameraWindow : AbstractWindow() {
         set(value) {
             exposureUnitToggleGroup.toggles
                 .forEach { (it as RadioButton).isSelected = it.userData == value.name }
+            exposureSpinner.userData = value
         }
 
     var exposure
@@ -442,7 +442,7 @@ class CameraWindow : AbstractWindow() {
     private fun updateExposureUnit(event: ActionEvent) {
         val radio = event.source as RadioButton
         val timeUnit = TimeUnit.valueOf(radio.userData as String)
-        cameraManager.updateExposureUnit(timeUnit)
+        cameraManager.updateExposureUnit(exposureSpinner.userData as TimeUnit, timeUnit, exposure)
     }
 
     @FXML
@@ -475,7 +475,7 @@ class CameraWindow : AbstractWindow() {
 
     @FXML
     private fun abortCapture() {
-        CameraExposureTask.cancel()
+        cameraManager.abortCapture()
     }
 
     companion object : Closeable {
