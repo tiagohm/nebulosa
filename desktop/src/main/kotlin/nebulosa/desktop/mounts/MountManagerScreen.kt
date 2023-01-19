@@ -334,7 +334,7 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     @FXML
     private fun sync() {
         val mount = equipmentManager.selectedMount.get() ?: return
-        val (ra, dec) = targetCoordinates ?: return showAlert("Invalid target coordinates")
+        val (ra, dec) = targetCoordinates
         val isJ2000 = targetCoordinatesEquinox.toggleGroup.selectedToggle.userData == "J2000"
         if (isJ2000) mount.syncJ2000(ra, dec)
         else mount.sync(ra, dec)

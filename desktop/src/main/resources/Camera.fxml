@@ -32,11 +32,11 @@
               spacing="1.0">
             <HBox alignment="CENTER"
                   spacing="8.0">
-                <ChoiceBox fx:id="cameras"
+                <ChoiceBox fx:id="camerasChoiceBox"
                            prefHeight="32.0"
                            prefWidth="394.0">
                 </ChoiceBox>
-                <Button fx:id="connect"
+                <Button fx:id="connectButton"
                         onAction="#connect"
                         alignment="CENTER"
                         mnemonicParsing="false"
@@ -46,7 +46,7 @@
                         minWidth="42.0"
                         styleClass="text-blue-grey-700,mdi,mdi-sm">
                 </Button>
-                <Button fx:id="openINDI"
+                <Button fx:id="openINDIButton"
                         onAction="#openINDI"
                         alignment="CENTER"
                         mnemonicParsing="false"
@@ -73,24 +73,24 @@
                                      styleClass="text-md">
                             <items>
                                 <CheckMenuItem text="Auto Save All Exposures"
-                                               fx:id="autoSaveAllExposures"
+                                               fx:id="autoSaveAllExposuresMenuItem"
                                                userData="BIND_TO_SELECTED_CAMERA"
                                                onAction="#toggleAutoSaveAllExposures"/>
                                 <MenuItem text="Image Save Path..."
                                           userData="BIND_TO_SELECTED_CAMERA"
-                                          onAction="#openImageSavePath"/>
+                                          onAction="#chooseImageSavePath"/>
                                 <CheckMenuItem text="Auto Sub Folder"
-                                               fx:id="autoSubFolder"
+                                               fx:id="autoSubFolderMenuItem"
                                                userData="BIND_TO_SELECTED_CAMERA"
                                                onAction="#toggleAutoSubFolder"/>
                                 <Menu text="New Sub Folder At"
                                       userData="BIND_TO_SELECTED_CAMERA">
                                     <CheckMenuItem text="Noon"
-                                                   fx:id="newSubFolderAtNoon"
+                                                   fx:id="newSubFolderAtNoonMenuItem"
                                                    userData="NOON"
                                                    onAction="#chooseNewSubFolderAt"/>
                                     <CheckMenuItem text="Midnight"
-                                                   fx:id="newSubFolderAtMidnight"
+                                                   fx:id="newSubFolderAtMidnightMenuItem"
                                                    userData="MIDNIGHT"
                                                    onAction="#chooseNewSubFolderAt"/>
                                 </Menu>
@@ -103,7 +103,7 @@
                 <VBox.margin>
                     <Insets top="4.0"/>
                 </VBox.margin>
-                <Label fx:id="autoSaveAllExposuresIndicator"
+                <Label fx:id="autoSaveAllExposuresIcon"
                        visible="false"
                        managed="false"
                        text="&#xF0193;"
@@ -112,7 +112,7 @@
                         <Insets right="8.0"/>
                     </HBox.margin>
                 </Label>
-                <Label fx:id="autoSubFolderIndicator"
+                <Label fx:id="autoSubFolderIcon"
                        visible="false"
                        managed="false"
                        text="&#xF0257;"
@@ -121,7 +121,7 @@
                         <Insets right="8.0"/>
                     </HBox.margin>
                 </Label>
-                <Label fx:id="savePathIndicator"
+                <Label fx:id="imageSavePathLabel"
                        text="-"
                        onMouseClicked="#openFolderInFiles"
                        styleClass="cursor-hand">
@@ -133,7 +133,7 @@
                 </Label>
             </HBox>
             <HBox alignment="CENTER_LEFT">
-                <Label fx:id="status"
+                <Label fx:id="statusLabel"
                        text="idle">
                     <graphic>
                         <Label text="&#xF02FC;"
@@ -152,7 +152,7 @@
                   spacing="1.0">
                 <Label text="Cooler (100%)">
                 </Label>
-                <ToggleSwitch fx:id="cooler"
+                <ToggleSwitch fx:id="coolerToggleSwitch"
                               prefWidth="32.0"
                               prefHeight="32.0">
                 </ToggleSwitch>
@@ -161,26 +161,26 @@
                   spacing="1.0">
                 <Label text="Dew Heater">
                 </Label>
-                <ToggleSwitch fx:id="dewHeater"
+                <ToggleSwitch fx:id="dewHeaterToggleSwitch"
                               prefWidth="32.0"
                               prefHeight="32.0">
                 </ToggleSwitch>
             </VBox>
             <VBox alignment="CENTER"
                   spacing="4.0">
-                <Label fx:id="temperature"
+                <Label fx:id="temperatureLabel"
                        text="Temperature (-15.0 °C)">
                 </Label>
                 <HBox alignment="CENTER"
                       spacing="4.0">
-                    <Spinner fx:id="temperatureSetpoint"
+                    <Spinner fx:id="temperatureSetpointSpinner"
                              editable="true"
                              min="-50.0"
                              max="50.0"
                              initialValue="0.0"
                              prefWidth="72.0">
                     </Spinner>
-                    <Button fx:id="applyTemperatureSetpoint"
+                    <Button fx:id="temperatureSetpointButton"
                             onAction="#applyTemperatureSetpoint"
                             contentDisplay="GRAPHIC_ONLY"
                             mnemonicParsing="false">
@@ -199,7 +199,7 @@
                   spacing="4.0">
                 <Label text="Exposure">
                 </Label>
-                <Spinner fx:id="exposure"
+                <Spinner fx:id="exposureSpinner"
                          editable="true"
                          min="1.0"
                          max="1000000.0"
@@ -209,25 +209,25 @@
                 <HBox alignment="CENTER"
                       spacing="4.0">
                     <fx:define>
-                        <ToggleGroup fx:id="exposureUnit"/>
+                        <ToggleGroup fx:id="exposureUnitToggleGroup"/>
                     </fx:define>
                     <RadioButton text="m"
-                                 toggleGroup="$exposureUnit"
+                                 toggleGroup="$exposureUnitToggleGroup"
                                  userData="MINUTES"
                                  onAction="#updateExposureUnit">
                     </RadioButton>
                     <RadioButton text="s"
-                                 toggleGroup="$exposureUnit"
+                                 toggleGroup="$exposureUnitToggleGroup"
                                  userData="SECONDS"
                                  onAction="#updateExposureUnit">
                     </RadioButton>
                     <RadioButton text="ms"
-                                 toggleGroup="$exposureUnit"
+                                 toggleGroup="$exposureUnitToggleGroup"
                                  userData="MILLISECONDS"
                                  onAction="#updateExposureUnit">
                     </RadioButton>
                     <RadioButton text="µs"
-                                 toggleGroup="$exposureUnit"
+                                 toggleGroup="$exposureUnitToggleGroup"
                                  selected="true"
                                  userData="MICROSECONDS"
                                  onAction="#updateExposureUnit">
@@ -239,19 +239,19 @@
                 <HBox alignment="CENTER"
                       spacing="6.0">
                     <fx:define>
-                        <ToggleGroup fx:id="exposureMode"/>
+                        <ToggleGroup fx:id="exposureModeToggleGroup"/>
                     </fx:define>
                     <RadioButton text="Single"
-                                 toggleGroup="$exposureMode"
+                                 toggleGroup="$exposureModeToggleGroup"
                                  selected="true"
                                  userData="SINGLE">
                     </RadioButton>
                     <RadioButton text="Fixed"
-                                 toggleGroup="$exposureMode"
+                                 toggleGroup="$exposureModeToggleGroup"
                                  userData="FIXED">
                     </RadioButton>
                     <RadioButton text="Continuous"
-                                 toggleGroup="$exposureMode"
+                                 toggleGroup="$exposureModeToggleGroup"
                                  userData="CONTINUOUS">
                     </RadioButton>
                 </HBox>
@@ -261,7 +261,7 @@
                           spacing="1.0">
                         <Label text="Delay (ms)">
                         </Label>
-                        <Spinner fx:id="exposureDelay"
+                        <Spinner fx:id="exposureDelaySpinner"
                                  editable="true"
                                  min="100.0"
                                  max="30000.0"
@@ -273,7 +273,7 @@
                           spacing="1.0">
                         <Label text="Count">
                         </Label>
-                        <Spinner fx:id="exposureCount"
+                        <Spinner fx:id="exposureCountSpinner"
                                  editable="true"
                                  min="1.0"
                                  max="9999.0"
@@ -290,12 +290,12 @@
                   spacing="4.0">
                 <Label text="Subframe">
                 </Label>
-                <ToggleSwitch fx:id="subFrame"
+                <ToggleSwitch fx:id="subFrameToggleSwitch"
                               prefWidth="32.0"
                               prefHeight="32.0">
                 </ToggleSwitch>
-                <Button fx:id="fullsize"
-                        onAction="#applyFullsize"
+                <Button fx:id="fullsizeButton"
+                        onAction="#fullsize"
                         contentDisplay="GRAPHIC_ONLY"
                         mnemonicParsing="false">
                     <graphic>
@@ -312,7 +312,7 @@
                     <VBox alignment="CENTER_LEFT">
                         <Label text="X">
                         </Label>
-                        <Spinner fx:id="frameX"
+                        <Spinner fx:id="frameXSpinner"
                                  editable="true"
                                  min="0.0"
                                  max="1279.0"
@@ -323,7 +323,7 @@
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Y">
                         </Label>
-                        <Spinner fx:id="frameY"
+                        <Spinner fx:id="frameYSpinner"
                                  editable="true"
                                  min="0.0"
                                  max="1023.0"
@@ -334,7 +334,7 @@
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Bin X">
                         </Label>
-                        <Spinner fx:id="binX"
+                        <Spinner fx:id="binXSpinner"
                                  editable="true"
                                  min="1.0"
                                  max="4.0"
@@ -348,7 +348,7 @@
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Width">
                         </Label>
-                        <Spinner fx:id="frameWidth"
+                        <Spinner fx:id="frameWidthSpinner"
                                  editable="true"
                                  min="0.0"
                                  max="1280.0"
@@ -359,7 +359,7 @@
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Height">
                         </Label>
-                        <Spinner fx:id="frameHeight"
+                        <Spinner fx:id="frameHeightSpinner"
                                  editable="true"
                                  min="0.0"
                                  max="1024.0"
@@ -370,7 +370,7 @@
                     <VBox alignment="CENTER_LEFT">
                         <Label text="Bin Y">
                         </Label>
-                        <Spinner fx:id="binY"
+                        <Spinner fx:id="binYSpinner"
                                  editable="true"
                                  min="1.0"
                                  max="4.0"
@@ -391,7 +391,7 @@
                   spacing="1.0">
                 <Label text="Frame Type">
                 </Label>
-                <ChoiceBox fx:id="frameType"
+                <ChoiceBox fx:id="frameTypeChoiceBox"
                            value="$frameTypeInitialValue">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
@@ -407,7 +407,7 @@
                   spacing="1.0">
                 <Label text="Frame Format">
                 </Label>
-                <ChoiceBox fx:id="frameFormat"
+                <ChoiceBox fx:id="frameFormatChoiceBox"
                            minWidth="96.0">
                 </ChoiceBox>
             </VBox>
@@ -415,7 +415,7 @@
                   spacing="1.0">
                 <Label text="Speed">
                 </Label>
-                <ChoiceBox fx:id="speed"
+                <ChoiceBox fx:id="speedChoiceBox"
                            minWidth="96.0"
                            disable="true">
                 </ChoiceBox>
@@ -427,7 +427,7 @@
                   spacing="1.0">
                 <Label text="Gain">
                 </Label>
-                <Spinner fx:id="gain"
+                <Spinner fx:id="gainSpinner"
                          editable="true"
                          min="0.0"
                          max="0.0"
@@ -439,7 +439,7 @@
                   spacing="1.0">
                 <Label text="Offset">
                 </Label>
-                <Spinner fx:id="offset"
+                <Spinner fx:id="offsetSpinner"
                          editable="true"
                          min="0.0"
                          max="0.0"
@@ -450,7 +450,7 @@
         </HBox>
         <HBox alignment="CENTER"
               spacing="4.0">
-            <Button fx:id="startCapture"
+            <Button fx:id="startCaptureButton"
                     onAction="#startCapture"
                     mnemonicParsing="false"
                     text="Start">
@@ -460,7 +460,7 @@
                     </Label>
                 </graphic>
             </Button>
-            <Button fx:id="abortCapture"
+            <Button fx:id="abortCaptureButton"
                     onAction="#abortCapture"
                     mnemonicParsing="false"
                     text="Abort">

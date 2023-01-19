@@ -9,6 +9,7 @@ import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.core.util.loader.IERSLoader
 import nebulosa.desktop.equipments.EquipmentManager
+import nebulosa.desktop.logic.EquipmentController
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.desktop.telescopecontrol.TelescopeControlServerManager
 import nebulosa.io.resource
@@ -41,6 +42,7 @@ private fun inject() = module {
     single(createdAtStart = true) { Preferences(Paths.get("$appDirectory", "preferences.json")) }
 
     single(createdAtStart = true) { ConnectionManager() }
+    single(createdAtStart = true) { EquipmentController() }
     single(createdAtStart = true) { EquipmentManager() }
     single(createdAtStart = true) { TelescopeControlServerManager() }
     single(createdAtStart = true) { ScreenManager() }

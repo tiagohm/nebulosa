@@ -9,12 +9,12 @@ class AlpacaServiceTest : StringSpec() {
         val client = AlpacaService("https://virtserver.swaggerhub.com/ASCOMInitiative/api/v1/")
 
         "camera" {
-            client.camera.isConnected(0).value!!.shouldBeTrue()
-            client.camera.connect(0, true).value.shouldBeNull()
+            client.camera.isConnected(0).execute().body()!!.value!!.shouldBeTrue()
+            client.camera.connect(0, true).execute().body()!!.value.shouldBeNull()
         }
         "telescope" {
-            client.telescope.isConnected(0).value!!.shouldBeTrue()
-            client.telescope.connect(0, true).value.shouldBeNull()
+            client.telescope.isConnected(0).execute().body()!!.value!!.shouldBeTrue()
+            client.telescope.connect(0, true).execute().body()!!.value.shouldBeNull()
         }
     }
 }

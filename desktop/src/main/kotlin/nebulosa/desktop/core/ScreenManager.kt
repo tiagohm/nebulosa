@@ -1,6 +1,5 @@
 package nebulosa.desktop.core
 
-import nebulosa.desktop.cameras.CameraManagerScreen
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.filterwheels.FilterWheelManagerScreen
 import nebulosa.desktop.focusers.FocuserManagerScreen
@@ -15,7 +14,6 @@ import java.io.File
 
 class ScreenManager : KoinComponent {
 
-    private val cameraManagerScreen by lazy { CameraManagerScreen() }
     private val mountManagerScreen by lazy { MountManagerScreen() }
     private val focuserManagerScreen by lazy { FocuserManagerScreen() }
     private val filterWheelManagerScreen by lazy { FilterWheelManagerScreen() }
@@ -29,7 +27,6 @@ class ScreenManager : KoinComponent {
         bringToFront: Boolean = true,
     ): Screen {
         val screen = when (name) {
-            CAMERA -> cameraManagerScreen
             MOUNT -> mountManagerScreen
             FOCUSER -> focuserManagerScreen
             FILTER_WHEEL -> filterWheelManagerScreen

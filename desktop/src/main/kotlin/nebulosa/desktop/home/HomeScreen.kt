@@ -14,6 +14,8 @@ import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.equipments.EquipmentManager
+import nebulosa.desktop.gui.ProgramClosed
+import nebulosa.desktop.gui.camera.CameraWindow
 import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.desktop.telescopecontrol.TelescopeControlServerManager
 import org.koin.core.component.get
@@ -94,6 +96,8 @@ class HomeScreen : Screen("Home") {
         ImageViewerScreen.close()
 
         telescopeControlServerManager.stopAll()
+
+        eventBus.post(ProgramClosed)
     }
 
     @FXML
@@ -124,6 +128,7 @@ class HomeScreen : Screen("Home") {
     private fun open(event: ActionEvent) {
         when (val name = (event.source as Node).userData as String) {
             "NEW_IMAGE" -> openNewImage()
+            "CAMERA" -> CameraWindow.open()
             else -> screenManager.openByName(name)
         }
     }

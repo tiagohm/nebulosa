@@ -1,4 +1,4 @@
-package nebulosa.desktop.equipments
+package nebulosa.desktop.logic
 
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
@@ -8,6 +8,10 @@ import nebulosa.desktop.connections.Connected
 import nebulosa.desktop.connections.ConnectionEvent
 import nebulosa.desktop.connections.Disconnected
 import nebulosa.desktop.core.EventBus
+import nebulosa.desktop.equipments.FilterWheelProperty
+import nebulosa.desktop.equipments.FocuserProperty
+import nebulosa.desktop.equipments.GPSProperty
+import nebulosa.desktop.equipments.MountProperty
 import nebulosa.desktop.logic.camera.CameraProperty
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.cameras.Camera
@@ -35,9 +39,10 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.Closeable
 
-class EquipmentManager : KoinComponent, Closeable {
+class EquipmentController : KoinComponent, Closeable {
 
     private val eventBus by inject<EventBus>()
+    private val subscribers = arrayOfNulls<Disposable>(2)
 
     @JvmField val connected = SimpleBooleanProperty(false)
 
@@ -55,8 +60,6 @@ class EquipmentManager : KoinComponent, Closeable {
     @JvmField val selectedFilterWheel = FilterWheelProperty()
     @JvmField val selectedFocuser = FocuserProperty()
     @JvmField val selectedGPS = GPSProperty()
-
-    private val subscribers = arrayOfNulls<Disposable>(2)
 
     init {
         subscribers[0] = eventBus

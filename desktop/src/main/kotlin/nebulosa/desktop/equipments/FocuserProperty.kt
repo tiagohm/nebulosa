@@ -3,6 +3,7 @@ package nebulosa.desktop.equipments
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
+import nebulosa.desktop.logic.DeviceProperty
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.focusers.*
 
@@ -19,17 +20,17 @@ class FocuserProperty : DeviceProperty<Focuser>() {
     @JvmField val hasBackslash = SimpleBooleanProperty()
     @JvmField val maxPosition = SimpleIntegerProperty()
 
-    override fun changed(value: Focuser) {
-        isMoving.value = value.isMoving
-        position.value = value.position
-        canAbsoluteMove.value = value.canAbsoluteMove
-        canRelativeMove.value = value.canRelativeMove
-        canAbort.value = value.canAbort
-        canReverse.value = value.canReverse
-        isReverse.value = value.isReverse
-        canSync.value = value.canSync
-        hasBackslash.value = value.hasBackslash
-        maxPosition.value = value.maxPosition
+    override fun changed(prev: Focuser?, new: Focuser) {
+        isMoving.value = new.isMoving
+        position.value = new.position
+        canAbsoluteMove.value = new.canAbsoluteMove
+        canRelativeMove.value = new.canRelativeMove
+        canAbort.value = new.canAbort
+        canReverse.value = new.canReverse
+        isReverse.value = new.isReverse
+        canSync.value = new.canSync
+        hasBackslash.value = new.hasBackslash
+        maxPosition.value = new.maxPosition
     }
 
     override fun reset() {

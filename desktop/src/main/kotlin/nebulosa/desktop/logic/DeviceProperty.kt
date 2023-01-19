@@ -1,4 +1,4 @@
-package nebulosa.desktop.equipments
+package nebulosa.desktop.logic
 
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Consumer
@@ -21,22 +21,25 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
     @JvmField val isConnected = SimpleBooleanProperty(false)
     @JvmField val isConnecting = SimpleBooleanProperty(false)
 
+    private val subscribers = arrayOfNulls<Disposable>(1)
+
     @Volatile private var closed = false
-    @Volatile private var subscriber: Disposable? = null
 
     init {
         addListener(this)
 
-        subscriber = eventBus
+        subscribers[0] = eventBus
             .filter { it is DeviceEvent<*> && it.device === value }
             .subscribe(::accept)
     }
 
     protected abstract fun reset()
 
-    protected abstract fun changed(value: T)
+    protected abstract fun changed(prev: T?, new: T)
 
     protected abstract fun accept(event: DeviceEvent<T>)
+
+    final override fun getName() = value?.name ?: ""
 
     final override fun changed(
         observable: ObservableValue<out T>,
@@ -50,7 +53,7 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
             reset()
         } else {
             isConnected.set(newValue.isConnected)
-            changed(newValue)
+            changed(oldValue, newValue)
         }
     }
 
@@ -70,8 +73,13 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
     }
 
     override fun close() {
+        if (closed) return
+
         closed = true
-        subscriber?.dispose()
-        subscriber = null
+
+        removeListener(this)
+
+        subscribers.forEach { it?.dispose() }
+        subscribers.fill(null)
     }
 }

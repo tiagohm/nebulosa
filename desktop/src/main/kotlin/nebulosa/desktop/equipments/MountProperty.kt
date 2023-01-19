@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
+import nebulosa.desktop.logic.DeviceProperty
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.mounts.*
 import java.time.OffsetDateTime
@@ -36,30 +37,30 @@ class MountProperty : DeviceProperty<Mount>() {
     @JvmField val elevation = SimpleDoubleProperty()
     @JvmField val time = SimpleObjectProperty(OffsetDateTime.now())
 
-    override fun changed(value: Mount) {
-        isSlewing.set(value.isSlewing)
-        isTracking.set(value.isTracking)
-        slewRates.setAll(value.slewRates)
-        slewRate.set(value.slewRate)
-        mountType.set(value.mountType)
-        trackModes.setAll(value.trackModes)
-        trackMode.set(value.trackMode)
-        pierSide.set(value.pierSide)
-        isParking.set(value.isParking)
-        isParked.set(value.isParked)
-        canAbort.set(value.canAbort)
-        canSync.set(value.canSync)
-        canPark.set(value.canPark)
-        guideRateWE.set(value.guideRateWE)
-        guideRateNS.set(value.guideRateNS)
-        rightAscension.set(value.rightAscension.hours)
-        declination.set(value.declination.degrees)
-        rightAscensionJ2000.set(value.rightAscensionJ2000.hours)
-        declinationJ2000.set(value.declinationJ2000.degrees)
-        longitude.set(value.longitude.degrees)
-        latitude.set(value.latitude.degrees)
-        elevation.set(value.elevation.meters)
-        time.set(value.time)
+    override fun changed(prev: Mount?, new: Mount) {
+        isSlewing.set(new.isSlewing)
+        isTracking.set(new.isTracking)
+        slewRates.setAll(new.slewRates)
+        slewRate.set(new.slewRate)
+        mountType.set(new.mountType)
+        trackModes.setAll(new.trackModes)
+        trackMode.set(new.trackMode)
+        pierSide.set(new.pierSide)
+        isParking.set(new.isParking)
+        isParked.set(new.isParked)
+        canAbort.set(new.canAbort)
+        canSync.set(new.canSync)
+        canPark.set(new.canPark)
+        guideRateWE.set(new.guideRateWE)
+        guideRateNS.set(new.guideRateNS)
+        rightAscension.set(new.rightAscension.hours)
+        declination.set(new.declination.degrees)
+        rightAscensionJ2000.set(new.rightAscensionJ2000.hours)
+        declinationJ2000.set(new.declinationJ2000.degrees)
+        longitude.set(new.longitude.degrees)
+        latitude.set(new.latitude.degrees)
+        elevation.set(new.elevation.meters)
+        time.set(new.time)
     }
 
     override fun reset() {

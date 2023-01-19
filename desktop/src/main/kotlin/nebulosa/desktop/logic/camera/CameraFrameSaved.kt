@@ -1,4 +1,4 @@
-package nebulosa.desktop.cameras
+package nebulosa.desktop.logic.camera
 
 import nebulosa.indi.device.cameras.Camera
 import nebulosa.indi.device.cameras.CameraEvent

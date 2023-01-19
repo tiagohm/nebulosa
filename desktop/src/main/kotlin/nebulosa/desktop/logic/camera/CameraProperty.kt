@@ -1,14 +1,15 @@
-package nebulosa.desktop.equipments
+package nebulosa.desktop.logic.camera
 
 import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.collections.FXCollections
+import nebulosa.desktop.logic.DeviceProperty
 import nebulosa.imaging.algorithms.CfaPattern
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.cameras.*
 import nebulosa.indi.protocol.PropertyState
 
-class CameraProperty : DeviceProperty<Camera>() {
+open class CameraProperty : DeviceProperty<Camera>() {
 
     @JvmField val isCapturing = SimpleBooleanProperty(false)
     @JvmField val hasCoolerControl = SimpleBooleanProperty(false)
@@ -23,7 +24,6 @@ class CameraProperty : DeviceProperty<Camera>() {
     @JvmField val exposureMin = SimpleLongProperty(0L)
     @JvmField val exposureMax = SimpleLongProperty(0L)
     @JvmField val exposureState = SimpleObjectProperty(PropertyState.IDLE)
-    @JvmField val exposure = SimpleLongProperty(0L)
     @JvmField val hasCooler = SimpleBooleanProperty(false)
     @JvmField val canSetTemperature = SimpleBooleanProperty(false)
     @JvmField val temperature = SimpleDoubleProperty(0.0)
@@ -52,48 +52,47 @@ class CameraProperty : DeviceProperty<Camera>() {
     @JvmField val offsetMin = SimpleIntegerProperty(0)
     @JvmField val offsetMax = SimpleIntegerProperty(0)
 
-    override fun changed(value: Camera) {
-        isCapturing.set(value.isCapturing)
-        hasCoolerControl.set(value.hasCoolerControl)
-        isCoolerOn.set(value.isCoolerOn)
-        hasDewHeater.set(value.hasDewHeater)
-        isDewHeaterOn.set(value.isDewHeaterOn)
-        frameFormats.setAll(value.frameFormats)
-        canAbort.set(value.canAbort)
-        cfaOffsetX.set(value.cfaOffsetX)
-        cfaOffsetY.set(value.cfaOffsetY)
-        cfaType.set(value.cfaType)
-        exposureMin.set(value.exposureMin)
-        exposureMax.set(value.exposureMax)
-        exposureState.set(value.exposureState)
-        exposure.set(value.exposure)
-        hasCooler.set(value.hasCooler)
-        canSetTemperature.set(value.canSetTemperature)
-        temperature.set(value.temperature)
-        canSubFrame.set(value.canSubFrame)
-        x.set(value.x)
-        minX.set(value.minX)
-        maxX.set(value.maxX)
-        y.set(value.y)
-        minY.set(value.minY)
-        maxY.set(value.maxY)
-        width.set(value.width)
-        minWidth.set(value.minWidth)
-        maxWidth.set(value.maxWidth)
-        height.set(value.height)
-        minHeight.set(value.minHeight)
-        maxHeight.set(value.maxHeight)
-        canBin.set(value.canBin)
-        maxBinX.set(value.maxBinX)
-        maxBinY.set(value.maxBinY)
-        binX.set(value.binX)
-        binY.set(value.binY)
-        gainMin.set(value.gainMin)
-        gainMax.set(value.gainMax)
-        gain.set(value.gain)
-        offsetMin.set(value.offsetMin)
-        offsetMax.set(value.offsetMax)
-        offset.set(value.offset)
+    override fun changed(prev: Camera?, new: Camera) {
+        isCapturing.set(new.isCapturing)
+        hasCoolerControl.set(new.hasCoolerControl)
+        isCoolerOn.set(new.isCoolerOn)
+        hasDewHeater.set(new.hasDewHeater)
+        isDewHeaterOn.set(new.isDewHeaterOn)
+        frameFormats.setAll(new.frameFormats)
+        canAbort.set(new.canAbort)
+        cfaOffsetX.set(new.cfaOffsetX)
+        cfaOffsetY.set(new.cfaOffsetY)
+        cfaType.set(new.cfaType)
+        exposureMin.set(new.exposureMin)
+        exposureMax.set(new.exposureMax)
+        exposureState.set(new.exposureState)
+        hasCooler.set(new.hasCooler)
+        canSetTemperature.set(new.canSetTemperature)
+        temperature.set(new.temperature)
+        canSubFrame.set(new.canSubFrame)
+        x.set(new.x)
+        minX.set(new.minX)
+        maxX.set(new.maxX)
+        y.set(new.y)
+        minY.set(new.minY)
+        maxY.set(new.maxY)
+        width.set(new.width)
+        minWidth.set(new.minWidth)
+        maxWidth.set(new.maxWidth)
+        height.set(new.height)
+        minHeight.set(new.minHeight)
+        maxHeight.set(new.maxHeight)
+        canBin.set(new.canBin)
+        maxBinX.set(new.maxBinX)
+        maxBinY.set(new.maxBinY)
+        binX.set(new.binX)
+        binY.set(new.binY)
+        gainMin.set(new.gainMin)
+        gainMax.set(new.gainMax)
+        gain.set(new.gain)
+        offsetMin.set(new.offsetMin)
+        offsetMax.set(new.offsetMax)
+        offset.set(new.offset)
     }
 
     override fun reset() {
@@ -110,7 +109,6 @@ class CameraProperty : DeviceProperty<Camera>() {
         exposureMin.set(0L)
         exposureMax.set(0L)
         exposureState.set(PropertyState.IDLE)
-        exposure.set(0L)
         hasCooler.set(false)
         canSetTemperature.set(false)
         temperature.set(0.0)

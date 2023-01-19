@@ -1,11 +1,13 @@
-package nebulosa.desktop.cameras
+package nebulosa.desktop.logic.camera
 
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Consumer
 import javafx.beans.property.SimpleBooleanProperty
+import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.equipments.ThreadedTask
 import nebulosa.desktop.equipments.ThreadedTaskManager
 import nebulosa.desktop.filterwheels.FilterWheelMoveTask
+import nebulosa.desktop.gui.camera.AutoSubFolderMode
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.device.cameras.*
 import nebulosa.indi.device.filterwheels.FilterWheel
@@ -32,7 +34,7 @@ data class CameraExposureTask(
     val y: Int,
     val width: Int,
     val height: Int,
-    val frameFormat: String,
+    val frameFormat: String?,
     val frameType: FrameType,
     val binX: Int,
     val binY: Int,
@@ -43,6 +45,7 @@ data class CameraExposureTask(
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
 ) : ThreadedTask<List<Path>>(), Consumer<CameraEvent>, KoinComponent {
 
+    private val eventBus by inject<EventBus>()
     private val preferences by inject<Preferences>()
 
     @Volatile var progress = 0.0
@@ -119,7 +122,7 @@ data class CameraExposureTask(
 
                     camera.frame(x, y, width, height)
                     camera.frameType(frameType)
-                    camera.frameFormat(frameFormat)
+                    if (!frameFormat.isNullOrEmpty()) camera.frameFormat(frameFormat)
                     camera.bin(binX, binY)
                     camera.gain(gain)
                     camera.offset(offset)

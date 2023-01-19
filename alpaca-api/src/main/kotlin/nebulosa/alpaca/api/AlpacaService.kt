@@ -1,10 +1,10 @@
 package nebulosa.alpaca.api
 
-import retrofit2.Call
-import retrofit2.CallAdapter
+import okhttp3.ConnectionPool
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
-import java.lang.reflect.Type
+import java.util.concurrent.TimeUnit
 
 /**
  * The Alpaca API uses RESTful techniques and TCP/IP to enable ASCOM
@@ -22,31 +22,8 @@ class AlpacaService private constructor(retrofit: Retrofit) {
 
     constructor(url: String) : this(
         Retrofit.Builder().baseUrl(url)
-            .addCallAdapterFactory(AlpacaResponseCallAdapterFactory)
             .addConverterFactory(JacksonConverterFactory.create())
+            .client(OkHttpClient.Builder().connectionPool(ConnectionPool(32, 5L, TimeUnit.MINUTES)).build())
             .build()
     )
-
-    private object AlpacaResponseCallAdapterFactory : CallAdapter.Factory() {
-
-        override fun get(
-            returnType: Type,
-            annotations: Array<out Annotation>,
-            retrofit: Retrofit,
-        ): CallAdapter<*, *> {
-            return AlpacaResposeCallAdapter<Any>()
-        }
-    }
-
-    private class AlpacaResposeCallAdapter<T> : CallAdapter<AlpacaResponse<T>, AlpacaResponse<T>> {
-
-        override fun responseType() = AlpacaResponse::class.java
-
-        override fun adapt(call: Call<AlpacaResponse<T>>): AlpacaResponse<T> {
-            val response = call.execute()
-
-            if (response.isSuccessful) return response.body()!!
-            else throw AlpacaException(response)
-        }
-    }
 }

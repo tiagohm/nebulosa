@@ -2,15 +2,20 @@ package nebulosa.desktop.filterwheels
 
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Consumer
+import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.equipments.ThreadedTask
 import nebulosa.desktop.equipments.ThreadedTaskManager
 import nebulosa.indi.device.filterwheels.*
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.slf4j.LoggerFactory
 
 class FilterWheelMoveTask(
     val filterWheel: FilterWheel,
     val position: Int,
-) : ThreadedTask<Boolean>(), Consumer<FilterWheelEvent> {
+) : ThreadedTask<Boolean>(), Consumer<FilterWheelEvent>, KoinComponent {
+
+    private val eventBus by inject<EventBus>()
 
     override fun accept(event: FilterWheelEvent) {
         when (event) {
