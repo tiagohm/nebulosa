@@ -2,10 +2,10 @@ package nebulosa.desktop.logic.camera
 
 import io.reactivex.rxjava3.disposables.Disposable
 import nebulosa.desktop.core.EventBus
-import nebulosa.desktop.filterwheels.FilterWheelMoveTask
 import nebulosa.desktop.gui.camera.AutoSubFolderMode
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
-import nebulosa.desktop.logic.taskexecutor.Task
+import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
+import nebulosa.desktop.logic.filterwheel.FilterWheelTaskExecutor
 import nebulosa.indi.device.cameras.*
 import nebulosa.indi.device.filterwheels.FilterWheel
 import org.koin.core.component.KoinComponent
@@ -21,7 +21,7 @@ import kotlin.io.path.outputStream
 import kotlin.math.min
 
 data class CameraExposureTask(
-    val camera: Camera,
+    override val camera: Camera,
     val exposure: Long,
     val amount: Int,
     val delay: Long,
@@ -40,9 +40,10 @@ data class CameraExposureTask(
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
     val filterWheel: FilterWheel? = null,
     val filterAsShutterPosition: Int = -1,
-) : Task, KoinComponent {
+) : CameraTask, KoinComponent {
 
     private val eventBus by inject<EventBus>()
+    private val filterWheelTaskExecutor by inject<FilterWheelTaskExecutor>()
     private val latch = CountUpDownLatch()
 
     @Volatile var progress = 0.0
@@ -70,7 +71,7 @@ data class CameraExposureTask(
         }
     }
 
-    override fun run() {
+    override fun call(): Boolean {
         var subscriber: Disposable? = null
 
         try {
@@ -84,13 +85,9 @@ data class CameraExposureTask(
                 if (!filterWheel.isConnected) {
                     LOG.warn("filter wheel ${filterWheel.name} is disconnected")
                 } else {
-                    latch.countUp()
-
                     LOG.info("moving filter wheel ${filterWheel.name} to dark filter")
                     val task = FilterWheelMoveTask(filterWheel, filterAsShutterPosition)
-                    FilterWheelMoveTask.execute(task) { latch.countDown() }
-
-                    latch.await()
+                    filterWheelTaskExecutor.add(task).get()
                 }
             }
 
@@ -128,6 +125,8 @@ data class CameraExposureTask(
         } finally {
             subscriber?.dispose()
         }
+
+        return true
     }
 
     override fun closeGracefully() {

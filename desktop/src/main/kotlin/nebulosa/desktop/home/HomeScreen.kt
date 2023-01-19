@@ -7,7 +7,7 @@ import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import javafx.stage.FileChooser
-import nebulosa.desktop.connections.ConnectionManager
+import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.scene.MaterialIcon

@@ -1,6 +1,8 @@
 package nebulosa.desktop.logic.taskexecutor
 
-interface Task : Runnable {
+import java.util.concurrent.Callable
+
+interface Task : Callable<Any> {
 
     fun closeGracefully()
 }

@@ -4,9 +4,9 @@ import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
-import nebulosa.desktop.connections.Connected
-import nebulosa.desktop.connections.ConnectionEvent
-import nebulosa.desktop.connections.Disconnected
+import nebulosa.desktop.logic.connection.Connected
+import nebulosa.desktop.logic.connection.ConnectionEvent
+import nebulosa.desktop.logic.connection.Disconnected
 import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.logic.camera.CameraProperty
 import nebulosa.indi.device.DeviceEvent

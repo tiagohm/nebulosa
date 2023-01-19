@@ -28,7 +28,7 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
 
     private val preferences by inject<Preferences>()
     private val equipmentController by inject<EquipmentController>()
-    private val cameraExposureTaskExecutor by inject<CameraExposureTaskExecutor>()
+    private val cameraTaskExecutor by inject<CameraTaskExecutor>()
     private val screenManager by inject<ScreenManager>()
     private val appDirectory by inject<Path>(named("app"))
     private val subscribers = arrayOfNulls<Disposable>(1)
@@ -37,10 +37,7 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
 
     init {
         subscribers[0] = eventBus
-            .filterIsInstance<TaskEvent> {
-                it.task is CameraExposureTask
-                        && (it.task as CameraExposureTask).camera === value
-            }
+            .filterIsInstance<TaskEvent> { it.task is CameraTask && (it.task as CameraTask).camera === value }
             .subscribe(::onTaskEvent)
     }
 
@@ -85,7 +82,7 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
 
     fun updateStatus() {
         val text = buildString(128) {
-            val task = cameraExposureTaskExecutor.currentTask
+            val task = cameraTaskExecutor.currentTask as? CameraExposureTask
 
             if (task != null && isCapturing.get()) {
                 val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000.0} s"
@@ -224,7 +221,7 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
             else -> Int.MAX_VALUE
         }
 
-        if (cameraExposureTaskExecutor.currentTask != null) return
+        if (cameraTaskExecutor.currentTask != null) return
 
         val task = CameraExposureTask(
             value,
@@ -243,7 +240,7 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
             else AutoSubFolderMode.MIDNIGHT,
         )
 
-        cameraExposureTaskExecutor.add(task)
+        cameraTaskExecutor.add(task)
 
         savePreferences()
     }

@@ -4,13 +4,14 @@ import ch.qos.logback.classic.Level
 import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.application.Application
 import javafx.scene.text.Font
-import nebulosa.desktop.connections.ConnectionManager
 import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.core.util.loader.IERSLoader
 import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.logic.EquipmentController
-import nebulosa.desktop.logic.camera.CameraExposureTaskExecutor
+import nebulosa.desktop.logic.camera.CameraTaskExecutor
+import nebulosa.desktop.logic.connection.ConnectionManager
+import nebulosa.desktop.logic.filterwheel.FilterWheelTaskExecutor
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.desktop.telescopecontrol.TelescopeControlServerManager
 import nebulosa.io.resource
@@ -48,7 +49,8 @@ private fun inject() = module {
     single(createdAtStart = true) { TelescopeControlServerManager() }
     single(createdAtStart = true) { ScreenManager() }
 
-    single { CameraExposureTaskExecutor() }
+    single { CameraTaskExecutor() }
+    single { FilterWheelTaskExecutor() }
 }
 
 fun main(args: Array<String>) {

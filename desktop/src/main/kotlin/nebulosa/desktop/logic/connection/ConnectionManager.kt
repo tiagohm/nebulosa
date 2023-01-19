@@ -1,4 +1,4 @@
-package nebulosa.desktop.connections
+package nebulosa.desktop.logic.connection
 
 import nebulosa.desktop.core.EventBus
 import nebulosa.indi.INDIClient
