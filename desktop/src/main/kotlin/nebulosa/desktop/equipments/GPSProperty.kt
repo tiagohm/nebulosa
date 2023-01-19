@@ -1,6 +1,5 @@
 package nebulosa.desktop.equipments
 
-import javafx.application.Platform
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleObjectProperty
 import nebulosa.desktop.logic.DeviceProperty
@@ -35,12 +34,12 @@ class GPSProperty : DeviceProperty<GPS>() {
         val device = event.device!!
 
         when (event) {
-            is GPSCoordinateChanged -> Platform.runLater {
+            is GPSCoordinateChanged -> {
                 longitude.set(device.longitude.degrees)
                 latitude.set(device.latitude.degrees)
                 elevation.set(device.elevation.meters)
             }
-            is GPSTimeChanged -> Platform.runLater { time.set(device.time) }
+            is GPSTimeChanged -> time.set(device.time)
         }
     }
 }

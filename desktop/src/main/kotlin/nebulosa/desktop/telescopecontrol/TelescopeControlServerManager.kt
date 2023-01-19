@@ -24,9 +24,7 @@ class TelescopeControlServerManager : KoinComponent {
     private fun onMountEvent(event: MountEvent) {
         when (event) {
             is MountDetached -> stopAll(event.device)
-            is MountEquatorialCoordinatesChanged -> {
-                servers[event.device]?.forEach { it.sendCurrentPosition() }
-            }
+            is MountEquatorialCoordinatesChanged -> servers[event.device]?.forEach { it.sendCurrentPosition() }
         }
     }
 

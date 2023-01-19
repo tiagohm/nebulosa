@@ -1,6 +1,5 @@
 package nebulosa.desktop.equipments
 
-import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import nebulosa.desktop.logic.DeviceProperty
@@ -50,15 +49,15 @@ class FocuserProperty : DeviceProperty<Focuser>() {
         val device = event.device!!
 
         when (event) {
-            is FocuserPositionChanged -> Platform.runLater { position.set(device.position) }
-            is FocuserCanAbsoluteMoveChanged -> Platform.runLater { canAbsoluteMove.set(device.canAbsoluteMove) }
-            is FocuserCanRelativeMoveChanged -> Platform.runLater { canRelativeMove.set(device.canRelativeMove) }
-            is FocuserCanAbortChanged -> Platform.runLater { canAbort.set(device.canAbort) }
-            is FocuserCanReverseChanged -> Platform.runLater { canReverse.set(device.canReverse) }
-            is FocuserReverseChanged -> Platform.runLater { isReverse.set(device.isReverse) }
-            is FocuserCanSyncChanged -> Platform.runLater { canSync.set(device.canSync) }
-            is FocuserMaxPositionChanged -> Platform.runLater { maxPosition.set(device.maxPosition) }
-            is FocuserMovingChanged -> Platform.runLater { isMoving.set(device.isMoving) }
+            is FocuserPositionChanged -> position.set(device.position)
+            is FocuserCanAbsoluteMoveChanged -> canAbsoluteMove.set(device.canAbsoluteMove)
+            is FocuserCanRelativeMoveChanged -> canRelativeMove.set(device.canRelativeMove)
+            is FocuserCanAbortChanged -> canAbort.set(device.canAbort)
+            is FocuserCanReverseChanged -> canReverse.set(device.canReverse)
+            is FocuserReverseChanged -> isReverse.set(device.isReverse)
+            is FocuserCanSyncChanged -> canSync.set(device.canSync)
+            is FocuserMaxPositionChanged -> maxPosition.set(device.maxPosition)
+            is FocuserMovingChanged -> isMoving.set(device.isMoving)
         }
     }
 }

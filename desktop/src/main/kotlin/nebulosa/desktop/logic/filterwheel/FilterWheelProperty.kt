@@ -1,6 +1,5 @@
-package nebulosa.desktop.equipments
+package nebulosa.desktop.logic.filterwheel
 
-import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import nebulosa.desktop.logic.DeviceProperty
@@ -10,7 +9,7 @@ import nebulosa.indi.device.filterwheels.FilterWheelMovingChanged
 import nebulosa.indi.device.filterwheels.FilterWheelPositionChanged
 import nebulosa.indi.device.filterwheels.FilterWheelSlotCountChanged
 
-class FilterWheelProperty : DeviceProperty<FilterWheel>() {
+open class FilterWheelProperty : DeviceProperty<FilterWheel>() {
 
     @JvmField val slotCount = SimpleIntegerProperty(0)
     @JvmField val position = SimpleIntegerProperty(-1)
@@ -32,9 +31,9 @@ class FilterWheelProperty : DeviceProperty<FilterWheel>() {
         val device = event.device!!
 
         when (event) {
-            is FilterWheelSlotCountChanged -> Platform.runLater { slotCount.set(device.slotCount) }
-            is FilterWheelPositionChanged -> Platform.runLater { position.set(device.position) }
-            is FilterWheelMovingChanged -> Platform.runLater { isMoving.set(device.isMoving) }
+            is FilterWheelSlotCountChanged -> slotCount.set(device.slotCount)
+            is FilterWheelPositionChanged -> position.set(device.position)
+            is FilterWheelMovingChanged -> isMoving.set(device.isMoving)
         }
     }
 }

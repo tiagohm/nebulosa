@@ -8,6 +8,7 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
+import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.or
@@ -17,7 +18,7 @@ import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.concurrent.Ticker
 import nebulosa.desktop.core.util.toggle
-import nebulosa.desktop.equipments.EquipmentManager
+import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.telescopecontrol.TelescopeControlServerScreen
 import nebulosa.indi.device.guiders.GuiderEvent
 import nebulosa.indi.device.guiders.GuiderPulsingChanged
@@ -179,10 +180,12 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
     override fun onStart() {
         subscribers[0] = eventBus
             .filterIsInstance<MountEvent> { it.device === equipmentManager.selectedMount.get() }
+            .observeOnFXThread()
             .subscribe(::onMountEvent)
 
         subscribers[1] = eventBus
             .filterIsInstance<GuiderEvent<*>> { it.device === equipmentManager.selectedMount.get() }
+            .observeOnFXThread()
             .subscribe(::onGuiderEvent)
 
         val mount = equipmentManager.selectedMount.get()
@@ -208,13 +211,13 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
         when (event) {
             is MountParkChanged,
             is MountTrackingChanged,
-            is MountSlewingChanged -> Platform.runLater { updateStatus() }
+            is MountSlewingChanged -> updateStatus()
         }
     }
 
     private fun onGuiderEvent(event: GuiderEvent<*>) {
         when (event) {
-            is GuiderPulsingChanged -> Platform.runLater { updateStatus() }
+            is GuiderPulsingChanged -> updateStatus()
         }
     }
 

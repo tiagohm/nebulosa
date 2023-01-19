@@ -1,14 +1,14 @@
 package nebulosa.desktop.mounts
 
 import io.reactivex.rxjava3.disposables.Disposable
-import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.TextField
+import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
-import nebulosa.desktop.equipments.EquipmentManager
+import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.mounts.Mount
 import nebulosa.indi.device.mounts.MountCoordinateChanged
@@ -52,7 +52,7 @@ class SiteAndTimeScreen : Screen("SiteAndTime", "nebulosa-site-and-time") {
 
     private fun onMountEvent(event: MountEvent) {
         when (event) {
-            is MountCoordinateChanged -> Platform.runLater { updateSiteAndTime() }
+            is MountCoordinateChanged -> updateSiteAndTime()
         }
     }
 
@@ -65,6 +65,7 @@ class SiteAndTimeScreen : Screen("SiteAndTime", "nebulosa-site-and-time") {
 
         subscriber = eventBus
             .filterIsInstance<MountEvent> { it.device === mount }
+            .observeOnFXThread()
             .subscribe(::onMountEvent)
 
         show(bringToFront = true)

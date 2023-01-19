@@ -1,6 +1,5 @@
 package nebulosa.desktop.logic.camera
 
-import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.collections.FXCollections
 import nebulosa.desktop.logic.DeviceProperty
@@ -142,38 +141,38 @@ open class CameraProperty : DeviceProperty<Camera>() {
         val device = event.device!!
 
         when (event) {
-            is CameraExposuringChanged -> Platform.runLater { isExposuring.set(device.isExposuring) }
-            is CameraCoolerControlChanged -> Platform.runLater { hasCoolerControl.set(device.hasCoolerControl) }
-            is CameraCoolerChanged -> Platform.runLater { isCoolerOn.set(device.isCoolerOn) }
-            is CameraHasDewHeaterChanged -> Platform.runLater { hasDewHeater.set(device.hasDewHeater) }
-            is CameraDewHeaterChanged -> Platform.runLater { isDewHeaterOn.set(device.isDewHeaterOn) }
-            is CameraFrameFormatsChanged -> Platform.runLater { frameFormats.setAll(device.frameFormats) }
-            is CameraCanAbortChanged -> Platform.runLater { canAbort.set(device.canAbort) }
-            is CameraCfaChanged -> Platform.runLater {
+            is CameraExposuringChanged -> isExposuring.set(device.isExposuring)
+            is CameraCoolerControlChanged -> hasCoolerControl.set(device.hasCoolerControl)
+            is CameraCoolerChanged -> isCoolerOn.set(device.isCoolerOn)
+            is CameraHasDewHeaterChanged -> hasDewHeater.set(device.hasDewHeater)
+            is CameraDewHeaterChanged -> isDewHeaterOn.set(device.isDewHeaterOn)
+            is CameraFrameFormatsChanged -> frameFormats.setAll(device.frameFormats)
+            is CameraCanAbortChanged -> canAbort.set(device.canAbort)
+            is CameraCfaChanged -> {
                 cfaOffsetX.set(device.cfaOffsetX)
                 cfaOffsetY.set(device.cfaOffsetY)
                 cfaType.set(device.cfaType)
             }
-            is CameraExposureMinMaxChanged -> Platform.runLater {
+            is CameraExposureMinMaxChanged -> {
                 exposureMin.set(device.exposureMin)
                 exposureMax.set(device.exposureMax)
             }
-            is CameraGainChanged -> Platform.runLater { gain.set(device.gain) }
-            is CameraGainMinMaxChanged -> Platform.runLater {
+            is CameraGainChanged -> gain.set(device.gain)
+            is CameraGainMinMaxChanged -> {
                 gainMin.set(device.gainMin)
                 gainMax.set(device.gainMax)
             }
-            is CameraOffsetChanged -> Platform.runLater { offset.set(device.offset) }
-            is CameraOffsetMinMaxChanged -> Platform.runLater {
+            is CameraOffsetChanged -> offset.set(device.offset)
+            is CameraOffsetMinMaxChanged -> {
                 offsetMin.set(device.offsetMin)
                 offsetMax.set(device.offsetMax)
             }
-            is CameraExposureStateChanged -> Platform.runLater { exposureState.set(device.exposureState) }
-            is CameraHasCoolerChanged -> Platform.runLater { hasCooler.set(device.hasCooler) }
-            is CameraCanSetTemperatureChanged -> Platform.runLater { canSetTemperature.set(device.canSetTemperature) }
-            is CameraTemperatureChanged -> Platform.runLater { temperature.set(device.temperature) }
-            is CameraCanSubFrameChanged -> Platform.runLater { canSubFrame.set(device.canSubFrame) }
-            is CameraFrameChanged -> Platform.runLater {
+            is CameraExposureStateChanged -> exposureState.set(device.exposureState)
+            is CameraHasCoolerChanged -> hasCooler.set(device.hasCooler)
+            is CameraCanSetTemperatureChanged -> canSetTemperature.set(device.canSetTemperature)
+            is CameraTemperatureChanged -> temperature.set(device.temperature)
+            is CameraCanSubFrameChanged -> canSubFrame.set(device.canSubFrame)
+            is CameraFrameChanged -> {
                 minX.set(device.minX)
                 maxX.set(device.maxX)
                 minY.set(device.minY)
@@ -187,12 +186,12 @@ open class CameraProperty : DeviceProperty<Camera>() {
                 width.set(device.width)
                 height.set(device.height)
             }
-            is CameraCanBinChanged -> Platform.runLater {
+            is CameraCanBinChanged -> {
                 canBin.set(device.canBin)
                 maxBinX.set(device.maxBinX)
                 maxBinY.set(device.maxBinY)
             }
-            is CameraBinChanged -> Platform.runLater {
+            is CameraBinChanged -> {
                 binX.set(device.binX)
                 binY.set(device.binY)
             }

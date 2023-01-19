@@ -1,10 +1,13 @@
 package nebulosa.desktop.core
 
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.functions.Function
 import io.reactivex.rxjava3.functions.Predicate
+import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.PublishSubject
+import nebulosa.desktop.logic.concurrency.JavaFXThreadExecutor
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -38,10 +41,12 @@ class EventBus {
 
     inline fun debounce(timeout: Long, unit: TimeUnit = TimeUnit.MILLISECONDS) = subject.debounce(timeout, unit)
 
-    inline fun subscribe(next: Consumer<Any>) = subject.subscribe(next)
+    inline fun subscribe(next: Consumer<in Any>) = subject.subscribe(next)
 
     companion object {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(EventBus::class.java)
+
+        inline fun <R : Any> Observable<R>.observeOnFXThread() = observeOn(Schedulers.from(JavaFXThreadExecutor))
     }
 }

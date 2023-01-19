@@ -8,6 +8,10 @@ class Ticker(
     val unit: TimeUnit = TimeUnit.MILLISECONDS,
 ) : Thread() {
 
+    init {
+        isDaemon = true
+    }
+
     override fun run() {
         while (true) {
             try {

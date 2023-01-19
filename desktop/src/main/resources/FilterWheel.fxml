@@ -27,11 +27,11 @@
         </padding>
         <HBox alignment="CENTER"
               spacing="8.0">
-            <ChoiceBox fx:id="filterWheels"
+            <ChoiceBox fx:id="filterWheelChoiceBox"
                        prefHeight="32.0"
                        prefWidth="360.0">
             </ChoiceBox>
-            <Button fx:id="connect"
+            <Button fx:id="connectButton"
                     onAction="#connect"
                     alignment="CENTER"
                     mnemonicParsing="false"
@@ -41,7 +41,7 @@
                     minWidth="42.0"
                     styleClass="mdi,mdi-sm,text-blue-grey-700">
             </Button>
-            <Button fx:id="openINDI"
+            <Button fx:id="openINDIButton"
                     onAction="#openINDI"
                     alignment="CENTER"
                     mnemonicParsing="false"
@@ -68,7 +68,7 @@
                                  styleClass="text-md">
                         <items>
                             <CheckMenuItem text="Compact Mode"
-                                           fx:id="compactMode"
+                                           fx:id="compactModeMenuItem"
                                            onAction="#toggleCompactMode"/>
                         </items>
                     </ContextMenu>
@@ -77,31 +77,30 @@
         </HBox>
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
-            <CheckBox fx:id="useFilterWheelAsShutter"
+            <CheckBox fx:id="useFilterWheelAsShutterCheckBox"
                       text="Use filter wheel as shutter:"
                       onAction="#toggleUseFilterWheelAsShutter"
                       styleClass="text-sm">
             </CheckBox>
-            <ChoiceBox fx:id="filterAsShutter"
+            <ChoiceBox fx:id="filterAsShutterChoiceBox"
                        prefWidth="135.0">
             </ChoiceBox>
         </HBox>
         <VBox alignment="TOP_CENTER">
-            <TableView fx:id="filterSlots"
+            <TableView fx:id="filterSlotTableView"
                        editable="true"
-                       fixedCellSize="28.0"
-                       stylesheets="@css/TableViewWithoutScrollbar.css">
+                       fixedCellSize="28.0">
                 <columns>
                     <TableColumn fx:id="position"
                                  prefWidth="40.0"
                                  style="-fx-alignment: CENTER;"
                                  text="#"/>
                     <TableColumn fx:id="name"
-                                 prefWidth="177.0"
+                                 prefWidth="150.0"
                                  style="-fx-alignment: CENTER-LEFT;"
                                  text="Name"/>
                     <TableColumn fx:id="action"
-                                 prefWidth="92.0"
+                                 prefWidth="110.0"
                                  style="-fx-alignment: CENTER;"
                                  text="Action"/>
                 </columns>
@@ -109,14 +108,14 @@
         </VBox>
         <HBox alignment="CENTER_LEFT"
               spacing="8.0">
-            <ChoiceBox fx:id="filterSlot"
+            <ChoiceBox fx:id="filterSlotChoiceBox"
                        prefWidth="213.0">
             </ChoiceBox>
-            <Button fx:id="moveToSelectedFilterSlot"
+            <Button fx:id="moveToSelectedFilterButton"
                     text="Move To"
                     minHeight="28.0"
                     prefHeight="28.0"
-                    onAction="#moveToSelectedFilterSlot">
+                    onAction="#moveToSelectedFilter">
                 <graphic>
                     <Label text="&#xF0054;"
                            styleClass="mdi,mdi-sm,text-blue-700">

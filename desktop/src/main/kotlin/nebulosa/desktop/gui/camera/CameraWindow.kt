@@ -19,7 +19,6 @@ import nebulosa.desktop.logic.camera.CameraManager
 import nebulosa.indi.device.cameras.Camera
 import nebulosa.indi.device.cameras.FrameType
 import org.controlsfx.control.ToggleSwitch
-import java.io.Closeable
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -29,7 +28,7 @@ class CameraWindow : AbstractWindow() {
 
     override val icon = "nebulosa-camera"
 
-    @FXML private lateinit var camerasChoiceBox: ChoiceBox<Camera>
+    @FXML private lateinit var cameraChoiceBox: ChoiceBox<Camera>
     @FXML private lateinit var connectButton: Button
     @FXML private lateinit var openINDIButton: Button
     @FXML private lateinit var menu: ContextMenu
@@ -79,10 +78,10 @@ class CameraWindow : AbstractWindow() {
         val isCapturing = cameraManager.isCapturing
         val isNotConnectedOrCapturing = isNotConnected or isCapturing
 
-        camerasChoiceBox.converter = DeviceStringConverter()
-        camerasChoiceBox.disableProperty().bind(isConnecting or isCapturing)
-        camerasChoiceBox.itemsProperty().bind(cameraManager.cameras)
-        cameraManager.bind(camerasChoiceBox.selectionModel.selectedItemProperty())
+        cameraChoiceBox.converter = DeviceStringConverter()
+        cameraChoiceBox.disableProperty().bind(isConnecting or isCapturing)
+        cameraChoiceBox.itemsProperty().bind(cameraManager.cameras)
+        cameraManager.bind(cameraChoiceBox.selectionModel.selectedItemProperty())
 
         connectButton.disableProperty().bind(cameraManager.isNull or isConnecting or isCapturing)
         connectButton.textProperty().bind(cameraManager.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
@@ -149,10 +148,16 @@ class CameraWindow : AbstractWindow() {
 
         exposureSpinner.userData = TimeUnit.MICROSECONDS
 
-        cameraManager.loadPreferences()
-
         xProperty().on { cameraManager.saveScreenLocation(it, y) }
         yProperty().on { cameraManager.saveScreenLocation(x, it) }
+    }
+
+    override fun onStart() {
+        cameraManager.loadPreferences()
+    }
+
+    override fun onStop() {
+        cameraManager.close()
     }
 
     var exposureUnit
@@ -394,13 +399,6 @@ class CameraWindow : AbstractWindow() {
             imageSavePathLabel.text = value
         }
 
-    override fun onStart() {
-    }
-
-    override fun onStop() {
-        cameraManager.close()
-    }
-
     @FXML
     private fun connect() {
         cameraManager.connect()
@@ -478,7 +476,7 @@ class CameraWindow : AbstractWindow() {
         cameraManager.abortCapture()
     }
 
-    companion object : Closeable {
+    companion object {
 
         @Volatile private var window: CameraWindow? = null
 
@@ -486,10 +484,6 @@ class CameraWindow : AbstractWindow() {
         fun open() {
             if (window == null) window = CameraWindow()
             window!!.open(bringToFront = true)
-        }
-
-        override fun close() {
-            window?.close()
         }
     }
 }

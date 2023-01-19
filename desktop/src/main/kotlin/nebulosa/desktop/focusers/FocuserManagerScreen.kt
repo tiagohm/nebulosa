@@ -1,13 +1,13 @@
 package nebulosa.desktop.focusers
 
 import io.reactivex.rxjava3.disposables.Disposable
-import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Label
 import javafx.scene.control.Spinner
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
+import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.or
@@ -15,7 +15,7 @@ import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
-import nebulosa.desktop.equipments.EquipmentManager
+import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.indi.device.filterwheels.FilterWheelEvent
 import nebulosa.indi.device.filterwheels.FilterWheelMovingChanged
 import nebulosa.indi.device.focusers.Focuser
@@ -106,6 +106,7 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
     override fun onStart() {
         subscriber = eventBus
             .filterIsInstance<FilterWheelEvent> { it.device === equipmentManager.selectedFilterWheel.get() }
+            .observeOnFXThread()
             .subscribe(::onFilterWheelEvent)
     }
 
@@ -116,7 +117,7 @@ class FocuserManagerScreen : Screen("FocuserManager", "nebulosa-focuser-manager"
 
     private fun onFilterWheelEvent(event: FilterWheelEvent) {
         when (event) {
-            is FilterWheelMovingChanged -> Platform.runLater { updateStatus() }
+            is FilterWheelMovingChanged -> updateStatus()
         }
     }
 

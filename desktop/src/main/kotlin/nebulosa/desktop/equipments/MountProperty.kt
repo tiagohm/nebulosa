@@ -1,6 +1,5 @@
 package nebulosa.desktop.equipments
 
-import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleListProperty
@@ -93,47 +92,45 @@ class MountProperty : DeviceProperty<Mount>() {
         val device = event.device!!
 
         when (event) {
-            is MountSlewingChanged -> Platform.runLater { isSlewing.set(device.isSlewing) }
-            is MountSlewRatesChanged -> Platform.runLater {
+            is MountSlewingChanged -> isSlewing.set(device.isSlewing)
+            is MountSlewRatesChanged -> {
                 slewRate.set(null)
                 slewRates.setAll(device.slewRates)
                 slewRate.set(device.slewRate ?: device.slewRates.firstOrNull())
             }
-            is MountSlewRateChanged -> Platform.runLater { slewRate.set(device.slewRate) }
-            is MountTypeChanged -> Platform.runLater { mountType.set(device.mountType) }
-            is MountTrackModesChanged -> Platform.runLater {
+            is MountSlewRateChanged -> slewRate.set(device.slewRate)
+            is MountTypeChanged -> mountType.set(device.mountType)
+            is MountTrackModesChanged -> {
                 trackMode.set(null)
                 trackModes.setAll(device.trackModes)
                 trackMode.set(device.trackMode)
             }
-            is MountTrackModeChanged -> Platform.runLater { trackMode.set(device.trackMode) }
-            is MountTrackingChanged -> Platform.runLater { isTracking.set(device.isTracking) }
-            is MountPierSideChanged -> Platform.runLater { pierSide.set(device.pierSide) }
-            is MountCanAbortChanged -> Platform.runLater { canAbort.set(device.canAbort) }
-            is MountCanSyncChanged -> Platform.runLater { canSync.set(device.canSync) }
-            is MountCanParkChanged -> Platform.runLater { canPark.set(device.canPark) }
-            is MountEquatorialCoordinatesChanged -> Platform.runLater {
+            is MountTrackModeChanged -> trackMode.set(device.trackMode)
+            is MountTrackingChanged -> isTracking.set(device.isTracking)
+            is MountPierSideChanged -> pierSide.set(device.pierSide)
+            is MountCanAbortChanged -> canAbort.set(device.canAbort)
+            is MountCanSyncChanged -> canSync.set(device.canSync)
+            is MountCanParkChanged -> canPark.set(device.canPark)
+            is MountEquatorialCoordinatesChanged -> {
                 rightAscension.set(device.rightAscension.hours)
                 declination.set(device.declination.degrees)
                 rightAscensionJ2000.set(device.rightAscensionJ2000.hours)
                 declinationJ2000.set(device.declinationJ2000.degrees)
             }
-            is MountGuideRateChanged -> Platform.runLater {
+            is MountGuideRateChanged -> {
                 guideRateWE.set(device.guideRateWE)
                 guideRateNS.set(device.guideRateNS)
             }
-            is MountParkChanged -> Platform.runLater {
+            is MountParkChanged -> {
                 isParking.set(device.isParking)
                 isParked.set(device.isParked)
             }
-            is MountCoordinateChanged -> Platform.runLater {
+            is MountCoordinateChanged -> {
                 longitude.set(device.longitude.degrees)
                 latitude.set(device.latitude.degrees)
                 elevation.set(device.elevation.meters)
             }
-            is MountTimeChanged -> Platform.runLater {
-                time.set(device.time)
-            }
+            is MountTimeChanged -> time.set(device.time)
         }
     }
 }

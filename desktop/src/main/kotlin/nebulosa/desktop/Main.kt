@@ -7,8 +7,7 @@ import javafx.scene.text.Font
 import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.core.util.loader.IERSLoader
-import nebulosa.desktop.equipments.EquipmentManager
-import nebulosa.desktop.logic.EquipmentController
+import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.camera.CameraTaskExecutor
 import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.logic.filterwheel.FilterWheelTaskExecutor
@@ -44,7 +43,7 @@ private fun inject() = module {
     single(createdAtStart = true) { Preferences(Paths.get("$appDirectory", "preferences.json")) }
 
     single(createdAtStart = true) { ConnectionManager() }
-    single(createdAtStart = true) { EquipmentController() }
+    single(createdAtStart = true) { EquipmentManager() }
     single(createdAtStart = true) { EquipmentManager() }
     single(createdAtStart = true) { TelescopeControlServerManager() }
     single(createdAtStart = true) { ScreenManager() }

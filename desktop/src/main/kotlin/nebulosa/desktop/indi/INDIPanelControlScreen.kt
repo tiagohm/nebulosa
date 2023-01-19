@@ -1,7 +1,6 @@
 package nebulosa.desktop.indi
 
 import io.reactivex.rxjava3.disposables.Disposable
-import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.geometry.Pos
 import javafx.scene.Cursor
@@ -9,12 +8,13 @@ import javafx.scene.control.*
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
+import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
 import nebulosa.desktop.core.beans.onZero
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
-import nebulosa.desktop.equipments.EquipmentManager
+import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.indi.device.*
 import nebulosa.indi.protocol.PropertyPermission
 import nebulosa.indi.protocol.SwitchRule
@@ -53,18 +53,19 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
     override fun onStart() {
         subscribers[0] = eventBus
             .filterIsInstance<DevicePropertyEvent> { it.device === devices.value }
+            .observeOnFXThread()
             .subscribe(::onPropertyEvent)
 
         subscribers[1] = eventBus
             .filterIsInstance<DeviceMessageReceived> { it.device === devices.value }
+            .observeOnFXThread()
             .subscribe(::onMessageEvent)
 
         populateDevices()
     }
 
     override fun onStop() {
-        subscribers[0]?.dispose()
-        subscribers[1]?.dispose()
+        subscribers.forEach { it?.dispose() }
         subscribers.fill(null)
     }
 
@@ -79,7 +80,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
     private fun onPropertyEvent(event: DevicePropertyEvent) {
         when (event) {
-            is DevicePropertyChanged -> Platform.runLater {
+            is DevicePropertyChanged -> {
                 synchronized(cacheProperties) {
                     val container = cacheProperties[event.device]!![event.property.name]
 
@@ -96,7 +97,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
                     }
                 }
             }
-            is DevicePropertyDeleted -> Platform.runLater {
+            is DevicePropertyDeleted -> {
                 synchronized(cacheProperties) {
                     val container = cacheProperties[event.device]!![event.property.name]
                     container?.delete()
@@ -107,11 +108,9 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
     }
 
     private fun onMessageEvent(event: DeviceMessageReceived) {
-        Platform.runLater {
-            synchronized(logText) {
-                logText.insert(0, "${event.message}\n")
-                logs.text = logText.toString()
-            }
+        synchronized(logText) {
+            logText.insert(0, "${event.message}\n")
+            logs.text = logText.toString()
         }
     }
 
@@ -126,11 +125,9 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         attachedDevices.sortBy { it.name }
         attachedDevices.forEach { if (it !in cacheProperties) cacheProperties[it] = HashMap(256) }
 
-        Platform.runLater {
-            devices.items.setAll(attachedDevices)
-            if (device in attachedDevices) devices.value = device
-            else devices.selectionModel.selectFirst()
-        }
+        devices.items.setAll(attachedDevices)
+        if (device in attachedDevices) devices.value = device
+        else devices.selectionModel.selectFirst()
     }
 
     private fun makePanelControl() {

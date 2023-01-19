@@ -32,7 +32,7 @@
               spacing="1.0">
             <HBox alignment="CENTER"
                   spacing="8.0">
-                <ChoiceBox fx:id="camerasChoiceBox"
+                <ChoiceBox fx:id="cameraChoiceBox"
                            prefHeight="32.0"
                            prefWidth="394.0">
                 </ChoiceBox>

@@ -1,14 +1,19 @@
-package nebulosa.desktop.equipments
+package nebulosa.desktop.logic
 
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
+import nebulosa.desktop.core.EventBus
+import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
+import nebulosa.desktop.equipments.FocuserProperty
+import nebulosa.desktop.equipments.GPSProperty
+import nebulosa.desktop.equipments.MountProperty
+import nebulosa.desktop.logic.camera.CameraProperty
 import nebulosa.desktop.logic.connection.Connected
 import nebulosa.desktop.logic.connection.ConnectionEvent
 import nebulosa.desktop.logic.connection.Disconnected
-import nebulosa.desktop.core.EventBus
-import nebulosa.desktop.logic.camera.CameraProperty
+import nebulosa.desktop.logic.filterwheel.FilterWheelProperty
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.cameras.Camera
 import nebulosa.indi.device.cameras.CameraAttached
@@ -38,6 +43,7 @@ import java.io.Closeable
 class EquipmentManager : KoinComponent, Closeable {
 
     private val eventBus by inject<EventBus>()
+    private val subscribers = arrayOfNulls<Disposable>(2)
 
     @JvmField val connected = SimpleBooleanProperty(false)
 
@@ -56,15 +62,15 @@ class EquipmentManager : KoinComponent, Closeable {
     @JvmField val selectedFocuser = FocuserProperty()
     @JvmField val selectedGPS = GPSProperty()
 
-    private val subscribers = arrayOfNulls<Disposable>(2)
-
     init {
         subscribers[0] = eventBus
             .filterIsInstance<DeviceEvent<*>>()
+            .observeOnFXThread()
             .subscribe(::onDeviceEvent)
 
         subscribers[1] = eventBus
             .filterIsInstance<ConnectionEvent>()
+            .observeOnFXThread()
             .subscribe(::onConnectionEvent)
     }
 

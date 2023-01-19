@@ -7,16 +7,17 @@ import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import javafx.stage.FileChooser
-import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.toggle
-import nebulosa.desktop.equipments.EquipmentManager
 import nebulosa.desktop.gui.ProgramClosed
 import nebulosa.desktop.gui.camera.CameraWindow
+import nebulosa.desktop.gui.filterwheel.FilterWheelWindow
 import nebulosa.desktop.imageviewer.ImageViewerScreen
+import nebulosa.desktop.logic.EquipmentManager
+import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.telescopecontrol.TelescopeControlServerManager
 import org.koin.core.component.get
 import org.koin.core.component.inject
@@ -129,6 +130,7 @@ class HomeScreen : Screen("Home") {
         when (val name = (event.source as Node).userData as String) {
             "NEW_IMAGE" -> openNewImage()
             "CAMERA" -> CameraWindow.open()
+            "FILTER_WHEEL" -> FilterWheelWindow.open()
             else -> screenManager.openByName(name)
         }
     }

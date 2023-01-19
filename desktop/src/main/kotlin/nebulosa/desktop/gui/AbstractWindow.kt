@@ -7,6 +7,7 @@ import javafx.scene.Scene
 import javafx.scene.image.Image
 import javafx.stage.Stage
 import nebulosa.desktop.core.EventBus
+import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
 import org.koin.core.component.KoinComponent
@@ -15,9 +16,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class AbstractWindow : Stage(), KoinComponent {
 
-    abstract val resourceName: String
+    protected abstract val resourceName: String
 
-    open val icon = "nebulosa"
+    protected open val icon = "nebulosa"
 
     protected val eventBus by inject<EventBus>()
 
@@ -43,6 +44,7 @@ abstract class AbstractWindow : Stage(), KoinComponent {
 
             subscribers[0] = eventBus
                 .filterIsInstance<ProgramClosed>()
+                .observeOnFXThread()
                 .subscribe {
                     onStop()
 

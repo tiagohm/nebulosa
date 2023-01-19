@@ -1,12 +1,12 @@
 package nebulosa.desktop.logic
 
 import io.reactivex.rxjava3.disposables.Disposable
-import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import nebulosa.desktop.core.EventBus
+import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
 import nebulosa.indi.device.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -28,7 +28,8 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
         addListener(this)
 
         subscribers[0] = eventBus
-            .filterIsInstance<DeviceEvent<T>> { it.device === value }
+            .filterIsInstance<DeviceEvent<*>> { it.device === value }
+            .observeOnFXThread()
             .subscribe(::onDeviceEvent)
     }
 
@@ -56,17 +57,23 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
         }
     }
 
-    private fun onDeviceEvent(event: DeviceEvent<T>) {
+    @Suppress("UNCHECKED_CAST")
+    private fun onDeviceEvent(event: DeviceEvent<*>) {
         if (closed) return
 
         when (event) {
-            is DeviceConnected,
-            is DeviceDisconnected -> Platform.runLater {
+            is DeviceConnected -> {
+                isConnected.set(true)
                 isConnecting.set(false)
-                isConnected.set(value.isConnected)
             }
-            is DeviceIsConnecting -> Platform.runLater { isConnecting.set(true) }
-            else -> accept(event)
+            is DeviceDisconnected -> {
+                isConnected.set(false)
+                isConnecting.set(false)
+            }
+            is DeviceIsConnecting -> {
+                isConnecting.set(true)
+            }
+            else -> accept(event as DeviceEvent<T>)
         }
     }
 
