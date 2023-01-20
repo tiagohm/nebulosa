@@ -149,9 +149,6 @@ class CameraWindow : AbstractWindow() {
         exposureSpinner.userData = TimeUnit.MICROSECONDS
 
         cameraManager.loadPreferences(null)
-
-        xProperty().on { cameraManager.saveScreenLocation(it, y) }
-        yProperty().on { cameraManager.saveScreenLocation(x, it) }
     }
 
     override fun onStart() {
@@ -159,6 +156,7 @@ class CameraWindow : AbstractWindow() {
     }
 
     override fun onStop() {
+        cameraManager.savePreferences(null)
         cameraManager.close()
     }
 
@@ -464,7 +462,7 @@ class CameraWindow : AbstractWindow() {
 
     @FXML
     private fun applyTemperatureSetpoint() {
-        cameraManager.applyTemperatureSetpoint(temperatureSetpointSpinner.value)
+        cameraManager.applyTemperatureSetpoint()
     }
 
     @FXML

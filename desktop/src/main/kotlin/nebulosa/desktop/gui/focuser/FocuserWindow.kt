@@ -93,6 +93,7 @@ class FocuserWindow : AbstractWindow() {
 
     override fun onStop() {
         focuserManager.savePreferences(null)
+        focuserManager.close()
     }
 
     var status

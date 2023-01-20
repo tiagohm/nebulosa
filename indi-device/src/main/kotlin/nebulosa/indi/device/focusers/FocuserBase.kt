@@ -90,9 +90,16 @@ internal open class FocuserBase(
                             }
                         }
 
+                        if (message.state == PropertyState.ALERT) {
+                            handler.fireOnEventReceived(FocuserMoveFailed(this))
+                        }
+
+                        val prevPosition = position
                         position = message["FOCUS_ABSOLUTE_POSITION"]!!.value.toInt()
 
-                        handler.fireOnEventReceived(FocuserPositionChanged(this))
+                        if (prevPosition != position) {
+                            handler.fireOnEventReceived(FocuserPositionChanged(this))
+                        }
 
                         val prevIsMoving = isMoving
                         isMoving = message.isBusy

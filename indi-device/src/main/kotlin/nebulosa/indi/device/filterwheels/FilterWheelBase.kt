@@ -23,26 +23,30 @@ internal open class FilterWheelBase(
             is NumberVector<*> -> {
                 when (message.name) {
                     "FILTER_SLOT" -> {
-                        val slotValue = message["FILTER_SLOT_VALUE"]!!
+                        val slot = message["FILTER_SLOT_VALUE"]!!
 
                         if (message is DefNumberVector) {
-                            slotCount = slotValue.max.toInt() - slotValue.min.toInt() + 1
+                            slotCount = slot.max.toInt() - slot.min.toInt() + 1
                             handler.fireOnEventReceived(FilterWheelSlotCountChanged(this))
-                        } else {
-                            isMoving = message.isBusy
-
-                            handler.fireOnEventReceived(FilterWheelMovingChanged(this))
                         }
 
                         if (message.state == PropertyState.ALERT) {
                             handler.fireOnEventReceived(FilterWheelMoveFailed(this))
                         }
 
-                        val position = slotValue.value.toInt()
-                        val previous = this.position
-                        this.position = position
+                        val prevPosition = position
+                        position = slot.value.toInt()
 
-                        handler.fireOnEventReceived(FilterWheelPositionChanged(this, previous))
+                        if (prevPosition != position) {
+                            handler.fireOnEventReceived(FilterWheelPositionChanged(this, prevPosition))
+                        }
+
+                        val prevIsMoving = isMoving
+                        isMoving = message.isBusy
+
+                        if (prevIsMoving != isMoving) {
+                            handler.fireOnEventReceived(FilterWheelMovingChanged(this))
+                        }
                     }
                 }
             }

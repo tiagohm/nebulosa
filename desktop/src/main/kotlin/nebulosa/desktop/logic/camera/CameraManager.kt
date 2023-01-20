@@ -153,21 +153,14 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
     }
 
     fun updateExposureMinMax() {
-        val min = window.exposureUnit.convert(exposureMin.value, TimeUnit.MICROSECONDS)
-        val max = window.exposureUnit.convert(exposureMax.value, TimeUnit.MICROSECONDS)
-
-        window.exposureMax = max
-        window.exposureMin = min
+        window.exposureMax = window.exposureUnit.convert(exposureMin.value, TimeUnit.MICROSECONDS)
+        window.exposureMin = window.exposureUnit.convert(exposureMax.value, TimeUnit.MICROSECONDS)
     }
 
     fun updateExposureUnit(from: TimeUnit, to: TimeUnit, exposure: Long) {
-        val min = to.convert(exposureMin.value, TimeUnit.MICROSECONDS)
-        val max = to.convert(exposureMax.value, TimeUnit.MICROSECONDS)
-        val value = to.convert(exposure, from)
-
-        window.exposureMax = max
-        window.exposureMin = min
-        window.exposure = value
+        window.exposureMax = to.convert(exposureMax.value, TimeUnit.MICROSECONDS)
+        window.exposureMin = to.convert(exposureMin.value, TimeUnit.MICROSECONDS)
+        window.exposure = to.convert(exposure, from)
         window.exposureUnit = to
     }
 
@@ -186,7 +179,8 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
         window.isNewSubFolderAtNoon = mode == AutoSubFolderMode.NOON
     }
 
-    fun applyTemperatureSetpoint(temperature: Double) {
+    fun applyTemperatureSetpoint() {
+        val temperature = window.temperatureSetpoint
         value?.temperature(temperature) ?: return
         preferences.double("camera.$name.temperatureSetpoint", temperature)
     }
@@ -240,67 +234,63 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
         value?.abortCapture()
     }
 
-    fun saveScreenLocation(x: Double, y: Double) {
-        preferences.double("camera.screen.x", x)
-        preferences.double("camera.screen.y", y)
-    }
-
-    fun savePreferences(camera: Camera? = value) {
-        if (camera != null && camera.isConnected) {
-            preferences.double("camera.${camera.name}.temperatureSetpoint", window.temperatureSetpoint)
-            preferences.enum("camera.${camera.name}.exposureUnit", window.exposureUnit)
-            preferences.long("camera.${camera.name}.exposure", window.exposureInMicros)
-            preferences.int("camera.${camera.name}.exposureCount", window.exposureCount)
-            preferences.enum("camera.${camera.name}.exposureMode", window.exposureMode)
-            preferences.long("camera.${camera.name}.exposureDelay", window.exposureDelay)
-            preferences.bool("camera.${camera.name}.isSubFrame", window.isSubFrame)
-            preferences.int("camera.${camera.name}.frameX", window.frameX)
-            preferences.int("camera.${camera.name}.frameY", window.frameY)
-            preferences.int("camera.${camera.name}.frameWidth", window.frameWidth)
-            preferences.int("camera.${camera.name}.frameHeight", window.frameHeight)
-            preferences.enum("camera.${camera.name}.frameType", window.frameType)
-            preferences.string("camera.${camera.name}.frameFormat", window.frameFormat)
-            preferences.int("camera.${camera.name}.binX", window.binX)
-            preferences.int("camera.${camera.name}.binY", window.binY)
-            preferences.int("camera.${camera.name}.gain", window.gain)
-            preferences.int("camera.${camera.name}.offset", window.offset)
+    fun savePreferences(device: Camera? = value) {
+        if (device != null && device.isConnected) {
+            preferences.double("camera.${device.name}.temperatureSetpoint", window.temperatureSetpoint)
+            preferences.enum("camera.${device.name}.exposureUnit", window.exposureUnit)
+            preferences.long("camera.${device.name}.exposure", window.exposureInMicros)
+            preferences.int("camera.${device.name}.exposureCount", window.exposureCount)
+            preferences.enum("camera.${device.name}.exposureMode", window.exposureMode)
+            preferences.long("camera.${device.name}.exposureDelay", window.exposureDelay)
+            preferences.bool("camera.${device.name}.isSubFrame", window.isSubFrame)
+            preferences.int("camera.${device.name}.frameX", window.frameX)
+            preferences.int("camera.${device.name}.frameY", window.frameY)
+            preferences.int("camera.${device.name}.frameWidth", window.frameWidth)
+            preferences.int("camera.${device.name}.frameHeight", window.frameHeight)
+            preferences.enum("camera.${device.name}.frameType", window.frameType)
+            preferences.string("camera.${device.name}.frameFormat", window.frameFormat)
+            preferences.int("camera.${device.name}.binX", window.binX)
+            preferences.int("camera.${device.name}.binY", window.binY)
+            preferences.int("camera.${device.name}.gain", window.gain)
+            preferences.int("camera.${device.name}.offset", window.offset)
+        } else if (device == null) {
+            preferences.double("camera.screen.x", window.x)
+            preferences.double("camera.screen.y", window.y)
         }
     }
 
-    fun loadPreferences(camera: Camera? = value) {
-        if (camera != null) {
+    fun loadPreferences(device: Camera? = value) {
+        if (device != null) {
             updateMaxBin()
             updateExposureMinMax()
             updateFrame()
             updateGainMinMax()
             updateOffsetMinMax()
 
-            window.temperatureSetpoint = preferences.double("camera.${camera.name}.temperatureSetpoint") ?: 0.0
-            val exposureUnit = preferences.enum("camera.${camera.name}.exposureUnit") ?: TimeUnit.MICROSECONDS
-            val exposureTimeInMicros = preferences.long("camera.${camera.name}.exposure") ?: 1L
-            window.exposureCount = preferences.int("camera.${camera.name}.exposureCount") ?: 1
-            window.exposureMode = preferences.enum<ExposureMode>("camera.${camera.name}.exposureMode") ?: ExposureMode.SINGLE
-            window.exposureDelay = preferences.long("camera.${camera.name}.exposureDelay") ?: 100L
-            window.isSubFrame = preferences.bool("camera.${camera.name}.isSubFrame")
-            window.frameX = preferences.int("camera.${camera.name}.frameX") ?: minX.get()
-            window.frameY = preferences.int("camera.${camera.name}.frameY") ?: minY.get()
-            window.frameWidth = preferences.int("camera.${camera.name}.frameWidth") ?: maxWidth.get()
-            window.frameHeight = preferences.int("camera.${camera.name}.frameHeight") ?: maxHeight.get()
-            window.frameType = preferences.enum<FrameType>("camera.${camera.name}.frameType") ?: FrameType.LIGHT
-            (preferences.string("camera.${camera.name}.frameFormat") ?: frameFormats.firstOrNull())?.let { window.frameFormat = it }
-            window.binX = preferences.int("camera.${camera.name}.binX") ?: 1
-            window.binY = preferences.int("camera.${camera.name}.binY") ?: 1
-            window.gain = preferences.int("camera.${camera.name}.gain") ?: 0
-            window.offset = preferences.int("camera.${camera.name}.offset") ?: 0
+            window.temperatureSetpoint = preferences.double("camera.${device.name}.temperatureSetpoint") ?: 0.0
+            val exposureUnit = preferences.enum("camera.${device.name}.exposureUnit") ?: TimeUnit.MICROSECONDS
+            val exposureTimeInMicros = preferences.long("camera.${device.name}.exposure") ?: 1L
+            window.exposureCount = preferences.int("camera.${device.name}.exposureCount") ?: 1
+            window.exposureMode = preferences.enum<ExposureMode>("camera.${device.name}.exposureMode") ?: ExposureMode.SINGLE
+            window.exposureDelay = preferences.long("camera.${device.name}.exposureDelay") ?: 100L
+            window.isSubFrame = preferences.bool("camera.${device.name}.isSubFrame")
+            window.frameX = preferences.int("camera.${device.name}.frameX") ?: minX.get()
+            window.frameY = preferences.int("camera.${device.name}.frameY") ?: minY.get()
+            window.frameWidth = preferences.int("camera.${device.name}.frameWidth") ?: maxWidth.get()
+            window.frameHeight = preferences.int("camera.${device.name}.frameHeight") ?: maxHeight.get()
+            window.frameType = preferences.enum<FrameType>("camera.${device.name}.frameType") ?: FrameType.LIGHT
+            (preferences.string("camera.${device.name}.frameFormat") ?: frameFormats.firstOrNull())?.let { window.frameFormat = it }
+            window.binX = preferences.int("camera.${device.name}.binX") ?: 1
+            window.binY = preferences.int("camera.${device.name}.binY") ?: 1
+            window.gain = preferences.int("camera.${device.name}.gain") ?: 0
+            window.offset = preferences.int("camera.${device.name}.offset") ?: 0
 
             updateExposureUnit(TimeUnit.MICROSECONDS, exposureUnit, exposureTimeInMicros)
 
-            window.isAutoSaveAllExposures = preferences.bool("camera.$name.autoSaveAllExposures")
-            window.isAutoSubFolder = preferences.bool("camera.$name.autoSubFolder")
-            window.isNewSubFolderAtNoon = preferences.enum<AutoSubFolderMode>("camera.$name.newSubFolderAt") != AutoSubFolderMode.MIDNIGHT
-            window.imageSavePath = preferences.string("camera.$name.imageSavePath")
-                ?.ifBlank { null }
-                ?: "$appDirectory/captures/$name"
+            window.isAutoSaveAllExposures = preferences.bool("camera.${device.name}.autoSaveAllExposures")
+            window.isAutoSubFolder = preferences.bool("camera.${device.name}.autoSubFolder")
+            window.isNewSubFolderAtNoon = preferences.enum<AutoSubFolderMode>("camera.${device.name}.newSubFolderAt") != AutoSubFolderMode.MIDNIGHT
+            window.imageSavePath = preferences.string("camera.${device.name}.imageSavePath") ?: "$appDirectory/captures/${device.name}"
         } else {
             preferences.double("camera.screen.x")?.let { window.x = it }
             preferences.double("camera.screen.y")?.let { window.y = it }
