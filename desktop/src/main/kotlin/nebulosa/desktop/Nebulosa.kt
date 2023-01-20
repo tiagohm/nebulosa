@@ -12,7 +12,10 @@ class Nebulosa : Application(), KoinComponent {
     private val homeScreen by lazy { HomeScreen() }
 
     override fun start(primaryStage: Stage) {
-        loadKoinModules(module { single { this@Nebulosa } })
+        loadKoinModules(module {
+            single { this@Nebulosa.hostServices }
+        })
+
         homeScreen.show()
     }
 }

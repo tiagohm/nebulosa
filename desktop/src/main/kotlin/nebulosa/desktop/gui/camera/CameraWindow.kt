@@ -148,6 +148,8 @@ class CameraWindow : AbstractWindow() {
 
         exposureSpinner.userData = TimeUnit.MICROSECONDS
 
+        cameraManager.loadPreferences(null)
+
         xProperty().on { cameraManager.saveScreenLocation(it, y) }
         yProperty().on { cameraManager.saveScreenLocation(x, it) }
     }
@@ -423,9 +425,9 @@ class CameraWindow : AbstractWindow() {
     }
 
     @FXML
-    private fun openFolderInFiles(event: MouseEvent) {
+    private fun openImageSavePathInFiles(event: MouseEvent) {
         if (event.button == MouseButton.PRIMARY && event.clickCount == 2) {
-            // nebulosa.hostServices.showDocument(path.toString())
+            cameraManager.openImageSavePathInFiles()
         }
     }
 

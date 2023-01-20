@@ -1,6 +1,7 @@
 package nebulosa.desktop.logic.camera
 
 import io.reactivex.rxjava3.disposables.Disposable
+import javafx.application.HostServices
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
 import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
@@ -31,6 +32,7 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
     private val cameraTaskExecutor by inject<CameraTaskExecutor>()
     private val screenManager by inject<ScreenManager>()
     private val appDirectory by inject<Path>(named("app"))
+    private val hostServices by inject<HostServices>()
     private val subscribers = arrayOfNulls<Disposable>(1)
 
     val cameras get() = equipmentManager.attachedCameras
@@ -85,6 +87,11 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
 
     fun openINDIPanelControl() {
         screenManager.openINDIPanelControl(value)
+    }
+
+    fun openImageSavePathInFiles() {
+        val imageSavePath = preferences.string("camera.$name.imageSavePath") ?: return
+        hostServices.showDocument(imageSavePath)
     }
 
     fun updateStatus() {

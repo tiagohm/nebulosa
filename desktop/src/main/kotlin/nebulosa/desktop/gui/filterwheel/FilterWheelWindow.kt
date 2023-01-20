@@ -44,6 +44,11 @@ class FilterWheelWindow : AbstractWindow() {
 
     private val filterWheelManager = FilterWheelManager(this)
 
+    init {
+        title = "FilterWheel"
+        isResizable = false
+    }
+
     override fun onCreate() {
         val isNotConnected = filterWheelManager.isConnected.not()
         val isConnecting = filterWheelManager.isConnecting
@@ -95,7 +100,8 @@ class FilterWheelWindow : AbstractWindow() {
             }
         }
 
-        filterAsShutterChoiceBox.selectionModel.selectedIndexProperty().add(1).on(filterWheelManager::updateFilterAsShutter)
+        filterAsShutterChoiceBox.selectionModel.selectedIndexProperty()
+            .on { filterWheelManager.updateFilterAsShutter(it + 1) }
 
         filterSlotChoiceBox.converter = FilterSlotStringConverter()
         filterSlotChoiceBox.disableProperty().bind(isNotConnectedOrMoving)
@@ -104,10 +110,15 @@ class FilterWheelWindow : AbstractWindow() {
             isNotConnectedOrMoving or filterSlotChoiceBox.selectionModel.selectedItemProperty()
                 .isEqualTo(filterWheelManager.position.asObject()) or filterSlotChoiceBox.selectionModel.selectedItemProperty().isNull
         )
+
+        filterWheelManager.loadPreferences(null)
+
+        xProperty().on { filterWheelManager.saveScreenLocation(it, y) }
+        yProperty().on { filterWheelManager.saveScreenLocation(x, it) }
     }
 
     override fun onStart() {
-        filterWheelManager.loadPreferences(null)
+        filterWheelManager.loadPreferences()
     }
 
     var status
@@ -130,10 +141,16 @@ class FilterWheelWindow : AbstractWindow() {
             updateScreenHeight()
         }
 
-    var useFilterWheelAsShutter
+    var isUseFilterWheelAsShutter
         get() = useFilterWheelAsShutterCheckBox.isSelected
         set(value) {
             useFilterWheelAsShutterCheckBox.isSelected = value
+        }
+
+    var filterAsShutter
+        get() = filterAsShutterChoiceBox.selectionModel.selectedIndex + 1
+        set(value) {
+            filterAsShutterChoiceBox.selectionModel.select(value - 1)
         }
 
     @FXML
@@ -170,7 +187,7 @@ class FilterWheelWindow : AbstractWindow() {
         filterWheelManager.moveTo(item)
     }
 
-    private fun updateScreenHeight() {
+    fun updateScreenHeight() {
         height = if (isCompactMode) {
             170.0
         } else {
@@ -186,16 +203,17 @@ class FilterWheelWindow : AbstractWindow() {
     fun updateFilterNames(
         names: List<String>,
         selectedFilterAsShutter: Int,
+        position: Int,
     ) {
         if (filterWheelManager.isConnected.get()) {
             filterAsShutterChoiceBox.items.setAll(names)
-            filterAsShutterChoiceBox.selectionModel.select(selectedFilterAsShutter - 1)
+            filterAsShutter = selectedFilterAsShutter
 
             val positions = (1..names.size).toList()
             filterSlotTableView.items.setAll(positions)
 
             filterSlotChoiceBox.items.setAll(positions)
-            filterSlotChoiceBox.value = filterWheelManager.position.get()
+            filterSlotChoiceBox.value = position
         } else {
             filterAsShutterChoiceBox.items.clear()
             filterAsShutterChoiceBox.value = null
