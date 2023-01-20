@@ -51,7 +51,7 @@ open class CameraProperty : DeviceProperty<Camera>() {
     @JvmField val offsetMin = SimpleIntegerProperty(0)
     @JvmField val offsetMax = SimpleIntegerProperty(0)
 
-    override fun changed(prev: Camera?, new: Camera) {
+    override fun onChanged(prev: Camera?, new: Camera) {
         isExposuring.set(new.isExposuring)
         hasCoolerControl.set(new.hasCoolerControl)
         isCoolerOn.set(new.isCoolerOn)
@@ -137,63 +137,63 @@ open class CameraProperty : DeviceProperty<Camera>() {
         offset.set(0)
     }
 
-    override fun accept(event: DeviceEvent<Camera>) {
-        val device = event.device!!
+    override fun onDeviceEvent(event: DeviceEvent<*>) {
+        super.onDeviceEvent(event)
 
         when (event) {
-            is CameraExposuringChanged -> isExposuring.set(device.isExposuring)
-            is CameraCoolerControlChanged -> hasCoolerControl.set(device.hasCoolerControl)
-            is CameraCoolerChanged -> isCoolerOn.set(device.isCoolerOn)
-            is CameraHasDewHeaterChanged -> hasDewHeater.set(device.hasDewHeater)
-            is CameraDewHeaterChanged -> isDewHeaterOn.set(device.isDewHeaterOn)
-            is CameraFrameFormatsChanged -> frameFormats.setAll(device.frameFormats)
-            is CameraCanAbortChanged -> canAbort.set(device.canAbort)
+            is CameraExposuringChanged -> isExposuring.set(value.isExposuring)
+            is CameraCoolerControlChanged -> hasCoolerControl.set(value.hasCoolerControl)
+            is CameraCoolerChanged -> isCoolerOn.set(value.isCoolerOn)
+            is CameraHasDewHeaterChanged -> hasDewHeater.set(value.hasDewHeater)
+            is CameraDewHeaterChanged -> isDewHeaterOn.set(value.isDewHeaterOn)
+            is CameraFrameFormatsChanged -> frameFormats.setAll(value.frameFormats)
+            is CameraCanAbortChanged -> canAbort.set(value.canAbort)
             is CameraCfaChanged -> {
-                cfaOffsetX.set(device.cfaOffsetX)
-                cfaOffsetY.set(device.cfaOffsetY)
-                cfaType.set(device.cfaType)
+                cfaOffsetX.set(value.cfaOffsetX)
+                cfaOffsetY.set(value.cfaOffsetY)
+                cfaType.set(value.cfaType)
             }
             is CameraExposureMinMaxChanged -> {
-                exposureMin.set(device.exposureMin)
-                exposureMax.set(device.exposureMax)
+                exposureMin.set(value.exposureMin)
+                exposureMax.set(value.exposureMax)
             }
-            is CameraGainChanged -> gain.set(device.gain)
+            is CameraGainChanged -> gain.set(value.gain)
             is CameraGainMinMaxChanged -> {
-                gainMin.set(device.gainMin)
-                gainMax.set(device.gainMax)
+                gainMin.set(value.gainMin)
+                gainMax.set(value.gainMax)
             }
-            is CameraOffsetChanged -> offset.set(device.offset)
+            is CameraOffsetChanged -> offset.set(value.offset)
             is CameraOffsetMinMaxChanged -> {
-                offsetMin.set(device.offsetMin)
-                offsetMax.set(device.offsetMax)
+                offsetMin.set(value.offsetMin)
+                offsetMax.set(value.offsetMax)
             }
-            is CameraExposureStateChanged -> exposureState.set(device.exposureState)
-            is CameraHasCoolerChanged -> hasCooler.set(device.hasCooler)
-            is CameraCanSetTemperatureChanged -> canSetTemperature.set(device.canSetTemperature)
-            is CameraTemperatureChanged -> temperature.set(device.temperature)
-            is CameraCanSubFrameChanged -> canSubFrame.set(device.canSubFrame)
+            is CameraExposureStateChanged -> exposureState.set(value.exposureState)
+            is CameraHasCoolerChanged -> hasCooler.set(value.hasCooler)
+            is CameraCanSetTemperatureChanged -> canSetTemperature.set(value.canSetTemperature)
+            is CameraTemperatureChanged -> temperature.set(value.temperature)
+            is CameraCanSubFrameChanged -> canSubFrame.set(value.canSubFrame)
             is CameraFrameChanged -> {
-                minX.set(device.minX)
-                maxX.set(device.maxX)
-                minY.set(device.minY)
-                maxY.set(device.maxY)
-                minWidth.set(device.minWidth)
-                maxWidth.set(device.maxWidth)
-                minHeight.set(device.minHeight)
-                maxHeight.set(device.maxHeight)
-                x.set(device.x)
-                y.set(device.y)
-                width.set(device.width)
-                height.set(device.height)
+                minX.set(value.minX)
+                maxX.set(value.maxX)
+                minY.set(value.minY)
+                maxY.set(value.maxY)
+                minWidth.set(value.minWidth)
+                maxWidth.set(value.maxWidth)
+                minHeight.set(value.minHeight)
+                maxHeight.set(value.maxHeight)
+                x.set(value.x)
+                y.set(value.y)
+                width.set(value.width)
+                height.set(value.height)
             }
             is CameraCanBinChanged -> {
-                canBin.set(device.canBin)
-                maxBinX.set(device.maxBinX)
-                maxBinY.set(device.maxBinY)
+                canBin.set(value.canBin)
+                maxBinX.set(value.maxBinX)
+                maxBinY.set(value.maxBinY)
             }
             is CameraBinChanged -> {
-                binX.set(device.binX)
-                binY.set(device.binY)
+                binX.set(value.binX)
+                binY.set(value.binY)
             }
         }
     }

@@ -3,7 +3,6 @@ package nebulosa.desktop.logic
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
@@ -13,7 +12,7 @@ import org.koin.core.component.inject
 import java.io.Closeable
 
 @Suppress("LeakingThis")
-abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeListener<T>, Closeable, KoinComponent {
+abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), Closeable, KoinComponent {
 
     protected val eventBus by inject<EventBus>()
 
@@ -25,7 +24,7 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
     @Volatile private var closed = false
 
     init {
-        addListener(this)
+        addListener(::onChanged)
 
         subscribers[0] = eventBus
             .filterIsInstance<DeviceEvent<*>> { it.device === value }
@@ -33,15 +32,13 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
             .subscribe(::onDeviceEvent)
     }
 
-    protected abstract fun reset()
-
-    protected abstract fun changed(prev: T?, new: T)
-
-    protected abstract fun accept(event: DeviceEvent<T>)
-
     final override fun getName() = value?.name ?: ""
 
-    final override fun changed(
+    protected abstract fun reset()
+
+    protected abstract fun onChanged(prev: T?, new: T)
+
+    protected fun onChanged(
         observable: ObservableValue<out T>,
         oldValue: T?, newValue: T?,
     ) {
@@ -53,12 +50,11 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
             reset()
         } else {
             isConnected.set(newValue.isConnected)
-            changed(oldValue, newValue)
+            onChanged(oldValue, newValue)
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun onDeviceEvent(event: DeviceEvent<*>) {
+    protected open fun onDeviceEvent(event: DeviceEvent<*>) {
         if (closed) return
 
         when (event) {
@@ -73,7 +69,6 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
             is DeviceIsConnecting -> {
                 isConnecting.set(true)
             }
-            else -> accept(event as DeviceEvent<T>)
         }
     }
 
@@ -81,8 +76,6 @@ abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), ChangeLis
         if (closed) return
 
         closed = true
-
-        removeListener(this)
 
         subscribers.forEach { it?.dispose() }
         subscribers.fill(null)

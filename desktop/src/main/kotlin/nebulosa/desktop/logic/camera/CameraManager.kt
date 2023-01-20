@@ -10,8 +10,8 @@ import nebulosa.desktop.gui.camera.AutoSubFolderMode
 import nebulosa.desktop.gui.camera.CameraWindow
 import nebulosa.desktop.gui.camera.ExposureMode
 import nebulosa.desktop.logic.EquipmentManager
-import nebulosa.desktop.logic.taskexecutor.TaskEvent
-import nebulosa.desktop.logic.taskexecutor.TaskStarted
+import nebulosa.desktop.logic.task.TaskEvent
+import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.cameras.*
@@ -49,8 +49,8 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
         updateStatus()
     }
 
-    override fun changed(prev: Camera?, new: Camera) {
-        super.changed(prev, new)
+    override fun onChanged(prev: Camera?, new: Camera) {
+        super.onChanged(prev, new)
 
         savePreferences(prev)
         updateTitle()
@@ -59,8 +59,8 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
         equipmentManager.selectedCamera.set(new)
     }
 
-    override fun accept(event: DeviceEvent<Camera>) {
-        super.accept(event)
+    override fun onDeviceEvent(event: DeviceEvent<*>) {
+        super.onDeviceEvent(event)
 
         when (event) {
             is CameraExposureAborted,

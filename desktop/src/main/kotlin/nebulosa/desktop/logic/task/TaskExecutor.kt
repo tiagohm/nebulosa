@@ -1,10 +1,9 @@
-package nebulosa.desktop.logic.taskexecutor
+package nebulosa.desktop.logic.task
 
 import nebulosa.desktop.core.EventBus
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.slf4j.LoggerFactory
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicReference
@@ -25,8 +24,7 @@ abstract class TaskExecutor<T : Task> : Thread(), KoinComponent {
     val currentTask: T? get() = runningTask.get()
 
     fun add(task: T): Future<Any> {
-        val completable = CompletableFuture<Any>()
-        val future = CompletableTask(task, completable)
+        val future = CompletableTask(task)
         tasks.offer(future)
         return future
     }

@@ -19,10 +19,10 @@ class FilterWheelManager(private val window: FilterWheelWindow) : FilterWheelPro
 
     val filterWheels get() = equipmentManager.attachedFilterWheels
 
-    override fun changed(prev: FilterWheel?, new: FilterWheel) {
-        super.changed(prev, new)
+    override fun onChanged(prev: FilterWheel?, new: FilterWheel) {
+        super.onChanged(prev, new)
 
-        // savePreferences(prev)
+        savePreferences(prev)
         updateTitle()
         loadPreferences(new)
         syncFilterNames()
@@ -30,8 +30,8 @@ class FilterWheelManager(private val window: FilterWheelWindow) : FilterWheelPro
         equipmentManager.selectedFilterWheel.set(new)
     }
 
-    override fun accept(event: DeviceEvent<FilterWheel>) {
-        super.accept(event)
+    override fun onDeviceEvent(event: DeviceEvent<*>) {
+        super.onDeviceEvent(event)
 
         when (event) {
             is FilterWheelPositionChanged -> updateTitle()
@@ -103,16 +103,18 @@ class FilterWheelManager(private val window: FilterWheelWindow) : FilterWheelPro
         value?.filterNames(filterNames)
     }
 
-    fun saveScreenLocation(x: Double, y: Double) {
-        preferences.double("filterWheel.screen.x", x)
-        preferences.double("filterWheel.screen.y", y)
+    fun savePreferences(device: FilterWheel? = value) {
+        if (device == null) {
+            preferences.double("filterWheel.screen.x")?.let { window.x = it }
+            preferences.double("filterWheel.screen.y")?.let { window.y = it }
+        }
     }
 
-    fun loadPreferences(filterWheel: FilterWheel? = value) {
-        if (filterWheel != null) {
+    fun loadPreferences(device: FilterWheel? = value) {
+        if (device != null) {
             updateFilterNames()
 
-            window.isUseFilterWheelAsShutter = preferences.bool("filterWheel.$name.useFilterWheelAsShutter")
+            window.isUseFilterWheelAsShutter = preferences.bool("filterWheel.${device.name}.useFilterWheelAsShutter")
         } else {
             window.isCompactMode = preferences.bool("filterWheel.compactMode")
 

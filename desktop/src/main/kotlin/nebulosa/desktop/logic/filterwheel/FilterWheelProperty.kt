@@ -15,7 +15,7 @@ open class FilterWheelProperty : DeviceProperty<FilterWheel>() {
     @JvmField val position = SimpleIntegerProperty(-1)
     @JvmField val isMoving = SimpleBooleanProperty()
 
-    override fun changed(prev: FilterWheel?, new: FilterWheel) {
+    override fun onChanged(prev: FilterWheel?, new: FilterWheel) {
         slotCount.set(new.slotCount)
         position.set(new.position)
         isMoving.set(new.isMoving)
@@ -27,13 +27,13 @@ open class FilterWheelProperty : DeviceProperty<FilterWheel>() {
         isMoving.set(false)
     }
 
-    override fun accept(event: DeviceEvent<FilterWheel>) {
-        val device = event.device!!
+    override fun onDeviceEvent(event: DeviceEvent<*>) {
+        super.onDeviceEvent(event)
 
         when (event) {
-            is FilterWheelSlotCountChanged -> slotCount.set(device.slotCount)
-            is FilterWheelPositionChanged -> position.set(device.position)
-            is FilterWheelMovingChanged -> isMoving.set(device.isMoving)
+            is FilterWheelSlotCountChanged -> slotCount.set(value.slotCount)
+            is FilterWheelPositionChanged -> position.set(value.position)
+            is FilterWheelMovingChanged -> isMoving.set(value.isMoving)
         }
     }
 }

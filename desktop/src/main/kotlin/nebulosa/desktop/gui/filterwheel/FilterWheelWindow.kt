@@ -112,13 +112,14 @@ class FilterWheelWindow : AbstractWindow() {
         )
 
         filterWheelManager.loadPreferences(null)
-
-        xProperty().on { filterWheelManager.saveScreenLocation(it, y) }
-        yProperty().on { filterWheelManager.saveScreenLocation(x, it) }
     }
 
     override fun onStart() {
         filterWheelManager.loadPreferences()
+    }
+
+    override fun onStop() {
+        filterWheelManager.savePreferences(null)
     }
 
     var status
@@ -212,6 +213,7 @@ class FilterWheelWindow : AbstractWindow() {
             val positions = (1..names.size).toList()
             filterSlotTableView.items.setAll(positions)
 
+            filterSlotChoiceBox.value = null
             filterSlotChoiceBox.items.setAll(positions)
             filterSlotChoiceBox.value = position
         } else {

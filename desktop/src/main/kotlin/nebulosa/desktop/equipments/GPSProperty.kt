@@ -16,7 +16,7 @@ class GPSProperty : DeviceProperty<GPS>() {
     @JvmField val elevation = SimpleDoubleProperty()
     @JvmField val time = SimpleObjectProperty(OffsetDateTime.now())
 
-    override fun changed(prev: GPS?, new: GPS) {
+    override fun onChanged(prev: GPS?, new: GPS) {
         longitude.set(new.longitude.degrees)
         latitude.set(new.latitude.degrees)
         elevation.set(new.elevation.meters)
@@ -30,16 +30,18 @@ class GPSProperty : DeviceProperty<GPS>() {
         time.set(OffsetDateTime.now())
     }
 
-    override fun accept(event: DeviceEvent<GPS>) {
-        val device = event.device!!
+    override fun onDeviceEvent(event: DeviceEvent<*>) {
+        super.onDeviceEvent(event)
 
         when (event) {
             is GPSCoordinateChanged -> {
-                longitude.set(device.longitude.degrees)
-                latitude.set(device.latitude.degrees)
-                elevation.set(device.elevation.meters)
+                longitude.set(value.longitude.degrees)
+                latitude.set(value.latitude.degrees)
+                elevation.set(value.elevation.meters)
             }
-            is GPSTimeChanged -> time.set(device.time)
+            is GPSTimeChanged -> {
+                time.set(value.time)
+            }
         }
     }
 }

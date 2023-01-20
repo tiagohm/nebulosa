@@ -6,7 +6,6 @@ import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.thermometers.ThermometerAttached
 import nebulosa.indi.device.thermometers.ThermometerDetached
-import nebulosa.indi.device.thermometers.ThermometerTemperatureChanged
 import nebulosa.indi.protocol.*
 
 internal open class FocuserBase(
@@ -120,7 +119,7 @@ internal open class FocuserBase(
 
                         temperature = message["TEMPERATURE"]!!.value
 
-                        handler.fireOnEventReceived(ThermometerTemperatureChanged(this))
+                        handler.fireOnEventReceived(FocuserTemperatureChanged(this))
                     }
                 }
             }

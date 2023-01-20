@@ -28,11 +28,11 @@
         </padding>
         <HBox alignment="CENTER"
               spacing="8.0">
-            <ChoiceBox fx:id="focusers"
+            <ChoiceBox fx:id="focuserChoiceBox"
                        prefHeight="32.0"
                        prefWidth="394.0">
             </ChoiceBox>
-            <Button fx:id="connect"
+            <Button fx:id="connectButton"
                     onAction="#connect"
                     alignment="CENTER"
                     contentDisplay="TEXT_ONLY"
@@ -41,7 +41,7 @@
                     prefHeight="32.0"
                     minWidth="42.0">
             </Button>
-            <Button fx:id="openINDI"
+            <Button fx:id="openINDIButton"
                     onAction="#openINDI"
                     alignment="CENTER"
                     mnemonicParsing="false"
@@ -68,7 +68,7 @@
                        minWidth="81.0"
                        styleClass="text-sm,text-bold">
                 </Label>
-                <Label fx:id="position"
+                <Label fx:id="positionLabel"
                        text="0"
                        alignment="CENTER_RIGHT"
                        prefWidth="81.0"
@@ -82,7 +82,7 @@
                        minWidth="81.0"
                        styleClass="text-sm,text-bold">
                 </Label>
-                <Label fx:id="temperature"
+                <Label fx:id="temperatureLabel"
                        text="0.0 °C"
                        alignment="CENTER_RIGHT"
                        prefWidth="81.0"
@@ -92,7 +92,7 @@
                 </Label>
             </HBox>
             <HBox alignment="CENTER_LEFT">
-                <Label fx:id="status"
+                <Label fx:id="statusLabel"
                        text="idle">
                     <graphic>
                         <Label text="&#xF02FC;"
@@ -109,7 +109,7 @@
             </Label>
             <HBox alignment="CENTER_LEFT"
                   spacing="8.0">
-                <Spinner fx:id="increment"
+                <Spinner fx:id="incrementSpinner"
                          editable="true"
                          min="1.0"
                          max="10000.0"
@@ -117,7 +117,7 @@
                          amountToStepBy="1.0"
                          prefWidth="138.0">
                 </Spinner>
-                <Button fx:id="moveIn"
+                <Button fx:id="moveInButton"
                         text="Move In"
                         onAction="#moveIn">
                     <graphic>
@@ -126,7 +126,7 @@
                         </Label>
                     </graphic>
                 </Button>
-                <Button fx:id="moveOut"
+                <Button fx:id="moveOutButton"
                         text="Move Out"
                         onAction="#moveOut">
                     <graphic>
@@ -144,7 +144,7 @@
             </Label>
             <HBox alignment="CENTER_LEFT"
                   spacing="8.0">
-                <Spinner fx:id="absolute"
+                <Spinner fx:id="absoluteSpinner"
                          editable="true"
                          min="0.0"
                          max="10000.0"
@@ -152,7 +152,7 @@
                          amountToStepBy="1.0"
                          prefWidth="120.0">
                 </Spinner>
-                <Button fx:id="moveTo"
+                <Button fx:id="moveToButton"
                         text="Move To"
                         onAction="#moveTo"
                         prefWidth="144.0">
@@ -162,7 +162,7 @@
                         </Label>
                     </graphic>
                 </Button>
-                <Button fx:id="sync"
+                <Button fx:id="syncButton"
                         text="Sync"
                         onAction="#sync"
                         prefWidth="92.0">
@@ -176,7 +176,7 @@
         </VBox>
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
-            <ToggleSwitch fx:id="backlashCompensation"
+            <ToggleSwitch fx:id="backlashCompensationToggleSwitch"
                           text="Backlash compensation:"
                           prefWidth="172.0"
                           styleClass="text-sm">
@@ -187,7 +187,7 @@
                     <Insets left="16.0"/>
                 </HBox.margin>
             </Label>
-            <Spinner fx:id="backlashCompensationSteps"
+            <Spinner fx:id="backlashCompensationStepsSpinner"
                      editable="true"
                      min="0.0"
                      max="1000.0"
@@ -198,7 +198,7 @@
         </HBox>
         <HBox alignment="CENTER_LEFT"
               spacing="129.0">
-            <Button fx:id="abort"
+            <Button fx:id="abortButton"
                     text="Abort"
                     onAction="#abort">
                 <graphic>
@@ -207,7 +207,7 @@
                     </Label>
                 </graphic>
             </Button>
-            <Button fx:id="autoFocus"
+            <Button fx:id="autoFocusButton"
                     text="Auto focus..."
                     onAction="#openAutoFocus"
                     prefWidth="144.0">

@@ -15,6 +15,7 @@ import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.ProgramClosed
 import nebulosa.desktop.gui.camera.CameraWindow
 import nebulosa.desktop.gui.filterwheel.FilterWheelWindow
+import nebulosa.desktop.gui.focuser.FocuserWindow
 import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.connection.ConnectionManager
@@ -130,6 +131,7 @@ class HomeScreen : Screen("Home") {
         when (val name = (event.source as Node).userData as String) {
             "NEW_IMAGE" -> openNewImage()
             "CAMERA" -> CameraWindow.open()
+            "FOCUSER" -> FocuserWindow.open()
             "FILTER_WHEEL" -> FilterWheelWindow.open()
             else -> screenManager.openByName(name)
         }

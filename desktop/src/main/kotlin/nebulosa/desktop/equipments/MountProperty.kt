@@ -36,7 +36,7 @@ class MountProperty : DeviceProperty<Mount>() {
     @JvmField val elevation = SimpleDoubleProperty()
     @JvmField val time = SimpleObjectProperty(OffsetDateTime.now())
 
-    override fun changed(prev: Mount?, new: Mount) {
+    override fun onChanged(prev: Mount?, new: Mount) {
         isSlewing.set(new.isSlewing)
         isTracking.set(new.isTracking)
         slewRates.setAll(new.slewRates)
@@ -88,49 +88,49 @@ class MountProperty : DeviceProperty<Mount>() {
         time.set(OffsetDateTime.now())
     }
 
-    override fun accept(event: DeviceEvent<Mount>) {
-        val device = event.device!!
+    override fun onDeviceEvent(event: DeviceEvent<*>) {
+        super.onDeviceEvent(event)
 
         when (event) {
-            is MountSlewingChanged -> isSlewing.set(device.isSlewing)
+            is MountSlewingChanged -> isSlewing.set(value.isSlewing)
             is MountSlewRatesChanged -> {
                 slewRate.set(null)
-                slewRates.setAll(device.slewRates)
-                slewRate.set(device.slewRate ?: device.slewRates.firstOrNull())
+                slewRates.setAll(value.slewRates)
+                slewRate.set(value.slewRate ?: value.slewRates.firstOrNull())
             }
-            is MountSlewRateChanged -> slewRate.set(device.slewRate)
-            is MountTypeChanged -> mountType.set(device.mountType)
+            is MountSlewRateChanged -> slewRate.set(value.slewRate)
+            is MountTypeChanged -> mountType.set(value.mountType)
             is MountTrackModesChanged -> {
                 trackMode.set(null)
-                trackModes.setAll(device.trackModes)
-                trackMode.set(device.trackMode)
+                trackModes.setAll(value.trackModes)
+                trackMode.set(value.trackMode)
             }
-            is MountTrackModeChanged -> trackMode.set(device.trackMode)
-            is MountTrackingChanged -> isTracking.set(device.isTracking)
-            is MountPierSideChanged -> pierSide.set(device.pierSide)
-            is MountCanAbortChanged -> canAbort.set(device.canAbort)
-            is MountCanSyncChanged -> canSync.set(device.canSync)
-            is MountCanParkChanged -> canPark.set(device.canPark)
+            is MountTrackModeChanged -> trackMode.set(value.trackMode)
+            is MountTrackingChanged -> isTracking.set(value.isTracking)
+            is MountPierSideChanged -> pierSide.set(value.pierSide)
+            is MountCanAbortChanged -> canAbort.set(value.canAbort)
+            is MountCanSyncChanged -> canSync.set(value.canSync)
+            is MountCanParkChanged -> canPark.set(value.canPark)
             is MountEquatorialCoordinatesChanged -> {
-                rightAscension.set(device.rightAscension.hours)
-                declination.set(device.declination.degrees)
-                rightAscensionJ2000.set(device.rightAscensionJ2000.hours)
-                declinationJ2000.set(device.declinationJ2000.degrees)
+                rightAscension.set(value.rightAscension.hours)
+                declination.set(value.declination.degrees)
+                rightAscensionJ2000.set(value.rightAscensionJ2000.hours)
+                declinationJ2000.set(value.declinationJ2000.degrees)
             }
             is MountGuideRateChanged -> {
-                guideRateWE.set(device.guideRateWE)
-                guideRateNS.set(device.guideRateNS)
+                guideRateWE.set(value.guideRateWE)
+                guideRateNS.set(value.guideRateNS)
             }
             is MountParkChanged -> {
-                isParking.set(device.isParking)
-                isParked.set(device.isParked)
+                isParking.set(value.isParking)
+                isParked.set(value.isParked)
             }
             is MountCoordinateChanged -> {
-                longitude.set(device.longitude.degrees)
-                latitude.set(device.latitude.degrees)
-                elevation.set(device.elevation.meters)
+                longitude.set(value.longitude.degrees)
+                latitude.set(value.latitude.degrees)
+                elevation.set(value.elevation.meters)
             }
-            is MountTimeChanged -> time.set(device.time)
+            is MountTimeChanged -> time.set(value.time)
         }
     }
 }

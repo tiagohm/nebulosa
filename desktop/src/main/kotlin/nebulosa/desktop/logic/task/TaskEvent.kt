@@ -1,4 +1,4 @@
-package nebulosa.desktop.logic.taskexecutor
+package nebulosa.desktop.logic.task
 
 interface TaskEvent {
 
