@@ -9,6 +9,7 @@ import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.gui.camera.AutoSubFolderMode
 import nebulosa.desktop.gui.camera.CameraWindow
 import nebulosa.desktop.gui.camera.ExposureMode
+import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.task.TaskEvent
 import nebulosa.desktop.logic.task.TaskStarted
@@ -86,7 +87,7 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
     }
 
     fun openINDIPanelControl() {
-        screenManager.openINDIPanelControl(value)
+        INDIPanelControlWindow.open(value)
     }
 
     fun openImageSavePathInFiles() {
@@ -302,8 +303,5 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
 
         savePreferences(null)
         savePreferences()
-
-        subscribers.forEach { it?.dispose() }
-        subscribers.fill(null)
     }
 }

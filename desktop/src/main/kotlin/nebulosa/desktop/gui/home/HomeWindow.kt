@@ -102,12 +102,6 @@ class HomeWindow : AbstractWindow() {
     @FXML
     @Synchronized
     private fun open(event: ActionEvent) {
-        when (val name = (event.source as Node).userData as String) {
-            // "NEW_IMAGE" -> openNewImage()
-            "CAMERA" -> CameraWindow.open()
-            "FOCUSER" -> FocuserWindow.open()
-            "FILTER_WHEEL" -> FilterWheelWindow.open()
-            // else -> screenManager.openByName(name)
-        }
+        homeManager.open((event.source as Node).userData as String)
     }
 }

@@ -260,8 +260,6 @@ class MountManagerScreen : Screen("MountManager", "nebulosa-mount-manager") {
 
     @FXML
     private fun openINDI() {
-        val mount = equipmentManager.selectedMount.get() ?: return
-        screenManager.openINDIPanelControl(mount)
     }
 
     @FXML

@@ -2,10 +2,7 @@ package nebulosa.desktop.core
 
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.imageviewer.ImageViewerScreen
-import nebulosa.desktop.indi.INDIPanelControlScreen
 import nebulosa.desktop.mounts.MountManagerScreen
-import nebulosa.desktop.platesolving.PlateSolverScreen
-import nebulosa.indi.device.Device
 import nebulosa.indi.device.cameras.Camera
 import org.koin.core.component.KoinComponent
 import java.io.File
@@ -13,7 +10,6 @@ import java.io.File
 class ScreenManager : KoinComponent {
 
     private val mountManagerScreen by lazy { MountManagerScreen() }
-    private val indiPanelControlScreen by lazy { INDIPanelControlScreen() }
 
     private val screens = HashSet<Screen>()
 
@@ -24,8 +20,6 @@ class ScreenManager : KoinComponent {
     ): Screen {
         val screen = when (name) {
             MOUNT -> mountManagerScreen
-            PLATE_SOLVING -> PlateSolverScreen()
-            INDI -> indiPanelControlScreen
             else -> throw IllegalArgumentException("unknown screen: $name")
         }
 
@@ -33,14 +27,6 @@ class ScreenManager : KoinComponent {
 
         screen.show(requestFocus, bringToFront)
 
-        return screen
-    }
-
-    fun openINDIPanelControl(device: Device? = null): INDIPanelControlScreen {
-        val screen = indiPanelControlScreen
-        screen.show(bringToFront = true)
-        if (device != null) screen.select(device)
-        screens.add(screen)
         return screen
     }
 
@@ -65,7 +51,6 @@ class ScreenManager : KoinComponent {
     companion object {
 
         const val MOUNT = "MOUNT"
-        const val PLATE_SOLVING = "PLATE_SOLVING"
         const val INDI = "INDI"
     }
 }

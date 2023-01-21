@@ -3,6 +3,7 @@ package nebulosa.desktop.logic.focuser
 import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.equipments.FocuserProperty
 import nebulosa.desktop.gui.focuser.FocuserWindow
+import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.device.DeviceEvent
@@ -59,7 +60,7 @@ class FocuserManager(private val window: FocuserWindow) : FocuserProperty(), Koi
     }
 
     fun openINDIPanelControl() {
-        screenManager.openINDIPanelControl(value)
+        INDIPanelControlWindow.open(value)
     }
 
     fun moveIn() {

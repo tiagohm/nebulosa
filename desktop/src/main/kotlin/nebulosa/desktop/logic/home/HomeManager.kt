@@ -1,7 +1,10 @@
 package nebulosa.desktop.logic.home
 
-import nebulosa.desktop.core.ScreenManager
+import nebulosa.desktop.gui.camera.CameraWindow
+import nebulosa.desktop.gui.filterwheel.FilterWheelWindow
+import nebulosa.desktop.gui.focuser.FocuserWindow
 import nebulosa.desktop.gui.home.HomeWindow
+import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.preferences.Preferences
@@ -13,7 +16,6 @@ class HomeManager(private val window: HomeWindow) : KoinComponent, Closeable {
 
     private val preferences by inject<Preferences>()
     private val equipmentManager by inject<EquipmentManager>()
-    private val screenManager by inject<ScreenManager>()
     private val connectionManager by inject<ConnectionManager>()
 
     val isConnected = equipmentManager.isConnected
@@ -29,6 +31,17 @@ class HomeManager(private val window: HomeWindow) : KoinComponent, Closeable {
             preferences.int("connection.port", port)
         } else {
             connectionManager.disconnect()
+        }
+    }
+
+    fun open(name: String) {
+        when (name) {
+            // "NEW_IMAGE" -> openNewImage()
+            "CAMERA" -> CameraWindow.open()
+            "FOCUSER" -> FocuserWindow.open()
+            "FILTER_WHEEL" -> FilterWheelWindow.open()
+            "INDI" -> INDIPanelControlWindow.open()
+            // else -> screenManager.openByName(name)
         }
     }
 

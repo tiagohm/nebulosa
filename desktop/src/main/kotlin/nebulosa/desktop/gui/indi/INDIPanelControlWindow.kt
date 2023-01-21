@@ -1,6 +1,5 @@
-package nebulosa.desktop.indi
+package nebulosa.desktop.gui.indi
 
-import io.reactivex.rxjava3.disposables.Disposable
 import javafx.fxml.FXML
 import javafx.geometry.Pos
 import javafx.scene.Cursor
@@ -8,158 +7,55 @@ import javafx.scene.control.*
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
-import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
 import nebulosa.desktop.core.beans.onZero
 import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
-import nebulosa.desktop.logic.EquipmentManager
+import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.logic.indi.INDIPanelControlManager
 import nebulosa.indi.device.*
 import nebulosa.indi.protocol.PropertyPermission
 import nebulosa.indi.protocol.SwitchRule
-import org.koin.core.component.inject
-import java.util.*
 import kotlin.math.min
 
-class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
+class INDIPanelControlWindow : AbstractWindow() {
 
-    private val equipmentManager by inject<EquipmentManager>()
+    override val resourceName = "INDIPanelControl"
 
-    @FXML private lateinit var devices: ChoiceBox<Device>
-    @FXML private lateinit var tabs: TabPane
-    @FXML private lateinit var logs: TextArea
+    override val icon = "nebulosa-indi"
 
-    private val cacheProperties = HashMap<Device, HashMap<String, GroupPropertyVector>>()
-    private val groups = ArrayList<Group>()
-    private val subscribers = arrayOfNulls<Disposable>(2)
-    private val logText = StringBuilder(1000 * 150)
+    @FXML private lateinit var deviceChoiceBox: ChoiceBox<Device>
+    @FXML private lateinit var tabPane: TabPane
+    @FXML private lateinit var logTextArea: TextArea
 
-    init {
-        title = "INDI Panel Control"
-    }
+    private val indiPanelControlManager = INDIPanelControlManager(this)
 
     override fun onCreate() {
-        devices.converter = DeviceStringConverter()
-        devices.selectionModel.selectedItemProperty().onZero(::makePanelControl)
-
-        equipmentManager.attachedCameras.onZero(::populateDevices)
-        equipmentManager.attachedMounts.onZero(::populateDevices)
-        equipmentManager.attachedFilterWheels.onZero(::populateDevices)
-        equipmentManager.attachedFocusers.onZero(::populateDevices)
-        equipmentManager.attachedGPSs.onZero(::populateDevices)
+        deviceChoiceBox.converter = DeviceStringConverter()
+        deviceChoiceBox.itemsProperty().bind(indiPanelControlManager.devices)
+        deviceChoiceBox.selectionModel.selectedItemProperty().onZero(indiPanelControlManager::makePanelControl)
     }
 
     override fun onStart() {
-        subscribers[0] = eventBus
-            .filterIsInstance<DevicePropertyEvent> { it.device === devices.value }
-            .observeOnFXThread()
-            .subscribe(::onPropertyEvent)
-
-        subscribers[1] = eventBus
-            .filterIsInstance<DeviceMessageReceived> { it.device === devices.value }
-            .observeOnFXThread()
-            .subscribe(::onMessageEvent)
-
-        populateDevices()
+        indiPanelControlManager.populate()
     }
 
-    override fun onStop() {
-        subscribers.forEach { it?.dispose() }
-        subscribers.fill(null)
-    }
-
-    fun select(device: Device): Boolean {
-        return if (device in devices.items) {
-            devices.selectionModel.select(device)
-            true
-        } else {
-            false
-        }
-    }
-
-    private fun onPropertyEvent(event: DevicePropertyEvent) {
-        when (event) {
-            is DevicePropertyChanged -> {
-                synchronized(cacheProperties) {
-                    val container = cacheProperties[event.device]!![event.property.name]
-
-                    if (container != null) {
-                        container.update(event.property)
-                    } else {
-                        val group = groups.firstOrNull { it.name == event.property.group }
-
-                        if (group != null) {
-                            group.add(event.property)
-                        } else {
-                            tabs.makeGroup(event.property.group, listOf(event.property))
-                        }
-                    }
-                }
-            }
-            is DevicePropertyDeleted -> {
-                synchronized(cacheProperties) {
-                    val container = cacheProperties[event.device]!![event.property.name]
-                    container?.delete()
-                    cacheProperties[event.device]!!.remove(event.property.name)
-                }
-            }
-        }
-    }
-
-    private fun onMessageEvent(event: DeviceMessageReceived) {
-        synchronized(logText) {
-            logText.insert(0, "${event.message}\n")
-            logs.text = logText.toString()
-        }
-    }
-
-    private fun populateDevices() {
-        val device = devices.value
-        val attachedDevices = ArrayList<Device>()
-        attachedDevices.addAll(equipmentManager.attachedCameras)
-        attachedDevices.addAll(equipmentManager.attachedMounts)
-        attachedDevices.addAll(equipmentManager.attachedFilterWheels)
-        attachedDevices.addAll(equipmentManager.attachedFocusers)
-        attachedDevices.addAll(equipmentManager.attachedGPSs)
-        attachedDevices.sortBy { it.name }
-        attachedDevices.forEach { if (it !in cacheProperties) cacheProperties[it] = HashMap(256) }
-
-        devices.items.setAll(attachedDevices)
-        if (device in attachedDevices) devices.value = device
-        else devices.selectionModel.selectFirst()
-    }
-
-    private fun makePanelControl() {
-        val device = devices.value ?: return
-
-        synchronized(cacheProperties) {
-            cacheProperties[device]!!.clear()
-            tabs.tabs.clear()
-            groups.clear()
-
-            val groupedProperties = TreeMap<String, MutableList<PropertyVector<*, *>>>(GroupNameComparator)
-
-            for (property in device.properties.values) {
-                groupedProperties
-                    .getOrPut(property.group) { ArrayList() }
-                    .add(property)
-            }
-
-            groupedProperties
-                .onEach { tabs.makeGroup(it.key, it.value) }
+    var device: Device?
+        get() = deviceChoiceBox.value
+        set(value) {
+            deviceChoiceBox.value = value
         }
 
-        synchronized(logText) {
-            logText.clear()
-            device.messages.forEach(logText::appendLine)
-            logs.text = logText.toString()
+    var log
+        get() = logTextArea.text!!
+        set(value) {
+            logTextArea.text = value
         }
 
-        System.gc()
-    }
+    val tabs: MutableList<Tab>
+        get() = tabPane.tabs
 
-    private fun TabPane.makeGroup(name: String, vectors: List<PropertyVector<*, *>>) {
+    fun makeGroup(name: String, vectors: List<PropertyVector<*, *>>): Group {
         val tab = Tab()
 
         tab.text = name
@@ -170,10 +66,11 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         tab.content = scroll
 
         tabs.add(tab)
-        groups.add(group)
+
+        return group
     }
 
-    private inner class Group(
+    inner class Group(
         @JvmField val tab: Tab,
         @JvmField val name: String,
         @JvmField val vectors: List<PropertyVector<*, *>>,
@@ -188,14 +85,13 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         }
 
         fun add(vector: PropertyVector<*, *>) {
-            val device = devices.value!!
             val container = GroupPropertyVector(vector)
             children.add(container)
-            cacheProperties[device]!![vector.name] = container
+            indiPanelControlManager.addGroupPropertyVector(device!!, vector, container)
         }
     }
 
-    private inner class GroupPropertyVector(vector: PropertyVector<*, *>) : HBox() {
+    inner class GroupPropertyVector(vector: PropertyVector<*, *>) : HBox() {
 
         init {
             alignment = Pos.CENTER_LEFT
@@ -259,7 +155,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
 
             if (shouldBeRemoved) {
                 group.tab.tabPane?.tabs?.remove(group.tab)
-                groups.remove(group)
+                indiPanelControlManager.removeGroup(group)
             }
         }
 
@@ -269,8 +165,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         ) {
             if (vector.perm == PropertyPermission.RO) return
 
-            val device = devices.value!!
-            device.sendNewNumber(vector.name, data)
+            device?.sendNewNumber(vector.name, data)
         }
 
         private fun sendTextPropertyVectorMessage(
@@ -279,8 +174,7 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         ) {
             if (vector.perm == PropertyPermission.RO) return
 
-            val device = devices.value!!
-            device.sendNewText(vector.name, data)
+            device?.sendNewText(vector.name, data)
         }
     }
 
@@ -351,12 +245,10 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         ) {
             if (vector.perm == PropertyPermission.RO) return
 
-            val device = devices.value!!
-
             if (vector.rule == SwitchRule.ANY_OF_MANY) {
-                device.sendNewSwitch(vector.name, property.name to !property.value)
+                device?.sendNewSwitch(vector.name, property.name to !property.value)
             } else {
-                device.sendNewSwitch(vector.name, property.name to true)
+                device?.sendNewSwitch(vector.name, property.name to true)
             }
         }
     }
@@ -520,19 +412,18 @@ class INDIPanelControlScreen : Screen("INDIPanelControl", "nebulosa-indi") {
         }
     }
 
-    private object GroupNameComparator : Comparator<String> {
-
-        override fun compare(a: String, b: String): Int {
-            return if (a == b) 0
-            else if (a == "Main Control") -1
-            else if (b == "Main Control") 1
-            else a.compareTo(b)
-        }
-    }
-
     companion object {
 
         @JvmStatic private val STATE_COLORS = arrayOf("text-grey-400", "text-green-400", "text-blue-400", "text-red-400")
+
+        @Volatile private var window: INDIPanelControlWindow? = null
+
+        @JvmStatic
+        fun open(device: Device? = null) {
+            if (window == null) window = INDIPanelControlWindow()
+            window!!.open(bringToFront = true)
+            device?.also { window!!.device = it }
+        }
 
         @JvmStatic
         private fun Label.withState(vector: PropertyVector<*, *>) = apply {

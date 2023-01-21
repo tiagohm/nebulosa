@@ -2,6 +2,7 @@ package nebulosa.desktop.logic.filterwheel
 
 import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.gui.filterwheel.FilterWheelWindow
+import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.device.DeviceEvent
@@ -59,7 +60,7 @@ class FilterWheelManager(private val window: FilterWheelWindow) : FilterWheelPro
     }
 
     fun openINDIPanelControl() {
-        screenManager.openINDIPanelControl(value)
+        INDIPanelControlWindow.open(value)
     }
 
     fun toggleUseFilterWheelAsShutter(enable: Boolean) {

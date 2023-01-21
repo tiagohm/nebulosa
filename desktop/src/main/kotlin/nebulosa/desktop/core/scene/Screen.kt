@@ -24,7 +24,6 @@ abstract class Screen(
 
     protected val eventBus by inject<EventBus>()
     protected val preferences by inject<Preferences>()
-    protected val screenManager by inject<ScreenManager>()
 
     init {
         setOnShowing {
