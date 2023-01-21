@@ -122,4 +122,11 @@ class FilterWheelManager(private val window: FilterWheelWindow) : FilterWheelPro
             preferences.double("filterWheel.screen.y")?.let { window.y = it }
         }
     }
+
+    override fun close() {
+        super.close()
+
+        savePreferences(null)
+        savePreferences()
+    }
 }

@@ -97,19 +97,19 @@ class FocuserWindow : AbstractWindow() {
     }
 
     var status
-        get() = statusLabel.text ?: ""
+        get() = statusLabel.text!!
         set(value) {
             statusLabel.text = value
         }
 
     var position
-        get() = positionLabel.text ?: ""
+        get() = positionLabel.text!!
         set(value) {
             positionLabel.text = value
         }
 
     var temperature
-        get() = temperatureLabel.text ?: ""
+        get() = temperatureLabel.text!!
         set(value) {
             temperatureLabel.text = value
         }

@@ -104,4 +104,11 @@ class FocuserManager(private val window: FocuserWindow) : FocuserProperty(), Koi
             preferences.double("focuser.screen.y")?.let { window.y = it }
         }
     }
+
+    override fun close() {
+        super.close()
+
+        savePreferences(null)
+        savePreferences()
+    }
 }

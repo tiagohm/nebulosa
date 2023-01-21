@@ -300,6 +300,9 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
     override fun close() {
         super.close()
 
+        savePreferences(null)
+        savePreferences()
+
         subscribers.forEach { it?.dispose() }
         subscribers.fill(null)
     }

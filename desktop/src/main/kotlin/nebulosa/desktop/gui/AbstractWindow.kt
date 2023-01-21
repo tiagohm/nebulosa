@@ -4,10 +4,12 @@ import io.reactivex.rxjava3.disposables.Disposable
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
+import javafx.scene.control.Alert
 import javafx.scene.image.Image
 import javafx.stage.Stage
 import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
+import nebulosa.desktop.gui.home.HomeWindow
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
 import org.koin.core.component.KoinComponent
@@ -42,15 +44,17 @@ abstract class AbstractWindow : Stage(), KoinComponent {
         setOnShown {
             onStart()
 
-            subscribers[0] = eventBus
-                .filterIsInstance<ProgramClosed>()
-                .observeOnFXThread()
-                .subscribe {
-                    onStop()
+            if (this !is HomeWindow) {
+                subscribers[0] = eventBus
+                    .filterIsInstance<ProgramClosed>()
+                    .observeOnFXThread()
+                    .subscribe {
+                        onStop()
 
-                    subscribers.forEach { it?.dispose() }
-                    subscribers.fill(null)
-                }
+                        subscribers.forEach { it?.dispose() }
+                        subscribers.fill(null)
+                    }
+            }
         }
 
         setOnHiding { onStop() }
@@ -70,5 +74,19 @@ abstract class AbstractWindow : Stage(), KoinComponent {
 
         if (requestFocus) requestFocus()
         if (bringToFront) toFront()
+    }
+
+    companion object {
+
+        @JvmStatic
+        fun showAlert(
+            message: String, title: String = "Information",
+        ) {
+            val alert = Alert(Alert.AlertType.INFORMATION)
+            alert.title = title
+            alert.headerText = null
+            alert.contentText = message
+            alert.showAndWait()
+        }
     }
 }

@@ -28,19 +28,19 @@
         </padding>
         <HBox alignment="CENTER"
               spacing="8.0">
-            <TextField fx:id="host"
+            <TextField fx:id="hostTextField"
                        prefHeight="32.0"
                        HBox.hgrow="ALWAYS"
                        focusTraversable="false"
                        promptText="Host (localhost)">
             </TextField>
-            <TextField fx:id="port"
+            <TextField fx:id="portTextField"
                        prefHeight="32.0"
                        prefWidth="94.0"
                        focusTraversable="false"
                        promptText="Port (7624)">
             </TextField>
-            <Button fx:id="connect"
+            <Button fx:id="connectButton"
                     onAction="#connect"
                     alignment="CENTER"
                     mnemonicParsing="false"
@@ -85,7 +85,7 @@
                                 valignment="CENTER"
                                 vgrow="SOMETIMES"/>
             </rowConstraints>
-            <Button fx:id="cameras"
+            <Button fx:id="cameraButton"
                     onAction="#open"
                     userData="CAMERA"
                     contentDisplay="TOP"
@@ -101,7 +101,7 @@
                     </Label>
                 </graphic>
             </Button>
-            <Button fx:id="mounts"
+            <Button fx:id="mountButton"
                     onAction="#open"
                     userData="MOUNT"
                     contentDisplay="TOP"
@@ -117,7 +117,7 @@
                     </Label>
                 </graphic>
             </Button>
-            <Button fx:id="guiders"
+            <Button fx:id="guiderButton"
                     onAction="#open"
                     userData="GUIDER"
                     contentDisplay="TOP"
@@ -136,7 +136,7 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="filterWheels"
+            <Button fx:id="filterWheelButton"
                     onAction="#open"
                     userData="FILTER_WHEEL"
                     contentDisplay="TOP"
@@ -155,7 +155,7 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="focusers"
+            <Button fx:id="focuserButton"
                     onAction="#open"
                     userData="FOCUSER"
                     contentDisplay="TOP"
@@ -171,7 +171,7 @@
                     </Label>
                 </graphic>
             </Button>
-            <Button fx:id="domes"
+            <Button fx:id="domeButton"
                     onAction="#open"
                     userData="DOME"
                     contentDisplay="TOP"
@@ -190,7 +190,7 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="rotators"
+            <Button fx:id="rotatorButton"
                     onAction="#open"
                     userData="ROTATOR"
                     contentDisplay="TOP"
@@ -209,7 +209,7 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="switches"
+            <Button fx:id="switchButton"
                     onAction="#open"
                     userData="SWTICH"
                     contentDisplay="TOP"
@@ -228,7 +228,7 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="atlas"
+            <Button fx:id="atlasButton"
                     onAction="#open"
                     userData="ATLAS"
                     contentDisplay="TOP"
@@ -244,7 +244,7 @@
                     </Label>
                 </graphic>
             </Button>
-            <Button fx:id="plateSolving"
+            <Button fx:id="plateSolvingButton"
                     onAction="#open"
                     userData="PLATE_SOLVING"
                     contentDisplay="TOP"
@@ -263,7 +263,7 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="alignment"
+            <Button fx:id="alignmentButton"
                     onAction="#open"
                     userData="ALIGNMENT"
                     contentDisplay="TOP"
@@ -279,7 +279,7 @@
                     </Label>
                 </graphic>
             </Button>
-            <Button fx:id="sequencer"
+            <Button fx:id="sequencerButton"
                     onAction="#open"
                     userData="SEQUENCER"
                     contentDisplay="TOP"
@@ -295,7 +295,7 @@
                     </Label>
                 </graphic>
             </Button>
-            <Button fx:id="imageViewer"
+            <Button fx:id="imageViewerButton"
                     onAction="#open"
                     userData="NEW_IMAGE"
                     contentDisplay="TOP"
@@ -311,7 +311,7 @@
                     </Label>
                 </graphic>
             </Button>
-            <Button fx:id="indi"
+            <Button fx:id="indiButton"
                     onAction="#open"
                     userData="INDI"
                     contentDisplay="TOP"

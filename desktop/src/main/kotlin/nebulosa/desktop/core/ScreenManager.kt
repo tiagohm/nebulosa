@@ -1,7 +1,6 @@
 package nebulosa.desktop.core
 
 import nebulosa.desktop.core.scene.Screen
-import nebulosa.desktop.focusers.FocuserManagerScreen
 import nebulosa.desktop.imageviewer.ImageViewerScreen
 import nebulosa.desktop.indi.INDIPanelControlScreen
 import nebulosa.desktop.mounts.MountManagerScreen
@@ -14,7 +13,6 @@ import java.io.File
 class ScreenManager : KoinComponent {
 
     private val mountManagerScreen by lazy { MountManagerScreen() }
-    private val focuserManagerScreen by lazy { FocuserManagerScreen() }
     private val indiPanelControlScreen by lazy { INDIPanelControlScreen() }
 
     private val screens = HashSet<Screen>()
@@ -26,7 +24,6 @@ class ScreenManager : KoinComponent {
     ): Screen {
         val screen = when (name) {
             MOUNT -> mountManagerScreen
-            FOCUSER -> focuserManagerScreen
             PLATE_SOLVING -> PlateSolverScreen()
             INDI -> indiPanelControlScreen
             else -> throw IllegalArgumentException("unknown screen: $name")
@@ -68,7 +65,6 @@ class ScreenManager : KoinComponent {
     companion object {
 
         const val MOUNT = "MOUNT"
-        const val FOCUSER = "FOCUSER"
         const val PLATE_SOLVING = "PLATE_SOLVING"
         const val INDI = "INDI"
     }

@@ -156,7 +156,6 @@ class CameraWindow : AbstractWindow() {
     }
 
     override fun onStop() {
-        cameraManager.savePreferences(null)
         cameraManager.close()
     }
 

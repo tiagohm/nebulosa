@@ -59,22 +59,22 @@ class HomeScreen : Screen("Home") {
     }
 
     override fun onCreate() {
-        host.disableProperty().bind(equipmentManager.connected)
-        port.disableProperty().bind(equipmentManager.connected)
-        cameras.disableProperty().bind(!equipmentManager.connected)
-        mounts.disableProperty().bind(!equipmentManager.connected)
-        guiders.disableProperty().bind(!equipmentManager.connected)
-        filterWheels.disableProperty().bind(!equipmentManager.connected)
-        focusers.disableProperty().bind(!equipmentManager.connected)
-        domes.disableProperty().bind(!equipmentManager.connected)
-        rotators.disableProperty().bind(!equipmentManager.connected)
-        switches.disableProperty().bind(!equipmentManager.connected)
-        alignment.disableProperty().bind(!equipmentManager.connected)
-        sequencer.disableProperty().bind(!equipmentManager.connected)
-        indi.disableProperty().bind(!equipmentManager.connected)
+        host.disableProperty().bind(equipmentManager.isConnected)
+        port.disableProperty().bind(equipmentManager.isConnected)
+        cameras.disableProperty().bind(!equipmentManager.isConnected)
+        mounts.disableProperty().bind(!equipmentManager.isConnected)
+        guiders.disableProperty().bind(!equipmentManager.isConnected)
+        filterWheels.disableProperty().bind(!equipmentManager.isConnected)
+        focusers.disableProperty().bind(!equipmentManager.isConnected)
+        domes.disableProperty().bind(!equipmentManager.isConnected)
+        rotators.disableProperty().bind(!equipmentManager.isConnected)
+        switches.disableProperty().bind(!equipmentManager.isConnected)
+        alignment.disableProperty().bind(!equipmentManager.isConnected)
+        sequencer.disableProperty().bind(!equipmentManager.isConnected)
+        indi.disableProperty().bind(!equipmentManager.isConnected)
 
-        connect.textProperty().bind(equipmentManager.connected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        equipmentManager.connected.on { connect.styleClass.toggle("text-red-700", "text-blue-grey-700") }
+        connect.textProperty().bind(equipmentManager.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
+        equipmentManager.isConnected.on { connect.styleClass.toggle("text-red-700", "text-blue-grey-700") }
 
         host.text = preferences.string("connection.last.host") ?: ""
         port.text = preferences.string("connection.last.port") ?: ""

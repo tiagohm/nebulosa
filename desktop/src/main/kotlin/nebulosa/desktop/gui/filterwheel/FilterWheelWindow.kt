@@ -119,7 +119,6 @@ class FilterWheelWindow : AbstractWindow() {
     }
 
     override fun onStop() {
-        filterWheelManager.savePreferences(null)
         filterWheelManager.close()
     }
 

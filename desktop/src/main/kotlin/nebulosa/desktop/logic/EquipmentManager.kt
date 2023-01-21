@@ -45,7 +45,7 @@ class EquipmentManager : KoinComponent, Closeable {
     private val eventBus by inject<EventBus>()
     private val subscribers = arrayOfNulls<Disposable>(2)
 
-    @JvmField val connected = SimpleBooleanProperty(false)
+    @JvmField val isConnected = SimpleBooleanProperty(false)
 
     @JvmField val attachedCameras = SimpleListProperty(FXCollections.observableArrayList<Camera>())
     @JvmField val attachedMounts = SimpleListProperty(FXCollections.observableArrayList<Mount>())
@@ -95,8 +95,8 @@ class EquipmentManager : KoinComponent, Closeable {
 
     private fun onConnectionEvent(event: ConnectionEvent) {
         when (event) {
-            is Connected -> connected.set(true)
-            is Disconnected -> connected.set(false)
+            is Connected -> isConnected.set(true)
+            is Disconnected -> isConnected.set(false)
         }
     }
 
