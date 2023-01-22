@@ -1,0 +1,20 @@
+plugins {
+    kotlin("jvm")
+    id("maven-publish")
+}
+
+dependencies {
+    api(project(":nebulosa-io"))
+    api(project(":nebulosa-time"))
+    implementation(libs.okhttp)
+    implementation(libs.apache.codec)
+    testImplementation(libs.bundles.kotest)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("pluginMaven") {
+            from(components["java"])
+        }
+    }
+}

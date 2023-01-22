@@ -9,9 +9,9 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":nova"))
-    implementation(project(":indi-client"))
-    implementation(project(":imaging"))
+    implementation(project(":nebulosa-nova"))
+    implementation(project(":nebulosa-indi-client"))
+    implementation(project(":nebulosa-imaging"))
     implementation(libs.koin)
     implementation(libs.jackson)
     implementation(libs.bundles.rx)
