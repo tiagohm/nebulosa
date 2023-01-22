@@ -33,7 +33,7 @@
             </ChoiceBox>
         </HBox>
         <AnchorPane VBox.vgrow="ALWAYS">
-            <TabPane fx:id="tabPane"
+            <TabPane fx:id="groupsTabPane"
                      AnchorPane.topAnchor="0.0"
                      AnchorPane.bottomAnchor="0.0"
                      AnchorPane.leftAnchor="0.0"

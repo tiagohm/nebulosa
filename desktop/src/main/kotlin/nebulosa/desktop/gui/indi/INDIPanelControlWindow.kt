@@ -25,7 +25,7 @@ class INDIPanelControlWindow : AbstractWindow() {
     override val icon = "nebulosa-indi"
 
     @FXML private lateinit var deviceChoiceBox: ChoiceBox<Device>
-    @FXML private lateinit var tabPane: TabPane
+    @FXML private lateinit var groupsTabPane: TabPane
     @FXML private lateinit var logTextArea: TextArea
 
     private val indiPanelControlManager = INDIPanelControlManager(this)
@@ -53,7 +53,7 @@ class INDIPanelControlWindow : AbstractWindow() {
         }
 
     val tabs: MutableList<Tab>
-        get() = tabPane.tabs
+        get() = groupsTabPane.tabs
 
     fun makeGroup(name: String, vectors: List<PropertyVector<*, *>>): Group {
         val tab = Tab()
