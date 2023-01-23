@@ -46,7 +46,7 @@ abstract class AbstractWindow : Stage(), KoinComponent {
 
             if (this !is HomeWindow) {
                 subscribers[0] = eventBus
-                    .filterIsInstance<ProgramClosed>()
+                    .filterIsInstance<Closed>()
                     .observeOnFXThread()
                     .subscribe {
                         onStop()

@@ -4,7 +4,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.imageviewer.HistogramView?>
+<?import nebulosa.desktop.gui.view.HistogramView?>
 <?import org.controlsfx.control.RangeSlider?>
 <?import java.lang.Integer?>
 <AnchorPane maxHeight="-Infinity"

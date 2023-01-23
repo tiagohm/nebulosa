@@ -416,7 +416,7 @@ class INDIPanelControlWindow : AbstractWindow() {
 
         @JvmStatic private val STATE_COLORS = arrayOf("text-grey-400", "text-green-400", "text-blue-400", "text-red-400")
 
-        @Volatile private var window: INDIPanelControlWindow? = null
+        @JvmStatic private var window: INDIPanelControlWindow? = null
 
         @JvmStatic
         fun open(device: Device? = null) {

@@ -38,7 +38,7 @@
                     <ImageChannel fx:id="channelInitialValue"
                                   fx:constant="GREEN"/>
                 </fx:define>
-                <ChoiceBox fx:id="channel"
+                <ChoiceBox fx:id="channelChoiceBox"
                            prefWidth="308.0"
                            value="$channelInitialValue">
                     <items>
@@ -58,7 +58,7 @@
                     <ProtectionMethod fx:id="protectionMethodInitialValue"
                                       fx:constant="AVERAGE_NEUTRAL"/>
                 </fx:define>
-                <ChoiceBox fx:id="protectionMethod"
+                <ChoiceBox fx:id="protectionMethodChoiceBox"
                            prefWidth="308.0"
                            value="$protectionMethodInitialValue">
                     <items>
@@ -79,7 +79,7 @@
                 <Label text="Amount"
                        styleClass="text-md">
                 </Label>
-                <Spinner fx:id="amount"
+                <Spinner fx:id="amountSpinner"
                          editable="true"
                          min="0.0"
                          max="1.0"
@@ -93,7 +93,7 @@
                 <Label text="Enabled"
                        styleClass="text-md">
                 </Label>
-                <ToggleSwitch fx:id="enabled"
+                <ToggleSwitch fx:id="enabledToggleSwitch"
                               prefHeight="32.0"
                               prefWidth="32.0"
                               styleClass="text-md">

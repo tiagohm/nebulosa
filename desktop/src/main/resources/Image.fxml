@@ -18,7 +18,7 @@
             <items>
                 <MenuItem text="Stretch"
                           onAction="#openImageStretcher"/>
-                <MenuItem fx:id="scnr"
+                <MenuItem fx:id="scnrMenuItem"
                           text="SCNR"
                           onAction="#openSCNR"/>
                 <CheckMenuItem text="Horizontal Mirror"
@@ -27,20 +27,13 @@
                                onAction="#mirrorVertical"/>
                 <CheckMenuItem text="Invert"
                                onAction="#invert"/>
-                <MenuItem fx:id="fitsHeader"
+                <MenuItem fx:id="fitsHeaderMenuItem"
                           text="FITS Header"
-                          onAction="#openFITSHeader"/>
+                          onAction="#openFitsHeader"/>
             </items>
         </ContextMenu>
     </fx:define>
-    <!--    <ImageView fx:id="image"-->
-    <!--               pickOnBounds="true"-->
-    <!--               smooth="false"-->
-    <!--               AnchorPane.bottomAnchor="0.0"-->
-    <!--               AnchorPane.leftAnchor="0.0"-->
-    <!--               AnchorPane.rightAnchor="0.0"-->
-    <!--               AnchorPane.topAnchor="0.0"/>-->
-    <Canvas fx:id="image"
+    <Canvas fx:id="imageCanvas"
             AnchorPane.bottomAnchor="0.0"
             AnchorPane.leftAnchor="0.0"
             AnchorPane.rightAnchor="0.0"

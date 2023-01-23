@@ -249,7 +249,7 @@ class FilterWheelWindow : AbstractWindow() {
 
     companion object {
 
-        @Volatile private var window: FilterWheelWindow? = null
+        @JvmStatic private var window: FilterWheelWindow? = null
 
         @JvmStatic
         fun open() {

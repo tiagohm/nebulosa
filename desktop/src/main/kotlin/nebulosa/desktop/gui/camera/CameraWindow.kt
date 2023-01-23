@@ -477,7 +477,7 @@ class CameraWindow : AbstractWindow() {
 
     companion object {
 
-        @Volatile private var window: CameraWindow? = null
+        @JvmStatic private var window: CameraWindow? = null
 
         @JvmStatic
         fun open() {

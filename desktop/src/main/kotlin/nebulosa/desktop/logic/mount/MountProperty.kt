@@ -1,4 +1,4 @@
-package nebulosa.desktop.equipments
+package nebulosa.desktop.logic.mount
 
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty

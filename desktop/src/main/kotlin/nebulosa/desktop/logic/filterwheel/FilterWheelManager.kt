@@ -1,6 +1,5 @@
 package nebulosa.desktop.logic.filterwheel
 
-import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.gui.filterwheel.FilterWheelWindow
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
@@ -16,7 +15,6 @@ class FilterWheelManager(private val window: FilterWheelWindow) : FilterWheelPro
 
     private val preferences by inject<Preferences>()
     private val equipmentManager by inject<EquipmentManager>()
-    private val screenManager by inject<ScreenManager>()
 
     val filterWheels get() = equipmentManager.attachedFilterWheels
 

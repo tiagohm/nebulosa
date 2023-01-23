@@ -1,7 +1,5 @@
 package nebulosa.desktop.logic.focuser
 
-import nebulosa.desktop.core.ScreenManager
-import nebulosa.desktop.equipments.FocuserProperty
 import nebulosa.desktop.gui.focuser.FocuserWindow
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
@@ -17,7 +15,6 @@ class FocuserManager(private val window: FocuserWindow) : FocuserProperty(), Koi
 
     private val preferences by inject<Preferences>()
     private val equipmentManager by inject<EquipmentManager>()
-    private val screenManager by inject<ScreenManager>()
 
     val focusers get() = equipmentManager.attachedFocusers
 

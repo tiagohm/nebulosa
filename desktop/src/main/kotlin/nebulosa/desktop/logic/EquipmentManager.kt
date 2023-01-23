@@ -6,14 +6,14 @@ import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
 import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
-import nebulosa.desktop.equipments.FocuserProperty
-import nebulosa.desktop.equipments.GPSProperty
-import nebulosa.desktop.equipments.MountProperty
+import nebulosa.desktop.logic.gps.GPSProperty
+import nebulosa.desktop.logic.mount.MountProperty
 import nebulosa.desktop.logic.camera.CameraProperty
 import nebulosa.desktop.logic.connection.Connected
 import nebulosa.desktop.logic.connection.ConnectionEvent
 import nebulosa.desktop.logic.connection.Disconnected
 import nebulosa.desktop.logic.filterwheel.FilterWheelProperty
+import nebulosa.desktop.logic.focuser.FocuserProperty
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.cameras.Camera
 import nebulosa.indi.device.cameras.CameraAttached

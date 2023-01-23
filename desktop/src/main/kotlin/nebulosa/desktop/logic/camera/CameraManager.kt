@@ -5,10 +5,10 @@ import javafx.application.HostServices
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
 import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
-import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.gui.camera.AutoSubFolderMode
 import nebulosa.desktop.gui.camera.CameraWindow
 import nebulosa.desktop.gui.camera.ExposureMode
+import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.task.TaskEvent
@@ -31,7 +31,6 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
     private val preferences by inject<Preferences>()
     private val equipmentManager by inject<EquipmentManager>()
     private val cameraTaskExecutor by inject<CameraTaskExecutor>()
-    private val screenManager by inject<ScreenManager>()
     private val appDirectory by inject<Path>(named("app"))
     private val hostServices by inject<HostServices>()
     private val subscribers = arrayOfNulls<Disposable>(1)
@@ -67,7 +66,7 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
             is CameraExposureAborted,
             is CameraExposureFailed -> updateStatus()
             is CameraExposureProgressChanged -> updateStatus()
-            is CameraFrameSaved -> screenManager.openImageViewer(event.imagePath.toFile(), event.device)
+            is CameraFrameSaved -> ImageWindow.open(event.imagePath.toFile(), event.device)
             is CameraExposureMinMaxChanged,
             is CameraFrameChanged,
             is CameraCanBinChanged,

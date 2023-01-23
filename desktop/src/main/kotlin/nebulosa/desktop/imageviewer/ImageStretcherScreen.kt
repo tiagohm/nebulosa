@@ -9,6 +9,7 @@ import javafx.util.StringConverter
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.onTwo
 import nebulosa.desktop.core.scene.Screen
+import nebulosa.desktop.gui.view.HistogramView
 import nebulosa.math.map
 import org.controlsfx.control.RangeSlider
 

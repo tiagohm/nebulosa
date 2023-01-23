@@ -1,4 +1,4 @@
-package nebulosa.desktop.equipments
+package nebulosa.desktop.logic.focuser
 
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty

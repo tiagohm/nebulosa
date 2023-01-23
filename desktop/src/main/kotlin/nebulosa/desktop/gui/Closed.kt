@@ -1,3 +1,3 @@
 package nebulosa.desktop.gui
 
-object ProgramClosed
+object Closed

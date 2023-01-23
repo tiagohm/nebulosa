@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.application.Application
 import javafx.scene.text.Font
 import nebulosa.desktop.core.EventBus
-import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.core.util.loader.IERSLoader
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.camera.CameraTaskExecutor
@@ -46,7 +45,6 @@ private fun inject() = module {
     single(createdAtStart = true) { EquipmentManager() }
     single(createdAtStart = true) { EquipmentManager() }
     single(createdAtStart = true) { TelescopeControlServerManager() }
-    single(createdAtStart = true) { ScreenManager() }
 
     single { CameraTaskExecutor() }
     single { FilterWheelTaskExecutor() }

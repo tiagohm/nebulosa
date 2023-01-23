@@ -1,4 +1,4 @@
-package nebulosa.desktop.equipments
+package nebulosa.desktop.logic.gps
 
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleObjectProperty

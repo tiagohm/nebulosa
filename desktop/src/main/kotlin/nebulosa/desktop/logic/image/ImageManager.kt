@@ -1,0 +1,375 @@
+package nebulosa.desktop.logic.image
+
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.subjects.BehaviorSubject
+import javafx.scene.input.MouseEvent
+import javafx.scene.input.ScrollEvent
+import javafx.stage.Screen
+import nebulosa.desktop.gui.image.ImageWindow
+import nebulosa.desktop.preferences.Preferences
+import nebulosa.imaging.ExtendedImage
+import nebulosa.imaging.FitsImage
+import nebulosa.imaging.Image
+import nebulosa.imaging.ImageChannel
+import nebulosa.imaging.algorithms.*
+import nom.tam.fits.Fits
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import java.io.Closeable
+import java.io.File
+import java.util.concurrent.TimeUnit
+import kotlin.math.max
+import kotlin.math.min
+
+class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
+
+    private val preferences by inject<Preferences>()
+
+    @Volatile @JvmField internal var fits: Image? = null
+    @Volatile @JvmField internal var transformedFits: Image? = null
+
+    @Volatile private var scale = 1f
+    @Volatile private var scaleFactor = 0
+    @Volatile private var startX = 0
+    @Volatile private var startY = 0
+    @Volatile private var dragging = false
+    @Volatile private var dragStartX = 0.0
+    @Volatile private var dragStartY = 0.0
+
+    private val screenBounds = Screen.getPrimary().bounds
+    private val transformPublisher = BehaviorSubject.create<Unit>()
+
+    @Volatile private var borderSize = 0.0
+    @Volatile private var titleHeight = 0.0
+    @Volatile private var idealSceneWidth = 640.0
+    @Volatile private var idealSceneHeight = 640.0
+    @Volatile private var transformSubscriber: Disposable? = null
+
+    @Volatile private var shadow = 0f
+    @Volatile private var highlight = 1f
+    @Volatile private var midtone = 0.5f
+    @Volatile private var mirrorHorizontal = false
+    @Volatile private var mirrorVertical = false
+    @Volatile private var invert = false
+    @Volatile private var scnrEnabled = false
+    @Volatile private var scnrChannel = ImageChannel.GREEN
+    @Volatile private var scnrProtectionMode = ProtectionMethod.AVERAGE_NEUTRAL
+    @Volatile private var scnrAmount = 0.5f
+
+    init {
+        borderSize = (window.width - window.scene.width) / 2.0
+        titleHeight = (window.height - window.scene.height) - borderSize
+
+        transformSubscriber = transformPublisher
+            .debounce(500L, TimeUnit.MILLISECONDS)
+            .subscribe {
+                transformImage()
+
+                draw()
+                window.drawHistogram()
+            }
+    }
+
+    @Synchronized
+    fun open(file: File) {
+        setTitleFromCameraAndFile(file)
+
+        val adjustToDefaultSize = fits == null
+
+        val fits = if (file.extension.startsWith("fit")) FitsImage(Fits(file))
+        else ExtendedImage(file)
+
+        this.fits = fits
+        this.transformedFits = null
+
+        window.hasScnr = !fits.mono
+        window.hasFitsHeader = fits is FitsImage
+
+        adjustSceneSizeToFitImage(adjustToDefaultSize)
+
+        transformImage()
+
+        draw()
+        window.drawHistogram()
+    }
+
+    fun openFitsHeader() {
+        (fits as? FitsImage)?.also { window.openFitsHeader(it.header) }
+    }
+
+    fun draw() {
+        val fits = transformedFits ?: fits ?: return
+
+        val areaWidth = min(idealSceneWidth, screenBounds.width).toInt()
+        val areaHeight = min(idealSceneHeight, screenBounds.height).toInt()
+
+        val factorW = fits.width.toFloat() / areaWidth
+        val factorH = fits.height.toFloat() / areaHeight
+        val factor = max(factorW, factorH) / scale
+
+        val maxStartX = (fits.width / factor).toInt()
+        val maxStartY = (fits.height / factor).toInt()
+
+        // Prevent move to left/up.
+        if (-startX < 0 || -startY < 0) {
+            if (maxStartX - startX <= window.scene.width.toInt()) {
+                startX = maxStartX - window.scene.width.toInt()
+            }
+            if (maxStartY - startY <= window.scene.height.toInt()) {
+                startY = maxStartY - window.scene.height.toInt()
+            }
+        }
+
+        // Prevent move to right/bottom.
+        if (startX > maxStartX) {
+            startX = maxStartX
+        } else if (startX < 0) {
+            startX = 0
+        }
+
+        if (startY > maxStartY) {
+            startY = maxStartY
+        } else if (startY < 0) {
+            startY = 0
+        }
+
+        window.draw(fits, areaWidth, areaHeight, startX, startY, factor)
+    }
+
+    fun transformImage(
+        shadow: Float = this.shadow, highlight: Float = this.highlight, midtone: Float = this.midtone,
+        mirrorHorizontal: Boolean = this.mirrorHorizontal, mirrorVertical: Boolean = this.mirrorVertical,
+        invert: Boolean = this.invert,
+        scnrEnabled: Boolean = this.scnrEnabled, scnrChannel: ImageChannel = this.scnrChannel,
+        scnrProtectionMode: ProtectionMethod = this.scnrProtectionMode,
+        scnrAmount: Float = this.scnrAmount,
+    ) {
+        this.shadow = shadow
+        this.highlight = highlight
+        this.midtone = midtone
+        this.mirrorHorizontal = mirrorHorizontal
+        this.mirrorVertical = mirrorVertical
+        this.invert = invert
+        this.scnrEnabled = scnrEnabled
+        this.scnrChannel = scnrChannel
+        this.scnrProtectionMode = scnrProtectionMode
+        this.scnrAmount = scnrAmount
+
+        transformPublisher.onNext(Unit)
+    }
+
+    @Synchronized
+    private fun transformImage() {
+        val shouldBeTransformed = this.shadow != 0f || this.highlight != 1f || this.midtone != 0.5f
+                || this.mirrorHorizontal || this.mirrorVertical || this.invert
+                || this.scnrEnabled
+
+        // TODO: How to handle rotation transformation if data is copy but width/height is not?
+        // TODO: Reason: Image will be rotated for each draw.
+        transformedFits = if (shouldBeTransformed) fits!!.clone() else null
+
+        if (transformedFits != null) {
+            val algorithms = arrayListOf<TransformAlgorithm>()
+            algorithms.add(Flip(mirrorHorizontal, mirrorVertical))
+            if (scnrEnabled) algorithms.add(SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode))
+            algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
+            if (invert) algorithms.add(Invert)
+
+            transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)
+        }
+    }
+
+    fun resetZoom() {
+        startX = 0
+        startY = 0
+        scaleFactor = 0
+        scale = 1f
+    }
+
+    fun mirrorHorizontal() {
+        transformImage(mirrorHorizontal = !mirrorHorizontal)
+    }
+
+    fun mirrorVertical() {
+        transformImage(mirrorVertical = !mirrorVertical)
+    }
+
+    fun invert() {
+        transformImage(invert = !invert)
+    }
+
+    private fun setTitleFromCameraAndFile(file: File? = null) {
+        window.title = buildString(64) {
+            append("Image")
+            if (window.camera != null) append(" · ${window.camera.name}")
+            if (file != null) append(" · ${file.name}")
+        }
+    }
+
+    fun adjustSceneSizeToFitImage(defaultSize: Boolean) {
+        val fits = fits ?: return
+
+        val factor = fits.width.toDouble() / fits.height.toDouble()
+
+        val defaultWidth = window.camera
+            ?.let { preferences.double("image.${it.name}.screen.width") }
+            ?: (screenBounds.width / 2)
+
+        val defaultHeight = window.camera
+            ?.let { preferences.double("image.${it.name}.screen.height") }
+            ?: (screenBounds.height / 2)
+
+        val sceneSize = if (factor >= 1.0)
+            if (defaultSize) defaultWidth
+            else min(screenBounds.width, window.width)
+        else if (defaultSize) defaultHeight - titleHeight
+        else min(screenBounds.height, window.height - titleHeight)
+
+        if (factor >= 1.0) {
+            idealSceneWidth = sceneSize
+            idealSceneHeight = sceneSize / factor
+        } else {
+            idealSceneHeight = sceneSize
+            idealSceneWidth = sceneSize * factor
+        }
+
+        window.width = idealSceneWidth
+        window.height = idealSceneHeight + titleHeight
+
+        window.imageWidth = idealSceneWidth
+        window.imageHeight = idealSceneHeight
+    }
+
+    fun drag(event: MouseEvent) {
+        if (!dragging) {
+            dragging = true
+            dragStartX = event.x
+            dragStartY = event.y
+        } else {
+            val deltaX = (event.x - dragStartX).toInt()
+            val deltaY = (event.y - dragStartY).toInt()
+
+            startX -= deltaX
+            startY -= deltaY
+
+            startX = max(0, startX)
+            startY = max(0, startY)
+
+            dragStartX = event.x
+            dragStartY = event.y
+
+            draw()
+        }
+    }
+
+    fun dragStop(event: MouseEvent) {
+        dragging = false
+    }
+
+    fun zoomWithWheel(event: ScrollEvent) {
+        val delta = if (event.deltaY == 0.0 && event.deltaX != 0.0) event.deltaX else event.deltaY
+        val wheel = if (delta < 0) -1 else 1
+        val scaleFactor = max(0, min(scaleFactor + wheel, SCALE_FACTORS.size - 1))
+
+        if (scaleFactor != this.scaleFactor) {
+            this.scaleFactor = scaleFactor
+            val newScale = SCALE_FACTORS[scaleFactor]
+            zoomToPoint(newScale, event.x, event.y)
+        }
+    }
+
+    fun zoomToPoint(
+        newScale: Double,
+        pointX: Double, pointY: Double,
+    ) {
+        val bounds = window.imageBounds
+
+        val x = ((startX + pointX) / bounds.width) * (bounds.width * newScale)
+        val y = ((startY + pointY) / bounds.height) * (bounds.height * newScale)
+
+        val toX = (x / newScale - x / scale + x * newScale) / newScale
+        val toY = (y / newScale - y / scale + y * newScale) / newScale
+
+        scale = newScale.toFloat()
+
+        startX -= ((toX - x) * scale).toInt()
+        startY -= ((toY - y) * scale).toInt()
+
+        startX = max(0, startX)
+        startY = max(0, startY)
+
+        // val areaWidth = scene.width.toInt()
+        // val areaHeight = scene.height.toInt()
+        //
+        // val factorW = fits!!.width.toFloat() / areaWidth
+        // val factorH = fits!!.height.toFloat() / areaHeight
+        // val factor = max(factorW, factorH) / scale
+        //
+        // val maxStartX = (fits!!.width / factor).toInt()
+        // val maxStartY = (fits!!.height / factor).toInt()
+        //
+        // val x0 = -startX
+        // val y0 = -startY
+        //
+        // val x1 = -startX + maxStartX
+        // val y1 = -startY + maxStartY
+        //
+        // val px = image.localToParent(pointX, pointY)
+        //
+        // if (px.x >= x0 && px.x <= x1 && px.y >= y0 && px.y <= y1) {
+        //     println("dentro $x0 $x1 $y0 $y1")
+        // } else {
+        //     println("fora")
+        //     startX = 0
+        //     startY = 0
+        // }
+
+        draw()
+    }
+
+    fun loadPreferences() {
+        if (window.camera != null) {
+            preferences.double("image.${window.camera.name}.screen.x")?.let { window.x = it }
+            preferences.double("image.${window.camera.name}.screen.y")?.let { window.y = it }
+        } else {
+            preferences.double("image.screen.x")?.let { window.x = it }
+            preferences.double("image.screen.y")?.let { window.y = it }
+        }
+    }
+
+    fun savePreferences() {
+        if (window.camera != null) {
+            preferences.double("image.${window.camera.name}.screen.x", window.x)
+            preferences.double("image.${window.camera.name}.screen.y", window.y)
+        } else {
+            preferences.double("image.screen.x", window.x)
+            preferences.double("image.screen.y", window.y)
+        }
+    }
+
+    override fun close() {
+        fits = null
+        transformedFits = null
+
+        scale = 1f
+        scaleFactor = 0
+        startX = 0
+        startY = 0
+        dragging = false
+        dragStartX = 0.0
+        dragStartY = 0.0
+
+        savePreferences()
+    }
+
+    companion object {
+
+        @JvmStatic private val SCALE_FACTORS = doubleArrayOf(
+            // 0.125, 0.25, 0.5, 0.75,
+            1.0, 1.25, 1.5, 1.75, 2.0,
+            3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0,
+            10.0, 15.0, 20.0, 25.0, 50.0, 75.0, 100.0,
+            200.0, 300.0, 400.0, 500.0,
+        )
+    }
+}

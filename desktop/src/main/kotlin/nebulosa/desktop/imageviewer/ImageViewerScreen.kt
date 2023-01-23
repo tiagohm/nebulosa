@@ -50,8 +50,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
     @Volatile private var dragStartY = 0.0
 
     private val imageStretcherScreen = ImageStretcherScreen(this)
-    private val scnrScreen = SCNRScreen(this)
-    private val fitsHeaderScreen = FITSHeaderScreen()
+    // private val scnrScreen = SCNRScreen(this)
+    // private val fitsHeaderScreen = FITSHeaderScreen()
 
     private val screenBounds = javafx.stage.Screen.getPrimary().bounds
     private val transformPublisher = BehaviorSubject.create<Unit>()
@@ -226,8 +226,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         dragStartY = 0.0
 
         imageStretcherScreen.close()
-        scnrScreen.close()
-        fitsHeaderScreen.close()
+        //scnrScreen.close()
+        //fitsHeaderScreen.close()
 
         transformSubscriber?.dispose()
         transformSubscriber = null
@@ -525,7 +525,7 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
 
     @FXML
     private fun openSCNR() {
-        scnrScreen.show(true, true)
+        //scnrScreen.show(true, true)
     }
 
     @FXML
@@ -533,8 +533,8 @@ class ImageViewerScreen(val camera: Camera? = null) : Screen("ImageViewer", "neb
         val fits = fits ?: return
 
         if (fits is FitsImage) {
-            fitsHeaderScreen.show(bringToFront = true)
-            fitsHeaderScreen.load(fits.header)
+            //fitsHeaderScreen.show(bringToFront = true)
+            //fitsHeaderScreen.load(fits.header)
         }
     }
 

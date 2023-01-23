@@ -1,19 +1,11 @@
-package nebulosa.desktop.imageviewer
+package nebulosa.desktop.logic.image
 
-import javafx.fxml.FXML
-import javafx.scene.control.TextArea
-import nebulosa.desktop.core.scene.Screen
+import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nom.tam.fits.Header
 import nom.tam.fits.HeaderCard
 import kotlin.math.max
 
-class FITSHeaderScreen : Screen("FITSHeader", "nebulosa-fits-header") {
-
-    @FXML private lateinit var cards: TextArea
-
-    init {
-        title = "FITS Header"
-    }
+class FitsHeaderManager(private val window: FitsHeaderWindow) {
 
     fun load(header: Header) {
         val maxWidth = IntArray(3)
@@ -24,7 +16,7 @@ class FITSHeaderScreen : Screen("FITSHeader", "nebulosa-fits-header") {
             return "%s: %s / %s".format(key, value, comment)
         }
 
-        cards.text = header
+        window.text = header
             .iterator()
             .asSequence()
             .filter { it.key != "END" }
@@ -34,6 +26,6 @@ class FITSHeaderScreen : Screen("FITSHeader", "nebulosa-fits-header") {
             .toList()
             .joinToString("\n") { it.formatCard() }
 
-        width = maxWidth.sum() * 6.0
+        window.width = maxWidth.sum() * 6.0
     }
 }

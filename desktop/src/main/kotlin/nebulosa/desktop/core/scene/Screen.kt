@@ -7,7 +7,6 @@ import javafx.scene.control.Alert
 import javafx.scene.image.Image
 import javafx.stage.Stage
 import nebulosa.desktop.core.EventBus
-import nebulosa.desktop.core.ScreenManager
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl

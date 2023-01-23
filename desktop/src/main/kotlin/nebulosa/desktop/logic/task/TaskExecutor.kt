@@ -4,6 +4,8 @@ import nebulosa.desktop.core.EventBus
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.slf4j.LoggerFactory
+import java.io.Closeable
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicReference
@@ -64,6 +66,20 @@ abstract class TaskExecutor<T : Task> : Thread(), KoinComponent {
         super.interrupt()
     }
 
+    private class CompletableTask(@JvmField val task: Task) : CompletableFuture<Any>(), Runnable, Closeable {
+
+        override fun run() {
+            try {
+                complete(task.call())
+            } catch (e: InterruptedException) {
+                throw e
+            } catch (e: Throwable) {
+                completeExceptionally(e)
+            }
+        }
+
+        override fun close() = task.closeGracefully()
+    }
 
     companion object {
 

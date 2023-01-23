@@ -179,7 +179,7 @@ class FocuserWindow : AbstractWindow() {
 
     companion object {
 
-        @Volatile private var window: FocuserWindow? = null
+        @JvmStatic private var window: FocuserWindow? = null
 
         @JvmStatic
         fun open() {
