@@ -25,10 +25,15 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
 
     private val preferences by inject<Preferences>()
 
-    @Volatile @JvmField internal var fits: Image? = null
-    @Volatile @JvmField internal var transformedFits: Image? = null
+    @Volatile var fits: Image? = null
+        private set
 
-    @Volatile private var scale = 1f
+    @Volatile var transformedFits: Image? = null
+        private set
+
+    @Volatile var scale = 1f
+        private set
+
     @Volatile private var scaleFactor = 0
     @Volatile private var startX = 0
     @Volatile private var startY = 0
@@ -45,21 +50,37 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
     @Volatile private var idealSceneHeight = 640.0
     @Volatile private var transformSubscriber: Disposable? = null
 
-    @Volatile private var shadow = 0f
-    @Volatile private var highlight = 1f
-    @Volatile private var midtone = 0.5f
-    @Volatile private var mirrorHorizontal = false
-    @Volatile private var mirrorVertical = false
-    @Volatile private var invert = false
-    @Volatile private var scnrEnabled = false
-    @Volatile private var scnrChannel = ImageChannel.GREEN
-    @Volatile private var scnrProtectionMode = ProtectionMethod.AVERAGE_NEUTRAL
-    @Volatile private var scnrAmount = 0.5f
+    @Volatile var shadow = 0f
+        private set
+
+    @Volatile var highlight = 1f
+        private set
+
+    @Volatile var midtone = 0.5f
+        private set
+
+    @Volatile var mirrorHorizontal = false
+        private set
+
+    @Volatile var mirrorVertical = false
+        private set
+
+    @Volatile var invert = false
+        private set
+
+    @Volatile var scnrEnabled = false
+        private set
+
+    @Volatile var scnrChannel = ImageChannel.GREEN
+        private set
+
+    @Volatile var scnrProtectionMode = ProtectionMethod.AVERAGE_NEUTRAL
+        private set
+
+    @Volatile var scnrAmount = 0.5f
+        private set
 
     init {
-        borderSize = (window.width - window.scene.width) / 2.0
-        titleHeight = (window.height - window.scene.height) - borderSize
-
         transformSubscriber = transformPublisher
             .debounce(500L, TimeUnit.MILLISECONDS)
             .subscribe {
@@ -73,6 +94,9 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
     @Synchronized
     fun open(file: File) {
         setTitleFromCameraAndFile(file)
+
+        borderSize = (window.width - window.scene.width) / 2.0
+        titleHeight = (window.height - window.scene.height) - borderSize
 
         val adjustToDefaultSize = fits == null
 
@@ -160,9 +184,9 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
 
     @Synchronized
     private fun transformImage() {
-        val shouldBeTransformed = this.shadow != 0f || this.highlight != 1f || this.midtone != 0.5f
-                || this.mirrorHorizontal || this.mirrorVertical || this.invert
-                || this.scnrEnabled
+        val shouldBeTransformed = shadow != 0f || highlight != 1f || midtone != 0.5f
+                || mirrorHorizontal || mirrorVertical || invert
+                || scnrEnabled
 
         // TODO: How to handle rotation transformation if data is copy but width/height is not?
         // TODO: Reason: Image will be rotated for each draw.

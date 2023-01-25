@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.view.HistogramView?>
+<?import nebulosa.desktop.gui.control.Histogram?>
 <?import org.controlsfx.control.RangeSlider?>
-<?import java.lang.Integer?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="220.0"
-            prefWidth="480.0"
+            prefHeight="200.0"
+            prefWidth="400.0"
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
@@ -37,20 +35,6 @@
                             right="32.0"
                             top="16.0"/>
                 </padding>
-                <HBox alignment="CENTER_RIGHT"
-                      spacing="4.0">
-                    <Label text="Bit depth:"
-                           styleClass="text-md">
-                    </Label>
-                    <ChoiceBox fx:id="bitDepth">
-                        <items>
-                            <FXCollections fx:factory="observableArrayList">
-                                <Integer fx:value="8"/>
-                                <Integer fx:value="16"/>
-                            </FXCollections>
-                        </items>
-                    </ChoiceBox>
-                </HBox>
                 <Label text="Shadow &amp; Highlight"
                        styleClass="text-md">
                     <VBox.margin>
@@ -61,24 +45,24 @@
                       spacing="8.0">
                     <VBox alignment="CENTER"
                           spacing="4.0">
-                        <Spinner fx:id="shadow"
+                        <Spinner fx:id="shadowSpinner"
                                  editable="true"
                                  initialValue="0.0"
                                  min="0.0"
                                  max="255.0"
-                                 amountToStepBy="0.1"
-                                 prefWidth="108.0">
+                                 amountToStepBy="0.01"
+                                 prefWidth="92.0">
                         </Spinner>
-                        <Spinner fx:id="highlight"
+                        <Spinner fx:id="highlightSpinner"
                                  editable="true"
                                  initialValue="255.0"
                                  min="0.0"
                                  max="255.0"
-                                 amountToStepBy="0.1"
-                                 prefWidth="108.0">
+                                 amountToStepBy="0.01"
+                                 prefWidth="92.0">
                         </Spinner>
                     </VBox>
-                    <RangeSlider fx:id="shadowAndHighlight"
+                    <RangeSlider fx:id="shadowAndHighlightRangeSlider"
                                  blockIncrement="1.0"
                                  highValue="255.0"
                                  lowValue="0.0"
@@ -101,10 +85,10 @@
                              initialValue="127.5"
                              min="0.0"
                              max="255.0"
-                             amountToStepBy="0.1"
-                             prefWidth="108.0">
+                             amountToStepBy="0.01"
+                             prefWidth="92.0">
                     </Spinner>
-                    <Slider fx:id="midtone"
+                    <Slider fx:id="midtoneSlider"
                             HBox.hgrow="ALWAYS"
                             blockIncrement="1.0"
                             majorTickUnit="32.0"
@@ -124,11 +108,11 @@
                 <AnchorPane prefHeight="200.0"
                             prefWidth="200.0"
                             VBox.vgrow="ALWAYS">
-                    <HistogramView fx:id="histogram"
-                                   AnchorPane.bottomAnchor="0.0"
-                                   AnchorPane.leftAnchor="0.0"
-                                   AnchorPane.rightAnchor="0.0"
-                                   AnchorPane.topAnchor="0.0"/>
+                    <Histogram fx:id="histogram"
+                               AnchorPane.bottomAnchor="0.0"
+                               AnchorPane.leftAnchor="0.0"
+                               AnchorPane.rightAnchor="0.0"
+                               AnchorPane.topAnchor="0.0"/>
                 </AnchorPane>
             </VBox>
         </Tab>

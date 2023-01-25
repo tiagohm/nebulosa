@@ -36,6 +36,7 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
 
     private val screenBounds = Screen.getPrimary().bounds
     private val imageManager = ImageManager(this)
+    @Volatile private var imageStretcherWindow: ImageStretcherWindow? = null
     @Volatile private var fitsHeaderWindow: FitsHeaderWindow? = null
     @Volatile private var scnrWindow: SCNRWindow? = null
 
@@ -97,9 +98,9 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
     override fun onStop() {
         buffer = IntArray(0)
 
-        //imageStretcherScreen.close()
-        //scnrScreen.close()
-        //fitsHeaderScreen.close()
+        imageStretcherWindow?.close()
+        scnrWindow?.close()
+        fitsHeaderWindow?.close()
 
         imageManager.close()
 
@@ -111,6 +112,39 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
 
         System.gc()
     }
+
+    val fits
+        get() = imageManager.transformedFits ?: imageManager.fits
+
+    val shadow
+        get() = imageManager.shadow
+
+    val highlight
+        get() = imageManager.highlight
+
+    val midtone
+        get() = imageManager.midtone
+
+    val mirrorHorizontal
+        get() = imageManager.mirrorHorizontal
+
+    val mirrorVertical
+        get() = imageManager.mirrorVertical
+
+    val invert
+        get() = imageManager.invert
+
+    val scnrEnabled
+        get() = imageManager.scnrEnabled
+
+    val scnrChannel
+        get() = imageManager.scnrChannel
+
+    val scnrProtectionMode
+        get() = imageManager.scnrProtectionMode
+
+    val scnrAmount
+        get() = imageManager.scnrAmount
 
     var imageWidth
         get() = imageCanvas.width
@@ -138,6 +172,12 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
 
     val imageBounds: Bounds
         get() = imageCanvas.parent.boundsInLocal
+
+    @FXML
+    private fun openImageStretcher() {
+        imageStretcherWindow = imageStretcherWindow ?: ImageStretcherWindow(this)
+        imageStretcherWindow!!.open(bringToFront = true)
+    }
 
     @FXML
     private fun openSCNR() {
@@ -225,6 +265,7 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
     }
 
     fun drawHistogram() {
+        imageStretcherWindow?.drawHistogram()
     }
 
     fun applySCNR(
@@ -238,12 +279,16 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
         )
     }
 
+    fun applySTF(shadow: Float, highlight: Float, midtone: Float) {
+        imageManager.transformImage(shadow = shadow, highlight = highlight, midtone = midtone)
+    }
+
     companion object {
 
         @JvmStatic private val windows = hashSetOf<ImageWindow>()
 
         @JvmStatic
-        fun open(file: File, camera: Camera? = null) {
+        fun open(file: File, camera: Camera? = null): ImageWindow {
             val window = windows
                 .firstOrNull { if (camera == null) it.camera == null && !it.isShowing else it.camera === camera }
                 ?: ImageWindow(camera)
@@ -252,6 +297,8 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
 
             window.show()
             window.open(file)
+
+            return window
         }
     }
 }

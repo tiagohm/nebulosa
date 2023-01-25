@@ -1,4 +1,4 @@
-package nebulosa.desktop.core.util.loader
+package nebulosa.desktop.logic.loader
 
 import nebulosa.time.IERS
 import nebulosa.time.IERSA

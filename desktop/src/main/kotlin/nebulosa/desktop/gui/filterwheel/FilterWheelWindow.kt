@@ -16,7 +16,7 @@ import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.or
 import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.core.scene.control.ButtonValueFactory
+import nebulosa.desktop.gui.control.ButtonValueFactory
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow

@@ -1,11 +1,11 @@
-package nebulosa.desktop.gui.view
+package nebulosa.desktop.gui.control
 
 import javafx.scene.canvas.Canvas
 import javafx.scene.paint.Color
 import nebulosa.imaging.Image
 import kotlin.math.max
 
-class HistogramView : Canvas() {
+class Histogram : Canvas() {
 
     private val histogramData = IntArray(256)
     private var maxHeight = 1

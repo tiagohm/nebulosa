@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.application.Application
 import javafx.scene.text.Font
 import nebulosa.desktop.core.EventBus
-import nebulosa.desktop.core.util.loader.IERSLoader
+import nebulosa.desktop.logic.loader.IERSLoader
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.camera.CameraTaskExecutor
 import nebulosa.desktop.logic.connection.ConnectionManager
