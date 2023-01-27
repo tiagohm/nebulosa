@@ -4,6 +4,7 @@ import io.reactivex.rxjava3.disposables.Disposable
 import javafx.application.HostServices
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
+import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.camera.AutoSubFolderMode
@@ -17,7 +18,9 @@ import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.cameras.*
+import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.koin.core.context.GlobalContext
 import org.koin.core.qualifier.named
 import java.io.File
 import java.nio.file.Path
@@ -25,11 +28,13 @@ import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class CameraManager(private val window: CameraWindow) : CameraProperty() {
+class CameraManager(private val window: CameraWindow) :
+    CameraProperty by GlobalContext.get().get<EquipmentManager>().selectedCamera, KoinComponent {
 
-    @JvmField val isCapturing = SimpleBooleanProperty()
+    @JvmField val capturingProperty = SimpleBooleanProperty()
 
     private val preferences by inject<Preferences>()
+    private val eventBus by inject<EventBus>()
     private val equipmentManager by inject<EquipmentManager>()
     private val cameraTaskExecutor by inject<CameraTaskExecutor>()
     private val appDirectory by inject<Path>(named("app"))
@@ -37,7 +42,7 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
     private val subscribers = arrayOfNulls<Disposable>(1)
     private val imageWindows = HashSet<ImageWindow>()
 
-    val cameras get() = equipmentManager.attachedCameras
+    @JvmField val cameras = equipmentManager.attachedCameras
 
     init {
         subscribers[0] = eventBus
@@ -47,23 +52,20 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
     }
 
     private fun onTaskEvent(event: TaskEvent) {
-        isCapturing.set(event is TaskStarted)
+        capturingProperty.set(event is TaskStarted)
         updateStatus()
     }
 
-    override fun onChanged(prev: Camera?, new: Camera) {
-        super.onChanged(prev, new)
+    override fun onChanged(prev: Camera?, device: Camera) {
+        if (prev !== device) savePreferences(prev)
 
-        savePreferences(prev)
         updateTitle()
-        loadPreferences(new)
+        loadPreferences(device)
 
-        equipmentManager.selectedCamera.set(new)
+        equipmentManager.selectedCamera.set(device)
     }
 
-    override fun onDeviceEvent(event: DeviceEvent<*>) {
-        super.onDeviceEvent(event)
-
+    override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
         when (event) {
             is CameraExposureAborted,
             is CameraExposureFailed -> updateStatus()
@@ -82,11 +84,6 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
         window.title = "Camera · $name"
     }
 
-    fun connect() {
-        if (isConnected.get()) value.disconnect()
-        else value.connect()
-    }
-
     fun openINDIPanelControl() {
         INDIPanelControlWindow.open(value)
     }
@@ -100,7 +97,7 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
         val text = buildString(128) {
             val task = cameraTaskExecutor.currentTask as? CameraExposureTask
 
-            if (task != null && isCapturing.get()) {
+            if (task != null && capturingProperty.get()) {
                 val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000.0} s"
                 else if (task.exposure >= 1000L) "${task.exposure / 1000.0} ms"
                 else "${task.exposure} µs"
@@ -120,48 +117,48 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
     }
 
     fun updateFrame() {
-        window.frameMaxX = maxX.get()
-        window.frameMinX = minX.get()
-        window.frameMaxY = maxY.get()
-        window.frameMinY = minY.get()
-        window.frameMaxWidth = maxWidth.get()
-        window.frameMinWidth = minWidth.get()
-        window.frameMaxHeight = maxHeight.get()
-        window.frameMinHeight = minHeight.get()
-        window.frameWidth = maxWidth.get()
-        window.frameHeight = maxHeight.get()
+        window.frameMaxX = maxX
+        window.frameMinX = minX
+        window.frameMaxY = maxY
+        window.frameMinY = minY
+        window.frameMaxWidth = maxWidth
+        window.frameMinWidth = minWidth
+        window.frameMaxHeight = maxHeight
+        window.frameMinHeight = minHeight
+        window.frameWidth = maxWidth
+        window.frameHeight = maxHeight
     }
 
     fun updateMaxBin() {
-        window.maxBinX = maxBinX.get()
-        window.maxBinY = maxBinY.get()
+        window.maxBinX = maxBinX
+        window.maxBinY = maxBinY
     }
 
     fun updateGainMinMax() {
-        window.gainMax = gainMax.get()
-        window.gainMin = gainMin.get()
+        window.gainMax = gainMax
+        window.gainMin = gainMin
     }
 
     fun updateOffsetMinMax() {
-        window.offsetMax = offsetMax.get()
-        window.offsetMin = offsetMin.get()
+        window.offsetMax = offsetMax
+        window.offsetMin = offsetMin
     }
 
     fun fullsize() {
-        window.frameX = minX.get()
-        window.frameY = minY.get()
-        window.frameWidth = maxWidth.get()
-        window.frameHeight = maxHeight.get()
+        window.frameX = minX
+        window.frameY = minY
+        window.frameWidth = maxWidth
+        window.frameHeight = maxHeight
     }
 
     fun updateExposureMinMax() {
-        window.exposureMax = window.exposureUnit.convert(exposureMin.value, TimeUnit.MICROSECONDS)
-        window.exposureMin = window.exposureUnit.convert(exposureMax.value, TimeUnit.MICROSECONDS)
+        window.exposureMax = window.exposureUnit.convert(exposureMin, TimeUnit.MICROSECONDS)
+        window.exposureMin = window.exposureUnit.convert(exposureMax, TimeUnit.MICROSECONDS)
     }
 
     fun updateExposureUnit(from: TimeUnit, to: TimeUnit, exposure: Long) {
-        window.exposureMax = to.convert(exposureMax.value, TimeUnit.MICROSECONDS)
-        window.exposureMin = to.convert(exposureMin.value, TimeUnit.MICROSECONDS)
+        window.exposureMax = to.convert(exposureMax, TimeUnit.MICROSECONDS)
+        window.exposureMin = to.convert(exposureMin, TimeUnit.MICROSECONDS)
         window.exposure = to.convert(exposure, from)
         window.exposureUnit = to
     }
@@ -194,7 +191,7 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
             val prevImageSavePath = preferences.string("camera.$name.imageSavePath")
             if (!prevImageSavePath.isNullOrBlank()) initialDirectory = File(prevImageSavePath)
 
-            val file = showDialog(window) ?: return
+            val file = showDialog(null) ?: return
 
             preferences.string("camera.$name.imageSavePath", "$file")
             window.imageSavePath = "$file"
@@ -213,10 +210,10 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
         val task = CameraExposureTask(
             value,
             window.exposureInMicros, amount, window.exposureDelay,
-            if (window.isSubFrame) window.frameX else minX.get(),
-            if (window.isSubFrame) window.frameY else minY.get(),
-            if (window.isSubFrame) window.frameWidth else maxWidth.get(),
-            if (window.isSubFrame) window.frameHeight else maxHeight.get(),
+            if (window.isSubFrame) window.frameX else minX,
+            if (window.isSubFrame) window.frameY else minY,
+            if (window.isSubFrame) window.frameWidth else maxWidth,
+            if (window.isSubFrame) window.frameHeight else maxHeight,
             window.frameFormat, window.frameType,
             window.binX, window.binY,
             window.gain, window.offset,
@@ -276,10 +273,10 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
             window.exposureMode = preferences.enum<ExposureMode>("camera.${device.name}.exposureMode") ?: ExposureMode.SINGLE
             window.exposureDelay = preferences.long("camera.${device.name}.exposureDelay") ?: 100L
             window.isSubFrame = preferences.bool("camera.${device.name}.isSubFrame")
-            window.frameX = preferences.int("camera.${device.name}.frameX") ?: minX.get()
-            window.frameY = preferences.int("camera.${device.name}.frameY") ?: minY.get()
-            window.frameWidth = preferences.int("camera.${device.name}.frameWidth") ?: maxWidth.get()
-            window.frameHeight = preferences.int("camera.${device.name}.frameHeight") ?: maxHeight.get()
+            window.frameX = preferences.int("camera.${device.name}.frameX") ?: minX
+            window.frameY = preferences.int("camera.${device.name}.frameY") ?: minY
+            window.frameWidth = preferences.int("camera.${device.name}.frameWidth") ?: maxWidth
+            window.frameHeight = preferences.int("camera.${device.name}.frameHeight") ?: maxHeight
             window.frameType = preferences.enum<FrameType>("camera.${device.name}.frameType") ?: FrameType.LIGHT
             (preferences.string("camera.${device.name}.frameFormat") ?: frameFormats.firstOrNull())?.let { window.frameFormat = it }
             window.binX = preferences.int("camera.${device.name}.binX") ?: 1
@@ -300,8 +297,6 @@ class CameraManager(private val window: CameraWindow) : CameraProperty() {
     }
 
     override fun close() {
-        super.close()
-
         savePreferences(null)
         savePreferences()
 

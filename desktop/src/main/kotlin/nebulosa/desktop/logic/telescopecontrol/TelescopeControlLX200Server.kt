@@ -1,4 +1,4 @@
-package nebulosa.desktop.telescopecontrol
+package nebulosa.desktop.logic.telescopecontrol
 
 import nebulosa.indi.device.mounts.Mount
 import nebulosa.math.Angle
@@ -191,8 +191,6 @@ class TelescopeControlLX200Server(
                     }
                 }
             }
-
-            updateRADEC = false
         }
     }
 

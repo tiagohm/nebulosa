@@ -30,8 +30,6 @@ class ImageStretcherWindow(private val window: ImageWindow) : AbstractWindow() {
     }
 
     override fun onCreate() {
-        window.titleProperty().on { title = "Image Stretch · " + it.split("·").last().trim() }
-
         shadowAndHighlightRangeSlider.lowValueProperty().on(::onShadowChanged)
         shadowAndHighlightRangeSlider.highValueProperty().on(::onHighlightChanged)
         midtoneSlider.valueProperty().on(::onMidtoneChanged)
@@ -45,6 +43,8 @@ class ImageStretcherWindow(private val window: ImageWindow) : AbstractWindow() {
         highlight = window.highlight * 255f
         shadow = window.shadow * 255f
         midtone = window.midtone * 255f
+
+        updateTitle()
     }
 
     var shadow
@@ -86,5 +86,9 @@ class ImageStretcherWindow(private val window: ImageWindow) : AbstractWindow() {
 
     fun drawHistogram() {
         histogram.draw(window.fits ?: return)
+    }
+
+    fun updateTitle() {
+        title = "Image Stretch · " + window.title.split("·").last().trim()
     }
 }

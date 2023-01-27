@@ -11,6 +11,7 @@ import nebulosa.desktop.core.beans.or
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.core.util.toggle
+import nebulosa.desktop.logic.telescopecontrol.*
 import nebulosa.indi.device.mounts.Mount
 import org.koin.core.component.inject
 

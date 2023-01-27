@@ -11,7 +11,7 @@ import nebulosa.desktop.logic.camera.CameraTaskExecutor
 import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.logic.filterwheel.FilterWheelTaskExecutor
 import nebulosa.desktop.preferences.Preferences
-import nebulosa.desktop.telescopecontrol.TelescopeControlServerManager
+import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServerManager
 import nebulosa.io.resource
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.named

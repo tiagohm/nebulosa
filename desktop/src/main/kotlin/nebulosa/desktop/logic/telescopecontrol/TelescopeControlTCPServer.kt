@@ -1,4 +1,4 @@
-package nebulosa.desktop.telescopecontrol
+package nebulosa.desktop.logic.telescopecontrol
 
 import nebulosa.desktop.tcp.TCPServer
 import nebulosa.indi.device.mounts.Mount

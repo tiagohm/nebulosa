@@ -16,6 +16,7 @@ import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.camera.CameraManager
+import nebulosa.desktop.logic.isNull
 import nebulosa.indi.device.cameras.Camera
 import nebulosa.indi.device.cameras.FrameType
 import org.controlsfx.control.ToggleSwitch
@@ -73,9 +74,9 @@ class CameraWindow : AbstractWindow() {
     }
 
     override fun onCreate() {
-        val isNotConnected = !cameraManager.isConnected
-        val isConnecting = cameraManager.isConnecting
-        val isCapturing = cameraManager.isCapturing
+        val isNotConnected = !cameraManager.connectedProperty
+        val isConnecting = cameraManager.connectingProperty
+        val isCapturing = cameraManager.capturingProperty
         val isNotConnectedOrCapturing = isNotConnected or isCapturing
 
         cameraChoiceBox.converter = DeviceStringConverter()
@@ -84,8 +85,8 @@ class CameraWindow : AbstractWindow() {
         cameraManager.bind(cameraChoiceBox.selectionModel.selectedItemProperty())
 
         connectButton.disableProperty().bind(cameraManager.isNull or isConnecting or isCapturing)
-        connectButton.textProperty().bind(cameraManager.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        cameraManager.isConnected.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700") }
+        connectButton.textProperty().bind(cameraManager.connectedProperty.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
+        cameraManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700") }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 
@@ -93,16 +94,16 @@ class CameraWindow : AbstractWindow() {
             .filter { it.userData == "BIND_TO_SELECTED_CAMERA" }
             .forEach { it.disableProperty().bind(isNotConnectedOrCapturing) }
 
-        coolerToggleSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.hasCooler)
-        cameraManager.isCoolerOn.on(coolerToggleSwitch::setSelected)
+        coolerToggleSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.hasCoolerProperty)
+        cameraManager.coolerProperty.on(coolerToggleSwitch::setSelected)
         coolerToggleSwitch.selectedProperty().on { cameraManager.get().cooler(it) }
 
-        dewHeaterToggleSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.hasDewHeater)
-        dewHeaterToggleSwitch.selectedProperty().bind(cameraManager.isDewHeaterOn)
+        dewHeaterToggleSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.hasDewHeaterProperty)
+        dewHeaterToggleSwitch.selectedProperty().bind(cameraManager.dewHeaterProperty)
         // TODO: dewHeaterToggleSwitch.selectedProperty().on { cameraManager.get().dewHeater(it) }
 
-        temperatureLabel.textProperty().bind(cameraManager.temperature.asString(Locale.ENGLISH, "Temperature (%.1f °C)"))
-        temperatureSetpointSpinner.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.canSetTemperature)
+        temperatureLabel.textProperty().bind(cameraManager.temperatureProperty.asString(Locale.ENGLISH, "Temperature (%.1f °C)"))
+        temperatureSetpointSpinner.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.canSetTemperatureProperty)
         temperatureSetpointButton.disableProperty().bind(temperatureSetpointSpinner.disableProperty())
 
         exposureSpinner.disableProperty().bind(isNotConnectedOrCapturing)
@@ -122,7 +123,7 @@ class CameraWindow : AbstractWindow() {
 
         exposureCountSpinner.disableProperty().bind(fixed.disableProperty() or !fixed.selectedProperty())
 
-        subFrameToggleSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.canSubFrame)
+        subFrameToggleSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.canSubFrameProperty)
         fullsizeButton.disableProperty().bind(subFrameToggleSwitch.disableProperty() or !subFrameToggleSwitch.selectedProperty())
 
         frameXSpinner.disableProperty().bind(fullsizeButton.disableProperty())
@@ -130,7 +131,7 @@ class CameraWindow : AbstractWindow() {
         frameWidthSpinner.disableProperty().bind(frameXSpinner.disableProperty())
         frameHeightSpinner.disableProperty().bind(frameXSpinner.disableProperty())
 
-        binXSpinner.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.canBin)
+        binXSpinner.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.canBinProperty)
         binYSpinner.disableProperty().bind(binXSpinner.disableProperty())
 
         gainSpinner.disableProperty().bind(isNotConnectedOrCapturing)
@@ -140,11 +141,11 @@ class CameraWindow : AbstractWindow() {
         frameTypeChoiceBox.disableProperty().bind(isNotConnectedOrCapturing)
 
         frameFormatChoiceBox.disableProperty().bind(isNotConnectedOrCapturing)
-        frameFormatChoiceBox.itemsProperty().bind(cameraManager.frameFormats)
+        frameFormatChoiceBox.itemsProperty().bind(cameraManager.frameFormatsProperty)
 
         val invalidExposure = exposureSpinner.valueFactory.valueProperty().isEqualTo(0.0)
         startCaptureButton.disableProperty().bind(isNotConnectedOrCapturing or invalidExposure)
-        abortCaptureButton.disableProperty().bind(isNotConnected or !isCapturing or invalidExposure or !cameraManager.canAbort)
+        abortCaptureButton.disableProperty().bind(isNotConnected or !isCapturing or invalidExposure or !cameraManager.canAbortProperty)
 
         exposureSpinner.userData = TimeUnit.MICROSECONDS
 
@@ -482,7 +483,7 @@ class CameraWindow : AbstractWindow() {
         @JvmStatic
         fun open() {
             if (window == null) window = CameraWindow()
-            window!!.open(bringToFront = true)
+            window!!.show(bringToFront = true)
         }
     }
 }

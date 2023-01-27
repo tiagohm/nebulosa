@@ -1,83 +1,28 @@
 package nebulosa.desktop.logic
 
-import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.value.ObservableValue
-import nebulosa.desktop.core.EventBus
-import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
-import nebulosa.indi.device.*
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import java.io.Closeable
+import nebulosa.indi.device.Device
 
-@Suppress("LeakingThis")
-abstract class DeviceProperty<T : Device> : SimpleObjectProperty<T>(), Closeable, KoinComponent {
+interface DeviceProperty<D : Device> : Property<D>, DevicePropertyListener<D> {
 
-    protected val eventBus by inject<EventBus>()
+    val connectedProperty: SimpleBooleanProperty
+    val connectingProperty: SimpleBooleanProperty
 
-    @JvmField val isConnected = SimpleBooleanProperty(false)
-    @JvmField val isConnecting = SimpleBooleanProperty(false)
+    val connected
+        get() = connectedProperty.get()
 
-    private val subscribers = arrayOfNulls<Disposable>(1)
+    val connecting
+        get() = connectingProperty.get()
 
-    @Volatile private var closed = false
+    fun registerListener(listener: DevicePropertyListener<D>)
 
-    init {
-        addListener(::onChanged)
+    fun unregisterListener(listener: DevicePropertyListener<D>)
 
-        subscribers[0] = eventBus
-            .filterIsInstance<DeviceEvent<*>> { it.device === value }
-            .observeOnFXThread()
-            .subscribe(::onDeviceEvent)
-    }
-
-    final override fun getName() = value?.name ?: ""
-
-    protected abstract fun reset()
-
-    protected abstract fun onChanged(prev: T?, new: T)
-
-    protected fun onChanged(
-        observable: ObservableValue<out T>,
-        oldValue: T?, newValue: T?,
-    ) {
-        if (closed) return
-
-        if (newValue == null) {
-            isConnected.set(false)
-            isConnecting.set(false)
-            reset()
+    fun connect() {
+        if (value.isConnected) {
+            value.disconnect()
         } else {
-            isConnected.set(newValue.isConnected)
-            onChanged(oldValue, newValue)
+            value.connect()
         }
-    }
-
-    protected open fun onDeviceEvent(event: DeviceEvent<*>) {
-        if (closed) return
-
-        when (event) {
-            is DeviceConnected -> {
-                isConnected.set(true)
-                isConnecting.set(false)
-            }
-            is DeviceDisconnected -> {
-                isConnected.set(false)
-                isConnecting.set(false)
-            }
-            is DeviceIsConnecting -> {
-                isConnecting.set(true)
-            }
-        }
-    }
-
-    override fun close() {
-        if (closed) return
-
-        closed = true
-
-        subscribers.forEach { it?.dispose() }
-        subscribers.fill(null)
     }
 }

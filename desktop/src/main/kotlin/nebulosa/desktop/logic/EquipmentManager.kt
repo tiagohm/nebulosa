@@ -6,14 +6,14 @@ import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
 import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
-import nebulosa.desktop.logic.gps.GPSProperty
-import nebulosa.desktop.logic.mount.MountProperty
-import nebulosa.desktop.logic.camera.CameraProperty
+import nebulosa.desktop.logic.gps.DefaultGPSProperty
+import nebulosa.desktop.logic.mount.DefaultMountProperty
+import nebulosa.desktop.logic.camera.DefaultCameraProperty
 import nebulosa.desktop.logic.connection.Connected
 import nebulosa.desktop.logic.connection.ConnectionEvent
 import nebulosa.desktop.logic.connection.Disconnected
-import nebulosa.desktop.logic.filterwheel.FilterWheelProperty
-import nebulosa.desktop.logic.focuser.FocuserProperty
+import nebulosa.desktop.logic.filterwheel.DefaultFilterWheelProperty
+import nebulosa.desktop.logic.focuser.DefaultFocuserProperty
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.cameras.Camera
 import nebulosa.indi.device.cameras.CameraAttached
@@ -45,7 +45,7 @@ class EquipmentManager : KoinComponent, Closeable {
     private val eventBus by inject<EventBus>()
     private val subscribers = arrayOfNulls<Disposable>(2)
 
-    @JvmField val isConnected = SimpleBooleanProperty(false)
+    @JvmField val connectedProperty = SimpleBooleanProperty(false)
 
     @JvmField val attachedCameras = SimpleListProperty(FXCollections.observableArrayList<Camera>())
     @JvmField val attachedMounts = SimpleListProperty(FXCollections.observableArrayList<Mount>())
@@ -56,11 +56,11 @@ class EquipmentManager : KoinComponent, Closeable {
     @JvmField val attachedGuiders = SimpleListProperty(FXCollections.observableArrayList<Guider>())
     @JvmField val attachedThermometers = SimpleListProperty(FXCollections.observableArrayList<Thermometer>())
 
-    @JvmField val selectedCamera = CameraProperty()
-    @JvmField val selectedMount = MountProperty()
-    @JvmField val selectedFilterWheel = FilterWheelProperty()
-    @JvmField val selectedFocuser = FocuserProperty()
-    @JvmField val selectedGPS = GPSProperty()
+    @JvmField val selectedCamera = DefaultCameraProperty()
+    @JvmField val selectedMount = DefaultMountProperty()
+    @JvmField val selectedFilterWheel = DefaultFilterWheelProperty()
+    @JvmField val selectedFocuser = DefaultFocuserProperty()
+    @JvmField val selectedGPS = DefaultGPSProperty()
 
     init {
         subscribers[0] = eventBus
@@ -95,8 +95,8 @@ class EquipmentManager : KoinComponent, Closeable {
 
     private fun onConnectionEvent(event: ConnectionEvent) {
         when (event) {
-            is Connected -> isConnected.set(true)
-            is Disconnected -> isConnected.set(false)
+            is Connected -> connectedProperty.set(true)
+            is Disconnected -> connectedProperty.set(false)
         }
     }
 

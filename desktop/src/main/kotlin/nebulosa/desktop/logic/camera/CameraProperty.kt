@@ -1,200 +1,171 @@
 package nebulosa.desktop.logic.camera
 
 import javafx.beans.property.*
-import javafx.collections.FXCollections
 import nebulosa.desktop.logic.DeviceProperty
 import nebulosa.imaging.algorithms.CfaPattern
-import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.cameras.*
+import nebulosa.indi.device.cameras.Camera
 import nebulosa.indi.protocol.PropertyState
 
-open class CameraProperty : DeviceProperty<Camera>() {
+interface CameraProperty : DeviceProperty<Camera> {
 
-    @JvmField val isExposuring = SimpleBooleanProperty(false)
-    @JvmField val hasCoolerControl = SimpleBooleanProperty(false)
-    @JvmField val isCoolerOn = SimpleBooleanProperty(false)
-    @JvmField val hasDewHeater = SimpleBooleanProperty(false)
-    @JvmField val isDewHeaterOn = SimpleBooleanProperty(false)
-    @JvmField val frameFormats = SimpleListProperty(FXCollections.observableArrayList<String>())
-    @JvmField val canAbort = SimpleBooleanProperty(false)
-    @JvmField val cfaOffsetX = SimpleIntegerProperty(0)
-    @JvmField val cfaOffsetY = SimpleIntegerProperty(0)
-    @JvmField val cfaType = SimpleObjectProperty(CfaPattern.RGGB)
-    @JvmField val exposureMin = SimpleLongProperty(0L)
-    @JvmField val exposureMax = SimpleLongProperty(0L)
-    @JvmField val exposureState = SimpleObjectProperty(PropertyState.IDLE)
-    @JvmField val hasCooler = SimpleBooleanProperty(false)
-    @JvmField val canSetTemperature = SimpleBooleanProperty(false)
-    @JvmField val temperature = SimpleDoubleProperty(0.0)
-    @JvmField val canSubFrame = SimpleBooleanProperty(false)
-    @JvmField val x = SimpleIntegerProperty(0)
-    @JvmField val minX = SimpleIntegerProperty(0)
-    @JvmField val maxX = SimpleIntegerProperty(0)
-    @JvmField val y = SimpleIntegerProperty(0)
-    @JvmField val minY = SimpleIntegerProperty(0)
-    @JvmField val maxY = SimpleIntegerProperty(0)
-    @JvmField val width = SimpleIntegerProperty(0)
-    @JvmField val minWidth = SimpleIntegerProperty(0)
-    @JvmField val maxWidth = SimpleIntegerProperty(0)
-    @JvmField val height = SimpleIntegerProperty(0)
-    @JvmField val minHeight = SimpleIntegerProperty(0)
-    @JvmField val maxHeight = SimpleIntegerProperty(0)
-    @JvmField val canBin = SimpleBooleanProperty(false)
-    @JvmField val maxBinX = SimpleIntegerProperty(1)
-    @JvmField val maxBinY = SimpleIntegerProperty(1)
-    @JvmField val binX = SimpleIntegerProperty(1)
-    @JvmField val binY = SimpleIntegerProperty(1)
-    @JvmField val gain = SimpleIntegerProperty(0)
-    @JvmField val gainMin = SimpleIntegerProperty(0)
-    @JvmField val gainMax = SimpleIntegerProperty(0)
-    @JvmField val offset = SimpleIntegerProperty(0)
-    @JvmField val offsetMin = SimpleIntegerProperty(0)
-    @JvmField val offsetMax = SimpleIntegerProperty(0)
+    val exposuringProperty: SimpleBooleanProperty
+    val hasCoolerControlProperty: SimpleBooleanProperty
+    val coolerProperty: SimpleBooleanProperty
+    val hasDewHeaterProperty: SimpleBooleanProperty
+    val dewHeaterProperty: SimpleBooleanProperty
+    val frameFormatsProperty: SimpleListProperty<String>
+    val canAbortProperty: SimpleBooleanProperty
+    val cfaOffsetXProperty: SimpleIntegerProperty
+    val cfaOffsetYProperty: SimpleIntegerProperty
+    val cfaTypeProperty: SimpleObjectProperty<CfaPattern>
+    val exposureMinProperty: SimpleLongProperty
+    val exposureMaxProperty: SimpleLongProperty
+    val exposureStateProperty: SimpleObjectProperty<PropertyState>
+    val hasCoolerProperty: SimpleBooleanProperty
+    val canSetTemperatureProperty: SimpleBooleanProperty
+    val temperatureProperty: SimpleDoubleProperty
+    val canSubFrameProperty: SimpleBooleanProperty
+    val xProperty: SimpleIntegerProperty
+    val minXProperty: SimpleIntegerProperty
+    val maxXProperty: SimpleIntegerProperty
+    val yProperty: SimpleIntegerProperty
+    val minYProperty: SimpleIntegerProperty
+    val maxYProperty: SimpleIntegerProperty
+    val widthProperty: SimpleIntegerProperty
+    val minWidthProperty: SimpleIntegerProperty
+    val maxWidthProperty: SimpleIntegerProperty
+    val heightProperty: SimpleIntegerProperty
+    val minHeightProperty: SimpleIntegerProperty
+    val maxHeightProperty: SimpleIntegerProperty
+    val canBinProperty: SimpleBooleanProperty
+    val maxBinXProperty: SimpleIntegerProperty
+    val maxBinYProperty: SimpleIntegerProperty
+    val binXProperty: SimpleIntegerProperty
+    val binYProperty: SimpleIntegerProperty
+    val gainProperty: SimpleIntegerProperty
+    val gainMinProperty: SimpleIntegerProperty
+    val gainMaxProperty: SimpleIntegerProperty
+    val offsetProperty: SimpleIntegerProperty
+    val offsetMinProperty: SimpleIntegerProperty
+    val offsetMaxProperty: SimpleIntegerProperty
 
-    override fun onChanged(prev: Camera?, new: Camera) {
-        isExposuring.set(new.isExposuring)
-        hasCoolerControl.set(new.hasCoolerControl)
-        isCoolerOn.set(new.isCoolerOn)
-        hasDewHeater.set(new.hasDewHeater)
-        isDewHeaterOn.set(new.isDewHeaterOn)
-        frameFormats.setAll(new.frameFormats)
-        canAbort.set(new.canAbort)
-        cfaOffsetX.set(new.cfaOffsetX)
-        cfaOffsetY.set(new.cfaOffsetY)
-        cfaType.set(new.cfaType)
-        exposureMin.set(new.exposureMin)
-        exposureMax.set(new.exposureMax)
-        exposureState.set(new.exposureState)
-        hasCooler.set(new.hasCooler)
-        canSetTemperature.set(new.canSetTemperature)
-        temperature.set(new.temperature)
-        canSubFrame.set(new.canSubFrame)
-        x.set(new.x)
-        minX.set(new.minX)
-        maxX.set(new.maxX)
-        y.set(new.y)
-        minY.set(new.minY)
-        maxY.set(new.maxY)
-        width.set(new.width)
-        minWidth.set(new.minWidth)
-        maxWidth.set(new.maxWidth)
-        height.set(new.height)
-        minHeight.set(new.minHeight)
-        maxHeight.set(new.maxHeight)
-        canBin.set(new.canBin)
-        maxBinX.set(new.maxBinX)
-        maxBinY.set(new.maxBinY)
-        binX.set(new.binX)
-        binY.set(new.binY)
-        gainMin.set(new.gainMin)
-        gainMax.set(new.gainMax)
-        gain.set(new.gain)
-        offsetMin.set(new.offsetMin)
-        offsetMax.set(new.offsetMax)
-        offset.set(new.offset)
-    }
+    val exposuring
+        get() = exposuringProperty.get()
 
-    override fun reset() {
-        isExposuring.set(false)
-        hasCoolerControl.set(false)
-        isCoolerOn.set(false)
-        hasDewHeater.set(false)
-        isDewHeaterOn.set(false)
-        frameFormats.clear()
-        canAbort.set(false)
-        cfaOffsetX.set(0)
-        cfaOffsetY.set(0)
-        cfaType.set(CfaPattern.RGGB)
-        exposureMin.set(0L)
-        exposureMax.set(0L)
-        exposureState.set(PropertyState.IDLE)
-        hasCooler.set(false)
-        canSetTemperature.set(false)
-        temperature.set(0.0)
-        canSubFrame.set(false)
-        x.set(0)
-        minX.set(0)
-        maxX.set(0)
-        y.set(0)
-        minY.set(0)
-        maxY.set(0)
-        width.set(0)
-        minWidth.set(0)
-        maxWidth.set(0)
-        height.set(0)
-        minHeight.set(0)
-        maxHeight.set(0)
-        canBin.set(false)
-        maxBinX.set(1)
-        maxBinY.set(1)
-        binX.set(1)
-        binY.set(1)
-        gainMin.set(0)
-        gainMax.set(0)
-        gain.set(0)
-        offsetMin.set(0)
-        offsetMax.set(0)
-        offset.set(0)
-    }
+    val hasCoolerControl
+        get() = hasCoolerControlProperty.get()
 
-    override fun onDeviceEvent(event: DeviceEvent<*>) {
-        super.onDeviceEvent(event)
+    val cooler
+        get() = coolerProperty.get()
 
-        when (event) {
-            is CameraExposuringChanged -> isExposuring.set(value.isExposuring)
-            is CameraCoolerControlChanged -> hasCoolerControl.set(value.hasCoolerControl)
-            is CameraCoolerChanged -> isCoolerOn.set(value.isCoolerOn)
-            is CameraHasDewHeaterChanged -> hasDewHeater.set(value.hasDewHeater)
-            is CameraDewHeaterChanged -> isDewHeaterOn.set(value.isDewHeaterOn)
-            is CameraFrameFormatsChanged -> frameFormats.setAll(value.frameFormats)
-            is CameraCanAbortChanged -> canAbort.set(value.canAbort)
-            is CameraCfaChanged -> {
-                cfaOffsetX.set(value.cfaOffsetX)
-                cfaOffsetY.set(value.cfaOffsetY)
-                cfaType.set(value.cfaType)
-            }
-            is CameraExposureMinMaxChanged -> {
-                exposureMin.set(value.exposureMin)
-                exposureMax.set(value.exposureMax)
-            }
-            is CameraGainChanged -> gain.set(value.gain)
-            is CameraGainMinMaxChanged -> {
-                gainMin.set(value.gainMin)
-                gainMax.set(value.gainMax)
-            }
-            is CameraOffsetChanged -> offset.set(value.offset)
-            is CameraOffsetMinMaxChanged -> {
-                offsetMin.set(value.offsetMin)
-                offsetMax.set(value.offsetMax)
-            }
-            is CameraExposureStateChanged -> exposureState.set(value.exposureState)
-            is CameraHasCoolerChanged -> hasCooler.set(value.hasCooler)
-            is CameraCanSetTemperatureChanged -> canSetTemperature.set(value.canSetTemperature)
-            is CameraTemperatureChanged -> temperature.set(value.temperature)
-            is CameraCanSubFrameChanged -> canSubFrame.set(value.canSubFrame)
-            is CameraFrameChanged -> {
-                minX.set(value.minX)
-                maxX.set(value.maxX)
-                minY.set(value.minY)
-                maxY.set(value.maxY)
-                minWidth.set(value.minWidth)
-                maxWidth.set(value.maxWidth)
-                minHeight.set(value.minHeight)
-                maxHeight.set(value.maxHeight)
-                x.set(value.x)
-                y.set(value.y)
-                width.set(value.width)
-                height.set(value.height)
-            }
-            is CameraCanBinChanged -> {
-                canBin.set(value.canBin)
-                maxBinX.set(value.maxBinX)
-                maxBinY.set(value.maxBinY)
-            }
-            is CameraBinChanged -> {
-                binX.set(value.binX)
-                binY.set(value.binY)
-            }
-        }
-    }
+    val hasDewHeater
+        get() = hasDewHeaterProperty.get()
+
+    val dewHeater
+        get() = dewHeaterProperty.get()
+
+    val frameFormats: List<String>
+        get() = frameFormatsProperty.get()
+
+    val canAbort
+        get() = canAbortProperty.get()
+
+    val cfaOffsetX
+        get() = cfaOffsetXProperty.get()
+
+    val cfaOffsetY
+        get() = cfaOffsetYProperty.get()
+
+    val cfaType: CfaPattern?
+        get() = cfaTypeProperty.get()
+
+    val exposureMin
+        get() = exposureMinProperty.get()
+
+    val exposureMax
+        get() = exposureMaxProperty.get()
+
+    val exposureState: PropertyState?
+        get() = exposureStateProperty.get()
+
+    val hasCooler
+        get() = hasCoolerProperty.get()
+
+    val canSetTemperature
+        get() = canSetTemperatureProperty.get()
+
+    val temperature
+        get() = temperatureProperty.get()
+
+    val canSubFrame
+        get() = canSubFrameProperty.get()
+
+    val x
+        get() = xProperty.get()
+
+    val minX
+        get() = minXProperty.get()
+
+    val maxX
+        get() = maxXProperty.get()
+
+    val y
+        get() = yProperty.get()
+
+    val minY
+        get() = minYProperty.get()
+
+    val maxY
+        get() = maxYProperty.get()
+
+    val width
+        get() = widthProperty.get()
+
+    val minWidth
+        get() = minWidthProperty.get()
+
+    val maxWidth
+        get() = maxWidthProperty.get()
+
+    val height
+        get() = heightProperty.get()
+
+    val minHeight
+        get() = minHeightProperty.get()
+
+    val maxHeight
+        get() = maxHeightProperty.get()
+
+    val canBin
+        get() = canBinProperty.get()
+
+    val maxBinX
+        get() = maxBinXProperty.get()
+
+    val maxBinY
+        get() = maxBinYProperty.get()
+
+    val binX
+        get() = binXProperty.get()
+
+    val binY
+        get() = binYProperty.get()
+
+    val gain
+        get() = gainProperty.get()
+
+    val gainMin
+        get() = gainMinProperty.get()
+
+    val gainMax
+        get() = gainMaxProperty.get()
+
+    val offset
+        get() = offsetProperty.get()
+
+    val offsetMin
+        get() = offsetMinProperty.get()
+
+    val offsetMax
+        get() = offsetMaxProperty.get()
 }

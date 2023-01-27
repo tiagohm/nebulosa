@@ -421,7 +421,7 @@ class INDIPanelControlWindow : AbstractWindow() {
         @JvmStatic
         fun open(device: Device? = null) {
             if (window == null) window = INDIPanelControlWindow()
-            window!!.open(bringToFront = true)
+            window!!.show(bringToFront = true)
             device?.also { window!!.device = it }
         }
 

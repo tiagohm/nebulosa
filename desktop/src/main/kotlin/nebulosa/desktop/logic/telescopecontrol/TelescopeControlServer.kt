@@ -1,4 +1,4 @@
-package nebulosa.desktop.telescopecontrol
+package nebulosa.desktop.logic.telescopecontrol
 
 import nebulosa.indi.device.mounts.Mount
 import java.io.Closeable

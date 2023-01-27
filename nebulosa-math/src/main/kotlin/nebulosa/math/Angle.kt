@@ -118,6 +118,7 @@ value class Angle(val value: Double) : Comparable<Angle> {
         @JvmStatic val ZERO = Angle(0.0)
         @JvmStatic val SEMICIRCLE = Angle(PI)
         @JvmStatic val CIRCLE = Angle(TAU)
+        @JvmStatic val QUARTER = Angle(PIOVERTWO)
 
         override val start = ZERO
 
@@ -158,7 +159,7 @@ value class Angle(val value: Double) : Comparable<Angle> {
                 res += abs(value) / PARSE_COORDINATES_FACTOR[idx++]
             }
 
-            return if (idx == 0) throw IllegalArgumentException("invalid coordinate: $input")
+            return if (idx == 0) throw NumberFormatException("invalid coordinate: $input")
             else if (negative) -res
             else res
         }

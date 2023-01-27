@@ -1,4 +1,4 @@
-package nebulosa.desktop.telescopecontrol
+package nebulosa.desktop.logic.telescopecontrol
 
 import nebulosa.constants.PI
 import nebulosa.erfa.eraAnpm

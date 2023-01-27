@@ -9,29 +9,27 @@ import nebulosa.indi.device.filterwheels.FilterWheel
 import nebulosa.indi.device.filterwheels.FilterWheelMovingChanged
 import nebulosa.indi.device.filterwheels.FilterWheelPositionChanged
 import nebulosa.indi.device.filterwheels.FilterWheelSlotCountChanged
+import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.koin.core.context.GlobalContext
 
-class FilterWheelManager(private val window: FilterWheelWindow) : FilterWheelProperty() {
+class FilterWheelManager(private val window: FilterWheelWindow) :
+    FilterWheelProperty by GlobalContext.get().get<EquipmentManager>().selectedFilterWheel, KoinComponent {
 
     private val preferences by inject<Preferences>()
     private val equipmentManager by inject<EquipmentManager>()
 
     val filterWheels get() = equipmentManager.attachedFilterWheels
 
-    override fun onChanged(prev: FilterWheel?, new: FilterWheel) {
-        super.onChanged(prev, new)
+    override fun onChanged(prev: FilterWheel?, device: FilterWheel) {
+        if (prev !== device) savePreferences(prev)
 
-        savePreferences(prev)
         updateTitle()
-        loadPreferences(new)
-        syncFilterNames()
 
-        equipmentManager.selectedFilterWheel.set(new)
+        loadPreferences(device)
     }
 
-    override fun onDeviceEvent(event: DeviceEvent<*>) {
-        super.onDeviceEvent(event)
-
+    override fun onDeviceEvent(event: DeviceEvent<*>, device: FilterWheel) {
         when (event) {
             is FilterWheelPositionChanged -> updateTitle()
             is FilterWheelSlotCountChanged -> updateFilterNames()
@@ -40,21 +38,16 @@ class FilterWheelManager(private val window: FilterWheelWindow) : FilterWheelPro
     }
 
     val filterNames
-        get() = (1..slotCount.get()).map(::computeFilterName)
+        get() = (1..count).map(::computeFilterName)
 
     fun updateTitle() {
-        val filterName = computeFilterName(position.get())
+        val filterName = computeFilterName(position)
         window.title = "Filter Wheel · $name · $filterName"
     }
 
     fun updateStatus() {
-        val text = if (isMoving.get()) "moving" else "idle"
-        window.status = text
-    }
-
-    fun connect() {
-        if (isConnected.get()) value.disconnect()
-        else value.connect()
+        window.status = if (moving) "moving"
+        else "idle"
     }
 
     fun openINDIPanelControl() {
@@ -67,7 +60,7 @@ class FilterWheelManager(private val window: FilterWheelWindow) : FilterWheelPro
     }
 
     fun updateFilterAsShutter(position: Int) {
-        if (position !in 1..slotCount.get()) return
+        if (position !in 1..count) return
         preferences.int("filterWheel.$name.filterAsShutter", position)
         window.filterAsShutter = position
     }
@@ -86,7 +79,7 @@ class FilterWheelManager(private val window: FilterWheelWindow) : FilterWheelPro
 
     fun updateFilterNames() {
         val selectedFilterAsShutter = preferences.int("filterWheel.$name.filterAsShutter") ?: 1
-        window.updateFilterNames(filterNames, selectedFilterAsShutter, position.get())
+        window.updateFilterNames(filterNames, selectedFilterAsShutter, position)
     }
 
     fun moveTo(position: Int) {
@@ -112,6 +105,7 @@ class FilterWheelManager(private val window: FilterWheelWindow) : FilterWheelPro
     fun loadPreferences(device: FilterWheel? = value) {
         if (device != null) {
             updateFilterNames()
+            syncFilterNames()
 
             window.isUseFilterWheelAsShutter = preferences.bool("filterWheel.${device.name}.useFilterWheelAsShutter")
         } else {
@@ -123,8 +117,6 @@ class FilterWheelManager(private val window: FilterWheelWindow) : FilterWheelPro
     }
 
     override fun close() {
-        super.close()
-
         savePreferences(null)
         savePreferences()
     }

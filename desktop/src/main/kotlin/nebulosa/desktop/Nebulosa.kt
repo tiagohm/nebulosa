@@ -16,6 +16,6 @@ class Nebulosa : Application(), KoinComponent {
             single { this@Nebulosa.hostServices }
         })
 
-        homeWindow.open()
+        homeWindow.show()
     }
 }

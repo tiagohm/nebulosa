@@ -6,38 +6,37 @@ import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.focusers.Focuser
-import nebulosa.indi.device.focusers.FocuserMaxPositionChanged
 import nebulosa.indi.device.focusers.FocuserMovingChanged
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.koin.core.context.GlobalContext
 
-class FocuserManager(private val window: FocuserWindow) : FocuserProperty(), KoinComponent {
+class FocuserManager(private val window: FocuserWindow) :
+    FocuserProperty by GlobalContext.get().get<EquipmentManager>().selectedFocuser, KoinComponent {
 
     private val preferences by inject<Preferences>()
     private val equipmentManager by inject<EquipmentManager>()
 
-    val focusers get() = equipmentManager.attachedFocusers
+    @JvmField val focusers = equipmentManager.attachedFocusers
 
-    override fun onChanged(prev: Focuser?, new: Focuser) {
-        super.onChanged(prev, new)
+    init {
+        registerListener(this)
+    }
 
-        savePreferences(prev)
+    override fun onChanged(prev: Focuser?, device: Focuser) {
+        if (prev !== device) savePreferences(prev)
+
         updateTitle()
         updateMaxIncrement()
         updateMaxAbsolute()
-        loadPreferences(new)
 
-        equipmentManager.selectedFocuser.set(new)
+        loadPreferences(device)
     }
 
-    override fun onDeviceEvent(event: DeviceEvent<*>) {
-        super.onDeviceEvent(event)
+    override fun onReset() {}
 
+    override fun onDeviceEvent(event: DeviceEvent<*>, device: Focuser) {
         when (event) {
-            is FocuserMaxPositionChanged -> {
-                updateMaxIncrement()
-                updateMaxAbsolute()
-            }
             is FocuserMovingChanged -> updateStatus()
         }
     }
@@ -47,13 +46,8 @@ class FocuserManager(private val window: FocuserWindow) : FocuserProperty(), Koi
     }
 
     fun updateStatus() {
-        val text = if (isMoving.get()) "moving" else "idle"
+        val text = if (moving) "moving" else "idle"
         window.status = text
-    }
-
-    fun connect() {
-        if (isConnected.get()) value.disconnect()
-        else value.connect()
     }
 
     fun openINDIPanelControl() {
@@ -96,16 +90,13 @@ class FocuserManager(private val window: FocuserWindow) : FocuserProperty(), Koi
     }
 
     fun loadPreferences(device: Focuser? = value) {
-        if (device != null) {
-        } else {
+        if (device == null) {
             preferences.double("focuser.screen.x")?.let { window.x = it }
             preferences.double("focuser.screen.y")?.let { window.y = it }
         }
     }
 
     override fun close() {
-        super.close()
-
         savePreferences(null)
         savePreferences()
     }

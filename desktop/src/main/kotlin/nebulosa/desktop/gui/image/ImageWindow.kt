@@ -19,7 +19,6 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.cameras.Camera
-import nom.tam.fits.Header
 import java.io.File
 import java.nio.IntBuffer
 
@@ -36,9 +35,6 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
 
     private val screenBounds = Screen.getPrimary().bounds
     private val imageManager = ImageManager(this)
-    @Volatile private var imageStretcherWindow: ImageStretcherWindow? = null
-    @Volatile private var fitsHeaderWindow: FitsHeaderWindow? = null
-    @Volatile private var scnrWindow: SCNRWindow? = null
 
     init {
         title = "Image"
@@ -98,17 +94,7 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
     override fun onStop() {
         buffer = IntArray(0)
 
-        imageStretcherWindow?.close()
-        scnrWindow?.close()
-        fitsHeaderWindow?.close()
-
         imageManager.close()
-
-        fitsHeaderWindow?.close()
-        fitsHeaderWindow = null
-
-        scnrWindow?.close()
-        scnrWindow = null
 
         System.gc()
     }
@@ -175,14 +161,12 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
 
     @FXML
     private fun openImageStretcher() {
-        imageStretcherWindow = imageStretcherWindow ?: ImageStretcherWindow(this)
-        imageStretcherWindow!!.open(bringToFront = true)
+        imageManager.openImageStretcher()
     }
 
     @FXML
     private fun openSCNR() {
-        scnrWindow = scnrWindow ?: SCNRWindow(this)
-        scnrWindow!!.open(bringToFront = true)
+        imageManager.openSCNR()
     }
 
     @FXML
@@ -207,12 +191,6 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
 
     fun open(file: File) {
         imageManager.open(file)
-    }
-
-    fun openFitsHeader(header: Header) {
-        fitsHeaderWindow = fitsHeaderWindow ?: FitsHeaderWindow()
-        fitsHeaderWindow!!.load(header)
-        fitsHeaderWindow!!.open(bringToFront = true)
     }
 
     fun draw(
@@ -262,10 +240,6 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
         val g = imageCanvas.graphicsContext2D
         g.clearRect(0.0, 0.0, imageCanvas.width, imageCanvas.height)
         g.drawImage(writableImage, 0.0, 0.0)
-    }
-
-    fun drawHistogram() {
-        imageStretcherWindow?.drawHistogram()
     }
 
     fun applySCNR(

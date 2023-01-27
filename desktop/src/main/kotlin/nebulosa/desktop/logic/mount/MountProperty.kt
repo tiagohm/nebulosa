@@ -1,136 +1,105 @@
 package nebulosa.desktop.logic.mount
 
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleDoubleProperty
-import javafx.beans.property.SimpleListProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.collections.FXCollections
+import javafx.beans.property.*
 import nebulosa.desktop.logic.DeviceProperty
-import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.mounts.*
+import nebulosa.indi.device.mounts.Mount
+import nebulosa.indi.device.mounts.MountType
+import nebulosa.indi.device.mounts.PierSide
+import nebulosa.indi.device.mounts.TrackMode
 import java.time.OffsetDateTime
 
-class MountProperty : DeviceProperty<Mount>() {
+interface MountProperty : DeviceProperty<Mount> {
 
-    @JvmField val isSlewing = SimpleBooleanProperty()
-    @JvmField val isTracking = SimpleBooleanProperty()
-    @JvmField val isParking = SimpleBooleanProperty()
-    @JvmField val isParked = SimpleBooleanProperty()
-    @JvmField val slewRates = SimpleListProperty(FXCollections.observableArrayList<String>())
-    @JvmField val slewRate = SimpleObjectProperty<String>()
-    @JvmField val mountType = SimpleObjectProperty(MountType.EQ_GEM)
-    @JvmField val trackModes = SimpleListProperty(FXCollections.observableArrayList<TrackMode>())
-    @JvmField val trackMode = SimpleObjectProperty<TrackMode>()
-    @JvmField val pierSide = SimpleObjectProperty(PierSide.NEITHER)
-    @JvmField val canAbort = SimpleBooleanProperty()
-    @JvmField val canSync = SimpleBooleanProperty()
-    @JvmField val canPark = SimpleBooleanProperty()
-    @JvmField val guideRateWE = SimpleDoubleProperty()
-    @JvmField val guideRateNS = SimpleDoubleProperty()
-    @JvmField val rightAscension = SimpleDoubleProperty()
-    @JvmField val declination = SimpleDoubleProperty()
-    @JvmField val rightAscensionJ2000 = SimpleDoubleProperty()
-    @JvmField val declinationJ2000 = SimpleDoubleProperty()
-    @JvmField val longitude = SimpleDoubleProperty()
-    @JvmField val latitude = SimpleDoubleProperty()
-    @JvmField val elevation = SimpleDoubleProperty()
-    @JvmField val time = SimpleObjectProperty(OffsetDateTime.now())
+    val slewingProperty: SimpleBooleanProperty
+    val trackingProperty: SimpleBooleanProperty
+    val parkingProperty: SimpleBooleanProperty
+    val parkedProperty: SimpleBooleanProperty
+    val slewRatesProperty: SimpleListProperty<String>
+    val slewRateProperty: SimpleStringProperty
+    val mountTypeProperty: SimpleObjectProperty<MountType>
+    val trackModesProperty: SimpleListProperty<TrackMode>
+    val trackModeProperty: SimpleObjectProperty<TrackMode>
+    val pierSideProperty: SimpleObjectProperty<PierSide>
+    val canAbortProperty: SimpleBooleanProperty
+    val canSyncProperty: SimpleBooleanProperty
+    val canParkProperty: SimpleBooleanProperty
+    val guideRateWEProperty: SimpleDoubleProperty
+    val guideRateNSProperty: SimpleDoubleProperty
+    val rightAscensionProperty: SimpleDoubleProperty
+    val declinationProperty: SimpleDoubleProperty
+    val rightAscensionJ2000Property: SimpleDoubleProperty
+    val declinationJ2000Property: SimpleDoubleProperty
+    val longitudeProperty: SimpleDoubleProperty
+    val latitudeProperty: SimpleDoubleProperty
+    val elevationProperty: SimpleDoubleProperty
+    val timeProperty: SimpleObjectProperty<OffsetDateTime>
 
-    override fun onChanged(prev: Mount?, new: Mount) {
-        isSlewing.set(new.isSlewing)
-        isTracking.set(new.isTracking)
-        slewRates.setAll(new.slewRates)
-        slewRate.set(new.slewRate)
-        mountType.set(new.mountType)
-        trackModes.setAll(new.trackModes)
-        trackMode.set(new.trackMode)
-        pierSide.set(new.pierSide)
-        isParking.set(new.isParking)
-        isParked.set(new.isParked)
-        canAbort.set(new.canAbort)
-        canSync.set(new.canSync)
-        canPark.set(new.canPark)
-        guideRateWE.set(new.guideRateWE)
-        guideRateNS.set(new.guideRateNS)
-        rightAscension.set(new.rightAscension.hours)
-        declination.set(new.declination.degrees)
-        rightAscensionJ2000.set(new.rightAscensionJ2000.hours)
-        declinationJ2000.set(new.declinationJ2000.degrees)
-        longitude.set(new.longitude.degrees)
-        latitude.set(new.latitude.degrees)
-        elevation.set(new.elevation.meters)
-        time.set(new.time)
-    }
+    val slewing
+        get() = slewingProperty.get()
 
-    override fun reset() {
-        isSlewing.set(false)
-        isTracking.set(false)
-        slewRates.clear()
-        slewRate.set(null)
-        mountType.set(MountType.EQ_GEM)
-        trackModes.setAll(listOf(TrackMode.SIDEREAL))
-        trackMode.set(TrackMode.SIDEREAL)
-        pierSide.set(PierSide.NEITHER)
-        isParking.set(false)
-        isParked.set(false)
-        canAbort.set(false)
-        canSync.set(false)
-        canPark.set(false)
-        guideRateWE.set(0.0)
-        guideRateNS.set(0.0)
-        rightAscension.set(0.0)
-        declination.set(0.0)
-        rightAscensionJ2000.set(0.0)
-        declinationJ2000.set(0.0)
-        longitude.set(0.0)
-        latitude.set(0.0)
-        elevation.set(0.0)
-        time.set(OffsetDateTime.now())
-    }
+    val tracking
+        get() = trackingProperty.get()
 
-    override fun onDeviceEvent(event: DeviceEvent<*>) {
-        super.onDeviceEvent(event)
+    val parking
+        get() = parkingProperty.get()
 
-        when (event) {
-            is MountSlewingChanged -> isSlewing.set(value.isSlewing)
-            is MountSlewRatesChanged -> {
-                slewRate.set(null)
-                slewRates.setAll(value.slewRates)
-                slewRate.set(value.slewRate ?: value.slewRates.firstOrNull())
-            }
-            is MountSlewRateChanged -> slewRate.set(value.slewRate)
-            is MountTypeChanged -> mountType.set(value.mountType)
-            is MountTrackModesChanged -> {
-                trackMode.set(null)
-                trackModes.setAll(value.trackModes)
-                trackMode.set(value.trackMode)
-            }
-            is MountTrackModeChanged -> trackMode.set(value.trackMode)
-            is MountTrackingChanged -> isTracking.set(value.isTracking)
-            is MountPierSideChanged -> pierSide.set(value.pierSide)
-            is MountCanAbortChanged -> canAbort.set(value.canAbort)
-            is MountCanSyncChanged -> canSync.set(value.canSync)
-            is MountCanParkChanged -> canPark.set(value.canPark)
-            is MountEquatorialCoordinatesChanged -> {
-                rightAscension.set(value.rightAscension.hours)
-                declination.set(value.declination.degrees)
-                rightAscensionJ2000.set(value.rightAscensionJ2000.hours)
-                declinationJ2000.set(value.declinationJ2000.degrees)
-            }
-            is MountGuideRateChanged -> {
-                guideRateWE.set(value.guideRateWE)
-                guideRateNS.set(value.guideRateNS)
-            }
-            is MountParkChanged -> {
-                isParking.set(value.isParking)
-                isParked.set(value.isParked)
-            }
-            is MountCoordinateChanged -> {
-                longitude.set(value.longitude.degrees)
-                latitude.set(value.latitude.degrees)
-                elevation.set(value.elevation.meters)
-            }
-            is MountTimeChanged -> time.set(value.time)
-        }
-    }
+    val parked
+        get() = parkedProperty.get()
+
+    val slewRates: List<String>
+        get() = slewRatesProperty.get()
+
+    val slewRate: String?
+        get() = slewRateProperty.get()
+
+    val mountType: MountType?
+        get() = mountTypeProperty.get()
+
+    val trackModes: List<TrackMode>
+        get() = trackModesProperty.get()
+
+    val trackMode: TrackMode?
+        get() = trackModeProperty.get()
+
+    val pierSide: PierSide?
+        get() = pierSideProperty.get()
+
+    val canAbort
+        get() = canAbortProperty.get()
+
+    val canSync
+        get() = canSyncProperty.get()
+
+    val canPark
+        get() = canParkProperty.get()
+
+    val guideRateWE
+        get() = guideRateWEProperty.get()
+
+    val guideRateNS
+        get() = guideRateNSProperty.get()
+
+    val rightAscension
+        get() = rightAscensionProperty.get()
+
+    val declination
+        get() = declinationProperty.get()
+
+    val rightAscensionJ2000
+        get() = rightAscensionJ2000Property.get()
+
+    val declinationJ2000
+        get() = declinationJ2000Property.get()
+
+    val longitude
+        get() = longitudeProperty.get()
+
+    val latitude
+        get() = latitudeProperty.get()
+
+    val elevation
+        get() = elevationProperty.get()
+
+    val time: OffsetDateTime?
+        get() = timeProperty.get()
 }

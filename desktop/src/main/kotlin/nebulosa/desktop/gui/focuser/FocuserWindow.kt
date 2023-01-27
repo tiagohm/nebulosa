@@ -14,6 +14,7 @@ import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.focuser.FocuserManager
+import nebulosa.desktop.logic.isNull
 import nebulosa.indi.device.focusers.Focuser
 import org.controlsfx.control.ToggleSwitch
 
@@ -48,9 +49,9 @@ class FocuserWindow : AbstractWindow() {
     }
 
     override fun onCreate() {
-        val isNotConnected = focuserManager.isConnected.not()
-        val isConnecting = focuserManager.isConnecting
-        val isMoving = focuserManager.isMoving
+        val isNotConnected = focuserManager.connectedProperty.not()
+        val isConnecting = focuserManager.connectingProperty
+        val isMoving = focuserManager.movingProperty
         val isNotConnectedOrMoving = isNotConnected or isMoving
 
         focuserChoiceBox.converter = DeviceStringConverter()
@@ -59,28 +60,28 @@ class FocuserWindow : AbstractWindow() {
         focuserManager.bind(focuserChoiceBox.selectionModel.selectedItemProperty())
 
         connectButton.disableProperty().bind(focuserManager.isNull or isConnecting or isMoving)
-        connectButton.textProperty().bind(focuserManager.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        focuserManager.isConnected.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700") }
+        connectButton.textProperty().bind(focuserManager.connectedProperty.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
+        focuserManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700") }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 
-        positionLabel.textProperty().bind(focuserManager.position.asString())
+        positionLabel.textProperty().bind(focuserManager.positionProperty.asString())
 
-        temperatureLabel.textProperty().bind(focuserManager.temperature.asString("%.01f °C"))
+        temperatureLabel.textProperty().bind(focuserManager.temperatureProperty.asString("%.01f °C"))
 
-        incrementSpinner.disableProperty().bind(isNotConnectedOrMoving or !focuserManager.canRelativeMove)
+        incrementSpinner.disableProperty().bind(isNotConnectedOrMoving or !focuserManager.canRelativeMoveProperty)
 
         moveInButton.disableProperty().bind(incrementSpinner.disableProperty())
 
         moveOutButton.disableProperty().bind(incrementSpinner.disableProperty())
 
-        absoluteSpinner.disableProperty().bind(isNotConnectedOrMoving or !focuserManager.canAbsoluteMove)
+        absoluteSpinner.disableProperty().bind(isNotConnectedOrMoving or !focuserManager.canAbsoluteMoveProperty)
 
         moveToButton.disableProperty().bind(absoluteSpinner.disableProperty())
 
-        syncButton.disableProperty().bind(isNotConnectedOrMoving or !focuserManager.canSync)
+        syncButton.disableProperty().bind(isNotConnectedOrMoving or !focuserManager.canSyncProperty)
 
-        abortButton.disableProperty().bind(isNotConnectedOrMoving or !focuserManager.canAbort)
+        abortButton.disableProperty().bind(isNotConnectedOrMoving or !focuserManager.canAbortProperty)
 
         autoFocusButton.disableProperty().bind(isNotConnectedOrMoving)
 
@@ -92,7 +93,6 @@ class FocuserWindow : AbstractWindow() {
     }
 
     override fun onStop() {
-        focuserManager.savePreferences(null)
         focuserManager.close()
     }
 
@@ -184,7 +184,7 @@ class FocuserWindow : AbstractWindow() {
         @JvmStatic
         fun open() {
             if (window == null) window = FocuserWindow()
-            window!!.open(bringToFront = true)
+            window!!.show(bringToFront = true)
         }
     }
 }

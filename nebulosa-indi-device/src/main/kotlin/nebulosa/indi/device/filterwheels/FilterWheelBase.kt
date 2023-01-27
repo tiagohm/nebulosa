@@ -14,9 +14,9 @@ internal open class FilterWheelBase(
     name: String,
 ) : AbstractDevice(sender, handler, name), FilterWheel {
 
-    override var slotCount = 0
+    override var count = 0
     override var position = -1
-    override var isMoving = false
+    override var moving = false
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -26,7 +26,7 @@ internal open class FilterWheelBase(
                         val slot = message["FILTER_SLOT_VALUE"]!!
 
                         if (message is DefNumberVector) {
-                            slotCount = slot.max.toInt() - slot.min.toInt() + 1
+                            count = slot.max.toInt() - slot.min.toInt() + 1
                             handler.fireOnEventReceived(FilterWheelSlotCountChanged(this))
                         }
 
@@ -41,10 +41,10 @@ internal open class FilterWheelBase(
                             handler.fireOnEventReceived(FilterWheelPositionChanged(this, prevPosition))
                         }
 
-                        val prevIsMoving = isMoving
-                        isMoving = message.isBusy
+                        val prevIsMoving = moving
+                        moving = message.isBusy
 
-                        if (prevIsMoving != isMoving) {
+                        if (prevIsMoving != moving) {
                             handler.fireOnEventReceived(FilterWheelMovingChanged(this))
                         }
                     }
@@ -57,7 +57,7 @@ internal open class FilterWheelBase(
     }
 
     override fun moveTo(position: Int) {
-        if (position in 1..slotCount) {
+        if (position in 1..count) {
             sendNewNumber("FILTER_SLOT", "FILTER_SLOT_VALUE" to position.toDouble())
         }
     }
@@ -69,7 +69,7 @@ internal open class FilterWheelBase(
     override fun close() {}
 
     override fun toString(): String {
-        return "FilterWheel(name=$name, slotCount=$slotCount, position=$position," +
-                " isMoving=$isMoving)"
+        return "FilterWheel(name=$name, slotCount=$count, position=$position," +
+                " isMoving=$moving)"
     }
 }

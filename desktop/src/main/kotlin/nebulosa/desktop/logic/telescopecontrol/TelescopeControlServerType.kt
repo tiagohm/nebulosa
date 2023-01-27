@@ -1,4 +1,4 @@
-package nebulosa.desktop.telescopecontrol
+package nebulosa.desktop.logic.telescopecontrol
 
 enum class TelescopeControlServerType(val type: Class<out TelescopeControlServer>) {
     STELLARIUM(TelescopeControlTCPServer::class.java),

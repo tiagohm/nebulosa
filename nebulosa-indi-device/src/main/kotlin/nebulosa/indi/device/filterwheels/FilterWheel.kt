@@ -4,11 +4,11 @@ import nebulosa.indi.device.Device
 
 interface FilterWheel : Device {
 
-    val slotCount: Int
+    val count: Int
 
     val position: Int
 
-    val isMoving: Boolean
+    val moving: Boolean
 
     fun moveTo(position: Int)
 

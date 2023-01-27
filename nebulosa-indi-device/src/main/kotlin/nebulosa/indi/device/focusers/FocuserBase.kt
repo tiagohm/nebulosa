@@ -14,13 +14,13 @@ internal open class FocuserBase(
     name: String,
 ) : AbstractDevice(sender, handler, name), Focuser {
 
-    override var isMoving = false
+    override var moving = false
     override var position = 0
     override var canAbsoluteMove = false
     override var canRelativeMove = false
     override var canAbort = false
     override var canReverse = false
-    override var isReverse = false
+    override var reverse = false
     override var canSync = false
     override var hasBackslash = false
     override var maxPosition = 0
@@ -46,7 +46,7 @@ internal open class FocuserBase(
                             handler.fireOnEventReceived(FocuserCanReverseChanged(this))
                         }
 
-                        isReverse = message.firstOnSwitch().name == "INDI_ENABLED"
+                        reverse = message.firstOnSwitch().name == "INDI_ENABLED"
 
                         handler.fireOnEventReceived(FocuserReverseChanged(this))
                     }
@@ -70,10 +70,10 @@ internal open class FocuserBase(
                             }
                         }
 
-                        val prevIsMoving = isMoving
-                        isMoving = message.isBusy
+                        val prevIsMoving = moving
+                        moving = message.isBusy
 
-                        if (prevIsMoving != isMoving) {
+                        if (prevIsMoving != moving) {
                             handler.fireOnEventReceived(FocuserMovingChanged(this))
                         }
                     }
@@ -101,10 +101,10 @@ internal open class FocuserBase(
                             handler.fireOnEventReceived(FocuserPositionChanged(this))
                         }
 
-                        val prevIsMoving = isMoving
-                        isMoving = message.isBusy
+                        val prevIsMoving = moving
+                        moving = message.isBusy
 
-                        if (prevIsMoving != isMoving) {
+                        if (prevIsMoving != moving) {
                             handler.fireOnEventReceived(FocuserMovingChanged(this))
                         }
                     }
@@ -182,9 +182,9 @@ internal open class FocuserBase(
     }
 
     override fun toString(): String {
-        return "Focuser(name=$name, isMoving=$isMoving, position=$position," +
+        return "Focuser(name=$name, isMoving=$moving, position=$position," +
                 " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
-                " canAbort=$canAbort, canReverse=$canReverse, isReverse=$isReverse," +
+                " canAbort=$canAbort, canReverse=$canReverse, isReverse=$reverse," +
                 " canSync=$canSync, hasBackslash=$hasBackslash," +
                 " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
                 " temperature=$temperature)"

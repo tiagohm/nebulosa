@@ -5,7 +5,10 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
 import javafx.stage.Screen
+import nebulosa.desktop.gui.image.FitsHeaderWindow
+import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.ImageWindow
+import nebulosa.desktop.gui.image.SCNRWindow
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.imaging.ExtendedImage
 import nebulosa.imaging.FitsImage
@@ -50,6 +53,10 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
     @Volatile private var idealSceneHeight = 640.0
     @Volatile private var transformSubscriber: Disposable? = null
 
+    @Volatile private var imageStretcherWindow: ImageStretcherWindow? = null
+    @Volatile private var fitsHeaderWindow: FitsHeaderWindow? = null
+    @Volatile private var scnrWindow: SCNRWindow? = null
+
     @Volatile var shadow = 0f
         private set
 
@@ -87,16 +94,13 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
                 transformImage()
 
                 draw()
-                window.drawHistogram()
+                drawHistogram()
             }
     }
 
     @Synchronized
     fun open(file: File) {
-        setTitleFromCameraAndFile(file)
-
-        borderSize = (window.width - window.scene.width) / 2.0
-        titleHeight = (window.height - window.scene.height) - borderSize
+        updateTitle(file)
 
         val adjustToDefaultSize = fits == null
 
@@ -114,11 +118,9 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
         transformImage()
 
         draw()
-        window.drawHistogram()
-    }
+        drawHistogram()
 
-    fun openFitsHeader() {
-        (fits as? FitsImage)?.also { window.openFitsHeader(it.header) }
+        imageStretcherWindow?.updateTitle()
     }
 
     fun draw() {
@@ -136,11 +138,11 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
 
         // Prevent move to left/up.
         if (-startX < 0 || -startY < 0) {
-            if (maxStartX - startX <= window.scene.width.toInt()) {
-                startX = maxStartX - window.scene.width.toInt()
+            if (maxStartX - startX <= window.sceneWidth.toInt()) {
+                startX = maxStartX - window.sceneWidth.toInt()
             }
-            if (maxStartY - startY <= window.scene.height.toInt()) {
-                startY = maxStartY - window.scene.height.toInt()
+            if (maxStartY - startY <= window.sceneHeight.toInt()) {
+                startY = maxStartY - window.sceneHeight.toInt()
             }
         }
 
@@ -158,6 +160,10 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
         }
 
         window.draw(fits, areaWidth, areaHeight, startX, startY, factor)
+    }
+
+    fun drawHistogram() {
+        imageStretcherWindow?.drawHistogram()
     }
 
     fun transformImage(
@@ -222,12 +228,10 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
         transformImage(invert = !invert)
     }
 
-    private fun setTitleFromCameraAndFile(file: File? = null) {
-        window.title = buildString(64) {
-            append("Image")
-            if (window.camera != null) append(" · ${window.camera.name}")
-            if (file != null) append(" · ${file.name}")
-        }
+    private fun updateTitle(file: File? = null) {
+        window.title = "Image"
+            .let { if (window.camera != null) "$it · ${window.camera.name}" else it }
+            .let { if (file != null) "$it · ${file.name}" else it }
     }
 
     fun adjustSceneSizeToFitImage(defaultSize: Boolean) {
@@ -351,6 +355,23 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
         draw()
     }
 
+    fun openImageStretcher() {
+        imageStretcherWindow = imageStretcherWindow ?: ImageStretcherWindow(window)
+        imageStretcherWindow!!.show(bringToFront = true)
+    }
+
+    fun openSCNR() {
+        scnrWindow = scnrWindow ?: SCNRWindow(window)
+        scnrWindow!!.show(bringToFront = true)
+    }
+
+    fun openFitsHeader() {
+        val header = (fits as? FitsImage)?.header ?: return
+        fitsHeaderWindow = fitsHeaderWindow ?: FitsHeaderWindow()
+        fitsHeaderWindow!!.load(header)
+        fitsHeaderWindow!!.show(bringToFront = true)
+    }
+
     fun loadPreferences() {
         if (window.camera != null) {
             preferences.double("image.${window.camera.name}.screen.x")?.let { window.x = it }
@@ -382,6 +403,14 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
         dragging = false
         dragStartX = 0.0
         dragStartY = 0.0
+
+        imageStretcherWindow?.close()
+        scnrWindow?.close()
+        fitsHeaderWindow?.close()
+
+        imageStretcherWindow = null
+        fitsHeaderWindow = null
+        scnrWindow = null
 
         savePreferences()
     }

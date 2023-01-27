@@ -5,7 +5,7 @@ import nebulosa.indi.device.thermometers.Thermometer
 
 interface Focuser : Device, Thermometer {
 
-    val isMoving: Boolean
+    val moving: Boolean
 
     val position: Int
 
@@ -17,7 +17,7 @@ interface Focuser : Device, Thermometer {
 
     val canReverse: Boolean
 
-    val isReverse: Boolean
+    val reverse: Boolean
 
     val canSync: Boolean
 

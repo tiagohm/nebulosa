@@ -32,7 +32,7 @@ data class FilterWheelMoveTask(
 
         try {
             if (filterWheel.position != position
-                && position in 1..filterWheel.slotCount
+                && position in 1..filterWheel.count
             ) {
                 synchronized(filterWheel) {
                     latch.countUp()

@@ -16,11 +16,12 @@ import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.or
 import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.gui.control.ButtonValueFactory
 import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.ButtonValueFactory
 import nebulosa.desktop.logic.filterwheel.FilterWheelManager
+import nebulosa.desktop.logic.isNull
 import nebulosa.indi.device.filterwheels.FilterWheel
 import kotlin.math.max
 import kotlin.math.min
@@ -50,9 +51,9 @@ class FilterWheelWindow : AbstractWindow() {
     }
 
     override fun onCreate() {
-        val isNotConnected = filterWheelManager.isConnected.not()
-        val isConnecting = filterWheelManager.isConnecting
-        val isMoving = filterWheelManager.isMoving
+        val isNotConnected = filterWheelManager.connectedProperty.not()
+        val isConnecting = filterWheelManager.connectingProperty
+        val isMoving = filterWheelManager.movingProperty
         val isNotConnectedOrMoving = isNotConnected or isMoving
 
         filterWheelChoiceBox.converter = DeviceStringConverter()
@@ -61,8 +62,8 @@ class FilterWheelWindow : AbstractWindow() {
         filterWheelManager.bind(filterWheelChoiceBox.selectionModel.selectedItemProperty())
 
         connectButton.disableProperty().bind(filterWheelManager.isNull or isConnecting or isMoving)
-        connectButton.textProperty().bind(filterWheelManager.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        filterWheelManager.isConnected.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700") }
+        connectButton.textProperty().bind(filterWheelManager.connectedProperty.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
+        filterWheelManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700") }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 
@@ -88,7 +89,7 @@ class FilterWheelWindow : AbstractWindow() {
 
                 return (button ?: Button("Move To")).apply {
                     cursor = Cursor.HAND
-                    disableProperty().bind(filterWheelManager.position.isEqualTo(item))
+                    disableProperty().bind(filterWheelManager.positionProperty.isEqualTo(item))
                     setOnAction { filterWheelManager.moveTo(item) }
                 }
             }
@@ -108,7 +109,7 @@ class FilterWheelWindow : AbstractWindow() {
 
         moveToSelectedFilterButton.disableProperty().bind(
             isNotConnectedOrMoving or filterSlotChoiceBox.selectionModel.selectedItemProperty()
-                .isEqualTo(filterWheelManager.position.asObject()) or filterSlotChoiceBox.selectionModel.selectedItemProperty().isNull
+                .isEqualTo(filterWheelManager.positionProperty.asObject()) or filterSlotChoiceBox.selectionModel.selectedItemProperty().isNull
         )
 
         filterWheelManager.loadPreferences(null)
@@ -192,8 +193,8 @@ class FilterWheelWindow : AbstractWindow() {
         height = if (isCompactMode) {
             170.0
         } else {
-            if (filterWheelManager.isConnected.get()) {
-                val slotCount = min(8, max(1, filterWheelManager.slotCount.get()))
+            if (filterWheelManager.connected) {
+                val slotCount = min(8, max(1, filterWheelManager.count))
                 161.0 + slotCount * 28.0
             } else {
                 188.0
@@ -206,7 +207,7 @@ class FilterWheelWindow : AbstractWindow() {
         selectedFilterAsShutter: Int,
         position: Int,
     ) {
-        if (filterWheelManager.isConnected.get()) {
+        if (filterWheelManager.connected) {
             filterAsShutterChoiceBox.items.setAll(names)
             filterAsShutter = selectedFilterAsShutter
 
@@ -254,7 +255,7 @@ class FilterWheelWindow : AbstractWindow() {
         @JvmStatic
         fun open() {
             if (window == null) window = FilterWheelWindow()
-            window!!.open(bringToFront = true)
+            window!!.show(bringToFront = true)
         }
     }
 }

@@ -16,7 +16,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class AbstractWindow : Stage(), KoinComponent {
+abstract class AbstractWindow : View, KoinComponent {
 
     protected abstract val resourceName: String
 
@@ -24,24 +24,25 @@ abstract class AbstractWindow : Stage(), KoinComponent {
 
     protected val eventBus by inject<EventBus>()
 
+    private val window = Stage()
     private val showingAtFirstTime = AtomicBoolean()
     private val subscribers = arrayOfNulls<Disposable>(1)
 
     init {
-        setOnShowing {
+        window.setOnShowing {
             if (showingAtFirstTime.compareAndSet(false, true)) {
                 val loader = FXMLLoader(resourceUrl("$resourceName.fxml")!!)
                 loader.setController(this)
                 val root = loader.load<Parent>()
 
-                scene = Scene(root)
-                icons.add(Image(resource("icons/$icon.png")))
+                window.scene = Scene(root)
+                window.icons.add(Image(resource("icons/$icon.png")))
 
                 onCreate()
             }
         }
 
-        setOnShown {
+        window.setOnShown {
             onStart()
 
             if (this !is HomeWindow) {
@@ -57,7 +58,7 @@ abstract class AbstractWindow : Stage(), KoinComponent {
             }
         }
 
-        setOnHiding { onStop() }
+        window.setOnHiding { onStop() }
     }
 
     protected open fun onCreate() {}
@@ -66,27 +67,85 @@ abstract class AbstractWindow : Stage(), KoinComponent {
 
     protected open fun onStop() {}
 
-    fun open(
-        requestFocus: Boolean = false,
-        bringToFront: Boolean = false,
-    ) {
-        show()
+    override var isResizable
+        get() = window.isResizable
+        set(value) {
+            window.isResizable = value
+        }
 
-        if (requestFocus) requestFocus()
-        if (bringToFront) toFront()
+    override var isMaximized
+        get() = window.isMaximized
+        set(value) {
+            window.isMaximized = value
+        }
+
+    override val isShowing
+        get() = window.isShowing
+
+    override var title
+        get() = window.title!!
+        set(value) {
+            window.title = value
+        }
+
+    override var x
+        get() = window.x
+        set(value) {
+            window.x = value
+        }
+
+    override var y
+        get() = window.y
+        set(value) {
+            window.y = value
+        }
+
+    override var width
+        get() = window.width
+        set(value) {
+            window.width = value
+        }
+
+    override var height
+        get() = window.height
+        set(value) {
+            window.height = value
+        }
+
+    override val sceneWidth
+        get() = window.scene.width
+
+    override val sceneHeight
+        get() = window.scene.height
+
+    override val borderSize
+        get() = (window.width - window.scene.width) / 2.0
+
+    override val titleHeight
+        get() = (window.height - window.scene.height) - borderSize
+
+    override fun show(
+        requestFocus: Boolean,
+        bringToFront: Boolean,
+    ) {
+        window.show()
+
+        if (requestFocus) window.requestFocus()
+        if (bringToFront) window.toFront()
     }
 
-    companion object {
+    override fun close() {
+        window.close()
+    }
 
-        @JvmStatic
-        fun showAlert(
-            message: String, title: String = "Information",
-        ) {
-            val alert = Alert(Alert.AlertType.INFORMATION)
-            alert.title = title
-            alert.headerText = null
-            alert.contentText = message
-            alert.showAndWait()
-        }
+    override fun showAlert(
+        message: String,
+        title: String,
+    ) {
+        val alert = Alert(Alert.AlertType.INFORMATION)
+        alert.title = title
+        alert.headerText = null
+        alert.contentText = message
+        alert.showAndWait()
     }
 }

@@ -19,7 +19,7 @@ data class FocuserRelativeMoveTask(
 
     private fun onFocuserEvent(event: FocuserEvent) {
         when (event) {
-            is FocuserMovingChanged -> if (!event.device.isMoving) {
+            is FocuserMovingChanged -> if (!event.device.moving) {
                 latch.countDown()
             }
             is FocuserDetached,
