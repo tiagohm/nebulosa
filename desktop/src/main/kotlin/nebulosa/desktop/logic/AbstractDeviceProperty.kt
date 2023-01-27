@@ -60,7 +60,7 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
 
             listeners.forEach { it.onReset() }
         } else {
-            connectedProperty.set(newValue.isConnected)
+            connectedProperty.set(newValue.connected)
 
             onChanged(oldValue, newValue)
 

@@ -19,7 +19,7 @@ interface DeviceProperty<D : Device> : Property<D>, DevicePropertyListener<D> {
     fun unregisterListener(listener: DevicePropertyListener<D>)
 
     fun connect() {
-        if (value.isConnected) {
+        if (value.connected) {
             value.disconnect()
         } else {
             value.connect()

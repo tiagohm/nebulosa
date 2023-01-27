@@ -1,6 +1,8 @@
 package nebulosa.alpaca.discovery
 
+import java.net.InetAddress
+
 fun interface DiscoveryListener {
 
-    fun onServerFound(server: DiscoveredServer)
+    fun onServerFound(address: InetAddress, port: Int)
 }

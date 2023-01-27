@@ -7,12 +7,12 @@ import javafx.scene.control.*
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
+import javafx.util.StringConverter
 import nebulosa.desktop.core.beans.and
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.or
 import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.camera.CameraManager
@@ -79,7 +79,7 @@ class CameraWindow : AbstractWindow() {
         val isCapturing = cameraManager.capturingProperty
         val isNotConnectedOrCapturing = isNotConnected or isCapturing
 
-        cameraChoiceBox.converter = DeviceStringConverter()
+        cameraChoiceBox.converter = CameraStringConverter
         cameraChoiceBox.disableProperty().bind(isConnecting or isCapturing)
         cameraChoiceBox.itemsProperty().bind(cameraManager.cameras)
         cameraManager.bind(cameraChoiceBox.selectionModel.selectedItemProperty())
@@ -157,6 +157,11 @@ class CameraWindow : AbstractWindow() {
     }
 
     override fun onStop() {
+        cameraManager.savePreferences()
+        cameraManager.savePreferences(null)
+    }
+
+    override fun onClose() {
         cameraManager.close()
     }
 
@@ -474,6 +479,13 @@ class CameraWindow : AbstractWindow() {
     @FXML
     private fun abortCapture() {
         cameraManager.abortCapture()
+    }
+
+    private object CameraStringConverter : StringConverter<Camera>() {
+
+        override fun toString(device: Camera?) = device?.name ?: "No camera selected"
+
+        override fun fromString(text: String?) = null
     }
 
     companion object {

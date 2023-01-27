@@ -6,11 +6,11 @@ import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Label
 import javafx.scene.control.Spinner
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
+import javafx.util.StringConverter
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.or
 import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.focuser.FocuserManager
@@ -54,7 +54,7 @@ class FocuserWindow : AbstractWindow() {
         val isMoving = focuserManager.movingProperty
         val isNotConnectedOrMoving = isNotConnected or isMoving
 
-        focuserChoiceBox.converter = DeviceStringConverter()
+        focuserChoiceBox.converter = FocuserStringConverter
         focuserChoiceBox.disableProperty().bind(isConnecting or isMoving)
         focuserChoiceBox.itemsProperty().bind(focuserManager.focusers)
         focuserManager.bind(focuserChoiceBox.selectionModel.selectedItemProperty())
@@ -84,8 +84,6 @@ class FocuserWindow : AbstractWindow() {
         abortButton.disableProperty().bind(isNotConnectedOrMoving or !focuserManager.canAbortProperty)
 
         autoFocusButton.disableProperty().bind(isNotConnectedOrMoving)
-
-        focuserManager.loadPreferences(null)
     }
 
     override fun onStart() {
@@ -93,6 +91,10 @@ class FocuserWindow : AbstractWindow() {
     }
 
     override fun onStop() {
+        focuserManager.savePreferences()
+    }
+
+    override fun onClose() {
         focuserManager.close()
     }
 
@@ -175,6 +177,13 @@ class FocuserWindow : AbstractWindow() {
 
     @FXML
     private fun openAutoFocus() {
+    }
+
+    private object FocuserStringConverter : StringConverter<Focuser>() {
+
+        override fun toString(device: Focuser?) = device?.name ?: "No focuser selected"
+
+        override fun fromString(text: String?) = null
     }
 
     companion object {

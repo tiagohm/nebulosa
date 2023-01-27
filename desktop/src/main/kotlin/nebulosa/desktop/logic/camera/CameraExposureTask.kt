@@ -85,7 +85,7 @@ data class CameraExposureTask(
             camera.snoop(listOf(filterWheel))
 
             if (filterWheel != null && frameType == FrameType.DARK) {
-                if (!filterWheel.isConnected) {
+                if (!filterWheel.connected) {
                     LOG.warn("filter wheel ${filterWheel.name} is disconnected")
                 } else {
                     val filterAsShutterPosition = preferences.int("filterWheel.${filterWheel.name}.filterAsShutter")
@@ -108,7 +108,7 @@ data class CameraExposureTask(
 
             camera.enableBlob()
 
-            while (camera.isConnected && remaining > 0) {
+            while (camera.connected && remaining > 0) {
                 synchronized(camera) {
                     latch.countUp()
 

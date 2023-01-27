@@ -21,7 +21,7 @@ internal abstract class AbstractDevice(
 
     override val messages = LinkedList<String>()
 
-    override var isConnected = false
+    override var connected = false
         protected set
 
     override fun handleMessage(message: INDIProtocol) {
@@ -31,13 +31,13 @@ internal abstract class AbstractDevice(
                     "CONNECTION" -> {
                         val connected = message["CONNECT"]?.isOn() == true
 
-                        if (connected != isConnected) {
+                        if (connected != this.connected) {
                             if (connected) {
-                                isConnected = true
+                                this.connected = true
 
                                 handler.fireOnEventReceived(DeviceConnected(this))
-                            } else if (isConnected) {
-                                isConnected = false
+                            } else if (this.connected) {
+                                this.connected = false
 
                                 handler.fireOnEventReceived(DeviceDisconnected(this))
                             }
@@ -185,7 +185,7 @@ internal abstract class AbstractDevice(
     }
 
     override fun connect() {
-        if (!isConnected) {
+        if (!connected) {
             handler.fireOnEventReceived(DeviceIsConnecting(this))
 
             sendNewSwitch("CONNECTION", "CONNECT" to true)

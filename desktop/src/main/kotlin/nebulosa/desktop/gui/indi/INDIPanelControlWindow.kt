@@ -7,9 +7,9 @@ import javafx.scene.control.*
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
+import javafx.util.StringConverter
 import nebulosa.desktop.core.beans.onZero
 import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.indi.INDIPanelControlManager
@@ -31,7 +31,7 @@ class INDIPanelControlWindow : AbstractWindow() {
     private val indiPanelControlManager = INDIPanelControlManager(this)
 
     override fun onCreate() {
-        deviceChoiceBox.converter = DeviceStringConverter()
+        deviceChoiceBox.converter = DeviceStringConverter
         deviceChoiceBox.itemsProperty().bind(indiPanelControlManager.devices)
         deviceChoiceBox.selectionModel.selectedItemProperty().onZero(indiPanelControlManager::makePanelControl)
     }
@@ -410,6 +410,13 @@ class INDIPanelControlWindow : AbstractWindow() {
             val value = children[1] as TextField
             value.text = property.value.trim()
         }
+    }
+
+    private object DeviceStringConverter : StringConverter<Device>() {
+
+        override fun toString(device: Device?) = device?.name ?: "No device selected"
+
+        override fun fromString(text: String?) = null
     }
 
     companion object {

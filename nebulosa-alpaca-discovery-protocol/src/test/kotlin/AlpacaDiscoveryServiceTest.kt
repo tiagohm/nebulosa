@@ -1,13 +1,12 @@
 import io.kotest.core.spec.style.StringSpec
-import nebulosa.alpaca.discovery.AlpacaDiscoveryService
-import nebulosa.alpaca.discovery.DiscoveredServer
+import nebulosa.alpaca.discovery.AlpacaDiscoveryProtocol
 import nebulosa.alpaca.discovery.DiscoveryListener
 
 class AlpacaDiscoveryServiceTest : StringSpec(), DiscoveryListener {
 
     init {
         "run" {
-            val discoverer = AlpacaDiscoveryService()
+            val discoverer = AlpacaDiscoveryProtocol()
             discoverer.registerDiscoveryListener(this@AlpacaDiscoveryServiceTest)
             discoverer.run()
         }

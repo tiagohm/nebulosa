@@ -168,6 +168,10 @@ class MountWindow : AbstractWindow(), MountView {
         mountManager.savePreferences()
     }
 
+    override fun onClose() {
+        mountManager.close()
+    }
+
     override var status
         get() = statusLabel.text!!
         set(value) {

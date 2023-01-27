@@ -24,13 +24,13 @@ class FocuserManager(private val window: FocuserWindow) :
     }
 
     override fun onChanged(prev: Focuser?, device: Focuser) {
-        if (prev !== device) savePreferences(prev)
+        if (prev !== device) savePreferences()
 
         updateTitle()
         updateMaxIncrement()
         updateMaxAbsolute()
 
-        loadPreferences(device)
+        loadPreferences()
     }
 
     override fun onReset() {}
@@ -82,22 +82,17 @@ class FocuserManager(private val window: FocuserWindow) :
         window.absoluteMax = value?.maxPosition ?: 0
     }
 
-    fun savePreferences(device: Focuser? = value) {
-        if (device == null) {
-            preferences.double("focuser.screen.x", window.x)
-            preferences.double("focuser.screen.y", window.y)
-        }
+    fun savePreferences() {
+        preferences.double("focuser.screen.x", window.x)
+        preferences.double("focuser.screen.y", window.y)
     }
 
-    fun loadPreferences(device: Focuser? = value) {
-        if (device == null) {
-            preferences.double("focuser.screen.x")?.let { window.x = it }
-            preferences.double("focuser.screen.y")?.let { window.y = it }
-        }
+    fun loadPreferences() {
+        preferences.double("focuser.screen.x")?.let { window.x = it }
+        preferences.double("focuser.screen.y")?.let { window.y = it }
     }
 
     override fun close() {
-        savePreferences(null)
         savePreferences()
     }
 }

@@ -21,8 +21,12 @@ class FilterWheelManager(private val window: FilterWheelWindow) :
 
     val filterWheels get() = equipmentManager.attachedFilterWheels
 
+    init {
+        registerListener(this)
+    }
+
     override fun onChanged(prev: FilterWheel?, device: FilterWheel) {
-        if (prev !== device) savePreferences(prev)
+        if (prev !== device) savePreferences()
 
         updateTitle()
 
@@ -95,11 +99,9 @@ class FilterWheelManager(private val window: FilterWheelWindow) :
         value?.filterNames(filterNames)
     }
 
-    fun savePreferences(device: FilterWheel? = value) {
-        if (device == null) {
-            preferences.double("filterWheel.screen.x")?.let { window.x = it }
-            preferences.double("filterWheel.screen.y")?.let { window.y = it }
-        }
+    fun savePreferences() {
+        preferences.double("filterWheel.screen.x")?.let { window.x = it }
+        preferences.double("filterWheel.screen.y")?.let { window.y = it }
     }
 
     fun loadPreferences(device: FilterWheel? = value) {
@@ -108,16 +110,17 @@ class FilterWheelManager(private val window: FilterWheelWindow) :
             syncFilterNames()
 
             window.isUseFilterWheelAsShutter = preferences.bool("filterWheel.${device.name}.useFilterWheelAsShutter")
-        } else {
-            window.isCompactMode = preferences.bool("filterWheel.compactMode")
-
-            preferences.double("filterWheel.screen.x")?.let { window.x = it }
-            preferences.double("filterWheel.screen.y")?.let { window.y = it }
         }
+
+        window.isCompactMode = preferences.bool("filterWheel.compactMode")
+
+        preferences.double("filterWheel.screen.x")?.let { window.x = it }
+        preferences.double("filterWheel.screen.y")?.let { window.y = it }
     }
 
     override fun close() {
-        savePreferences(null)
+        unregisterListener(this)
+
         savePreferences()
     }
 }

@@ -16,7 +16,6 @@ import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.beans.or
 import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ButtonValueFactory
@@ -56,7 +55,7 @@ class FilterWheelWindow : AbstractWindow() {
         val isMoving = filterWheelManager.movingProperty
         val isNotConnectedOrMoving = isNotConnected or isMoving
 
-        filterWheelChoiceBox.converter = DeviceStringConverter()
+        filterWheelChoiceBox.converter = FilterWheelStringConverter
         filterWheelChoiceBox.disableProperty().bind(isConnecting or isMoving)
         filterWheelChoiceBox.itemsProperty().bind(filterWheelManager.filterWheels)
         filterWheelManager.bind(filterWheelChoiceBox.selectionModel.selectedItemProperty())
@@ -120,6 +119,10 @@ class FilterWheelWindow : AbstractWindow() {
     }
 
     override fun onStop() {
+        filterWheelManager.savePreferences()
+    }
+
+    override fun onClose() {
         filterWheelManager.close()
     }
 
@@ -239,6 +242,13 @@ class FilterWheelWindow : AbstractWindow() {
                 else -> null
             }
         }
+    }
+
+    private object FilterWheelStringConverter : StringConverter<FilterWheel>() {
+
+        override fun toString(device: FilterWheel?) = device?.name ?: "No filter wheel selected"
+
+        override fun fromString(text: String?) = null
     }
 
     private inner class FilterSlotStringConverter : StringConverter<Int>() {

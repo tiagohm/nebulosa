@@ -26,6 +26,8 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
 
     override val resourceName = "Image"
 
+    override val icon = "nebulosa-image"
+
     @FXML private lateinit var imageCanvas: Canvas
     @FXML private lateinit var menu: ContextMenu
     @FXML private lateinit var scnrMenuItem: MenuItem
@@ -38,9 +40,6 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
 
     init {
         title = "Image"
-
-        val area = (screenBounds.width * screenBounds.height).toInt()
-        buffer = IntArray(area)
     }
 
     override fun onCreate() {
@@ -202,6 +201,10 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
         var prevIndex = -1
         var prevColor = 0
         var idx = 0
+
+        val area = width * height
+
+        if (area > buffer.size) buffer = IntArray(area)
 
         for (y in 0 until height) {
             for (x in 0 until width) {

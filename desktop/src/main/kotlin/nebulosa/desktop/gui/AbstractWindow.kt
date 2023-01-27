@@ -51,6 +51,7 @@ abstract class AbstractWindow : View, KoinComponent {
                     .observeOnFXThread()
                     .subscribe {
                         onStop()
+                        onClose()
 
                         subscribers.forEach { it?.dispose() }
                         subscribers.fill(null)
@@ -66,6 +67,8 @@ abstract class AbstractWindow : View, KoinComponent {
     protected open fun onStart() {}
 
     protected open fun onStop() {}
+
+    protected open fun onClose() {}
 
     override var isResizable
         get() = window.isResizable

@@ -10,7 +10,7 @@ interface Device : INDIProtocolHandler, Closeable {
 
     val name: String
 
-    val isConnected: Boolean
+    val connected: Boolean
 
     val properties: Map<String, PropertyVector<*, *>>
 

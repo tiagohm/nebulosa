@@ -5,9 +5,9 @@ import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.TextField
+import javafx.util.StringConverter
 import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
 import nebulosa.desktop.core.scene.Screen
-import nebulosa.desktop.core.util.DeviceStringConverter
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.mounts.Mount
@@ -40,7 +40,7 @@ class SiteAndTimeScreen : Screen("SiteAndTime", "nebulosa-site-and-time") {
     }
 
     override fun onCreate() {
-        gps.converter = DeviceStringConverter()
+        gps.converter = GPSStringConverter
         gps.itemsProperty().bind(equipmentManager.attachedGPSs)
 
         coordinateFromGps.disableProperty().bind(gps.selectionModel.selectedItemProperty().isNull)
@@ -101,5 +101,12 @@ class SiteAndTimeScreen : Screen("SiteAndTime", "nebulosa-site-and-time") {
         longitude.text = "${mount.longitude.degrees}"
         latitude.text = "${mount.latitude.degrees}"
         elevation.text = "${mount.elevation.meters}"
+    }
+
+    private object GPSStringConverter : StringConverter<GPS>() {
+
+        override fun toString(device: GPS?) = device?.name ?: "No GPS selected"
+
+        override fun fromString(text: String?) = null
     }
 }

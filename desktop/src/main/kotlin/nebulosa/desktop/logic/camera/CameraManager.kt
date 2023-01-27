@@ -45,6 +45,8 @@ class CameraManager(private val window: CameraWindow) :
     @JvmField val cameras = equipmentManager.attachedCameras
 
     init {
+        registerListener(this)
+
         subscribers[0] = eventBus
             .filterIsInstance<TaskEvent> { it.task is CameraTask && (it.task as CameraTask).camera === value }
             .observeOnFXThread()
@@ -61,8 +63,6 @@ class CameraManager(private val window: CameraWindow) :
 
         updateTitle()
         loadPreferences(device)
-
-        equipmentManager.selectedCamera.set(device)
     }
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
@@ -234,7 +234,7 @@ class CameraManager(private val window: CameraWindow) :
     }
 
     fun savePreferences(device: Camera? = value) {
-        if (device != null && device.isConnected) {
+        if (device != null && device.connected) {
             preferences.double("camera.${device.name}.temperatureSetpoint", window.temperatureSetpoint)
             preferences.enum("camera.${device.name}.exposureUnit", window.exposureUnit)
             preferences.long("camera.${device.name}.exposure", window.exposureInMicros)
@@ -252,10 +252,10 @@ class CameraManager(private val window: CameraWindow) :
             preferences.int("camera.${device.name}.binY", window.binY)
             preferences.int("camera.${device.name}.gain", window.gain)
             preferences.int("camera.${device.name}.offset", window.offset)
-        } else if (device == null) {
-            preferences.double("camera.screen.x", window.x)
-            preferences.double("camera.screen.y", window.y)
         }
+
+        preferences.double("camera.screen.x", window.x)
+        preferences.double("camera.screen.y", window.y)
     }
 
     fun loadPreferences(device: Camera? = value) {
@@ -290,10 +290,10 @@ class CameraManager(private val window: CameraWindow) :
             window.isAutoSubFolder = preferences.bool("camera.${device.name}.autoSubFolder")
             window.isNewSubFolderAtNoon = preferences.enum<AutoSubFolderMode>("camera.${device.name}.newSubFolderAt") != AutoSubFolderMode.MIDNIGHT
             window.imageSavePath = preferences.string("camera.${device.name}.imageSavePath") ?: "$appDirectory/captures/${device.name}"
-        } else {
-            preferences.double("camera.screen.x")?.let { window.x = it }
-            preferences.double("camera.screen.y")?.let { window.y = it }
         }
+
+        preferences.double("camera.screen.x")?.let { window.x = it }
+        preferences.double("camera.screen.y")?.let { window.y = it }
     }
 
     override fun close() {
@@ -302,5 +302,7 @@ class CameraManager(private val window: CameraWindow) :
 
         imageWindows.forEach(AbstractWindow::close)
         imageWindows.clear()
+
+        unregisterListener(this)
     }
 }

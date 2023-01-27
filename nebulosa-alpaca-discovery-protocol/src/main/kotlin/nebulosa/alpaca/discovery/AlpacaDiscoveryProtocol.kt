@@ -12,7 +12,7 @@ import java.net.*
  * @see <a href="https://ascom-standards.org/api/?urls.primaryName=ASCOM%20Alpaca%20Management%20API">ASCOM Alpaca Management API</a>
  * @see <a href="https://ascom-standards.org/api/?urls.primaryName=ASCOM%20Alpaca%20Device%20API">ASCOM Alpaca Device API</a>
  */
-class AlpacaDiscoveryService : Runnable, Closeable {
+class AlpacaDiscoveryProtocol : Runnable, Closeable {
 
     @Volatile private var running = false
 
@@ -85,9 +85,8 @@ class AlpacaDiscoveryService : Runnable, Closeable {
 
             val message = packet.data.decodeToString(0, packet.length)
             val port = ALPACA_PORT_REGEX.matchEntire(message)?.groupValues?.get(1)?.toIntOrNull() ?: continue
-            val server = DiscoveredServer(packet.address, port)
-            LOG.info("server found at {}:{}", server.address, server.port)
-            listeners.forEach { it.onServerFound(server) }
+            LOG.info("server found at {}:{}", packet.address, port)
+            listeners.forEach { it.onServerFound(packet.address, port) }
         }
     }
 
@@ -102,6 +101,6 @@ class AlpacaDiscoveryService : Runnable, Closeable {
         private const val ALPACA_DISCOVERY_MESSAGE = "alpacadiscovery1"
 
         @JvmStatic private val ALPACA_PORT_REGEX = Regex("\\{\"AlpacaPort\":(\\d+)\\}")
-        @JvmStatic private val LOG = LoggerFactory.getLogger(AlpacaDiscoveryService::class.java)
+        @JvmStatic private val LOG = LoggerFactory.getLogger(AlpacaDiscoveryProtocol::class.java)
     }
 }

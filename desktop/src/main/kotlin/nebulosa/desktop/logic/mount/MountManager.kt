@@ -147,7 +147,7 @@ class MountManager(private val view: MountView) :
         preferences.double("value.screen.y", view.y)
     }
 
-    fun loadPreferences() {
+    fun loadPreferences(device: Mount? = value) {
         preferences.double("value.screen.x")?.also { view.x = it }
         preferences.double("value.screen.y")?.also { view.y = it }
     }
@@ -175,5 +175,7 @@ class MountManager(private val view: MountView) :
 
     override fun close() {
         savePreferences()
+
+        timer.cancel()
     }
 }

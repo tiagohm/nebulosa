@@ -47,8 +47,6 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
     private val screenBounds = Screen.getPrimary().bounds
     private val transformPublisher = BehaviorSubject.create<Unit>()
 
-    @Volatile private var borderSize = 0.0
-    @Volatile private var titleHeight = 0.0
     @Volatile private var idealSceneWidth = 640.0
     @Volatile private var idealSceneHeight = 640.0
     @Volatile private var transformSubscriber: Disposable? = null
@@ -247,11 +245,14 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
             ?.let { preferences.double("image.${it.name}.screen.height") }
             ?: (screenBounds.height / 2)
 
+        val borderSize = window.borderSize
+        val titleHeight = window.titleHeight
+
         val sceneSize = if (factor >= 1.0)
             if (defaultSize) defaultWidth
             else min(screenBounds.width, window.width)
-        else if (defaultSize) defaultHeight - titleHeight
-        else min(screenBounds.height, window.height - titleHeight)
+        else if (defaultSize) defaultHeight
+        else min(screenBounds.height, window.height)
 
         if (factor >= 1.0) {
             idealSceneWidth = sceneSize
@@ -261,7 +262,7 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
             idealSceneWidth = sceneSize * factor
         }
 
-        window.width = idealSceneWidth
+        window.width = idealSceneWidth + borderSize * 2
         window.height = idealSceneHeight + titleHeight
 
         window.imageWidth = idealSceneWidth
