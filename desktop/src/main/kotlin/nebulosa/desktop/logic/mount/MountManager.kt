@@ -55,9 +55,9 @@ class MountManager(private val view: MountView) :
     }
 
     fun park() {
-        if (value.isParked) {
+        if (value.parked) {
             value.unpark()
-        } else if (!value.isParking) {
+        } else if (!value.parking) {
             value.park()
         }
     }
@@ -134,11 +134,11 @@ class MountManager(private val view: MountView) :
 
     fun updateStatus() {
         view.status = if (value == null) "idle"
-        else if (value.isParking) "parking"
-        else if (value.isParked) "parked"
-        else if (value.isSlewing) "slewing"
-        else if (value.isTracking) "tracking"
-        else if (value.isPulseGuiding) "guiding"
+        else if (value.parking) "parking"
+        else if (value.parked) "parked"
+        else if (value.slewing) "slewing"
+        else if (value.tracking) "tracking"
+        else if (value.pulseGuiding) "guiding"
         else "idle"
     }
 

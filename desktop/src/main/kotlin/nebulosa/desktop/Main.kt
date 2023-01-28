@@ -4,14 +4,13 @@ import ch.qos.logback.classic.Level
 import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.application.Application
 import javafx.scene.text.Font
-import nebulosa.desktop.core.EventBus
-import nebulosa.desktop.logic.loader.IERSLoader
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.camera.CameraTaskExecutor
 import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.logic.filterwheel.FilterWheelTaskExecutor
-import nebulosa.desktop.preferences.Preferences
+import nebulosa.desktop.logic.loader.IERSLoader
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServerManager
+import nebulosa.desktop.preferences.Preferences
 import nebulosa.io.resource
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.named
@@ -37,7 +36,6 @@ private fun inject() = module {
 
     single { appDirectory } withOptions { named("app") }
 
-    single { EventBus() }
     single { ObjectMapper() }
     single(createdAtStart = true) { Preferences(Paths.get("$appDirectory", "preferences.json")) }
 

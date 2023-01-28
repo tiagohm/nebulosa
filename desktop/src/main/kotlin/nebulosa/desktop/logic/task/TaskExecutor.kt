@@ -1,8 +1,7 @@
 package nebulosa.desktop.logic.task
 
-import nebulosa.desktop.core.EventBus
+import nebulosa.desktop.logic.EventBus
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.util.concurrent.CompletableFuture
@@ -12,7 +11,6 @@ import java.util.concurrent.atomic.AtomicReference
 
 abstract class TaskExecutor<T : Task> : Thread(), KoinComponent {
 
-    private val eventBus by inject<EventBus>()
     private val tasks = LinkedBlockingQueue<CompletableTask>()
     private val runningTask = AtomicReference<T>()
 
@@ -45,7 +43,7 @@ abstract class TaskExecutor<T : Task> : Thread(), KoinComponent {
             }
 
             runningTask.set(task.task as T)
-            eventBus.post(TaskStarted(task.task))
+            EventBus.TASK.post(TaskStarted(task.task))
 
             try {
                 task.run()
@@ -56,7 +54,7 @@ abstract class TaskExecutor<T : Task> : Thread(), KoinComponent {
                 LOG.error("task exception", e)
             } finally {
                 runningTask.set(null)
-                eventBus.post(TaskFinished(task.task))
+                EventBus.TASK.post(TaskFinished(task.task))
             }
         }
     }

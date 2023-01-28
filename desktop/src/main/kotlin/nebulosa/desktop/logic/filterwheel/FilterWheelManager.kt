@@ -6,9 +6,9 @@ import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.filterwheels.FilterWheel
+import nebulosa.indi.device.filterwheels.FilterWheelCountChanged
 import nebulosa.indi.device.filterwheels.FilterWheelMovingChanged
 import nebulosa.indi.device.filterwheels.FilterWheelPositionChanged
-import nebulosa.indi.device.filterwheels.FilterWheelSlotCountChanged
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext
@@ -36,7 +36,7 @@ class FilterWheelManager(private val window: FilterWheelWindow) :
     override fun onDeviceEvent(event: DeviceEvent<*>, device: FilterWheel) {
         when (event) {
             is FilterWheelPositionChanged -> updateTitle()
-            is FilterWheelSlotCountChanged -> updateFilterNames()
+            is FilterWheelCountChanged -> updateFilterNames()
             is FilterWheelMovingChanged -> updateStatus()
         }
     }

@@ -19,11 +19,11 @@ internal open class CameraBase(
     name: String,
 ) : AbstractDevice(sender, handler, name), Camera {
 
-    override var isExposuring = false
+    override var exposuring = false
     override var hasCoolerControl = false
-    override var isCoolerOn = false
+    override var cooler = false
     override var hasDewHeater = false
-    override var isDewHeaterOn = false
+    override var dewHeater = false
     override var frameFormats = emptyList<String>()
     override var canAbort = false
     override var cfaOffsetX = 0
@@ -65,7 +65,7 @@ internal open class CameraBase(
     override var temperature = 0.0
 
     override var canPulseGuide = false
-    override var isPulseGuiding = false
+    override var pulseGuiding = false
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -73,7 +73,7 @@ internal open class CameraBase(
                 when (message.name) {
                     "CCD_COOLER" -> {
                         hasCoolerControl = true
-                        isCoolerOn = message["COOLER_ON"]?.isOn() ?: false
+                        cooler = message["COOLER_ON"]?.isOn() ?: false
 
                         handler.fireOnEventReceived(CameraCoolerControlChanged(this))
                         handler.fireOnEventReceived(CameraCoolerChanged(this))
@@ -122,15 +122,15 @@ internal open class CameraBase(
                             handler.fireOnEventReceived(CameraExposureProgressChanged(this))
                         }
 
-                        val prevIsExposuring = isExposuring
-                        isExposuring = exposureState == PropertyState.BUSY
+                        val prevIsExposuring = exposuring
+                        exposuring = exposureState == PropertyState.BUSY
 
-                        if (prevIsExposuring != isExposuring) {
+                        if (prevIsExposuring != exposuring) {
                             handler.fireOnEventReceived(CameraExposuringChanged(this))
                         }
 
                         if (exposureState == PropertyState.IDLE
-                            && (prevExposureState == PropertyState.BUSY || isExposuring)
+                            && (prevExposureState == PropertyState.BUSY || exposuring)
                         ) {
                             handler.fireOnEventReceived(CameraExposureAborted(this))
                         } else if (exposureState == PropertyState.OK && prevExposureState == PropertyState.BUSY) {
@@ -237,10 +237,10 @@ internal open class CameraBase(
 
                             handler.fireOnEventReceived(GuiderAttached(this))
                         } else {
-                            val prevIsPulseGuiding = isPulseGuiding
-                            isPulseGuiding = message.isBusy
+                            val prevIsPulseGuiding = pulseGuiding
+                            pulseGuiding = message.isBusy
 
-                            if (isPulseGuiding != prevIsPulseGuiding) {
+                            if (pulseGuiding != prevIsPulseGuiding) {
                                 handler.fireOnEventReceived(GuiderPulsingChanged(this))
                             }
                         }
@@ -251,10 +251,10 @@ internal open class CameraBase(
 
                             handler.fireOnEventReceived(GuiderAttached(this))
                         } else {
-                            val prevIsPulseGuiding = isPulseGuiding
-                            isPulseGuiding = message.isBusy
+                            val prevIsPulseGuiding = pulseGuiding
+                            pulseGuiding = message.isBusy
 
-                            if (isPulseGuiding != prevIsPulseGuiding) {
+                            if (pulseGuiding != prevIsPulseGuiding) {
                                 handler.fireOnEventReceived(GuiderPulsingChanged(this))
                             }
                         }
@@ -281,7 +281,7 @@ internal open class CameraBase(
     }
 
     override fun cooler(enable: Boolean) {
-        if (hasCoolerControl && isCoolerOn != enable) {
+        if (hasCoolerControl && cooler != enable) {
             sendNewSwitch("CCD_COOLER", "COOLER_ON" to enable, "COOLER_OFF" to !enable)
         }
     }
@@ -369,9 +369,9 @@ internal open class CameraBase(
     }
 
     override fun toString(): String {
-        return "Camera(name=$name, isCapturing=$isExposuring," +
-                " hasCoolerControl=$hasCoolerControl, isCoolerOn=$isCoolerOn," +
-                " hasDewHeater=$hasDewHeater, isDewHeaterOn=$isDewHeaterOn," +
+        return "Camera(name=$name, exposuring=$exposuring," +
+                " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
+                " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
                 " frameFormats=$frameFormats, canAbort=$canAbort," +
                 " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
                 " exposureMin=$exposureMin, exposureMax=$exposureMax," +
@@ -385,6 +385,6 @@ internal open class CameraBase(
                 " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
                 " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
                 " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
-                " canPulseGuide=$canPulseGuide, isPulseGuiding=$isPulseGuiding)"
+                " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
     }
 }

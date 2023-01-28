@@ -4,19 +4,14 @@ import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
-import nebulosa.desktop.core.EventBus
-import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
 import nebulosa.indi.device.*
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 @Suppress("LeakingThis", "UNCHECKED_CAST")
 abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), DeviceProperty<D>, KoinComponent {
 
     override val connectedProperty = SimpleBooleanProperty(false)
     override val connectingProperty = SimpleBooleanProperty(false)
-
-    protected val eventBus by inject<EventBus>()
 
     private val subscribers = arrayOfNulls<Disposable>(1)
     private val listeners = hashSetOf<DevicePropertyListener<D>>()
@@ -26,10 +21,8 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
     init {
         addListener(::onChanged)
 
-        subscribers[0] = eventBus
-            .filterIsInstance<DeviceEvent<*>> { it.device === value }
-            .observeOnFXThread()
-            .subscribe(::onDeviceEvent)
+        subscribers[0] = EventBus.DEVICE
+            .subscribe(filter = { it.device === value }, observeOnJavaFX = true, next = ::onDeviceEvent)
     }
 
     override fun registerListener(listener: DevicePropertyListener<D>) {

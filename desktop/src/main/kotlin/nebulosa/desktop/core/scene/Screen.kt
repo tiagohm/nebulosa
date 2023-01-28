@@ -6,7 +6,6 @@ import javafx.scene.Scene
 import javafx.scene.control.Alert
 import javafx.scene.image.Image
 import javafx.stage.Stage
-import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
@@ -21,7 +20,6 @@ abstract class Screen(
 
     private val created = AtomicBoolean(false)
 
-    protected val eventBus by inject<EventBus>()
     protected val preferences by inject<Preferences>()
 
     init {

@@ -177,7 +177,7 @@ class TelescopeControlLX200Server(
                 // ":Qe", ":Qn", ":Qs", ":Qw" -> return // abort move
                 ":Q" -> abort()
                 ":U" -> return
-                ":D" -> sendSlewingStatus(server.mount.isSlewing)
+                ":D" -> sendSlewingStatus(server.mount.slewing)
                 else -> {
                     when {
                         c.startsWith(":Sg") -> sendOk() // Longitude

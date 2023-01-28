@@ -5,8 +5,7 @@ import javafx.collections.FXCollections
 import nebulosa.desktop.logic.AbstractDeviceProperty
 import nebulosa.imaging.algorithms.CfaPattern
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.cameras.Camera
-import nebulosa.indi.device.cameras.CameraEvent
+import nebulosa.indi.device.cameras.*
 import nebulosa.indi.protocol.PropertyState
 
 open class DefaultCameraProperty : AbstractDeviceProperty<Camera>(), CameraProperty {
@@ -53,11 +52,11 @@ open class DefaultCameraProperty : AbstractDeviceProperty<Camera>(), CameraPrope
     override val offsetMaxProperty = SimpleIntegerProperty(0)
 
     override fun onChanged(prev: Camera?, device: Camera) {
-        exposuringProperty.set(device.isExposuring)
+        exposuringProperty.set(device.exposuring)
         hasCoolerControlProperty.set(device.hasCoolerControl)
-        coolerProperty.set(device.isCoolerOn)
+        coolerProperty.set(device.cooler)
         hasDewHeaterProperty.set(device.hasDewHeater)
-        dewHeaterProperty.set(device.isDewHeaterOn)
+        dewHeaterProperty.set(device.dewHeater)
         frameFormatsProperty.setAll(device.frameFormats)
         canAbortProperty.set(device.canAbort)
         cfaOffsetXProperty.set(device.cfaOffsetX)
@@ -140,7 +139,60 @@ open class DefaultCameraProperty : AbstractDeviceProperty<Camera>(), CameraPrope
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
         when (event) {
-            is CameraEvent -> onChanged(device, device)
+            is CameraExposuringChanged -> exposuringProperty.set(device.exposuring)
+            is CameraCoolerControlChanged -> hasCoolerControlProperty.set(device.hasCoolerControl)
+            is CameraCoolerChanged -> coolerProperty.set(device.cooler)
+            is CameraHasDewHeaterChanged -> hasDewHeaterProperty.set(device.hasDewHeater)
+            is CameraDewHeaterChanged -> dewHeaterProperty.set(device.dewHeater)
+            is CameraFrameFormatsChanged -> frameFormatsProperty.setAll(device.frameFormats)
+            is CameraCanAbortChanged -> canAbortProperty.set(device.canAbort)
+            is CameraGainChanged -> gainProperty.set(device.gain)
+            is CameraOffsetChanged -> offsetProperty.set(device.offset)
+            is CameraExposureStateChanged -> exposureStateProperty.set(device.exposureState)
+            is CameraHasCoolerChanged -> hasCoolerProperty.set(device.hasCooler)
+            is CameraCanSetTemperatureChanged -> canSetTemperatureProperty.set(device.canSetTemperature)
+            is CameraTemperatureChanged -> temperatureProperty.set(device.temperature)
+            is CameraCanSubFrameChanged -> canSubFrameProperty.set(device.canSubFrame)
+            is CameraCfaChanged -> {
+                cfaOffsetXProperty.set(device.cfaOffsetX)
+                cfaOffsetYProperty.set(device.cfaOffsetY)
+                cfaTypeProperty.set(device.cfaType)
+            }
+            is CameraExposureMinMaxChanged -> {
+                exposureMaxProperty.set(device.exposureMax)
+                exposureMinProperty.set(device.exposureMin)
+            }
+            is CameraGainMinMaxChanged -> {
+                gainMaxProperty.set(device.gainMax)
+                gainMinProperty.set(device.gainMin)
+            }
+            is CameraOffsetMinMaxChanged -> {
+                offsetMaxProperty.set(device.offsetMax)
+                offsetMinProperty.set(device.offsetMin)
+            }
+            is CameraFrameChanged -> {
+                maxXProperty.set(device.maxX)
+                minXProperty.set(device.minX)
+                maxYProperty.set(device.maxY)
+                minYProperty.set(device.minY)
+                maxWidthProperty.set(device.maxWidth)
+                minWidthProperty.set(device.minWidth)
+                maxHeightProperty.set(device.maxHeight)
+                minHeightProperty.set(device.minHeight)
+                xProperty.set(device.x)
+                yProperty.set(device.y)
+                widthProperty.set(device.width)
+                heightProperty.set(device.height)
+            }
+            is CameraCanBinChanged -> {
+                canBinProperty.set(device.canBin)
+                maxBinXProperty.set(device.maxBinX)
+                maxBinYProperty.set(device.maxBinY)
+            }
+            is CameraBinChanged -> {
+                binXProperty.set(device.binX)
+                binYProperty.set(device.binY)
+            }
         }
     }
 }

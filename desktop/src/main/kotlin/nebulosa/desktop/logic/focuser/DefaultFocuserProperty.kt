@@ -5,8 +5,8 @@ import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
 import nebulosa.desktop.logic.AbstractDeviceProperty
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.focusers.Focuser
-import nebulosa.indi.device.focusers.FocuserEvent
+import nebulosa.indi.device.focusers.*
+import nebulosa.indi.device.thermometers.ThermometerTemperatureChanged
 
 open class DefaultFocuserProperty : AbstractDeviceProperty<Focuser>(), FocuserProperty {
 
@@ -52,7 +52,16 @@ open class DefaultFocuserProperty : AbstractDeviceProperty<Focuser>(), FocuserPr
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Focuser) {
         when (event) {
-            is FocuserEvent -> onChanged(device, device)
+            is FocuserPositionChanged -> positionProperty.set(device.position)
+            is FocuserCanAbsoluteMoveChanged -> canAbsoluteMoveProperty.set(device.canAbsoluteMove)
+            is FocuserCanRelativeMoveChanged -> canRelativeMoveProperty.set(device.canRelativeMove)
+            is FocuserCanAbortChanged -> canAbortProperty.set(device.canAbort)
+            is FocuserCanReverseChanged -> canReverseProperty.set(device.canReverse)
+            is FocuserReverseChanged -> reverseProperty.set(device.reverse)
+            is FocuserCanSyncChanged -> canSyncProperty.set(device.canSync)
+            is FocuserMaxPositionChanged -> maxPositionProperty.set(device.maxPosition)
+            is FocuserMovingChanged -> movingProperty.set(device.moving)
+            is ThermometerTemperatureChanged -> temperatureProperty.set(device.temperature)
         }
     }
 }

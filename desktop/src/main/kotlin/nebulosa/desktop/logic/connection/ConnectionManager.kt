@@ -1,23 +1,20 @@
 package nebulosa.desktop.logic.connection
 
-import nebulosa.desktop.core.EventBus
+import nebulosa.desktop.logic.EventBus
 import nebulosa.indi.INDIClient
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.DeviceProtocolHandler
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 class ConnectionManager : DeviceEventHandler, KoinComponent {
-
-    private val eventBus by inject<EventBus>()
 
     @Volatile private var client: INDIClient? = null
     @Volatile private var deviceHandler: DeviceProtocolHandler? = null
 
     override fun onEventReceived(event: DeviceEvent<*>) {
         if (event.device?.sender === client) {
-            eventBus.post(event)
+            EventBus.DEVICE.post(event)
         }
     }
 
@@ -40,7 +37,7 @@ class ConnectionManager : DeviceEventHandler, KoinComponent {
         this.deviceHandler = deviceHandler
         this.client = client
 
-        eventBus.post(Connected(client))
+        EventBus.CONNECTION.post(Connected(client))
     }
 
     @Synchronized
@@ -51,7 +48,7 @@ class ConnectionManager : DeviceEventHandler, KoinComponent {
             deviceHandler!!.close()
             deviceHandler = null
 
-            eventBus.post(Disconnected(client!!))
+            EventBus.CONNECTION.post(Disconnected(client!!))
 
             client = null
         }

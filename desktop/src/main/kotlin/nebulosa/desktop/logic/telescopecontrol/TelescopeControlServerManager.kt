@@ -1,27 +1,23 @@
 package nebulosa.desktop.logic.telescopecontrol
 
-import nebulosa.desktop.core.EventBus
+import nebulosa.desktop.logic.EventBus
+import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.mounts.Mount
 import nebulosa.indi.device.mounts.MountDetached
 import nebulosa.indi.device.mounts.MountEquatorialCoordinatesChanged
-import nebulosa.indi.device.mounts.MountEvent
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import java.util.*
 
 class TelescopeControlServerManager : KoinComponent {
 
-    private val eventBus by inject<EventBus>()
-
     private val servers = HashMap<Mount, LinkedList<TelescopeControlServer>>()
 
     init {
-        eventBus
-            .filterIsInstance<MountEvent> { it.device in servers }
-            .subscribe(::onMountEvent)
+        EventBus.DEVICE
+            .subscribe(filter = { it.device in servers }, next = ::onEvent)
     }
 
-    private fun onMountEvent(event: MountEvent) {
+    private fun onEvent(event: DeviceEvent<*>) {
         when (event) {
             is MountDetached -> stopAll(event.device)
             is MountEquatorialCoordinatesChanged -> servers[event.device]?.forEach { it.sendCurrentPosition() }

@@ -182,9 +182,9 @@ internal open class FocuserBase(
     }
 
     override fun toString(): String {
-        return "Focuser(name=$name, isMoving=$moving, position=$position," +
+        return "Focuser(name=$name, moving=$moving, position=$position," +
                 " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
-                " canAbort=$canAbort, canReverse=$canReverse, isReverse=$reverse," +
+                " canAbort=$canAbort, canReverse=$canReverse, reverse=$reverse," +
                 " canSync=$canSync, hasBackslash=$hasBackslash," +
                 " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
                 " temperature=$temperature)"

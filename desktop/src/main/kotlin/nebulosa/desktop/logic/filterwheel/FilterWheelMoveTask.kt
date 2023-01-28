@@ -1,11 +1,14 @@
 package nebulosa.desktop.logic.filterwheel
 
 import io.reactivex.rxjava3.disposables.Disposable
-import nebulosa.desktop.core.EventBus
+import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
-import nebulosa.indi.device.filterwheels.*
+import nebulosa.indi.device.DeviceEvent
+import nebulosa.indi.device.filterwheels.FilterWheel
+import nebulosa.indi.device.filterwheels.FilterWheelDetached
+import nebulosa.indi.device.filterwheels.FilterWheelMoveFailed
+import nebulosa.indi.device.filterwheels.FilterWheelPositionChanged
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import org.slf4j.LoggerFactory
 
 data class FilterWheelMoveTask(
@@ -13,10 +16,9 @@ data class FilterWheelMoveTask(
     val position: Int,
 ) : FilterWheelTask, KoinComponent {
 
-    private val eventBus by inject<EventBus>()
     private val latch = CountUpDownLatch()
 
-    private fun onFilterWheelEvent(event: FilterWheelEvent) {
+    private fun onEvent(event: DeviceEvent<*>) {
         when (event) {
             is FilterWheelPositionChanged -> latch.countDown()
             is FilterWheelDetached,
@@ -37,9 +39,8 @@ data class FilterWheelMoveTask(
                 synchronized(filterWheel) {
                     latch.countUp()
 
-                    subscriber = eventBus
-                        .filterIsInstance<FilterWheelEvent> { it.device === filterWheel }
-                        .subscribe(::onFilterWheelEvent)
+                    subscriber = EventBus.DEVICE
+                        .subscribe(filter = { it.device === filterWheel }, next = ::onEvent)
 
                     LOG.info("moving filter wheel ${filterWheel.name} to position $position")
 

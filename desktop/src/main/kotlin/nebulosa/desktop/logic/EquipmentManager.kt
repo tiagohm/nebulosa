@@ -4,16 +4,14 @@ import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
-import nebulosa.desktop.core.EventBus
-import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
-import nebulosa.desktop.logic.gps.DefaultGPSProperty
-import nebulosa.desktop.logic.mount.DefaultMountProperty
 import nebulosa.desktop.logic.camera.DefaultCameraProperty
 import nebulosa.desktop.logic.connection.Connected
 import nebulosa.desktop.logic.connection.ConnectionEvent
 import nebulosa.desktop.logic.connection.Disconnected
 import nebulosa.desktop.logic.filterwheel.DefaultFilterWheelProperty
 import nebulosa.desktop.logic.focuser.DefaultFocuserProperty
+import nebulosa.desktop.logic.gps.DefaultGPSProperty
+import nebulosa.desktop.logic.mount.DefaultMountProperty
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.cameras.Camera
 import nebulosa.indi.device.cameras.CameraAttached
@@ -37,12 +35,10 @@ import nebulosa.indi.device.thermometers.Thermometer
 import nebulosa.indi.device.thermometers.ThermometerAttached
 import nebulosa.indi.device.thermometers.ThermometerDetached
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import java.io.Closeable
 
 class EquipmentManager : KoinComponent, Closeable {
 
-    private val eventBus by inject<EventBus>()
     private val subscribers = arrayOfNulls<Disposable>(2)
 
     @JvmField val connectedProperty = SimpleBooleanProperty(false)
@@ -63,15 +59,10 @@ class EquipmentManager : KoinComponent, Closeable {
     @JvmField val selectedGPS = DefaultGPSProperty()
 
     init {
-        subscribers[0] = eventBus
-            .filterIsInstance<DeviceEvent<*>>()
-            .observeOnFXThread()
-            .subscribe(::onDeviceEvent)
-
-        subscribers[1] = eventBus
-            .filterIsInstance<ConnectionEvent>()
-            .observeOnFXThread()
-            .subscribe(::onConnectionEvent)
+        subscribers[0] = EventBus.DEVICE
+            .subscribe(observeOnJavaFX = true, next = ::onDeviceEvent)
+        subscribers[1] = EventBus.CONNECTION
+            .subscribe(observeOnJavaFX = true, next = ::onConnectionEvent)
     }
 
     private fun onDeviceEvent(event: DeviceEvent<*>) {

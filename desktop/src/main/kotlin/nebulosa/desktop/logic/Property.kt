@@ -2,7 +2,6 @@ package nebulosa.desktop.logic
 
 import javafx.beans.property.Property
 import javafx.beans.value.ObservableObjectValue
-import javafx.beans.value.ObservableValue
 import javafx.beans.value.WritableObjectValue
 import java.io.Closeable
 

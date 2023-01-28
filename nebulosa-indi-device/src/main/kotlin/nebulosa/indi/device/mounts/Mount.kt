@@ -8,13 +8,13 @@ import java.time.OffsetDateTime
 
 interface Mount : Guider, GPS {
 
-    val isSlewing: Boolean
+    val slewing: Boolean
 
-    val isTracking: Boolean
+    val tracking: Boolean
 
-    val isParking: Boolean
+    val parking: Boolean
 
-    val isParked: Boolean
+    val parked: Boolean
 
     val canAbort: Boolean
 

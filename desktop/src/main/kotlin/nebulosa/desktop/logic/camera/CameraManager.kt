@@ -4,8 +4,6 @@ import io.reactivex.rxjava3.disposables.Disposable
 import javafx.application.HostServices
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
-import nebulosa.desktop.core.EventBus
-import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.camera.AutoSubFolderMode
 import nebulosa.desktop.gui.camera.CameraWindow
@@ -13,7 +11,9 @@ import nebulosa.desktop.gui.camera.ExposureMode
 import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
+import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.task.TaskEvent
+import nebulosa.desktop.logic.task.TaskFinished
 import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.desktop.preferences.Preferences
 import nebulosa.indi.device.DeviceEvent
@@ -34,7 +34,6 @@ class CameraManager(private val window: CameraWindow) :
     @JvmField val capturingProperty = SimpleBooleanProperty()
 
     private val preferences by inject<Preferences>()
-    private val eventBus by inject<EventBus>()
     private val equipmentManager by inject<EquipmentManager>()
     private val cameraTaskExecutor by inject<CameraTaskExecutor>()
     private val appDirectory by inject<Path>(named("app"))
@@ -47,15 +46,26 @@ class CameraManager(private val window: CameraWindow) :
     init {
         registerListener(this)
 
-        subscribers[0] = eventBus
-            .filterIsInstance<TaskEvent> { it.task is CameraTask && (it.task as CameraTask).camera === value }
-            .observeOnFXThread()
-            .subscribe(::onTaskEvent)
+        subscribers[0] = EventBus.TASK
+            .subscribe(observeOnJavaFX = true, next = ::onTaskEvent)
     }
 
     private fun onTaskEvent(event: TaskEvent) {
-        capturingProperty.set(event is TaskStarted)
-        updateStatus()
+        when (event) {
+            is CameraFrameSaved -> imageWindows.add(ImageWindow.open(event.imagePath.toFile(), event.task.camera))
+            else -> {
+                val task = event.task
+
+                if (task is CameraTask && task.camera === value) {
+                    updateStatus()
+
+                    when (event) {
+                        is TaskStarted -> capturingProperty.set(true)
+                        is TaskFinished -> capturingProperty.set(false)
+                    }
+                }
+            }
+        }
     }
 
     override fun onChanged(prev: Camera?, device: Camera) {
@@ -70,7 +80,6 @@ class CameraManager(private val window: CameraWindow) :
             is CameraExposureAborted,
             is CameraExposureFailed -> updateStatus()
             is CameraExposureProgressChanged -> updateStatus()
-            is CameraFrameSaved -> imageWindows.add(ImageWindow.open(event.imagePath.toFile(), event.device))
             is CameraExposureMinMaxChanged,
             is CameraFrameChanged,
             is CameraCanBinChanged,

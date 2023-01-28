@@ -6,13 +6,13 @@ import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.TextField
 import javafx.util.StringConverter
-import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
 import nebulosa.desktop.core.scene.Screen
 import nebulosa.desktop.logic.EquipmentManager
+import nebulosa.desktop.logic.EventBus
+import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.mounts.Mount
 import nebulosa.indi.device.mounts.MountCoordinateChanged
-import nebulosa.indi.device.mounts.MountEvent
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Distance.Companion.m
@@ -50,7 +50,7 @@ class SiteAndTimeScreen : Screen("SiteAndTime", "nebulosa-site-and-time") {
         subscriber?.dispose()
     }
 
-    private fun onMountEvent(event: MountEvent) {
+    private fun onEvent(event: DeviceEvent<*>) {
         when (event) {
             is MountCoordinateChanged -> updateSiteAndTime()
         }
@@ -63,10 +63,8 @@ class SiteAndTimeScreen : Screen("SiteAndTime", "nebulosa-site-and-time") {
 
         subscriber?.dispose()
 
-        subscriber = eventBus
-            .filterIsInstance<MountEvent> { it.device === mount }
-            .observeOnFXThread()
-            .subscribe(::onMountEvent)
+        subscriber = EventBus.DEVICE
+            .subscribe(filter = { it.device === mount }, observeOnJavaFX = true, next = ::onEvent)
 
         show(bringToFront = true)
 
@@ -77,10 +75,17 @@ class SiteAndTimeScreen : Screen("SiteAndTime", "nebulosa-site-and-time") {
     private fun apply() {
         try {
             val longitude = newLongitude.text.trim()
-                .ifBlank { null }?.let(Angle::parseCoordinatesAsDouble)?.deg ?: mount.longitude
+                .ifBlank { null }
+                ?.let(Angle::parseCoordinatesAsDouble)?.deg
+                ?: mount.longitude
+
             val latitude = newLatitude.text.trim()
-                .ifBlank { null }?.let(Angle::parseCoordinatesAsDouble)?.deg ?: mount.latitude
-            val elevation = newElevation.text.trim().toDoubleOrNull()?.m ?: mount.elevation
+                .ifBlank { null }
+                ?.let(Angle::parseCoordinatesAsDouble)?.deg
+                ?: mount.latitude
+
+            val elevation = newElevation.text.trim().toDoubleOrNull()?.m
+                ?: mount.elevation
 
             mount.coordinates(longitude, latitude, elevation)
         } catch (e: IllegalArgumentException) {

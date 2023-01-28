@@ -27,7 +27,7 @@ internal open class FilterWheelBase(
 
                         if (message is DefNumberVector) {
                             count = slot.max.toInt() - slot.min.toInt() + 1
-                            handler.fireOnEventReceived(FilterWheelSlotCountChanged(this))
+                            handler.fireOnEventReceived(FilterWheelCountChanged(this))
                         }
 
                         if (message.state == PropertyState.ALERT) {
@@ -70,6 +70,6 @@ internal open class FilterWheelBase(
 
     override fun toString(): String {
         return "FilterWheel(name=$name, slotCount=$count, position=$position," +
-                " isMoving=$moving)"
+                " moving=$moving)"
     }
 }

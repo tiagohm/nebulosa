@@ -34,16 +34,16 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
     override val timeProperty = SimpleObjectProperty(OffsetDateTime.now())
 
     override fun onChanged(prev: Mount?, device: Mount) {
-        slewingProperty.set(device.isSlewing)
-        trackingProperty.set(device.isTracking)
+        slewingProperty.set(device.slewing)
+        trackingProperty.set(device.tracking)
         slewRatesProperty.setAll(device.slewRates)
         slewRateProperty.set(device.slewRate)
         mountTypeProperty.set(device.mountType)
         trackModesProperty.setAll(device.trackModes)
         trackModeProperty.set(device.trackMode)
         pierSideProperty.set(device.pierSide)
-        parkingProperty.set(device.isParking)
-        parkedProperty.set(device.isParked)
+        parkingProperty.set(device.parking)
+        parkedProperty.set(device.parked)
         canAbortProperty.set(device.canAbort)
         canSyncProperty.set(device.canSync)
         canParkProperty.set(device.canPark)
@@ -87,7 +87,45 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {
         when (event) {
-            is MountEvent -> onChanged(device, device)
+            is MountSlewingChanged -> slewingProperty.set(device.slewing)
+            is MountSlewRateChanged -> slewRateProperty.set(device.slewRate)
+            is MountTypeChanged -> mountTypeProperty.set(device.mountType)
+            is MountTrackModeChanged -> trackModeProperty.set(device.trackMode)
+            is MountTrackingChanged -> trackingProperty.set(device.tracking)
+            is MountPierSideChanged -> pierSideProperty.set(device.pierSide)
+            is MountCanAbortChanged -> canAbortProperty.set(device.canAbort)
+            is MountCanSyncChanged -> canSyncProperty.set(device.canSync)
+            is MountCanParkChanged -> canParkProperty.set(device.canPark)
+            is MountTimeChanged -> timeProperty.set(device.time)
+            is MountSlewRatesChanged -> {
+                slewRateProperty.set(null)
+                slewRatesProperty.setAll(device.slewRates)
+                slewRateProperty.set(device.slewRate ?: device.slewRates.firstOrNull())
+            }
+            is MountTrackModesChanged -> {
+                trackModeProperty.set(null)
+                trackModesProperty.setAll(device.trackModes)
+                trackModeProperty.set(device.trackMode)
+            }
+            is MountEquatorialCoordinatesChanged -> {
+                rightAscensionProperty.set(device.rightAscension.hours)
+                declinationProperty.set(device.declination.degrees)
+                rightAscensionJ2000Property.set(device.rightAscensionJ2000.hours)
+                declinationJ2000Property.set(device.declinationJ2000.degrees)
+            }
+            is MountGuideRateChanged -> {
+                guideRateWEProperty.set(device.guideRateWE)
+                guideRateNSProperty.set(device.guideRateNS)
+            }
+            is MountParkChanged -> {
+                parkingProperty.set(device.parking)
+                parkedProperty.set(device.parked)
+            }
+            is MountCoordinateChanged -> {
+                longitudeProperty.set(device.longitude.degrees)
+                latitudeProperty.set(device.latitude.degrees)
+                elevationProperty.set(device.elevation.meters)
+            }
         }
     }
 }

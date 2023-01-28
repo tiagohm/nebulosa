@@ -1,13 +1,14 @@
 package nebulosa.desktop.logic.camera
 
 import io.reactivex.rxjava3.disposables.Disposable
-import nebulosa.desktop.core.EventBus
 import nebulosa.desktop.gui.camera.AutoSubFolderMode
 import nebulosa.desktop.logic.EquipmentManager
+import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
 import nebulosa.desktop.logic.filterwheel.FilterWheelTaskExecutor
 import nebulosa.desktop.preferences.Preferences
+import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.cameras.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -41,13 +42,10 @@ data class CameraExposureTask(
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
 ) : CameraTask, KoinComponent {
 
-    private val eventBus by inject<EventBus>()
     private val filterWheelTaskExecutor by inject<FilterWheelTaskExecutor>()
     private val equipmentManager by inject<EquipmentManager>()
     private val preferences by inject<Preferences>()
     private val latch = CountUpDownLatch()
-
-    private val filterWheel = equipmentManager.selectedFilterWheel.get()
 
     @Volatile var progress = 0.0
         private set
@@ -55,7 +53,7 @@ data class CameraExposureTask(
     @Volatile var remaining = amount
         private set
 
-    private fun onCameraEvent(event: CameraEvent) {
+    private fun onCameraEvent(event: DeviceEvent<*>) {
         when (event) {
             is CameraFrameCaptured -> {
                 save(event.fits)
@@ -78,11 +76,14 @@ data class CameraExposureTask(
         var subscriber: Disposable? = null
 
         try {
-            subscriber = eventBus
-                .filterIsInstance<CameraEvent> { it.device === camera }
-                .subscribe(::onCameraEvent)
+            subscriber = EventBus.DEVICE
+                .subscribe(filter = { it.device === camera }, next = ::onCameraEvent)
 
-            camera.snoop(listOf(filterWheel))
+            val mount = equipmentManager.selectedMount.get()
+            val focuser = equipmentManager.selectedFocuser.get()
+            val filterWheel = equipmentManager.selectedFilterWheel.get()
+
+            camera.snoop(listOf(mount, focuser, filterWheel))
 
             if (filterWheel != null && frameType == FrameType.DARK) {
                 if (!filterWheel.connected) {
@@ -168,7 +169,7 @@ data class CameraExposureTask(
         imagePath.parent.createDirectories()
         imagePath.outputStream().use { output -> fits.use { it.transferTo(output) } }
 
-        eventBus.post(CameraFrameSaved(camera, imagePath, autoSave))
+        EventBus.TASK.post(CameraFrameSaved(this, imagePath, autoSave))
     }
 
     companion object {

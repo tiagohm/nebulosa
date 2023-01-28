@@ -3,10 +3,9 @@ package nebulosa.desktop.logic.indi
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
-import nebulosa.desktop.core.EventBus
-import nebulosa.desktop.core.EventBus.Companion.observeOnFXThread
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
+import nebulosa.desktop.logic.EventBus
 import nebulosa.indi.device.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -14,7 +13,6 @@ import java.util.*
 
 class INDIPanelControlManager(private val window: INDIPanelControlWindow) : KoinComponent {
 
-    private val eventBus by inject<EventBus>()
     private val equipmentManager by inject<EquipmentManager>()
     private val cacheProperties = HashMap<Device, HashMap<String, INDIPanelControlWindow.GroupPropertyVector>>()
     private val groups = ArrayList<INDIPanelControlWindow.Group>()
@@ -24,13 +22,11 @@ class INDIPanelControlManager(private val window: INDIPanelControlWindow) : Koin
     @JvmField val devices = SimpleListProperty(FXCollections.observableArrayList<Device>())
 
     init {
-        subscribers[0] = eventBus
-            .filterIsInstance<DevicePropertyEvent>() { it.device === window.device }
-            .observeOnFXThread()
-            .subscribe(::onPropertyEvent)
+        subscribers[0] = EventBus.DEVICE
+            .subscribe(filter = { it.device === window.device }, next = ::onEvent)
     }
 
-    private fun onPropertyEvent(event: DevicePropertyEvent) {
+    private fun onEvent(event: DeviceEvent<*>) {
         when (event) {
             is DevicePropertyChanged -> {
                 synchronized(cacheProperties) {

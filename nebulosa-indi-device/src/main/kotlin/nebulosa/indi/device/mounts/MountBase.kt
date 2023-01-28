@@ -24,10 +24,10 @@ internal open class MountBase(
     name: String,
 ) : AbstractDevice(sender, handler, name), Mount {
 
-    override var isSlewing = false
-    override var isTracking = false
-    override var isParking = false
-    override var isParked = false
+    override var slewing = false
+    override var tracking = false
+    override var parking = false
+    override var parked = false
     override var canAbort = false
     override var canSync = false
     override var canPark = false
@@ -45,7 +45,7 @@ internal open class MountBase(
     override var declinationJ2000 = Angle.ZERO
 
     override var canPulseGuide = false
-    override var isPulseGuiding = false
+    override var pulseGuiding = false
 
     override var hasGPS = false
     override var longitude = Angle.ZERO
@@ -85,7 +85,7 @@ internal open class MountBase(
                         handler.fireOnEventReceived(MountTrackModeChanged(this))
                     }
                     "TELESCOPE_TRACK_STATE" -> {
-                        isTracking = message.firstOnSwitch().name == "TRACK_ON"
+                        tracking = message.firstOnSwitch().name == "TRACK_ON"
 
                         handler.fireOnEventReceived(MountTrackingChanged(this))
                     }
@@ -105,8 +105,8 @@ internal open class MountBase(
                             handler.fireOnEventReceived(MountCanParkChanged(this))
                         }
 
-                        isParking = message.isBusy
-                        isParked = message.firstOnSwitchOrNull()?.name == "PARK"
+                        parking = message.isBusy
+                        parked = message.firstOnSwitchOrNull()?.name == "PARK"
 
                         handler.fireOnEventReceived(MountParkChanged(this))
                     }
@@ -131,10 +131,10 @@ internal open class MountBase(
                         handler.fireOnEventReceived(MountGuideRateChanged(this))
                     }
                     "EQUATORIAL_EOD_COORD" -> {
-                        val prevIsIslewing = isSlewing
-                        isSlewing = message.isBusy
+                        val prevIsIslewing = slewing
+                        slewing = message.isBusy
 
-                        if (isSlewing != prevIsIslewing) {
+                        if (slewing != prevIsIslewing) {
                             handler.fireOnEventReceived(MountSlewingChanged(this))
                         }
 
@@ -156,10 +156,10 @@ internal open class MountBase(
                         }
 
                         if (canPulseGuide) {
-                            val prevIsPulseGuiding = isPulseGuiding
-                            isPulseGuiding = message.isBusy
+                            val prevIsPulseGuiding = pulseGuiding
+                            pulseGuiding = message.isBusy
 
-                            if (isPulseGuiding != prevIsPulseGuiding) {
+                            if (pulseGuiding != prevIsPulseGuiding) {
                                 handler.fireOnEventReceived(GuiderPulsingChanged(this))
                             }
                         }
@@ -172,10 +172,10 @@ internal open class MountBase(
                         }
 
                         if (canPulseGuide) {
-                            val prevIsPulseGuiding = isPulseGuiding
-                            isPulseGuiding = message.isBusy
+                            val prevIsPulseGuiding = pulseGuiding
+                            pulseGuiding = message.isBusy
 
-                            if (isPulseGuiding != prevIsPulseGuiding) {
+                            if (pulseGuiding != prevIsPulseGuiding) {
                                 handler.fireOnEventReceived(GuiderPulsingChanged(this))
                             }
                         }
@@ -208,7 +208,7 @@ internal open class MountBase(
     }
 
     override fun tracking(enable: Boolean) {
-        if (isTracking != enable) {
+        if (tracking != enable) {
             sendNewSwitch("TELESCOPE_TRACK_STATE", (if (enable) "TRACK_ON" else "TRACK_OFF") to true)
         }
     }
@@ -312,13 +312,13 @@ internal open class MountBase(
     }
 
     override fun toString(): String {
-        return "Mount(name=$name, isSlewing=$isSlewing, isTracking=$isTracking," +
-                " isParking=$isParking, isParked=$isParked, canAbort=$canAbort," +
+        return "Mount(name=$name, slewing=$slewing, tracking=$tracking," +
+                " parking=$parking, parked=$parked, canAbort=$canAbort," +
                 " canSync=$canSync, canPark=$canPark, slewRates=$slewRates," +
                 " slewRate=$slewRate, mountType=$mountType, trackModes=$trackModes," +
                 " trackMode=$trackMode, pierSide=$pierSide, guideRateWE=$guideRateWE," +
                 " guideRateNS=$guideRateNS, rightAscension=$rightAscension," +
                 " declination=$declination, canPulseGuide=$canPulseGuide," +
-                " isPulseGuiding=$isPulseGuiding)"
+                " pulseGuiding=$pulseGuiding)"
     }
 }

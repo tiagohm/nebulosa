@@ -6,7 +6,7 @@ interface Guider : Device {
 
     val canPulseGuide: Boolean
 
-    val isPulseGuiding: Boolean
+    val pulseGuiding: Boolean
 
     fun guideNorth(duration: Int)
 

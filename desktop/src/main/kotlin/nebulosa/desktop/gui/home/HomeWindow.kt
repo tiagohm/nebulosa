@@ -10,7 +10,6 @@ import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.Closed
 import nebulosa.desktop.logic.home.HomeManager
 
 class HomeWindow : AbstractWindow() {
@@ -69,8 +68,6 @@ class HomeWindow : AbstractWindow() {
 
     override fun onStop() {
         homeManager.close()
-
-        eventBus.post(Closed)
     }
 
     var host

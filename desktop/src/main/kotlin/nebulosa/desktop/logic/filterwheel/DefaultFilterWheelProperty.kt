@@ -5,7 +5,9 @@ import javafx.beans.property.SimpleIntegerProperty
 import nebulosa.desktop.logic.AbstractDeviceProperty
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.filterwheels.FilterWheel
-import nebulosa.indi.device.filterwheels.FilterWheelEvent
+import nebulosa.indi.device.filterwheels.FilterWheelCountChanged
+import nebulosa.indi.device.filterwheels.FilterWheelMovingChanged
+import nebulosa.indi.device.filterwheels.FilterWheelPositionChanged
 
 open class DefaultFilterWheelProperty : AbstractDeviceProperty<FilterWheel>(), FilterWheelProperty {
 
@@ -27,7 +29,9 @@ open class DefaultFilterWheelProperty : AbstractDeviceProperty<FilterWheel>(), F
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: FilterWheel) {
         when (event) {
-            is FilterWheelEvent -> onChanged(device, device)
+            is FilterWheelCountChanged -> countProperty.set(device.count)
+            is FilterWheelPositionChanged -> positionProperty.set(device.position)
+            is FilterWheelMovingChanged -> movingProperty.set(device.moving)
         }
     }
 }
