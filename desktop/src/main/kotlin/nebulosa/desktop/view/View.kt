@@ -30,5 +30,7 @@ interface View : Closeable {
 
     fun show(requestFocus: Boolean = false, bringToFront: Boolean = false)
 
+    fun showAndWait()
+
     fun showAlert(message: String, title: String = "Information")
 }

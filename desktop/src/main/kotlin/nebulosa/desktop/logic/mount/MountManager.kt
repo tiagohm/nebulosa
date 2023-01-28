@@ -1,9 +1,10 @@
 package nebulosa.desktop.logic.mount
 
 import javafx.application.Platform
+import nebulosa.desktop.gui.telescopecontrol.TelescopeControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.telescopecontrol.TelescopeControlServerScreen
+import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServer
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.guiders.GuiderPulsingChanged
@@ -15,6 +16,7 @@ import nebulosa.time.TimeJD
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext
+import java.io.Closeable
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.concurrent.timer
@@ -38,7 +40,9 @@ class MountManager(private val view: MountView) :
         updateStatus()
     }
 
-    override fun onChanged(prev: Mount?, device: Mount) {}
+    override fun onChanged(prev: Mount?, device: Mount) {
+        attachTelescopeControlToMount()
+    }
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {
         when (event) {
@@ -46,12 +50,13 @@ class MountManager(private val view: MountView) :
             is MountTrackingChanged,
             is MountSlewingChanged,
             is GuiderPulsingChanged -> updateStatus()
+            is MountEquatorialCoordinatesChanged -> sendCurrentPositionToTelescopeControl()
         }
     }
 
     fun openTelescopeControlServer() {
-        val screen = TelescopeControlServerScreen(value ?: return)
-        screen.showAndWait()
+        val window = TelescopeControlWindow(this)
+        window.show()
     }
 
     fun park() {
@@ -147,7 +152,7 @@ class MountManager(private val view: MountView) :
         preferences.double("value.screen.y", view.y)
     }
 
-    fun loadPreferences(device: Mount? = value) {
+    fun loadPreferences() {
         preferences.double("value.screen.x")?.also { view.x = it }
         preferences.double("value.screen.y")?.also { view.y = it }
     }
@@ -161,6 +166,14 @@ class MountManager(private val view: MountView) :
     private fun computeTimeLeftToMeridianFlip(): Angle {
         if (value == null) return Angle.ZERO
         return value.rightAscension - computeLST(TimeJD.now())
+    }
+
+    private fun attachTelescopeControlToMount() {
+        TelescopeControlServer.SERVERS.values.forEach { it.attach(value) }
+    }
+
+    private fun sendCurrentPositionToTelescopeControl() {
+        TelescopeControlServer.SERVERS.values.forEach(TelescopeControlServer::sendCurrentPosition)
     }
 
     private fun onTimerHit(task: TimerTask) {
@@ -177,5 +190,7 @@ class MountManager(private val view: MountView) :
         savePreferences()
 
         timer.cancel()
+
+        TelescopeControlServer.SERVERS.values.forEach(Closeable::close)
     }
 }

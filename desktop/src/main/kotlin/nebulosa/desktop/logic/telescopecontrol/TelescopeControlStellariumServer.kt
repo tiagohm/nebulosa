@@ -2,7 +2,6 @@ package nebulosa.desktop.logic.telescopecontrol
 
 import nebulosa.constants.PI
 import nebulosa.erfa.eraAnpm
-import nebulosa.indi.device.mounts.Mount
 import nebulosa.math.Angle.Companion.rad
 import org.slf4j.LoggerFactory
 import java.net.Socket
@@ -65,11 +64,7 @@ import java.net.Socket
  * @see <a href="https://free-astro.org/images/b/b7/Stellarium_telescope_protocol.txt">Protocol</a>
  * @see <a href="https://github.com/Stellarium/stellarium/blob/master/plugins/TelescopeControl/src/TelescopeClient.cpp">Stellarium Implementation</a>
  */
-class TelescopeControlStellariumServer(
-    mount: Mount,
-    host: String = "0.0.0.0",
-    port: Int = 10001,
-) : TelescopeControlTCPServer(mount, host, port) {
+object TelescopeControlStellariumServer : TelescopeControlTCPServer() {
 
     override fun sendCurrentPosition() {
         forEach { (it as TelescopeClient).sendCurrentPosition() }
@@ -83,8 +78,9 @@ class TelescopeControlStellariumServer(
     ) : Client(socket) {
 
         fun sendCurrentPosition() {
-            val ra = server.mount.rightAscensionJ2000
-            val dec = server.mount.declinationJ2000
+            val mount = server.mount ?: return
+            val ra = mount.rightAscensionJ2000
+            val dec = mount.declinationJ2000
 
             output.writeShortLe(24) // LENGTH
             output.writeShortLe(0) // TYPE
@@ -115,23 +111,14 @@ class TelescopeControlStellariumServer(
                 val ra = (buffer.readIntLe() * (PI / 0x80000000)).rad.normalized
                 val dec = (buffer.readIntLe() * (PI / 0x80000000)).rad
                 if (LOG.isDebugEnabled) LOG.debug("MessageGoto: ra=${ra.hours}, dec=${dec.degrees}")
-                server.mount.goToJ2000(ra, dec)
+                server.mount?.goToJ2000(ra, dec)
             } else if (readCount < 0L) {
                 return false
             }
 
             return true
         }
-
-        override fun close() {
-            super.close()
-
-            server.remove(this)
-        }
     }
 
-    companion object {
-
-        @JvmStatic private val LOG = LoggerFactory.getLogger(TelescopeControlStellariumServer::class.java)
-    }
+    @JvmStatic private val LOG = LoggerFactory.getLogger(TelescopeControlStellariumServer::class.java)
 }

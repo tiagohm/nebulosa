@@ -28,7 +28,7 @@
                     top="16.0"/>
         </padding>
         <HBox alignment="CENTER">
-            <ChoiceBox fx:id="types"
+            <ChoiceBox fx:id="serverTypeChoiceBox"
                        HBox.hgrow="ALWAYS">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
@@ -40,19 +40,17 @@
         </HBox>
         <HBox alignment="CENTER"
               spacing="8.0">
-            <TextField fx:id="host"
+            <TextField fx:id="hostTextField"
                        prefHeight="32.0"
                        HBox.hgrow="ALWAYS"
-                       focusTraversable="false"
                        promptText="Host (0.0.0.0)">
             </TextField>
-            <TextField fx:id="port"
+            <TextField fx:id="portTextField"
                        prefHeight="32.0"
                        prefWidth="94.0"
-                       focusTraversable="false"
                        promptText="Port">
             </TextField>
-            <Button fx:id="connect"
+            <Button fx:id="connectButton"
                     onAction="#connect"
                     alignment="CENTER"
                     mnemonicParsing="false"

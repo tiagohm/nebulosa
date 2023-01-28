@@ -12,7 +12,7 @@ import nebulosa.desktop.logic.EventBus
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.mounts.Mount
-import nebulosa.indi.device.mounts.MountCoordinateChanged
+import nebulosa.indi.device.mounts.MountGeographicCoordinateChanged
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Distance.Companion.m
@@ -52,7 +52,7 @@ class SiteAndTimeScreen : Screen("SiteAndTime", "nebulosa-site-and-time") {
 
     private fun onEvent(event: DeviceEvent<*>) {
         when (event) {
-            is MountCoordinateChanged -> updateSiteAndTime()
+            is MountGeographicCoordinateChanged -> updateSiteAndTime()
         }
     }
 

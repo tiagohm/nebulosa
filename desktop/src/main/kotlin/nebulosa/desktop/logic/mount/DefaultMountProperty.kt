@@ -121,7 +121,7 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
                 parkingProperty.set(device.parking)
                 parkedProperty.set(device.parked)
             }
-            is MountCoordinateChanged -> {
+            is MountGeographicCoordinateChanged -> {
                 longitudeProperty.set(device.longitude.degrees)
                 latitudeProperty.set(device.latitude.degrees)
                 elevationProperty.set(device.elevation.meters)

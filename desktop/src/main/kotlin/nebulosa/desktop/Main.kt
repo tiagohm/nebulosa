@@ -10,7 +10,6 @@ import nebulosa.desktop.logic.camera.CameraTaskExecutor
 import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.logic.filterwheel.FilterWheelTaskExecutor
 import nebulosa.desktop.logic.loader.IERSLoader
-import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServerManager
 import nebulosa.io.resource
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.named
@@ -42,7 +41,6 @@ private fun inject() = module {
     single(createdAtStart = true) { ConnectionManager() }
     single(createdAtStart = true) { EquipmentManager() }
     single(createdAtStart = true) { EquipmentManager() }
-    single(createdAtStart = true) { TelescopeControlServerManager() }
 
     single { CameraTaskExecutor() }
     single { FilterWheelTaskExecutor() }

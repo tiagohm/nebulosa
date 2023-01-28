@@ -93,7 +93,7 @@ class MountWindow : AbstractWindow(), MountView {
 
         connectButton.disableProperty().bind(mountManager.isNull or isConnecting or isSlewing)
         connectButton.textProperty().bind(mountManager.connectedProperty.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        mountManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700") }
+        mountManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 
@@ -156,7 +156,7 @@ class MountWindow : AbstractWindow(), MountView {
         parkButton.textProperty().bind(mountManager.parkedProperty.between("Unpark", "Park"))
         val parkIcon = parkButton.graphic as Label
         parkIcon.textProperty().bind(mountManager.parkedProperty.between(MaterialIcon.PLAY, MaterialIcon.STOP))
-        mountManager.parkedProperty.on { parkIcon.styleClass.toggle("text-red-700", "text-blue-grey-700") }
+        mountManager.parkedProperty.on { parkIcon.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
 
         homeButton.disableProperty().set(true)
     }

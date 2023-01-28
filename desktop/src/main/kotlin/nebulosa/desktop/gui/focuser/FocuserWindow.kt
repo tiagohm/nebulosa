@@ -62,7 +62,7 @@ class FocuserWindow : AbstractWindow(), FocuserView {
 
         connectButton.disableProperty().bind(focuserManager.isNull or isConnecting or isMoving)
         connectButton.textProperty().bind(focuserManager.connectedProperty.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        focuserManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700") }
+        focuserManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 

@@ -1,10 +1,18 @@
 package nebulosa.desktop.logic.telescopecontrol
 
-import nebulosa.desktop.tcp.TCPServer
+import nebulosa.desktop.logic.io.TCPServer
 import nebulosa.indi.device.mounts.Mount
 
-abstract class TelescopeControlTCPServer(
-    override val mount: Mount,
-    host: String = "0.0.0.0",
-    port: Int = 10001,
-) : TCPServer(host, port), TelescopeControlServer
+abstract class TelescopeControlTCPServer : TCPServer(), TelescopeControlServer {
+
+    @Volatile protected var mount: Mount? = null
+
+    override fun attach(mount: Mount) {
+        this.mount = mount
+        sendCurrentPosition()
+    }
+
+    override fun detach() {
+        this.mount = null
+    }
+}

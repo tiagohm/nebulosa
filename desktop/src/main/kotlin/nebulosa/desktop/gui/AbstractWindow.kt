@@ -114,6 +114,10 @@ abstract class AbstractWindow : View, KoinComponent {
         if (bringToFront) window.toFront()
     }
 
+    override fun showAndWait() {
+        window.showAndWait()
+    }
+
     override fun close() {
         window.close()
     }

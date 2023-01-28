@@ -185,7 +185,7 @@ internal open class MountBase(
                         longitude = message["LONG"]!!.value.deg
                         elevation = message["ELEV"]!!.value.m
 
-                        handler.fireOnEventReceived(MountCoordinateChanged(this))
+                        handler.fireOnEventReceived(MountGeographicCoordinateChanged(this))
                     }
                 }
             }

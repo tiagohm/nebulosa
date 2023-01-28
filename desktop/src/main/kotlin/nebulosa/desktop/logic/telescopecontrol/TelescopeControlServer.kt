@@ -5,11 +5,25 @@ import java.io.Closeable
 
 interface TelescopeControlServer : Closeable {
 
-    val mount: Mount
+    val running: Boolean
 
-    val isClosed: Boolean
+    val host: String
 
-    fun start()
+    val port: Int
+
+    fun attach(mount: Mount)
+
+    fun detach()
+
+    fun start(host: String, port: Int)
 
     fun sendCurrentPosition() = Unit
+
+    companion object {
+
+        @JvmStatic val SERVERS = mapOf<TelescopeControlServerType, TelescopeControlServer>(
+            TelescopeControlServerType.STELLARIUM to TelescopeControlStellariumServer,
+            TelescopeControlServerType.LX200 to TelescopeControlLX200Server,
+        )
+    }
 }

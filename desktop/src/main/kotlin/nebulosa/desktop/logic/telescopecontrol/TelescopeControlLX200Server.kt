@@ -1,6 +1,5 @@
 package nebulosa.desktop.logic.telescopecontrol
 
-import nebulosa.indi.device.mounts.Mount
 import nebulosa.math.Angle
 import org.slf4j.LoggerFactory
 import java.net.Socket
@@ -16,11 +15,7 @@ import kotlin.math.abs
  *
  * @see <a href="http://www.company7.com/library/meade/LX200CommandSet.pdf">Meade Telescope Serial Command Protocol</a>
  */
-class TelescopeControlLX200Server(
-    mount: Mount,
-    host: String = "0.0.0.0",
-    port: Int = 10001,
-) : TelescopeControlTCPServer(mount, host, port) {
+object TelescopeControlLX200Server : TelescopeControlTCPServer() {
 
     override fun acceptSocket(socket: Socket): Client = TelescopeClient(this, socket)
 
@@ -106,20 +101,20 @@ class TelescopeControlLX200Server(
 
         private fun sync() {
             if (updateRADEC) {
-                server.mount.syncJ2000(rightAscension, declination)
+                server.mount?.syncJ2000(rightAscension, declination)
                 updateRADEC = false
             }
         }
 
         private fun move() {
             if (updateRADEC) {
-                server.mount.goToJ2000(rightAscension, declination)
+                server.mount?.goToJ2000(rightAscension, declination)
                 updateRADEC = false
             }
         }
 
         private fun abort() {
-            server.mount.abortMotion()
+            server.mount?.abortMotion()
         }
 
         private fun sendOk() {
@@ -157,15 +152,17 @@ class TelescopeControlLX200Server(
                 }
             }
 
+            val mount = server.mount ?: return
+
             when (val c = String(command, 0, commandIdx)) {
                 "\u0006" -> {
                     output.writeByte(71) // G
                     output.flush()
                 }
-                ":GR" -> sendRAPosition(server.mount.rightAscensionJ2000)
-                ":GD" -> sendDECPosition(server.mount.declinationJ2000)
-                ":Gg" -> sendLongitude(server.mount.longitude)
-                ":Gt" -> sendLatitude(server.mount.latitude)
+                ":GR" -> sendRAPosition(mount.rightAscensionJ2000)
+                ":GD" -> sendDECPosition(mount.declinationJ2000)
+                ":Gg" -> sendLongitude(mount.longitude)
+                ":Gt" -> sendLatitude(mount.latitude)
                 ":GC" -> sendCalendarDate()
                 ":GL" -> sendLocalTime()
                 ":GG" -> sendTimeOffset()
@@ -177,7 +174,7 @@ class TelescopeControlLX200Server(
                 // ":Qe", ":Qn", ":Qs", ":Qw" -> return // abort move
                 ":Q" -> abort()
                 ":U" -> return
-                ":D" -> sendSlewingStatus(server.mount.slewing)
+                ":D" -> sendSlewingStatus(mount.slewing)
                 else -> {
                     when {
                         c.startsWith(":Sg") -> sendOk() // Longitude
@@ -194,10 +191,7 @@ class TelescopeControlLX200Server(
         }
     }
 
-    companion object {
-
-        @JvmStatic private val LOG = LoggerFactory.getLogger(TelescopeControlLX200Server::class.java)
-        @JvmStatic private val CALENDAR_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yy")
-        @JvmStatic private val CALENDAR_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")
-    }
+    @JvmStatic private val LOG = LoggerFactory.getLogger(TelescopeControlLX200Server::class.java)
+    @JvmStatic private val CALENDAR_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yy")
+    @JvmStatic private val CALENDAR_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")
 }

@@ -63,7 +63,7 @@ class FilterWheelWindow : AbstractWindow(), FilterWheelView {
 
         connectButton.disableProperty().bind(filterWheelManager.isNull or isConnecting or isMoving)
         connectButton.textProperty().bind(filterWheelManager.connectedProperty.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        filterWheelManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700") }
+        filterWheelManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 

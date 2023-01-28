@@ -255,25 +255,19 @@
                 </buttons>
             </SegmentedButton>
             <HBox alignment="CENTER"
-                  HBox.hgrow="ALWAYS">
+                  HBox.hgrow="ALWAYS"
+                  spacing="4.0">
                 <Button fx:id="siteAndTimeButton"
                         text="&#xF034E;"
                         styleClass="mdi,mdi-sm,text-red-700"
                         onAction="#openSiteAndTime">
                 </Button>
+                <Button fx:id="telescopeControlServerButton"
+                        text="&#xF0EC5;"
+                        onAction="#openTelescopeControlServer"
+                        styleClass="mdi,mdi-sm,text-purple-700">
+                </Button>
             </HBox>
-        </HBox>
-        <HBox>
-            <Button fx:id="telescopeControlServerButton"
-                    text="Telescope Control Server"
-                    onAction="#openTelescopeControlServer"
-                    styleClass="text-sm">
-                <graphic>
-                    <Label text="&#xF0EC5;"
-                           styleClass="text-purple-700,mdi,mdi-sm">
-                    </Label>
-                </graphic>
-            </Button>
         </HBox>
         <VBox alignment="CENTER_LEFT"
               spacing="4.0">
@@ -288,7 +282,7 @@
                            styleClass="text-sm">
                     </Label>
                     <TextField fx:id="targetRightAscensionTextField"
-                               text="0.00"
+                               text="00 00 00.0"
                                prefWidth="200.0">
                     </TextField>
                 </VBox>
@@ -298,7 +292,7 @@
                            styleClass="text-sm">
                     </Label>
                     <TextField fx:id="targetDeclinationTextField"
-                               text="0.00"
+                               text="00 00 00.0"
                                prefWidth="200.0">
                     </TextField>
                 </VBox>

@@ -60,7 +60,7 @@ class HomeWindow : AbstractWindow(), HomeView {
         indiButton.disableProperty().bind(!homeManager.connected)
 
         connectButton.textProperty().bind(homeManager.connected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        homeManager.connected.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700") }
+        homeManager.connected.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
     }
 
     override fun onStart() {

@@ -89,7 +89,7 @@ class CameraWindow : AbstractWindow(), CameraView {
 
         connectButton.disableProperty().bind(cameraManager.isNull or isConnecting or isCapturing)
         connectButton.textProperty().bind(cameraManager.connectedProperty.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        cameraManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700") }
+        cameraManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 
