@@ -32,6 +32,9 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow(), Imag
     }
 
     override fun onCreate() {
+        shadowAndHighlightRangeSlider.lowValue = 0.0
+        shadowAndHighlightRangeSlider.highValue = 255.0
+
         shadowAndHighlightRangeSlider.lowValueProperty().on(::onShadowChanged)
         shadowAndHighlightRangeSlider.highValueProperty().on(::onHighlightChanged)
         midtoneSlider.valueProperty().on(::onMidtoneChanged)
@@ -47,6 +50,7 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow(), Imag
         midtone = view.midtone * 255f
 
         updateTitle()
+        drawHistogram()
     }
 
     override var shadow

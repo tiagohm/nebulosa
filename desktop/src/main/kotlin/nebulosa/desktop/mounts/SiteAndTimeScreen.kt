@@ -11,8 +11,8 @@ import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.EventBus
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.gps.GPS
-import nebulosa.indi.device.mounts.Mount
-import nebulosa.indi.device.mounts.MountGeographicCoordinateChanged
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Distance.Companion.m

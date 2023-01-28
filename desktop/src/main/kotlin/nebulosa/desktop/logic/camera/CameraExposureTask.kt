@@ -9,7 +9,7 @@ import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
 import nebulosa.desktop.logic.filterwheel.FilterWheelTaskExecutor
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.cameras.*
+import nebulosa.indi.device.camera.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.slf4j.LoggerFactory

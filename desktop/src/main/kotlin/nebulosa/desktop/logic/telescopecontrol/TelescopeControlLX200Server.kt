@@ -101,20 +101,20 @@ object TelescopeControlLX200Server : TelescopeControlTCPServer() {
 
         private fun sync() {
             if (updateRADEC) {
-                server.mount?.syncJ2000(rightAscension, declination)
+                server.telescope?.sync(rightAscension, declination)
                 updateRADEC = false
             }
         }
 
         private fun move() {
             if (updateRADEC) {
-                server.mount?.goToJ2000(rightAscension, declination)
+                server.telescope?.goTo(rightAscension, declination)
                 updateRADEC = false
             }
         }
 
         private fun abort() {
-            server.mount?.abortMotion()
+            server.telescope?.abort()
         }
 
         private fun sendOk() {
@@ -152,17 +152,17 @@ object TelescopeControlLX200Server : TelescopeControlTCPServer() {
                 }
             }
 
-            val mount = server.mount ?: return
+            val telescope = server.telescope ?: return
 
             when (val c = String(command, 0, commandIdx)) {
                 "\u0006" -> {
                     output.writeByte(71) // G
                     output.flush()
                 }
-                ":GR" -> sendRAPosition(mount.rightAscensionJ2000)
-                ":GD" -> sendDECPosition(mount.declinationJ2000)
-                ":Gg" -> sendLongitude(mount.longitude)
-                ":Gt" -> sendLatitude(mount.latitude)
+                ":GR" -> sendRAPosition(telescope.rightAscensionJ2000)
+                ":GD" -> sendDECPosition(telescope.declinationJ2000)
+                ":Gg" -> sendLongitude(telescope.longitude)
+                ":Gt" -> sendLatitude(telescope.latitude)
                 ":GC" -> sendCalendarDate()
                 ":GL" -> sendLocalTime()
                 ":GG" -> sendTimeOffset()
@@ -174,7 +174,7 @@ object TelescopeControlLX200Server : TelescopeControlTCPServer() {
                 // ":Qe", ":Qn", ":Qs", ":Qw" -> return // abort move
                 ":Q" -> abort()
                 ":U" -> return
-                ":D" -> sendSlewingStatus(mount.slewing)
+                ":D" -> sendSlewingStatus(telescope.slewing)
                 else -> {
                     when {
                         c.startsWith(":Sg") -> sendOk() // Longitude

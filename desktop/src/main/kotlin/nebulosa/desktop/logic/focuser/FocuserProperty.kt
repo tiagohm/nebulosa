@@ -4,20 +4,30 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
 import nebulosa.desktop.logic.DeviceProperty
-import nebulosa.indi.device.focusers.Focuser
+import nebulosa.indi.device.focuser.Focuser
 
 interface FocuserProperty : DeviceProperty<Focuser> {
 
     val movingProperty: SimpleBooleanProperty
+
     val positionProperty: SimpleIntegerProperty
+
     val canAbsoluteMoveProperty: SimpleBooleanProperty
+
     val canRelativeMoveProperty: SimpleBooleanProperty
+
     val canAbortProperty: SimpleBooleanProperty
+
     val canReverseProperty: SimpleBooleanProperty
+
     val reverseProperty: SimpleBooleanProperty
+
     val canSyncProperty: SimpleBooleanProperty
+
     val hasBackslashProperty: SimpleBooleanProperty
+
     val maxPositionProperty: SimpleIntegerProperty
+
     val temperatureProperty: SimpleDoubleProperty
 
     val moving

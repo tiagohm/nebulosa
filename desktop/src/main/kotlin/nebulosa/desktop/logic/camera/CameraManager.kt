@@ -17,7 +17,7 @@ import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.camera.ExposureMode
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.cameras.*
+import nebulosa.indi.device.camera.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext

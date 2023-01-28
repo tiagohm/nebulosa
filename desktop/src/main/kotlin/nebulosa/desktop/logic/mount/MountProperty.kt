@@ -2,37 +2,63 @@ package nebulosa.desktop.logic.mount
 
 import javafx.beans.property.*
 import nebulosa.desktop.logic.DeviceProperty
-import nebulosa.indi.device.mounts.Mount
-import nebulosa.indi.device.mounts.MountType
-import nebulosa.indi.device.mounts.PierSide
-import nebulosa.indi.device.mounts.TrackMode
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.MountType
+import nebulosa.indi.device.mount.PierSide
+import nebulosa.indi.device.mount.TrackMode
 import java.time.OffsetDateTime
 
 interface MountProperty : DeviceProperty<Mount> {
 
     val slewingProperty: SimpleBooleanProperty
+
     val trackingProperty: SimpleBooleanProperty
+
     val parkingProperty: SimpleBooleanProperty
+
     val parkedProperty: SimpleBooleanProperty
+
     val slewRatesProperty: SimpleListProperty<String>
+
     val slewRateProperty: SimpleStringProperty
+
     val mountTypeProperty: SimpleObjectProperty<MountType>
+
     val trackModesProperty: SimpleListProperty<TrackMode>
+
     val trackModeProperty: SimpleObjectProperty<TrackMode>
+
     val pierSideProperty: SimpleObjectProperty<PierSide>
+
     val canAbortProperty: SimpleBooleanProperty
+
     val canSyncProperty: SimpleBooleanProperty
+
     val canParkProperty: SimpleBooleanProperty
+
     val guideRateWEProperty: SimpleDoubleProperty
+
     val guideRateNSProperty: SimpleDoubleProperty
+
     val rightAscensionProperty: SimpleDoubleProperty
+
     val declinationProperty: SimpleDoubleProperty
+
     val rightAscensionJ2000Property: SimpleDoubleProperty
+
     val declinationJ2000Property: SimpleDoubleProperty
+
     val longitudeProperty: SimpleDoubleProperty
+
     val latitudeProperty: SimpleDoubleProperty
+
     val elevationProperty: SimpleDoubleProperty
+
     val timeProperty: SimpleObjectProperty<OffsetDateTime>
+
+    val azimuthProperty: SimpleDoubleProperty
+
+    val altitudeProperty: SimpleDoubleProperty
 
     val slewing
         get() = slewingProperty.get()
@@ -102,4 +128,6 @@ interface MountProperty : DeviceProperty<Mount> {
 
     val time: OffsetDateTime?
         get() = timeProperty.get()
+
+    fun computeCoordinates()
 }

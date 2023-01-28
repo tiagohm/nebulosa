@@ -1,7 +1,7 @@
 package nebulosa.desktop.view.camera
 
 import nebulosa.desktop.view.View
-import nebulosa.indi.device.cameras.FrameType
+import nebulosa.indi.device.camera.FrameType
 import java.util.concurrent.TimeUnit
 
 interface CameraView : View {

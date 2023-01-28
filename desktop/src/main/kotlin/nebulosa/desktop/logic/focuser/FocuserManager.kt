@@ -5,8 +5,8 @@ import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.focusers.Focuser
-import nebulosa.indi.device.focusers.FocuserMovingChanged
+import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.focuser.FocuserMovingChanged
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext

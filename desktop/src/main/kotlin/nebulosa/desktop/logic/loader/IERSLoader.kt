@@ -44,6 +44,11 @@ class IERSLoader : Thread(), KoinComponent {
             return true
         }
 
+        if (path.toFile().length() <= 0) {
+            LOG.warn("finals2000A.all is empty")
+            return true
+        }
+
         return try {
             path.inputStream().use { IERSA.load(it) }
             IERS.current = IERSA

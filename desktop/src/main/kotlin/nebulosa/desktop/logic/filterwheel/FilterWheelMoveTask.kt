@@ -4,10 +4,10 @@ import io.reactivex.rxjava3.disposables.Disposable
 import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.filterwheels.FilterWheel
-import nebulosa.indi.device.filterwheels.FilterWheelDetached
-import nebulosa.indi.device.filterwheels.FilterWheelMoveFailed
-import nebulosa.indi.device.filterwheels.FilterWheelPositionChanged
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.filterwheel.FilterWheelDetached
+import nebulosa.indi.device.filterwheel.FilterWheelMoveFailed
+import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
 import org.koin.core.component.KoinComponent
 import org.slf4j.LoggerFactory
 

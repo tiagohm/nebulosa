@@ -22,7 +22,7 @@ import nebulosa.desktop.gui.control.ButtonValueFactory
 import nebulosa.desktop.logic.filterwheel.FilterWheelManager
 import nebulosa.desktop.logic.isNull
 import nebulosa.desktop.view.filterwheel.FilterWheelView
-import nebulosa.indi.device.filterwheels.FilterWheel
+import nebulosa.indi.device.filterwheel.FilterWheel
 import kotlin.math.max
 import kotlin.math.min
 

@@ -3,50 +3,89 @@ package nebulosa.desktop.logic.camera
 import javafx.beans.property.*
 import nebulosa.desktop.logic.DeviceProperty
 import nebulosa.imaging.algorithms.CfaPattern
-import nebulosa.indi.device.cameras.Camera
+import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.protocol.PropertyState
 
 interface CameraProperty : DeviceProperty<Camera> {
 
     val exposuringProperty: SimpleBooleanProperty
+
     val hasCoolerControlProperty: SimpleBooleanProperty
+
     val coolerProperty: SimpleBooleanProperty
+
     val hasDewHeaterProperty: SimpleBooleanProperty
+
     val dewHeaterProperty: SimpleBooleanProperty
+
     val frameFormatsProperty: SimpleListProperty<String>
+
     val canAbortProperty: SimpleBooleanProperty
+
     val cfaOffsetXProperty: SimpleIntegerProperty
+
     val cfaOffsetYProperty: SimpleIntegerProperty
+
     val cfaTypeProperty: SimpleObjectProperty<CfaPattern>
+
     val exposureMinProperty: SimpleLongProperty
+
     val exposureMaxProperty: SimpleLongProperty
+
     val exposureStateProperty: SimpleObjectProperty<PropertyState>
+
     val hasCoolerProperty: SimpleBooleanProperty
+
     val canSetTemperatureProperty: SimpleBooleanProperty
+
     val temperatureProperty: SimpleDoubleProperty
+
     val canSubFrameProperty: SimpleBooleanProperty
+
     val xProperty: SimpleIntegerProperty
+
     val minXProperty: SimpleIntegerProperty
+
     val maxXProperty: SimpleIntegerProperty
+
     val yProperty: SimpleIntegerProperty
+
     val minYProperty: SimpleIntegerProperty
+
     val maxYProperty: SimpleIntegerProperty
+
     val widthProperty: SimpleIntegerProperty
+
     val minWidthProperty: SimpleIntegerProperty
+
     val maxWidthProperty: SimpleIntegerProperty
+
     val heightProperty: SimpleIntegerProperty
+
     val minHeightProperty: SimpleIntegerProperty
+
     val maxHeightProperty: SimpleIntegerProperty
+
     val canBinProperty: SimpleBooleanProperty
+
     val maxBinXProperty: SimpleIntegerProperty
+
     val maxBinYProperty: SimpleIntegerProperty
+
     val binXProperty: SimpleIntegerProperty
+
     val binYProperty: SimpleIntegerProperty
+
     val gainProperty: SimpleIntegerProperty
+
     val gainMinProperty: SimpleIntegerProperty
+
     val gainMaxProperty: SimpleIntegerProperty
+
     val offsetProperty: SimpleIntegerProperty
+
     val offsetMinProperty: SimpleIntegerProperty
+
     val offsetMaxProperty: SimpleIntegerProperty
 
     val exposuring

@@ -5,8 +5,8 @@ import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
 import nebulosa.desktop.logic.AbstractDeviceProperty
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.focusers.*
-import nebulosa.indi.device.thermometers.ThermometerTemperatureChanged
+import nebulosa.indi.device.focuser.*
+import nebulosa.indi.device.thermometer.ThermometerTemperatureChanged
 
 open class DefaultFocuserProperty : AbstractDeviceProperty<Focuser>(), FocuserProperty {
 

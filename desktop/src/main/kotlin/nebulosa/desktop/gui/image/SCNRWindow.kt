@@ -3,7 +3,6 @@ package nebulosa.desktop.gui.image
 import javafx.fxml.FXML
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Spinner
-import nebulosa.desktop.core.beans.isAnyOf
 import nebulosa.desktop.core.beans.onZero
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.image.SCNRManager
@@ -32,9 +31,6 @@ class SCNRWindow(private val view: ImageView) : AbstractWindow(), SCNRView {
     }
 
     override fun onCreate() {
-        amountSpinner.disableProperty()
-            .bind(protectionMethodChoiceBox.valueProperty().isAnyOf(ProtectionMethod.AVERAGE_NEUTRAL, ProtectionMethod.MAXIMUM_NEUTRAL))
-
         channelChoiceBox.valueProperty().onZero(scnrManager::apply)
         protectionMethodChoiceBox.valueProperty().onZero(scnrManager::apply)
         amountSpinner.valueProperty().onZero(scnrManager::apply)

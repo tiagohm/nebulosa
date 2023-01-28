@@ -4,10 +4,10 @@ import io.reactivex.rxjava3.disposables.Disposable
 import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.focusers.Focuser
-import nebulosa.indi.device.focusers.FocuserDetached
-import nebulosa.indi.device.focusers.FocuserMoveFailed
-import nebulosa.indi.device.focusers.FocuserMovingChanged
+import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.focuser.FocuserDetached
+import nebulosa.indi.device.focuser.FocuserMoveFailed
+import nebulosa.indi.device.focuser.FocuserMovingChanged
 import org.koin.core.component.KoinComponent
 import org.slf4j.LoggerFactory
 

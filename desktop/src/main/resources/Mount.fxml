@@ -11,7 +11,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="480.0"
+            prefHeight="440.0"
             prefWidth="412.0"
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
@@ -135,27 +135,27 @@
                 <Label maxWidth="64.0"
                        minWidth="64.0"
                        prefWidth="64.0"
-                       text="Altitude"
+                       text="Azimuth"
                        styleClass="text-sm,text-bold">
                 </Label>
-                <Label fx:id="altitudeLabel"
+                <Label fx:id="azimuthLabel"
                        alignment="CENTER_RIGHT"
                        maxWidth="110.0"
                        minWidth="110.0"
                        prefWidth="110.0"
-                       text="+00° 00' 00.00&quot;"
+                       text="000° 00' 00.00&quot;"
                        styleClass="text-monospaced,text-sm">
                 </Label>
                 <Label maxWidth="64.0"
                        minWidth="64.0"
                        prefWidth="64.0"
-                       text="Azimuth"
+                       text="Altitude"
                        styleClass="text-sm,text-bold">
                     <HBox.margin>
                         <Insets left="8.0"/>
                     </HBox.margin>
                 </Label>
-                <Label fx:id="azimuthLabel"
+                <Label fx:id="altitudeLabel"
                        alignment="CENTER_RIGHT"
                        maxWidth="110.0"
                        minWidth="110.0"

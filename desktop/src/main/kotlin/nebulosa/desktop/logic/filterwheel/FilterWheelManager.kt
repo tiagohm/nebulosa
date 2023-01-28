@@ -5,10 +5,10 @@ import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.view.filterwheel.FilterWheelView
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.filterwheels.FilterWheel
-import nebulosa.indi.device.filterwheels.FilterWheelCountChanged
-import nebulosa.indi.device.filterwheels.FilterWheelMovingChanged
-import nebulosa.indi.device.filterwheels.FilterWheelPositionChanged
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.filterwheel.FilterWheelCountChanged
+import nebulosa.indi.device.filterwheel.FilterWheelMovingChanged
+import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext

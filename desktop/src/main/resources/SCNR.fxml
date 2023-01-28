@@ -67,6 +67,7 @@
                             <ProtectionMethod fx:value="ADDTIVIVE_MASK"/>
                             <ProtectionMethod fx:value="AVERAGE_NEUTRAL"/>
                             <ProtectionMethod fx:value="MAXIMUM_NEUTRAL"/>
+                            <ProtectionMethod fx:value="MINIMUM_NEUTRAL"/>
                         </FXCollections>
                     </items>
                 </ChoiceBox>

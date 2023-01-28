@@ -18,8 +18,8 @@ import nebulosa.desktop.logic.isNull
 import nebulosa.desktop.logic.mount.MountManager
 import nebulosa.desktop.mounts.SiteAndTimeScreen
 import nebulosa.desktop.view.mount.MountView
-import nebulosa.indi.device.mounts.Mount
-import nebulosa.indi.device.mounts.TrackMode
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.TrackMode
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
@@ -98,15 +98,17 @@ class MountWindow : AbstractWindow(), MountView {
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 
         rightAscensionLabel.textProperty()
-            .bind(mountManager.rightAscensionProperty.transformed { Angle.formatHMS(it.hours, "%02dh %02dm %05.02fs") })
+            .bind(mountManager.rightAscensionProperty.transformed { Angle.formatHMS(it.hours, RA_FORMAT) })
 
-        declinationLabel.textProperty().bind(mountManager.declinationProperty.transformed { Angle.formatDMS(it.deg, "%s%02d° %02d' %05.02f\"") })
+        declinationLabel.textProperty().bind(mountManager.declinationProperty.transformed { Angle.formatDMS(it.deg, DEC_FORMAT) })
 
-        rightAscensionJ2000Label.textProperty()
-            .bind(mountManager.rightAscensionJ2000Property.transformed { Angle.formatHMS(it.hours, "%02dh %02dm %05.02fs") })
+        rightAscensionJ2000Label.textProperty().bind(mountManager.rightAscensionJ2000Property.transformed { Angle.formatHMS(it.hours, RA_FORMAT) })
 
-        declinationJ2000Label.textProperty()
-            .bind(mountManager.declinationJ2000Property.transformed { Angle.formatDMS(it.deg, "%s%02d° %02d' %05.02f\"") })
+        declinationJ2000Label.textProperty().bind(mountManager.declinationJ2000Property.transformed { Angle.formatDMS(it.deg, DEC_FORMAT) })
+
+        azimuthLabel.textProperty().bind(mountManager.azimuthProperty.transformed { Angle.formatDMS(it.deg, AZ_FORMAT) })
+
+        altitudeLabel.textProperty().bind(mountManager.altitudeProperty.transformed { Angle.formatDMS(it.deg, ALT_FORMAT) })
 
         pierSideLabel.textProperty().bind(mountManager.pierSideProperty.asString())
 
@@ -309,6 +311,8 @@ class MountWindow : AbstractWindow(), MountView {
 
         private const val RA_FORMAT = "%02dh %02dm %05.02fs"
         private const val DEC_FORMAT = "%s%02d° %02d' %05.02f\""
+        private const val AZ_FORMAT = "%2$03d° %3$02d' %4$05.02f\""
+        private const val ALT_FORMAT = "%s%02d° %02d' %05.02f\""
         private const val LST_FORMAT = "-%02d:%02d:%02.0f"
 
         @JvmStatic private val MERIDIAN_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")

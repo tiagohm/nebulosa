@@ -1,11 +1,11 @@
 package nebulosa.indi.device
 
-import nebulosa.indi.device.cameras.Camera
-import nebulosa.indi.device.domes.Dome
-import nebulosa.indi.device.filterwheels.FilterWheel
-import nebulosa.indi.device.focusers.Focuser
-import nebulosa.indi.device.mounts.Mount
-import nebulosa.indi.device.rotators.Rotator
+import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.dome.Dome
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.Vector
 import org.slf4j.LoggerFactory

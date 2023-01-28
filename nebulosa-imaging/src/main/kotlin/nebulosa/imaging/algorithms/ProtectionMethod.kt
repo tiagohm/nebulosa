@@ -27,6 +27,12 @@ enum class ProtectionMethod {
             val m = max(p0, p1)
             return min(g, m)
         }
+    },
+    MINIMUM_NEUTRAL {
+        override fun compute(p0: Float, p1: Float, g: Float, amount: Float): Float {
+            val m = min(p0, p1)
+            return min(g, m)
+        }
     };
 
     abstract fun compute(p0: Float, p1: Float, g: Float, amount: Float): Float

@@ -78,9 +78,9 @@ object TelescopeControlStellariumServer : TelescopeControlTCPServer() {
     ) : Client(socket) {
 
         fun sendCurrentPosition() {
-            val mount = server.mount ?: return
-            val ra = mount.rightAscensionJ2000
-            val dec = mount.declinationJ2000
+            val telescope = server.telescope ?: return
+            val ra = telescope.rightAscensionJ2000
+            val dec = telescope.declinationJ2000
 
             output.writeShortLe(24) // LENGTH
             output.writeShortLe(0) // TYPE
@@ -111,7 +111,7 @@ object TelescopeControlStellariumServer : TelescopeControlTCPServer() {
                 val ra = (buffer.readIntLe() * (PI / 0x80000000)).rad.normalized
                 val dec = (buffer.readIntLe() * (PI / 0x80000000)).rad
                 if (LOG.isDebugEnabled) LOG.debug("MessageGoto: ra=${ra.hours}, dec=${dec.degrees}")
-                server.mount?.goToJ2000(ra, dec)
+                server.telescope?.goTo(ra, dec)
             } else if (readCount < 0L) {
                 return false
             }

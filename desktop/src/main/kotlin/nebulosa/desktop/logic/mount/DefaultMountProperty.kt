@@ -4,7 +4,14 @@ import javafx.beans.property.*
 import javafx.collections.FXCollections
 import nebulosa.desktop.logic.AbstractDeviceProperty
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.mounts.*
+import nebulosa.indi.device.mount.*
+import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Angle.Companion.hours
+import nebulosa.math.Distance.Companion.m
+import nebulosa.nova.astrometry.ICRF
+import nebulosa.nova.position.Geoid
+import nebulosa.nova.position.Geometric
+import nebulosa.time.TimeJD
 import java.time.OffsetDateTime
 
 open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty {
@@ -32,6 +39,8 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
     override val latitudeProperty = SimpleDoubleProperty()
     override val elevationProperty = SimpleDoubleProperty()
     override val timeProperty = SimpleObjectProperty(OffsetDateTime.now())
+    override val azimuthProperty = SimpleDoubleProperty()
+    override val altitudeProperty = SimpleDoubleProperty()
 
     override fun onChanged(prev: Mount?, device: Mount) {
         slewingProperty.set(device.slewing)
@@ -51,12 +60,11 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
         guideRateNSProperty.set(device.guideRateNS)
         rightAscensionProperty.set(device.rightAscension.hours)
         declinationProperty.set(device.declination.degrees)
-        rightAscensionJ2000Property.set(device.rightAscensionJ2000.hours)
-        declinationJ2000Property.set(device.declinationJ2000.degrees)
         longitudeProperty.set(device.longitude.degrees)
         latitudeProperty.set(device.latitude.degrees)
         elevationProperty.set(device.elevation.meters)
         timeProperty.set(device.time)
+        computeCoordinates()
     }
 
     override fun onReset() {
@@ -83,6 +91,8 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
         latitudeProperty.set(0.0)
         elevationProperty.set(0.0)
         timeProperty.set(OffsetDateTime.now())
+        azimuthProperty.set(0.0)
+        altitudeProperty.set(0.0)
     }
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {
@@ -110,8 +120,7 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
             is MountEquatorialCoordinatesChanged -> {
                 rightAscensionProperty.set(device.rightAscension.hours)
                 declinationProperty.set(device.declination.degrees)
-                rightAscensionJ2000Property.set(device.rightAscensionJ2000.hours)
-                declinationJ2000Property.set(device.declinationJ2000.degrees)
+                computeCoordinates()
             }
             is MountGuideRateChanged -> {
                 guideRateWEProperty.set(device.guideRateWE)
@@ -125,7 +134,22 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
                 longitudeProperty.set(device.longitude.degrees)
                 latitudeProperty.set(device.latitude.degrees)
                 elevationProperty.set(device.elevation.meters)
+                computeCoordinates()
             }
         }
+    }
+
+    override fun computeCoordinates() {
+        val epoch = TimeJD.now()
+        val center = Geoid.IERS2010.latLon(longitude.deg, latitude.deg, elevation.m)
+        val icrf = ICRF.equatorial(rightAscension.hours, declination.deg, time = epoch, epoch = epoch, center = center)
+        val raDec = icrf.equatorialJ2000()
+        rightAscensionJ2000Property.set(raDec.longitude.normalized.hours)
+        declinationJ2000Property.set(raDec.latitude.degrees)
+
+        val altAz = (icrf as Geometric).horizontal()
+
+        azimuthProperty.set(altAz.longitude.normalized.degrees)
+        altitudeProperty.set(altAz.latitude.degrees)
     }
 }

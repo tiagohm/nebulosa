@@ -16,7 +16,7 @@ import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.focuser.FocuserManager
 import nebulosa.desktop.logic.isNull
 import nebulosa.desktop.view.focuser.FocuserView
-import nebulosa.indi.device.focusers.Focuser
+import nebulosa.indi.device.focuser.Focuser
 import org.controlsfx.control.ToggleSwitch
 
 class FocuserWindow : AbstractWindow(), FocuserView {

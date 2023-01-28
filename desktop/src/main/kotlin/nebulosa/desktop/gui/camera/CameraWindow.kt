@@ -20,8 +20,8 @@ import nebulosa.desktop.logic.isNull
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.camera.ExposureMode
-import nebulosa.indi.device.cameras.Camera
-import nebulosa.indi.device.cameras.FrameType
+import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.camera.FrameType
 import org.controlsfx.control.ToggleSwitch
 import java.util.*
 import java.util.concurrent.TimeUnit

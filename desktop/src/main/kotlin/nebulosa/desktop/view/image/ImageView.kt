@@ -5,7 +5,7 @@ import nebulosa.desktop.view.View
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
-import nebulosa.indi.device.cameras.Camera
+import nebulosa.indi.device.camera.Camera
 
 interface ImageView : View {
 

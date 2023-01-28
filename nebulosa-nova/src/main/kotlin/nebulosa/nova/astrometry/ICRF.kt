@@ -118,7 +118,8 @@ open class ICRF protected constructor(
     }
 
     /**
-     * Computes the parallactic angle, which is the deviation between zenith angle and north angle.
+     * Computes the parallactic angle, which is the deviation
+     * between zenith angle and north angle.
      */
     fun parallacticAngle(): Angle {
         val (ha, delta) = hourAngle()
@@ -192,9 +193,9 @@ open class ICRF protected constructor(
             target: Number = Int.MIN_VALUE,
             type: Class<out ICRF>? = null,
         ) = when {
-            type == Barycentric::class.java || center.toInt() == 0 -> Barycentric(position, velocity, time, center, target)
-            type == Geocentric::class.java || center.toInt() == 399 -> Geocentric(position, velocity, time, center, target)
-            type == Geometric::class.java || center is GeographicPosition -> Geometric(position, velocity, time, center, target)
+            type === Barycentric::class.java || center.toInt() == 0 -> Barycentric(position, velocity, time, center, target)
+            type === Geometric::class.java || center is GeographicPosition -> Geometric(position, velocity, time, center, target)
+            type === Geocentric::class.java || center.toInt() == 399 -> Geocentric(position, velocity, time, center, target)
             else -> ICRF(position, velocity, time, center, target)
         }
 
@@ -219,7 +220,7 @@ open class ICRF protected constructor(
             // TODO: return if (position.center is GeographicPosition) {
             //    SphericalRepresentation(position.center.refract(h.a2.rad, temperature, pressure), h.a1.rad, h.a3.au)
             //} else {
-            return SphericalCoordinate.of(h[0].km, h[1].km, h[2].km)
+            return SphericalCoordinate.of(h[0].au, h[1].au, h[2].au)
             //}
         }
 

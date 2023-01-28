@@ -5,7 +5,7 @@ import javafx.collections.FXCollections
 import nebulosa.desktop.logic.AbstractDeviceProperty
 import nebulosa.imaging.algorithms.CfaPattern
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.cameras.*
+import nebulosa.indi.device.camera.*
 import nebulosa.indi.protocol.PropertyState
 
 open class DefaultCameraProperty : AbstractDeviceProperty<Camera>(), CameraProperty {

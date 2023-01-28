@@ -4,19 +4,22 @@ import javafx.application.Platform
 import nebulosa.desktop.gui.telescopecontrol.TelescopeControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.telescopecontrol.TelescopeControlLX200Server
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServer
+import nebulosa.desktop.logic.telescopecontrol.TelescopeControlStellariumServer
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.guiders.GuiderPulsingChanged
-import nebulosa.indi.device.mounts.*
+import nebulosa.indi.device.guider.GuiderPulsingChanged
+import nebulosa.indi.device.mount.*
 import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Angle.Companion.hours
 import nebulosa.nova.position.Geoid
 import nebulosa.time.InstantOfTime
 import nebulosa.time.TimeJD
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext
-import java.io.Closeable
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.concurrent.timer
@@ -33,6 +36,10 @@ class MountManager(private val view: MountView) :
 
     init {
         registerListener(this)
+
+        val telescope = Telescope(this)
+        TelescopeControlStellariumServer.telescope = telescope
+        TelescopeControlLX200Server.telescope = telescope
     }
 
     override fun onReset() {
@@ -40,9 +47,7 @@ class MountManager(private val view: MountView) :
         updateStatus()
     }
 
-    override fun onChanged(prev: Mount?, device: Mount) {
-        attachTelescopeControlToMount()
-    }
+    override fun onChanged(prev: Mount?, device: Mount) {}
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {
         when (event) {
@@ -50,7 +55,7 @@ class MountManager(private val view: MountView) :
             is MountTrackingChanged,
             is MountSlewingChanged,
             is GuiderPulsingChanged -> updateStatus()
-            is MountEquatorialCoordinatesChanged -> sendCurrentPositionToTelescopeControl()
+            is MountEquatorialCoordinatesChanged -> TelescopeControlStellariumServer.sendCurrentPosition()
         }
     }
 
@@ -106,7 +111,7 @@ class MountManager(private val view: MountView) :
     }
 
     fun loadCurrentPostionJ2000() {
-        view.updateTargetPosition(value.rightAscensionJ2000, value.declinationJ2000)
+        view.updateTargetPosition(rightAscensionJ2000.hours, declinationJ2000.deg)
         view.isJ2000 = true
     }
 
@@ -168,14 +173,6 @@ class MountManager(private val view: MountView) :
         return value.rightAscension - computeLST(TimeJD.now())
     }
 
-    private fun attachTelescopeControlToMount() {
-        TelescopeControlServer.SERVERS.values.forEach { it.attach(value) }
-    }
-
-    private fun sendCurrentPositionToTelescopeControl() {
-        TelescopeControlServer.SERVERS.values.forEach(TelescopeControlServer::sendCurrentPosition)
-    }
-
     private fun onTimerHit(task: TimerTask) {
         if (value == null || !view.showing) return
 
@@ -183,7 +180,10 @@ class MountManager(private val view: MountView) :
         val timeLeftToMeridianFlip = computeTimeLeftToMeridianFlip()
         val timeToMeridianFlip = LocalDateTime.now().plusSeconds((timeLeftToMeridianFlip.hours * 3600.0).toLong())
 
-        Platform.runLater { view.updateLSTAndMeridian(lst, timeLeftToMeridianFlip, timeToMeridianFlip) }
+        Platform.runLater {
+            view.updateLSTAndMeridian(lst, timeLeftToMeridianFlip, timeToMeridianFlip)
+            computeCoordinates()
+        }
     }
 
     override fun close() {
@@ -191,6 +191,38 @@ class MountManager(private val view: MountView) :
 
         timer.cancel()
 
-        TelescopeControlServer.SERVERS.values.forEach(Closeable::close)
+        TelescopeControlStellariumServer.close()
+        TelescopeControlLX200Server.close()
+    }
+
+    private class Telescope(val mountManager: MountManager) : TelescopeControlServer.Telescope {
+
+        override val rightAscension get() = mountManager.rightAscension.hours
+
+        override val declination get() = mountManager.declination.deg
+
+        override val rightAscensionJ2000 get() = mountManager.rightAscensionJ2000.hours
+
+        override val declinationJ2000 get() = mountManager.declinationJ2000.deg
+
+        override val longitude get() = mountManager.longitude.deg
+
+        override val latitude get() = mountManager.latitude.deg
+
+        override val slewing get() = mountManager.slewing
+
+        override fun goTo(ra: Angle, dec: Angle, j2000: Boolean) {
+            if (j2000) mountManager.get()?.goToJ2000(ra, dec)
+            else mountManager.get()?.goTo(ra, dec)
+        }
+
+        override fun sync(ra: Angle, dec: Angle, j2000: Boolean) {
+            if (j2000) mountManager.get()?.syncJ2000(ra, dec)
+            else mountManager.get()?.sync(ra, dec)
+        }
+
+        override fun abort() {
+            mountManager.get()?.abortMotion()
+        }
     }
 }

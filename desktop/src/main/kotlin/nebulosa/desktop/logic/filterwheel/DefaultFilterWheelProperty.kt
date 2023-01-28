@@ -4,10 +4,10 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import nebulosa.desktop.logic.AbstractDeviceProperty
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.filterwheels.FilterWheel
-import nebulosa.indi.device.filterwheels.FilterWheelCountChanged
-import nebulosa.indi.device.filterwheels.FilterWheelMovingChanged
-import nebulosa.indi.device.filterwheels.FilterWheelPositionChanged
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.filterwheel.FilterWheelCountChanged
+import nebulosa.indi.device.filterwheel.FilterWheelMovingChanged
+import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
 
 open class DefaultFilterWheelProperty : AbstractDeviceProperty<FilterWheel>(), FilterWheelProperty {
 

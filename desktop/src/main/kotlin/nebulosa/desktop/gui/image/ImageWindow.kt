@@ -19,7 +19,7 @@ import nebulosa.desktop.view.image.ImageView
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
-import nebulosa.indi.device.cameras.Camera
+import nebulosa.indi.device.camera.Camera
 import java.io.File
 import java.nio.IntBuffer
 
