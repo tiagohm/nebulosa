@@ -21,11 +21,12 @@ import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ButtonValueFactory
 import nebulosa.desktop.logic.filterwheel.FilterWheelManager
 import nebulosa.desktop.logic.isNull
+import nebulosa.desktop.view.filterwheel.FilterWheelView
 import nebulosa.indi.device.filterwheels.FilterWheel
 import kotlin.math.max
 import kotlin.math.min
 
-class FilterWheelWindow : AbstractWindow() {
+class FilterWheelWindow : AbstractWindow(), FilterWheelView {
 
     override val resourceName = "FilterWheel"
 
@@ -46,7 +47,7 @@ class FilterWheelWindow : AbstractWindow() {
 
     init {
         title = "FilterWheel"
-        isResizable = false
+        resizable = false
     }
 
     override fun onCreate() {
@@ -126,13 +127,13 @@ class FilterWheelWindow : AbstractWindow() {
         filterWheelManager.close()
     }
 
-    var status
+    override var status
         get() = "" // statusLabel.text
         set(value) {
             // statusLabel.text = value
         }
 
-    var isCompactMode
+    override var compactMode
         get() = compactModeMenuItem.isSelected
         set(value) {
             compactModeMenuItem.isSelected = value
@@ -146,13 +147,13 @@ class FilterWheelWindow : AbstractWindow() {
             updateScreenHeight()
         }
 
-    var isUseFilterWheelAsShutter
+    override var useFilterWheelAsShutter
         get() = useFilterWheelAsShutterCheckBox.isSelected
         set(value) {
             useFilterWheelAsShutterCheckBox.isSelected = value
         }
 
-    var filterAsShutter
+    override var filterAsShutter
         get() = filterAsShutterChoiceBox.selectionModel.selectedIndex + 1
         set(value) {
             filterAsShutterChoiceBox.selectionModel.select(value - 1)
@@ -193,7 +194,7 @@ class FilterWheelWindow : AbstractWindow() {
     }
 
     fun updateScreenHeight() {
-        height = if (isCompactMode) {
+        height = if (compactMode) {
             170.0
         } else {
             if (filterWheelManager.connected) {
@@ -205,7 +206,7 @@ class FilterWheelWindow : AbstractWindow() {
         }
     }
 
-    fun updateFilterNames(
+    override fun updateFilterNames(
         names: List<String>,
         selectedFilterAsShutter: Int,
         position: Int,

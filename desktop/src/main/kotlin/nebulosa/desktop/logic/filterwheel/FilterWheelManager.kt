@@ -1,9 +1,9 @@
 package nebulosa.desktop.logic.filterwheel
 
-import nebulosa.desktop.gui.filterwheel.FilterWheelWindow
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
-import nebulosa.desktop.preferences.Preferences
+import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.view.filterwheel.FilterWheelView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.filterwheels.FilterWheel
 import nebulosa.indi.device.filterwheels.FilterWheelCountChanged
@@ -13,7 +13,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext
 
-class FilterWheelManager(private val window: FilterWheelWindow) :
+class FilterWheelManager(private val view: FilterWheelView) :
     FilterWheelProperty by GlobalContext.get().get<EquipmentManager>().selectedFilterWheel, KoinComponent {
 
     private val preferences by inject<Preferences>()
@@ -46,11 +46,11 @@ class FilterWheelManager(private val window: FilterWheelWindow) :
 
     fun updateTitle() {
         val filterName = computeFilterName(position)
-        window.title = "Filter Wheel · $name · $filterName"
+        view.title = "Filter Wheel · $name · $filterName"
     }
 
     fun updateStatus() {
-        window.status = if (moving) "moving"
+        view.status = if (moving) "moving"
         else "idle"
     }
 
@@ -60,18 +60,18 @@ class FilterWheelManager(private val window: FilterWheelWindow) :
 
     fun toggleUseFilterWheelAsShutter(enable: Boolean) {
         preferences.bool("filterWheel.$name.useFilterWheelAsShutter", enable)
-        window.isUseFilterWheelAsShutter = enable
+        view.useFilterWheelAsShutter = enable
     }
 
     fun updateFilterAsShutter(position: Int) {
         if (position !in 1..count) return
         preferences.int("filterWheel.$name.filterAsShutter", position)
-        window.filterAsShutter = position
+        view.filterAsShutter = position
     }
 
     fun toggleCompactMode(enable: Boolean) {
         preferences.bool("filterWheel.compactMode", enable)
-        window.isCompactMode = enable
+        view.compactMode = enable
     }
 
     fun updateFilterName(position: Int, label: String) {
@@ -83,7 +83,7 @@ class FilterWheelManager(private val window: FilterWheelWindow) :
 
     fun updateFilterNames() {
         val selectedFilterAsShutter = preferences.int("filterWheel.$name.filterAsShutter") ?: 1
-        window.updateFilterNames(filterNames, selectedFilterAsShutter, position)
+        view.updateFilterNames(filterNames, selectedFilterAsShutter, position)
     }
 
     fun moveTo(position: Int) {
@@ -100,8 +100,8 @@ class FilterWheelManager(private val window: FilterWheelWindow) :
     }
 
     fun savePreferences() {
-        preferences.double("filterWheel.screen.x")?.let { window.x = it }
-        preferences.double("filterWheel.screen.y")?.let { window.y = it }
+        preferences.double("filterWheel.screen.x")?.let { view.x = it }
+        preferences.double("filterWheel.screen.y")?.let { view.y = it }
     }
 
     fun loadPreferences(device: FilterWheel? = value) {
@@ -109,13 +109,13 @@ class FilterWheelManager(private val window: FilterWheelWindow) :
             updateFilterNames()
             syncFilterNames()
 
-            window.isUseFilterWheelAsShutter = preferences.bool("filterWheel.${device.name}.useFilterWheelAsShutter")
+            view.useFilterWheelAsShutter = preferences.bool("filterWheel.${device.name}.useFilterWheelAsShutter")
         }
 
-        window.isCompactMode = preferences.bool("filterWheel.compactMode")
+        view.compactMode = preferences.bool("filterWheel.compactMode")
 
-        preferences.double("filterWheel.screen.x")?.let { window.x = it }
-        preferences.double("filterWheel.screen.y")?.let { window.y = it }
+        preferences.double("filterWheel.screen.x")?.let { view.x = it }
+        preferences.double("filterWheel.screen.y")?.let { view.y = it }
     }
 
     override fun close() {

@@ -1,4 +1,4 @@
-package nebulosa.desktop.gui.camera
+package nebulosa.desktop.view.camera
 
 enum class ExposureMode {
     SINGLE,

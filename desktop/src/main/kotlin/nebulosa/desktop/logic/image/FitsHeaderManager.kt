@@ -1,11 +1,11 @@
 package nebulosa.desktop.logic.image
 
-import nebulosa.desktop.gui.image.FitsHeaderWindow
+import nebulosa.desktop.view.image.FitsHeaderView
 import nom.tam.fits.Header
 import nom.tam.fits.HeaderCard
 import kotlin.math.max
 
-class FitsHeaderManager(private val window: FitsHeaderWindow) {
+class FitsHeaderManager(private val view: FitsHeaderView) {
 
     fun load(header: Header) {
         val maxWidth = IntArray(3)
@@ -16,7 +16,7 @@ class FitsHeaderManager(private val window: FitsHeaderWindow) {
             return "%s: %s / %s".format(key, value, comment)
         }
 
-        window.text = header
+        val text = header
             .iterator()
             .asSequence()
             .filter { it.key != "END" }
@@ -26,6 +26,7 @@ class FitsHeaderManager(private val window: FitsHeaderWindow) {
             .toList()
             .joinToString("\n") { it.formatCard() }
 
-        window.width = maxWidth.sum() * 6.0
+        view.updateText(text)
+        view.width = maxWidth.sum() * 6.0
     }
 }

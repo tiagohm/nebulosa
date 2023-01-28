@@ -1,9 +1,9 @@
 package nebulosa.desktop.logic.focuser
 
-import nebulosa.desktop.gui.focuser.FocuserWindow
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
-import nebulosa.desktop.preferences.Preferences
+import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.focusers.Focuser
 import nebulosa.indi.device.focusers.FocuserMovingChanged
@@ -11,7 +11,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext
 
-class FocuserManager(private val window: FocuserWindow) :
+class FocuserManager(private val view: FocuserView) :
     FocuserProperty by GlobalContext.get().get<EquipmentManager>().selectedFocuser, KoinComponent {
 
     private val preferences by inject<Preferences>()
@@ -42,12 +42,12 @@ class FocuserManager(private val window: FocuserWindow) :
     }
 
     fun updateTitle() {
-        window.title = "Filter Wheel · $name"
+        view.title = "Filter Wheel · $name"
     }
 
     fun updateStatus() {
         val text = if (moving) "moving" else "idle"
-        window.status = text
+        view.status = text
     }
 
     fun openINDIPanelControl() {
@@ -55,19 +55,19 @@ class FocuserManager(private val window: FocuserWindow) :
     }
 
     fun moveIn() {
-        value?.moveFocusIn(window.increment)
+        value?.moveFocusIn(view.increment)
     }
 
     fun moveOut() {
-        value?.moveFocusOut(window.increment)
+        value?.moveFocusOut(view.increment)
     }
 
     fun moveTo() {
-        value?.moveFocusTo(window.absolute)
+        value?.moveFocusTo(view.absolute)
     }
 
     fun sync() {
-        value?.syncFocusTo(window.absolute)
+        value?.syncFocusTo(view.absolute)
     }
 
     fun abort() {
@@ -75,21 +75,21 @@ class FocuserManager(private val window: FocuserWindow) :
     }
 
     fun updateMaxIncrement() {
-        window.maxIncrement = value?.maxPosition ?: 0
+        view.maxIncrement = value?.maxPosition ?: 0
     }
 
     fun updateMaxAbsolute() {
-        window.absoluteMax = value?.maxPosition ?: 0
+        view.absoluteMax = value?.maxPosition ?: 0
     }
 
     fun savePreferences() {
-        preferences.double("focuser.screen.x", window.x)
-        preferences.double("focuser.screen.y", window.y)
+        preferences.double("focuser.screen.x", view.x)
+        preferences.double("focuser.screen.y", view.y)
     }
 
     fun loadPreferences() {
-        preferences.double("focuser.screen.x")?.let { window.x = it }
-        preferences.double("focuser.screen.y")?.let { window.y = it }
+        preferences.double("focuser.screen.x")?.let { view.x = it }
+        preferences.double("focuser.screen.y")?.let { view.y = it }
     }
 
     override fun close() {

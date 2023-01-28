@@ -286,6 +286,10 @@ internal open class CameraBase(
         }
     }
 
+    override fun dewHeater(enable: Boolean) {
+        // TODO: Implement this.
+    }
+
     override fun temperature(value: Double) {
         if (canSetTemperature) {
             sendNewNumber("CCD_TEMPERATURE", "CCD_TEMPERATURE_VALUE" to value)

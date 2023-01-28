@@ -7,9 +7,9 @@ import javafx.scene.input.ScrollEvent
 import javafx.stage.Screen
 import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
-import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.gui.image.SCNRWindow
-import nebulosa.desktop.preferences.Preferences
+import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.view.image.ImageView
 import nebulosa.imaging.ExtendedImage
 import nebulosa.imaging.FitsImage
 import nebulosa.imaging.Image
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.min
 
-class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
+class ImageManager(private val view: ImageView) : KoinComponent, Closeable {
 
     private val preferences by inject<Preferences>()
 
@@ -108,8 +108,8 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
         this.fits = fits
         this.transformedFits = null
 
-        window.hasScnr = !fits.mono
-        window.hasFitsHeader = fits is FitsImage
+        view.hasScnr = !fits.mono
+        view.hasFitsHeader = fits is FitsImage
 
         adjustSceneSizeToFitImage(adjustToDefaultSize)
 
@@ -136,11 +136,11 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
 
         // Prevent move to left/up.
         if (-startX < 0 || -startY < 0) {
-            if (maxStartX - startX <= window.sceneWidth.toInt()) {
-                startX = maxStartX - window.sceneWidth.toInt()
+            if (maxStartX - startX <= view.sceneWidth.toInt()) {
+                startX = maxStartX - view.sceneWidth.toInt()
             }
-            if (maxStartY - startY <= window.sceneHeight.toInt()) {
-                startY = maxStartY - window.sceneHeight.toInt()
+            if (maxStartY - startY <= view.sceneHeight.toInt()) {
+                startY = maxStartY - view.sceneHeight.toInt()
             }
         }
 
@@ -157,7 +157,7 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
             startY = 0
         }
 
-        window.draw(fits, areaWidth, areaHeight, startX, startY, factor)
+        view.draw(fits, areaWidth, areaHeight, startX, startY, factor)
     }
 
     fun drawHistogram() {
@@ -227,8 +227,8 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
     }
 
     private fun updateTitle(file: File? = null) {
-        window.title = "Image"
-            .let { if (window.camera != null) "$it · ${window.camera.name}" else it }
+        view.title = "Image"
+            .let { if (view.camera != null) "$it · ${view.camera!!.name}" else it }
             .let { if (file != null) "$it · ${file.name}" else it }
     }
 
@@ -237,22 +237,22 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
 
         val factor = fits.width.toDouble() / fits.height.toDouble()
 
-        val defaultWidth = window.camera
+        val defaultWidth = view.camera
             ?.let { preferences.double("image.${it.name}.screen.width") }
             ?: (screenBounds.width / 2)
 
-        val defaultHeight = window.camera
+        val defaultHeight = view.camera
             ?.let { preferences.double("image.${it.name}.screen.height") }
             ?: (screenBounds.height / 2)
 
-        val borderSize = window.borderSize
-        val titleHeight = window.titleHeight
+        val borderSize = view.borderSize
+        val titleHeight = view.titleHeight
 
         val sceneSize = if (factor >= 1.0)
             if (defaultSize) defaultWidth
-            else min(screenBounds.width, window.width)
+            else min(screenBounds.width, view.width)
         else if (defaultSize) defaultHeight
-        else min(screenBounds.height, window.height)
+        else min(screenBounds.height, view.height)
 
         if (factor >= 1.0) {
             idealSceneWidth = sceneSize
@@ -262,11 +262,11 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
             idealSceneWidth = sceneSize * factor
         }
 
-        window.width = idealSceneWidth + borderSize * 2
-        window.height = idealSceneHeight + titleHeight
+        view.width = idealSceneWidth + borderSize * 2
+        view.height = idealSceneHeight + titleHeight
 
-        window.imageWidth = idealSceneWidth
-        window.imageHeight = idealSceneHeight
+        view.imageWidth = idealSceneWidth
+        view.imageHeight = idealSceneHeight
     }
 
     fun drag(event: MouseEvent) {
@@ -311,7 +311,7 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
         newScale: Double,
         pointX: Double, pointY: Double,
     ) {
-        val bounds = window.imageBounds
+        val bounds = view.imageBounds
 
         val x = ((startX + pointX) / bounds.width) * (bounds.width * newScale)
         val y = ((startY + pointY) / bounds.height) * (bounds.height * newScale)
@@ -357,12 +357,12 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
     }
 
     fun openImageStretcher() {
-        imageStretcherWindow = imageStretcherWindow ?: ImageStretcherWindow(window)
+        imageStretcherWindow = imageStretcherWindow ?: ImageStretcherWindow(view)
         imageStretcherWindow!!.show(bringToFront = true)
     }
 
     fun openSCNR() {
-        scnrWindow = scnrWindow ?: SCNRWindow(window)
+        scnrWindow = scnrWindow ?: SCNRWindow(view)
         scnrWindow!!.show(bringToFront = true)
     }
 
@@ -374,22 +374,22 @@ class ImageManager(private val window: ImageWindow) : KoinComponent, Closeable {
     }
 
     fun loadPreferences() {
-        if (window.camera != null) {
-            preferences.double("image.${window.camera.name}.screen.x")?.let { window.x = it }
-            preferences.double("image.${window.camera.name}.screen.y")?.let { window.y = it }
+        if (view.camera != null) {
+            preferences.double("image.${view.camera!!.name}.screen.x")?.let { view.x = it }
+            preferences.double("image.${view.camera!!.name}.screen.y")?.let { view.y = it }
         } else {
-            preferences.double("image.screen.x")?.let { window.x = it }
-            preferences.double("image.screen.y")?.let { window.y = it }
+            preferences.double("image.screen.x")?.let { view.x = it }
+            preferences.double("image.screen.y")?.let { view.y = it }
         }
     }
 
     fun savePreferences() {
-        if (window.camera != null) {
-            preferences.double("image.${window.camera.name}.screen.x", window.x)
-            preferences.double("image.${window.camera.name}.screen.y", window.y)
+        if (view.camera != null) {
+            preferences.double("image.${view.camera!!.name}.screen.x", view.x)
+            preferences.double("image.${view.camera!!.name}.screen.y", view.y)
         } else {
-            preferences.double("image.screen.x", window.x)
-            preferences.double("image.screen.y", window.y)
+            preferences.double("image.screen.x", view.x)
+            preferences.double("image.screen.y", view.y)
         }
     }
 

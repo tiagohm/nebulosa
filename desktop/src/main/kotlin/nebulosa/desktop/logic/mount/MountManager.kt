@@ -1,10 +1,10 @@
 package nebulosa.desktop.logic.mount
 
 import javafx.application.Platform
-import nebulosa.desktop.gui.mount.MountView
 import nebulosa.desktop.logic.EquipmentManager
-import nebulosa.desktop.preferences.Preferences
+import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.telescopecontrol.TelescopeControlServerScreen
+import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.guiders.GuiderPulsingChanged
 import nebulosa.indi.device.mounts.*
@@ -164,7 +164,7 @@ class MountManager(private val view: MountView) :
     }
 
     private fun onTimerHit(task: TimerTask) {
-        if (value == null || !view.isShowing) return
+        if (value == null || !view.showing) return
 
         val lst = computeLST()
         val timeLeftToMeridianFlip = computeTimeLeftToMeridianFlip()

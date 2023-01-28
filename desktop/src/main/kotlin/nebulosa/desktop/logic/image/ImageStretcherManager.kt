@@ -1,11 +1,11 @@
 package nebulosa.desktop.logic.image
 
-import nebulosa.desktop.gui.image.ImageStretcherWindow
+import nebulosa.desktop.view.image.ImageStretcherView
 
-class ImageStretcherManager(private val window: ImageStretcherWindow) {
+class ImageStretcherManager(private val view: ImageStretcherView) {
 
     fun apply() {
-        window.apply(window.shadow / 255f, window.highlight / 255f, window.midtone / 255f)
-        window.drawHistogram()
+        view.apply(view.shadow / 255f, view.highlight / 255f, view.midtone / 255f)
+        view.drawHistogram()
     }
 }

@@ -13,12 +13,13 @@ import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.indi.INDIPanelControlManager
+import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.*
 import nebulosa.indi.protocol.PropertyPermission
 import nebulosa.indi.protocol.SwitchRule
 import kotlin.math.min
 
-class INDIPanelControlWindow : AbstractWindow() {
+class INDIPanelControlWindow : AbstractWindow(), INDIPanelControlView {
 
     override val resourceName = "INDIPanelControl"
 
@@ -40,22 +41,24 @@ class INDIPanelControlWindow : AbstractWindow() {
         indiPanelControlManager.populate()
     }
 
-    var device: Device?
+    override var device: Device?
         get() = deviceChoiceBox.value
         set(value) {
             deviceChoiceBox.value = value
         }
 
-    var log
-        get() = logTextArea.text!!
-        set(value) {
-            logTextArea.text = value
-        }
-
     val tabs: MutableList<Tab>
         get() = groupsTabPane.tabs
 
-    fun makeGroup(name: String, vectors: List<PropertyVector<*, *>>): Group {
+    override fun updateLog(text: String) {
+        logTextArea.text = text
+    }
+
+    override fun clearTabs() {
+        tabs.clear()
+    }
+
+    override fun makeGroup(name: String, vectors: List<PropertyVector<*, *>>): Group {
         val tab = Tab()
 
         tab.text = name

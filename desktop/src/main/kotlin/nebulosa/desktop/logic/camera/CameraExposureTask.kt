@@ -1,13 +1,13 @@
 package nebulosa.desktop.logic.camera
 
 import io.reactivex.rxjava3.disposables.Disposable
-import nebulosa.desktop.gui.camera.AutoSubFolderMode
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.EventBus
+import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
 import nebulosa.desktop.logic.filterwheel.FilterWheelTaskExecutor
-import nebulosa.desktop.preferences.Preferences
+import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.cameras.*
 import org.koin.core.component.KoinComponent

@@ -15,10 +15,11 @@ import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.focuser.FocuserManager
 import nebulosa.desktop.logic.isNull
+import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.indi.device.focusers.Focuser
 import org.controlsfx.control.ToggleSwitch
 
-class FocuserWindow : AbstractWindow() {
+class FocuserWindow : AbstractWindow(), FocuserView {
 
     override val resourceName = "Focuser"
 
@@ -45,7 +46,7 @@ class FocuserWindow : AbstractWindow() {
 
     init {
         title = "Focuser"
-        isResizable = false
+        resizable = false
     }
 
     override fun onCreate() {
@@ -98,43 +99,31 @@ class FocuserWindow : AbstractWindow() {
         focuserManager.close()
     }
 
-    var status
+    override var status
         get() = statusLabel.text!!
         set(value) {
             statusLabel.text = value
         }
 
-    var position
-        get() = positionLabel.text!!
-        set(value) {
-            positionLabel.text = value
-        }
-
-    var temperature
-        get() = temperatureLabel.text!!
-        set(value) {
-            temperatureLabel.text = value
-        }
-
-    var increment
+    override var increment
         get() = incrementSpinner.value.toInt()
         set(value) {
             incrementSpinner.valueFactory.value = value.toDouble()
         }
 
-    var maxIncrement
+    override var maxIncrement
         get() = (incrementSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
         set(value) {
             (incrementSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
         }
 
-    var absolute
+    override var absolute
         get() = absoluteSpinner.value.toInt()
         set(value) {
             absoluteSpinner.valueFactory.value = value.toDouble()
         }
 
-    var absoluteMax
+    override var absoluteMax
         get() = (absoluteSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
         set(value) {
             (absoluteSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()

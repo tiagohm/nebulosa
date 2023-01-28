@@ -7,11 +7,13 @@ import nebulosa.desktop.core.beans.isAnyOf
 import nebulosa.desktop.core.beans.onZero
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.image.SCNRManager
+import nebulosa.desktop.view.image.ImageView
+import nebulosa.desktop.view.image.SCNRView
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import org.controlsfx.control.ToggleSwitch
 
-class SCNRWindow(private val window: ImageWindow) : AbstractWindow() {
+class SCNRWindow(private val view: ImageView) : AbstractWindow(), SCNRView {
 
     override val resourceName = "SCNR"
 
@@ -26,7 +28,7 @@ class SCNRWindow(private val window: ImageWindow) : AbstractWindow() {
 
     init {
         title = "SCNR"
-        isResizable = false
+        resizable = false
     }
 
     override fun onCreate() {
@@ -39,22 +41,22 @@ class SCNRWindow(private val window: ImageWindow) : AbstractWindow() {
         enabledToggleSwitch.selectedProperty().onZero(scnrManager::apply)
     }
 
-    val amount
-        get() = amountSpinner.value!!
+    override val amount
+        get() = amountSpinner.value!!.toFloat()
 
-    val protectionMethod
+    override val protectionMethod
         get() = protectionMethodChoiceBox.value!!
 
-    val channel
+    override val channel
         get() = channelChoiceBox.value!!
 
-    val enabled
+    override val enabled
         get() = enabledToggleSwitch.isSelected
 
-    fun applySCNR(
+    override fun applySCNR(
         enabled: Boolean, channel: ImageChannel,
-        protectionMethod: ProtectionMethod, amount: Double,
+        protectionMethod: ProtectionMethod, amount: Float,
     ) {
-        window.applySCNR(enabled, channel, protectionMethod, amount)
+        view.applySCNR(enabled, channel, protectionMethod, amount)
     }
 }

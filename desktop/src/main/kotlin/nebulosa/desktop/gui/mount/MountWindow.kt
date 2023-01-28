@@ -17,6 +17,7 @@ import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.isNull
 import nebulosa.desktop.logic.mount.MountManager
 import nebulosa.desktop.mounts.SiteAndTimeScreen
+import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.mounts.Mount
 import nebulosa.indi.device.mounts.TrackMode
 import nebulosa.math.Angle
@@ -76,7 +77,7 @@ class MountWindow : AbstractWindow(), MountView {
 
     init {
         title = "Mount"
-        isResizable = false
+        resizable = false
     }
 
     override fun onCreate() {

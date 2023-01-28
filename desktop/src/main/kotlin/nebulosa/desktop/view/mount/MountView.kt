@@ -1,6 +1,6 @@
-package nebulosa.desktop.gui.mount
+package nebulosa.desktop.view.mount
 
-import nebulosa.desktop.gui.View
+import nebulosa.desktop.view.View
 import nebulosa.math.Angle
 import java.time.LocalDateTime
 

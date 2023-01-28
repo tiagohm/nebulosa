@@ -1,4 +1,4 @@
-package nebulosa.desktop.gui.camera
+package nebulosa.desktop.view.camera
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

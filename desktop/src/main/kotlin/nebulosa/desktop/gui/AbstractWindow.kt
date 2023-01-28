@@ -6,6 +6,7 @@ import javafx.scene.Scene
 import javafx.scene.control.Alert
 import javafx.scene.image.Image
 import javafx.stage.Stage
+import nebulosa.desktop.view.View
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
 import org.koin.core.component.KoinComponent
@@ -46,19 +47,19 @@ abstract class AbstractWindow : View, KoinComponent {
 
     protected open fun onClose() {}
 
-    override var isResizable
+    override var resizable
         get() = window.isResizable
         set(value) {
             window.isResizable = value
         }
 
-    override var isMaximized
+    override var maximized
         get() = window.isMaximized
         set(value) {
             window.isMaximized = value
         }
 
-    override val isShowing
+    override val showing
         get() = window.isShowing
 
     override var title

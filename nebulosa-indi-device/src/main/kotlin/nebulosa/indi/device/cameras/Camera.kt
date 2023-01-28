@@ -91,6 +91,8 @@ interface Camera : Guider, Thermometer {
 
     fun cooler(enable: Boolean)
 
+    fun dewHeater(enable: Boolean)
+
     fun temperature(value: Double)
 
     fun frameFormat(format: String)

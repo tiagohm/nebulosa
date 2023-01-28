@@ -6,12 +6,13 @@ import javafx.collections.FXCollections
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.EventBus
+import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.*
 
-class INDIPanelControlManager(private val window: INDIPanelControlWindow) : KoinComponent {
+class INDIPanelControlManager(private val view: INDIPanelControlView) : KoinComponent {
 
     private val equipmentManager by inject<EquipmentManager>()
     private val cacheProperties = HashMap<Device, HashMap<String, INDIPanelControlWindow.GroupPropertyVector>>()
@@ -23,7 +24,7 @@ class INDIPanelControlManager(private val window: INDIPanelControlWindow) : Koin
 
     init {
         subscribers[0] = EventBus.DEVICE
-            .subscribe(filter = { it.device === window.device }, next = ::onEvent)
+            .subscribe(filter = { it.device === view.device }, next = ::onEvent)
     }
 
     private fun onEvent(event: DeviceEvent<*>) {
@@ -38,7 +39,7 @@ class INDIPanelControlManager(private val window: INDIPanelControlWindow) : Koin
                         val group = groups.firstOrNull { it.name == event.property.group }
 
                         group?.add(event.property)
-                            ?: window.makeGroup(event.property.group, listOf(event.property))
+                            ?: view.makeGroup(event.property.group, listOf(event.property))
                                 .also(groups::add)
                     }
                 }
@@ -54,13 +55,13 @@ class INDIPanelControlManager(private val window: INDIPanelControlWindow) : Koin
     }
 
     fun clear(device: Device) {
-        window.tabs.clear()
+        view.clearTabs()
         cacheProperties[device]!!.clear()
         groups.clear()
     }
 
     fun populate() {
-        val device = window.device
+        val device = view.device
         val attachedDevices = ArrayList<Device>()
         attachedDevices.addAll(equipmentManager.attachedCameras)
         attachedDevices.addAll(equipmentManager.attachedMounts)
@@ -71,19 +72,19 @@ class INDIPanelControlManager(private val window: INDIPanelControlWindow) : Koin
         attachedDevices.forEach { if (it !in cacheProperties) cacheProperties[it] = HashMap(256) }
         devices.setAll(attachedDevices)
 
-        if (device in attachedDevices) window.device = device
-        else window.device = attachedDevices.firstOrNull()
+        if (device in attachedDevices) view.device = device
+        else view.device = attachedDevices.firstOrNull()
     }
 
     fun makeLog() {
         logText.clear()
-        window.device?.messages?.forEach(logText::appendLine)
-        window.log = logText.toString()
+        view.device?.messages?.forEach(logText::appendLine)
+        view.updateLog("$logText")
     }
 
     fun makePanelControl() {
         synchronized(cacheProperties) {
-            val device = window.device ?: return
+            val device = view.device ?: return
 
             clear(device)
 
@@ -96,7 +97,7 @@ class INDIPanelControlManager(private val window: INDIPanelControlWindow) : Koin
             }
 
             groupedProperties
-                .onEach { window.makeGroup(it.key, it.value).also(groups::add) }
+                .onEach { view.makeGroup(it.key, it.value).also(groups::add) }
         }
 
         makeLog()

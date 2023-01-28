@@ -4,13 +4,13 @@ import javafx.stage.FileChooser
 import nebulosa.desktop.gui.camera.CameraWindow
 import nebulosa.desktop.gui.filterwheel.FilterWheelWindow
 import nebulosa.desktop.gui.focuser.FocuserWindow
-import nebulosa.desktop.gui.home.HomeWindow
 import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.gui.mount.MountWindow
 import nebulosa.desktop.logic.EquipmentManager
+import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.connection.ConnectionManager
-import nebulosa.desktop.preferences.Preferences
+import nebulosa.desktop.view.home.HomeView
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.component.inject
@@ -19,20 +19,27 @@ import java.io.Closeable
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
-class HomeManager(private val window: HomeWindow) : KoinComponent, Closeable {
+class HomeManager(private val view: HomeView) : KoinComponent, Closeable {
 
     private val preferences by inject<Preferences>()
     private val equipmentManager by inject<EquipmentManager>()
     private val connectionManager by inject<ConnectionManager>()
 
-    val isConnected = equipmentManager.connectedProperty
+    val connected = equipmentManager.connectedProperty
 
     fun connect() {
         if (!connectionManager.isConnected()) {
-            val host = window.host
-            val port = window.port
+            val host = view.host
+            val port = view.port
 
-            connectionManager.connect(host, port)
+            try {
+                connectionManager.connect(host, port)
+            } catch (e: Throwable) {
+                return view.showAlert(
+                    "A connection to the INDI Server could not be established. Check your connection or server configuration.",
+                    "Connection failed"
+                )
+            }
 
             preferences.string("connection.host", host)
             preferences.int("connection.port", port)
@@ -73,21 +80,21 @@ class HomeManager(private val window: HomeWindow) : KoinComponent, Closeable {
             ImageWindow.open(file)
         } catch (e: Throwable) {
             e.printStackTrace()
-            window.showAlert("Unable to load this image.", "Image Error")
+            view.showAlert("Unable to load this image.", "Image Error")
         }
     }
 
     fun savePreferences() {
-        preferences.double("home.screen.x", window.x)
-        preferences.double("home.screen.y", window.y)
+        preferences.double("home.screen.x", view.x)
+        preferences.double("home.screen.y", view.y)
     }
 
     fun loadPreferences() {
-        window.host = preferences.string("connection.host") ?: ""
-        window.port = preferences.int("connection.port") ?: 7624
+        view.host = preferences.string("connection.host") ?: ""
+        view.port = preferences.int("connection.port") ?: 7624
 
-        preferences.double("home.screen.x")?.let { window.x = it }
-        preferences.double("home.screen.y")?.let { window.y = it }
+        preferences.double("home.screen.x")?.let { view.x = it }
+        preferences.double("home.screen.y")?.let { view.y = it }
     }
 
     override fun close() {

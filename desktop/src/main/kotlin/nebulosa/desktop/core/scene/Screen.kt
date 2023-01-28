@@ -6,7 +6,7 @@ import javafx.scene.Scene
 import javafx.scene.control.Alert
 import javafx.scene.image.Image
 import javafx.stage.Stage
-import nebulosa.desktop.preferences.Preferences
+import nebulosa.desktop.logic.Preferences
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
 import org.koin.core.component.KoinComponent

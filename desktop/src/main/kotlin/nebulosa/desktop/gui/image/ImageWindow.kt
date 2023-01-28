@@ -15,6 +15,7 @@ import javafx.scene.input.ScrollEvent
 import javafx.stage.Screen
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.image.ImageManager
+import nebulosa.desktop.view.image.ImageView
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
@@ -22,7 +23,7 @@ import nebulosa.indi.device.cameras.Camera
 import java.io.File
 import java.nio.IntBuffer
 
-class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
+class ImageWindow(override val camera: Camera? = null) : AbstractWindow(), ImageView {
 
     override val resourceName = "Image"
 
@@ -67,8 +68,8 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
             if (it.button == MouseButton.PRIMARY && it.clickCount == 2) {
                 imageManager.resetZoom()
 
-                if (isMaximized) {
-                    isMaximized = false
+                if (maximized) {
+                    maximized = false
                     imageManager.adjustSceneSizeToFitImage(true)
                 } else {
                     imageManager.adjustSceneSizeToFitImage(false)
@@ -98,64 +99,64 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
         System.gc()
     }
 
-    val fits
+    override val fits
         get() = imageManager.transformedFits ?: imageManager.fits
 
-    val shadow
+    override val shadow
         get() = imageManager.shadow
 
-    val highlight
+    override val highlight
         get() = imageManager.highlight
 
-    val midtone
+    override val midtone
         get() = imageManager.midtone
 
-    val mirrorHorizontal
+    override val mirrorHorizontal
         get() = imageManager.mirrorHorizontal
 
-    val mirrorVertical
+    override val mirrorVertical
         get() = imageManager.mirrorVertical
 
-    val invert
+    override val invert
         get() = imageManager.invert
 
-    val scnrEnabled
+    override val scnrEnabled
         get() = imageManager.scnrEnabled
 
-    val scnrChannel
+    override val scnrChannel
         get() = imageManager.scnrChannel
 
-    val scnrProtectionMode
+    override val scnrProtectionMode
         get() = imageManager.scnrProtectionMode
 
-    val scnrAmount
+    override val scnrAmount
         get() = imageManager.scnrAmount
 
-    var imageWidth
+    override var imageWidth
         get() = imageCanvas.width
         set(value) {
             imageCanvas.width = value
         }
 
-    var imageHeight
+    override var imageHeight
         get() = imageCanvas.height
         set(value) {
             imageCanvas.height = value
         }
 
-    var hasScnr
+    override var hasScnr
         get() = !scnrMenuItem.isDisable
         set(value) {
             scnrMenuItem.isDisable = !value
         }
 
-    var hasFitsHeader
+    override var hasFitsHeader
         get() = !fitsHeaderMenuItem.isDisable
         set(value) {
             fitsHeaderMenuItem.isDisable = !value
         }
 
-    val imageBounds: Bounds
+    override val imageBounds: Bounds
         get() = imageCanvas.parent.boundsInLocal
 
     @FXML
@@ -192,7 +193,7 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
         imageManager.open(file)
     }
 
-    fun draw(
+    override fun draw(
         fits: Image,
         width: Int, height: Int,
         startX: Int, startY: Int,
@@ -245,18 +246,18 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
         g.drawImage(writableImage, 0.0, 0.0)
     }
 
-    fun applySCNR(
+    override fun applySCNR(
         enabled: Boolean, channel: ImageChannel,
-        protectionMethod: ProtectionMethod, amount: Double,
+        protectionMethod: ProtectionMethod, amount: Float,
     ) {
         imageManager.transformImage(
             scnrEnabled = enabled, scnrChannel = channel,
             scnrProtectionMode = protectionMethod,
-            scnrAmount = amount.toFloat(),
+            scnrAmount = amount,
         )
     }
 
-    fun applySTF(shadow: Float, highlight: Float, midtone: Float) {
+    override fun applySTF(shadow: Float, highlight: Float, midtone: Float) {
         imageManager.transformImage(shadow = shadow, highlight = highlight, midtone = midtone)
     }
 
@@ -267,7 +268,7 @@ class ImageWindow(@JvmField val camera: Camera? = null) : AbstractWindow() {
         @JvmStatic
         fun open(file: File, camera: Camera? = null): ImageWindow {
             val window = windows
-                .firstOrNull { if (camera == null) it.camera == null && !it.isShowing else it.camera === camera }
+                .firstOrNull { if (camera == null) it.camera == null && !it.showing else it.camera === camera }
                 ?: ImageWindow(camera)
 
             windows.add(window)

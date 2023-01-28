@@ -1,4 +1,4 @@
-package nebulosa.desktop.preferences
+package nebulosa.desktop.logic
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.koin.core.component.KoinComponent

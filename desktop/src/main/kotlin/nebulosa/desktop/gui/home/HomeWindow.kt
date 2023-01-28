@@ -11,8 +11,9 @@ import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.home.HomeManager
+import nebulosa.desktop.view.home.HomeView
 
-class HomeWindow : AbstractWindow() {
+class HomeWindow : AbstractWindow(), HomeView {
 
     override val resourceName = "Home"
 
@@ -40,26 +41,26 @@ class HomeWindow : AbstractWindow() {
 
     init {
         title = "Nebulosa"
-        isResizable = false
+        resizable = false
     }
 
     override fun onCreate() {
-        hostTextField.disableProperty().bind(homeManager.isConnected)
-        portTextField.disableProperty().bind(homeManager.isConnected)
-        cameraButton.disableProperty().bind(!homeManager.isConnected)
-        mountButton.disableProperty().bind(!homeManager.isConnected)
-        guiderButton.disableProperty().bind(!homeManager.isConnected)
-        filterWheelButton.disableProperty().bind(!homeManager.isConnected)
-        focuserButton.disableProperty().bind(!homeManager.isConnected)
-        domeButton.disableProperty().bind(!homeManager.isConnected)
-        rotatorButton.disableProperty().bind(!homeManager.isConnected)
-        switchButton.disableProperty().bind(!homeManager.isConnected)
-        alignmentButton.disableProperty().bind(!homeManager.isConnected)
-        sequencerButton.disableProperty().bind(!homeManager.isConnected)
-        indiButton.disableProperty().bind(!homeManager.isConnected)
+        hostTextField.disableProperty().bind(homeManager.connected)
+        portTextField.disableProperty().bind(homeManager.connected)
+        cameraButton.disableProperty().bind(!homeManager.connected)
+        mountButton.disableProperty().bind(!homeManager.connected)
+        guiderButton.disableProperty().bind(!homeManager.connected)
+        filterWheelButton.disableProperty().bind(!homeManager.connected)
+        focuserButton.disableProperty().bind(!homeManager.connected)
+        domeButton.disableProperty().bind(!homeManager.connected)
+        rotatorButton.disableProperty().bind(!homeManager.connected)
+        switchButton.disableProperty().bind(!homeManager.connected)
+        alignmentButton.disableProperty().bind(!homeManager.connected)
+        sequencerButton.disableProperty().bind(!homeManager.connected)
+        indiButton.disableProperty().bind(!homeManager.connected)
 
-        connectButton.textProperty().bind(homeManager.isConnected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
-        homeManager.isConnected.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700") }
+        connectButton.textProperty().bind(homeManager.connected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
+        homeManager.connected.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700") }
     }
 
     override fun onStart() {
@@ -70,13 +71,13 @@ class HomeWindow : AbstractWindow() {
         homeManager.close()
     }
 
-    var host
+    override var host
         get() = hostTextField.text.trim().ifBlank { "localhost" }
         set(value) {
             hostTextField.text = value.trim()
         }
 
-    var port
+    override var port
         get() = portTextField.text?.toIntOrNull() ?: 7624
         set(value) {
             portTextField.text = "$value"
@@ -85,14 +86,7 @@ class HomeWindow : AbstractWindow() {
     @FXML
     @Synchronized
     private fun connect() {
-        try {
-            homeManager.connect()
-        } catch (e: Throwable) {
-            showAlert(
-                "A connection to the INDI Server could not be established. Check your connection or server configuration.",
-                "Connection failed"
-            )
-        }
+        homeManager.connect()
     }
 
     @FXML

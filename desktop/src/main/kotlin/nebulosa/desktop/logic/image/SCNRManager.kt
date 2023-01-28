@@ -1,10 +1,10 @@
 package nebulosa.desktop.logic.image
 
-import nebulosa.desktop.gui.image.SCNRWindow
+import nebulosa.desktop.view.image.SCNRView
 
-class SCNRManager(private val window: SCNRWindow) {
+class SCNRManager(private val view: SCNRView) {
 
     fun apply() {
-        window.applySCNR(window.enabled, window.channel, window.protectionMethod, window.amount)
+        view.applySCNR(view.enabled, view.channel, view.protectionMethod, view.amount)
     }
 }

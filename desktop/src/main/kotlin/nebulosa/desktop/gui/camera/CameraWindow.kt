@@ -17,13 +17,16 @@ import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.camera.CameraManager
 import nebulosa.desktop.logic.isNull
+import nebulosa.desktop.view.camera.AutoSubFolderMode
+import nebulosa.desktop.view.camera.CameraView
+import nebulosa.desktop.view.camera.ExposureMode
 import nebulosa.indi.device.cameras.Camera
 import nebulosa.indi.device.cameras.FrameType
 import org.controlsfx.control.ToggleSwitch
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class CameraWindow : AbstractWindow() {
+class CameraWindow : AbstractWindow(), CameraView {
 
     override val resourceName = "Camera"
 
@@ -70,7 +73,7 @@ class CameraWindow : AbstractWindow() {
 
     init {
         title = "Camera"
-        isResizable = false
+        resizable = false
     }
 
     override fun onCreate() {
@@ -100,7 +103,7 @@ class CameraWindow : AbstractWindow() {
 
         dewHeaterToggleSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.hasDewHeaterProperty)
         dewHeaterToggleSwitch.selectedProperty().bind(cameraManager.dewHeaterProperty)
-        // TODO: dewHeaterToggleSwitch.selectedProperty().on { cameraManager.get().dewHeater(it) }
+        dewHeaterToggleSwitch.selectedProperty().on { cameraManager.get().dewHeater(it) }
 
         temperatureLabel.textProperty().bind(cameraManager.temperatureProperty.asString(Locale.ENGLISH, "Temperature (%.1f °C)"))
         temperatureSetpointSpinner.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.canSetTemperatureProperty)
@@ -165,224 +168,252 @@ class CameraWindow : AbstractWindow() {
         cameraManager.close()
     }
 
-    var exposureUnit
+    override val exposureUnit
         get() = TimeUnit.valueOf(exposureUnitToggleGroup.selectedToggle.userData as String)
-        set(value) {
-            exposureUnitToggleGroup.toggles
-                .forEach { (it as RadioButton).isSelected = it.userData == value.name }
-            exposureSpinner.userData = value
-        }
 
-    var exposure
+    override val exposure
         get() = exposureSpinner.value.toLong()
-        set(value) {
-            exposureSpinner.valueFactory.value = value.toDouble()
-        }
 
-    var exposureMin
+    override fun updateExposure(exposure: Long, unit: TimeUnit) {
+        exposureSpinner.valueFactory.value = exposure.toDouble()
+
+        exposureUnitToggleGroup.toggles
+            .forEach { (it as RadioButton).isSelected = it.userData == unit.name }
+        exposureSpinner.userData = unit
+    }
+
+    override val exposureMin
         get() = (exposureSpinner.valueFactory as DoubleSpinnerValueFactory).min.toLong()
-        set(value) {
-            (exposureSpinner.valueFactory as DoubleSpinnerValueFactory).min = value.toDouble()
-        }
 
-    var exposureMax
+    override val exposureMax
         get() = (exposureSpinner.valueFactory as DoubleSpinnerValueFactory).max.toLong()
-        set(value) {
-            (exposureSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
+
+    override fun updateExposureMinMax(exposureMin: Long, exposureMax: Long) {
+        with(exposureSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            max = exposureMax.toDouble()
+            min = exposureMin.toDouble()
         }
+    }
 
-    val exposureInMicros
-        get() = exposureUnit.toMicros(exposure)
-
-    var temperatureSetpoint
+    override var temperatureSetpoint
         get() = temperatureSetpointSpinner.value!!
         set(value) {
             temperatureSetpointSpinner.valueFactory.value = value
         }
 
-    var exposureCount
+    override var exposureCount
         get() = exposureCountSpinner.value!!.toInt()
         set(value) {
             exposureCountSpinner.valueFactory.value = value.toDouble()
         }
 
-    var exposureMode
+    override var exposureMode
         get() = ExposureMode.valueOf(exposureModeToggleGroup.selectedToggle.userData as String)
         set(value) {
             exposureModeToggleGroup
                 .toggles.forEach { (it as RadioButton).isSelected = it.userData == value.name }
         }
 
-    var exposureDelay
+    override var exposureDelay
         get() = exposureDelaySpinner.value!!.toLong()
         set(value) {
             exposureDelaySpinner.valueFactory.value = value.toDouble()
         }
 
-    var isSubFrame
+    override var isSubFrame
         get() = subFrameToggleSwitch.isSelected
         set(value) {
             subFrameToggleSwitch.isSelected = value
         }
 
-    var frameX
+    override val frameX
         get() = frameXSpinner.value.toInt()
-        set(value) {
-            frameXSpinner.valueFactory.value = value.toDouble()
-        }
 
-    var frameMinX
+    override val frameMinX
         get() = (frameXSpinner.valueFactory as DoubleSpinnerValueFactory).min.toInt()
-        set(value) {
-            (frameXSpinner.valueFactory as DoubleSpinnerValueFactory).min = value.toDouble()
-        }
 
-    var frameMaxX
+    override val frameMaxX
         get() = (frameXSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
-        set(value) {
-            (frameXSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
-        }
 
-    var frameY
+    override val frameY
         get() = frameYSpinner.value.toInt()
-        set(value) {
-            frameYSpinner.valueFactory.value = value.toDouble()
-        }
 
-    var frameMinY
+    override val frameMinY
         get() = (frameYSpinner.valueFactory as DoubleSpinnerValueFactory).min.toInt()
-        set(value) {
-            (frameYSpinner.valueFactory as DoubleSpinnerValueFactory).min = value.toDouble()
-        }
 
-    var frameMaxY
+    override val frameMaxY
         get() = (frameYSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
-        set(value) {
-            (frameYSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
-        }
 
-    var frameWidth
+    override val frameWidth
         get() = frameWidthSpinner.value.toInt()
-        set(value) {
-            frameWidthSpinner.valueFactory.value = value.toDouble()
-        }
 
-    var frameMinWidth
+    override val frameMinWidth
         get() = (frameWidthSpinner.valueFactory as DoubleSpinnerValueFactory).min.toInt()
-        set(value) {
-            (frameWidthSpinner.valueFactory as DoubleSpinnerValueFactory).min = value.toDouble()
-        }
 
-    var frameMaxWidth
+    override val frameMaxWidth
         get() = (frameWidthSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
-        set(value) {
-            (frameWidthSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
-        }
 
-    var frameHeight
+    override val frameHeight
         get() = frameHeightSpinner.value.toInt()
-        set(value) {
-            frameHeightSpinner.valueFactory.value = value.toDouble()
-        }
 
-    var frameMinHeight
+    override val frameMinHeight
         get() = (frameHeightSpinner.valueFactory as DoubleSpinnerValueFactory).min.toInt()
-        set(value) {
-            (frameHeightSpinner.valueFactory as DoubleSpinnerValueFactory).min = value.toDouble()
-        }
 
-    var frameMaxHeight
+    override val frameMaxHeight
         get() = (frameHeightSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
-        set(value) {
-            (frameHeightSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
-        }
 
-    var frameType
+    override fun updateFrameMinMax(
+        minX: Int, maxX: Int, minY: Int, maxY: Int,
+        minWidth: Int, maxWidth: Int, minHeight: Int, maxHeight: Int,
+    ) {
+        with(frameXSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            max = maxX.toDouble()
+            min = minX.toDouble()
+        }
+        with(frameYSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            max = maxY.toDouble()
+            min = minY.toDouble()
+        }
+        with(frameWidthSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            max = maxWidth.toDouble()
+            min = minWidth.toDouble()
+        }
+        with(frameHeightSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            max = maxHeight.toDouble()
+            min = minHeight.toDouble()
+        }
+    }
+
+    override fun updateFrame(x: Int, y: Int, width: Int, height: Int) {
+        with(frameXSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            value = x.toDouble()
+        }
+        with(frameYSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            value = y.toDouble()
+        }
+        with(frameWidthSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            value = width.toDouble()
+        }
+        with(frameHeightSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            value = height.toDouble()
+        }
+    }
+
+    override var frameType
         get() = frameTypeChoiceBox.value!!
         set(value) {
             frameTypeChoiceBox.value = value
         }
 
-    var frameFormat: String?
+    override var frameFormat: String?
         get() = frameFormatChoiceBox.value
         set(value) {
             frameFormatChoiceBox.value = value
         }
 
-    var binX
+    override val binX
         get() = binXSpinner.value.toInt()
-        set(value) {
-            binXSpinner.valueFactory.value = value.toDouble()
-        }
 
-    var maxBinX
+    override val maxBinX
         get() = (binXSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
-        set(value) {
-            (binXSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
-        }
 
-    var binY
+    override val binY
         get() = binYSpinner.value.toInt()
-        set(value) {
-            binYSpinner.valueFactory.value = value.toDouble()
-        }
 
-    var maxBinY
+    override val maxBinY
         get() = (binYSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
-        set(value) {
-            (binYSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
-        }
 
-    var gain
+    override fun updateMaxBin(binX: Int, binY: Int) {
+        with(binXSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            max = binX.toDouble()
+        }
+        with(binYSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            max = binY.toDouble()
+        }
+    }
+
+    override fun updateBin(x: Int, y: Int) {
+        with(binXSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            value = x.toDouble()
+        }
+        with(binYSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            value = y.toDouble()
+        }
+    }
+
+    override var gain
         get() = gainSpinner.value.toInt()
         set(value) {
             gainSpinner.valueFactory.value = value.toDouble()
         }
 
-    var gainMin
+    override var gainMin
         get() = (gainSpinner.valueFactory as DoubleSpinnerValueFactory).min.toInt()
         set(value) {
             (gainSpinner.valueFactory as DoubleSpinnerValueFactory).min = value.toDouble()
         }
 
-    var gainMax
+    override var gainMax
         get() = (gainSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
         set(value) {
             (gainSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
         }
 
-    var offset
+    override fun updateGainMinMax(gainMin: Int, gainMax: Int) {
+        with(gainSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            max = gainMin.toDouble()
+            min = gainMax.toDouble()
+        }
+    }
+
+    override var offset
         get() = offsetSpinner.value.toInt()
         set(value) {
             offsetSpinner.valueFactory.value = value.toDouble()
         }
 
-    var offsetMin
+    override var offsetMin
         get() = (offsetSpinner.valueFactory as DoubleSpinnerValueFactory).min.toInt()
         set(value) {
             (offsetSpinner.valueFactory as DoubleSpinnerValueFactory).min = value.toDouble()
         }
 
-    var offsetMax
+    override var offsetMax
         get() = (offsetSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
         set(value) {
             (offsetSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
         }
 
-    var status
+    override fun updateOffsetMinMax(offsetMin: Int, offsetMax: Int) {
+        with(offsetSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            max = offsetMin.toDouble()
+            min = offsetMax.toDouble()
+        }
+    }
+
+    override fun updateGainAndOffset(gain: Int, offset: Int) {
+        with(gainSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            value = gain.toDouble()
+        }
+        with(offsetSpinner.valueFactory as DoubleSpinnerValueFactory) {
+            value = offset.toDouble()
+        }
+    }
+
+    override var status
         get() = statusLabel.text!!
         set(value) {
             statusLabel.text = value
         }
 
-    var isNewSubFolderAtNoon
-        get() = newSubFolderAtNoonMenuItem.isSelected
+    override var autoSubFolderMode
+        get() = if (newSubFolderAtMidnightMenuItem.isSelected) AutoSubFolderMode.MIDNIGHT else AutoSubFolderMode.NOON
         set(value) {
-            newSubFolderAtNoonMenuItem.isSelected = value
-            newSubFolderAtMidnightMenuItem.isSelected = !value
+            newSubFolderAtNoonMenuItem.isSelected = value == AutoSubFolderMode.NOON
+            newSubFolderAtMidnightMenuItem.isSelected = value == AutoSubFolderMode.MIDNIGHT
         }
 
-    var isAutoSaveAllExposures
+    override var isAutoSaveAllExposures
         get() = autoSaveAllExposuresMenuItem.isSelected
         set(value) {
             autoSaveAllExposuresMenuItem.isSelected = value
@@ -390,7 +421,7 @@ class CameraWindow : AbstractWindow() {
             autoSaveAllExposuresIcon.isManaged = value
         }
 
-    var isAutoSubFolder
+    override var isAutoSubFolder
         get() = autoSubFolderMenuItem.isSelected
         set(value) {
             autoSubFolderMenuItem.isSelected = value
@@ -398,7 +429,7 @@ class CameraWindow : AbstractWindow() {
             autoSubFolderIcon.isManaged = value
         }
 
-    var imageSavePath
+    override var imageSavePath
         get() = imageSavePathLabel.text!!
         set(value) {
             imageSavePathLabel.text = value

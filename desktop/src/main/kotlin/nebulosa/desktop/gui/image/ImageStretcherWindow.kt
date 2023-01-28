@@ -7,9 +7,11 @@ import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.Histogram
 import nebulosa.desktop.logic.image.ImageStretcherManager
+import nebulosa.desktop.view.image.ImageStretcherView
+import nebulosa.desktop.view.image.ImageView
 import org.controlsfx.control.RangeSlider
 
-class ImageStretcherWindow(private val window: ImageWindow) : AbstractWindow() {
+class ImageStretcherWindow(private val view: ImageView) : AbstractWindow(), ImageStretcherView {
 
     override val resourceName = "ImageStretcher"
 
@@ -25,7 +27,7 @@ class ImageStretcherWindow(private val window: ImageWindow) : AbstractWindow() {
     private val imageStretcherManager = ImageStretcherManager(this)
 
     init {
-        isResizable = false
+        resizable = false
         title = "Image Stretch"
     }
 
@@ -40,26 +42,26 @@ class ImageStretcherWindow(private val window: ImageWindow) : AbstractWindow() {
     }
 
     override fun onStart() {
-        highlight = window.highlight * 255f
-        shadow = window.shadow * 255f
-        midtone = window.midtone * 255f
+        highlight = view.highlight * 255f
+        shadow = view.shadow * 255f
+        midtone = view.midtone * 255f
 
         updateTitle()
     }
 
-    var shadow
+    override var shadow
         get() = shadowSpinner.value.toFloat()
         set(value) {
             shadowSpinner.valueFactory.value = value.toDouble()
         }
 
-    var highlight
+    override var highlight
         get() = highlightSpinner.value.toFloat()
         set(value) {
             highlightSpinner.valueFactory.value = value.toDouble()
         }
 
-    var midtone
+    override var midtone
         get() = midtoneSpinner.value.toFloat()
         set(value) {
             midtoneSpinner.valueFactory.value = value.toDouble()
@@ -80,15 +82,15 @@ class ImageStretcherWindow(private val window: ImageWindow) : AbstractWindow() {
         imageStretcherManager.apply()
     }
 
-    fun apply(shadow: Float, highlight: Float, midtone: Float) {
-        window.applySTF(shadow, highlight, midtone)
+    override fun apply(shadow: Float, highlight: Float, midtone: Float) {
+        view.applySTF(shadow, highlight, midtone)
     }
 
-    fun drawHistogram() {
-        histogram.draw(window.fits ?: return)
+    override fun drawHistogram() {
+        histogram.draw(view.fits ?: return)
     }
 
-    fun updateTitle() {
-        title = "Image Stretch · " + window.title.split("·").last().trim()
+    override fun updateTitle() {
+        title = "Image Stretch · " + view.title.split("·").last().trim()
     }
 }

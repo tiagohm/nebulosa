@@ -1,14 +1,14 @@
-package nebulosa.desktop.gui
+package nebulosa.desktop.view
 
 import java.io.Closeable
 
 interface View : Closeable {
 
-    var isResizable: Boolean
+    var resizable: Boolean
 
-    var isMaximized: Boolean
+    var maximized: Boolean
 
-    val isShowing: Boolean
+    val showing: Boolean
 
     var title: String
 
