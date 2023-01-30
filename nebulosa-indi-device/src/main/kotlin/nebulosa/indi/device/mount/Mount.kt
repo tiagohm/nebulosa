@@ -42,6 +42,14 @@ interface Mount : Guider, GPS {
 
     val declination: Angle
 
+    val rightAscensionJ2000: Angle
+
+    val declinationJ2000: Angle
+
+    val azimuth: Angle
+
+    val altitude: Angle
+
     fun tracking(enable: Boolean)
 
     fun sync(ra: Angle, dec: Angle)
@@ -69,6 +77,8 @@ interface Mount : Guider, GPS {
     fun coordinates(longitude: Angle, latitude: Angle, elevation: Distance)
 
     fun time(time: OffsetDateTime)
+
+    fun computeCoordinates(j2000: Boolean = true, horizontal: Boolean = true)
 
     companion object {
 

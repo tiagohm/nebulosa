@@ -7,11 +7,14 @@ import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import nebulosa.desktop.core.beans.between
 import nebulosa.desktop.core.beans.on
+import nebulosa.desktop.core.beans.or
 import nebulosa.desktop.core.scene.MaterialIcon
 import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.home.HomeManager
 import nebulosa.desktop.view.home.HomeView
+import org.koin.core.component.inject
 
 class HomeWindow : AbstractWindow(), HomeView {
 
@@ -37,6 +40,7 @@ class HomeWindow : AbstractWindow(), HomeView {
     @FXML private lateinit var imageViewerButton: Button
     @FXML private lateinit var indiButton: Button
 
+    private val equipmentManager by inject<EquipmentManager>()
     private val homeManager = HomeManager(this)
 
     init {
@@ -47,11 +51,11 @@ class HomeWindow : AbstractWindow(), HomeView {
     override fun onCreate() {
         hostTextField.disableProperty().bind(homeManager.connected)
         portTextField.disableProperty().bind(homeManager.connected)
-        cameraButton.disableProperty().bind(!homeManager.connected)
-        mountButton.disableProperty().bind(!homeManager.connected)
+        cameraButton.disableProperty().bind(!homeManager.connected or equipmentManager.attachedCameras.emptyProperty())
+        mountButton.disableProperty().bind(!homeManager.connected or equipmentManager.attachedMounts.emptyProperty())
         guiderButton.disableProperty().bind(!homeManager.connected)
-        filterWheelButton.disableProperty().bind(!homeManager.connected)
-        focuserButton.disableProperty().bind(!homeManager.connected)
+        filterWheelButton.disableProperty().bind(!homeManager.connected or equipmentManager.attachedFilterWheels.emptyProperty())
+        focuserButton.disableProperty().bind(!homeManager.connected or equipmentManager.attachedFocusers.emptyProperty())
         domeButton.disableProperty().bind(!homeManager.connected)
         rotatorButton.disableProperty().bind(!homeManager.connected)
         switchButton.disableProperty().bind(!homeManager.connected)

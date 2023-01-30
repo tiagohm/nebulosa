@@ -129,5 +129,12 @@ interface MountProperty : DeviceProperty<Mount> {
     val time: OffsetDateTime?
         get() = timeProperty.get()
 
-    fun computeCoordinates()
+    fun computeCoordinates() {
+        value?.computeCoordinates() ?: return
+
+        rightAscensionJ2000Property.set(value.rightAscensionJ2000.hours)
+        declinationJ2000Property.set(value.declinationJ2000.degrees)
+        azimuthProperty.set(value.azimuth.degrees)
+        altitudeProperty.set(value.altitude.degrees)
+    }
 }

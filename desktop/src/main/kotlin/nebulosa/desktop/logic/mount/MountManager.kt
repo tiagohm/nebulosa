@@ -6,7 +6,6 @@ import nebulosa.desktop.gui.telescopecontrol.TelescopeControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlLX200Server
-import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServer
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlStellariumServer
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.DeviceEvent
@@ -37,10 +36,6 @@ class MountManager(private val view: MountView) :
 
     init {
         registerListener(this)
-
-        val telescope = Telescope(this)
-        TelescopeControlStellariumServer.telescope = telescope
-        TelescopeControlLX200Server.telescope = telescope
     }
 
     override fun onReset() {
@@ -48,7 +43,10 @@ class MountManager(private val view: MountView) :
         updateStatus()
     }
 
-    override fun onChanged(prev: Mount?, device: Mount) {}
+    override fun onChanged(prev: Mount?, device: Mount) {
+        TelescopeControlStellariumServer.mount = device
+        TelescopeControlLX200Server.mount = device
+    }
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {
         when (event) {
@@ -198,36 +196,5 @@ class MountManager(private val view: MountView) :
 
         TelescopeControlStellariumServer.close()
         TelescopeControlLX200Server.close()
-    }
-
-    private class Telescope(val mountManager: MountManager) : TelescopeControlServer.Telescope {
-
-        override val rightAscension get() = mountManager.rightAscension.hours
-
-        override val declination get() = mountManager.declination.deg
-
-        override val rightAscensionJ2000 get() = mountManager.rightAscensionJ2000.hours
-
-        override val declinationJ2000 get() = mountManager.declinationJ2000.deg
-
-        override val longitude get() = mountManager.longitude.deg
-
-        override val latitude get() = mountManager.latitude.deg
-
-        override val slewing get() = mountManager.slewing
-
-        override fun goTo(ra: Angle, dec: Angle, j2000: Boolean) {
-            if (j2000) mountManager.get()?.goToJ2000(ra, dec)
-            else mountManager.get()?.goTo(ra, dec)
-        }
-
-        override fun sync(ra: Angle, dec: Angle, j2000: Boolean) {
-            if (j2000) mountManager.get()?.syncJ2000(ra, dec)
-            else mountManager.get()?.sync(ra, dec)
-        }
-
-        override fun abort() {
-            mountManager.get()?.abortMotion()
-        }
     }
 }

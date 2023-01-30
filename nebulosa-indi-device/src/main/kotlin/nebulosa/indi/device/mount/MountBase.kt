@@ -14,6 +14,9 @@ import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.m
 import nebulosa.nova.astrometry.ICRF
+import nebulosa.nova.position.Geoid
+import nebulosa.nova.position.Geometric
+import nebulosa.time.TimeJD
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -40,6 +43,10 @@ internal open class MountBase(
     override var guideRateNS = 0.0
     override var rightAscension = Angle.ZERO
     override var declination = Angle.ZERO
+    override var rightAscensionJ2000 = Angle.ZERO
+    override var declinationJ2000 = Angle.ZERO
+    override var azimuth = Angle.ZERO
+    override var altitude = Angle.ZERO
 
     override var canPulseGuide = false
     override var pulseGuiding = false
@@ -293,6 +300,26 @@ internal open class MountBase(
 
     override fun time(time: OffsetDateTime) {
 
+    }
+
+    override fun computeCoordinates(j2000: Boolean, horizontal: Boolean) {
+        if (j2000 || horizontal) {
+            val epoch = TimeJD.now()
+            val center = Geoid.IERS2010.latLon(longitude, latitude, elevation)
+            val icrf = ICRF.equatorial(rightAscension, declination, time = epoch, epoch = epoch, center = center)
+
+            if (j2000) {
+                val raDec = icrf.equatorialJ2000()
+                rightAscensionJ2000 = raDec.longitude.normalized
+                declinationJ2000 = raDec.latitude
+            }
+
+            if (horizontal) {
+                val altAz = (icrf as Geometric).horizontal()
+                azimuth = altAz.longitude.normalized
+                altitude = altAz.latitude
+            }
+        }
     }
 
     override fun close() {

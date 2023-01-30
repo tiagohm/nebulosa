@@ -5,13 +5,6 @@ import javafx.collections.FXCollections
 import nebulosa.desktop.logic.AbstractDeviceProperty
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.mount.*
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
-import nebulosa.math.Distance.Companion.m
-import nebulosa.nova.astrometry.ICRF
-import nebulosa.nova.position.Geoid
-import nebulosa.nova.position.Geometric
-import nebulosa.time.TimeJD
 import java.time.OffsetDateTime
 
 open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty {
@@ -64,6 +57,7 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
         latitudeProperty.set(device.latitude.degrees)
         elevationProperty.set(device.elevation.meters)
         timeProperty.set(device.time)
+
         computeCoordinates()
     }
 
@@ -120,7 +114,6 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
             is MountEquatorialCoordinatesChanged -> {
                 rightAscensionProperty.set(device.rightAscension.hours)
                 declinationProperty.set(device.declination.degrees)
-                computeCoordinates()
             }
             is MountGuideRateChanged -> {
                 guideRateWEProperty.set(device.guideRateWE)
@@ -134,22 +127,7 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
                 longitudeProperty.set(device.longitude.degrees)
                 latitudeProperty.set(device.latitude.degrees)
                 elevationProperty.set(device.elevation.meters)
-                computeCoordinates()
             }
         }
-    }
-
-    override fun computeCoordinates() {
-        val epoch = TimeJD.now()
-        val center = Geoid.IERS2010.latLon(longitude.deg, latitude.deg, elevation.m)
-        val icrf = ICRF.equatorial(rightAscension.hours, declination.deg, time = epoch, epoch = epoch, center = center)
-        val raDec = icrf.equatorialJ2000()
-        rightAscensionJ2000Property.set(raDec.longitude.normalized.hours)
-        declinationJ2000Property.set(raDec.latitude.degrees)
-
-        val altAz = (icrf as Geometric).horizontal()
-
-        azimuthProperty.set(altAz.longitude.normalized.degrees)
-        altitudeProperty.set(altAz.latitude.degrees)
     }
 }
