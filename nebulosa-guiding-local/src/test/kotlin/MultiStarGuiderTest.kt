@@ -1,5 +1,5 @@
 import io.kotest.core.spec.style.StringSpec
-import nebulosa.guiding.*
+import nebulosa.guiding.local.*
 import nebulosa.imaging.FitsImage
 import nom.tam.fits.Fits
 

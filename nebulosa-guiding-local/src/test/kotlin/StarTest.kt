@@ -5,7 +5,7 @@ import io.kotest.matchers.floats.plusOrMinus
 import io.kotest.matchers.floats.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.guiding.Star
+import nebulosa.guiding.local.Star
 import nebulosa.imaging.FitsImage
 import nom.tam.fits.Fits
 

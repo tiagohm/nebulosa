@@ -1,4 +1,4 @@
-package nebulosa.guiding
+package nebulosa.guiding.local
 
 class GuideStar : Star {
 

@@ -1,4 +1,4 @@
-package nebulosa.guiding
+package nebulosa.guiding.local
 
 enum class GuideParity {
     EVEN,      // Guide(NORTH) moves scope north

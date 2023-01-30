@@ -5,7 +5,9 @@ plugins {
 
 dependencies {
     api(project(":nebulosa-math"))
-    api(project(":nebulosa-indi-device"))
+    api(project(":nebulosa-imaging"))
+    api(project(":nebulosa-guiding"))
+    implementation(libs.logback)
     testImplementation(libs.bundles.kotest)
 }
 
