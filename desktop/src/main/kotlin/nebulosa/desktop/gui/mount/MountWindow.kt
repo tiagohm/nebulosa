@@ -203,6 +203,7 @@ class MountWindow : AbstractWindow(), MountView {
 
     @FXML
     private fun openINDI() {
+        mountManager.openINDIPanelControl()
     }
 
     @FXML

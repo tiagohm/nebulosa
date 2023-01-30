@@ -128,6 +128,10 @@ internal open class MountBase(
                         handler.fireOnEventReceived(MountGuideRateChanged(this))
                     }
                     "EQUATORIAL_EOD_COORD" -> {
+                        if (message.state == PropertyState.ALERT) {
+                            handler.fireOnEventReceived(MountSlewFailed(this))
+                        }
+
                         val prevIsIslewing = slewing
                         slewing = message.isBusy
 

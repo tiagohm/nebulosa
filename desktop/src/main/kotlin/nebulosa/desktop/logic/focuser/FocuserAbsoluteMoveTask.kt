@@ -3,6 +3,8 @@ package nebulosa.desktop.logic.focuser
 import io.reactivex.rxjava3.disposables.Disposable
 import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
+import nebulosa.desktop.logic.task.TaskFinished
+import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserDetached
@@ -24,17 +26,16 @@ data class FocuserAbsoluteMoveTask(
                 latch.countDown()
             }
             is FocuserDetached,
-            is FocuserMoveFailed -> {
-                latch.reset()
-                closeGracefully()
-            }
+            is FocuserMoveFailed -> latch.reset()
         }
     }
 
-    override fun call(): Boolean {
+    override fun call() {
         var subscriber: Disposable? = null
 
         try {
+            EventBus.TASK.post(TaskStarted(this))
+
             if (position >= 0 && position <= focuser.maxPosition) {
                 synchronized(focuser) {
                     latch.countUp()
@@ -51,12 +52,10 @@ data class FocuserAbsoluteMoveTask(
             }
         } finally {
             subscriber?.dispose()
+
+            EventBus.TASK.post(TaskFinished(this))
         }
-
-        return true
     }
-
-    override fun closeGracefully() {}
 
     companion object {
 

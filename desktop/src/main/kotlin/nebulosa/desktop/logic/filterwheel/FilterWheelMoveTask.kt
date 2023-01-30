@@ -3,6 +3,8 @@ package nebulosa.desktop.logic.filterwheel
 import io.reactivex.rxjava3.disposables.Disposable
 import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
+import nebulosa.desktop.logic.task.TaskFinished
+import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelDetached
@@ -22,17 +24,16 @@ data class FilterWheelMoveTask(
         when (event) {
             is FilterWheelPositionChanged -> latch.countDown()
             is FilterWheelDetached,
-            is FilterWheelMoveFailed -> {
-                latch.reset()
-                closeGracefully()
-            }
+            is FilterWheelMoveFailed -> latch.reset()
         }
     }
 
-    override fun call(): Boolean {
+    override fun call() {
         var subscriber: Disposable? = null
 
         try {
+            EventBus.TASK.post(TaskStarted(this))
+
             if (filterWheel.position != position
                 && position in 1..filterWheel.count
             ) {
@@ -51,12 +52,10 @@ data class FilterWheelMoveTask(
             }
         } finally {
             subscriber?.dispose()
+
+            EventBus.TASK.post(TaskFinished(this))
         }
-
-        return true
     }
-
-    override fun closeGracefully() {}
 
     companion object {
 

@@ -6,7 +6,7 @@ import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
-import nebulosa.desktop.logic.filterwheel.FilterWheelTaskExecutor
+import nebulosa.desktop.logic.task.Task
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.*
@@ -20,7 +20,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.createDirectories
 import kotlin.io.path.outputStream
-import kotlin.math.min
 
 data class CameraExposureTask(
     override val camera: Camera,
@@ -42,28 +41,28 @@ data class CameraExposureTask(
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
 ) : CameraTask, KoinComponent {
 
-    private val filterWheelTaskExecutor by inject<FilterWheelTaskExecutor>()
-    private val equipmentManager by inject<EquipmentManager>()
-    private val preferences by inject<Preferences>()
-    private val latch = CountUpDownLatch()
-
     @Volatile var progress = 0.0
         private set
 
     @Volatile var remaining = amount
         private set
 
-    private fun onCameraEvent(event: DeviceEvent<*>) {
+    private val equipmentManager by inject<EquipmentManager>()
+    private val preferences by inject<Preferences>()
+    private val latch = CountUpDownLatch()
+    private val imagePaths = arrayListOf<Path>()
+
+    private fun onEvent(event: DeviceEvent<*>) {
         when (event) {
             is CameraFrameCaptured -> {
-                save(event.fits)
+                imagePaths.add(save(event.fits))
                 latch.countDown()
             }
             is CameraExposureAborted,
             is CameraExposureFailed,
             is CameraDetached -> {
                 latch.reset()
-                closeGracefully()
+                remaining = 0
             }
             is CameraExposureProgressChanged -> {
                 progress = ((amount - remaining - 1).toDouble() / amount) +
@@ -72,12 +71,12 @@ data class CameraExposureTask(
         }
     }
 
-    override fun call(): Boolean {
+    override fun call(): List<Path> {
         var subscriber: Disposable? = null
 
         try {
             subscriber = EventBus.DEVICE
-                .subscribe(filter = { it.device === camera }, next = ::onCameraEvent)
+                .subscribe(filter = { it.device === camera }, next = ::onEvent)
 
             val mount = equipmentManager.selectedMount.get()
             val focuser = equipmentManager.selectedFocuser.get()
@@ -93,8 +92,7 @@ data class CameraExposureTask(
 
                     if (filterAsShutterPosition != null) {
                         LOG.info("moving filter wheel ${filterWheel.name} to dark filter")
-                        val task = FilterWheelMoveTask(filterWheel, filterAsShutterPosition)
-                        filterWheelTaskExecutor.add(task).get()
+                        FilterWheelMoveTask(filterWheel, filterAsShutterPosition).call()
                     } else {
                         LOG.info("filter wheel ${filterWheel.name} dont have dark filter")
                     }
@@ -129,31 +127,18 @@ data class CameraExposureTask(
 
                     LOG.info("camera exposure finished")
 
-                    sleep()
+                    Task.sleep(delay, latch)
                 }
             }
         } finally {
             subscriber?.dispose()
         }
 
-        return true
-    }
-
-    override fun closeGracefully() {
-        remaining = 0
-    }
-
-    private fun sleep() {
-        var remainingTime = delay
-
-        while (remaining > 0 && remainingTime > 0L) {
-            Thread.sleep(min(remainingTime, DELAY_INTERVAL))
-            remainingTime -= DELAY_INTERVAL
-        }
+        return imagePaths
     }
 
     @Synchronized
-    private fun save(fits: InputStream) {
+    private fun save(fits: InputStream): Path {
         val imagePath = if (autoSave) {
             val folderName = autoSubFolderMode.folderName()
             val fileName = "%s-%s.fits".format(LocalDateTime.now().format(DATE_TIME_FORMAT), frameType)
@@ -170,11 +155,11 @@ data class CameraExposureTask(
         imagePath.outputStream().use { output -> fits.use { it.transferTo(output) } }
 
         EventBus.TASK.post(CameraFrameSaved(this, imagePath, autoSave))
+
+        return imagePath
     }
 
     companion object {
-
-        private const val DELAY_INTERVAL = 100L
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(CameraExposureTask::class.java)
         @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")

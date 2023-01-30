@@ -1,6 +1,7 @@
 package nebulosa.desktop.logic.mount
 
 import javafx.application.Platform
+import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.gui.telescopecontrol.TelescopeControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
@@ -57,6 +58,10 @@ class MountManager(private val view: MountView) :
             is GuiderPulsingChanged -> updateStatus()
             is MountEquatorialCoordinatesChanged -> TelescopeControlStellariumServer.sendCurrentPosition()
         }
+    }
+
+    fun openINDIPanelControl() {
+        INDIPanelControlWindow.open(value)
     }
 
     fun openTelescopeControlServer() {

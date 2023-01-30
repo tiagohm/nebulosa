@@ -2,6 +2,7 @@ package nebulosa.desktop.logic.camera
 
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.application.HostServices
+import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
 import nebulosa.desktop.gui.AbstractWindow
@@ -11,8 +12,6 @@ import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.task.TaskEvent
-import nebulosa.desktop.logic.task.TaskFinished
-import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.camera.ExposureMode
@@ -26,7 +25,10 @@ import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 class CameraManager(private val view: CameraView) :
     CameraProperty by GlobalContext.get().get<EquipmentManager>().selectedCamera, KoinComponent {
@@ -35,11 +37,12 @@ class CameraManager(private val view: CameraView) :
 
     private val preferences by inject<Preferences>()
     private val equipmentManager by inject<EquipmentManager>()
-    private val cameraTaskExecutor by inject<CameraTaskExecutor>()
     private val appDirectory by inject<Path>(named("app"))
+    private val cameraTaskExecutor by inject<ExecutorService>(named("camera"))
     private val hostServices by inject<HostServices>()
     private val subscribers = arrayOfNulls<Disposable>(1)
     private val imageWindows = HashSet<ImageWindow>()
+    private val runningTask = AtomicReference<CameraExposureTask>()
 
     @JvmField val cameras = equipmentManager.attachedCameras
 
@@ -50,29 +53,17 @@ class CameraManager(private val view: CameraView) :
             .subscribe(observeOnJavaFX = true, next = ::onTaskEvent)
     }
 
-    private fun onTaskEvent(event: TaskEvent) {
-        when (event) {
-            is CameraFrameSaved -> imageWindows.add(ImageWindow.open(event.imagePath.toFile(), event.task.camera))
-            else -> {
-                val task = event.task
-
-                if (task is CameraTask && task.camera === value) {
-                    updateStatus()
-
-                    when (event) {
-                        is TaskStarted -> capturingProperty.set(true)
-                        is TaskFinished -> capturingProperty.set(false)
-                    }
-                }
-            }
-        }
-    }
-
     override fun onChanged(prev: Camera?, device: Camera) {
         if (prev !== device) savePreferences(prev)
 
         updateTitle()
         loadPreferences(device)
+    }
+
+    private fun onTaskEvent(event: TaskEvent) {
+        when (event) {
+            is CameraFrameSaved -> imageWindows.add(ImageWindow.open(event.imagePath.toFile(), event.task.camera))
+        }
     }
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
@@ -104,7 +95,7 @@ class CameraManager(private val view: CameraView) :
 
     fun updateStatus() {
         view.status = buildString(128) {
-            val task = cameraTaskExecutor.currentTask as? CameraExposureTask
+            val task = runningTask.get()
 
             if (task != null && capturingProperty.get()) {
                 val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000.0} s"
@@ -193,13 +184,13 @@ class CameraManager(private val view: CameraView) :
     }
 
     fun startCapture() {
+        if (capturingProperty.get()) return
+
         val amount = when (view.exposureMode) {
             ExposureMode.SINGLE -> 1
             ExposureMode.FIXED -> view.exposureCount
             else -> Int.MAX_VALUE
         }
-
-        if (cameraTaskExecutor.currentTask != null) return
 
         val task = CameraExposureTask(
             value,
@@ -217,7 +208,17 @@ class CameraManager(private val view: CameraView) :
             else view.autoSubFolderMode,
         )
 
-        cameraTaskExecutor.add(task)
+        runningTask.set(task)
+        capturingProperty.set(true)
+        updateStatus()
+
+        CompletableFuture
+            .supplyAsync(task::call, cameraTaskExecutor)
+            .whenCompleteAsync { _, _ ->
+                capturingProperty.set(false)
+                runningTask.set(null)
+                Platform.runLater { updateStatus() }
+            }
 
         savePreferences()
     }

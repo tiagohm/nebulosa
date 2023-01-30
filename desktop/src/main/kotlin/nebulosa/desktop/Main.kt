@@ -6,9 +6,7 @@ import javafx.application.Application
 import javafx.scene.text.Font
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.logic.camera.CameraTaskExecutor
 import nebulosa.desktop.logic.connection.ConnectionManager
-import nebulosa.desktop.logic.filterwheel.FilterWheelTaskExecutor
 import nebulosa.desktop.logic.loader.IERSLoader
 import nebulosa.io.resource
 import org.koin.core.context.startKoin
@@ -20,6 +18,7 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
+import java.util.concurrent.Executors
 import kotlin.io.path.createDirectories
 
 private fun appDirectory(): Path {
@@ -40,10 +39,9 @@ private fun inject() = module {
 
     single(createdAtStart = true) { ConnectionManager() }
     single(createdAtStart = true) { EquipmentManager() }
-    single(createdAtStart = true) { EquipmentManager() }
 
-    single { CameraTaskExecutor() }
-    single { FilterWheelTaskExecutor() }
+    single { Executors.newSingleThreadExecutor() } withOptions { named("camera") }
+    single { Executors.newSingleThreadExecutor() } withOptions { named("mount") }
 }
 
 fun main(args: Array<String>) {

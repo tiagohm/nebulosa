@@ -70,6 +70,10 @@ internal open class FocuserBase(
                             }
                         }
 
+                        if (message.state == PropertyState.ALERT) {
+                            handler.fireOnEventReceived(FocuserMoveFailed(this))
+                        }
+
                         val prevIsMoving = moving
                         moving = message.isBusy
 

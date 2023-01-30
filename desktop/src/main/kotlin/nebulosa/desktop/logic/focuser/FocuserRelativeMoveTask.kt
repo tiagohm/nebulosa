@@ -3,6 +3,8 @@ package nebulosa.desktop.logic.focuser
 import io.reactivex.rxjava3.disposables.Disposable
 import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
+import nebulosa.desktop.logic.task.TaskFinished
+import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserDetached
@@ -14,7 +16,7 @@ import org.slf4j.LoggerFactory
 data class FocuserRelativeMoveTask(
     override val focuser: Focuser,
     val increment: Int,
-    val isOut: Boolean,
+    val direction: FocuserDirection,
 ) : FocuserTask, KoinComponent {
 
     private val latch = CountUpDownLatch()
@@ -25,17 +27,16 @@ data class FocuserRelativeMoveTask(
                 latch.countDown()
             }
             is FocuserDetached,
-            is FocuserMoveFailed -> {
-                latch.reset()
-                closeGracefully()
-            }
+            is FocuserMoveFailed -> latch.reset()
         }
     }
 
-    override fun call(): Boolean {
+    override fun call() {
         var subscriber: Disposable? = null
 
         try {
+            EventBus.TASK.post(TaskStarted(this))
+
             if (increment >= 0 && increment <= focuser.maxPosition) {
                 synchronized(focuser) {
                     latch.countUp()
@@ -43,9 +44,9 @@ data class FocuserRelativeMoveTask(
                     subscriber = EventBus.DEVICE
                         .subscribe(filter = { it.device === focuser }, next = ::onEvent)
 
-                    LOG.info("moving focuser ${focuser.name} to position by $increment [{}]", if (isOut) "OUT" else "IN")
+                    LOG.info("moving focuser ${focuser.name} to position by $increment [{}]", direction)
 
-                    if (isOut) focuser.moveFocusOut(increment)
+                    if (direction == FocuserDirection.OUT) focuser.moveFocusOut(increment)
                     else focuser.moveFocusIn(increment)
 
                     latch.await()
@@ -53,12 +54,10 @@ data class FocuserRelativeMoveTask(
             }
         } finally {
             subscriber?.dispose()
+
+            EventBus.TASK.post(TaskFinished(this))
         }
-
-        return true
     }
-
-    override fun closeGracefully() {}
 
     companion object {
 
