@@ -100,8 +100,8 @@ class FilterWheelManager(private val view: FilterWheelView) :
     }
 
     fun savePreferences() {
-        preferences.double("filterWheel.screen.x")?.let { view.x = it }
-        preferences.double("filterWheel.screen.y")?.let { view.y = it }
+        preferences.double("filterWheel.screen.x", view.x)
+        preferences.double("filterWheel.screen.y", view.y)
     }
 
     fun loadPreferences(device: FilterWheel? = value) {

@@ -118,7 +118,7 @@
                     onAction="#moveToSelectedFilter">
                 <graphic>
                     <Label text="&#xF0054;"
-                           styleClass="mdi,mdi-sm,text-blue-700">
+                           styleClass="mdi,mdi-sm,text-grey-800">
                     </Label>
                 </graphic>
             </Button>

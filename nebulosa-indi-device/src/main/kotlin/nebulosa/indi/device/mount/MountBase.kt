@@ -197,7 +197,7 @@ internal open class MountBase(
                         val utcTime = GPS.extractTime(message["UTC"]!!.value) ?: return
                         val utcOffset = message["OFFSET"]!!.value.toDoubleOrNull() ?: 0.0
 
-                        time = OffsetDateTime.of(utcTime, ZoneOffset.ofTotalSeconds((utcOffset * 60.0).toInt()))
+                        time = OffsetDateTime.of(utcTime, ZoneOffset.ofTotalSeconds((utcOffset * 3600.0).toInt()))
 
                         handler.fireOnEventReceived(MountTimeChanged(this))
                     }

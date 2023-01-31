@@ -300,7 +300,7 @@
                         mnemonicParsing="false">
                     <graphic>
                         <Label text="&#xF0293;"
-                               styleClass="text-purple-700,mdi,mdi-sm">
+                               styleClass="text-grey-800,mdi,mdi-sm">
                         </Label>
                     </graphic>
                 </Button>

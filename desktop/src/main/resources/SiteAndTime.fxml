@@ -2,13 +2,15 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="310.0"
-            prefWidth="340.0"
+            prefHeight="175.0"
+            prefWidth="440.0"
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
@@ -24,58 +26,7 @@
                     right="16.0"
                     top="16.0"/>
         </padding>
-        <HBox alignment="CENTER"
-              spacing="8.0">
-            <VBox spacing="1.0">
-                <Label text="Latitude (degrees)"
-                       styleClass="text-sm">
-                </Label>
-                <HBox alignment="CENTER_LEFT"
-                      spacing="4.0">
-                    <TextField fx:id="latitude"
-                               editable="false"
-                               disable="true">
-                    </TextField>
-                    <TextField fx:id="newLatitude">
-                    </TextField>
-                </HBox>
-            </VBox>
-        </HBox>
-        <HBox alignment="CENTER"
-              spacing="8.0">
-            <VBox spacing="1.0">
-                <Label text="Longitude (degrees)"
-                       styleClass="text-sm">
-                </Label>
-                <HBox alignment="CENTER_LEFT"
-                      spacing="4.0">
-                    <TextField fx:id="longitude"
-                               editable="false"
-                               disable="true">
-                    </TextField>
-                    <TextField fx:id="newLongitude">
-                    </TextField>
-                </HBox>
-            </VBox>
-        </HBox>
-        <HBox alignment="CENTER"
-              spacing="8.0">
-            <VBox spacing="1.0">
-                <Label text="Elevation (meters)"
-                       styleClass="text-sm">
-                </Label>
-                <HBox alignment="CENTER_LEFT"
-                      spacing="4.0">
-                    <TextField fx:id="elevation"
-                               editable="false"
-                               disable="true">
-                    </TextField>
-                    <TextField fx:id="newElevation">
-                    </TextField>
-                </HBox>
-            </VBox>
-        </HBox>
-        <HBox alignment="CENTER"
+        <HBox alignment="CENTER_LEFT"
               spacing="8.0">
             <VBox spacing="1.0">
                 <Label text="GPS"
@@ -83,35 +34,116 @@
                 </Label>
                 <HBox alignment="CENTER_LEFT"
                       spacing="4.0">
-                    <ChoiceBox fx:id="gps"
+                    <ChoiceBox fx:id="gpsChoiceBox"
                                minWidth="128.0"
                                minHeight="28.0">
                     </ChoiceBox>
-                    <Button fx:id="coordinateFromGps"
-                            text="Get Coordinates"
-                            onAction="#getCoordinateFromGps">
+                    <Button fx:id="openINDIButton"
+                            onAction="#openINDI"
+                            alignment="CENTER"
+                            mnemonicParsing="false"
+                            contentDisplay="GRAPHIC_ONLY"
+                            prefHeight="32.0"
+                            minWidth="42.0">
                         <graphic>
-                            <Label text="&#xF04FE;"
-                                   styleClass="mdi,mdi-sm,text-grey-800">
-                            </Label>
+                            <ImageView fitHeight="16.0"
+                                       fitWidth="16.0"
+                                       pickOnBounds="true"
+                                       preserveRatio="true">
+                                <Image url="@icons/indi.png"/>
+                            </ImageView>
                         </graphic>
+                    </Button>
+                    <Button fx:id="useCoordinateFromGpsButton"
+                            text="&#xF04FE;"
+                            styleClass="mdi,mdi-sm,text-grey-800"
+                            onAction="#useCoordinateFromGps">
+                    </Button>
+                    <Button fx:id="syncDateAndTimeButton"
+                            text="&#xF1AEC;"
+                            styleClass="mdi,mdi-sm,text-grey-800"
+                            onAction="#syncDateAndTime">
                     </Button>
                 </HBox>
             </VBox>
         </HBox>
-        <HBox alignment="CENTER">
-            <VBox.margin>
-                <Insets top="16.0"/>
-            </VBox.margin>
-            <Button fx:id="apply"
-                    text="Apply"
-                    onAction="#apply"
-                    prefWidth="92.0">
-                <graphic>
-                    <Label text="&#xF012C;"
-                           styleClass="mdi,mdi-sm,text-green-700">
-                    </Label>
-                </graphic>
+        <HBox alignment="CENTER_LEFT"
+              spacing="8.0">
+            <VBox spacing="1.0">
+                <Label text="Latitude (degrees)"
+                       styleClass="text-sm">
+                </Label>
+                <TextField fx:id="latitudeTextField"
+                           promptText="+00 00 00.0"
+                           minWidth="120.0"
+                           prefWidth="120.0">
+                </TextField>
+            </VBox>
+            <VBox spacing="1.0">
+                <Label text="Longitude (degrees)"
+                       styleClass="text-sm">
+                </Label>
+                <TextField fx:id="longitudeTextField"
+                           promptText="+00 00 00.0"
+                           minWidth="120.0"
+                           prefWidth="120.0">
+                </TextField>
+            </VBox>
+            <VBox spacing="1.0">
+                <Label text="Elevation (m)"
+                       styleClass="text-sm">
+                </Label>
+                <TextField fx:id="elevationTextField"
+                           promptText="000"
+                           minWidth="101.0"
+                           prefWidth="101.0">
+                </TextField>
+            </VBox>
+            <Button text="&#xF012C;"
+                    styleClass="mdi,mdi-sm,text-green-700"
+                    onAction="#applySite">
+                <HBox.margin>
+                    <Insets top="8.0"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
+        <HBox alignment="CENTER_LEFT"
+              spacing="8.0">
+            <VBox spacing="1.0">
+                <Label text="Date"
+                       styleClass="text-sm">
+                </Label>
+                <DatePicker fx:id="dateDatePicker"
+                            minWidth="120.0"
+                            prefWidth="120.0">
+                </DatePicker>
+            </VBox>
+            <VBox spacing="1.0">
+                <Label text="Time (UTC)"
+                       styleClass="text-sm">
+                </Label>
+                <TextField fx:id="timeTextField"
+                           promptText="00:00:00"
+                           minWidth="120.0"
+                           prefWidth="120.0">
+                </TextField>
+            </VBox>
+            <VBox spacing="1.0">
+                <Label text="Offset (minutes)"
+                       styleClass="text-sm">
+                </Label>
+                <TextField fx:id="offsetTextField"
+                           promptText="-180"
+                           minWidth="101.0"
+                           prefWidth="101.0">
+                </TextField>
+            </VBox>
+            <Button text="&#xF012C;"
+                    styleClass="mdi,mdi-sm,text-green-700"
+                    onAction="#applyDateAndTime">
+                <HBox.margin>
+                    <Insets top="8.0"/>
+                </HBox.margin>
             </Button>
         </HBox>
     </VBox>

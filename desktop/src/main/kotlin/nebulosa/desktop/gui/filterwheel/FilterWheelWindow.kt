@@ -12,15 +12,16 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.Callback
 import javafx.util.StringConverter
-import nebulosa.desktop.core.beans.between
-import nebulosa.desktop.core.beans.on
-import nebulosa.desktop.core.beans.or
-import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.CLOSE_CIRCLE_ICON
+import nebulosa.desktop.gui.CONNECTION_ICON
 import nebulosa.desktop.gui.control.ButtonValueFactory
+import nebulosa.desktop.logic.between
 import nebulosa.desktop.logic.filterwheel.FilterWheelManager
 import nebulosa.desktop.logic.isNull
+import nebulosa.desktop.logic.on
+import nebulosa.desktop.logic.or
+import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.filterwheel.FilterWheelView
 import nebulosa.indi.device.filterwheel.FilterWheel
 import kotlin.math.max
@@ -61,8 +62,8 @@ class FilterWheelWindow : AbstractWindow(), FilterWheelView {
         filterWheelChoiceBox.itemsProperty().bind(filterWheelManager.filterWheels)
         filterWheelManager.bind(filterWheelChoiceBox.selectionModel.selectedItemProperty())
 
-        connectButton.disableProperty().bind(filterWheelManager.isNull or isConnecting or isMoving)
-        connectButton.textProperty().bind(filterWheelManager.connectedProperty.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
+        connectButton.disableProperty().bind(filterWheelManager.isNull() or isConnecting or isMoving)
+        connectButton.textProperty().bind(filterWheelManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
         filterWheelManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())

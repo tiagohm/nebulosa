@@ -1,4 +1,4 @@
-package nebulosa.desktop.core.util
+package nebulosa.desktop.logic.util
 
 fun <T> MutableList<T>.toggle(ifTrue: T, ifFalse: T, state: Boolean) {
     if (state) {

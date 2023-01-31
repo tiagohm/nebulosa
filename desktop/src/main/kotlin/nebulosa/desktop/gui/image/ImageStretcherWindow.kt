@@ -3,10 +3,10 @@ package nebulosa.desktop.gui.image
 import javafx.fxml.FXML
 import javafx.scene.control.Slider
 import javafx.scene.control.Spinner
-import nebulosa.desktop.core.beans.on
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.Histogram
 import nebulosa.desktop.logic.image.ImageStretcherManager
+import nebulosa.desktop.logic.on
 import nebulosa.desktop.view.image.ImageStretcherView
 import nebulosa.desktop.view.image.ImageView
 import org.controlsfx.control.RangeSlider

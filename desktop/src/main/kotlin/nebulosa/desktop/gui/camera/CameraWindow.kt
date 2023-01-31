@@ -8,15 +8,12 @@ import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
-import nebulosa.desktop.core.beans.and
-import nebulosa.desktop.core.beans.between
-import nebulosa.desktop.core.beans.on
-import nebulosa.desktop.core.beans.or
-import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.CLOSE_CIRCLE_ICON
+import nebulosa.desktop.gui.CONNECTION_ICON
+import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.camera.CameraManager
-import nebulosa.desktop.logic.isNull
+import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.camera.ExposureMode
@@ -87,8 +84,8 @@ class CameraWindow : AbstractWindow(), CameraView {
         cameraChoiceBox.itemsProperty().bind(cameraManager.cameras)
         cameraManager.bind(cameraChoiceBox.selectionModel.selectedItemProperty())
 
-        connectButton.disableProperty().bind(cameraManager.isNull or isConnecting or isCapturing)
-        connectButton.textProperty().bind(cameraManager.connectedProperty.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
+        connectButton.disableProperty().bind(cameraManager.isNull() or isConnecting or isCapturing)
+        connectButton.textProperty().bind(cameraManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
         cameraManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
@@ -161,7 +158,6 @@ class CameraWindow : AbstractWindow(), CameraView {
 
     override fun onStop() {
         cameraManager.savePreferences()
-        cameraManager.savePreferences(null)
     }
 
     override fun onClose() {
@@ -361,8 +357,8 @@ class CameraWindow : AbstractWindow(), CameraView {
 
     override fun updateGainMinMax(gainMin: Int, gainMax: Int) {
         with(gainSpinner.valueFactory as DoubleSpinnerValueFactory) {
-            max = gainMin.toDouble()
-            min = gainMax.toDouble()
+            max = gainMax.toDouble()
+            min = gainMin.toDouble()
         }
     }
 
@@ -386,8 +382,8 @@ class CameraWindow : AbstractWindow(), CameraView {
 
     override fun updateOffsetMinMax(offsetMin: Int, offsetMax: Int) {
         with(offsetSpinner.valueFactory as DoubleSpinnerValueFactory) {
-            max = offsetMin.toDouble()
-            min = offsetMax.toDouble()
+            max = offsetMax.toDouble()
+            min = offsetMin.toDouble()
         }
     }
 

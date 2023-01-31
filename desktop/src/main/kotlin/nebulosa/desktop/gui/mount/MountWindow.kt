@@ -7,16 +7,10 @@ import javafx.scene.control.*
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
-import nebulosa.desktop.core.beans.between
-import nebulosa.desktop.core.beans.on
-import nebulosa.desktop.core.beans.or
-import nebulosa.desktop.core.beans.transformed
-import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.core.util.toggle
-import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.logic.isNull
+import nebulosa.desktop.gui.*
+import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.mount.MountManager
-import nebulosa.desktop.mounts.SiteAndTimeScreen
+import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.TrackMode
@@ -71,8 +65,6 @@ class MountWindow : AbstractWindow(), MountView {
     @FXML private lateinit var homeButton: Button
     @FXML private lateinit var statusLabel: Label
 
-    private val siteAndTimeScreen = SiteAndTimeScreen()
-
     private val mountManager = MountManager(this)
 
     init {
@@ -91,24 +83,24 @@ class MountWindow : AbstractWindow(), MountView {
         mountChoiceBox.itemsProperty().bind(mountManager.mounts)
         mountManager.bind(mountChoiceBox.selectionModel.selectedItemProperty())
 
-        connectButton.disableProperty().bind(mountManager.isNull or isConnecting or isSlewing)
-        connectButton.textProperty().bind(mountManager.connectedProperty.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
+        connectButton.disableProperty().bind(mountManager.isNull() or isConnecting or isSlewing)
+        connectButton.textProperty().bind(mountManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
         mountManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 
         rightAscensionLabel.textProperty()
-            .bind(mountManager.rightAscensionProperty.transformed { Angle.formatHMS(it.hours, RA_FORMAT) })
+            .bind(mountManager.rightAscensionProperty.asString { Angle.formatHMS(it.hours, RA_FORMAT) })
 
-        declinationLabel.textProperty().bind(mountManager.declinationProperty.transformed { Angle.formatDMS(it.deg, DEC_FORMAT) })
+        declinationLabel.textProperty().bind(mountManager.declinationProperty.asString { Angle.formatDMS(it.deg, DEC_FORMAT) })
 
-        rightAscensionJ2000Label.textProperty().bind(mountManager.rightAscensionJ2000Property.transformed { Angle.formatHMS(it.hours, RA_FORMAT) })
+        rightAscensionJ2000Label.textProperty().bind(mountManager.rightAscensionJ2000Property.asString { Angle.formatHMS(it.hours, RA_FORMAT) })
 
-        declinationJ2000Label.textProperty().bind(mountManager.declinationJ2000Property.transformed { Angle.formatDMS(it.deg, DEC_FORMAT) })
+        declinationJ2000Label.textProperty().bind(mountManager.declinationJ2000Property.asString { Angle.formatDMS(it.deg, DEC_FORMAT) })
 
-        azimuthLabel.textProperty().bind(mountManager.azimuthProperty.transformed { Angle.formatDMS(it.deg, AZ_FORMAT) })
+        azimuthLabel.textProperty().bind(mountManager.azimuthProperty.asString { Angle.formatDMS(it.deg, AZ_FORMAT) })
 
-        altitudeLabel.textProperty().bind(mountManager.altitudeProperty.transformed { Angle.formatDMS(it.deg, ALT_FORMAT) })
+        altitudeLabel.textProperty().bind(mountManager.altitudeProperty.asString { Angle.formatDMS(it.deg, ALT_FORMAT) })
 
         pierSideLabel.textProperty().bind(mountManager.pierSideProperty.asString())
 
@@ -157,7 +149,7 @@ class MountWindow : AbstractWindow(), MountView {
         parkButton.disableProperty().bind(isNotConnectedOrSlewing or !mountManager.canParkProperty)
         parkButton.textProperty().bind(mountManager.parkedProperty.between("Unpark", "Park"))
         val parkIcon = parkButton.graphic as Label
-        parkIcon.textProperty().bind(mountManager.parkedProperty.between(MaterialIcon.PLAY, MaterialIcon.STOP))
+        parkIcon.textProperty().bind(mountManager.parkedProperty.between(PLAY_ICON, STOP_ICON))
         mountManager.parkedProperty.on { parkIcon.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
 
         homeButton.disableProperty().set(true)
@@ -230,7 +222,7 @@ class MountWindow : AbstractWindow(), MountView {
 
     @FXML
     private fun openSiteAndTime() {
-        // siteAndTimeScreen.load(equipmentManager.selectedMount.get() ?: return)
+        mountManager.openSiteAndTime()
     }
 
     @FXML

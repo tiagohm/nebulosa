@@ -33,9 +33,7 @@ interface GPS : Device {
         }
 
         @JvmStatic val DRIVERS = setOf(
-            "indi_celestron_gps",
             "indi_simulator_gps",
-            "indi_lx200gps",
         )
     }
 }

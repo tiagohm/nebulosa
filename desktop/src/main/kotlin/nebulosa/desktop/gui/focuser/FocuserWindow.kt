@@ -7,14 +7,15 @@ import javafx.scene.control.Label
 import javafx.scene.control.Spinner
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import javafx.util.StringConverter
-import nebulosa.desktop.core.beans.between
-import nebulosa.desktop.core.beans.on
-import nebulosa.desktop.core.beans.or
-import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.CLOSE_CIRCLE_ICON
+import nebulosa.desktop.gui.CONNECTION_ICON
+import nebulosa.desktop.logic.between
 import nebulosa.desktop.logic.focuser.FocuserManager
 import nebulosa.desktop.logic.isNull
+import nebulosa.desktop.logic.on
+import nebulosa.desktop.logic.or
+import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.indi.device.focuser.Focuser
 import org.controlsfx.control.ToggleSwitch
@@ -60,8 +61,8 @@ class FocuserWindow : AbstractWindow(), FocuserView {
         focuserChoiceBox.itemsProperty().bind(focuserManager.focusers)
         focuserManager.bind(focuserChoiceBox.selectionModel.selectedItemProperty())
 
-        connectButton.disableProperty().bind(focuserManager.isNull or isConnecting or isMoving)
-        connectButton.textProperty().bind(focuserManager.connectedProperty.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
+        connectButton.disableProperty().bind(focuserManager.isNull() or isConnecting or isMoving)
+        connectButton.textProperty().bind(focuserManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
         focuserManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())

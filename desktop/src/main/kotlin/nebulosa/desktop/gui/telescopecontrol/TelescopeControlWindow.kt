@@ -4,13 +4,14 @@ import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.TextField
-import nebulosa.desktop.core.beans.on
-import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.CLOSE_CIRCLE_ICON
+import nebulosa.desktop.gui.CONNECTION_ICON
 import nebulosa.desktop.logic.mount.MountManager
+import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlManager
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServerType
+import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.telescopecontrol.TelescopeControlView
 
 class TelescopeControlWindow(private val mountManager: MountManager) : AbstractWindow(), TelescopeControlView {
@@ -50,7 +51,7 @@ class TelescopeControlWindow(private val mountManager: MountManager) : AbstractW
         get() = portTextField.text.trim().toIntOrNull() ?: -1
 
     override fun updateConnectionStatus(connected: Boolean, host: String, port: Int) {
-        connectButton.text = if (connected) MaterialIcon.CLOSE_CIRCLE else MaterialIcon.CONNECTION
+        connectButton.text = if (connected) CLOSE_CIRCLE_ICON else CONNECTION_ICON
         connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", connected)
 
         hostTextField.text = host

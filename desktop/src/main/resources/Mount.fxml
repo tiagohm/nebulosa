@@ -265,7 +265,7 @@
                 <Button fx:id="telescopeControlServerButton"
                         text="&#xF0EC5;"
                         onAction="#openTelescopeControlServer"
-                        styleClass="mdi,mdi-sm,text-purple-700">
+                        styleClass="mdi,mdi-sm,text-grey-800">
                 </Button>
             </HBox>
         </HBox>
@@ -337,8 +337,7 @@
                         prefWidth="92.0">
                     <graphic>
                         <Label text="&#xF012C;"
-                               textFill="#388E3C"
-                               styleClass="mdi,mdi-sm">
+                               styleClass="mdi,mdi-sm,text-green-700">
                         </Label>
                     </graphic>
                 </Button>
@@ -537,7 +536,7 @@
                             onAction="#home">
                         <graphic>
                             <Label text="&#xF02DC;"
-                                   styleClass="mdi,mdi-sm,text-blue-700">
+                                   styleClass="mdi,mdi-sm,text-grey-800">
                             </Label>
                         </graphic>
                     </Button>

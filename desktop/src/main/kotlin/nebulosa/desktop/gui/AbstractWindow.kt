@@ -6,6 +6,8 @@ import javafx.scene.Scene
 import javafx.scene.control.Alert
 import javafx.scene.image.Image
 import javafx.stage.Stage
+import nebulosa.desktop.gui.home.HomeWindow
+import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.view.View
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
@@ -32,11 +34,26 @@ abstract class AbstractWindow : View, KoinComponent {
                 window.icons.add(Image(resource("icons/$icon.png")))
 
                 onCreate()
+
+                CLOSE_EVENTBUS.subscribe {
+                    if (this !is HomeWindow) {
+                        close()
+                        onClose()
+                    }
+                }
             }
         }
 
         window.setOnShown { onStart() }
-        window.setOnHiding { onStop() }
+
+        window.setOnHiding {
+            onStop()
+
+            if (this is HomeWindow) {
+                onClose()
+                CLOSE_EVENTBUS.post(Unit)
+            }
+        }
     }
 
     protected open fun onCreate() {}
@@ -130,5 +147,10 @@ abstract class AbstractWindow : View, KoinComponent {
         alert.headerText = null
         alert.contentText = message
         alert.showAndWait()
+    }
+
+    companion object {
+
+        @JvmStatic private val CLOSE_EVENTBUS = EventBus<Unit>()
     }
 }

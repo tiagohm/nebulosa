@@ -2,6 +2,7 @@ package nebulosa.desktop.logic.mount
 
 import javafx.application.Platform
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
+import nebulosa.desktop.gui.mount.SiteAndTimeWindow
 import nebulosa.desktop.gui.telescopecontrol.TelescopeControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
@@ -44,6 +45,8 @@ class MountManager(private val view: MountView) :
     }
 
     override fun onChanged(prev: Mount?, device: Mount) {
+        if (prev !== device) savePreferences()
+
         TelescopeControlStellariumServer.mount = device
         TelescopeControlLX200Server.mount = device
     }
@@ -64,7 +67,12 @@ class MountManager(private val view: MountView) :
 
     fun openTelescopeControlServer() {
         val window = TelescopeControlWindow(this)
-        window.show()
+        window.showAndWait()
+    }
+
+    fun openSiteAndTime() {
+        val window = SiteAndTimeWindow(value ?: return)
+        window.showAndWait()
     }
 
     fun park() {

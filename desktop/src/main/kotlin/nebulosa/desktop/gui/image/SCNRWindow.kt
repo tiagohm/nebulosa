@@ -3,9 +3,9 @@ package nebulosa.desktop.gui.image
 import javafx.fxml.FXML
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Spinner
-import nebulosa.desktop.core.beans.onZero
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.image.SCNRManager
+import nebulosa.desktop.logic.on
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.image.SCNRView
 import nebulosa.imaging.ImageChannel
@@ -31,10 +31,10 @@ class SCNRWindow(private val view: ImageView) : AbstractWindow(), SCNRView {
     }
 
     override fun onCreate() {
-        channelChoiceBox.valueProperty().onZero(scnrManager::apply)
-        protectionMethodChoiceBox.valueProperty().onZero(scnrManager::apply)
-        amountSpinner.valueProperty().onZero(scnrManager::apply)
-        enabledToggleSwitch.selectedProperty().onZero(scnrManager::apply)
+        channelChoiceBox.valueProperty().on { scnrManager.apply() }
+        protectionMethodChoiceBox.valueProperty().on { scnrManager.apply() }
+        amountSpinner.valueProperty().on { scnrManager.apply() }
+        enabledToggleSwitch.selectedProperty().on { scnrManager.apply() }
     }
 
     override val amount

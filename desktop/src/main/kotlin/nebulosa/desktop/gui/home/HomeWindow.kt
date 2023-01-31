@@ -5,14 +5,15 @@ import javafx.fxml.FXML
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.TextField
-import nebulosa.desktop.core.beans.between
-import nebulosa.desktop.core.beans.on
-import nebulosa.desktop.core.beans.or
-import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.CLOSE_CIRCLE_ICON
+import nebulosa.desktop.gui.CONNECTION_ICON
 import nebulosa.desktop.logic.EquipmentManager
+import nebulosa.desktop.logic.between
 import nebulosa.desktop.logic.home.HomeManager
+import nebulosa.desktop.logic.on
+import nebulosa.desktop.logic.or
+import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.home.HomeView
 import org.koin.core.component.inject
 
@@ -63,7 +64,7 @@ class HomeWindow : AbstractWindow(), HomeView {
         sequencerButton.disableProperty().bind(!homeManager.connected)
         indiButton.disableProperty().bind(!homeManager.connected)
 
-        connectButton.textProperty().bind(homeManager.connected.between(MaterialIcon.CLOSE_CIRCLE, MaterialIcon.CONNECTION))
+        connectButton.textProperty().bind(homeManager.connected.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
         homeManager.connected.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
     }
 

@@ -165,6 +165,13 @@ value class Angle(val value: Double) : Comparable<Angle> {
         }
 
         @JvmStatic
+        fun parseCoordinatesAsDoubleOrNull(input: String) = try {
+            parseCoordinatesAsDouble(input)
+        } catch (e: NumberFormatException) {
+            null
+        }
+
+        @JvmStatic
         fun formatHMS(angle: Angle, format: String): String {
             val (hours, minutes, seconds) = angle.hms()
             return format.format(hours.toInt(), minutes.toInt(), seconds)

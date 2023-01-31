@@ -72,7 +72,7 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : KoinComp
 
         subscribers[0]?.dispose()
         subscribers[0] = EventBus.DEVICE
-            .subscribe(filter = { it.device === view.device }, next = ::onEvent)
+            .subscribe(filter = { it.device === view.device }, observeOnJavaFX = true, next = ::onEvent)
     }
 
     fun makeLog() {

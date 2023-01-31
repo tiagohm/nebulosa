@@ -4,6 +4,7 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.dome.Dome
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.*
@@ -173,6 +174,7 @@ internal abstract class AbstractDevice(
                 is FilterWheel -> "ACTIVE_FILTER"
                 is Rotator -> "ACTIVE_ROTATOR"
                 is Dome -> "ACTIVE_DOME"
+                is GPS -> "ACTIVE_GPS"
                 else -> return@mapNotNull null
             } to it.name
         }

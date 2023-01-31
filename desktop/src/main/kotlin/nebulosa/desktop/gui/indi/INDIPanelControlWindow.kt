@@ -8,11 +8,12 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.util.StringConverter
-import nebulosa.desktop.core.beans.onZero
-import nebulosa.desktop.core.scene.MaterialIcon
-import nebulosa.desktop.core.util.toggle
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.CIRCLE_ICON
+import nebulosa.desktop.gui.SEND_ICON
 import nebulosa.desktop.logic.indi.INDIPanelControlManager
+import nebulosa.desktop.logic.on
+import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.*
 import nebulosa.indi.protocol.PropertyPermission
@@ -31,10 +32,14 @@ class INDIPanelControlWindow : AbstractWindow(), INDIPanelControlView {
 
     private val indiPanelControlManager = INDIPanelControlManager(this)
 
+    init {
+        title = "INDI Panel Control"
+    }
+
     override fun onCreate() {
         deviceChoiceBox.converter = DeviceStringConverter
         deviceChoiceBox.itemsProperty().bind(indiPanelControlManager.devices)
-        deviceChoiceBox.selectionModel.selectedItemProperty().onZero(indiPanelControlManager::makePanelControl)
+        deviceChoiceBox.selectionModel.selectedItemProperty().on { indiPanelControlManager.makePanelControl() }
     }
 
     override fun onStart() {
@@ -128,7 +133,7 @@ class INDIPanelControlWindow : AbstractWindow(), INDIPanelControlView {
                     }
                 }
 
-                val icon = Label(MaterialIcon.SEND)
+                val icon = Label(SEND_ICON)
                 icon.styleClass.addAll("text-blue-700", "mdi", "mdi-sm")
                 send.graphic = icon
 
@@ -437,7 +442,7 @@ class INDIPanelControlWindow : AbstractWindow(), INDIPanelControlView {
 
         @JvmStatic
         private fun Label.withState(vector: PropertyVector<*, *>) = apply {
-            val icon = Label(MaterialIcon.CIRCLE)
+            val icon = Label(CIRCLE_ICON)
             icon.styleClass.addAll("mdi", "mdi-xs")
             graphic = icon
             updateState(vector)
