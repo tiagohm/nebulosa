@@ -7,7 +7,6 @@ import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.au
 import nebulosa.math.Distance.Companion.m
 import nebulosa.math.Vector3D
-import nebulosa.nova.astrometry.ICRF
 import nebulosa.nova.frame.ITRS
 import kotlin.math.*
 

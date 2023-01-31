@@ -1,11 +1,9 @@
 package nebulosa.nova.position
 
-import nebulosa.math.Pressure
-import nebulosa.math.Pressure.Companion.mbar
-import nebulosa.math.Temperature
-import nebulosa.math.Temperature.Companion.celsius
-import nebulosa.math.Vector3D
-import nebulosa.nova.astrometry.ICRF
+import nebulosa.coordinates.CartesianCoordinate
+import nebulosa.math.*
+import nebulosa.math.Distance.Companion.au
+import nebulosa.nova.frame.Frame
 import nebulosa.time.InstantOfTime
 
 /**
@@ -31,14 +29,31 @@ class Apparent internal constructor(
     time: InstantOfTime,
     center: Number,
     target: Number,
-    val barycenter: Barycentric,
 ) : ICRF(position, velocity, time, center, target) {
 
-    /**
-     * Computes the altitude, azimuth and distance relative to the observer's horizon.
-     */
-    fun horizontal(
-        temperature: Temperature = 10.0.celsius,
-        pressure: Pressure = 1013.0.mbar,
-    ) = horizontal(this, temperature, pressure)
+    companion object {
+
+        /**
+         * Generates an [Apparent] position from an [altitude] and [azimuth].
+         */
+        @JvmStatic
+        @Suppress("LocalVariableName")
+        fun altAz(
+            position: ICRF,
+            azimuth: Angle,
+            altitude: Angle,
+            distance: Distance = 0.1.au,
+        ): Apparent {
+            val frame = position.target as? Frame ?: throw IllegalArgumentException(
+                "to compute an altazimuth position, you must observe from " +
+                        "a specific Earth location or from a position on another body loaded from a set " +
+                        "of planetary constants"
+            )
+
+            val R = frame.rotationAt(position.time)
+            val p = R.transposed * CartesianCoordinate.of(azimuth, altitude, distance)
+
+            return Apparent(p, Vector3D.EMPTY, position.time, position.center, position.target)
+        }
+    }
 }

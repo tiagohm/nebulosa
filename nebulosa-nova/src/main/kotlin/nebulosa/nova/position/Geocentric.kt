@@ -1,7 +1,6 @@
 package nebulosa.nova.position
 
 import nebulosa.math.Vector3D
-import nebulosa.nova.astrometry.ICRF
 import nebulosa.time.InstantOfTime
 
 /**

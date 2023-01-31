@@ -17,9 +17,8 @@ class GeographicPosition(
     val model: Geoid,
 ) : ITRSPosition, Frame, Number() {
 
-    private val rLat by lazy { Matrix3D.IDENTITY.rotateY(latitude).flipX() }
-
-    private val rLatLon by lazy { rLat * Matrix3D.IDENTITY.rotateZ(-longitude) }
+    private val rLat by lazy { Matrix3D.IDENTITY.rotateY(-latitude).flipX() }
+    private val rLatLon by lazy { rLat * Matrix3D.IDENTITY.rotateZ(longitude) }
 
     override val center = 399
 

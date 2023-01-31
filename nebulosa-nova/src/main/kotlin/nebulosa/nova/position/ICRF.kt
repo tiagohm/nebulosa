@@ -1,4 +1,4 @@
-package nebulosa.nova.astrometry
+package nebulosa.nova.position
 
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.SPEED_OF_LIGHT
@@ -11,6 +11,7 @@ import nebulosa.math.Distance.Companion.km
 import nebulosa.math.Pressure.Companion.mbar
 import nebulosa.math.Temperature.Companion.celsius
 import nebulosa.math.Velocity.Companion.kms
+import nebulosa.nova.astrometry.Body
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.ITRS
 import nebulosa.nova.position.*
@@ -31,6 +32,7 @@ import kotlin.math.sin
  * @param position The |xyz| position in AU.
  * @param velocity The |xyz| velocity in AU/day.
  */
+@Suppress("LeakingThis")
 open class ICRF protected constructor(
     val position: Vector3D,
     val velocity: Vector3D,
@@ -38,6 +40,8 @@ open class ICRF protected constructor(
     val center: Number,
     val target: Number,
 ) {
+
+    internal var centerBarycentric: ICRF? = null
 
     @Suppress("NOTHING_TO_INLINE")
     inline operator fun component1() = position
@@ -47,6 +51,12 @@ open class ICRF protected constructor(
 
     @Suppress("NOTHING_TO_INLINE")
     inline operator fun component3() = time
+
+    init {
+        if (center.toInt() == 0) {
+            centerBarycentric = this
+        }
+    }
 
     /**
      * Distance from [center] to [target] at [time].
@@ -118,6 +128,21 @@ open class ICRF protected constructor(
     }
 
     /**
+     * Computes the altitude, azimuth and distance relative to the observer's horizon.
+     */
+    fun horizontal(
+        temperature: Temperature = 10.0.celsius,
+        pressure: Pressure = 1013.0.mbar,
+    ): SphericalCoordinate {
+        require(this !is Astrometric) {
+            "it is not useful to call horizontal() on an astrometric position; " +
+                    "try calling apparent() first to get an apparent position"
+        }
+
+        return horizontal(this, temperature, pressure)
+    }
+
+    /**
      * Computes the parallactic angle, which is the deviation
      * between zenith angle and north angle.
      */
@@ -166,6 +191,30 @@ open class ICRF protected constructor(
     fun separationFrom(another: ICRF) = position.angle(another.position)
 
     /**
+     * Given a [sun] object, returns the [Angle] from the
+     * body's point of view between light arriving from the Sun and the
+     * light departing toward the observer. This angle is 0° if the
+     * observer is in the same direction as the Sun and sees the body
+     * as fully illuminated, and 180° if the observer is behind the
+     * body and sees only its dark side.
+     */
+    fun phaseAngle(sun: Body): Angle {
+        val s = sun.at<ICRF>(time)
+        var v = position - s.position
+        if (centerBarycentric != null) v += centerBarycentric!!.position
+        return position.angle(v)
+    }
+
+    /**
+     * Given a [sun] object computes what fraction from 0.0
+     * to 1.0 of this target’s disc is illuminated, under the
+     * assumption that the target is a sphere.
+     */
+    fun illuminated(sun: Body): Double {
+        return 0.5 * (1.0 + phaseAngle(sun).cos)
+    }
+
+    /**
      *  Returns the orientation of this observer.
      */
     val horizontalRotation by lazy {
@@ -204,16 +253,18 @@ open class ICRF protected constructor(
             temperature: Temperature = 10.0.celsius,
             pressure: Pressure = 1013.0.mbar,
         ): SphericalCoordinate {
-            val r = when {
-                position is Astrometric -> position.barycenter.horizontalRotation
-                position is Apparent -> position.barycenter.horizontalRotation
-                position.center is Frame -> position.center.rotationAt(position.time)
-                else -> throw IllegalArgumentException(
-                    "to compute an altazimuth position, you must observe from " +
-                            "a specific Earth location or from a position on another body loaded from a set " +
-                            "of planetary constants"
-                )
-            }
+            val centerBarycentric = position.centerBarycentric
+
+            val r = centerBarycentric?.horizontalRotation
+                ?: if (position.center is Frame) {
+                    position.center.rotationAt(position.time)
+                } else {
+                    throw IllegalArgumentException(
+                        "to compute an altazimuth position, you must observe from " +
+                                "a specific Earth location or from a position on another body loaded from a set " +
+                                "of planetary constants"
+                    )
+                }
 
             val h = r * position.position
 

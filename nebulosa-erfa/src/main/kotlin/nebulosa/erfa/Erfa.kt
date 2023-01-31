@@ -25,7 +25,7 @@ import kotlin.math.PI
  */
 fun eraP2s(x: Double, y: Double, z: Double): Triple<Angle, Angle, Double> {
     val (theta, phi) = eraC2s(x, y, z)
-    val r = x * x + y * y + z * z
+    val r = sqrt(x * x + y * y + z * z)
     return Triple(theta, phi, r)
 }
 

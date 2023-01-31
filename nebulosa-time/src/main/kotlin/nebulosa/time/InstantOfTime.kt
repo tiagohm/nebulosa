@@ -119,6 +119,11 @@ abstract class InstantOfTime {
     val gmst by lazy { eraGmst06(ut1.whole, ut1.fraction, tt.whole, tt.fraction) }
 
     /**
+     * Returns Earth rotation angle (IAU 2000 model).
+     */
+    val era by lazy { eraEra00(ut1.whole, ut1.fraction) }
+
+    /**
      * Returns the 3x3 matrix of Equation of Origins in cycles.
      */
     val c by lazy { Matrix3D.IDENTITY.rotateZ(eraEra00(ut1.whole, ut1.fraction) - gast) * m }

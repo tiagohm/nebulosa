@@ -4,6 +4,7 @@ import nebulosa.constants.AU_M
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.SPEED_OF_LIGHT
 import nebulosa.math.Vector3D
+import nebulosa.nova.position.ICRF
 import nebulosa.time.InstantOfTime
 import nebulosa.time.TDB
 import kotlin.math.abs

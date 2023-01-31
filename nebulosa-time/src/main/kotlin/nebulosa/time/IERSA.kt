@@ -4,7 +4,9 @@ import java.io.InputStream
 
 object IERSA : IERS() {
 
-    // https://maia.usno.navy.mil/ser7/readme.finals2000A
+    /**
+     * @see <a href="https://maia.usno.navy.mil/ser7/readme.finals2000A">Reference</a>
+     */
     enum class Column(
         override val byteStart: Int,
         override val byteEnd: Int,

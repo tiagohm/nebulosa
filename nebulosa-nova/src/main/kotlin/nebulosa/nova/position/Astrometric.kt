@@ -1,7 +1,6 @@
 package nebulosa.nova.position
 
 import nebulosa.math.Vector3D
-import nebulosa.nova.astrometry.ICRF
 import nebulosa.time.InstantOfTime
 
 /**
@@ -44,6 +43,7 @@ class Astrometric internal constructor(
 //
 //        val a = Apparent(p, velocity, time, center, target, barycenter)
 //        a.gcrs = gcrs
+//        a.centerBarycentric = centerBarycentric
 //        return a
 //    }
 }

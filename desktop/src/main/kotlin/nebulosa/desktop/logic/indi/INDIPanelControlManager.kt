@@ -22,11 +22,6 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : KoinComp
 
     @JvmField val devices = SimpleListProperty(FXCollections.observableArrayList<Device>())
 
-    init {
-        subscribers[0] = EventBus.DEVICE
-            .subscribe(filter = { it.device === view.device }, next = ::onEvent)
-    }
-
     private fun onEvent(event: DeviceEvent<*>) {
         when (event) {
             is DevicePropertyChanged -> {
@@ -74,6 +69,10 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : KoinComp
 
         if (device in attachedDevices) view.device = device
         else view.device = attachedDevices.firstOrNull()
+
+        subscribers[0]?.dispose()
+        subscribers[0] = EventBus.DEVICE
+            .subscribe(filter = { it.device === view.device }, next = ::onEvent)
     }
 
     fun makeLog() {

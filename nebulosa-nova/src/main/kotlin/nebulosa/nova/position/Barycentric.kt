@@ -1,17 +1,12 @@
 package nebulosa.nova.position
 
 import nebulosa.constants.TAU
-import nebulosa.coordinates.CartesianCoordinate
 import nebulosa.math.Angle
-import nebulosa.math.Distance
-import nebulosa.math.Distance.Companion.au
 import nebulosa.math.Vector3D
 import nebulosa.math.pmod
 import nebulosa.nova.astrometry.Body
-import nebulosa.nova.astrometry.ICRF
 import nebulosa.nova.astrometry.Observable
 import nebulosa.nova.frame.Ecliptic
-import nebulosa.nova.frame.Frame
 import nebulosa.time.InstantOfTime
 import nebulosa.time.TimeJD
 
@@ -40,7 +35,18 @@ class Barycentric internal constructor(
     fun observe(body: Observable): Astrometric {
         val (p, v) = body.observe(this)
         val target = if (body is Body) body.target else if (body is Number) body else Int.MIN_VALUE
-        return Astrometric(p, v, time, this.target, target, this)
+        val astrometric = Astrometric(p, v, time, this.target, target, this)
+        astrometric.centerBarycentric = this
+        return astrometric
+    }
+
+    /**
+     * Computes the phase angle of [target] body viewed from this position at the [time].
+     */
+    fun phaseAngle(target: Body, center: Body): Angle {
+        val pe = -observe(target) // Rotate 180 degrees to point back at Earth.
+        val ps = target.at<Barycentric>(TimeJD(time.tt - pe.lightTime)).observe(center)
+        return pe.separationFrom(ps)
     }
 
     /**
@@ -58,40 +64,5 @@ class Barycentric internal constructor(
         val sLon = observe(center).latLon(Ecliptic).phi
         val angle = (mLon - sLon).value pmod TAU
         return angle / TAU
-    }
-
-    /**
-     * Computes the phase angle of [target] body viewed from this position at the [time].
-     */
-    fun phaseAngle(target: Body, center: Body): Angle {
-        val pe = -observe(target) // Rotate 180 degrees to point back at Earth.
-        val ps = target.at<Barycentric>(TimeJD(time.tt - pe.lightTime)).observe(center)
-        return pe.separationFrom(ps)
-    }
-
-    /**
-     * Computes the illuminated fraction of [target] body viewed from this position at the [time].
-     */
-    fun illuminated(target: Body, center: Body) = 0.5 * (1.0 + phaseAngle(target, center).cos)
-
-    /**
-     * Generates an [Apparent] position from an [altitude] and [azimuth].
-     */
-    @Suppress("LocalVariableName")
-    fun altAz(
-        altitude: Angle,
-        azimuth: Angle,
-        distance: Distance = 0.1.au,
-    ): Apparent {
-        val frame = target as? Frame ?: throw IllegalArgumentException(
-            "to compute an altazimuth position, you must observe from " +
-                    "a specific Earth location or from a position on another body loaded from a set " +
-                    "of planetary constants"
-        )
-
-        val R = frame.rotationAt(time)
-        val p = R.transposed * CartesianCoordinate.of(azimuth, altitude, distance)
-
-        return Apparent(p, Vector3D.EMPTY, time, center, target, this)
     }
 }

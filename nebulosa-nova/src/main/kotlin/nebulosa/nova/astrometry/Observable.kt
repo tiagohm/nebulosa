@@ -1,6 +1,7 @@
 package nebulosa.nova.astrometry
 
 import nebulosa.math.Vector3D
+import nebulosa.nova.position.ICRF
 
 /**
  * An observable object.

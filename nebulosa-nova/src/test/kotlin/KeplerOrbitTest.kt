@@ -4,7 +4,7 @@ import io.kotest.matchers.shouldBe
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Distance.Companion.au
 import nebulosa.nova.astrometry.Asteroid
-import nebulosa.nova.astrometry.ICRF
+import nebulosa.nova.position.ICRF
 import nebulosa.time.TDB
 import nebulosa.time.TT
 import nebulosa.time.TimeJD

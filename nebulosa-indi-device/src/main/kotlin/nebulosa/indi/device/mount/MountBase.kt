@@ -13,9 +13,8 @@ import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.m
-import nebulosa.nova.astrometry.ICRF
 import nebulosa.nova.position.Geoid
-import nebulosa.nova.position.Geometric
+import nebulosa.nova.position.ICRF
 import nebulosa.time.TimeJD
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -315,7 +314,7 @@ internal open class MountBase(
             }
 
             if (horizontal) {
-                val altAz = (icrf as Geometric).horizontal()
+                val altAz = icrf.horizontal()
                 azimuth = altAz.longitude.normalized
                 altitude = altAz.latitude
             }

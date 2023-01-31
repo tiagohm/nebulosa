@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.logback)
+    api(project(":nebulosa-platesolving"))
     testImplementation(libs.bundles.kotest)
 }
 
