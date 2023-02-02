@@ -1,6 +1,5 @@
 package nebulosa.indi.protocol
 
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute
 import java.io.Serializable
 
 /**
@@ -12,20 +11,37 @@ import java.io.Serializable
  */
 sealed class INDIProtocol : HasName, Serializable {
 
-    @XStreamAsAttribute
-    @JvmField
-    var device = ""
+    @JvmField var device = ""
 
-    @XStreamAsAttribute
     override var name = ""
 
-    @XStreamAsAttribute
-    @JvmField
-    var message = ""
+    @JvmField var message = ""
 
-    @XStreamAsAttribute
-    @JvmField
-    var timestamp = ""
+    @JvmField var timestamp = ""
+
+    abstract fun toXML(): String
+
+    override fun toString() = toXML()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is INDIProtocol) return false
+
+        if (device != other.device) return false
+        if (name != other.name) return false
+        if (message != other.message) return false
+        if (timestamp != other.timestamp) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = device.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + message.hashCode()
+        result = 31 * result + timestamp.hashCode()
+        return result
+    }
 
     companion object {
 

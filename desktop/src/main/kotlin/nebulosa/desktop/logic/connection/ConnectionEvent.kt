@@ -1,6 +1,6 @@
 package nebulosa.desktop.logic.connection
 
-import nebulosa.indi.INDIClient
+import nebulosa.indi.client.INDIClient
 
 sealed interface ConnectionEvent {
 

@@ -7,7 +7,6 @@ import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.guider.GuiderAttached
 import nebulosa.indi.device.guider.GuiderDetached
 import nebulosa.indi.device.guider.GuiderPulsingChanged
-import nebulosa.indi.device.isOn
 import nebulosa.indi.device.thermometer.ThermometerAttached
 import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.protocol.*
@@ -73,7 +72,7 @@ internal open class CameraBase(
                 when (message.name) {
                     "CCD_COOLER" -> {
                         hasCoolerControl = true
-                        cooler = message["COOLER_ON"]?.isOn() ?: false
+                        cooler = message["COOLER_ON"]?.value ?: false
 
                         handler.fireOnEventReceived(CameraCoolerControlChanged(this))
                         handler.fireOnEventReceived(CameraCoolerChanged(this))

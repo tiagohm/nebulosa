@@ -1,7 +1,7 @@
 package nebulosa.indi.device
 
+import nebulosa.indi.parser.INDIProtocolHandler
 import nebulosa.indi.protocol.*
-import nebulosa.indi.protocol.parser.INDIProtocolHandler
 import java.io.Closeable
 
 interface Device : INDIProtocolHandler, Closeable {
@@ -52,7 +52,7 @@ interface Device : INDIProtocolHandler, Closeable {
         for (element in elements) {
             val switch = OneSwitch()
             switch.name = element.first
-            switch.value = if (element.second) SwitchState.ON else SwitchState.OFF
+            switch.value = element.second
             vector.elements.add(switch)
         }
 

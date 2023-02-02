@@ -4,8 +4,6 @@ plugins {
 }
 
 dependencies {
-    api(libs.xstream)
-    implementation(libs.logback)
     testImplementation(libs.bundles.kotest)
 }
 

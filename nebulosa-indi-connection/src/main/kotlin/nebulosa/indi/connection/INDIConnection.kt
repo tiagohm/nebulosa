@@ -1,8 +1,8 @@
-package nebulosa.indi.protocol.connection
+package nebulosa.indi.connection
 
+import nebulosa.indi.connection.io.INDIInputStream
+import nebulosa.indi.connection.io.INDIOutputStream
 import nebulosa.indi.protocol.INDIProtocol
-import nebulosa.indi.protocol.io.INDIInputStream
-import nebulosa.indi.protocol.io.INDIOutputStream
 import java.io.Closeable
 
 interface INDIConnection : INDIInputStream, INDIOutputStream, Closeable {

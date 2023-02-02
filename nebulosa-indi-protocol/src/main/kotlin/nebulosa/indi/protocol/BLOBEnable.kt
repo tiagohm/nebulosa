@@ -6,4 +6,10 @@ enum class BLOBEnable(override val text: String) : HasText {
     ONLY("Only");
 
     override fun toString() = text
+
+    companion object {
+
+        @JvmStatic
+        fun parse(text: String) = valueOf(text.uppercase())
+    }
 }

@@ -30,7 +30,7 @@ internal abstract class AbstractDevice(
             is SwitchVector<*> -> {
                 when (message.name) {
                     "CONNECTION" -> {
-                        val connected = message["CONNECT"]?.isOn() == true
+                        val connected = message["CONNECT"]?.value ?: false
 
                         if (connected != this.connected) {
                             if (connected) {
@@ -86,7 +86,7 @@ internal abstract class AbstractDevice(
                         val properties = LinkedHashMap<String, SwitchProperty>()
 
                         for (e in message) {
-                            val property = SwitchProperty(e.name, e.label, e.value == SwitchState.ON)
+                            val property = SwitchProperty(e.name, e.label, e.value)
                             properties[property.name] = property
                         }
 
@@ -139,7 +139,7 @@ internal abstract class AbstractDevice(
 
                         for (e in message) {
                             val property = vector[e.name] ?: continue
-                            property.value = e.value == SwitchState.ON
+                            property.value = e.value
                         }
 
                         vector

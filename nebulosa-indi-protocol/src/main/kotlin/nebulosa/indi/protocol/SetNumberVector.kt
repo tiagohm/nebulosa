@@ -1,6 +1,10 @@
 package nebulosa.indi.protocol
 
-import com.thoughtworks.xstream.annotations.XStreamAlias
+import nebulosa.indi.protocol.Vector.Companion.toXML
 
-@XStreamAlias("setNumberVector")
-class SetNumberVector : SetVector<OneNumber>(), NumberVector<OneNumber>
+@Suppress("CanSealedSubClassBeObject")
+class SetNumberVector : SetVector<OneNumber>(), NumberVector<OneNumber> {
+
+    override fun toXML() =
+        """<setNumberVector device="$device" name="$name" state="$state" timeout="$timeout" timestamp="$timestamp" message="$message">${elements.toXML()}</setNumberVector>"""
+}

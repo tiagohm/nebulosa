@@ -1,6 +1,6 @@
-package nebulosa.indi.protocol.parser
+package nebulosa.indi.parser
 
-import nebulosa.indi.protocol.io.INDIInputStream
+import nebulosa.indi.connection.io.INDIInputStream
 import java.io.Closeable
 
 interface INDIProtocolParser : INDIProtocolHandler, Closeable {

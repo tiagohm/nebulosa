@@ -1,31 +1,18 @@
 package nebulosa.indi.protocol
 
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute
-import com.thoughtworks.xstream.annotations.XStreamImplicit
-
 sealed class DefVector<E : DefElement<*>> : INDIProtocol(), Vector<E> {
 
-    @XStreamImplicit
-    override var elements = ArrayList<E>(0)
+    override val elements: MutableList<E> = ArrayList(0)
 
-    @XStreamAsAttribute
-    @JvmField
-    var group = ""
+    @JvmField var group = ""
 
-    @XStreamAsAttribute
-    @JvmField
-    var label = ""
+    @JvmField var label = ""
 
-    @XStreamAsAttribute
-    @JvmField
-    var perm = PropertyPermission.RW
+    @JvmField var perm = PropertyPermission.RW
 
-    @XStreamAsAttribute
     override var state = PropertyState.IDLE
 
-    @XStreamAsAttribute
-    @JvmField
-    var timeout = 0.0
+    @JvmField var timeout = 0.0
 
     override fun get(name: String) = elements.firstOrNull { it.name == name }
 
@@ -33,8 +20,29 @@ sealed class DefVector<E : DefElement<*>> : INDIProtocol(), Vector<E> {
 
     inline val isNotReadOnly get() = !isReadOnly
 
-    override fun toString() =
-        "${this::class.simpleName}(device=$device, group=$group, name=$name, " +
-                "label=$label, message=$message, perm=$perm, state=$state," +
-                " timeout=$timeout, elements=$elements)"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DefVector<*>) return false
+        if (!super.equals(other)) return false
+
+        if (elements != other.elements) return false
+        if (group != other.group) return false
+        if (label != other.label) return false
+        if (perm != other.perm) return false
+        if (state != other.state) return false
+        if (timeout != other.timeout) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + elements.hashCode()
+        result = 31 * result + group.hashCode()
+        result = 31 * result + label.hashCode()
+        result = 31 * result + perm.hashCode()
+        result = 31 * result + state.hashCode()
+        result = 31 * result + timeout.hashCode()
+        return result
+    }
 }

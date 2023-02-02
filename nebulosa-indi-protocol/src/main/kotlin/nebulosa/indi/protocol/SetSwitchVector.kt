@@ -1,15 +1,10 @@
 package nebulosa.indi.protocol
 
-import com.thoughtworks.xstream.annotations.XStreamAlias
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute
+import nebulosa.indi.protocol.Vector.Companion.toXML
 
-@XStreamAlias("setSwitchVector")
+@Suppress("CanSealedSubClassBeObject")
 class SetSwitchVector : SetVector<OneSwitch>(), SwitchVector<OneSwitch> {
 
-    @XStreamAsAttribute
-    @JvmField
-    var rule = SwitchRule.ANY_OF_MANY
-
-    override fun toString() =
-        "SetSwitchVector(device=$device, name=$name, state=$state, message=$message, rule=$rule, timeout=$timeout, elements=$elements)"
+    override fun toXML() =
+        """<setSwitchVector device="$device" name="$name" state="$state" timeout="$timeout" timestamp="$timestamp" message="$message">${elements.toXML()}</setSwitchVector>"""
 }

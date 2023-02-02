@@ -1,9 +1,6 @@
 package nebulosa.indi.protocol
 
-import com.thoughtworks.xstream.annotations.XStreamAlias
-
-@XStreamAlias("message")
 class Message : INDIProtocol() {
 
-    override fun toString() = "Message(device=$device, name=$name, message=$message)"
+    override fun toXML() = """<message device="$device" timestamp="$timestamp" message="$message"></message>"""
 }

@@ -1,5 +1,6 @@
 package nebulosa.indi.device
 
+import nebulosa.indi.connection.io.INDIInputStream
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
 import nebulosa.indi.device.camera.CameraBase
@@ -20,13 +21,12 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
 import nebulosa.indi.device.mount.MountBase
 import nebulosa.indi.device.mount.MountDetached
+import nebulosa.indi.parser.INDIProtocolParser
+import nebulosa.indi.parser.INDIProtocolReader
 import nebulosa.indi.protocol.DefTextVector
 import nebulosa.indi.protocol.DelProperty
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.Message
-import nebulosa.indi.protocol.io.INDIInputStream
-import nebulosa.indi.protocol.parser.INDIProtocolParser
-import nebulosa.indi.protocol.parser.INDIProtocolReader
 import org.slf4j.LoggerFactory
 import java.util.concurrent.LinkedBlockingQueue
 

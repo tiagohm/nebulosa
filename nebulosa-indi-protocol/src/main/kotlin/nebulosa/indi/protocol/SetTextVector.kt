@@ -1,6 +1,10 @@
 package nebulosa.indi.protocol
 
-import com.thoughtworks.xstream.annotations.XStreamAlias
+import nebulosa.indi.protocol.Vector.Companion.toXML
 
-@XStreamAlias("setTextVector")
-class SetTextVector : SetVector<OneText>(), TextVector<OneText>
+@Suppress("CanSealedSubClassBeObject")
+class SetTextVector : SetVector<OneText>(), TextVector<OneText> {
+
+    override fun toXML() =
+        """<setTextVector device="$device" name="$name" state="$state" timeout="$timeout" timestamp="$timestamp" message="$message">${elements.toXML()}</setTextVector>"""
+}

@@ -1,4 +1,4 @@
-package nebulosa.indi.protocol.parser
+package nebulosa.indi.parser
 
 import org.slf4j.LoggerFactory
 import java.io.Closeable

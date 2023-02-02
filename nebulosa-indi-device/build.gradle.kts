@@ -6,7 +6,7 @@ plugins {
 dependencies {
     api(project(":nebulosa-imaging"))
     api(project(":nebulosa-nova"))
-    api(project(":nebulosa-indi-protocol"))
+    api(project(":nebulosa-indi-parser"))
     implementation(libs.logback)
     testImplementation(libs.bundles.kotest)
 }

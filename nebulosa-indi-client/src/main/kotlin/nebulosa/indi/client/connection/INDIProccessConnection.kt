@@ -1,6 +1,7 @@
-package nebulosa.indi.protocol.connection
+package nebulosa.indi.client.connection
 
-import nebulosa.indi.protocol.io.INDIProtocolFactory
+import nebulosa.indi.client.io.INDIProtocolFactory
+import nebulosa.indi.connection.INDIConnection
 
 class INDIProccessConnection(val process: Process) : INDIConnection {
 

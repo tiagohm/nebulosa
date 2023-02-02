@@ -1,15 +1,27 @@
 package nebulosa.indi.protocol
 
-import com.thoughtworks.xstream.annotations.XStreamAlias
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute
+import nebulosa.indi.protocol.Vector.Companion.toXML
 
-@XStreamAlias("defSwitchVector")
 class DefSwitchVector : DefVector<DefSwitch>(), SwitchVector<DefSwitch> {
 
-    @XStreamAsAttribute
-    @JvmField
-    var rule = SwitchRule.ANY_OF_MANY
+    @JvmField var rule = SwitchRule.ANY_OF_MANY
 
-    override fun toString() =
-        "DefSwitchVector(device=$device, group=$group, name=$name, label=$label, message=$message, rule=$rule, perm=$perm, state=$state, timeout=$timeout, elements=$elements)"
+    override fun toXML() =
+        """<defSwitchVector device="$device" name="$name" label="$label" group="$group" state="$state" perm="$perm" rule="$rule" timeout="$timeout" timestamp="$timestamp" message="$message">${elements.toXML()}</defSwitchVector>"""
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DefSwitchVector) return false
+        if (!super.equals(other)) return false
+
+        if (rule != other.rule) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + rule.hashCode()
+        return result
+    }
 }

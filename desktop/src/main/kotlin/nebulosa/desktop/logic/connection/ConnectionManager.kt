@@ -1,7 +1,8 @@
 package nebulosa.desktop.logic.connection
 
 import nebulosa.desktop.logic.EventBus
-import nebulosa.indi.INDIClient
+import nebulosa.indi.client.DefaultINDIClient
+import nebulosa.indi.client.INDIClient
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.DeviceProtocolHandler
@@ -27,7 +28,7 @@ class ConnectionManager : DeviceEventHandler, KoinComponent {
     ) {
         disconnect()
 
-        val client = INDIClient(host, port)
+        val client = DefaultINDIClient(host, port)
         val deviceHandler = DeviceProtocolHandler()
         deviceHandler.registerDeviceEventHandler(this)
         client.registerDeviceProtocolHandler(deviceHandler)

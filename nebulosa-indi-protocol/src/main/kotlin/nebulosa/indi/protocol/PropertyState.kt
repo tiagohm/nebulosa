@@ -7,4 +7,10 @@ enum class PropertyState(override val text: String) : HasText {
     ALERT("Alert");
 
     override fun toString() = text
+
+    companion object {
+
+        @JvmStatic
+        fun parse(text: String) = valueOf(text.uppercase())
+    }
 }

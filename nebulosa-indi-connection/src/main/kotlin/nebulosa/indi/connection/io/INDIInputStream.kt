@@ -1,4 +1,4 @@
-package nebulosa.indi.protocol.io
+package nebulosa.indi.connection.io
 
 import nebulosa.indi.protocol.INDIProtocol
 import java.io.Closeable

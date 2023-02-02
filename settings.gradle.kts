@@ -12,7 +12,6 @@ buildCache {
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("xstream", "com.thoughtworks.xstream:xstream:1.4.19")
             library("okio", "com.squareup.okio:okio:3.2.0")
             library("okhttp", "com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
             library("ejml", "org.ejml:ejml-ddense:0.41.1")
@@ -32,6 +31,7 @@ dependencyResolutionManagement {
     }
 }
 
+include(":desktop")
 include(":nebulosa-alpaca-api")
 include(":nebulosa-alpaca-client")
 include(":nebulosa-alpaca-discovery-protocol")
@@ -44,14 +44,15 @@ include(":nebulosa-guiding-phd2")
 include(":nebulosa-horizons")
 include(":nebulosa-imaging")
 include(":nebulosa-indi-client")
+include(":nebulosa-indi-connection")
 include(":nebulosa-indi-device")
+include(":nebulosa-indi-parser")
 include(":nebulosa-indi-protocol")
 include(":nebulosa-io")
 include(":nebulosa-math")
 include(":nebulosa-nasa")
 include(":nebulosa-nova")
-include(":nebulosa-time")
-include(":nebulosa-vizier")
 include(":nebulosa-platesolving")
 include(":nebulosa-platesolving-astrometrynet")
-include(":desktop")
+include(":nebulosa-time")
+include(":nebulosa-vizier")

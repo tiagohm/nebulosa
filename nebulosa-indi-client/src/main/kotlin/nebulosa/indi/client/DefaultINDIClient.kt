@@ -1,18 +1,16 @@
-package nebulosa.indi
+package nebulosa.indi.client
 
+import nebulosa.indi.client.connection.INDIProccessConnection
+import nebulosa.indi.client.connection.INDISocketConnection
+import nebulosa.indi.connection.INDIConnection
 import nebulosa.indi.device.DeviceProtocolHandler
-import nebulosa.indi.device.MessageSender
+import nebulosa.indi.parser.INDIProtocolReader
 import nebulosa.indi.protocol.GetProperties
 import nebulosa.indi.protocol.INDIProtocol
-import nebulosa.indi.protocol.connection.INDIConnection
-import nebulosa.indi.protocol.connection.INDIProccessConnection
-import nebulosa.indi.protocol.connection.INDISocketConnection
-import nebulosa.indi.protocol.parser.INDIProtocolParser
-import nebulosa.indi.protocol.parser.INDIProtocolReader
 import org.slf4j.LoggerFactory
 import java.io.Closeable
 
-class INDIClient(val connection: INDIConnection) : INDIProtocolParser, MessageSender, Closeable {
+class DefaultINDIClient(override val connection: INDIConnection) : INDIClient {
 
     @Volatile private var closed = false
 
@@ -30,17 +28,17 @@ class INDIClient(val connection: INDIConnection) : INDIProtocolParser, MessageSe
 
     override val input get() = connection.input
 
-    fun start() {
+    override fun start() {
         check(!closed) { "closed" }
         reader.start()
         sendMessageToServer(GetProperties())
     }
 
-    fun registerDeviceProtocolHandler(handler: DeviceProtocolHandler) {
+    override fun registerDeviceProtocolHandler(handler: DeviceProtocolHandler) {
         handlers.add(handler)
     }
 
-    fun unregisterDeviceProtocolHandler(handler: DeviceProtocolHandler) {
+    override fun unregisterDeviceProtocolHandler(handler: DeviceProtocolHandler) {
         handlers.remove(handler)
     }
 
@@ -87,6 +85,6 @@ class INDIClient(val connection: INDIConnection) : INDIProtocolParser, MessageSe
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(INDIClient::class.java)
+        @JvmStatic private val LOG = LoggerFactory.getLogger(DefaultINDIClient::class.java)
     }
 }

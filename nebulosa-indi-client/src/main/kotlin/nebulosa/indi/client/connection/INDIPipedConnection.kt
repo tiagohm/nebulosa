@@ -1,5 +1,6 @@
-package nebulosa.indi.protocol.connection
+package nebulosa.indi.client.connection
 
+import nebulosa.indi.connection.INDIConnection
 import nebulosa.indi.protocol.INDIProtocol
 import java.util.concurrent.BlockingQueue
 

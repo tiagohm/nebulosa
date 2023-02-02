@@ -1,12 +1,22 @@
 package nebulosa.indi.protocol
 
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute
-
 sealed class DefElement<T> : INDIProtocol(), Element<T> {
 
-    @XStreamAsAttribute
-    @JvmField
-    var label = ""
+    @JvmField var label = ""
 
-    override fun toString() = "${this::class.simpleName}(name=$name, label=$label, message=$message, value=$value)"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DefElement<*>) return false
+        if (!super.equals(other)) return false
+
+        if (label != other.label) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + label.hashCode()
+        return result
+    }
 }

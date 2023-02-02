@@ -1,6 +1,10 @@
 package nebulosa.indi.protocol
 
-import com.thoughtworks.xstream.annotations.XStreamAlias
+import nebulosa.indi.protocol.Vector.Companion.toXML
 
-@XStreamAlias("defBLOBVector")
-class DefBLOBVector : DefVector<DefBLOB>(), BLOBVector<DefBLOB>
+@Suppress("CanSealedSubClassBeObject")
+class DefBLOBVector : DefVector<DefBLOB>(), BLOBVector<DefBLOB> {
+
+    override fun toXML() =
+        """<defBLOBVector device="$device" name="$name" label="$label" group="$group" state="$state" perm="$perm" timeout="$timeout" timestamp="$timestamp" message="$message">${elements.toXML()}</defBLOBVector>"""
+}
