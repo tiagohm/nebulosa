@@ -1,10 +1,17 @@
 package nebulosa.indi.protocol
 
+import nebulosa.indi.protocol.xml.XmlBuilder
+
 class DefSwitch : DefElement<Boolean>(), SwitchElement {
 
     override var value = false
 
-    override fun toXML() = """<defSwitch name="$name" label="$label">$value</defSwitch>"""
+    override fun toXML() = XmlBuilder()
+        .name("defSwitch")
+        .attr("name", name)
+        .attr("label", label)
+        .value(value)
+        .build()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

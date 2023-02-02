@@ -1,10 +1,16 @@
 package nebulosa.indi.protocol
 
+import nebulosa.indi.protocol.xml.XmlBuilder
+
 class DefBLOB : DefElement<String>(), BLOBElement {
 
     override var value = ""
 
-    override fun toXML() = """<defBLOB name="$name" label="$label"></defBLOB>"""
+    override fun toXML() = XmlBuilder()
+        .name("defBLOB")
+        .attr("name", name)
+        .attr("label", label)
+        .build()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

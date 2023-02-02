@@ -1,9 +1,15 @@
 package nebulosa.indi.protocol
 
-import nebulosa.indi.protocol.Vector.Companion.toXML
+import nebulosa.indi.protocol.xml.XmlBuilder
 
 @Suppress("CanSealedSubClassBeObject")
 class NewSwitchVector : NewVector<OneSwitch>(), SwitchVector<OneSwitch> {
 
-    override fun toXML() = """<newSwitchVector device="$device" name="$name" timestamp="$timestamp">${elements.toXML()}</newSwitchVector>"""
+    override fun toXML() = XmlBuilder()
+        .name("newSwitchVector")
+        .attr("device", device)
+        .attr("name", name)
+        .attr("timestamp", timestamp)
+        .value(elements.toXML())
+        .build()
 }

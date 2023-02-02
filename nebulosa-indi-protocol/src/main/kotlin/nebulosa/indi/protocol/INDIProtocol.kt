@@ -46,5 +46,8 @@ sealed class INDIProtocol : HasName, Serializable {
     companion object {
 
         const val DEFAULT_PORT = 7624
+
+        @Suppress("NOTHING_TO_INLINE")
+        internal inline fun <E : INDIProtocol> List<E>.toXML() = joinToString("") { it.toXML() }
     }
 }

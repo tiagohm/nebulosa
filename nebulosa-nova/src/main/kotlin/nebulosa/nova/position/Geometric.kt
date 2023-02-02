@@ -1,9 +1,5 @@
 package nebulosa.nova.position
 
-import nebulosa.math.Pressure
-import nebulosa.math.Pressure.Companion.mbar
-import nebulosa.math.Temperature
-import nebulosa.math.Temperature.Companion.celsius
 import nebulosa.math.Vector3D
 import nebulosa.time.InstantOfTime
 

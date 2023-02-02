@@ -1,8 +1,13 @@
 package nebulosa.indi.protocol
 
+import nebulosa.indi.protocol.xml.XmlBuilder
+
 class GetProperties : INDIProtocol() {
 
-    @JvmField val version = "1.7"
-
-    override fun toXML() = """<getProperties version="$version" device="$device" name="$name"></getProperties>"""
+    override fun toXML() = XmlBuilder()
+        .name("getProperties")
+        .attr("version", "1.7")
+        .attr("device", device)
+        .attr("name", name)
+        .build()
 }

@@ -37,10 +37,4 @@ sealed interface Vector<E : Element<*>> : List<E> {
     val isAlert get() = state == PropertyState.ALERT
 
     val isOk get() = state == PropertyState.OK
-
-    companion object {
-
-        @Suppress("NOTHING_TO_INLINE")
-        internal inline fun <E : INDIProtocol> List<E>.toXML() = joinToString("") { it.toXML() }
-    }
 }

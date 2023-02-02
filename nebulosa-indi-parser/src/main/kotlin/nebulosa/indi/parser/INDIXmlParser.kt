@@ -18,15 +18,11 @@ open class INDIXmlParser(private val source: InputStream) : INDIInputStream {
         while (reader.hasNext()) {
             val event = reader.nextEvent()
 
-            println(event)
-
             if (event is StartElement) {
                 val message = parse(reader, event)
                 if (message != null) return message
             }
         }
-
-        println("exit")
 
         return null
     }
@@ -48,6 +44,10 @@ open class INDIXmlParser(private val source: InputStream) : INDIInputStream {
             NEW_TEXT_VECTOR_NAME -> parseNewTextVector(reader, element)
             NEW_LIGHT_VECTOR_NAME -> parseNewLightVector(reader, element)
             NEW_BLOB_VECTOR_NAME -> parseNewBLOBVector(reader, element)
+            GET_PROPERTIES_NAME -> parseGetProperties(reader, element)
+            DEL_PROPERTY_NAME -> parseDelProperty(reader, element)
+            MESSAGE_NAME -> parseMessage(reader, element)
+            ENABLE_BLOB_NAME -> parseEnableBLOB(reader, element)
             else -> null
         }
     }
@@ -148,7 +148,7 @@ open class INDIXmlParser(private val source: InputStream) : INDIInputStream {
         state = PropertyState.parse(element.getAttributeByName(STATE_ATTR_NAME).value)
         element.getAttributeByName(TIMEOUT_ATTR_NAME)?.value?.toDoubleOrNull()?.also { timeout = it }
         timestamp = element.getAttributeByName(TIMESTAMP_ATTR_NAME).value
-        message = element.getAttributeByName(MESSAGE_ATTR_NAME).value
+        element.getAttributeByName(MESSAGE_ATTR_NAME)?.value?.also { message = it }
     }
 
     private fun parseSetSwitchVector(reader: XMLEventReader, element: StartElement): SetSwitchVector {
@@ -209,43 +209,43 @@ open class INDIXmlParser(private val source: InputStream) : INDIInputStream {
     }
 
     private fun parseDefSwitch(reader: XMLEventReader, element: StartElement): DefSwitch {
-        val number = DefSwitch()
-        number.parseDefElement(element)
-        number.value = reader.elementText.trim().equals("On", true)
-        return number
+        val defSwitch = DefSwitch()
+        defSwitch.parseDefElement(element)
+        defSwitch.value = reader.elementText.trim().equals("On", true)
+        return defSwitch
     }
 
     private fun parseDefText(reader: XMLEventReader, element: StartElement): DefText {
-        val number = DefText()
-        number.parseDefElement(element)
-        number.value = reader.elementText.trim()
-        return number
+        val defText = DefText()
+        defText.parseDefElement(element)
+        defText.value = reader.elementText.trim()
+        return defText
     }
 
     private fun parseDefLight(reader: XMLEventReader, element: StartElement): DefLight {
-        val number = DefLight()
-        number.parseDefElement(element)
-        number.value = PropertyState.parse(reader.elementText.trim())
-        return number
+        val defLight = DefLight()
+        defLight.parseDefElement(element)
+        defLight.value = PropertyState.parse(reader.elementText.trim())
+        return defLight
     }
 
     private fun parseDefBLOB(reader: XMLEventReader, element: StartElement): DefBLOB {
-        val number = DefBLOB()
-        number.parseDefElement(element)
-        return number
+        val defBLOB = DefBLOB()
+        defBLOB.parseDefElement(element)
+        return defBLOB
     }
 
     private fun parseDefNumber(reader: XMLEventReader, element: StartElement): DefNumber {
-        val number = DefNumber()
+        val defNumber = DefNumber()
 
-        number.parseDefElement(element)
-        number.max = element.getAttributeByName(MAX_ATTR_NAME).value.toDouble()
-        number.min = element.getAttributeByName(MIN_ATTR_NAME).value.toDouble()
-        number.step = element.getAttributeByName(STEP_ATTR_NAME).value.toDouble()
-        number.format = element.getAttributeByName(FORMAT_ATTR_NAME).value
-        number.value = reader.elementText.trim().toDouble()
+        defNumber.parseDefElement(element)
+        defNumber.max = element.getAttributeByName(MAX_ATTR_NAME).value.toDouble()
+        defNumber.min = element.getAttributeByName(MIN_ATTR_NAME).value.toDouble()
+        defNumber.step = element.getAttributeByName(STEP_ATTR_NAME).value.toDouble()
+        defNumber.format = element.getAttributeByName(FORMAT_ATTR_NAME)?.value ?: ""
+        defNumber.value = reader.elementText.trim().toDouble()
 
-        return number
+        return defNumber
     }
 
     private fun OneElement<*>.parseOneElement(element: StartElement) {
@@ -253,38 +253,70 @@ open class INDIXmlParser(private val source: InputStream) : INDIInputStream {
     }
 
     private fun parseOneSwitch(reader: XMLEventReader, element: StartElement): OneSwitch {
-        val number = OneSwitch()
-        number.parseOneElement(element)
-        number.value = reader.elementText.trim().equals("On", true)
-        return number
+        val oneSwitch = OneSwitch()
+        oneSwitch.parseOneElement(element)
+        oneSwitch.value = reader.elementText.trim().equals("On", true)
+        return oneSwitch
     }
 
     private fun parseOneText(reader: XMLEventReader, element: StartElement): OneText {
-        val number = OneText()
-        number.parseOneElement(element)
-        number.value = reader.elementText.trim()
-        return number
+        val oneText = OneText()
+        oneText.parseOneElement(element)
+        oneText.value = reader.elementText.trim()
+        return oneText
     }
 
     private fun parseOneLight(reader: XMLEventReader, element: StartElement): OneLight {
-        val number = OneLight()
-        number.parseOneElement(element)
-        number.value = PropertyState.parse(reader.elementText.trim())
-        return number
+        val oneLight = OneLight()
+        oneLight.parseOneElement(element)
+        oneLight.value = PropertyState.parse(reader.elementText.trim())
+        return oneLight
     }
 
     private fun parseOneBLOB(reader: XMLEventReader, element: StartElement): OneBLOB {
-        val number = OneBLOB()
-        number.parseOneElement(element)
-        number.value = reader.elementText
-        return number
+        val oneBLOB = OneBLOB()
+        oneBLOB.parseOneElement(element)
+        oneBLOB.value = reader.elementText
+        return oneBLOB
     }
 
     private fun parseOneNumber(reader: XMLEventReader, element: StartElement): OneNumber {
-        val number = OneNumber()
-        number.parseOneElement(element)
-        number.value = reader.elementText.trim().toDouble()
-        return number
+        val oneNumber = OneNumber()
+        oneNumber.parseOneElement(element)
+        oneNumber.value = reader.elementText.trim().toDouble()
+        return oneNumber
+    }
+
+    fun parseGetProperties(reader: XMLEventReader, element: StartElement): GetProperties {
+        val getProperties = GetProperties()
+        getProperties.device = element.getAttributeByName(DEVICE_ATTR_NAME).value
+        getProperties.name = element.getAttributeByName(NAME_ATTR_NAME).value
+        return getProperties
+    }
+
+    fun parseDelProperty(reader: XMLEventReader, element: StartElement): DelProperty {
+        val delProperty = DelProperty()
+        delProperty.device = element.getAttributeByName(DEVICE_ATTR_NAME).value
+        delProperty.name = element.getAttributeByName(NAME_ATTR_NAME).value
+        delProperty.timestamp = element.getAttributeByName(TIMESTAMP_ATTR_NAME).value
+        element.getAttributeByName(MESSAGE_ATTR_NAME)?.value?.also { delProperty.message = it }
+        return delProperty
+    }
+
+    fun parseMessage(reader: XMLEventReader, element: StartElement): Message {
+        val message = Message()
+        message.device = element.getAttributeByName(DEVICE_ATTR_NAME).value
+        message.timestamp = element.getAttributeByName(TIMESTAMP_ATTR_NAME).value
+        message.message = element.getAttributeByName(MESSAGE_ATTR_NAME).value
+        return message
+    }
+
+    fun parseEnableBLOB(reader: XMLEventReader, element: StartElement): EnableBLOB {
+        val enableBLOB = EnableBLOB()
+        enableBLOB.device = element.getAttributeByName(DEVICE_ATTR_NAME).value
+        enableBLOB.name = element.getAttributeByName(NAME_ATTR_NAME).value
+        enableBLOB.value = BLOBEnable.parse(reader.elementText.trim())
+        return enableBLOB
     }
 
     override fun close() = source.close()
@@ -308,6 +340,10 @@ open class INDIXmlParser(private val source: InputStream) : INDIInputStream {
         @JvmStatic private val SET_TEXT_VECTOR_NAME = QName("setTextVector")
         @JvmStatic private val SET_LIGHT_VECTOR_NAME = QName("setLightVector")
         @JvmStatic private val SET_BLOB_VECTOR_NAME = QName("setBLOBVector")
+        @JvmStatic private val GET_PROPERTIES_NAME = QName("getProperties")
+        @JvmStatic private val DEL_PROPERTY_NAME = QName("delProperty")
+        @JvmStatic private val MESSAGE_NAME = QName("message")
+        @JvmStatic private val ENABLE_BLOB_NAME = QName("enableBLOB")
         @JvmStatic private val DEVICE_ATTR_NAME = QName("device")
         @JvmStatic private val NAME_ATTR_NAME = QName("name")
         @JvmStatic private val LABEL_ATTR_NAME = QName("label")

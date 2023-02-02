@@ -1,10 +1,18 @@
 package nebulosa.indi.protocol
 
-import nebulosa.indi.protocol.Vector.Companion.toXML
+import nebulosa.indi.protocol.xml.XmlBuilder
 
 @Suppress("CanSealedSubClassBeObject")
 class SetNumberVector : SetVector<OneNumber>(), NumberVector<OneNumber> {
 
-    override fun toXML() =
-        """<setNumberVector device="$device" name="$name" state="$state" timeout="$timeout" timestamp="$timestamp" message="$message">${elements.toXML()}</setNumberVector>"""
+    override fun toXML() = XmlBuilder()
+        .name("setNumberVector")
+        .attr("device", device)
+        .attr("name", name)
+        .attr("state", state)
+        .attr("timeout", timeout)
+        .attr("timestamp", timestamp)
+        .attr("message", message)
+        .value(elements.toXML())
+        .build()
 }

@@ -369,8 +369,8 @@ class ImageManager(private val view: ImageView) : KoinComponent, Closeable {
     fun openFitsHeader() {
         val header = (fits as? FitsImage)?.header ?: return
         fitsHeaderWindow = fitsHeaderWindow ?: FitsHeaderWindow()
-        fitsHeaderWindow!!.load(header)
         fitsHeaderWindow!!.show(bringToFront = true)
+        fitsHeaderWindow!!.load(header)
     }
 
     fun loadPreferences() {
