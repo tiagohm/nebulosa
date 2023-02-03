@@ -1,6 +1,7 @@
 package nebulosa.desktop.logic.home
 
 import javafx.stage.FileChooser
+import nebulosa.desktop.gui.atlas.AtlasWindow
 import nebulosa.desktop.gui.camera.CameraWindow
 import nebulosa.desktop.gui.filterwheel.FilterWheelWindow
 import nebulosa.desktop.gui.focuser.FocuserWindow
@@ -55,6 +56,7 @@ class HomeManager(private val view: HomeView) : KoinComponent, Closeable {
             "MOUNT" -> MountWindow.open()
             "FOCUSER" -> FocuserWindow.open()
             "FILTER_WHEEL" -> FilterWheelWindow.open()
+            "ATLAS" -> AtlasWindow.open()
             "INDI" -> INDIPanelControlWindow.open()
         }
     }

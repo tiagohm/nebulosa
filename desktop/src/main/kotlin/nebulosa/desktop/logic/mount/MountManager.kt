@@ -22,7 +22,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext
 import java.time.LocalDateTime
-import java.util.*
 import kotlin.concurrent.timer
 
 class MountManager(private val view: MountView) :
@@ -31,9 +30,9 @@ class MountManager(private val view: MountView) :
     private val preferences by inject<Preferences>()
     private val equipmentManager by inject<EquipmentManager>()
 
-    @JvmField val mounts = equipmentManager.attachedMounts
+    val mounts = equipmentManager.attachedMounts
 
-    private val timer = timer(daemon = true, period = 1000L, action = ::onTimerHit)
+    private val timer = timer(daemon = true, initialDelay = 1000L, period = 1000L) { onTimerHit() }
 
     init {
         registerListener(this)
@@ -164,13 +163,13 @@ class MountManager(private val view: MountView) :
     }
 
     fun savePreferences() {
-        preferences.double("value.screen.x", view.x)
-        preferences.double("value.screen.y", view.y)
+        preferences.double("mount.screen.x", view.x)
+        preferences.double("mount.screen.y", view.y)
     }
 
     fun loadPreferences() {
-        preferences.double("value.screen.x")?.also { view.x = it }
-        preferences.double("value.screen.y")?.also { view.y = it }
+        preferences.double("mount.screen.x")?.also { view.x = it }
+        preferences.double("mount.screen.y")?.also { view.y = it }
     }
 
     private fun computeLST(time: InstantOfTime = TimeJD.now()): Angle {
@@ -184,7 +183,7 @@ class MountManager(private val view: MountView) :
         return value.rightAscension - computeLST(TimeJD.now())
     }
 
-    private fun onTimerHit(task: TimerTask) {
+    private fun onTimerHit() {
         if (value == null || !view.showing) return
 
         val lst = computeLST()

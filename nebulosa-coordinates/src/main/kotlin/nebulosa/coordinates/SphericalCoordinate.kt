@@ -11,17 +11,19 @@ class SphericalCoordinate(
     val distance: Distance,
 ) : Coordinate {
 
+    val cartesian by lazy { CartesianCoordinate.of(theta, phi, distance) }
+
     override fun component1() = theta.value
 
     override fun component2() = phi.value
 
     override fun component3() = distance.value
 
-    inline val longitude get() = theta
+    inline val longitude
+        get() = theta
 
-    inline val latitude get() = phi
-
-    val cartesian by lazy { CartesianCoordinate.of(theta, phi, distance) }
+    inline val latitude
+        get() = phi
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

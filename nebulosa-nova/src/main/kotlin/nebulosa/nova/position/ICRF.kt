@@ -132,10 +132,11 @@ open class ICRF protected constructor(
         temperature: Temperature = 10.0.celsius,
         pressure: Pressure = 1013.0.mbar,
     ): SphericalCoordinate {
-        require(this !is Astrometric) {
-            "it is not useful to call horizontal() on an astrometric position; " +
-                    "try calling apparent() first to get an apparent position"
-        }
+        // TODO: Uncomment when implement apparent method.
+        // require(this !is Astrometric) {
+        //     "it is not useful to call horizontal() on an astrometric position; " +
+        //             "try calling apparent() first to get an apparent position"
+        // }
 
         return horizontal(this, temperature, pressure)
     }

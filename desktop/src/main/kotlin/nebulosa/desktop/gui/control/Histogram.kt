@@ -1,33 +1,13 @@
 package nebulosa.desktop.gui.control
 
-import javafx.scene.canvas.Canvas
 import javafx.scene.paint.Color
 import nebulosa.imaging.Image
 import kotlin.math.max
 
-class Histogram : Canvas() {
+class Histogram : ResizableCanvas() {
 
     private val histogramData = IntArray(256)
     private var maxHeight = 1
-
-    override fun isResizable() = true
-
-    override fun maxHeight(width: Double) = Double.POSITIVE_INFINITY
-
-    override fun maxWidth(height: Double) = Double.POSITIVE_INFINITY
-
-    override fun minWidth(height: Double) = 1.0
-
-    override fun minHeight(width: Double) = 1.0
-
-    override fun prefWidth(height: Double) = width
-
-    override fun prefHeight(width: Double) = height
-
-    override fun resize(width: Double, height: Double) {
-        this.width = width
-        this.height = height
-    }
 
     fun draw(fits: Image) {
         maxHeight = 1

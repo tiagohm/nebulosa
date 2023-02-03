@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.control.AltitudeGraph?>
+<AnchorPane maxHeight="-Infinity"
+            maxWidth="-Infinity"
+            minHeight="-Infinity"
+            minWidth="-Infinity"
+            prefHeight="570.0"
+            prefWidth="480.0"
+            stylesheets="@css/Global.css"
+            xmlns="http://javafx.com/javafx/19"
+            xmlns:fx="http://javafx.com/fxml/1">
+    <VBox spacing="8.0"
+          AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0"
+          AnchorPane.topAnchor="0.0">
+        <TabPane fx:id="ephemerisTabPane"
+                 VBox.vgrow="ALWAYS">
+            <Tab text="Sun"
+                 closable="false"
+                 onSelectionChanged="#tabSelectionChanged"
+                 userData="SUN">
+                <VBox alignment="CENTER">
+                    <ImageView fx:id="sunImageView"
+                               pickOnBounds="true"
+                               preserveRatio="true"
+                               fitHeight="340.0"
+                               cache="true">
+                    </ImageView>
+                </VBox>
+            </Tab>
+            <Tab text="Moon"
+                 closable="false"
+                 onSelectionChanged="#tabSelectionChanged"
+                 userData="MOON"
+            />
+            <Tab text="Planets"
+                 closable="false"
+                 onSelectionChanged="#tabSelectionChanged"
+                 userData="PLANET"
+            />
+            <Tab text="Asteroids &amp; Comets"
+                 closable="false"
+                 onSelectionChanged="#tabSelectionChanged"
+                 userData="MINOR_PLANET"
+            />
+            <Tab text="Stars"
+                 closable="false"
+                 onSelectionChanged="#tabSelectionChanged"
+                 userData="STAR"
+            />
+            <Tab text="DSOs"
+                 closable="false"
+                 onSelectionChanged="#tabSelectionChanged"
+                 userData="DSO"
+            />
+        </TabPane>
+        <VBox alignment="CENTER"
+              spacing="4.0">
+            <padding>
+                <Insets topRightBottomLeft="16.0"/>
+            </padding>
+            <HBox alignment="CENTER_LEFT"
+                  spacing="4.0">
+                <Label maxWidth="72.0"
+                       minWidth="72.0"
+                       prefWidth="72.0"
+                       text="RA"
+                       styleClass="text-sm,text-bold">
+                </Label>
+                <Label fx:id="rightAscensionLabel"
+                       alignment="CENTER_RIGHT"
+                       maxWidth="140.0"
+                       minWidth="140.0"
+                       prefWidth="140.0"
+                       text="00h 00m 00.00s"
+                       styleClass="text-monospaced,text-sm">
+                </Label>
+                <Label maxWidth="72.0"
+                       minWidth="72.0"
+                       prefWidth="72.0"
+                       text="DEC"
+                       styleClass="text-sm,text-bold">
+                    <HBox.margin>
+                        <Insets left="8.0"/>
+                    </HBox.margin>
+                </Label>
+                <Label fx:id="declinationLabel"
+                       alignment="CENTER_RIGHT"
+                       maxWidth="140.0"
+                       minWidth="140.0"
+                       prefWidth="140.0"
+                       text="+00° 00' 00.00&quot;"
+                       styleClass="text-monospaced,text-sm">
+                </Label>
+            </HBox>
+            <HBox alignment="CENTER_LEFT"
+                  spacing="4.0">
+                <Label maxWidth="72.0"
+                       minWidth="72.0"
+                       prefWidth="72.0"
+                       text="RA (J2000)"
+                       styleClass="text-sm,text-bold">
+                </Label>
+                <Label fx:id="rightAscensionJ2000Label"
+                       alignment="CENTER_RIGHT"
+                       maxWidth="140.0"
+                       minWidth="140.0"
+                       prefWidth="140.0"
+                       text="00h 00m 00.00s"
+                       styleClass="text-monospaced,text-sm">
+                </Label>
+                <Label maxWidth="72.0"
+                       minWidth="72.0"
+                       prefWidth="72.0"
+                       text="DEC (J2000)"
+                       styleClass="text-sm,text-bold">
+                    <HBox.margin>
+                        <Insets left="8.0"/>
+                    </HBox.margin>
+                </Label>
+                <Label fx:id="declinationJ2000Label"
+                       alignment="CENTER_RIGHT"
+                       maxWidth="140.0"
+                       minWidth="140.0"
+                       prefWidth="140.0"
+                       text="+00° 00' 00.00&quot;"
+                       styleClass="text-monospaced,text-sm">
+                </Label>
+            </HBox>
+            <HBox alignment="CENTER_LEFT"
+                  spacing="4.0">
+                <Label maxWidth="72.0"
+                       minWidth="72.0"
+                       prefWidth="72.0"
+                       text="Azimuth"
+                       styleClass="text-sm,text-bold">
+                </Label>
+                <Label fx:id="azimuthLabel"
+                       alignment="CENTER_RIGHT"
+                       maxWidth="140.0"
+                       minWidth="140.0"
+                       prefWidth="140.0"
+                       text="000° 00' 00.00&quot;"
+                       styleClass="text-monospaced,text-sm">
+                </Label>
+                <Label maxWidth="72.0"
+                       minWidth="72.0"
+                       prefWidth="72.0"
+                       text="Altitude"
+                       styleClass="text-sm,text-bold">
+                    <HBox.margin>
+                        <Insets left="8.0"/>
+                    </HBox.margin>
+                </Label>
+                <Label fx:id="altitudeLabel"
+                       alignment="CENTER_RIGHT"
+                       maxWidth="140.0"
+                       minWidth="140.0"
+                       prefWidth="140.0"
+                       text="+00° 00' 00.00&quot;"
+                       styleClass="text-monospaced,text-sm">
+                </Label>
+            </HBox>
+        </VBox>
+        <AltitudeGraph fx:id="altitudeGraph"
+                       height="130.0">
+        </AltitudeGraph>
+    </VBox>
+</AnchorPane>
