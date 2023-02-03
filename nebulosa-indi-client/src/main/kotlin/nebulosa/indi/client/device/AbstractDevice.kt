@@ -1,5 +1,6 @@
-package nebulosa.indi.device
+package nebulosa.indi.client.device
 
+import nebulosa.indi.device.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.dome.Dome
 import nebulosa.indi.device.filterwheel.FilterWheel

@@ -1,11 +1,14 @@
-package nebulosa.indi.device.mount
+package nebulosa.indi.client.device
 
-import nebulosa.indi.device.*
+import nebulosa.indi.device.MessageSender
+import nebulosa.indi.device.firstOnSwitch
+import nebulosa.indi.device.firstOnSwitchOrNull
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.gps.GPSDetached
-import nebulosa.indi.device.guider.GuiderAttached
-import nebulosa.indi.device.guider.GuiderDetached
-import nebulosa.indi.device.guider.GuiderPulsingChanged
+import nebulosa.indi.device.guide.GuideOutputAttached
+import nebulosa.indi.device.guide.GuideOutputDetached
+import nebulosa.indi.device.guide.GuideOutputPulsingChanged
+import nebulosa.indi.device.mount.*
 import nebulosa.indi.protocol.*
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
@@ -19,7 +22,7 @@ import nebulosa.time.TimeJD
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-internal open class MountBase(
+internal open class MountDevice(
     sender: MessageSender,
     handler: DeviceProtocolHandler,
     name: String,
@@ -150,27 +153,12 @@ internal open class MountBase(
 
                         handler.fireOnEventReceived(MountEquatorialCoordinatesChanged(this))
                     }
-                    "TELESCOPE_TIMED_GUIDE_NS" -> {
-                        if (!canPulseGuide && message is DefNumberVector) {
-                            canPulseGuide = true
-
-                            handler.fireOnEventReceived(GuiderAttached(this))
-                        }
-
-                        if (canPulseGuide) {
-                            val prevIsPulseGuiding = pulseGuiding
-                            pulseGuiding = message.isBusy
-
-                            if (pulseGuiding != prevIsPulseGuiding) {
-                                handler.fireOnEventReceived(GuiderPulsingChanged(this))
-                            }
-                        }
-                    }
+                    "TELESCOPE_TIMED_GUIDE_NS",
                     "TELESCOPE_TIMED_GUIDE_WE" -> {
                         if (!canPulseGuide && message is DefNumberVector) {
                             canPulseGuide = true
 
-                            handler.fireOnEventReceived(GuiderAttached(this))
+                            handler.fireOnEventReceived(GuideOutputAttached(this))
                         }
 
                         if (canPulseGuide) {
@@ -178,7 +166,7 @@ internal open class MountBase(
                             pulseGuiding = message.isBusy
 
                             if (pulseGuiding != prevIsPulseGuiding) {
-                                handler.fireOnEventReceived(GuiderPulsingChanged(this))
+                                handler.fireOnEventReceived(GuideOutputPulsingChanged(this))
                             }
                         }
                     }
@@ -298,7 +286,11 @@ internal open class MountBase(
     }
 
     override fun time(time: OffsetDateTime) {
+        val offsetHours = time.offset.totalSeconds / 3600.0
+        val offsetMinutes = ((offsetHours - offsetHours.toInt()) * 60.0) % 60.0
+        val offset = "%02d:%02d".format(offsetHours.toInt(), offsetMinutes.toInt())
 
+        sendNewText("TIME_UTC", "UTC" to GPS.formatTime(time.toLocalDateTime()), "OFFSET" to offset)
     }
 
     override fun computeCoordinates(j2000: Boolean, horizontal: Boolean) {
@@ -324,7 +316,7 @@ internal open class MountBase(
     override fun close() {
         if (canPulseGuide) {
             canPulseGuide = false
-            handler.fireOnEventReceived(GuiderDetached(this))
+            handler.fireOnEventReceived(GuideOutputDetached(this))
         }
 
         if (hasGPS) {

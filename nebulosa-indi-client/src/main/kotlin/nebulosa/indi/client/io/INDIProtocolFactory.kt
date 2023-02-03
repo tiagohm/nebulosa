@@ -2,7 +2,7 @@ package nebulosa.indi.client.io
 
 import nebulosa.indi.connection.io.INDIInputStream
 import nebulosa.indi.connection.io.INDIOutputStream
-import nebulosa.indi.parser.INDIXmlParser
+import nebulosa.indi.parser.INDIXmlInputStream
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.io.MinimalBlockingInputStream
 import java.io.ByteArrayInputStream
@@ -26,7 +26,7 @@ internal object INDIProtocolFactory {
 
     fun createInputStream(input: InputStream): INDIInputStream {
         val inputStreamWithRootTag = inputStreamWithRootTag(MinimalBlockingInputStream(input))
-        return INDIXmlParser(inputStreamWithRootTag)
+        return INDIXmlInputStream(inputStreamWithRootTag)
     }
 
     fun createOutputStream(output: OutputStream): INDIOutputStream = object : INDIOutputStream {

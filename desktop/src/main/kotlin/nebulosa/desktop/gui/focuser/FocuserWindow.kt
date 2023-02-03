@@ -166,8 +166,7 @@ class FocuserWindow : AbstractWindow(), FocuserView {
     }
 
     @FXML
-    private fun openAutoFocus() {
-    }
+    private fun openAutoFocus() = Unit
 
     private object FocuserStringConverter : StringConverter<Focuser>() {
 

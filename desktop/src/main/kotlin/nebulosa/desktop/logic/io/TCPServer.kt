@@ -22,7 +22,8 @@ abstract class TCPServer : ArrayList<TCPServer.Client>(), Closeable {
     @Volatile private var serverSocket: ServerSocket? = null
     @Volatile private var acceptorThread: Thread? = null
 
-    val running get() = serverSocket != null
+    val running
+        get() = serverSocket != null
 
     protected abstract fun acceptSocket(socket: Socket): Client?
 

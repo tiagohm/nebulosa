@@ -35,9 +35,9 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
 
     final override fun getName() = value?.name ?: ""
 
-    override fun onChanged(prev: D?, device: D) {}
+    override fun onChanged(prev: D?, device: D) = Unit
 
-    override fun onDeviceEvent(event: DeviceEvent<*>, device: D) {}
+    override fun onDeviceEvent(event: DeviceEvent<*>, device: D) = Unit
 
     protected fun onChanged(
         observable: ObservableValue<out D>,

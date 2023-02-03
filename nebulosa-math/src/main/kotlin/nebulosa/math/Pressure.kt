@@ -96,21 +96,17 @@ value class Pressure(val value: Double) : Comparable<Pressure> {
          *
          * https://www.mide.com/air-pressure-at-altitude-calculator
          */
-        @Suppress("LocalVariableName")
         @JvmStatic
         fun Distance.pressure(temperature: Temperature = 10.0.celsius): Pressure {
+            val e = (9.80665 * 0.0289644) / (8.31432 * -0.0065)
             val k = temperature.kelvin
-            val M = 0.0289644
-            val g = 9.80665
-            val R = 8.31432
-            val e = (g * M) / (8.31432 * -0.0065)
 
             return if (meters < 11000) {
                 (1013.25 * (k / (k + (-0.0065 * meters))).pow(e)).mbar
             } else {
                 val a = 1013.25 * (k / (k + (-0.0065 * 11000.0))).pow(e)
                 val c = k + (11000 * -0.0065)
-                (a * exp((-g * M * (meters - 11000.0)) / (R * c))).mbar
+                (a * exp((-9.80665 * 0.0289644 * (meters - 11000.0)) / (8.31432 * c))).mbar
             }
         }
     }

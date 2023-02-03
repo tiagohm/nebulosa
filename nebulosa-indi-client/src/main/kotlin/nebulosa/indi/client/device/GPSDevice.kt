@@ -1,8 +1,9 @@
-package nebulosa.indi.device.gps
+package nebulosa.indi.client.device
 
-import nebulosa.indi.device.AbstractDevice
-import nebulosa.indi.device.DeviceProtocolHandler
 import nebulosa.indi.device.MessageSender
+import nebulosa.indi.device.gps.GPS
+import nebulosa.indi.device.gps.GPSCoordinateChanged
+import nebulosa.indi.device.gps.GPSTimeChanged
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
 import nebulosa.indi.protocol.TextVector
@@ -13,7 +14,7 @@ import nebulosa.math.Distance.Companion.m
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-internal class GPSBase(
+internal class GPSDevice(
     sender: MessageSender,
     handler: DeviceProtocolHandler,
     name: String,
@@ -56,7 +57,7 @@ internal class GPSBase(
         super.handleMessage(message)
     }
 
-    override fun close() {}
+    override fun close() = Unit
 
     override fun toString(): String {
         return "GPS(hasGPS=$hasGPS, longitude=$longitude, latitude=$latitude," +

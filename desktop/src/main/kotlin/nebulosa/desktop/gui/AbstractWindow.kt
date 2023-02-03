@@ -56,13 +56,13 @@ abstract class AbstractWindow : View, KoinComponent {
         }
     }
 
-    protected open fun onCreate() {}
+    protected open fun onCreate() = Unit
 
-    protected open fun onStart() {}
+    protected open fun onStart() = Unit
 
-    protected open fun onStop() {}
+    protected open fun onStop() = Unit
 
-    protected open fun onClose() {}
+    protected open fun onClose() = Unit
 
     override var resizable
         get() = window.isResizable

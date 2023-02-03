@@ -86,7 +86,7 @@ class RemoteDaf(
         }
     }
 
-    override fun close() {}
+    override fun close() = Unit
 
     companion object {
 

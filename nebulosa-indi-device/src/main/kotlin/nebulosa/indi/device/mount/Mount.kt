@@ -1,12 +1,12 @@
 package nebulosa.indi.device.mount
 
 import nebulosa.indi.device.gps.GPS
-import nebulosa.indi.device.guider.Guider
+import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.math.Angle
 import nebulosa.math.Distance
 import java.time.OffsetDateTime
 
-interface Mount : Guider, GPS {
+interface Mount : GuideOutput, GPS {
 
     val slewing: Boolean
 

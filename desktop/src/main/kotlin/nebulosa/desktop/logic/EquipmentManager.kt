@@ -25,9 +25,9 @@ import nebulosa.indi.device.focuser.FocuserDetached
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.gps.GPSAttached
 import nebulosa.indi.device.gps.GPSDetached
-import nebulosa.indi.device.guider.Guider
-import nebulosa.indi.device.guider.GuiderAttached
-import nebulosa.indi.device.guider.GuiderDetached
+import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guide.GuideOutputAttached
+import nebulosa.indi.device.guide.GuideOutputDetached
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
 import nebulosa.indi.device.mount.MountDetached
@@ -49,7 +49,7 @@ class EquipmentManager : KoinComponent, Closeable {
     @JvmField val attachedFocusers = SimpleListProperty(FXCollections.observableArrayList<Focuser>())
     @JvmField val attachedGPSs = SimpleListProperty(FXCollections.observableArrayList<GPS>())
 
-    @JvmField val attachedGuiders = SimpleListProperty(FXCollections.observableArrayList<Guider>())
+    @JvmField val attachedGuideOutputs = SimpleListProperty(FXCollections.observableArrayList<GuideOutput>())
     @JvmField val attachedThermometers = SimpleListProperty(FXCollections.observableArrayList<Thermometer>())
 
     @JvmField val selectedCamera = DefaultCameraProperty()
@@ -75,8 +75,8 @@ class EquipmentManager : KoinComponent, Closeable {
             is FilterWheelDetached -> attachedFilterWheels.remove(event.device)
             is FocuserAttached -> attachedFocusers.add(event.device)
             is FocuserDetached -> attachedFocusers.remove(event.device)
-            is GuiderAttached -> attachedGuiders.add(event.device)
-            is GuiderDetached -> attachedGuiders.remove(event.device)
+            is GuideOutputAttached -> attachedGuideOutputs.add(event.device)
+            is GuideOutputDetached -> attachedGuideOutputs.remove(event.device)
             is GPSAttached -> attachedGPSs.add(event.device)
             is GPSDetached -> attachedGPSs.remove(event.device)
             is ThermometerAttached -> attachedThermometers.add(event.device)

@@ -4,9 +4,9 @@ import nebulosa.indi.protocol.xml.XmlBuilder
 
 class OneBLOB : OneElement<String>(), BLOBElement {
 
-    @JvmField var format = ""
+    var format = ""
 
-    @JvmField var size = ""
+    var size = ""
 
     override var value = ""
 

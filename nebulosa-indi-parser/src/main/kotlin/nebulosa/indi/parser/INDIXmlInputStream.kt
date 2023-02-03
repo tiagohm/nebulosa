@@ -9,7 +9,7 @@ import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.events.EndElement
 import javax.xml.stream.events.StartElement
 
-open class INDIXmlParser(private val source: InputStream) : INDIInputStream {
+open class INDIXmlInputStream(private val source: InputStream) : INDIInputStream {
 
     private val reader = XML_INPUT_FACTORY.createXMLEventReader(source)
 

@@ -1,14 +1,13 @@
-package nebulosa.indi.device.focuser
+package nebulosa.indi.client.device
 
-import nebulosa.indi.device.AbstractDevice
-import nebulosa.indi.device.DeviceProtocolHandler
 import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.firstOnSwitch
+import nebulosa.indi.device.focuser.*
 import nebulosa.indi.device.thermometer.ThermometerAttached
 import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.protocol.*
 
-internal open class FocuserBase(
+internal open class FocuserDevice(
     sender: MessageSender,
     handler: DeviceProtocolHandler,
     name: String,

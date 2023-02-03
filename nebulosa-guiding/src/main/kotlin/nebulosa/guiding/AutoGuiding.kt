@@ -1,7 +1,7 @@
 package nebulosa.guiding
 
 import nebulosa.indi.device.camera.Camera
-import nebulosa.indi.device.guider.Guider
+import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 
 interface AutoGuiding {
@@ -10,7 +10,7 @@ interface AutoGuiding {
 
     val camera: Camera
 
-    val guider: Guider
+    val guideOutput: GuideOutput
 
     val canClearCalibration: Boolean
 

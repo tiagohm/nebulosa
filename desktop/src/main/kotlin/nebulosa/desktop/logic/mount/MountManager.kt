@@ -10,7 +10,7 @@ import nebulosa.desktop.logic.telescopecontrol.TelescopeControlLX200Server
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlStellariumServer
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.guider.GuiderPulsingChanged
+import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
@@ -56,7 +56,7 @@ class MountManager(private val view: MountView) :
             is MountParkChanged,
             is MountTrackingChanged,
             is MountSlewingChanged,
-            is GuiderPulsingChanged -> updateStatus()
+            is GuideOutputPulsingChanged -> updateStatus()
             is MountEquatorialCoordinatesChanged -> TelescopeControlStellariumServer.sendCurrentPosition()
         }
     }

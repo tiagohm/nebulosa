@@ -33,7 +33,7 @@ class FocuserManager(private val view: FocuserView) :
         loadPreferences()
     }
 
-    override fun onReset() {}
+    override fun onReset() = Unit
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Focuser) {
         when (event) {

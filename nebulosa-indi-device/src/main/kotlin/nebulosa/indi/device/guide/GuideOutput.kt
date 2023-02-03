@@ -1,8 +1,8 @@
-package nebulosa.indi.device.guider
+package nebulosa.indi.device.guide
 
 import nebulosa.indi.device.Device
 
-interface Guider : Device {
+interface GuideOutput : Device {
 
     val canPulseGuide: Boolean
 

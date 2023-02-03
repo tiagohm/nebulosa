@@ -7,13 +7,13 @@ class DefNumber : DefElement<Double>(), NumberElement {
     // TODO: Support sexagesimal format conversion.
     override var value = 0.0
 
-    @JvmField var format = ""
+    var format = ""
 
     override var max = 0.0
 
     override var min = 0.0
 
-    @JvmField var step = 0.0
+    var step = 0.0
 
     override fun toXML() = XmlBuilder()
         .name("defNumber")

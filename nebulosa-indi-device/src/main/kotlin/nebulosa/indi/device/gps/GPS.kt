@@ -32,6 +32,11 @@ interface GPS : Device {
                 ?: runCatching { LocalDateTime.parse(trimmedImput, UTC_TIME_FORMAT_2) }.getOrNull()
         }
 
+        @JvmStatic
+        fun formatTime(time: LocalDateTime): String {
+            return time.format(UTC_TIME_FORMAT_1)
+        }
+
         @JvmStatic val DRIVERS = setOf(
             "indi_simulator_gps",
         )

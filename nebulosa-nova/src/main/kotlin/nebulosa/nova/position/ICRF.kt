@@ -114,13 +114,11 @@ open class ICRF protected constructor(
      * The coordinates are not adjusted for atmospheric refraction near
      * the horizon.
      */
-    @Suppress("LocalVariableName")
     fun hourAngle(): SphericalCoordinate {
         require(center is GeographicPosition) { "the center must be a GeographicPosition" }
 
-        val R = ITRS.rotationAt(time)
-        val r = R * position
-        val (sublongitude, dec, distance) = r
+        val r = ITRS.rotationAt(time)
+        val (sublongitude, dec, distance) = r * position
 
         val ha = (center.longitude - sublongitude).normalized
 
@@ -167,15 +165,14 @@ open class ICRF protected constructor(
     /**
      * Returns the [position] as an |xyz| position and velocity vector in a reference [frame].
      */
-    @Suppress("LocalVariableName")
     fun frame(frame: Frame): Pair<Vector3D, Vector3D> {
-        val R = frame.rotationAt(time)
-        val r = R * position
-        var v = R * velocity
+        val r = frame.rotationAt(time)
+        val p = r * position
+        var v = r * velocity
 
-        frame.dRdtTimesRtAt(time)?.also { v += it * r }
+        frame.dRdtTimesRtAt(time)?.also { v += it * p }
 
-        return r to v
+        return p to v
     }
 
     /**

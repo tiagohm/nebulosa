@@ -1,10 +1,11 @@
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.booleans.shouldBeTrue
-import nebulosa.indi.parser.INDIXmlParser
+import io.kotest.matchers.equality.shouldBeEqualToComparingFields
+import io.kotest.matchers.nulls.shouldNotBeNull
+import nebulosa.indi.parser.INDIXmlInputStream
 import nebulosa.indi.protocol.*
 import java.io.ByteArrayInputStream
 
-class INDIXmlParserTest : StringSpec() {
+class INDIXmlInputStreamTest : StringSpec() {
 
     init {
         "def blob vector" {
@@ -24,8 +25,8 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "def switch vector" {
@@ -46,8 +47,8 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "def number vector" {
@@ -68,8 +69,8 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "def light vector" {
@@ -88,8 +89,8 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "def text vector" {
@@ -110,15 +111,14 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "new blob vector" {
             NewBLOBVector().also {
                 it.device = "DEVICE"
                 it.name = "NAME"
-                it.state = PropertyState.OK
                 it.timestamp = "2023-02-01T12:59:52"
 
                 with(OneBLOB()) {
@@ -126,15 +126,14 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "new switch vector" {
             NewSwitchVector().also {
                 it.device = "DEVICE"
                 it.name = "NAME"
-                it.state = PropertyState.OK
                 it.timestamp = "2023-02-01T12:59:52"
 
                 with(OneSwitch()) {
@@ -143,15 +142,14 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "new number vector" {
             NewNumberVector().also {
                 it.device = "DEVICE"
                 it.name = "NAME"
-                it.state = PropertyState.OK
                 it.timestamp = "2023-02-01T12:59:52"
 
                 with(OneNumber()) {
@@ -160,15 +158,14 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "new light vector" {
             NewLightVector().also {
                 it.device = "DEVICE"
                 it.name = "NAME"
-                it.state = PropertyState.OK
                 it.timestamp = "2023-02-01T12:59:52"
 
                 with(OneLight()) {
@@ -177,15 +174,14 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "new text vector" {
             NewTextVector().also {
                 it.device = "DEVICE"
                 it.name = "NAME"
-                it.state = PropertyState.OK
                 it.timestamp = "2023-02-01T12:59:52"
 
                 with(OneText()) {
@@ -194,8 +190,8 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "set blob vector" {
@@ -212,8 +208,8 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "set switch vector" {
@@ -231,8 +227,8 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "set number vector" {
@@ -250,8 +246,8 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "set light vector" {
@@ -268,8 +264,8 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
         "set text vector" {
@@ -287,8 +283,8 @@ class INDIXmlParserTest : StringSpec() {
                     it.elements.add(this)
                 }
 
-                val parser = INDIXmlParser(it.toInputStream())
-                (parser.readINDIProtocol() == it).shouldBeTrue()
+                val parser = INDIXmlInputStream(it.toInputStream())
+                parser.readINDIProtocol().shouldNotBeNull() shouldBeEqualToComparingFields it
             }
         }
     }

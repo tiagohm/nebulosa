@@ -4,21 +4,23 @@ sealed class DefVector<E : DefElement<*>> : INDIProtocol(), Vector<E> {
 
     override val elements: MutableList<E> = ArrayList(0)
 
-    @JvmField var group = ""
+    var group = ""
 
-    @JvmField var label = ""
+    var label = ""
 
-    @JvmField var perm = PropertyPermission.RW
+    var perm = PropertyPermission.RW
 
     override var state = PropertyState.IDLE
 
-    @JvmField var timeout = 0.0
+    var timeout = 0.0
 
     override fun get(name: String) = elements.firstOrNull { it.name == name }
 
-    inline val isReadOnly get() = perm == PropertyPermission.RO
+    inline val isReadOnly
+        get() = perm == PropertyPermission.RO
 
-    inline val isNotReadOnly get() = !isReadOnly
+    inline val isNotReadOnly
+        get() = !isReadOnly
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

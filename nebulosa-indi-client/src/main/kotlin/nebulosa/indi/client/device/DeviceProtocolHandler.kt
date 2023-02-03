@@ -1,25 +1,21 @@
-package nebulosa.indi.device
+package nebulosa.indi.client.device
 
 import nebulosa.indi.connection.io.INDIInputStream
+import nebulosa.indi.device.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
-import nebulosa.indi.device.camera.CameraBase
 import nebulosa.indi.device.camera.CameraDetached
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelAttached
-import nebulosa.indi.device.filterwheel.FilterWheelBase
 import nebulosa.indi.device.filterwheel.FilterWheelDetached
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserAttached
-import nebulosa.indi.device.focuser.FocuserBase
 import nebulosa.indi.device.focuser.FocuserDetached
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.gps.GPSAttached
-import nebulosa.indi.device.gps.GPSBase
 import nebulosa.indi.device.gps.GPSDetached
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
-import nebulosa.indi.device.mount.MountBase
 import nebulosa.indi.device.mount.MountDetached
 import nebulosa.indi.parser.INDIProtocolParser
 import nebulosa.indi.parser.INDIProtocolReader
@@ -129,72 +125,74 @@ class DeviceProtocolHandler : INDIProtocolParser {
         if (message.device in notRegisteredDevices) return
 
         if (message is DefTextVector) {
-            if (message.name == "DRIVER_INFO") {
-                val executable = message.elements.first { it.name == "DRIVER_EXEC" }.value
+            when (message.name) {
+                "DRIVER_INFO" -> {
+                    val executable = message.elements.first { it.name == "DRIVER_EXEC" }.value
 
-                var registered = false
+                    var registered = false
 
-                if (executable in Camera.DRIVERS) {
-                    registered = true
+                    if (executable in Camera.DRIVERS) {
+                        registered = true
 
-                    if (message.device !in cameras) {
-                        val device = CameraBase(sender, this, message.device)
-                        cameras[message.device] = device
-                        LOG.info("camera attached: {}", device.name)
-                        fireOnEventReceived(CameraAttached(device))
+                        if (message.device !in cameras) {
+                            val device = CameraDevice(sender, this, message.device)
+                            cameras[message.device] = device
+                            LOG.info("camera attached: {}", device.name)
+                            fireOnEventReceived(CameraAttached(device))
+                        }
                     }
-                }
 
-                if (executable in Mount.DRIVERS) {
-                    registered = true
+                    if (executable in Mount.DRIVERS) {
+                        registered = true
 
-                    if (message.device !in mounts) {
-                        val device = MountBase(sender, this, message.device)
-                        mounts[message.device] = device
-                        LOG.info("mount attached: {}", device.name)
-                        fireOnEventReceived(MountAttached(device))
+                        if (message.device !in mounts) {
+                            val device = MountDevice(sender, this, message.device)
+                            mounts[message.device] = device
+                            LOG.info("mount attached: {}", device.name)
+                            fireOnEventReceived(MountAttached(device))
+                        }
                     }
-                }
 
-                if (executable in FilterWheel.DRIVERS) {
-                    registered = true
+                    if (executable in FilterWheel.DRIVERS) {
+                        registered = true
 
-                    if (message.device !in filterWheels) {
-                        val device = FilterWheelBase(sender, this, message.device)
-                        filterWheels[message.device] = device
-                        LOG.info("filter wheel attached: {}", device.name)
-                        fireOnEventReceived(FilterWheelAttached(device))
+                        if (message.device !in filterWheels) {
+                            val device = FilterWheelDevice(sender, this, message.device)
+                            filterWheels[message.device] = device
+                            LOG.info("filter wheel attached: {}", device.name)
+                            fireOnEventReceived(FilterWheelAttached(device))
+                        }
                     }
-                }
 
-                if (executable in Focuser.DRIVERS) {
-                    registered = true
+                    if (executable in Focuser.DRIVERS) {
+                        registered = true
 
-                    if (message.device !in focusers) {
-                        val device = FocuserBase(sender, this, message.device)
-                        focusers[message.device] = device
-                        LOG.info("focuser attached: {}", device.name)
-                        fireOnEventReceived(FocuserAttached(device))
+                        if (message.device !in focusers) {
+                            val device = FocuserDevice(sender, this, message.device)
+                            focusers[message.device] = device
+                            LOG.info("focuser attached: {}", device.name)
+                            fireOnEventReceived(FocuserAttached(device))
+                        }
                     }
-                }
 
-                if (executable in GPS.DRIVERS) {
-                    registered = true
+                    if (executable in GPS.DRIVERS) {
+                        registered = true
 
-                    if (message.device !in gps) {
-                        val device = GPSBase(sender, this, message.device)
-                        gps[message.device] = device
-                        LOG.info("gps attached: {}", device.name)
-                        fireOnEventReceived(GPSAttached(device))
+                        if (message.device !in gps) {
+                            val device = GPSDevice(sender, this, message.device)
+                            gps[message.device] = device
+                            LOG.info("gps attached: {}", device.name)
+                            fireOnEventReceived(GPSAttached(device))
+                        }
                     }
-                }
 
-                if (!registered) {
-                    LOG.warn("device is not registered: {}", message.device)
-                    notRegisteredDevices.add(message.device)
-                }
+                    if (!registered) {
+                        LOG.warn("device is not registered: {}", message.device)
+                        notRegisteredDevices.add(message.device)
+                    }
 
-                return
+                    return
+                }
             }
         }
 
@@ -211,57 +209,61 @@ class DeviceProtocolHandler : INDIProtocolParser {
     override fun handleMessage(message: INDIProtocol) {
         if (closed) return
 
-        if (message is Message) {
-            val device = findDeviceByName(message.device)
-
-            if (device == null) {
-                val text = "[%s]: %s\n".format(message.timestamp, message.message)
-                handlers.forEach { it.onEventReceived(DeviceMessageReceived(null, text)) }
-            } else {
-                device.handleMessage(message)
-            }
-
-            if (LOG.isDebugEnabled) {
-                LOG.debug("message received: {}", message)
-            }
-
-            return
-        } else if (message is DelProperty) {
-            if (message.name.isEmpty() && message.device.isNotEmpty()) {
+        when (message) {
+            is Message -> {
                 val device = findDeviceByName(message.device)
 
-                device?.close()
+                if (device == null) {
+                    val text = "[%s]: %s\n".format(message.timestamp, message.message)
+                    handlers.forEach { it.onEventReceived(DeviceMessageReceived(null, text)) }
+                } else {
+                    device.handleMessage(message)
+                }
 
-                when (device) {
-                    is Camera -> {
-                        handlers.forEach { it.onEventReceived(CameraDetached(device)) }
-                        LOG.info("camera detached: {}", device.name)
-                        cameras.remove(device.name)
-                    }
-                    is Mount -> {
-                        handlers.forEach { it.onEventReceived(MountDetached(device)) }
-                        LOG.info("mount detached: {}", device.name)
-                        mounts.remove(device.name)
-                    }
-                    is FilterWheel -> {
-                        handlers.forEach { it.onEventReceived(FilterWheelDetached(device)) }
-                        LOG.info("filter wheel detached: {}", device.name)
-                        filterWheels.remove(device.name)
-                    }
-                    is Focuser -> {
-                        handlers.forEach { it.onEventReceived(FocuserDetached(device)) }
-                        LOG.info("focuser detached: {}", device.name)
-                        focusers.remove(device.name)
-                    }
-                    is GPS -> {
-                        handlers.forEach { it.onEventReceived(GPSDetached(device)) }
-                        LOG.info("gps detached: {}", device.name)
-                        focusers.remove(device.name)
-                    }
+                if (LOG.isDebugEnabled) {
+                    LOG.debug("message received: {}", message)
                 }
 
                 return
             }
+            is DelProperty -> {
+                if (message.name.isEmpty() && message.device.isNotEmpty()) {
+                    val device = findDeviceByName(message.device)
+
+                    device?.close()
+
+                    when (device) {
+                        is Camera -> {
+                            handlers.forEach { it.onEventReceived(CameraDetached(device)) }
+                            LOG.info("camera detached: {}", device.name)
+                            cameras.remove(device.name)
+                        }
+                        is Mount -> {
+                            handlers.forEach { it.onEventReceived(MountDetached(device)) }
+                            LOG.info("mount detached: {}", device.name)
+                            mounts.remove(device.name)
+                        }
+                        is FilterWheel -> {
+                            handlers.forEach { it.onEventReceived(FilterWheelDetached(device)) }
+                            LOG.info("filter wheel detached: {}", device.name)
+                            filterWheels.remove(device.name)
+                        }
+                        is Focuser -> {
+                            handlers.forEach { it.onEventReceived(FocuserDetached(device)) }
+                            LOG.info("focuser detached: {}", device.name)
+                            focusers.remove(device.name)
+                        }
+                        is GPS -> {
+                            handlers.forEach { it.onEventReceived(GPSDetached(device)) }
+                            LOG.info("gps detached: {}", device.name)
+                            focusers.remove(device.name)
+                        }
+                    }
+
+                    return
+                }
+            }
+            else -> Unit
         }
 
         if (message.device.isEmpty() || message.device in notRegisteredDevices) {

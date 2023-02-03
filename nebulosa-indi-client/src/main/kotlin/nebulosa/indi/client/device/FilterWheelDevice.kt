@@ -1,14 +1,13 @@
-package nebulosa.indi.device.filterwheel
+package nebulosa.indi.client.device
 
-import nebulosa.indi.device.AbstractDevice
-import nebulosa.indi.device.DeviceProtocolHandler
 import nebulosa.indi.device.MessageSender
+import nebulosa.indi.device.filterwheel.*
 import nebulosa.indi.protocol.DefNumberVector
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
 import nebulosa.indi.protocol.PropertyState
 
-internal open class FilterWheelBase(
+internal open class FilterWheelDevice(
     sender: MessageSender,
     handler: DeviceProtocolHandler,
     name: String,
@@ -66,7 +65,7 @@ internal open class FilterWheelBase(
         sendNewText("FILTER_NAME", names.mapIndexed { i, name -> "FILTER_SLOT_NAME_${i + 1}" to name })
     }
 
-    override fun close() {}
+    override fun close() = Unit
 
     override fun toString(): String {
         return "FilterWheel(name=$name, slotCount=$count, position=$position," +

@@ -18,7 +18,7 @@ class INDIPipedOutputStream(
         }
     }
 
-    override fun flush() {}
+    override fun flush() = Unit
 
     override fun close() = connection.close()
 }

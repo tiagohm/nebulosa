@@ -1,7 +1,7 @@
 package nebulosa.indi.client
 
+import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.connection.INDIConnection
-import nebulosa.indi.device.DeviceProtocolHandler
 import nebulosa.indi.device.MessageSender
 import nebulosa.indi.parser.INDIProtocolParser
 import java.io.Closeable

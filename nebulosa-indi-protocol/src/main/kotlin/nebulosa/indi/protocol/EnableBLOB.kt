@@ -4,7 +4,7 @@ import nebulosa.indi.protocol.xml.XmlBuilder
 
 class EnableBLOB : INDIProtocol() {
 
-    @JvmField var value = BLOBEnable.ALSO
+    var value = BLOBEnable.ALSO
 
     override fun toXML() = XmlBuilder()
         .name("enableBLOB")

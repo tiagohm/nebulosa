@@ -4,7 +4,7 @@ import nebulosa.indi.protocol.xml.XmlBuilder
 
 class DefSwitchVector : DefVector<DefSwitch>(), SwitchVector<DefSwitch> {
 
-    @JvmField var rule = SwitchRule.ANY_OF_MANY
+    var rule = SwitchRule.ANY_OF_MANY
 
     override fun toXML() = XmlBuilder()
         .name("defSwitchVector")

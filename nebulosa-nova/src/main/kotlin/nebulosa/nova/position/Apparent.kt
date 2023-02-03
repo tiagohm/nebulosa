@@ -1,8 +1,10 @@
 package nebulosa.nova.position
 
 import nebulosa.coordinates.CartesianCoordinate
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.au
+import nebulosa.math.Vector3D
 import nebulosa.nova.frame.Frame
 import nebulosa.time.InstantOfTime
 
@@ -37,7 +39,6 @@ class Apparent internal constructor(
          * Generates an [Apparent] position from an [altitude] and [azimuth].
          */
         @JvmStatic
-        @Suppress("LocalVariableName")
         fun altAz(
             position: ICRF,
             azimuth: Angle,
@@ -50,8 +51,8 @@ class Apparent internal constructor(
                         "of planetary constants"
             )
 
-            val R = frame.rotationAt(position.time)
-            val p = R.transposed * CartesianCoordinate.of(azimuth, altitude, distance)
+            val r = frame.rotationAt(position.time)
+            val p = r.transposed * CartesianCoordinate.of(azimuth, altitude, distance)
 
             return Apparent(p, Vector3D.EMPTY, position.time, position.center, position.target)
         }

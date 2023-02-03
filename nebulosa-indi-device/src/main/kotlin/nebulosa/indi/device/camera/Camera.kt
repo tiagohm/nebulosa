@@ -1,11 +1,11 @@
 package nebulosa.indi.device.camera
 
 import nebulosa.imaging.algorithms.CfaPattern
-import nebulosa.indi.device.guider.Guider
+import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.indi.protocol.PropertyState
 
-interface Camera : Guider, Thermometer {
+interface Camera : GuideOutput, Thermometer {
 
     val exposuring: Boolean
 

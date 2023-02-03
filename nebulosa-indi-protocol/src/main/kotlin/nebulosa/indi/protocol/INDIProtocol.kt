@@ -11,13 +11,13 @@ import java.io.Serializable
  */
 sealed class INDIProtocol : HasName, Serializable {
 
-    @JvmField var device = ""
+    var device = ""
 
     override var name = ""
 
-    @JvmField var message = ""
+    var message = ""
 
-    @JvmField var timestamp = ""
+    var timestamp = ""
 
     abstract fun toXML(): String
 

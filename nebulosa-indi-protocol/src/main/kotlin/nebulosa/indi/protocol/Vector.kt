@@ -2,7 +2,7 @@ package nebulosa.indi.protocol
 
 sealed interface Vector<E : Element<*>> : List<E> {
 
-    var state: PropertyState
+    val state: PropertyState
 
     val elements: MutableList<E>
 

@@ -3,9 +3,9 @@ package nebulosa.desktop.logic.connection
 import nebulosa.desktop.logic.EventBus
 import nebulosa.indi.client.DefaultINDIClient
 import nebulosa.indi.client.INDIClient
+import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceEventHandler
-import nebulosa.indi.device.DeviceProtocolHandler
 import org.koin.core.component.KoinComponent
 
 class ConnectionManager : DeviceEventHandler, KoinComponent {

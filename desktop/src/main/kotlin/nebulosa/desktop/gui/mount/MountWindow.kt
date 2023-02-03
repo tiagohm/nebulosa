@@ -218,6 +218,7 @@ class MountWindow : AbstractWindow(), MountView {
 
     @FXML
     private fun nudgeTo(event: ActionEvent) {
+        val direction = (event.source as Node).userData as String
     }
 
     @FXML

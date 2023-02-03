@@ -1,18 +1,17 @@
-package nebulosa.indi.device.camera
+package nebulosa.indi.client.device
 
 import nebulosa.imaging.algorithms.CfaPattern
-import nebulosa.indi.device.AbstractDevice
-import nebulosa.indi.device.DeviceProtocolHandler
 import nebulosa.indi.device.MessageSender
-import nebulosa.indi.device.guider.GuiderAttached
-import nebulosa.indi.device.guider.GuiderDetached
-import nebulosa.indi.device.guider.GuiderPulsingChanged
+import nebulosa.indi.device.camera.*
+import nebulosa.indi.device.guide.GuideOutputAttached
+import nebulosa.indi.device.guide.GuideOutputDetached
+import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.thermometer.ThermometerAttached
 import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.protocol.*
 import nebulosa.io.Base64InputStream
 
-internal open class CameraBase(
+internal open class CameraDevice(
     sender: MessageSender,
     handler: DeviceProtocolHandler,
     name: String,
@@ -230,31 +229,18 @@ internal open class CameraBase(
 
                         handler.fireOnEventReceived(CameraOffsetChanged(this))
                     }
-                    "TELESCOPE_TIMED_GUIDE_NS" -> {
-                        if (!canPulseGuide && message is DefNumberVector) {
-                            canPulseGuide = true
-
-                            handler.fireOnEventReceived(GuiderAttached(this))
-                        } else {
-                            val prevIsPulseGuiding = pulseGuiding
-                            pulseGuiding = message.isBusy
-
-                            if (pulseGuiding != prevIsPulseGuiding) {
-                                handler.fireOnEventReceived(GuiderPulsingChanged(this))
-                            }
-                        }
-                    }
+                    "TELESCOPE_TIMED_GUIDE_NS",
                     "TELESCOPE_TIMED_GUIDE_WE" -> {
                         if (!canPulseGuide && message is DefNumberVector) {
                             canPulseGuide = true
 
-                            handler.fireOnEventReceived(GuiderAttached(this))
+                            handler.fireOnEventReceived(GuideOutputAttached(this))
                         } else {
                             val prevIsPulseGuiding = pulseGuiding
                             pulseGuiding = message.isBusy
 
                             if (pulseGuiding != prevIsPulseGuiding) {
-                                handler.fireOnEventReceived(GuiderPulsingChanged(this))
+                                handler.fireOnEventReceived(GuideOutputPulsingChanged(this))
                             }
                         }
                     }
@@ -367,7 +353,7 @@ internal open class CameraBase(
 
         if (canPulseGuide) {
             canPulseGuide = false
-            handler.fireOnEventReceived(GuiderDetached(this))
+            handler.fireOnEventReceived(GuideOutputDetached(this))
         }
     }
 

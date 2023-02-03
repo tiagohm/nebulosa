@@ -2,7 +2,7 @@ package nebulosa.indi.protocol
 
 sealed class DefElement<T> : INDIProtocol(), Element<T> {
 
-    @JvmField var label = ""
+    var label = ""
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
