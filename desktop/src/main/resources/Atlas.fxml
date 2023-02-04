@@ -29,7 +29,7 @@
                     <ImageView fx:id="sunImageView"
                                pickOnBounds="true"
                                preserveRatio="true"
-                               fitHeight="340.0"
+                               fitHeight="300.0"
                                cache="true">
                     </ImageView>
                 </VBox>
@@ -37,13 +37,37 @@
             <Tab text="Moon"
                  closable="false"
                  onSelectionChanged="#tabSelectionChanged"
-                 userData="MOON"
-            />
+                 userData="MOON">
+                <VBox alignment="CENTER">
+                    <ImageView fx:id="moonImageView"
+                               pickOnBounds="true"
+                               preserveRatio="true"
+                               fitHeight="300.0"
+                               cache="true">
+                    </ImageView>
+                </VBox>
+            </Tab>
             <Tab text="Planets"
                  closable="false"
                  onSelectionChanged="#tabSelectionChanged"
-                 userData="PLANET"
-            />
+                 userData="PLANET">
+                <TableView fx:id="planetTableView"
+                           fixedCellSize="28.0"
+                           minHeight="300.0"
+                           prefHeight="300.0"
+                           maxHeight="300.0">
+                    <columns>
+                        <TableColumn fx:id="nameTableColumn"
+                                     prefWidth="160.0"
+                                     style="-fx-alignment: CENTER-LEFT;"
+                                     text="Name"/>
+                        <TableColumn fx:id="typeTableColumn"
+                                     prefWidth="100.0"
+                                     style="-fx-alignment: CENTER;"
+                                     text="Type"/>
+                    </columns>
+                </TableView>
+            </Tab>
             <Tab text="Asteroids &amp; Comets"
                  closable="false"
                  onSelectionChanged="#tabSelectionChanged"

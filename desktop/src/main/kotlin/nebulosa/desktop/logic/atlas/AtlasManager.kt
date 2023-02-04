@@ -17,9 +17,12 @@ import nebulosa.math.Distance.Companion.au
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.ELPMPP02
 import nebulosa.nova.astrometry.VSOP87E
+import nebulosa.nova.position.Astrometric
 import nebulosa.nova.position.Barycentric
 import nebulosa.nova.position.Geoid
+import nebulosa.time.TimeJD
 import nebulosa.time.TimeYMDHMS
+import nebulosa.time.UTC
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
@@ -45,15 +48,19 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
     private val cache = HashMap<Body, List<Point2D>>()
 
     private val timerCount = AtomicInteger()
-    private val timer = timer(daemon = true, initialDelay = 60000L, period = 60000L) { onTimerHit() }
+    private val timer = timer(daemon = true, initialDelay = 60000L, period = 60000L) {
+        onTimerHit(timerCount.getAndIncrement())
+    }
 
     @Volatile private var tabType = AtlasView.TabType.SUN
     @Volatile private var observer: Body
+    @Volatile private var planet: Body? = null
 
     init {
-        val longitude = preferences.double("atlas.longitude")?.rad ?: Angle.ZERO
-        val latitude = preferences.double("atlas.latitude")?.rad ?: Angle.ZERO
-        val elevation = preferences.double("atlas.elevation")?.au ?: Distance.ZERO
+        val mount = equipmentManager.selectedMount.value
+        val longitude = mount?.longitude ?: preferences.double("atlas.longitude")?.rad ?: Angle.ZERO
+        val latitude = mount?.latitude ?: preferences.double("atlas.latitude")?.rad ?: Angle.ZERO
+        val elevation = mount?.elevation ?: preferences.double("atlas.elevation")?.au ?: Distance.ZERO
 
         observer = VSOP87E.EARTH + Geoid.IERS2010.latLon(longitude, latitude, elevation)
 
@@ -62,7 +69,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         EventBus.DEVICE
             .subscribe(
                 filter = { it is MountGeographicCoordinateChanged && it.device === equipmentManager.selectedMount.value },
-                observeOnJavaFX = true
+                observeOnJavaFX = true,
             ) { onMountCoordinateChanged() }
     }
 
@@ -88,7 +95,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         when (type) {
             AtlasView.TabType.SUN -> computeSun()
             AtlasView.TabType.MOON -> computeMoon()
-            AtlasView.TabType.PLANET -> Unit
+            AtlasView.TabType.PLANET -> computePlanet()
             AtlasView.TabType.MINOR_PLANET -> Unit
             AtlasView.TabType.STAR -> Unit
             AtlasView.TabType.DSO -> Unit
@@ -103,11 +110,17 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         MOON.computeBody()
     }
 
-    private fun Body.computeBody() {
-        computeAltitude(observer, this)
+    fun computePlanet(body: Body? = planet) {
+        body?.computeBody() ?: return
+        planet = body
     }
 
-    fun computeAltitude(observer: Body, target: Body) {
+    private fun Body.computeBody() {
+        computeAltitude(observer, this)
+        computeCoordinates(observer, this)
+    }
+
+    private fun computeAltitude(observer: Body, target: Body) {
         val now = OffsetDateTime.now()
 
         val year = now.year
@@ -116,7 +129,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
 
         val offset = now.offset.totalSeconds / DAYSEC
         val startTime = TimeYMDHMS(year, month, dayOfMonth, 12) - offset
-        val stepCount = 24.0 * 4.0 // per 15 minutes
+        val stepCount = 24.0 * 12.0
 
         if (target in cache) {
             view.drawAltitudeGraph(
@@ -151,6 +164,23 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         }
     }
 
+    private fun computeCoordinates(observer: Body, target: Body) {
+        val position = observer.at<Barycentric>(UTC(TimeJD.now())).observe(target)
+        computeEquatorialCoordinates(position)
+        computeHorizontalCoordinates(position)
+    }
+
+    private fun computeEquatorialCoordinates(position: Astrometric) {
+        val (ra, dec) = position.equatorialAtDate()
+        val (raJ2000, decJ2000) = position.equatorialJ2000()
+        view.updateEquatorialCoordinates(ra.rad, dec.rad, raJ2000.rad, decJ2000.rad)
+    }
+
+    private fun computeHorizontalCoordinates(position: Astrometric) {
+        val (az, alt) = position.horizontal()
+        view.updateHorizontalCoordinates(az.rad, alt.rad)
+    }
+
     fun updateSunImage() {
         if (!view.showing) return
 
@@ -175,18 +205,25 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
                 }
             }
 
-            val sunImagePath = Paths.get("$appDirectory", "HMIIF.png")
-
+            val sunImagePath = Paths.get("$appDirectory", "SUN.png")
             ImageIO.write(newImage, "PNG", sunImagePath.toFile())
 
-            Platform.runLater { view.updateSunImage("$sunImagePath") }
+            Platform.runLater { view.updateSunImage("file://$sunImagePath") }
         }
     }
 
-    private fun onTimerHit() {
-        val count = timerCount.getAndIncrement()
+    fun updateMoonImage() {
+        if (!view.showing) return
+
+        Platform.runLater { view.updateMoonImage("images/MOON.png") }
+    }
+
+    private fun onTimerHit(count: Int) {
+        if (!view.showing) return
 
         if (count % 15 == 0) updateSunImage()
+
+        computePlanet()
     }
 
     fun savePreferences() {
