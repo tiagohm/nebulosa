@@ -173,12 +173,12 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
     private fun computeEquatorialCoordinates(position: Astrometric) {
         val (ra, dec) = position.equatorialAtDate()
         val (raJ2000, decJ2000) = position.equatorialJ2000()
-        view.updateEquatorialCoordinates(ra.rad, dec.rad, raJ2000.rad, decJ2000.rad)
+        view.updateEquatorialCoordinates(ra, dec, raJ2000, decJ2000)
     }
 
     private fun computeHorizontalCoordinates(position: Astrometric) {
         val (az, alt) = position.horizontal()
-        view.updateHorizontalCoordinates(az.rad, alt.rad)
+        view.updateHorizontalCoordinates(az, alt)
     }
 
     fun updateSunImage() {
@@ -223,7 +223,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
 
         if (count % 15 == 0) updateSunImage()
 
-        computePlanet()
+        Platform.runLater { computePlanet() }
     }
 
     fun savePreferences() {

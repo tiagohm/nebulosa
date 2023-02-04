@@ -9,17 +9,19 @@ import nebulosa.constants.DAYSEC
  */
 @JvmInline
 @Suppress("NOTHING_TO_INLINE")
-value class Velocity(val value: Double) : Comparable<Velocity> {
+value class Velocity(val value: Double) {
 
     /**
      * Converts this velocity to km/s.
      */
-    inline val kms get() = value * AU_KM / DAYSEC
+    inline val kms
+        get() = value * AU_KM / DAYSEC
 
     /**
      * Converts this velocity to m/s.
      */
-    inline val ms get() = value * AU_M / DAYSEC
+    inline val ms
+        get() = value * AU_M / DAYSEC
 
     inline operator fun plus(velocity: Velocity) = (value + velocity.value).auDay
 
@@ -53,42 +55,44 @@ value class Velocity(val value: Double) : Comparable<Velocity> {
 
     inline operator fun unaryMinus() = (-value).auDay
 
-    override fun compareTo(other: Velocity) = value.compareTo(other.value)
-
-    companion object : Comparator<Velocity> {
+    companion object {
 
         @JvmStatic val ZERO = Velocity(0.0)
 
         /**
          * Creates [Velocity] from au/day.
          */
-        inline val Double.auDay get() = Velocity(this)
+        inline val Double.auDay
+            get() = Velocity(this)
 
         /**
          * Creates [Velocity] from au/day.
          */
-        inline val Int.auDay get() = Velocity(toDouble())
+        inline val Int.auDay
+            get() = Velocity(toDouble())
 
         /**
          * Creates [Velocity] from km/s.
          */
-        inline val Double.kms get() = (this * DAYSEC / AU_KM).auDay
+        inline val Double.kms
+            get() = (this * DAYSEC / AU_KM).auDay
 
         /**
          * Creates [Velocity] from km/s.
          */
-        inline val Int.kms get() = (this * DAYSEC / AU_KM).auDay
+        inline val Int.kms
+            get() = (this * DAYSEC / AU_KM).auDay
 
         /**
          * Creates [Velocity] from m/s.
          */
-        inline val Double.ms get() = (this * DAYSEC / AU_M).auDay
+        inline val Double.ms
+            get() = (this * DAYSEC / AU_M).auDay
 
         /**
          * Creates [Velocity] from m/s.
          */
-        inline val Int.ms get() = (this * DAYSEC / AU_M).auDay
-
-        override fun compare(a: Velocity?, b: Velocity?) = compareValues(a, b)
+        inline val Int.ms
+            get() = (this * DAYSEC / AU_M).auDay
     }
 }

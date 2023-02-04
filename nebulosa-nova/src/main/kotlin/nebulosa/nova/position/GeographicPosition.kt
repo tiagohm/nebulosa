@@ -4,11 +4,13 @@ import nebulosa.constants.ANGULAR_VELOCITY
 import nebulosa.constants.DAYSEC
 import nebulosa.erfa.eraSp00
 import nebulosa.math.*
+import nebulosa.math.Distance.Companion.au
 import nebulosa.math.Pressure.Companion.pressure
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.ITRS
 import nebulosa.time.InstantOfTime
 
+@Suppress("NOTHING_TO_INLINE")
 class GeographicPosition(
     val longitude: Angle,
     val latitude: Angle,
@@ -25,6 +27,12 @@ class GeographicPosition(
     override val target get() = this
 
     override val velocity by lazy { super.velocity }
+
+    inline operator fun component1() = itrs.a1.au
+
+    inline operator fun component2() = itrs.a2.au
+
+    inline operator fun component3() = itrs.a3.au
 
     /**
      * Returns this position’s Local Sidereal Time at the [time].

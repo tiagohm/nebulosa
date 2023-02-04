@@ -41,23 +41,30 @@ object TelescopeControlLX200Server : TelescopeControlTCPServer() {
         }
 
         fun sendRAPosition(ra: Angle) {
-            output.writeString(Angle.formatHMS(ra, "+%02d:%02d:%02.0f#"), Charsets.US_ASCII)
+            val (h, m, s) = ra.hms()
+            output.writeString("+%02d:%02d:%02d#".format(h.toInt(), m.toInt(), s.toInt()), Charsets.US_ASCII)
             output.flush()
         }
 
         fun sendDECPosition(dec: Angle) {
-            output.writeString(Angle.formatDMS(dec, "%s%02d*%02d:%02.0f#"), Charsets.US_ASCII)
+            val (d, m, s) = dec.dms()
+            val sign = if (d < 0.0) "-" else "+"
+            output.writeString("%s%02d*%02d:%02d#".format(sign, abs(d).toInt(), m.toInt(), s.toInt()), Charsets.US_ASCII)
             output.flush()
         }
 
         fun sendLongitude(longitude: Angle) {
             // East is negative.
-            output.writeString(Angle.formatDMS(-longitude, "%s%03d*%02d#"), Charsets.US_ASCII)
+            val (d, m) = (-longitude).dms()
+            val sign = if (d < 0.0) "-" else "+"
+            output.writeString("%s%03d*%02d#".format(sign, abs(d).toInt(), m.toInt()), Charsets.US_ASCII)
             output.flush()
         }
 
         fun sendLatitude(latitude: Angle) {
-            output.writeString(Angle.formatDMS(latitude, "%s%02d*%02d#"), Charsets.US_ASCII)
+            val (d, m) = latitude.dms()
+            val sign = if (d < 0.0) "-" else "+"
+            output.writeString("%s%02d*%02d#".format(sign, abs(d).toInt(), m.toInt()), Charsets.US_ASCII)
             output.flush()
         }
 

@@ -4,7 +4,6 @@ plugins {
 }
 
 dependencies {
-    api(project(":nebulosa-coordinates"))
     api(project(":nebulosa-erfa"))
     testImplementation(libs.bundles.kotest)
 }

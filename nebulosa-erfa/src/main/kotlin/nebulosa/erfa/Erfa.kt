@@ -23,10 +23,10 @@ import kotlin.math.PI
  *
  * @return longitude angle (theta), latitude angle (phi) and radial distance.
  */
-fun eraP2s(x: Double, y: Double, z: Double): Triple<Angle, Angle, Double> {
+fun eraP2s(x: Distance, y: Distance, z: Distance): SphericalCoordinate {
     val (theta, phi) = eraC2s(x, y, z)
-    val r = sqrt(x * x + y * y + z * z)
-    return Triple(theta, phi, r)
+    val r = sqrt(x.value * x.value + y.value * y.value + z.value * z.value).au
+    return SphericalCoordinate(theta, phi, r)
 }
 
 /**
@@ -34,11 +34,11 @@ fun eraP2s(x: Double, y: Double, z: Double): Triple<Angle, Angle, Double> {
  *
  * @return longitude angle (theta) and latitude angle (phi).
  */
-fun eraC2s(x: Double, y: Double, z: Double): Pair<Angle, Angle> {
-    val d2 = x * x + y * y
-    val theta = if (d2 == 0.0) 0.0 else atan2(y, x)
-    val phi = if (z == 0.0) 0.0 else atan2(z, sqrt(d2))
-    return theta.rad to phi.rad
+fun eraC2s(x: Distance, y: Distance, z: Distance): PairOfAngle {
+    val d2 = x.value * x.value + y.value * y.value
+    val theta = if (d2 == 0.0) 0.0 else atan2(y.value, x.value)
+    val phi = if (z.value == 0.0) 0.0 else atan2(z.value, sqrt(d2))
+    return PairOfAngle(theta.rad, phi.rad)
 }
 
 /**
@@ -93,7 +93,7 @@ fun eraAb(pnat: Vector3D, v: Vector3D, s: Distance, bm1: Double): Vector3D {
  *
  * @return hour angle (local) and declination
  */
-fun eraAe2hd(az: Angle, alt: Angle, phi: Angle): Pair<Angle, Angle> {
+fun eraAe2hd(az: Angle, alt: Angle, phi: Angle): PairOfAngle {
     val sa = az.sin
     val ca = az.cos
     val se = alt.sin
@@ -109,7 +109,7 @@ fun eraAe2hd(az: Angle, alt: Angle, phi: Angle): Pair<Angle, Angle> {
     val ha = if (r != 0.0) atan2(y, x).rad else Angle.ZERO
     val dec = atan2(z, r).rad
 
-    return ha to dec
+    return PairOfAngle(ha, dec)
 }
 
 /**
@@ -253,7 +253,7 @@ fun eraAnpm(angle: Angle): Angle {
 fun eraGc2Gde(
     radius: Distance, flattening: Double,
     x: Distance, y: Distance, z: Distance,
-): Triple<Angle, Angle, Distance> {
+): SphericalCoordinate {
     val aeps2 = radius.value * radius.value * 1e-32
     val e2 = (2.0 - flattening) * flattening
 
@@ -309,7 +309,7 @@ fun eraGc2Gde(
         height = absz - b
     }
 
-    return Triple(elong.rad, phi.rad, height.au)
+    return SphericalCoordinate(elong.rad, phi.rad, height.au)
 }
 
 /**
@@ -322,7 +322,7 @@ fun eraGc2Gde(
 fun eraGd2Gce(
     radius: Distance, flattening: Double,
     elong: Angle, phi: Angle, height: Distance,
-): Triple<Distance, Distance, Distance> {
+): CartesianCoordinate {
     val sp = phi.sin
     val cp = phi.cos
     val w = (1.0 - flattening).let { it * it }
@@ -338,7 +338,7 @@ fun eraGd2Gce(
     val y = r * elong.sin
     val z = (aS + height.value) * sp
 
-    return Triple(x.au, y.au, z.au)
+    return CartesianCoordinate(x.au, y.au, z.au)
 }
 
 /**
@@ -398,7 +398,7 @@ fun eraPvtob(
 
     // Polar motion and TIO position.
     val rpm = eraPom00(xp, yp, sp)
-    val (x, y, z) = rpm.transposed * Vector3D(xyzm.first.meters, xyzm.second.meters, xyzm.third.meters)
+    val (x, y, z) = rpm.transposed * Vector3D(xyzm.x.meters, xyzm.y.meters, xyzm.z.meters)
 
     val s = theta.sin
     val c = theta.cos
@@ -467,9 +467,9 @@ fun eraApcs(
     val phz = ehpz.value + dpz
 
     // Barycentric position of observer (au).
-    val pbx = ebpx.value + dpx
-    val pby = ebpy.value + dpy
-    val pbz = ebpz.value + dpz
+    val pbx = ebpx + dpx
+    val pby = ebpy + dpy
+    val pbz = ebpz + dpz
 
     // Heliocentric direction and distance (unit vector and au).
     val ph = Vector3D(phx, phy, phz)
@@ -491,7 +491,7 @@ fun eraApcs(
 
     return AstrometryParameters(
         pmt = pmt,
-        ebx = pbx.au, eby = pby.au, ebz = pbz.au,
+        eb = CartesianCoordinate(pbx, pby, pbz),
         em = em.au,
         ehx = ehx, ehy = ehy, ehz = ehz,
         vx = wx, vy = wy, vz = wz,
@@ -618,7 +618,7 @@ fun eraObl06(tt1: Double, tt2: Double): Angle {
 /**
  * Precession angles, IAU 2006 (Fukushima-Williams 4-angle formulation).
  */
-fun eraPfw06(tt1: Double, tt2: Double): Array<Angle> {
+fun eraPfw06(tt1: Double, tt2: Double): FukushimaWilliamsFourAngles {
     val t = ((tt1 - J2000) + tt2) / DAYSPERJC
 
     val gamb = (-0.052928 + (10.556378 + (0.4932044 + (-0.00031238 + (-0.000002788 + (0.0000000260) * t) * t) * t) * t) * t).arcsec
@@ -626,7 +626,7 @@ fun eraPfw06(tt1: Double, tt2: Double): Array<Angle> {
     val psib = (-0.041775 + (5038.481484 + (1.5584175 + (-0.00018522 + (-0.000026452 + (-0.0000000148) * t) * t) * t) * t) * t).arcsec
     val epsa = eraObl06(tt1, tt2)
 
-    return arrayOf(gamb, phib, psib, epsa)
+    return FukushimaWilliamsFourAngles(gamb, phib, psib, epsa)
 }
 
 /**
@@ -776,7 +776,7 @@ private val XPL = bufferedResource("PLANETARY-NUT.dat") { (0 until 687).map { Pl
  * Nutation, IAU 2000A model (MHB2000 luni-solar and planetary nutation
  * with free core nutation omitted).
  */
-fun eraNut00a(tt1: Double, tt2: Double): Pair<Angle, Angle> {
+fun eraNut00a(tt1: Double, tt2: Double): PairOfAngle {
     // Interval between fundamental date J2000.0 and given date (JC).
     val t = ((tt1 - J2000) + tt2) / DAYSPERJC
 
@@ -860,13 +860,13 @@ fun eraNut00a(tt1: Double, tt2: Double): Pair<Angle, Angle> {
     val dep = de
 
     // Units of 0.1 microarcsecond to radians.
-    return (dpls + dpp).arcsec / 10000000.0 to (dels + dep).arcsec / 10000000.0
+    return PairOfAngle((dpls + dpp).arcsec / 10000000.0, (dels + dep).arcsec / 10000000.0)
 }
 
 /**
  * IAU 2000A nutation with adjustments to match the IAU 2006 precession.
  */
-fun eraNut06a(tt1: Double, tt2: Double): Pair<Angle, Angle> {
+fun eraNut06a(tt1: Double, tt2: Double): PairOfAngle {
     // Interval between fundamental date J2000.0 and given date (JC).
     val t = ((tt1 - J2000) + tt2) / DAYSPERJC
 
@@ -880,7 +880,7 @@ fun eraNut06a(tt1: Double, tt2: Double): Pair<Angle, Angle> {
     val dpsi = dp.value + dp.value * (0.4697e-6 + fj2)
     val deps = de.value + de.value * fj2
 
-    return dpsi.rad to deps.rad
+    return PairOfAngle(dpsi.rad, deps.rad)
 }
 
 /**
@@ -1108,7 +1108,7 @@ fun era00(ut11: Double, ut12: Double): Angle {
  *
  * @return tan Z coefficient (radians) and tan^3 Z coefficient (radians)
  */
-fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): Pair<Angle, Angle> {
+fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): PairOfAngle {
     // Decide whether optical/IR or radio case:  switch at 100 microns.
     val optic = wl <= 100.0
 
@@ -1144,7 +1144,7 @@ fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): Pair<Angle, Angl
     val refa = gamma * (1.0 - beta)
     val refb = -gamma * (beta - gamma / 2.0)
 
-    return refa.rad to refb.rad
+    return PairOfAngle(refa.rad, refb.rad)
 }
 
 //fun apco(frame: CoordinateFrame) {
@@ -1187,7 +1187,12 @@ fun eraApcg(
     ehpx: Distance, ehpy: Distance, ehpz: Distance,
 ): AstrometryParameters {
     return eraApcs(
-        tdb1, tdb2, Distance.ZERO, Distance.ZERO, Distance.ZERO, 0.0, 0.0, 0.0, ebpx, ebpy, ebpz, ebvx, ebvy, ebvz, ehpx, ehpy, ehpz
+        tdb1, tdb2,
+        Distance.ZERO, Distance.ZERO, Distance.ZERO,
+        0.0, 0.0, 0.0,
+        ebpx, ebpy, ebpz,
+        ebvx, ebvy, ebvz,
+        ehpx, ehpy, ehpz,
     )
 }
 
@@ -1750,10 +1755,10 @@ private val OBLCOR = (-0.02524).arcsec
  * model, formally adopted by the IAU General Assembly in 2000,
  * namely MHB2000 (Mathews et al. 2002).
  */
-fun eraPr00(tt1: Double, tt2: Double): Pair<Angle, Angle> {
+fun eraPr00(tt1: Double, tt2: Double): PairOfAngle {
     // Interval between fundamental epoch J2000.0 and given date (JC).
     val t = ((tt1 - J2000) + tt2) / DAYSPERJC
-    return (PRECOR * t) to (OBLCOR * t)
+    return PairOfAngle(PRECOR * t, OBLCOR * t)
 }
 
 /**
@@ -1860,7 +1865,7 @@ private val DEPLAN = 0.388.mas
 /**
  * Nutation, IAU 2000B model.
  */
-fun eraNut00b(tt1: Double, tt2: Double): Pair<Angle, Angle> {
+fun eraNut00b(tt1: Double, tt2: Double): PairOfAngle {
     // Interval between fundamental epoch J2000.0 and given date (JC).
     val t = ((tt1 - J2000) + tt2) / DAYSPERJC
 
@@ -1892,7 +1897,7 @@ fun eraNut00b(tt1: Double, tt2: Double): Pair<Angle, Angle> {
         de += (X[i].ce + X[i].cet * t) * carg + X[i].se * sarg
     }
 
-    return (dp.arcsec / 10000000.0 + DPPLAN) to (de.arcsec / 10000000.0 + DEPLAN)
+    return PairOfAngle(dp.arcsec / 10000000.0 + DPPLAN, de.arcsec / 10000000.0 + DEPLAN)
 }
 
 /**
@@ -1936,7 +1941,7 @@ fun eraPmat06(tt1: Double, tt2: Double): Matrix3D {
 /**
  * Precession angles, IAU 2006, equinox based.
  */
-fun eraP06e(tt1: Double, tt2: Double): Array<Angle> {
+fun eraP06e(tt1: Double, tt2: Double): PrecessionAnglesIAU2006 {
     // Interval between fundamental date J2000.0 and given date (JC).
     val t = ((tt1 - J2000) + tt2) / DAYSPERJC
     // Obliquity at J2000.0.
@@ -1970,7 +1975,7 @@ fun eraP06e(tt1: Double, tt2: Double): Array<Angle> {
     val phi = eps0 + ((-46.811015 + (0.0511269 + (0.00053289 + (-0.000000440 + (-0.0000000176) * t) * t) * t) * t) * t).arcsec
     val psi = ((5038.481507 + (1.5584176 + (-0.00018522 + (-0.000026452 + (-0.0000000148) * t) * t) * t) * t) * t).arcsec
 
-    return arrayOf(eps0, psia, oma, bpa, bqa, pia, bpia, epsa, chia, za, zetaa, thetaa, pa, gam, phi, psi)
+    return PrecessionAnglesIAU2006(eps0, psia, oma, bpa, bqa, pia, bpia, epsa, chia, za, zetaa, thetaa, pa, gam, phi, psi)
 }
 
 /**

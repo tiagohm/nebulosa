@@ -1,16 +1,19 @@
-package nebulosa.coordinates
+package nebulosa.erfa
 
 import nebulosa.math.Angle
 import nebulosa.math.Distance
 import nebulosa.math.Vector3D
 
-class CartesianCoordinate(
+@Suppress("NOTHING_TO_INLINE")
+data class CartesianCoordinate(
     val x: Distance,
     val y: Distance,
     val z: Distance,
-) : Coordinate, Vector3D(x.value, y.value, z.value) {
+) {
 
     val spherical by lazy { SphericalCoordinate.of(x, y, z) }
+
+    val vector3D by lazy { Vector3D(x.value, y.value, z.value) }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -35,6 +38,8 @@ class CartesianCoordinate(
     }
 
     companion object {
+
+        @JvmStatic val EMPTY = CartesianCoordinate(Distance.ZERO, Distance.ZERO, Distance.ZERO)
 
         /**
          * Given [theta] as longitude, [phi] as latitude and

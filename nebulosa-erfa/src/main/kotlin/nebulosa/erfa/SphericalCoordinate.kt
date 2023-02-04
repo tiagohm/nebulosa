@@ -1,23 +1,16 @@
-package nebulosa.coordinates
+package nebulosa.erfa
 
-import nebulosa.erfa.eraP2s
 import nebulosa.math.Angle
 import nebulosa.math.Distance
-import nebulosa.math.Distance.Companion.au
 
-class SphericalCoordinate(
+@Suppress("NOTHING_TO_INLINE")
+data class SphericalCoordinate(
     val theta: Angle,
     val phi: Angle,
     val distance: Distance,
-) : Coordinate {
+) {
 
     val cartesian by lazy { CartesianCoordinate.of(theta, phi, distance) }
-
-    override fun component1() = theta.value
-
-    override fun component2() = phi.value
-
-    override fun component3() = distance.value
 
     inline val longitude
         get() = theta
@@ -50,9 +43,6 @@ class SphericalCoordinate(
     companion object {
 
         @JvmStatic
-        fun of(x: Distance, y: Distance, z: Distance): SphericalCoordinate {
-            val (theta, phi, r) = eraP2s(x.value, y.value, z.value)
-            return SphericalCoordinate(theta, phi, r.au)
-        }
+        fun of(x: Distance, y: Distance, z: Distance) = eraP2s(x, y, z)
     }
 }

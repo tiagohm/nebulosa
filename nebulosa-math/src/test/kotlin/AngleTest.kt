@@ -10,6 +10,8 @@ import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Angle.Companion.mas
 import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.AngleFormatter
+import java.util.*
 
 class AngleTest : StringSpec() {
 
@@ -81,29 +83,71 @@ class AngleTest : StringSpec() {
             Angle.ZERO.compareTo(Angle.ZERO) shouldBeExactly 0
         }
         "parse decimal coordinates" {
-            Angle.parseCoordinatesAsDouble("23.5634453") shouldBe 23.5634453
+            Angle.from("23.5634453") shouldBe 23.5634453
         }
         "parse sexagesimal coordinates" {
-            Angle.parseCoordinatesAsDouble("23 33 48.40308") shouldBe 23.5634453
-            Angle.parseCoordinatesAsDouble("23h 33 48.40308") shouldBe 23.5634453
-            Angle.parseCoordinatesAsDouble("23 33m 48.40308") shouldBe 23.5634453
-            Angle.parseCoordinatesAsDouble("23 33 48.40308s") shouldBe 23.5634453
-            Angle.parseCoordinatesAsDouble("23h 33m 48.40308") shouldBe 23.5634453
-            Angle.parseCoordinatesAsDouble("23 33m 48.40308s") shouldBe 23.5634453
-            Angle.parseCoordinatesAsDouble("23h 33m 48.40308s") shouldBe 23.5634453
-            Angle.parseCoordinatesAsDouble("-23° 33m 48.40308s") shouldBe -23.5634453
-            Angle.parseCoordinatesAsDouble("  -23   33m   48.40308s  ") shouldBe -23.5634453
-            Angle.parseCoordinatesAsDouble("-23 33.806718m") shouldBe -23.5634453
-            Angle.parseCoordinatesAsDouble("+23") shouldBe 23.0
-            Angle.parseCoordinatesAsDouble("-23") shouldBe -23.0
-            Angle.parseCoordinatesAsDouble("23h33m48.40308s") shouldBe 23.5634453
-            Angle.parseCoordinatesAsDouble("23h33m 48.40308\"") shouldBe 23.5634453
-            Angle.parseCoordinatesAsDouble("23h33'48.40308\"") shouldBe 23.5634453
-            Angle.parseCoordinatesAsDouble("-23°33'48.40308\"") shouldBe -23.5634453
-            Angle.parseCoordinatesAsDouble("-23°33'48.40308s 67.99") shouldBe -23.5634453
-            Angle.parseCoordinatesAsDouble("- 23°33'48.40308s 67.99") shouldBe -23.5634453
-            Angle.parseCoordinatesAsDouble("") shouldBe null
-            Angle.parseCoordinatesAsDouble("kkk") shouldBe null
+            Angle.from("23 33 48.40308") shouldBe 23.5634453
+            Angle.from("23h 33 48.40308") shouldBe 23.5634453
+            Angle.from("23 33m 48.40308") shouldBe 23.5634453
+            Angle.from("23 33 48.40308s") shouldBe 23.5634453
+            Angle.from("23h 33m 48.40308") shouldBe 23.5634453
+            Angle.from("23 33m 48.40308s") shouldBe 23.5634453
+            Angle.from("23h 33m 48.40308s") shouldBe 23.5634453
+            Angle.from("-23° 33m 48.40308s") shouldBe -23.5634453
+            Angle.from("  -23   33m   48.40308s  ") shouldBe -23.5634453
+            Angle.from("-23 33.806718m") shouldBe -23.5634453
+            Angle.from("+23") shouldBe 23.0
+            Angle.from("-23") shouldBe -23.0
+            Angle.from("23h33m48.40308s") shouldBe 23.5634453
+            Angle.from("23h33m 48.40308\"") shouldBe 23.5634453
+            Angle.from("23h33'48.40308\"") shouldBe 23.5634453
+            Angle.from("-23°33'48.40308\"") shouldBe -23.5634453
+            Angle.from("-23°33'48.40308s 67.99") shouldBe -23.5634453
+            Angle.from("- 23°33'48.40308s 67.99") shouldBe -23.5634453
+            Angle.from("") shouldBe null
+            Angle.from("kkk") shouldBe null
+        }
+        "format" {
+            val angle = Angle.from("12h 30 1.5", true)!!
+
+            AngleFormatter.Builder()
+                .degrees()
+                .secondsDecimalPlaces(2)
+                .separators("°", "'", "\"")
+                .locale(Locale.ENGLISH)
+                .build()
+                .format(angle) shouldBe "+180°30'01.50\""
+
+            AngleFormatter.Builder()
+                .hours()
+                .secondsDecimalPlaces(1)
+                .separators("h", "m", "s")
+                .locale(Locale.ENGLISH)
+                .build()
+                .format(angle) shouldBe "+12h30m01.5s"
+
+            AngleFormatter.Builder()
+                .hours()
+                .noSign()
+                .secondsDecimalPlaces(0)
+                .locale(Locale.ENGLISH)
+                .build()
+                .format(angle) shouldBe "12:30:01"
+
+            AngleFormatter.Builder()
+                .hours()
+                .noSign()
+                .noSeconds()
+                .build()
+                .format(angle) shouldBe "12:30"
+
+            AngleFormatter.Builder()
+                .hours()
+                .noSign()
+                .noSeconds()
+                .separators("h", "m")
+                .build()
+                .format(angle) shouldBe "12h30m"
         }
     }
 }

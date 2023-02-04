@@ -17,6 +17,7 @@ import nebulosa.desktop.logic.on
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.atlas.Twilight
 import nebulosa.math.Angle
+import nebulosa.math.AngleFormatter
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.VSOP87E
 
@@ -116,23 +117,18 @@ class AtlasWindow : AbstractWindow(), AtlasView {
         ra: Angle, dec: Angle,
         raJ2000: Angle, decJ2000: Angle,
     ) {
-        rightAscensionLabel.text = Angle.formatHMS(ra, RA_FORMAT)
-        declinationLabel.text = Angle.formatDMS(dec, DEC_FORMAT)
-        rightAscensionJ2000Label.text = Angle.formatHMS(raJ2000, RA_FORMAT)
-        declinationJ2000Label.text = Angle.formatDMS(decJ2000, DEC_FORMAT)
+        rightAscensionLabel.text = ra.format(AngleFormatter.HMS)
+        declinationLabel.text = dec.format(AngleFormatter.DMS)
+        rightAscensionJ2000Label.text = raJ2000.format(AngleFormatter.HMS)
+        declinationJ2000Label.text = decJ2000.format(AngleFormatter.DMS)
     }
 
     override fun updateHorizontalCoordinates(az: Angle, alt: Angle) {
-        azimuthLabel.text = Angle.formatDMS(az, AZ_FORMAT)
-        altitudeLabel.text = Angle.formatDMS(alt, ALT_FORMAT)
+        azimuthLabel.text = az.format(AngleFormatter.DMS)
+        altitudeLabel.text = alt.format(AngleFormatter.DMS)
     }
 
     companion object {
-
-        private const val RA_FORMAT = "%02dh %02dm %05.02fs"
-        private const val DEC_FORMAT = "%s%02d° %02d' %05.02f\""
-        private const val AZ_FORMAT = "%2$03d° %3$02d' %4$05.02f\""
-        private const val ALT_FORMAT = "%s%02d° %02d' %05.02f\""
 
         @JvmStatic private var window: AtlasWindow? = null
 

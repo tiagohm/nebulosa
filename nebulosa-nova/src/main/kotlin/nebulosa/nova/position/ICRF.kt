@@ -2,8 +2,8 @@ package nebulosa.nova.position
 
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.SPEED_OF_LIGHT
-import nebulosa.coordinates.CartesianCoordinate
-import nebulosa.coordinates.SphericalCoordinate
+import nebulosa.erfa.CartesianCoordinate
+import nebulosa.erfa.SphericalCoordinate
 import nebulosa.math.*
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance.Companion.au
@@ -18,8 +18,6 @@ import nebulosa.nova.position.*
 import nebulosa.time.InstantOfTime
 import nebulosa.time.TimeJD
 import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
 
 /**
  * An |xyz| position and velocity oriented to the ICRF axes.
@@ -149,8 +147,8 @@ open class ICRF protected constructor(
         val (ha, delta) = hourAngle()
         val phi = (center as GeographicPosition).latitude
         // A rare condition! Object exactly in zenith, avoid undefined result.
-        return if (ha == 0.0 && (delta - phi.value) == 0.0) Angle.ZERO
-        else atan2(sin(ha), phi.tan * cos(delta) - sin(delta) * cos(ha)).rad
+        return if (ha.value == 0.0 && (delta - phi).value == 0.0) Angle.ZERO
+        else atan2(ha.sin, phi.tan * delta.cos - delta.sin * ha.cos).rad
     }
 
     /**
@@ -320,7 +318,7 @@ open class ICRF protected constructor(
             center: Number = Int.MIN_VALUE,
             target: Number = Int.MIN_VALUE,
         ): ICRF {
-            val position = CartesianCoordinate.of(ra, dec, distance)
+            val position = CartesianCoordinate.of(ra, dec, distance).vector3D
             return of(if (epoch != null) epoch.m.transposed * position else position, Vector3D.EMPTY, time, center, target)
         }
     }

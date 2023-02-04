@@ -6,7 +6,7 @@ import nebulosa.math.Matrix3D
 
 data class AstrometryParameters(
     val pmt: Double = 0.0, // PM time interval (SSB, Julian years).
-    val ebx: Distance = Distance.ZERO, val eby: Distance = Distance.ZERO, val ebz: Distance = Distance.ZERO, // SSB to observer (vector, au).
+    val eb: CartesianCoordinate = CartesianCoordinate.EMPTY, // SSB to observer (vector, au).
     val ehx: Double = 0.0, val ehy: Double = 0.0, val ehz: Double = 0.0, // Sun to observer (unit vector).
     val em: Distance = Distance.ZERO, // Distance from Sun to observer.
     val vx: Double = 0.0, val vy: Double = 0.0, val vz: Double = 0.0, // Barycentric observer velocity (c)

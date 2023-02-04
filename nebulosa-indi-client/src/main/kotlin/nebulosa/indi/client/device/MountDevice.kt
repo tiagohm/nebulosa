@@ -13,7 +13,6 @@ import nebulosa.indi.protocol.*
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
-import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.m
 import nebulosa.nova.position.Geoid
@@ -210,7 +209,7 @@ internal open class MountDevice(
 
     override fun syncJ2000(ra: Angle, dec: Angle) {
         val (raNow, decNow) = ICRF.equatorial(ra, dec).equatorialAtDate()
-        sync(raNow.rad.normalized, decNow.rad)
+        sync(raNow.normalized, decNow)
     }
 
     override fun slewTo(ra: Angle, dec: Angle) {
@@ -220,7 +219,7 @@ internal open class MountDevice(
 
     override fun slewToJ2000(ra: Angle, dec: Angle) {
         val (raNow, decNow) = ICRF.equatorial(ra, dec).equatorialAtDate()
-        slewTo(raNow.rad.normalized, decNow.rad)
+        slewTo(raNow.normalized, decNow)
     }
 
     override fun goTo(ra: Angle, dec: Angle) {
@@ -230,7 +229,7 @@ internal open class MountDevice(
 
     override fun goToJ2000(ra: Angle, dec: Angle) {
         val (raNow, decNow) = ICRF.equatorial(ra, dec).equatorialAtDate()
-        goTo(raNow.rad.normalized, decNow.rad)
+        goTo(raNow.normalized, decNow)
     }
 
     override fun park() {

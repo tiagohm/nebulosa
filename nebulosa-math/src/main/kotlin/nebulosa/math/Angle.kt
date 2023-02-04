@@ -10,64 +10,73 @@ import kotlin.math.*
  */
 @JvmInline
 @Suppress("NOTHING_TO_INLINE")
-value class Angle(val value: Double) : Comparable<Angle> {
+value class Angle(val value: Double) {
 
     /**
      * Converts this angle to degrees.
      */
-    inline val degrees get() = value * RAD2DEG
+    inline val degrees
+        get() = value * RAD2DEG
 
     /**
      * Converts this angle to hours.
      */
-    inline val hours get() = value * (12.0 / PI)
+    inline val hours
+        get() = value * (12.0 / PI)
 
     /**
      * Converts this angle to arcminutes.
      */
-    inline val arcmin get() = value * (60.0 * 180.0 / PI)
+    inline val arcmin
+        get() = value * (60.0 * 180.0 / PI)
 
     /**
      * Converts this angle to arcseconds.
      */
-    inline val arcsec get() = value * (3600.0 * 180.0 / PI)
+    inline val arcsec
+        get() = value * (3600.0 * 180.0 / PI)
 
     /**
      * Converts this angle to milliarcseconds.
      */
-    inline val mas get() = value * (3600000.0 * 180.0 / PI)
+    inline val mas
+        get() = value * (3600000.0 * 180.0 / PI)
 
     /**
      * Returns the normalized angle.
      */
-    inline val normalized get() = (value pmod TAU).rad
+    inline val normalized
+        get() = (value pmod TAU).rad
 
     /**
      * Gets the cosine of this angle.
      */
-    inline val cos get() = cos(value)
+    inline val cos
+        get() = cos(value)
 
     /**
      * Gets the sine of this angle.
      */
-    inline val sin get() = sin(value)
+    inline val sin
+        get() = sin(value)
 
     /**
      * Gets the tangent of this angle.
      */
-    inline val tan get() = tan(value)
+    inline val tan
+        get() = tan(value)
 
     fun hms(): DoubleArray {
         val hours = normalized.hours
-        val minutes = (hours - hours.toInt()) * 60.0
-        val seconds = (minutes - minutes.toInt()) * 60.0
+        val minutes = ((hours - hours.toInt()) * 60.0) % 60.0
+        val seconds = ((minutes - minutes.toInt()) * 60.0) % 60.0
         return doubleArrayOf(hours, minutes, seconds)
     }
 
     fun dms(): DoubleArray {
         val degrees = abs(degrees)
-        val minutes = (degrees - degrees.toInt()) * 60.0
-        val seconds = (minutes - minutes.toInt()) * 60.0
+        val minutes = ((degrees - degrees.toInt()) * 60.0) % 60.0
+        val seconds = ((minutes - minutes.toInt()) * 60.0) % 60.0
         return doubleArrayOf(if (value < 0.0) -degrees else degrees, minutes, seconds)
     }
 
@@ -111,34 +120,29 @@ value class Angle(val value: Double) : Comparable<Angle> {
 
     inline operator fun unaryMinus() = (-value).rad
 
-    override fun compareTo(other: Angle) = value.compareTo(other.value)
+    fun format(formatter: AngleFormatter) = formatter.format(this)
 
-    companion object : ClosedRange<Angle>, Comparator<Angle> {
+    companion object {
 
         @JvmStatic val ZERO = Angle(0.0)
         @JvmStatic val SEMICIRCLE = Angle(PI)
         @JvmStatic val CIRCLE = Angle(TAU)
         @JvmStatic val QUARTER = Angle(PIOVERTWO)
 
-        override val start = ZERO
-
-        override val endInclusive = CIRCLE
-
-        override fun compare(a: Angle?, b: Angle?) = compareValues(a?.value, b?.value)
-
-        @JvmStatic private val PARSE_COORDINATES_FACTOR = doubleArrayOf(1.0, 60.0, 3600.0)
         @JvmStatic private val PARSE_COORDINATES_NOT_NUMBER_REGEX = Regex("[^\\-\\d.]+")
 
         @JvmStatic
-        fun parseCoordinatesAsDouble(input: String): Double {
+        fun from(input: String, isHours: Boolean = false): Angle? {
             val trimmedInput = input.trim()
-            val decimalInput = trimmedInput.toDoubleOrNull()
-            if (decimalInput != null) return decimalInput
 
-            val tokenizer = StringTokenizer(trimmedInput, " \t\n\rhms°'\"")
-            var res = 0.0
+            val decimalInput = trimmedInput.toDoubleOrNull()
+            if (decimalInput != null) return if (isHours) decimalInput.hours
+            else decimalInput.deg
+
+            val tokenizer = StringTokenizer(trimmedInput, " \t\n\rhms°'\":")
+            val res = DoubleArray(3)
             var idx = 0
-            var negative = false
+            var sign = 1.0
 
             while (idx < 3 && tokenizer.hasMoreElements()) {
                 val token = tokenizer.nextToken().replace(PARSE_COORDINATES_NOT_NUMBER_REGEX, "").trim()
@@ -146,108 +150,104 @@ value class Angle(val value: Double) : Comparable<Angle> {
                 if (token.isEmpty()) continue
 
                 if (idx == 0 && token == "-") {
-                    negative = true
+                    sign = -1.0
                     continue
                 }
 
                 val value = token.toDoubleOrNull() ?: continue
 
                 if (idx == 0 && value < 0.0) {
-                    negative = true
+                    sign = -1.0
                 }
 
-                res += abs(value) / PARSE_COORDINATES_FACTOR[idx++]
+                res[idx++] = abs(value)
             }
 
-            return if (idx == 0) throw NumberFormatException("invalid coordinate: $input")
-            else if (negative) -res
-            else res
-        }
+            if (idx == 0) return null
 
-        @JvmStatic
-        fun parseCoordinatesAsDoubleOrNull(input: String) = try {
-            parseCoordinatesAsDouble(input)
-        } catch (e: NumberFormatException) {
-            null
-        }
+            val value = if (isHours) sign * res[0] * 15.0 + res[1] / 60.0 + res[2] / 3600.0
+            else sign * res[0] + res[1] / 60.0 + res[2] / 3600.0
 
-        @JvmStatic
-        fun formatHMS(angle: Angle, format: String): String {
-            val (hours, minutes, seconds) = angle.hms()
-            return format.format(hours.toInt(), minutes.toInt(), seconds)
-        }
-
-        @JvmStatic
-        fun formatDMS(angle: Angle, format: String): String {
-            val (degrees, minutes, seconds) = angle.dms()
-            val sign = if (degrees < 0.0) "-" else "+"
-            return format.format(sign, abs(degrees).toInt(), minutes.toInt(), seconds)
+            return value.deg
         }
 
         /**
          * Creates [Angle] from radians.
          */
-        inline val Double.rad get() = Angle(this)
+        inline val Double.rad
+            get() = Angle(this)
 
         /**
          * Creates [Angle] from radians.
          */
-        inline val Float.rad get() = Angle(toDouble())
+        inline val Float.rad
+            get() = Angle(toDouble())
 
         /**
          * Creates [Angle] from radians.
          */
-        inline val Int.rad get() = Angle(toDouble())
+        inline val Int.rad
+            get() = Angle(toDouble())
 
         /**
          * Creates [Angle] from milliarcseconds.
          */
-        inline val Double.mas get() = (this * MILLIASEC2RAD).rad
+        inline val Double.mas
+            get() = (this * MILLIASEC2RAD).rad
 
         /**
          * Creates [Angle] from milliarcseconds.
          */
-        inline val Int.mas get() = (this * MILLIASEC2RAD).rad
+        inline val Int.mas
+            get() = (this * MILLIASEC2RAD).rad
 
         /**
          * Creates [Angle] from arcseconds.
          */
-        inline val Double.arcsec get() = (this * ASEC2RAD).rad
+        inline val Double.arcsec
+            get() = (this * ASEC2RAD).rad
 
         /**
          * Creates [Angle] from arcseconds.
          */
-        inline val Int.arcsec get() = (this * ASEC2RAD).rad
+        inline val Int.arcsec
+            get() = (this * ASEC2RAD).rad
 
         /**
          * Creates [Angle] from arcminutes.
          */
-        inline val Double.arcmin get() = (this * AMIN2RAD).rad
+        inline val Double.arcmin
+            get() = (this * AMIN2RAD).rad
 
         /**
          * Creates [Angle] from arcminutes.
          */
-        inline val Int.arcmin get() = (this * AMIN2RAD).rad
+        inline val Int.arcmin
+            get() = (this * AMIN2RAD).rad
 
         /**
          * Creates [Angle] from degrees.
          */
-        inline val Double.deg get() = (this * DEG2RAD).rad
+        inline val Double.deg
+            get() = (this * DEG2RAD).rad
 
         /**
          * Creates [Angle] from degrees.
          */
-        inline val Int.deg get() = (this * DEG2RAD).rad
+        inline val Int.deg
+            get() = (this * DEG2RAD).rad
 
         /**
          * Creates [Angle] from hours.
          */
-        inline val Double.hours get() = (this * PI / 12.0).rad
+        inline val Double.hours
+            get() = (this * PI / 12.0).rad
 
         /**
          * Creates [Angle] from hours.
          */
-        inline val Int.hours get() = (this * PI / 12.0).rad
+        inline val Int.hours
+            get() = (this * PI / 12.0).rad
 
         /**
          * Creates the [Angle] from [hour], [minute] and [second].

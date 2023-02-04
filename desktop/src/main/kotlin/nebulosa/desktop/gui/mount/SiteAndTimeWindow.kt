@@ -13,7 +13,7 @@ import nebulosa.desktop.view.mount.SiteAndTimeView
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.mount.Mount
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.AngleFormatter
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.m
 import org.koin.core.component.inject
@@ -64,19 +64,19 @@ class SiteAndTimeWindow(override val mount: Mount) : AbstractWindow(), SiteAndTi
     override var longitude
         get() = longitudeTextField.text.trim()
             .ifBlank { null }
-            ?.let(Angle::parseCoordinatesAsDouble)?.deg
+            ?.let(Angle::from)
             ?: mount.longitude
         set(value) {
-            longitudeTextField.text = Angle.formatDMS(value, "%s%03d %02d %02.01f")
+            longitudeTextField.text = value.format(AngleFormatter.DMS)
         }
 
     override var latitude
         get() = latitudeTextField.text.trim()
             .ifBlank { null }
-            ?.let(Angle::parseCoordinatesAsDouble)?.deg
+            ?.let(Angle::from)
             ?: mount.latitude
         set(value) {
-            latitudeTextField.text = Angle.formatDMS(value, "%s%02d %02d %02.01f")
+            latitudeTextField.text = value.format(AngleFormatter.DMS)
         }
 
     override var elevation

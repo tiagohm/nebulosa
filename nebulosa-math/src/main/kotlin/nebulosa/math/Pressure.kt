@@ -9,17 +9,19 @@ import kotlin.math.pow
  */
 @JvmInline
 @Suppress("NOTHING_TO_INLINE")
-value class Pressure(val value: Double) : Comparable<Pressure> {
+value class Pressure(val value: Double) {
 
     /**
      * Converts this pressure to pascal.
      */
-    inline val pascal get() = value * 100.0
+    inline val pascal
+        get() = value * 100.0
 
     /**
      * Converts this pressure to atmosphere.
      */
-    inline val atm get() = value / 1013.25
+    inline val atm
+        get() = value / 1013.25
 
     inline operator fun plus(pressure: Pressure) = (value + pressure.value).mbar
 
@@ -53,43 +55,45 @@ value class Pressure(val value: Double) : Comparable<Pressure> {
 
     inline operator fun unaryMinus() = (-value).mbar
 
-    override fun compareTo(other: Pressure) = value.compareTo(other.value)
-
-    companion object : Comparator<Pressure> {
+    companion object {
 
         @JvmStatic val ZERO = Pressure(0.0)
 
         /**
          * Creates [Pressure] from millibar.
          */
-        inline val Double.mbar get() = Pressure(this)
+        inline val Double.mbar
+            get() = Pressure(this)
 
         /**
          * Creates [Pressure] from millibar.
          */
-        inline val Int.mbar get() = Pressure(toDouble())
+        inline val Int.mbar
+            get() = Pressure(toDouble())
 
         /**
          * Creates [Pressure] from pascal.
          */
-        inline val Double.pascal get() = (this / 100.0).mbar
+        inline val Double.pascal
+            get() = (this / 100.0).mbar
 
         /**
          * Creates [Pressure] from pascal.
          */
-        inline val Int.pascal get() = (this / 100.0).mbar
+        inline val Int.pascal
+            get() = (this / 100.0).mbar
 
         /**
          * Creates [Pressure] from atmosphere.
          */
-        inline val Double.atm get() = (this * 1013.25).mbar
+        inline val Double.atm
+            get() = (this * 1013.25).mbar
 
         /**
          * Creates [Pressure] from atmosphere.
          */
-        inline val Int.atm get() = (this * 1013.25).mbar
-
-        override fun compare(a: Pressure?, b: Pressure?) = compareValues(a, b)
+        inline val Int.atm
+            get() = (this * 1013.25).mbar
 
         /**
          * Converts this distance (altitude) to pressure at specified [temperature].

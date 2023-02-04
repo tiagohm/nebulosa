@@ -5,17 +5,19 @@ package nebulosa.math
  */
 @JvmInline
 @Suppress("NOTHING_TO_INLINE")
-value class Temperature(val value: Double) : Comparable<Temperature> {
+value class Temperature(val value: Double) {
 
     /**
      * Converts this temperature to fahrenheit.
      */
-    inline val fahrenheit get() = value * 1.8 + 32
+    inline val fahrenheit
+        get() = value * 1.8 + 32
 
     /**
      * Converts this temperature to kelvin.
      */
-    inline val kelvin get() = value + 273.15
+    inline val kelvin
+        get() = value + 273.15
 
     inline operator fun plus(temperature: Temperature) = (value + temperature.value).celsius
 
@@ -49,8 +51,6 @@ value class Temperature(val value: Double) : Comparable<Temperature> {
 
     inline operator fun unaryMinus() = (-value).celsius
 
-    override fun compareTo(other: Temperature) = value.compareTo(other.value)
-
     companion object {
 
         @JvmStatic val ZERO = Temperature(0.0)
@@ -58,31 +58,37 @@ value class Temperature(val value: Double) : Comparable<Temperature> {
         /**
          * Creates [Temperature] from celsius.
          */
-        inline val Double.celsius get() = Temperature(this)
+        inline val Double.celsius
+            get() = Temperature(this)
 
         /**
          * Creates [Temperature] from celsius.
          */
-        inline val Int.celsius get() = Temperature(toDouble())
+        inline val Int.celsius
+            get() = Temperature(toDouble())
 
         /**
          * Creates [Temperature] from fahrenheit.
          */
-        inline val Double.fahrenheit get() = ((this - 32.0) / 1.8).celsius
+        inline val Double.fahrenheit
+            get() = ((this - 32.0) / 1.8).celsius
 
         /**
          * Creates [Temperature] from fahrenheit.
          */
-        inline val Int.fahrenheit get() = ((this - 32.0) / 1.8).celsius
+        inline val Int.fahrenheit
+            get() = ((this - 32.0) / 1.8).celsius
 
         /**
          * Creates [Temperature] from kelvin.
          */
-        inline val Double.kelvin get() = (this - 273.15).celsius
+        inline val Double.kelvin
+            get() = (this - 273.15).celsius
 
         /**
          * Creates [Temperature] from kelvin.
          */
-        inline val Int.kelvin get() = (this - 273.15).celsius
+        inline val Int.kelvin
+            get() = (this - 273.15).celsius
     }
 }

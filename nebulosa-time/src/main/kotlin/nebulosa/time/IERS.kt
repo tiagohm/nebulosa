@@ -1,6 +1,7 @@
 package nebulosa.time
 
 import nebulosa.constants.MJD0
+import nebulosa.erfa.PairOfAngle
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.arcsec
 import nebulosa.math.search
@@ -88,9 +89,9 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
     }
 
     // TODO: CACHE?
-    override fun pmXY(time: InstantOfTime): Pair<Angle, Angle> {
+    override fun pmXY(time: InstantOfTime): PairOfAngle {
         val (x, y) = interpolate(time, mjd, pmX, pmY)
-        return x.arcsec to y.arcsec
+        return PairOfAngle(x.arcsec, y.arcsec)
     }
 
     // TODO: CACHE?

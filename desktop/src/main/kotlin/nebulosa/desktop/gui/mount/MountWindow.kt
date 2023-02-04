@@ -12,11 +12,13 @@ import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.mount.MountManager
 import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.mount.MountView
+import nebulosa.erfa.PairOfAngle
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.TrackMode
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
+import nebulosa.math.AngleFormatter
 import org.controlsfx.control.SegmentedButton
 import org.controlsfx.control.ToggleSwitch
 import java.time.LocalDateTime
@@ -90,17 +92,17 @@ class MountWindow : AbstractWindow(), MountView {
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 
         rightAscensionLabel.textProperty()
-            .bind(mountManager.rightAscensionProperty.asString { Angle.formatHMS(it.hours, RA_FORMAT) })
+            .bind(mountManager.rightAscensionProperty.asString { it.hours.format(AngleFormatter.HMS) })
 
-        declinationLabel.textProperty().bind(mountManager.declinationProperty.asString { Angle.formatDMS(it.deg, DEC_FORMAT) })
+        declinationLabel.textProperty().bind(mountManager.declinationProperty.asString { it.deg.format(AngleFormatter.DMS) })
 
-        rightAscensionJ2000Label.textProperty().bind(mountManager.rightAscensionJ2000Property.asString { Angle.formatHMS(it.hours, RA_FORMAT) })
+        rightAscensionJ2000Label.textProperty().bind(mountManager.rightAscensionJ2000Property.asString { it.hours.format(AngleFormatter.HMS) })
 
-        declinationJ2000Label.textProperty().bind(mountManager.declinationJ2000Property.asString { Angle.formatDMS(it.deg, DEC_FORMAT) })
+        declinationJ2000Label.textProperty().bind(mountManager.declinationJ2000Property.asString { it.deg.format(AngleFormatter.DMS) })
 
-        azimuthLabel.textProperty().bind(mountManager.azimuthProperty.asString { Angle.formatDMS(it.deg, AZ_FORMAT) })
+        azimuthLabel.textProperty().bind(mountManager.azimuthProperty.asString { it.deg.format(AngleFormatter.DMS) })
 
-        altitudeLabel.textProperty().bind(mountManager.altitudeProperty.asString { Angle.formatDMS(it.deg, ALT_FORMAT) })
+        altitudeLabel.textProperty().bind(mountManager.altitudeProperty.asString { it.deg.format(AngleFormatter.DMS) })
 
         pierSideLabel.textProperty().bind(mountManager.pierSideProperty.asString())
 
@@ -173,11 +175,11 @@ class MountWindow : AbstractWindow(), MountView {
             statusLabel.text = value
         }
 
-    override val targetCoordinates: Pair<Angle, Angle>
+    override val targetCoordinates: PairOfAngle
         get() {
-            val ra = Angle.parseCoordinatesAsDouble(targetRightAscensionTextField.text)
-            val dec = Angle.parseCoordinatesAsDouble(targetDeclinationTextField.text)
-            return ra.hours.normalized to dec.deg.normalized
+            val ra = Angle.from(targetRightAscensionTextField.text, true)!!
+            val dec = Angle.from(targetDeclinationTextField.text)!!
+            return PairOfAngle(ra.normalized, dec.normalized)
         }
 
     override var isJ2000
@@ -285,13 +287,13 @@ class MountWindow : AbstractWindow(), MountView {
     }
 
     override fun updateTargetPosition(ra: Angle, dec: Angle) {
-        targetRightAscensionTextField.text = Angle.formatHMS(ra, RA_FORMAT)
-        targetDeclinationTextField.text = Angle.formatDMS(dec, DEC_FORMAT)
+        targetRightAscensionTextField.text = ra.format(AngleFormatter.HMS)
+        targetDeclinationTextField.text = dec.format(AngleFormatter.DMS)
     }
 
     override fun updateLSTAndMeridian(lst: Angle, timeLeftToMeridianFlip: Angle, timeToMeridianFlip: LocalDateTime) {
-        meridianAtLabel.text = "%s (%s)".format(timeToMeridianFlip.format(MERIDIAN_TIME_FORMAT), Angle.formatHMS(timeLeftToMeridianFlip, LST_FORMAT))
-        lstLabel.text = Angle.formatHMS(lst, "%02d:%02d:%02.0f ")
+        meridianAtLabel.text = "%s (%s)".format(timeToMeridianFlip.format(MERIDIAN_TIME_FORMAT), timeLeftToMeridianFlip.format(LST_FORMAT))
+        lstLabel.text = lst.format(LST_FORMAT)
     }
 
     private object MountStringConverter : StringConverter<Mount>() {
@@ -303,11 +305,11 @@ class MountWindow : AbstractWindow(), MountView {
 
     companion object {
 
-        private const val RA_FORMAT = "%02dh %02dm %05.02fs"
-        private const val DEC_FORMAT = "%s%02d° %02d' %05.02f\""
-        private const val AZ_FORMAT = "%2$03d° %3$02d' %4$05.02f\""
-        private const val ALT_FORMAT = "%s%02d° %02d' %05.02f\""
-        private const val LST_FORMAT = "-%02d:%02d:%02.0f"
+        @JvmStatic private val LST_FORMAT = AngleFormatter.Builder()
+            .hours()
+            .noSign()
+            .secondsDecimalPlaces(0)
+            .build()
 
         @JvmStatic private val MERIDIAN_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")
 

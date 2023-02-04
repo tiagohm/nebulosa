@@ -1,6 +1,6 @@
 package nebulosa.nova.position
 
-import nebulosa.coordinates.CartesianCoordinate
+import nebulosa.erfa.CartesianCoordinate
 import nebulosa.math.Angle
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.au
@@ -52,7 +52,7 @@ class Apparent internal constructor(
             )
 
             val r = frame.rotationAt(position.time)
-            val p = r.transposed * CartesianCoordinate.of(azimuth, altitude, distance)
+            val p = r.transposed * CartesianCoordinate.of(azimuth, altitude, distance).vector3D
 
             return Apparent(p, Vector3D.EMPTY, position.time, position.center, position.target)
         }

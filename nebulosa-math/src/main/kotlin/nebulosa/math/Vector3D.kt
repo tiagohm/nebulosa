@@ -8,8 +8,9 @@ import org.ejml.dense.fixed.CommonOps_DDF3
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
+@JvmInline
 @Suppress("NOTHING_TO_INLINE")
-open class Vector3D(@PublishedApi internal val vector: DMatrix3) {
+value class Vector3D(@PublishedApi internal val vector: DMatrix3) {
 
     constructor(a1: Double = 0.0, a2: Double = 0.0, a3: Double = 0.0) : this(DMatrix3(a1, a2, a3))
 
@@ -53,8 +54,6 @@ open class Vector3D(@PublishedApi internal val vector: DMatrix3) {
 
     fun isEmpty() = a1 == 0.0 && a2 == 0.0 && a3 == 0.0
 
-    inline fun isNotEmpty() = !isEmpty()
-
     /**
      * Computes the angle between this vector and [vector].
 
@@ -71,11 +70,8 @@ open class Vector3D(@PublishedApi internal val vector: DMatrix3) {
     companion object {
 
         @JvmStatic val EMPTY = Vector3D()
-
         @JvmStatic val X = Vector3D(a1 = 1.0)
-
         @JvmStatic val Y = Vector3D(a2 = 1.0)
-
         @JvmStatic val Z = Vector3D(a3 = 1.0)
     }
 }
