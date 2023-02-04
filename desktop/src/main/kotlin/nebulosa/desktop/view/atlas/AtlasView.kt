@@ -3,6 +3,7 @@ package nebulosa.desktop.view.atlas
 import javafx.geometry.Point2D
 import nebulosa.desktop.view.View
 import nebulosa.math.Angle
+import nebulosa.nova.astrometry.Body
 
 interface AtlasView : View {
 
@@ -15,7 +16,19 @@ interface AtlasView : View {
         DSO,
     }
 
-    fun drawAltitudeGraph(
+    data class Planet(
+        val name: String,
+        val type: String,
+        val body: Body,
+    )
+
+    data class MinorPlanet(
+        val element: String,
+        val description: String,
+        val value: String,
+    )
+
+    fun drawAltitude(
         points: List<Point2D>, now: Double,
         civilTwilight: Twilight, nauticalTwilight: Twilight, astronomicalTwilight: Twilight,
     )
@@ -27,4 +40,10 @@ interface AtlasView : View {
     fun updateEquatorialCoordinates(ra: Angle, dec: Angle, raJ2000: Angle, decJ2000: Angle)
 
     fun updateHorizontalCoordinates(az: Angle, alt: Angle)
+
+    fun clearAltitudeAndCoordinates()
+
+    fun populatePlanets(planets: List<Planet>)
+
+    fun populateMinorPlanet(minorPlanet: List<MinorPlanet>)
 }

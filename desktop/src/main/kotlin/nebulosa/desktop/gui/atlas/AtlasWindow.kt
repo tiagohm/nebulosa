@@ -3,10 +3,7 @@ package nebulosa.desktop.gui.atlas
 import javafx.event.Event
 import javafx.fxml.FXML
 import javafx.geometry.Point2D
-import javafx.scene.control.Label
-import javafx.scene.control.Tab
-import javafx.scene.control.TabPane
-import javafx.scene.control.TableView
+import javafx.scene.control.*
 import javafx.scene.control.cell.PropertyValueFactory
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
@@ -14,20 +11,13 @@ import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.AltitudeGraph
 import nebulosa.desktop.logic.atlas.AtlasManager
 import nebulosa.desktop.logic.on
+import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.atlas.Twilight
 import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
-import nebulosa.nova.astrometry.Body
-import nebulosa.nova.astrometry.VSOP87E
 
 class AtlasWindow : AbstractWindow(), AtlasView {
-
-    data class Planet(
-        val name: String,
-        val type: String,
-        val body: Body,
-    )
 
     override val resourceName = "Atlas"
 
@@ -40,10 +30,15 @@ class AtlasWindow : AbstractWindow(), AtlasView {
     @FXML private lateinit var declinationJ2000Label: Label
     @FXML private lateinit var altitudeLabel: Label
     @FXML private lateinit var azimuthLabel: Label
-    @FXML private lateinit var altitudeGraph: AltitudeGraph
     @FXML private lateinit var sunImageView: ImageView
     @FXML private lateinit var moonImageView: ImageView
-    @FXML private lateinit var planetTableView: TableView<Planet>
+    @FXML private lateinit var planetTableView: TableView<AtlasView.Planet>
+    @FXML private lateinit var searchMinorPlanetTextField: TextField
+    @FXML private lateinit var minorPlanetTableView: TableView<AtlasView.MinorPlanet>
+    @FXML private lateinit var goToButton: Button
+    @FXML private lateinit var slewToButton: Button
+    @FXML private lateinit var syncButton: Button
+    @FXML private lateinit var altitudeGraph: AltitudeGraph
 
     @Volatile private var started = false
 
@@ -55,19 +50,22 @@ class AtlasWindow : AbstractWindow(), AtlasView {
     }
 
     override fun onCreate() {
-        planetTableView.columns[0].cellValueFactory = PropertyValueFactory<Planet, String>("name")
-        planetTableView.columns[1].cellValueFactory = PropertyValueFactory<Planet, String>("type")
+        val isNotConnected = !atlasManager.mountProperty.connectedProperty
+        val isMoving = atlasManager.mountProperty.slewingProperty or atlasManager.mountProperty.parkingProperty
 
-        planetTableView.items.add(Planet("Mercury", "Planet", VSOP87E.MERCURY))
-        planetTableView.items.add(Planet("Venus", "Planet", VSOP87E.VENUS))
-        planetTableView.items.add(Planet("Mars", "Planet", VSOP87E.MARS))
-        planetTableView.items.add(Planet("Jupiter", "Planet", VSOP87E.JUPITER))
-        planetTableView.items.add(Planet("Saturn", "Planet", VSOP87E.SATURN))
-        planetTableView.items.add(Planet("Uranus", "Planet", VSOP87E.URANUS))
-        planetTableView.items.add(Planet("Neptune", "Planet", VSOP87E.NEPTUNE))
-        planetTableView.items.add(Planet("Pluto", "Dwarf Planet", VSOP87E.MERCURY))
+        goToButton.disableProperty().bind(atlasManager.mountProperty.isNull or isNotConnected or isMoving)
 
+        slewToButton.disableProperty().bind(goToButton.disableProperty())
+
+        syncButton.disableProperty().bind(goToButton.disableProperty())
+
+        planetTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("name")
+        planetTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("type")
         planetTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computePlanet(it.body) }
+
+        minorPlanetTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("element")
+        minorPlanetTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("description")
+        minorPlanetTableView.columns[2].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("value")
     }
 
     override fun onStart() {
@@ -77,6 +75,7 @@ class AtlasWindow : AbstractWindow(), AtlasView {
 
         atlasManager.updateSunImage()
         atlasManager.updateMoonImage()
+        atlasManager.populatePlanets()
 
         atlasManager.computeTab(AtlasView.TabType.SUN)
     }
@@ -98,7 +97,28 @@ class AtlasWindow : AbstractWindow(), AtlasView {
         atlasManager.computeTab(tabType)
     }
 
-    override fun drawAltitudeGraph(
+    @FXML
+    private fun goTo() {
+        atlasManager.goTo()
+    }
+
+    @FXML
+    private fun slewTo() {
+        atlasManager.slewTo()
+    }
+
+    @FXML
+    private fun sync() {
+        atlasManager.sync()
+    }
+
+    @FXML
+    private fun searchMinorPlanet() {
+        val text = searchMinorPlanetTextField.text.trim().ifEmpty { null } ?: return
+        atlasManager.searchAsteroidsAndComets(text)
+    }
+
+    override fun drawAltitude(
         points: List<Point2D>, now: Double,
         civilTwilight: Twilight, nauticalTwilight: Twilight, astronomicalTwilight: Twilight,
     ) {
@@ -113,19 +133,33 @@ class AtlasWindow : AbstractWindow(), AtlasView {
         moonImageView.image = Image(uri)
     }
 
+    override fun populatePlanets(planets: List<AtlasView.Planet>) {
+        planetTableView.items.setAll(planets)
+    }
+
+    override fun populateMinorPlanet(minorPlanet: List<AtlasView.MinorPlanet>) {
+        minorPlanetTableView.items.setAll(minorPlanet)
+    }
+
     override fun updateEquatorialCoordinates(
         ra: Angle, dec: Angle,
         raJ2000: Angle, decJ2000: Angle,
     ) {
         rightAscensionLabel.text = ra.format(AngleFormatter.HMS)
-        declinationLabel.text = dec.format(AngleFormatter.DMS)
+        declinationLabel.text = dec.format(AngleFormatter.SIGNED_DMS)
         rightAscensionJ2000Label.text = raJ2000.format(AngleFormatter.HMS)
-        declinationJ2000Label.text = decJ2000.format(AngleFormatter.DMS)
+        declinationJ2000Label.text = decJ2000.format(AngleFormatter.SIGNED_DMS)
     }
 
     override fun updateHorizontalCoordinates(az: Angle, alt: Angle) {
-        azimuthLabel.text = az.format(AngleFormatter.DMS)
-        altitudeLabel.text = alt.format(AngleFormatter.DMS)
+        azimuthLabel.text = az.normalized.format(AngleFormatter.DMS)
+        altitudeLabel.text = alt.format(AngleFormatter.SIGNED_DMS)
+    }
+
+    override fun clearAltitudeAndCoordinates() {
+        updateEquatorialCoordinates(Angle.ZERO, Angle.ZERO, Angle.ZERO, Angle.ZERO)
+        updateHorizontalCoordinates(Angle.ZERO, Angle.ZERO)
+        altitudeGraph.draw(emptyList())
     }
 
     companion object {

@@ -16,9 +16,6 @@ import java.io.EOFException
 class BufferedByteArrayTest : StringSpec() {
 
     init {
-
-        timeout = 1000L
-
         val data = ByteArray(79)
 
         "write" {

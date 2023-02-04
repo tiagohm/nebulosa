@@ -77,15 +77,15 @@ class MountWindow : AbstractWindow(), MountView {
     override fun onCreate() {
         val isNotConnected = mountManager.connectedProperty.not()
         val isConnecting = mountManager.connectingProperty
-        val isSlewing = mountManager.slewingProperty
-        val isNotConnectedOrSlewing = isNotConnected or isSlewing
+        val isMoving = mountManager.slewingProperty or mountManager.parkingProperty
+        val isNotConnectedOrMoving = isNotConnected or isMoving
 
         mountChoiceBox.converter = MountStringConverter
-        mountChoiceBox.disableProperty().bind(isConnecting or isSlewing)
+        mountChoiceBox.disableProperty().bind(isConnecting or isMoving)
         mountChoiceBox.itemsProperty().bind(mountManager.mounts)
         mountManager.bind(mountChoiceBox.selectionModel.selectedItemProperty())
 
-        connectButton.disableProperty().bind(mountManager.isNull() or isConnecting or isSlewing)
+        connectButton.disableProperty().bind(mountManager.isNull() or isConnecting or isMoving)
         connectButton.textProperty().bind(mountManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
         mountManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
 
@@ -94,61 +94,61 @@ class MountWindow : AbstractWindow(), MountView {
         rightAscensionLabel.textProperty()
             .bind(mountManager.rightAscensionProperty.asString { it.hours.format(AngleFormatter.HMS) })
 
-        declinationLabel.textProperty().bind(mountManager.declinationProperty.asString { it.deg.format(AngleFormatter.DMS) })
+        declinationLabel.textProperty().bind(mountManager.declinationProperty.asString { it.deg.format(AngleFormatter.SIGNED_DMS) })
 
         rightAscensionJ2000Label.textProperty().bind(mountManager.rightAscensionJ2000Property.asString { it.hours.format(AngleFormatter.HMS) })
 
-        declinationJ2000Label.textProperty().bind(mountManager.declinationJ2000Property.asString { it.deg.format(AngleFormatter.DMS) })
+        declinationJ2000Label.textProperty().bind(mountManager.declinationJ2000Property.asString { it.deg.format(AngleFormatter.SIGNED_DMS) })
 
-        azimuthLabel.textProperty().bind(mountManager.azimuthProperty.asString { it.deg.format(AngleFormatter.DMS) })
+        azimuthLabel.textProperty().bind(mountManager.azimuthProperty.asString { it.deg.format(AngleFormatter.SIGNED_DMS) })
 
-        altitudeLabel.textProperty().bind(mountManager.altitudeProperty.asString { it.deg.format(AngleFormatter.DMS) })
+        altitudeLabel.textProperty().bind(mountManager.altitudeProperty.asString { it.deg.format(AngleFormatter.SIGNED_DMS) })
 
         pierSideLabel.textProperty().bind(mountManager.pierSideProperty.asString())
 
-        targetCoordinatesEquinoxSegmentedButton.disableProperty().bind(isNotConnectedOrSlewing)
+        targetCoordinatesEquinoxSegmentedButton.disableProperty().bind(isNotConnectedOrMoving)
 
-        siteAndTimeButton.disableProperty().bind(isNotConnectedOrSlewing)
+        siteAndTimeButton.disableProperty().bind(isNotConnectedOrMoving)
 
-        targetRightAscensionTextField.disableProperty().bind(isNotConnectedOrSlewing)
+        targetRightAscensionTextField.disableProperty().bind(isNotConnectedOrMoving)
 
-        targetDeclinationTextField.disableProperty().bind(isNotConnectedOrSlewing)
+        targetDeclinationTextField.disableProperty().bind(isNotConnectedOrMoving)
 
-        goToButton.disableProperty().bind(isNotConnectedOrSlewing)
-        slewToButton.disableProperty().bind(isNotConnectedOrSlewing)
-        syncButton.disableProperty().bind(isNotConnectedOrSlewing or !mountManager.canSyncProperty)
+        goToButton.disableProperty().bind(isNotConnectedOrMoving)
+        slewToButton.disableProperty().bind(isNotConnectedOrMoving)
+        syncButton.disableProperty().bind(isNotConnectedOrMoving or !mountManager.canSyncProperty)
 
         targetCoordinatesContextMenu.items
             .filter { it.userData == "BIND_TO_SELECTED_MOUNT" }
-            .forEach { it.disableProperty().bind(isNotConnectedOrSlewing) }
+            .forEach { it.disableProperty().bind(isNotConnectedOrMoving) }
 
-        telescopeControlServerButton.disableProperty().bind(isNotConnectedOrSlewing)
+        telescopeControlServerButton.disableProperty().bind(isNotConnectedOrMoving)
 
-        nudgeNEButton.disableProperty().bind(isNotConnectedOrSlewing)
-        nudgeNButton.disableProperty().bind(isNotConnectedOrSlewing)
-        nudgeNWButton.disableProperty().bind(isNotConnectedOrSlewing)
-        nudgeEButton.disableProperty().bind(isNotConnectedOrSlewing)
+        nudgeNEButton.disableProperty().bind(isNotConnectedOrMoving)
+        nudgeNButton.disableProperty().bind(isNotConnectedOrMoving)
+        nudgeNWButton.disableProperty().bind(isNotConnectedOrMoving)
+        nudgeEButton.disableProperty().bind(isNotConnectedOrMoving)
         abortButton.disableProperty().bind(isNotConnected or !mountManager.canAbortProperty)
-        nudgeWButton.disableProperty().bind(isNotConnectedOrSlewing)
-        nudgeSEButton.disableProperty().bind(isNotConnectedOrSlewing)
-        nudgeSButton.disableProperty().bind(isNotConnectedOrSlewing)
-        nudgeSWButton.disableProperty().bind(isNotConnectedOrSlewing)
+        nudgeWButton.disableProperty().bind(isNotConnectedOrMoving)
+        nudgeSEButton.disableProperty().bind(isNotConnectedOrMoving)
+        nudgeSButton.disableProperty().bind(isNotConnectedOrMoving)
+        nudgeSWButton.disableProperty().bind(isNotConnectedOrMoving)
 
-        trackingToggleSwitch.disableProperty().bind(isNotConnectedOrSlewing)
+        trackingToggleSwitch.disableProperty().bind(isNotConnectedOrMoving)
         mountManager.trackingProperty.on(trackingToggleSwitch::setSelected)
         trackingToggleSwitch.selectedProperty().on { mountManager.get().tracking(it) }
 
-        trackingModeChoiceBox.disableProperty().bind(isNotConnectedOrSlewing)
+        trackingModeChoiceBox.disableProperty().bind(isNotConnectedOrMoving)
         trackingModeChoiceBox.itemsProperty().bind(mountManager.trackModesProperty)
         mountManager.trackModeProperty.on { trackingModeChoiceBox.value = it }
         trackingModeChoiceBox.valueProperty().on { if (it != null) mountManager.get().trackingMode(it) }
 
-        slewSpeedChoiceBox.disableProperty().bind(isNotConnectedOrSlewing)
+        slewSpeedChoiceBox.disableProperty().bind(isNotConnectedOrMoving)
         slewSpeedChoiceBox.itemsProperty().bind(mountManager.slewRatesProperty)
         mountManager.slewRateProperty.on { slewSpeedChoiceBox.value = it }
         slewSpeedChoiceBox.valueProperty().on { if (it != null) mountManager.get().slewRate(it) }
 
-        parkButton.disableProperty().bind(isNotConnectedOrSlewing or !mountManager.canParkProperty)
+        parkButton.disableProperty().bind(isNotConnectedOrMoving or !mountManager.canParkProperty)
         parkButton.textProperty().bind(mountManager.parkedProperty.between("Unpark", "Park"))
         val parkIcon = parkButton.graphic as Label
         parkIcon.textProperty().bind(mountManager.parkedProperty.between(PLAY_ICON, STOP_ICON))
@@ -288,7 +288,7 @@ class MountWindow : AbstractWindow(), MountView {
 
     override fun updateTargetPosition(ra: Angle, dec: Angle) {
         targetRightAscensionTextField.text = ra.format(AngleFormatter.HMS)
-        targetDeclinationTextField.text = dec.format(AngleFormatter.DMS)
+        targetDeclinationTextField.text = dec.format(AngleFormatter.SIGNED_DMS)
     }
 
     override fun updateLSTAndMeridian(lst: Angle, timeLeftToMeridianFlip: Angle, timeToMeridianFlip: LocalDateTime) {

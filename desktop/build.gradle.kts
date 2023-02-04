@@ -12,6 +12,8 @@ dependencies {
     implementation(project(":nebulosa-nova"))
     implementation(project(":nebulosa-indi-client"))
     implementation(project(":nebulosa-imaging"))
+    implementation(project(":nebulosa-query-sbd"))
+    implementation(project(":nebulosa-query-horizons"))
     implementation(libs.koin)
     implementation(libs.jackson)
     implementation(libs.bundles.rx)

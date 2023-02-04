@@ -7,13 +7,13 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.context.loadKoinModules
 import org.koin.dsl.module
 
-class Nebulosa : Application(), KoinComponent {
+class App : Application(), KoinComponent {
 
     private val homeWindow by lazy { HomeWindow() }
 
     override fun start(primaryStage: Stage) {
         loadKoinModules(module {
-            single { this@Nebulosa.hostServices }
+            single { this@App.hostServices }
         })
 
         homeWindow.show()

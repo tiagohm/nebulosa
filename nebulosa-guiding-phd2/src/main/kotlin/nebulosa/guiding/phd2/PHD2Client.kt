@@ -73,9 +73,8 @@ class PHD2Client(
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(PHD2Client::class.java)
 
-        @JvmStatic private val OBJECT_MAPPER = ObjectMapper().apply {
-            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        }
+        @JvmStatic private val OBJECT_MAPPER = ObjectMapper()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 
         @JvmStatic private val EVENT_NAME_REGEX = Regex(".*\"Event\":\"(.*?)\".*")
 

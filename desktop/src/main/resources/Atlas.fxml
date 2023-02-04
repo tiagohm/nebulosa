@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
@@ -29,7 +29,7 @@
                     <ImageView fx:id="sunImageView"
                                pickOnBounds="true"
                                preserveRatio="true"
-                               fitHeight="300.0"
+                               fitHeight="260.0"
                                cache="true">
                     </ImageView>
                 </VBox>
@@ -42,7 +42,7 @@
                     <ImageView fx:id="moonImageView"
                                pickOnBounds="true"
                                preserveRatio="true"
-                               fitHeight="300.0"
+                               fitHeight="260.0"
                                cache="true">
                     </ImageView>
                 </VBox>
@@ -57,22 +57,56 @@
                            prefHeight="300.0"
                            maxHeight="300.0">
                     <columns>
-                        <TableColumn fx:id="nameTableColumn"
-                                     prefWidth="160.0"
-                                     style="-fx-alignment: CENTER-LEFT;"
-                                     text="Name"/>
-                        <TableColumn fx:id="typeTableColumn"
-                                     prefWidth="100.0"
+                        <TableColumn prefWidth="170.0"
                                      style="-fx-alignment: CENTER;"
+                                     text="Name"/>
+                        <TableColumn prefWidth="130.0"
+                                     style="-fx-alignment: CENTER-LEFT;"
                                      text="Type"/>
                     </columns>
                 </TableView>
             </Tab>
-            <Tab text="Asteroids &amp; Comets"
+            <Tab text="Minor Planets"
                  closable="false"
                  onSelectionChanged="#tabSelectionChanged"
-                 userData="MINOR_PLANET"
-            />
+                 userData="MINOR_PLANET">
+                <VBox alignment="TOP_CENTER"
+                      spacing="4.0">
+                    <HBox alignment="CENTER"
+                          spacing="4.0">
+                        <VBox.margin>
+                            <Insets top="8.0"/>
+                        </VBox.margin>
+                        <TextField fx:id="searchMinorPlanetTextField"
+                                   styleClass="text-md">
+                        </TextField>
+                        <Button text="Search"
+                                onAction="#searchMinorPlanet">
+                            <graphic>
+                                <Label text="&#xF0349;"
+                                       styleClass="text-blue-grey-700,mdi,mdi-sm"/>
+                            </graphic>
+                        </Button>
+                    </HBox>
+                    <TableView fx:id="minorPlanetTableView"
+                               fixedCellSize="28.0"
+                               minHeight="230.0"
+                               prefHeight="230.0"
+                               maxHeight="230.0">
+                        <columns>
+                            <TableColumn prefWidth="70.0"
+                                         style="-fx-alignment: CENTER;"
+                                         text="Element"/>
+                            <TableColumn prefWidth="180.0"
+                                         style="-fx-alignment: CENTER-LEFT;"
+                                         text="Description"/>
+                            <TableColumn prefWidth="190.0"
+                                         style="-fx-alignment: CENTER-RIGHT;"
+                                         text="Value"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
             <Tab text="Stars"
                  closable="false"
                  onSelectionChanged="#tabSelectionChanged"
@@ -192,8 +226,49 @@
                 </Label>
             </HBox>
         </VBox>
-        <AltitudeGraph fx:id="altitudeGraph"
-                       height="130.0">
-        </AltitudeGraph>
+        <HBox alignment="TOP_CENTER"
+              spacing="4.0">
+            <Button fx:id="goToButton"
+                    text="Go To"
+                    onAction="#goTo"
+                    prefWidth="92.0">
+                <graphic>
+                    <Label text="&#xF012C;"
+                           styleClass="mdi,mdi-sm,text-green-700">
+                    </Label>
+                </graphic>
+            </Button>
+            <Button fx:id="slewToButton"
+                    text="Slew To"
+                    onAction="#slewTo"
+                    prefWidth="92.0">
+                <graphic>
+                    <Label text="&#xF012C;"
+                           styleClass="mdi,mdi-sm,text-green-700">
+                    </Label>
+                </graphic>
+            </Button>
+            <Button fx:id="syncButton"
+                    text="Sync"
+                    onAction="#sync"
+                    prefWidth="92.0">
+                <graphic>
+                    <Label text="&#xF04E6;"
+                           styleClass="mdi,mdi-sm,text-blue-700">
+                    </Label>
+                </graphic>
+            </Button>
+        </HBox>
+        <AnchorPane prefHeight="130.0"
+                    minHeight="130.0"
+                    maxHeight="130.0">
+            <AltitudeGraph fx:id="altitudeGraph"
+                           AnchorPane.bottomAnchor="0.0"
+                           AnchorPane.rightAnchor="0.0"
+                           AnchorPane.leftAnchor="0.0"
+                           AnchorPane.topAnchor="0.0"
+                           height="130.0">
+            </AltitudeGraph>
+        </AnchorPane>
     </VBox>
 </AnchorPane>

@@ -13,9 +13,6 @@ import okio.utf8Size
 class BufferedRandomAccessFileTest : StringSpec() {
 
     init {
-
-        timeout = 1000L
-
         val file = createFile()
 
         "write" {

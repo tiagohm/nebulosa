@@ -69,5 +69,5 @@ fun main(args: Array<String>) {
     IERSLoader().start()
 
     // Run the application.
-    Application.launch(Nebulosa::class.java, *args)
+    Application.launch(App::class.java, *args)
 }

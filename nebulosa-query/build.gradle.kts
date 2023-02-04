@@ -4,11 +4,11 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.retrofit)
-    implementation(libs.okhttp)
-    implementation(libs.jackson)
-    implementation(libs.logback)
-    implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
+    api(libs.retrofit)
+    api(libs.retrofit.jackson)
+    api(libs.jackson)
+    api(libs.okhttp)
+    implementation(libs.okhttp.logging)
     testImplementation(libs.bundles.kotest)
 }
 

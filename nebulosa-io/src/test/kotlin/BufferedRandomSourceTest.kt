@@ -7,9 +7,6 @@ import java.util.*
 class BufferedRandomSourceTest : StringSpec() {
 
     init {
-
-        timeout = 1000L
-
         "read full segment" {
             val source = Random(0).source(8192L).buffer()
             val bytes = source.readByteArray(8192L)

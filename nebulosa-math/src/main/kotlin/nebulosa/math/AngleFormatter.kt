@@ -67,8 +67,15 @@ data class AngleFormatter(
             .separators("h", "m", "s")
             .build()
 
+        @JvmStatic val SIGNED_DMS = Builder()
+            .degrees()
+            .secondsDecimalPlaces(1)
+            .separators("°", "'", "\"")
+            .build()
+
         @JvmStatic val DMS = Builder()
             .degrees()
+            .noSign()
             .secondsDecimalPlaces(1)
             .separators("°", "'", "\"")
             .build()

@@ -7,6 +7,7 @@ import java.io.File
 import java.io.InputStream
 import java.io.RandomAccessFile
 import java.net.URL
+import java.nio.ByteBuffer
 import java.util.*
 
 val EMPTY_BYTE_ARRAY = ByteArray(0)
@@ -98,6 +99,13 @@ fun ByteArray.sink(
     byteCount: Int = size - offset,
     timeout: Timeout = Timeout.NONE,
 ): SeekableSink = ByteArraySink(this, offset, byteCount, timeout)
+
+fun ByteBuffer.source(
+    offset: Int = 0,
+    byteCount: Int = capacity() - offset,
+    timeout: Timeout = Timeout.NONE,
+): SeekableSource = ByteBufferSource(this, offset, byteCount, timeout)
+
 
 fun Random.source(
     maxSize: Long = Long.MAX_VALUE,

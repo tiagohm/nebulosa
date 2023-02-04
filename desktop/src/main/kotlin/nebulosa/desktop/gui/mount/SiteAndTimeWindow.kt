@@ -67,7 +67,7 @@ class SiteAndTimeWindow(override val mount: Mount) : AbstractWindow(), SiteAndTi
             ?.let(Angle::from)
             ?: mount.longitude
         set(value) {
-            longitudeTextField.text = value.format(AngleFormatter.DMS)
+            longitudeTextField.text = value.format(AngleFormatter.SIGNED_DMS)
         }
 
     override var latitude
@@ -76,7 +76,7 @@ class SiteAndTimeWindow(override val mount: Mount) : AbstractWindow(), SiteAndTi
             ?.let(Angle::from)
             ?: mount.latitude
         set(value) {
-            latitudeTextField.text = value.format(AngleFormatter.DMS)
+            latitudeTextField.text = value.format(AngleFormatter.SIGNED_DMS)
         }
 
     override var elevation
