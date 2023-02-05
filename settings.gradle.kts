@@ -19,7 +19,7 @@ dependencyResolutionManagement {
             library("jackson", "com.fasterxml.jackson.core:jackson-databind:2.14.1")
             library("retrofit", "com.squareup.retrofit2:retrofit:2.9.0")
             library("retrofit-jackson", "com.squareup.retrofit2:converter-jackson:2.9.0")
-            library("koin", "io.insert-koin:koin-core:3.3.0")
+            library("koin", "io.insert-koin:koin-core:3.3.2")
             library("rx-java", "io.reactivex.rxjava3:rxjava:3.1.5")
             library("controlsfx", "org.controlsfx:controlsfx:11.1.2")
             library("logback", "ch.qos.logback:logback-classic:1.4.5")
