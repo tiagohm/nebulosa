@@ -33,9 +33,9 @@ class GeographicPositionTest : StringSpec() {
             val longitude = Angle.from("-46 38 9.99")!!
             val position = Geoid.IERS2010.latLon(longitude, latitude, 853.0.m)
 
-            position.x shouldBe (2.68548107e-05 plusOrMinus 1e-13)
-            position.y shouldBe (-2.84340394e-05 plusOrMinus 1e-13)
-            position.z shouldBe (-1.69304560e-05 plusOrMinus 1e-13)
+            position.x.value shouldBe (2.68548107e-05 plusOrMinus 1e-13)
+            position.y.value shouldBe (-2.84340394e-05 plusOrMinus 1e-13)
+            position.z.value shouldBe (-1.69304560e-05 plusOrMinus 1e-13)
         }
     }
 }

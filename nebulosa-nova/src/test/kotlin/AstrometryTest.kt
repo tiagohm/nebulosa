@@ -87,7 +87,7 @@ class AstrometryTest : StringSpec() {
                 argumentOfPerihelion = 73.80896808746482.deg, // W
                 longitudeOfAscendingNode = 80.3011901917491.deg, // OM
                 meanAnomaly = 130.3159688200986.deg,
-                epoch = TDB(TimeJD(2458849.5)),
+                epoch = TDB(2458849.5),
             )
             val astrometric = earth.at<Barycentric>(time).observe(sun + ceres)
             val (ra, dec) = astrometric.equatorial()
