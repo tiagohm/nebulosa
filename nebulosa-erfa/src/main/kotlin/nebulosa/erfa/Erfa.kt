@@ -1238,7 +1238,7 @@ private val CS2 = arrayOf(S2X, S2Y, S2Z)
  * @return Heliocentric Earth position/velocity (au, au/day) and
  * Barycentric Earth position/velocity (au, au/day).
  */
-fun eraEpv00(tdb1: Double, tdb2: Double): Array<Vector3D> {
+fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndVelocity> {
     val t = ((tdb1 - J2000) + tdb2) / DAYSPERJY
     val t2 = t * t
 
@@ -1344,10 +1344,8 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Array<Vector3D> {
     val vby = AM21 * vb[0] + AM22 * vb[1] + AM23 * vb[2]
     val vbz = AM32 * vb[1] + AM33 * vb[2]
 
-    return arrayOf(
-        Vector3D(phx, phy, phz), Vector3D(vhx, vhy, vhz),
-        Vector3D(pbx, pby, pbz), Vector3D(vbx, vby, vbz),
-    )
+    return PositionAndVelocity(Vector3D(phx, phy, phz), Vector3D(vhx, vhy, vhz)) to
+            PositionAndVelocity(Vector3D(pbx, pby, pbz), Vector3D(vbx, vby, vbz))
 }
 
 /**
@@ -1361,13 +1359,13 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Array<Vector3D> {
  * transformation chain.
  */
 fun eraApcg13(tdb1: Double, tdb2: Double): AstrometryParameters {
-    val (a, _, c, d) = eraEpv00(tdb1, tdb2)
+    val (h, b) = eraEpv00(tdb1, tdb2)
 
     return eraApcg(
         tdb1, tdb2,
-        c.x.au, c.y.au, c.z.au,
-        d.x.auDay, d.y.auDay, d.z.auDay,
-        a.x.au, a.y.au, a.z.au,
+        b.position.x.au, b.position.y.au, b.position.z.au,
+        b.velocity.x.auDay, b.velocity.y.auDay, b.velocity.z.auDay,
+        h.position.x.au, h.position.y.au, h.position.z.au,
     )
 }
 

@@ -131,7 +131,7 @@ abstract class InstantOfTime {
     /**
      * Returns the true obliquity of the ecliptic in radians.
      */
-    val trueObliquity get() = meanObliquity + nutationAngles.second
+    val trueObliquity by lazy { meanObliquity + nutationAngles.second }
 
     /**
      * Returns the mean obliquity of the ecliptic in radians.

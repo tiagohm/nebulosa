@@ -24,7 +24,7 @@ data class KeplerOrbit(
         val (position, velocity) = propagate(position, velocity, epoch.tt, time.tt, mu)
 
         return if (rotation != null) {
-            PositionAndVelocity((rotation * position), (rotation * velocity))
+            PositionAndVelocity(rotation * position, rotation * velocity)
         } else {
             PositionAndVelocity(position, velocity)
         }
@@ -161,9 +161,9 @@ data class KeplerOrbit(
             // From http://www.bogan.ca/orbits/kepler/orbteqtn.html
             val dt = sqrt(2.0 * (p.value * p.value * p.value) / mu) * M.value
             val periapsis = p / 2.0
-            val A = 1.5 * sqrt(mu / (2.0 * (periapsis.value * periapsis.value * periapsis.value))) * dt
-            val B = cbrt(A + (A * A + 1.0))
-            return (2.0 * atan(B - 1.0 / B)).rad
+            val a = 1.5 * sqrt(mu / (2.0 * (periapsis.value * periapsis.value * periapsis.value))) * dt
+            val b = cbrt(a + (a * a + 1.0))
+            return (2.0 * atan(b - 1.0 / b)).rad
         }
 
         /**

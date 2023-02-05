@@ -3,8 +3,6 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
-import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance.Companion.m
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
@@ -24,20 +22,20 @@ class ICRFTest : StringSpec() {
             val ra = 2.15105.deg
             val dec = (-0.4493).deg
             val (raNow, decNow) = ICRF.equatorial(ra, dec, epoch = TimeJD(2459950.24436)).equatorialJ2000()
-            raNow.rad.degrees shouldBe (1.85881 plusOrMinus 1e-2)
-            decNow.rad.degrees shouldBe (-0.5762 plusOrMinus 1e-2)
+            raNow.degrees shouldBe (1.85881 plusOrMinus 1e-2)
+            decNow.degrees shouldBe (-0.5762 plusOrMinus 1e-2)
         }
         "equatorial J2000 to equatorial at date" {
             val ra = 1.85881.deg
             val dec = (-0.5762).deg
             val (raNow, decNow) = ICRF.equatorial(ra, dec).equatorialAtEpoch(TimeJD(2459950.24436))
-            raNow.rad.degrees shouldBe (2.15105 plusOrMinus 1e-2)
-            decNow.rad.degrees shouldBe (-0.4493 plusOrMinus 1e-2)
+            raNow.degrees shouldBe (2.15105 plusOrMinus 1e-2)
+            decNow.degrees shouldBe (-0.4493 plusOrMinus 1e-2)
         }
         "horizontal" {
             // Sirius.
-            val ra = Angle.parseCoordinatesAsDouble("06 45 08.91728").hours
-            val dec = Angle.parseCoordinatesAsDouble("-16 42 58.0171").deg
+            val ra = Angle.from("06 45 08.91728", isHours = true)!!
+            val dec = Angle.from("-16 42 58.0171")!!
 
             val latitude = (-23.547500000000003).deg
             val longitude = (-46.63610833333333).deg

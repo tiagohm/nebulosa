@@ -1,6 +1,7 @@
 package nebulosa.nova.frame
 
 import nebulosa.constants.DAYSEC
+import nebulosa.erfa.TripleOfAngle
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
@@ -20,12 +21,17 @@ data class PlanetaryFrame(
     val segment: PckSegment,
 ) : Frame {
 
+    data class RotationAndRate(
+        val rotation: Matrix3D,
+        val rate: Matrix3D,
+    )
+
     /**
      * Creates the [PlanetaryFrame] given the |xyz| rotating [angles].
      */
     constructor(
         center: Number,
-        angles: Triple<Angle, Angle, Angle>,
+        angles: TripleOfAngle,
         segment: PckSegment,
     ) : this(
         center,
@@ -47,7 +53,7 @@ data class PlanetaryFrame(
      *
      * The rate matrix returned is in units of angular motion per day.
      */
-    fun rotationAndRateAt(time: InstantOfTime): Pair<Matrix3D, Matrix3D> {
+    fun rotationAndRateAt(time: InstantOfTime): RotationAndRate {
         val (c, rates) = segment.compute(time, true)
         val (ra, dec, w) = c
         val (radot, decdot, wdot) = rates
@@ -74,9 +80,9 @@ data class PlanetaryFrame(
         val dRdt = drdtrt * r
 
         return if (matrix != null) {
-            (matrix * r) to (matrix * dRdt) * DAYSEC
+            RotationAndRate(matrix * r, (matrix * dRdt) * DAYSEC)
         } else {
-            r to (dRdt * DAYSEC)
+            RotationAndRate(r, dRdt * DAYSEC)
         }
     }
 

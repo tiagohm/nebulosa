@@ -30,7 +30,7 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
         return PositionAndVelocity(position, velocity)
     }
 
-    override fun observe(observer: ICRF): Pair<Vector3D, Vector3D> {
+    override fun observe(observer: ICRF): PositionAndVelocity {
         require(center.toInt() == 0) {
             "you can only observe a body whose vector's center is the Solar System Barycenter," +
                     " but this vector has the center $center"
@@ -38,7 +38,7 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
 
         return if (observer.target.toInt() < 0) {
             val (p, v) = compute(observer.time)
-            (p - observer.position) to (v - observer.velocity)
+            PositionAndVelocity((p - observer.position), (v - observer.velocity))
         } else {
             correctForLightTravelTime(observer, this)
         }
@@ -129,7 +129,7 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
          * Computes the light travel time correction
          * from [observer]'s position to [body]'s position.
          */
-        internal fun correctForLightTravelTime(observer: ICRF, body: Body): Pair<Vector3D, Vector3D> {
+        internal fun correctForLightTravelTime(observer: ICRF, body: Body): PositionAndVelocity {
             var time = observer.time.tdb
             val whole = time.whole
             val fraction = time.fraction
@@ -138,8 +138,7 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
 
             for (i in 0..9) {
                 val position = pv.position - observer.position
-                val distance = position.length
-                val lightTime = distance * (AU_M / (SPEED_OF_LIGHT * DAYSEC))
+                val lightTime = position.length * (AU_M / (SPEED_OF_LIGHT * DAYSEC))
 
                 if (abs(lightTime - value) <= 1E-12) break
 
@@ -148,7 +147,7 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
                 value = lightTime
             }
 
-            return (pv.position - observer.position) to (pv.velocity - observer.velocity)
+            return PositionAndVelocity(pv.position - observer.position, pv.velocity - observer.velocity)
         }
     }
 }

@@ -241,22 +241,22 @@ class ErfaTest : StringSpec() {
             astrom.bm1 shouldBe (0.9999999951686012981 plusOrMinus 1e-12)
         }
         "eraEpv00" {
-            val (a, b, c, d) = eraEpv00(2400000.5, 53411.52501161)
-            a[0] shouldBe (-0.7757238809297706813 plusOrMinus 1e-14)
-            a[1] shouldBe (0.5598052241363340596 plusOrMinus 1e-14)
-            a[2] shouldBe (0.2426998466481686993 plusOrMinus 1e-14)
+            val (h, b) = eraEpv00(2400000.5, 53411.52501161)
+            h.position[0] shouldBe (-0.7757238809297706813 plusOrMinus 1e-14)
+            h.position[1] shouldBe (0.5598052241363340596 plusOrMinus 1e-14)
+            h.position[2] shouldBe (0.2426998466481686993 plusOrMinus 1e-14)
 
-            b[0] shouldBe (-0.1091891824147313846e-1 plusOrMinus 1e-15)
-            b[1] shouldBe (-0.1247187268440845008e-1 plusOrMinus 1e-15)
-            b[2] shouldBe (-0.5407569418065039061e-2 plusOrMinus 1e-15)
+            h.velocity[0] shouldBe (-0.1091891824147313846e-1 plusOrMinus 1e-15)
+            h.velocity[1] shouldBe (-0.1247187268440845008e-1 plusOrMinus 1e-15)
+            h.velocity[2] shouldBe (-0.5407569418065039061e-2 plusOrMinus 1e-15)
 
-            c[0] shouldBe (-0.7714104440491111971 plusOrMinus 1e-14)
-            c[1] shouldBe (0.5598412061824171323 plusOrMinus 1e-14)
-            c[2] shouldBe (0.2425996277722452400 plusOrMinus 1e-14)
+            b.position[0] shouldBe (-0.7714104440491111971 plusOrMinus 1e-14)
+            b.position[1] shouldBe (0.5598412061824171323 plusOrMinus 1e-14)
+            b.position[2] shouldBe (0.2425996277722452400 plusOrMinus 1e-14)
 
-            d[0] shouldBe (-0.1091874268116823295e-1 plusOrMinus 1e-15)
-            d[1] shouldBe (-0.1246525461732861538e-1 plusOrMinus 1e-15)
-            d[2] shouldBe (-0.5404773180966231279e-2 plusOrMinus 1e-15)
+            b.velocity[0] shouldBe (-0.1091874268116823295e-1 plusOrMinus 1e-15)
+            b.velocity[1] shouldBe (-0.1246525461732861538e-1 plusOrMinus 1e-15)
+            b.velocity[2] shouldBe (-0.5404773180966231279e-2 plusOrMinus 1e-15)
         }
         "eraApcg13" {
             val astrom = eraApcg13(2456165.5, 0.401182685)
