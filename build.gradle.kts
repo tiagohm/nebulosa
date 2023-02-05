@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10")
         classpath("io.objectbox:objectbox-gradle-plugin:3.5.1")
         classpath("org.openjfx:javafx-plugin:0.0.13")
         classpath("gradle.plugin.com.github.johnrengelman:shadow:7.1.2")
