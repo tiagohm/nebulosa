@@ -18,6 +18,7 @@ import nebulosa.nova.frame.ITRS
 import nebulosa.nova.position.*
 import nebulosa.time.InstantOfTime
 import nebulosa.time.TimeJD
+import nebulosa.time.UTC
 import kotlin.math.atan2
 
 /**
@@ -314,7 +315,7 @@ open class ICRF protected constructor(
             ra: Angle,
             dec: Angle,
             distance: Distance = Distance.GIGAPARSEC,
-            time: InstantOfTime = TimeJD.now(),
+            time: InstantOfTime = UTC.now(),
             epoch: InstantOfTime? = null,
             center: Number = Int.MIN_VALUE,
             target: Number = Int.MIN_VALUE,

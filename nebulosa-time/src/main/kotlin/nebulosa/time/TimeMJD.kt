@@ -9,4 +9,4 @@ import nebulosa.constants.MJD0
  *
  * For example, 51544.0 in MJD is midnight on January 1, 2000.
  */
-data class TimeMJD(val mjd: Double) : TimeJD(normalize(mjd).let { normalize(it[0] + MJD0, it[1]) })
+class TimeMJD(val mjd: Double) : TimeJD(normalize(mjd).let { normalize(it[0] + MJD0, it[1]) })

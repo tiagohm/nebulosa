@@ -4,7 +4,7 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 
-interface AutoGuiding {
+interface Guider {
 
     val mount: Mount
 

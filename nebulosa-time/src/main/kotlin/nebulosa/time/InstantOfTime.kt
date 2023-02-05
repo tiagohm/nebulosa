@@ -15,8 +15,11 @@ import java.time.LocalTime
  * two 64-bit floats to represent time. Floating point algorithms are used
  * so that the Time object maintains sub-nanosecond precision over times spanning
  * the age of the universe.
+ *
+ * @see <img src="https://docs.astropy.org/en/stable/_images/time_scale_conversion.png"/>
  */
-abstract class InstantOfTime {
+@Suppress("NOTHING_TO_INLINE")
+sealed class InstantOfTime : Timescale {
 
     /**
      * Number of days.
@@ -31,25 +34,16 @@ abstract class InstantOfTime {
     /**
      * Gets time representation from internal [whole] and [fraction].
      */
-    val value get() = whole + fraction
+    val value
+        get() = whole + fraction
+
+    inline operator fun component1() = whole
+
+    inline operator fun component2() = fraction
 
     abstract operator fun plus(days: Double): InstantOfTime
 
     abstract operator fun minus(days: Double): InstantOfTime
-
-    abstract val ut1: UT1
-
-    abstract val utc: UTC
-
-    abstract val tai: TAI
-
-    abstract val tt: TT
-
-    abstract val tcg: TCG
-
-    abstract val tdb: TDB
-
-    abstract val tcb: TCB
 
     fun asYearMonthDayAndFraction(cutoff: JulianCalendarCutOff = JulianCalendarCutOff.NONE): DoubleArray {
         val a = whole.toInt()

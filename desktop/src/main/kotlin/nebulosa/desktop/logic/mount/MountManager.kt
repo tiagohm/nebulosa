@@ -17,7 +17,7 @@ import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
 import nebulosa.nova.position.Geoid
 import nebulosa.time.InstantOfTime
-import nebulosa.time.TimeJD
+import nebulosa.time.UTC
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext
@@ -172,7 +172,7 @@ class MountManager(private val view: MountView) :
         preferences.double("mount.screen.y")?.also { view.y = it }
     }
 
-    private fun computeLST(time: InstantOfTime = TimeJD.now()): Angle {
+    private fun computeLST(time: InstantOfTime = UTC.now()): Angle {
         if (value == null) return Angle.ZERO
         val position = Geoid.IERS2010.latLon(value.longitude, value.latitude, value.elevation)
         return position.lstAt(time)
@@ -180,7 +180,7 @@ class MountManager(private val view: MountView) :
 
     private fun computeTimeLeftToMeridianFlip(): Angle {
         if (value == null) return Angle.ZERO
-        return value.rightAscension - computeLST(TimeJD.now())
+        return value.rightAscension - computeLST()
     }
 
     private fun onTimerHit() {

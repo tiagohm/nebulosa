@@ -7,21 +7,17 @@ import kotlin.math.round
  * epoch as a floating point multiple of a unit time interval (e.g. seconds
  * or days).
  */
-abstract class TimeFromEpoch(
-    epoch: Double,
-    unit: Double,
-    epochStartWhole: Double,
-    epochStartFraction: Double,
+sealed class TimeFromEpoch(
+    epoch: Double, unit: Double,
+    epochStartWhole: Double, epochStartFraction: Double,
 ) : TimeJD(compute(epoch, unit, epochStartWhole, epochStartFraction)) {
 
     companion object {
 
         @JvmStatic
         private fun compute(
-            epoch: Double,
-            unit: Double,
-            epochStartWhole: Double,
-            epochStartFraction: Double,
+            epoch: Double, unit: Double,
+            epochStartWhole: Double, epochStartFraction: Double,
         ): DoubleArray {
             val date = normalize(epoch, divisor = unit)
 

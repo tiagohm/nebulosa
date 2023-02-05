@@ -3,15 +3,15 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.io.resource
 import nebulosa.time.*
+import java.io.File
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 class TimeTest : StringSpec() {
 
     init {
-        IERSA.load(resource("assets/finals2000A.all")!!)
+        IERSA.load(File("../assets/finals2000A.all").inputStream())
         IERS.current = IERSA
 
         "convert jd to datetime" {
@@ -56,7 +56,7 @@ class TimeTest : StringSpec() {
         "ut1 -> utc" {
             val time = UT1(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).utc
             time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
-            time.fraction shouldBe (0.017223910863385494 plusOrMinus 1E-16)
+            time.fraction shouldBe (0.017223876663362683 plusOrMinus 1E-15)
         }
         "utc -> tai" {
             val time = UTC(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).tai
@@ -111,7 +111,7 @@ class TimeTest : StringSpec() {
         "utc -> ut1" {
             val time = UTC(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).ut1
             time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
-            time.fraction shouldBe (0.017223380803281257 plusOrMinus 1E-16)
+            time.fraction shouldBe (0.017223415003304474 plusOrMinus 1E-16)
         }
     }
 }

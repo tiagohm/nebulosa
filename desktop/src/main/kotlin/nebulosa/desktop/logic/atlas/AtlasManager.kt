@@ -260,7 +260,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
     }
 
     private fun computeCoordinates(observer: Body, target: Body) {
-        val position = observer.at<Barycentric>(UTC(TimeJD.now())).observe(target)
+        val position = observer.at<Barycentric>(UTC.now()).observe(target)
         computeEquatorialCoordinates(position)
         computeHorizontalCoordinates(position)
         this.position = position

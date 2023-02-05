@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 /**
  * A Time format to represent Time as [year], [month], [day], [hour], [minute] and [second].
  */
-data class TimeYMDHMS(
+class TimeYMDHMS(
     val year: Int,
     val month: Int = 1,
     val day: Int = 1,

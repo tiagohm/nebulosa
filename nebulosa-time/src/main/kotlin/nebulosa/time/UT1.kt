@@ -2,31 +2,29 @@ package nebulosa.time
 
 import nebulosa.constants.DAYSEC
 
-class UT1(
-    val time: InstantOfTime,
-) : InstantOfTime() {
+class UT1 : TimeJD, Timescale {
 
-    constructor(whole: Double, fraction: Double = 0.0) : this(TimeJD(whole, fraction))
+    constructor(normalized: DoubleArray) : super(normalized)
 
-    override val whole get() = time.whole
+    constructor(whole: Double, fraction: Double = 0.0) : super(whole, fraction)
 
-    override val fraction get() = time.fraction
+    constructor(time: Timescale) : super(time.ut1)
 
-    override fun plus(days: Double) = UT1(time + days)
+    override fun plus(days: Double) = UT1(whole + days, fraction)
 
-    override fun minus(days: Double) = UT1(time - days)
+    override fun minus(days: Double) = UT1(whole - days, fraction)
 
     override val ut1 get() = this
 
-    override val utc by lazy { UTC(TimeJD(whole, fraction - IERS.delta(time) / DAYSEC)) }
+    override val utc get() = UTC(whole, fraction - IERS.delta(this) / DAYSEC)
 
-    override val tai by lazy { utc.tai }
+    override val tai get() = utc.tai
 
-    override val tt by lazy { tai.tt }
+    override val tt get() = tai.tt
 
-    override val tcg by lazy { tt.tcg }
+    override val tcg get() = tt.tcg
 
-    override val tdb by lazy { tt.tdb }
+    override val tdb get() = tt.tdb
 
-    override val tcb by lazy { tdb.tcb }
+    override val tcb get() = tdb.tcb
 }

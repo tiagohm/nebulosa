@@ -14,4 +14,11 @@ import nebulosa.constants.DAYSEC
  * second at midnight on leap second days while this class value is monotonically increasing
  * at 86400 seconds per UTC day.
  */
-data class TimeUnix(val seconds: Double) : TimeFromEpoch(seconds, DAYSEC, 2440588.0, -0.5)
+class TimeUnix(val seconds: Double) : TimeFromEpoch(seconds, DAYSEC, 2440588.0, -0.5) {
+
+    companion object {
+
+        @JvmStatic
+        fun now() = TimeUnix(System.currentTimeMillis() / 1000.0)
+    }
+}

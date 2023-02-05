@@ -2,31 +2,29 @@ package nebulosa.time
 
 import nebulosa.erfa.eraTcbTdb
 
-class TCB(
-    val time: InstantOfTime,
-) : InstantOfTime() {
+class TCB : TimeJD, Timescale {
 
-    constructor(whole: Double, fraction: Double = 0.0) : this(TimeJD(whole, fraction))
+    constructor(normalized: DoubleArray) : super(normalized)
 
-    override val whole get() = time.whole
+    constructor(whole: Double, fraction: Double = 0.0) : super(whole, fraction)
 
-    override val fraction get() = time.fraction
+    constructor(time: Timescale) : super(time.tcb)
 
-    override fun plus(days: Double) = TCB(time + days)
+    override fun plus(days: Double) = TCB(whole + days, fraction)
 
-    override fun minus(days: Double) = TCB(time - days)
+    override fun minus(days: Double) = TCB(whole - days, fraction)
 
-    override val ut1 by lazy { utc.ut1 }
+    override val ut1 get() = utc.ut1
 
-    override val utc by lazy { tai.utc }
+    override val utc get() = tai.utc
 
-    override val tai by lazy { tt.tai }
+    override val tai get() = tt.tai
 
-    override val tt by lazy { tdb.tt }
+    override val tt get() = tdb.tt
 
-    override val tcg by lazy { tt.tcg }
+    override val tcg get() = tt.tcg
 
-    override val tdb by lazy { TDB(TimeJD(eraTcbTdb(whole, fraction))) }
+    override val tdb get() = TDB(eraTcbTdb(whole, fraction))
 
     override val tcb get() = this
 }

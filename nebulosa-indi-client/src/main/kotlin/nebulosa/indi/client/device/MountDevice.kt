@@ -17,7 +17,7 @@ import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.m
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
-import nebulosa.time.TimeJD
+import nebulosa.time.UTC
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -294,7 +294,7 @@ internal open class MountDevice(
 
     override fun computeCoordinates(j2000: Boolean, horizontal: Boolean) {
         if (j2000 || horizontal) {
-            val epoch = TimeJD.now()
+            val epoch = UTC.now()
             val center = Geoid.IERS2010.latLon(longitude, latitude, elevation)
             val icrf = ICRF.equatorial(rightAscension, declination, time = epoch, epoch = epoch, center = center)
 

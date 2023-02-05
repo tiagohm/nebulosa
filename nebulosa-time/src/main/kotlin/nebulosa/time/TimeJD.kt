@@ -4,54 +4,42 @@ import nebulosa.math.twoProduct
 import nebulosa.math.twoSum
 import kotlin.math.round
 
-open class TimeJD(
-    whole: Double,
-    fraction: Double = 0.0,
-) : InstantOfTime() {
+open class TimeJD internal constructor(normalized: DoubleArray) : InstantOfTime() {
 
-    override val whole: Double
+    final override val whole = normalized[0]
 
-    override val fraction: Double
+    final override val fraction = normalized[1]
 
-    constructor(date: DoubleArray) : this(date[0], date[1])
+    constructor(whole: Double, fraction: Double = 0.0) : this(normalize(whole, fraction))
 
-    constructor(time: InstantOfTime) : this(time.whole, time.fraction)
-
-    init {
-        with(normalize(whole, fraction)) {
-            this@TimeJD.whole = this[0]
-            this@TimeJD.fraction = this[1]
-        }
-    }
+    constructor(time: InstantOfTime) : this(doubleArrayOf(time.whole, time.fraction))
 
     override fun plus(days: Double) = TimeJD(whole + days, fraction)
 
     override fun minus(days: Double) = TimeJD(whole - days, fraction)
 
-    override val ut1 by lazy { UT1(this) }
+    override val ut1 get() = UT1(whole, fraction)
 
-    override val utc by lazy { UTC(this) }
+    override val utc get() = UTC(whole, fraction)
 
-    override val tai by lazy { TAI(this) }
+    override val tai get() = TAI(whole, fraction)
 
-    override val tt by lazy { TT(this) }
+    override val tt get() = TT(whole, fraction)
 
-    override val tcg by lazy { TCG(this) }
+    override val tcg get() = TCG(whole, fraction)
 
-    override val tdb by lazy { TDB(this) }
+    override val tdb get() = TDB(whole, fraction)
 
-    override val tcb by lazy { TCB(this) }
+    override val tcb get() = TCB(whole, fraction)
 
     companion object {
-
-        inline val Number.jd get() = TimeJD(toDouble())
 
         @JvmStatic val J2000 = TimeJD(nebulosa.constants.J2000)
 
         @JvmStatic val B1950 = TimeJD(nebulosa.constants.B1950)
 
         @JvmStatic
-        fun now(): TimeJD = TimeUnix(System.currentTimeMillis() / 1000.0)
+        fun now(): TimeJD = TimeUnix.now()
 
         /**
          * Returns the sum of [whole] and [fraction] as two 64-bit floats.

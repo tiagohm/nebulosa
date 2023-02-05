@@ -3,31 +3,29 @@ package nebulosa.time
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.TTMINUSTAI
 
-class TAI(
-    val time: InstantOfTime,
-) : InstantOfTime() {
+class TAI : TimeJD, Timescale {
 
-    constructor(whole: Double, fraction: Double = 0.0) : this(TimeJD(whole, fraction))
+    constructor(normalized: DoubleArray) : super(normalized)
 
-    override val whole get() = time.whole
+    constructor(whole: Double, fraction: Double = 0.0) : super(whole, fraction)
 
-    override val fraction get() = time.fraction
+    constructor(time: Timescale) : super(time.tai)
 
-    override fun plus(days: Double) = TAI(time + days)
+    override fun plus(days: Double) = TAI(whole + days, fraction)
 
-    override fun minus(days: Double) = TAI(time - days)
+    override fun minus(days: Double) = TAI(whole - days, fraction)
 
-    override val ut1 by lazy { utc.ut1 }
+    override val ut1 get() = utc.ut1
 
-    override val utc by lazy { UTC(TimeJD(whole, fraction - TAIMinusUTC.delta(time) / DAYSEC)) }
+    override val utc get() = UTC(whole, fraction - TAIMinusUTC.delta(this) / DAYSEC)
 
     override val tai get() = this
 
-    override val tt by lazy { TT(TimeJD(whole, fraction + TTMINUSTAI / DAYSEC)) }
+    override val tt get() = TT(whole, fraction + TTMINUSTAI / DAYSEC)
 
-    override val tcg by lazy { tt.tcg }
+    override val tcg get() = tt.tcg
 
-    override val tdb by lazy { tt.tdb }
+    override val tdb get() = tt.tdb
 
-    override val tcb by lazy { tdb.tcb }
+    override val tcb get() = tdb.tcb
 }

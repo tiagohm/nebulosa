@@ -9,4 +9,4 @@ import nebulosa.constants.DAYSEC
  *
  * Must be used with [TT] date.
  */
-data class TimeCxcSec(val seconds: Double) : TimeFromEpoch(seconds, DAYSEC, 2450814.0, 0.5)
+class TimeCxcSec(val seconds: Double) : TimeFromEpoch(seconds, DAYSEC, 2450814.0, 0.5)

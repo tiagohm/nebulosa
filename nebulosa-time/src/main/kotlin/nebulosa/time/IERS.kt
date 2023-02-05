@@ -51,10 +51,10 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
         input: DoubleArray,
         vararg data: DoubleArray,
     ): DoubleArray {
-        val jd = if (time is TimeJD) time else time.utc
+        val (whole, fraction) = time
         val res = DoubleArray(data.size)
-        val mjd = floor(jd.whole - MJD0 + jd.fraction)
-        val utc = jd.whole - (MJD0 + mjd) + jd.fraction
+        val mjd = floor(whole - MJD0 + fraction)
+        val utc = whole - (MJD0 + mjd) + fraction
         val i = input.search(mjd, rightSide = true)
         val k = max(1, min(i, input.size - 1))
         val mjd0 = input[k - 1]

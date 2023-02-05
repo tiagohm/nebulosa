@@ -4,7 +4,7 @@ import nebulosa.imaging.Image
 import kotlin.math.abs
 import kotlin.math.hypot
 
-abstract class MultiStarGuider : Guider() {
+class MultiStarGuider : Guider() {
 
     private var primaryStar = Star(0f, 0f)
     private val guideStars = ArrayList<Star>(0)
@@ -133,7 +133,7 @@ abstract class MultiStarGuider : Guider() {
                     distance = hypot(offset.camera.x, offset.camera.y)
                 }
             } else {
-                starsUsed = 1
+                // starsUsed = 1
             }
 
             transformCameraCoordinatesToMountCoordinates(offset.camera, offset.mount, calibration, yAngleError)
@@ -143,9 +143,9 @@ abstract class MultiStarGuider : Guider() {
         }
     }
 
-    abstract val isGuiding: Boolean
+    val isGuiding = false
 
-    abstract val isSettling: Boolean
+    val isSettling = false
 
     private fun updateCurrentDistance(distance: Float, distanceRA: Float) {
         // starFoundTimestamp = System.currentTimeMillis()
@@ -185,15 +185,17 @@ abstract class MultiStarGuider : Guider() {
         }
     }
 
-    private fun refineOffset(image: Image, offset: GuiderOffset) {
+    private fun refineOffset(image: Image, offset: GuiderOffset): Boolean {
         var origOffset = offset
 
         if (isGuiding && guideStars.size > 1 && !isSettling) {
             val sumWeights = 1.0
             val sumX = origOffset.camera.x
             val sumY = origOffset.camera.y
-            primaryDistance = hypot(sumX, sumY)
+            // primaryDistance = hypot(sumX, sumY)
         }
+
+        return false
     }
 
     private fun currentError(avgDist: Float): Float {
