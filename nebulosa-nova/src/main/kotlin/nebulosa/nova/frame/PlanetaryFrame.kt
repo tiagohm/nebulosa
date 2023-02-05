@@ -16,7 +16,7 @@ import kotlin.math.sin
  */
 data class PlanetaryFrame(
     val center: Number,
-    val matrix: Matrix3D,
+    val matrix: Matrix3D?,
     val segment: PckSegment,
 ) : Frame {
 
@@ -29,7 +29,7 @@ data class PlanetaryFrame(
         segment: PckSegment,
     ) : this(
         center,
-        Matrix3D.IDENTITY.rotateX(angles.first).rotateY(angles.second).rotateZ(angles.third),
+        Matrix3D.rotateX(angles.first).rotateY(angles.second).rotateZ(angles.third),
         segment,
     )
 
@@ -37,10 +37,9 @@ data class PlanetaryFrame(
      * Returns the rotation matrix for this frame at the [time].
      */
     override fun rotationAt(time: InstantOfTime): Matrix3D {
-        // TODO: TDB
-        val (ra, dec, w) = segment.compute(time, derivative = false).first
-        val r = Matrix3D.IDENTITY.rotateZ((-w).rad).rotateX((-dec).rad).rotateZ((-ra).rad)
-        return if (matrix.isNotEmpty()) matrix * r else r
+        val (ra, dec, w) = segment.compute(time.tdb, derivative = false).position
+        val r = Matrix3D.rotateZ((-w).rad).rotateX((-dec).rad).rotateZ((-ra).rad)
+        return if (matrix != null) matrix * r else r
     }
 
     /**
@@ -53,8 +52,7 @@ data class PlanetaryFrame(
         val (ra, dec, w) = c
         val (radot, decdot, wdot) = rates
 
-        val r = Matrix3D.IDENTITY
-            .rotateZ((-w).rad)
+        val r = Matrix3D.rotateZ((-w).rad)
             .rotateX((-dec).rad)
             .rotateZ((-ra).rad)
 
@@ -75,7 +73,7 @@ data class PlanetaryFrame(
 
         val dRdt = drdtrt * r
 
-        return if (matrix.isNotEmpty()) {
+        return if (matrix != null) {
             (matrix * r) to (matrix * dRdt) * DAYSEC
         } else {
             r to (dRdt * DAYSEC)

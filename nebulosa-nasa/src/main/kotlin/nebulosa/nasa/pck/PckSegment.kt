@@ -1,6 +1,6 @@
 package nebulosa.nasa.pck;
 
-import nebulosa.math.Vector3D
+import nebulosa.erfa.PositionAndVelocity
 import nebulosa.time.InstantOfTime
 
 interface PckSegment {
@@ -54,5 +54,5 @@ interface PckSegment {
     fun compute(
         time: InstantOfTime,
         derivative: Boolean = false,
-    ): Pair<Vector3D, Vector3D>
+    ): PositionAndVelocity
 }

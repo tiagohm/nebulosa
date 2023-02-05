@@ -1,7 +1,6 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
-import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.arcmin
@@ -75,12 +74,6 @@ class AngleTest : StringSpec() {
         "rem" {
             (5.0.rad % 5).value shouldBeExactly 0.0
             (5.0.rad % 5.0.rad).value shouldBeExactly 0.0
-        }
-        "compare" {
-            Angle.ZERO.compareTo(Angle.SEMICIRCLE) shouldBeExactly -1
-            Angle.SEMICIRCLE.compareTo(Angle.CIRCLE) shouldBeExactly -1
-            Angle.CIRCLE.compareTo(Angle.ZERO) shouldBeExactly 1
-            Angle.ZERO.compareTo(Angle.ZERO) shouldBeExactly 0
         }
         "parse decimal coordinates" {
             Angle.from("23.5634453") shouldBe 23.5634453

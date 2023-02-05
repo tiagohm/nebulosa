@@ -3,6 +3,7 @@ package nebulosa.nova.astrometry
 import nebulosa.constants.AU_M
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.SPEED_OF_LIGHT
+import nebulosa.erfa.PositionAndVelocity
 import nebulosa.math.Vector3D
 import nebulosa.nova.position.ICRF
 import nebulosa.time.InstantOfTime
@@ -15,18 +16,18 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
 
     val target: Number
 
-    override fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D> {
-        var position = Vector3D()
-        var velocity = Vector3D()
+    override fun compute(time: InstantOfTime): PositionAndVelocity {
+        var position = Vector3D.EMPTY
+        var velocity = Vector3D.EMPTY
 
         for (body in this) {
             val pv = body.compute(time)
 
-            position += pv.first
-            velocity += pv.second
+            position += pv.position
+            velocity += pv.velocity
         }
 
-        return position to velocity
+        return PositionAndVelocity(position, velocity)
     }
 
     override fun observe(observer: ICRF): Pair<Vector3D, Vector3D> {
@@ -107,7 +108,7 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
         override val target: Number = body.center,
     ) : Body {
 
-        override fun compute(time: InstantOfTime) = body.compute(time).let { -it.first to -it.second }
+        override fun compute(time: InstantOfTime) = body.compute(time).let { -it }
 
         override fun unaryMinus() = body
 
@@ -136,7 +137,7 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
             var value = 0.0
 
             for (i in 0..9) {
-                val position = pv.first - observer.position
+                val position = pv.position - observer.position
                 val distance = position.length
                 val lightTime = distance * (AU_M / (SPEED_OF_LIGHT * DAYSEC))
 
@@ -147,7 +148,7 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
                 value = lightTime
             }
 
-            return (pv.first - observer.position) to (pv.second - observer.velocity)
+            return (pv.position - observer.position) to (pv.velocity - observer.velocity)
         }
     }
 }

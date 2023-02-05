@@ -19,8 +19,8 @@ class GeographicPosition(
     val model: Geoid,
 ) : ITRSPosition, Frame, Number() {
 
-    private val rLat by lazy { Matrix3D.IDENTITY.rotateY(-latitude).flipX() }
-    private val rLatLon by lazy { rLat * Matrix3D.IDENTITY.rotateZ(longitude) }
+    private val rLat by lazy { Matrix3D.rotateY(-latitude).flipX() }
+    private val rLatLon by lazy { rLat * Matrix3D.rotateZ(longitude) }
 
     override val center = 399
 
@@ -28,11 +28,11 @@ class GeographicPosition(
 
     override val velocity by lazy { super.velocity }
 
-    inline operator fun component1() = itrs.a1.au
+    inline operator fun component1() = itrs.x.au
 
-    inline operator fun component2() = itrs.a2.au
+    inline operator fun component2() = itrs.y.au
 
-    inline operator fun component3() = itrs.a3.au
+    inline operator fun component3() = itrs.z.au
 
     /**
      * Returns this position’s Local Sidereal Time at the [time].

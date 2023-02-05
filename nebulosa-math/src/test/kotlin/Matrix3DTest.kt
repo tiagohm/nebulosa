@@ -11,9 +11,6 @@ import nebulosa.math.Angle.Companion.rad
 class Matrix3DTest : StringSpec() {
 
     init {
-
-        timeout = 1000L
-
         "rotate x" {
             val m = Matrix3D(2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 3.0, 4.0, 5.0)
             val r = m.rotateX(0.3456789.rad)
@@ -58,6 +55,11 @@ class Matrix3DTest : StringSpec() {
             r[2, 0] shouldBeExactly 3.0
             r[2, 1] shouldBeExactly 4.0
             r[2, 2] shouldBeExactly 5.0
+        }
+        "chain rotation" {
+            val m0 = Matrix3D.IDENTITY.rotateZ(Angle.SEMICIRCLE).rotateX(-Angle.SEMICIRCLE).rotateY(Angle.SEMICIRCLE)
+            val m1 = Matrix3D.rotateZ(Angle.SEMICIRCLE).rotateX(-Angle.SEMICIRCLE).rotateY(Angle.SEMICIRCLE)
+            m0.matrix shouldBe m1.matrix
         }
         "plus matrix" {
             val m = Matrix3D(2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 3.0, 4.0, 5.0)

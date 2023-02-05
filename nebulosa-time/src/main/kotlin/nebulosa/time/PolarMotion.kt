@@ -24,6 +24,6 @@ fun interface PolarMotion {
      */
     fun pmMatrix(time: InstantOfTime): Matrix3D {
         val (sprime, x, y) = pmAngles(time)
-        return Matrix3D.IDENTITY.rotateX(y).rotateY(x).rotateZ(-sprime)
+        return Matrix3D.rotateX(y).rotateY(x).rotateZ(-sprime)
     }
 }

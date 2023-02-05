@@ -358,7 +358,7 @@ fun eraC2ixys(
     val e = if (r2 > 0.0) atan2(y, x).rad else Angle.ZERO
     val d = atan(sqrt(r2 / (1.0 - r2))).rad
 
-    return Matrix3D.IDENTITY.rotateZ(e).rotateY(d).rotateZ(-(e + s))
+    return Matrix3D.rotateZ(e).rotateY(d).rotateZ(-(e + s))
 }
 
 @Suppress("FloatingPointLiteralPrecision") private const val OM = 1.00273781191135448 * TAU / DAYSEC
@@ -371,7 +371,7 @@ fun eraC2ixys(
  * @param sp The TIO locator s' (radians)
  */
 fun eraPom00(xp: Angle, yp: Angle, sp: Angle): Matrix3D {
-    return Matrix3D.IDENTITY.rotateZ(sp).rotateY(-xp).rotateX(-yp)
+    return Matrix3D.rotateZ(sp).rotateY(-xp).rotateX(-yp)
 }
 
 /**
@@ -392,7 +392,7 @@ fun eraPvtob(
     xp: Angle, yp: Angle,
     sp: Angle,
     theta: Angle,
-): Pair<Vector3D, Vector3D> {
+): PositionAndVelocity {
     // Geodetic to geocentric transformation (WGS84).
     val xyzm = eraGd2Gce(6378137.0.m, 1.0 / 298.257223563, elong, phi, hm)
 
@@ -409,7 +409,7 @@ fun eraPvtob(
     val vx = OM * (-s * x - c * y)
     val vy = OM * (c * x - s * y)
 
-    return Vector3D(px, py, z) to Vector3D(vx, vy, 0.0)
+    return PositionAndVelocity(Vector3D(px, py, z), Vector3D(vx, vy, 0.0))
 }
 
 private const val AUDMS = AU_M / DAYSEC
@@ -544,7 +544,7 @@ fun eraApco(
     refa: Angle, refb: Angle,
 ): AstrometryParameters {
     // Form the rotation matrix, CIRS to apparent [HA,Dec].
-    var r = Matrix3D.IDENTITY.rotateZ(theta + sp).rotateY(-xp).rotateX(-yp).rotateZ(elong)
+    var r = Matrix3D.rotateZ(theta + sp).rotateY(-xp).rotateX(-yp).rotateZ(elong)
 
     // Solve for local Earth rotation angle.
     val a = r[0, 0]
@@ -573,14 +573,14 @@ fun eraApco(
 
     // Rotate into GCRS.
     val rt = r.transposed
-    val p = rt * pvc.first
-    val v = rt * pvc.second
+    val p = rt * pvc.position
+    val v = rt * pvc.velocity
 
     // ICRS <-> GCRS parameters.
     return eraApcs(
         tdb1, tdb2,
-        p.a1.m, p.a2.m, p.a3.m,
-        v.a1, v.a2, v.a3,
+        p.x.m, p.y.m, p.z.m,
+        v.x, v.y, v.z,
         ebpx, ebpy, ebpz,
         ebvx, ebvy, ebvz,
         ehpx, ehpy, ehpz,
@@ -887,7 +887,7 @@ fun eraNut06a(tt1: Double, tt2: Double): PairOfAngle {
  * Form rotation matrix given the Fukushima-Williams angles.
  */
 fun eraFw2m(gamb: Angle, phib: Angle, psi: Angle, eps: Angle): Matrix3D {
-    return Matrix3D.IDENTITY.rotateZ(gamb).rotateX(phib).rotateZ(-psi).rotateX(-eps)
+    return Matrix3D.rotateZ(gamb).rotateX(phib).rotateZ(-psi).rotateX(-eps)
 }
 
 /**
@@ -1365,9 +1365,9 @@ fun eraApcg13(tdb1: Double, tdb2: Double): AstrometryParameters {
 
     return eraApcg(
         tdb1, tdb2,
-        c.a1.au, c.a2.au, c.a3.au,
-        d.a1.auDay, d.a2.auDay, d.a3.auDay,
-        a.a1.au, a.a2.au, a.a3.au,
+        c.x.au, c.y.au, c.z.au,
+        d.x.auDay, d.y.auDay, d.z.auDay,
+        a.x.au, a.y.au, a.z.au,
     )
 }
 
@@ -1922,7 +1922,7 @@ fun eraEcm06(tt1: Double, tt2: Double): Matrix3D {
     // Precession-bias matrix, IAU 2006.
     val bp = eraPmat06(tt1, tt2)
     // Equatorial of date to ecliptic matrix.
-    val e = Matrix3D.IDENTITY.rotateX(ob)
+    val e = Matrix3D.rotateX(ob)
     // ICRS to ecliptic coordinates rotation matrix, IAU 2006.
     return e * bp
 }
@@ -1986,7 +1986,7 @@ fun eraP06e(tt1: Double, tt2: Double): PrecessionAnglesIAU2006 {
  * @param deps Nutation angle.
  */
 fun eraNumat(epsa: Angle, dpsi: Angle, deps: Angle): Matrix3D {
-    return Matrix3D.IDENTITY.rotateX(epsa).rotateZ(-dpsi).rotateX(-(epsa + deps))
+    return Matrix3D.rotateX(epsa).rotateZ(-dpsi).rotateX(-(epsa + deps))
 }
 
 /**

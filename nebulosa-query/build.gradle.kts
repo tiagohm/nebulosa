@@ -9,6 +9,7 @@ dependencies {
     api(libs.jackson)
     api(libs.okhttp)
     implementation(libs.okhttp.logging)
+    implementation(libs.logback)
     testImplementation(libs.bundles.kotest)
 }
 

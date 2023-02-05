@@ -224,7 +224,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
 
         val offset = now.offset.totalSeconds / DAYSEC
         val startTime = TimeYMDHMS(year, month, dayOfMonth, 12) - offset
-        val stepCount = 24.0 * 12.0
+        val stepCount = 24.0 * 2.0
 
         if (target in bodyCache) {
             view.drawAltitude(
@@ -238,11 +238,11 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
                 val points = ArrayList<Point2D>(stepCount.toInt())
 
                 for (i in 0..stepCount.toInt()) {
-                    val x = i / stepCount // 0..1
-                    val position = observer.at<Barycentric>(startTime + x).observe(target)
+                    val fraction = i / stepCount // 0..1
+                    val position = observer.at<Barycentric>(UTC(startTime + fraction)).observe(target)
                     val altitude = position.horizontal().latitude
                     val y = max(0.0, altitude.degrees / 90.0)
-                    points.add(Point2D(x, y))
+                    points.add(Point2D(fraction, y))
                 }
 
                 bodyCache[target] = points

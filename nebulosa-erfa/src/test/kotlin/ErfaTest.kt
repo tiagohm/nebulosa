@@ -305,13 +305,13 @@ class ErfaTest : StringSpec() {
             dt shouldBe (-0.1280368005936998991e-2 plusOrMinus 1E-15)
         }
         "eraPvtob" {
-            val pv = eraPvtob(2.0.rad, 0.5.rad, 3000.0.m, 1e-6.rad, (-0.5e-6).rad, 1e-8.rad, 5.0.rad)
-            pv.first[0] shouldBe (4225081.367071159207 plusOrMinus 1e-5)
-            pv.first[1] shouldBe (3681943.215856198144 plusOrMinus 1e-5)
-            pv.first[2] shouldBe (3041149.399241260785 plusOrMinus 1e-5)
-            pv.second[0] shouldBe (-268.4915389365998787 plusOrMinus 1e-5)
-            pv.second[1] shouldBe (308.0977983288903123 plusOrMinus 1e-5)
-            pv.second[2] shouldBe (0.0 plusOrMinus 1e-5)
+            val (p, v) = eraPvtob(2.0.rad, 0.5.rad, 3000.0.m, 1e-6.rad, (-0.5e-6).rad, 1e-8.rad, 5.0.rad)
+            p[0] shouldBe (4225081.367071159207 plusOrMinus 1e-5)
+            p[1] shouldBe (3681943.215856198144 plusOrMinus 1e-5)
+            p[2] shouldBe (3041149.399241260785 plusOrMinus 1e-5)
+            v[0] shouldBe (-268.4915389365998787 plusOrMinus 1e-5)
+            v[1] shouldBe (308.0977983288903123 plusOrMinus 1e-5)
+            v[2] shouldBe (0.0 plusOrMinus 1e-5)
         }
         "eraNut00a" {
             val (psi, eps) = eraNut00a(2400000.5, 53736.0)

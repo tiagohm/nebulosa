@@ -2,7 +2,6 @@ package nebulosa.time
 
 import nebulosa.constants.MJD0
 import nebulosa.erfa.PairOfAngle
-import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.arcsec
 import nebulosa.math.search
 import java.io.InputStream
@@ -101,6 +100,7 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
 
     companion object : PolarMotion, DeltaTime {
 
+        // TODO: Initialize with default IERS (empty?)
         @Volatile lateinit var current: IERS
 
         override fun pmXY(time: InstantOfTime) = current.pmXY(time)

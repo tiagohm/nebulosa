@@ -4,6 +4,7 @@ import nebulosa.constants.AU_KM
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.DAYSPERJY
 import nebulosa.constants.DEG2RAD
+import nebulosa.erfa.PositionAndVelocity
 import nebulosa.math.Matrix3D
 import nebulosa.math.Vector3D
 import nebulosa.time.InstantOfTime
@@ -227,7 +228,7 @@ enum class GUST86(override val target: Int) : Body {
         an: DoubleArray, ae: DoubleArray, ai: DoubleArray,
     )
 
-    override fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D> {
+    override fun compute(time: InstantOfTime): PositionAndVelocity {
         val td = (time.tdb.whole - 2444239.5 + time.tdb.fraction)
         val ty = td / DAYSPERJY
 
@@ -296,7 +297,7 @@ enum class GUST86(override val target: Int) : Body {
         for (i in 0..2) xyz[i] /= AU_KM
         for (i in 3..5) xyz[i] *= DAYSEC / AU_KM
 
-        return REFERENCE_FRAME * Vector3D(xyz) to REFERENCE_FRAME * Vector3D(xyz, 3)
+        return PositionAndVelocity(REFERENCE_FRAME * Vector3D(xyz), REFERENCE_FRAME * Vector3D(xyz, 3))
     }
 
     protected fun computeSeries(

@@ -3,6 +3,7 @@ package nebulosa.nasa.spk
 import nebulosa.constants.AU_KM
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.J2000
+import nebulosa.erfa.PositionAndVelocity
 import nebulosa.math.Vector3D
 import nebulosa.math.divmod
 import nebulosa.time.InstantOfTime
@@ -84,7 +85,7 @@ internal data class Type2And3Segment(
         }
     }
 
-    override fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D> {
+    override fun compute(time: InstantOfTime): PositionAndVelocity {
         val (a, p) = ((time.tdb.whole - J2000) * DAYSEC - initialEpoch) divmod intervalLength
         val (b, q) = (time.tdb.fraction * DAYSEC) divmod intervalLength
         val (d, offset) = (p + q) divmod intervalLength
@@ -151,6 +152,6 @@ internal data class Type2And3Segment(
         val r1 = ((w0[1] + s * dw0[1] - dw1[1]) / intervalLength) * 2.0 * DAYSEC / AU_KM
         val r2 = ((w0[2] + s * dw0[2] - dw1[2]) / intervalLength) * 2.0 * DAYSEC / AU_KM
 
-        return Vector3D(c0, c1, c2) to Vector3D(r0, r1, r2)
+        return PositionAndVelocity(Vector3D(c0, c1, c2), Vector3D(r0, r1, r2))
     }
 }

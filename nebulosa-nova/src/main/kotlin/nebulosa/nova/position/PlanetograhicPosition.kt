@@ -1,6 +1,7 @@
 package nebulosa.nova.position
 
 import nebulosa.constants.TAU
+import nebulosa.erfa.PositionAndVelocity
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
@@ -29,16 +30,16 @@ class PlanetograhicPosition(
         distance: Distance,
     ) : this(
         frame,
-        Matrix3D.IDENTITY.rotateZ(longitude).rotateY(-latitude) * Vector3D(distance.value, 0.0, 0.0),
+        Matrix3D.rotateZ(longitude).rotateY(-latitude) * Vector3D(distance.value, 0.0, 0.0),
         latitude,
         longitude,
     )
 
-    override fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D> {
+    override fun compute(time: InstantOfTime): PositionAndVelocity {
         // Since position has zero velocity in this reference
         // frame, velocity includes a "dRdt" term but not an "r" term.
         val (r, dRdt) = frame.rotationAndRateAt(time)
-        return (r.transposed * position) to (dRdt.transposed * position)
+        return PositionAndVelocity((r.transposed * position), (dRdt.transposed * position))
     }
 
     /**
@@ -49,7 +50,7 @@ class PlanetograhicPosition(
         // from position, to support situations where we were not
         // given a latitude and longitude.  If that is not feasible,
         // then at least cache the product of these first two matrices.
-        val m = Matrix3D.IDENTITY.rotateY((TAU / 4.0 - latitude.value).rad)
+        val m = Matrix3D.rotateY((TAU / 4.0 - latitude.value).rad)
             .rotateZ((TAU / 2.0 - longitude.value).rad) *
                 frame.rotationAt(time)
 

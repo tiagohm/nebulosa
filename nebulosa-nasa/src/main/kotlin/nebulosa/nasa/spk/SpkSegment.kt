@@ -1,6 +1,6 @@
 package nebulosa.nasa.spk
 
-import nebulosa.math.Vector3D
+import nebulosa.erfa.PositionAndVelocity
 import nebulosa.time.InstantOfTime
 
 /**
@@ -61,5 +61,5 @@ interface SpkSegment {
     /**
      * Computes the component (au) and differentials (au/day) values for the TDB [time].
      */
-    fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D>
+    fun compute(time: InstantOfTime): PositionAndVelocity
 }

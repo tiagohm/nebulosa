@@ -1,5 +1,6 @@
 package nebulosa.nasa.spk
 
+import nebulosa.erfa.PositionAndVelocity
 import nebulosa.math.Vector3D
 import nebulosa.time.InstantOfTime
 
@@ -19,7 +20,7 @@ internal data class Type9Segment(
     override val endIndex: Int,
 ) : SpkSegment {
 
-    override fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D> {
+    override fun compute(time: InstantOfTime): PositionAndVelocity {
         TODO("Not yet implemented")
     }
 }

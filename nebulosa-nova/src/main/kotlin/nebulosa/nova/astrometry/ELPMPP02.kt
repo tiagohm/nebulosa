@@ -1,6 +1,7 @@
 package nebulosa.nova.astrometry
 
 import nebulosa.constants.*
+import nebulosa.erfa.PositionAndVelocity
 import nebulosa.io.bufferedResource
 import nebulosa.math.Matrix3D
 import nebulosa.math.Vector3D
@@ -27,7 +28,7 @@ object ELPMPP02 : Body {
     override val target = 301 // Moon.
 
     @Suppress("UnnecessaryVariable")
-    override fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D> {
+    override fun compute(time: InstantOfTime): PositionAndVelocity {
         val t = DoubleArray(5)
         t[0] = 1.0
         t[1] = (time.tdb.whole - J2000 + time.tdb.fraction) / DAYSPERJC
@@ -120,7 +121,7 @@ object ELPMPP02 : Body {
         v[4] = (pwqw * xp1 + qw2 * xp2 - qwra * xp3 + ppwqpw * x1 + qpw2 * x2 - qpwra * x3) / DAYSPERJC / AU_KM
         v[5] = (-pwra * xp1 + qwra * xp2 + (pw2 + qw2 - 1.0) * xp3 - ppwra * x1 + qpwra * x2 + (ppw2 + qpw2) * x3) / DAYSPERJC / AU_KM
 
-        return REFERENCE_FRAME * Vector3D(v) to REFERENCE_FRAME * Vector3D(v, 3)
+        return PositionAndVelocity(REFERENCE_FRAME * Vector3D(v), REFERENCE_FRAME * Vector3D(v, 3))
     }
 
     @JvmStatic private val REFERENCE_FRAME = Matrix3D(

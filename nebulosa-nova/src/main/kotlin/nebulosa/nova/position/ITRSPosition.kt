@@ -2,6 +2,7 @@ package nebulosa.nova.position
 
 import nebulosa.constants.ANGULAR_VELOCITY
 import nebulosa.constants.DAYSEC
+import nebulosa.erfa.PositionAndVelocity
 import nebulosa.math.Vector3D
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.frame.ITRS
@@ -22,10 +23,10 @@ interface ITRSPosition : Body {
     /**
      * Computes GCRS position and velocity at the [time].
      */
-    override fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D> {
+    override fun compute(time: InstantOfTime): PositionAndVelocity {
         val rt = ITRS.rotationAt(time).transposed
         val r = rt * itrs
         val v = rt * velocity
-        return r to v
+        return PositionAndVelocity(r, v)
     }
 }

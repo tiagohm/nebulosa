@@ -2,6 +2,7 @@ package nebulosa.nova.astrometry
 
 import nebulosa.constants.DAYSPERJM
 import nebulosa.constants.J2000
+import nebulosa.erfa.PositionAndVelocity
 import nebulosa.io.bufferedResource
 import nebulosa.math.Matrix3D
 import nebulosa.math.Vector3D
@@ -54,7 +55,7 @@ enum class VSOP87E(override val target: Int) : Body {
 
     override val center = 0 // SSB.
 
-    override fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D> {
+    override fun compute(time: InstantOfTime): PositionAndVelocity {
         val t = DoubleArray(6)
         t[0] = 1.0
         t[1] = (time.tdb.whole - J2000 + time.tdb.fraction) / DAYSPERJM
@@ -87,7 +88,7 @@ enum class VSOP87E(override val target: Int) : Body {
             v[k] /= DAYSPERJM
         }
 
-        return REFERENCE_FRAME * Vector3D(p) to REFERENCE_FRAME * Vector3D(v)
+        return PositionAndVelocity(REFERENCE_FRAME * Vector3D(p), REFERENCE_FRAME * Vector3D(v))
     }
 
     companion object {

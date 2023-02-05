@@ -126,7 +126,7 @@ abstract class InstantOfTime {
     /**
      * Returns the 3x3 matrix of Equation of Origins in cycles.
      */
-    val c by lazy { Matrix3D.IDENTITY.rotateZ(eraEra00(ut1.whole, ut1.fraction) - gast) * m }
+    val c by lazy { Matrix3D.rotateZ(eraEra00(ut1.whole, ut1.fraction) - gast) * m }
 
     /**
      * Returns the true obliquity of the ecliptic in radians.

@@ -1,6 +1,7 @@
 package nebulosa.nova.astrometry
 
 import nebulosa.constants.TAU
+import nebulosa.erfa.PositionAndVelocity
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
@@ -19,13 +20,13 @@ data class KeplerOrbit(
     val rotation: Matrix3D? = null,
 ) : Body {
 
-    override fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D> {
+    override fun compute(time: InstantOfTime): PositionAndVelocity {
         val (position, velocity) = propagate(position, velocity, epoch.tt, time.tt, mu)
 
         return if (rotation != null) {
-            (rotation * position) to (rotation * velocity)
+            PositionAndVelocity((rotation * position), (rotation * velocity))
         } else {
-            position to velocity
+            PositionAndVelocity(position, velocity)
         }
     }
 
@@ -179,7 +180,7 @@ data class KeplerOrbit(
             e: Double,
             i: Angle, om: Angle, w: Angle, v: Angle,
             mu: Double,
-        ): Pair<Vector3D, Vector3D> {
+        ): PositionAndVelocity {
             // Checks that true anomaly is less than arccos(-1/e) for hyperbolic orbits.
             if (e > 1 && v.value > acos(-1.0 / e)) {
                 throw IllegalArgumentException("if eccentricity is > 1, abs(true anomaly) cannot be more than acos(-1/e)")
@@ -205,7 +206,7 @@ data class KeplerOrbit(
             val yDot = y * h * e / (r * p.value) * sinv - h / r * (sinOm * sinu - cosOm * cosu * cosi)
             val zDot = z * h * e / (r * p.value) * sinv + h / r * sini * cosu
 
-            return Vector3D(x, y, z) to Vector3D(xDot, yDot, zDot)
+            return PositionAndVelocity(Vector3D(x, y, z), Vector3D(xDot, yDot, zDot))
         }
 
         /**
@@ -222,7 +223,7 @@ data class KeplerOrbit(
             position: Vector3D, velocity: Vector3D,
             t0: InstantOfTime, t1: InstantOfTime,
             mu: Double,
-        ): Pair<Vector3D, Vector3D> {
+        ): PositionAndVelocity {
             val r0 = position.length
             val rv = position.dot(velocity)
 
@@ -315,7 +316,7 @@ data class KeplerOrbit(
             val pos = position * pc + velocity * vc
             val vel = position * pcdot + velocity * vcdot
 
-            return pos to vel
+            return PositionAndVelocity(pos, vel)
         }
 
         @JvmStatic

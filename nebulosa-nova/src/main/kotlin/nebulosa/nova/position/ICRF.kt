@@ -3,6 +3,7 @@ package nebulosa.nova.position
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.SPEED_OF_LIGHT
 import nebulosa.erfa.CartesianCoordinate
+import nebulosa.erfa.PositionAndVelocity
 import nebulosa.erfa.SphericalCoordinate
 import nebulosa.math.*
 import nebulosa.math.Angle.Companion.rad
@@ -164,14 +165,14 @@ open class ICRF protected constructor(
     /**
      * Returns the [position] as an |xyz| position and velocity vector in a reference [frame].
      */
-    fun frame(frame: Frame): Pair<Vector3D, Vector3D> {
+    fun frame(frame: Frame): PositionAndVelocity {
         val r = frame.rotationAt(time)
         val p = r * position
         var v = r * velocity
 
         frame.dRdtTimesRtAt(time)?.also { v += it * p }
 
-        return p to v
+        return PositionAndVelocity(p, v)
     }
 
     /**

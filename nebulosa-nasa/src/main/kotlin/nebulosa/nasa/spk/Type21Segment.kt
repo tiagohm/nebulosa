@@ -3,6 +3,7 @@ package nebulosa.nasa.spk
 import nebulosa.constants.AU_KM
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.J2000
+import nebulosa.erfa.PositionAndVelocity
 import nebulosa.math.Vector3D
 import nebulosa.time.InstantOfTime
 import java.io.IOException
@@ -141,7 +142,7 @@ internal data class Type21Segment(
         return true
     }
 
-    override fun compute(time: InstantOfTime): Pair<Vector3D, Vector3D> {
+    override fun compute(time: InstantOfTime): PositionAndVelocity {
         val seconds = (time.tdb.whole - J2000 + time.tdb.fraction) * DAYSEC
 
         val index = searchCoefficientIndex(seconds)
@@ -232,7 +233,7 @@ internal data class Type21Segment(
             state[i + 3] = (c.refVel[i] + delta * sum) * DAYSEC / AU_KM
         }
 
-        return Vector3D(state) to Vector3D(state, 3)
+        return PositionAndVelocity(Vector3D(state), Vector3D(state, 3))
     }
 
     companion object {
