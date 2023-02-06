@@ -20,13 +20,13 @@ class TT : TimeJD, Timescale {
 
     override val utc get() = tai.utc
 
-    override val tai get() = TAI(whole, fraction - TTMINUSTAI / DAYSEC)
+    override val tai by lazy { TAI(whole, fraction - TTMINUSTAI / DAYSEC) }
 
     override val tt get() = this
 
-    override val tcg get() = TCG(eraTtTcg(whole, fraction))
+    override val tcg by lazy { TCG(eraTtTcg(whole, fraction)) }
 
-    override val tdb get() = TDB(whole, fraction + TDBMinusTT.delta(this) / DAYSEC)
+    override val tdb by lazy { TDB(whole, fraction + TDBMinusTT.delta(this) / DAYSEC) }
 
     override val tcb get() = tdb.tcb
 }

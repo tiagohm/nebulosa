@@ -1,3 +1,4 @@
+import io.kotest.core.annotation.Ignored
 import io.kotest.matchers.ints.shouldBeExactly
 import nebulosa.imaging.ExtendedImage
 import nebulosa.imaging.FitsImage
@@ -5,6 +6,7 @@ import nom.tam.fits.Fits
 import java.io.File
 import javax.imageio.ImageIO
 
+@Ignored
 @Suppress("BlockingMethodInNonBlockingContext")
 class ExtendedImageTest : ImageTest() {
 

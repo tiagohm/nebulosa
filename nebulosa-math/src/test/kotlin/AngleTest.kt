@@ -1,6 +1,7 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.arcmin
@@ -15,9 +16,6 @@ import java.util.*
 class AngleTest : StringSpec() {
 
     init {
-
-        timeout = 1000L
-
         "mas" {
             37000.mas.value shouldBe (0.000179381 plusOrMinus 1e-8)
             37000.mas.arcsec shouldBe (37.0 plusOrMinus 0.1)
@@ -76,32 +74,35 @@ class AngleTest : StringSpec() {
             (5.0.rad % 5.0.rad).value shouldBeExactly 0.0
         }
         "parse decimal coordinates" {
-            Angle.from("23.5634453") shouldBe 23.5634453
+            Angle.from("23.5634453")!!.degrees shouldBe 23.5634453
+            Angle.from("23.5634453", isHours = true)!!.degrees shouldBe 353.4516795
         }
         "parse sexagesimal coordinates" {
-            Angle.from("23 33 48.40308") shouldBe 23.5634453
-            Angle.from("23h 33 48.40308") shouldBe 23.5634453
-            Angle.from("23 33m 48.40308") shouldBe 23.5634453
-            Angle.from("23 33 48.40308s") shouldBe 23.5634453
-            Angle.from("23h 33m 48.40308") shouldBe 23.5634453
-            Angle.from("23 33m 48.40308s") shouldBe 23.5634453
-            Angle.from("23h 33m 48.40308s") shouldBe 23.5634453
-            Angle.from("-23° 33m 48.40308s") shouldBe -23.5634453
-            Angle.from("  -23   33m   48.40308s  ") shouldBe -23.5634453
-            Angle.from("-23 33.806718m") shouldBe -23.5634453
-            Angle.from("+23") shouldBe 23.0
-            Angle.from("-23") shouldBe -23.0
-            Angle.from("23h33m48.40308s") shouldBe 23.5634453
-            Angle.from("23h33m 48.40308\"") shouldBe 23.5634453
-            Angle.from("23h33'48.40308\"") shouldBe 23.5634453
-            Angle.from("-23°33'48.40308\"") shouldBe -23.5634453
-            Angle.from("-23°33'48.40308s 67.99") shouldBe -23.5634453
-            Angle.from("- 23°33'48.40308s 67.99") shouldBe -23.5634453
-            Angle.from("") shouldBe null
-            Angle.from("kkk") shouldBe null
+            Angle.from("23 33 48.40308")!!.degrees shouldBe 23.5634453
+            Angle.from("23h 33 48.40308", isHours = true)!!.degrees shouldBe 353.4516795
+            Angle.from("23 33m 48.40308")!!.degrees shouldBe 23.5634453
+            Angle.from("23 33 48.40308s")!!.degrees shouldBe 23.5634453
+            Angle.from("23h 33m 48.40308", isHours = true)!!.degrees shouldBe 353.4516795
+            Angle.from("23 33m 48.40308s")!!.degrees shouldBe 23.5634453
+            Angle.from("23h 33m 48.40308s", isHours = true)!!.degrees shouldBe 353.4516795
+            Angle.from("-23° 33m 48.40308s")!!.degrees shouldBe -22.4365547
+            Angle.from("  -23   33m   48.40308s  ")!!.degrees shouldBe -22.4365547
+            Angle.from("-23 33.806718m")!!.degrees shouldBe -22.4365547
+            Angle.from("+23")!!.degrees shouldBe 23.0
+            Angle.from("-23")!!.degrees shouldBe -23.0
+            Angle.from("23h33m48.40308s", isHours = true)!!.degrees shouldBe 353.4516795
+            Angle.from("23h33m 48.40308\"", isHours = true)!!.degrees shouldBe 353.4516795
+            Angle.from("23h33'48.40308\"", isHours = true)!!.degrees shouldBe 353.4516795
+            Angle.from("-23°33'48.40308\"", isHours = true)!!.degrees shouldBe -336.54832049999993
+            Angle.from("-23°33'48.40308s 67.99")!!.degrees shouldBe -22.4365547
+            Angle.from("- 23°33'48.40308s 67.99")!!.degrees shouldBe -22.4365547
+            Angle.from("").shouldBeNull()
+            Angle.from("kkk").shouldBeNull()
         }
         "format" {
-            val angle = Angle.from("12h 30 1.5", true)!!
+            val angle = Angle.from("12h 30 1", true)!!
+
+            angle.hours shouldBe (12.5003 plusOrMinus 1e-4)
 
             AngleFormatter.Builder()
                 .degrees()
@@ -109,7 +110,7 @@ class AngleTest : StringSpec() {
                 .separators("°", "'", "\"")
                 .locale(Locale.ENGLISH)
                 .build()
-                .format(angle) shouldBe "+180°30'01.50\""
+                .format(angle) shouldBe "+187°30'15.00\""
 
             AngleFormatter.Builder()
                 .hours()
@@ -117,7 +118,7 @@ class AngleTest : StringSpec() {
                 .separators("h", "m", "s")
                 .locale(Locale.ENGLISH)
                 .build()
-                .format(angle) shouldBe "+12h30m01.5s"
+                .format(angle) shouldBe "+12h30m01.0s"
 
             AngleFormatter.Builder()
                 .hours()

@@ -20,7 +20,7 @@ class TCG : TimeJD, Timescale {
 
     override val tai get() = tt.tai
 
-    override val tt get() = TT(eraTcgTt(whole, fraction))
+    override val tt by lazy { TT(eraTcgTt(whole, fraction)) }
 
     override val tcg get() = this
 

@@ -132,11 +132,38 @@ value class Matrix3D(@PublishedApi internal val matrix: DoubleArray) {
     inline val transposed
         get() = Matrix3D(a11, a21, a31, a12, a22, a32, a13, a23, a33)
 
-    infix fun rotateX(angle: Angle) = Matrix3D.rotateX(angle) * this
+    infix fun rotateX(angle: Angle): Matrix3D {
+        val ca = angle.cos
+        val sa = angle.sin
 
-    infix fun rotateY(angle: Angle) = Matrix3D.rotateY(angle) * this
+        return Matrix3D(
+            matrix[0], matrix[1], matrix[2],
+            ca * matrix[3] + sa * matrix[6], ca * matrix[4] + sa * matrix[7], ca * matrix[5] + sa * matrix[8],
+            -sa * matrix[3] + ca * matrix[6], -sa * matrix[4] + ca * matrix[7], -sa * matrix[5] + ca * matrix[8],
+        )
+    }
 
-    infix fun rotateZ(angle: Angle) = Matrix3D.rotateZ(angle) * this
+    infix fun rotateY(angle: Angle): Matrix3D {
+        val ca = angle.cos
+        val sa = angle.sin
+
+        return Matrix3D(
+            ca * matrix[0] - sa * matrix[6], ca * matrix[1] - sa * matrix[7], ca * matrix[2] - sa * matrix[8],
+            matrix[3], matrix[4], matrix[5],
+            sa * matrix[0] + ca * matrix[6], sa * matrix[1] + ca * matrix[7], sa * matrix[2] + ca * matrix[8],
+        )
+    }
+
+    infix fun rotateZ(angle: Angle): Matrix3D {
+        val ca = angle.cos
+        val sa = angle.sin
+
+        return Matrix3D(
+            ca * matrix[0] + sa * matrix[3], ca * matrix[1] + sa * matrix[4], ca * matrix[2] + sa * matrix[5],
+            -sa * matrix[0] + ca * matrix[3], -sa * matrix[1] + ca * matrix[4], -sa * matrix[2] + ca * matrix[5],
+            matrix[6], matrix[7], matrix[8],
+        )
+    }
 
     inline fun flipX() = Matrix3D(a31, a32, a33, a21, a22, a23, a11, a12, a13)
 
@@ -149,6 +176,8 @@ value class Matrix3D(@PublishedApi internal val matrix: DoubleArray) {
     override fun toString(): String {
         return "Matrix3D(a11=$a11, a12=$a12, a13=$a13, a21=$a21, a22=$a22, a23=$a23, a31=$a31, a32=$a32, a33=$a33)"
     }
+
+    inline fun equalsTo(other: Matrix3D) = matrix.contentEquals(other.matrix)
 
     companion object {
 

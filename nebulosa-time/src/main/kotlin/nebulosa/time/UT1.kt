@@ -16,7 +16,7 @@ class UT1 : TimeJD, Timescale {
 
     override val ut1 get() = this
 
-    override val utc get() = UTC(whole, fraction - IERS.delta(this) / DAYSEC)
+    override val utc by lazy { UTC(whole, fraction - IERS.delta(this) / DAYSEC) }
 
     override val tai get() = utc.tai
 

@@ -17,11 +17,11 @@ class TAI : TimeJD, Timescale {
 
     override val ut1 get() = utc.ut1
 
-    override val utc get() = UTC(whole, fraction - TAIMinusUTC.delta(this) / DAYSEC)
+    override val utc by lazy { UTC(whole, fraction - TAIMinusUTC.delta(this) / DAYSEC) }
 
     override val tai get() = this
 
-    override val tt get() = TT(whole, fraction + TTMINUSTAI / DAYSEC)
+    override val tt by lazy { TT(whole, fraction + TTMINUSTAI / DAYSEC) }
 
     override val tcg get() = tt.tcg
 

@@ -1,4 +1,5 @@
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
@@ -16,6 +17,69 @@ import nebulosa.math.Velocity.Companion.auDay
 class ErfaTest : StringSpec() {
 
     init {
+        "eraRx" {
+            val r = Matrix3D(2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 3.0, 4.0, 5.0)
+            val s = r.rotateX(0.3456789.rad)
+
+            s[0] shouldBe (2.0 plusOrMinus 1e-12)
+            s[1] shouldBe (3.0 plusOrMinus 1e-12)
+            s[2] shouldBe (2.0 plusOrMinus 1e-12)
+            s[3] shouldBe (3.839043388235612460 plusOrMinus 1e-12)
+            s[4] shouldBe (3.237033249594111899 plusOrMinus 1e-12)
+            s[5] shouldBe (4.516714379005982719 plusOrMinus 1e-12)
+            s[6] shouldBe (1.806030415924501684 plusOrMinus 1e-12)
+            s[7] shouldBe (3.085711545336372503 plusOrMinus 1e-12)
+            s[8] shouldBe (3.687721683977873065 plusOrMinus 1e-12)
+
+            s.equalsTo(Matrix3D.rotateX(0.3456789.rad) * r).shouldBeTrue()
+        }
+        "eraRy" {
+            val r = Matrix3D(2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 3.0, 4.0, 5.0)
+            val s = r.rotateY(0.3456789.rad)
+
+            s[0] shouldBe (0.8651847818978159930 plusOrMinus 1e-12)
+            s[1] shouldBe (1.467194920539316554 plusOrMinus 1e-12)
+            s[2] shouldBe (0.1875137911274457342 plusOrMinus 1e-12)
+            s[3] shouldBe (3.0 plusOrMinus 1e-12)
+            s[4] shouldBe (2.0 plusOrMinus 1e-12)
+            s[5] shouldBe (3.0 plusOrMinus 1e-12)
+            s[6] shouldBe (3.500207892850427330 plusOrMinus 1e-12)
+            s[7] shouldBe (4.779889022262298150 plusOrMinus 1e-12)
+            s[8] shouldBe (5.381899160903798712 plusOrMinus 1e-12)
+
+            s.equalsTo(Matrix3D.rotateY(0.3456789.rad) * r).shouldBeTrue()
+        }
+        "eraRz" {
+            val r = Matrix3D(2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 3.0, 4.0, 5.0)
+            val s = r.rotateZ(0.3456789.rad)
+
+            s[0] shouldBe (2.898197754208926769 plusOrMinus 1e-12)
+            s[1] shouldBe (3.500207892850427330 plusOrMinus 1e-12)
+            s[2] shouldBe (2.898197754208926769 plusOrMinus 1e-12)
+            s[3] shouldBe (2.144865911309686813 plusOrMinus 1e-12)
+            s[4] shouldBe (0.865184781897815993 plusOrMinus 1e-12)
+            s[5] shouldBe (2.144865911309686813 plusOrMinus 1e-12)
+            s[6] shouldBe (3.0 plusOrMinus 1e-12)
+            s[7] shouldBe (4.0 plusOrMinus 1e-12)
+            s[8] shouldBe (5.0 plusOrMinus 1e-12)
+
+            s.equalsTo(Matrix3D.rotateZ(0.3456789.rad) * r).shouldBeTrue()
+        }
+        "eraRxr" {
+            val a = Matrix3D(2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 3.0, 4.0, 5.0)
+            val b = Matrix3D(1.0, 2.0, 2.0, 4.0, 1.0, 1.0, 3.0, 0.0, 1.0)
+            val c = a * b
+
+            c[0] shouldBe (20.0 plusOrMinus 1e-12)
+            c[1] shouldBe (7.0 plusOrMinus 1e-12)
+            c[2] shouldBe (9.0 plusOrMinus 1e-12)
+            c[3] shouldBe (20.0 plusOrMinus 1e-12)
+            c[4] shouldBe (8.0 plusOrMinus 1e-12)
+            c[5] shouldBe (11.0 plusOrMinus 1e-12)
+            c[6] shouldBe (34.0 plusOrMinus 1e-12)
+            c[7] shouldBe (10.0 plusOrMinus 1e-12)
+            c[8] shouldBe (15.0 plusOrMinus 1e-12)
+        }
         "eraC2s" {
             val (theta, phi) = eraC2s(100.0.au, (-50.0).au, 25.0.au)
             theta.value shouldBe (-0.4636476090008061162 plusOrMinus 1e-14)
@@ -433,8 +497,8 @@ class ErfaTest : StringSpec() {
         }
         "eraC2tcio" {
             val rc2i = Matrix3D(
-                0.9999998323037164738, 0.5581526271714303683e-9, 0.5791308477073443903e-3,
-                0.2384266227524722273e-7, 0.9999999991917404296, 0.4020594955030704125e-4,
+                0.9999998323037164738, 0.5581526271714303683e-9, -0.5791308477073443903e-3,
+                -0.2384266227524722273e-7, 0.9999999991917404296, -0.4020594955030704125e-4,
                 0.5791308472168153320e-3, 0.4020595661593994396e-4, 0.9999998314954572365,
             )
 
@@ -446,15 +510,15 @@ class ErfaTest : StringSpec() {
 
             val rc2t = eraC2tcio(rc2i, 1.75283325530307.rad, rpom)
 
-            rc2t[0, 0] shouldBe (-0.1810332128307110439 plusOrMinus 1e-12)
-            rc2t[0, 1] shouldBe (0.9834769806938470149 plusOrMinus 1e-12)
-            rc2t[0, 2] shouldBe (0.6555535638685466874e-4 plusOrMinus 1e-12)
-            rc2t[1, 0] shouldBe (-0.9834768134135996657 plusOrMinus 1e-12)
-            rc2t[1, 1] shouldBe (-0.1810332203649448367 plusOrMinus 1e-12)
-            rc2t[1, 2] shouldBe (0.5749801116141106528e-3 plusOrMinus 1e-12)
-            rc2t[2, 0] shouldBe (0.5773474014081407076e-3 plusOrMinus 1e-12)
-            rc2t[2, 1] shouldBe (0.3961832391772658944e-4 plusOrMinus 1e-12)
-            rc2t[2, 2] shouldBe (0.9999998325501691969 plusOrMinus 1e-12)
+            rc2t[0] shouldBe (-0.1810332128307110439 plusOrMinus 1e-12)
+            rc2t[1] shouldBe (0.9834769806938470149 plusOrMinus 1e-12)
+            rc2t[2] shouldBe (0.6555535638685466874e-4 plusOrMinus 1e-12)
+            rc2t[3] shouldBe (-0.9834768134135996657 plusOrMinus 1e-12)
+            rc2t[4] shouldBe (-0.1810332203649448367 plusOrMinus 1e-12)
+            rc2t[5] shouldBe (0.5749801116141106528e-3 plusOrMinus 1e-12)
+            rc2t[6] shouldBe (0.5773474014081407076e-3 plusOrMinus 1e-12)
+            rc2t[7] shouldBe (0.3961832391772658944e-4 plusOrMinus 1e-12)
+            rc2t[8] shouldBe (0.9999998325501691969 plusOrMinus 1e-12)
         }
         "eraEcm06" {
             val rm = eraEcm06(2456165.5, 0.401182685)

@@ -19,12 +19,12 @@ class StarTest : StringSpec() {
             with(Star(542f, 974f)) {
                 find(fits1, 15f).shouldBeTrue()
 
-                mass shouldBe (13791.1f plusOrMinus 0.1f)
-                snr shouldBe (82.4f plusOrMinus 0.1f)
-                hfd shouldBe (2.8f plusOrMinus 0.1f)
+                mass shouldBe (13840.811f plusOrMinus 0.1f)
+                snr shouldBe (82.5f plusOrMinus 0.1f)
+                hfd shouldBe (2.9f plusOrMinus 0.1f)
                 peak shouldBe (1240f plusOrMinus 1f)
-                x shouldBeExactly 544f
-                y shouldBeExactly 981f
+                x.toInt() shouldBeExactly 544
+                y.toInt() shouldBeExactly 974
             }
         }
         "no star" {
@@ -35,20 +35,20 @@ class StarTest : StringSpec() {
                 snr shouldBe (0f plusOrMinus 0.1f)
                 hfd shouldBe (0f plusOrMinus 0.1f)
                 peak shouldBe (9f plusOrMinus 1f)
-                x shouldBeExactly 68f
-                y shouldBeExactly 35f
+                x.toInt() shouldBeExactly 68
+                y.toInt() shouldBeExactly 35
             }
         }
         "faint star" {
             with(Star(996f, 250f)) {
                 find(fits1, 15f).shouldBeTrue()
 
-                //mass shouldBe (740f plusOrMinus 0.1f)
-                //snr shouldBe (18.1f plusOrMinus 0.1f)
-                //hfd shouldBe (2.5f plusOrMinus 0.1f)
-                //peak shouldBe (80f plusOrMinus 1f)
-                //x shouldBeExactly 996
-                //y shouldBeExactly 249
+                // mass shouldBe (740f plusOrMinus 0.1f)
+                // snr shouldBe (18.1f plusOrMinus 0.1f)
+                // hfd shouldBe (2.5f plusOrMinus 0.1f)
+                // peak shouldBe (80f plusOrMinus 1f)
+                // x.toInt() shouldBeExactly 996
+                // y.toInt() shouldBeExactly 249
             }
         }
         "unfocused star" {

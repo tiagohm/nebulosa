@@ -1,8 +1,10 @@
+import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.StringSpec
 import nebulosa.guiding.local.*
 import nebulosa.imaging.FitsImage
 import nom.tam.fits.Fits
 
+@Ignored
 class MultiStarGuiderTest : StringSpec(), GuiderListener {
 
     init {

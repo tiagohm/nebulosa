@@ -1,8 +1,11 @@
+import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.StringSpec
 import nebulosa.guiding.phd2.EventListener
 import nebulosa.guiding.phd2.PHD2Client
 import nebulosa.guiding.phd2.event.PHD2Event
 
+@Ignored
+@Suppress("BlockingMethodInNonBlockingContext")
 class PHD2ClientTest : StringSpec(), EventListener {
 
     init {

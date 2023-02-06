@@ -24,8 +24,8 @@ class HorizonsQueryTest : StringSpec() {
             ephemeris[startTime]!![HorizonsQuantity.CONSTELLATION] shouldBe "Tau"
             ephemeris[startTime]!![HorizonsQuantity.ILLUMINATED_FRACTION] shouldBe "98.32712"
             ephemeris[startTime]!![HorizonsQuantity.VISUAL_MAGNITUDE_SURFACE_BRIGHTNESS] shouldBe "-1.426 4.239"
-            ephemeris[startTime]!![HorizonsQuantity.APPARENT_AZ_ALT] shouldBe "317.889826189 -16.319680728"
-            ephemeris[startTime]!![HorizonsQuantity.APPARENT_HOUR_ANGLE] shouldBe "8.993056234"
+            ephemeris[startTime]!![HorizonsQuantity.APPARENT_AZ_ALT] shouldBe "317.889826208 -16.319680741"
+            ephemeris[startTime]!![HorizonsQuantity.APPARENT_HOUR_ANGLE] shouldBe "8.993056236"
         }
     }
 }

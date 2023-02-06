@@ -165,10 +165,9 @@ value class Angle(val value: Double) {
 
             if (idx == 0) return null
 
-            val value = if (isHours) sign * res[0] * 15.0 + res[1] / 60.0 + res[2] / 3600.0
-            else sign * res[0] + res[1] / 60.0 + res[2] / 3600.0
+            val value = sign * res[0] + res[1] / 60.0 + res[2] / 3600.0
 
-            return value.deg
+            return if (isHours) value.hours else value.deg
         }
 
         /**
