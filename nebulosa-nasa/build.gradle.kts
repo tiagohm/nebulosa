@@ -8,7 +8,7 @@ dependencies {
     api(project(":nebulosa-time"))
     implementation(libs.okhttp)
     implementation(libs.apache.codec)
-    testImplementation(libs.bundles.kotest)
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

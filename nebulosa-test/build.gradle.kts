@@ -4,9 +4,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":nebulosa-math"))
-    api(libs.okhttp)
-    testImplementation(libs.bundles.kotest)
+    api(libs.bundles.kotest)
 }
 
 publishing {

@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     api(libs.okio)
-    testImplementation(libs.bundles.kotest)
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     api(project(":nebulosa-constants"))
-    testImplementation(libs.bundles.kotest)
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

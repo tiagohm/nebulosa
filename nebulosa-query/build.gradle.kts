@@ -10,7 +10,7 @@ dependencies {
     api(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.logback)
-    testImplementation(libs.bundles.kotest)
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    testImplementation(libs.bundles.kotest)
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

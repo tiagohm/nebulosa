@@ -7,6 +7,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.slf4j.LoggerFactory
 import retrofit2.CallAdapter
+import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -16,12 +17,14 @@ abstract class QueryService protected constructor(protected val retrofit: Retrof
     constructor(
         url: String,
         mapper: ObjectMapper = OBJECT_MAPPER,
+        converterFactory: Converter.Factory? = null,
         callAdaptorFactory: CallAdapter.Factory? = null,
         client: OkHttpClient? = null,
         clientBuilder: (OkHttpClient.Builder) -> Unit = {},
     ) : this(
         Retrofit.Builder()
             .baseUrl(url)
+            .also { if (converterFactory != null) it.addConverterFactory(converterFactory) }
             .addConverterFactory(JacksonConverterFactory.create(mapper))
             .also { if (callAdaptorFactory != null) it.addCallAdapterFactory(callAdaptorFactory) }
             .client((client ?: HTTP_CLIENT).newBuilder().also(clientBuilder).build())

@@ -6,7 +6,7 @@ plugins {
 dependencies {
     api(project(":nebulosa-io"))
     api(libs.fits)
-    testImplementation(libs.bundles.kotest)
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

@@ -8,7 +8,7 @@ dependencies {
     api(project(":nebulosa-nova"))
     api(project(":nebulosa-indi-parser"))
     implementation(libs.logback)
-    testImplementation(libs.bundles.kotest)
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

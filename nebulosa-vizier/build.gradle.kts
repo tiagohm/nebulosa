@@ -6,7 +6,7 @@ plugins {
 dependencies {
     api(project(":nebulosa-math"))
     api(libs.okhttp)
-    testImplementation(libs.bundles.kotest)
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

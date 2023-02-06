@@ -8,7 +8,7 @@ dependencies {
     api(project(":nebulosa-guiding"))
     implementation(libs.jackson)
     implementation(libs.logback)
-    testImplementation(libs.bundles.kotest)
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

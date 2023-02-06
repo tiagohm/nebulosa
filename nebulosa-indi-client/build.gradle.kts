@@ -9,7 +9,7 @@ dependencies {
     api(project(":nebulosa-imaging"))
     api(project(":nebulosa-indi-device"))
     implementation(libs.logback)
-    testImplementation(libs.bundles.kotest)
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

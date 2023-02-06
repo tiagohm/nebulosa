@@ -1,4 +1,4 @@
-package nebulosa.horizons
+package nebulosa.query.horizons
 
 enum class ApparentRefractionCorrection {
     AIRLESS,

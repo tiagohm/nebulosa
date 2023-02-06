@@ -1,23 +1,15 @@
 package nebulosa.nova.astrometry
 
 import nebulosa.nasa.spk.Spk
-import nebulosa.nasa.spk.SpkSegment
 import java.io.IOException
 
-class SpiceKernel(
-    vararg spks: Spk,
-    replace: (SpkSegment) -> Boolean = { _ -> false },
-) {
+class SpiceKernel(vararg spks: Spk) {
 
-    // private val segments: List<Body>
-    // private val segmentCodes: Set<Int>
     private val segmentsByTarget: Map<Number, Body>
     private val cache = HashMap<Int, Body>()
 
     init {
         segmentsByTarget = HashMap(64)
-        // segments = ArrayList(spk.size)
-        // segmentCodes = HashSet(segments.size * 2)
 
         for (spk in spks) {
             spk.map {
@@ -27,13 +19,9 @@ class SpiceKernel(
                     else -> throw IOException("SPK data type ${it.type} is not yet supported")
                 }
 
-                if (it.target !in segmentsByTarget || replace(it)) {
+                if (it.target !in segmentsByTarget) {
                     segmentsByTarget[it.target] = p
                 }
-
-                // segments.add(p)
-                // segmentCodes.add(it.center)
-                // segmentCodes.add(it.target)
             }
         }
     }

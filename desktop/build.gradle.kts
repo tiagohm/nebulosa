@@ -20,7 +20,7 @@ dependencies {
     implementation(libs.controlsfx)
     implementation(libs.okhttp)
     implementation(libs.logback)
-    testImplementation(libs.bundles.kotest)
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

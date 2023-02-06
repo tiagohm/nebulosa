@@ -9,7 +9,7 @@ dependencies {
     implementation(libs.jackson)
     implementation(libs.logback)
     implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
-    testImplementation(libs.bundles.kotest)
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

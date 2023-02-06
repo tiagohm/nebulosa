@@ -4,10 +4,11 @@ plugins {
 }
 
 dependencies {
+    api(project(":nebulosa-math"))
     api(project(":nebulosa-query"))
     testImplementation(project(":nebulosa-nasa"))
     testImplementation(project(":nebulosa-io"))
-    testImplementation(libs.bundles.kotest)
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {
