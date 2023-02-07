@@ -61,7 +61,7 @@ class AtlasWindow : AbstractWindow(), AtlasView {
 
         planetTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("name")
         planetTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("type")
-        planetTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computePlanet(it.body) }
+        planetTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computePlanet(it.command) }
 
         minorPlanetTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("element")
         minorPlanetTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("description")

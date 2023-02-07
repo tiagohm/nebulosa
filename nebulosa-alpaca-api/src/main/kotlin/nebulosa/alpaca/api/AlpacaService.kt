@@ -23,7 +23,7 @@ class AlpacaService private constructor(retrofit: Retrofit) {
     constructor(url: String) : this(
         Retrofit.Builder().baseUrl(url)
             .addConverterFactory(JacksonConverterFactory.create())
-            .client(OkHttpClient.Builder().connectionPool(ConnectionPool(32, 5L, TimeUnit.MINUTES)).build())
+            .client(OkHttpClient.Builder().connectionPool(ConnectionPool(32, 30L, TimeUnit.MINUTES)).build())
             .build()
     )
 }

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import org.slf4j.LoggerFactory
 import retrofit2.CallAdapter
 import retrofit2.Converter
 import retrofit2.Retrofit
@@ -33,11 +32,9 @@ abstract class QueryService protected constructor(protected val retrofit: Retrof
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(QueryService::class.java)
-
         @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder()
-            .connectionPool(ConnectionPool(32, 5L, TimeUnit.MINUTES))
-            .also { if (LOG.isDebugEnabled) it.addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC)) }
+            .connectionPool(ConnectionPool(32, 30L, TimeUnit.MINUTES))
+            .also { it.addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC)) }
             .build()
 
         @JvmStatic private val OBJECT_MAPPER = ObjectMapper()

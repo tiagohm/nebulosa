@@ -34,7 +34,7 @@ class VizierQuery(private val serverUri: String = "http://vizier.cfa.harvard.edu
 
     companion object {
 
-        @JvmStatic private val CONNECTION_POOL = ConnectionPool(8, 5L, TimeUnit.MINUTES)
+        @JvmStatic private val CONNECTION_POOL = ConnectionPool(8, 30L, TimeUnit.MINUTES)
         @JvmStatic private val CLIENT = OkHttpClient.Builder().connectionPool(CONNECTION_POOL).build()
     }
 }

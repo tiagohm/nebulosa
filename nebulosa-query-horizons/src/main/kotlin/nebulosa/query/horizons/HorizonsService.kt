@@ -4,6 +4,7 @@ import nebulosa.math.Angle
 import nebulosa.math.Distance
 import nebulosa.query.QueryService
 import okhttp3.ResponseBody
+import org.slf4j.LoggerFactory
 import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Retrofit
@@ -22,6 +23,11 @@ class HorizonsService(url: String = "https://ssd.jpl.nasa.gov/api/") :
         endTime: String, stepSize: String, quantities: String,
         apparent: String, extraPrecision: String,
     ): Call<HorizonsEphemeris> {
+        LOG.info(
+            "calling observer. command={}, coordinates={}, startTime={}, endTime={}, stepSize={}, quantities={}",
+            command, coordinates, startTime, endTime, stepSize, quantities
+        )
+
         return service.observer(command, coordinates, startTime, endTime, stepSize, quantities, apparent, extraPrecision)
     }
 
@@ -34,15 +40,16 @@ class HorizonsService(url: String = "https://ssd.jpl.nasa.gov/api/") :
         extraPrecision: Boolean = false,
         vararg quantities: HorizonsQuantity = HorizonsQuantity.ENTRIES,
     ): Call<HorizonsEphemeris> {
-        return service.observer(
-            command, wrap("${longitude.degrees},${latitude.degrees},${elevation.kilometers}"),
-            wrap(startTime), wrap(endTime), wrap(stepSize.seconds),
+        return observer(
+            wrap(command), wrap("${longitude.degrees},${latitude.degrees},${elevation.kilometers}"),
+            wrap(startTime), wrap(endTime), wrap("${stepSize.toMinutes()}m"),
             wrap(quantities.map { it.code }.toSet().joinToString(",")),
             wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),
         )
     }
 
     override fun spk(command: String, startTime: String, endTime: String): Call<SpkFile> {
+        LOG.info("calling spk. command={}, startTime={}, endTime={}", command, startTime, endTime)
         return service.spk(command, startTime, endTime)
     }
 
@@ -53,7 +60,7 @@ class HorizonsService(url: String = "https://ssd.jpl.nasa.gov/api/") :
     private object HorizonsEphemerisConverter : Converter<ResponseBody, HorizonsEphemeris> {
 
         override fun convert(value: ResponseBody): HorizonsEphemeris {
-            return HorizonsEphemeris.parse(value.byteStream())
+            return value.use { HorizonsEphemeris.parse(value.byteStream()) }
         }
     }
 
@@ -71,6 +78,7 @@ class HorizonsService(url: String = "https://ssd.jpl.nasa.gov/api/") :
 
     companion object {
 
+        @JvmStatic private val LOG = LoggerFactory.getLogger(HorizonsService::class.java)
         @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
         @JvmStatic private val DEFAULT_STEP_SIZE = Duration.ofMinutes(1L)
 

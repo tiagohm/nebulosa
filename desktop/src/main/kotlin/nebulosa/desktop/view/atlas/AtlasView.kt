@@ -3,7 +3,6 @@ package nebulosa.desktop.view.atlas
 import javafx.geometry.Point2D
 import nebulosa.desktop.view.View
 import nebulosa.math.Angle
-import nebulosa.nova.astrometry.Body
 
 interface AtlasView : View {
 
@@ -19,7 +18,7 @@ interface AtlasView : View {
     data class Planet(
         val name: String,
         val type: String,
-        val body: Body,
+        val command: String,
     )
 
     data class MinorPlanet(
