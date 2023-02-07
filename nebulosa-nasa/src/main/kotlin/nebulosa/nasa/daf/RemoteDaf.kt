@@ -19,7 +19,7 @@ class RemoteDaf(
     private val cacheDirectory: Path? = null,
 ) : Daf() {
 
-    override fun initialize() {
+    override fun read() {
         val request = Request.Builder()
             .head().url(uri)
             .build()
@@ -38,7 +38,7 @@ class RemoteDaf(
             }
         }
 
-        super.initialize()
+        super.read()
     }
 
     override fun read(start: Int, end: Int): DoubleArray {

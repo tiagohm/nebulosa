@@ -14,7 +14,7 @@ import java.io.IOException
 class Spk(val daf: Daf) : Closeable, Collection<SpkSegment> {
 
     init {
-        daf.initialize()
+        daf.read()
     }
 
     private val segments by lazy {

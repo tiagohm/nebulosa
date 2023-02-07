@@ -1,19 +1,19 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
+import nebulosa.io.resource
+import nebulosa.io.source
+import nebulosa.nasa.daf.RemoteDaf
 import nebulosa.nasa.daf.SourceDaf
 import nebulosa.nasa.spk.Spk
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
-import java.io.File
 
 class SpkTest : StringSpec() {
 
     init {
         "DE421: SSB - Earth Barycenter" {
-            // https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp
-            val source = File("../assets/DE421.bsp")
-            val spk = Spk(SourceDaf(source))
+            val spk = Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp"))
             val (p, v) = spk[0, 3]!!.compute(UTC(TimeYMDHMS(2022, 12, 8, 20, 7, 15.0)))
 
             p[0] shouldBe (2.226291206593103E-01 plusOrMinus 1e-6)
@@ -24,9 +24,7 @@ class SpkTest : StringSpec() {
             v[2] shouldBe (1.580159029289274E-03 plusOrMinus 1e-6)
         }
         "DE405: SSB - Earth Barycenter" {
-            // https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de405.bsp
-            val source = File("../assets/DE405.bsp")
-            val spk = Spk(SourceDaf(source))
+            val spk = Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de405.bsp"))
             val (p, v) = spk[0, 3]!!.compute(UTC(TimeYMDHMS(2022, 12, 8, 20, 7, 15.0)))
 
             p[0] shouldBe (2.226291206593103E-01 plusOrMinus 1e-6)
@@ -37,8 +35,7 @@ class SpkTest : StringSpec() {
             v[2] shouldBe (1.580159029289274E-03 plusOrMinus 1e-6)
         }
         "65803 Didymos (Type 21)" {
-            val source = File("../assets/65803 Didymos.bsp")
-            val spk = Spk(SourceDaf(source))
+            val spk = Spk(SourceDaf(resource("65803 Didymos.bsp")!!.readBytes().source()))
             val (p, v) = spk[10, 2065803]!!.compute(UTC(TimeYMDHMS(2022, 12, 8, 20, 7, 15.0)))
             p[0] shouldBe (1.231026319338612E-01 plusOrMinus 1e-2)
             p[1] shouldBe (1.022833989843715E+00 plusOrMinus 1e-2)

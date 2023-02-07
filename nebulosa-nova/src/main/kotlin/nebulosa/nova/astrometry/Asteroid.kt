@@ -5,9 +5,10 @@ import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.au
+import nebulosa.math.Matrix3D
 import nebulosa.nova.frame.EclipticJ2000
 import nebulosa.time.InstantOfTime
-import nebulosa.time.TDB
+import nebulosa.time.TT
 import nebulosa.time.TimeYMDHMS
 
 class Asteroid(
@@ -18,14 +19,15 @@ class Asteroid(
     argumentOfPerihelion: Angle,
     meanAnomaly: Angle,
     epoch: InstantOfTime,
-    target: Int = -1,
+    target: Int = Int.MIN_VALUE,
     mu: Double = GM_SUN_PITJEVA_2005,
+    rotation: Matrix3D? = EclipticJ2000.transposed.matrix,
 ) : Body by KeplerOrbit.meanAnomaly(
     semiMajorAxis * (1.0 - eccentricity * eccentricity),
     eccentricity,
     inclination, longitudeOfAscendingNode, argumentOfPerihelion, meanAnomaly,
     epoch, mu, 10, target,
-    EclipticJ2000.transposed.matrix,
+    rotation,
 ) {
 
     companion object {
@@ -67,7 +69,7 @@ class Asteroid(
 
             val epochPacked = parsedLine["epoch_packed"]!!
             val year = 100 * n(epochPacked[0]) + epochPacked.substring(1..2).toInt()
-            val epoch = TDB(TimeYMDHMS(year, n(epochPacked[3]), n(epochPacked[4]), 12))
+            val epoch = TT(TimeYMDHMS(year, n(epochPacked[3]), n(epochPacked[4])))
 
             return Asteroid(
                 a, e,

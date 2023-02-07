@@ -1,6 +1,7 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
+import nebulosa.io.resource
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Distance.Companion.m
@@ -10,12 +11,11 @@ import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import nebulosa.time.TimeJD
 import nebulosa.time.TimeYMDHMS
-import java.io.File
 
 class ICRFTest : StringSpec() {
 
     init {
-        IERSA.load(File("../assets/finals2000A.all").inputStream())
+        IERSA.load(resource("finals2000A.all")!!)
         IERS.current = IERSA
 
         "equatorial at date to equatorial J2000" {

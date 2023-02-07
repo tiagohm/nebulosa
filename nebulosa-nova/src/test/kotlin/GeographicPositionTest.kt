@@ -2,6 +2,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
+import nebulosa.io.resource
 import nebulosa.math.Angle
 import nebulosa.math.Distance.Companion.m
 import nebulosa.nova.position.Geoid
@@ -9,12 +10,11 @@ import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
-import java.io.File
 
 class GeographicPositionTest : StringSpec() {
 
     init {
-        IERSA.load(File("../assets/finals2000A.all").inputStream())
+        IERSA.load(resource("finals2000A.all")!!)
         IERS.current = IERSA
 
         "lst" {

@@ -38,7 +38,7 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
 
         return if (observer.target.toInt() < 0) {
             val (p, v) = compute(observer.time)
-            PositionAndVelocity((p - observer.position), (v - observer.velocity))
+            PositionAndVelocity(p - observer.position, v - observer.velocity)
         } else {
             correctForLightTravelTime(observer, this)
         }

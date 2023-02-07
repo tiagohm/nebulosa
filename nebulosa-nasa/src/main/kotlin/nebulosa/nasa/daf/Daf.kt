@@ -17,7 +17,7 @@ abstract class Daf : Closeable {
     @Suppress("NOTHING_TO_INLINE")
     inline operator fun component2() = summaries
 
-    open fun initialize() {
+    open fun read() {
         // File record.
         val source = readRecord(1)
         // Gets the file format.

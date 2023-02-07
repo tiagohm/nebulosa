@@ -260,7 +260,7 @@ data class KeplerOrbit(
                 return x * (br0 * c1 + x * (b2rv * c2 + x * bq * c3))
             }
 
-            val dt = t1.whole - t0.whole + t1.fraction + t0.fraction // T1 - T0
+            val dt = t1.whole - t0.whole + t1.fraction - t0.fraction // T1 - T0
             var x = max(-bound, min(dt / bq, bound))
 
             var kfun = kepler(x)
@@ -296,13 +296,13 @@ data class KeplerOrbit(
 
             var count = 64
 
-            while (count-- > 0 && x in lower..upper) {
+            while (count-- > 0 && lower < x && x < upper) {
                 kfun = kepler(x)
 
                 if (kfun >= dt) upper = x
                 if (kfun <= dt) lower = x
 
-                x = if (lower <= upper) (upper + lower) / 2.0 else upper
+                x = (upper + lower) / 2.0
             }
 
             val (c0, c1, c2, c3) = stumpff(f * x * x)

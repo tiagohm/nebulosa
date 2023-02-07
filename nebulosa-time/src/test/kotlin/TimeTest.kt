@@ -3,15 +3,15 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
+import nebulosa.io.resource
 import nebulosa.time.*
-import java.io.File
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 class TimeTest : StringSpec() {
 
     init {
-        IERSA.load(File("../assets/finals2000A.all").inputStream())
+        IERSA.load(resource("finals2000A.all")!!)
         IERS.current = IERSA
 
         "convert jd to datetime" {

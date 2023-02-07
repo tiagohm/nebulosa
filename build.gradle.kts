@@ -1,3 +1,5 @@
+import com.adarshr.gradle.testlogger.TestLoggerExtension
+import com.adarshr.gradle.testlogger.theme.ThemeType
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -7,6 +9,7 @@ buildscript {
         classpath("io.objectbox:objectbox-gradle-plugin:3.5.1")
         classpath("org.openjfx:javafx-plugin:0.0.13")
         classpath("gradle.plugin.com.github.johnrengelman:shadow:7.1.2")
+        classpath("com.adarshr:gradle-test-logger-plugin:3.2.0")
     }
 
     repositories {
@@ -41,6 +44,22 @@ subprojects {
     val project = this@subprojects
     if (project.name == "nebulosa-bom") return@subprojects
 
+    apply {
+        plugin("com.adarshr.test-logger")
+    }
+
+    configure<TestLoggerExtension> {
+        theme = ThemeType.STANDARD
+        slowThreshold = 2000L
+        showStackTraces = false
+        showSkipped = true
+        showStandardStreams = true
+        showPassedStandardStreams = true
+        showSkippedStandardStreams = false
+        showFailedStandardStreams = true
+        logLevel = LogLevel.QUIET
+    }
+
     tasks.withType<KotlinCompile> {
         kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
         kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=all", "-Xjsr305=strict")
@@ -49,7 +68,7 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
 
-        maxParallelForks = Runtime.getRuntime().availableProcessors() * 2
+        maxParallelForks = 1
 
         testLogging {
             exceptionFormat = TestExceptionFormat.FULL

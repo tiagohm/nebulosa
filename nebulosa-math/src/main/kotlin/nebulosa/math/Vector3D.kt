@@ -72,8 +72,5 @@ value class Vector3D private constructor(@PublishedApi internal val vector: Doub
         @JvmStatic val X = Vector3D(x = 1.0)
         @JvmStatic val Y = Vector3D(y = 1.0)
         @JvmStatic val Z = Vector3D(z = 1.0)
-
-        @JvmStatic
-        fun of(other: Vector3D) = Vector3D(other.vector)
     }
 }
