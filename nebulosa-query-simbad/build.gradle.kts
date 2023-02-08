@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     api(project(":nebulosa-math"))
-    api(libs.okhttp)
+    api(project(":nebulosa-query"))
     testImplementation(project(":nebulosa-test"))
 }
 

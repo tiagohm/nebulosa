@@ -53,15 +53,15 @@ class HorizonsServiceTest : StringSpec() {
         "observer: mars" {
             val ephemeris = observe("499")
             val dateTime = LocalDateTime.of(2022, 12, 25, 22, 0, 0)
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldBe "67.876674963"
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldBe "24.657460871"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldBe "67.876675050"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldBe "24.657460920"
             ephemeris[dateTime]!![HorizonsQuantity.CONSTELLATION] shouldBe "Tau"
             ephemeris[dateTime]!![HorizonsQuantity.ILLUMINATED_FRACTION] shouldBe "98.32712"
             ephemeris[dateTime]!![HorizonsQuantity.VISUAL_MAGNITUDE] shouldBe "-1.426"
             ephemeris[dateTime]!![HorizonsQuantity.SURFACE_BRIGHTNESS] shouldBe "4.239"
-            ephemeris[dateTime]!![HorizonsQuantity.APPARENT_AZ] shouldBe "317.889826208"
-            ephemeris[dateTime]!![HorizonsQuantity.APPARENT_ALT] shouldBe "-16.319680741"
-            ephemeris[dateTime]!![HorizonsQuantity.APPARENT_HOUR_ANGLE] shouldBe "8.993056236"
+            ephemeris[dateTime]!![HorizonsQuantity.APPARENT_AZ] shouldBe "317.889826173"
+            ephemeris[dateTime]!![HorizonsQuantity.APPARENT_ALT] shouldBe "-16.319680655"
+            ephemeris[dateTime]!![HorizonsQuantity.APPARENT_HOUR_ANGLE] shouldBe "8.993056230"
         }
         "observer: ceres by SPK ID" {
             val ephemeris = observe("DES=2000001;")

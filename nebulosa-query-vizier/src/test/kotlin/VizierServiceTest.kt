@@ -1,13 +1,13 @@
 import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.StringSpec
-import nebulosa.query.vizier.VizierQuery
+import nebulosa.query.vizier.VizierService
 
 @Ignored
-class VizierQueryTest : StringSpec() {
+class VizierServiceTest : StringSpec() {
 
     init {
         "catalogs" {
-            val vizier = VizierQuery()
+            val vizier = VizierService()
             vizier.catalogs("Kang W51")
         }
     }

@@ -5,8 +5,8 @@ import nebulosa.io.readDoubleArray
 import nebulosa.io.source
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okio.ByteString.Companion.toByteString
 import okio.buffer
-import org.apache.commons.codec.binary.Hex
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.security.MessageDigest
@@ -58,11 +58,10 @@ class RemoteDaf(
         return if (cacheDirectory == null) {
             readSourceFromUri(start, end)
         } else {
-            val hash = Hex.encodeHexString(MD5.digest(uri.toByteArray()), true)
+            val hash = uri.toByteArray().toByteString().md5().hex()
             val filePath = Paths.get("$cacheDirectory", "$hash-$start-$end.cache")
 
             if (filePath.exists()) {
-                // filePath.toFile().seekableSource()
                 filePath.readBytes().source()
             } else {
                 readSourceFromUri(start, end, filePath)
