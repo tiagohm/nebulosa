@@ -26,7 +26,8 @@ class DefaultINDIClient(override val connection: INDIConnection) : INDIClient {
         process: Process,
     ) : this(INDIProccessConnection(process))
 
-    override val input get() = connection.input
+    override val input
+        get() = connection.input
 
     override fun start() {
         check(!closed) { "closed" }

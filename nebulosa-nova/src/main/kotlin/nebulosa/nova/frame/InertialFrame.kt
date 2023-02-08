@@ -20,6 +20,7 @@ abstract class InertialFrame(val matrix: Matrix3D) : Frame {
 
     protected data class Transposed(val frame: InertialFrame) : InertialFrame(frame.matrix.transposed) {
 
-        override val transposed get() = frame
+        override val transposed
+            get() = frame
     }
 }

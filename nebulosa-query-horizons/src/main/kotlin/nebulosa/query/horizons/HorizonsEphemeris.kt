@@ -1,6 +1,5 @@
 package nebulosa.query.horizons
 
-import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -14,9 +13,11 @@ import kotlin.math.abs
 class HorizonsEphemeris private constructor(private val ephemeris: MutableMap<LocalDateTime, HorizonsElement>) :
     Map<LocalDateTime, HorizonsElement> by ephemeris, ClosedRange<LocalDateTime> {
 
-    override val start get() = ephemeris.keys.first()
+    override val start
+        get() = ephemeris.keys.first()
 
-    override val endInclusive get() = ephemeris.keys.last()
+    override val endInclusive
+        get() = ephemeris.keys.last()
 
     constructor() : this(TreeMap<LocalDateTime, HorizonsElement>())
 
@@ -36,7 +37,6 @@ class HorizonsEphemeris private constructor(private val ephemeris: MutableMap<Lo
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(HorizonsEphemeris::class.java)
         @JvmStatic private val WHITESPACE_REGEX = Regex("\\s+")
         @JvmStatic private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MMM-dd", Locale.ENGLISH)
         @JvmStatic private val TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
@@ -68,8 +68,6 @@ class HorizonsEphemeris private constructor(private val ephemeris: MutableMap<Lo
                 headerLine[1] = headerLine[2]
                 headerLine[2] = headerLine[3]
                 headerLine[3] = trimmedLine
-
-                if (LOG.isDebugEnabled) LOG.debug(trimmedLine)
 
                 if (!start) {
                     start = trimmedLine.startsWith("\$\$SOE")

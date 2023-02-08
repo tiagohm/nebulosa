@@ -19,7 +19,8 @@ open class Star : Point {
         MASSCHANGE,
         ERROR;
 
-        inline val wasFound get() = this == OK || this == SATURATED
+        inline val wasFound
+            get() = this == OK || this == SATURATED
     }
 
     var mass = 0f
@@ -335,7 +336,8 @@ open class Star : Point {
         super.invalidate()
     }
 
-    inline val wasFound get() = isValid && lastFindResult.wasFound
+    inline val wasFound
+        get() = isValid && lastFindResult.wasFound
 
     override fun toString(): String {
         return "Star(x=$x, y=$y," +

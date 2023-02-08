@@ -6,7 +6,9 @@ interface HasMinMax<T : Comparable<T>> : ClosedRange<T> {
 
     val max: T
 
-    override val start get() = min
+    override val start
+        get() = min
 
-    override val endInclusive get() = max
+    override val endInclusive
+        get() = max
 }

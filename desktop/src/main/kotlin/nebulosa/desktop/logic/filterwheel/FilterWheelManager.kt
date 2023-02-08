@@ -19,7 +19,8 @@ class FilterWheelManager(private val view: FilterWheelView) :
     private val preferences by inject<Preferences>()
     private val equipmentManager by inject<EquipmentManager>()
 
-    val filterWheels get() = equipmentManager.attachedFilterWheels
+    val filterWheels
+        get() = equipmentManager.attachedFilterWheels
 
     init {
         registerListener(this)

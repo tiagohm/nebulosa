@@ -14,9 +14,11 @@ internal class RandomAccessFileSource(
 
     private val cursor = Buffer.UnsafeCursor()
 
-    override val position get() = file.filePointer
+    override val position
+        get() = file.filePointer
 
-    override val exhausted get() = position >= file.length()
+    override val exhausted
+        get() = position >= file.length()
 
     @Synchronized
     override fun seek(position: Long) {

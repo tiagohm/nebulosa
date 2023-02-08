@@ -61,17 +61,20 @@ open class ICRF protected constructor(
     /**
      * Distance from [center] to [target] at [time].
      */
-    inline val distance get() = position.length.km
+    inline val distance
+        get() = position.length.km
 
     /**
      * Speed at [time].
      */
-    inline val speed get() = velocity.length.kms
+    inline val speed
+        get() = velocity.length.kms
 
     /**
      * Length of this vector in days of light travel time.
      */
-    inline val lightTime get() = position.length * (1000.0 / (SPEED_OF_LIGHT * DAYSEC))
+    inline val lightTime
+        get() = position.length * (1000.0 / (SPEED_OF_LIGHT * DAYSEC))
 
     /**
      * Computes the equatorial (RA, declination, distance)

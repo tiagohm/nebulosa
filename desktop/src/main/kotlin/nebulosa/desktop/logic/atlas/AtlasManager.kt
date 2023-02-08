@@ -69,7 +69,8 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
 
     val mountProperty = equipmentManager.selectedMount
 
-    val mount: Mount? get() = mountProperty.value
+    val mount: Mount?
+        get() = mountProperty.value
 
     init {
         val longitude = mount?.longitude ?: preferences.double("atlas.longitude")?.rad ?: Angle.ZERO

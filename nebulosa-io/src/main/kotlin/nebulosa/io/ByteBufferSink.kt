@@ -22,7 +22,8 @@ internal class ByteBufferSink(
             data.position(value.toInt())
         }
 
-    override val exhausted get() = position >= byteCount
+    override val exhausted
+        get() = position >= byteCount
 
     init {
         require(byteCount > 0) { "byteCount <= 0: $byteCount" }

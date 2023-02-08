@@ -6,9 +6,11 @@ class Summary(
     private val ints: IntArray,
 ) {
 
-    val numberOfDoubles get() = doubles.size
+    val numberOfDoubles
+        get() = doubles.size
 
-    val numberOfInts get() = ints.size
+    val numberOfInts
+        get() = ints.size
 
     fun doubleAt(index: Int) = doubles[index]
 

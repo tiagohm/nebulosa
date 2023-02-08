@@ -36,7 +36,8 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
 
     operator fun get(index: Int, column: Column) = data[index][column.ordinal]
 
-    override val size get() = data.size
+    override val size
+        get() = data.size
 
     override fun contains(element: List<String>) = element in data
 

@@ -86,7 +86,8 @@ inline fun bufferedResource(name: String) = resource(name)?.source()?.buffer()
 
 inline fun <R> bufferedResource(name: String, block: BufferedSource.() -> R) = bufferedResource(name)!!.use(block)
 
-inline val Buffer.UnsafeCursor.remaining get() = end - start
+inline val Buffer.UnsafeCursor.remaining
+    get() = end - start
 
 fun ByteArray.source(
     offset: Int = 0,

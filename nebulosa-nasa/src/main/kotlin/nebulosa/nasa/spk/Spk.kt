@@ -25,7 +25,8 @@ class Spk(val daf: Daf) : Closeable, Collection<SpkSegment> {
 
     override fun close() = daf.close()
 
-    override val size get() = segments.size
+    override val size
+        get() = segments.size
 
     override fun isEmpty() = segments.isEmpty()
 

@@ -17,7 +17,8 @@ internal class RandomSource(
     override var position = 0L
         private set
 
-    override val exhausted get() = maxSize in 0L..position
+    override val exhausted
+        get() = maxSize in 0L..position
 
     init {
         require(maxSize > 0) { "maxSize <= 0: $maxSize" }

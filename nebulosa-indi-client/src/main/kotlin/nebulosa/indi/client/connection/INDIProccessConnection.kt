@@ -9,7 +9,8 @@ class INDIProccessConnection(val process: Process) : INDIConnection {
 
     override val output = INDIProtocolFactory.createOutputStream(process.outputStream)
 
-    override val isOpen get() = process.isAlive
+    override val isOpen
+        get() = process.isAlive
 
     override fun close() {
         process.destroyForcibly().waitFor()

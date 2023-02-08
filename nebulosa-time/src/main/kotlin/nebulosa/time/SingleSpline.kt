@@ -14,11 +14,14 @@ class SingleSpline(private val data: DoubleArray) : Spline<Double> {
         slope1: Double,
     ) : this(makeSplineGivenEnds(x0, y0, slope0, x1, y1, slope1))
 
-    override val lower get() = data[0]
+    override val lower
+        get() = data[0]
 
-    override val upper get() = data[1]
+    override val upper
+        get() = data[1]
 
-    override val width get() = upper - lower
+    override val width
+        get() = upper - lower
 
     override fun get(index: Int) = data[index]
 

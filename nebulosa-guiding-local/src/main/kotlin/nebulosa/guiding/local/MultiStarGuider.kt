@@ -36,7 +36,8 @@ class MultiStarGuider : Guider() {
     var calibration = Calibration.EMPTY
     var yAngleError = 0f
 
-    override val currentPosition get() = primaryStar
+    override val currentPosition
+        get() = primaryStar
 
     @Volatile override var currentImage: Image? = null
         protected set

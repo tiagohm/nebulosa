@@ -18,6 +18,7 @@ enum class CfaPattern(private val pattern: Array<Array<ImageChannel>>) {
 
     companion object {
 
-        val BasicHDU<*>.cfaPattern get() = header.getStringValue(MaxImDLExt.BAYERPAT)?.trim()?.let(CfaPattern::valueOf)
+        val BasicHDU<*>.cfaPattern
+            get() = header.getStringValue(MaxImDLExt.BAYERPAT)?.trim()?.let(CfaPattern::valueOf)
     }
 }

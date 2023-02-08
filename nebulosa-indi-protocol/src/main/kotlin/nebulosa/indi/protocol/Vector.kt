@@ -6,7 +6,8 @@ sealed interface Vector<E : Element<*>> : List<E> {
 
     val elements: MutableList<E>
 
-    override val size get() = elements.size
+    override val size
+        get() = elements.size
 
     override fun contains(element: E) = element in elements
 
@@ -30,11 +31,15 @@ sealed interface Vector<E : Element<*>> : List<E> {
 
     override fun subList(fromIndex: Int, toIndex: Int) = elements.subList(fromIndex, toIndex)
 
-    val isIdle get() = state == PropertyState.IDLE
+    val isIdle
+        get() = state == PropertyState.IDLE
 
-    val isBusy get() = state == PropertyState.BUSY
+    val isBusy
+        get() = state == PropertyState.BUSY
 
-    val isAlert get() = state == PropertyState.ALERT
+    val isAlert
+        get() = state == PropertyState.ALERT
 
-    val isOk get() = state == PropertyState.OK
+    val isOk
+        get() = state == PropertyState.OK
 }

@@ -15,7 +15,8 @@ class INDIPipedConnection(
 
     override val output = INDIPipedOutputStream(this, output)
 
-    override val isOpen get() = !closed
+    override val isOpen
+        get() = !closed
 
     override fun close() {
         closed = true

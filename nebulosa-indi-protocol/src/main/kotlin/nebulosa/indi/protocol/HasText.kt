@@ -4,7 +4,8 @@ interface HasText : CharSequence {
 
     val text: String
 
-    override val length get() = text.length
+    override val length
+        get() = text.length
 
     override fun get(index: Int) = text[index]
 

@@ -38,6 +38,7 @@ class KeplerOrbitTest : StringSpec() {
                 longitudeOfAscendingNode = 2.336112629072238E+01.deg, // OM
                 meanAnomaly = 1.382501360489816E+02.deg,
                 epoch = time,
+                rotation = null,
             )
 
             val (r) = ceres.at<ICRF>(time)

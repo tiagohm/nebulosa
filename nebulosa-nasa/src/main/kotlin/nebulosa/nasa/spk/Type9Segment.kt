@@ -1,7 +1,6 @@
 package nebulosa.nasa.spk
 
 import nebulosa.erfa.PositionAndVelocity
-import nebulosa.math.Vector3D
 import nebulosa.time.InstantOfTime
 
 /**

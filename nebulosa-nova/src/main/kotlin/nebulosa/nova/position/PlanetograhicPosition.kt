@@ -19,9 +19,11 @@ class PlanetograhicPosition(
     val longitude: Angle,
 ) : Body, Frame, Number() {
 
-    override val center get() = frame.center
+    override val center
+        get() = frame.center
 
-    override val target get() = this
+    override val target
+        get() = this
 
     constructor(
         frame: PlanetaryFrame,

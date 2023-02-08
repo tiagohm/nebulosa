@@ -12,15 +12,18 @@ class INDISocketConnection(private val socket: Socket) : INDIConnection {
         socket.connect(InetSocketAddress(host, port), 30000)
     }
 
-    val host: String get() = socket.localAddress.hostName
+    val host: String
+        get() = socket.localAddress.hostName
 
-    val port: Int get() = socket.localPort
+    val port: Int
+        get() = socket.localPort
 
     override val input by lazy { INDIProtocolFactory.createInputStream(socket.getInputStream()) }
 
     override val output by lazy { INDIProtocolFactory.createOutputStream(socket.getOutputStream()) }
 
-    override val isOpen get() = !socket.isClosed
+    override val isOpen
+        get() = !socket.isClosed
 
     override fun close() {
         var thrown: Throwable? = null

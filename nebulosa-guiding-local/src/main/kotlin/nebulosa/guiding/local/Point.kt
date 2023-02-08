@@ -37,11 +37,13 @@ open class Point(
 
     inline fun dY(point: Point) = y - point.y
 
-    inline val distance get() = hypot(x, y)
+    inline val distance
+        get() = hypot(x, y)
 
     inline fun distance(point: Point) = hypot(dX(point), dY(point))
 
-    inline val angle get() = angle(ZERO)
+    inline val angle
+        get() = angle(ZERO)
 
     fun angle(point: Point): Angle {
         val dx = dX(point)

@@ -17,7 +17,8 @@ internal class ByteArraySource(
     override var position = 0L
         private set
 
-    override val exhausted get() = position >= byteCount
+    override val exhausted
+        get() = position >= byteCount
 
     init {
         require(byteCount > 0) { "byteCount <= 0: $byteCount" }

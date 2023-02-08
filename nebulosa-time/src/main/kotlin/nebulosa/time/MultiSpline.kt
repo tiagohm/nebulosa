@@ -4,9 +4,11 @@ import nebulosa.math.interpolation
 
 class MultiSpline(private val data: List<DoubleArray>) : Spline<DoubleArray> {
 
-    override val lower get() = data[0]
+    override val lower
+        get() = data[0]
 
-    override val upper get() = data[1]
+    override val upper
+        get() = data[1]
 
     override val width by lazy { DoubleArray(upper.size) { upper[it] - lower[it] } }
 
