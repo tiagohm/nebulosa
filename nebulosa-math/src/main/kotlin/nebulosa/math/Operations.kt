@@ -44,10 +44,10 @@ inline infix fun Int.pmod(other: Int) = (this % other).let { if (it < 0) it + ot
  * Computes the floor modulo.
  */
 @Suppress("NOTHING_TO_INLINE")
-inline infix fun Double.fmod(other: Double) = ((this % other) + other) % other
+inline infix fun Double.fmod(other: Double) = (this % other + other) % other
 
 /**
  * Computes the floor modulo.
  */
 @Suppress("NOTHING_TO_INLINE")
-inline infix fun Int.fmod(other: Int) = ((this % other) + other) % other
+inline infix fun Int.fmod(other: Int) = (this % other + other) % other

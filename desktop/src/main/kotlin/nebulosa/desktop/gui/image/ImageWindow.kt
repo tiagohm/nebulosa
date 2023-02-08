@@ -95,8 +95,6 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow(), Image
         buffer = IntArray(0)
 
         imageManager.close()
-
-        System.gc()
     }
 
     override val fits

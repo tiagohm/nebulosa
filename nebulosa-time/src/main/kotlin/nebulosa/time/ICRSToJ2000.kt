@@ -3,9 +3,9 @@ package nebulosa.time
 import nebulosa.constants.ASEC2RAD
 import nebulosa.math.Matrix3D
 
-private const val XI = (-0.0166170) * ASEC2RAD
-private const val ETA = (-0.0068192) * ASEC2RAD
-private const val DA = (-0.01460) * ASEC2RAD
+private const val XI = -0.0166170 * ASEC2RAD
+private const val ETA = -0.0068192 * ASEC2RAD
+private const val DA = -0.01460 * ASEC2RAD
 
 // Compute elements of rotation matrix.
 private const val A10 = -DA

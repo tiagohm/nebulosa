@@ -61,7 +61,7 @@ abstract class Daf : Closeable {
         var recordNumber = record.fward
 
         val length = record.nd * 8L + record.ni * 4L
-        val step = length + (-length % 8)
+        val step = length - length % 8
 
         while (recordNumber != 0) {
             val data = readRecord(recordNumber)

@@ -100,8 +100,6 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : KoinComp
         }
 
         makeLog()
-
-        System.gc()
     }
 
     fun removeGroup(group: INDIPanelControlWindow.Group) {

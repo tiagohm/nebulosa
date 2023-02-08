@@ -86,7 +86,7 @@ internal data class Type2And3Segment(
     }
 
     override fun compute(time: InstantOfTime): PositionAndVelocity {
-        val (a, p) = ((time.tdb.whole - J2000) * DAYSEC - initialEpoch) divmod intervalLength
+        val (a, p) = (time.tdb.whole - J2000) * DAYSEC - initialEpoch divmod intervalLength
         val (b, q) = (time.tdb.fraction * DAYSEC) divmod intervalLength
         val (d, offset) = (p + q) divmod intervalLength
         val index = (a + b + d).toInt()
@@ -148,9 +148,9 @@ internal data class Type2And3Segment(
         val c2 = (c.z[0] + (s * w0[2] - w1[2])) / AU_KM
 
         // au/day
-        val r0 = ((w0[0] + s * dw0[0] - dw1[0]) / intervalLength) * 2.0 * DAYSEC / AU_KM
-        val r1 = ((w0[1] + s * dw0[1] - dw1[1]) / intervalLength) * 2.0 * DAYSEC / AU_KM
-        val r2 = ((w0[2] + s * dw0[2] - dw1[2]) / intervalLength) * 2.0 * DAYSEC / AU_KM
+        val r0 = (w0[0] + s * dw0[0] - dw1[0]) / intervalLength * 2.0 * DAYSEC / AU_KM
+        val r1 = (w0[1] + s * dw0[1] - dw1[1]) / intervalLength * 2.0 * DAYSEC / AU_KM
+        val r2 = (w0[2] + s * dw0[2] - dw1[2]) / intervalLength * 2.0 * DAYSEC / AU_KM
 
         return PositionAndVelocity(Vector3D(c0, c1, c2), Vector3D(r0, r1, r2))
     }

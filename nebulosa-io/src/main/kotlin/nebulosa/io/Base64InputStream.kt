@@ -87,8 +87,8 @@ class Base64InputStream(private val input: String) : InputStream() {
             inCount++
 
             if (inCount % 4 == 0) {
-                buffer[0] = (word shr 16) and 0xff
-                buffer[1] = (word shr 8) and 0xff
+                buffer[0] = word shr 16 and 0xff
+                buffer[1] = word shr 8 and 0xff
                 buffer[2] = word and 0xff
                 break
             }
@@ -102,13 +102,13 @@ class Base64InputStream(private val input: String) : InputStream() {
             2 -> {
                 // We read 2 chars followed by "==". Emit 1 byte with 8 of those 12 bits.
                 word = word shl 12
-                buffer[0] = (word shr 16) and 0xff
+                buffer[0] = word shr 16 and 0xff
             }
             3 -> {
                 // We read 3 chars, followed by "=". Emit 2 bytes for 16 of those 18 bits.
                 word = word shl 6
-                buffer[0] = (word shr 16) and 0xff
-                buffer[1] = (word shr 8) and 0xff
+                buffer[0] = word shr 16 and 0xff
+                buffer[1] = word shr 8 and 0xff
             }
         }
 

@@ -100,7 +100,7 @@ internal data class Type21Segment(
 
         val mdaRecord = spk.daf.read(
             startIndex + recordIndex * dlsize,
-            startIndex + ((recordIndex + 1) * dlsize) - 1,
+            startIndex + (recordIndex + 1) * dlsize - 1,
         )
 
         // Reference epoch of record.

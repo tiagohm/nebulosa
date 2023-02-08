@@ -39,48 +39,48 @@ class Debayer(val pattern: CfaPattern = CfaPattern.GRGB) : TransformAlgorithm {
                 rgbCounters[bayerIndex.ordinal]++
 
                 if (x != 0) {
-                    bayerIndex = pattern[y and 1, (x - 1) and 1]
+                    bayerIndex = pattern[y and 1, x - 1 and 1]
                     rgbValues[bayerIndex.ordinal] += source.data[index - source.pixelStride]
                     rgbCounters[bayerIndex.ordinal]++
                 }
 
                 if (x != widthM1) {
-                    bayerIndex = pattern[y and 1, (x + 1) and 1]
+                    bayerIndex = pattern[y and 1, x + 1 and 1]
                     rgbValues[bayerIndex.ordinal] += source.data[index + source.pixelStride]
                     rgbCounters[bayerIndex.ordinal]++
                 }
 
                 if (y != 0) {
-                    bayerIndex = pattern[(y - 1) and 1, x and 1]
+                    bayerIndex = pattern[y - 1 and 1, x and 1]
                     rgbValues[bayerIndex.ordinal] += source.data[index - source.stride]
                     rgbCounters[bayerIndex.ordinal]++
 
                     if (x != 0) {
-                        bayerIndex = pattern[(y - 1) and 1, (x - 1) and 1]
+                        bayerIndex = pattern[y - 1 and 1, x - 1 and 1]
                         rgbValues[bayerIndex.ordinal] += source.data[index - source.stride - source.pixelStride]
                         rgbCounters[bayerIndex.ordinal]++
                     }
 
                     if (x != widthM1) {
-                        bayerIndex = pattern[(y - 1) and 1, (x + 1) and 1]
+                        bayerIndex = pattern[y - 1 and 1, x + 1 and 1]
                         rgbValues[bayerIndex.ordinal] += source.data[index - source.stride + source.pixelStride]
                         rgbCounters[bayerIndex.ordinal]++
                     }
                 }
 
                 if (y != heightM1) {
-                    bayerIndex = pattern[(y + 1) and 1, x and 1]
+                    bayerIndex = pattern[y + 1 and 1, x and 1]
                     rgbValues[bayerIndex.ordinal] += source.data[index + source.stride]
                     rgbCounters[bayerIndex.ordinal]++
 
                     if (x != 0) {
-                        bayerIndex = pattern[(y + 1) and 1, (x - 1) and 1]
+                        bayerIndex = pattern[y + 1 and 1, x - 1 and 1]
                         rgbValues[bayerIndex.ordinal] += source.data[index + source.stride - source.pixelStride]
                         rgbCounters[bayerIndex.ordinal]++
                     }
 
                     if (x != widthM1) {
-                        bayerIndex = pattern[(y + 1) and 1, (x + 1) and 1]
+                        bayerIndex = pattern[y + 1 and 1, x + 1 and 1]
                         rgbValues[bayerIndex.ordinal] += source.data[index + source.stride + source.pixelStride]
                         rgbCounters[bayerIndex.ordinal]++
                     }

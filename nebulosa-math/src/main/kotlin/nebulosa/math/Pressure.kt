@@ -102,15 +102,15 @@ value class Pressure(val value: Double) {
          */
         @JvmStatic
         fun Distance.pressure(temperature: Temperature = 10.0.celsius): Pressure {
-            val e = (9.80665 * 0.0289644) / (8.31432 * -0.0065)
+            val e = 9.80665 * 0.0289644 / (8.31432 * -0.0065)
             val k = temperature.kelvin
 
             return if (meters < 11000) {
-                (1013.25 * (k / (k + (-0.0065 * meters))).pow(e)).mbar
+                (1013.25 * (k / (k - 0.0065 * meters)).pow(e)).mbar
             } else {
                 val a = 1013.25 * (k / (k + (-0.0065 * 11000.0))).pow(e)
-                val c = k + (11000 * -0.0065)
-                (a * exp((-9.80665 * 0.0289644 * (meters - 11000.0)) / (8.31432 * c))).mbar
+                val c = k + 11000 * -0.0065
+                (a * exp(-9.80665 * 0.0289644 * (meters - 11000.0) / (8.31432 * c))).mbar
             }
         }
     }

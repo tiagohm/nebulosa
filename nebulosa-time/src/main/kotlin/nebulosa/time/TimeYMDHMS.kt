@@ -32,7 +32,7 @@ class TimeYMDHMS(
             cutoff: JulianCalendarCutOff = JulianCalendarCutOff.NONE,
         ): Int {
             // Support months <1 and >12 by overflowing cleanly into adjacent years.
-            var (y, m) = (month - 1) divmod 12
+            var (y, m) = month - 1 divmod 12
             y += year
             m += 1
 

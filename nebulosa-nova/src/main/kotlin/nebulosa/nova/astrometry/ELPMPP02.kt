@@ -151,8 +151,8 @@ object ELPMPP02 : Body {
     // Constants for the evaluation of the partial derivatives.
     private const val AM = 0.074801329 // Ratio of the mean motions (EMB / Moon)
     private const val ALPHA = 0.002571881 // Ratio of the semi-major axis (Moon / EMB)
-    private const val DTASM = (2.0 * ALPHA) / (3.0 * AM)
-    private const val XA = (2.0 * ALPHA) / 3.0
+    private const val DTASM = 2.0 * ALPHA / (3.0 * AM)
+    private const val XA = 2.0 * ALPHA / 3.0
 
     // Values of the corrections to the constants fitted to DE405 over the time interval (1950-2060).
     private const val DW1_0 = -0.07008

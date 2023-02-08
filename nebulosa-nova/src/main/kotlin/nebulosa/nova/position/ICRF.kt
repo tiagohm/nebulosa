@@ -290,7 +290,7 @@ open class ICRF protected constructor(
             var v = velocity
 
             frame.dRdtTimesRtAt(time)?.also {
-                v -= (it * r) // Subtract instead of transposing.
+                v -= it * r // Subtract instead of transposing.
             }
 
             frame.rotationAt(time).transposed.also {

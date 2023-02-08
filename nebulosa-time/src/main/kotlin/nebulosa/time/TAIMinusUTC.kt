@@ -13,7 +13,7 @@ object TAIMinusUTC : DeltaTime {
         var k = -1
 
         for (i in CHANGES.indices.reversed()) {
-            if (m >= (12 * CHANGES[i][0] + CHANGES[i][1])) {
+            if (m >= 12 * CHANGES[i][0] + CHANGES[i][1]) {
                 k = i
                 break
             }

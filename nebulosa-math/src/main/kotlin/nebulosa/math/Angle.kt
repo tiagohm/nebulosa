@@ -68,15 +68,15 @@ value class Angle(val value: Double) {
 
     fun hms(): DoubleArray {
         val hours = normalized.hours
-        val minutes = ((hours - hours.toInt()) * 60.0) % 60.0
-        val seconds = ((minutes - minutes.toInt()) * 60.0) % 60.0
+        val minutes = (hours - hours.toInt()) * 60.0 % 60.0
+        val seconds = (minutes - minutes.toInt()) * 60.0 % 60.0
         return doubleArrayOf(hours, minutes, seconds)
     }
 
     fun dms(): DoubleArray {
         val degrees = abs(degrees)
-        val minutes = ((degrees - degrees.toInt()) * 60.0) % 60.0
-        val seconds = ((minutes - minutes.toInt()) * 60.0) % 60.0
+        val minutes = (degrees - degrees.toInt()) * 60.0 % 60.0
+        val seconds = (minutes - minutes.toInt()) * 60.0 % 60.0
         return doubleArrayOf(if (value < 0.0) -degrees else degrees, minutes, seconds)
     }
 

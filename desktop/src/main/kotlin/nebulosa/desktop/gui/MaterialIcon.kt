@@ -12,8 +12,8 @@ private fun convert(text: String): String {
     val s = text.toInt(16)
 
     return if (s in 0x10000..0x10FFFF) {
-        val hi = ((s - 0x10000) / 0x400) + 0xD800
-        val lo = ((s - 0x10000) % 0x400) + 0xDC00
+        val hi = (s - 0x10000) / 0x400 + 0xD800
+        val lo = (s - 0x10000) % 0x400 + 0xDC00
         String(charArrayOf(hi.toChar(), lo.toChar()))
     } else {
         s.toChar().toString()

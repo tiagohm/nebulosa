@@ -33,29 +33,29 @@ class Asteroid(
     companion object {
 
         @JvmStatic private val MPC_COLUMNS = mapOf(
-            // "designation_packed" to (0..6),
-            // "magnitude_H" to (8..12),
-            // "magnitude_G" to (14..18),
-            "epoch_packed" to (20..24),
-            "mean_anomaly" to (26..34), // degrees
-            "argument_of_perihelion" to (37..45), // degrees
-            "longitude_of_ascending_node" to (48..56), // degrees
-            "inclination" to (59..67), // degrees
-            "eccentricity" to (70..78),
-            // "mean_daily_motion" to (80..90), // degrees
-            "semimajor_axis" to (92..102), // AU
-            // "uncertainty" to (105..105),
-            // "reference" to (107..115),
-            // "observations" to (117..121),
-            // "oppositions" to (123..125),
-            // "observation_period" to (127..135),
-            // "rms_residual" to (137..140), // arcseconds
-            // "coarse_perturbers" to (142..144),
-            // "precise_perturbers" to (146..148),
-            // "computer_name" to (150..159),
-            // "hex_flags" to (161..164),
-            // "designation" to (166..193),
-            // "last_observation_date" to (194..201),
+            // "designation_packed" to 0..6,
+            // "magnitude_H" to 8..12,
+            // "magnitude_G" to 14..18,
+            "epoch_packed" to 20..24,
+            "mean_anomaly" to 26..34, // degrees
+            "argument_of_perihelion" to 37..45, // degrees
+            "longitude_of_ascending_node" to 48..56, // degrees
+            "inclination" to 59..67, // degrees
+            "eccentricity" to 70..78,
+            // "mean_daily_motion" to 80..90), // degrees
+            "semimajor_axis" to 92..102, // U
+            // "uncertainty" to 105..105,
+            // "reference" to 107..115,
+            // "observations" to 117..121,
+            // "oppositions" to 123..125,
+            // "observation_period" to 127..135,
+            // "rms_residual" to 137..140, // arcseconds
+            // "coarse_perturbers" to 142..144,
+            // "precise_perturbers" to 146..148,
+            // "computer_name" to 150..159,
+            // "hex_flags" to 161..164,
+            // "designation" to 166..193,
+            // "last_observation_date" to 194..201,
         )
 
         @JvmStatic

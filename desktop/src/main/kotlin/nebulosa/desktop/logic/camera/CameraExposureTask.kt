@@ -65,8 +65,8 @@ data class CameraExposureTask(
                 remaining = 0
             }
             is CameraExposureProgressChanged -> {
-                progress = ((amount - remaining - 1).toDouble() / amount) +
-                        ((exposure - camera.exposure).toDouble() / exposure) * (1.0 / amount)
+                progress = (amount - remaining - 1).toDouble() / amount +
+                        (exposure - camera.exposure).toDouble() / exposure * (1.0 / amount)
             }
         }
     }

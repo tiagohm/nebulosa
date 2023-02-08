@@ -229,7 +229,7 @@ enum class GUST86(override val target: Int) : Body {
     )
 
     override fun compute(time: InstantOfTime): PositionAndVelocity {
-        val td = (time.tdb.whole - 2444239.5 + time.tdb.fraction)
+        val td = time.tdb.whole - 2444239.5 + time.tdb.fraction
         val ty = td / DAYSPERJY
 
         val an = DoubleArray(5)

@@ -11,7 +11,7 @@ class ScreenTransformFunction(
     private val canTransform = midtone != 0.5f || shadow != 0f || highlight != 1f
     private val rangeFactor = if (shadow == highlight) 1f else (1f / (highlight - shadow))
     private val k1 = (midtone - 1f) * rangeFactor
-    private val k2 = ((2f * midtone) - 1f) * rangeFactor
+    private val k2 = (2f * midtone - 1f) * rangeFactor
     private val lut = if (canTransform) FloatArray(65536) else FloatArray(0)
 
     override fun transform(source: Image): Image {

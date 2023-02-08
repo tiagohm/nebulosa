@@ -125,7 +125,7 @@ fun eraTcbTdb(tcb1: Double, tcb2: Double): DoubleArray {
  * Geocentric Coordinate Time, TCG, to Terrestrial Time, TT.
  */
 fun eraTcgTt(tcg1: Double, tcg2: Double): DoubleArray {
-    val tt2 = tcg2 - ((tcg1 - MJD0) + (tcg2 - (MJD1977 + TTMINUSTAI / DAYSEC))) * ELG
+    val tt2 = tcg2 - (tcg1 - MJD0 + (tcg2 - (MJD1977 + TTMINUSTAI / DAYSEC))) * ELG
     return doubleArrayOf(tcg1, tt2)
 }
 
@@ -133,7 +133,7 @@ fun eraTcgTt(tcg1: Double, tcg2: Double): DoubleArray {
  * Barycentric Dynamical Time, TDB, to Barycentric Coordinate Time, TCB.
  */
 fun eraTdbTcb(tdb1: Double, tdb2: Double): DoubleArray {
-    val d = (MJD0 + MJD1977) - tdb1
+    val d = MJD0 + MJD1977 - tdb1
     val f = tdb2 - TDB0 / DAYSEC
     val tcb2 = f - (d - (f - TTMINUSTAI / DAYSEC)) * (ELB / (1.0 - ELB))
     return doubleArrayOf(tdb1, tcb2)
@@ -143,7 +143,7 @@ fun eraTdbTcb(tdb1: Double, tdb2: Double): DoubleArray {
  * Terrestrial Time, TT, to Geocentric Coordinate Time, TCG.
  */
 fun eraTtTcg(tt1: Double, tt2: Double): DoubleArray {
-    val tcg2 = tt2 + ((tt1 - MJD0) + (tt2 - (MJD1977 + TTMINUSTAI / DAYSEC))) * (ELG / (1.0 - ELG))
+    val tcg2 = tt2 + (tt1 - MJD0 + (tt2 - (MJD1977 + TTMINUSTAI / DAYSEC))) * (ELG / (1.0 - ELG))
     return doubleArrayOf(tt1, tcg2)
 }
 
@@ -168,21 +168,21 @@ fun eraDtDb(
     elong: Angle = Angle.ZERO, u: Distance = Distance.ZERO, v: Distance = Distance.ZERO,
 ): Double {
     // Time since J2000.0 in Julian millennia.
-    val t = ((tdb1 - J2000) + tdb2) / DAYSPERJM
+    val t = (tdb1 - J2000 + tdb2) / DAYSPERJM
     // Convert UT to local solar time in radians.
     val tsol = (ut pmod 1.0) * TAU + elong.value
     // Combine time argument (millennia) with deg/arcsec factor.
     val w = t / 3600.0
     // Sun Mean Meridian.
-    val elsun = ((280.46645683 + 1296027711.03429 * w) pmod 360.0).deg.value
+    val elsun = (280.46645683 + 1296027711.03429 * w pmod 360.0).deg.value
     // Sun Mean Anomaly.
-    val emsun = ((357.52910918 + 1295965810.481 * w) pmod 360.0).deg.value
+    val emsun = (357.52910918 + 1295965810.481 * w pmod 360.0).deg.value
     // Mean Elongation of Moon from Sun.
-    val d = ((297.85019547 + 16029616012.090 * w) pmod 360.0).deg.value
+    val d = (297.85019547 + 16029616012.090 * w pmod 360.0).deg.value
     // Mean Longitude of Jupiter.
-    val elj = ((34.35151874 + 109306899.89453 * w) pmod 360.0).deg.value
+    val elj = (34.35151874 + 109306899.89453 * w pmod 360.0).deg.value
     // Mean Longitude of Saturn.
-    val els = ((50.07744430 + 44046398.47038 * w) pmod 360.0).deg.value
+    val els = (50.07744430 + 44046398.47038 * w pmod 360.0).deg.value
     // TOPOCENTRIC TERMS: Moyer 1981 and Murray 1983.
     val ukm = u.kilometers
     val vkm = v.kilometers
@@ -448,7 +448,7 @@ fun eraApcs(
     ehpx: Distance, ehpy: Distance, ehpz: Distance,
 ): AstrometryParameters {
     // Time since reference epoch, years (for proper motion calculation).
-    val pmt = ((tdb1 - J2000) + tdb2) / DAYSPERJY
+    val pmt = (tdb1 - J2000 + tdb2) / DAYSPERJY
 
     // Adjust Earth ephemeris to observer.
     val dpx = px.value
@@ -600,7 +600,7 @@ fun eraApco(
  * on the equator of the Celestial Intermediate Pole.
  */
 fun eraSp00(tt1: Double, tt2: Double): Angle {
-    val t = ((tt1 - J2000) + tt2) / DAYSPERJC
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
     val sp = -47e-6 * t
     return sp.arcsec
 }
@@ -610,7 +610,7 @@ fun eraSp00(tt1: Double, tt2: Double): Angle {
  */
 fun eraObl06(tt1: Double, tt2: Double): Angle {
     // Interval between fundamental date J2000.0 and given date (JC).
-    val t = ((tt1 - J2000) + tt2) / DAYSPERJC
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
     // Mean obliquity.
     return (84381.406 + (-46.836769 + (-0.0001831 + (0.00200340 + (-0.000000576 + (-0.0000000434) * t) * t) * t) * t) * t).arcsec
 }
@@ -619,7 +619,7 @@ fun eraObl06(tt1: Double, tt2: Double): Angle {
  * Precession angles, IAU 2006 (Fukushima-Williams 4-angle formulation).
  */
 fun eraPfw06(tt1: Double, tt2: Double): FukushimaWilliamsFourAngles {
-    val t = ((tt1 - J2000) + tt2) / DAYSPERJC
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
     val gamb = (-0.052928 + (10.556378 + (0.4932044 + (-0.00031238 + (-0.000002788 + (0.0000000260) * t) * t) * t) * t) * t).arcsec
     val phib = (84381.412819 + (-46.811016 + (0.0511268 + (0.00053289 + (-0.000000440 + (-0.0000000176) * t) * t) * t) * t) * t).arcsec
@@ -778,7 +778,7 @@ private val XPL = bufferedResource("PLANETARY-NUT.dat") { (0 until 687).map { Pl
  */
 fun eraNut00a(tt1: Double, tt2: Double): PairOfAngle {
     // Interval between fundamental date J2000.0 and given date (JC).
-    val t = ((tt1 - J2000) + tt2) / DAYSPERJC
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
     // Mean anomaly of the Moon (IERS 2003).
     val el = eraFal03(t)
@@ -868,7 +868,7 @@ fun eraNut00a(tt1: Double, tt2: Double): PairOfAngle {
  */
 fun eraNut06a(tt1: Double, tt2: Double): PairOfAngle {
     // Interval between fundamental date J2000.0 and given date (JC).
-    val t = ((tt1 - J2000) + tt2) / DAYSPERJC
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
     // Factor correcting for secular variation of J2.
     val fj2 = -2.7774e-6 * t
@@ -1018,7 +1018,7 @@ private val S = arrayOf(S0, S1, S2, S3, S4)
  */
 fun eraS06(tt1: Double, tt2: Double, x: Double, y: Double): Angle {
     // Interval between fundamental epoch J2000.0 and current date (JC).
-    val t = ((tt1 - J2000) + tt2) / DAYSPERJC
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
     // Fundamental Arguments (from IERS Conventions 2003)
     val fa = DoubleArray(8)
@@ -1055,7 +1055,7 @@ fun eraS06(tt1: Double, tt2: Double, x: Double, y: Double): Angle {
         }
     }
 
-    return (w[0] + (w[1] + (w[2] + (w[3] + (w[4] + w[5] * t) * t) * t) * t) * t).arcsec - (x * y / 2.0)
+    return (w[0] + (w[1] + (w[2] + (w[3] + (w[4] + w[5] * t) * t) * t) * t) * t).arcsec - x * y / 2.0
 }
 
 /**
@@ -1239,7 +1239,7 @@ private val CS2 = arrayOf(S2X, S2Y, S2Z)
  * Barycentric Earth position/velocity (au, au/day).
  */
 fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndVelocity> {
-    val t = ((tdb1 - J2000) + tdb2) / DAYSPERJY
+    val t = (tdb1 - J2000 + tdb2) / DAYSPERJY
     val t2 = t * t
 
     val ph = DoubleArray(3)
@@ -1460,7 +1460,7 @@ private val E1 = arrayOf(
  */
 fun eraEect00(tt1: Double, tt2: Double): Angle {
     // Interval between fundamental epoch J2000.0 and current date (JC).
-    val t = ((tt1 - J2000) + tt2) / DAYSPERJC
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
     // Fundamental Arguments (from IERS Conventions 2003)
     val fa = DoubleArray(14)
@@ -1570,10 +1570,10 @@ fun eraEe00(tt1: Double, tt2: Double, epsa: Angle, dpsi: Angle): Angle {
  */
 fun eraGmst00(ut11: Double, ut12: Double, tt1: Double, tt2: Double): Angle {
     // TT Julian centuries since J2000.0.
-    val t = ((tt1 - J2000) + tt2) / DAYSPERJC
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
     // Greenwich Mean Sidereal Time, IAU 2000.
-    return (eraEra00(ut11, ut12) + (0.014506 + (4612.15739966 + (1.39667721 + (-0.00009344 + (0.00001882) * t) * t) * t) * t).arcsec).normalized
+    return (eraEra00(ut11, ut12) + (0.014506 + (4612.15739966 + (1.39667721 + (-0.00009344 + 0.00001882 * t) * t) * t) * t).arcsec).normalized
 }
 
 
@@ -1594,7 +1594,7 @@ fun eraGmst00(ut11: Double, ut12: Double, tt1: Double, tt2: Double): Angle {
  */
 fun eraGmst06(ut11: Double, ut12: Double, tt1: Double, tt2: Double): Angle {
     // TT Julian centuries since J2000.0.
-    val t = ((tt1 - J2000) + tt2) / DAYSPERJC
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
     // Greenwich Mean Sidereal Time, IAU 2006.
     return (eraEra00(
@@ -1755,7 +1755,7 @@ private val OBLCOR = (-0.02524).arcsec
  */
 fun eraPr00(tt1: Double, tt2: Double): PairOfAngle {
     // Interval between fundamental epoch J2000.0 and given date (JC).
-    val t = ((tt1 - J2000) + tt2) / DAYSPERJC
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
     return PairOfAngle(PRECOR * t, OBLCOR * t)
 }
 
@@ -1764,9 +1764,9 @@ fun eraPr00(tt1: Double, tt2: Double): PairOfAngle {
  */
 fun eraObl80(tt1: Double, tt2: Double): Angle {
     // Interval between fundamental date J2000.0 and given date (JC).
-    val t = ((tt1 - J2000) + tt2) / DAYSPERJC
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
     // Mean obliquity.
-    return (84381.448 + (-46.8150 + (-0.00059 + (0.001813) * t) * t) * t).arcsec
+    return (84381.448 + (-46.8150 + (-0.00059 + 0.001813 * t) * t) * t).arcsec
 }
 
 private val X = arrayOf(
@@ -1865,20 +1865,20 @@ private val DEPLAN = 0.388.mas
  */
 fun eraNut00b(tt1: Double, tt2: Double): PairOfAngle {
     // Interval between fundamental epoch J2000.0 and given date (JC).
-    val t = ((tt1 - J2000) + tt2) / DAYSPERJC
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
     // Fundamental (Delaunay) arguments from Simon et al. (1994)
 
     // Mean anomaly of the Moon.
-    val el = (485868.249036 + (1717915923.2178) * t).mod(TURNAS).arcsec.value
+    val el = (485868.249036 + 1717915923.2178 * t).mod(TURNAS).arcsec.value
     // Mean anomaly of the Sun.
-    val elp = (1287104.79305 + (129596581.0481) * t).mod(TURNAS).arcsec.value
+    val elp = (1287104.79305 + 129596581.0481 * t).mod(TURNAS).arcsec.value
     // Mean argument of the latitude of the Moon.
-    val f = (335779.526232 + (1739527262.8478) * t).mod(TURNAS).arcsec.value
+    val f = (335779.526232 + 1739527262.8478 * t).mod(TURNAS).arcsec.value
     // Mean elongation of the Moon from the Sun.
-    val d = (1072260.70369 + (1602961601.2090) * t).mod(TURNAS).arcsec.value
+    val d = (1072260.70369 + 1602961601.2090 * t).mod(TURNAS).arcsec.value
     // Mean longitude of the ascending node of the Moon.
-    val om = (450160.398036 + (-6962890.5431) * t).mod(TURNAS).arcsec.value
+    val om = (450160.398036 - 6962890.5431 * t).mod(TURNAS).arcsec.value
 
     var dp = 0.0
     var de = 0.0
@@ -1941,37 +1941,37 @@ fun eraPmat06(tt1: Double, tt2: Double): Matrix3D {
  */
 fun eraP06e(tt1: Double, tt2: Double): PrecessionAnglesIAU2006 {
     // Interval between fundamental date J2000.0 and given date (JC).
-    val t = ((tt1 - J2000) + tt2) / DAYSPERJC
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
     // Obliquity at J2000.0.
     val eps0 = 84381.406.arcsec
     // Luni-solar precession.
-    val psia = ((5038.481507 + (-1.0790069 + (-0.00114045 + (0.000132851 + (-0.0000000951) * t) * t) * t) * t) * t).arcsec
+    val psia = ((5038.481507 + (-1.0790069 + (-0.00114045 + (0.000132851 - 0.0000000951 * t) * t) * t) * t) * t).arcsec
     // Inclination of mean equator with respect to the J2000.0 ecliptic.
-    val oma = eps0 + ((-0.025754 + (0.0512623 + (-0.00772503 + (-0.000000467 + (0.0000003337) * t) * t) * t) * t) * t).arcsec
+    val oma = eps0 + ((-0.025754 + (0.0512623 + (-0.00772503 + (-0.000000467 + 0.0000003337 * t) * t) * t) * t) * t).arcsec
     // Ecliptic pole x, J2000.0 ecliptic triad.
-    val bpa = ((4.199094 + (0.1939873 + (-0.00022466 + (-0.000000912 + (0.0000000120) * t) * t) * t) * t) * t).arcsec
+    val bpa = ((4.199094 + (0.1939873 + (-0.00022466 + (-0.000000912 + 0.0000000120 * t) * t) * t) * t) * t).arcsec
     // Ecliptic pole -y, J2000.0 ecliptic triad.
-    val bqa = ((-46.811015 + (0.0510283 + (0.00052413 + (-0.000000646 + (-0.0000000172) * t) * t) * t) * t) * t).arcsec
+    val bqa = ((-46.811015 + (0.0510283 + (0.00052413 + (-0.000000646 - 0.0000000172 * t) * t) * t) * t) * t).arcsec
     // Angle between moving and J2000.0 ecliptics.
-    val pia = ((46.998973 + (-0.0334926 + (-0.00012559 + (0.000000113 + (-0.0000000022) * t) * t) * t) * t) * t).arcsec
+    val pia = ((46.998973 + (-0.0334926 + (-0.00012559 + (0.000000113 - 0.0000000022 * t) * t) * t) * t) * t).arcsec
     // Longitude of ascending node of the moving ecliptic.
-    val bpia = (629546.7936 + (-867.95758 + (0.157992 + (-0.0005371 + (-0.00004797 + (0.000000072) * t) * t) * t) * t) * t).arcsec
+    val bpia = (629546.7936 + (-867.95758 + (0.157992 + (-0.0005371 + (-0.00004797 + 0.000000072 * t) * t) * t) * t) * t).arcsec
     // Mean obliquity of the ecliptic.
     val epsa = eraObl06(tt1, tt2)
     // Planetary precession.
-    val chia = ((10.556403 + (-2.3814292 + (-0.00121197 + (0.000170663 + (-0.0000000560) * t) * t) * t) * t) * t).arcsec
+    val chia = ((10.556403 + (-2.3814292 + (-0.00121197 + (0.000170663 - 0.0000000560 * t) * t) * t) * t) * t).arcsec
     // Equatorial precession: minus the third of the 323 Euler angles.
-    val za = (-2.650545 + (2306.077181 + (1.0927348 + (0.01826837 + (-0.000028596 + (-0.0000002904) * t) * t) * t) * t) * t).arcsec
+    val za = (-2.650545 + (2306.077181 + (1.0927348 + (0.01826837 + (-0.000028596 - 0.0000002904 * t) * t) * t) * t) * t).arcsec
     // Equatorial precession: minus the first of the 323 Euler angles.
-    val zetaa = (2.650545 + (2306.083227 + (0.2988499 + (0.01801828 + (-0.000005971 + (-0.0000003173) * t) * t) * t) * t) * t).arcsec
+    val zetaa = (2.650545 + (2306.083227 + (0.2988499 + (0.01801828 + (-0.000005971 - 0.0000003173 * t) * t) * t) * t) * t).arcsec
     // Equatorial precession: second of the 323 Euler angles.
-    val thetaa = ((2004.191903 + (-0.4294934 + (-0.04182264 + (-0.000007089 + (-0.0000001274) * t) * t) * t) * t) * t).arcsec
+    val thetaa = ((2004.191903 + (-0.4294934 + (-0.04182264 + (-0.000007089 - 0.0000001274 * t) * t) * t) * t) * t).arcsec
     // General precession.
-    val pa = ((5028.796195 + (1.1054348 + (0.00007964 + (-0.000023857 + (-0.0000000383) * t) * t) * t) * t) * t).arcsec
+    val pa = ((5028.796195 + (1.1054348 + (0.00007964 + (-0.000023857 - 0.0000000383 * t) * t) * t) * t) * t).arcsec
     // Fukushima-Williams angles for precession.
-    val gam = ((10.556403 + (0.4932044 + (-0.00031238 + (-0.000002788 + (0.0000000260) * t) * t) * t) * t) * t).arcsec
-    val phi = eps0 + ((-46.811015 + (0.0511269 + (0.00053289 + (-0.000000440 + (-0.0000000176) * t) * t) * t) * t) * t).arcsec
-    val psi = ((5038.481507 + (1.5584176 + (-0.00018522 + (-0.000026452 + (-0.0000000148) * t) * t) * t) * t) * t).arcsec
+    val gam = ((10.556403 + (0.4932044 + (-0.00031238 + (-0.000002788 + 0.0000000260 * t) * t) * t) * t) * t).arcsec
+    val phi = eps0 + ((-46.811015 + (0.0511269 + (0.00053289 + (-0.000000440 - 0.0000000176 * t) * t) * t) * t) * t).arcsec
+    val psi = ((5038.481507 + (1.5584176 + (-0.00018522 + (-0.000026452 - 0.0000000148 * t) * t) * t) * t) * t).arcsec
 
     return PrecessionAnglesIAU2006(eps0, psia, oma, bpa, bqa, pia, bpia, epsa, chia, za, zetaa, thetaa, pa, gam, phi, psi)
 }

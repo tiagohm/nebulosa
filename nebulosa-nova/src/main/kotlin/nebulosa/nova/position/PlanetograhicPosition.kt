@@ -41,7 +41,7 @@ class PlanetograhicPosition(
         // Since position has zero velocity in this reference
         // frame, velocity includes a "dRdt" term but not an "r" term.
         val (r, dRdt) = frame.rotationAndRateAt(time)
-        return PositionAndVelocity((r.transposed * position), (dRdt.transposed * position))
+        return PositionAndVelocity(r.transposed * position, dRdt.transposed * position)
     }
 
     /**

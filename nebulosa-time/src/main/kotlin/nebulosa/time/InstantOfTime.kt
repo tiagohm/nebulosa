@@ -48,7 +48,7 @@ sealed class InstantOfTime : Timescale {
     fun asYearMonthDayAndFraction(cutoff: JulianCalendarCutOff = JulianCalendarCutOff.NONE): DoubleArray {
         val a = whole.toInt()
         var f = a + 1401
-        if (a >= cutoff.value) f += ((4 * a + 274277) / 146097 * 3 / 4 - 38)
+        if (a >= cutoff.value) f += (4 * a + 274277) / 146097 * 3 / 4 - 38
         val e = 4 * f + 3
         val g = e % 1461 / 4
         val h = 5 * g + 2

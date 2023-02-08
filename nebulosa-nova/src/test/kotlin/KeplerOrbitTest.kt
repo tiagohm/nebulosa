@@ -46,7 +46,7 @@ class KeplerOrbitTest : StringSpec() {
             val sun = Vector3D(-0.004105894975783999, 0.006739680703224941, 0.002956344702049446)
             val horizons = Vector3D(1.334875927366032E+00, -2.239607658161781E+00, -1.328895183461897E+00)
 
-            val s = (r + sun - horizons)
+            val s = r + sun - horizons
             val epsilon = 0.001.m
 
             s[0] shouldBeLessThan epsilon.value

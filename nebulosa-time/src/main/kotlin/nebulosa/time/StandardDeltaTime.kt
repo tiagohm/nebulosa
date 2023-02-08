@@ -49,7 +49,7 @@ object StandardDeltaTime : DeltaTime {
         x0 = S15[0][k]
         x1 = S15[1][k]
         val t = (x - x0) / (x1 - x0)
-        val a1 = S15[4][k] + ((desiredY - currentY) / t) // adjust linear term
+        val a1 = S15[4][k] + (desiredY - currentY) / t // adjust linear term
 
         // To the right of the recent ∆T table, design a spline connecting
         // smoothly to the long-term parabola.

@@ -87,7 +87,7 @@ internal data class Type2Segment(
         time: InstantOfTime,
         derivative: Boolean,
     ): PositionAndVelocity {
-        val seconds = ((time.tdb.whole - J2000) * DAYSEC - initialEpoch) + time.tdb.fraction * DAYSEC
+        val seconds = (time.tdb.whole - J2000) * DAYSEC - initialEpoch + time.tdb.fraction * DAYSEC
         val (idx, offset) = seconds divmod intervalLength
         val index = idx.toInt()
 

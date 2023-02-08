@@ -286,7 +286,7 @@ internal open class MountDevice(
 
     override fun time(time: OffsetDateTime) {
         val offsetHours = time.offset.totalSeconds / 3600.0
-        val offsetMinutes = ((offsetHours - offsetHours.toInt()) * 60.0) % 60.0
+        val offsetMinutes = (offsetHours - offsetHours.toInt()) * 60.0 % 60.0
         val offset = "%02d:%02d".format(offsetHours.toInt(), offsetMinutes.toInt())
 
         sendNewText("TIME_UTC", "UTC" to GPS.formatTime(time.toLocalDateTime()), "OFFSET" to offset)

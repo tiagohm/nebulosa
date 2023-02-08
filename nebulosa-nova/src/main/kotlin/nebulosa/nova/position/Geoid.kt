@@ -90,7 +90,7 @@ data class Geoid(
             lat = atan2(z + a * c * e2 * sin(lat), r)
         }
 
-        val elevation = ((r / cos(lat)) - a * c)
+        val elevation = r / cos(lat) - a * c
 
         return GeographicPosition(lon.rad, lat.rad, elevation.au, xyz, this)
     }

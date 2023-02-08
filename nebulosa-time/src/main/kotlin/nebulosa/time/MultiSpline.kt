@@ -18,7 +18,7 @@ class MultiSpline(private val data: List<DoubleArray>) : Spline<DoubleArray> {
         val i = interpolation(value, lower).toInt()
         val t = (value - lower[i]) / width[i]
         var res = data[2][i]
-        for (k in 3 until data.size) res = (res * t) + data[k][i]
+        for (k in 3 until data.size) res = res * t + data[k][i]
         return res
     }
 

@@ -232,7 +232,7 @@ data class KeplerOrbit(
 
             require(h2 != 0.0) { "motion is not conical" }
 
-            val eqvec = velocity.cross(hvec) / mu + (-position / r0)
+            val eqvec = velocity.cross(hvec) / mu - position / r0
             val e = eqvec.length
             val q = h2 / (mu * (1.0 + e))
 

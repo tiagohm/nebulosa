@@ -80,7 +80,7 @@ data class PlanetaryFrame(
         val dRdt = drdtrt * r
 
         return if (matrix != null) {
-            RotationAndRate(matrix * r, (matrix * dRdt) * DAYSEC)
+            RotationAndRate(matrix * r, matrix * dRdt * DAYSEC)
         } else {
             RotationAndRate(r, dRdt * DAYSEC)
         }

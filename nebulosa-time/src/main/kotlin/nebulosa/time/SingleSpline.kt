@@ -29,7 +29,7 @@ class SingleSpline(private val data: DoubleArray) : Spline<Double> {
         val i = interpolation(value, doubleArrayOf(lower), N).toInt()
         val t = (value - lower) / width
         var res = data[2 + i]
-        for (k in 3 + i until data.size) res = (res * t) + data[k]
+        for (k in 3 + i until data.size) res = res * t + data[k]
         return res
     }
 

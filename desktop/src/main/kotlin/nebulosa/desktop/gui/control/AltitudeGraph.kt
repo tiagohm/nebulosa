@@ -130,7 +130,7 @@ class AltitudeGraph : ResizableCanvas() {
 
         // Tick labels.
         for (i in 0..8) {
-            val tickText = (12 + (i * 3)) % 24
+            val tickText = (12 + i * 3) % 24
             val x = PADDING + horTickLabelStepSize * i
             gc.fillText("$tickText", x, height - 12.0)
         }
@@ -141,7 +141,7 @@ class AltitudeGraph : ResizableCanvas() {
 
         // Ticks.
         for (i in 0..9) {
-            val y = height - (verTickStepSize * i) - PADDING
+            val y = height - verTickStepSize * i - PADDING
             val tickWidth = if (i % 3 == 0) 8.0 else 4.0
             gc.strokeLine(PADDING - tickWidth, y, PADDING, y)
         }
@@ -152,7 +152,7 @@ class AltitudeGraph : ResizableCanvas() {
         // Tick labels.
         for (i in 0..3) {
             val x = PADDING - HALF_PADDING / 2.0
-            val y = height - (verTickLabelStepSize * i) - PADDING
+            val y = height - verTickLabelStepSize * i - PADDING
             gc.fillText("${i * 30}", x, y)
         }
     }
