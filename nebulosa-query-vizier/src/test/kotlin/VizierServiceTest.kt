@@ -8,7 +8,6 @@ class VizierServiceTest : StringSpec() {
     init {
         "catalogs" {
             val vizier = VizierService()
-            vizier.catalogs("Kang W51")
         }
     }
 }

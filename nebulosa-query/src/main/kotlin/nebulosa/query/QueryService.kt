@@ -20,13 +20,14 @@ abstract class QueryService protected constructor(protected val retrofit: Retrof
         callAdaptorFactory: CallAdapter.Factory? = null,
         client: OkHttpClient? = null,
         clientBuilder: (OkHttpClient.Builder) -> Unit = {},
+        logLevel: HttpLoggingInterceptor.Level? = HttpLoggingInterceptor.Level.BASIC,
     ) : this(
         Retrofit.Builder()
             .baseUrl(url)
             .also { if (converterFactory != null) it.addConverterFactory(converterFactory) }
             .addConverterFactory(JacksonConverterFactory.create(mapper))
             .also { if (callAdaptorFactory != null) it.addCallAdapterFactory(callAdaptorFactory) }
-            .client((client ?: HTTP_CLIENT).newBuilder().also(clientBuilder).build())
+            .client(client.handle(clientBuilder, logLevel))
             .build()
     )
 
@@ -34,10 +35,19 @@ abstract class QueryService protected constructor(protected val retrofit: Retrof
 
         @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder()
             .connectionPool(ConnectionPool(32, 30L, TimeUnit.MINUTES))
-            .also { it.addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC)) }
             .build()
 
         @JvmStatic private val OBJECT_MAPPER = ObjectMapper()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+
+        @JvmStatic
+        private fun OkHttpClient?.handle(
+            clientBuilder: (OkHttpClient.Builder) -> Unit,
+            logLevel: HttpLoggingInterceptor.Level?,
+        ) = (this ?: HTTP_CLIENT).newBuilder().also(clientBuilder).also { it.addLoggingInterceptor(logLevel) }.build()
+
+        @JvmStatic
+        private fun OkHttpClient.Builder.addLoggingInterceptor(level: HttpLoggingInterceptor.Level?) =
+            apply { if (level != null) addInterceptor(HttpLoggingInterceptor().setLevel(level)) }
     }
 }

@@ -1,0 +1,27 @@
+package nebulosa.query.simbad
+
+data class SimbadObject(
+    val id: Long,
+    val name: String,
+    val type: SimbadObjectType,
+    val names: List<Name>,
+    val ra: Double,
+    val dec: Double,
+    val pmRA: Double,
+    val pmDEC: Double,
+    val plx: Double,
+    val spType: String,
+    val mType: String,
+    val majorAxis: Double,
+    val minorAxis: Double,
+    val u: Double,
+    val b: Double,
+    val v: Double,
+    val r: Double,
+    val i: Double,
+    val j: Double,
+    val h: Double,
+    val k: Double,
+    val redshift: Double,
+    val rv: Double,
+)

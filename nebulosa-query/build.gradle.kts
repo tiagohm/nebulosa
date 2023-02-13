@@ -8,7 +8,7 @@ dependencies {
     api(libs.retrofit.jackson)
     api(libs.jackson)
     api(libs.okhttp)
-    implementation(libs.okhttp.logging)
+    api(libs.okhttp.logging)
     implementation(libs.logback)
     testImplementation(project(":nebulosa-test"))
 }
