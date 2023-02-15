@@ -32,9 +32,11 @@ class AtlasWindow : AbstractWindow(), AtlasView {
     @FXML private lateinit var azimuthLabel: Label
     @FXML private lateinit var sunImageView: ImageView
     @FXML private lateinit var moonImageView: ImageView
-    @FXML private lateinit var planetTableView: TableView<AtlasView.Planet>
+    @FXML private lateinit var planetsTableView: TableView<AtlasView.Planet>
     @FXML private lateinit var searchMinorPlanetTextField: TextField
-    @FXML private lateinit var minorPlanetTableView: TableView<AtlasView.MinorPlanet>
+    @FXML private lateinit var minorPlanetsTableView: TableView<AtlasView.MinorPlanet>
+    @FXML private lateinit var searchStarTextField: TextField
+    @FXML private lateinit var starsTableView: TableView<AtlasView.Star>
     @FXML private lateinit var goToButton: Button
     @FXML private lateinit var slewToButton: Button
     @FXML private lateinit var syncButton: Button
@@ -59,13 +61,20 @@ class AtlasWindow : AbstractWindow(), AtlasView {
 
         syncButton.disableProperty().bind(goToButton.disableProperty())
 
-        planetTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("name")
-        planetTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("type")
-        planetTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computePlanet(it.command) }
+        planetsTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("name")
+        planetsTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("type")
+        planetsTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computePlanet(it) }
 
-        minorPlanetTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("element")
-        minorPlanetTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("description")
-        minorPlanetTableView.columns[2].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("value")
+        minorPlanetsTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("element")
+        minorPlanetsTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("description")
+        minorPlanetsTableView.columns[2].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("value")
+
+        starsTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.Star, String>("name")
+        starsTableView.columns[1].columns[0].cellValueFactory = PropertyValueFactory<AtlasView.Star, String>("pmRA")
+        starsTableView.columns[1].columns[1].cellValueFactory = PropertyValueFactory<AtlasView.Star, String>("pmDEC")
+        starsTableView.columns[2].cellValueFactory = PropertyValueFactory<AtlasView.Star, String>("plx")
+        starsTableView.columns[3].cellValueFactory = PropertyValueFactory<AtlasView.Star, String>("rv")
+        starsTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computeStar(it) }
     }
 
     override fun onStart() {
@@ -76,6 +85,7 @@ class AtlasWindow : AbstractWindow(), AtlasView {
         atlasManager.updateSunImage()
         atlasManager.updateMoonImage()
         atlasManager.populatePlanets()
+        atlasManager.populateStars()
 
         atlasManager.computeTab(AtlasView.TabType.SUN)
     }
@@ -118,6 +128,10 @@ class AtlasWindow : AbstractWindow(), AtlasView {
         atlasManager.searchAsteroidsAndComets(text)
     }
 
+    @FXML
+    private fun searchStar() {
+    }
+
     override fun drawAltitude(
         points: List<Point2D>, now: Double,
         civilTwilight: Twilight, nauticalTwilight: Twilight, astronomicalTwilight: Twilight,
@@ -134,11 +148,15 @@ class AtlasWindow : AbstractWindow(), AtlasView {
     }
 
     override fun populatePlanets(planets: List<AtlasView.Planet>) {
-        planetTableView.items.setAll(planets)
+        planetsTableView.items.setAll(planets)
     }
 
-    override fun populateMinorPlanet(minorPlanet: List<AtlasView.MinorPlanet>) {
-        minorPlanetTableView.items.setAll(minorPlanet)
+    override fun populateMinorPlanets(minorPlanets: List<AtlasView.MinorPlanet>) {
+        minorPlanetsTableView.items.setAll(minorPlanets)
+    }
+
+    override fun populateStars(stars: List<AtlasView.Star>) {
+        starsTableView.items.setAll(stars)
     }
 
     override fun updateEquatorialCoordinates(

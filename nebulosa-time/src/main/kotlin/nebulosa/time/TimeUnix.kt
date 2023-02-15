@@ -16,6 +16,8 @@ import nebulosa.constants.DAYSEC
  */
 class TimeUnix(val seconds: Double) : TimeFromEpoch(seconds, DAYSEC, 2440588.0, -0.5) {
 
+    override fun toString() = "TimeUnix(seconds=$seconds, whole=$whole, fraction=$fraction)"
+
     companion object {
 
         @JvmStatic

@@ -76,7 +76,10 @@ class SimbadQuery {
             builder.appendLine("AND CONTAINS(POINT('ICRS', ra, dec), BOX('ICRS', $vertices)) = 1")
         }
 
-        if (name.isNotBlank()) builder.appendLine("AND ident.id LIKE '$name'")
+        if (name.isNotBlank()) {
+            if ("%" in name) builder.appendLine("AND ident.id LIKE '${name.replace("'", "''")}'")
+            else builder.appendLine("AND ident.id = '${name.replace("'", "''")}'")
+        }
 
         builder.append("ORDER BY oid ASC")
 

@@ -1,6 +1,7 @@
 package nebulosa.desktop
 
 import ch.qos.logback.classic.Level
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.application.Application
 import javafx.scene.text.Font
@@ -34,7 +35,10 @@ private fun inject() = module {
 
     single { appDirectory } withOptions { named("app") }
 
-    single { ObjectMapper() }
+    val mapper = ObjectMapper()
+    mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+
+    single(createdAtStart = true) { mapper }
     single(createdAtStart = true) { Preferences(Paths.get("$appDirectory", "preferences.json")) }
 
     single(createdAtStart = true) { ConnectionManager() }

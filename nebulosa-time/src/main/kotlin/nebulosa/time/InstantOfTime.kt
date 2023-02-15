@@ -131,4 +131,6 @@ sealed class InstantOfTime : Timescale {
      * Returns the mean obliquity of the ecliptic in radians.
      */
     val meanObliquity by lazy { eraObl06(tt.whole, tt.fraction) }
+
+    override fun toString() = "${javaClass.simpleName}(whole=$whole, fraction=$fraction)"
 }

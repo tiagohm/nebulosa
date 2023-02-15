@@ -8,6 +8,8 @@ import nebulosa.constants.MJD0
  */
 class TimeBesselianEpoch(override val epoch: Double) : TimeJD(MJD0 + 15019.81352 + (epoch - 1900.0) * DTY), TimeEpochDate {
 
+    override fun toString() = "TimeBesselianEpoch(epoch=$epoch, whole=$whole, fraction=$fraction)"
+
     companion object {
 
         @JvmStatic val B1875 = TimeBesselianEpoch(1875.0)

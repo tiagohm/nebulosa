@@ -44,10 +44,21 @@ abstract class QueryService protected constructor(protected val retrofit: Retrof
         private fun OkHttpClient?.handle(
             clientBuilder: (OkHttpClient.Builder) -> Unit,
             logLevel: HttpLoggingInterceptor.Level?,
-        ) = (this ?: HTTP_CLIENT).newBuilder().also(clientBuilder).also { it.addLoggingInterceptor(logLevel) }.build()
+        ) = (this ?: HTTP_CLIENT).newBuilder()
+            .also { it.timeout() }
+            .also(clientBuilder)
+            .also { it.loggingInterceptor(logLevel) }
+            .build()
 
         @JvmStatic
-        private fun OkHttpClient.Builder.addLoggingInterceptor(level: HttpLoggingInterceptor.Level?) =
+        private fun OkHttpClient.Builder.timeout() =
+            readTimeout(30L, TimeUnit.SECONDS)
+                .writeTimeout(30L, TimeUnit.SECONDS)
+                .connectTimeout(30L, TimeUnit.SECONDS)
+                .callTimeout(30L, TimeUnit.SECONDS)
+
+        @JvmStatic
+        private fun OkHttpClient.Builder.loggingInterceptor(level: HttpLoggingInterceptor.Level?) =
             apply { if (level != null) addInterceptor(HttpLoggingInterceptor().setLevel(level)) }
     }
 }

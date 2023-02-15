@@ -9,4 +9,7 @@ import nebulosa.constants.DAYSEC
  *
  * Must be used with [TT] date.
  */
-class TimeCxcSec(val seconds: Double) : TimeFromEpoch(seconds, DAYSEC, 2450814.0, 0.5)
+class TimeCxcSec(val seconds: Double) : TimeFromEpoch(seconds, DAYSEC, 2450814.0, 0.5) {
+
+    override fun toString() = "TimeCxcSec(seconds=$seconds, whole=$whole, fraction=$fraction)"
+}

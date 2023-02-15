@@ -9,4 +9,7 @@ package nebulosa.time
  *
  * @see <a href="http://trekguide.com/Stardates.htm#TNG">Calculations and reference points</a>
  */
-class TimeStarDate(val units: Double) : TimeFromEpoch(units, 1 / 0.397766856, 2567877.0, -0.041666666666666685)
+class TimeStarDate(val units: Double) : TimeFromEpoch(units, 1 / 0.397766856, 2567877.0, -0.041666666666666685) {
+
+    override fun toString() = "TimeStarDate(units=$units, whole=$whole, fraction=$fraction)"
+}

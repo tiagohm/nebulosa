@@ -2,6 +2,11 @@ package nebulosa.query.simbad;
 
 enum class CatalogType(val prefix: String) {
     /**
+     * Star names following the Bayer's Greek letter system and Flamsteed numbers.
+     */
+    STAR("* "),
+
+    /**
      * Common name.
      */
     NAME("NAME "),

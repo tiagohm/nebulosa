@@ -48,6 +48,13 @@ class HorizonsEphemeris private constructor(private val ephemeris: MutableMap<Lo
         internal fun parse(stream: InputStream) = parse(stream.bufferedReader().lines())
 
         @JvmStatic
+        fun of(elements: Map<LocalDateTime, HorizonsElement>): HorizonsEphemeris {
+            val ephemeris = HorizonsEphemeris()
+            ephemeris.ephemeris.putAll(elements)
+            return ephemeris
+        }
+
+        @JvmStatic
         internal fun parse(lines: Stream<String?>): HorizonsEphemeris {
             val ephemeris = HorizonsEphemeris()
 

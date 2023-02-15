@@ -19,6 +19,10 @@ class TimeYMDHMS(
 
     constructor(date: LocalDateTime) : this(date.year, date.monthValue, date.dayOfMonth, date.hour, date.minute, date.second + date.nano / 1E+9)
 
+    override fun toString(): String {
+        return "TimeYMDHMS(whole=$whole, fraction=$fraction, year=$year, month=$month, day=$day, hour=$hour, minute=$minute, second=$second, cutoff=$cutoff)"
+    }
+
     companion object {
 
         /**

@@ -74,6 +74,10 @@ class GeographicPosition(
 
     override fun toShort() = center.toShort()
 
+    override fun toString(): String {
+        return "GeographicPosition(longitude=${longitude.degrees}, latitude=${latitude.degrees}, elevation=${elevation.meters}, model=$model)"
+    }
+
     companion object {
 
         @JvmStatic val EARTH_ANGULAR_VELOCITY_VECTOR = Vector3D(0.0, 0.0, DAYSEC * ANGULAR_VELOCITY)

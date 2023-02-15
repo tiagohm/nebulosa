@@ -1,5 +1,6 @@
 package nebulosa.desktop.logic.atlas
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.application.Platform
 import javafx.geometry.Point2D
 import nebulosa.constants.DAYSEC
@@ -11,11 +12,15 @@ import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.atlas.Twilight
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
+import nebulosa.io.resource
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.au
+import nebulosa.nova.astrometry.Body
+import nebulosa.nova.astrometry.VSOP87E
+import nebulosa.nova.position.Barycentric
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.query.horizons.HorizonsElement
@@ -24,6 +29,10 @@ import nebulosa.query.horizons.HorizonsQuantity
 import nebulosa.query.horizons.HorizonsService
 import nebulosa.query.sbd.SmallBody
 import nebulosa.query.sbd.SmallBodyDatabaseLookupService
+import nebulosa.query.simbad.SimbadObject
+import nebulosa.time.InstantOfTime
+import nebulosa.time.TimeYMDHMS
+import nebulosa.time.UTC
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
@@ -38,6 +47,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.atomic.AtomicInteger
 import javax.imageio.ImageIO
@@ -50,9 +60,11 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
 
     private val equipmentManager by inject<EquipmentManager>()
     private val preferences by inject<Preferences>()
+    private val objectMapper by inject<ObjectMapper>()
     private val appDirectory by inject<Path>(named("app"))
 
-    private val bodyCache = HashMap<String, HorizonsEphemeris>()
+    private val timespan = ArrayList<Pair<InstantOfTime, LocalDateTime>>(1440)
+    private val bodyCache = HashMap<Any, HorizonsEphemeris>()
     private val pointsCache = HashMap<HorizonsEphemeris, List<Point2D>>()
 
     private val timerCount = AtomicInteger()
@@ -63,9 +75,9 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
 
     @Volatile private var observer: GeographicPosition? = null
     @Volatile private var tabType = AtlasView.TabType.SUN
-    @Volatile private var planet = ""
+    @Volatile private var planet: AtlasView.Planet? = null
     @Volatile private var minorPlanet: SmallBody? = null
-    @Volatile private var currentEphemeris: HorizonsEphemeris? = null
+    @Volatile private var star: AtlasView.Star? = null
 
     val mountProperty = equipmentManager.selectedMount
 
@@ -160,6 +172,21 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         view.populatePlanets(planets)
     }
 
+    val currentEphemeris
+        get() = when (tabType) {
+            AtlasView.TabType.SUN -> bodyCache["10"]
+            AtlasView.TabType.MOON -> bodyCache["301"]
+            AtlasView.TabType.PLANET -> planet?.command?.let(bodyCache::get)
+            AtlasView.TabType.MINOR_PLANET -> minorPlanet?.body?.spkId?.let { bodyCache["DES=${it};"] }
+            AtlasView.TabType.STAR -> star?.star?.let(bodyCache::get)
+            AtlasView.TabType.DSO -> null
+        }
+
+    fun populateStars() {
+        val stars = objectMapper.readValue(resource("data/NAMED_STARS.json"), Array<SimbadObject>::class.java)
+        view.populateStars(stars.map { AtlasView.Star(it) })
+    }
+
     fun computeSun() {
         "10".computeBody()
     }
@@ -168,9 +195,9 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         "301".computeBody()
     }
 
-    fun computePlanet(body: String = planet) {
-        body.computeBody()
-        planet = body
+    fun computePlanet(body: AtlasView.Planet? = planet) {
+        planet = body ?: return
+        body.command.computeBody()
     }
 
     fun computeMinorPlanet(body: SmallBody? = minorPlanet) {
@@ -178,9 +205,17 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         "DES=${body.body!!.spkId};".computeBody()
     }
 
+    fun computeStar(body: AtlasView.Star? = star) {
+        star = body ?: return view.clearAltitudeAndCoordinates()
+        body.star.computeBody()
+    }
+
     private fun String.computeBody() {
         if (isEmpty()) return view.clearAltitudeAndCoordinates()
-        currentEphemeris = bodyCache[this]
+        computeAltitude(this)
+    }
+
+    private fun Body.computeBody() {
         computeAltitude(this)
     }
 
@@ -202,20 +237,82 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         return points
     }
 
-    private fun computeAltitude(command: String, force: Boolean = false) {
-        LOG.info("computing altitude. command={}", command)
+    private fun computeTimespan(): Boolean {
+        val now = OffsetDateTime.now()
 
-        if (!force && command in bodyCache) {
-            LOG.info("altitude is cached. command={}", command)
+        val year = now.year
+        val month = now.monthValue
+        val dayOfMonth = now.dayOfMonth
 
-            computeCoordinates(command)
+        val offset = now.offset.totalSeconds / DAYSEC
+        val startTime = TimeYMDHMS(year, month, dayOfMonth, 12) - offset
 
-            return view.drawAltitude(
-                points = bodyCache[command]!!.makePoints(),
+        if (timespan.isEmpty() || startTime.value > timespan[0].first.value) {
+            LOG.info("computing timespan. startTime={}", startTime)
+
+            timespan.clear()
+
+            val stepCount = 24.0 * 60.0
+
+            for (i in 0L..stepCount.toLong()) {
+                val fraction = i / stepCount // 0..1
+                timespan.add(UTC(startTime + fraction) to now.plusMinutes(i).toLocalDateTime())
+            }
+
+            return true
+        }
+
+        return false
+    }
+
+    private fun Body.computeEphemeris(force: Boolean = false): HorizonsEphemeris {
+        val site = VSOP87E.EARTH + observer!!
+
+        if (force || this !in bodyCache) {
+            LOG.info("computing ephemeris. body={}, observer={}", this, observer)
+
+            val ephemeris = HashMap<LocalDateTime, HorizonsElement>(timespan.size)
+
+            timespan.forEach {
+                val position = site.at<Barycentric>(it.first).observe(this)
+                val (az, alt) = position.horizontal()
+                val (ra, dec) = position.equatorialAtDate()
+                val (raJ2000, decJ2000) = position.equatorialJ2000()
+
+                val element = HorizonsElement()
+                element[HorizonsQuantity.ASTROMETRIC_RA] = "${raJ2000.degrees}"
+                element[HorizonsQuantity.ASTROMETRIC_DEC] = "${decJ2000.degrees}"
+                element[HorizonsQuantity.APPARENT_RA] = "${ra.degrees}"
+                element[HorizonsQuantity.APPARENT_DEC] = "${dec.degrees}"
+                element[HorizonsQuantity.APPARENT_AZ] = "${az.degrees}"
+                element[HorizonsQuantity.APPARENT_ALT] = "${alt.degrees}"
+                ephemeris[it.second] = element
+            }
+
+            bodyCache[this] = HorizonsEphemeris.of(ephemeris)
+        }
+
+        return bodyCache[this]!!
+    }
+
+    private fun drawAltitude(points: List<Point2D>) {
+        Platform.runLater {
+            view.drawAltitude(
+                points = points,
                 now = 0.0,
                 civilTwilight = Twilight.EMPTY, nauticalTwilight = Twilight.EMPTY,
                 astronomicalTwilight = Twilight.EMPTY,
             )
+        }
+    }
+
+    private fun computeAltitude(target: Any, force: Boolean = false) {
+        LOG.info("computing altitude. target={}", target)
+
+        if (!force && target in bodyCache) {
+            LOG.info("altitude is cached. target={}", target)
+            computeCoordinates(target)
+            return drawAltitude(bodyCache[target]!!.makePoints())
         }
 
         val observer = observer ?: return
@@ -224,42 +321,45 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         val startTime = LocalDateTime.now().minusHours(12).withHour(12).withMinute(0).minusSeconds(offset)
         val endTime = startTime.plusHours(24)
 
-        thread {
-            LOG.info("retrieving ephemeris from JPL Horizons. command={}, startTime={}, endTime={}", command, startTime, endTime)
+        if (target is String) {
+            thread {
+                LOG.info("retrieving ephemeris from JPL Horizons. target={}, startTime={}, endTime={}", target, startTime, endTime)
 
-            val ephemeris = horizonsService
-                .observer(
-                    command,
-                    observer.longitude, observer.latitude, observer.elevation,
-                    startTime, endTime,
-                    extraPrecision = true,
-                    quantities = DEFAULT_QUANTITIES,
-                ).execute()
-                .body()
+                val ephemeris = horizonsService
+                    .observer(
+                        target,
+                        observer.longitude, observer.latitude, observer.elevation,
+                        startTime, endTime,
+                        extraPrecision = true,
+                        quantities = DEFAULT_QUANTITIES,
+                    ).execute()
+                    .body()
 
-            if (ephemeris == null) {
-                LOG.warn("unable to retrieve ephemeris. command={}", command)
-            } else if (ephemeris.isNotEmpty()) {
-                LOG.info("ephemeris was retrieved. command={}, start={}, end={}", command, ephemeris.start, ephemeris.endInclusive)
+                if (ephemeris == null) {
+                    LOG.warn("unable to retrieve ephemeris. target={}", target)
+                } else if (ephemeris.isNotEmpty()) {
+                    LOG.info("ephemeris was retrieved. target={}, start={}, end={}", target, ephemeris.start, ephemeris.endInclusive)
 
-                bodyCache[command]?.also(pointsCache::remove)
-                bodyCache[command] = ephemeris
+                    bodyCache[target]?.also(pointsCache::remove)
+                    bodyCache[target] = ephemeris
 
-                computeCoordinates(command)
+                    computeCoordinates(target)
 
-                view.drawAltitude(
-                    points = ephemeris.makePoints(),
-                    now = 0.0,
-                    civilTwilight = Twilight.EMPTY, nauticalTwilight = Twilight.EMPTY,
-                    astronomicalTwilight = Twilight.EMPTY,
-                )
-            } else {
-                LOG.warn("retrived empty epheremis. command={}", command)
+                    drawAltitude(ephemeris.makePoints())
+                } else {
+                    LOG.warn("retrived empty epheremis. target={}", target)
+                }
+            }
+        } else if (target is Body) {
+            thread {
+                val ephemeris = target.computeEphemeris(computeTimespan())
+                computeCoordinates(target)
+                drawAltitude(ephemeris.makePoints())
             }
         }
     }
 
-    private fun computeCoordinates(target: String) {
+    private fun computeCoordinates(target: Any) {
         val ephemeris = bodyCache[target] ?: return
         val now = LocalDateTime.now(ZoneOffset.UTC)
         LOG.info("computing coordinates. now={}, target={}, element={}", now, target, ephemeris[now])
@@ -338,7 +438,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
                                     AtlasView.MinorPlanet(it.label, it.title, value)
                                 }
 
-                            view.populateMinorPlanet(elements)
+                            view.populateMinorPlanets(elements)
                         }
                     }
 

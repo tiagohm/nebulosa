@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":nebulosa-imaging"))
     implementation(project(":nebulosa-query-sbd"))
     implementation(project(":nebulosa-query-horizons"))
+    implementation(project(":nebulosa-query-simbad"))
     implementation(libs.koin)
     implementation(libs.jackson)
     implementation(libs.bundles.rx)

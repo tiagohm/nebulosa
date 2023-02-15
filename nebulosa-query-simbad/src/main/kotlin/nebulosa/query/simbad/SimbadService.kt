@@ -25,7 +25,7 @@ class SimbadService(url: String = "https://simbad.u-strasbg.fr/") :
         val body = FormBody.Builder()
             .add("request", "doQuery")
             .add("lang", "adql")
-            .add("format", "csv")
+            .add("format", "tsv")
             .add("query", query.build())
             .build()
 
@@ -102,7 +102,7 @@ class SimbadService(url: String = "https://simbad.u-strasbg.fr/") :
 
         @JvmStatic
         private fun String.parse(): SimbadObject? {
-            val parts = split(",")
+            val parts = split("\t")
 
             require(parts.size == 23) { "invalid line: $this" }
 

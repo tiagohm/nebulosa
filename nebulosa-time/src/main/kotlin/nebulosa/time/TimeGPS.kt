@@ -11,4 +11,7 @@ import nebulosa.constants.DAYSEC
  *
  * @see <a href="https://www.usno.navy.mil/USNO/time/gps/usno-gps-time-transfer">Details</a>
  */
-class TimeGPS(val seconds: Double) : TimeFromEpoch(seconds, DAYSEC, 2444245.0, -0.4997800925925926)
+class TimeGPS(val seconds: Double) : TimeFromEpoch(seconds, DAYSEC, 2444245.0, -0.4997800925925926) {
+
+    override fun toString() = "TimeGPS(seconds=$seconds, whole=$whole, fraction=$fraction)"
+}
