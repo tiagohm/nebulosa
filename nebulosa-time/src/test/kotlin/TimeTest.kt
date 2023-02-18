@@ -21,10 +21,11 @@ class TimeTest : StringSpec() {
             TimeJD(2299160.0).asDateTime(JulianCalendarCutOff.GREGORIAN_START).toString() shouldBe "1582-10-04T12:00"
         }
         "jd as year, month, day and fraction" {
-            val (year, month, day, fraction) = TimeJD(2400000.5, 50123.9999).asYearMonthDayAndFraction()
-            year.toInt() shouldBeExactly 1996
-            month.toInt() shouldBeExactly 2
-            day.toInt() shouldBeExactly 10
+            val (yearMonthDay, fraction) = TimeJD(2400000.5, 50123.9999).asYearMonthDayAndFraction()
+            val (year, month, day) = yearMonthDay
+            year shouldBeExactly 1996
+            month shouldBeExactly 2
+            day shouldBeExactly 10
             fraction shouldBe (0.9999 plusOrMinus 1e-9)
         }
         "time unix & time ymdhms" {

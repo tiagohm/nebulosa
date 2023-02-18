@@ -34,13 +34,22 @@ interface AtlasView : View {
 
     data class Star(
         val simbad: SimbadObject,
-        val star: FixedStar = FixedStar(simbad.ra.deg, simbad.dec.deg, simbad.pmRA.mas, simbad.pmDEC.mas, simbad.plx.mas, simbad.rv.kms),
         val name: String = simbad.name,
-        val pmRA: String = if (simbad.pmRA.isFinite()) "${simbad.pmRA}" else "-",
-        val pmDEC: String = if (simbad.pmDEC.isFinite()) "${simbad.pmDEC}" else "-",
-        val plx: String = if (simbad.plx.isFinite()) "${simbad.plx}" else "-",
-        val rv: String = if (simbad.rv.isFinite()) "${simbad.rv}" else "-",
-    )
+        val magnitude: String = if (simbad.v.isFinite()) "${simbad.v}" else "-",
+    ) {
+
+        val star by lazy { FixedStar(simbad.ra.deg, simbad.dec.deg, simbad.pmRA.mas, simbad.pmDEC.mas, simbad.plx.mas, simbad.rv.kms) }
+    }
+
+    data class DSO(
+        val simbad: SimbadObject,
+        val name: String = simbad.name,
+        val magnitude: String = if (simbad.v.isFinite()) "${simbad.v}" else "-",
+        val type: String = simbad.type.description,
+    ) {
+
+        val star by lazy { FixedStar(simbad.ra.deg, simbad.dec.deg, simbad.pmRA.mas, simbad.pmDEC.mas, simbad.plx.mas, simbad.rv.kms) }
+    }
 
     fun drawAltitude(
         points: List<Point2D>, now: Double,
@@ -57,9 +66,11 @@ interface AtlasView : View {
 
     fun clearAltitudeAndCoordinates()
 
-    fun populatePlanets(planets: List<Planet>)
+    fun populatePlanet(planets: List<Planet>)
 
-    fun populateMinorPlanets(minorPlanets: List<MinorPlanet>)
+    fun populateMinorPlanet(minorPlanets: List<MinorPlanet>)
 
-    fun populateStars(stars: List<Star>)
+    fun populateStar(stars: List<Star>)
+
+    fun populateDSO(dso: List<DSO>)
 }

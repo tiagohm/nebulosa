@@ -5,7 +5,8 @@ import nebulosa.constants.MJD0
 object TAIMinusUTC : DeltaTime {
 
     override fun delta(time: InstantOfTime): Double {
-        val (year, month) = time.asYearMonthDayAndFraction()
+        val (yearMonthDay) = time.asYearMonthDayAndFraction()
+        val (year, month) = yearMonthDay
 
         if (year < CHANGES[0][0]) return 0.0
 

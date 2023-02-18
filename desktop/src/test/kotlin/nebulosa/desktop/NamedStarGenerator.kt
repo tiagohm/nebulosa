@@ -15,8 +15,6 @@ class NamedStarGenerator {
 
         @JvmStatic
         fun main(args: Array<String>) {
-            val file = File("desktop/src/main/resources/data/NAMED_STARS.json")
-
             val simbad = SimbadService()
             val query = SimbadQuery()
 
@@ -46,6 +44,7 @@ class NamedStarGenerator {
                 }
             }
 
+            val file = File("desktop/src/main/resources/data/NAMED_STARS.json")
             ObjectMapper().writeValue(file, stars)
         }
     }

@@ -30,7 +30,8 @@ import nebulosa.query.horizons.HorizonsService
 import nebulosa.query.sbd.SmallBody
 import nebulosa.query.sbd.SmallBodyDatabaseLookupService
 import nebulosa.query.simbad.SimbadObject
-import nebulosa.time.InstantOfTime
+import nebulosa.query.simbad.SimbadQuery
+import nebulosa.query.simbad.SimbadService
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 import org.koin.core.component.KoinComponent
@@ -63,7 +64,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
     private val objectMapper by inject<ObjectMapper>()
     private val appDirectory by inject<Path>(named("app"))
 
-    private val timespan = ArrayList<Pair<InstantOfTime, LocalDateTime>>(1440)
+    private val timeIntervals = arrayOfNulls<Pair<UTC, LocalDateTime>>(1441)
     private val bodyCache = HashMap<Any, HorizonsEphemeris>()
     private val pointsCache = HashMap<HorizonsEphemeris, List<Point2D>>()
 
@@ -72,12 +73,14 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
 
     private val smallBodyDatabaseLookupService = SmallBodyDatabaseLookupService()
     private val horizonsService = HorizonsService()
+    private val simbadService = SimbadService()
 
     @Volatile private var observer: GeographicPosition? = null
     @Volatile private var tabType = AtlasView.TabType.SUN
     @Volatile private var planet: AtlasView.Planet? = null
     @Volatile private var minorPlanet: SmallBody? = null
     @Volatile private var star: AtlasView.Star? = null
+    @Volatile private var dso: AtlasView.DSO? = null
 
     val mountProperty = equipmentManager.selectedMount
 
@@ -125,8 +128,8 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
             AtlasView.TabType.MOON -> computeMoon()
             AtlasView.TabType.PLANET -> computePlanet()
             AtlasView.TabType.MINOR_PLANET -> computeMinorPlanet()
-            AtlasView.TabType.STAR -> Unit
-            AtlasView.TabType.DSO -> Unit
+            AtlasView.TabType.STAR -> computeStar()
+            AtlasView.TabType.DSO -> computeDSO()
         }
     }
 
@@ -169,7 +172,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
             AtlasView.Planet("4 Vesta", "Asteroid", "4;"),
         )
 
-        view.populatePlanets(planets)
+        view.populatePlanet(planets)
     }
 
     val currentEphemeris
@@ -184,7 +187,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
 
     fun populateStars() {
         val stars = objectMapper.readValue(resource("data/NAMED_STARS.json"), Array<SimbadObject>::class.java)
-        view.populateStars(stars.map { AtlasView.Star(it) })
+        view.populateStar(stars.map { AtlasView.Star(it) })
     }
 
     fun computeSun() {
@@ -207,6 +210,11 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
 
     fun computeStar(body: AtlasView.Star? = star) {
         star = body ?: return view.clearAltitudeAndCoordinates()
+        body.star.computeBody()
+    }
+
+    fun computeDSO(body: AtlasView.DSO? = dso) {
+        dso = body ?: return view.clearAltitudeAndCoordinates()
         body.star.computeBody()
     }
 
@@ -237,7 +245,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         return points
     }
 
-    private fun computeTimespan(): Boolean {
+    private fun computeTimeIntervals(): Boolean {
         val now = OffsetDateTime.now()
 
         val year = now.year
@@ -247,16 +255,15 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         val offset = now.offset.totalSeconds / DAYSEC
         val startTime = TimeYMDHMS(year, month, dayOfMonth, 12) - offset
 
-        if (timespan.isEmpty() || startTime.value > timespan[0].first.value) {
-            LOG.info("computing timespan. startTime={}", startTime)
-
-            timespan.clear()
+        if (timeIntervals[0] == null || startTime.value > timeIntervals[0]!!.first.value) {
+            LOG.info("computing time intervals. startTime={}", startTime)
 
             val stepCount = 24.0 * 60.0
 
-            for (i in 0L..stepCount.toLong()) {
+            for (i in 0..stepCount.toInt()) {
                 val fraction = i / stepCount // 0..1
-                timespan.add(UTC(startTime + fraction) to now.plusMinutes(i).toLocalDateTime())
+                val utc = UTC(startTime.value, fraction)
+                timeIntervals[i] = utc to utc.asDateTime()
             }
 
             return true
@@ -271,10 +278,10 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         if (force || this !in bodyCache) {
             LOG.info("computing ephemeris. body={}, observer={}", this, observer)
 
-            val ephemeris = HashMap<LocalDateTime, HorizonsElement>(timespan.size)
+            val ephemeris = HashMap<LocalDateTime, HorizonsElement>(timeIntervals.size)
 
-            timespan.forEach {
-                val position = site.at<Barycentric>(it.first).observe(this)
+            timeIntervals.forEach {
+                val position = site.at<Barycentric>(it!!.first).observe(this)
                 val (az, alt) = position.horizontal()
                 val (ra, dec) = position.equatorialAtDate()
                 val (raJ2000, decJ2000) = position.equatorialJ2000()
@@ -352,7 +359,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
             }
         } else if (target is Body) {
             thread {
-                val ephemeris = target.computeEphemeris(computeTimespan())
+                val ephemeris = target.computeEphemeris(computeTimeIntervals())
                 computeCoordinates(target)
                 drawAltitude(ephemeris.makePoints())
             }
@@ -418,7 +425,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         Platform.runLater { view.updateMoonImage("images/MOON.png") }
     }
 
-    fun searchAsteroidsAndComets(text: String) {
+    fun searchMinorPlanet(text: String) {
         smallBodyDatabaseLookupService.search(text)
             .enqueue(object : Callback<SmallBody> {
 
@@ -438,7 +445,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
                                     AtlasView.MinorPlanet(it.label, it.title, value)
                                 }
 
-                            view.populateMinorPlanets(elements)
+                            view.populateMinorPlanet(elements)
                         }
                     }
 
@@ -451,6 +458,18 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
                     t.printStackTrace()
                 }
             })
+    }
+
+    fun searchDSO(text: String) {
+        val query = SimbadQuery()
+            .limit(500)
+            .name(text)
+
+        thread {
+            val dso = simbadService.query(query).execute().body()!!
+
+            Platform.runLater { view.populateDSO(dso.map { AtlasView.DSO(it) }) }
+        }
     }
 
     fun goTo() {

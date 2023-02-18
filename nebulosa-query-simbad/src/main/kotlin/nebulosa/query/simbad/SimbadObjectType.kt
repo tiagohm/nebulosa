@@ -233,8 +233,11 @@ enum class SimbadObjectType(
 
         @JvmStatic private val ENTRIES = values()
         @JvmStatic private val MAPPED_ENTRIES = ENTRIES.associateBy { it.code }
+        @JvmStatic private val EXTRA_MAPPED_ENTRIES = mapOf(
+            "C?*" to CLUSTER_OF_STARS_CANDIDATE,
+        )
 
         @JvmStatic
-        fun of(type: String) = MAPPED_ENTRIES[type]
+        fun of(type: String) = MAPPED_ENTRIES[type] ?: EXTRA_MAPPED_ENTRIES[type]
     }
 }

@@ -45,7 +45,7 @@ sealed class InstantOfTime : Timescale {
 
     abstract operator fun minus(days: Double): InstantOfTime
 
-    fun asYearMonthDayAndFraction(cutoff: JulianCalendarCutOff = JulianCalendarCutOff.NONE): DoubleArray {
+    fun asYearMonthDayAndFraction(cutoff: JulianCalendarCutOff = JulianCalendarCutOff.NONE): Pair<IntArray, DoubleArray> {
         val a = whole.toInt()
         var f = a + 1401
         if (a >= cutoff.value) f += (4 * a + 274277) / 146097 * 3 / 4 - 38
@@ -57,16 +57,17 @@ sealed class InstantOfTime : Timescale {
         val month = (h / 153 + 2) % 12 + 1
         val year = e / 1461 - 4716 + (12 + 2 - month) / 12
 
-        return doubleArrayOf(year.toDouble(), month.toDouble(), day.toDouble(), fraction + 0.5)
+        return intArrayOf(year, month, day) to doubleArrayOf(fraction + 0.5)
     }
 
     fun asDateTime(cutoff: JulianCalendarCutOff = JulianCalendarCutOff.NONE): LocalDateTime {
-        val (year, month, day, fraction) = asYearMonthDayAndFraction(cutoff)
+        val (yearMonthDay, fraction) = asYearMonthDayAndFraction(cutoff)
+        val (year, month, day) = yearMonthDay
 
-        val date = LocalDate.of(year.toInt(), month.toInt(), day.toInt())!!
+        val (i, j) = (fraction[0] * DAYSEC) divmod 3600.0
+        val (extra, hour) = i divmod 24.0
 
-        val (i, j) = (fraction * DAYSEC) divmod 3600.0
-        val hour = i.toInt()
+        val date = LocalDate.of(year, month, day).plusDays(extra.toLong())
 
         val (k, m) = j divmod 60.0
         val minute = k.toInt()
@@ -75,7 +76,7 @@ sealed class InstantOfTime : Timescale {
         val second = n.toInt()
         val nanoOfSecond = (o * 1E+9).toInt()
 
-        val time = LocalTime.of(hour, minute, second, nanoOfSecond)
+        val time = LocalTime.of(hour.toInt(), minute, second, nanoOfSecond)
 
         return LocalDateTime.of(date, time)
     }
