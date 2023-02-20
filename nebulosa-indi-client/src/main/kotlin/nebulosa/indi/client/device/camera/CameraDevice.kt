@@ -1,6 +1,8 @@
-package nebulosa.indi.client.device
+package nebulosa.indi.client.device.camera
 
 import nebulosa.imaging.algorithms.CfaPattern
+import nebulosa.indi.client.device.AbstractDevice
+import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.guide.GuideOutputAttached

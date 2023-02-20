@@ -6,8 +6,6 @@ sealed class NewVector<E : OneElement<*>> : INDIProtocol(), Vector<E> {
 
     override val state = PropertyState.BUSY
 
-    override fun get(name: String) = elements.firstOrNull { it.name == name }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is NewVector<*>) return false

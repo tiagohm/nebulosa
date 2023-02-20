@@ -20,13 +20,42 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.Executors
+import javax.swing.filechooser.FileSystemView
 import kotlin.io.path.createDirectories
 
+enum class OSType {
+    WINDOWS,
+    LINUX,
+    MAC,
+    OTHER,
+}
+
+val operatingSystemType: OSType
+    get() {
+        val osName = System.getProperty("os.name", "generic").lowercase()
+        return when {
+            "mac" in osName || "darwin" in osName -> OSType.MAC
+            "win" in osName -> OSType.WINDOWS
+            "nux" in osName -> OSType.LINUX
+            else -> OSType.OTHER
+        }
+    }
+
 private fun appDirectory(): Path {
-    val userHomeDir = Paths.get(System.getProperty("user.home"))
-    // TODO: Use different directory name based on current OS.
-    val appDirectory = Paths.get("$userHomeDir", ".nebulosa")
+    val appDirectory = when (val type = operatingSystemType) {
+        OSType.LINUX -> {
+            val userHomeDir = Paths.get(System.getProperty("user.home"))
+            Paths.get("$userHomeDir", ".nebulosa")
+        }
+        OSType.WINDOWS -> {
+            val documentsDir = FileSystemView.getFileSystemView().defaultDirectory.path
+            Paths.get(documentsDir, "Nebulosa")
+        }
+        else -> throw IllegalStateException("invalid os: $type")
+    }
+
     appDirectory.createDirectories()
+
     return appDirectory
 }
 

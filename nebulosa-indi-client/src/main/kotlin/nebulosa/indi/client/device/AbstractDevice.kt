@@ -202,5 +202,11 @@ internal abstract class AbstractDevice(
     companion object {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(AbstractDevice::class.java)
+
+        @JvmStatic
+        fun <T : Device> Class<out T>.create(sender: MessageSender, handler: DeviceProtocolHandler, name: String): T {
+            return getConstructor(MessageSender::class.java, DeviceProtocolHandler::class.java, String::class.java)
+                .newInstance(sender, handler, name)
+        }
     }
 }

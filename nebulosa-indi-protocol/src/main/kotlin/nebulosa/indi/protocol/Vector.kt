@@ -15,7 +15,9 @@ sealed interface Vector<E : Element<*>> : List<E> {
 
     override fun get(index: Int) = elements[index]
 
-    operator fun get(name: String): E?
+    operator fun get(name: String) = elements.firstOrNull { it.name == name }
+
+    operator fun contains(name: String) = elements.any { it.name == name }
 
     override fun indexOf(element: E) = elements.indexOf(element)
 

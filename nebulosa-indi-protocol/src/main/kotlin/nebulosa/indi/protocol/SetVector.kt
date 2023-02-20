@@ -8,8 +8,6 @@ sealed class SetVector<E : OneElement<*>> : INDIProtocol(), Vector<E> {
 
     var timeout = 0.0
 
-    override fun get(name: String) = elements.firstOrNull { it.name == name }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is SetVector<*>) return false

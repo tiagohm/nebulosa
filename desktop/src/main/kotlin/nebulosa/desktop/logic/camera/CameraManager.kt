@@ -80,7 +80,7 @@ class CameraManager(private val view: CameraView) :
         }
     }
 
-    fun updateTitle() {
+    private fun updateTitle() {
         view.title = "Camera · $name"
     }
 
@@ -93,7 +93,7 @@ class CameraManager(private val view: CameraView) :
         hostServices.showDocument(imageSavePath)
     }
 
-    fun updateStatus() {
+    private fun updateStatus() {
         view.status = buildString(128) {
             val task = runningTask.get()
 
@@ -114,20 +114,20 @@ class CameraManager(private val view: CameraView) :
         }
     }
 
-    fun updateFrame() {
+    private fun updateFrame() {
         view.updateFrameMinMax(minX, maxX, minY, maxY, minWidth, maxWidth, minHeight, maxHeight)
         view.updateFrame(0, 0, maxWidth, maxHeight)
     }
 
-    fun updateMaxBin() {
+    private fun updateMaxBin() {
         view.updateMaxBin(maxBinX, maxBinY)
     }
 
-    fun updateGainMinMax() {
+    private fun updateGainMinMax() {
         view.updateGainMinMax(gainMin, gainMax)
     }
 
-    fun updateOffsetMinMax() {
+    private fun updateOffsetMinMax() {
         view.updateOffsetMinMax(offsetMin, offsetMax)
     }
 
@@ -135,7 +135,7 @@ class CameraManager(private val view: CameraView) :
         view.updateFrame(minX, minY, maxWidth, maxHeight)
     }
 
-    fun updateExposureMinMax() {
+    private fun updateExposureMinMax() {
         val exposureMax = view.exposureUnit.convert(exposureMin, TimeUnit.MICROSECONDS)
         val exposureMin = view.exposureUnit.convert(exposureMax, TimeUnit.MICROSECONDS)
         view.updateExposureMinMax(exposureMin, exposureMax)
@@ -262,7 +262,7 @@ class CameraManager(private val view: CameraView) :
 
             view.temperatureSetpoint = preferences.double("camera.${device.name}.temperatureSetpoint") ?: 0.0
             val exposureUnit = preferences.enum("camera.${device.name}.exposureUnit") ?: TimeUnit.MICROSECONDS
-            val exposureTimeInMicros = preferences.long("camera.${device.name}.exposure") ?: 1L
+            val exposureTimeInMicros = preferences.long("camera.${device.name}.exposure") ?: exposureMin
             view.exposureCount = preferences.int("camera.${device.name}.exposureCount") ?: 1
             view.exposureMode = preferences.enum<ExposureMode>("camera.${device.name}.exposureMode") ?: ExposureMode.SINGLE
             view.exposureDelay = preferences.long("camera.${device.name}.exposureDelay") ?: 100L
@@ -286,7 +286,8 @@ class CameraManager(private val view: CameraView) :
             view.isAutoSaveAllExposures = preferences.bool("camera.${device.name}.autoSaveAllExposures")
             view.isAutoSubFolder = preferences.bool("camera.${device.name}.autoSubFolder")
             view.autoSubFolderMode = preferences.enum<AutoSubFolderMode>("camera.${device.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON
-            view.imageSavePath = preferences.string("camera.${device.name}.imageSavePath") ?: "$appDirectory/captures/${device.name}"
+            view.imageSavePath =
+                preferences.string("camera.${device.name}.imageSavePath") ?: Paths.get("$appDirectory", "captures", device.name).toString()
         }
 
         preferences.double("camera.screen.x")?.let { view.x = it }

@@ -14,8 +14,6 @@ sealed class DefVector<E : DefElement<*>> : INDIProtocol(), Vector<E> {
 
     var timeout = 0.0
 
-    override fun get(name: String) = elements.firstOrNull { it.name == name }
-
     inline val isReadOnly
         get() = perm == PropertyPermission.RO
 

@@ -1,5 +1,8 @@
 package nebulosa.indi.client.device
 
+import nebulosa.indi.client.device.AbstractDevice.Companion.create
+import nebulosa.indi.client.device.camera.AsiCamera
+import nebulosa.indi.client.device.camera.CameraDevice
 import nebulosa.indi.connection.io.INDIInputStream
 import nebulosa.indi.device.*
 import nebulosa.indi.device.camera.Camera
@@ -135,7 +138,8 @@ class DeviceProtocolHandler : INDIProtocolParser {
                         registered = true
 
                         if (message.device !in cameras) {
-                            val device = CameraDevice(sender, this, message.device)
+                            val device = CAMERAS[executable]?.create(sender, this, message.device)
+                                ?: CameraDevice(sender, this, message.device)
                             cameras[message.device] = device
                             LOG.info("camera attached: {}", device.name)
                             fireOnEventReceived(CameraAttached(device))
@@ -302,5 +306,10 @@ class DeviceProtocolHandler : INDIProtocolParser {
     companion object {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(DeviceProtocolHandler::class.java)
+
+        @JvmStatic private val CAMERAS = mapOf(
+            "indi_asi_ccd" to AsiCamera::class.java,
+            "indi_asi_single_ccd" to AsiCamera::class.java,
+        )
     }
 }

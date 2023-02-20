@@ -343,17 +343,11 @@ class CameraWindow : AbstractWindow(), CameraView {
             gainSpinner.valueFactory.value = value.toDouble()
         }
 
-    override var gainMin
+    override val gainMin
         get() = (gainSpinner.valueFactory as DoubleSpinnerValueFactory).min.toInt()
-        set(value) {
-            (gainSpinner.valueFactory as DoubleSpinnerValueFactory).min = value.toDouble()
-        }
 
-    override var gainMax
+    override val gainMax
         get() = (gainSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
-        set(value) {
-            (gainSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
-        }
 
     override fun updateGainMinMax(gainMin: Int, gainMax: Int) {
         with(gainSpinner.valueFactory as DoubleSpinnerValueFactory) {
@@ -368,17 +362,11 @@ class CameraWindow : AbstractWindow(), CameraView {
             offsetSpinner.valueFactory.value = value.toDouble()
         }
 
-    override var offsetMin
+    override val offsetMin
         get() = (offsetSpinner.valueFactory as DoubleSpinnerValueFactory).min.toInt()
-        set(value) {
-            (offsetSpinner.valueFactory as DoubleSpinnerValueFactory).min = value.toDouble()
-        }
 
-    override var offsetMax
+    override val offsetMax
         get() = (offsetSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
-        set(value) {
-            (offsetSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
-        }
 
     override fun updateOffsetMinMax(offsetMin: Int, offsetMax: Int) {
         with(offsetSpinner.valueFactory as DoubleSpinnerValueFactory) {
