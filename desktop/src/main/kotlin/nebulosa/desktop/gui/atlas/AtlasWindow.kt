@@ -51,7 +51,6 @@ class AtlasWindow : AbstractWindow(), AtlasView {
     private val atlasManager = AtlasManager(this)
 
     init {
-        title = "Atlas"
         resizable = false
     }
 

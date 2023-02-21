@@ -1,6 +1,7 @@
 package nebulosa.desktop.logic.camera
 
 import io.reactivex.rxjava3.disposables.Disposable
+import nebulosa.desktop.App
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.Preferences
@@ -10,9 +11,8 @@ import nebulosa.desktop.logic.task.Task
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.*
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import java.io.InputStream
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -39,7 +39,7 @@ data class CameraExposureTask(
     val autoSave: Boolean = false,
     val savePath: Path? = null,
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
-) : CameraTask, KoinComponent {
+) : CameraTask {
 
     @Volatile var progress = 0.0
         private set
@@ -47,10 +47,15 @@ data class CameraExposureTask(
     @Volatile var remaining = amount
         private set
 
-    private val equipmentManager by inject<EquipmentManager>()
-    private val preferences by inject<Preferences>()
+    @Autowired private lateinit var equipmentManager: EquipmentManager
+    @Autowired private lateinit var preferences: Preferences
+
     private val latch = CountUpDownLatch()
     private val imagePaths = arrayListOf<Path>()
+
+    init {
+        App.autowireBean(this)
+    }
 
     private fun onEvent(event: DeviceEvent<*>) {
         when (event) {

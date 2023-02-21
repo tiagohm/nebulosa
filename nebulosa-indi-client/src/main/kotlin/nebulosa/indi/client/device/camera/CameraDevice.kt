@@ -71,13 +71,6 @@ internal open class CameraDevice(
         when (message) {
             is SwitchVector<*> -> {
                 when (message.name) {
-                    "CCD_COOLER" -> {
-                        hasCoolerControl = true
-                        cooler = message["COOLER_ON"]?.value ?: false
-
-                        handler.fireOnEventReceived(CameraCoolerControlChanged(this))
-                        handler.fireOnEventReceived(CameraCoolerChanged(this))
-                    }
                     "CCD_CAPTURE_FORMAT" -> {
                         if (message is DefSwitchVector) {
                             frameFormats = message.map { it.name }
@@ -207,30 +200,6 @@ internal open class CameraDevice(
 
                         handler.fireOnEventReceived(CameraBinChanged(this))
                     }
-                    "CCD_GAIN" -> {
-                        if (message is DefNumberVector) {
-                            gainMin = message["GAIN"]!!.min.toInt()
-                            gainMax = message["GAIN"]!!.max.toInt()
-
-                            handler.fireOnEventReceived(CameraGainMinMaxChanged(this))
-                        }
-
-                        gain = message["GAIN"]!!.value.toInt()
-
-                        handler.fireOnEventReceived(CameraGainChanged(this))
-                    }
-                    "CCD_OFFSET" -> {
-                        if (message is DefNumberVector) {
-                            offsetMin = message["OFFSET"]!!.min.toInt()
-                            offsetMax = message["OFFSET"]!!.max.toInt()
-
-                            handler.fireOnEventReceived(CameraOffsetMinMaxChanged(this))
-                        }
-
-                        offset = message["OFFSET"]!!.value.toInt()
-
-                        handler.fireOnEventReceived(CameraOffsetChanged(this))
-                    }
                     "TELESCOPE_TIMED_GUIDE_NS",
                     "TELESCOPE_TIMED_GUIDE_WE" -> {
                         if (!canPulseGuide && message is DefNumberVector) {
@@ -267,15 +236,9 @@ internal open class CameraDevice(
         super.handleMessage(message)
     }
 
-    override fun cooler(enable: Boolean) {
-        if (hasCoolerControl && cooler != enable) {
-            sendNewSwitch("CCD_COOLER", "COOLER_ON" to enable, "COOLER_OFF" to !enable)
-        }
-    }
+    override fun cooler(enable: Boolean) = Unit
 
-    override fun dewHeater(enable: Boolean) {
-        // TODO: Implement this.
-    }
+    override fun dewHeater(enable: Boolean) = Unit
 
     override fun temperature(value: Double) {
         if (canSetTemperature) {
@@ -304,13 +267,9 @@ internal open class CameraDevice(
         sendNewNumber("CCD_BINNING", "HOR_BIN" to x.toDouble(), "VER_BIN" to y.toDouble())
     }
 
-    override fun gain(value: Int) {
-        sendNewNumber("CCD_GAIN", "GAIN" to value.toDouble())
-    }
+    override fun gain(value: Int) = Unit
 
-    override fun offset(value: Int) {
-        sendNewNumber("CCD_OFFSET", "OFFSET" to value.toDouble())
-    }
+    override fun offset(value: Int) = Unit
 
     override fun startCapture(exposureInMicros: Long) {
         val exposureInSeconds = exposureInMicros / 1000000.0
@@ -367,7 +326,7 @@ internal open class CameraDevice(
                 " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
                 " exposureMin=$exposureMin, exposureMax=$exposureMax," +
                 " exposureState=$exposureState, exposure=$exposure," +
-                " hasCooler=$hasCooler, canSetTemperature=$canSetTemperature," +
+                " hasCooler=$hasCooler, hasThermometer=$hasThermometer, canSetTemperature=$canSetTemperature," +
                 " temperature=$temperature, canSubFrame=$canSubFrame," +
                 " x=$x, minX=$minX, maxX=$maxX, y=$y, minY=$minY, maxY=$maxY," +
                 " width=$width, minWidth=$minWidth, maxWidth=$maxWidth, height=$height," +

@@ -1,6 +1,7 @@
 package nebulosa.desktop.logic.home
 
 import javafx.stage.FileChooser
+import nebulosa.desktop.App
 import nebulosa.desktop.gui.atlas.AtlasWindow
 import nebulosa.desktop.gui.camera.CameraWindow
 import nebulosa.desktop.gui.filterwheel.FilterWheelWindow
@@ -12,21 +13,26 @@ import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.view.home.HomeView
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
-import org.koin.core.component.inject
-import org.koin.core.qualifier.named
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import java.io.Closeable
+import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
-class HomeManager(private val view: HomeView) : KoinComponent, Closeable {
+class HomeManager(private val view: HomeView) : Closeable {
 
-    private val preferences by inject<Preferences>()
-    private val equipmentManager by inject<EquipmentManager>()
-    private val connectionManager by inject<ConnectionManager>()
+    @Autowired private lateinit var preferences: Preferences
+    @Autowired private lateinit var equipmentManager: EquipmentManager
+    @Autowired private lateinit var connectionManager: ConnectionManager
+    @Autowired private lateinit var appDirectory: Path
 
-    val connected = equipmentManager.connectedProperty
+    init {
+        App.autowireBean(this)
+    }
+
+    val connectedProperty
+        get() = equipmentManager.connectedProperty
 
     fun connect() {
         if (!connectionManager.isConnected()) {
@@ -36,6 +42,8 @@ class HomeManager(private val view: HomeView) : KoinComponent, Closeable {
             try {
                 connectionManager.connect(host, port)
             } catch (e: Throwable) {
+                LOG.error("connection failed", e)
+
                 return view.showAlert(
                     "A connection to the INDI Server could not be established. Check your connection or server configuration.",
                     "Connection failed"
@@ -65,7 +73,7 @@ class HomeManager(private val view: HomeView) : KoinComponent, Closeable {
         val initialDirectoryPath = preferences
             .string("home.newImage.initialDirectory")
             ?.let(::Path)?.takeIf { it.exists() }
-            ?: get(named("app"))
+            ?: appDirectory
 
         val file = with(FileChooser()) {
             title = "Open New Image"
@@ -81,7 +89,8 @@ class HomeManager(private val view: HomeView) : KoinComponent, Closeable {
         try {
             ImageWindow.open(file)
         } catch (e: Throwable) {
-            e.printStackTrace()
+            LOG.error("image load error", e)
+
             view.showAlert("Unable to load this image.", "Image Error")
         }
     }
@@ -104,5 +113,10 @@ class HomeManager(private val view: HomeView) : KoinComponent, Closeable {
 
         equipmentManager.close()
         connectionManager.disconnect()
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(HomeManager::class.java)
     }
 }

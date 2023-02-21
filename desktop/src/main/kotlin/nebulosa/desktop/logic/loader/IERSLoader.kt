@@ -1,23 +1,30 @@
 package nebulosa.desktop.logic.loader
 
+import nebulosa.desktop.App
 import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.qualifier.named
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
-class IERSLoader : Thread(), KoinComponent {
+class IERSLoader : Thread() {
 
-    private val appDirectory by inject<Path>(named("app"))
-    private val path by lazy { Paths.get("$appDirectory", "finals2000A.all") }
+    @Autowired private lateinit var appDirectory: Path
+    @Autowired private lateinit var okHttpClient: OkHttpClient
+
+    private val path: Path
+
+    init {
+        App.autowireBean(this)
+
+        path = Paths.get("$appDirectory", "finals2000A.all")
+    }
 
     override fun run() {
         LOG.info("checking finals2000A.all")
@@ -66,7 +73,7 @@ class IERSLoader : Thread(), KoinComponent {
             .url(IERSA.URL)
             .build()
 
-        return OK_HTTP_CLIENT.newCall(request)
+        return okHttpClient.newCall(request)
             .execute()
             .use { it.headers.getDate("Last-Modified")?.time ?: 0L }
     }
@@ -77,12 +84,13 @@ class IERSLoader : Thread(), KoinComponent {
             .url(IERSA.URL)
             .build()
 
-        OK_HTTP_CLIENT.newCall(request)
+        okHttpClient.newCall(request)
             .execute()
             .use { response ->
                 path.outputStream().use {
                     val bytes = response.body.bytes()
                     bytes.inputStream().copyTo(it)
+                    // TODO: Usar um IERSA Padrão.
                     IERSA.load(bytes.inputStream())
                     IERS.current = IERSA
                     LOG.info("finals2000A.all is loaded")
@@ -93,6 +101,5 @@ class IERSLoader : Thread(), KoinComponent {
     companion object {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(IERSLoader::class.java)
-        @JvmStatic private val OK_HTTP_CLIENT = OkHttpClient.Builder().build()
     }
 }

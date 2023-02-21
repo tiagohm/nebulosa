@@ -5,20 +5,21 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
 import nebulosa.indi.device.*
-import org.koin.core.component.KoinComponent
 
 @Suppress("LeakingThis", "UNCHECKED_CAST")
-abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), DeviceProperty<D>, KoinComponent {
+abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), DeviceProperty<D> {
 
     override val connectedProperty = SimpleBooleanProperty(false)
     override val connectingProperty = SimpleBooleanProperty(false)
 
     private val subscribers = arrayOfNulls<Disposable>(1)
-    private val listeners = hashSetOf<DevicePropertyListener<D>>()
+    private val listeners = linkedSetOf<DevicePropertyListener<D>>()
 
     @Volatile private var closed = false
 
     init {
+        registerListener(this)
+
         addListener(::onChanged)
 
         subscribers[0] = EventBus.DEVICE
@@ -49,13 +50,9 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
             connectedProperty.set(false)
             connectingProperty.set(false)
 
-            onReset()
-
             listeners.forEach { it.onReset() }
         } else {
             connectedProperty.set(newValue.connected)
-
-            onChanged(oldValue, newValue)
 
             listeners.forEach { it.onChanged(oldValue, newValue) }
         }
@@ -68,10 +65,14 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
             is DeviceConnected -> {
                 connectedProperty.set(true)
                 connectingProperty.set(false)
+
+                listeners.forEach { it.onDeviceConnected() }
             }
             is DeviceDisconnected -> {
                 connectedProperty.set(false)
                 connectingProperty.set(false)
+
+                listeners.forEach { it.onDeviceDisconnected() }
             }
             is DeviceIsConnecting -> {
                 connectingProperty.set(true)
@@ -79,8 +80,6 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
         }
 
         val device = event.device as D
-
-        onDeviceEvent(event, device)
 
         listeners.forEach { it.onDeviceEvent(event, device) }
     }

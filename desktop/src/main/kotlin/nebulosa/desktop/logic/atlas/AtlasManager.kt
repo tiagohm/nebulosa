@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.application.Platform
 import javafx.geometry.Point2D
 import nebulosa.constants.DAYSEC
+import nebulosa.desktop.App
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.Preferences
@@ -11,7 +12,6 @@ import nebulosa.desktop.logic.on
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.atlas.Twilight
 import nebulosa.indi.device.mount.Mount
-import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
 import nebulosa.io.resource
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
@@ -19,25 +19,18 @@ import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.au
 import nebulosa.nova.astrometry.Body
-import nebulosa.nova.astrometry.VSOP87E
-import nebulosa.nova.position.Barycentric
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.query.horizons.HorizonsElement
 import nebulosa.query.horizons.HorizonsEphemeris
 import nebulosa.query.horizons.HorizonsQuantity
-import nebulosa.query.horizons.HorizonsService
 import nebulosa.query.sbd.SmallBody
 import nebulosa.query.sbd.SmallBodyDatabaseLookupService
 import nebulosa.query.simbad.SimbadObject
 import nebulosa.query.simbad.SimbadQuery
 import nebulosa.query.simbad.SimbadService
-import nebulosa.time.TimeYMDHMS
-import nebulosa.time.UTC
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.qualifier.named
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -46,9 +39,9 @@ import java.io.Closeable
 import java.net.URL
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.atomic.AtomicInteger
 import javax.imageio.ImageIO
@@ -57,23 +50,23 @@ import kotlin.concurrent.timer
 import kotlin.math.hypot
 import kotlin.math.max
 
-class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
+class AtlasManager(private val view: AtlasView) : Closeable {
 
-    private val equipmentManager by inject<EquipmentManager>()
-    private val preferences by inject<Preferences>()
-    private val objectMapper by inject<ObjectMapper>()
-    private val appDirectory by inject<Path>(named("app"))
+    @Autowired private lateinit var equipmentManager: EquipmentManager
+    @Autowired private lateinit var preferences: Preferences
+    @Autowired private lateinit var objectMapper: ObjectMapper
+    @Autowired private lateinit var appDirectory: Path
+    @Autowired private lateinit var bodyEphemerisProvider: BodyEphemerisProvider
+    @Autowired private lateinit var horizonsEphemerisProvider: HorizonsEphemerisProvider
+    @Autowired private lateinit var smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService
+    @Autowired private lateinit var simbadService: SimbadService
 
-    private val timeIntervals = arrayOfNulls<Pair<UTC, LocalDateTime>>(1441)
-    private val bodyCache = HashMap<Any, HorizonsEphemeris>()
-    private val pointsCache = HashMap<HorizonsEphemeris, List<Point2D>>()
+    private val bodyCache = hashMapOf<Any, HorizonsEphemeris>()
+    private val pointsCache = hashMapOf<HorizonsEphemeris, List<Point2D>>()
 
     private val timerCount = AtomicInteger()
     private val timer = timer(daemon = true, initialDelay = 60000L, period = 60000L) { onTimerHit(timerCount.getAndIncrement()) }
-
-    private val smallBodyDatabaseLookupService = SmallBodyDatabaseLookupService()
-    private val horizonsService = HorizonsService()
-    private val simbadService = SimbadService()
+    private val observerEventBus = EventBus<Unit>()
 
     @Volatile private var observer: GeographicPosition? = null
     @Volatile private var tabType = AtlasView.TabType.SUN
@@ -82,31 +75,35 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
     @Volatile private var star: AtlasView.Star? = null
     @Volatile private var dso: AtlasView.DSO? = null
 
-    val mountProperty = equipmentManager.selectedMount
+    val mountProperty
+        get() = equipmentManager.selectedMount
 
     val mount: Mount?
         get() = mountProperty.value
 
     init {
+        App.autowireBean(this)
+
         val longitude = mount?.longitude ?: preferences.double("atlas.longitude")?.rad ?: Angle.ZERO
         val latitude = mount?.latitude ?: preferences.double("atlas.latitude")?.rad ?: Angle.ZERO
         val elevation = mount?.elevation ?: preferences.double("atlas.elevation")?.au ?: Distance.ZERO
 
         observer = Geoid.IERS2010.latLon(longitude, latitude, elevation)
+        updateTitle()
 
-        mountProperty.on { onMountCoordinateChanged() }
+        observerEventBus
+            .subscribe(observeOnJavaFX = true, debounce = Duration.ofSeconds(1L)) { onMountCoordinateChanged() }
 
-        EventBus.DEVICE
-            .subscribe(
-                filter = { it is MountGeographicCoordinateChanged && it.device === mount },
-                observeOnJavaFX = true,
-            ) { onMountCoordinateChanged() }
+        mountProperty.latitudeProperty.on { observerEventBus.post(Unit) }
+        mountProperty.longitudeProperty.on { observerEventBus.post(Unit) }
+        mountProperty.elevationProperty.on { observerEventBus.post(Unit) }
     }
 
     private fun onMountCoordinateChanged() {
         val mount = mount ?: return
 
         observer = Geoid.IERS2010.latLon(mount.longitude, mount.latitude, mount.elevation)
+        updateTitle()
 
         preferences.double("atlas.longitude", mount.longitude.value)
         preferences.double("atlas.latitude", mount.latitude.value)
@@ -116,6 +113,12 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         pointsCache.clear()
 
         computeTab()
+    }
+
+    private fun updateTitle() {
+        view.title = "Atlas · LAT: %.04f° LNG: %.04f° ELEV: %.0fm".format(
+            observer!!.latitude.degrees, observer!!.longitude.degrees, observer!!.elevation.meters
+        )
     }
 
     fun computeTab(type: AtlasView.TabType = tabType) {
@@ -245,63 +248,6 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
         return points
     }
 
-    private fun computeTimeIntervals(): Boolean {
-        val now = OffsetDateTime.now()
-
-        val year = now.year
-        val month = now.monthValue
-        val dayOfMonth = now.dayOfMonth
-
-        val offset = now.offset.totalSeconds / DAYSEC
-        val startTime = TimeYMDHMS(year, month, dayOfMonth, 12) - offset
-
-        if (timeIntervals[0] == null || startTime.value > timeIntervals[0]!!.first.value) {
-            LOG.info("computing time intervals. startTime={}", startTime)
-
-            val stepCount = 24.0 * 60.0
-
-            for (i in 0..stepCount.toInt()) {
-                val fraction = i / stepCount // 0..1
-                val utc = UTC(startTime.value, fraction)
-                timeIntervals[i] = utc to utc.asDateTime()
-            }
-
-            return true
-        }
-
-        return false
-    }
-
-    private fun Body.computeEphemeris(force: Boolean = false): HorizonsEphemeris {
-        val site = VSOP87E.EARTH + observer!!
-
-        if (force || this !in bodyCache) {
-            LOG.info("computing ephemeris. body={}, observer={}", this, observer)
-
-            val ephemeris = HashMap<LocalDateTime, HorizonsElement>(timeIntervals.size)
-
-            timeIntervals.forEach {
-                val position = site.at<Barycentric>(it!!.first).observe(this)
-                val (az, alt) = position.horizontal()
-                val (ra, dec) = position.equatorialAtDate()
-                val (raJ2000, decJ2000) = position.equatorialJ2000()
-
-                val element = HorizonsElement()
-                element[HorizonsQuantity.ASTROMETRIC_RA] = "${raJ2000.degrees}"
-                element[HorizonsQuantity.ASTROMETRIC_DEC] = "${decJ2000.degrees}"
-                element[HorizonsQuantity.APPARENT_RA] = "${ra.degrees}"
-                element[HorizonsQuantity.APPARENT_DEC] = "${dec.degrees}"
-                element[HorizonsQuantity.APPARENT_AZ] = "${az.degrees}"
-                element[HorizonsQuantity.APPARENT_ALT] = "${alt.degrees}"
-                ephemeris[it.second] = element
-            }
-
-            bodyCache[this] = HorizonsEphemeris.of(ephemeris)
-        }
-
-        return bodyCache[this]!!
-    }
-
     private fun drawAltitude(points: List<Point2D>) {
         Platform.runLater {
             view.drawAltitude(
@@ -332,15 +278,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
             thread {
                 LOG.info("retrieving ephemeris from JPL Horizons. target={}, startTime={}, endTime={}", target, startTime, endTime)
 
-                val ephemeris = horizonsService
-                    .observer(
-                        target,
-                        observer.longitude, observer.latitude, observer.elevation,
-                        startTime, endTime,
-                        extraPrecision = true,
-                        quantities = DEFAULT_QUANTITIES,
-                    ).execute()
-                    .body()
+                val ephemeris = horizonsEphemerisProvider.compute(target, observer)
 
                 if (ephemeris == null) {
                     LOG.warn("unable to retrieve ephemeris. target={}", target)
@@ -359,7 +297,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
             }
         } else if (target is Body) {
             thread {
-                val ephemeris = target.computeEphemeris(computeTimeIntervals())
+                val ephemeris = bodyEphemerisProvider.compute(target, observer) ?: return@thread view.clearAltitudeAndCoordinates()
                 computeCoordinates(target)
                 drawAltitude(ephemeris.makePoints())
             }
@@ -400,7 +338,7 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
                     val distance = hypot(x - 256.0, y - 256.0)
                     val color = image.getRGB(x, y)
 
-                    if (distance > 230) {
+                    if (distance > 238) {
                         val grayLevel = ((color shr 16 and 0xff) + (color shr 8 and 0xff) + (color and 0xff)) / 3
 
                         if (grayLevel >= 170) {
@@ -415,7 +353,9 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
             val sunImagePath = Paths.get("$appDirectory", "SUN.png")
             ImageIO.write(newImage, "PNG", sunImagePath.toFile())
 
-            Platform.runLater { view.updateSunImage("file://$sunImagePath") }
+            LOG.info("saving Sun image. path={}", sunImagePath.toUri())
+
+            Platform.runLater { view.updateSunImage(sunImagePath.toUri().toString()) }
         }
     }
 
@@ -523,12 +463,5 @@ class AtlasManager(private val view: AtlasView) : KoinComponent, Closeable {
     companion object {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(AtlasManager::class.java)
-
-        @JvmStatic private val DEFAULT_QUANTITIES = arrayOf(
-            HorizonsQuantity.ASTROMETRIC_RA, HorizonsQuantity.ASTROMETRIC_DEC,
-            HorizonsQuantity.APPARENT_RA, HorizonsQuantity.APPARENT_DEC,
-            HorizonsQuantity.APPARENT_AZ, HorizonsQuantity.APPARENT_ALT,
-            HorizonsQuantity.CONSTELLATION
-        )
     }
 }

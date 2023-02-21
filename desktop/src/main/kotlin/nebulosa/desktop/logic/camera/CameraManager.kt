@@ -5,6 +5,7 @@ import javafx.application.HostServices
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
+import nebulosa.desktop.App
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
@@ -17,10 +18,7 @@ import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.camera.ExposureMode
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.*
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.context.GlobalContext
-import org.koin.core.qualifier.named
+import org.springframework.beans.factory.annotation.Autowired
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -31,22 +29,26 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
 class CameraManager(private val view: CameraView) :
-    CameraProperty by GlobalContext.get().get<EquipmentManager>().selectedCamera, KoinComponent {
+    CameraProperty by App.beanFor<EquipmentManager>().selectedCamera {
 
-    @JvmField val capturingProperty = SimpleBooleanProperty()
+    val capturingProperty = SimpleBooleanProperty()
 
-    private val preferences by inject<Preferences>()
-    private val equipmentManager by inject<EquipmentManager>()
-    private val appDirectory by inject<Path>(named("app"))
-    private val cameraTaskExecutor by inject<ExecutorService>(named("camera"))
-    private val hostServices by inject<HostServices>()
+    @Autowired private lateinit var preferences: Preferences
+    @Autowired private lateinit var equipmentManager: EquipmentManager
+    @Autowired private lateinit var appDirectory: Path
+    @Autowired private lateinit var cameraExecutorService: ExecutorService
+    @Autowired private lateinit var hostServices: HostServices
+
     private val subscribers = arrayOfNulls<Disposable>(1)
-    private val imageWindows = HashSet<ImageWindow>()
+    private val imageWindows = hashSetOf<ImageWindow>()
     private val runningTask = AtomicReference<CameraExposureTask>()
 
-    @JvmField val cameras = equipmentManager.attachedCameras
+    val cameras
+        get() = equipmentManager.attachedCameras
 
     init {
+        App.autowireBean(this)
+
         registerListener(this)
 
         subscribers[0] = EventBus.TASK
@@ -213,7 +215,7 @@ class CameraManager(private val view: CameraView) :
         updateStatus()
 
         CompletableFuture
-            .supplyAsync(task::call, cameraTaskExecutor)
+            .supplyAsync(task::call, cameraExecutorService)
             .whenCompleteAsync { _, _ ->
                 capturingProperty.set(false)
                 runningTask.set(null)

@@ -6,9 +6,10 @@ import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceEventHandler
-import org.koin.core.component.KoinComponent
+import org.springframework.stereotype.Service
 
-class ConnectionManager : DeviceEventHandler, KoinComponent {
+@Service
+class ConnectionManager : DeviceEventHandler {
 
     @Volatile private var client: INDIClient? = null
     @Volatile private var deviceHandler: DeviceProtocolHandler? = null

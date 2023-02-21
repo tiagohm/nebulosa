@@ -6,15 +6,15 @@ import javafx.scene.Scene
 import javafx.scene.control.Alert
 import javafx.scene.image.Image
 import javafx.stage.Stage
+import nebulosa.desktop.App
 import nebulosa.desktop.gui.home.HomeWindow
 import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.view.View
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
-import org.koin.core.component.KoinComponent
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class AbstractWindow : View, KoinComponent {
+abstract class AbstractWindow : View {
 
     protected abstract val resourceName: String
 
@@ -32,6 +32,8 @@ abstract class AbstractWindow : View, KoinComponent {
 
                 window.scene = Scene(root)
                 window.icons.add(Image(resource("icons/$icon.png")))
+
+                App.autowireBean(this)
 
                 onCreate()
 

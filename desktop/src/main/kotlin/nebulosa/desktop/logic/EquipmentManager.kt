@@ -34,29 +34,30 @@ import nebulosa.indi.device.mount.MountDetached
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.indi.device.thermometer.ThermometerAttached
 import nebulosa.indi.device.thermometer.ThermometerDetached
-import org.koin.core.component.KoinComponent
+import org.springframework.stereotype.Service
 import java.io.Closeable
 
-class EquipmentManager : KoinComponent, Closeable {
+@Service
+class EquipmentManager : Closeable {
 
     private val subscribers = arrayOfNulls<Disposable>(2)
 
-    @JvmField val connectedProperty = SimpleBooleanProperty(false)
+    val connectedProperty = SimpleBooleanProperty(false)
 
-    @JvmField val attachedCameras = SimpleListProperty(FXCollections.observableArrayList<Camera>())
-    @JvmField val attachedMounts = SimpleListProperty(FXCollections.observableArrayList<Mount>())
-    @JvmField val attachedFilterWheels = SimpleListProperty(FXCollections.observableArrayList<FilterWheel>())
-    @JvmField val attachedFocusers = SimpleListProperty(FXCollections.observableArrayList<Focuser>())
-    @JvmField val attachedGPSs = SimpleListProperty(FXCollections.observableArrayList<GPS>())
+    val attachedCameras = SimpleListProperty(FXCollections.observableArrayList<Camera>())
+    val attachedMounts = SimpleListProperty(FXCollections.observableArrayList<Mount>())
+    val attachedFilterWheels = SimpleListProperty(FXCollections.observableArrayList<FilterWheel>())
+    val attachedFocusers = SimpleListProperty(FXCollections.observableArrayList<Focuser>())
+    val attachedGPSs = SimpleListProperty(FXCollections.observableArrayList<GPS>())
 
-    @JvmField val attachedGuideOutputs = SimpleListProperty(FXCollections.observableArrayList<GuideOutput>())
-    @JvmField val attachedThermometers = SimpleListProperty(FXCollections.observableArrayList<Thermometer>())
+    val attachedGuideOutputs = SimpleListProperty(FXCollections.observableArrayList<GuideOutput>())
+    val attachedThermometers = SimpleListProperty(FXCollections.observableArrayList<Thermometer>())
 
-    @JvmField val selectedCamera = DefaultCameraProperty()
-    @JvmField val selectedMount = DefaultMountProperty()
-    @JvmField val selectedFilterWheel = DefaultFilterWheelProperty()
-    @JvmField val selectedFocuser = DefaultFocuserProperty()
-    @JvmField val selectedGPS = DefaultGPSProperty()
+    val selectedCamera = DefaultCameraProperty()
+    val selectedMount = DefaultMountProperty()
+    val selectedFilterWheel = DefaultFilterWheelProperty()
+    val selectedFocuser = DefaultFocuserProperty()
+    val selectedGPS = DefaultGPSProperty()
 
     init {
         subscribers[0] = EventBus.DEVICE

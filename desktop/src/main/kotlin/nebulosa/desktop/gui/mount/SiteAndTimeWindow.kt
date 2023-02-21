@@ -16,7 +16,7 @@ import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.m
-import org.koin.core.component.inject
+import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -39,7 +39,8 @@ class SiteAndTimeWindow(override val mount: Mount) : AbstractWindow(), SiteAndTi
     @FXML private lateinit var useCoordinateFromGpsButton: Button
     @FXML private lateinit var syncDateAndTimeButton: Button
 
-    private val equipmentManager by inject<EquipmentManager>()
+    @Autowired private lateinit var equipmentManager: EquipmentManager
+
     private val siteAndTimeManager = SiteAndTimeManager(this)
 
     init {

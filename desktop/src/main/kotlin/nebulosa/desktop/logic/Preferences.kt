@@ -1,16 +1,16 @@
 package nebulosa.desktop.logic
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
-class Preferences(private val path: Path) : KoinComponent {
+class Preferences(
+    private val path: Path,
+    private val objectMapper: ObjectMapper,
+) {
 
-    private val objectMapper by inject<ObjectMapper>()
     private val data = HashMap<String, String?>()
 
     init {

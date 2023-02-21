@@ -5,6 +5,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
 import javafx.stage.Screen
+import nebulosa.desktop.App
 import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
@@ -16,17 +17,16 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nom.tam.fits.Fits
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import org.springframework.beans.factory.annotation.Autowired
 import java.io.Closeable
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.min
 
-class ImageManager(private val view: ImageView) : KoinComponent, Closeable {
+class ImageManager(private val view: ImageView) : Closeable {
 
-    private val preferences by inject<Preferences>()
+    @Autowired private lateinit var preferences: Preferences
 
     @Volatile var fits: Image? = null
         private set
@@ -86,6 +86,8 @@ class ImageManager(private val view: ImageView) : KoinComponent, Closeable {
         private set
 
     init {
+        App.autowireBean(this)
+
         transformSubscriber = transformPublisher
             .debounce(500L, TimeUnit.MILLISECONDS)
             .subscribe {
@@ -307,7 +309,7 @@ class ImageManager(private val view: ImageView) : KoinComponent, Closeable {
         }
     }
 
-    fun zoomToPoint(
+    private fun zoomToPoint(
         newScale: Double,
         pointX: Double, pointY: Double,
     ) {

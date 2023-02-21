@@ -3,24 +3,29 @@ package nebulosa.desktop.logic.indi
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
+import nebulosa.desktop.App
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.*
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import org.springframework.beans.factory.annotation.Autowired
 import java.util.*
 
-class INDIPanelControlManager(private val view: INDIPanelControlView) : KoinComponent {
+class INDIPanelControlManager(private val view: INDIPanelControlView) {
 
-    private val equipmentManager by inject<EquipmentManager>()
+    @Autowired private lateinit var equipmentManager: EquipmentManager
+
     private val cacheProperties = HashMap<Device, HashMap<String, INDIPanelControlWindow.GroupPropertyVector>>()
     private val groups = ArrayList<INDIPanelControlWindow.Group>()
     private val logText = StringBuilder(1000 * 150)
     private val subscribers = arrayOfNulls<Disposable>(1)
 
     @JvmField val devices = SimpleListProperty(FXCollections.observableArrayList<Device>())
+
+    init {
+        App.autowireBean(this)
+    }
 
     private fun onEvent(event: DeviceEvent<*>) {
         when (event) {
@@ -75,7 +80,7 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : KoinComp
             .subscribe(filter = { it.device === view.device }, observeOnJavaFX = true, next = ::onEvent)
     }
 
-    fun makeLog() {
+    private fun makeLog() {
         logText.clear()
         view.device?.messages?.forEach(logText::appendLine)
         view.updateLog("$logText")

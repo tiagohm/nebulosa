@@ -1,5 +1,6 @@
 package nebulosa.desktop.logic.filterwheel
 
+import nebulosa.desktop.App
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
@@ -9,20 +10,20 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelCountChanged
 import nebulosa.indi.device.filterwheel.FilterWheelMovingChanged
 import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.context.GlobalContext
+import org.springframework.beans.factory.annotation.Autowired
 
 class FilterWheelManager(private val view: FilterWheelView) :
-    FilterWheelProperty by GlobalContext.get().get<EquipmentManager>().selectedFilterWheel, KoinComponent {
+    FilterWheelProperty by App.beanFor<EquipmentManager>().selectedFilterWheel {
 
-    private val preferences by inject<Preferences>()
-    private val equipmentManager by inject<EquipmentManager>()
+    @Autowired private lateinit var preferences: Preferences
+    @Autowired private lateinit var equipmentManager: EquipmentManager
 
     val filterWheels
         get() = equipmentManager.attachedFilterWheels
 
     init {
+        App.autowireBean(this)
+
         registerListener(this)
     }
 

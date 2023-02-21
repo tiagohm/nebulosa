@@ -10,4 +10,8 @@ interface DevicePropertyListener<in D : Device> {
     fun onChanged(prev: D?, device: D)
 
     fun onDeviceEvent(event: DeviceEvent<*>, device: D)
+
+    fun onDeviceConnected() = Unit
+
+    fun onDeviceDisconnected() = Unit
 }

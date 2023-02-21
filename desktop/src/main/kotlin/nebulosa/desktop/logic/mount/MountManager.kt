@@ -1,6 +1,7 @@
 package nebulosa.desktop.logic.mount
 
 import javafx.application.Platform
+import nebulosa.desktop.App
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.gui.mount.SiteAndTimeWindow
 import nebulosa.desktop.gui.telescopecontrol.TelescopeControlWindow
@@ -18,23 +19,24 @@ import nebulosa.math.Angle.Companion.hours
 import nebulosa.nova.position.Geoid
 import nebulosa.time.InstantOfTime
 import nebulosa.time.UTC
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.context.GlobalContext
+import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDateTime
 import kotlin.concurrent.timer
 
 class MountManager(private val view: MountView) :
-    MountProperty by GlobalContext.get().get<EquipmentManager>().selectedMount, KoinComponent {
+    MountProperty by App.beanFor<EquipmentManager>().selectedMount {
 
-    private val preferences by inject<Preferences>()
-    private val equipmentManager by inject<EquipmentManager>()
+    @Autowired private lateinit var preferences: Preferences
+    @Autowired private lateinit var equipmentManager: EquipmentManager
 
-    val mounts = equipmentManager.attachedMounts
+    val mounts
+        get() = equipmentManager.attachedMounts
 
     private val timer = timer(daemon = true, initialDelay = 1000L, period = 1000L) { onTimerHit() }
 
     init {
+        App.autowireBean(this)
+
         registerListener(this)
     }
 

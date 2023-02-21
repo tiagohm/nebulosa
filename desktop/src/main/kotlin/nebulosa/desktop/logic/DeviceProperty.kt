@@ -6,6 +6,7 @@ import nebulosa.indi.device.Device
 interface DeviceProperty<D : Device> : Property<D>, DevicePropertyListener<D> {
 
     val connectedProperty: SimpleBooleanProperty
+
     val connectingProperty: SimpleBooleanProperty
 
     val connected

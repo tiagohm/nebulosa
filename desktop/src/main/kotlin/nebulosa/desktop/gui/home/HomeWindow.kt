@@ -15,7 +15,7 @@ import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.home.HomeView
-import org.koin.core.component.inject
+import org.springframework.beans.factory.annotation.Autowired
 
 class HomeWindow : AbstractWindow(), HomeView {
 
@@ -41,7 +41,8 @@ class HomeWindow : AbstractWindow(), HomeView {
     @FXML private lateinit var imageViewerButton: Button
     @FXML private lateinit var indiButton: Button
 
-    private val equipmentManager by inject<EquipmentManager>()
+    @Autowired private lateinit var equipmentManager: EquipmentManager
+
     private val homeManager = HomeManager(this)
 
     init {
@@ -50,22 +51,22 @@ class HomeWindow : AbstractWindow(), HomeView {
     }
 
     override fun onCreate() {
-        hostTextField.disableProperty().bind(homeManager.connected)
-        portTextField.disableProperty().bind(homeManager.connected)
-        cameraButton.disableProperty().bind(!homeManager.connected or equipmentManager.attachedCameras.emptyProperty())
-        mountButton.disableProperty().bind(!homeManager.connected or equipmentManager.attachedMounts.emptyProperty())
-        guiderButton.disableProperty().bind(!homeManager.connected)
-        filterWheelButton.disableProperty().bind(!homeManager.connected or equipmentManager.attachedFilterWheels.emptyProperty())
-        focuserButton.disableProperty().bind(!homeManager.connected or equipmentManager.attachedFocusers.emptyProperty())
-        domeButton.disableProperty().bind(!homeManager.connected)
-        rotatorButton.disableProperty().bind(!homeManager.connected)
-        switchButton.disableProperty().bind(!homeManager.connected)
-        alignmentButton.disableProperty().bind(!homeManager.connected)
-        sequencerButton.disableProperty().bind(!homeManager.connected)
-        indiButton.disableProperty().bind(!homeManager.connected)
+        hostTextField.disableProperty().bind(homeManager.connectedProperty)
+        portTextField.disableProperty().bind(homeManager.connectedProperty)
+        cameraButton.disableProperty().bind(!homeManager.connectedProperty or equipmentManager.attachedCameras.emptyProperty())
+        mountButton.disableProperty().bind(!homeManager.connectedProperty or equipmentManager.attachedMounts.emptyProperty())
+        guiderButton.disableProperty().bind(!homeManager.connectedProperty)
+        filterWheelButton.disableProperty().bind(!homeManager.connectedProperty or equipmentManager.attachedFilterWheels.emptyProperty())
+        focuserButton.disableProperty().bind(!homeManager.connectedProperty or equipmentManager.attachedFocusers.emptyProperty())
+        domeButton.disableProperty().bind(!homeManager.connectedProperty)
+        rotatorButton.disableProperty().bind(!homeManager.connectedProperty)
+        switchButton.disableProperty().bind(!homeManager.connectedProperty)
+        alignmentButton.disableProperty().bind(!homeManager.connectedProperty)
+        sequencerButton.disableProperty().bind(!homeManager.connectedProperty)
+        indiButton.disableProperty().bind(!homeManager.connectedProperty)
 
-        connectButton.textProperty().bind(homeManager.connected.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
-        homeManager.connected.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
+        connectButton.textProperty().bind(homeManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
+        homeManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
     }
 
     override fun onStart() {

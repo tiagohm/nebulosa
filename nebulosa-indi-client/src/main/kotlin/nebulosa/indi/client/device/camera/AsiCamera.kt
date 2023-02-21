@@ -2,46 +2,60 @@ package nebulosa.indi.client.device.camera
 
 import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.device.MessageSender
-import nebulosa.indi.device.camera.CameraGainChanged
-import nebulosa.indi.device.camera.CameraGainMinMaxChanged
-import nebulosa.indi.device.camera.CameraOffsetChanged
-import nebulosa.indi.device.camera.CameraOffsetMinMaxChanged
+import nebulosa.indi.device.camera.*
 import nebulosa.indi.protocol.DefNumberVector
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
+import nebulosa.indi.protocol.SwitchVector
 
-internal class AsiCamera(sender: MessageSender, handler: DeviceProtocolHandler, name: String) : CameraDevice(sender, handler, name) {
+internal class AsiCamera(
+    sender: MessageSender,
+    handler: DeviceProtocolHandler,
+    name: String,
+) : CameraDevice(sender, handler, name) {
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
+            is SwitchVector<*> -> {
+                when (message.name) {
+                    "CCD_COOLER" -> {
+                        hasCoolerControl = true
+                        cooler = message["COOLER_ON"]?.value ?: false
+
+                        handler.fireOnEventReceived(CameraCoolerControlChanged(this))
+                        handler.fireOnEventReceived(CameraCoolerChanged(this))
+                    }
+                }
+            }
             is NumberVector<*> -> {
                 when (message.name) {
                     "CCD_CONTROLS" -> {
                         if ("Gain" in message) {
-                            val gainMessage = message["Gain"]!!
+                            val element = message["Gain"]!!
 
                             if (message is DefNumberVector) {
-                                gainMin = gainMessage.min.toInt()
-                                gainMax = gainMessage.max.toInt()
+                                gainMin = element.min.toInt()
+                                gainMax = element.max.toInt()
 
                                 handler.fireOnEventReceived(CameraGainMinMaxChanged(this))
                             }
 
-                            gain = gainMessage.value.toInt()
+                            gain = element.value.toInt()
+
                             handler.fireOnEventReceived(CameraGainChanged(this))
                         }
-
                         if ("Offset" in message) {
-                            val offsetMessage = message["Offset"]!!
+                            val element = message["Offset"]!!
 
                             if (message is DefNumberVector) {
-                                offsetMin = offsetMessage.min.toInt()
-                                offsetMax = offsetMessage.max.toInt()
+                                gainMin = element.min.toInt()
+                                gainMax = element.max.toInt()
 
                                 handler.fireOnEventReceived(CameraOffsetMinMaxChanged(this))
                             }
 
-                            offset = offsetMessage.value.toInt()
+                            gain = element.value.toInt()
+
                             handler.fireOnEventReceived(CameraOffsetChanged(this))
                         }
                     }

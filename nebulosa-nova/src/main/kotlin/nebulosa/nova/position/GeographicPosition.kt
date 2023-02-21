@@ -74,6 +74,28 @@ class GeographicPosition(
 
     override fun toShort() = center.toShort()
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as GeographicPosition
+
+        if (longitude != other.longitude) return false
+        if (latitude != other.latitude) return false
+        if (elevation != other.elevation) return false
+        if (model != other.model) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = longitude.hashCode()
+        result = 31 * result + latitude.hashCode()
+        result = 31 * result + elevation.hashCode()
+        result = 31 * result + model.hashCode()
+        return result
+    }
+
     override fun toString(): String {
         return "GeographicPosition(longitude=${longitude.degrees}, latitude=${latitude.degrees}, elevation=${elevation.meters}, model=$model)"
     }

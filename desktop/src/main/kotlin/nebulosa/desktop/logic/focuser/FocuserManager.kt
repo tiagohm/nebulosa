@@ -1,5 +1,6 @@
 package nebulosa.desktop.logic.focuser
 
+import nebulosa.desktop.App
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
@@ -7,17 +8,16 @@ import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserMovingChanged
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.context.GlobalContext
+import org.springframework.beans.factory.annotation.Autowired
 
 class FocuserManager(private val view: FocuserView) :
-    FocuserProperty by GlobalContext.get().get<EquipmentManager>().selectedFocuser, KoinComponent {
+    FocuserProperty by App.beanFor<EquipmentManager>().selectedFocuser {
 
-    private val preferences by inject<Preferences>()
-    private val equipmentManager by inject<EquipmentManager>()
+    @Autowired private lateinit var preferences: Preferences
+    @Autowired private lateinit var equipmentManager: EquipmentManager
 
-    @JvmField val focusers = equipmentManager.attachedFocusers
+    val focusers
+        get() = equipmentManager.attachedFocusers
 
     init {
         registerListener(this)
@@ -41,11 +41,11 @@ class FocuserManager(private val view: FocuserView) :
         }
     }
 
-    fun updateTitle() {
+    private fun updateTitle() {
         view.title = "Filter Wheel · $name"
     }
 
-    fun updateStatus() {
+    private fun updateStatus() {
         val text = if (moving) "moving" else "idle"
         view.status = text
     }
@@ -74,11 +74,11 @@ class FocuserManager(private val view: FocuserView) :
         value?.abortFocus()
     }
 
-    fun updateMaxIncrement() {
+    private fun updateMaxIncrement() {
         view.maxIncrement = value?.maxPosition ?: 0
     }
 
-    fun updateMaxAbsolute() {
+    private fun updateMaxAbsolute() {
         view.absoluteMax = value?.maxPosition ?: 0
     }
 

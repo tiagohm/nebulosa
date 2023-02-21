@@ -1,6 +1,5 @@
-#
-# https://help.github.com/articles/dealing-with-line-endings/
-#
+* text eol=lf
+
 # Linux start script should use lf
 /gradlew        text eol=lf
 
@@ -14,3 +13,4 @@
 *.fits          binary
 *.ttf           binary
 *.xcf           binary
+*.png           binary

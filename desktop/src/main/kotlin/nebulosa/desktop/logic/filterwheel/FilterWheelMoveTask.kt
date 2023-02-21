@@ -10,13 +10,12 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelDetached
 import nebulosa.indi.device.filterwheel.FilterWheelMoveFailed
 import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
-import org.koin.core.component.KoinComponent
 import org.slf4j.LoggerFactory
 
 data class FilterWheelMoveTask(
     override val filterWheel: FilterWheel,
     val position: Int,
-) : FilterWheelTask, KoinComponent {
+) : FilterWheelTask {
 
     private val latch = CountUpDownLatch()
 

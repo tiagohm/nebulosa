@@ -10,21 +10,18 @@ import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserDetached
 import nebulosa.indi.device.focuser.FocuserMoveFailed
 import nebulosa.indi.device.focuser.FocuserMovingChanged
-import org.koin.core.component.KoinComponent
 import org.slf4j.LoggerFactory
 
 data class FocuserAbsoluteMoveTask(
     override val focuser: Focuser,
     val position: Int,
-) : FocuserTask, KoinComponent {
+) : FocuserTask {
 
     private val latch = CountUpDownLatch()
 
     private fun onEvent(event: DeviceEvent<*>) {
         when (event) {
-            is FocuserMovingChanged -> if (!event.device.moving) {
-                latch.countDown()
-            }
+            is FocuserMovingChanged -> if (!event.device.moving) latch.countDown()
             is FocuserDetached,
             is FocuserMoveFailed -> latch.reset()
         }

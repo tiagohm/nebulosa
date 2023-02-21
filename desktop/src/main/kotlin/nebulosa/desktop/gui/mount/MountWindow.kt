@@ -179,7 +179,7 @@ class MountWindow : AbstractWindow(), MountView {
         get() {
             val ra = Angle.from(targetRightAscensionTextField.text, true)!!
             val dec = Angle.from(targetDeclinationTextField.text)!!
-            return PairOfAngle(ra.normalized, dec.normalized)
+            return PairOfAngle(ra.normalized, dec)
         }
 
     override var isJ2000
