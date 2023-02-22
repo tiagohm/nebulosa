@@ -12,6 +12,8 @@ interface CameraProperty : DeviceProperty<Camera> {
 
     val hasCoolerControlProperty: SimpleBooleanProperty
 
+    val coolerPowerProperty: SimpleDoubleProperty
+
     val coolerProperty: SimpleBooleanProperty
 
     val hasDewHeaterProperty: SimpleBooleanProperty

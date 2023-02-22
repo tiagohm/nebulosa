@@ -2,11 +2,13 @@ package nebulosa.indi.client.device.camera
 
 import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.device.MessageSender
-import nebulosa.indi.device.camera.*
+import nebulosa.indi.device.camera.CameraGainChanged
+import nebulosa.indi.device.camera.CameraGainMinMaxChanged
+import nebulosa.indi.device.camera.CameraOffsetChanged
+import nebulosa.indi.device.camera.CameraOffsetMinMaxChanged
 import nebulosa.indi.protocol.DefNumberVector
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
-import nebulosa.indi.protocol.SwitchVector
 
 internal class AsiCamera(
     sender: MessageSender,
@@ -16,17 +18,6 @@ internal class AsiCamera(
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
-            is SwitchVector<*> -> {
-                when (message.name) {
-                    "CCD_COOLER" -> {
-                        hasCoolerControl = true
-                        cooler = message["COOLER_ON"]?.value ?: false
-
-                        handler.fireOnEventReceived(CameraCoolerControlChanged(this))
-                        handler.fireOnEventReceived(CameraCoolerChanged(this))
-                    }
-                }
-            }
             is NumberVector<*> -> {
                 when (message.name) {
                     "CCD_CONTROLS" -> {
@@ -48,13 +39,13 @@ internal class AsiCamera(
                             val element = message["Offset"]!!
 
                             if (message is DefNumberVector) {
-                                gainMin = element.min.toInt()
-                                gainMax = element.max.toInt()
+                                offsetMin = element.min.toInt()
+                                offsetMax = element.max.toInt()
 
                                 handler.fireOnEventReceived(CameraOffsetMinMaxChanged(this))
                             }
 
-                            gain = element.value.toInt()
+                            offset = element.value.toInt()
 
                             handler.fireOnEventReceived(CameraOffsetChanged(this))
                         }

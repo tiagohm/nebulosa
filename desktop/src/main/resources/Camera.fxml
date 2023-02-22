@@ -150,7 +150,8 @@
             </VBox.margin>
             <VBox alignment="CENTER"
                   spacing="1.0">
-                <Label text="Cooler (100%)">
+                <Label fx:id="coolerPowerLabel"
+                       text="Cooler (100%)">
                 </Label>
                 <ToggleSwitch fx:id="coolerToggleSwitch"
                               prefWidth="32.0"

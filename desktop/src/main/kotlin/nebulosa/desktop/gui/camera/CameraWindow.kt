@@ -22,6 +22,7 @@ import nebulosa.indi.device.camera.FrameType
 import org.controlsfx.control.ToggleSwitch
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.math.max
 
 class CameraWindow : AbstractWindow(), CameraView {
 
@@ -40,6 +41,7 @@ class CameraWindow : AbstractWindow(), CameraView {
     @FXML private lateinit var autoSaveAllExposuresIcon: Label
     @FXML private lateinit var autoSubFolderIcon: Label
     @FXML private lateinit var imageSavePathLabel: Label
+    @FXML private lateinit var coolerPowerLabel: Label
     @FXML private lateinit var coolerToggleSwitch: ToggleSwitch
     @FXML private lateinit var dewHeaterToggleSwitch: ToggleSwitch
     @FXML private lateinit var temperatureLabel: Label
@@ -94,6 +96,7 @@ class CameraWindow : AbstractWindow(), CameraView {
             .filter { it.userData == "BIND_TO_SELECTED_CAMERA" }
             .forEach { it.disableProperty().bind(isNotConnectedOrCapturing) }
 
+        coolerPowerLabel.textProperty().bind(cameraManager.coolerPowerProperty.asString(Locale.ENGLISH, "Cooler (%.1f °C)"))
         coolerToggleSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.hasCoolerProperty)
         cameraManager.coolerProperty.on(coolerToggleSwitch::setSelected)
         coolerToggleSwitch.selectedProperty().on { cameraManager.get().cooler(it) }
@@ -132,7 +135,10 @@ class CameraWindow : AbstractWindow(), CameraView {
         frameHeightSpinner.disableProperty().bind(frameXSpinner.disableProperty())
 
         binXSpinner.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.canBinProperty)
-        binYSpinner.disableProperty().bind(binXSpinner.disableProperty())
+        binXSpinner.valueProperty().on { binYSpinner.valueFactory.value = it }
+
+        // binYSpinner.disableProperty().bind(binXSpinner.disableProperty())
+        binYSpinner.disableProperty().set(true)
 
         gainSpinner.disableProperty().bind(isNotConnectedOrCapturing)
 
@@ -171,7 +177,7 @@ class CameraWindow : AbstractWindow(), CameraView {
         get() = exposureSpinner.value.toLong()
 
     override fun updateExposure(exposure: Long, unit: TimeUnit) {
-        exposureSpinner.valueFactory.value = exposure.toDouble()
+        exposureSpinner.valueFactory.value = max(1.0, exposure.toDouble())
 
         exposureUnitToggleGroup.toggles
             .forEach { (it as RadioButton).isSelected = it.userData == unit.name }

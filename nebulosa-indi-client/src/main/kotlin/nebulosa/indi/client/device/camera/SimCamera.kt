@@ -19,17 +19,6 @@ internal class SimCamera(
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
-            is SwitchVector<*> -> {
-                when (message.name) {
-                    "CCD_COOLER" -> {
-                        hasCoolerControl = true
-                        cooler = message["COOLER_ON"]?.value ?: false
-
-                        handler.fireOnEventReceived(CameraCoolerControlChanged(this))
-                        handler.fireOnEventReceived(CameraCoolerChanged(this))
-                    }
-                }
-            }
             is NumberVector<*> -> {
                 when (message.name) {
                     "CCD_GAIN" -> {
@@ -50,13 +39,13 @@ internal class SimCamera(
                         val element = message["OFFSET"]!!
 
                         if (message is DefNumberVector) {
-                            gainMin = element.min.toInt()
-                            gainMax = element.max.toInt()
+                            offsetMin = element.min.toInt()
+                            offsetMax = element.max.toInt()
 
                             handler.fireOnEventReceived(CameraGainMinMaxChanged(this))
                         }
 
-                        gain = element.value.toInt()
+                        offset = element.value.toInt()
 
                         handler.fireOnEventReceived(CameraGainChanged(this))
                     }
@@ -70,7 +59,7 @@ internal class SimCamera(
 
     override fun cooler(enable: Boolean) {
         if (hasCoolerControl && cooler != enable) {
-            sendNewSwitch("CCD_COOLER", "COOLER_ON" to enable, "COOLER_OFF" to !enable)
+            sendNewSwitch("CCD_COOLER", (if (enable) "COOLER_ON" else "COOLER_OFF") to true)
         }
     }
 

@@ -1,5 +1,6 @@
 package nebulosa.desktop
 
+import ch.qos.logback.classic.Level
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.application.Application
@@ -12,6 +13,8 @@ import nebulosa.query.sbd.SmallBodyDatabaseLookupService
 import nebulosa.query.simbad.SimbadService
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.boot.CommandLineRunner
@@ -51,7 +54,7 @@ class App : CommandLineRunner {
     }
 
     @Bean
-    fun appDirectory(operatingSystemType: OSType): Path {
+    fun appDirectory(operatingSystemType: OSType): Path? {
         val appDirectory = when (operatingSystemType) {
             OSType.LINUX -> {
                 val userHomeDir = Paths.get(System.getProperty("user.home"))
@@ -61,10 +64,12 @@ class App : CommandLineRunner {
                 val documentsDir = FileSystemView.getFileSystemView().defaultDirectory.path
                 Paths.get(documentsDir, "Nebulosa")
             }
-            else -> throw IllegalStateException("invalid os: $operatingSystemType")
+            else -> {
+                null
+            }
         }
 
-        appDirectory.createDirectories()
+        appDirectory?.createDirectories()
 
         return appDirectory
     }
@@ -120,6 +125,11 @@ class App : CommandLineRunner {
         System.setProperty("prism.lcdtext", "false")
 
         IERSLoader().start()
+
+        // Log level.
+        with(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger) {
+            level = if ("-v" in args) Level.DEBUG else Level.INFO
+        }
 
         // Run the JavaFX application.
         Application.launch(Nebulosa::class.java, *args)

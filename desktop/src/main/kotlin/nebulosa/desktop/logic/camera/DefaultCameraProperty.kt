@@ -12,6 +12,7 @@ open class DefaultCameraProperty : AbstractDeviceProperty<Camera>(), CameraPrope
 
     override val exposuringProperty = SimpleBooleanProperty(false)
     override val hasCoolerControlProperty = SimpleBooleanProperty(false)
+    override val coolerPowerProperty = SimpleDoubleProperty(0.0)
     override val coolerProperty = SimpleBooleanProperty(false)
     override val hasDewHeaterProperty = SimpleBooleanProperty(false)
     override val dewHeaterProperty = SimpleBooleanProperty(false)
@@ -54,6 +55,7 @@ open class DefaultCameraProperty : AbstractDeviceProperty<Camera>(), CameraPrope
     override fun onChanged(prev: Camera?, device: Camera) {
         exposuringProperty.set(device.exposuring)
         hasCoolerControlProperty.set(device.hasCoolerControl)
+        coolerPowerProperty.set(device.coolerPower)
         coolerProperty.set(device.cooler)
         hasDewHeaterProperty.set(device.hasDewHeater)
         dewHeaterProperty.set(device.dewHeater)
@@ -97,6 +99,7 @@ open class DefaultCameraProperty : AbstractDeviceProperty<Camera>(), CameraPrope
     override fun onReset() {
         exposuringProperty.set(false)
         hasCoolerControlProperty.set(false)
+        coolerPowerProperty.set(0.0)
         coolerProperty.set(false)
         hasDewHeaterProperty.set(false)
         dewHeaterProperty.set(false)
@@ -141,6 +144,7 @@ open class DefaultCameraProperty : AbstractDeviceProperty<Camera>(), CameraPrope
         when (event) {
             is CameraExposuringChanged -> exposuringProperty.set(device.exposuring)
             is CameraCoolerControlChanged -> hasCoolerControlProperty.set(device.hasCoolerControl)
+            is CameraCoolerPowerChanged -> coolerPowerProperty.set(device.coolerPower)
             is CameraCoolerChanged -> coolerProperty.set(device.cooler)
             is CameraHasDewHeaterChanged -> hasDewHeaterProperty.set(device.hasDewHeater)
             is CameraDewHeaterChanged -> dewHeaterProperty.set(device.dewHeater)

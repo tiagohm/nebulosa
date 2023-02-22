@@ -21,6 +21,7 @@ internal open class CameraDevice(
 
     override var exposuring = false
     override var hasCoolerControl = false
+    override var coolerPower = 0.0
     override var cooler = false
     override var hasDewHeater = false
     override var dewHeater = false
@@ -71,8 +72,19 @@ internal open class CameraDevice(
         when (message) {
             is SwitchVector<*> -> {
                 when (message.name) {
-                    "CCD_CAPTURE_FORMAT" -> {
+                    "CCD_COOLER" -> {
                         if (message is DefSwitchVector) {
+                            hasCoolerControl = true
+
+                            handler.fireOnEventReceived(CameraCoolerControlChanged(this))
+                        }
+
+                        cooler = message["COOLER_ON"]?.value ?: false
+
+                        handler.fireOnEventReceived(CameraCoolerChanged(this))
+                    }
+                    "CCD_CAPTURE_FORMAT" -> {
+                        if (message.isNotEmpty()) {
                             frameFormats = message.map { it.name }
                             handler.fireOnEventReceived(CameraFrameFormatsChanged(this))
                         }
@@ -136,6 +148,10 @@ internal open class CameraDevice(
                             handler.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
                         }
                     }
+                    "CCD_COOLER_POWER" -> {
+                        coolerPower = message.first().value
+                        handler.fireOnEventReceived(CameraCoolerPowerChanged(this))
+                    }
                     "CCD_TEMPERATURE" -> {
                         if (message is DefNumberVector) {
                             hasCooler = true
@@ -168,6 +184,11 @@ internal open class CameraDevice(
                         val minHeight = message["HEIGHT"]!!.min.toInt()
                         val maxHeight = message["HEIGHT"]!!.max.toInt()
 
+                        x = message["X"]!!.value.toInt()
+                        y = message["Y"]!!.value.toInt()
+                        width = message["WIDTH"]!!.value.toInt()
+                        height = message["HEIGHT"]!!.value.toInt()
+
                         if (maxX != 0 && maxY != 0 && maxWidth != 0 && maxHeight != 0) {
                             this.minX = minX
                             this.maxX = maxX
@@ -177,12 +198,12 @@ internal open class CameraDevice(
                             this.maxWidth = maxWidth
                             this.minHeight = minHeight
                             this.maxHeight = maxHeight
+                        } else if (this.maxX == 0 || this.maxY == 0 || this.maxWidth == 0 || this.maxHeight == 0) {
+                            this.maxX = width - 1
+                            this.maxY = height - 1
+                            this.maxWidth = width
+                            this.maxHeight = height
                         }
-
-                        x = message["X"]!!.value.toInt()
-                        y = message["Y"]!!.value.toInt()
-                        width = message["WIDTH"]!!.value.toInt()
-                        height = message["HEIGHT"]!!.value.toInt()
 
                         handler.fireOnEventReceived(CameraFrameChanged(this))
                     }

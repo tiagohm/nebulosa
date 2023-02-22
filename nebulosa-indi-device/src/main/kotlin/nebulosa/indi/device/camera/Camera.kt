@@ -11,6 +11,8 @@ interface Camera : GuideOutput, Thermometer {
 
     val hasCoolerControl: Boolean
 
+    val coolerPower: Double
+
     val cooler: Boolean
 
     val hasDewHeater: Boolean

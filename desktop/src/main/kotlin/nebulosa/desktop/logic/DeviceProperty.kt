@@ -24,6 +24,7 @@ interface DeviceProperty<D : Device> : Property<D>, DevicePropertyListener<D> {
             value.disconnect()
         } else {
             value.connect()
+            value.ask()
         }
     }
 }
