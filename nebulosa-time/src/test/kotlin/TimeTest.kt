@@ -26,7 +26,7 @@ class TimeTest : StringSpec() {
             year shouldBeExactly 1996
             month shouldBeExactly 2
             day shouldBeExactly 10
-            fraction shouldBe (0.9999 plusOrMinus 1e-9)
+            fraction[0] shouldBe (0.9999 plusOrMinus 1e-9)
         }
         "time unix & time ymdhms" {
             val now = LocalDateTime.now(ZoneOffset.UTC).withNano(0)

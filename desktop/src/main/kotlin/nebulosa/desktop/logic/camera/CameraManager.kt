@@ -173,8 +173,8 @@ class CameraManager(private val view: CameraView) :
         with(DirectoryChooser()) {
             title = "Open Image Save Path"
 
-            val prevImageSavePath = preferences.string("camera.$name.imageSavePath")
-            if (!prevImageSavePath.isNullOrBlank()) initialDirectory = File(prevImageSavePath)
+            val imageSavePath = preferences.string("camera.$name.imageSavePath")
+            if (!imageSavePath.isNullOrBlank()) initialDirectory = File(imageSavePath)
 
             val file = showDialog(null) ?: return
 

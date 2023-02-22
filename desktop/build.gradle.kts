@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     kotlin("jvm")
     id("maven-publish")
@@ -37,4 +39,10 @@ publishing {
 javafx {
     version = "19"
     modules = listOf("javafx.controls", "javafx.fxml")
+}
+
+tasks.withType<BootJar> {
+    manifest {
+        attributes["Start-Class"] = "nebulosa.desktop.MainKt"
+    }
 }

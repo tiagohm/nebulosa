@@ -1,5 +1,6 @@
 package nebulosa.desktop.gui.image
 
+import com.sun.javafx.scene.control.ControlAcceleratorSupport
 import javafx.fxml.FXML
 import javafx.geometry.Bounds
 import javafx.scene.Cursor
@@ -82,8 +83,12 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow(), Image
             }
         }
 
-        imageCanvas.parent.setOnContextMenuRequested {
-            menu.show(imageCanvas.parent, it.screenX, it.screenY)
+        with(imageCanvas.parent) {
+            setOnContextMenuRequested {
+                menu.show(this, it.screenX, it.screenY)
+            }
+
+            ControlAcceleratorSupport.addAcceleratorsIntoScene(menu.items, this)
         }
     }
 
@@ -156,6 +161,11 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow(), Image
 
     override val imageBounds: Bounds
         get() = imageCanvas.parent.boundsInLocal
+
+    @FXML
+    private fun save() {
+        imageManager.save()
+    }
 
     @FXML
     private fun openImageStretcher() {

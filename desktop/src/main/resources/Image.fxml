@@ -2,6 +2,7 @@
 
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.*?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
@@ -16,17 +17,56 @@
         <ContextMenu fx:id="menu"
                      styleClass="text-md">
             <items>
+                <MenuItem text="Save"
+                          onAction="#save">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP"
+                                            code="S"
+                                            control="DOWN"
+                                            meta="UP"
+                                            shift="UP"
+                                            shortcut="UP"/>
+                    </accelerator>
+                </MenuItem>
+                <SeparatorMenuItem/>
                 <MenuItem text="Stretch"
                           onAction="#openImageStretcher"/>
                 <MenuItem fx:id="scnrMenuItem"
                           text="SCNR"
                           onAction="#openSCNR"/>
                 <CheckMenuItem text="Horizontal Mirror"
-                               onAction="#mirrorHorizontal"/>
+                               onAction="#mirrorHorizontal">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP"
+                                            code="H"
+                                            control="DOWN"
+                                            meta="UP"
+                                            shift="UP"
+                                            shortcut="UP"/>
+                    </accelerator>
+                </CheckMenuItem>
                 <CheckMenuItem text="Vertical Mirror"
-                               onAction="#mirrorVertical"/>
+                               onAction="#mirrorVertical">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP"
+                                            code="V"
+                                            control="DOWN"
+                                            meta="UP"
+                                            shift="UP"
+                                            shortcut="UP"/>
+                    </accelerator>
+                </CheckMenuItem>
                 <CheckMenuItem text="Invert"
-                               onAction="#invert"/>
+                               onAction="#invert">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP"
+                                            code="I"
+                                            control="DOWN"
+                                            meta="UP"
+                                            shift="UP"
+                                            shortcut="UP"/>
+                    </accelerator>
+                </CheckMenuItem>
                 <MenuItem fx:id="fitsHeaderMenuItem"
                           text="FITS Header"
                           onAction="#openFitsHeader"/>

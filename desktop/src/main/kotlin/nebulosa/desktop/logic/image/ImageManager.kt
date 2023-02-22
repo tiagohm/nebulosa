@@ -4,6 +4,7 @@ import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
+import javafx.stage.FileChooser
 import javafx.stage.Screen
 import nebulosa.desktop.App
 import nebulosa.desktop.gui.image.FitsHeaderWindow
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.io.Closeable
 import java.io.File
 import java.util.concurrent.TimeUnit
+import javax.imageio.ImageIO
 import kotlin.math.max
 import kotlin.math.min
 
@@ -356,6 +358,41 @@ class ImageManager(private val view: ImageView) : Closeable {
         // }
 
         draw()
+    }
+
+    @Suppress("BlockingMethodInNonBlockingContext")
+    fun save() {
+        val fits = fits ?: return
+
+        with(FileChooser()) {
+            title = "Save Image"
+
+            val imageSavePath = preferences.string("image.savePath")
+            if (!imageSavePath.isNullOrBlank()) initialDirectory = File(imageSavePath)
+
+            extensionFilters.add(FileChooser.ExtensionFilter("FITS", "*.fits", "*.fit"))
+            extensionFilters.add(FileChooser.ExtensionFilter("PNG", "*.png"))
+            extensionFilters.add(FileChooser.ExtensionFilter("JPEG", "*.jpg", "*.jpeg"))
+
+            val file = showSaveDialog(null) ?: return
+            val extension = file.extension.lowercase()
+
+            if (extension == "png") {
+                ImageIO.write(fits, "PNG", file)
+            } else if (extension == "jpg" || extension == "jpeg") {
+                ImageIO.write(fits, "JPEG", file)
+            } else if (extension == "fits") {
+                if (fits is FitsImage) {
+                    fits.fits.write(file)
+                } else {
+                    // TODO: Save non-FITS as FITS.
+                }
+            } else {
+                return view.showAlert("Unsupported format: ${file.extension}", "Save Error")
+            }
+
+            preferences.string("image.savePath", file.parent)
+        }
     }
 
     fun openImageStretcher() {
