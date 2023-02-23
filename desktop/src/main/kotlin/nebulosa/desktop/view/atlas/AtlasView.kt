@@ -6,6 +6,7 @@ import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.mas
 import nebulosa.math.Velocity.Companion.kms
+import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.astrometry.FixedStar
 import nebulosa.query.simbad.SimbadObject
 
@@ -35,7 +36,8 @@ interface AtlasView : View {
     data class Star(
         val simbad: SimbadObject,
         val name: String = simbad.name,
-        val magnitude: String = if (simbad.v.isFinite()) "${simbad.v}" else "-",
+        val magnitude: Double = simbad.v,
+        val type: String = simbad.type.description,
     ) {
 
         val star by lazy { FixedStar(simbad.ra.deg, simbad.dec.deg, simbad.pmRA.mas, simbad.pmDEC.mas, simbad.plx.mas, simbad.rv.kms) }
@@ -44,14 +46,14 @@ interface AtlasView : View {
     data class DSO(
         val simbad: SimbadObject,
         val name: String = simbad.name,
-        val magnitude: String = if (simbad.v.isFinite()) "${simbad.v}" else "-",
+        val magnitude: Double = simbad.v,
         val type: String = simbad.type.description,
     ) {
 
         val star by lazy { FixedStar(simbad.ra.deg, simbad.dec.deg, simbad.pmRA.mas, simbad.pmDEC.mas, simbad.plx.mas, simbad.rv.kms) }
     }
 
-    fun drawAltitude(
+    fun updateAltitude(
         points: List<Point2D>, now: Double,
         civilTwilight: Twilight, nauticalTwilight: Twilight, astronomicalTwilight: Twilight,
     )
@@ -60,7 +62,7 @@ interface AtlasView : View {
 
     fun updateMoonImage(uri: String)
 
-    fun updateEquatorialCoordinates(ra: Angle, dec: Angle, raJ2000: Angle, decJ2000: Angle)
+    fun updateEquatorialCoordinates(ra: Angle, dec: Angle, raJ2000: Angle, decJ2000: Angle, constellation: Constellation?)
 
     fun updateHorizontalCoordinates(az: Angle, alt: Angle)
 
@@ -73,4 +75,6 @@ interface AtlasView : View {
     fun populateStar(stars: List<Star>)
 
     fun populateDSO(dso: List<DSO>)
+
+    fun updateInfo(bodyName: String)
 }

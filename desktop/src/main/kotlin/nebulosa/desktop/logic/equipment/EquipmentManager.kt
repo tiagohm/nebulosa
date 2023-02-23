@@ -1,9 +1,10 @@
-package nebulosa.desktop.logic
+package nebulosa.desktop.logic.equipment
 
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
+import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.camera.DefaultCameraProperty
 import nebulosa.desktop.logic.connection.Connected
 import nebulosa.desktop.logic.connection.ConnectionEvent

@@ -1,14 +1,16 @@
 package nebulosa.desktop.logic.atlas
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import javafx.application.Platform
 import javafx.geometry.Point2D
 import nebulosa.constants.DAYSEC
 import nebulosa.desktop.App
-import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.atlas.ephemeris.provider.BodyEphemerisProvider
+import nebulosa.desktop.logic.atlas.ephemeris.provider.HorizonsEphemerisProvider
+import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.on
+import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.atlas.Twilight
 import nebulosa.indi.device.mount.Mount
@@ -19,8 +21,10 @@ import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.au
 import nebulosa.nova.astrometry.Body
+import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
+import nebulosa.nova.position.ICRF
 import nebulosa.query.horizons.HorizonsElement
 import nebulosa.query.horizons.HorizonsEphemeris
 import nebulosa.query.horizons.HorizonsQuantity
@@ -29,6 +33,7 @@ import nebulosa.query.sbd.SmallBodyDatabaseLookupService
 import nebulosa.query.simbad.SimbadObject
 import nebulosa.query.simbad.SimbadQuery
 import nebulosa.query.simbad.SimbadService
+import nebulosa.time.UTC
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import retrofit2.Call
@@ -40,7 +45,6 @@ import java.net.URL
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
-import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.atomic.AtomicInteger
@@ -61,7 +65,6 @@ class AtlasManager(private val view: AtlasView) : Closeable {
     @Autowired private lateinit var smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService
     @Autowired private lateinit var simbadService: SimbadService
 
-    private val bodyCache = hashMapOf<Any, HorizonsEphemeris>()
     private val pointsCache = hashMapOf<HorizonsEphemeris, List<Point2D>>()
 
     private val timerCount = AtomicInteger()
@@ -74,6 +77,7 @@ class AtlasManager(private val view: AtlasView) : Closeable {
     @Volatile private var minorPlanet: SmallBody? = null
     @Volatile private var star: AtlasView.Star? = null
     @Volatile private var dso: AtlasView.DSO? = null
+    @Volatile private var bodyName = ""
 
     val mountProperty
         get() = equipmentManager.selectedMount
@@ -109,7 +113,6 @@ class AtlasManager(private val view: AtlasView) : Closeable {
         preferences.double("atlas.latitude", mount.latitude.value)
         preferences.double("atlas.elevation", mount.elevation.value)
 
-        bodyCache.clear()
         pointsCache.clear()
 
         computeTab()
@@ -178,46 +181,42 @@ class AtlasManager(private val view: AtlasView) : Closeable {
         view.populatePlanet(planets)
     }
 
-    val currentEphemeris
-        get() = when (tabType) {
-            AtlasView.TabType.SUN -> bodyCache["10"]
-            AtlasView.TabType.MOON -> bodyCache["301"]
-            AtlasView.TabType.PLANET -> planet?.command?.let(bodyCache::get)
-            AtlasView.TabType.MINOR_PLANET -> minorPlanet?.body?.spkId?.let { bodyCache["DES=${it};"] }
-            AtlasView.TabType.STAR -> star?.star?.let(bodyCache::get)
-            AtlasView.TabType.DSO -> null
-        }
-
     fun populateStars() {
         val stars = objectMapper.readValue(resource("data/NAMED_STARS.json"), Array<SimbadObject>::class.java)
         view.populateStar(stars.map { AtlasView.Star(it) })
     }
 
     fun computeSun() {
+        bodyName = "Sun"
         "10".computeBody()
     }
 
     fun computeMoon() {
+        bodyName = "Moon"
         "301".computeBody()
     }
 
     fun computePlanet(body: AtlasView.Planet? = planet) {
         planet = body ?: return
+        bodyName = body.name
         body.command.computeBody()
     }
 
     fun computeMinorPlanet(body: SmallBody? = minorPlanet) {
         minorPlanet = body ?: return view.clearAltitudeAndCoordinates()
+        bodyName = body.body!!.fullname
         "DES=${body.body!!.spkId};".computeBody()
     }
 
     fun computeStar(body: AtlasView.Star? = star) {
         star = body ?: return view.clearAltitudeAndCoordinates()
+        bodyName = body.simbad.names.joinToString(", ") { it.type.format(it.name) }
         body.star.computeBody()
     }
 
     fun computeDSO(body: AtlasView.DSO? = dso) {
         dso = body ?: return view.clearAltitudeAndCoordinates()
+        bodyName = body.simbad.names.joinToString(", ") { it.type.format(it.name) }
         body.star.computeBody()
     }
 
@@ -249,8 +248,8 @@ class AtlasManager(private val view: AtlasView) : Closeable {
     }
 
     private fun drawAltitude(points: List<Point2D>) {
-        Platform.runLater {
-            view.drawAltitude(
+        javaFxThread {
+            view.updateAltitude(
                 points = points,
                 now = 0.0,
                 civilTwilight = Twilight.EMPTY, nauticalTwilight = Twilight.EMPTY,
@@ -262,54 +261,43 @@ class AtlasManager(private val view: AtlasView) : Closeable {
     private fun computeAltitude(target: Any, force: Boolean = false) {
         LOG.info("computing altitude. target={}", target)
 
-        if (!force && target in bodyCache) {
-            LOG.info("altitude is cached. target={}", target)
-            computeCoordinates(target)
-            return drawAltitude(bodyCache[target]!!.makePoints())
-        }
-
         val observer = observer ?: return
-
-        val offset = ZoneOffset.systemDefault().rules.getOffset(Instant.now()).totalSeconds.toLong()
-        val startTime = LocalDateTime.now().minusHours(12).withHour(12).withMinute(0).minusSeconds(offset)
-        val endTime = startTime.plusHours(24)
 
         if (target is String) {
             thread {
-                LOG.info("retrieving ephemeris from JPL Horizons. target={}, startTime={}, endTime={}", target, startTime, endTime)
-
-                val ephemeris = horizonsEphemerisProvider.compute(target, observer)
+                val ephemeris = horizonsEphemerisProvider.compute(target, observer, force)
 
                 if (ephemeris == null) {
                     LOG.warn("unable to retrieve ephemeris. target={}", target)
                 } else if (ephemeris.isNotEmpty()) {
                     LOG.info("ephemeris was retrieved. target={}, start={}, end={}", target, ephemeris.start, ephemeris.endInclusive)
 
-                    bodyCache[target]?.also(pointsCache::remove)
-                    bodyCache[target] = ephemeris
-
-                    computeCoordinates(target)
-
-                    drawAltitude(ephemeris.makePoints())
+                    ephemeris.showBodyCoordinatesAndInfos(target)
                 } else {
                     LOG.warn("retrived empty epheremis. target={}", target)
                 }
             }
         } else if (target is Body) {
             thread {
-                val ephemeris = bodyEphemerisProvider.compute(target, observer) ?: return@thread view.clearAltitudeAndCoordinates()
-                computeCoordinates(target)
-                drawAltitude(ephemeris.makePoints())
+                val ephemeris = bodyEphemerisProvider.compute(target, observer, force)
+                    ?: return@thread view.clearAltitudeAndCoordinates()
+                ephemeris.showBodyCoordinatesAndInfos(target)
             }
         }
     }
 
-    private fun computeCoordinates(target: Any) {
-        val ephemeris = bodyCache[target] ?: return
+    private fun HorizonsEphemeris.showBodyCoordinatesAndInfos(target: Any) {
+        computeCoordinates(target)
+        javaFxThread { view.updateInfo(bodyName) }
+        drawAltitude(makePoints())
+    }
+
+    private fun HorizonsEphemeris.computeCoordinates(target: Any) {
         val now = LocalDateTime.now(ZoneOffset.UTC)
-        LOG.info("computing coordinates. now={}, target={}, element={}", now, target, ephemeris[now])
-        computeEquatorialCoordinates(ephemeris[now] ?: return)
-        computeHorizontalCoordinates(ephemeris[now] ?: return)
+        val element = this[now] ?: return
+        LOG.info("computing coordinates. now={}, target={}, element={}", now, target, element)
+        computeEquatorialCoordinates(element)
+        computeHorizontalCoordinates(element)
     }
 
     private fun computeEquatorialCoordinates(element: HorizonsElement) {
@@ -317,13 +305,15 @@ class AtlasManager(private val view: AtlasView) : Closeable {
         val decJ2000 = element[HorizonsQuantity.ASTROMETRIC_DEC]?.toDoubleOrNull()?.deg ?: Angle.ZERO
         val ra = element[HorizonsQuantity.APPARENT_RA]?.toDoubleOrNull()?.deg ?: Angle.ZERO
         val dec = element[HorizonsQuantity.APPARENT_DEC]?.toDoubleOrNull()?.deg ?: Angle.ZERO
-        Platform.runLater { view.updateEquatorialCoordinates(ra, dec, raJ2000, decJ2000) }
+        val epoch = UTC.now()
+        val constellation = Constellation.find(ICRF.equatorial(ra, dec, time = epoch, epoch = epoch))
+        javaFxThread { view.updateEquatorialCoordinates(ra, dec, raJ2000, decJ2000, constellation) }
     }
 
     private fun computeHorizontalCoordinates(element: HorizonsElement) {
         val az = element[HorizonsQuantity.APPARENT_AZ]?.toDoubleOrNull()?.deg ?: Angle.ZERO
         val alt = element[HorizonsQuantity.APPARENT_ALT]?.toDoubleOrNull()?.deg ?: Angle.ZERO
-        Platform.runLater { view.updateHorizontalCoordinates(az, alt) }
+        javaFxThread { view.updateHorizontalCoordinates(az, alt) }
     }
 
     fun updateSunImage() {
@@ -355,14 +345,14 @@ class AtlasManager(private val view: AtlasView) : Closeable {
 
             LOG.info("saving Sun image. path={}", sunImagePath.toUri())
 
-            Platform.runLater { view.updateSunImage(sunImagePath.toUri().toString()) }
+            javaFxThread { view.updateSunImage(sunImagePath.toUri().toString()) }
         }
     }
 
     fun updateMoonImage() {
         if (!view.showing) return
 
-        Platform.runLater { view.updateMoonImage("images/MOON.png") }
+        javaFxThread { view.updateMoonImage("images/MOON.png") }
     }
 
     fun searchMinorPlanet(text: String) {
@@ -372,7 +362,7 @@ class AtlasManager(private val view: AtlasView) : Closeable {
                 override fun onResponse(call: Call<SmallBody>, response: Response<SmallBody>) {
                     val smallBody = response.body() ?: return
 
-                    Platform.runLater {
+                    javaFxThread {
                         if (!smallBody.message.isNullOrEmpty()) {
                             view.showAlert(smallBody.message!!)
                         } else if (!smallBody.list.isNullOrEmpty()) {
@@ -386,11 +376,9 @@ class AtlasManager(private val view: AtlasView) : Closeable {
                                 }
 
                             view.populateMinorPlanet(elements)
-                        }
-                    }
 
-                    if (smallBody.body != null) {
-                        Platform.runLater { computeMinorPlanet(smallBody) }
+                            computeMinorPlanet(smallBody)
+                        }
                     }
                 }
 
@@ -408,31 +396,22 @@ class AtlasManager(private val view: AtlasView) : Closeable {
         thread {
             val dso = simbadService.query(query).execute().body()!!
 
-            Platform.runLater { view.populateDSO(dso.map { AtlasView.DSO(it) }) }
+            javaFxThread { view.populateDSO(dso.map { AtlasView.DSO(it) }) }
         }
     }
 
-    fun goTo() {
-        val now = LocalDateTime.now(ZoneOffset.UTC)
-        val element = currentEphemeris?.get(now) ?: return
-        val ra = element[HorizonsQuantity.APPARENT_RA]?.toDoubleOrNull()?.deg ?: return
-        val dec = element[HorizonsQuantity.APPARENT_DEC]?.toDoubleOrNull()?.deg ?: return
+    fun goTo(ra: Angle, dec: Angle) {
+        LOG.info("go to. ra={}, dec={}", ra.hours, dec.degrees)
         mount?.goTo(ra, dec)
     }
 
-    fun slewTo() {
-        val now = LocalDateTime.now(ZoneOffset.UTC)
-        val element = currentEphemeris?.get(now) ?: return
-        val ra = element[HorizonsQuantity.APPARENT_RA]?.toDoubleOrNull()?.deg ?: return
-        val dec = element[HorizonsQuantity.APPARENT_DEC]?.toDoubleOrNull()?.deg ?: return
+    fun slewTo(ra: Angle, dec: Angle) {
+        LOG.info("slew to. ra={}, dec={}", ra.hours, dec.degrees)
         mount?.slewTo(ra, dec)
     }
 
-    fun sync() {
-        val now = LocalDateTime.now(ZoneOffset.UTC)
-        val element = currentEphemeris?.get(now) ?: return
-        val ra = element[HorizonsQuantity.APPARENT_RA]?.toDoubleOrNull()?.deg ?: return
-        val dec = element[HorizonsQuantity.APPARENT_DEC]?.toDoubleOrNull()?.deg ?: return
+    fun sync(ra: Angle, dec: Angle) {
+        LOG.info("sync. ra={}, dec={}", ra.hours, dec.degrees)
         mount?.sync(ra, dec)
     }
 
@@ -441,7 +420,7 @@ class AtlasManager(private val view: AtlasView) : Closeable {
 
         if (count % 15 == 0) updateSunImage()
 
-        Platform.runLater { computeTab() }
+        javaFxThread { computeTab() }
     }
 
     fun savePreferences() {

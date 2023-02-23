@@ -2,8 +2,8 @@ package nebulosa.desktop.logic.filterwheel
 
 import nebulosa.desktop.App
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
-import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.filterwheel.FilterWheelView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.filterwheel.FilterWheel

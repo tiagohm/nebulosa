@@ -2,14 +2,11 @@ package nebulosa.indi.client.device.camera
 
 import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.device.MessageSender
-import nebulosa.indi.device.camera.CameraCoolerChanged
-import nebulosa.indi.device.camera.CameraCoolerControlChanged
 import nebulosa.indi.device.camera.CameraGainChanged
 import nebulosa.indi.device.camera.CameraGainMinMaxChanged
 import nebulosa.indi.protocol.DefNumberVector
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
-import nebulosa.indi.protocol.SwitchVector
 
 internal class SimCamera(
     sender: MessageSender,

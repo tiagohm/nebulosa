@@ -100,6 +100,29 @@ class SimbadService(url: String = "https://simbad.u-strasbg.fr/") :
         private const val RADVEL = 21
         private const val IDS = 22
 
+        @JvmStatic private val CATALOG_TYPES = CatalogType.values()
+
+        @JvmStatic private val MAIN_CATALOG_TYPES = arrayOf(
+            CatalogType.NAME, CatalogType.STAR,
+            CatalogType.HD, CatalogType.HIP,
+            CatalogType.M,
+            CatalogType.NGC, CatalogType.IC,
+            CatalogType.C, CatalogType.B,
+        )
+
+        private object NameComparator : Comparator<Name> {
+
+            override fun compare(a: Name, b: Name): Int {
+                val c = MAIN_CATALOG_TYPES.indexOf(a.type)
+                val d = MAIN_CATALOG_TYPES.indexOf(b.type)
+
+                return if (c == d) a.name.compareTo(b.name)
+                else if (c == -1) 1
+                else if (d == -1) -1
+                else c.compareTo(d)
+            }
+        }
+
         @JvmStatic
         private fun String.parse(): SimbadObject? {
             val parts = split("\t")
@@ -141,8 +164,6 @@ class SimbadService(url: String = "https://simbad.u-strasbg.fr/") :
             )
         }
 
-        @JvmStatic private val CATALOG_TYPES = CatalogType.values()
-
         @JvmStatic
         fun String.names(): List<Name> {
             val res = arrayListOf<Name>()
@@ -156,7 +177,7 @@ class SimbadService(url: String = "https://simbad.u-strasbg.fr/") :
                 }
             }
 
-            return res
+            return res.sortedWith(NameComparator)
         }
     }
 }

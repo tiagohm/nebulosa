@@ -8,8 +8,8 @@ import javafx.scene.control.TextField
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.CLOSE_CIRCLE_ICON
 import nebulosa.desktop.gui.CONNECTION_ICON
-import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.between
+import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.home.HomeManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or

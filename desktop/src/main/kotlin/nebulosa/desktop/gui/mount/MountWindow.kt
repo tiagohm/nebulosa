@@ -42,6 +42,7 @@ class MountWindow : AbstractWindow(), MountView {
     @FXML private lateinit var pierSideLabel: Label
     @FXML private lateinit var meridianAtLabel: Label
     @FXML private lateinit var lstLabel: Label
+    @FXML private lateinit var constellationLabel: Label
     @FXML private lateinit var targetCoordinatesEquinoxSegmentedButton: SegmentedButton
     @FXML private lateinit var siteAndTimeButton: Button
     @FXML private lateinit var targetRightAscensionTextField: TextField
@@ -105,6 +106,8 @@ class MountWindow : AbstractWindow(), MountView {
         altitudeLabel.textProperty().bind(mountManager.altitudeProperty.asString { it.deg.format(AngleFormatter.SIGNED_DMS) })
 
         pierSideLabel.textProperty().bind(mountManager.pierSideProperty.asString())
+
+        constellationLabel.textProperty().bind(mountManager.constellationProperty.asString { it?.iau ?: "-" })
 
         targetCoordinatesEquinoxSegmentedButton.disableProperty().bind(isNotConnectedOrMoving)
 

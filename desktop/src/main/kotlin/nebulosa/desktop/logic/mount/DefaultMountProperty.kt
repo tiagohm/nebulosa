@@ -5,6 +5,7 @@ import javafx.collections.FXCollections
 import nebulosa.desktop.logic.AbstractDeviceProperty
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.mount.*
+import nebulosa.nova.astrometry.Constellation
 import java.time.OffsetDateTime
 
 open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty {
@@ -34,6 +35,7 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
     override val timeProperty = SimpleObjectProperty(OffsetDateTime.now())
     override val azimuthProperty = SimpleDoubleProperty()
     override val altitudeProperty = SimpleDoubleProperty()
+    override val constellationProperty = SimpleObjectProperty<Constellation>()
 
     override fun onChanged(prev: Mount?, device: Mount) {
         slewingProperty.set(device.slewing)

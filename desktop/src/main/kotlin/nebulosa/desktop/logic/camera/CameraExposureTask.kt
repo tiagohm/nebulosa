@@ -2,10 +2,10 @@ package nebulosa.desktop.logic.camera
 
 import io.reactivex.rxjava3.disposables.Disposable
 import nebulosa.desktop.App
-import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
+import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
 import nebulosa.desktop.logic.task.Task
 import nebulosa.desktop.view.camera.AutoSubFolderMode

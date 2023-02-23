@@ -9,9 +9,9 @@ import nebulosa.desktop.gui.focuser.FocuserWindow
 import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.gui.mount.MountWindow
-import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.connection.ConnectionManager
+import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.home.HomeView
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

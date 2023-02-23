@@ -1,4 +1,4 @@
-package nebulosa.desktop.logic.atlas
+package nebulosa.desktop.logic.atlas.ephemeris.provider
 
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.query.horizons.HorizonsEphemeris

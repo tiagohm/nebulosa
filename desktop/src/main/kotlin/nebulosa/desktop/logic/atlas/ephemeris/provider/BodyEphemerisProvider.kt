@@ -1,4 +1,4 @@
-package nebulosa.desktop.logic.atlas
+package nebulosa.desktop.logic.atlas.ephemeris.provider
 
 import nebulosa.constants.DAYSEC
 import nebulosa.nova.astrometry.Body

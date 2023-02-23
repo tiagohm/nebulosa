@@ -2,8 +2,8 @@ package nebulosa.desktop.logic.focuser
 
 import nebulosa.desktop.App
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
-import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.focuser.Focuser

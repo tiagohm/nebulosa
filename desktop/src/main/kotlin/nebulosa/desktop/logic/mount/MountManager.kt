@@ -1,14 +1,14 @@
 package nebulosa.desktop.logic.mount
 
-import javafx.application.Platform
 import nebulosa.desktop.App
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.gui.mount.SiteAndTimeWindow
 import nebulosa.desktop.gui.telescopecontrol.TelescopeControlWindow
-import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlLX200Server
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlStellariumServer
+import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
@@ -47,6 +47,8 @@ class MountManager(private val view: MountView) :
 
     override fun onChanged(prev: Mount?, device: Mount) {
         if (prev !== device) savePreferences()
+
+        updateTitle()
 
         TelescopeControlStellariumServer.mount = device
         TelescopeControlLX200Server.mount = device
@@ -151,7 +153,7 @@ class MountManager(private val view: MountView) :
     }
 
     fun updateTitle() {
-        view.title = if (value == null) "Mount" else "Mount · $name"
+        view.title = "Mount · $name"
     }
 
     fun updateStatus() {
@@ -192,7 +194,7 @@ class MountManager(private val view: MountView) :
         val timeLeftToMeridianFlip = computeTimeLeftToMeridianFlip()
         val timeToMeridianFlip = LocalDateTime.now().plusSeconds((timeLeftToMeridianFlip.hours * 3600.0).toLong())
 
-        Platform.runLater {
+        javaFxThread {
             view.updateLSTAndMeridian(lst, timeLeftToMeridianFlip, timeToMeridianFlip)
             computeCoordinates()
         }

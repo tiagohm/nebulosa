@@ -1,4 +1,4 @@
-package nebulosa.desktop.logic.atlas
+package nebulosa.desktop.logic.atlas.ephemeris.provider
 
 import nebulosa.constants.DAYSEC
 import nebulosa.nova.position.GeographicPosition
@@ -6,6 +6,7 @@ import nebulosa.query.horizons.HorizonsEphemeris
 import nebulosa.query.horizons.HorizonsQuantity
 import nebulosa.query.horizons.HorizonsService
 import nebulosa.time.TimeYMDHMS
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -32,6 +33,8 @@ class HorizonsEphemerisProvider : EphemerisProvider<String> {
             return cache[position]!![target]
         }
 
+        LOG.info("retrieving ephemeris from JPL Horizons. target={}, startTime={}", target, startTime)
+
         time = startTime
 
         if (position !in cache) cache[position] = hashMapOf()
@@ -48,6 +51,8 @@ class HorizonsEphemerisProvider : EphemerisProvider<String> {
     }
 
     companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(HorizonsEphemerisProvider::class.java)
 
         @JvmStatic private val QUANTITIES = arrayOf(
             HorizonsQuantity.ASTROMETRIC_RA, HorizonsQuantity.ASTROMETRIC_DEC,

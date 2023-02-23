@@ -6,6 +6,7 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountType
 import nebulosa.indi.device.mount.PierSide
 import nebulosa.indi.device.mount.TrackMode
+import nebulosa.nova.astrometry.Constellation
 import java.time.OffsetDateTime
 
 interface MountProperty : DeviceProperty<Mount> {
@@ -59,6 +60,8 @@ interface MountProperty : DeviceProperty<Mount> {
     val azimuthProperty: SimpleDoubleProperty
 
     val altitudeProperty: SimpleDoubleProperty
+
+    val constellationProperty: SimpleObjectProperty<Constellation>
 
     val slewing
         get() = slewingProperty.get()
@@ -117,6 +120,9 @@ interface MountProperty : DeviceProperty<Mount> {
     val declinationJ2000
         get() = declinationJ2000Property.get()
 
+    val constellation: Constellation?
+        get() = constellationProperty.get()
+
     val longitude
         get() = longitudeProperty.get()
 
@@ -130,8 +136,7 @@ interface MountProperty : DeviceProperty<Mount> {
         get() = timeProperty.get()
 
     fun computeCoordinates() {
-        value?.computeCoordinates() ?: return
-
+        constellationProperty.set(value?.computeCoordinates() ?: return)
         rightAscensionJ2000Property.set(value.rightAscensionJ2000.hours)
         declinationJ2000Property.set(value.declinationJ2000.degrees)
         azimuthProperty.set(value.azimuth.degrees)

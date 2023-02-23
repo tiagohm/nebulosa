@@ -4,12 +4,16 @@ enum class CatalogType(val prefix: String) {
     /**
      * Star names following the Bayer's Greek letter system and Flamsteed numbers.
      */
-    STAR("* "),
+    STAR("* ") {
+        override fun format(name: String) = name
+    },
 
     /**
      * Common name.
      */
-    NAME("NAME "),
+    NAME("NAME ") {
+        override fun format(name: String) = name
+    },
 
     /**
      * Henry Draper: 359083 objects.
@@ -59,17 +63,23 @@ enum class CatalogType(val prefix: String) {
     /**
      * Melotte: 245 objects.
      */
-    MEL("Cl Melotte "),
+    MEL("Cl Melotte ") {
+        override fun format(name: String) = "Mel $name"
+    },
 
     /**
      * Collinder: 471 objects.
      */
-    CR("Cl Collinder "),
+    CR("Cl Collinder ") {
+        override fun format(name: String) = "Cr $name"
+    },
 
     /**
      * Barnard: 370 objects.
      */
-    B("Barnard "),
+    B("Barnard ") {
+        override fun format(name: String) = "B $name"
+    },
 
     /**
      * Sharpless: 142+313 objects?
@@ -127,17 +137,23 @@ enum class CatalogType(val prefix: String) {
     /**
      * Trumpler: 37 objects.
      */
-    TR("Cl Trumpler "),
+    TR("Cl Trumpler ") {
+        override fun format(name: String) = "TR $name"
+    },
 
     /**
      * Stock: 21 objects.
      */
-    ST("Cl Stock "),
+    ST("Cl Stock ") {
+        override fun format(name: String) = "St $name"
+    },
 
     /**
      * Ruprecht: 176 objects.
      */
-    RU("Cl Ruprecht "),
+    RU("Cl Ruprecht ") {
+        override fun format(name: String) = "Ru $name"
+    },
 
     /**
      * Perek+Kohoutek (Catalogue of galactic planetary nebulae): 1702 objects.
@@ -193,4 +209,6 @@ enum class CatalogType(val prefix: String) {
      * Gaia Data Release 3.
      */
     GAIA_DR3("Gaia DR3 ");
+
+    open fun format(name: String) = "${prefix}$name"
 }

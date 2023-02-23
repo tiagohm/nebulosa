@@ -7,7 +7,7 @@ import javafx.scene.control.DatePicker
 import javafx.scene.control.TextField
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.logic.EquipmentManager
+import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.mount.SiteAndTimeManager
 import nebulosa.desktop.view.mount.SiteAndTimeView
 import nebulosa.indi.device.gps.GPS

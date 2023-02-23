@@ -1,17 +1,17 @@
 package nebulosa.desktop.logic.camera
 
 import io.reactivex.rxjava3.disposables.Disposable
-import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
 import nebulosa.desktop.App
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
-import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.task.TaskEvent
+import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.camera.ExposureMode
@@ -217,7 +217,7 @@ class CameraManager(private val view: CameraView) :
             .whenCompleteAsync { _, _ ->
                 capturingProperty.set(false)
                 runningTask.set(null)
-                Platform.runLater { updateStatus() }
+                javaFxThread { updateStatus() }
             }
 
         savePreferences()

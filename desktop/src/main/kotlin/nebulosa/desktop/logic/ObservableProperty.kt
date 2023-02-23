@@ -5,4 +5,4 @@ import javafx.beans.value.ObservableObjectValue
 import javafx.beans.value.WritableObjectValue
 import java.io.Closeable
 
-interface Property<T> : Property<T>, ObservableObjectValue<T>, WritableObjectValue<T>, Closeable
+interface ObservableProperty<T> : Property<T>, ObservableObjectValue<T>, WritableObjectValue<T>, Closeable

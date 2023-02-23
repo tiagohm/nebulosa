@@ -15,6 +15,7 @@ import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.m
+import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.time.UTC
@@ -292,8 +293,8 @@ internal open class MountDevice(
         sendNewText("TIME_UTC", "UTC" to GPS.formatTime(time.toLocalDateTime()), "OFFSET" to offset)
     }
 
-    override fun computeCoordinates(j2000: Boolean, horizontal: Boolean) {
-        if (j2000 || horizontal) {
+    override fun computeCoordinates(j2000: Boolean, horizontal: Boolean): Constellation? {
+        return if (j2000 || horizontal) {
             val epoch = UTC.now()
             val center = Geoid.IERS2010.latLon(longitude, latitude, elevation)
             val icrf = ICRF.equatorial(rightAscension, declination, time = epoch, epoch = epoch, center = center)
@@ -309,6 +310,10 @@ internal open class MountDevice(
                 azimuth = altAz.longitude.normalized
                 altitude = altAz.latitude
             }
+
+            Constellation.find(icrf)
+        } else {
+            null
         }
     }
 

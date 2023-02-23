@@ -5,8 +5,8 @@ import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
 import nebulosa.desktop.App
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
-import nebulosa.desktop.logic.EquipmentManager
 import nebulosa.desktop.logic.EventBus
+import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.*
 import org.springframework.beans.factory.annotation.Autowired
