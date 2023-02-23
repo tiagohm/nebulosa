@@ -13,7 +13,6 @@ import javafx.scene.image.WritableImage
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
-import javafx.stage.Screen
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.image.ImageManager
 import nebulosa.desktop.view.image.ImageView
@@ -21,14 +20,13 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+import org.springframework.stereotype.Service
 import java.io.File
 import java.nio.IntBuffer
 
-class ImageWindow(override val camera: Camera? = null) : AbstractWindow(), ImageView {
-
-    override val resourceName = "Image"
-
-    override val icon = "nebulosa-image"
+class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image", "nebulosa-image"), ImageView {
 
     @FXML private lateinit var imageCanvas: Canvas
     @FXML private lateinit var menu: ContextMenu
@@ -37,7 +35,6 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow(), Image
 
     @Volatile private var buffer = IntArray(0)
 
-    private val screenBounds = Screen.getPrimary().bounds
     private val imageManager = ImageManager(this)
 
     init {
@@ -269,15 +266,17 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow(), Image
         imageManager.transformImage(shadow = shadow, highlight = highlight, midtone = midtone)
     }
 
-    companion object {
+    @Service
+    class Opener {
 
-        @JvmStatic private val windows = hashSetOf<ImageWindow>()
+        @Autowired private lateinit var beanFactory: AutowireCapableBeanFactory
 
-        @JvmStatic
+        private val windows = hashSetOf<ImageWindow>()
+
         fun open(file: File, camera: Camera? = null): ImageWindow {
             val window = windows
                 .firstOrNull { if (camera == null) it.camera == null && !it.showing else it.camera === camera }
-                ?: ImageWindow(camera)
+                ?: ImageWindow(camera).also { beanFactory.autowireBean(it); beanFactory.autowireBean(it.imageManager) }
 
             windows.add(window)
 

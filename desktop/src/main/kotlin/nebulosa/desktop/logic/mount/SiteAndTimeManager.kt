@@ -1,6 +1,5 @@
 package nebulosa.desktop.logic.mount
 
-import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.view.mount.SiteAndTimeView
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -9,7 +8,8 @@ import java.time.ZoneOffset
 class SiteAndTimeManager(private val view: SiteAndTimeView) {
 
     fun openINDIPanelControl() {
-        INDIPanelControlWindow.open(view.gps)
+        // TODO: indiPanelControlWindow.show(bringToFront = true)
+        // indiPanelControlWindow.device = view.gps
     }
 
     fun useCoordinateFromGPS() {

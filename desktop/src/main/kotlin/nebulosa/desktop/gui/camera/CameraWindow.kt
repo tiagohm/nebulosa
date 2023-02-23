@@ -20,15 +20,17 @@ import nebulosa.desktop.view.camera.ExposureMode
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
 import org.controlsfx.control.ToggleSwitch
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
+import org.springframework.stereotype.Component
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
-class CameraWindow : AbstractWindow(), CameraView {
+@Component
+class CameraWindow : AbstractWindow("Camera", "nebulosa-camera"), CameraView {
 
-    override val resourceName = "Camera"
-
-    override val icon = "nebulosa-camera"
+    @Lazy @Autowired private lateinit var cameraManager: CameraManager
 
     @FXML private lateinit var cameraChoiceBox: ChoiceBox<Camera>
     @FXML private lateinit var connectButton: Button
@@ -67,8 +69,6 @@ class CameraWindow : AbstractWindow(), CameraView {
     @FXML private lateinit var startCaptureButton: Button
     @FXML private lateinit var abortCaptureButton: Button
     @FXML private lateinit var statusLabel: Label
-
-    private val cameraManager = CameraManager(this)
 
     init {
         title = "Camera"

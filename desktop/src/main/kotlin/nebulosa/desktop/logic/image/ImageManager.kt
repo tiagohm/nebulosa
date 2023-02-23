@@ -6,7 +6,6 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
 import javafx.stage.FileChooser
 import javafx.stage.Screen
-import nebulosa.desktop.App
 import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
@@ -88,8 +87,6 @@ class ImageManager(private val view: ImageView) : Closeable {
         private set
 
     init {
-        App.autowireBean(this)
-
         transformSubscriber = transformPublisher
             .debounce(500L, TimeUnit.MILLISECONDS)
             .subscribe {

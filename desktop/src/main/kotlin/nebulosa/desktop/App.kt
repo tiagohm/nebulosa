@@ -3,7 +3,6 @@ package nebulosa.desktop
 import ch.qos.logback.classic.Level
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import javafx.application.Application
 import javafx.scene.text.Font
 import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.loader.IERSLoader
@@ -124,8 +123,6 @@ class App : CommandLineRunner {
     fun taskEventBus(): TaskEventBus = newEventBus()
 
     override fun run(vararg args: String) {
-        App.beanFactory = beanFactory
-
         // Sets default locale to en_US.
         Locale.setDefault(Locale.ENGLISH)
 
@@ -136,28 +133,11 @@ class App : CommandLineRunner {
 
         System.setProperty("prism.lcdtext", "false")
 
-        IERSLoader().start()
+        beanFactory.createBean(IERSLoader::class.java).start()
 
         // Log level.
         with(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger) {
             level = if ("-v" in args) Level.DEBUG else Level.INFO
         }
-
-        // Run the JavaFX application.
-        Application.launch(Nebulosa::class.java, *args)
-    }
-
-    companion object {
-
-        @JvmStatic private lateinit var beanFactory: AutowireCapableBeanFactory
-
-        @JvmStatic
-        fun autowireBean(o: Any) = beanFactory.autowireBean(o)
-
-        @JvmStatic
-        inline fun <reified T : Any> beanFor() = beanFor(T::class.java)
-
-        @JvmStatic
-        fun <T : Any> beanFor(type: Class<out T>) = beanFactory.getBean(type)
     }
 }

@@ -1,7 +1,6 @@
 package nebulosa.desktop.logic.focuser
 
 import io.reactivex.rxjava3.disposables.Disposable
-import nebulosa.desktop.App
 import nebulosa.desktop.logic.DeviceEventBus
 import nebulosa.desktop.logic.TaskEventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
@@ -25,10 +24,6 @@ data class FocuserRelativeMoveTask(
     @Autowired private lateinit var taskEventBus: TaskEventBus
 
     private val latch = CountUpDownLatch()
-
-    init {
-        App.autowireBean(this)
-    }
 
     private fun onEvent(event: DeviceEvent<*>) {
         when (event) {

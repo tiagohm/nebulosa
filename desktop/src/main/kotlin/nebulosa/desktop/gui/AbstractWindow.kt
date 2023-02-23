@@ -6,7 +6,6 @@ import javafx.scene.Scene
 import javafx.scene.control.Alert
 import javafx.scene.image.Image
 import javafx.stage.Stage
-import nebulosa.desktop.App
 import nebulosa.desktop.gui.home.HomeWindow
 import nebulosa.desktop.logic.newEventBus
 import nebulosa.desktop.view.View
@@ -14,13 +13,12 @@ import nebulosa.io.resource
 import nebulosa.io.resourceUrl
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class AbstractWindow : View {
+abstract class AbstractWindow(
+    private val resourceName: String,
+    private val icon: String = "nebulosa",
+    private val window: Stage = Stage(),
+) : View {
 
-    protected abstract val resourceName: String
-
-    protected open val icon = "nebulosa"
-
-    private val window = Stage()
     private val showingAtFirstTime = AtomicBoolean()
 
     init {
@@ -32,8 +30,6 @@ abstract class AbstractWindow : View {
 
                 window.scene = Scene(root)
                 window.icons.add(Image(resource("icons/$icon.png")))
-
-                App.autowireBean(this)
 
                 onCreate()
 
@@ -66,64 +62,64 @@ abstract class AbstractWindow : View {
 
     protected open fun onClose() = Unit
 
-    override var resizable
+    final override var resizable
         get() = window.isResizable
         set(value) {
             window.isResizable = value
         }
 
-    override var maximized
+    final override var maximized
         get() = window.isMaximized
         set(value) {
             window.isMaximized = value
         }
 
-    override val showing
+    final override val showing
         get() = window.isShowing
 
-    override var title
+    final override var title
         get() = window.title!!
         set(value) {
             window.title = value
         }
 
-    override var x
+    final override var x
         get() = window.x
         set(value) {
             window.x = value
         }
 
-    override var y
+    final override var y
         get() = window.y
         set(value) {
             window.y = value
         }
 
-    override var width
+    final override var width
         get() = window.width
         set(value) {
             window.width = value
         }
 
-    override var height
+    final override var height
         get() = window.height
         set(value) {
             window.height = value
         }
 
-    override val sceneWidth
+    final override val sceneWidth
         get() = window.scene.width
 
-    override val sceneHeight
+    final override val sceneHeight
         get() = window.scene.height
 
-    override val borderSize
+    final override val borderSize
         get() = (width - sceneWidth) / 2.0
 
-    override val titleHeight
+    final override val titleHeight
         get() = (height - sceneHeight) - borderSize
 
-    override fun show(
+    final override fun show(
         requestFocus: Boolean,
         bringToFront: Boolean,
     ) {
@@ -133,7 +129,7 @@ abstract class AbstractWindow : View {
         if (bringToFront) window.toFront()
     }
 
-    override fun showAndWait() {
+    final override fun showAndWait() {
         window.showAndWait()
     }
 
@@ -141,7 +137,7 @@ abstract class AbstractWindow : View {
         window.close()
     }
 
-    override fun showAlert(
+    final override fun showAlert(
         message: String, title: String,
     ) {
         val alert = Alert(Alert.AlertType.INFORMATION)

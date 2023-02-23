@@ -1,27 +1,32 @@
 package nebulosa.desktop.logic.focuser
 
-import nebulosa.desktop.App
+import jakarta.annotation.PostConstruct
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
+import nebulosa.desktop.logic.task.TaskExecutor
 import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserMovingChanged
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
-class FocuserManager(private val view: FocuserView) :
-    FocuserProperty by App.beanFor<EquipmentManager>().selectedFocuser {
+@Component
+class FocuserManager(
+    @Autowired private val view: FocuserView,
+    @Autowired private val equipmentManager: EquipmentManager,
+) : FocuserProperty by equipmentManager.selectedFocuser {
 
     @Autowired private lateinit var preferences: Preferences
-    @Autowired private lateinit var equipmentManager: EquipmentManager
+    @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
+    @Autowired private lateinit var taskExecutor: TaskExecutor
 
     val focusers
         get() = equipmentManager.attachedFocusers
 
-    init {
-        App.autowireBean(this)
-
+    @PostConstruct
+    private fun initialize() {
         registerListener(this)
     }
 
@@ -52,19 +57,23 @@ class FocuserManager(private val view: FocuserView) :
     }
 
     fun openINDIPanelControl() {
-        INDIPanelControlWindow.open(value)
+        indiPanelControlWindow.show(bringToFront = true)
+        indiPanelControlWindow.device = value
     }
 
     fun moveIn() {
-        value?.moveFocusIn(view.increment)
+        val task = FocuserRelativeMoveTask(value, view.increment, FocuserDirection.IN)
+        taskExecutor.execute(task)
     }
 
     fun moveOut() {
-        value?.moveFocusOut(view.increment)
+        val task = FocuserRelativeMoveTask(value, view.increment, FocuserDirection.OUT)
+        taskExecutor.execute(task)
     }
 
     fun moveTo() {
-        value?.moveFocusTo(view.absolute)
+        val task = FocuserAbsoluteMoveTask(value, view.absolute)
+        taskExecutor.execute(task)
     }
 
     fun sync() {

@@ -13,11 +13,11 @@ import org.springframework.stereotype.Service
 @Service
 class ConnectionManager : DeviceEventHandler {
 
-    @Volatile private final var client: INDIClient? = null
-    @Volatile private final var deviceHandler: DeviceProtocolHandler? = null
+    @Volatile private var client: INDIClient? = null
+    @Volatile private var deviceHandler: DeviceProtocolHandler? = null
 
-    @Autowired private final lateinit var connectionEventBus: ConnectionEventBus
-    @Autowired private final lateinit var deviceEventBus: DeviceEventBus
+    @Autowired private lateinit var connectionEventBus: ConnectionEventBus
+    @Autowired private lateinit var deviceEventBus: DeviceEventBus
 
     override fun onEventReceived(event: DeviceEvent<*>) {
         if (event.device?.sender === client) {

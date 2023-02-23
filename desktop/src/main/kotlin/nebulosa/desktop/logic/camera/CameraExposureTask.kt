@@ -1,7 +1,6 @@
 package nebulosa.desktop.logic.camera
 
 import io.reactivex.rxjava3.disposables.Disposable
-import nebulosa.desktop.App
 import nebulosa.desktop.logic.DeviceEventBus
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.TaskEventBus
@@ -55,10 +54,6 @@ data class CameraExposureTask(
 
     private val latch = CountUpDownLatch()
     private val imagePaths = arrayListOf<Path>()
-
-    init {
-        App.autowireBean(this)
-    }
 
     private fun onEvent(event: DeviceEvent<*>) {
         when (event) {

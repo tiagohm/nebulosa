@@ -18,19 +18,19 @@ import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.*
 import nebulosa.indi.protocol.PropertyPermission
 import nebulosa.indi.protocol.SwitchRule
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
+import org.springframework.stereotype.Component
 import kotlin.math.min
 
-class INDIPanelControlWindow : AbstractWindow(), INDIPanelControlView {
+@Component
+class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "nebulosa-indi"), INDIPanelControlView {
 
-    override val resourceName = "INDIPanelControl"
-
-    override val icon = "nebulosa-indi"
+    @Lazy @Autowired private lateinit var indiPanelControlManager: INDIPanelControlManager
 
     @FXML private lateinit var deviceChoiceBox: ChoiceBox<Device>
     @FXML private lateinit var groupsTabPane: TabPane
     @FXML private lateinit var logTextArea: TextArea
-
-    private val indiPanelControlManager = INDIPanelControlManager(this)
 
     init {
         title = "INDI Panel Control"
@@ -430,15 +430,6 @@ class INDIPanelControlWindow : AbstractWindow(), INDIPanelControlView {
     companion object {
 
         @JvmStatic private val STATE_COLORS = arrayOf("text-grey-400", "text-green-400", "text-blue-400", "text-red-400")
-
-        @JvmStatic private var window: INDIPanelControlWindow? = null
-
-        @JvmStatic
-        fun open(device: Device? = null) {
-            if (window == null) window = INDIPanelControlWindow()
-            window!!.show(bringToFront = true)
-            device?.also { window!!.device = it }
-        }
 
         @JvmStatic
         private fun Label.withState(vector: PropertyVector<*, *>) = apply {

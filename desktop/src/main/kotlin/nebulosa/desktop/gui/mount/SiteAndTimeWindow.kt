@@ -22,11 +22,7 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
-class SiteAndTimeWindow(override val mount: Mount) : AbstractWindow(), SiteAndTimeView {
-
-    override val resourceName = "SiteAndTime"
-
-    override val icon = "nebulosa-site-and-time"
+class SiteAndTimeWindow(override val mount: Mount) : AbstractWindow("SiteAndTime", "nebulosa-site-and-time"), SiteAndTimeView {
 
     @FXML private lateinit var latitudeTextField: TextField
     @FXML private lateinit var longitudeTextField: TextField

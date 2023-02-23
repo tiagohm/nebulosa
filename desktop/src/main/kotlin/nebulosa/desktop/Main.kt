@@ -1,7 +1,8 @@
 package nebulosa.desktop
 
-import org.springframework.boot.runApplication
+import javafx.application.Application
 
 fun main(args: Array<String>) {
-    runApplication<App>(*args)
+    // Run the JavaFX application.
+    Application.launch(Nebulosa::class.java, *args)
 }

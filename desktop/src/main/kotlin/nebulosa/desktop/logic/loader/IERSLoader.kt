@@ -1,6 +1,5 @@
 package nebulosa.desktop.logic.loader
 
-import nebulosa.desktop.App
 import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import okhttp3.OkHttpClient
@@ -13,18 +12,12 @@ import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
-class IERSLoader : Thread() {
+class IERSLoader(
+    @Autowired private var appDirectory: Path,
+    @Autowired private var okHttpClient: OkHttpClient,
+) : Thread() {
 
-    @Autowired private lateinit var appDirectory: Path
-    @Autowired private lateinit var okHttpClient: OkHttpClient
-
-    private val path: Path
-
-    init {
-        App.autowireBean(this)
-
-        path = Paths.get("$appDirectory", "finals2000A.all")
-    }
+    private val path = Paths.get("$appDirectory", "finals2000A.all")
 
     override fun run() {
         LOG.info("checking finals2000A.all")

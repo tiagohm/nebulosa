@@ -47,24 +47,24 @@ class EquipmentManager(@Autowired private val deviceEventBus: DeviceEventBus) : 
 
     @Autowired private lateinit var connectionEventBus: ConnectionEventBus
 
-    private final val subscribers = arrayOfNulls<Disposable>(2)
+    private val subscribers = arrayOfNulls<Disposable>(2)
 
-    final val connectedProperty = SimpleBooleanProperty(false)
+    val connectedProperty = SimpleBooleanProperty(false)
 
-    final val attachedCameras = SimpleListProperty(FXCollections.observableArrayList<Camera>())
-    final val attachedMounts = SimpleListProperty(FXCollections.observableArrayList<Mount>())
-    final val attachedFilterWheels = SimpleListProperty(FXCollections.observableArrayList<FilterWheel>())
-    final val attachedFocusers = SimpleListProperty(FXCollections.observableArrayList<Focuser>())
-    final val attachedGPSs = SimpleListProperty(FXCollections.observableArrayList<GPS>())
+    val attachedCameras = SimpleListProperty(FXCollections.observableArrayList<Camera>())
+    val attachedMounts = SimpleListProperty(FXCollections.observableArrayList<Mount>())
+    val attachedFilterWheels = SimpleListProperty(FXCollections.observableArrayList<FilterWheel>())
+    val attachedFocusers = SimpleListProperty(FXCollections.observableArrayList<Focuser>())
+    val attachedGPSs = SimpleListProperty(FXCollections.observableArrayList<GPS>())
 
-    final val attachedGuideOutputs = SimpleListProperty(FXCollections.observableArrayList<GuideOutput>())
-    final val attachedThermometers = SimpleListProperty(FXCollections.observableArrayList<Thermometer>())
+    val attachedGuideOutputs = SimpleListProperty(FXCollections.observableArrayList<GuideOutput>())
+    val attachedThermometers = SimpleListProperty(FXCollections.observableArrayList<Thermometer>())
 
-    final val selectedCamera = DefaultCameraProperty()
-    final val selectedMount = DefaultMountProperty()
-    final val selectedFilterWheel = DefaultFilterWheelProperty()
-    final val selectedFocuser = DefaultFocuserProperty()
-    final val selectedGPS = DefaultGPSProperty()
+    val selectedCamera = DefaultCameraProperty()
+    val selectedMount = DefaultMountProperty()
+    val selectedFilterWheel = DefaultFilterWheelProperty()
+    val selectedFocuser = DefaultFocuserProperty()
+    val selectedGPS = DefaultGPSProperty()
 
     @PostConstruct
     private fun initialize() {

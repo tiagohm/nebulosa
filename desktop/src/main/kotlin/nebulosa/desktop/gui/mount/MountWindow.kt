@@ -21,14 +21,16 @@ import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.AngleFormatter
 import org.controlsfx.control.SegmentedButton
 import org.controlsfx.control.ToggleSwitch
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
+import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class MountWindow : AbstractWindow(), MountView {
+@Component
+class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
 
-    override val resourceName = "Mount"
-
-    override val icon = "nebulosa-mount"
+    @Lazy @Autowired private lateinit var mountManager: MountManager
 
     @FXML private lateinit var mountChoiceBox: ChoiceBox<Mount>
     @FXML private lateinit var connectButton: Button
@@ -67,8 +69,6 @@ class MountWindow : AbstractWindow(), MountView {
     @FXML private lateinit var parkButton: Button
     @FXML private lateinit var homeButton: Button
     @FXML private lateinit var statusLabel: Label
-
-    private val mountManager = MountManager(this)
 
     init {
         title = "Mount"

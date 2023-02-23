@@ -1,10 +1,10 @@
 package nebulosa.desktop.logic.camera
 
 import io.reactivex.rxjava3.disposables.Disposable
+import jakarta.annotation.PostConstruct
+import javafx.application.HostServices
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
-import nebulosa.desktop.App
-import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.Preferences
@@ -12,6 +12,7 @@ import nebulosa.desktop.logic.TaskEventBus
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.observeOnJavaFX
 import nebulosa.desktop.logic.task.TaskEvent
+import nebulosa.desktop.logic.task.TaskExecutor
 import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.desktop.view.camera.CameraView
@@ -19,36 +20,41 @@ import nebulosa.desktop.view.camera.ExposureMode
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.*
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+import org.springframework.stereotype.Component
+import java.io.Closeable
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
-class CameraManager(private val view: CameraView) :
-    CameraProperty by App.beanFor<EquipmentManager>().selectedCamera {
-
-    val capturingProperty = SimpleBooleanProperty()
+@Component
+class CameraManager(
+    @Autowired private val view: CameraView,
+    @Autowired private val equipmentManager: EquipmentManager,
+) : CameraProperty by equipmentManager.selectedCamera {
 
     @Autowired private lateinit var preferences: Preferences
-    @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var appDirectory: Path
-    @Autowired private lateinit var cameraExecutorService: ExecutorService
     @Autowired private lateinit var taskEventBus: TaskEventBus
+    @Autowired private lateinit var taskExecutor: TaskExecutor
+    @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
+    @Autowired private lateinit var imageWindowOpener: ImageWindow.Opener
+    @Autowired private lateinit var beanFactory: AutowireCapableBeanFactory
 
     private val subscribers = arrayOfNulls<Disposable>(1)
     private val imageWindows = hashSetOf<ImageWindow>()
     private val runningTask = AtomicReference<CameraExposureTask>()
 
+    val capturingProperty = SimpleBooleanProperty()
+
     val cameras
         get() = equipmentManager.attachedCameras
 
-    init {
-        App.autowireBean(this)
-
+    @PostConstruct
+    private fun initialize() {
         registerListener(this)
 
         subscribers[0] = taskEventBus
@@ -65,7 +71,7 @@ class CameraManager(private val view: CameraView) :
 
     private fun onTaskEvent(event: TaskEvent) {
         when (event) {
-            is CameraFrameSaved -> imageWindows.add(ImageWindow.open(event.imagePath.toFile(), event.task.camera))
+            is CameraFrameSaved -> imageWindows.add(imageWindowOpener.open(event.imagePath.toFile(), event.task.camera))
         }
     }
 
@@ -88,12 +94,14 @@ class CameraManager(private val view: CameraView) :
     }
 
     fun openINDIPanelControl() {
-        INDIPanelControlWindow.open(value)
+        indiPanelControlWindow.show(bringToFront = true)
+        indiPanelControlWindow.device = value
     }
 
     fun openImageSavePathInFiles() {
         val imageSavePath = preferences.string("camera.$name.imageSavePath") ?: return
-        // TODO: hostServices.showDocument(imageSavePath)
+        val hostServices = beanFactory.getBean(HostServices::class.java)
+        hostServices.showDocument(imageSavePath)
     }
 
     private fun updateStatus() {
@@ -215,8 +223,7 @@ class CameraManager(private val view: CameraView) :
         capturingProperty.set(true)
         updateStatus()
 
-        CompletableFuture
-            .supplyAsync(task, cameraExecutorService)
+        taskExecutor.execute(task)
             .thenRun {
                 capturingProperty.set(false)
                 runningTask.set(null)
@@ -300,7 +307,7 @@ class CameraManager(private val view: CameraView) :
     override fun close() {
         savePreferences()
 
-        imageWindows.forEach(AbstractWindow::close)
+        imageWindows.forEach(Closeable::close)
         imageWindows.clear()
 
         unregisterListener(this)

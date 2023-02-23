@@ -1,7 +1,6 @@
 package nebulosa.desktop.logic.home
 
 import javafx.stage.FileChooser
-import nebulosa.desktop.App
 import nebulosa.desktop.gui.atlas.AtlasWindow
 import nebulosa.desktop.gui.camera.CameraWindow
 import nebulosa.desktop.gui.filterwheel.FilterWheelWindow
@@ -27,9 +26,13 @@ class HomeManager(private val view: HomeView) : Closeable {
     @Autowired private lateinit var connectionManager: ConnectionManager
     @Autowired private lateinit var appDirectory: Path
 
-    init {
-        App.autowireBean(this)
-    }
+    @Autowired private lateinit var cameraWindow: CameraWindow
+    @Autowired private lateinit var mountWindow: MountWindow
+    @Autowired private lateinit var focuserWindow: FocuserWindow
+    @Autowired private lateinit var filterWheelWindow: FilterWheelWindow
+    @Autowired private lateinit var atlasWindow: AtlasWindow
+    @Autowired private lateinit var imageWindowOpener: ImageWindow.Opener
+    @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
 
     val connectedProperty
         get() = equipmentManager.connectedProperty
@@ -60,12 +63,12 @@ class HomeManager(private val view: HomeView) : Closeable {
     fun open(name: String) {
         when (name) {
             "NEW_IMAGE" -> openNewImage()
-            "CAMERA" -> CameraWindow.open()
-            "MOUNT" -> MountWindow.open()
-            "FOCUSER" -> FocuserWindow.open()
-            "FILTER_WHEEL" -> FilterWheelWindow.open()
-            "ATLAS" -> AtlasWindow.open()
-            "INDI" -> INDIPanelControlWindow.open()
+            "CAMERA" -> cameraWindow.show(bringToFront = true)
+            "MOUNT" -> mountWindow.show(bringToFront = true)
+            "FOCUSER" -> focuserWindow.show(bringToFront = true)
+            "FILTER_WHEEL" -> filterWheelWindow.show(bringToFront = true)
+            "ATLAS" -> atlasWindow.show(bringToFront = true)
+            "INDI" -> indiPanelControlWindow.show(bringToFront = true)
         }
     }
 
@@ -87,7 +90,7 @@ class HomeManager(private val view: HomeView) : Closeable {
         preferences.string("home.newImage.initialDirectory", file.parent)
 
         try {
-            ImageWindow.open(file)
+            imageWindowOpener.open(file)
         } catch (e: Throwable) {
             LOG.error("image load error", e)
 

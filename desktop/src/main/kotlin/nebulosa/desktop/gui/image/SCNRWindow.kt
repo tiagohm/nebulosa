@@ -12,11 +12,7 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import org.controlsfx.control.ToggleSwitch
 
-class SCNRWindow(private val view: ImageView) : AbstractWindow(), SCNRView {
-
-    override val resourceName = "SCNR"
-
-    override val icon = "nebulosa-scnr"
+class SCNRWindow(private val view: ImageView) : AbstractWindow("SCNR", "nebulosa-scnr"), SCNRView {
 
     @FXML private lateinit var channelChoiceBox: ChoiceBox<ImageChannel>
     @FXML private lateinit var protectionMethodChoiceBox: ChoiceBox<ProtectionMethod>

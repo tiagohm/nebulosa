@@ -1,6 +1,6 @@
 package nebulosa.desktop.logic.mount
 
-import nebulosa.desktop.App
+import jakarta.annotation.PostConstruct
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.gui.mount.SiteAndTimeWindow
 import nebulosa.desktop.gui.telescopecontrol.TelescopeControlWindow
@@ -20,23 +20,26 @@ import nebulosa.nova.position.Geoid
 import nebulosa.time.InstantOfTime
 import nebulosa.time.UTC
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import kotlin.concurrent.timer
 
-class MountManager(private val view: MountView) :
-    MountProperty by App.beanFor<EquipmentManager>().selectedMount {
+@Component
+class MountManager(
+    @Autowired private val view: MountView,
+    @Autowired private val equipmentManager: EquipmentManager,
+) : MountProperty by equipmentManager.selectedMount {
 
     @Autowired private lateinit var preferences: Preferences
-    @Autowired private lateinit var equipmentManager: EquipmentManager
+    @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
 
     val mounts
         get() = equipmentManager.attachedMounts
 
     private val timer = timer(daemon = true, initialDelay = 1000L, period = 1000L) { onTimerHit() }
 
-    init {
-        App.autowireBean(this)
-
+    @PostConstruct
+    private fun initialize() {
         registerListener(this)
     }
 
@@ -65,7 +68,8 @@ class MountManager(private val view: MountView) :
     }
 
     fun openINDIPanelControl() {
-        INDIPanelControlWindow.open(value)
+        indiPanelControlWindow.show(bringToFront = true)
+        indiPanelControlWindow.device = value
     }
 
     fun openTelescopeControlServer() {

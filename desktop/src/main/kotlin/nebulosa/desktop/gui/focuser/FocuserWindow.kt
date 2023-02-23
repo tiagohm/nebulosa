@@ -19,12 +19,14 @@ import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.indi.device.focuser.Focuser
 import org.controlsfx.control.ToggleSwitch
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
+import org.springframework.stereotype.Component
 
-class FocuserWindow : AbstractWindow(), FocuserView {
+@Component
+class FocuserWindow : AbstractWindow("Focuser", "nebulosa-focuser"), FocuserView {
 
-    override val resourceName = "Focuser"
-
-    override val icon = "nebulosa-focuser"
+    @Lazy @Autowired private lateinit var focuserManager: FocuserManager
 
     @FXML private lateinit var focuserChoiceBox: ChoiceBox<Focuser>
     @FXML private lateinit var connectButton: Button
@@ -42,8 +44,6 @@ class FocuserWindow : AbstractWindow(), FocuserView {
     @FXML private lateinit var backlashCompensationToggleSwitch: ToggleSwitch
     @FXML private lateinit var backlashCompensationStepsSpinner: Spinner<Double>
     @FXML private lateinit var autoFocusButton: Button
-
-    private val focuserManager = FocuserManager(this)
 
     init {
         title = "Focuser"

@@ -24,14 +24,16 @@ import nebulosa.desktop.logic.or
 import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.filterwheel.FilterWheelView
 import nebulosa.indi.device.filterwheel.FilterWheel
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
+import org.springframework.stereotype.Component
 import kotlin.math.max
 import kotlin.math.min
 
-class FilterWheelWindow : AbstractWindow(), FilterWheelView {
+@Component
+class FilterWheelWindow : AbstractWindow("FilterWheel", "nebulosa-filterwheel"), FilterWheelView {
 
-    override val resourceName = "FilterWheel"
-
-    override val icon = "nebulosa-filterwheel"
+    @Lazy @Autowired private lateinit var filterWheelManager: FilterWheelManager
 
     @FXML private lateinit var filterWheelChoiceBox: ChoiceBox<FilterWheel>
     @FXML private lateinit var connectButton: Button
@@ -44,10 +46,8 @@ class FilterWheelWindow : AbstractWindow(), FilterWheelView {
     @FXML private lateinit var filterSlotChoiceBox: ChoiceBox<Int>
     @FXML private lateinit var moveToSelectedFilterButton: Button
 
-    private val filterWheelManager = FilterWheelManager(this)
-
     init {
-        title = "FilterWheel"
+        title = "Filter Wheel"
         resizable = false
     }
 

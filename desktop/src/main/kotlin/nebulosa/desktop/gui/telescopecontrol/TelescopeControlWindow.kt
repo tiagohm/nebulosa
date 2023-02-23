@@ -14,11 +14,8 @@ import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServerType
 import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.telescopecontrol.TelescopeControlView
 
-class TelescopeControlWindow(private val mountManager: MountManager) : AbstractWindow(), TelescopeControlView {
-
-    override val resourceName = "TelescopeControl"
-
-    override val icon = "nebulosa-telescope-control"
+class TelescopeControlWindow(private val mountManager: MountManager) : AbstractWindow("TelescopeControl", "nebulosa-telescope-control"),
+    TelescopeControlView {
 
     @FXML private lateinit var serverTypeChoiceBox: ChoiceBox<TelescopeControlServerType>
     @FXML private lateinit var hostTextField: TextField

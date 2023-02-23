@@ -3,7 +3,6 @@ package nebulosa.desktop.logic.indi
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
-import nebulosa.desktop.App
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.DeviceEventBus
 import nebulosa.desktop.logic.equipment.EquipmentManager
@@ -11,8 +10,10 @@ import nebulosa.desktop.logic.observeOnJavaFX
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.*
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.util.*
 
+@Component
 class INDIPanelControlManager(private val view: INDIPanelControlView) {
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
@@ -23,11 +24,7 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) {
     private val logText = StringBuilder(1000 * 150)
     private val subscribers = arrayOfNulls<Disposable>(1)
 
-    @JvmField val devices = SimpleListProperty(FXCollections.observableArrayList<Device>())
-
-    init {
-        App.autowireBean(this)
-    }
+    val devices = SimpleListProperty(FXCollections.observableArrayList<Device>())
 
     private fun onEvent(event: DeviceEvent<*>) {
         when (event) {

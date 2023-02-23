@@ -11,11 +11,7 @@ import nebulosa.desktop.view.image.ImageStretcherView
 import nebulosa.desktop.view.image.ImageView
 import org.controlsfx.control.RangeSlider
 
-class ImageStretcherWindow(private val view: ImageView) : AbstractWindow(), ImageStretcherView {
-
-    override val resourceName = "ImageStretcher"
-
-    override val icon = "nebulosa-image-stretcher"
+class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageStretcher", "nebulosa-image-stretcher"), ImageStretcherView {
 
     @FXML private lateinit var shadowSpinner: Spinner<Double>
     @FXML private lateinit var midtoneSpinner: Spinner<Double>

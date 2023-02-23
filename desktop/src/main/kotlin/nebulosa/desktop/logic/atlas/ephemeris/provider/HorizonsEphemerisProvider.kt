@@ -17,8 +17,8 @@ class HorizonsEphemerisProvider : EphemerisProvider<String> {
 
     @Autowired private lateinit var horizonsService: HorizonsService
 
-    private final var time: LocalDateTime? = null
-    private final val cache = hashMapOf<GeographicPosition, MutableMap<String, HorizonsEphemeris>>()
+    private var time: LocalDateTime? = null
+    private val cache = hashMapOf<GeographicPosition, MutableMap<String, HorizonsEphemeris>>()
 
     override fun compute(
         target: String,

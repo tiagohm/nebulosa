@@ -21,12 +21,14 @@ import nebulosa.desktop.view.atlas.Twilight
 import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
 import nebulosa.nova.astrometry.Constellation
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
+import org.springframework.stereotype.Component
 
-class AtlasWindow : AbstractWindow(), AtlasView {
+@Component
+class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
 
-    override val resourceName = "Atlas"
-
-    override val icon = "nebulosa-atlas"
+    @Lazy @Autowired private lateinit var atlasManager: AtlasManager
 
     @FXML private lateinit var ephemerisTabPane: TabPane
     @FXML private lateinit var nameLabel: Label
@@ -53,8 +55,6 @@ class AtlasWindow : AbstractWindow(), AtlasView {
     @FXML private lateinit var altitudeGraph: AltitudeGraph
 
     @Volatile private var started = false
-
-    private val atlasManager = AtlasManager(this)
 
     init {
         resizable = false
@@ -237,17 +237,6 @@ class AtlasWindow : AbstractWindow(), AtlasView {
             text = if (empty || item == null) null
             else if (item.isFinite()) "$item"
             else "-"
-        }
-    }
-
-    companion object {
-
-        @JvmStatic private var window: AtlasWindow? = null
-
-        @JvmStatic
-        fun open() {
-            if (window == null) window = AtlasWindow()
-            window!!.show(bringToFront = true)
         }
     }
 }

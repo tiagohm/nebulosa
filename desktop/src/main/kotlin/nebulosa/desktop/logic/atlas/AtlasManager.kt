@@ -1,9 +1,9 @@
 package nebulosa.desktop.logic.atlas
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import jakarta.annotation.PostConstruct
 import javafx.geometry.Point2D
 import nebulosa.constants.DAYSEC
-import nebulosa.desktop.App
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.atlas.ephemeris.provider.BodyEphemerisProvider
 import nebulosa.desktop.logic.atlas.ephemeris.provider.HorizonsEphemerisProvider
@@ -37,6 +37,7 @@ import nebulosa.query.simbad.SimbadService
 import nebulosa.time.UTC
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -55,7 +56,8 @@ import kotlin.concurrent.timer
 import kotlin.math.hypot
 import kotlin.math.max
 
-class AtlasManager(private val view: AtlasView) : Closeable {
+@Component
+class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var preferences: Preferences
@@ -87,9 +89,8 @@ class AtlasManager(private val view: AtlasView) : Closeable {
     val mount: Mount?
         get() = mountProperty.value
 
-    init {
-        App.autowireBean(this)
-
+    @PostConstruct
+    private fun initialize() {
         val longitude = mount?.longitude ?: preferences.double("atlas.longitude")?.rad ?: Angle.ZERO
         val latitude = mount?.latitude ?: preferences.double("atlas.latitude")?.rad ?: Angle.ZERO
         val elevation = mount?.elevation ?: preferences.double("atlas.elevation")?.au ?: Distance.ZERO

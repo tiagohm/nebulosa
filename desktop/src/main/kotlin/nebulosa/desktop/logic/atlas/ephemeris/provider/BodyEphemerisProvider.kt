@@ -17,8 +17,8 @@ import java.time.OffsetDateTime
 @Service
 class BodyEphemerisProvider : EphemerisProvider<Body> {
 
-    private final val time = ArrayList<Pair<UTC, LocalDateTime>>(1441)
-    private final val cache = hashMapOf<GeographicPosition, MutableMap<Body, HorizonsEphemeris>>()
+    private val time = ArrayList<Pair<UTC, LocalDateTime>>(1441)
+    private val cache = hashMapOf<GeographicPosition, MutableMap<Body, HorizonsEphemeris>>()
 
     private fun computeTime(): Boolean {
         val now = OffsetDateTime.now()

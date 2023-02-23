@@ -1,14 +1,29 @@
 package nebulosa.desktop
 
 import javafx.application.Application
+import javafx.application.HostServices
 import javafx.stage.Stage
 import nebulosa.desktop.gui.home.HomeWindow
+import nebulosa.desktop.logic.home.HomeManager
+import nebulosa.desktop.view.home.HomeView
+import org.springframework.boot.runApplication
 
 class Nebulosa : Application() {
 
-    private val homeWindow by lazy { HomeWindow() }
+    override fun start(primaryStage: Stage) {
+        val context = runApplication<App>()
 
-    override fun start(primaryStage: Stage?) {
+        context.beanFactory.registerResolvableDependency(HostServices::class.java, hostServices)
+
+        val homeWindow = HomeWindow(primaryStage)
+        context.beanFactory.registerResolvableDependency(HomeView::class.java, homeWindow)
+
+        val homeManager = HomeManager(homeWindow)
+        context.beanFactory.registerResolvableDependency(HomeManager::class.java, homeManager)
+
+        context.beanFactory.autowireBean(homeWindow)
+        context.beanFactory.autowireBean(homeManager)
+
         homeWindow.show()
     }
 }

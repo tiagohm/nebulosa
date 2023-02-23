@@ -1,9 +1,10 @@
 package nebulosa.desktop.logic.filterwheel
 
-import nebulosa.desktop.App
+import jakarta.annotation.PostConstruct
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
+import nebulosa.desktop.logic.task.TaskExecutor
 import nebulosa.desktop.view.filterwheel.FilterWheelView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.filterwheel.FilterWheel
@@ -11,22 +12,23 @@ import nebulosa.indi.device.filterwheel.FilterWheelCountChanged
 import nebulosa.indi.device.filterwheel.FilterWheelMovingChanged
 import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
 import org.springframework.beans.factory.annotation.Autowired
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
+import org.springframework.stereotype.Component
 
-class FilterWheelManager(private val view: FilterWheelView) :
-    FilterWheelProperty by App.beanFor<EquipmentManager>().selectedFilterWheel {
+@Component
+class FilterWheelManager(
+    @Autowired private val view: FilterWheelView,
+    @Autowired private val equipmentManager: EquipmentManager,
+) : FilterWheelProperty by equipmentManager.selectedFilterWheel {
 
     @Autowired private lateinit var preferences: Preferences
-    @Autowired private lateinit var equipmentManager: EquipmentManager
-    @Autowired private lateinit var cameraExecutorService: ExecutorService
+    @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
+    @Autowired private lateinit var taskExecutor: TaskExecutor
 
     val filterWheels
         get() = equipmentManager.attachedFilterWheels
 
-    init {
-        App.autowireBean(this)
-
+    @PostConstruct
+    private fun initialize() {
         registerListener(this)
     }
 
@@ -59,7 +61,8 @@ class FilterWheelManager(private val view: FilterWheelView) :
     }
 
     fun openINDIPanelControl() {
-        INDIPanelControlWindow.open(value)
+        indiPanelControlWindow.show(bringToFront = true)
+        indiPanelControlWindow.device = value
     }
 
     fun toggleUseFilterWheelAsShutter(enable: Boolean) {
@@ -91,7 +94,7 @@ class FilterWheelManager(private val view: FilterWheelView) :
 
     fun moveTo(position: Int) {
         val task = FilterWheelMoveTask(value ?: return, position)
-        CompletableFuture.supplyAsync(task, cameraExecutorService)
+        taskExecutor.execute(task)
     }
 
     fun computeFilterName(position: Int): String {
