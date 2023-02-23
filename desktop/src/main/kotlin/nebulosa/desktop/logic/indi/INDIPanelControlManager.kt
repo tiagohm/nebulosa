@@ -5,8 +5,9 @@ import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
 import nebulosa.desktop.App
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
-import nebulosa.desktop.logic.EventBus
+import nebulosa.desktop.logic.DeviceEventBus
 import nebulosa.desktop.logic.equipment.EquipmentManager
+import nebulosa.desktop.logic.observeOnJavaFX
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,6 +16,7 @@ import java.util.*
 class INDIPanelControlManager(private val view: INDIPanelControlView) {
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
+    @Autowired private lateinit var deviceEventBus: DeviceEventBus
 
     private val cacheProperties = HashMap<Device, HashMap<String, INDIPanelControlWindow.GroupPropertyVector>>()
     private val groups = ArrayList<INDIPanelControlWindow.Group>()
@@ -76,8 +78,10 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) {
         else view.device = attachedDevices.firstOrNull()
 
         subscribers[0]?.dispose()
-        subscribers[0] = EventBus.DEVICE
-            .subscribe(filter = { it.device === view.device }, observeOnJavaFX = true, next = ::onEvent)
+        subscribers[0] = deviceEventBus
+            .filter { it.device === view.device }
+            .observeOnJavaFX()
+            .subscribe(::onEvent)
     }
 
     private fun makeLog() {

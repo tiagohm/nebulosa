@@ -11,12 +11,15 @@ import nebulosa.indi.device.filterwheel.FilterWheelCountChanged
 import nebulosa.indi.device.filterwheel.FilterWheelMovingChanged
 import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
 import org.springframework.beans.factory.annotation.Autowired
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
 
 class FilterWheelManager(private val view: FilterWheelView) :
     FilterWheelProperty by App.beanFor<EquipmentManager>().selectedFilterWheel {
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var equipmentManager: EquipmentManager
+    @Autowired private lateinit var cameraExecutorService: ExecutorService
 
     val filterWheels
         get() = equipmentManager.attachedFilterWheels
@@ -52,8 +55,7 @@ class FilterWheelManager(private val view: FilterWheelView) :
     }
 
     fun updateStatus() {
-        view.status = if (moving) "moving"
-        else "idle"
+        view.updateStatus(if (moving) "moving" else "idle")
     }
 
     fun openINDIPanelControl() {
@@ -62,18 +64,16 @@ class FilterWheelManager(private val view: FilterWheelView) :
 
     fun toggleUseFilterWheelAsShutter(enable: Boolean) {
         preferences.bool("filterWheel.$name.useFilterWheelAsShutter", enable)
-        view.useFilterWheelAsShutter = enable
     }
 
     fun updateFilterAsShutter(position: Int) {
         if (position !in 1..count) return
         preferences.int("filterWheel.$name.filterAsShutter", position)
-        view.filterAsShutter = position
     }
 
     fun toggleCompactMode(enable: Boolean) {
         preferences.bool("filterWheel.compactMode", enable)
-        view.compactMode = enable
+        view.useCompactMode(enable)
     }
 
     fun updateFilterName(position: Int, label: String) {
@@ -84,12 +84,14 @@ class FilterWheelManager(private val view: FilterWheelView) :
     }
 
     fun updateFilterNames() {
-        val selectedFilterAsShutter = preferences.int("filterWheel.$name.filterAsShutter") ?: 1
-        view.updateFilterNames(filterNames, selectedFilterAsShutter, position)
+        val useFilterWheelAsShutter = preferences.bool("filterWheel.$name.useFilterWheelAsShutter")
+        val filterAsShutter = preferences.int("filterWheel.$name.filterAsShutter") ?: 1
+        view.updateFilterNames(filterNames, useFilterWheelAsShutter, filterAsShutter, position)
     }
 
     fun moveTo(position: Int) {
-        value?.moveTo(position)
+        val task = FilterWheelMoveTask(value ?: return, position)
+        CompletableFuture.supplyAsync(task, cameraExecutorService)
     }
 
     fun computeFilterName(position: Int): String {
@@ -110,11 +112,9 @@ class FilterWheelManager(private val view: FilterWheelView) :
         if (device != null) {
             updateFilterNames()
             syncFilterNames()
-
-            view.useFilterWheelAsShutter = preferences.bool("filterWheel.${device.name}.useFilterWheelAsShutter")
         }
 
-        view.compactMode = preferences.bool("filterWheel.compactMode")
+        view.useCompactMode(preferences.bool("filterWheel.compactMode"))
 
         preferences.double("filterWheel.screen.x")?.let { view.x = it }
         preferences.double("filterWheel.screen.y")?.let { view.y = it }

@@ -4,11 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.geometry.Point2D
 import nebulosa.constants.DAYSEC
 import nebulosa.desktop.App
-import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.atlas.ephemeris.provider.BodyEphemerisProvider
 import nebulosa.desktop.logic.atlas.ephemeris.provider.HorizonsEphemerisProvider
 import nebulosa.desktop.logic.equipment.EquipmentManager
+import nebulosa.desktop.logic.newEventBus
+import nebulosa.desktop.logic.observeOnJavaFX
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.atlas.AtlasView
@@ -44,12 +45,12 @@ import java.io.Closeable
 import java.net.URL
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import javax.imageio.ImageIO
-import kotlin.concurrent.thread
 import kotlin.concurrent.timer
 import kotlin.math.hypot
 import kotlin.math.max
@@ -64,12 +65,13 @@ class AtlasManager(private val view: AtlasView) : Closeable {
     @Autowired private lateinit var horizonsEphemerisProvider: HorizonsEphemerisProvider
     @Autowired private lateinit var smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService
     @Autowired private lateinit var simbadService: SimbadService
+    @Autowired private lateinit var systemExecutorService: ExecutorService
 
     private val pointsCache = hashMapOf<HorizonsEphemeris, List<Point2D>>()
 
     private val timerCount = AtomicInteger()
     private val timer = timer(daemon = true, initialDelay = 60000L, period = 60000L) { onTimerHit(timerCount.getAndIncrement()) }
-    private val observerEventBus = EventBus<Unit>()
+    private val observerEventBus = newEventBus<Double>()
 
     @Volatile private var observer: GeographicPosition? = null
     @Volatile private var tabType = AtlasView.TabType.SUN
@@ -96,11 +98,13 @@ class AtlasManager(private val view: AtlasView) : Closeable {
         updateTitle()
 
         observerEventBus
-            .subscribe(observeOnJavaFX = true, debounce = Duration.ofSeconds(1L)) { onMountCoordinateChanged() }
+            .debounce(1L, TimeUnit.SECONDS)
+            .observeOnJavaFX()
+            .subscribe { onMountCoordinateChanged() }
 
-        mountProperty.latitudeProperty.on { observerEventBus.post(Unit) }
-        mountProperty.longitudeProperty.on { observerEventBus.post(Unit) }
-        mountProperty.elevationProperty.on { observerEventBus.post(Unit) }
+        mountProperty.latitudeProperty.on(observerEventBus::onNext)
+        mountProperty.longitudeProperty.on(observerEventBus::onNext)
+        mountProperty.elevationProperty.on(observerEventBus::onNext)
     }
 
     private fun onMountCoordinateChanged() {
@@ -203,26 +207,25 @@ class AtlasManager(private val view: AtlasView) : Closeable {
     }
 
     fun computeMinorPlanet(body: SmallBody? = minorPlanet) {
-        minorPlanet = body ?: return view.clearAltitudeAndCoordinates()
+        minorPlanet = body ?: return
         bodyName = body.body!!.fullname
         "DES=${body.body!!.spkId};".computeBody()
     }
 
     fun computeStar(body: AtlasView.Star? = star) {
-        star = body ?: return view.clearAltitudeAndCoordinates()
+        star = body ?: return
         bodyName = body.simbad.names.joinToString(", ") { it.type.format(it.name) }
         body.star.computeBody()
     }
 
     fun computeDSO(body: AtlasView.DSO? = dso) {
-        dso = body ?: return view.clearAltitudeAndCoordinates()
+        dso = body ?: return
         bodyName = body.simbad.names.joinToString(", ") { it.type.format(it.name) }
         body.star.computeBody()
     }
 
     private fun String.computeBody() {
-        if (isEmpty()) return view.clearAltitudeAndCoordinates()
-        computeAltitude(this)
+        if (isNotEmpty()) computeAltitude(this)
     }
 
     private fun Body.computeBody() {
@@ -264,7 +267,7 @@ class AtlasManager(private val view: AtlasView) : Closeable {
         val observer = observer ?: return
 
         if (target is String) {
-            thread {
+            systemExecutorService.submit {
                 val ephemeris = horizonsEphemerisProvider.compute(target, observer, force)
 
                 if (ephemeris == null) {
@@ -278,9 +281,9 @@ class AtlasManager(private val view: AtlasView) : Closeable {
                 }
             }
         } else if (target is Body) {
-            thread {
+            systemExecutorService.submit {
                 val ephemeris = bodyEphemerisProvider.compute(target, observer, force)
-                    ?: return@thread view.clearAltitudeAndCoordinates()
+                    ?: return@submit view.clearAltitudeAndCoordinates()
                 ephemeris.showBodyCoordinatesAndInfos(target)
             }
         }
@@ -319,7 +322,7 @@ class AtlasManager(private val view: AtlasView) : Closeable {
     fun updateSunImage() {
         if (!view.showing) return
 
-        thread {
+        systemExecutorService.submit {
             val image = ImageIO.read(URL("https://sdo.gsfc.nasa.gov/assets/img/latest/latest_512_HMIIF.jpg"))
             val newImage = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_ARGB)
 
@@ -393,7 +396,7 @@ class AtlasManager(private val view: AtlasView) : Closeable {
             .limit(500)
             .name(text)
 
-        thread {
+        systemExecutorService.submit {
             val dso = simbadService.query(query).execute().body()!!
 
             javaFxThread { view.populateDSO(dso.map { AtlasView.DSO(it) }) }

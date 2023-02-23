@@ -128,37 +128,31 @@ class FilterWheelWindow : AbstractWindow(), FilterWheelView {
         filterWheelManager.close()
     }
 
-    override var status
+    override val status
         get() = "" // statusLabel.text
-        set(value) {
-            // statusLabel.text = value
-        }
 
-    override var compactMode
+    override val compactMode
         get() = compactModeMenuItem.isSelected
-        set(value) {
-            compactModeMenuItem.isSelected = value
 
-            filterSlotTableView.isVisible = !value
-            filterSlotTableView.isManaged = !value
-
-            filterSlotChoiceBox.parent.isVisible = value
-            filterSlotChoiceBox.parent.isManaged = value
-
-            updateScreenHeight()
-        }
-
-    override var useFilterWheelAsShutter
+    override val useFilterWheelAsShutter
         get() = useFilterWheelAsShutterCheckBox.isSelected
-        set(value) {
-            useFilterWheelAsShutterCheckBox.isSelected = value
-        }
 
-    override var filterAsShutter
+    override val filterAsShutter
         get() = filterAsShutterChoiceBox.selectionModel.selectedIndex + 1
-        set(value) {
-            filterAsShutterChoiceBox.selectionModel.select(value - 1)
-        }
+
+    override fun updateStatus(status: String) = Unit
+
+    override fun useCompactMode(enable: Boolean) {
+        compactModeMenuItem.isSelected = enable
+
+        filterSlotTableView.isVisible = !enable
+        filterSlotTableView.isManaged = !enable
+
+        filterSlotChoiceBox.parent.isVisible = enable
+        filterSlotChoiceBox.parent.isManaged = enable
+
+        updateScreenHeight()
+    }
 
     @FXML
     private fun connect() {
@@ -209,12 +203,15 @@ class FilterWheelWindow : AbstractWindow(), FilterWheelView {
 
     override fun updateFilterNames(
         names: List<String>,
-        selectedFilterAsShutter: Int,
+        useFilterWheelAsShutter: Boolean,
+        filterAsShutter: Int,
         position: Int,
     ) {
+        useFilterWheelAsShutterCheckBox.isSelected = useFilterWheelAsShutter
+
         if (filterWheelManager.connected) {
             filterAsShutterChoiceBox.items.setAll(names)
-            filterAsShutter = selectedFilterAsShutter
+            filterAsShutterChoiceBox.selectionModel.select(filterAsShutter - 1)
 
             val positions = (1..names.size).toList()
             filterSlotTableView.items.setAll(positions)

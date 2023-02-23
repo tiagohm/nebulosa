@@ -37,7 +37,7 @@ class AtlasWindow : AbstractWindow(), AtlasView {
     @FXML private lateinit var altitudeLabel: Label
     @FXML private lateinit var azimuthLabel: Label
     @FXML private lateinit var constellationLabel: Label
-    @FXML private lateinit var distanceLabel: Label
+    @FXML private lateinit var rtsLabel: Label
     @FXML private lateinit var sunImageView: ImageView
     @FXML private lateinit var moonImageView: ImageView
     @FXML private lateinit var planetTableView: TableView<AtlasView.Planet>

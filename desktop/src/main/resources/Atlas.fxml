@@ -53,9 +53,9 @@
                  userData="PLANET">
                 <TableView fx:id="planetTableView"
                            fixedCellSize="28.0"
-                           minHeight="300.0"
-                           prefHeight="300.0"
-                           maxHeight="300.0">
+                           minHeight="268.0"
+                           prefHeight="268.0"
+                           maxHeight="268.0">
                     <columns>
                         <TableColumn prefWidth="170.0"
                                      style="-fx-alignment: CENTER;"
@@ -330,18 +330,18 @@
                 <Label maxWidth="72.0"
                        minWidth="72.0"
                        prefWidth="72.0"
-                       text="Distance:"
+                       text="RTS:"
                        styleClass="text-sm,text-bold">
                     <HBox.margin>
                         <Insets left="8.0"/>
                     </HBox.margin>
                 </Label>
-                <Label fx:id="distanceLabel"
+                <Label fx:id="rtsLabel"
                        alignment="CENTER_RIGHT"
                        maxWidth="140.0"
                        minWidth="140.0"
                        prefWidth="140.0"
-                       text="-"
+                       text="00:00 | 00:00 | 00:00"
                        styleClass="text-monospaced,text-sm">
                 </Label>
             </HBox>

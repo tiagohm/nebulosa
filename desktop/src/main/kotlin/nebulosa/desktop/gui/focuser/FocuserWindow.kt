@@ -100,35 +100,32 @@ class FocuserWindow : AbstractWindow(), FocuserView {
         focuserManager.close()
     }
 
-    override var status
+    override val status
         get() = statusLabel.text!!
-        set(value) {
-            statusLabel.text = value
-        }
 
-    override var increment
+    override val increment
         get() = incrementSpinner.value.toInt()
-        set(value) {
-            incrementSpinner.valueFactory.value = value.toDouble()
-        }
 
-    override var maxIncrement
+    override val maxIncrement
         get() = (incrementSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
-        set(value) {
-            (incrementSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
-        }
 
-    override var absolute
+    override val absolute
         get() = absoluteSpinner.value.toInt()
-        set(value) {
-            absoluteSpinner.valueFactory.value = value.toDouble()
-        }
 
-    override var absoluteMax
+    override val absoluteMax
         get() = (absoluteSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
-        set(value) {
-            (absoluteSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
-        }
+
+    override fun updateStatus(status: String) {
+        statusLabel.text = status
+    }
+
+    override fun updateMaxIncrement(value: Int) {
+        (incrementSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
+    }
+
+    override fun updateAbsoluteMax(value: Int) {
+        (absoluteSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
+    }
 
     @FXML
     private fun connect() {

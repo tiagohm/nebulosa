@@ -1,7 +1,9 @@
 package nebulosa.desktop.logic.filterwheel
 
 import io.reactivex.rxjava3.disposables.Disposable
-import nebulosa.desktop.logic.EventBus
+import nebulosa.desktop.App
+import nebulosa.desktop.logic.DeviceEventBus
+import nebulosa.desktop.logic.TaskEventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.task.TaskFinished
 import nebulosa.desktop.logic.task.TaskStarted
@@ -11,13 +13,21 @@ import nebulosa.indi.device.filterwheel.FilterWheelDetached
 import nebulosa.indi.device.filterwheel.FilterWheelMoveFailed
 import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 
 data class FilterWheelMoveTask(
     override val filterWheel: FilterWheel,
     val position: Int,
 ) : FilterWheelTask {
 
+    @Autowired private lateinit var deviceEventBus: DeviceEventBus
+    @Autowired private lateinit var taskEventBus: TaskEventBus
+
     private val latch = CountUpDownLatch()
+
+    init {
+        App.autowireBean(this)
+    }
 
     private fun onEvent(event: DeviceEvent<*>) {
         when (event) {
@@ -31,7 +41,7 @@ data class FilterWheelMoveTask(
         var subscriber: Disposable? = null
 
         try {
-            EventBus.TASK.post(TaskStarted(this))
+            taskEventBus.onNext(TaskStarted(this))
 
             if (filterWheel.position != position
                 && position in 1..filterWheel.count
@@ -39,8 +49,9 @@ data class FilterWheelMoveTask(
                 synchronized(filterWheel) {
                     latch.countUp()
 
-                    subscriber = EventBus.DEVICE
-                        .subscribe(filter = { it.device === filterWheel }, next = ::onEvent)
+                    subscriber = deviceEventBus
+                        .filter { it.device === filterWheel }
+                        .subscribe(::onEvent)
 
                     LOG.info("moving filter wheel ${filterWheel.name} to position $position")
 
@@ -52,7 +63,7 @@ data class FilterWheelMoveTask(
         } finally {
             subscriber?.dispose()
 
-            EventBus.TASK.post(TaskFinished(this))
+            taskEventBus.onNext(TaskFinished(this))
         }
     }
 

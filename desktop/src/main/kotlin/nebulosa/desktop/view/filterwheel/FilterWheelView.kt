@@ -4,13 +4,20 @@ import nebulosa.desktop.view.View
 
 interface FilterWheelView : View {
 
-    var status: String
+    val status: String
 
-    var useFilterWheelAsShutter: Boolean
+    val useFilterWheelAsShutter: Boolean
 
-    var filterAsShutter: Int
+    val filterAsShutter: Int
 
-    var compactMode: Boolean
+    val compactMode: Boolean
 
-    fun updateFilterNames(names: List<String>, selectedFilterAsShutter: Int, position: Int)
+    fun updateStatus(status: String)
+
+    fun useCompactMode(enable: Boolean)
+
+    fun updateFilterNames(
+        names: List<String>, useFilterWheelAsShutter: Boolean,
+        filterAsShutter: Int, position: Int
+    )
 }

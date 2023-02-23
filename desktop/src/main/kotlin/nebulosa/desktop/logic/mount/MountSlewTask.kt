@@ -1,33 +1,41 @@
 package nebulosa.desktop.logic.mount
 
 import io.reactivex.rxjava3.disposables.Disposable
-import nebulosa.desktop.logic.EventBus
+import nebulosa.desktop.App
+import nebulosa.desktop.logic.DeviceEventBus
+import nebulosa.desktop.logic.TaskEventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.task.TaskFinished
 import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.focuser.FocuserMovingChanged
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountDetached
 import nebulosa.indi.device.mount.MountSlewFailed
+import nebulosa.indi.device.mount.MountSlewingChanged
 import nebulosa.math.Angle
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 
 data class MountSlewTask(
     override val mount: Mount,
     val rightAscension: Angle,
     val declination: Angle,
-    val isJ2000: Boolean,
-    val slewType: MountSlewType,
+    val isJ2000: Boolean = false,
+    val slewType: MountSlewType = MountSlewType.GOTO,
 ) : MountTask {
+
+    @Autowired private lateinit var deviceEventBus: DeviceEventBus
+    @Autowired private lateinit var taskEventBus: TaskEventBus
 
     private val latch = CountUpDownLatch()
 
+    init {
+        App.autowireBean(this)
+    }
+
     private fun onEvent(event: DeviceEvent<*>) {
         when (event) {
-            is FocuserMovingChanged -> if (!event.device.moving) {
-                latch.countDown()
-            }
+            is MountSlewingChanged -> if (!event.device.slewing) latch.countDown()
             is MountDetached,
             is MountSlewFailed -> latch.reset()
         }
@@ -37,13 +45,14 @@ data class MountSlewTask(
         var subscriber: Disposable? = null
 
         try {
-            EventBus.TASK.post(TaskStarted(this))
+            taskEventBus.onNext(TaskStarted(this))
 
             synchronized(mount) {
                 latch.countUp()
 
-                subscriber = EventBus.DEVICE
-                    .subscribe(filter = { it.device === mount }, next = ::onEvent)
+                subscriber = deviceEventBus
+                    .filter { it.device === mount }
+                    .subscribe(::onEvent)
 
                 LOG.info("slewing mount ${mount.name} to position ra={}, dec={}", rightAscension.hours, declination.degrees)
 
@@ -57,7 +66,7 @@ data class MountSlewTask(
         } finally {
             subscriber?.dispose()
 
-            EventBus.TASK.post(TaskFinished(this))
+            taskEventBus.onNext(TaskFinished(this))
         }
     }
 

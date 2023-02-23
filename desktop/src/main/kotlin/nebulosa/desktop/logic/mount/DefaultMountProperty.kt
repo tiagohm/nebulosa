@@ -89,6 +89,7 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
         timeProperty.set(OffsetDateTime.now())
         azimuthProperty.set(0.0)
         altitudeProperty.set(0.0)
+        constellationProperty.set(null)
     }
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {

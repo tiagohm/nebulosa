@@ -8,7 +8,7 @@ import javafx.scene.image.Image
 import javafx.stage.Stage
 import nebulosa.desktop.App
 import nebulosa.desktop.gui.home.HomeWindow
-import nebulosa.desktop.logic.EventBus
+import nebulosa.desktop.logic.newEventBus
 import nebulosa.desktop.view.View
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
@@ -37,8 +37,8 @@ abstract class AbstractWindow : View {
 
                 onCreate()
 
-                CLOSE_EVENTBUS.subscribe {
-                    if (this !is HomeWindow) {
+                if (this !is HomeWindow) {
+                    CLOSE_EVENT_BUS.subscribe {
                         close()
                         onClose()
                     }
@@ -53,7 +53,7 @@ abstract class AbstractWindow : View {
 
             if (this is HomeWindow) {
                 onClose()
-                CLOSE_EVENTBUS.post(Unit)
+                CLOSE_EVENT_BUS.onNext(Unit)
             }
         }
     }
@@ -153,6 +153,6 @@ abstract class AbstractWindow : View {
 
     companion object {
 
-        @JvmStatic private val CLOSE_EVENTBUS = EventBus<Unit>()
+        @JvmStatic private val CLOSE_EVENT_BUS = newEventBus<Unit>()
     }
 }

@@ -1,12 +1,13 @@
 package nebulosa.desktop.logic
 
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
 import nebulosa.indi.device.*
 
-@Suppress("LeakingThis", "UNCHECKED_CAST")
+@Suppress("UNCHECKED_CAST")
 abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), DeviceProperty<D> {
 
     override val connectedProperty = SimpleBooleanProperty(false)
@@ -17,14 +18,7 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
 
     @Volatile private var closed = false
 
-    init {
-        registerListener(this)
-
-        addListener(::onChanged)
-
-        subscribers[0] = EventBus.DEVICE
-            .subscribe(filter = { it.device === value }, observeOnJavaFX = true, next = ::onDeviceEvent)
-    }
+    final override fun getName() = value?.name ?: ""
 
     override fun registerListener(listener: DevicePropertyListener<D>) {
         listeners.add(listener)
@@ -34,7 +28,15 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
         listeners.remove(listener)
     }
 
-    final override fun getName() = value?.name ?: ""
+    internal fun initialize(observable: Observable<DeviceEvent<*>>) {
+        observable.filter { it.device === value }
+            .observeOnJavaFX()
+            .subscribe(::onDeviceEvent)
+
+        registerListener(this)
+
+        addListener(::onChanged)
+    }
 
     override fun onChanged(prev: D?, device: D) = Unit
 

@@ -20,6 +20,8 @@ class FocuserManager(private val view: FocuserView) :
         get() = equipmentManager.attachedFocusers
 
     init {
+        App.autowireBean(this)
+
         registerListener(this)
     }
 
@@ -28,7 +30,7 @@ class FocuserManager(private val view: FocuserView) :
 
         updateTitle()
         updateMaxIncrement()
-        updateMaxAbsolute()
+        updateAbsoluteMax()
 
         loadPreferences()
     }
@@ -46,8 +48,7 @@ class FocuserManager(private val view: FocuserView) :
     }
 
     private fun updateStatus() {
-        val text = if (moving) "moving" else "idle"
-        view.status = text
+        view.updateStatus(if (moving) "moving" else "idle")
     }
 
     fun openINDIPanelControl() {
@@ -75,11 +76,11 @@ class FocuserManager(private val view: FocuserView) :
     }
 
     private fun updateMaxIncrement() {
-        view.maxIncrement = value?.maxPosition ?: 0
+        view.updateMaxIncrement(value?.maxPosition ?: 0)
     }
 
-    private fun updateMaxAbsolute() {
-        view.absoluteMax = value?.maxPosition ?: 0
+    private fun updateAbsoluteMax() {
+        view.updateAbsoluteMax(value?.maxPosition ?: 0)
     }
 
     fun savePreferences() {

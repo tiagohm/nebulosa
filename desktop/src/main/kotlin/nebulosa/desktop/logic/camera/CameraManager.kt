@@ -7,9 +7,10 @@ import nebulosa.desktop.App
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
-import nebulosa.desktop.logic.EventBus
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.TaskEventBus
 import nebulosa.desktop.logic.equipment.EquipmentManager
+import nebulosa.desktop.logic.observeOnJavaFX
 import nebulosa.desktop.logic.task.TaskEvent
 import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.camera.AutoSubFolderMode
@@ -36,6 +37,7 @@ class CameraManager(private val view: CameraView) :
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var appDirectory: Path
     @Autowired private lateinit var cameraExecutorService: ExecutorService
+    @Autowired private lateinit var taskEventBus: TaskEventBus
 
     private val subscribers = arrayOfNulls<Disposable>(1)
     private val imageWindows = hashSetOf<ImageWindow>()
@@ -49,8 +51,9 @@ class CameraManager(private val view: CameraView) :
 
         registerListener(this)
 
-        subscribers[0] = EventBus.TASK
-            .subscribe(observeOnJavaFX = true, next = ::onTaskEvent)
+        subscribers[0] = taskEventBus
+            .observeOnJavaFX()
+            .subscribe(::onTaskEvent)
     }
 
     override fun onChanged(prev: Camera?, device: Camera) {
@@ -213,8 +216,8 @@ class CameraManager(private val view: CameraView) :
         updateStatus()
 
         CompletableFuture
-            .supplyAsync(task::call, cameraExecutorService)
-            .whenCompleteAsync { _, _ ->
+            .supplyAsync(task, cameraExecutorService)
+            .thenRun {
                 capturingProperty.set(false)
                 runningTask.set(null)
                 javaFxThread { updateStatus() }

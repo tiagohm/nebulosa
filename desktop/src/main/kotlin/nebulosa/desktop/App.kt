@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.application.Application
 import javafx.scene.text.Font
-import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.loader.IERSLoader
 import nebulosa.io.resource
 import nebulosa.query.horizons.HorizonsService
@@ -103,6 +103,9 @@ class App : CommandLineRunner {
     fun mountExecutorService(): ExecutorService = Executors.newSingleThreadExecutor()
 
     @Bean
+    fun systemExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
+
+    @Bean
     fun horizonsService() = HorizonsService()
 
     @Bean
@@ -110,6 +113,15 @@ class App : CommandLineRunner {
 
     @Bean
     fun smallBodyDatabaseLookupService() = SmallBodyDatabaseLookupService()
+
+    @Bean
+    fun connectionEventBus(): ConnectionEventBus = newEventBus()
+
+    @Bean
+    fun deviceEventBus(): DeviceEventBus = newEventBus()
+
+    @Bean
+    fun taskEventBus(): TaskEventBus = newEventBus()
 
     override fun run(vararg args: String) {
         App.beanFactory = beanFactory

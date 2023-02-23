@@ -2,9 +2,12 @@ package nebulosa.desktop.logic.task
 
 import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.function.Supplier
 import kotlin.math.min
 
-interface Task<T> : Callable<T> {
+interface Task<T> : Callable<T>, Supplier<T> {
+
+    override fun get(): T = call()
 
     companion object {
 

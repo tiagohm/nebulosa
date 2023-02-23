@@ -2,8 +2,9 @@ package nebulosa.desktop.logic.camera
 
 import io.reactivex.rxjava3.disposables.Disposable
 import nebulosa.desktop.App
-import nebulosa.desktop.logic.EventBus
+import nebulosa.desktop.logic.DeviceEventBus
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.TaskEventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
@@ -49,6 +50,8 @@ data class CameraExposureTask(
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var preferences: Preferences
+    @Autowired private lateinit var deviceEventBus: DeviceEventBus
+    @Autowired private lateinit var taskEventBus: TaskEventBus
 
     private val latch = CountUpDownLatch()
     private val imagePaths = arrayListOf<Path>()
@@ -80,8 +83,9 @@ data class CameraExposureTask(
         var subscriber: Disposable? = null
 
         try {
-            subscriber = EventBus.DEVICE
-                .subscribe(filter = { it.device === camera }, next = ::onEvent)
+            subscriber = deviceEventBus
+                .filter { it.device === camera }
+                .subscribe(::onEvent)
 
             val mount = equipmentManager.selectedMount.get()
             val focuser = equipmentManager.selectedFocuser.get()
@@ -97,7 +101,8 @@ data class CameraExposureTask(
 
                     if (filterAsShutterPosition != null) {
                         LOG.info("moving filter wheel ${filterWheel.name} to dark filter")
-                        FilterWheelMoveTask(filterWheel, filterAsShutterPosition).call()
+                        val task = FilterWheelMoveTask(filterWheel, filterAsShutterPosition)
+                        task.call()
                     } else {
                         LOG.info("filter wheel ${filterWheel.name} dont have dark filter")
                     }
@@ -159,7 +164,7 @@ data class CameraExposureTask(
         imagePath.parent.createDirectories()
         imagePath.outputStream().use { output -> fits.use { it.transferTo(output) } }
 
-        EventBus.TASK.post(CameraFrameSaved(this, imagePath, autoSave))
+        taskEventBus.onNext(CameraFrameSaved(this, imagePath, autoSave))
 
         return imagePath
     }

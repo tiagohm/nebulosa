@@ -4,13 +4,19 @@ import nebulosa.desktop.view.View
 
 interface FocuserView : View {
 
-    var status: String
+    val status: String
 
-    var increment: Int
+    val increment: Int
 
-    var maxIncrement: Int
+    val maxIncrement: Int
 
-    var absolute: Int
+    val absolute: Int
 
-    var absoluteMax: Int
+    val absoluteMax: Int
+
+    fun updateStatus(status: String)
+
+    fun updateMaxIncrement(value: Int)
+
+    fun updateAbsoluteMax(value: Int)
 }
