@@ -20,23 +20,22 @@ import nebulosa.nova.position.Geoid
 import nebulosa.time.InstantOfTime
 import nebulosa.time.UTC
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
-import kotlin.concurrent.timer
+import java.util.concurrent.TimeUnit
 
 @Component
 class MountManager(
     @Autowired private val view: MountView,
-    @Autowired private val equipmentManager: EquipmentManager,
+    @Autowired internal val equipmentManager: EquipmentManager,
 ) : MountProperty by equipmentManager.selectedMount {
 
     @Autowired private lateinit var preferences: Preferences
-    @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
+    @Autowired internal lateinit var indiPanelControlWindow: INDIPanelControlWindow
 
     val mounts
         get() = equipmentManager.attachedMounts
-
-    private val timer = timer(daemon = true, initialDelay = 1000L, period = 1000L) { onTimerHit() }
 
     @PostConstruct
     private fun initialize() {
@@ -78,7 +77,7 @@ class MountManager(
     }
 
     fun openSiteAndTime() {
-        val window = SiteAndTimeWindow(value ?: return)
+        val window = SiteAndTimeWindow(value ?: return, this)
         window.showAndWait()
     }
 
@@ -191,7 +190,8 @@ class MountManager(
         return value.rightAscension - computeLST()
     }
 
-    private fun onTimerHit() {
+    @Scheduled(fixedRate = 1L, initialDelay = 1L, timeUnit = TimeUnit.SECONDS)
+    fun onTimerHit() {
         if (value == null || !view.showing) return
 
         val lst = computeLST()
@@ -206,8 +206,6 @@ class MountManager(
 
     override fun close() {
         savePreferences()
-
-        timer.cancel()
 
         TelescopeControlStellariumServer.close()
         TelescopeControlLX200Server.close()

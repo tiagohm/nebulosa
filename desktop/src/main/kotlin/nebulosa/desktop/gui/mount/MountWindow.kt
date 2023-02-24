@@ -10,7 +10,6 @@ import javafx.util.StringConverter
 import nebulosa.desktop.gui.*
 import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.mount.MountManager
-import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.erfa.PairOfAngle
 import nebulosa.indi.device.mount.Mount
@@ -88,7 +87,7 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
 
         connectButton.disableProperty().bind(mountManager.isNull() or isConnecting or isMoving)
         connectButton.textProperty().bind(mountManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
-        mountManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
+        mountManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 
@@ -155,7 +154,7 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
         parkButton.textProperty().bind(mountManager.parkedProperty.between("Unpark", "Park"))
         val parkIcon = parkButton.graphic as Label
         parkIcon.textProperty().bind(mountManager.parkedProperty.between(PLAY_ICON, STOP_ICON))
-        mountManager.parkedProperty.on { parkIcon.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
+        mountManager.parkedProperty.between(parkIcon.styleClass, "text-red-700", "text-blue-grey-700")
 
         homeButton.disableProperty().set(true)
     }

@@ -13,7 +13,6 @@ import nebulosa.desktop.gui.CLOSE_CIRCLE_ICON
 import nebulosa.desktop.gui.CONNECTION_ICON
 import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.camera.CameraManager
-import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.camera.ExposureMode
@@ -88,7 +87,7 @@ class CameraWindow : AbstractWindow("Camera", "nebulosa-camera"), CameraView {
 
         connectButton.disableProperty().bind(cameraManager.isNull() or isConnecting or isCapturing)
         connectButton.textProperty().bind(cameraManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
-        cameraManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
+        cameraManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 

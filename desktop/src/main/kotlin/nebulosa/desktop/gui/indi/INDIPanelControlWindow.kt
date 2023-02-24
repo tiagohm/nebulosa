@@ -13,7 +13,7 @@ import nebulosa.desktop.gui.CIRCLE_ICON
 import nebulosa.desktop.gui.SEND_ICON
 import nebulosa.desktop.logic.indi.INDIPanelControlManager
 import nebulosa.desktop.logic.on
-import nebulosa.desktop.logic.util.toggle
+import nebulosa.desktop.logic.toggle
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.*
 import nebulosa.indi.protocol.PropertyPermission

@@ -12,9 +12,7 @@ import nebulosa.desktop.gui.CONNECTION_ICON
 import nebulosa.desktop.logic.between
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.home.HomeManager
-import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
-import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.home.HomeView
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -62,7 +60,7 @@ class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeV
         indiButton.disableProperty().bind(!homeManager.connectedProperty)
 
         connectButton.textProperty().bind(homeManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
-        homeManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
+        homeManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
     }
 
     override fun onStart() {

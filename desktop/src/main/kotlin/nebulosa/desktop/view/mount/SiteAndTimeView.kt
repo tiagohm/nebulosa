@@ -30,4 +30,6 @@ interface SiteAndTimeView : View {
     fun updateSite(longitude: Angle, latitude: Angle, elevation: Distance)
 
     fun updateDateAndTime(dateTime: OffsetDateTime)
+
+    fun openINDIPanelControl(gps: GPS)
 }

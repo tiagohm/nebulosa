@@ -37,6 +37,8 @@ import nebulosa.query.simbad.SimbadService
 import nebulosa.time.UTC
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import retrofit2.Call
 import retrofit2.Callback
@@ -50,13 +52,12 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 import javax.imageio.ImageIO
-import kotlin.concurrent.timer
 import kotlin.math.hypot
 import kotlin.math.max
 
 @Component
+@EnableScheduling
 class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
@@ -70,9 +71,6 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
     @Autowired private lateinit var systemExecutorService: ExecutorService
 
     private val pointsCache = hashMapOf<HorizonsEphemeris, List<Point2D>>()
-
-    private val timerCount = AtomicInteger()
-    private val timer = timer(daemon = true, initialDelay = 60000L, period = 60000L) { onTimerHit(timerCount.getAndIncrement()) }
     private val observerEventBus = newEventBus<Double>()
 
     @Volatile private var observer: GeographicPosition? = null
@@ -129,8 +127,10 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
         )
     }
 
-    fun computeTab(type: AtlasView.TabType = tabType) {
+    fun computeTab(type: AtlasView.TabType) {
         if (!view.showing) return
+
+        LOG.info("computing tab. type={}", type)
 
         tabType = type
 
@@ -142,6 +142,11 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
             AtlasView.TabType.STAR -> computeStar()
             AtlasView.TabType.DSO -> computeDSO()
         }
+    }
+
+    @Scheduled(fixedDelay = 1L, initialDelay = 1L, timeUnit = TimeUnit.MINUTES)
+    fun computeTab() {
+        computeTab(tabType)
     }
 
     fun populatePlanets() {
@@ -320,6 +325,7 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
         javaFxThread { view.updateHorizontalCoordinates(az, alt) }
     }
 
+    @Scheduled(fixedDelay = 15L, initialDelay = 15L, timeUnit = TimeUnit.MINUTES)
     fun updateSunImage() {
         if (!view.showing) return
 
@@ -419,14 +425,6 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
         mount?.sync(ra, dec)
     }
 
-    private fun onTimerHit(count: Int) {
-        if (!view.showing) return
-
-        if (count % 15 == 0) updateSunImage()
-
-        javaFxThread { computeTab() }
-    }
-
     fun savePreferences() {
         preferences.double("atlas.screen.x", view.x)
         preferences.double("atlas.screen.y", view.y)
@@ -439,8 +437,6 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
 
     override fun close() {
         savePreferences()
-
-        timer.cancel()
     }
 
     companion object {

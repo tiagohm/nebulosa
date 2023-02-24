@@ -7,7 +7,7 @@ import javafx.scene.control.DatePicker
 import javafx.scene.control.TextField
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.logic.equipment.EquipmentManager
+import nebulosa.desktop.logic.mount.MountManager
 import nebulosa.desktop.logic.mount.SiteAndTimeManager
 import nebulosa.desktop.view.mount.SiteAndTimeView
 import nebulosa.indi.device.gps.GPS
@@ -16,13 +16,15 @@ import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.m
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
-class SiteAndTimeWindow(override val mount: Mount) : AbstractWindow("SiteAndTime", "nebulosa-site-and-time"), SiteAndTimeView {
+class SiteAndTimeWindow(
+    override val mount: Mount,
+    private val mountManager: MountManager,
+) : AbstractWindow("SiteAndTime", "nebulosa-site-and-time"), SiteAndTimeView {
 
     @FXML private lateinit var latitudeTextField: TextField
     @FXML private lateinit var longitudeTextField: TextField
@@ -34,8 +36,6 @@ class SiteAndTimeWindow(override val mount: Mount) : AbstractWindow("SiteAndTime
     @FXML private lateinit var openINDIButton: Button
     @FXML private lateinit var useCoordinateFromGpsButton: Button
     @FXML private lateinit var syncDateAndTimeButton: Button
-
-    @Autowired private lateinit var equipmentManager: EquipmentManager
 
     private val siteAndTimeManager = SiteAndTimeManager(this)
 
@@ -51,7 +51,7 @@ class SiteAndTimeWindow(override val mount: Mount) : AbstractWindow("SiteAndTime
         dateDatePicker.converter = LocalDateStringConverter
 
         gpsChoiceBox.converter = GPSStringConverter
-        gpsChoiceBox.itemsProperty().bind(equipmentManager.attachedGPSs)
+        gpsChoiceBox.itemsProperty().bind(mountManager.equipmentManager.attachedGPSs)
 
         openINDIButton.disableProperty().bind(gpsChoiceBox.selectionModel.selectedItemProperty().isNull)
 
@@ -126,6 +126,11 @@ class SiteAndTimeWindow(override val mount: Mount) : AbstractWindow("SiteAndTime
     @FXML
     private fun applyDateAndTime() {
         siteAndTimeManager.applyDateAndTime()
+    }
+
+    override fun openINDIPanelControl(gps: GPS) {
+        mountManager.indiPanelControlWindow.show(bringToFront = true)
+        mountManager.indiPanelControlWindow.device = gps
     }
 
     override fun updateSite(longitude: Angle, latitude: Angle, elevation: Distance) {

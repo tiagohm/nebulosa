@@ -8,6 +8,7 @@ import javafx.beans.binding.BooleanBinding
 import javafx.beans.binding.StringBinding
 import javafx.beans.property.ObjectProperty
 import javafx.beans.value.*
+import javafx.collections.ObservableList
 import java.util.*
 
 // Any.
@@ -116,6 +117,20 @@ inline infix fun ObservableBooleanValue.xor(other: ObservableBooleanValue): Bool
 
 inline fun <E> ObservableBooleanValue.between(onTrue: E?, onFalse: E?): ObservableValue<out E?> {
     return Bindings.createObjectBinding({ if (get()) onTrue else onFalse }, this)
+}
+
+fun <E> ObservableList<E>.toggle(onTrue: E, onFalse: E, value: Boolean) {
+    if (value) {
+        remove(onFalse)
+        add(onTrue)
+    } else {
+        remove(onTrue)
+        add(onFalse)
+    }
+}
+
+fun <E> ObservableBooleanValue.between(observable: ObservableList<E>, onTrue: E, onFalse: E) {
+    on { observable.toggle(onTrue, onFalse, get()) }
 }
 
 // String.

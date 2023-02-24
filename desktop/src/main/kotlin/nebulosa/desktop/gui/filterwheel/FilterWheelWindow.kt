@@ -21,7 +21,6 @@ import nebulosa.desktop.logic.filterwheel.FilterWheelManager
 import nebulosa.desktop.logic.isNull
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
-import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.filterwheel.FilterWheelView
 import nebulosa.indi.device.filterwheel.FilterWheel
 import org.springframework.beans.factory.annotation.Autowired
@@ -64,7 +63,7 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "nebulosa-filterwheel"),
 
         connectButton.disableProperty().bind(filterWheelManager.isNull() or isConnecting or isMoving)
         connectButton.textProperty().bind(filterWheelManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
-        filterWheelManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
+        filterWheelManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 

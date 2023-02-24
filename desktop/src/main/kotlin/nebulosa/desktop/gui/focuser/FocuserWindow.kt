@@ -13,9 +13,7 @@ import nebulosa.desktop.gui.CONNECTION_ICON
 import nebulosa.desktop.logic.between
 import nebulosa.desktop.logic.focuser.FocuserManager
 import nebulosa.desktop.logic.isNull
-import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
-import nebulosa.desktop.logic.util.toggle
 import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.indi.device.focuser.Focuser
 import org.controlsfx.control.ToggleSwitch
@@ -63,7 +61,7 @@ class FocuserWindow : AbstractWindow("Focuser", "nebulosa-focuser"), FocuserView
 
         connectButton.disableProperty().bind(focuserManager.isNull() or isConnecting or isMoving)
         connectButton.textProperty().bind(focuserManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
-        focuserManager.connectedProperty.on { connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", it) }
+        focuserManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 

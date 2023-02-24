@@ -11,7 +11,7 @@ import nebulosa.desktop.logic.mount.MountManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlManager
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServerType
-import nebulosa.desktop.logic.util.toggle
+import nebulosa.desktop.logic.toggle
 import nebulosa.desktop.view.telescopecontrol.TelescopeControlView
 
 class TelescopeControlWindow(private val mountManager: MountManager) : AbstractWindow("TelescopeControl", "nebulosa-telescope-control"),

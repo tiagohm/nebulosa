@@ -8,8 +8,7 @@ import java.time.ZoneOffset
 class SiteAndTimeManager(private val view: SiteAndTimeView) {
 
     fun openINDIPanelControl() {
-        // TODO: indiPanelControlWindow.show(bringToFront = true)
-        // indiPanelControlWindow.device = view.gps
+        view.openINDIPanelControl(view.gps ?: return)
     }
 
     fun useCoordinateFromGPS() {
