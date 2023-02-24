@@ -12,69 +12,46 @@ import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import java.util.concurrent.TimeUnit
 
-abstract class RetrofitService {
+abstract class RetrofitService(val url: String) {
 
-    protected val retrofit: Retrofit
-    protected val mapper: ObjectMapper
+    protected open val converterFactory = emptyList<Converter.Factory>()
 
-    protected constructor(
-        retrofit: Retrofit,
-        mapper: ObjectMapper? = null,
-    ) {
-        this.mapper = mapper ?: buildDefaultMapper()
-        this.retrofit = retrofit
-    }
+    protected open val callAdaptorFactory: CallAdapter.Factory? = null
 
-    constructor(
-        url: String,
-        mapper: ObjectMapper? = null,
-        converterFactory: Converter.Factory? = null,
-        callAdaptorFactory: CallAdapter.Factory? = null,
-        client: OkHttpClient? = null,
-        clientBuilderHandle: (OkHttpClient.Builder) -> Unit = {},
-        logLevel: HttpLoggingInterceptor.Level? = HttpLoggingInterceptor.Level.BASIC,
-    ) {
-        this.mapper = mapper ?: buildDefaultMapper()
+    protected open val mapper = ObjectMapper()
+        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)!!
 
-        retrofit = Retrofit.Builder()
-            .baseUrl(url)
-            .also { if (converterFactory != null) it.addConverterFactory(converterFactory) }
-            .addConverterFactory(JacksonConverterFactory.create(this.mapper))
-            .also { if (callAdaptorFactory != null) it.addCallAdapterFactory(callAdaptorFactory) }
-            .client(client.handle(clientBuilderHandle, logLevel))
-            .build()
+    protected open val logLevel: HttpLoggingInterceptor.Level? = HttpLoggingInterceptor.Level.BASIC
+
+    protected open fun handleOkHttpClientBuilder(builder: OkHttpClient.Builder) = Unit
+
+    protected open val retrofit by lazy {
+        val builder = Retrofit.Builder()
+        builder.baseUrl(url)
+        converterFactory.forEach { builder.addConverterFactory(it) }
+        builder.addConverterFactory(JacksonConverterFactory.create(mapper))
+        callAdaptorFactory?.also(builder::addCallAdapterFactory)
+
+        with(HTTP_CLIENT.newBuilder()) {
+            logLevel?.also { addInterceptor(HttpLoggingInterceptor().setLevel(it)) }
+            handleOkHttpClientBuilder(this)
+            builder.client(build())
+        }
+
+        builder.build()
     }
 
     companion object {
 
+        @JvmStatic private val CONNECTION_POOL = ConnectionPool(32, 30L, TimeUnit.MINUTES)
+
         @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder()
-            .connectionPool(ConnectionPool(32, 30L, TimeUnit.MINUTES))
+            .connectionPool(CONNECTION_POOL)
+            .readTimeout(60L, TimeUnit.SECONDS)
+            .writeTimeout(60L, TimeUnit.SECONDS)
+            .connectTimeout(60L, TimeUnit.SECONDS)
+            .callTimeout(60L, TimeUnit.SECONDS)
             .build()
-
-        @JvmStatic
-        private fun buildDefaultMapper() = ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)!!
-
-        @JvmStatic
-        private fun OkHttpClient?.handle(
-            clientBuilder: (OkHttpClient.Builder) -> Unit,
-            logLevel: HttpLoggingInterceptor.Level?,
-        ) = (this ?: HTTP_CLIENT).newBuilder()
-            .also { it.timeout() }
-            .also(clientBuilder)
-            .also { it.loggingInterceptor(logLevel) }
-            .build()
-
-        @JvmStatic
-        private fun OkHttpClient.Builder.timeout() =
-            readTimeout(30L, TimeUnit.SECONDS)
-                .writeTimeout(30L, TimeUnit.SECONDS)
-                .connectTimeout(30L, TimeUnit.SECONDS)
-                .callTimeout(30L, TimeUnit.SECONDS)
-
-        @JvmStatic
-        private fun OkHttpClient.Builder.loggingInterceptor(level: HttpLoggingInterceptor.Level?) =
-            apply { if (level != null) addInterceptor(HttpLoggingInterceptor().setLevel(level)) }
     }
 }

@@ -14,8 +14,9 @@ import java.lang.reflect.Type
  * @see <a href="https://simbad.u-strasbg.fr/simbad/tap/help/adqlHelp.html">ADQL Cheat sheet</a>
  * @see <a href="http://simbad.u-strasbg.fr/guide/otypes.htx">Object types</a>
  */
-class SimbadService(url: String = "https://simbad.u-strasbg.fr/") :
-    QueryService(url, converterFactory = SimbadObjectConverterFactory), Simbad {
+class SimbadService(url: String = "https://simbad.u-strasbg.fr/") : QueryService(url), Simbad {
+
+    override val converterFactory: List<Converter.Factory> = listOf(SimbadObjectConverterFactory)
 
     private val service = retrofit.create(Simbad::class.java)
 

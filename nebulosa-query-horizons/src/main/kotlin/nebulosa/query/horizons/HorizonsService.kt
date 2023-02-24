@@ -13,10 +13,11 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class HorizonsService(url: String = "https://ssd.jpl.nasa.gov/api/") :
-    QueryService(url, converterFactory = HorizonsEphemerisConverterFactory), Horizons {
+class HorizonsService(url: String = "https://ssd.jpl.nasa.gov/api/") : QueryService(url), Horizons {
 
-    private val service = retrofit.create(Horizons::class.java)
+    override val converterFactory: List<Converter.Factory> = listOf(HorizonsEphemerisConverterFactory)
+
+    private val service by lazy { retrofit.create(Horizons::class.java) }
 
     override fun observer(
         command: String, coordinates: String, startTime: String,

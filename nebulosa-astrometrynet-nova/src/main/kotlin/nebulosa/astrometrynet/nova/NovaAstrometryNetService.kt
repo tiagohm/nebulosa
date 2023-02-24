@@ -12,7 +12,7 @@ import java.util.*
 
 class NovaAstrometryNetService(url: String = "https://nova.astrometry.net/api/") : RetrofitService(url), NovaAstrometryNet {
 
-    private val service = retrofit.create(NovaAstrometryNet::class.java)
+    private val service by lazy { retrofit.create(NovaAstrometryNet::class.java) }
 
     override fun login(body: FormBody) = service.login(body)
 
