@@ -167,7 +167,7 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "nebulosa-filterwheel"),
     }
 
     @FXML
-    private fun openINDI() {
+    private fun openINDIPanelControl() {
         filterWheelManager.openINDIPanelControl()
     }
 
@@ -254,16 +254,5 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "nebulosa-filterwheel"),
         override fun toString(slot: Int?) = slot?.let(filterWheelManager::computeFilterName) ?: "No filter selected"
 
         override fun fromString(text: String?) = null
-    }
-
-    companion object {
-
-        @JvmStatic private var window: FilterWheelWindow? = null
-
-        @JvmStatic
-        fun open() {
-            if (window == null) window = FilterWheelWindow()
-            window!!.show(bringToFront = true)
-        }
     }
 }

@@ -1,6 +1,8 @@
 package nebulosa.desktop.logic.mount
 
 import jakarta.annotation.PostConstruct
+import nebulosa.constants.PI
+import nebulosa.constants.TAU
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.gui.mount.SiteAndTimeWindow
 import nebulosa.desktop.gui.telescopecontrol.TelescopeControlWindow
@@ -11,11 +13,13 @@ import nebulosa.desktop.logic.telescopecontrol.TelescopeControlStellariumServer
 import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.DeviceEvent
+import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
+import nebulosa.math.Distance
 import nebulosa.nova.position.Geoid
 import nebulosa.time.InstantOfTime
 import nebulosa.time.UTC
@@ -28,14 +32,19 @@ import java.util.concurrent.TimeUnit
 @Component
 class MountManager(
     @Autowired private val view: MountView,
-    @Autowired internal val equipmentManager: EquipmentManager,
+    @Autowired private val equipmentManager: EquipmentManager,
 ) : MountProperty by equipmentManager.selectedMount {
 
     @Autowired private lateinit var preferences: Preferences
-    @Autowired internal lateinit var indiPanelControlWindow: INDIPanelControlWindow
+    @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
+
+    @Volatile private var position = Geoid.IERS2010.latLon(Angle.ZERO, Angle.ZERO, Distance.ZERO)
 
     val mounts
         get() = equipmentManager.attachedMounts
+
+    val gps
+        get() = equipmentManager.attachedGPSs
 
     @PostConstruct
     private fun initialize() {
@@ -51,6 +60,7 @@ class MountManager(
         if (prev !== device) savePreferences()
 
         updateTitle()
+        computePosition()
 
         TelescopeControlStellariumServer.mount = device
         TelescopeControlLX200Server.mount = device
@@ -63,12 +73,23 @@ class MountManager(
             is MountSlewingChanged,
             is GuideOutputPulsingChanged -> updateStatus()
             is MountEquatorialCoordinatesChanged -> TelescopeControlStellariumServer.sendCurrentPosition()
+            is MountGeographicCoordinateChanged -> computePosition()
         }
+    }
+
+    private fun computePosition() {
+        val mount = value ?: return
+        position = Geoid.IERS2010.latLon(mount.longitude, mount.latitude, mount.elevation)
     }
 
     fun openINDIPanelControl() {
         indiPanelControlWindow.show(bringToFront = true)
         indiPanelControlWindow.device = value
+    }
+
+    fun openINDIPanelControl(gps: GPS) {
+        indiPanelControlWindow.show(bringToFront = true)
+        indiPanelControlWindow.device = gps
     }
 
     fun openTelescopeControlServer() {
@@ -180,14 +201,19 @@ class MountManager(
     }
 
     private fun computeLST(time: InstantOfTime = UTC.now()): Angle {
-        if (value == null) return Angle.ZERO
-        val position = Geoid.IERS2010.latLon(value.longitude, value.latitude, value.elevation)
-        return position.lstAt(time)
+        return if (value == null) Angle.ZERO else position.lstAt(time)
     }
 
     private fun computeTimeLeftToMeridianFlip(): Angle {
         if (value == null) return Angle.ZERO
-        return value.rightAscension - computeLST()
+        val timeLeft = value.rightAscension - computeLST()
+        return if (timeLeft.value < 0.0) timeLeft - SIDEREAL_TIME_DIFF * (timeLeft.normalized.value / TAU)
+        else timeLeft + SIDEREAL_TIME_DIFF * (1.0 - timeLeft.value / TAU)
+    }
+
+    private fun computeHourAngle(): Angle {
+        if (value == null) return Angle.ZERO
+        return (computeLST() - value.rightAscension).normalized
     }
 
     @Scheduled(fixedRate = 1L, initialDelay = 1L, timeUnit = TimeUnit.SECONDS)
@@ -209,5 +235,10 @@ class MountManager(
 
         TelescopeControlStellariumServer.close()
         TelescopeControlLX200Server.close()
+    }
+
+    companion object {
+
+        private const val SIDEREAL_TIME_DIFF = 0.06552777 * PI / 12.0
     }
 }

@@ -44,7 +44,7 @@
                     styleClass="mdi,mdi-sm,text-blue-grey-700">
             </Button>
             <Button fx:id="openINDIButton"
-                    onAction="#openINDI"
+                    onAction="#openINDIPanelControl"
                     alignment="CENTER"
                     mnemonicParsing="false"
                     contentDisplay="GRAPHIC_ONLY"
@@ -61,12 +61,12 @@
             </Button>
         </HBox>
         <VBox alignment="CENTER"
-              spacing="4.0">
+              spacing="2.0">
             <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Label maxWidth="64.0"
-                       minWidth="64.0"
-                       prefWidth="64.0"
+                  spacing="2.0">
+                <Label maxWidth="68.0"
+                       minWidth="68.0"
+                       prefWidth="68.0"
                        text="RA:"
                        styleClass="text-sm,text-bold">
                 </Label>
@@ -78,13 +78,13 @@
                        text="00h 00m 00.00s"
                        styleClass="text-monospaced,text-sm">
                 </Label>
-                <Label maxWidth="64.0"
-                       minWidth="64.0"
-                       prefWidth="64.0"
+                <Label maxWidth="68.0"
+                       minWidth="68.0"
+                       prefWidth="68.0"
                        text="DEC:"
                        styleClass="text-sm,text-bold">
                     <HBox.margin>
-                        <Insets left="8.0"/>
+                        <Insets left="4.0"/>
                     </HBox.margin>
                 </Label>
                 <Label fx:id="declinationLabel"
@@ -97,10 +97,10 @@
                 </Label>
             </HBox>
             <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Label maxWidth="64.0"
-                       minWidth="64.0"
-                       prefWidth="64.0"
+                  spacing="2.0">
+                <Label maxWidth="68.0"
+                       minWidth="68.0"
+                       prefWidth="68.0"
                        text="RA (J2000):"
                        styleClass="text-sm,text-bold">
                 </Label>
@@ -112,13 +112,13 @@
                        text="00h 00m 00.00s"
                        styleClass="text-monospaced,text-sm">
                 </Label>
-                <Label maxWidth="64.0"
-                       minWidth="64.0"
-                       prefWidth="64.0"
+                <Label maxWidth="68.0"
+                       minWidth="68.0"
+                       prefWidth="68.0"
                        text="DEC (J2000):"
                        styleClass="text-sm,text-bold">
                     <HBox.margin>
-                        <Insets left="8.0"/>
+                        <Insets left="4.0"/>
                     </HBox.margin>
                 </Label>
                 <Label fx:id="declinationJ2000Label"
@@ -131,10 +131,10 @@
                 </Label>
             </HBox>
             <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Label maxWidth="64.0"
-                       minWidth="64.0"
-                       prefWidth="64.0"
+                  spacing="2.0">
+                <Label maxWidth="68.0"
+                       minWidth="68.0"
+                       prefWidth="68.0"
                        text="Azimuth:"
                        styleClass="text-sm,text-bold">
                 </Label>
@@ -146,13 +146,13 @@
                        text="000° 00' 00.00&quot;"
                        styleClass="text-monospaced,text-sm">
                 </Label>
-                <Label maxWidth="64.0"
-                       minWidth="64.0"
-                       prefWidth="64.0"
+                <Label maxWidth="68.0"
+                       minWidth="68.0"
+                       prefWidth="68.0"
                        text="Altitude:"
                        styleClass="text-sm,text-bold">
                     <HBox.margin>
-                        <Insets left="8.0"/>
+                        <Insets left="4.0"/>
                     </HBox.margin>
                 </Label>
                 <Label fx:id="altitudeLabel"
@@ -165,10 +165,10 @@
                 </Label>
             </HBox>
             <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Label maxWidth="64.0"
-                       minWidth="64.0"
-                       prefWidth="64.0"
+                  spacing="2.0">
+                <Label maxWidth="68.0"
+                       minWidth="68.0"
+                       prefWidth="68.0"
                        text="Pier:"
                        styleClass="text-sm,text-bold">
                 </Label>
@@ -180,13 +180,13 @@
                        text="NEITHER"
                        styleClass="text-monospaced,text-sm">
                 </Label>
-                <Label maxWidth="64.0"
-                       minWidth="64.0"
-                       prefWidth="64.0"
+                <Label maxWidth="68.0"
+                       minWidth="68.0"
+                       prefWidth="68.0"
                        text="Meridian at:"
                        styleClass="text-sm,text-bold">
                     <HBox.margin>
-                        <Insets left="8.0"/>
+                        <Insets left="4.0"/>
                     </HBox.margin>
                 </Label>
                 <Label fx:id="meridianAtLabel"
@@ -199,30 +199,32 @@
                 </Label>
             </HBox>
             <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
+                  spacing="2.0">
                 <Label fx:id="statusLabel"
                        text="idle"
-                       minWidth="128.0"
-                       prefWidth="128.0">
+                       minWidth="130.0"
+                       maxWidth="130.0"
+                       prefWidth="130.0">
                     <graphic>
                         <Label text="&#xF02FC;"
                                styleClass="text-blue-700,mdi,mdi-xs">
                         </Label>
                     </graphic>
                 </Label>
-                <Label maxWidth="30.0"
-                       minWidth="30.0"
-                       prefWidth="30.0"
+                <Label maxWidth="27.0"
+                       minWidth="27.0"
+                       prefWidth="27.0"
                        text="LST:"
                        styleClass="text-sm,text-bold">
                     <HBox.margin>
-                        <Insets left="8.0"/>
+                        <Insets left="4.0"/>
                     </HBox.margin>
                 </Label>
                 <Label fx:id="lstLabel"
-                       maxWidth="70.0"
-                       minWidth="70.0"
-                       prefWidth="70.0"
+                       alignment="CENTER_RIGHT"
+                       maxWidth="68.0"
+                       minWidth="68.0"
+                       prefWidth="68.0"
                        text="00:00:00"
                        styleClass="text-monospaced,text-sm">
                 </Label>
@@ -237,9 +239,9 @@
                 </Label>
                 <Label fx:id="constellationLabel"
                        alignment="CENTER_RIGHT"
-                       maxWidth="35.0"
-                       minWidth="35.0"
-                       prefWidth="35.0"
+                       maxWidth="48.0"
+                       minWidth="48.0"
+                       prefWidth="48.0"
                        text="-"
                        styleClass="text-monospaced,text-sm">
                 </Label>
@@ -553,7 +555,7 @@
                             onAction="#home">
                         <graphic>
                             <Label text="&#xF02DC;"
-                                   styleClass="mdi,mdi-sm,text-grey-800">
+                                   styleClass="mdi,mdi-sm,text-blue-700">
                             </Label>
                         </graphic>
                     </Button>

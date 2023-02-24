@@ -195,7 +195,7 @@
             </Tab>
         </TabPane>
         <VBox alignment="CENTER"
-              spacing="4.0">
+              spacing="2.0">
             <padding>
                 <Insets left="16.0"
                         top="2.0"

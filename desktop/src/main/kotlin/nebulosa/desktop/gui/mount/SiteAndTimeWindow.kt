@@ -51,7 +51,7 @@ class SiteAndTimeWindow(
         dateDatePicker.converter = LocalDateStringConverter
 
         gpsChoiceBox.converter = GPSStringConverter
-        gpsChoiceBox.itemsProperty().bind(mountManager.equipmentManager.attachedGPSs)
+        gpsChoiceBox.itemsProperty().bind(mountManager.gps)
 
         openINDIButton.disableProperty().bind(gpsChoiceBox.selectionModel.selectedItemProperty().isNull)
 
@@ -104,7 +104,7 @@ class SiteAndTimeWindow(
         }
 
     @FXML
-    private fun openINDI() {
+    private fun openINDIPanelControl() {
         siteAndTimeManager.openINDIPanelControl()
     }
 
@@ -129,8 +129,7 @@ class SiteAndTimeWindow(
     }
 
     override fun openINDIPanelControl(gps: GPS) {
-        mountManager.indiPanelControlWindow.show(bringToFront = true)
-        mountManager.indiPanelControlWindow.device = gps
+        mountManager.openINDIPanelControl(gps)
     }
 
     override fun updateSite(longitude: Angle, latitude: Angle, elevation: Distance) {

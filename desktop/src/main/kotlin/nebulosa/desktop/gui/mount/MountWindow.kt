@@ -198,7 +198,7 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
     }
 
     @FXML
-    private fun openINDI() {
+    private fun openINDIPanelControl() {
         mountManager.openINDIPanelControl()
     }
 
@@ -314,13 +314,5 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
             .build()
 
         @JvmStatic private val MERIDIAN_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")
-
-        @JvmStatic private var window: MountWindow? = null
-
-        @JvmStatic
-        fun open() {
-            if (window == null) window = MountWindow()
-            window!!.show(bringToFront = true)
-        }
     }
 }

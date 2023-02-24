@@ -131,7 +131,7 @@ class FocuserWindow : AbstractWindow("Focuser", "nebulosa-focuser"), FocuserView
     }
 
     @FXML
-    private fun openINDI() {
+    private fun openINDIPanelControl() {
         focuserManager.openINDIPanelControl()
     }
 
@@ -168,16 +168,5 @@ class FocuserWindow : AbstractWindow("Focuser", "nebulosa-focuser"), FocuserView
         override fun toString(device: Focuser?) = device?.name ?: "No focuser selected"
 
         override fun fromString(text: String?) = null
-    }
-
-    companion object {
-
-        @JvmStatic private var window: FocuserWindow? = null
-
-        @JvmStatic
-        fun open() {
-            if (window == null) window = FocuserWindow()
-            window!!.show(bringToFront = true)
-        }
     }
 }

@@ -42,7 +42,7 @@
                     minWidth="42.0">
             </Button>
             <Button fx:id="openINDIButton"
-                    onAction="#openINDI"
+                    onAction="#openINDIPanelControl"
                     alignment="CENTER"
                     mnemonicParsing="false"
                     contentDisplay="GRAPHIC_ONLY"
@@ -208,7 +208,7 @@
                 </graphic>
             </Button>
             <Button fx:id="autoFocusButton"
-                    text="Auto focus..."
+                    text="Auto focus"
                     onAction="#openAutoFocus"
                     prefWidth="144.0">
                 <graphic>

@@ -2,21 +2,19 @@
 
 <?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServerType?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="100.0"
+            prefHeight="110.0"
             prefWidth="310.0"
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <VBox spacing="16.0"
+    <VBox spacing="8.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
           AnchorPane.rightAnchor="0.0"
@@ -28,15 +26,18 @@
                     top="16.0"/>
         </padding>
         <HBox alignment="CENTER">
-            <ChoiceBox fx:id="serverTypeChoiceBox"
-                       HBox.hgrow="ALWAYS">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <TelescopeControlServerType fx:constant="STELLARIUM"/>
-                        <TelescopeControlServerType fx:constant="LX200"/>
-                    </FXCollections>
-                </items>
-            </ChoiceBox>
+            <VBox alignment="CENTER_LEFT">
+                <Label text="Protocol:"
+                       styleClass="text-sm"/>
+                <ChoiceBox fx:id="serverTypeChoiceBox">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <TelescopeControlServerType fx:constant="STELLARIUM"/>
+                            <TelescopeControlServerType fx:constant="LX200"/>
+                        </FXCollections>
+                    </items>
+                </ChoiceBox>
+            </VBox>
         </HBox>
         <HBox alignment="CENTER"
               spacing="8.0">

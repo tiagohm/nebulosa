@@ -119,17 +119,18 @@ inline fun <E> ObservableBooleanValue.between(onTrue: E?, onFalse: E?): Observab
     return Bindings.createObjectBinding({ if (get()) onTrue else onFalse }, this)
 }
 
+@Suppress("ControlFlowWithEmptyBody")
 fun <E> ObservableList<E>.toggle(onTrue: E, onFalse: E, value: Boolean) {
     if (value) {
-        remove(onFalse)
+        while (remove(onFalse));
         add(onTrue)
     } else {
-        remove(onTrue)
+        while (remove(onTrue));
         add(onFalse)
     }
 }
 
-fun <E> ObservableBooleanValue.between(observable: ObservableList<E>, onTrue: E, onFalse: E) {
+inline fun <E> ObservableBooleanValue.between(observable: ObservableList<E>, onTrue: E, onFalse: E) {
     on { observable.toggle(onTrue, onFalse, get()) }
 }
 

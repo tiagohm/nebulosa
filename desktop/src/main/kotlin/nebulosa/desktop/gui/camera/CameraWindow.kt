@@ -438,7 +438,7 @@ class CameraWindow : AbstractWindow("Camera", "nebulosa-camera"), CameraView {
     }
 
     @FXML
-    private fun openINDI() {
+    private fun openINDIPanelControl() {
         cameraManager.openINDIPanelControl()
     }
 
@@ -506,16 +506,5 @@ class CameraWindow : AbstractWindow("Camera", "nebulosa-camera"), CameraView {
         override fun toString(device: Camera?) = device?.name ?: "No camera selected"
 
         override fun fromString(text: String?) = null
-    }
-
-    companion object {
-
-        @JvmStatic private var window: CameraWindow? = null
-
-        @JvmStatic
-        fun open() {
-            if (window == null) window = CameraWindow()
-            window!!.show(bringToFront = true)
-        }
     }
 }

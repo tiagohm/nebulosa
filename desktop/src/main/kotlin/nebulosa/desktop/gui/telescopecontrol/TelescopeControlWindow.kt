@@ -13,6 +13,7 @@ import nebulosa.desktop.logic.telescopecontrol.TelescopeControlManager
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServerType
 import nebulosa.desktop.logic.toggle
 import nebulosa.desktop.view.telescopecontrol.TelescopeControlView
+import org.slf4j.LoggerFactory
 
 class TelescopeControlWindow(private val mountManager: MountManager) : AbstractWindow("TelescopeControl", "nebulosa-telescope-control"),
     TelescopeControlView {
@@ -61,12 +62,17 @@ class TelescopeControlWindow(private val mountManager: MountManager) : AbstractW
         try {
             telescopeControlManager.connect()
         } catch (e: Throwable) {
-            e.printStackTrace()
+            LOG.error("connection error", e)
 
             showAlert(
                 "A connection could not be established. Check your connection or server configuration.",
                 "Connection failed"
             )
         }
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(TelescopeControlWindow::class.java)
     }
 }

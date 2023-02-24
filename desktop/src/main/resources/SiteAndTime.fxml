@@ -39,7 +39,7 @@
                                minHeight="28.0">
                     </ChoiceBox>
                     <Button fx:id="openINDIButton"
-                            onAction="#openINDI"
+                            onAction="#openINDIPanelControl"
                             alignment="CENTER"
                             mnemonicParsing="false"
                             contentDisplay="GRAPHIC_ONLY"

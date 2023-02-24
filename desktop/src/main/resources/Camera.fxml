@@ -47,7 +47,7 @@
                         styleClass="text-blue-grey-700,mdi,mdi-sm">
                 </Button>
                 <Button fx:id="openINDIButton"
-                        onAction="#openINDI"
+                        onAction="#openINDIPanelControl"
                         alignment="CENTER"
                         mnemonicParsing="false"
                         contentDisplay="GRAPHIC_ONLY"
