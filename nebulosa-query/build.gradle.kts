@@ -4,11 +4,7 @@ plugins {
 }
 
 dependencies {
-    api(libs.retrofit)
-    api(libs.retrofit.jackson)
-    api(libs.jackson)
-    api(libs.okhttp)
-    api(libs.okhttp.logging)
+    api(project(":nebulosa-retrofit"))
     implementation(libs.logback)
     testImplementation(project(":nebulosa-test"))
 }
