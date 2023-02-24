@@ -9,11 +9,14 @@ import io.kotest.matchers.string.shouldNotBeBlank
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.nova.Parity
 import nebulosa.astrometrynet.nova.Upload
+import nebulosa.io.resource
 import java.io.File
 
 class AstrometryNetServiceTest : StringSpec() {
 
     init {
+        val file = File.createTempFile("nova", ".jpg").also { resource("ldn673s_block1123.jpg")!!.transferTo(it.outputStream()) }
+
         val service = NovaAstrometryNetService()
 
         "login" {
@@ -21,7 +24,7 @@ class AstrometryNetServiceTest : StringSpec() {
             session.status shouldBe "success"
             session.session.shouldNotBeBlank()
         }
-        "upload from url" {
+        "!upload from url" {
             val session = service.login("XXXXXXXX").execute().body()!!.session
 
             val upload = Upload(
@@ -33,12 +36,11 @@ class AstrometryNetServiceTest : StringSpec() {
             submission.status shouldBe "success"
             submission.subId shouldBeGreaterThan 0
         }
-        "upload from file" {
+        "!upload from file" {
             val session = service.login("XXXXXXXX").execute().body()!!.session
 
             val upload = Upload(session, scaleLower = 0.5, scaleUpper = 1.0, centerRA = 290.0, centerDEC = 11.0, radius = 2.0)
 
-            val file = File("src/test/resources/ldn673s_block1123.jpg")
             val submission = service.uploadFromFile(file, upload).execute().body()!!
             submission.status shouldBe "success"
             submission.subId shouldBeGreaterThan 0

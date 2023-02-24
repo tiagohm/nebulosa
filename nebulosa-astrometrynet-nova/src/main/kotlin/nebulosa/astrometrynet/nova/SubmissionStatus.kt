@@ -1,16 +1,10 @@
 package nebulosa.astrometrynet.nova
 
-import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
-import java.time.LocalDateTime
 
 data class SubmissionStatus(
-    @field:JsonProperty("processing_started")
-    @field:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = NovaAstrometryNet.DATE_TIME_PATTERN)
-    val processingStarted: LocalDateTime = LocalDateTime.MIN,
-    @field:JsonProperty("processing_finished")
-    @field:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = NovaAstrometryNet.DATE_TIME_PATTERN)
-    val processingFinished: LocalDateTime = LocalDateTime.MIN,
+    @field:JsonProperty("processing_started") val processingStarted: String = "",
+    @field:JsonProperty("processing_finished") val processingFinished: String = "",
     @field:JsonProperty("job_calibrations") val jobCalibrations: Array<IntArray> = emptyArray(),
     @field:JsonProperty("jobs") val jobs: IntArray = IntArray(0),
     @field:JsonProperty("user") val user: Int = 0,

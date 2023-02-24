@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    api(project(":nebulosa-io"))
     api(libs.bundles.kotest)
 }
 

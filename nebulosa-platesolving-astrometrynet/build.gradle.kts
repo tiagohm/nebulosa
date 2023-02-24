@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     api(project(":nebulosa-platesolving"))
+    api(project(":nebulosa-astrometrynet-nova"))
     testImplementation(project(":nebulosa-test"))
 }
 

@@ -3,7 +3,6 @@ package nebulosa.retrofit
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -54,7 +53,6 @@ abstract class RetrofitService {
 
         @JvmStatic
         private fun buildDefaultMapper() = ObjectMapper()
-            .registerModule(JavaTimeModule())
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)!!
 
