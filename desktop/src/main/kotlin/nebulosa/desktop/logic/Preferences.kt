@@ -1,6 +1,7 @@
 package nebulosa.desktop.logic
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
@@ -17,11 +18,14 @@ class Preferences(
         load()
     }
 
-    @Suppress("UNCHECKED_CAST")
     private fun load() {
         if (path.exists()) {
-            val data = path.inputStream().use { objectMapper.readValue(it, Map::class.java) }
-            this.data.putAll(data as Map<out String, String?>)
+            try {
+                val data = path.inputStream().use { objectMapper.readValue(it, data::class.java) }
+                this.data.putAll(data)
+            } catch (e: Throwable) {
+                LOG.error("load preferences failed", e)
+            }
         }
     }
 
@@ -83,8 +87,10 @@ class Preferences(
     }
 
     fun double(key: String, value: Double) {
-        data[key] = "$value"
-        save()
+        if (value.isFinite()) {
+            data[key] = "$value"
+            save()
+        }
     }
 
     fun string(key: String): String? {
@@ -116,5 +122,10 @@ class Preferences(
     fun json(key: String, value: Any) {
         data[key] = objectMapper.writeValueAsString(value)
         save()
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(Preferences::class.java)
     }
 }

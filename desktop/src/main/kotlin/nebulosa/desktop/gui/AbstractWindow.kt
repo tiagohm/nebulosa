@@ -33,20 +33,15 @@ abstract class AbstractWindow(
 
                 onCreate()
 
-                if (this !is HomeWindow) {
-                    CLOSE
-                        .filter { !it }
-                        .subscribe {
-                            try {
-                                onClose()
-                            } catch (e: Throwable) {
-                                e.printStackTrace()
-                            } finally {
-                                close()
-                                CLOSE.onNext(true)
-                            }
+                CLOSE
+                    .filter { !it }
+                    .subscribe {
+                        if (this !is HomeWindow) {
+                            use { onClose() }
                         }
-                }
+
+                        CLOSE.onNext(true)
+                    }
             }
         }
 
