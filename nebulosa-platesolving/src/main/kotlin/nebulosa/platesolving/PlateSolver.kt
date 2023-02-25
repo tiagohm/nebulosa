@@ -13,5 +13,5 @@ interface PlateSolver {
         radius: Angle = Angle.ZERO,
         downsampleFactor: Int = 2,
         timeout: Duration? = null,
-    ): PlateSolvingCalibration
+    ): Calibration
 }

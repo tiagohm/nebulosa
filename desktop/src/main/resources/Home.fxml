@@ -244,9 +244,9 @@
                     </Label>
                 </graphic>
             </Button>
-            <Button fx:id="plateSolvingButton"
+            <Button fx:id="plateSolverButton"
                     onAction="#open"
-                    userData="PLATE_SOLVING"
+                    userData="PLATE_SOLVER"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
                     prefHeight="56.0"

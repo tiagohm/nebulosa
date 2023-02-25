@@ -91,6 +91,10 @@ interface Camera : GuideOutput, Thermometer {
 
     val hasGuiderHead: Boolean
 
+    val pixelSizeX: Double
+
+    val pixelSizeY: Double
+
     fun cooler(enable: Boolean)
 
     fun dewHeater(enable: Boolean)

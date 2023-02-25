@@ -1,17 +1,18 @@
 package nebulosa.desktop.logic.home
 
 import javafx.stage.FileChooser
-import nebulosa.desktop.gui.atlas.AtlasWindow
-import nebulosa.desktop.gui.camera.CameraWindow
-import nebulosa.desktop.gui.filterwheel.FilterWheelWindow
-import nebulosa.desktop.gui.focuser.FocuserWindow
 import nebulosa.desktop.gui.image.ImageWindow
-import nebulosa.desktop.gui.indi.INDIPanelControlWindow
-import nebulosa.desktop.gui.mount.MountWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
+import nebulosa.desktop.view.atlas.AtlasView
+import nebulosa.desktop.view.camera.CameraView
+import nebulosa.desktop.view.filterwheel.FilterWheelView
+import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.desktop.view.home.HomeView
+import nebulosa.desktop.view.indi.INDIPanelControlView
+import nebulosa.desktop.view.mount.MountView
+import nebulosa.desktop.view.platesolver.PlateSolverView
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.Closeable
@@ -26,13 +27,14 @@ class HomeManager(private val view: HomeView) : Closeable {
     @Autowired private lateinit var connectionManager: ConnectionManager
     @Autowired private lateinit var appDirectory: Path
 
-    @Autowired private lateinit var cameraWindow: CameraWindow
-    @Autowired private lateinit var mountWindow: MountWindow
-    @Autowired private lateinit var focuserWindow: FocuserWindow
-    @Autowired private lateinit var filterWheelWindow: FilterWheelWindow
-    @Autowired private lateinit var atlasWindow: AtlasWindow
+    @Autowired private lateinit var cameraView: CameraView
+    @Autowired private lateinit var mountView: MountView
+    @Autowired private lateinit var focuserView: FocuserView
+    @Autowired private lateinit var filterWheelView: FilterWheelView
+    @Autowired private lateinit var atlasView: AtlasView
+    @Autowired private lateinit var plateSolverView: PlateSolverView
     @Autowired private lateinit var imageWindowOpener: ImageWindow.Opener
-    @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
+    @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
 
     val connectedProperty
         get() = equipmentManager.connectedProperty
@@ -63,12 +65,13 @@ class HomeManager(private val view: HomeView) : Closeable {
     fun open(name: String) {
         when (name) {
             "NEW_IMAGE" -> openNewImage()
-            "CAMERA" -> cameraWindow.show(bringToFront = true)
-            "MOUNT" -> mountWindow.show(bringToFront = true)
-            "FOCUSER" -> focuserWindow.show(bringToFront = true)
-            "FILTER_WHEEL" -> filterWheelWindow.show(bringToFront = true)
-            "ATLAS" -> atlasWindow.show(bringToFront = true)
-            "INDI" -> indiPanelControlWindow.show(bringToFront = true)
+            "CAMERA" -> cameraView.show(bringToFront = true)
+            "MOUNT" -> mountView.show(bringToFront = true)
+            "FOCUSER" -> focuserView.show(bringToFront = true)
+            "FILTER_WHEEL" -> filterWheelView.show(bringToFront = true)
+            "ATLAS" -> atlasView.show(bringToFront = true)
+            "PLATE_SOLVER" -> plateSolverView.show(bringToFront = true)
+            "INDI" -> indiPanelControlView.show(bringToFront = true)
         }
     }
 

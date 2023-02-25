@@ -51,6 +51,8 @@ open class DefaultCameraProperty : AbstractDeviceProperty<Camera>(), CameraPrope
     override val offsetProperty = SimpleIntegerProperty(0)
     override val offsetMinProperty = SimpleIntegerProperty(0)
     override val offsetMaxProperty = SimpleIntegerProperty(0)
+    override val pixelSizeXProperty = SimpleDoubleProperty(0.0)
+    override val pixelSizeYProperty = SimpleDoubleProperty(0.0)
 
     override fun onChanged(prev: Camera?, device: Camera) {
         exposuringProperty.set(device.exposuring)
@@ -94,6 +96,8 @@ open class DefaultCameraProperty : AbstractDeviceProperty<Camera>(), CameraPrope
         offsetMinProperty.set(device.offsetMin)
         offsetMaxProperty.set(device.offsetMax)
         offsetProperty.set(device.offset)
+        pixelSizeXProperty.set(device.pixelSizeX)
+        pixelSizeYProperty.set(device.pixelSizeY)
     }
 
     override fun onReset() {
@@ -138,6 +142,8 @@ open class DefaultCameraProperty : AbstractDeviceProperty<Camera>(), CameraPrope
         offsetMinProperty.set(0)
         offsetMaxProperty.set(0)
         offsetProperty.set(0)
+        pixelSizeXProperty.set(0.0)
+        pixelSizeYProperty.set(0.0)
     }
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
@@ -196,6 +202,10 @@ open class DefaultCameraProperty : AbstractDeviceProperty<Camera>(), CameraPrope
             is CameraBinChanged -> {
                 binXProperty.set(device.binX)
                 binYProperty.set(device.binY)
+            }
+            is CameraPixelSizeChanged -> {
+                pixelSizeXProperty.set(device.pixelSizeX)
+                pixelSizeYProperty.set(device.pixelSizeY)
             }
         }
     }

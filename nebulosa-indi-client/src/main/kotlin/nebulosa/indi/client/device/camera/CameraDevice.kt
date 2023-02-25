@@ -61,6 +61,8 @@ internal open class CameraDevice(
     override var offsetMin = 0
     override var offsetMax = 0
     override var hasGuiderHead = false // TODO: Handle guider head.
+    override var pixelSizeX = 0.0
+    override var pixelSizeY = 0.0
 
     override var hasThermometer = false
     override var temperature = 0.0
@@ -109,6 +111,12 @@ internal open class CameraDevice(
             }
             is NumberVector<*> -> {
                 when (message.name) {
+                    "CCD_INFO" -> {
+                        pixelSizeX = message["CCD_PIXEL_SIZE_X"]?.value ?: 0.0
+                        pixelSizeY = message["CCD_PIXEL_SIZE_Y"]?.value ?: 0.0
+
+                        handler.fireOnEventReceived(CameraPixelSizeChanged(this))
+                    }
                     "CCD_EXPOSURE" -> {
                         val element = message["CCD_EXPOSURE_VALUE"]!!
 

@@ -30,7 +30,7 @@ class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeV
     @FXML private lateinit var rotatorButton: Button
     @FXML private lateinit var switchButton: Button
     @FXML private lateinit var atlasButton: Button
-    @FXML private lateinit var plateSolvingButton: Button
+    @FXML private lateinit var plateSolverButton: Button
     @FXML private lateinit var alignmentButton: Button
     @FXML private lateinit var sequencerButton: Button
     @FXML private lateinit var imageViewerButton: Button

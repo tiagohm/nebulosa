@@ -90,6 +90,10 @@ interface CameraProperty : DeviceProperty<Camera> {
 
     val offsetMaxProperty: SimpleIntegerProperty
 
+    val pixelSizeXProperty: SimpleDoubleProperty
+
+    val pixelSizeYProperty: SimpleDoubleProperty
+
     val exposuring
         get() = exposuringProperty.get()
 
@@ -209,4 +213,10 @@ interface CameraProperty : DeviceProperty<Camera> {
 
     val offsetMax
         get() = offsetMaxProperty.get()
+
+    val pixelSizeX
+        get() = pixelSizeXProperty.get()
+
+    val pixelSizeY
+        get() = pixelSizeYProperty.get()
 }

@@ -34,10 +34,18 @@ abstract class AbstractWindow(
                 onCreate()
 
                 if (this !is HomeWindow) {
-                    CLOSE_EVENT_BUS.subscribe {
-                        close()
-                        onClose()
-                    }
+                    CLOSE
+                        .filter { !it }
+                        .subscribe {
+                            try {
+                                onClose()
+                            } catch (e: Throwable) {
+                                e.printStackTrace()
+                            } finally {
+                                hide()
+                                CLOSE.onNext(true)
+                            }
+                        }
                 }
             }
         }
@@ -49,7 +57,7 @@ abstract class AbstractWindow(
 
             if (this is HomeWindow) {
                 onClose()
-                CLOSE_EVENT_BUS.onNext(Unit)
+                CLOSE.onNext(false)
             }
         }
     }
@@ -133,8 +141,8 @@ abstract class AbstractWindow(
         window.showAndWait()
     }
 
-    override fun close() {
-        window.close()
+    final override fun hide() {
+        window.hide()
     }
 
     final override fun showAlert(
@@ -149,6 +157,6 @@ abstract class AbstractWindow(
 
     companion object {
 
-        @JvmStatic private val CLOSE_EVENT_BUS = newEventBus<Unit>()
+        @JvmStatic internal val CLOSE = newEventBus<Boolean>()
     }
 }

@@ -5,8 +5,8 @@ import nebulosa.astrometrynet.nova.Session
 import nebulosa.astrometrynet.nova.Upload
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
+import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
-import nebulosa.platesolving.PlateSolvingCalibration
 import nebulosa.platesolving.PlateSolvingException
 import java.io.File
 import java.time.Duration
@@ -25,7 +25,15 @@ class NovaAstrometryNetPlateSolver(
         val currentTime = System.currentTimeMillis()
 
         if (session == null || lastSessionTime == 0L || currentTime - lastSessionTime >= SESSION_EXPIRATION_TIME) {
-            session = service.login(apiKey).execute().body() ?: return
+            val session = service.login(apiKey).execute().body()
+                ?: throw PlateSolvingException("failed to renew session key")
+
+            if (session.status != "success") {
+                throw PlateSolvingException("failed to renew session key: ${session.errorMessage}")
+            }
+
+            this.session = session
+            lastSessionTime = currentTime
         }
     }
 
@@ -36,7 +44,7 @@ class NovaAstrometryNetPlateSolver(
         radius: Angle,
         downsampleFactor: Int,
         timeout: Duration?,
-    ): PlateSolvingCalibration {
+    ): Calibration {
         renewSession()
 
         val upload = Upload(
@@ -66,7 +74,7 @@ class NovaAstrometryNetPlateSolver(
                 val calibration = service.jobCalibration(status.jobs[0]).execute().body()
                     ?: throw PlateSolvingException("failed to retrieve calibration")
 
-                return PlateSolvingCalibration(
+                return Calibration(
                     calibration.orientation.deg,
                     calibration.pixScale,
                     calibration.radius.deg,
@@ -85,7 +93,7 @@ class NovaAstrometryNetPlateSolver(
             timeLeft -= timeDelay
         }
 
-        throw PlateSolvingException("the plate solving took a long time")
+        throw PlateSolvingException("the plate solving took a long time and finished")
     }
 
     companion object {

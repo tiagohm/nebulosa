@@ -14,6 +14,7 @@ import nebulosa.desktop.logic.observeOnJavaFX
 import nebulosa.desktop.logic.task.TaskEvent
 import nebulosa.desktop.logic.task.TaskExecutor
 import nebulosa.desktop.logic.util.javaFxThread
+import nebulosa.desktop.view.View
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.camera.ExposureMode
@@ -22,7 +23,6 @@ import nebulosa.indi.device.camera.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.stereotype.Component
-import java.io.Closeable
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -307,7 +307,7 @@ class CameraManager(
     override fun close() {
         savePreferences()
 
-        imageWindows.forEach(Closeable::close)
+        imageWindows.forEach(View::hide)
         imageWindows.clear()
 
         unregisterListener(this)

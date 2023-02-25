@@ -441,9 +441,9 @@ class ImageManager(private val view: ImageView) : Closeable {
         dragStartX = 0.0
         dragStartY = 0.0
 
-        imageStretcherWindow?.close()
-        scnrWindow?.close()
-        fitsHeaderWindow?.close()
+        imageStretcherWindow?.hide()
+        scnrWindow?.hide()
+        fitsHeaderWindow?.hide()
 
         imageStretcherWindow = null
         fitsHeaderWindow = null

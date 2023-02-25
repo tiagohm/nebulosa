@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":nebulosa-query-sbd"))
     implementation(project(":nebulosa-query-horizons"))
     implementation(project(":nebulosa-query-simbad"))
+    implementation(project(":nebulosa-platesolving-astrometrynet"))
     implementation(libs.jackson)
     implementation(libs.bundles.rx)
     implementation(libs.controlsfx)

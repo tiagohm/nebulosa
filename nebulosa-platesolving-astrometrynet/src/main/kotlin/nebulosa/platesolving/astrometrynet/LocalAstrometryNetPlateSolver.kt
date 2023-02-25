@@ -1,12 +1,12 @@
 package nebulosa.platesolving.astrometrynet
 
 import nebulosa.math.Angle
+import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
-import nebulosa.platesolving.PlateSolvingCalibration
 import java.io.File
 import java.time.Duration
 
-class LocalAstrometryNetPlateSolver(path: String = "") : PlateSolver {
+class LocalAstrometryNetPlateSolver(private val path: String = "") : PlateSolver {
 
     override fun solve(
         file: File,
@@ -14,7 +14,7 @@ class LocalAstrometryNetPlateSolver(path: String = "") : PlateSolver {
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int,
         timeout: Duration?,
-    ): PlateSolvingCalibration {
+    ): Calibration {
         TODO("Not yet implemented")
     }
 }

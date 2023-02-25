@@ -6,4 +6,5 @@ data class Session(
     @field:JsonProperty("status") val status: String = "",
     @field:JsonProperty("message") val message: String = "",
     @field:JsonProperty("session") val session: String = "",
+    @field:JsonProperty("errormessage") val errorMessage: String = "",
 )
