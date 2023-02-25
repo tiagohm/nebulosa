@@ -29,22 +29,22 @@
         <HBox alignment="CENTER_LEFT"
               spacing="8.0">
             <VBox spacing="1.0">
-                <Label text="GPS"
-                       styleClass="text-sm">
+                <Label styleClass="text-sm"
+                       text="GPS">
                 </Label>
                 <HBox alignment="CENTER_LEFT"
                       spacing="4.0">
                     <ChoiceBox fx:id="gpsChoiceBox"
-                               minWidth="128.0"
-                               minHeight="28.0">
+                               minHeight="28.0"
+                               minWidth="128.0">
                     </ChoiceBox>
                     <Button fx:id="openINDIButton"
-                            onAction="#openINDIPanelControl"
                             alignment="CENTER"
-                            mnemonicParsing="false"
                             contentDisplay="GRAPHIC_ONLY"
-                            prefHeight="32.0"
-                            minWidth="42.0">
+                            minWidth="42.0"
+                            mnemonicParsing="false"
+                            onAction="#openINDIPanelControl"
+                            prefHeight="32.0">
                         <graphic>
                             <ImageView fitHeight="16.0"
                                        fitWidth="16.0"
@@ -55,14 +55,14 @@
                         </graphic>
                     </Button>
                     <Button fx:id="useCoordinateFromGpsButton"
-                            text="&#xF04FE;"
+                            onAction="#useCoordinateFromGps"
                             styleClass="mdi,mdi-sm,text-grey-800"
-                            onAction="#useCoordinateFromGps">
+                            text="󰓾">
                     </Button>
                     <Button fx:id="syncDateAndTimeButton"
-                            text="&#xF1AEC;"
+                            onAction="#syncDateAndTime"
                             styleClass="mdi,mdi-sm,text-grey-800"
-                            onAction="#syncDateAndTime">
+                            text="󱫬">
                     </Button>
                 </HBox>
             </VBox>
@@ -70,38 +70,38 @@
         <HBox alignment="CENTER_LEFT"
               spacing="8.0">
             <VBox spacing="1.0">
-                <Label text="Latitude (degrees)"
-                       styleClass="text-sm">
+                <Label styleClass="text-sm"
+                       text="Latitude (degrees)">
                 </Label>
                 <TextField fx:id="latitudeTextField"
-                           promptText="+00 00 00.0"
                            minWidth="120.0"
-                           prefWidth="120.0">
+                           prefWidth="120.0"
+                           promptText="+00 00 00.0">
                 </TextField>
             </VBox>
             <VBox spacing="1.0">
-                <Label text="Longitude (degrees)"
-                       styleClass="text-sm">
+                <Label styleClass="text-sm"
+                       text="Longitude (degrees)">
                 </Label>
                 <TextField fx:id="longitudeTextField"
-                           promptText="+00 00 00.0"
                            minWidth="120.0"
-                           prefWidth="120.0">
+                           prefWidth="120.0"
+                           promptText="+00 00 00.0">
                 </TextField>
             </VBox>
             <VBox spacing="1.0">
-                <Label text="Elevation (m)"
-                       styleClass="text-sm">
+                <Label styleClass="text-sm"
+                       text="Elevation (m)">
                 </Label>
                 <TextField fx:id="elevationTextField"
-                           promptText="000"
                            minWidth="101.0"
-                           prefWidth="101.0">
+                           prefWidth="101.0"
+                           promptText="000">
                 </TextField>
             </VBox>
-            <Button text="&#xF012C;"
+            <Button onAction="#applySite"
                     styleClass="mdi,mdi-sm,text-green-700"
-                    onAction="#applySite">
+                    text="󰄬">
                 <HBox.margin>
                     <Insets top="8.0"/>
                 </HBox.margin>
@@ -110,8 +110,8 @@
         <HBox alignment="CENTER_LEFT"
               spacing="8.0">
             <VBox spacing="1.0">
-                <Label text="Date"
-                       styleClass="text-sm">
+                <Label styleClass="text-sm"
+                       text="Date">
                 </Label>
                 <DatePicker fx:id="dateDatePicker"
                             minWidth="120.0"
@@ -119,28 +119,28 @@
                 </DatePicker>
             </VBox>
             <VBox spacing="1.0">
-                <Label text="Time (UTC)"
-                       styleClass="text-sm">
+                <Label styleClass="text-sm"
+                       text="Time (UTC)">
                 </Label>
                 <TextField fx:id="timeTextField"
-                           promptText="00:00:00"
                            minWidth="120.0"
-                           prefWidth="120.0">
+                           prefWidth="120.0"
+                           promptText="00:00:00">
                 </TextField>
             </VBox>
             <VBox spacing="1.0">
-                <Label text="Offset (minutes)"
-                       styleClass="text-sm">
+                <Label styleClass="text-sm"
+                       text="Offset (minutes)">
                 </Label>
                 <TextField fx:id="offsetTextField"
-                           promptText="-180"
                            minWidth="101.0"
-                           prefWidth="101.0">
+                           prefWidth="101.0"
+                           promptText="-180">
                 </TextField>
             </VBox>
-            <Button text="&#xF012C;"
+            <Button onAction="#applyDateAndTime"
                     styleClass="mdi,mdi-sm,text-green-700"
-                    onAction="#applyDateAndTime">
+                    text="󰄬">
                 <HBox.margin>
                     <Insets top="8.0"/>
                 </HBox.margin>

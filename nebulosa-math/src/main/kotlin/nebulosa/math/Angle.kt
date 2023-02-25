@@ -132,8 +132,8 @@ value class Angle(val value: Double) {
         @JvmStatic private val PARSE_COORDINATES_NOT_NUMBER_REGEX = Regex("[^\\-\\d.]+")
 
         @JvmStatic
-        fun from(input: String, isHours: Boolean = false): Angle? {
-            val trimmedInput = input.trim()
+        fun from(input: String?, isHours: Boolean = false): Angle? {
+            val trimmedInput = input?.trim() ?: return null
 
             val decimalInput = trimmedInput.toDoubleOrNull()
             if (decimalInput != null) return if (isHours) decimalInput.hours

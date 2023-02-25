@@ -8,4 +8,6 @@ data class Calibration(
     val radius: Angle = Angle.ZERO,
     val ra: Angle = Angle.ZERO,
     val dec: Angle = Angle.ZERO,
+    val width: Double = 0.0, // arcmin
+    val height: Double = 0.0, // arcmin
 )

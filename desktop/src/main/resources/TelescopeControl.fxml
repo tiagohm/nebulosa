@@ -27,8 +27,8 @@
         </padding>
         <HBox alignment="CENTER">
             <VBox alignment="CENTER_LEFT">
-                <Label text="Protocol:"
-                       styleClass="text-sm"/>
+                <Label styleClass="text-sm"
+                       text="Protocol:"/>
                 <ChoiceBox fx:id="serverTypeChoiceBox">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
@@ -43,8 +43,8 @@
               spacing="8.0">
             <TextField fx:id="hostTextField"
                        prefHeight="32.0"
-                       HBox.hgrow="ALWAYS"
-                       promptText="Host (0.0.0.0)">
+                       promptText="Host (0.0.0.0)"
+                       HBox.hgrow="ALWAYS">
             </TextField>
             <TextField fx:id="portTextField"
                        prefHeight="32.0"
@@ -52,13 +52,13 @@
                        promptText="Port">
             </TextField>
             <Button fx:id="connectButton"
-                    onAction="#connect"
                     alignment="CENTER"
-                    mnemonicParsing="false"
                     contentDisplay="TEXT_ONLY"
+                    mnemonicParsing="false"
+                    onAction="#connect"
+                    prefHeight="32.0"
                     styleClass="mdi,mdi-sm,text-blue-grey-700"
-                    text="&#xF1616;"
-                    prefHeight="32.0">
+                    text="󱘖">
             </Button>
         </HBox>
     </VBox>

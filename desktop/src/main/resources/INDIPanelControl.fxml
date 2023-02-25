@@ -27,25 +27,25 @@
                         top="16.0"/>
             </padding>
             <ChoiceBox fx:id="deviceChoiceBox"
-                       prefHeight="32.0"
                        minHeight="32.0"
+                       prefHeight="32.0"
                        prefWidth="304.0">
             </ChoiceBox>
         </HBox>
         <AnchorPane VBox.vgrow="ALWAYS">
             <TabPane fx:id="groupsTabPane"
-                     AnchorPane.topAnchor="0.0"
                      AnchorPane.bottomAnchor="0.0"
                      AnchorPane.leftAnchor="0.0"
-                     AnchorPane.rightAnchor="0.0">
+                     AnchorPane.rightAnchor="0.0"
+                     AnchorPane.topAnchor="0.0">
             </TabPane>
         </AnchorPane>
         <TextArea fx:id="logTextArea"
                   editable="false"
-                  stylesheets="@css/TextAreaWithoutFocus.css"
                   maxHeight="125.0"
                   minHeight="125.0"
-                  prefHeight="125.0">
+                  prefHeight="125.0"
+                  stylesheets="@css/TextAreaWithoutFocus.css">
         </TextArea>
     </VBox>
 </AnchorPane>

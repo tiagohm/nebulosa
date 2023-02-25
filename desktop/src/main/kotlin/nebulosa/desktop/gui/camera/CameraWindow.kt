@@ -9,8 +9,6 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.CLOSE_CIRCLE_ICON
-import nebulosa.desktop.gui.CONNECTION_ICON
 import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.camera.CameraManager
 import nebulosa.desktop.view.camera.AutoSubFolderMode
@@ -86,7 +84,7 @@ class CameraWindow : AbstractWindow("Camera", "nebulosa-camera"), CameraView {
         cameraManager.bind(cameraChoiceBox.selectionModel.selectedItemProperty())
 
         connectButton.disableProperty().bind(cameraManager.isNull() or isConnecting or isCapturing)
-        connectButton.textProperty().bind(cameraManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
+        connectButton.textProperty().bind(cameraManager.connectedProperty.between("󰅙", "󱘖"))
         cameraManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())

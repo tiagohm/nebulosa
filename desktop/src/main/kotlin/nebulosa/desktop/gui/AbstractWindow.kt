@@ -42,7 +42,7 @@ abstract class AbstractWindow(
                             } catch (e: Throwable) {
                                 e.printStackTrace()
                             } finally {
-                                hide()
+                                close()
                                 CLOSE.onNext(true)
                             }
                         }
@@ -141,14 +141,15 @@ abstract class AbstractWindow(
         window.showAndWait()
     }
 
-    final override fun hide() {
-        window.hide()
+    final override fun close() {
+        window.close()
     }
 
     final override fun showAlert(
         message: String, title: String,
     ) {
         val alert = Alert(Alert.AlertType.INFORMATION)
+        alert.initOwner(window)
         alert.title = title
         alert.headerText = null
         alert.contentText = message

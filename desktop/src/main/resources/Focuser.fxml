@@ -33,21 +33,21 @@
                        prefWidth="394.0">
             </ChoiceBox>
             <Button fx:id="connectButton"
-                    onAction="#connect"
                     alignment="CENTER"
                     contentDisplay="TEXT_ONLY"
-                    text="&#xF1616;"
-                    styleClass="text-blue-grey-700,mdi,mdi-sm"
+                    minWidth="42.0"
+                    onAction="#connect"
                     prefHeight="32.0"
-                    minWidth="42.0">
+                    styleClass="text-blue-grey-700,mdi,mdi-sm"
+                    text="󱘖">
             </Button>
             <Button fx:id="openINDIButton"
-                    onAction="#openINDIPanelControl"
                     alignment="CENTER"
-                    mnemonicParsing="false"
                     contentDisplay="GRAPHIC_ONLY"
-                    prefHeight="32.0"
-                    minWidth="42.0">
+                    minWidth="42.0"
+                    mnemonicParsing="false"
+                    onAction="#openINDIPanelControl"
+                    prefHeight="32.0">
                 <graphic>
                     <ImageView fitHeight="16.0"
                                fitWidth="16.0"
@@ -62,41 +62,41 @@
               spacing="4.0">
             <HBox alignment="CENTER_LEFT"
                   spacing="8.0">
-                <Label text="Position:"
-                       prefWidth="81.0"
-                       maxWidth="81.0"
+                <Label maxWidth="81.0"
                        minWidth="81.0"
-                       styleClass="text-sm,text-bold">
+                       prefWidth="81.0"
+                       styleClass="text-sm,text-bold"
+                       text="Position:">
                 </Label>
                 <Label fx:id="positionLabel"
-                       text="0"
                        alignment="CENTER_RIGHT"
-                       prefWidth="81.0"
                        maxWidth="81.0"
                        minWidth="81.0"
-                       styleClass="text-md">
+                       prefWidth="81.0"
+                       styleClass="text-md"
+                       text="0">
                 </Label>
-                <Label text="Temperature:"
-                       prefWidth="81.0"
-                       maxWidth="81.0"
+                <Label maxWidth="81.0"
                        minWidth="81.0"
-                       styleClass="text-sm,text-bold">
+                       prefWidth="81.0"
+                       styleClass="text-sm,text-bold"
+                       text="Temperature:">
                 </Label>
                 <Label fx:id="temperatureLabel"
-                       text="0.0 °C"
                        alignment="CENTER_RIGHT"
-                       prefWidth="81.0"
                        maxWidth="81.0"
                        minWidth="81.0"
-                       styleClass="text-md">
+                       prefWidth="81.0"
+                       styleClass="text-md"
+                       text="0.0 °C">
                 </Label>
             </HBox>
             <HBox alignment="CENTER_LEFT">
                 <Label fx:id="statusLabel"
                        text="idle">
                     <graphic>
-                        <Label text="&#xF02FC;"
-                               styleClass="text-blue-700,mdi,mdi-xs">
+                        <Label styleClass="text-blue-700,mdi,mdi-xs"
+                               text="󰋼">
                         </Label>
                     </graphic>
                 </Label>
@@ -104,34 +104,34 @@
         </VBox>
         <VBox alignment="CENTER_LEFT"
               spacing="1.0">
-            <Label text="Relative:"
-                   styleClass="text-sm">
+            <Label styleClass="text-sm"
+                   text="Relative:">
             </Label>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
                 <Spinner fx:id="incrementSpinner"
-                         editable="true"
-                         min="1.0"
-                         max="10000.0"
-                         initialValue="100.0"
                          amountToStepBy="1.0"
+                         editable="true"
+                         initialValue="100.0"
+                         max="10000.0"
+                         min="1.0"
                          prefWidth="138.0">
                 </Spinner>
                 <Button fx:id="moveInButton"
-                        text="Move In"
-                        onAction="#moveIn">
+                        onAction="#moveIn"
+                        text="Move In">
                     <graphic>
-                        <Label text="&#xF004D;"
-                               styleClass="mdi,mdi-sm,text-green-800">
+                        <Label styleClass="mdi,mdi-sm,text-green-800"
+                               text="󰁍">
                         </Label>
                     </graphic>
                 </Button>
                 <Button fx:id="moveOutButton"
-                        text="Move Out"
-                        onAction="#moveOut">
+                        onAction="#moveOut"
+                        text="Move Out">
                     <graphic>
-                        <Label text="&#xF0054;"
-                               styleClass="mdi,mdi-sm,text-green-800">
+                        <Label styleClass="mdi,mdi-sm,text-green-800"
+                               text="󰁔">
                         </Label>
                     </graphic>
                 </Button>
@@ -139,36 +139,36 @@
         </VBox>
         <VBox alignment="CENTER_LEFT"
               spacing="1.0">
-            <Label text="Absolute:"
-                   styleClass="text-sm">
+            <Label styleClass="text-sm"
+                   text="Absolute:">
             </Label>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
                 <Spinner fx:id="absoluteSpinner"
-                         editable="true"
-                         min="0.0"
-                         max="10000.0"
-                         initialValue="1000.0"
                          amountToStepBy="1.0"
+                         editable="true"
+                         initialValue="1000.0"
+                         max="10000.0"
+                         min="0.0"
                          prefWidth="120.0">
                 </Spinner>
                 <Button fx:id="moveToButton"
-                        text="Move To"
                         onAction="#moveTo"
-                        prefWidth="144.0">
+                        prefWidth="144.0"
+                        text="Move To">
                     <graphic>
-                        <Label text="&#xF0E73;"
-                               styleClass="mdi,mdi-sm,text-blue-800">
+                        <Label styleClass="mdi,mdi-sm,text-blue-800"
+                               text="󰹳">
                         </Label>
                     </graphic>
                 </Button>
                 <Button fx:id="syncButton"
-                        text="Sync"
                         onAction="#sync"
-                        prefWidth="92.0">
+                        prefWidth="92.0"
+                        text="Sync">
                     <graphic>
-                        <Label text="&#xF04E6;"
-                               styleClass="mdi,mdi-sm,text-blue-700">
+                        <Label styleClass="mdi,mdi-sm,text-blue-700"
+                               text="󰓦">
                         </Label>
                     </graphic>
                 </Button>
@@ -177,44 +177,44 @@
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
             <ToggleSwitch fx:id="backlashCompensationToggleSwitch"
-                          text="Backlash compensation:"
                           prefWidth="172.0"
-                          styleClass="text-sm">
+                          styleClass="text-sm"
+                          text="Backlash compensation:">
             </ToggleSwitch>
-            <Label text="Steps:"
-                   styleClass="text-sm">
+            <Label styleClass="text-sm"
+                   text="Steps:">
                 <HBox.margin>
                     <Insets left="16.0"/>
                 </HBox.margin>
             </Label>
             <Spinner fx:id="backlashCompensationStepsSpinner"
-                     editable="true"
-                     min="0.0"
-                     max="1000.0"
-                     initialValue="100.0"
                      amountToStepBy="1.0"
+                     editable="true"
+                     initialValue="100.0"
+                     max="1000.0"
+                     min="0.0"
                      prefWidth="84.0">
             </Spinner>
         </HBox>
         <HBox alignment="CENTER_LEFT"
               spacing="129.0">
             <Button fx:id="abortButton"
-                    text="Abort"
-                    onAction="#abort">
+                    onAction="#abort"
+                    text="Abort">
                 <graphic>
-                    <Label text="&#xF04DB;"
-                           styleClass="mdi,mdi-sm,text-red-700">
+                    <Label styleClass="mdi,mdi-sm,text-red-700"
+                           text="󰓛">
                     </Label>
                 </graphic>
             </Button>
             <Button fx:id="autoFocusButton"
-                    text="Auto focus"
                     onAction="#openAutoFocus"
-                    prefWidth="144.0">
+                    prefWidth="144.0"
+                    text="Auto focus">
                 <graphic>
-                    <Label text="&#xF0F4E;"
-                           textFill="#388E3C"
-                           styleClass="mdi,mdi-sm,text-purple-800">
+                    <Label styleClass="mdi,mdi-sm,text-purple-800"
+                           text="󰽎"
+                           textFill="#388E3C">
                     </Label>
                 </graphic>
             </Button>

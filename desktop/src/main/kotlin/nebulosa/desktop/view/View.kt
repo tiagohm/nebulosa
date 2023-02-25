@@ -1,6 +1,8 @@
 package nebulosa.desktop.view
 
-interface View {
+import java.io.Closeable
+
+interface View : Closeable {
 
     var resizable: Boolean
 
@@ -31,6 +33,4 @@ interface View {
     fun showAndWait()
 
     fun showAlert(message: String, title: String = "Information")
-
-    fun hide()
 }

@@ -7,7 +7,7 @@ import javafx.scene.control.*
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
-import nebulosa.desktop.gui.*
+import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.mount.MountManager
 import nebulosa.desktop.view.mount.MountView
@@ -86,7 +86,7 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
         mountManager.bind(mountChoiceBox.selectionModel.selectedItemProperty())
 
         connectButton.disableProperty().bind(mountManager.isNull() or isConnecting or isMoving)
-        connectButton.textProperty().bind(mountManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
+        connectButton.textProperty().bind(mountManager.connectedProperty.between("󰅙", "󱘖"))
         mountManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
@@ -153,7 +153,7 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
         parkButton.disableProperty().bind(isNotConnectedOrMoving or !mountManager.canParkProperty)
         parkButton.textProperty().bind(mountManager.parkedProperty.between("Unpark", "Park"))
         val parkIcon = parkButton.graphic as Label
-        parkIcon.textProperty().bind(mountManager.parkedProperty.between(PLAY_ICON, STOP_ICON))
+        parkIcon.textProperty().bind(mountManager.parkedProperty.between("󰐊", "󰓛"))
         mountManager.parkedProperty.between(parkIcon.styleClass, "text-red-700", "text-blue-grey-700")
 
         homeButton.disableProperty().set(true)

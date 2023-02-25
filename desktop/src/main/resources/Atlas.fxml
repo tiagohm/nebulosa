@@ -11,7 +11,7 @@
             minWidth="-Infinity"
             prefHeight="590.0"
             prefWidth="480.0"
-            stylesheets="@css/Global.css"
+            stylesheets="@css/Global.css,@css/CopyableLabel.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="8.0"
@@ -21,41 +21,41 @@
           AnchorPane.topAnchor="0.0">
         <TabPane fx:id="ephemerisTabPane"
                  VBox.vgrow="ALWAYS">
-            <Tab text="Sun"
-                 closable="false"
+            <Tab closable="false"
                  onSelectionChanged="#tabSelectionChanged"
+                 text="Sun"
                  userData="SUN">
                 <VBox alignment="CENTER">
                     <ImageView fx:id="sunImageView"
-                               pickOnBounds="true"
-                               preserveRatio="true"
+                               cache="true"
                                fitHeight="260.0"
-                               cache="true">
+                               pickOnBounds="true"
+                               preserveRatio="true">
                     </ImageView>
                 </VBox>
             </Tab>
-            <Tab text="Moon"
-                 closable="false"
+            <Tab closable="false"
                  onSelectionChanged="#tabSelectionChanged"
+                 text="Moon"
                  userData="MOON">
                 <VBox alignment="CENTER">
                     <ImageView fx:id="moonImageView"
-                               pickOnBounds="true"
-                               preserveRatio="true"
+                               cache="true"
                                fitHeight="260.0"
-                               cache="true">
+                               pickOnBounds="true"
+                               preserveRatio="true">
                     </ImageView>
                 </VBox>
             </Tab>
-            <Tab text="Planets"
-                 closable="false"
+            <Tab closable="false"
                  onSelectionChanged="#tabSelectionChanged"
+                 text="Planets"
                  userData="PLANET">
                 <TableView fx:id="planetTableView"
                            fixedCellSize="28.0"
+                           maxHeight="268.0"
                            minHeight="268.0"
-                           prefHeight="268.0"
-                           maxHeight="268.0">
+                           prefHeight="268.0">
                     <columns>
                         <TableColumn prefWidth="170.0"
                                      style="-fx-alignment: CENTER;"
@@ -66,9 +66,9 @@
                     </columns>
                 </TableView>
             </Tab>
-            <Tab text="Minor Planets"
-                 closable="false"
+            <Tab closable="false"
                  onSelectionChanged="#tabSelectionChanged"
+                 text="Minor Planets"
                  userData="MINOR_PLANET">
                 <VBox alignment="TOP_CENTER"
                       spacing="4.0">
@@ -80,19 +80,19 @@
                         <TextField fx:id="searchMinorPlanetTextField"
                                    styleClass="text-md">
                         </TextField>
-                        <Button text="Search"
-                                onAction="#searchMinorPlanet">
+                        <Button onAction="#searchMinorPlanet"
+                                text="Search">
                             <graphic>
-                                <Label text="&#xF0349;"
-                                       styleClass="text-blue-grey-700,mdi,mdi-sm"/>
+                                <Label styleClass="text-blue-grey-700,mdi,mdi-sm"
+                                       text="󰍉"/>
                             </graphic>
                         </Button>
                     </HBox>
                     <TableView fx:id="minorPlanetTableView"
                                fixedCellSize="28.0"
+                               maxHeight="230.0"
                                minHeight="230.0"
-                               prefHeight="230.0"
-                               maxHeight="230.0">
+                               prefHeight="230.0">
                         <columns>
                             <TableColumn prefWidth="70.0"
                                          style="-fx-alignment: CENTER;"
@@ -107,9 +107,9 @@
                     </TableView>
                 </VBox>
             </Tab>
-            <Tab text="Named Stars"
-                 closable="false"
+            <Tab closable="false"
                  onSelectionChanged="#tabSelectionChanged"
+                 text="Named Stars"
                  userData="STAR">
                 <VBox alignment="TOP_CENTER"
                       spacing="4.0">
@@ -121,19 +121,19 @@
                         <TextField fx:id="searchStarTextField"
                                    styleClass="text-md">
                         </TextField>
-                        <Button text="Search"
-                                onAction="#searchStar">
+                        <Button onAction="#searchStar"
+                                text="Search">
                             <graphic>
-                                <Label text="&#xF0349;"
-                                       styleClass="text-blue-grey-700,mdi,mdi-sm"/>
+                                <Label styleClass="text-blue-grey-700,mdi,mdi-sm"
+                                       text="󰍉"/>
                             </graphic>
                         </Button>
                     </HBox>
                     <TableView fx:id="starTableView"
                                fixedCellSize="28.0"
+                               maxHeight="230.0"
                                minHeight="230.0"
-                               prefHeight="230.0"
-                               maxHeight="230.0">
+                               prefHeight="230.0">
                         <columns>
                             <TableColumn prefWidth="140.0"
                                          style="-fx-alignment: CENTER;"
@@ -150,9 +150,9 @@
                     </TableView>
                 </VBox>
             </Tab>
-            <Tab text="DSOs"
-                 closable="false"
+            <Tab closable="false"
                  onSelectionChanged="#tabSelectionChanged"
+                 text="DSOs"
                  userData="DSO">
                 <VBox alignment="TOP_CENTER"
                       spacing="4.0">
@@ -164,19 +164,19 @@
                         <TextField fx:id="searchDSOTextField"
                                    styleClass="text-md">
                         </TextField>
-                        <Button text="Search"
-                                onAction="#searchDSO">
+                        <Button onAction="#searchDSO"
+                                text="Search">
                             <graphic>
-                                <Label text="&#xF0349;"
-                                       styleClass="text-blue-grey-700,mdi,mdi-sm"/>
+                                <Label styleClass="text-blue-grey-700,mdi,mdi-sm"
+                                       text="󰍉"/>
                             </graphic>
                         </Button>
                     </HBox>
                     <TableView fx:id="dsoTableView"
                                fixedCellSize="28.0"
+                               maxHeight="230.0"
                                minHeight="230.0"
-                               prefHeight="230.0"
-                               maxHeight="230.0">
+                               prefHeight="230.0">
                         <columns>
                             <TableColumn prefWidth="140.0"
                                          style="-fx-alignment: CENTER;"
@@ -197,16 +197,16 @@
         <VBox alignment="CENTER"
               spacing="2.0">
             <padding>
-                <Insets left="16.0"
-                        top="2.0"
-                        bottom="2.0"
-                        right="16.0"/>
+                <Insets bottom="2.0"
+                        left="16.0"
+                        right="16.0"
+                        top="2.0"/>
             </padding>
             <HBox alignment="CENTER">
                 <Label fx:id="nameLabel"
                        alignment="CENTER"
-                       text="Sun"
-                       styleClass="text-md,text-bold">
+                       styleClass="text-md,text-bold"
+                       text="Sun">
                 </Label>
             </HBox>
             <HBox alignment="CENTER_LEFT"
@@ -214,180 +214,189 @@
                 <Label maxWidth="72.0"
                        minWidth="72.0"
                        prefWidth="72.0"
-                       text="RA:"
-                       styleClass="text-sm,text-bold">
+                       styleClass="text-sm,text-bold"
+                       text="RA:">
                 </Label>
-                <Label fx:id="rightAscensionLabel"
-                       alignment="CENTER_RIGHT"
-                       maxWidth="140.0"
-                       minWidth="140.0"
-                       prefWidth="140.0"
-                       text="00h 00m 00.00s"
-                       styleClass="text-monospaced,text-sm">
-                </Label>
+                <TextField fx:id="rightAscensionTextField"
+                           alignment="CENTER_RIGHT"
+                           editable="false"
+                           maxWidth="140.0"
+                           minWidth="140.0"
+                           prefWidth="140.0"
+                           styleClass="copyable,text-monospaced,text-sm"
+                           text="00h 00m 00.00s">
+                </TextField>
                 <Label maxWidth="72.0"
                        minWidth="72.0"
                        prefWidth="72.0"
-                       text="DEC:"
-                       styleClass="text-sm,text-bold">
+                       styleClass="text-sm,text-bold"
+                       text="DEC:">
                     <HBox.margin>
                         <Insets left="8.0"/>
                     </HBox.margin>
                 </Label>
-                <Label fx:id="declinationLabel"
-                       alignment="CENTER_RIGHT"
-                       maxWidth="140.0"
-                       minWidth="140.0"
-                       prefWidth="140.0"
-                       text="+00° 00' 00.00&quot;"
-                       styleClass="text-monospaced,text-sm">
-                </Label>
+                <TextField fx:id="declinationTextField"
+                           alignment="CENTER_RIGHT"
+                           editable="false"
+                           maxWidth="140.0"
+                           minWidth="140.0"
+                           prefWidth="140.0"
+                           styleClass="copyable,text-monospaced,text-sm"
+                           text="+00° 00' 00.00&quot;">
+                </TextField>
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
                 <Label maxWidth="72.0"
                        minWidth="72.0"
                        prefWidth="72.0"
-                       text="RA (J2000):"
-                       styleClass="text-sm,text-bold">
+                       styleClass="text-sm,text-bold"
+                       text="RA (J2000):">
                 </Label>
-                <Label fx:id="rightAscensionJ2000Label"
-                       alignment="CENTER_RIGHT"
-                       maxWidth="140.0"
-                       minWidth="140.0"
-                       prefWidth="140.0"
-                       text="00h 00m 00.00s"
-                       styleClass="text-monospaced,text-sm">
-                </Label>
+                <TextField fx:id="rightAscensionJ2000TextField"
+                           alignment="CENTER_RIGHT"
+                           editable="false"
+                           maxWidth="140.0"
+                           minWidth="140.0"
+                           prefWidth="140.0"
+                           styleClass="copyable,text-monospaced,text-sm"
+                           text="00h 00m 00.00s">
+                </TextField>
                 <Label maxWidth="72.0"
                        minWidth="72.0"
                        prefWidth="72.0"
-                       text="DEC (J2000):"
-                       styleClass="text-sm,text-bold">
+                       styleClass="text-sm,text-bold"
+                       text="DEC (J2000):">
                     <HBox.margin>
                         <Insets left="8.0"/>
                     </HBox.margin>
                 </Label>
-                <Label fx:id="declinationJ2000Label"
-                       alignment="CENTER_RIGHT"
-                       maxWidth="140.0"
-                       minWidth="140.0"
-                       prefWidth="140.0"
-                       text="+00° 00' 00.00&quot;"
-                       styleClass="text-monospaced,text-sm">
-                </Label>
+                <TextField fx:id="declinationJ2000TextField"
+                           alignment="CENTER_RIGHT"
+                           editable="false"
+                           maxWidth="140.0"
+                           minWidth="140.0"
+                           prefWidth="140.0"
+                           styleClass="copyable,text-monospaced,text-sm"
+                           text="+00° 00' 00.00&quot;">
+                </TextField>
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
                 <Label maxWidth="72.0"
                        minWidth="72.0"
                        prefWidth="72.0"
-                       text="Azimuth:"
-                       styleClass="text-sm,text-bold">
+                       styleClass="text-sm,text-bold"
+                       text="Azimuth:">
                 </Label>
-                <Label fx:id="azimuthLabel"
-                       alignment="CENTER_RIGHT"
-                       maxWidth="140.0"
-                       minWidth="140.0"
-                       prefWidth="140.0"
-                       text="000° 00' 00.00&quot;"
-                       styleClass="text-monospaced,text-sm">
-                </Label>
+                <TextField fx:id="azimuthTextField"
+                           alignment="CENTER_RIGHT"
+                           editable="false"
+                           maxWidth="140.0"
+                           minWidth="140.0"
+                           prefWidth="140.0"
+                           styleClass="copyable,text-monospaced,text-sm"
+                           text="000° 00' 00.00&quot;">
+                </TextField>
                 <Label maxWidth="72.0"
                        minWidth="72.0"
                        prefWidth="72.0"
-                       text="Altitude:"
-                       styleClass="text-sm,text-bold">
+                       styleClass="text-sm,text-bold"
+                       text="Altitude:">
                     <HBox.margin>
                         <Insets left="8.0"/>
                     </HBox.margin>
                 </Label>
-                <Label fx:id="altitudeLabel"
-                       alignment="CENTER_RIGHT"
-                       maxWidth="140.0"
-                       minWidth="140.0"
-                       prefWidth="140.0"
-                       text="+00° 00' 00.00&quot;"
-                       styleClass="text-monospaced,text-sm">
-                </Label>
+                <TextField fx:id="altitudeTextField"
+                           alignment="CENTER_RIGHT"
+                           editable="false"
+                           maxWidth="140.0"
+                           minWidth="140.0"
+                           prefHeight="10.0"
+                           prefWidth="140.0"
+                           styleClass="copyable,text-monospaced,text-sm"
+                           text="+00° 00' 00.00&quot;">
+                </TextField>
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
                 <Label maxWidth="72.0"
                        minWidth="72.0"
                        prefWidth="72.0"
-                       text="Constellation:"
-                       styleClass="text-sm,text-bold">
+                       styleClass="text-sm,text-bold"
+                       text="Constellation:">
                 </Label>
-                <Label fx:id="constellationLabel"
-                       alignment="CENTER_RIGHT"
-                       maxWidth="140.0"
-                       minWidth="140.0"
-                       prefWidth="140.0"
-                       text="-"
-                       styleClass="text-monospaced,text-sm">
-                </Label>
+                <TextField fx:id="constellationTextField"
+                           alignment="CENTER_RIGHT"
+                           editable="false"
+                           maxWidth="140.0"
+                           minWidth="140.0"
+                           prefWidth="140.0"
+                           styleClass="copyable,text-monospaced,text-sm"
+                           text="-">
+                </TextField>
                 <Label maxWidth="72.0"
                        minWidth="72.0"
                        prefWidth="72.0"
-                       text="RTS:"
-                       styleClass="text-sm,text-bold">
+                       styleClass="text-sm,text-bold"
+                       text="RTS:">
                     <HBox.margin>
                         <Insets left="8.0"/>
                     </HBox.margin>
                 </Label>
-                <Label fx:id="rtsLabel"
-                       alignment="CENTER_RIGHT"
-                       maxWidth="140.0"
-                       minWidth="140.0"
-                       prefWidth="140.0"
-                       text="00:00 | 00:00 | 00:00"
-                       styleClass="text-monospaced,text-sm">
-                </Label>
+                <TextField fx:id="rtsTextField"
+                           alignment="CENTER_RIGHT"
+                           editable="false"
+                           maxWidth="140.0"
+                           minWidth="140.0"
+                           prefWidth="140.0"
+                           styleClass="copyable,text-monospaced,text-sm"
+                           text="00:00 | 00:00 | 00:00">
+                </TextField>
             </HBox>
         </VBox>
         <HBox alignment="TOP_CENTER"
               spacing="4.0">
             <Button fx:id="goToButton"
-                    text="Go To"
                     onAction="#goTo"
-                    prefWidth="92.0">
+                    prefWidth="92.0"
+                    text="Go To">
                 <graphic>
-                    <Label text="&#xF012C;"
-                           styleClass="mdi,mdi-sm,text-green-700">
+                    <Label styleClass="mdi,mdi-sm,text-green-700"
+                           text="󰄬">
                     </Label>
                 </graphic>
             </Button>
             <Button fx:id="slewToButton"
-                    text="Slew To"
                     onAction="#slewTo"
-                    prefWidth="92.0">
+                    prefWidth="92.0"
+                    text="Slew To">
                 <graphic>
-                    <Label text="&#xF012C;"
-                           styleClass="mdi,mdi-sm,text-green-700">
+                    <Label styleClass="mdi,mdi-sm,text-green-700"
+                           text="󰄬">
                     </Label>
                 </graphic>
             </Button>
             <Button fx:id="syncButton"
-                    text="Sync"
                     onAction="#sync"
-                    prefWidth="92.0">
+                    prefWidth="92.0"
+                    text="Sync">
                 <graphic>
-                    <Label text="&#xF04E6;"
-                           styleClass="mdi,mdi-sm,text-blue-700">
+                    <Label styleClass="mdi,mdi-sm,text-blue-700"
+                           text="󰓦">
                     </Label>
                 </graphic>
             </Button>
         </HBox>
-        <AnchorPane prefHeight="130.0"
+        <AnchorPane maxHeight="130.0"
                     minHeight="130.0"
-                    maxHeight="130.0">
+                    prefHeight="130.0">
             <AltitudeGraph fx:id="altitudeGraph"
+                           height="130.0"
                            AnchorPane.bottomAnchor="0.0"
-                           AnchorPane.rightAnchor="0.0"
                            AnchorPane.leftAnchor="0.0"
-                           AnchorPane.topAnchor="0.0"
-                           height="130.0">
+                           AnchorPane.rightAnchor="0.0"
+                           AnchorPane.topAnchor="0.0">
             </AltitudeGraph>
         </AnchorPane>
     </VBox>

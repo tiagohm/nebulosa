@@ -63,7 +63,10 @@ subprojects {
 
     tasks.withType<KotlinCompile> {
         kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
-        kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=all", "-Xjsr305=strict")
+        kotlinOptions.freeCompilerArgs = listOf(
+            "-Xjvm-default=all", "-Xjsr305=strict",
+            "-opt-in=kotlin.io.path.ExperimentalPathApi"
+        )
     }
 
     tasks.withType<Test> {

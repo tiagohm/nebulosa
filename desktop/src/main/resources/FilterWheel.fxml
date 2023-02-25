@@ -32,22 +32,22 @@
                        prefWidth="360.0">
             </ChoiceBox>
             <Button fx:id="connectButton"
-                    onAction="#connect"
                     alignment="CENTER"
-                    mnemonicParsing="false"
                     contentDisplay="TEXT_ONLY"
-                    text="&#xF1616;"
-                    prefHeight="32.0"
                     minWidth="42.0"
-                    styleClass="mdi,mdi-sm,text-blue-grey-700">
+                    mnemonicParsing="false"
+                    onAction="#connect"
+                    prefHeight="32.0"
+                    styleClass="mdi,mdi-sm,text-blue-grey-700"
+                    text="󱘖">
             </Button>
             <Button fx:id="openINDIButton"
-                    onAction="#openINDIPanelControl"
                     alignment="CENTER"
-                    mnemonicParsing="false"
                     contentDisplay="GRAPHIC_ONLY"
-                    prefHeight="32.0"
-                    minWidth="42.0">
+                    minWidth="42.0"
+                    mnemonicParsing="false"
+                    onAction="#openINDIPanelControl"
+                    prefHeight="32.0">
                 <graphic>
                     <ImageView fitHeight="16.0"
                                fitWidth="16.0"
@@ -57,19 +57,19 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Label text="&#xF01D9;"
-                   alignment="CENTER"
-                   prefWidth="32.0"
+            <Label alignment="CENTER"
                    minWidth="32.0"
                    onMouseClicked="#openMenu"
-                   styleClass="text-grey-700,mdi,mdi-sm,cursor-hand">
+                   prefWidth="32.0"
+                   styleClass="text-grey-700,mdi,mdi-sm,cursor-hand"
+                   text="󰇙">
                 <fx:define>
                     <ContextMenu fx:id="menu"
                                  styleClass="text-md">
                         <items>
-                            <CheckMenuItem text="Compact Mode"
-                                           fx:id="compactModeMenuItem"
-                                           onAction="#toggleCompactMode"/>
+                            <CheckMenuItem fx:id="compactModeMenuItem"
+                                           onAction="#toggleCompactMode"
+                                           text="Compact Mode"/>
                         </items>
                     </ContextMenu>
                 </fx:define>
@@ -78,9 +78,9 @@
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
             <CheckBox fx:id="useFilterWheelAsShutterCheckBox"
-                      text="Use filter wheel as shutter:"
                       onAction="#toggleUseFilterWheelAsShutter"
-                      styleClass="text-sm">
+                      styleClass="text-sm"
+                      text="Use filter wheel as shutter:">
             </CheckBox>
             <ChoiceBox fx:id="filterAsShutterChoiceBox"
                        prefWidth="135.0">
@@ -112,13 +112,13 @@
                        prefWidth="213.0">
             </ChoiceBox>
             <Button fx:id="moveToSelectedFilterButton"
-                    text="Move To"
                     minHeight="28.0"
+                    onAction="#moveToSelectedFilter"
                     prefHeight="28.0"
-                    onAction="#moveToSelectedFilter">
+                    text="Move To">
                 <graphic>
-                    <Label text="&#xF0054;"
-                           styleClass="mdi,mdi-sm,text-grey-800">
+                    <Label styleClass="mdi,mdi-sm,text-grey-800"
+                           text="󰁔">
                     </Label>
                 </graphic>
             </Button>

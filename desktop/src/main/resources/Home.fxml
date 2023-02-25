@@ -29,25 +29,25 @@
         <HBox alignment="CENTER"
               spacing="8.0">
             <TextField fx:id="hostTextField"
-                       prefHeight="32.0"
-                       HBox.hgrow="ALWAYS"
                        focusTraversable="false"
-                       promptText="Host (localhost)">
+                       prefHeight="32.0"
+                       promptText="Host (localhost)"
+                       HBox.hgrow="ALWAYS">
             </TextField>
             <TextField fx:id="portTextField"
+                       focusTraversable="false"
                        prefHeight="32.0"
                        prefWidth="94.0"
-                       focusTraversable="false"
                        promptText="Port (7624)">
             </TextField>
             <Button fx:id="connectButton"
-                    onAction="#connect"
                     alignment="CENTER"
-                    mnemonicParsing="false"
                     contentDisplay="TEXT_ONLY"
-                    text="&#xF1616;"
+                    mnemonicParsing="false"
+                    onAction="#connect"
+                    prefHeight="32.0"
                     styleClass="text-blue-grey-700,mdi,mdi-sm"
-                    prefHeight="32.0">
+                    text="󱘖">
             </Button>
         </HBox>
         <GridPane alignment="CENTER"
@@ -84,49 +84,50 @@
                                 prefHeight="64.0"
                                 valignment="CENTER"
                                 vgrow="SOMETIMES"/>
+                <RowConstraints/>
             </rowConstraints>
             <Button fx:id="cameraButton"
-                    onAction="#open"
-                    userData="CAMERA"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Camera"
-                    GridPane.rowIndex="0"
-                    GridPane.columnIndex="0">
+                    userData="CAMERA"
+                    GridPane.columnIndex="0"
+                    GridPane.rowIndex="0">
                 <graphic>
-                    <Label text="&#xF0104;"
-                           styleClass="text-grey-900,mdi">
+                    <Label styleClass="text-grey-900,mdi"
+                           text="󰄄">
                     </Label>
                 </graphic>
             </Button>
             <Button fx:id="mountButton"
-                    onAction="#open"
-                    userData="MOUNT"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Mount"
-                    GridPane.rowIndex="0"
-                    GridPane.columnIndex="1">
+                    userData="MOUNT"
+                    GridPane.columnIndex="1"
+                    GridPane.rowIndex="0">
                 <graphic>
-                    <Label text="&#xF0B4E;"
-                           styleClass="text-grey-900,mdi">
+                    <Label styleClass="text-grey-900,mdi"
+                           text="󰭎">
                     </Label>
                 </graphic>
             </Button>
             <Button fx:id="guiderButton"
-                    onAction="#open"
-                    userData="GUIDER"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Guider"
-                    GridPane.rowIndex="0"
-                    GridPane.columnIndex="2">
+                    userData="GUIDER"
+                    GridPane.columnIndex="2"
+                    GridPane.rowIndex="0">
                 <graphic>
                     <ImageView fitHeight="24.0"
                                fitWidth="24.0"
@@ -137,15 +138,15 @@
                 </graphic>
             </Button>
             <Button fx:id="filterWheelButton"
-                    onAction="#open"
-                    userData="FILTER_WHEEL"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Filter Wheel"
-                    GridPane.rowIndex="1"
-                    GridPane.columnIndex="0">
+                    userData="FILTER_WHEEL"
+                    GridPane.columnIndex="0"
+                    GridPane.rowIndex="1">
                 <graphic>
                     <ImageView fitHeight="24.0"
                                fitWidth="24.0"
@@ -156,31 +157,31 @@
                 </graphic>
             </Button>
             <Button fx:id="focuserButton"
-                    onAction="#open"
-                    userData="FOCUSER"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Focuser"
-                    GridPane.rowIndex="1"
-                    GridPane.columnIndex="1">
+                    userData="FOCUSER"
+                    GridPane.columnIndex="1"
+                    GridPane.rowIndex="1">
                 <graphic>
-                    <Label text="&#xF02F1;"
-                           styleClass="text-grey-900,mdi">
+                    <Label styleClass="text-grey-900,mdi"
+                           text="󰋱">
                     </Label>
                 </graphic>
             </Button>
             <Button fx:id="domeButton"
-                    onAction="#open"
-                    userData="DOME"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Dome"
-                    GridPane.rowIndex="1"
-                    GridPane.columnIndex="2">
+                    userData="DOME"
+                    GridPane.columnIndex="2"
+                    GridPane.rowIndex="1">
                 <graphic>
                     <ImageView fitHeight="24.0"
                                fitWidth="24.0"
@@ -191,15 +192,15 @@
                 </graphic>
             </Button>
             <Button fx:id="rotatorButton"
-                    onAction="#open"
-                    userData="ROTATOR"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Rotator"
-                    GridPane.rowIndex="2"
-                    GridPane.columnIndex="0">
+                    userData="ROTATOR"
+                    GridPane.columnIndex="0"
+                    GridPane.rowIndex="2">
                 <graphic>
                     <ImageView fitHeight="24.0"
                                fitWidth="24.0"
@@ -210,15 +211,15 @@
                 </graphic>
             </Button>
             <Button fx:id="switchButton"
-                    onAction="#open"
-                    userData="SWTICH"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Switch"
-                    GridPane.rowIndex="2"
-                    GridPane.columnIndex="1">
+                    userData="SWTICH"
+                    GridPane.columnIndex="1"
+                    GridPane.rowIndex="2">
                 <graphic>
                     <ImageView fitHeight="24.0"
                                fitWidth="24.0"
@@ -229,31 +230,31 @@
                 </graphic>
             </Button>
             <Button fx:id="atlasButton"
-                    onAction="#open"
-                    userData="ATLAS"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Atlas"
-                    GridPane.rowIndex="2"
-                    GridPane.columnIndex="2">
+                    userData="ATLAS"
+                    GridPane.columnIndex="2"
+                    GridPane.rowIndex="2">
                 <graphic>
-                    <Label text="&#xF034D;"
-                           styleClass="text-grey-900,mdi">
+                    <Label styleClass="text-grey-900,mdi"
+                           text="󰍍">
                     </Label>
                 </graphic>
             </Button>
             <Button fx:id="plateSolverButton"
-                    onAction="#open"
-                    userData="PLATE_SOLVER"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Plate Solving"
-                    GridPane.rowIndex="3"
-                    GridPane.columnIndex="0">
+                    userData="PLATE_SOLVER"
+                    GridPane.columnIndex="0"
+                    GridPane.rowIndex="3">
                 <graphic>
                     <ImageView fitHeight="24.0"
                                fitWidth="24.0"
@@ -264,63 +265,63 @@
                 </graphic>
             </Button>
             <Button fx:id="alignmentButton"
-                    onAction="#open"
-                    userData="ALIGNMENT"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Alignment"
-                    GridPane.rowIndex="3"
-                    GridPane.columnIndex="1">
+                    userData="ALIGNMENT"
+                    GridPane.columnIndex="1"
+                    GridPane.rowIndex="3">
                 <graphic>
-                    <Label text="&#xF04CE;"
-                           styleClass="text-grey-900,mdi">
+                    <Label styleClass="text-grey-900,mdi"
+                           text="󰓎">
                     </Label>
                 </graphic>
             </Button>
             <Button fx:id="sequencerButton"
-                    onAction="#open"
-                    userData="SEQUENCER"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Sequencer"
-                    GridPane.rowIndex="3"
-                    GridPane.columnIndex="2">
+                    userData="SEQUENCER"
+                    GridPane.columnIndex="2"
+                    GridPane.rowIndex="3">
                 <graphic>
-                    <Label text="&#xF13C1;"
-                           styleClass="text-grey-900,mdi">
+                    <Label styleClass="text-grey-900,mdi"
+                           text="󱏁">
                     </Label>
                 </graphic>
             </Button>
             <Button fx:id="imageViewerButton"
-                    onAction="#open"
-                    userData="NEW_IMAGE"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="Image Viewer"
-                    GridPane.rowIndex="4"
-                    GridPane.columnIndex="0">
+                    userData="NEW_IMAGE"
+                    GridPane.columnIndex="0"
+                    GridPane.rowIndex="4">
                 <graphic>
-                    <Label text="&#xF087C;"
-                           styleClass="text-grey-900,mdi">
+                    <Label styleClass="text-grey-900,mdi"
+                           text="󰡼">
                     </Label>
                 </graphic>
             </Button>
             <Button fx:id="indiButton"
-                    onAction="#open"
-                    userData="INDI"
                     contentDisplay="TOP"
                     mnemonicParsing="false"
+                    onAction="#open"
                     prefHeight="56.0"
                     prefWidth="96.0"
                     text="INDI"
-                    GridPane.rowIndex="4"
-                    GridPane.columnIndex="1">
+                    userData="INDI"
+                    GridPane.columnIndex="1"
+                    GridPane.rowIndex="4">
                 <graphic>
                     <ImageView fitHeight="24.0"
                                fitWidth="24.0"

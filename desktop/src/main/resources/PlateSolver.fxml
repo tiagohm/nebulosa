@@ -10,9 +10,9 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="360.0"
+            prefHeight="340.0"
             prefWidth="420.0"
-            stylesheets="@css/Global.css"
+            stylesheets="@css/Global.css,@css/CopyableLabel.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox layoutX="116.0"
@@ -117,10 +117,11 @@
                        maxWidth="68.0"
                        prefWidth="68.0"/>
                 <TextField fx:id="radiusTextField"
-                           promptText="0.0"
+                           promptText="1.0"
                            minWidth="120.0"
                            maxWidth="120.0"
-                           prefWidth="120.0"/>
+                           prefWidth="120.0"
+                           text="1.0"/>
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
@@ -147,7 +148,7 @@
             </HBox>
         </VBox>
         <Label text="Astrometry solution:"/>
-        <VBox spacing="4.0"
+        <VBox spacing="1.0"
               alignment="TOP_CENTER">
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
@@ -157,24 +158,26 @@
                        maxWidth="68.0"
                        prefWidth="68.0"/>
                 <TextField fx:id="raTextField"
-                           editable="false"
+                           alignment="CENTER_RIGHT"
                            text="00h00m00.00s"
                            minWidth="120.0"
                            maxWidth="120.0"
                            prefWidth="120.0"
-                           focusTraversable="false"/>
+                           editable="false"
+                           styleClass="copyable"/>
                 <Label text="DEC:"
                        styleClass="text-sm,text-bold,monospaced"
                        minWidth="68.0"
                        maxWidth="68.0"
                        prefWidth="68.0"/>
                 <TextField fx:id="decTextField"
-                           editable="false"
+                           alignment="CENTER_RIGHT"
                            text="00°00'00.00&quot;"
                            minWidth="120.0"
                            maxWidth="120.0"
                            prefWidth="120.0"
-                           focusTraversable="false"/>
+                           editable="false"
+                           styleClass="copyable"/>
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
@@ -184,24 +187,64 @@
                        maxWidth="98.0"
                        prefWidth="98.0"/>
                 <TextField fx:id="orientationTextField"
-                           editable="false"
+                           alignment="CENTER_RIGHT"
                            text="0.00"
                            minWidth="90.0"
                            maxWidth="90.0"
                            prefWidth="90.0"
-                           focusTraversable="false"/>
+                           editable="false"
+                           styleClass="copyable"/>
                 <Label text="Scale (&quot;/px):"
                        styleClass="text-sm,text-bold,monospaced"
                        minWidth="98.0"
                        maxWidth="98.0"
                        prefWidth="98.0"/>
                 <TextField fx:id="scaleTextField"
-                           editable="false"
+                           alignment="CENTER_RIGHT"
                            text="0.0000"
                            minWidth="90.0"
                            maxWidth="90.0"
                            prefWidth="90.0"
-                           focusTraversable="false"/>
+                           editable="false"
+                           styleClass="copyable"/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT"
+                  spacing="4.0">
+                <Label text="Field size (arcmin):"
+                       styleClass="text-sm,text-bold,monospaced"
+                       minWidth="98.0"
+                       maxWidth="98.0"
+                       prefWidth="98.0"/>
+                <TextField fx:id="fieldSizeWidthTextField"
+                           alignment="CENTER_RIGHT"
+                           text="0.00"
+                           minWidth="60.0"
+                           maxWidth="60.0"
+                           prefWidth="60.0"
+                           editable="false"
+                           styleClass="copyable"/>
+                <Label text="x"
+                       styleClass="text-bold,text-md"/>
+                <TextField fx:id="fieldSizeHeightTextField"
+                           text="0.00"
+                           minWidth="60.0"
+                           maxWidth="60.0"
+                           prefWidth="60.0"
+                           editable="false"
+                           styleClass="copyable"/>
+                <Label text="Radius (deg):"
+                       styleClass="text-sm,text-bold,monospaced"
+                       minWidth="70.0"
+                       maxWidth="70.0"
+                       prefWidth="70.0"/>
+                <TextField fx:id="fieldRadiusTextField"
+                           alignment="CENTER_RIGHT"
+                           text="0.0000"
+                           minWidth="73.0"
+                           maxWidth="73.0"
+                           prefWidth="73.0"
+                           editable="false"
+                           styleClass="copyable"/>
             </HBox>
         </VBox>
         <HBox alignment="CENTER"
@@ -215,6 +258,14 @@
                 <graphic>
                     <Label text="&#xF04CE;"
                            styleClass="mdi,mdi-sm,text-yellow-700"/>
+                </graphic>
+            </Button>
+            <Button fx:id="cancelButton"
+                    text="Cancel"
+                    onAction="#cancel">
+                <graphic>
+                    <Label text="&#xF04DB;"
+                           styleClass="mdi,mdi-sm,text-red-700"/>
                 </graphic>
             </Button>
             <Button fx:id="syncButton"

@@ -80,6 +80,8 @@ class NovaAstrometryNetPlateSolver(
                     calibration.radius.deg,
                     calibration.ra.deg,
                     calibration.dec.deg,
+                    calibration.width / 60.0,
+                    calibration.height / 60.0,
                 )
             }
 

@@ -13,8 +13,6 @@ import javafx.scene.input.MouseEvent
 import javafx.util.Callback
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.CLOSE_CIRCLE_ICON
-import nebulosa.desktop.gui.CONNECTION_ICON
 import nebulosa.desktop.gui.control.ButtonValueFactory
 import nebulosa.desktop.logic.between
 import nebulosa.desktop.logic.filterwheel.FilterWheelManager
@@ -62,7 +60,7 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "nebulosa-filterwheel"),
         filterWheelManager.bind(filterWheelChoiceBox.selectionModel.selectedItemProperty())
 
         connectButton.disableProperty().bind(filterWheelManager.isNull() or isConnecting or isMoving)
-        connectButton.textProperty().bind(filterWheelManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
+        connectButton.textProperty().bind(filterWheelManager.connectedProperty.between("󰅙", "󱘖"))
         filterWheelManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())

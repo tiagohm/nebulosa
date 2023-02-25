@@ -31,16 +31,11 @@
         <HBox alignment="CENTER_LEFT"
               spacing="8.0">
             <VBox spacing="1.0">
-                <Label text="Channel"
-                       styleClass="text-md">
+                <Label styleClass="text-md"
+                       text="Channel">
                 </Label>
-                <fx:define>
-                    <ImageChannel fx:id="channelInitialValue"
-                                  fx:constant="GREEN"/>
-                </fx:define>
                 <ChoiceBox fx:id="channelChoiceBox"
-                           prefWidth="308.0"
-                           value="$channelInitialValue">
+                           prefWidth="308.0">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
                             <ImageChannel fx:value="RED"/>
@@ -49,18 +44,17 @@
                         </FXCollections>
                     </items>
                 </ChoiceBox>
+                <fx:define>
+                    <ImageChannel fx:id="channelInitialValue"
+                                  fx:constant="GREEN"/>
+                </fx:define>
             </VBox>
             <VBox spacing="1.0">
-                <Label text="Protection method"
-                       styleClass="text-md">
+                <Label styleClass="text-md"
+                       text="Protection method">
                 </Label>
-                <fx:define>
-                    <ProtectionMethod fx:id="protectionMethodInitialValue"
-                                      fx:constant="AVERAGE_NEUTRAL"/>
-                </fx:define>
                 <ChoiceBox fx:id="protectionMethodChoiceBox"
-                           prefWidth="308.0"
-                           value="$protectionMethodInitialValue">
+                           prefWidth="308.0">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
                             <ProtectionMethod fx:value="MAXIMUM_MASK"/>
@@ -71,28 +65,32 @@
                         </FXCollections>
                     </items>
                 </ChoiceBox>
+                <fx:define>
+                    <ProtectionMethod fx:id="protectionMethodInitialValue"
+                                      fx:constant="AVERAGE_NEUTRAL"/>
+                </fx:define>
             </VBox>
         </HBox>
         <HBox alignment="CENTER"
               spacing="16.0">
             <VBox alignment="CENTER_LEFT"
                   spacing="1.0">
-                <Label text="Amount"
-                       styleClass="text-md">
+                <Label styleClass="text-md"
+                       text="Amount">
                 </Label>
                 <Spinner fx:id="amountSpinner"
-                         editable="true"
-                         min="0.0"
-                         max="1.0"
                          amountToStepBy="0.01"
+                         editable="true"
                          initialValue="0.5"
+                         max="1.0"
+                         min="0.0"
                          prefWidth="144.0">
                 </Spinner>
             </VBox>
             <VBox alignment="CENTER"
                   spacing="1.0">
-                <Label text="Enabled"
-                       styleClass="text-md">
+                <Label styleClass="text-md"
+                       text="Enabled">
                 </Label>
                 <ToggleSwitch fx:id="enabledToggleSwitch"
                               prefHeight="32.0"

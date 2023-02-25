@@ -9,4 +9,6 @@ data class JobCalibration(
     @field:JsonProperty("radius") val radius: Double = 0.0,
     @field:JsonProperty("ra") val ra: Double = 0.0,
     @field:JsonProperty("dec") val dec: Double = 0.0,
+    @field:JsonProperty("width_arcsec") val width: Double = 0.0,
+    @field:JsonProperty("height_arcsec") val height: Double = 0.0,
 )

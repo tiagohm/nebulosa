@@ -307,7 +307,7 @@ class CameraManager(
     override fun close() {
         savePreferences()
 
-        imageWindows.forEach(View::hide)
+        imageWindows.forEach(View::close)
         imageWindows.clear()
 
         unregisterListener(this)

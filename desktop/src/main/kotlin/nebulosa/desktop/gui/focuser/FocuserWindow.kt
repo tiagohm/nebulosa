@@ -8,8 +8,6 @@ import javafx.scene.control.Spinner
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.CLOSE_CIRCLE_ICON
-import nebulosa.desktop.gui.CONNECTION_ICON
 import nebulosa.desktop.logic.between
 import nebulosa.desktop.logic.focuser.FocuserManager
 import nebulosa.desktop.logic.isNull
@@ -60,7 +58,7 @@ class FocuserWindow : AbstractWindow("Focuser", "nebulosa-focuser"), FocuserView
         focuserManager.bind(focuserChoiceBox.selectionModel.selectedItemProperty())
 
         connectButton.disableProperty().bind(focuserManager.isNull() or isConnecting or isMoving)
-        connectButton.textProperty().bind(focuserManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
+        connectButton.textProperty().bind(focuserManager.connectedProperty.between("󰅙", "󱘖"))
         focuserManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())

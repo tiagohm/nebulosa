@@ -11,14 +11,13 @@
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <TextArea
-            fx:id="cardsTextArea"
-            AnchorPane.bottomAnchor="0.0"
-            AnchorPane.leftAnchor="0.0"
-            AnchorPane.rightAnchor="0.0"
-            AnchorPane.topAnchor="0.0"
-            editable="false"
-            stylesheets="@css/TextAreaWithoutFocus.css"
-            styleClass="text-monospaced,text-md">
+    <TextArea fx:id="cardsTextArea"
+              editable="false"
+              styleClass="text-monospaced,text-md"
+              stylesheets="@css/TextAreaWithoutFocus.css"
+              AnchorPane.bottomAnchor="0.0"
+              AnchorPane.leftAnchor="0.0"
+              AnchorPane.rightAnchor="0.0"
+              AnchorPane.topAnchor="0.0">
     </TextArea>
 </AnchorPane>

@@ -29,6 +29,18 @@
                     </accelerator>
                 </MenuItem>
                 <SeparatorMenuItem/>
+                <MenuItem text="Plate Solve"
+                          onAction="#plateSolve">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP"
+                                            code="P"
+                                            control="DOWN"
+                                            meta="UP"
+                                            shift="UP"
+                                            shortcut="UP"/>
+                    </accelerator>
+                </MenuItem>
+                <SeparatorMenuItem/>
                 <MenuItem text="Stretch"
                           onAction="#openImageStretcher"/>
                 <MenuItem fx:id="scnrMenuItem"

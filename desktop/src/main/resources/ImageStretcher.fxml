@@ -35,8 +35,8 @@
                             right="32.0"
                             top="16.0"/>
                 </padding>
-                <Label text="Shadow &amp; Highlight"
-                       styleClass="text-md">
+                <Label styleClass="text-md"
+                       text="Shadow &amp; Highlight">
                     <VBox.margin>
                         <Insets bottom="4.0"/>
                     </VBox.margin>
@@ -46,19 +46,19 @@
                     <VBox alignment="CENTER"
                           spacing="4.0">
                         <Spinner fx:id="shadowSpinner"
+                                 amountToStepBy="0.01"
                                  editable="true"
                                  initialValue="0.0"
-                                 min="0.0"
                                  max="255.0"
-                                 amountToStepBy="0.01"
+                                 min="0.0"
                                  prefWidth="92.0">
                         </Spinner>
                         <Spinner fx:id="highlightSpinner"
+                                 amountToStepBy="0.01"
                                  editable="true"
                                  initialValue="255.0"
-                                 min="0.0"
                                  max="255.0"
-                                 amountToStepBy="0.01"
+                                 min="0.0"
                                  prefWidth="92.0">
                         </Spinner>
                     </VBox>
@@ -70,33 +70,33 @@
                                  max="255.0"
                                  min="0.0"
                                  minorTickCount="3"
-                                 showTickMarks="true"
                                  showTickLabels="true"
+                                 showTickMarks="true"
                                  HBox.hgrow="ALWAYS">
                     </RangeSlider>
                 </HBox>
-                <Label text="Midtone"
-                       styleClass="text-md">
+                <Label styleClass="text-md"
+                       text="Midtone">
                 </Label>
                 <HBox alignment="CENTER"
                       spacing="8.0">
                     <Spinner fx:id="midtoneSpinner"
+                             amountToStepBy="0.01"
                              editable="true"
                              initialValue="127.5"
-                             min="0.0"
                              max="255.0"
-                             amountToStepBy="0.01"
+                             min="0.0"
                              prefWidth="92.0">
                     </Spinner>
                     <Slider fx:id="midtoneSlider"
-                            HBox.hgrow="ALWAYS"
                             blockIncrement="1.0"
                             majorTickUnit="32.0"
-                            minorTickCount="3"
-                            showTickMarks="true"
                             max="255.0"
+                            minorTickCount="3"
                             showTickLabels="true"
-                            value="127.5">
+                            showTickMarks="true"
+                            value="127.5"
+                            HBox.hgrow="ALWAYS">
                     </Slider>
                 </HBox>
             </VBox>

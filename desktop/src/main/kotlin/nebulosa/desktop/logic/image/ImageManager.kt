@@ -2,6 +2,7 @@ package nebulosa.desktop.logic.image
 
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
+import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
 import javafx.stage.FileChooser
@@ -11,12 +12,16 @@ import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.view.image.ImageView
-import nebulosa.imaging.ExtendedImage
-import nebulosa.imaging.FitsImage
-import nebulosa.imaging.Image
-import nebulosa.imaging.ImageChannel
+import nebulosa.desktop.view.platesolver.PlateSolverView
+import nebulosa.imaging.*
 import nebulosa.imaging.algorithms.*
+import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.deg
+import nebulosa.platesolving.Calibration
 import nom.tam.fits.Fits
+import nom.tam.fits.header.ObservationDescription
+import nom.tam.fits.header.extra.SBFitsExt
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.Closeable
 import java.io.File
@@ -28,6 +33,7 @@ import kotlin.math.min
 class ImageManager(private val view: ImageView) : Closeable {
 
     @Autowired private lateinit var preferences: Preferences
+    @Autowired private lateinit var plateSolverView: PlateSolverView
 
     @Volatile var fits: Image? = null
         private set
@@ -86,6 +92,8 @@ class ImageManager(private val view: ImageView) : Closeable {
     @Volatile var scnrAmount = 0.5f
         private set
 
+    val calibration = SimpleObjectProperty<Calibration>()
+
     init {
         transformSubscriber = transformPublisher
             .debounce(500L, TimeUnit.MILLISECONDS)
@@ -108,6 +116,7 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         this.fits = fits
         this.transformedFits = null
+        this.calibration.set(null)
 
         view.hasScnr = !fits.mono
         view.hasFitsHeader = fits is FitsImage
@@ -357,10 +366,29 @@ class ImageManager(private val view: ImageView) : Closeable {
         draw()
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    fun save() {
-        val fits = fits ?: return
+    fun writeToFile(file: File): Boolean {
+        val fits = fits ?: return false
+        val extension = file.extension.lowercase()
 
+        if (extension == "png") {
+            ImageIO.write(fits, "PNG", file)
+        } else if (extension == "jpg" || extension == "jpeg") {
+            ImageIO.write(fits, "JPEG", file)
+        } else if (extension == "fits") {
+            if (fits is FitsImage) {
+                fits.fits.write(file)
+            } else {
+                // TODO: Save non-FITS as FITS.
+                return false
+            }
+        } else {
+            return false
+        }
+
+        return true
+    }
+
+    fun save() {
         with(FileChooser()) {
             title = "Save Image"
 
@@ -372,24 +400,55 @@ class ImageManager(private val view: ImageView) : Closeable {
             extensionFilters.add(FileChooser.ExtensionFilter("JPEG", "*.jpg", "*.jpeg"))
 
             val file = showSaveDialog(null) ?: return
-            val extension = file.extension.lowercase()
 
-            if (extension == "png") {
-                ImageIO.write(fits, "PNG", file)
-            } else if (extension == "jpg" || extension == "jpeg") {
-                ImageIO.write(fits, "JPEG", file)
-            } else if (extension == "fits") {
-                if (fits is FitsImage) {
-                    fits.fits.write(file)
-                } else {
-                    // TODO: Save non-FITS as FITS.
-                }
-            } else {
+            if (!writeToFile(file)) {
                 return view.showAlert("Unsupported format: ${file.extension}", "Save Error")
             }
 
             preferences.string("image.savePath", file.parent)
         }
+    }
+
+    fun plateSolve(): Boolean {
+        val fits = fits ?: return false
+
+        plateSolverView.show(bringToFront = true)
+
+        val file = File.createTempFile("image", ".png")
+        if (!writeToFile(file)) return false
+
+        try {
+            val task = if (fits is FitsImage) {
+                val ra = Angle.from(fits.header.ra, true)
+                val dec = Angle.from(fits.header.dec)
+
+                if (ra != null && dec != null) {
+                    LOG.info("plate solving. path={}, ra={}, dec={}", file, ra.hours, dec.degrees)
+                    plateSolverView.solve(file, false, ra, dec, 1.0.deg)
+                } else {
+                    LOG.info("blind plate solving. path={}", file)
+                    plateSolverView.solve(file)
+                }
+            } else {
+                LOG.info("blind plate solving. path={}", file)
+                plateSolverView.solve(file)
+            }
+
+            task.whenComplete { calibration, e ->
+                this.calibration.set(calibration)
+
+                if (calibration != null) {
+                    LOG.info("plate solving finished. calibration={}", calibration)
+                } else if (e != null) {
+                    LOG.error("plate solving failed.", e)
+                }
+
+                file.delete()
+            }
+        } finally {
+        }
+
+        return true
     }
 
     fun openImageStretcher() {
@@ -441,9 +500,9 @@ class ImageManager(private val view: ImageView) : Closeable {
         dragStartX = 0.0
         dragStartY = 0.0
 
-        imageStretcherWindow?.hide()
-        scnrWindow?.hide()
-        fitsHeaderWindow?.hide()
+        imageStretcherWindow?.close()
+        scnrWindow?.close()
+        fitsHeaderWindow?.close()
 
         imageStretcherWindow = null
         fitsHeaderWindow = null
@@ -453,6 +512,8 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(ImageManager::class.java)
 
         @JvmStatic private val SCALE_FACTORS = doubleArrayOf(
             // 0.125, 0.25, 0.5, 0.75,

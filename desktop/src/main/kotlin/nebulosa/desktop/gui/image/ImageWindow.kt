@@ -165,6 +165,11 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     @FXML
+    private fun plateSolve() {
+        imageManager.plateSolve()
+    }
+
+    @FXML
     private fun openImageStretcher() {
         imageManager.openImageStretcher()
     }

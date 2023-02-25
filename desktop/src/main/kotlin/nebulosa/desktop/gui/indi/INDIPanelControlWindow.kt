@@ -9,8 +9,6 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.CIRCLE_ICON
-import nebulosa.desktop.gui.SEND_ICON
 import nebulosa.desktop.logic.indi.INDIPanelControlManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.toggle
@@ -133,7 +131,7 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "nebulosa-indi
                     }
                 }
 
-                val icon = Label(SEND_ICON)
+                val icon = Label("󰒊")
                 icon.styleClass.addAll("text-blue-700", "mdi", "mdi-sm")
                 send.graphic = icon
 
@@ -433,7 +431,7 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "nebulosa-indi
 
         @JvmStatic
         private fun Label.withState(vector: PropertyVector<*, *>) = apply {
-            val icon = Label(CIRCLE_ICON)
+            val icon = Label("󰝥")
             icon.styleClass.addAll("mdi", "mdi-xs")
             graphic = icon
             updateState(vector)

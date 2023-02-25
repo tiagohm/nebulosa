@@ -7,8 +7,6 @@ import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import javafx.stage.Stage
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.CLOSE_CIRCLE_ICON
-import nebulosa.desktop.gui.CONNECTION_ICON
 import nebulosa.desktop.logic.between
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.home.HomeManager
@@ -59,7 +57,7 @@ class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeV
         sequencerButton.disableProperty().bind(!homeManager.connectedProperty)
         indiButton.disableProperty().bind(!homeManager.connectedProperty)
 
-        connectButton.textProperty().bind(homeManager.connectedProperty.between(CLOSE_CIRCLE_ICON, CONNECTION_ICON))
+        connectButton.textProperty().bind(homeManager.connectedProperty.between("󰅙", "󱘖"))
         homeManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
     }
 
