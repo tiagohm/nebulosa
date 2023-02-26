@@ -9,9 +9,9 @@ import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.platesolver.PlateSolverType
 import nebulosa.desktop.view.platesolver.PlateSolverView
-import nebulosa.imaging.dec
-import nebulosa.imaging.imageHDU
-import nebulosa.imaging.ra
+import nebulosa.fits.dec
+import nebulosa.fits.imageHDU
+import nebulosa.fits.ra
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.platesolving.Calibration
@@ -77,8 +77,8 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
                     val header = Fits(file).imageHDU(0)?.header
 
                     if (header != null) {
-                        val ra = Angle.from(header.ra, true)
-                        val dec = Angle.from(header.dec)
+                        val ra = header.ra
+                        val dec = header.dec
 
                         if (ra != null && dec != null) {
                             LOG.info("retrieved RA/DEC from fits. ra={}, dec={}", ra.hours, dec.degrees)
@@ -175,8 +175,8 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
     }
 
     fun loadPathOrUrlFromPreferences() {
-        if (view.plateSolverType == PlateSolverType.ASTROMETRY_NET_LOCAL) preferences.string("plateSolver.path")?.let { view.pathOrUrl = it }
-        else preferences.string("plateSolver.url")?.let { view.pathOrUrl = it }
+        view.pathOrUrl = if (view.plateSolverType == PlateSolverType.ASTROMETRY_NET_LOCAL) preferences.string("plateSolver.path") ?: ""
+        else preferences.string("plateSolver.url") ?: ""
     }
 
     fun loadPreferences() {

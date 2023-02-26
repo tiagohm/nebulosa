@@ -3,7 +3,7 @@ package nebulosa.query.sbd
 import nebulosa.query.QueryService
 import okhttp3.OkHttpClient
 
-class SmallBodyDatabaseLookupService(url: String = "https://ssd-api.jpl.nasa.gov/") : QueryService(url), SmallBodyDatabaseLookup {
+class SmallBodyDatabaseLookupService(url: String = "https://ssd-api.jpl.nasa.gov/") : QueryService(url) {
 
     private val service by lazy { retrofit.create(SmallBodyDatabaseLookup::class.java) }
 
@@ -21,5 +21,5 @@ class SmallBodyDatabaseLookupService(url: String = "https://ssd-api.jpl.nasa.gov
         }
     }
 
-    override fun search(text: String) = service.search(text)
+    fun search(text: String) = service.search(text)
 }

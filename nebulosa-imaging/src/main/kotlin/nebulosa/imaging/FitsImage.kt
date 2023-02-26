@@ -1,5 +1,7 @@
 package nebulosa.imaging
 
+import nebulosa.fits.imageHDU
+import nebulosa.fits.naxis
 import nebulosa.imaging.algorithms.CfaPattern.Companion.cfaPattern
 import nebulosa.imaging.algorithms.Debayer
 import nom.tam.fits.Fits
@@ -10,12 +12,13 @@ import kotlin.math.min
 
 @Suppress("UNCHECKED_CAST")
 class FitsImage(
+    // TODO: Remove val keyword to reduce memory usage?
     @JvmField val fits: Fits,
     debayer: Boolean = true,
     hdu: ImageHDU = fits.imageHDU(0)!!,
 ) : Image(
-    hdu.naxis(1),
-    hdu.naxis(2),
+    hdu.header.naxis(1),
+    hdu.header.naxis(2),
     hdu.let { it.axes.size != 3 && !(debayer && it.axes.size == 2 && it.cfaPattern != null) },
 ) {
 

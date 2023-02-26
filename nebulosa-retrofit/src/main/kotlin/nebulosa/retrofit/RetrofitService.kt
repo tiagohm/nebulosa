@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.CallAdapter
 import retrofit2.Converter
@@ -40,6 +41,11 @@ abstract class RetrofitService(val url: String) {
         }
 
         builder.build()
+    }
+
+    object ByteArrayConverter : Converter<ResponseBody, ByteArray> {
+
+        override fun convert(value: ResponseBody) = value.bytes()
     }
 
     companion object {

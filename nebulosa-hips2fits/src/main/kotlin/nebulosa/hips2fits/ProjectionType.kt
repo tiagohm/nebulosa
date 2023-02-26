@@ -1,0 +1,25 @@
+package nebulosa.hips2fits
+
+enum class ProjectionType(val description: String) {
+    AZP("zenithal/azimuthal perspective"),
+    SZP("slant zenithal perspective"),
+    TAN("tangential"),
+    STG("stereographic"),
+    SIN("orthographic"),
+    ARC("zenithal/azimuthal equidistant"),
+    ZEA("zenithal/azimuthal equal area"),
+    AIR("Airy's projection"),
+    CYP("cylindrical perspective"),
+    CEA("cylindrical equal area"),
+    CAR("plate carrée"),
+    MER("Mercator"),
+    SFL("Sanson-Flamsteed"),
+    PAR("parabolic"),
+    MOL("Mollweide"),
+    AIT("Hammer-Aitoff"),
+    TSC("tangential spherical cube"),
+    CSC("COBE spherical cube"),
+    QSC("quadrilateralized spherical cube"),
+    HPX("HEALPix"),
+    XPH("HEALPix polar, butterfly"),
+}

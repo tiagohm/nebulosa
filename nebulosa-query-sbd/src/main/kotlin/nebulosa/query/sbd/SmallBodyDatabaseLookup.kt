@@ -4,7 +4,7 @@ import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface SmallBodyDatabaseLookup {
+internal interface SmallBodyDatabaseLookup {
 
     @GET(API_URL)
     fun search(@Query("sstr") text: String): Call<SmallBody>

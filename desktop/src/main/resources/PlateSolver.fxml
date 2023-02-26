@@ -218,18 +218,18 @@
                 <TextField fx:id="fieldSizeWidthTextField"
                            alignment="CENTER_RIGHT"
                            text="0.00"
-                           minWidth="60.0"
-                           maxWidth="60.0"
-                           prefWidth="60.0"
+                           minWidth="37.0"
+                           maxWidth="37.0"
+                           prefWidth="37.0"
                            editable="false"
                            styleClass="copyable"/>
                 <Label text="x"
                        styleClass="text-bold,text-md"/>
                 <TextField fx:id="fieldSizeHeightTextField"
                            text="0.00"
-                           minWidth="60.0"
-                           maxWidth="60.0"
-                           prefWidth="60.0"
+                           minWidth="37.0"
+                           maxWidth="37.0"
+                           prefWidth="37.0"
                            editable="false"
                            styleClass="copyable"/>
                 <Label text="Radius (deg):"
@@ -240,9 +240,9 @@
                 <TextField fx:id="fieldRadiusTextField"
                            alignment="CENTER_RIGHT"
                            text="0.0000"
-                           minWidth="73.0"
-                           maxWidth="73.0"
-                           prefWidth="73.0"
+                           minWidth="119.0"
+                           maxWidth="119.0"
+                           prefWidth="119.0"
                            editable="false"
                            styleClass="copyable"/>
             </HBox>

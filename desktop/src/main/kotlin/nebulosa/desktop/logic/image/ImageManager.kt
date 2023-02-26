@@ -13,14 +13,16 @@ import nebulosa.desktop.gui.image.SCNRWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.platesolver.PlateSolverView
-import nebulosa.imaging.*
+import nebulosa.fits.dec
+import nebulosa.fits.ra
+import nebulosa.imaging.ExtendedImage
+import nebulosa.imaging.FitsImage
+import nebulosa.imaging.Image
+import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
-import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.platesolving.Calibration
 import nom.tam.fits.Fits
-import nom.tam.fits.header.ObservationDescription
-import nom.tam.fits.header.extra.SBFitsExt
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.Closeable
@@ -260,9 +262,9 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         val sceneSize = if (factor >= 1.0)
             if (defaultSize) defaultWidth
-            else min(screenBounds.width, view.width)
+            else view.width - borderSize * 2
         else if (defaultSize) defaultHeight
-        else min(screenBounds.height, view.height)
+        else view.height - titleHeight
 
         if (factor >= 1.0) {
             idealSceneWidth = sceneSize
@@ -366,7 +368,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         draw()
     }
 
-    fun writeToFile(file: File): Boolean {
+    private fun writeToFile(file: File): Boolean {
         val fits = fits ?: return false
         val extension = file.extension.lowercase()
 
@@ -419,8 +421,8 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         try {
             val task = if (fits is FitsImage) {
-                val ra = Angle.from(fits.header.ra, true)
-                val dec = Angle.from(fits.header.dec)
+                val ra = fits.header.ra
+                val dec = fits.header.dec
 
                 if (ra != null && dec != null) {
                     LOG.info("plate solving. path={}, ra={}, dec={}", file, ra.hours, dec.degrees)
