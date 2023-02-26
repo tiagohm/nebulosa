@@ -17,7 +17,7 @@ class Hips2FitsService(url: String = MAIN_URL) : RetrofitService(url) {
     fun hipsSurvey() = service.mocServerQuery("hips_service_url*=*alasky* && dataproduct_type=image", "record", "json")
 
     fun query(
-        hips: HipsSurvey,
+        hips: HipsSurveySource,
         ra: Angle, dec: Angle,
         width: Int = 1200, height: Int = 900,
         projection: ProjectionType = ProjectionType.TAN, fov: Angle = DEFAULT_FOV,

@@ -7,7 +7,7 @@ import retrofit2.http.Query
 internal interface Hips2Fits {
 
     @GET("MocServer/query")
-    fun mocServerQuery(@Query("expr") expr: String, @Query("get") get: String, @Query("fmt") format: String): Call<List<HipsSurvey>>
+    fun mocServerQuery(@Query("expr") expr: String, @Query("get") get: String, @Query("fmt") format: String): Call<List<HipsSurveySource>>
 
     @GET("hips-image-services/hips2fits")
     fun query(

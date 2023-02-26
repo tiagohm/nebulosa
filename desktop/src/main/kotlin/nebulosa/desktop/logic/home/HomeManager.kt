@@ -9,6 +9,7 @@ import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.filterwheel.FilterWheelView
 import nebulosa.desktop.view.focuser.FocuserView
+import nebulosa.desktop.view.framing.FramingView
 import nebulosa.desktop.view.home.HomeView
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.desktop.view.mount.MountView
@@ -34,6 +35,7 @@ class HomeManager(private val view: HomeView) : Closeable {
     @Autowired private lateinit var atlasView: AtlasView
     @Autowired private lateinit var plateSolverView: PlateSolverView
     @Autowired private lateinit var imageWindowOpener: ImageWindow.Opener
+    @Autowired private lateinit var framingView: FramingView
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
 
     val connectedProperty
@@ -71,6 +73,7 @@ class HomeManager(private val view: HomeView) : Closeable {
             "FILTER_WHEEL" -> filterWheelView.show(bringToFront = true)
             "ATLAS" -> atlasView.show(bringToFront = true)
             "PLATE_SOLVER" -> plateSolverView.show(bringToFront = true)
+            "FRAMING" -> framingView.show(bringToFront = true)
             "INDI" -> indiPanelControlView.show(bringToFront = true)
         }
     }

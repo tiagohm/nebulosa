@@ -9,7 +9,7 @@ import nebulosa.fits.imageHDU
 import nebulosa.fits.naxis
 import nebulosa.fits.ra
 import nebulosa.hips2fits.Hips2FitsService
-import nebulosa.hips2fits.HipsSurvey
+import nebulosa.hips2fits.HipsSurveySource
 import nebulosa.math.Angle.Companion.deg
 import nom.tam.fits.Fits
 import java.io.ByteArrayInputStream
@@ -24,7 +24,7 @@ class Hips2FitsServiceTest : StringSpec() {
                 .shouldNotBeEmpty().any { it.id == "CDS/P/DSS2/red" }.shouldBeTrue()
         }
         "query" {
-            val bytes = service.query(HipsSurvey("CDS/P/DSS2/red"), 201.36506337683.deg, (-43.01911250808).deg).execute().body().shouldNotBeNull()
+            val bytes = service.query(HipsSurveySource("CDS/P/DSS2/red"), 201.36506337683.deg, (-43.01911250808).deg).execute().body().shouldNotBeNull()
             val fits = Fits(ByteArrayInputStream(bytes))
             val hdu = fits.imageHDU(0)?.header.shouldNotBeNull()
             hdu.naxis(1) shouldBeExactly 1200
