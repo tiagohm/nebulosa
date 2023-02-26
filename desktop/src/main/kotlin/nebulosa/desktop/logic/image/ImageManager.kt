@@ -37,6 +37,9 @@ class ImageManager(private val view: ImageView) : Closeable {
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var plateSolverView: PlateSolverView
 
+    @Volatile var file: File? = null
+        private set
+
     @Volatile var fits: Image? = null
         private set
 
@@ -109,7 +112,9 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     @Synchronized
     fun open(file: File) {
-        updateTitle(file)
+        this.file = file
+
+        updateTitle()
 
         val adjustToDefaultSize = fits == null
 
@@ -238,10 +243,10 @@ class ImageManager(private val view: ImageView) : Closeable {
         transformImage(invert = !invert)
     }
 
-    private fun updateTitle(file: File? = null) {
+    private fun updateTitle() {
         view.title = "Image"
             .let { if (view.camera != null) "$it · ${view.camera!!.name}" else it }
-            .let { if (file != null) "$it · ${file.name}" else it }
+            .let { if (file != null) "$it · ${file!!.name}" else it }
     }
 
     fun adjustSceneSizeToFitImage(defaultSize: Boolean) {
@@ -412,42 +417,35 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     fun plateSolve(): Boolean {
+        val file = file ?: return false
         val fits = fits ?: return false
 
         plateSolverView.show(bringToFront = true)
 
-        val file = File.createTempFile("image", ".png")
-        if (!writeToFile(file)) return false
+        val task = if (fits is FitsImage) {
+            val ra = fits.header.ra
+            val dec = fits.header.dec
 
-        try {
-            val task = if (fits is FitsImage) {
-                val ra = fits.header.ra
-                val dec = fits.header.dec
-
-                if (ra != null && dec != null) {
-                    LOG.info("plate solving. path={}, ra={}, dec={}", file, ra.hours, dec.degrees)
-                    plateSolverView.solve(file, false, ra, dec, 1.0.deg)
-                } else {
-                    LOG.info("blind plate solving. path={}", file)
-                    plateSolverView.solve(file)
-                }
+            if (ra != null && dec != null) {
+                LOG.info("plate solving. path={}, ra={}, dec={}", file, ra.hours, dec.degrees)
+                plateSolverView.solve(file, false, ra, dec, 10.0.deg)
             } else {
                 LOG.info("blind plate solving. path={}", file)
                 plateSolverView.solve(file)
             }
+        } else {
+            LOG.info("blind plate solving. path={}", file)
+            plateSolverView.solve(file)
+        }
 
-            task.whenComplete { calibration, e ->
-                this.calibration.set(calibration)
+        task.whenComplete { calibration, e ->
+            this.calibration.set(calibration)
 
-                if (calibration != null) {
-                    LOG.info("plate solving finished. calibration={}", calibration)
-                } else if (e != null) {
-                    LOG.error("plate solving failed.", e)
-                }
-
-                file.delete()
+            if (calibration != null) {
+                LOG.info("plate solving finished. calibration={}", calibration)
+            } else if (e != null) {
+                LOG.error("plate solving failed.", e)
             }
-        } finally {
         }
 
         return true

@@ -10,7 +10,7 @@ import retrofit2.Call
 import java.io.File
 import java.util.*
 
-class NovaAstrometryNetService(url: String = "https://nova.astrometry.net/api/") : RetrofitService(url), NovaAstrometryNet {
+class NovaAstrometryNetService(url: String = URL) : RetrofitService(url), NovaAstrometryNet {
 
     private val service by lazy { retrofit.create(NovaAstrometryNet::class.java) }
 
@@ -58,6 +58,8 @@ class NovaAstrometryNetService(url: String = "https://nova.astrometry.net/api/")
     override fun jobCalibration(jobId: Int) = service.jobCalibration(jobId)
 
     companion object {
+
+        const val URL = "https://nova.astrometry.net/api/"
 
         @JvmStatic private val TEXT_PLAIN_MEDIA_TYPE = "text/plain".toMediaType()
         @JvmStatic private val OCTET_STREAM_MEDIA_TYPE = "application/octet-stream".toMediaType()

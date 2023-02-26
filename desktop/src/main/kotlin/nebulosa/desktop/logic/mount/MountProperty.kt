@@ -35,6 +35,8 @@ interface MountProperty : DeviceProperty<Mount> {
 
     val canSyncProperty: SimpleBooleanProperty
 
+    val canGoToProperty: SimpleBooleanProperty
+
     val canParkProperty: SimpleBooleanProperty
 
     val guideRateWEProperty: SimpleDoubleProperty
@@ -98,6 +100,9 @@ interface MountProperty : DeviceProperty<Mount> {
 
     val canSync
         get() = canSyncProperty.get()
+
+    val canGoTo
+        get() = canGoToProperty.get()
 
     val canPark
         get() = canParkProperty.get()

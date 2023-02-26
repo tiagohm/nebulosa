@@ -10,7 +10,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="340.0"
+            prefHeight="370.0"
             prefWidth="420.0"
             stylesheets="@css/Global.css,@css/CopyableLabel.css"
             xmlns="http://javafx.com/javafx/19"
@@ -31,220 +31,211 @@
         <HBox alignment="CENTER"
               spacing="4.0">
             <VBox alignment="CENTER_LEFT"
-                  HBox.hgrow="ALWAYS"
-                  spacing="2.0">
-                <Label text="File path:"
-                       styleClass="text-sm"/>
+                  spacing="2.0"
+                  HBox.hgrow="ALWAYS">
+                <Label styleClass="text-sm"
+                       text="File path:"/>
                 <TextField fx:id="filePathTextField"
                            disable="true"/>
             </VBox>
             <Button fx:id="browseButton"
-                    text="Browse"
-                    onAction="#browse">
+                    onAction="#browse"
+                    text="Browse">
                 <HBox.margin>
                     <Insets top="14.0"/>
                 </HBox.margin>
                 <graphic>
-                    <Label text="&#xF0349;"
-                           styleClass="mdi,mdi-sm,text-blue-grey-700"/>
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
+                           text="󰍉"/>
                 </graphic>
             </Button>
         </HBox>
         <HBox alignment="CENTER"
               spacing="4.0">
-            <fx:define>
-                <PlateSolverType fx:id="plateSolverTypeInitialValue"
-                                 fx:constant="ASTROMETRY_NET_LOCAL"/>
-            </fx:define>
-            <ChoiceBox fx:id="plateSolverTypeChoiceBox"
-                       value="$plateSolverTypeInitialValue">
+            <ChoiceBox fx:id="plateSolverTypeChoiceBox">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
                         <PlateSolverType fx:value="ASTROMETRY_NET_LOCAL"/>
                         <PlateSolverType fx:value="ASTROMETRY_NET_ONLINE"/>
+                        <PlateSolverType fx:value="ASTAP"/>
                     </FXCollections>
                 </items>
             </ChoiceBox>
         </HBox>
         <Label text="Parameters:"/>
-        <VBox spacing="4.0"
-              alignment="TOP_CENTER">
+        <VBox alignment="TOP_CENTER"
+              spacing="4.0">
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
-                <Label text="Path/URL:"
-                       styleClass="text-sm,text-bold,monospaced"
+                <Label maxWidth="68.0"
                        minWidth="68.0"
-                       maxWidth="68.0"
-                       prefWidth="68.0"/>
+                       prefWidth="68.0"
+                       styleClass="text-sm,text-bold,monospaced"
+                       text="Path/URL:"/>
                 <TextField fx:id="pathOrUrlTextField"
-                           promptText="solve-field"
-                           minWidth="120.0"
                            maxWidth="120.0"
-                           prefWidth="120.0"/>
-                <Label text="API Key:"
-                       styleClass="text-sm,text-bold,monospaced"
+                           minWidth="120.0"
+                           prefWidth="120.0"
+                           promptText="solve-field"/>
+                <Label maxWidth="68.0"
                        minWidth="68.0"
-                       maxWidth="68.0"
-                       prefWidth="68.0"/>
+                       prefWidth="68.0"
+                       styleClass="text-sm,text-bold,monospaced"
+                       text="API Key:"/>
                 <TextField fx:id="apiKeyTextField"
-                           promptText="XXXXXXXX"
-                           minWidth="120.0"
                            maxWidth="120.0"
-                           prefWidth="120.0"/>
+                           minWidth="120.0"
+                           prefWidth="120.0"
+                           promptText="XXXXXXXX"/>
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="8.0">
                 <ToggleSwitch fx:id="blindToggleSwitch"
-                              text="Blind:"
+                              selected="true"
                               styleClass="text-sm,text-bold,monospaced"
-                              selected="true"/>
-                <Label text="Factor:"
-                       styleClass="text-sm,text-bold,monospaced"
+                              text="Blind:"/>
+                <Label maxWidth="40.0"
                        minWidth="40.0"
-                       maxWidth="40.0"
-                       prefWidth="40.0"/>
+                       prefWidth="40.0"
+                       styleClass="text-sm,text-bold,monospaced"
+                       text="Factor:"/>
                 <Spinner fx:id="downsampleFactorSpinner"
-                         min="1.0"
-                         max="8.0"
                          amountToStepBy="1.0"
                          initialValue="2.0"
-                         minWidth="60.0"
+                         max="8.0"
                          maxWidth="60.0"
+                         min="1.0"
+                         minWidth="60.0"
                          prefWidth="60.0"/>
-                <Label text="Radius (deg):"
+                <Label maxWidth="74.0"
+                       minWidth="74.0"
+                       prefWidth="74.0"
                        styleClass="text-sm,text-bold,monospaced"
-                       minWidth="68.0"
-                       maxWidth="68.0"
-                       prefWidth="68.0"/>
-                <TextField fx:id="radiusTextField"
-                           promptText="1.0"
-                           minWidth="120.0"
-                           maxWidth="120.0"
-                           prefWidth="120.0"
-                           text="1.0"/>
+                       text="Radius (deg):"/>
+                <Spinner fx:id="radiusSpinner"
+                         maxWidth="110.0"
+                         minWidth="110.0"
+                         prefWidth="110.0"
+                         min="1.0"
+                         max="180.0"
+                         amountToStepBy="1.0"
+                         initialValue="1.0"/>
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
-                <Label text="Center RA:"
-                       styleClass="text-sm,text-bold,monospaced"
+                <Label maxWidth="68.0"
                        minWidth="68.0"
-                       maxWidth="68.0"
-                       prefWidth="68.0"/>
+                       prefWidth="68.0"
+                       styleClass="text-sm,text-bold,monospaced"
+                       text="Center RA:"/>
                 <TextField fx:id="centerRATextField"
-                           promptText="00h00m00.00s"
-                           minWidth="120.0"
                            maxWidth="120.0"
-                           prefWidth="120.0"/>
-                <Label text="Center DEC:"
-                       styleClass="text-sm,text-bold,monospaced"
+                           minWidth="120.0"
+                           prefWidth="120.0"
+                           promptText="00h00m00.00s"/>
+                <Label maxWidth="68.0"
                        minWidth="68.0"
-                       maxWidth="68.0"
-                       prefWidth="68.0"/>
+                       prefWidth="68.0"
+                       styleClass="text-sm,text-bold,monospaced"
+                       text="Center DEC:"/>
                 <TextField fx:id="centerDECTextField"
-                           promptText="00°00'00.00&quot;"
-                           minWidth="120.0"
                            maxWidth="120.0"
-                           prefWidth="120.0"/>
+                           minWidth="120.0"
+                           prefWidth="120.0"
+                           promptText="00°00'00.00&quot;"/>
             </HBox>
         </VBox>
         <Label text="Astrometry solution:"/>
-        <VBox spacing="1.0"
-              alignment="TOP_CENTER">
+        <VBox alignment="TOP_CENTER"
+              spacing="1.0">
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
-                <Label text="RA:"
-                       styleClass="text-sm,text-bold,monospaced"
+                <Label maxWidth="68.0"
                        minWidth="68.0"
-                       maxWidth="68.0"
-                       prefWidth="68.0"/>
+                       prefWidth="68.0"
+                       styleClass="text-sm,text-bold,monospaced"
+                       text="RA:"/>
                 <TextField fx:id="raTextField"
                            alignment="CENTER_RIGHT"
-                           text="00h00m00.00s"
-                           minWidth="120.0"
-                           maxWidth="120.0"
-                           prefWidth="120.0"
                            editable="false"
-                           styleClass="copyable"/>
-                <Label text="DEC:"
-                       styleClass="text-sm,text-bold,monospaced"
+                           maxWidth="120.0"
+                           minWidth="120.0"
+                           prefWidth="120.0"
+                           styleClass="copyable"
+                           text="00h00m00.00s"/>
+                <Label maxWidth="68.0"
                        minWidth="68.0"
-                       maxWidth="68.0"
-                       prefWidth="68.0"/>
+                       prefWidth="68.0"
+                       styleClass="text-sm,text-bold,monospaced"
+                       text="DEC:"/>
                 <TextField fx:id="decTextField"
                            alignment="CENTER_RIGHT"
-                           text="00°00'00.00&quot;"
-                           minWidth="120.0"
-                           maxWidth="120.0"
-                           prefWidth="120.0"
                            editable="false"
-                           styleClass="copyable"/>
+                           maxWidth="120.0"
+                           minWidth="120.0"
+                           prefWidth="120.0"
+                           styleClass="copyable"
+                           text="00°00'00.00&quot;"/>
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
-                <Label text="Orientation (deg):"
-                       styleClass="text-sm,text-bold,monospaced"
+                <Label maxWidth="98.0"
                        minWidth="98.0"
-                       maxWidth="98.0"
-                       prefWidth="98.0"/>
+                       prefWidth="98.0"
+                       styleClass="text-sm,text-bold,monospaced"
+                       text="Orientation (deg):"/>
                 <TextField fx:id="orientationTextField"
                            alignment="CENTER_RIGHT"
-                           text="0.00"
-                           minWidth="90.0"
-                           maxWidth="90.0"
-                           prefWidth="90.0"
                            editable="false"
-                           styleClass="copyable"/>
-                <Label text="Scale (&quot;/px):"
-                       styleClass="text-sm,text-bold,monospaced"
+                           maxWidth="90.0"
+                           minWidth="90.0"
+                           prefWidth="90.0"
+                           styleClass="copyable"
+                           text="0.00"/>
+                <Label maxWidth="98.0"
                        minWidth="98.0"
-                       maxWidth="98.0"
-                       prefWidth="98.0"/>
+                       prefWidth="98.0"
+                       styleClass="text-sm,text-bold,monospaced"
+                       text="Scale (&quot;/px):"/>
                 <TextField fx:id="scaleTextField"
                            alignment="CENTER_RIGHT"
-                           text="0.0000"
-                           minWidth="90.0"
-                           maxWidth="90.0"
-                           prefWidth="90.0"
                            editable="false"
-                           styleClass="copyable"/>
+                           maxWidth="90.0"
+                           minWidth="90.0"
+                           prefWidth="90.0"
+                           styleClass="copyable"
+                           text="0.0000"/>
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
-                <Label text="Field size (arcmin):"
-                       styleClass="text-sm,text-bold,monospaced"
+                <Label maxWidth="98.0"
                        minWidth="98.0"
-                       maxWidth="98.0"
-                       prefWidth="98.0"/>
-                <TextField fx:id="fieldSizeWidthTextField"
-                           alignment="CENTER_RIGHT"
-                           text="0.00"
-                           minWidth="37.0"
-                           maxWidth="37.0"
-                           prefWidth="37.0"
-                           editable="false"
-                           styleClass="copyable"/>
-                <Label text="x"
-                       styleClass="text-bold,text-md"/>
-                <TextField fx:id="fieldSizeHeightTextField"
-                           text="0.00"
-                           minWidth="37.0"
-                           maxWidth="37.0"
-                           prefWidth="37.0"
-                           editable="false"
-                           styleClass="copyable"/>
-                <Label text="Radius (deg):"
+                       prefWidth="98.0"
                        styleClass="text-sm,text-bold,monospaced"
+                       text="Field size (arcmin):"/>
+                <HBox alignment="CENTER_RIGHT"
+                      maxWidth="90.0"
+                      minWidth="90.0"
+                      prefWidth="90.0">
+                    <TextField fx:id="fieldSizeTextField"
+                               alignment="CENTER_RIGHT"
+                               editable="false"
+                               styleClass="copyable"
+                               text="0.00 x 0.00"/>
+                </HBox>
+                <Label maxWidth="70.0"
                        minWidth="70.0"
-                       maxWidth="70.0"
-                       prefWidth="70.0"/>
+                       prefWidth="70.0"
+                       styleClass="text-sm,text-bold,monospaced"
+                       text="Radius (deg):"/>
                 <TextField fx:id="fieldRadiusTextField"
                            alignment="CENTER_RIGHT"
-                           text="0.0000"
-                           minWidth="119.0"
-                           maxWidth="119.0"
-                           prefWidth="119.0"
                            editable="false"
-                           styleClass="copyable"/>
+                           maxWidth="118.0"
+                           minWidth="118.0"
+                           prefWidth="118.0"
+                           styleClass="copyable"
+                           text="0.0000"/>
             </HBox>
         </VBox>
         <HBox alignment="CENTER"
@@ -253,27 +244,46 @@
                 <Insets top="8.0"/>
             </VBox.margin>
             <Button fx:id="solveButton"
-                    text="Solve"
-                    onAction="#solve">
+                    onAction="#solve"
+                    text="Solve">
                 <graphic>
-                    <Label text="&#xF04CE;"
-                           styleClass="mdi,mdi-sm,text-yellow-700"/>
+                    <Label styleClass="mdi,mdi-sm,text-yellow-700"
+                           text="󰓎"/>
                 </graphic>
             </Button>
             <Button fx:id="cancelButton"
-                    text="Cancel"
-                    onAction="#cancel">
+                    onAction="#cancel"
+                    text="Cancel">
                 <graphic>
-                    <Label text="&#xF04DB;"
-                           styleClass="mdi,mdi-sm,text-red-700"/>
+                    <Label styleClass="mdi,mdi-sm,text-red-700"
+                           text="󰓛"/>
                 </graphic>
             </Button>
+        </HBox>
+        <HBox alignment="CENTER"
+              spacing="4.0">
             <Button fx:id="syncButton"
-                    text="Sync"
-                    onAction="#sync">
+                    onAction="#sync"
+                    text="Sync">
                 <graphic>
-                    <Label text="&#xF04E6;"
-                           styleClass="mdi,mdi-sm,text-blue-700"/>
+                    <Label styleClass="mdi,mdi-sm,text-blue-700"
+                           text="󰓦"/>
+                </graphic>
+            </Button>
+            <Button fx:id="goToButton"
+                    onAction="#goTo"
+                    text="Go To">
+                <graphic>
+                    <Label styleClass="mdi,mdi-sm,text-green-700"
+                           text="󰄬"/>
+                </graphic>
+            </Button>
+            <Button fx:id="slewToButton"
+                    onAction="#slewTo"
+                    text="Slew To">
+                <graphic>
+                    <Label styleClass="mdi,mdi-sm,text-green-700"
+                           text="󰄬"/>
                 </graphic>
             </Button>
         </HBox>

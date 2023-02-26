@@ -93,7 +93,7 @@ class App : CommandLineRunner {
         .build()
 
     @Bean
-    fun preferences(appDirectory: Path, objectMapper: ObjectMapper) = Preferences(Paths.get("$appDirectory", "preferences.json"), objectMapper)
+    fun preferences(appDirectory: Path, objectMapper: ObjectMapper) = Preferences(Paths.get("$appDirectory", "preferences.properties"), objectMapper)
 
     @Bean
     fun cameraExecutorService(): ExecutorService = Executors.newSingleThreadExecutor()

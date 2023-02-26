@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.stage.FileChooser
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
+import nebulosa.desktop.App
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.util.javaFxThread
@@ -15,6 +16,7 @@ import nebulosa.fits.ra
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.platesolving.Calibration
+import nebulosa.platesolving.astap.AstapPlateSolver
 import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
 import nom.tam.fits.Fits
@@ -34,6 +36,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var systemExecutorService: ExecutorService
+    @Autowired private lateinit var osType: App.OSType
 
     private val solverTask = AtomicReference<Future<*>>()
 
@@ -73,8 +76,10 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
             view.updateParameters(true, Angle.ZERO, Angle.ZERO)
 
             if (file.extension.lowercase().startsWith("fit")) {
+                val fits = Fits(file)
+
                 try {
-                    val header = Fits(file).imageHDU(0)?.header
+                    val header = fits.imageHDU(0)?.header
 
                     if (header != null) {
                         val ra = header.ra
@@ -87,6 +92,8 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
                     }
                 } catch (e: Throwable) {
                     LOG.error("failed to read RA/DEC from fits.", e)
+                } finally {
+                    fits.close()
                 }
             }
 
@@ -94,6 +101,12 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
 
             clearAstrometrySolution()
         }
+    }
+
+    fun pathOrUrl(type: PlateSolverType) = when (type) {
+        PlateSolverType.ASTROMETRY_NET_LOCAL -> "solve-field"
+        PlateSolverType.ASTROMETRY_NET_ONLINE -> NovaAstrometryNetService.URL
+        PlateSolverType.ASTAP -> if (osType == App.OSType.WINDOWS) "C:\\Program Files\\astap\\astap.exe" else "astap"
     }
 
     @Synchronized
@@ -112,13 +125,23 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
         val future = CompletableFuture<Calibration>()
 
         val task = systemExecutorService.submit {
-            val pathOrUrl = if (view.plateSolverType == PlateSolverType.ASTROMETRY_NET_LOCAL) view.pathOrUrl.ifBlank { ASTROMETRY_NET_LOCAL_PATH }
-            else view.pathOrUrl.ifBlank { ASTROMETRY_NET_ONLINE_URL }
+            val pathOrUrl = when (view.plateSolverType) {
+                PlateSolverType.ASTROMETRY_NET_LOCAL -> view.pathOrUrl
+                PlateSolverType.ASTROMETRY_NET_ONLINE -> view.pathOrUrl
+                else -> view.pathOrUrl
+            }.ifBlank { pathOrUrl(view.plateSolverType) }
 
-            val solver = if (view.plateSolverType == PlateSolverType.ASTROMETRY_NET_LOCAL) LocalAstrometryNetPlateSolver(pathOrUrl)
-            else NovaAstrometryNetPlateSolver(NovaAstrometryNetService(pathOrUrl), view.apiKey.ifBlank { "XXXXXXXX" })
+            val apiKey = view.apiKey.ifBlank { NovaAstrometryNetPlateSolver.ANONYMOUS_API_KEY }
 
-            val tempFile = File.createTempFile("platesolver", ".tmp")
+            val solver = when (view.plateSolverType) {
+                PlateSolverType.ASTROMETRY_NET_LOCAL -> LocalAstrometryNetPlateSolver(pathOrUrl)
+                PlateSolverType.ASTROMETRY_NET_ONLINE -> NovaAstrometryNetPlateSolver(NovaAstrometryNetService(pathOrUrl), apiKey)
+                else -> AstapPlateSolver(pathOrUrl)
+            }
+
+            val tempFile = File.createTempFile("platesolver", ".${file.extension}")
+
+            LOG.info("create temp file for plate solving. path={}", tempFile)
 
             try {
                 file.inputStream().use { input -> tempFile.outputStream().use(input::transferTo) }
@@ -174,15 +197,26 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
         mount.value?.syncJ2000(calibration.ra, calibration.dec)
     }
 
+    fun goTo() {
+        val calibration = calibration.get() ?: return
+        mount.value?.goToJ2000(calibration.ra, calibration.dec)
+    }
+
+    fun slewTo() {
+        val calibration = calibration.get() ?: return
+        mount.value?.slewToJ2000(calibration.ra, calibration.dec)
+    }
+
     fun loadPathOrUrlFromPreferences() {
-        view.pathOrUrl = if (view.plateSolverType == PlateSolverType.ASTROMETRY_NET_LOCAL) preferences.string("plateSolver.path") ?: ""
-        else preferences.string("plateSolver.url") ?: ""
+        view.pathOrUrl = if (view.plateSolverType == PlateSolverType.ASTROMETRY_NET_ONLINE) preferences.string("plateSolver.url") ?: ""
+        else preferences.string("plateSolver.path") ?: ""
     }
 
     fun loadPreferences() {
-        preferences.enum<PlateSolverType>("plateSolver.plateSolverType")?.let { view.plateSolverType = it }
+        view.plateSolverType = preferences.enum<PlateSolverType>("plateSolver.plateSolverType") ?: PlateSolverType.ASTROMETRY_NET_ONLINE
         loadPathOrUrlFromPreferences()
         preferences.string("plateSolver.apiKey")?.let { view.apiKey = it }
+        preferences.int("plateSolver.downsampleFactor")?.let { view.downsampleFactor = it }
         preferences.double("plateSolver.radius")?.let { view.radius = it.rad }
         preferences.double("plateSolver.screen.x")?.let { view.x = it }
         preferences.double("plateSolver.screen.y")?.let { view.y = it }
@@ -193,6 +227,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
         if (view.plateSolverType == PlateSolverType.ASTROMETRY_NET_LOCAL) preferences.string("plateSolver.path", view.pathOrUrl)
         else preferences.string("plateSolver.url", view.pathOrUrl)
         preferences.string("plateSolver.apiKey", view.apiKey)
+        preferences.int("plateSolver.downsampleFactor", view.downsampleFactor)
         preferences.double("plateSolver.radius", view.radius.value)
         preferences.double("plateSolver.screen.x", view.x)
         preferences.double("plateSolver.screen.y", view.y)
@@ -200,8 +235,6 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
 
     companion object {
 
-        const val ASTROMETRY_NET_LOCAL_PATH = "solve-field"
-        const val ASTROMETRY_NET_ONLINE_URL = "https://nova.astrometry.net/api/"
         const val FOCAL_LENGTH_RATIO = 206.26480624709635
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(PlateSolverManager::class.java)

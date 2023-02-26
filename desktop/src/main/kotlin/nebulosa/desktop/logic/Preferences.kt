@@ -2,8 +2,13 @@ package nebulosa.desktop.logic
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Path
-import kotlin.io.path.exists
+import java.nio.file.attribute.FileAttribute
+import java.util.*
+import kotlin.io.path.createFile
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
@@ -12,120 +17,105 @@ class Preferences(
     private val objectMapper: ObjectMapper,
 ) {
 
-    private val data = HashMap<String, String?>()
+    private val properties = Properties()
 
     init {
         load()
     }
 
     private fun load() {
-        if (path.exists()) {
-            try {
-                val data = path.inputStream().use { objectMapper.readValue(it, data::class.java) }
-                this.data.putAll(data)
-            } catch (e: Throwable) {
-                LOG.error("load preferences failed", e)
-            }
+        try {
+            path.createFileIfNotExists().inputStream().use(properties::load)
+        } catch (e: Throwable) {
+            LOG.error("failed to load preferences.", e)
         }
     }
 
     @Synchronized
-    private fun save() = path.outputStream().use { objectMapper.writeValue(it, data) }
+    private fun save() = path.outputStream().use { properties.store(it, null) }
 
-    operator fun contains(key: String) = data.containsKey(key)
+    operator fun contains(key: String) = properties.containsKey(key)
 
-    fun keys() = data.keys.toList()
+    fun keys() = properties.keys.toList()
 
-    fun delete(key: String) {
-        data.remove(key)
+    operator fun get(key: String): String? = properties.getProperty(key)
+
+    operator fun set(key: String, value: String?) {
+        properties.setProperty(key, value)
         save()
     }
 
-    fun clear() {
-        data.clear()
-        save()
-    }
+    fun bool(key: String) = this[key] == "true"
 
-    fun bool(key: String): Boolean {
-        return data[key] == "true"
-    }
+    fun bool(key: String, value: Boolean) = string(key, "$value")
 
-    fun bool(key: String, value: Boolean) {
-        data[key] = "$value"
-        save()
-    }
+    fun int(key: String) = string(key)?.toIntOrNull()
 
-    fun int(key: String): Int? {
-        return data[key]?.toIntOrNull()
-    }
+    fun int(key: String, value: Int) = string(key, "$value")
 
-    fun int(key: String, value: Int) {
-        data[key] = "$value"
-        save()
-    }
+    fun long(key: String) = string(key)?.toLongOrNull()
 
-    fun long(key: String): Long? {
-        return data[key]?.toLongOrNull()
-    }
+    fun long(key: String, value: Long) = string(key, "$value")
 
-    fun long(key: String, value: Long) {
-        data[key] = "$value"
-        save()
-    }
+    fun float(key: String) = string(key)?.toFloatOrNull()
 
-    fun float(key: String): Float? {
-        return data[key]?.toFloatOrNull()
-    }
+    fun float(key: String, value: Float) = string(key, "$value")
 
-    fun float(key: String, value: Float) {
-        data[key] = "$value"
-        save()
-    }
+    fun double(key: String) = string(key)?.toDoubleOrNull()
 
-    fun double(key: String): Double? {
-        return data[key]?.toDoubleOrNull()
-    }
+    fun double(key: String, value: Double) = string(key, if (value.isFinite()) "$value" else null)
 
-    fun double(key: String, value: Double) {
-        if (value.isFinite()) {
-            data[key] = "$value"
-            save()
-        }
-    }
+    fun string(key: String) = get(key)
 
-    fun string(key: String): String? {
-        return data[key]
-    }
+    fun string(key: String, value: String?) = set(key, value)
 
-    fun string(key: String, value: String?) {
-        data[key] = value
-        save()
-    }
+    fun bigInt(key: String) = string(key)?.let(::BigInteger)
+
+    fun bigInt(key: String, value: BigInteger) = set(key, value.toString())
+
+    fun bigDecimal(key: String) = string(key)?.let(::BigDecimal)
+
+    fun bigDecimal(key: String, value: BigDecimal) = set(key, value.toString())
 
     inline fun <reified T : Enum<T>> enum(key: String) = enum(key, T::class.java)
 
     fun <T : Enum<T>> enum(key: String, type: Class<out T>): T? {
-        return type.enumConstants.firstOrNull { it.name == data[key] }
+        val name = string(key)
+        return type.enumConstants.firstOrNull { it.name == name }
     }
 
-    fun enum(key: String, value: Enum<*>) {
-        data[key] = value.name
-        save()
-    }
+    fun <T : Enum<T>> enum(key: String, value: T) = string(key, value.name)
 
     inline fun <reified T> json(key: String) = json(key, T::class.java)
 
-    fun <T> json(key: String, type: Class<out T>): T? {
-        return data[key]?.let { objectMapper.readValue(it, type) }
+    fun <T> json(key: String, type: Class<out T>) = string(key)?.let { objectMapper.readValue(it, type) }
+
+    fun json(key: String, value: Any) = string(key, objectMapper.writeValueAsString(value))
+
+    fun delete(key: String) {
+        if (properties.remove(key) != null) {
+            save()
+        }
     }
 
-    fun json(key: String, value: Any) {
-        data[key] = objectMapper.writeValueAsString(value)
-        save()
+    fun clear() {
+        if (properties.isNotEmpty()) {
+            properties.clear()
+            save()
+        }
     }
 
     companion object {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(Preferences::class.java)
+
+        @JvmStatic
+        private fun Path.createFileIfNotExists(vararg attributes: FileAttribute<*>) = try {
+            createFile(*attributes)
+        } catch (e: FileAlreadyExistsException) {
+            this
+        } catch (e: Throwable) {
+            throw e
+        }
     }
 }

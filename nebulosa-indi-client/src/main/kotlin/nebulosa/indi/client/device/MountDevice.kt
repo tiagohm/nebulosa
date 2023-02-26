@@ -34,6 +34,7 @@ internal open class MountDevice(
     override var parked = false
     override var canAbort = false
     override var canSync = false
+    override var canGoTo = false
     override var canPark = false
     override var slewRates = emptyList<String>()
     override var slewRate: String? = null
@@ -74,11 +75,11 @@ internal open class MountDevice(
 
                         handler.fireOnEventReceived(MountSlewRateChanged(this))
                     }
-//                    "MOUNT_TYPE" -> {
-//                        mountType = MountType.valueOf(message.firstOnSwitch().name)
-//
-//                        handler.fireOnEventReceived(MountTypeChanged(this))
-//                    }
+                    // "MOUNT_TYPE" -> {
+                    //     mountType = MountType.valueOf(message.firstOnSwitch().name)
+                    //
+                    //     handler.fireOnEventReceived(MountTypeChanged(this))
+                    // }
                     "TELESCOPE_TRACK_MODE" -> {
                         if (message is DefSwitchVector) {
                             trackModes = message.map { TrackMode.valueOf(it.name.replace("TRACK_", "")) }
@@ -123,19 +124,21 @@ internal open class MountDevice(
                     }
                     "ON_COORD_SET" -> {
                         canSync = message.any { it.name == "SYNC" }
+                        canGoTo = message.any { it.name == "TRACK" }
 
                         handler.fireOnEventReceived(MountCanSyncChanged(this))
+                        handler.fireOnEventReceived(MountCanGoToChanged(this))
                     }
                 }
             }
             is NumberVector<*> -> {
                 when (message.name) {
-//                    "GUIDE_RATE" -> {
-//                        guideRateWE = message["GUIDE_RATE_WE"]!!.value
-//                        guideRateNS = message["GUIDE_RATE_NS"]!!.value
-//
-//                        handler.fireOnEventReceived(MountGuideRateChanged(this))
-//                    }
+                    // "GUIDE_RATE" -> {
+                    //     guideRateWE = message["GUIDE_RATE_WE"]!!.value
+                    //     guideRateNS = message["GUIDE_RATE_NS"]!!.value
+                    //
+                    //     handler.fireOnEventReceived(MountGuideRateChanged(this))
+                    // }
                     "EQUATORIAL_EOD_COORD" -> {
                         if (message.state == PropertyState.ALERT) {
                             handler.fireOnEventReceived(MountSlewFailed(this))

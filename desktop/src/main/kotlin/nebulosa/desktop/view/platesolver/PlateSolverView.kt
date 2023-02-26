@@ -22,7 +22,7 @@ interface PlateSolverView : View {
 
     var radius: Angle
 
-    val downsampleFactor: Int
+    var downsampleFactor: Int
 
     fun updateFilePath(file: File)
 

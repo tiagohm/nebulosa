@@ -16,7 +16,7 @@ import kotlin.math.hypot
 /**
  * @see <a href="http://astrometry.net/doc/readme.html">README</a>
  */
-class LocalAstrometryNetPlateSolver(private val path: String = "solve-field") : PlateSolver {
+class LocalAstrometryNetPlateSolver(private val path: String) : PlateSolver {
 
     override fun solve(
         file: File,
@@ -80,7 +80,7 @@ class LocalAstrometryNetPlateSolver(private val path: String = "solve-field") : 
 
         val buffer = process.inputReader()
 
-        var calibration = Calibration()
+        var calibration = Calibration.EMPTY
 
         val parseThread = thread {
             for (line in buffer.lines()) {
@@ -95,9 +95,7 @@ class LocalAstrometryNetPlateSolver(private val path: String = "solve-field") : 
         }
 
         try {
-            while (process.isAlive) {
-                Thread.sleep(1000L)
-            }
+            process.waitFor()
         } catch (e: InterruptedException) {
             parseThread.interrupt()
             process.destroyForcibly()

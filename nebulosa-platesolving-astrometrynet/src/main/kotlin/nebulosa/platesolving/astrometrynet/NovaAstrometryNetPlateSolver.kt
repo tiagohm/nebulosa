@@ -14,7 +14,7 @@ import kotlin.math.max
 
 class NovaAstrometryNetPlateSolver(
     private val service: NovaAstrometryNetService,
-    private val apiKey: String = "XXXXXXXX",
+    private val apiKey: String = ANONYMOUS_API_KEY,
 ) : PlateSolver {
 
     @Volatile private var session: Session? = null
@@ -99,6 +99,8 @@ class NovaAstrometryNetPlateSolver(
     }
 
     companion object {
+
+        const val ANONYMOUS_API_KEY = "XXXXXXXX"
 
         private const val SESSION_EXPIRATION_TIME = 1000L * 60L * 15L
     }

@@ -21,6 +21,8 @@ interface Mount : GuideOutput, GPS {
 
     val canSync: Boolean
 
+    val canGoTo: Boolean
+
     val canPark: Boolean
 
     val slewRates: List<String>

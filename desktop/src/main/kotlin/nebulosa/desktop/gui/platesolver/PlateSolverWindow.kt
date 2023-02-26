@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import java.io.File
 import java.util.concurrent.CompletableFuture
+import kotlin.math.ceil
 
 @Component
 class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver"), PlateSolverView {
@@ -34,19 +35,20 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
     @FXML private lateinit var apiKeyTextField: TextField
     @FXML private lateinit var blindToggleSwitch: ToggleSwitch
     @FXML private lateinit var downsampleFactorSpinner: Spinner<Double>
-    @FXML private lateinit var radiusTextField: TextField
+    @FXML private lateinit var radiusSpinner: Spinner<Double>
     @FXML private lateinit var centerRATextField: TextField
     @FXML private lateinit var centerDECTextField: TextField
     @FXML private lateinit var raTextField: TextField
     @FXML private lateinit var decTextField: TextField
     @FXML private lateinit var orientationTextField: TextField
     @FXML private lateinit var scaleTextField: TextField
-    @FXML private lateinit var fieldSizeWidthTextField: TextField
-    @FXML private lateinit var fieldSizeHeightTextField: TextField
+    @FXML private lateinit var fieldSizeTextField: TextField
     @FXML private lateinit var fieldRadiusTextField: TextField
     @FXML private lateinit var solveButton: Button
     @FXML private lateinit var cancelButton: Button
     @FXML private lateinit var syncButton: Button
+    @FXML private lateinit var goToButton: Button
+    @FXML private lateinit var slewToButton: Button
 
     init {
         title = "Plate Solver"
@@ -56,23 +58,22 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
     override fun onCreate() {
         val isSolving = plateSolverManager.solving
         val canNotSolve = plateSolverManager.file.isNull or isSolving
-        val canNotSync = !plateSolverManager.mount.connectedProperty or
-                plateSolverManager.mount.slewingProperty or
-                !plateSolverManager.mount.canSyncProperty
+        val canNotSlew = !plateSolverManager.mount.connectedProperty or plateSolverManager.mount.slewingProperty
+        val canNotSync = canNotSlew or !plateSolverManager.mount.canSyncProperty
+        val canNotGoTo = canNotSlew or !plateSolverManager.mount.canGoToProperty
 
         browseButton.disableProperty().bind(isSolving)
 
         plateSolverTypeChoiceBox.disableProperty().bind(isSolving)
         plateSolverTypeChoiceBox.selectionModel.selectedItemProperty().on {
-            pathOrUrlTextField.promptText = if (it == PlateSolverType.ASTROMETRY_NET_LOCAL) PlateSolverManager.ASTROMETRY_NET_LOCAL_PATH
-            else PlateSolverManager.ASTROMETRY_NET_ONLINE_URL
+            pathOrUrlTextField.promptText = if (it != null) plateSolverManager.pathOrUrl(it) else ""
             plateSolverManager.loadPathOrUrlFromPreferences()
         }
 
         pathOrUrlTextField.disableProperty().bind(isSolving)
 
         apiKeyTextField.disableProperty()
-            .bind(isSolving or plateSolverTypeChoiceBox.selectionModel.selectedItemProperty().isEqualTo(PlateSolverType.ASTROMETRY_NET_LOCAL))
+            .bind(isSolving or plateSolverTypeChoiceBox.selectionModel.selectedItemProperty().isNotEqualTo(PlateSolverType.ASTROMETRY_NET_ONLINE))
 
         blindToggleSwitch.disableProperty().bind(isSolving)
 
@@ -82,7 +83,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
 
         centerDECTextField.disableProperty().bind(isSolving or blindToggleSwitch.selectedProperty())
 
-        radiusTextField.disableProperty().bind(isSolving or blindToggleSwitch.selectedProperty())
+        radiusSpinner.disableProperty().bind(isSolving or blindToggleSwitch.selectedProperty())
 
         raTextField.disableProperty().bind(canNotSolve)
 
@@ -92,9 +93,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
 
         scaleTextField.disableProperty().bind(canNotSolve)
 
-        fieldSizeWidthTextField.disableProperty().bind(canNotSolve)
-
-        fieldSizeHeightTextField.disableProperty().bind(canNotSolve)
+        fieldSizeTextField.disableProperty().bind(canNotSolve)
 
         fieldRadiusTextField.disableProperty().bind(canNotSolve)
 
@@ -103,6 +102,10 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         cancelButton.disableProperty().bind(!isSolving)
 
         syncButton.disableProperty().bind(canNotSolve or canNotSync or !plateSolverManager.solved)
+
+        goToButton.disableProperty().bind(canNotSolve or canNotGoTo or !plateSolverManager.solved)
+
+        slewToButton.disableProperty().bind(canNotSolve or canNotGoTo or !plateSolverManager.solved)
     }
 
     override fun onStart() {
@@ -143,13 +146,16 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         get() = Angle.from(centerDECTextField.text)!!
 
     override var radius
-        get() = Angle.from(radiusTextField.text) ?: DEFAULT_RADIUS
+        get() = radiusSpinner.value.deg
         set(value) {
-            radiusTextField.text = "${value.degrees}"
+            radiusSpinner.valueFactory.value = ceil(value.degrees)
         }
 
-    override val downsampleFactor
+    override var downsampleFactor
         get() = downsampleFactorSpinner.value!!.toInt()
+        set(value) {
+            downsampleFactorSpinner.valueFactory.value = value.toDouble()
+        }
 
     @FXML
     private fun browse() {
@@ -179,6 +185,16 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         plateSolverManager.sync()
     }
 
+    @FXML
+    private fun goTo() {
+        plateSolverManager.goTo()
+    }
+
+    @FXML
+    private fun slewTo() {
+        plateSolverManager.slewTo()
+    }
+
     override fun solve(
         file: File,
         blind: Boolean,
@@ -188,7 +204,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         blindToggleSwitch.isSelected = blind
         centerRATextField.text = centerRA.format(AngleFormatter.HMS)
         centerDECTextField.text = centerDEC.format(AngleFormatter.SIGNED_DMS)
-        radiusTextField.text = "${radius.degrees}"
+        this.radius = radius
 
         plateSolverManager.clearAstrometrySolution()
         return plateSolverManager.solve(file, blind, centerRA, centerDEC, radius)
@@ -215,12 +231,6 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         orientationTextField.text = "%.6f".format(orientation.degrees)
         scaleTextField.text = "%.6f".format(scale)
         fieldRadiusTextField.text = "%.04f".format(radius.degrees)
-        fieldSizeWidthTextField.text = "%.02f".format(width)
-        fieldSizeHeightTextField.text = "%.02f".format(height)
-    }
-
-    companion object {
-
-        @JvmStatic private val DEFAULT_RADIUS = 1.0.deg
+        fieldSizeTextField.text = "%.02f x %.02f".format(width, height)
     }
 }

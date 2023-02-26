@@ -142,6 +142,14 @@ class AngleTest : StringSpec() {
                 .separators("h", "m")
                 .build()
                 .format(angle) shouldBe "12h30m"
+
+            val negativeAngle = Angle.from("-43 00 45")!!
+
+            AngleFormatter.Builder()
+                .separators("°", "'", "\"")
+                .secondsDecimalPlaces(2)
+                .build()
+                .format(negativeAngle) shouldBe "-43°00'45.00\""
         }
     }
 }
