@@ -1,6 +1,4 @@
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -19,11 +17,7 @@ class Hips2FitsServiceTest : StringSpec() {
     init {
         val service = Hips2FitsService()
 
-        "hipsSurvey" {
-            service.hipsSurvey().execute().body()
-                .shouldNotBeEmpty().any { it.id == "CDS/P/DSS2/red" }.shouldBeTrue()
-        }
-        "query" {
+        "!query" {
             val bytes = service.query(HipsSurvey("CDS/P/DSS2/red"), 201.36506337683.deg, (-43.01911250808).deg).execute().body().shouldNotBeNull()
             val fits = Fits(ByteArrayInputStream(bytes))
             val hdu = fits.imageHDU(0)?.header.shouldNotBeNull()

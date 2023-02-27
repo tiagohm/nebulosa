@@ -90,6 +90,7 @@ class FilterWheelManager(
         val useFilterWheelAsShutter = preferences.bool("filterWheel.$name.useFilterWheelAsShutter")
         val filterAsShutter = preferences.int("filterWheel.$name.filterAsShutter") ?: 1
         view.updateFilterNames(filterNames, useFilterWheelAsShutter, filterAsShutter, position)
+        updateTitle()
     }
 
     fun moveTo(position: Int) {
