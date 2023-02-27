@@ -328,21 +328,24 @@
                         <ContextMenu fx:id="targetCoordinatesContextMenu"
                                      styleClass="text-md">
                             <items>
-                                <MenuItem onAction="#loadCurrentPosition"
-                                          text="Load current position"
-                                          userData="BIND_TO_SELECTED_MOUNT"/>
-                                <MenuItem onAction="#loadCurrentPositionJ2000"
-                                          text="Load current position (J2000)"
-                                          userData="BIND_TO_SELECTED_MOUNT"/>
-                                <MenuItem onAction="#loadZenithPosition"
-                                          text="Load zenith position"
-                                          userData="BIND_TO_SELECTED_MOUNT"/>
-                                <MenuItem onAction="#loadNorthCelestialPolePosition"
-                                          text="Load north celestial pole position"
-                                          userData="BIND_TO_SELECTED_MOUNT"/>
-                                <MenuItem onAction="#loadSouthCelestialPolePosition"
-                                          text="Load south celestial pole position"
-                                          userData="BIND_TO_SELECTED_MOUNT"/>
+                                <MenuItem onAction="#loadLocation"
+                                          text="Load current location"
+                                          userData="BIND_TO_SELECTED_MOUNT,JNOW"/>
+                                <MenuItem onAction="#loadLocation"
+                                          text="Load current location (J2000)"
+                                          userData="BIND_TO_SELECTED_MOUNT,J2000"/>
+                                <MenuItem onAction="#loadLocation"
+                                          text="Load zenith location"
+                                          userData="BIND_TO_SELECTED_MOUNT,ZENITH"/>
+                                <MenuItem onAction="#loadLocation"
+                                          text="Load north celestial pole location"
+                                          userData="BIND_TO_SELECTED_MOUNT,NORTH_POLE"/>
+                                <MenuItem onAction="#loadLocation"
+                                          text="Load south celestial pole location"
+                                          userData="BIND_TO_SELECTED_MOUNT,SOUTH_POLE"/>
+                                <MenuItem onAction="#loadLocation"
+                                          text="Load galactic center location"
+                                          userData="BIND_TO_SELECTED_MOUNT,GALACTIC_CENTER"/>
                             </items>
                         </ContextMenu>
                     </fx:define>

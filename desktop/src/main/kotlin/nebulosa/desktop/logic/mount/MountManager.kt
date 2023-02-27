@@ -143,29 +143,36 @@ class MountManager(
         else value.sync(ra, dec)
     }
 
-    fun loadCurrentPostion() {
+    fun loadCurrentLocation() {
         view.updateTargetPosition(value.rightAscension, value.declination)
         view.isJ2000 = false
     }
 
-    fun loadCurrentPostionJ2000() {
+    fun loadCurrentLocationJ2000() {
         view.updateTargetPosition(rightAscensionJ2000.hours, declinationJ2000.deg)
         view.isJ2000 = true
     }
 
-    fun loadZenithPosition() {
+    fun loadZenithLocation() {
         view.updateTargetPosition(computeLST(), value.latitude)
         view.isJ2000 = false
     }
 
-    fun loadNorthCelestialPolePosition() {
+    fun loadNorthCelestialPoleLocation() {
         view.updateTargetPosition(computeLST(), Angle.QUARTER)
         view.isJ2000 = false
     }
 
-    fun loadSouthCelestialPolePosition() {
+    fun loadSouthCelestialPoleLocation() {
         view.updateTargetPosition(computeLST(), -Angle.QUARTER)
         view.isJ2000 = false
+    }
+
+    fun loadGalacticCenterLocation() {
+        val ra = Angle.from("17 45 40.04", true)!!
+        val dec = Angle.from("−29 00 28.1")!!
+        view.updateTargetPosition(ra, dec)
+        view.isJ2000 = true
     }
 
     fun abort() {

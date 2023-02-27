@@ -8,12 +8,14 @@ import javafx.scene.control.TextField
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.framing.FramingManager
+import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.hips2fits.HipsSurvey
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.AngleFormatter
+import org.controlsfx.control.HyperlinkLabel
 import org.controlsfx.control.ToggleSwitch
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -24,6 +26,7 @@ class FramingWindow : AbstractWindow("Framing"), FramingView {
 
     @Lazy @Autowired private lateinit var framingManager: FramingManager
 
+    @FXML private lateinit var poweredByHyperlinkLabel: HyperlinkLabel
     @FXML private lateinit var raTextField: TextField
     @FXML private lateinit var decTextField: TextField
     @FXML private lateinit var syncFromMountToggleSwitch: ToggleSwitch
@@ -45,11 +48,14 @@ class FramingWindow : AbstractWindow("Framing"), FramingView {
         val isLoading = framingManager.loading
         val canNotLoad = hipsSurveyChoiceBox.valueProperty().isNull
 
+        poweredByHyperlinkLabel.setOnAction { hostServices.showDocument("https://alasky.u-strasbg.fr/hips-image-services/hips2fits") }
+
         raTextField.disableProperty().bind(isLoading)
 
         decTextField.disableProperty().bind(isLoading)
 
         syncFromMountToggleSwitch.disableProperty().bind(isLoading or !framingManager.mount.connectedProperty)
+        syncFromMountToggleSwitch.selectedProperty().on { if (it) framingManager.loadFromMountCoordinate() }
 
         fovSpinner.disableProperty().bind(isLoading)
 
@@ -72,6 +78,8 @@ class FramingWindow : AbstractWindow("Framing"), FramingView {
     }
 
     override fun onStart() {
+        syncFromMountToggleSwitch.isSelected = false
+
         framingManager.loadPreferences()
     }
 

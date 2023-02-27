@@ -245,7 +245,7 @@
                     mnemonicParsing="false"
                     onAction="#open"
                     styleClass="open"
-                    text="Plate Solving"
+                    text="Plate Solver"
                     userData="PLATE_SOLVER"
                     GridPane.columnIndex="0"
                     GridPane.rowIndex="3">
@@ -254,7 +254,7 @@
                                fitWidth="24.0"
                                pickOnBounds="true"
                                preserveRatio="true">
-                        <Image url="@icons/platesolving.png"/>
+                        <Image url="@icons/platesolver.png"/>
                     </ImageView>
                 </graphic>
             </Button>

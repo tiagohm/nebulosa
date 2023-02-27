@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture
 
 interface PlateSolverView : View {
 
-    var plateSolverType: PlateSolverType
+    var type: PlateSolverType
 
     var pathOrUrl: String
 
@@ -34,11 +34,4 @@ interface PlateSolverView : View {
         centerRA: Angle = Angle.ZERO, centerDEC: Angle = Angle.ZERO,
         radius: Angle = Angle.ZERO
     ): CompletableFuture<Calibration>
-
-    fun updateAstrometrySolution(
-        ra: Angle, dec: Angle,
-        orientation: Angle, radius: Angle,
-        scale: Double,
-        width: Double, height: Double,
-    )
 }

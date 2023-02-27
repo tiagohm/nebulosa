@@ -223,8 +223,9 @@ class CameraManager(
         capturingProperty.set(true)
         updateStatus()
 
-        taskExecutor.execute(task)
-            .thenRun {
+        taskExecutor
+            .execute(task)
+            .whenComplete { _, _ ->
                 capturingProperty.set(false)
                 runningTask.set(null)
                 javaFxThread { updateStatus() }

@@ -14,6 +14,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.inputStream
+import kotlin.math.ceil
 import kotlin.math.hypot
 
 /**
@@ -49,7 +50,7 @@ class AstapPlateSolver(private val path: String) : PlateSolver {
             args.add("${centerDEC.degrees + 90.0}")
 
             args.add("-r")
-            args.add("${radius.degrees}")
+            args.add("${ceil(radius.degrees)}")
         } else {
             args.add("-r")
             args.add("180.0")

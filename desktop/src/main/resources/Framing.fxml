@@ -29,6 +29,11 @@
         </padding>
         <VBox alignment="TOP_CENTER"
               spacing="4.0">
+            <HBox alignment="CENTER_RIGHT">
+                <HyperlinkLabel fx:id="poweredByHyperlinkLabel"
+                                styleClass="text-xs"
+                                text="Powered by [hips2fits], a service provided by CDS."/>
+            </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="5.0">
                 <Label maxWidth="40.0"
@@ -149,10 +154,6 @@
                 <ChoiceBox fx:id="hipsSurveyChoiceBox"
                            prefWidth="200.0"
                            HBox.hgrow="ALWAYS"/>
-            </HBox>
-            <HBox alignment="CENTER_RIGHT">
-                <HyperlinkLabel styleClass="text-xs"
-                                text="Powered by [hips2fits], a service provided by CDS."/>
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">

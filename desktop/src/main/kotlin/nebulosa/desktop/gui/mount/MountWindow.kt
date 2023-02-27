@@ -121,7 +121,7 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
         syncButton.disableProperty().bind(isNotConnectedOrMoving or !mountManager.canSyncProperty)
 
         targetCoordinatesContextMenu.items
-            .filter { it.userData == "BIND_TO_SELECTED_MOUNT" }
+            .filter { "BIND_TO_SELECTED_MOUNT" in (it.userData as String) }
             .forEach { it.disableProperty().bind(isNotConnectedOrMoving) }
 
         telescopeControlServerButton.disableProperty().bind(isNotConnectedOrMoving)
@@ -246,32 +246,21 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
     }
 
     @FXML
-    private fun loadCurrentPosition() {
-        mountManager.loadCurrentPostion()
-    }
+    private fun loadLocation(event: ActionEvent) {
+        val userData = (event.source as MenuItem).userData as String
 
-    @FXML
-    private fun loadCurrentPositionJ2000() {
-        mountManager.loadCurrentPostionJ2000()
+        when {
+            "JNOW" in userData -> mountManager.loadCurrentLocation()
+            "J2000" in userData -> mountManager.loadCurrentLocationJ2000()
+            "ZENITH" in userData -> mountManager.loadZenithLocation()
+            "NORTH_POLE" in userData -> mountManager.loadNorthCelestialPoleLocation()
+            "SOUTH_POLE" in userData -> mountManager.loadSouthCelestialPoleLocation()
+            "GALACTIC_CENTER" in userData -> mountManager.loadGalacticCenterLocation()
+        }
     }
 
     // TODO: Prevent go to below horizon. Show warning.
     // TODO: Prevent go to Sun. Show warning.
-
-    @FXML
-    private fun loadZenithPosition() {
-        mountManager.loadZenithPosition()
-    }
-
-    @FXML
-    private fun loadNorthCelestialPolePosition() {
-        mountManager.loadNorthCelestialPolePosition()
-    }
-
-    @FXML
-    private fun loadSouthCelestialPolePosition() {
-        mountManager.loadSouthCelestialPolePosition()
-    }
 
     @FXML
     private fun abort() {

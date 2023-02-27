@@ -1,12 +1,10 @@
 package nebulosa.desktop
 
 import javafx.application.Application
-import javafx.application.HostServices
 import javafx.stage.Stage
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.home.HomeWindow
 import nebulosa.desktop.logic.home.HomeManager
-import nebulosa.desktop.view.home.HomeView
 import org.springframework.boot.runApplication
 import java.util.concurrent.TimeUnit
 
@@ -20,13 +18,13 @@ class Nebulosa : Application() {
             .debounce(2L, TimeUnit.SECONDS)
             .subscribe { context.close() }
 
-        context.beanFactory.registerResolvableDependency(HostServices::class.java, hostServices)
+        context.beanFactory.registerSingleton("hostServices", hostServices)
 
         val homeWindow = HomeWindow(primaryStage)
-        context.beanFactory.registerResolvableDependency(HomeView::class.java, homeWindow)
+        context.beanFactory.registerSingleton("homeView", homeWindow)
 
         val homeManager = HomeManager(homeWindow)
-        context.beanFactory.registerResolvableDependency(HomeManager::class.java, homeManager)
+        context.beanFactory.registerSingleton("homeManager", homeManager)
 
         context.beanFactory.autowireBean(homeWindow)
         context.beanFactory.autowireBean(homeManager)

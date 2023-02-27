@@ -1,5 +1,6 @@
 package nebulosa.desktop.gui
 
+import javafx.application.HostServices
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -11,6 +12,8 @@ import nebulosa.desktop.logic.newEventBus
 import nebulosa.desktop.view.View
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class AbstractWindow(
@@ -20,6 +23,11 @@ abstract class AbstractWindow(
 ) : View {
 
     private val showingAtFirstTime = AtomicBoolean()
+
+    @Autowired protected lateinit var beanFactory: AutowireCapableBeanFactory
+        private set
+
+    protected val hostServices by lazy { beanFactory.getBean(HostServices::class.java) }
 
     init {
         window.setOnShowing {

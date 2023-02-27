@@ -52,7 +52,7 @@
         </HBox>
         <HBox alignment="CENTER"
               spacing="4.0">
-            <ChoiceBox fx:id="plateSolverTypeChoiceBox">
+            <ChoiceBox fx:id="typeChoiceBox">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
                         <PlateSolverType fx:value="ASTROMETRY_NET_LOCAL"/>
@@ -100,6 +100,7 @@
                        styleClass="text-sm,text-bold,monospaced"
                        text="Factor:"/>
                 <Spinner fx:id="downsampleFactorSpinner"
+                         editable="true"
                          amountToStepBy="1.0"
                          initialValue="2.0"
                          max="8.0"
@@ -113,6 +114,7 @@
                        styleClass="text-sm,text-bold,monospaced"
                        text="Radius (deg):"/>
                 <Spinner fx:id="radiusSpinner"
+                         editable="true"
                          maxWidth="110.0"
                          minWidth="110.0"
                          prefWidth="110.0"
@@ -154,7 +156,7 @@
                        minWidth="68.0"
                        prefWidth="68.0"
                        styleClass="text-sm,text-bold,monospaced"
-                       text="RA:"/>
+                       text="RA (J2000):"/>
                 <TextField fx:id="raTextField"
                            alignment="CENTER_RIGHT"
                            editable="false"
@@ -167,7 +169,7 @@
                        minWidth="68.0"
                        prefWidth="68.0"
                        styleClass="text-sm,text-bold,monospaced"
-                       text="DEC:"/>
+                       text="DEC (J2000):"/>
                 <TextField fx:id="decTextField"
                            alignment="CENTER_RIGHT"
                            editable="false"
@@ -247,7 +249,7 @@
                     onAction="#solve"
                     text="Solve">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-yellow-700"
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                            text="󰓎"/>
                 </graphic>
             </Button>
@@ -266,7 +268,7 @@
                     onAction="#sync"
                     text="Sync">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-700"
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                            text="󰓦"/>
                 </graphic>
             </Button>
@@ -274,7 +276,7 @@
                     onAction="#goTo"
                     text="Go To">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-green-700"
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                            text="󰄬"/>
                 </graphic>
             </Button>
@@ -282,8 +284,18 @@
                     onAction="#slewTo"
                     text="Slew To">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-green-700"
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                            text="󰄬"/>
+                </graphic>
+            </Button>
+            <Button fx:id="frameButton"
+                    onAction="#frame"
+                    prefWidth="92.0"
+                    text="Frame">
+                <graphic>
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
+                           text="󰋩">
+                    </Label>
                 </graphic>
             </Button>
         </HBox>

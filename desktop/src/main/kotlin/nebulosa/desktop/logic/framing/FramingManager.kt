@@ -7,7 +7,6 @@ import javafx.beans.property.SimpleBooleanProperty
 import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.logic.DeviceEventBus
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.framing.FramingView
@@ -15,7 +14,10 @@ import nebulosa.erfa.PairOfAngle
 import nebulosa.hips2fits.FormatOutputType
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.hips2fits.HipsSurvey
+import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountEquatorialCoordinatesChanged
+import nebulosa.indi.device.mount.MountEvent
+import nebulosa.indi.device.mount.MountSlewingChanged
 import nebulosa.io.resource
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
@@ -26,6 +28,7 @@ import java.io.Closeable
 import java.io.InterruptedIOException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.io.path.deleteIfExists
@@ -45,7 +48,6 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
     private val imageWindow = AtomicReference<ImageWindow>()
     private val subscribers = arrayOfNulls<Disposable>(1)
     private val imagePath = AtomicReference<Path>()
-    private val loadingLatch = CountUpDownLatch()
     private val framingReloader = FramingReloader()
 
     val loading = SimpleBooleanProperty()
@@ -56,38 +58,52 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
     @PostConstruct
     private fun initialize() {
         subscribers[0] = deviceEventBus
-            .filter { it is MountEquatorialCoordinatesChanged && it.device === equipmentManager.selectedMount.value }
-            .cast(MountEquatorialCoordinatesChanged::class.java)
-            .subscribe(::onMountEquatorialCoordinatesChanged)
+            .filter { view.showing && it is MountEvent && it.device === mount.value }
+            .cast(MountEvent::class.java)
+            .subscribe(::onMountEvent)
 
         framingReloader.start()
     }
 
-    private fun onMountEquatorialCoordinatesChanged(event: MountEquatorialCoordinatesChanged) {
-        if (view.syncFromMount) {
-            javaFxThread {
-                val coordinate = PairOfAngle(event.device.rightAscensionJ2000, event.device.declinationJ2000)
-                view.updateCoordinate(coordinate.first, coordinate.second)
-                framingReloader.coordinate.set(coordinate)
-            }
+    private fun onMountEvent(event: MountEvent) {
+        when (event) {
+            is MountEquatorialCoordinatesChanged -> loadFromMountCoordinate(event.device)
+            is MountSlewingChanged -> if (!event.device.slewing) loadFromMountCoordinate(event.device)
         }
     }
 
+    fun loadFromMountCoordinate(device: Mount? = null) {
+        if (!view.syncFromMount) return
+
+        val mount = device ?: equipmentManager.selectedMount.value ?: return
+
+        mount.computeCoordinates(true, false)
+
+        val coordinate = PairOfAngle(mount.rightAscensionJ2000, mount.declinationJ2000)
+        framingReloader.coordinate.set(coordinate)
+
+        javaFxThread { view.updateCoordinate(coordinate.first, coordinate.second) }
+    }
+
     @Synchronized
-    fun load(ra: Angle, dec: Angle) {
+    fun load(ra: Angle, dec: Angle): CompletableFuture<Path>? {
         if (loading.get()) {
             LOG.warn("framing is already loading")
-            return
+            return null
+        }
+
+        if (!view.showing) {
+            LOG.warn("framing window is hidden")
+            return null
         }
 
         loading.set(true)
-        loadingLatch.countUp()
+
+        val task = CompletableFuture<Path>()
 
         systemExecutorService.submit {
             val data = try {
-                while (view.hipsSurvey == null) {
-                    Thread.sleep(100L)
-                }
+                while (view.hipsSurvey == null) Thread.sleep(100L)
 
                 LOG.info(
                     "loading image. survey={}, ra={}, dec={}, width={}, height={}, rotation={}",
@@ -104,14 +120,13 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
                 ).execute().body()!!
             } catch (e: InterruptedIOException) {
                 javaFxThread { view.showAlert("Image took a long time to load. Please try again.") }
+                task.completeExceptionally(e)
                 return@submit
             } catch (e: Throwable) {
                 LOG.error("failed to load image", e)
                 javaFxThread { view.showAlert("Failed to load image. Try using other survey source.") }
+                task.completeExceptionally(e)
                 return@submit
-            } finally {
-                loading.set(false)
-                loadingLatch.countDown()
             }
 
             savePreferences()
@@ -125,8 +140,12 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
                 val window = imageWindow.get()?.also { it.open(tmpFile.toFile()) }
                     ?: imageWindowOpener.open(tmpFile.toFile())
                 imageWindow.set(window)
+                task.complete(tmpFile)
             }
         }
+
+        return task
+            .whenComplete { _, _ -> loading.set(false) }
     }
 
     fun populateHipsSurveys() {
@@ -171,16 +190,24 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
         }
 
         override fun run() {
+            var prevCoordinate: PairOfAngle? = null
+            var lastTime = 0L
+
             try {
                 while (true) {
-                    val coordinate = coordinate.getAndSet(null)
+                    val coordinate = coordinate.get()
 
-                    if (coordinate == null) {
-                        sleep(5000L)
+                    if (coordinate == null
+                        || coordinate == prevCoordinate
+                        || System.currentTimeMillis() - lastTime < 15000L
+                    ) {
+                        sleep(1000L)
                     } else {
+                        this.coordinate.set(null)
                         LOG.info("starting framing reload. ra={}, dec={}", coordinate.first.hours, coordinate.second.degrees)
-                        loadingLatch.await()
-                        load(coordinate.first, coordinate.second)
+                        load(coordinate.first, coordinate.second)?.get()
+                        prevCoordinate = coordinate
+                        lastTime = System.currentTimeMillis()
                     }
                 }
             } catch (e: InterruptedException) {

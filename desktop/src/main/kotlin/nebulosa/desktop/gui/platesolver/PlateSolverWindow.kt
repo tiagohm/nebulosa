@@ -6,6 +6,7 @@ import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Spinner
 import javafx.scene.control.TextField
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.logic.asString
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.logic.platesolver.PlateSolverManager
@@ -30,7 +31,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
 
     @FXML private lateinit var filePathTextField: TextField
     @FXML private lateinit var browseButton: Button
-    @FXML private lateinit var plateSolverTypeChoiceBox: ChoiceBox<PlateSolverType>
+    @FXML private lateinit var typeChoiceBox: ChoiceBox<PlateSolverType>
     @FXML private lateinit var pathOrUrlTextField: TextField
     @FXML private lateinit var apiKeyTextField: TextField
     @FXML private lateinit var blindToggleSwitch: ToggleSwitch
@@ -49,6 +50,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
     @FXML private lateinit var syncButton: Button
     @FXML private lateinit var goToButton: Button
     @FXML private lateinit var slewToButton: Button
+    @FXML private lateinit var frameButton: Button
 
     init {
         title = "Plate Solver"
@@ -61,11 +63,12 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         val canNotSlew = !plateSolverManager.mount.connectedProperty or plateSolverManager.mount.slewingProperty
         val canNotSync = canNotSlew or !plateSolverManager.mount.canSyncProperty
         val canNotGoTo = canNotSlew or !plateSolverManager.mount.canGoToProperty
+        val isNotSolved = !plateSolverManager.solved
 
         browseButton.disableProperty().bind(isSolving)
 
-        plateSolverTypeChoiceBox.disableProperty().bind(isSolving)
-        plateSolverTypeChoiceBox.selectionModel.selectedItemProperty().on {
+        typeChoiceBox.disableProperty().bind(isSolving)
+        typeChoiceBox.selectionModel.selectedItemProperty().on {
             pathOrUrlTextField.promptText = if (it != null) plateSolverManager.pathOrUrl(it) else ""
             plateSolverManager.loadPathOrUrlFromPreferences()
         }
@@ -73,7 +76,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         pathOrUrlTextField.disableProperty().bind(isSolving)
 
         apiKeyTextField.disableProperty()
-            .bind(isSolving or plateSolverTypeChoiceBox.selectionModel.selectedItemProperty().isNotEqualTo(PlateSolverType.ASTROMETRY_NET_ONLINE))
+            .bind(isSolving or typeChoiceBox.selectionModel.selectedItemProperty().isNotEqualTo(PlateSolverType.ASTROMETRY_NET_ONLINE))
 
         blindToggleSwitch.disableProperty().bind(isSolving)
 
@@ -86,26 +89,34 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         radiusSpinner.disableProperty().bind(isSolving or blindToggleSwitch.selectedProperty())
 
         raTextField.disableProperty().bind(canNotSolve)
+        raTextField.textProperty().bind(plateSolverManager.calibration.asString { it.ra.format(AngleFormatter.HMS) })
 
         decTextField.disableProperty().bind(canNotSolve)
+        decTextField.textProperty().bind(plateSolverManager.calibration.asString { it.dec.format(AngleFormatter.SIGNED_DMS) })
 
         orientationTextField.disableProperty().bind(canNotSolve)
+        orientationTextField.textProperty().bind(plateSolverManager.calibration.asString { "%.6f".format(it.orientation.degrees) })
 
         scaleTextField.disableProperty().bind(canNotSolve)
-
-        fieldSizeTextField.disableProperty().bind(canNotSolve)
+        scaleTextField.textProperty().bind(plateSolverManager.calibration.asString { "%.6f".format(it.scale) })
 
         fieldRadiusTextField.disableProperty().bind(canNotSolve)
+        fieldRadiusTextField.textProperty().bind(plateSolverManager.calibration.asString { "%.04f".format(it.radius.degrees) })
+
+        fieldSizeTextField.disableProperty().bind(canNotSolve)
+        fieldSizeTextField.textProperty().bind(plateSolverManager.calibration.asString { "%.02f x %.02f".format(it.width, it.height) })
 
         solveButton.disableProperty().bind(canNotSolve)
 
         cancelButton.disableProperty().bind(!isSolving)
 
-        syncButton.disableProperty().bind(canNotSolve or canNotSync or !plateSolverManager.solved)
+        syncButton.disableProperty().bind(canNotSolve or canNotSync or isNotSolved)
 
-        goToButton.disableProperty().bind(canNotSolve or canNotGoTo or !plateSolverManager.solved)
+        goToButton.disableProperty().bind(canNotSolve or canNotGoTo or isNotSolved)
 
-        slewToButton.disableProperty().bind(canNotSolve or canNotGoTo or !plateSolverManager.solved)
+        slewToButton.disableProperty().bind(canNotSolve or canNotGoTo or isNotSolved)
+
+        frameButton.disableProperty().bind(canNotSolve or isNotSolved)
     }
 
     override fun onStart() {
@@ -118,10 +129,10 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
 
     override fun onClose() = Unit
 
-    override var plateSolverType: PlateSolverType
-        get() = plateSolverTypeChoiceBox.value
+    override var type: PlateSolverType
+        get() = typeChoiceBox.value
         set(value) {
-            plateSolverTypeChoiceBox.value = value
+            typeChoiceBox.value = value
         }
 
     override var pathOrUrl
@@ -195,6 +206,11 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         plateSolverManager.slewTo()
     }
 
+    @FXML
+    private fun frame() {
+        plateSolverManager.frame()
+    }
+
     override fun solve(
         file: File,
         blind: Boolean,
@@ -218,19 +234,5 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         blindToggleSwitch.isSelected = blind
         centerRATextField.text = ra.format(AngleFormatter.HMS)
         centerDECTextField.text = dec.format(AngleFormatter.SIGNED_DMS)
-    }
-
-    override fun updateAstrometrySolution(
-        ra: Angle, dec: Angle,
-        orientation: Angle, radius: Angle,
-        scale: Double,
-        width: Double, height: Double,
-    ) {
-        raTextField.text = ra.format(AngleFormatter.HMS)
-        decTextField.text = dec.format(AngleFormatter.SIGNED_DMS)
-        orientationTextField.text = "%.6f".format(orientation.degrees)
-        scaleTextField.text = "%.6f".format(scale)
-        fieldRadiusTextField.text = "%.04f".format(radius.degrees)
-        fieldSizeTextField.text = "%.02f x %.02f".format(width, height)
     }
 }
