@@ -26,53 +26,17 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import javax.swing.filechooser.FileSystemView
-import kotlin.io.path.createDirectories
 
 @SpringBootApplication
 class App : CommandLineRunner {
 
-    enum class OSType {
-        WINDOWS,
-        LINUX,
-        MAC,
-        OTHER,
-    }
-
     @Autowired private lateinit var beanFactory: AutowireCapableBeanFactory
 
     @Bean
-    fun operatingSystemType(): OSType {
-        val osName = System.getProperty("os.name", "generic").lowercase()
-
-        return when {
-            "mac" in osName || "darwin" in osName -> OSType.MAC
-            "win" in osName -> OSType.WINDOWS
-            "nux" in osName -> OSType.LINUX
-            else -> OSType.OTHER
-        }
-    }
+    fun operatingSystemType() = getOperatingSystemType()
 
     @Bean
-    fun appDirectory(operatingSystemType: OSType): Path? {
-        val appDirectory = when (operatingSystemType) {
-            OSType.LINUX -> {
-                val userHomeDir = Paths.get(System.getProperty("user.home"))
-                Paths.get("$userHomeDir", ".nebulosa")
-            }
-            OSType.WINDOWS -> {
-                val documentsDir = FileSystemView.getFileSystemView().defaultDirectory.path
-                Paths.get(documentsDir, "Nebulosa")
-            }
-            else -> {
-                null
-            }
-        }
-
-        appDirectory?.createDirectories()
-
-        return appDirectory
-    }
+    fun appDirectory(): Path = Paths.get(System.getProperty("app.dir"))
 
     @Bean
     fun objectMapper() = ObjectMapper()

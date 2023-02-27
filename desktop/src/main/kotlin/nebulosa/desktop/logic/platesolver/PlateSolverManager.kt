@@ -4,7 +4,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.stage.FileChooser
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
-import nebulosa.desktop.App
+import nebulosa.desktop.OperatingSystemType
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.util.javaFxThread
@@ -38,7 +38,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var framingView: FramingView
-    @Autowired private lateinit var osType: App.OSType
+    @Autowired private lateinit var operatingSystemType: OperatingSystemType
 
     private val solverTask = AtomicReference<Future<*>>()
 
@@ -107,7 +107,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
     fun pathOrUrl(type: PlateSolverType) = when (type) {
         PlateSolverType.ASTROMETRY_NET_LOCAL -> "solve-field"
         PlateSolverType.ASTROMETRY_NET_ONLINE -> NovaAstrometryNetService.URL
-        PlateSolverType.ASTAP -> if (osType == App.OSType.WINDOWS) "C:\\Program Files\\astap\\astap.exe" else "astap"
+        PlateSolverType.ASTAP -> if (operatingSystemType == OperatingSystemType.WINDOWS) "C:\\Program Files\\astap\\astap.exe" else "astap"
     }
 
     @Synchronized
