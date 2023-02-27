@@ -30,12 +30,17 @@
         </padding>
         <HBox alignment="CENTER_LEFT"
               spacing="8.0">
+            <fx:define>
+                <ImageChannel fx:id="channelInitialValue"
+                              fx:constant="GREEN"/>
+            </fx:define>
             <VBox spacing="1.0">
                 <Label styleClass="text-md"
                        text="Channel">
                 </Label>
                 <ChoiceBox fx:id="channelChoiceBox"
-                           prefWidth="308.0">
+                           prefWidth="308.0"
+                           value="$channelInitialValue">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
                             <ImageChannel fx:value="RED"/>
@@ -44,17 +49,18 @@
                         </FXCollections>
                     </items>
                 </ChoiceBox>
-                <fx:define>
-                    <ImageChannel fx:id="channelInitialValue"
-                                  fx:constant="GREEN"/>
-                </fx:define>
             </VBox>
+            <fx:define>
+                <ProtectionMethod fx:id="protectionMethodInitialValue"
+                                  fx:constant="AVERAGE_NEUTRAL"/>
+            </fx:define>
             <VBox spacing="1.0">
                 <Label styleClass="text-md"
                        text="Protection method">
                 </Label>
                 <ChoiceBox fx:id="protectionMethodChoiceBox"
-                           prefWidth="308.0">
+                           prefWidth="308.0"
+                           value="$protectionMethodInitialValue">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
                             <ProtectionMethod fx:value="MAXIMUM_MASK"/>
@@ -65,10 +71,6 @@
                         </FXCollections>
                     </items>
                 </ChoiceBox>
-                <fx:define>
-                    <ProtectionMethod fx:id="protectionMethodInitialValue"
-                                      fx:constant="AVERAGE_NEUTRAL"/>
-                </fx:define>
             </VBox>
         </HBox>
         <HBox alignment="CENTER"

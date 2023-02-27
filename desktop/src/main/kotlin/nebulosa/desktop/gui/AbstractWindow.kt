@@ -122,6 +122,7 @@ abstract class AbstractWindow(
     final override val titleHeight
         get() = (height - sceneHeight) - borderSize
 
+    @Synchronized
     final override fun show(
         requestFocus: Boolean,
         bringToFront: Boolean,

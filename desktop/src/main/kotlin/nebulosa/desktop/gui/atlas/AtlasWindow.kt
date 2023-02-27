@@ -18,6 +18,7 @@ import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.atlas.Twilight
+import nebulosa.erfa.PairOfAngle
 import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
 import nebulosa.nova.astrometry.Constellation
@@ -52,6 +53,7 @@ class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
     @FXML private lateinit var goToButton: Button
     @FXML private lateinit var slewToButton: Button
     @FXML private lateinit var syncButton: Button
+    @FXML private lateinit var frameButton: Button
     @FXML private lateinit var altitudeGraph: AltitudeGraph
 
     @Volatile private var started = false
@@ -63,12 +65,15 @@ class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
     override fun onCreate() {
         val isNotConnected = !atlasManager.mountProperty.connectedProperty
         val isMoving = atlasManager.mountProperty.slewingProperty or atlasManager.mountProperty.parkingProperty
+        val isComputing = atlasManager.computing
 
-        goToButton.disableProperty().bind(atlasManager.mountProperty.isNull or isNotConnected or isMoving)
+        goToButton.disableProperty().bind(atlasManager.mountProperty.isNull or isNotConnected or isMoving or isComputing)
 
         slewToButton.disableProperty().bind(goToButton.disableProperty())
 
         syncButton.disableProperty().bind(goToButton.disableProperty())
+
+        frameButton.disableProperty().bind(isComputing)
 
         planetTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("name")
         planetTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("type")
@@ -121,25 +126,34 @@ class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
         atlasManager.computeTab(tabType)
     }
 
+    val equatorialCoordinate
+        get() = PairOfAngle(Angle.from(rightAscensionTextField.text, true)!!, Angle.from(declinationTextField.text)!!)
+
+    val equatorialJ2000Coordinate
+        get() = PairOfAngle(Angle.from(rightAscensionJ2000TextField.text, true)!!, Angle.from(declinationJ2000TextField.text)!!)
+
     @FXML
     private fun goTo() {
-        val ra = Angle.from(rightAscensionTextField.text, true)!!
-        val dec = Angle.from(declinationTextField.text)!!
+        val (ra, dec) = equatorialCoordinate
         atlasManager.goTo(ra, dec)
     }
 
     @FXML
     private fun slewTo() {
-        val ra = Angle.from(rightAscensionTextField.text, true)!!
-        val dec = Angle.from(declinationTextField.text)!!
+        val (ra, dec) = equatorialCoordinate
         atlasManager.slewTo(ra, dec)
     }
 
     @FXML
     private fun sync() {
-        val ra = Angle.from(rightAscensionTextField.text, true)!!
-        val dec = Angle.from(declinationTextField.text)!!
+        val (ra, dec) = equatorialCoordinate
         atlasManager.sync(ra, dec)
+    }
+
+    @FXML
+    private fun frame() {
+        val (ra, dec) = equatorialJ2000Coordinate
+        atlasManager.frame(ra, dec)
     }
 
     @FXML

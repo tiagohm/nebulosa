@@ -85,17 +85,17 @@ class AngleTest : StringSpec() {
             Angle.from("23h 33m 48.40308", isHours = true)!!.degrees shouldBe 353.4516795
             Angle.from("23 33m 48.40308s")!!.degrees shouldBe 23.5634453
             Angle.from("23h 33m 48.40308s", isHours = true)!!.degrees shouldBe 353.4516795
-            Angle.from("-23° 33m 48.40308s")!!.degrees shouldBe -22.4365547
-            Angle.from("  -23   33m   48.40308s  ")!!.degrees shouldBe -22.4365547
-            Angle.from("-23 33.806718m")!!.degrees shouldBe -22.4365547
+            Angle.from("-23° 33m 48.40308s")!!.degrees shouldBe -23.5634453
+            Angle.from("  -23   33m   48.40308s  ")!!.degrees shouldBe -23.5634453
+            Angle.from("-23 33.806718m")!!.degrees shouldBe -23.5634453
             Angle.from("+23")!!.degrees shouldBe 23.0
             Angle.from("-23")!!.degrees shouldBe -23.0
             Angle.from("23h33m48.40308s", isHours = true)!!.degrees shouldBe 353.4516795
             Angle.from("23h33m 48.40308\"", isHours = true)!!.degrees shouldBe 353.4516795
             Angle.from("23h33'48.40308\"", isHours = true)!!.degrees shouldBe 353.4516795
-            Angle.from("-23°33'48.40308\"", isHours = true)!!.degrees shouldBe -336.54832049999993
-            Angle.from("-23°33'48.40308s 67.99")!!.degrees shouldBe -22.4365547
-            Angle.from("- 23°33'48.40308s 67.99")!!.degrees shouldBe -22.4365547
+            Angle.from("-23°33'48.40308\"", isHours = true)!!.degrees shouldBe -353.4516795
+            Angle.from("-23°33'48.40308s 67.99")!!.degrees shouldBe -23.5634453
+            Angle.from("- 23°33'48.40308s 67.99")!!.degrees shouldBe -23.5634453
             Angle.from("").shouldBeNull()
             Angle.from("kkk").shouldBeNull()
         }

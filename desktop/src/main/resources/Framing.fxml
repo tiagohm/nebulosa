@@ -3,12 +3,14 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.HyperlinkLabel?>
+<?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="370.0"
-            prefWidth="420.0"
+            prefHeight="230.0"
+            prefWidth="395.0"
             stylesheets="@css/Global.css,@css/CopyableLabel.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
@@ -28,29 +30,29 @@
         <VBox alignment="TOP_CENTER"
               spacing="4.0">
             <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Label maxWidth="68.0"
-                       minWidth="68.0"
-                       prefWidth="68.0"
+                  spacing="5.0">
+                <Label maxWidth="40.0"
+                       minWidth="40.0"
+                       prefWidth="40.0"
                        styleClass="text-sm,text-bold,monospaced"
                        text="RA:"/>
                 <TextField fx:id="raTextField"
-                           maxWidth="120.0"
-                           minWidth="120.0"
-                           prefWidth="120.0"
-                           text="00h00m00.00s"
-                           promptText="00h00m00.00s"/>
-                <Label maxWidth="68.0"
-                       minWidth="68.0"
-                       prefWidth="68.0"
+                           maxWidth="134.0"
+                           minWidth="134.0"
+                           prefWidth="134.0"
+                           promptText="00h00m00.00s"
+                           text="00h00m00.00s"/>
+                <Label maxWidth="40.0"
+                       minWidth="40.0"
+                       prefWidth="40.0"
                        styleClass="text-sm,text-bold,monospaced"
                        text="DEC:"/>
                 <TextField fx:id="decTextField"
-                           maxWidth="120.0"
-                           minWidth="120.0"
-                           prefWidth="120.0"
-                           text="00°00'00.00&quot;"
-                           promptText="00°00'00.00&quot;"/>
+                           maxWidth="134.0"
+                           minWidth="134.0"
+                           prefWidth="134.0"
+                           promptText="00°00'00.00&quot;"
+                           text="00°00'00.00&quot;"/>
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
@@ -61,32 +63,35 @@
                        text="FOV:"/>
                 <Spinner fx:id="fovSpinner"
                          amountToStepBy="0.1"
+                         editable="true"
                          initialValue="1.0"
                          max="180.0"
                          maxWidth="60.0"
                          min="0.1"
                          minWidth="60.0"
                          prefWidth="60.0"/>
-                <Label maxWidth="54.0"
-                       minWidth="54.0"
-                       prefWidth="54.0"
+                <Label maxWidth="40.0"
+                       minWidth="40.0"
+                       prefWidth="40.0"
                        styleClass="text-sm,text-bold,monospaced"
                        text="Width:"/>
                 <Spinner fx:id="widthSpinner"
                          amountToStepBy="0.1"
+                         editable="true"
                          initialValue="1280.0"
                          max="1280.0"
                          maxWidth="80.0"
                          min="1.0"
                          minWidth="80.0"
                          prefWidth="80.0"/>
-                <Label maxWidth="54.0"
-                       minWidth="54.0"
-                       prefWidth="54.0"
+                <Label maxWidth="43.0"
+                       minWidth="43.0"
+                       prefWidth="43.0"
                        styleClass="text-sm,text-bold,monospaced"
                        text="Height:"/>
                 <Spinner fx:id="heightSpinner"
                          amountToStepBy="0.1"
+                         editable="true"
                          initialValue="1024.0"
                          max="1024.0"
                          maxWidth="80.0"
@@ -94,28 +99,30 @@
                          minWidth="80.0"
                          prefWidth="80.0"/>
             </HBox>
-            <HBox alignment="CENTER"
+            <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
-                <Label maxWidth="100.0"
-                       minWidth="100.0"
-                       prefWidth="100.0"
+                <Label maxWidth="88.0"
+                       minWidth="88.0"
+                       prefWidth="88.0"
                        styleClass="text-sm,text-bold,monospaced"
                        text="Pixel size (μm):"/>
                 <Spinner fx:id="pixelSizeSpinner"
                          amountToStepBy="0.01"
+                         editable="true"
                          initialValue="4.0"
                          max="100.0"
                          maxWidth="80.0"
                          min="0.01"
                          minWidth="80.0"
                          prefWidth="80.0"/>
-                <Label maxWidth="100.0"
-                       minWidth="100.0"
-                       prefWidth="100.0"
+                <Label maxWidth="103.0"
+                       minWidth="103.0"
+                       prefWidth="103.0"
                        styleClass="text-sm,text-bold,monospaced"
                        text="Focal length (mm):"/>
                 <Spinner fx:id="focalLengthSpinner"
                          amountToStepBy="1.0"
+                         editable="true"
                          initialValue="500.0"
                          max="100000.0"
                          maxWidth="80.0"
@@ -123,22 +130,50 @@
                          minWidth="80.0"
                          prefWidth="80.0"/>
             </HBox>
-            <HBox alignment="CENTER"
+            <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
-                <Label maxWidth="100.0"
-                       minWidth="100.0"
-                       prefWidth="100.0"
+                <Label maxWidth="88.0"
+                       minWidth="88.0"
+                       prefWidth="88.0"
                        styleClass="text-sm,text-bold,monospaced"
                        text="Rotation (deg):"/>
                 <Spinner fx:id="rotationSpinner"
                          amountToStepBy="0.01"
+                         editable="true"
                          initialValue="0.0"
                          max="360.0"
                          maxWidth="80.0"
                          min="0.0"
                          minWidth="80.0"
                          prefWidth="80.0"/>
+                <ChoiceBox fx:id="hipsSurveyChoiceBox"
+                           prefWidth="200.0"
+                           HBox.hgrow="ALWAYS"/>
+            </HBox>
+            <HBox alignment="CENTER_RIGHT">
+                <HyperlinkLabel styleClass="text-xs"
+                                text="Powered by [hips2fits], a service provided by CDS."/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT"
+                  spacing="4.0">
+                <ToggleSwitch fx:id="syncFromMountToggleSwitch"
+                              styleClass="text-bold"
+                              text="Sync from mount:"/>
             </HBox>
         </VBox>
+        <HBox alignment="CENTER">
+            <VBox.margin>
+                <Insets top="16.0"/>
+            </VBox.margin>
+            <Button fx:id="loadButton"
+                    onAction="#load"
+                    text="Load">
+                <graphic>
+                    <Label styleClass="text-blue-grey-700,mdi,mdi-sm"
+                           text="󰇚">
+                    </Label>
+                </graphic>
+            </Button>
+        </HBox>
     </VBox>
 </AnchorPane>

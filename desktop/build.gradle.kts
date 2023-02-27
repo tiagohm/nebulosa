@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":nebulosa-nova"))
     implementation(project(":nebulosa-indi-client"))
     implementation(project(":nebulosa-imaging"))
+    implementation(project(":nebulosa-hips2fits"))
     implementation(project(":nebulosa-query-sbd"))
     implementation(project(":nebulosa-query-horizons"))
     implementation(project(":nebulosa-query-simbad"))

@@ -2,6 +2,7 @@ package nebulosa.desktop.logic.atlas
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.annotation.PostConstruct
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Point2D
 import nebulosa.constants.DAYSEC
 import nebulosa.desktop.logic.Preferences
@@ -14,6 +15,7 @@ import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.atlas.Twilight
+import nebulosa.desktop.view.framing.FramingView
 import nebulosa.indi.device.mount.Mount
 import nebulosa.io.resource
 import nebulosa.math.Angle
@@ -37,6 +39,7 @@ import nebulosa.query.simbad.SimbadService
 import nebulosa.time.UTC
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -69,6 +72,7 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
     @Autowired private lateinit var smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService
     @Autowired private lateinit var simbadService: SimbadService
     @Autowired private lateinit var systemExecutorService: ExecutorService
+    @Lazy @Autowired private lateinit var framingView: FramingView
 
     private val pointsCache = hashMapOf<HorizonsEphemeris, List<Point2D>>()
     private val observerEventBus = newEventBus<Double>()
@@ -86,6 +90,8 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
 
     val mount: Mount?
         get() = mountProperty.value
+
+    val computing = SimpleBooleanProperty()
 
     @PostConstruct
     private fun initialize() {
@@ -267,30 +273,40 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
         }
     }
 
+    @Synchronized
     private fun computeAltitude(target: Any, force: Boolean = false) {
         LOG.info("computing altitude. target={}", target)
 
         val observer = observer ?: return
 
+        computing.set(true)
+
         if (target is String) {
             systemExecutorService.submit {
-                val ephemeris = horizonsEphemerisProvider.compute(target, observer, force)
+                try {
+                    val ephemeris = horizonsEphemerisProvider.compute(target, observer, force)
 
-                if (ephemeris == null) {
-                    LOG.warn("unable to retrieve ephemeris. target={}", target)
-                } else if (ephemeris.isNotEmpty()) {
-                    LOG.info("ephemeris was retrieved. target={}, start={}, end={}", target, ephemeris.start, ephemeris.endInclusive)
-
-                    ephemeris.showBodyCoordinatesAndInfos(target)
-                } else {
-                    LOG.warn("retrived empty epheremis. target={}", target)
+                    if (ephemeris == null) {
+                        LOG.warn("unable to retrieve ephemeris. target={}", target)
+                    } else if (ephemeris.isNotEmpty()) {
+                        LOG.info("ephemeris was retrieved. target={}, start={}, end={}", target, ephemeris.start, ephemeris.endInclusive)
+                        ephemeris.showBodyCoordinatesAndInfos(target)
+                    } else {
+                        LOG.warn("retrived empty epheremis. target={}", target)
+                    }
+                } finally {
+                    computing.set(false)
                 }
             }
         } else if (target is Body) {
             systemExecutorService.submit {
-                val ephemeris = bodyEphemerisProvider.compute(target, observer, force)
-                    ?: return@submit view.clearAltitudeAndCoordinates()
-                ephemeris.showBodyCoordinatesAndInfos(target)
+                try {
+                    val ephemeris = bodyEphemerisProvider.compute(target, observer, force)
+                        ?: return@submit view.clearAltitudeAndCoordinates()
+                    ephemeris.showBodyCoordinatesAndInfos(target)
+                } finally {
+                    computing.set(false)
+                }
             }
         }
     }
@@ -404,25 +420,29 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
             .name(text)
 
         systemExecutorService.submit {
-            val dso = simbadService.query(query).execute().body()!!
-
-            javaFxThread { view.populateDSO(dso.map { AtlasView.DSO(it) }) }
+            try {
+                val dso = simbadService.query(query).execute().body()!!
+                javaFxThread { view.populateDSO(dso.map { AtlasView.DSO(it) }) }
+            } catch (e: Throwable) {
+                javaFxThread { view.showAlert("Failed to search DSOs: ${e.message}") }
+            }
         }
     }
 
     fun goTo(ra: Angle, dec: Angle) {
-        LOG.info("go to. ra={}, dec={}", ra.hours, dec.degrees)
         mount?.goTo(ra, dec)
     }
 
     fun slewTo(ra: Angle, dec: Angle) {
-        LOG.info("slew to. ra={}, dec={}", ra.hours, dec.degrees)
         mount?.slewTo(ra, dec)
     }
 
     fun sync(ra: Angle, dec: Angle) {
-        LOG.info("sync. ra={}, dec={}", ra.hours, dec.degrees)
         mount?.sync(ra, dec)
+    }
+
+    fun frame(ra: Angle, dec: Angle) {
+        framingView.load(ra, dec)
     }
 
     fun savePreferences() {

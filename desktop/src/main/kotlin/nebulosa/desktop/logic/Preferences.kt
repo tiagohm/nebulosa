@@ -41,8 +41,12 @@ class Preferences(
     operator fun get(key: String): String? = properties.getProperty(key)
 
     operator fun set(key: String, value: String?) {
-        properties.setProperty(key, value)
-        save()
+        if (value != null) {
+            properties.setProperty(key, value)
+            save()
+        } else {
+            delete(key)
+        }
     }
 
     fun bool(key: String) = this[key] == "true"
@@ -80,8 +84,7 @@ class Preferences(
     inline fun <reified T : Enum<T>> enum(key: String) = enum(key, T::class.java)
 
     fun <T : Enum<T>> enum(key: String, type: Class<out T>): T? {
-        val name = string(key)
-        return type.enumConstants.firstOrNull { it.name == name }
+        return string(key).let { name -> type.enumConstants.firstOrNull { it.name == name } }
     }
 
     fun <T : Enum<T>> enum(key: String, value: T) = string(key, value.name)

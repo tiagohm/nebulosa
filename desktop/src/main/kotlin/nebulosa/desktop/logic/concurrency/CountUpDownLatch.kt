@@ -19,7 +19,7 @@ class CountUpDownLatch : AtomicBoolean(true) {
     }
 
     fun countDown() = lock.withLock {
-        val value = counter.decrementAndGet()
+        val value = if (counter.get() <= 0) 0 else counter.decrementAndGet()
         set(value == 0)
         condition.signalAll()
         value

@@ -1,0 +1,8 @@
+.button.open {
+    -fx-pref-width: 96px;
+    -fx-min-width: 96px;
+    -fx-max-width: 96px;
+    -fx-pref-height: 54px;
+    -fx-min-height: 54px;
+    -fx-max-height: 54px;
+}

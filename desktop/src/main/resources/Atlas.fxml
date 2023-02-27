@@ -362,7 +362,7 @@
                     prefWidth="92.0"
                     text="Go To">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-green-700"
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                            text="󰄬">
                     </Label>
                 </graphic>
@@ -372,7 +372,7 @@
                     prefWidth="92.0"
                     text="Slew To">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-green-700"
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                            text="󰄬">
                     </Label>
                 </graphic>
@@ -382,8 +382,18 @@
                     prefWidth="92.0"
                     text="Sync">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-700"
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                            text="󰓦">
+                    </Label>
+                </graphic>
+            </Button>
+            <Button fx:id="frameButton"
+                    onAction="#frame"
+                    prefWidth="92.0"
+                    text="Frame">
+                <graphic>
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
+                           text="󰋩">
                     </Label>
                 </graphic>
             </Button>

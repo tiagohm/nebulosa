@@ -214,10 +214,8 @@
                     </fx:define>
                     <RadioButton onAction="#updateExposureUnit"
                                  text="m"
+                                 toggleGroup="$exposureUnitToggleGroup"
                                  userData="MINUTES">
-                        <toggleGroup>
-                            <ToggleGroup fx:id="exposureUnitToggleGroup"/>
-                        </toggleGroup>
                     </RadioButton>
                     <RadioButton onAction="#updateExposureUnit"
                                  text="s"
@@ -246,10 +244,8 @@
                     </fx:define>
                     <RadioButton selected="true"
                                  text="Single"
+                                 toggleGroup="$exposureModeToggleGroup"
                                  userData="SINGLE">
-                        <toggleGroup>
-                            <ToggleGroup fx:id="exposureModeToggleGroup"/>
-                        </toggleGroup>
                     </RadioButton>
                     <RadioButton text="Fixed"
                                  toggleGroup="$exposureModeToggleGroup"

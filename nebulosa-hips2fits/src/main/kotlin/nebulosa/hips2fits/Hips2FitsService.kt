@@ -14,19 +14,19 @@ class Hips2FitsService(url: String = MAIN_URL) : RetrofitService(url) {
 
     private val service by lazy { retrofit.create(Hips2Fits::class.java) }
 
-    fun hipsSurvey() = service.mocServerQuery("hips_service_url*=*alasky* && dataproduct_type=image", "record", "json")
-
     fun query(
-        hips: HipsSurveySource,
+        hips: HipsSurvey,
         ra: Angle, dec: Angle,
         width: Int = 1200, height: Int = 900,
-        projection: ProjectionType = ProjectionType.TAN, fov: Angle = DEFAULT_FOV,
-        coordSystem: CoordinateFrameType = CoordinateFrameType.ICRS, rotationAngle: Angle = Angle.ZERO,
+        rotation: Angle = Angle.ZERO,
+        fov: Angle = DEFAULT_FOV,
+        projection: ProjectionType = ProjectionType.TAN,
+        coordSystem: CoordinateFrameType = CoordinateFrameType.ICRS,
         format: FormatOutputType = FormatOutputType.FITS,
     ): Call<ByteArray> {
         return service.query(
             hips.id, ra.degrees, dec.degrees, width, height, projection.name, fov.degrees,
-            coordSystem.name.lowercase(), rotationAngle.degrees, format.name.lowercase(),
+            coordSystem.name.lowercase(), rotation.degrees, format.name.lowercase(),
         )
     }
 
@@ -44,6 +44,6 @@ class Hips2FitsService(url: String = MAIN_URL) : RetrofitService(url) {
         const val MAIN_URL = "https://alasky.u-strasbg.fr/"
         const val MIRROR_URL = "https://alaskybis.u-strasbg.fr/"
 
-        @JvmStatic private val DEFAULT_FOV = 0.5.deg
+        @JvmStatic val DEFAULT_FOV = 0.5.deg
     }
 }

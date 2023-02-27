@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.scene.text.Font
 import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.loader.IERSLoader
+import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.io.resource
 import nebulosa.query.horizons.HorizonsService
 import nebulosa.query.sbd.SmallBodyDatabaseLookupService
@@ -74,11 +75,9 @@ class App : CommandLineRunner {
     }
 
     @Bean
-    fun objectMapper(): ObjectMapper {
-        val mapper = ObjectMapper()
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        return mapper
-    }
+    fun objectMapper() = ObjectMapper()
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)!!
 
     @Bean
     fun connectionPool() = ConnectionPool(32, 5L, TimeUnit.MINUTES)
@@ -112,6 +111,9 @@ class App : CommandLineRunner {
 
     @Bean
     fun smallBodyDatabaseLookupService() = SmallBodyDatabaseLookupService()
+
+    @Bean
+    fun hips2FitsService() = Hips2FitsService()
 
     @Bean
     fun connectionEventBus(): ConnectionEventBus = newEventBus()
