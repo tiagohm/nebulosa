@@ -22,7 +22,7 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 
 @Component
-class FramingWindow : AbstractWindow("Framing"), FramingView {
+class FramingWindow : AbstractWindow("Framing", "nebulosa-framing"), FramingView {
 
     @Lazy @Autowired private lateinit var framingManager: FramingManager
 

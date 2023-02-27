@@ -5,6 +5,7 @@ import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
+import nebulosa.desktop.view.about.AboutView
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.filterwheel.FilterWheelView
@@ -37,6 +38,7 @@ class HomeManager(private val view: HomeView) : Closeable {
     @Autowired private lateinit var imageWindowOpener: ImageWindow.Opener
     @Autowired private lateinit var framingView: FramingView
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
+    @Autowired private lateinit var aboutView: AboutView
 
     val connectedProperty
         get() = equipmentManager.connectedProperty
@@ -75,6 +77,7 @@ class HomeManager(private val view: HomeView) : Closeable {
             "PLATE_SOLVER" -> plateSolverView.show(bringToFront = true)
             "FRAMING" -> framingView.show(bringToFront = true)
             "INDI" -> indiPanelControlView.show(bringToFront = true)
+            "ABOUT" -> aboutView.show(bringToFront = true)
         }
     }
 

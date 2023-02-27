@@ -300,7 +300,7 @@
                         mnemonicParsing="false"
                         onAction="#fullsize">
                     <graphic>
-                        <Label styleClass="text-grey-800,mdi,mdi-sm"
+                        <Label styleClass="text-blue-grey-700,mdi,mdi-sm"
                                text="󰊓">
                         </Label>
                     </graphic>

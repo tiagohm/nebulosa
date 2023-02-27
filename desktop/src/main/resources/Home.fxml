@@ -8,7 +8,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="360.0"
+            prefHeight="362.0"
             prefWidth="332.0"
             stylesheets="@css/Global.css,@css/Home.css"
             xmlns="http://javafx.com/javafx/19"
@@ -50,295 +50,320 @@
                     text="󱘖">
             </Button>
         </HBox>
-        <GridPane alignment="CENTER"
-                  minHeight="1.0"
-                  VBox.vgrow="NEVER">
-            <columnConstraints>
-                <ColumnConstraints halignment="CENTER"
-                                   hgrow="SOMETIMES"
-                                   minWidth="10.0"
-                                   prefWidth="100.0"/>
-                <ColumnConstraints halignment="CENTER"
-                                   hgrow="SOMETIMES"
-                                   minWidth="10.0"
-                                   prefWidth="100.0"/>
-                <ColumnConstraints halignment="CENTER"
-                                   hgrow="SOMETIMES"
-                                   minWidth="10.0"
-                                   prefWidth="100.0"/>
-            </columnConstraints>
-            <rowConstraints>
-                <RowConstraints minHeight="10.0"
-                                prefHeight="58.0"
-                                valignment="CENTER"
-                                vgrow="SOMETIMES"/>
-                <RowConstraints minHeight="10.0"
-                                prefHeight="58.0"
-                                valignment="CENTER"
-                                vgrow="SOMETIMES"/>
-                <RowConstraints minHeight="10.0"
-                                prefHeight="58.0"
-                                valignment="CENTER"
-                                vgrow="SOMETIMES"/>
-                <RowConstraints minHeight="10.0"
-                                prefHeight="58.0"
-                                valignment="CENTER"
-                                vgrow="SOMETIMES"/>
-                <RowConstraints minHeight="10.0"
-                                prefHeight="58.0"
-                                valignment="CENTER"
-                                vgrow="SOMETIMES"/>
-                <RowConstraints/>
-            </rowConstraints>
-            <Button fx:id="cameraButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Camera"
-                    userData="CAMERA"
-                    GridPane.columnIndex="0"
-                    GridPane.rowIndex="0">
-                <graphic>
-                    <Label styleClass="text-grey-900,mdi"
-                           text="󰄄">
-                    </Label>
-                </graphic>
-            </Button>
-            <Button fx:id="mountButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Mount"
-                    userData="MOUNT"
-                    GridPane.columnIndex="1"
-                    GridPane.rowIndex="0">
-                <graphic>
-                    <Label styleClass="text-grey-900,mdi"
-                           text="󰭎">
-                    </Label>
-                </graphic>
-            </Button>
-            <Button fx:id="guiderButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Guider"
-                    userData="GUIDER"
-                    GridPane.columnIndex="2"
-                    GridPane.rowIndex="0">
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/guider.png"/>
-                    </ImageView>
-                </graphic>
-            </Button>
-            <Button fx:id="filterWheelButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Filter Wheel"
-                    userData="FILTER_WHEEL"
-                    GridPane.columnIndex="0"
-                    GridPane.rowIndex="1">
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/fw.png"/>
-                    </ImageView>
-                </graphic>
-            </Button>
-            <Button fx:id="focuserButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Focuser"
-                    userData="FOCUSER"
-                    GridPane.columnIndex="1"
-                    GridPane.rowIndex="1">
-                <graphic>
-                    <Label styleClass="text-grey-900,mdi"
-                           text="󰋱">
-                    </Label>
-                </graphic>
-            </Button>
-            <Button fx:id="domeButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Dome"
-                    userData="DOME"
-                    GridPane.columnIndex="2"
-                    GridPane.rowIndex="1">
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/dome.png"/>
-                    </ImageView>
-                </graphic>
-            </Button>
-            <Button fx:id="rotatorButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Rotator"
-                    userData="ROTATOR"
-                    GridPane.columnIndex="0"
-                    GridPane.rowIndex="2">
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/rotator.png"/>
-                    </ImageView>
-                </graphic>
-            </Button>
-            <Button fx:id="switchButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Switch"
-                    userData="SWTICH"
-                    GridPane.columnIndex="1"
-                    GridPane.rowIndex="2">
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/switches.png"/>
-                    </ImageView>
-                </graphic>
-            </Button>
-            <Button fx:id="atlasButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Atlas"
-                    userData="ATLAS"
-                    GridPane.columnIndex="2"
-                    GridPane.rowIndex="2">
-                <graphic>
-                    <Label styleClass="text-grey-900,mdi"
-                           text="󰍍">
-                    </Label>
-                </graphic>
-            </Button>
-            <Button fx:id="plateSolverButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Plate Solver"
-                    userData="PLATE_SOLVER"
-                    GridPane.columnIndex="0"
-                    GridPane.rowIndex="3">
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/platesolver.png"/>
-                    </ImageView>
-                </graphic>
-            </Button>
-            <Button fx:id="alignmentButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Alignment"
-                    userData="ALIGNMENT"
-                    GridPane.columnIndex="1"
-                    GridPane.rowIndex="3">
-                <graphic>
-                    <Label styleClass="text-grey-900,mdi"
-                           text="󰓎">
-                    </Label>
-                </graphic>
-            </Button>
-            <Button fx:id="sequencerButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Sequencer"
-                    userData="SEQUENCER"
-                    GridPane.columnIndex="2"
-                    GridPane.rowIndex="3">
-                <graphic>
-                    <Label styleClass="text-grey-900,mdi"
-                           text="󱏁">
-                    </Label>
-                </graphic>
-            </Button>
-            <Button fx:id="imageViewerButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Image Viewer"
-                    userData="NEW_IMAGE"
-                    GridPane.columnIndex="0"
-                    GridPane.rowIndex="4">
-                <graphic>
-                    <Label styleClass="text-grey-900,mdi"
-                           text="󰡼">
-                    </Label>
-                </graphic>
-            </Button>
-            <Button fx:id="framingButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="Framing"
-                    userData="FRAMING"
-                    GridPane.columnIndex="1"
-                    GridPane.rowIndex="4">
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/framing.png"/>
-                    </ImageView>
-                </graphic>
-            </Button>
-            <Button fx:id="indiButton"
-                    contentDisplay="TOP"
-                    mnemonicParsing="false"
-                    onAction="#open"
-                    styleClass="open"
-                    text="INDI"
-                    userData="INDI"
-                    GridPane.columnIndex="2"
-                    GridPane.rowIndex="4">
-                <graphic>
-                    <ImageView fitHeight="24.0"
-                               fitWidth="24.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/indi.png"/>
-                    </ImageView>
-                </graphic>
-            </Button>
-        </GridPane>
+        <ScrollPane hbarPolicy="NEVER"
+                    vbarPolicy="NEVER"
+                    style="-fx-box-border: transparent;">
+            <GridPane alignment="CENTER"
+                      minHeight="1.0"
+                      VBox.vgrow="NEVER">
+                <columnConstraints>
+                    <ColumnConstraints halignment="CENTER"
+                                       hgrow="SOMETIMES"
+                                       minWidth="10.0"
+                                       prefWidth="100.0"/>
+                    <ColumnConstraints halignment="CENTER"
+                                       hgrow="SOMETIMES"
+                                       minWidth="10.0"
+                                       prefWidth="100.0"/>
+                    <ColumnConstraints halignment="CENTER"
+                                       hgrow="SOMETIMES"
+                                       minWidth="10.0"
+                                       prefWidth="100.0"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="10.0"
+                                    prefHeight="58.0"
+                                    valignment="CENTER"
+                                    vgrow="SOMETIMES"/>
+                    <RowConstraints minHeight="10.0"
+                                    prefHeight="58.0"
+                                    valignment="CENTER"
+                                    vgrow="SOMETIMES"/>
+                    <RowConstraints minHeight="10.0"
+                                    prefHeight="58.0"
+                                    valignment="CENTER"
+                                    vgrow="SOMETIMES"/>
+                    <RowConstraints minHeight="10.0"
+                                    prefHeight="58.0"
+                                    valignment="CENTER"
+                                    vgrow="SOMETIMES"/>
+                    <RowConstraints minHeight="10.0"
+                                    prefHeight="58.0"
+                                    valignment="CENTER"
+                                    vgrow="SOMETIMES"/>
+                    <RowConstraints minHeight="10.0"
+                                    prefHeight="58.0"
+                                    valignment="CENTER"
+                                    vgrow="SOMETIMES"/>
+                </rowConstraints>
+                <Button fx:id="cameraButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Camera"
+                        userData="CAMERA"
+                        GridPane.columnIndex="0"
+                        GridPane.rowIndex="0">
+                    <graphic>
+                        <Label styleClass="text-grey-900,mdi"
+                               text="󰄄">
+                        </Label>
+                    </graphic>
+                </Button>
+                <Button fx:id="mountButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Mount"
+                        userData="MOUNT"
+                        GridPane.columnIndex="1"
+                        GridPane.rowIndex="0">
+                    <graphic>
+                        <Label styleClass="text-grey-900,mdi"
+                               text="󰭎">
+                        </Label>
+                    </graphic>
+                </Button>
+                <Button fx:id="guiderButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Guider"
+                        userData="GUIDER"
+                        GridPane.columnIndex="2"
+                        GridPane.rowIndex="0">
+                    <graphic>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/guider.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button fx:id="filterWheelButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Filter Wheel"
+                        userData="FILTER_WHEEL"
+                        GridPane.columnIndex="0"
+                        GridPane.rowIndex="1">
+                    <graphic>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/fw.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button fx:id="focuserButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Focuser"
+                        userData="FOCUSER"
+                        GridPane.columnIndex="1"
+                        GridPane.rowIndex="1">
+                    <graphic>
+                        <Label styleClass="text-grey-900,mdi"
+                               text="󰋱">
+                        </Label>
+                    </graphic>
+                </Button>
+                <Button fx:id="domeButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Dome"
+                        userData="DOME"
+                        GridPane.columnIndex="2"
+                        GridPane.rowIndex="1">
+                    <graphic>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/dome.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button fx:id="rotatorButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Rotator"
+                        userData="ROTATOR"
+                        GridPane.columnIndex="0"
+                        GridPane.rowIndex="2">
+                    <graphic>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/rotator.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button fx:id="switchButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Switch"
+                        userData="SWTICH"
+                        GridPane.columnIndex="1"
+                        GridPane.rowIndex="2">
+                    <graphic>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/switches.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button fx:id="atlasButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Atlas"
+                        userData="ATLAS"
+                        GridPane.columnIndex="2"
+                        GridPane.rowIndex="2">
+                    <graphic>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/atlas.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button fx:id="plateSolverButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Plate Solver"
+                        userData="PLATE_SOLVER"
+                        GridPane.columnIndex="0"
+                        GridPane.rowIndex="3">
+                    <graphic>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/platesolver.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button fx:id="alignmentButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Alignment"
+                        userData="ALIGNMENT"
+                        GridPane.columnIndex="1"
+                        GridPane.rowIndex="3">
+                    <graphic>
+                        <Label styleClass="text-grey-900,mdi"
+                               text="󰓎">
+                        </Label>
+                    </graphic>
+                </Button>
+                <Button fx:id="sequencerButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Sequencer"
+                        userData="SEQUENCER"
+                        GridPane.columnIndex="2"
+                        GridPane.rowIndex="3">
+                    <graphic>
+                        <Label styleClass="text-grey-900,mdi"
+                               text="󱏁">
+                        </Label>
+                    </graphic>
+                </Button>
+                <Button fx:id="imageViewerButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Image Viewer"
+                        userData="NEW_IMAGE"
+                        GridPane.columnIndex="0"
+                        GridPane.rowIndex="4">
+                    <graphic>
+                        <Label styleClass="text-grey-900,mdi"
+                               text="󰡼">
+                        </Label>
+                    </graphic>
+                </Button>
+                <Button fx:id="framingButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="Framing"
+                        userData="FRAMING"
+                        GridPane.columnIndex="1"
+                        GridPane.rowIndex="4">
+                    <graphic>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/framing.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button fx:id="indiButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="INDI"
+                        userData="INDI"
+                        GridPane.columnIndex="2"
+                        GridPane.rowIndex="4">
+                    <graphic>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/indi.png"/>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <Button fx:id="aboutButton"
+                        contentDisplay="TOP"
+                        mnemonicParsing="false"
+                        onAction="#open"
+                        styleClass="open"
+                        text="About"
+                        userData="ABOUT"
+                        GridPane.columnIndex="0"
+                        GridPane.rowIndex="5">
+                    <graphic>
+                        <Label styleClass="text-grey-900,mdi"
+                               text="󰋼">
+                        </Label>
+                    </graphic>
+                </Button>
+            </GridPane>
+        </ScrollPane>
     </VBox>
 </AnchorPane>

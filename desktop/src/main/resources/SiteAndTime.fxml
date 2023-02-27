@@ -56,12 +56,12 @@
                     </Button>
                     <Button fx:id="useCoordinateFromGpsButton"
                             onAction="#useCoordinateFromGps"
-                            styleClass="mdi,mdi-sm,text-grey-800"
+                            styleClass="mdi,mdi-sm,text-blue-grey-700"
                             text="󰓾">
                     </Button>
                     <Button fx:id="syncDateAndTimeButton"
                             onAction="#syncDateAndTime"
-                            styleClass="mdi,mdi-sm,text-grey-800"
+                            styleClass="mdi,mdi-sm,text-blue-grey-700"
                             text="󱫬">
                     </Button>
                 </HBox>

@@ -121,7 +121,7 @@
                         onAction="#moveIn"
                         text="Move In">
                     <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-green-800"
+                        <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                                text="󰁍">
                         </Label>
                     </graphic>
@@ -130,7 +130,7 @@
                         onAction="#moveOut"
                         text="Move Out">
                     <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-green-800"
+                        <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                                text="󰁔">
                         </Label>
                     </graphic>
@@ -157,7 +157,7 @@
                         prefWidth="144.0"
                         text="Move To">
                     <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-blue-800"
+                        <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                                text="󰹳">
                         </Label>
                     </graphic>
@@ -167,7 +167,7 @@
                         prefWidth="92.0"
                         text="Sync">
                     <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-blue-700"
+                        <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                                text="󰓦">
                         </Label>
                     </graphic>
@@ -212,7 +212,7 @@
                     prefWidth="144.0"
                     text="Auto focus">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-purple-800"
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                            text="󰽎"
                            textFill="#388E3C">
                     </Label>

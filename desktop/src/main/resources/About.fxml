@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<AnchorPane maxHeight="-Infinity"
+            maxWidth="-Infinity"
+            minHeight="-Infinity"
+            minWidth="-Infinity"
+            prefHeight="440.0"
+            prefWidth="412.0"
+            stylesheets="@css/Global.css"
+            xmlns="http://javafx.com/javafx/19"
+            xmlns:fx="http://javafx.com/fxml/1">
+    <VBox alignment="TOP_CENTER"
+          spacing="4.0"
+          AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0"
+          AnchorPane.topAnchor="0.0">
+        <padding>
+            <Insets bottom="16.0"
+                    left="16.0"
+                    right="16.0"
+                    top="16.0"/>
+        </padding>
+        <ImageView fitHeight="128.0"
+                   fitWidth="128.0">
+            <Image url="@icons/nebulosa-512.png"/>
+        </ImageView>
+        <Label text="Nebulosa"
+               styleClass="text-lg,text-bold,monospaced"/>
+        <Label text="v0.1.0"
+               styleClass="text-md,monospaced"/>
+        <Label text="Copyright © 2023 - Tiago Melo"
+               styleClass="text-sm,monospaced"/>
+    </VBox>
+</AnchorPane>

@@ -22,6 +22,10 @@
     -fx-font-size: 12px;
 }
 
+.text-lg {
+    -fx-font-size: 15px;
+}
+
 .text-monospaced {
     -fx-font-family: 'Monospaced';
 }

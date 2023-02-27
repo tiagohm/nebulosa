@@ -283,7 +283,7 @@
                 </Button>
                 <Button fx:id="telescopeControlServerButton"
                         onAction="#openTelescopeControlServer"
-                        styleClass="mdi,mdi-sm,text-purple-700"
+                        styleClass="mdi,mdi-sm,text-blue-grey-700"
                         text="󰻅">
                 </Button>
             </HBox>
@@ -358,7 +358,7 @@
                         prefWidth="92.0"
                         text="Go To">
                     <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-green-700"
+                        <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                                text="󰄬">
                         </Label>
                     </graphic>
@@ -368,7 +368,7 @@
                         prefWidth="92.0"
                         text="Slew To">
                     <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-green-700"
+                        <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                                text="󰄬">
                         </Label>
                     </graphic>
@@ -378,7 +378,7 @@
                         prefWidth="92.0"
                         text="Sync">
                     <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-blue-700"
+                        <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                                text="󰓦">
                         </Label>
                     </graphic>
@@ -396,7 +396,7 @@
                             prefWidth="48.0"
                             userData="NE">
                         <graphic>
-                            <Label styleClass="text-blue-700,mdi,mdi-md"
+                            <Label styleClass="text-blue-grey-700,mdi,mdi-md"
                                    text="󰧄">
                             </Label>
                         </graphic>
@@ -408,7 +408,7 @@
                             prefWidth="48.0"
                             userData="N">
                         <graphic>
-                            <Label styleClass="text-blue-700,mdi,mdi-md"
+                            <Label styleClass="text-blue-grey-700,mdi,mdi-md"
                                    text="󰜷">
                             </Label>
                         </graphic>
@@ -420,7 +420,7 @@
                             prefWidth="48.0"
                             userData="NW">
                         <graphic>
-                            <Label styleClass="text-blue-700,mdi,mdi-md"
+                            <Label styleClass="text-blue-grey-700,mdi,mdi-md"
                                    text="󰧆">
                             </Label>
                         </graphic>
@@ -435,7 +435,7 @@
                             prefWidth="48.0"
                             userData="E">
                         <graphic>
-                            <Label styleClass="text-blue-700,mdi,mdi-md"
+                            <Label styleClass="text-blue-grey-700,mdi,mdi-md"
                                    text="󰜱">
                             </Label>
                         </graphic>
@@ -458,7 +458,7 @@
                             prefWidth="48.0"
                             userData="W">
                         <graphic>
-                            <Label styleClass="text-blue-700,mdi,mdi-md"
+                            <Label styleClass="text-blue-grey-700,mdi,mdi-md"
                                    text="󰜴">
                             </Label>
                         </graphic>
@@ -473,7 +473,7 @@
                             prefWidth="48.0"
                             userData="SE">
                         <graphic>
-                            <Label styleClass="text-blue-700,mdi,mdi-md"
+                            <Label styleClass="text-blue-grey-700,mdi,mdi-md"
                                    text="󰦸">
                             </Label>
                         </graphic>
@@ -485,7 +485,7 @@
                             prefWidth="48.0"
                             userData="S">
                         <graphic>
-                            <Label styleClass="text-blue-700,mdi,mdi-md"
+                            <Label styleClass="text-blue-grey-700,mdi,mdi-md"
                                    text="󰜮">
                             </Label>
                         </graphic>
@@ -497,7 +497,7 @@
                             prefWidth="48.0"
                             userData="SW">
                         <graphic>
-                            <Label styleClass="text-blue-700,mdi,mdi-md"
+                            <Label styleClass="text-blue-grey-700,mdi,mdi-md"
                                    text="󰦺">
                             </Label>
                         </graphic>
@@ -557,7 +557,7 @@
                             onAction="#home"
                             text="Home">
                         <graphic>
-                            <Label styleClass="mdi,mdi-sm,text-blue-700"
+                            <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                                    text="󰋜">
                             </Label>
                         </graphic>

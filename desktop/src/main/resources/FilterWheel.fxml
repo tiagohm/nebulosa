@@ -117,7 +117,7 @@
                     prefHeight="28.0"
                     text="Move To">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-grey-800"
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
                            text="󰁔">
                     </Label>
                 </graphic>
