@@ -13,7 +13,7 @@ class Grayscale(
     override fun transform(source: Image): Image {
         if (source.mono) return source
 
-        val result = Image(source.width, source.height, true)
+        val result = Image(source.width, source.height, source.header, true)
 
         for (i in source.data.indices step 3) {
             val gray = red * source.data[i] + green * source.data[i + 1] + blue * source.data[i + 2]

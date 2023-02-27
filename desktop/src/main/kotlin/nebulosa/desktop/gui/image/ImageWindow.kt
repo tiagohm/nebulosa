@@ -150,12 +150,6 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             scnrMenuItem.isDisable = !value
         }
 
-    override var hasFitsHeader
-        get() = !fitsHeaderMenuItem.isDisable
-        set(value) {
-            fitsHeaderMenuItem.isDisable = !value
-        }
-
     override val imageBounds: Bounds
         get() = imageCanvas.parent.boundsInLocal
 

@@ -1,14 +1,14 @@
 import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.StringSpec
 import nebulosa.guiding.local.*
-import nebulosa.imaging.FitsImage
+import nebulosa.imaging.Image
 import nom.tam.fits.Fits
 
 @Ignored
 class MultiStarGuiderTest : StringSpec(), GuiderListener {
 
     init {
-        val fits1 = FitsImage(Fits("src/test/resources/1.fits"))
+        val fits1 = Image.open(Fits("src/test/resources/1.fits"))
 
         "select star" {
             val guider = MultiStarGuider()

@@ -13,8 +13,6 @@ interface ImageView : View {
 
     var hasScnr: Boolean
 
-    var hasFitsHeader: Boolean
-
     val imageBounds: Bounds
 
     val fits: Image?

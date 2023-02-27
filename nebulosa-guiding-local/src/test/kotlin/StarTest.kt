@@ -6,14 +6,14 @@ import io.kotest.matchers.floats.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import nebulosa.guiding.local.Star
-import nebulosa.imaging.FitsImage
+import nebulosa.imaging.Image
 import nom.tam.fits.Fits
 
 class StarTest : StringSpec() {
 
     init {
-        val fits1 = FitsImage(Fits("src/test/resources/1.fits"))
-        val fits2 = FitsImage(Fits("src/test/resources/2.fits"))
+        val fits1 = Image.open(Fits("src/test/resources/1.fits"))
+        val fits2 = Image.open(Fits("src/test/resources/2.fits"))
 
         "star found" {
             with(Star(542f, 974f)) {
