@@ -1,5 +1,6 @@
 import io.kotest.matchers.shouldBe
 import nebulosa.imaging.Image
+import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nom.tam.fits.Fits
 import java.io.File
@@ -198,6 +199,14 @@ class FitsImageTest : ImageTest() {
             val outputFile = File("src/test/resources/Debayer.GRBG.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "dad1a430e41e4846f0c6a9c594e5d57d"
+        }
+        "SCNR" {
+            val fits = Fits("src/test/resources/Debayer.GRBG.fits")
+            val scnr = SubtractiveChromaticNoiseReduction(ImageChannel.GREEN, 0.5f, ProtectionMethod.AVERAGE_NEUTRAL)
+            val image = scnr.transform(Image.open(fits))
+            val outputFile = File("src/test/resources/Debayer.SCNR.png")
+            ImageIO.write(image, "PNG", outputFile)
+             outputFile.md5() shouldBe "223dd13ec260782e135ff64a5acedb26"
         }
         "Salt & Pepper Noise" {
             val fits = Fits("src/test/resources/Flower.fits")

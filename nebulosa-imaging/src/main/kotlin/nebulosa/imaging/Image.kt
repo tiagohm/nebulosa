@@ -18,8 +18,6 @@ import java.io.OutputStream
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import javax.imageio.ImageIO
-import kotlin.math.max
-import kotlin.math.min
 
 @Suppress("NOTHING_TO_INLINE")
 class Image(
@@ -29,147 +27,166 @@ class Image(
 ) : BufferedImage(colorModel(mono), raster(width, height, mono), false, null) {
 
     @JvmField val pixelStride = if (mono) 1 else 3
-    @JvmField val stride = width * pixelStride
-    @JvmField val data = (raster.dataBuffer as Float8bitsDataBuffer).data
+    @JvmField val stride = width
+    @JvmField val buffer = raster.dataBuffer as Float8bitsDataBuffer
+    @JvmField val data = buffer.data
+    @JvmField val r = buffer.r
+    @JvmField val g = buffer.g
+    @JvmField val b = buffer.b
 
-    inline fun indexAt(x: Int, y: Int) = y * stride + x * pixelStride
-
-    inline fun writePixel(x: Int, y: Int, channel: ImageChannel, color: Float) {
-        data[indexAt(x, y) + channel.offset] = color
+    inline fun indexAt(x: Int, y: Int): Int {
+        return y * stride + x
     }
 
-    inline fun readPixel(x: Int, y: Int, channel: ImageChannel): Float {
-        return data[indexAt(x, y) + channel.offset]
+    inline fun write(index: Int, channel: ImageChannel, color: Float) {
+        data[channel.offset][index] = color
     }
 
-    inline fun readPixel(x: Int, y: Int): Float {
-        return readPixelAt(indexAt(x, y))
+    inline fun write(x: Int, y: Int, channel: ImageChannel, color: Float) {
+        write(indexAt(x, y), channel, color)
     }
 
-    inline fun readPixelAt(index: Int): Float {
-        return if (mono) data[index]
-        else (data[index] + data[index + 1] + data[index + 2]) / 3f
+    inline fun writeRed(index: Int, color: Float) {
+        r[index] = color
     }
 
-    fun writeByteArray(channel: ImageChannel, data: Array<ByteArray>): FloatArray {
-        var idx = channel.offset
+    inline fun writeRed(x: Int, y: Int, color: Float) {
+        writeRed(indexAt(x, y), color)
+    }
 
-        var max = Float.MIN_VALUE
-        var min = Float.MAX_VALUE
+    inline fun writeGreen(index: Int, color: Float) {
+        g[index] = color
+    }
+
+    inline fun writeGreen(x: Int, y: Int, color: Float) {
+        writeGreen(indexAt(x, y), color)
+    }
+
+    inline fun writeBlue(index: Int, color: Float) {
+        b[index] = color
+    }
+
+    inline fun writeBlue(x: Int, y: Int, color: Float) {
+        writeBlue(indexAt(x, y), color)
+    }
+
+    inline fun writeGray(index: Int, color: Float) {
+        r[index] = color
+
+        if (!mono) {
+            g[index] = color
+            b[index] = color
+        }
+    }
+
+    inline fun writeGray(x: Int, y: Int, color: Float) {
+        writeGray(indexAt(x, y), color)
+    }
+
+    inline fun read(index: Int, channel: ImageChannel): Float {
+        return data[channel.offset][index]
+    }
+
+    inline fun read(x: Int, y: Int, channel: ImageChannel): Float {
+        return read(indexAt(x, y), channel)
+    }
+
+    inline fun readRed(index: Int): Float {
+        return r[index]
+    }
+
+    inline fun readRed(x: Int, y: Int): Float {
+        return readRed(indexAt(x, y))
+    }
+
+    inline fun readGreen(index: Int): Float {
+        return g[index]
+    }
+
+    inline fun readGreen(x: Int, y: Int): Float {
+        return readGreen(indexAt(x, y))
+    }
+
+    inline fun readBlue(index: Int): Float {
+        return b[index]
+    }
+
+    inline fun readBlue(x: Int, y: Int): Float {
+        return readBlue(indexAt(x, y))
+    }
+
+    inline fun readGray(index: Int): Float {
+        return if (mono) r[index] else (r[index] + g[index] + b[index]) / 3f
+    }
+
+    inline fun readGray(x: Int, y: Int): Float {
+        return readGray(indexAt(x, y))
+    }
+
+    fun writeByteArray(channel: ImageChannel, data: Array<ByteArray>) {
+        var idx = 0
 
         for (y in data.indices) {
             for (x in 0 until data[y].size) {
-                val color = (data[y][x].toInt() and 0xff) / 255f
-                this.data[idx] = color
-
-                if (color < min) min = color
-                else if (color > max) max = color
-
-                idx += pixelStride
+                write(idx++, channel, (data[y][x].toInt() and 0xff) / 255f)
             }
         }
-
-        return floatArrayOf(min, max)
     }
 
-    fun writeShortArray(channel: ImageChannel, data: Array<ShortArray>): FloatArray {
-        var idx = channel.offset
-
-        var max = Float.MIN_VALUE
-        var min = Float.MAX_VALUE
+    fun writeShortArray(channel: ImageChannel, data: Array<ShortArray>) {
+        var idx = 0
 
         for (y in data.indices) {
             for (x in 0 until data[y].size) {
-                val color = (data[y][x].toInt() + 32768) / 65535f
-                this.data[idx] = color
-
-                if (color < min) min = color
-                else if (color > max) max = color
-
-                idx += pixelStride
+                write(idx++, channel, (data[y][x].toInt() + 32768) / 65535f)
             }
         }
-
-        return floatArrayOf(min, max)
     }
 
-    fun writeIntArray(channel: ImageChannel, data: Array<IntArray>): FloatArray {
-        var idx = channel.offset
-
-        var max = Float.MIN_VALUE
-        var min = Float.MAX_VALUE
+    fun writeIntArray(channel: ImageChannel, data: Array<IntArray>) {
+        var idx = 0
 
         for (y in data.indices) {
             for (x in 0 until data[y].size) {
-                val color = ((data[y][x].toLong() + 2147483648) / 4294967295.0).toFloat()
-                this.data[idx] = color
-
-                if (color < min) min = color
-                else if (color > max) max = color
-
-                idx += pixelStride
+                write(idx++, channel, ((data[y][x].toLong() + 2147483648) / 4294967295.0).toFloat())
             }
         }
-
-        return floatArrayOf(min, max)
     }
 
-    fun writeFloatArray(channel: ImageChannel, data: Array<FloatArray>): FloatArray {
-        var idx = channel.offset
-
-        var max = Float.MIN_VALUE
-        var min = Float.MAX_VALUE
+    fun writeFloatArray(channel: ImageChannel, data: Array<FloatArray>) {
+        var idx = 0
 
         for (y in data.indices) {
             for (x in 0 until data[y].size) {
-                val color = data[y][x]
-                this.data[idx] = color
-
-                if (color < min) min = color
-                else if (color > max) max = color
-
-                idx += pixelStride
+                write(idx++, channel, data[y][x])
             }
         }
-
-        return floatArrayOf(min, max)
     }
 
-    fun writeDoubleArray(channel: ImageChannel, data: Array<DoubleArray>): FloatArray {
-        var idx = channel.offset
-
-        var max = Float.MIN_VALUE
-        var min = Float.MAX_VALUE
+    fun writeDoubleArray(channel: ImageChannel, data: Array<DoubleArray>) {
+        var idx = 0
 
         for (y in data.indices) {
             for (x in 0 until data[y].size) {
-                val color = data[y][x].toFloat()
-                this.data[idx] = color
-
-                if (color < min) min = color
-                else if (color > max) max = color
-
-                idx += pixelStride
+                write(idx++, channel, data[y][x].toFloat())
             }
         }
-
-        return floatArrayOf(min, max)
     }
 
     fun writeTo(output: IntBuffer) {
         for (y in 0 until height) {
             for (x in 0 until width) {
-                val index = y * stride + x * pixelStride
+                val index = indexAt(x, y)
 
                 if (mono) {
-                    val c = (data[index] * 255f).toInt()
+                    val c = (r[index] * 255f).toInt()
                     val p = 0xFF000000.toInt() or (c shl 16) or (c shl 8) or c
                     output.put(p)
                 } else {
-                    val a = (data[index] * 255f).toInt()
-                    val b = (data[index + 1] * 255f).toInt()
-                    val c = (data[index + 2] * 255f).toInt()
-                    val p = 0xFF000000.toInt() or (a shl 16) or (b shl 8) or c
+                    val ri = (r[index] * 255f).toInt()
+                    val gi = (g[index] * 255f).toInt()
+                    val bi = (b[index] * 255f).toInt()
+                    val p = 0xFF000000.toInt() or (ri shl 16) or (gi shl 8) or bi
                     output.put(p)
                 }
             }
@@ -180,13 +197,14 @@ class Image(
         val fits = Fits()
 
         val data = ImageData(header)
-        val buffer = FloatArray(this.data.size)
-        var idx = 0
+        val buffer = FloatArray(buffer.size)
+        val size = width * height
 
-        for (i in 0 until pixelStride) {
-            for (k in i until this.data.size step pixelStride) {
-                buffer[idx++] = this.data[k]
-            }
+        r.copyInto(buffer, 0)
+
+        if (!mono) {
+            g.copyInto(buffer, size)
+            b.copyInto(buffer, size * 2)
         }
 
         data.setBuffer(FloatBuffer.wrap(buffer))
@@ -226,7 +244,11 @@ class Image(
             val pixelStride = if (mono) 1 else 3
             val bandOffsets = if (mono) intArrayOf(0) else intArrayOf(0, 1, 2)
             val sampleModel = PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, width, height, pixelStride, width * pixelStride, bandOffsets)
-            val buffer = Float8bitsDataBuffer(width * height * pixelStride)
+            val size = width * height
+
+            val buffer = if (mono) Float8bitsDataBuffer.mono(size)
+            else Float8bitsDataBuffer.rgb(size)
+
             return Raster.createWritableRaster(sampleModel, buffer, null)
         }
 
@@ -257,21 +279,10 @@ class Image(
 
             val image = Image(width, height, header, mono)
 
-            // TODO: This is correct?
-            fun mapData(min: Float, max: Float) {
-                if (min < 0f || max > 1f) {
-                    val k = max - min
-
-                    for (i in image.data.indices) {
-                        image.data[i] = (image.data[i] - min) / k
-                    }
-                }
-            }
-
             if (axes.size == 2) {
                 val bayer = hdu.cfaPattern
 
-                val (min, max) = when (val numberType = bitpix.numberType) {
+                when (val numberType = bitpix.numberType) {
                     Byte::class.java -> image.writeByteArray(ImageChannel.RED, pixels as Array<ByteArray>)
                     Short::class.java -> image.writeShortArray(ImageChannel.RED, pixels as Array<ShortArray>)
                     Int::class.java -> image.writeIntArray(ImageChannel.RED, pixels as Array<IntArray>)
@@ -280,17 +291,12 @@ class Image(
                     else -> throw IllegalStateException("invalid bitpix number type: $numberType")
                 }
 
-                mapData(min, max)
-
                 if (bayer != null) {
                     Debayer(bayer).transform(image)
                 }
             } else {
-                var max = Float.MIN_VALUE
-                var min = Float.MAX_VALUE
-
                 for (channel in ImageChannel.RGB) {
-                    val minMax = when (val numberType = bitpix.numberType) {
+                    when (val numberType = bitpix.numberType) {
                         Byte::class.java -> image.writeByteArray(channel, pixels[channel.offset] as Array<ByteArray>)
                         Short::class.java -> image.writeShortArray(channel, pixels[channel.offset] as Array<ShortArray>)
                         Int::class.java -> image.writeIntArray(channel, pixels[channel.offset] as Array<IntArray>)
@@ -298,12 +304,7 @@ class Image(
                         Double::class.java -> image.writeDoubleArray(channel, pixels[channel.offset] as Array<DoubleArray>)
                         else -> throw IllegalStateException("invalid bitpix number type: $numberType")
                     }
-
-                    min = min(min, minMax[0])
-                    max = max(max, minMax[1])
                 }
-
-                mapData(min, max)
             }
 
             return image
@@ -336,17 +337,17 @@ class Image(
 
             var idx = 0
 
+            // TODO: Fix mono overbrightness when write to file.
             for (y in 0 until height) {
                 for (x in 0 until width) {
                     val rgb = bufferedImage.getRGB(x, y)
 
                     if (mono) {
-                        // TODO: Fix mono overbrightness when write to file.
-                        image.data[idx++] = (rgb and 0xff) / 255f
+                        image.r[idx++] = (rgb and 0xff) / 255f
                     } else {
-                        image.data[idx++] = (rgb ushr 16 and 0xff) / 255f
-                        image.data[idx++] = (rgb ushr 8 and 0xff) / 255f
-                        image.data[idx++] = (rgb and 0xff) / 255f
+                        image.r[idx] = (rgb ushr 16 and 0xff) / 255f
+                        image.g[idx] = (rgb ushr 8 and 0xff) / 255f
+                        image.b[idx++] = (rgb and 0xff) / 255f
                     }
                 }
             }

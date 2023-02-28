@@ -51,8 +51,8 @@ abstract class Convolution(
                             val k = kernel[i][j]
 
                             div += k
-                            val index = (y + ir) * source.stride + (x + jr) * source.pixelStride
-                            for (p in 0 until source.pixelStride) c[p] += k * source.data[index + p]
+                            val index = (y + ir) * source.stride + (x + jr)
+                            for (p in 0 until source.pixelStride) c[p] += k * source.data[p][index]
 
                             processedKernelSize++
                         }
@@ -71,8 +71,10 @@ abstract class Convolution(
         }
 
         for (i in cached.indices) {
-            for (k in cached[i].indices) source.data[k * source.pixelStride + i] = cached[i][k]
+            cached[i].copyInto(source.data[i])
         }
+
+        cached.fill(FloatArray(0)) // clear.
 
         return source
     }

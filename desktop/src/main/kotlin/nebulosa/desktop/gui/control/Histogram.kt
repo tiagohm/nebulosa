@@ -15,14 +15,14 @@ class Histogram : ResizableCanvas() {
 
         for (y in 0 until fits.height) {
             for (x in 0 until fits.width) {
-                val index = y * fits.stride + x * fits.pixelStride
+                val index = fits.indexAt(x, y)
 
                 maxHeight = if (fits.mono) {
-                    val i = (fits.data[index] * 255f).toInt()
+                    val i = (fits.r[index] * 255f).toInt()
                     histogramData[i]++
                     max(maxHeight, histogramData[i])
                 } else {
-                    val i = ((fits.data[index] + fits.data[index + 1] + fits.data[index + 2]) * 85f).toInt()
+                    val i = ((fits.r[index] + fits.g[index] + fits.b[index]) * 85f).toInt()
                     histogramData[i]++
                     max(maxHeight, histogramData[i])
                 }

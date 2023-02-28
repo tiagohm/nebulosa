@@ -15,9 +15,9 @@ class Grayscale(
 
         val result = Image(source.width, source.height, source.header, true)
 
-        for (i in source.data.indices step 3) {
-            val gray = red * source.data[i] + green * source.data[i + 1] + blue * source.data[i + 2]
-            result.data[i / 3] = max(0f, min(gray, 1f))
+        for (i in source.r.indices) {
+            val gray = max(0f, min(red * source.r[i] + green * source.g[i] + blue * source.b[i], 1f))
+            result.r[i] = gray
         }
 
         return result

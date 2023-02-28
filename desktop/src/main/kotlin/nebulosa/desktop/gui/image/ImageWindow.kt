@@ -221,18 +221,18 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
                     continue
                 }
 
-                val index = realY * fits.stride + realX * fits.pixelStride
+                val index = fits.indexAt(realX, realY)
 
                 if (prevIndex == index) {
                     buffer[idx++] = prevColor
                 } else if (fits.mono) {
-                    val c = (fits.data[index] * 255f).toInt()
+                    val c = (fits.r[index] * 255f).toInt()
                     prevColor = 0xFF000000.toInt() or (c shl 16) or (c shl 8) or c
                     buffer[idx++] = prevColor
                 } else {
-                    val a = (fits.data[index] * 255f).toInt()
-                    val b = (fits.data[index + 1] * 255f).toInt()
-                    val c = (fits.data[index + 2] * 255f).toInt()
+                    val a = (fits.r[index] * 255f).toInt()
+                    val b = (fits.g[index] * 255f).toInt()
+                    val c = (fits.b[index] * 255f).toInt()
                     prevColor = 0xFF000000.toInt() or (a shl 16) or (b shl 8) or c
                     buffer[idx++] = prevColor
                 }

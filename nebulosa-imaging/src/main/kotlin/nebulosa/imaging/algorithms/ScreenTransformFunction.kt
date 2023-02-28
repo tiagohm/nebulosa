@@ -19,10 +19,13 @@ class ScreenTransformFunction(
 
         lut.fill(Float.NaN)
 
-        for (i in source.data.indices) {
-            val pixel = source.data[i]
-            val color = pixel.df(midtone, shadow, highlight, k1, k2)
-            source.data[i] = color
+        for (i in source.r.indices) {
+            source.r[i] = source.r[i].df(midtone, shadow, highlight, k1, k2)
+
+            if (!source.mono) {
+                source.g[i] = source.g[i].df(midtone, shadow, highlight, k1, k2)
+                source.b[i] = source.b[i].df(midtone, shadow, highlight, k1, k2)
+            }
         }
 
         return source

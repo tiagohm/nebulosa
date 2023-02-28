@@ -29,69 +29,69 @@ class Debayer(val pattern: CfaPattern = CfaPattern.GRGB) : TransformAlgorithm {
 
         for (y in 0 until height) {
             for (x in 0 until width) {
-                val index = y * source.stride + x * source.pixelStride
+                val index = source.indexAt(x, y)
 
                 rgbValues.fill(0f)
                 rgbCounters.fill(0)
 
                 var bayerIndex = pattern[y and 1, x and 1]
-                rgbValues[bayerIndex.ordinal] += source.data[index]
-                rgbCounters[bayerIndex.ordinal]++
+                rgbValues[bayerIndex.offset] += source.readRed(index)
+                rgbCounters[bayerIndex.offset]++
 
                 if (x != 0) {
                     bayerIndex = pattern[y and 1, x - 1 and 1]
-                    rgbValues[bayerIndex.ordinal] += source.data[index - source.pixelStride]
-                    rgbCounters[bayerIndex.ordinal]++
+                    rgbValues[bayerIndex.offset] += source.readRed(index - 1)
+                    rgbCounters[bayerIndex.offset]++
                 }
 
                 if (x != widthM1) {
                     bayerIndex = pattern[y and 1, x + 1 and 1]
-                    rgbValues[bayerIndex.ordinal] += source.data[index + source.pixelStride]
-                    rgbCounters[bayerIndex.ordinal]++
+                    rgbValues[bayerIndex.offset] += source.readRed(index + 1)
+                    rgbCounters[bayerIndex.offset]++
                 }
 
                 if (y != 0) {
                     bayerIndex = pattern[y - 1 and 1, x and 1]
-                    rgbValues[bayerIndex.ordinal] += source.data[index - source.stride]
-                    rgbCounters[bayerIndex.ordinal]++
+                    rgbValues[bayerIndex.offset] += source.readRed(index - source.stride)
+                    rgbCounters[bayerIndex.offset]++
 
                     if (x != 0) {
                         bayerIndex = pattern[y - 1 and 1, x - 1 and 1]
-                        rgbValues[bayerIndex.ordinal] += source.data[index - source.stride - source.pixelStride]
-                        rgbCounters[bayerIndex.ordinal]++
+                        rgbValues[bayerIndex.offset] += source.readRed(index - source.stride - 1)
+                        rgbCounters[bayerIndex.offset]++
                     }
 
                     if (x != widthM1) {
                         bayerIndex = pattern[y - 1 and 1, x + 1 and 1]
-                        rgbValues[bayerIndex.ordinal] += source.data[index - source.stride + source.pixelStride]
-                        rgbCounters[bayerIndex.ordinal]++
+                        rgbValues[bayerIndex.offset] += source.readRed(index - source.stride + 1)
+                        rgbCounters[bayerIndex.offset]++
                     }
                 }
 
                 if (y != heightM1) {
                     bayerIndex = pattern[y + 1 and 1, x and 1]
-                    rgbValues[bayerIndex.ordinal] += source.data[index + source.stride]
-                    rgbCounters[bayerIndex.ordinal]++
+                    rgbValues[bayerIndex.offset] += source.readRed(index + source.stride)
+                    rgbCounters[bayerIndex.offset]++
 
                     if (x != 0) {
                         bayerIndex = pattern[y + 1 and 1, x - 1 and 1]
-                        rgbValues[bayerIndex.ordinal] += source.data[index + source.stride - source.pixelStride]
-                        rgbCounters[bayerIndex.ordinal]++
+                        rgbValues[bayerIndex.offset] += source.readRed(index + source.stride - 1)
+                        rgbCounters[bayerIndex.offset]++
                     }
 
                     if (x != widthM1) {
                         bayerIndex = pattern[y + 1 and 1, x + 1 and 1]
-                        rgbValues[bayerIndex.ordinal] += source.data[index + source.stride + source.pixelStride]
-                        rgbCounters[bayerIndex.ordinal]++
+                        rgbValues[bayerIndex.offset] += source.readRed(index + source.stride + 1)
+                        rgbCounters[bayerIndex.offset]++
                     }
                 }
 
-                cachedRed[index / 3] = rgbValues[0] / rgbCounters[0]
-                source.data[index + 1] = rgbValues[1] / rgbCounters[1]
-                source.data[index + 2] = rgbValues[2] / rgbCounters[2]
+                cachedRed[index] = rgbValues[0] / rgbCounters[0]
+                source.g[index] = rgbValues[1] / rgbCounters[1]
+                source.b[index] = rgbValues[2] / rgbCounters[2]
             }
         }
 
-        for (i in cachedRed.indices) source.data[i * source.pixelStride] = cachedRed[i]
+        cachedRed.copyInto(source.r)
     }
 }

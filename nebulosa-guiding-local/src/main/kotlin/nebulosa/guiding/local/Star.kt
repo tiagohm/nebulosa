@@ -75,7 +75,7 @@ open class Star : Point {
             if (mode == FindMode.PEAK) {
                 for (y in startY..endY) {
                     for (x in startX..endY) {
-                        val p = image.readPixel(x, y) * 65535f
+                        val p = image.readGray(x, y) * 65535f
 
                         if (p > peak) {
                             peak = p
@@ -91,18 +91,17 @@ open class Star : Point {
                 // using a smoothing function also check for saturation.
                 for (y in startY + 1 until endY) {
                     for (x in startX + 1 until endX) {
-                        var p = image.readPixel(x, y) * 65535f
+                        var p = image.readGray(x, y) * 65535f
 
-                        // TODO: Optimize this using stride instead of call readPixel
-                        // and remove 65535 multiplication.
-                        val pv = 4 * p + image.readPixel(x - 1, y - 1) * 65535f +
-                                image.readPixel(x + 1, y - 1) * 65535f +
-                                image.readPixel(x - 1, y + 1) * 65535f +
-                                image.readPixel(x + 1, y + 1) * 65535f +
-                                2 * image.readPixel(x + 0, y - 1) * 65535f +
-                                2 * image.readPixel(x - 1, y + 0) * 65535f +
-                                2 * image.readPixel(x + 1, y + 0) * 65535f +
-                                2 * image.readPixel(x + 0, y + 1) * 65535f
+                        // TODO: Optimize this using stride instead of call readGray and remove 65535 multiplication.
+                        val pv = 4 * p + image.readGray(x - 1, y - 1) * 65535f +
+                                image.readGray(x + 1, y - 1) * 65535f +
+                                image.readGray(x - 1, y + 1) * 65535f +
+                                image.readGray(x + 1, y + 1) * 65535f +
+                                2 * image.readGray(x + 0, y - 1) * 65535f +
+                                2 * image.readGray(x - 1, y + 0) * 65535f +
+                                2 * image.readGray(x + 1, y + 0) * 65535f +
+                                2 * image.readGray(x + 0, y + 1) * 65535f
 
                         // println("Star::Find p=%d val=%d".format(p.toInt(), pv.toInt()))
 
@@ -168,7 +167,7 @@ open class Star : Point {
                         // Exclude points not in annulus.
                         if (r2 <= A2 || r2 > B2) continue
 
-                        val p = image.readPixel(x, y) * 65535f
+                        val p = image.readGray(x, y) * 65535f
                         // println("Star::Find val=%.4f x=%d y=%d".format(p, x, y))
 
                         if (i > 0 && (p < meanBg - 2f * sigmaBg || p > meanBg + 2f * sigmaBg)) continue
@@ -240,7 +239,7 @@ open class Star : Point {
                         if (dx * dx + dy2 > A2) continue
 
                         // Exclude points below threshold.
-                        val p = image.readPixel(x, y) * 65535f
+                        val p = image.readGray(x, y) * 65535f
 
                         if (p < thresh) continue
 

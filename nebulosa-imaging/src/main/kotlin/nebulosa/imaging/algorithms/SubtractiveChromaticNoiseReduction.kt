@@ -30,12 +30,12 @@ class SubtractiveChromaticNoiseReduction(
     override fun transform(source: Image): Image {
         if (source.mono || channel == ImageChannel.GRAY) return source
 
-        val p0 = ((channel.offset - 1) % 3).let { if (it < 0) it + 3 else it }
+        val p0 = (channel.offset + 2) % 3
         val p1 = (channel.offset + 1) % 3
 
-        for (i in source.data.indices step 3) {
-            source.data[i + channel.offset] = protectionMethod
-                .compute(source.data[i + p0], source.data[i + p1], source.data[i + channel.offset], amount)
+        for (i in source.r.indices) {
+            source.data[channel.offset][i] = protectionMethod
+                .compute(source.data[p0][i], source.data[p1][i], source.data[channel.offset][i], amount)
         }
 
         return source

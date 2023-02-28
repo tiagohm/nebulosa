@@ -215,9 +215,10 @@ class ImageManager(private val view: ImageView) : Closeable {
             algorithms.add(Flip(mirrorHorizontal, mirrorVertical))
             if (scnrEnabled) algorithms.add(SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode))
             algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
+
             if (invert) algorithms.add(Invert)
 
-            algorithms.add(Crosshair)
+            // algorithms.add(Crosshair)
 
             transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)
         }

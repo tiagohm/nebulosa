@@ -19,9 +19,9 @@ class SaltAndPepperNoise(
         for (i in 0 until noisyPixels) {
             val x = random.nextInt(source.width)
             val y = random.nextInt(source.height)
-            val index = y * source.stride + x * source.pixelStride
+            val index = source.indexAt(x, y)
             val plane = if (source.mono) 0 else random.nextInt(3)
-            source.data[index + plane] = if (random.nextBoolean()) 1f else 0f
+            source.data[plane][index] = if (random.nextBoolean()) 1f else 0f
         }
 
         return source
