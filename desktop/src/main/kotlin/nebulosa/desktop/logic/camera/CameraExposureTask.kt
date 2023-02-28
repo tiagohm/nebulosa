@@ -9,8 +9,11 @@ import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
 import nebulosa.desktop.logic.task.Task
 import nebulosa.desktop.view.camera.AutoSubFolderMode
+import nebulosa.imaging.Image
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.*
+import nom.tam.fits.Fits
+import nom.tam.util.FitsOutputStream
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.InputStream
@@ -143,8 +146,8 @@ data class CameraExposureTask(
     }
 
     @Synchronized
-    private fun save(fits: InputStream): Path {
-        val imagePath = if (autoSave) {
+    private fun save(inputStream: InputStream): Path {
+        val path = if (autoSave) {
             val folderName = autoSubFolderMode.folderName()
             val fileName = "%s-%s.fits".format(LocalDateTime.now().format(DATE_TIME_FORMAT), frameType)
             val fileDirectory = Paths.get("$savePath", folderName).normalize()
@@ -154,14 +157,21 @@ data class CameraExposureTask(
             Paths.get("$savePath", fileName)
         }
 
-        LOG.info("saving FITS at $imagePath...")
+        LOG.info("saving FITS at $path...")
 
-        imagePath.parent.createDirectories()
-        imagePath.outputStream().use { output -> fits.use { it.transferTo(output) } }
+        Fits(inputStream).use { fits ->
+            // TODO: Process custom header: val hdu = fits.read().firstOrNull { it is ImageHDU }
+            fits.read()
 
-        taskEventBus.onNext(CameraFrameSaved(this, imagePath, autoSave))
+            path.parent.createDirectories()
+            path.outputStream().use { fits.write(FitsOutputStream(it)) }
 
-        return imagePath
+            val image = Image.open(fits)
+
+            taskEventBus.onNext(CameraFrameSaved(this, image, path, autoSave))
+        }
+
+        return path
     }
 
     companion object {

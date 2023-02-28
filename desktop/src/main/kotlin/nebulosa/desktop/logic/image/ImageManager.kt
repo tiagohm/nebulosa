@@ -11,7 +11,6 @@ import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.logic.image.draw.Crosshair
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.platesolver.PlateSolverView
 import nebulosa.fits.dec
@@ -108,15 +107,25 @@ class ImageManager(private val view: ImageView) : Closeable {
             }
     }
 
+    private fun updateTitle() {
+        view.title = "Image"
+            .let { if (view.camera != null) "$it · ${view.camera!!.name}" else it }
+            .let { if (file != null) "$it · ${file!!.name}" else it }
+    }
+
     @Synchronized
     fun open(file: File) {
+        val fits = Image.open(file)
+        open(fits, file)
+    }
+
+    @Synchronized
+    fun open(fits: Image, file: File? = null) {
         this.file = file
 
         updateTitle()
 
-        val adjustToDefaultSize = fits == null
-
-        val fits = Image.open(file)
+        val adjustToDefaultSize = this.fits == null
 
         this.fits = fits
         this.transformedFits = null
@@ -241,12 +250,6 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     fun invert() {
         transformImage(invert = !invert)
-    }
-
-    private fun updateTitle() {
-        view.title = "Image"
-            .let { if (view.camera != null) "$it · ${view.camera!!.name}" else it }
-            .let { if (file != null) "$it · ${file!!.name}" else it }
     }
 
     fun adjustSceneSizeToFitImage(defaultSize: Boolean) {

@@ -71,7 +71,10 @@ class CameraManager(
 
     private fun onTaskEvent(event: TaskEvent) {
         when (event) {
-            is CameraFrameSaved -> imageWindows.add(imageWindowOpener.open(event.imagePath.toFile(), event.task.camera))
+            is CameraFrameSaved -> {
+                val window = imageWindowOpener.open(event.image, event.path.toFile(), event.task.camera)
+                imageWindows.add(window)
+            }
         }
     }
 

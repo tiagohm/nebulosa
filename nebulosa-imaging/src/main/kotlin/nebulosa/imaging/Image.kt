@@ -14,6 +14,7 @@ import nom.tam.util.FitsOutputStream
 import java.awt.color.ColorSpace
 import java.awt.image.*
 import java.io.File
+import java.io.InputStream
 import java.io.OutputStream
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
@@ -225,11 +226,43 @@ class Image(
         fitsOutputStream.use { fos -> fits().use { it.write(fos) } }
     }
 
-    fun clone(): Image {
-        val image = Image(width, height, header, mono)
-        data.copyInto(image.data)
+    /**
+     * Creates a new [Image] and returns a mono version of this image.
+     */
+    fun mono(): Image {
+        val image = Image(width, height, header, true)
+
+        if (mono) {
+            r.copyInto(image.r)
+        } else {
+            for (i in r.indices) {
+                image.r[i] = (r[i] + b[i] + g[i]) / 3f
+            }
+        }
+
         return image
     }
+
+    /**
+     * Creates a new [Image] and returns a RGB version of this image.
+     */
+    fun color(): Image {
+        val image = Image(width, height, header, false)
+
+        if (mono) {
+            r.copyInto(image.r)
+            r.copyInto(image.g)
+            r.copyInto(image.b)
+        } else {
+            r.copyInto(image.r)
+            g.copyInto(image.g)
+            b.copyInto(image.b)
+        }
+
+        return image
+    }
+
+    fun clone() = if (mono) mono() else color()
 
     companion object {
 
@@ -255,6 +288,11 @@ class Image(
         @JvmStatic
         fun open(file: File): Image {
             return ImageIO.read(file)?.let(::open) ?: Fits(file).use { open(it) }
+        }
+
+        @JvmStatic
+        fun open(inputStream: InputStream): Image {
+            return ImageIO.read(inputStream)?.let(::open) ?: Fits(inputStream).use { open(it) }
         }
 
         @Suppress("UNCHECKED_CAST")

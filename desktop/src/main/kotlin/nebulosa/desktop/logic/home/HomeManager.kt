@@ -99,7 +99,7 @@ class HomeManager(private val view: HomeView) : Closeable {
         preferences.string("home.newImage.initialDirectory", file.parent)
 
         try {
-            imageWindowOpener.open(file)
+            imageWindowOpener.open(null, file)
         } catch (e: Throwable) {
             LOG.error("image load error", e)
 

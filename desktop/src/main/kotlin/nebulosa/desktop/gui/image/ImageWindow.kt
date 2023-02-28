@@ -197,6 +197,10 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         imageManager.open(file)
     }
 
+    fun open(fits: Image, file: File? = null) {
+        imageManager.open(fits, file)
+    }
+
     override fun draw(
         fits: Image,
         width: Int, height: Int,
@@ -272,7 +276,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
         private val windows = hashSetOf<ImageWindow>()
 
-        fun open(file: File, camera: Camera? = null): ImageWindow {
+        fun open(fits: Image?, file: File?, camera: Camera? = null): ImageWindow {
             val window = windows
                 .firstOrNull { if (camera == null) it.camera == null && !it.showing else it.camera === camera }
                 ?: ImageWindow(camera).also { beanFactory.autowireBean(it); beanFactory.autowireBean(it.imageManager) }
@@ -280,7 +284,10 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             windows.add(window)
 
             window.show()
-            window.open(file)
+
+            if (fits != null) window.open(fits, file)
+            else if (file != null) window.open(file)
+            else throw IllegalArgumentException("fits or file parameter must be provided")
 
             return window
         }

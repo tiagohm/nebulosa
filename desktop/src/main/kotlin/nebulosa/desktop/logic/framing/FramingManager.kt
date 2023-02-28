@@ -14,6 +14,7 @@ import nebulosa.erfa.PairOfAngle
 import nebulosa.hips2fits.FormatOutputType
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.hips2fits.HipsSurvey
+import nebulosa.imaging.Image
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountEquatorialCoordinatesChanged
 import nebulosa.indi.device.mount.MountEvent
@@ -24,6 +25,7 @@ import nebulosa.math.Angle.Companion.rad
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.io.ByteArrayInputStream
 import java.io.Closeable
 import java.io.InterruptedIOException
 import java.nio.file.Files
@@ -137,8 +139,10 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
             imagePath.set(tmpFile)
 
             javaFxThread {
-                val window = imageWindow.get()?.also { it.open(tmpFile.toFile()) }
-                    ?: imageWindowOpener.open(tmpFile.toFile())
+                val image = Image.open(ByteArrayInputStream(data))
+
+                val window = imageWindow.get()?.also { it.open(image, tmpFile.toFile()) }
+                    ?: imageWindowOpener.open(image, tmpFile.toFile())
                 imageWindow.set(window)
                 task.complete(tmpFile)
             }
