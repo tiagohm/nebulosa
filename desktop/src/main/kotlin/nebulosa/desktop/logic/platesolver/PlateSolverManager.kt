@@ -160,7 +160,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
 
                 javaFXExecutorService.execute {
                     solving.set(false)
-                    solved.set(true)
+                    solved.set(calibration != Calibration.EMPTY)
 
                     this.calibration.set(calibration)
                 }

@@ -6,19 +6,26 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.stereotype.Service
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
+@Service
+@EnableScheduling
 class IERSLoader(
     @Autowired private var appDirectory: Path,
     @Autowired private var okHttpClient: OkHttpClient,
-) : Thread() {
+) : Runnable {
 
     private val path = Paths.get("$appDirectory", "finals2000A.all")
 
+    @Scheduled(fixedRate = 1L, initialDelay = 0L, timeUnit = TimeUnit.HOURS)
     override fun run() {
         LOG.info("checking finals2000A.all")
 
@@ -66,9 +73,14 @@ class IERSLoader(
             .url(IERSA.URL)
             .build()
 
-        return okHttpClient.newCall(request)
-            .execute()
-            .use { it.headers.getDate("Last-Modified")?.time ?: 0L }
+        return try {
+            okHttpClient.newCall(request)
+                .execute()
+                .use { it.headers.getDate("Last-Modified")?.time ?: 0L }
+        } catch (e: Throwable) {
+            LOG.error("failed to check last modified date", e)
+            System.currentTimeMillis()
+        }
     }
 
     private fun download() {

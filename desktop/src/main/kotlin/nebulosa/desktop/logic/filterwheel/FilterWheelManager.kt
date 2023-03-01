@@ -1,6 +1,5 @@
 package nebulosa.desktop.logic.filterwheel
 
-import jakarta.annotation.PostConstruct
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager

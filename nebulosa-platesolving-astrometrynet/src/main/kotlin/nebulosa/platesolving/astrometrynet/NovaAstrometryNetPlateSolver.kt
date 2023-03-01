@@ -8,6 +8,7 @@ import nebulosa.math.Angle.Companion.deg
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.Duration
 import kotlin.math.max
@@ -71,18 +72,22 @@ class NovaAstrometryNetPlateSolver(
                 ?: throw PlateSolvingException("failed to retrieve submission status")
 
             if (status.solved) {
-                val calibration = service.jobCalibration(status.jobs[0]).execute().body()
+                val body = service.jobCalibration(status.jobs[0]).execute().body()
                     ?: throw PlateSolvingException("failed to retrieve calibration")
 
-                return Calibration(
-                    calibration.orientation.deg,
-                    calibration.pixScale,
-                    calibration.radius.deg,
-                    calibration.ra.deg,
-                    calibration.dec.deg,
-                    calibration.width / 60.0,
-                    calibration.height / 60.0,
+                val calibration = Calibration(
+                    body.orientation.deg,
+                    body.pixScale,
+                    body.radius.deg,
+                    body.ra.deg,
+                    body.dec.deg,
+                    body.width / 60.0,
+                    body.height / 60.0,
                 )
+
+                LOG.info("astrometry.net solved. calibration={}", calibration)
+
+                return calibration
             }
 
             val timeEnd = System.currentTimeMillis()
@@ -103,5 +108,7 @@ class NovaAstrometryNetPlateSolver(
         const val ANONYMOUS_API_KEY = "XXXXXXXX"
 
         private const val SESSION_EXPIRATION_TIME = 1000L * 60L * 15L
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(NovaAstrometryNetService::class.java)
     }
 }

@@ -84,7 +84,9 @@ class AstapPlateSolver(private val path: String) : PlateSolver {
                 val width = dimensions[0].trim().toInt() * scale
                 val height = dimensions[1].trim().toInt() * scale
                 val fieldRadius = hypot(width, height) / 2.0
-                return Calibration(orientation, scale * 60.0, fieldRadius.arcmin, ra, dec, width, height)
+                val calibration = Calibration(orientation, scale * 60.0, fieldRadius.arcmin, ra, dec, width, height)
+                LOG.info("astap solved. calibration={}", calibration)
+                return calibration
             } else {
                 val message = ini.getProperty("ERROR") ?: ini.getProperty("WARNING") ?: "Plate solving failed."
                 throw PlateSolvingException(message)

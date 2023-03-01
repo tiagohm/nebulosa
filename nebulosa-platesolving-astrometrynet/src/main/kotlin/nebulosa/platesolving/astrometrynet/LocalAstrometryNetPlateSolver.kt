@@ -91,6 +91,8 @@ class LocalAstrometryNetPlateSolver(private val path: String) : PlateSolver {
                     .parseFieldRotation(line)
                     .parsePixelScale(line)
                     .parseFieldSize(line)
+
+                LOG.info("astrometry.net solved. calibration={}", calibration)
             }
         }
 

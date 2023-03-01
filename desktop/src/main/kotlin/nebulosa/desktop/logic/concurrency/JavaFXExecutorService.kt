@@ -1,18 +1,17 @@
 package nebulosa.desktop.logic.concurrency
 
-import javafx.application.Platform
 import java.util.concurrent.*
 
-class JavaFXExecutorService : ExecutorService {
+class JavaFXExecutorService(private val executor: Executor) : ExecutorService {
 
     override fun execute(command: Runnable) {
-        runOnJavaFXThread(command)
+        executor.execute(command)
     }
 
     override fun <T : Any> submit(task: Callable<T>): Future<T> {
         val future = CompletableFuture<T>()
 
-        runOnJavaFXThread {
+        executor.execute {
             try {
                 future.complete(task.call())
             } catch (e: Throwable) {
@@ -26,7 +25,7 @@ class JavaFXExecutorService : ExecutorService {
     override fun <T : Any> submit(task: Runnable, result: T): Future<T> {
         val future = CompletableFuture<T>()
 
-        runOnJavaFXThread {
+        executor.execute {
             try {
                 task.run()
                 future.complete(result)
@@ -41,7 +40,7 @@ class JavaFXExecutorService : ExecutorService {
     override fun submit(task: Runnable): Future<*> {
         val future = CompletableFuture<Unit>()
 
-        runOnJavaFXThread {
+        executor.execute {
             try {
                 task.run()
                 future.complete(Unit)
@@ -63,8 +62,8 @@ class JavaFXExecutorService : ExecutorService {
 
     override fun awaitTermination(timeout: Long, unit: TimeUnit) = true
 
-    override fun <T : Any> invokeAll(tasks: MutableCollection<out Callable<T>>): MutableList<Future<T>> {
-        TODO("Not yet implemented")
+    override fun <T : Any> invokeAll(tasks: MutableCollection<out Callable<T>>): List<Future<T>> {
+        return tasks.map { submit(it) }
     }
 
     override fun <T : Any> invokeAll(tasks: MutableCollection<out Callable<T>>, timeout: Long, unit: TimeUnit): MutableList<Future<T>> {
@@ -77,21 +76,5 @@ class JavaFXExecutorService : ExecutorService {
 
     override fun <T : Any> invokeAny(tasks: MutableCollection<out Callable<T>>, timeout: Long, unit: TimeUnit): T {
         TODO("Not yet implemented")
-    }
-
-    companion object {
-
-        @JvmStatic
-        @Suppress("NOTHING_TO_INLINE")
-        inline fun runOnJavaFXThread(command: Runnable) {
-            if (Platform.isFxApplicationThread()) command.run()
-            else Platform.runLater(command)
-        }
-
-        @JvmStatic
-        inline fun runOnJavaFXThread(crossinline block: () -> Unit) {
-            if (Platform.isFxApplicationThread()) block()
-            else Platform.runLater { block() }
-        }
     }
 }

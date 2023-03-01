@@ -3,11 +3,10 @@ package nebulosa.desktop
 import ch.qos.logback.classic.Level
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import javafx.application.Platform
 import javafx.scene.text.Font
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.concurrency.JavaFXExecutor
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
-import nebulosa.desktop.logic.loader.IERSLoader
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.io.resource
 import nebulosa.query.horizons.HorizonsService
@@ -72,7 +71,7 @@ class App : CommandLineRunner {
     fun systemExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
 
     @Bean
-    fun javaFXExecutorService(): ExecutorService = JavaFXExecutorService()
+    fun javaFXExecutorService(javaFXExecutor: Executor): ExecutorService = JavaFXExecutorService(javaFXExecutor)
 
     @Bean
     fun horizonsService() = HorizonsService()
@@ -87,7 +86,7 @@ class App : CommandLineRunner {
     fun hips2FitsService() = Hips2FitsService()
 
     @Bean
-    fun javaFXExecutor() = Executor(Platform::runLater)
+    fun javaFXExecutor() = JavaFXExecutor()
 
     @Bean
     fun eventBus(javaFXExecutorService: ExecutorService) = EventBus.builder()
@@ -109,8 +108,6 @@ class App : CommandLineRunner {
         Font.loadFont(resource("fonts/Roboto-Bold.ttf"), 12.0)
 
         System.setProperty("prism.lcdtext", "false")
-
-        beanFactory.createBean(IERSLoader::class.java).start()
 
         // Log level.
         with(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger) {

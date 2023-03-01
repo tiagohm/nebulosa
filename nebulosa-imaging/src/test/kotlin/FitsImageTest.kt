@@ -206,7 +206,7 @@ class FitsImageTest : ImageTest() {
             val image = scnr.transform(Image.open(fits))
             val outputFile = File("src/test/resources/Debayer.SCNR.png")
             ImageIO.write(image, "PNG", outputFile)
-             outputFile.md5() shouldBe "223dd13ec260782e135ff64a5acedb26"
+            outputFile.md5() shouldBe "223dd13ec260782e135ff64a5acedb26"
         }
         "Salt & Pepper Noise" {
             val fits = Fits("src/test/resources/Flower.fits")

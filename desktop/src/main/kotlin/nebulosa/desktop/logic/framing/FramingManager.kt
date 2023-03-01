@@ -16,6 +16,10 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.io.resource
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.AngleFormatter
+import nom.tam.fits.header.ObservationDescription
+import nom.tam.fits.header.Standard
+import nom.tam.fits.header.extra.MaxImDLExt
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -72,20 +76,23 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
 
         val task = CompletableFuture<Path>()
 
+        val rotation = view.frameRotation
+        val hipsSurvey = view.hipsSurvey!!
+
         systemExecutorService.submit {
             val data = try {
                 while (view.hipsSurvey == null) Thread.sleep(100L)
 
                 LOG.info(
                     "loading image. survey={}, ra={}, dec={}, width={}, height={}, rotation={}",
-                    view.hipsSurvey, ra.hours, dec.degrees,
-                    view.frameWidth, view.frameHeight, view.frameRotation.degrees,
+                    hipsSurvey, ra.hours, dec.degrees,
+                    view.frameWidth, view.frameHeight, rotation.degrees,
                 )
 
                 hips2FitsService.query(
-                    view.hipsSurvey!!,
+                    hipsSurvey,
                     view.frameRA, view.frameDEC,
-                    view.frameWidth, view.frameHeight, view.frameRotation,
+                    view.frameWidth, view.frameHeight, rotation,
                     view.frameFOV,
                     format = FormatOutputType.JPG,
                 ).execute().body()!!
@@ -109,6 +116,12 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
 
             javaFXExecutorService.execute {
                 val image = Image.open(ByteArrayInputStream(data))
+
+                image.header.addValue(Standard.INSTRUME, hipsSurvey.id)
+                image.header.addValue(ObservationDescription.RA, ra.format(FITS_RA))
+                image.header.addValue(ObservationDescription.DEC, ra.format(FITS_DEC))
+                image.header.addValue(MaxImDLExt.ROTATANG, rotation.degrees)
+                image.header.addValue(Standard.COMMENT, "Made use of hips2fits, a service provided by CDS.")
 
                 val window = imageWindow.get()?.also { it.open(image, tmpFile.toFile()) }
                     ?: imageWindowOpener.open(image, tmpFile.toFile())
@@ -154,5 +167,16 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
         const val DEFAULT_HIPS_SURVEY = "CDS/P/DSS2/color"
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(FramingManager::class.java)
+
+        @JvmStatic val FITS_RA = AngleFormatter.HMS.newBuilder()
+            .secondsDecimalPlaces(2)
+            .whitespaced()
+            .build()
+
+        @JvmStatic val FITS_DEC = AngleFormatter.SIGNED_DMS.newBuilder()
+            .degreesFormat("%02d")
+            .secondsDecimalPlaces(2)
+            .whitespaced()
+            .build()
     }
 }

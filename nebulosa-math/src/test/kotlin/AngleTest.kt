@@ -146,10 +146,43 @@ class AngleTest : StringSpec() {
             val negativeAngle = Angle.from("-43 00 45")!!
 
             AngleFormatter.Builder()
+                .degreesFormat("%02d")
                 .separators("°", "'", "\"")
                 .secondsDecimalPlaces(2)
                 .build()
                 .format(negativeAngle) shouldBe "-43°00'45.00\""
+
+            AngleFormatter.HMS
+                .format(angle) shouldBe "12h30m01.0s"
+
+            AngleFormatter.SIGNED_DMS
+                .format(negativeAngle) shouldBe "-043°00'45.0\""
+
+            AngleFormatter.DMS
+                .format(angle) shouldBe "187°30'15.0\""
+
+            AngleFormatter.SIGNED_DMS
+                .newBuilder()
+                .secondsDecimalPlaces(2)
+                .degreesFormat("%03d")
+                .minutesFormat("%04d")
+                .secondsFormat("%02.05f")
+                .whitespaced()
+                .build()
+                .format(negativeAngle) shouldBe "-043 0000 45.00000"
+
+            AngleFormatter.HMS
+                .format(Angle.ZERO) shouldBe "00h00m00.0s"
+
+            AngleFormatter.HMS
+                .format(Angle.CIRCLE) shouldBe "00h00m00.0s"
+        }
+        "bug on round seconds" {
+            Angle.from("23h59m60.0s", true)!!
+                .format(AngleFormatter.HMS) shouldBe "00h00m00.0s"
+
+            AngleFormatter.HMS
+                .format(Angle(6.283182643402501)) shouldBe "23h59m59.9s"
         }
     }
 }

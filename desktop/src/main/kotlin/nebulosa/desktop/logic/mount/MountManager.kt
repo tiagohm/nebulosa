@@ -1,6 +1,5 @@
 package nebulosa.desktop.logic.mount
 
-import jakarta.annotation.PostConstruct
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
