@@ -18,6 +18,8 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.nio.FloatBuffer
 import javax.imageio.ImageIO
+import kotlin.math.max
+import kotlin.math.min
 
 @Suppress("NOTHING_TO_INLINE")
 class Image(
@@ -26,7 +28,7 @@ class Image(
     val mono: Boolean,
 ) : BufferedImage(colorModel(mono), raster(width, height, mono), false, null) {
 
-    @JvmField val pixelStride = if (mono) 1 else 3
+    @JvmField val numberOfChannels = if (mono) 1 else 3
     @JvmField val stride = width
     @JvmField val buffer = raster.dataBuffer as Float8bitsDataBuffer
     @JvmField val data = buffer.data
@@ -318,6 +320,27 @@ class Image(
 
             val image = Image(width, height, header, mono)
 
+            fun rescaling() {
+                for (p in 0 until image.numberOfChannels) {
+                    val minMax = floatArrayOf(Float.MAX_VALUE, Float.MIN_VALUE)
+                    val plane = image.data[p]
+
+                    for (i in plane.indices) {
+                        val k = plane[i]
+                        minMax[0] = min(minMax[0], k)
+                        minMax[1] = max(minMax[1], k)
+                    }
+
+                    if (minMax[0] < 0f || minMax[1] > 1f) {
+                        val k = minMax[1] - minMax[0]
+
+                        for (i in plane.indices) {
+                            plane[i] = (plane[i] - minMax[0]) / k
+                        }
+                    }
+                }
+            }
+
             if (axes.size == 2) {
                 val bayer = hdu.cfaPattern
 
@@ -329,6 +352,8 @@ class Image(
                     Double::class.java -> image.writeDoubleArray(ImageChannel.RED, pixels as Array<DoubleArray>)
                     else -> throw IllegalStateException("invalid bitpix number type: $numberType")
                 }
+
+                rescaling()
 
                 if (bayer != null) {
                     Debayer(bayer).transform(image)
@@ -344,6 +369,8 @@ class Image(
                         else -> throw IllegalStateException("invalid bitpix number type: $numberType")
                     }
                 }
+
+                rescaling()
             }
 
             return image

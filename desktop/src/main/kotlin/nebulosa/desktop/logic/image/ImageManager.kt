@@ -206,7 +206,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         val defaultWidth = if (defaultSize) view.camera
             ?.let { preferences.double("image.${it.name}.screen.width") }
             ?: (screenBounds.width / 2)
-        else view.width - view.borderSize * 2
+        else view.width - view.borderSize
 
         val defaultHeight = if (defaultSize) view.camera
             ?.let { preferences.double("image.${it.name}.screen.height") }
@@ -214,11 +214,11 @@ class ImageManager(private val view: ImageView) : Closeable {
         else view.height - view.titleHeight
 
         if (factor >= 1.0) {
-            view.width = defaultWidth + view.borderSize * 2
+            view.width = defaultWidth + view.borderSize
             view.height = defaultWidth / factor + view.titleHeight
         } else {
             view.height = defaultHeight + view.titleHeight
-            view.width = defaultHeight * factor + view.borderSize * 2
+            view.width = defaultHeight * factor + view.borderSize
         }
     }
 

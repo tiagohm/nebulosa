@@ -22,7 +22,7 @@ abstract class Convolution(
 
     override fun transform(source: Image): Image {
         val radius = size / 2
-        val c = FloatArray(source.pixelStride)
+        val c = FloatArray(source.numberOfChannels)
         val kernelSize = size * size
 
         for (i in c.indices) cached[i] = FloatArray(source.width * source.height)
@@ -52,7 +52,7 @@ abstract class Convolution(
 
                             div += k
                             val index = (y + ir) * source.stride + (x + jr)
-                            for (p in 0 until source.pixelStride) c[p] += k * source.data[p][index]
+                            for (p in 0 until source.numberOfChannels) c[p] += k * source.data[p][index]
 
                             processedKernelSize++
                         }
@@ -63,10 +63,10 @@ abstract class Convolution(
                     div = divisor
                 }
 
-                for (p in 0 until source.pixelStride) c[p] /= div
+                for (p in 0 until source.numberOfChannels) c[p] /= div
 
                 val index = y * source.width + x
-                for (p in 0 until source.pixelStride) cached[p][index] = max(0f, min(c[p], 1f))
+                for (p in 0 until source.numberOfChannels) cached[p][index] = max(0f, min(c[p], 1f))
             }
         }
 

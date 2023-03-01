@@ -4,21 +4,19 @@ import nebulosa.imaging.Image
 
 class Debayer(val pattern: CfaPattern = CfaPattern.GRGB) : TransformAlgorithm {
 
-    private var cachedRed = FloatArray(0) // Prevent clone image.
-
     override fun transform(source: Image): Image {
-        cachedRed = FloatArray(source.width * source.height)
-
-        if (source.mono) {
-            TODO("") // create RGB image, copy gray to red channel e call transform.
+        return if (source.mono) {
+            val newSource = Image(source.width, source.height, source.header, false)
+            source.r.copyInto(newSource.r)
+            transform(newSource)
         } else {
             process(source)
         }
-
-        return source
     }
 
-    private fun process(source: Image) {
+    private fun process(source: Image): Image {
+        val cache = Array(2) { FloatArray(source.width) }
+
         val width = source.width
         val height = source.height
         val widthM1 = width - 1
@@ -27,9 +25,22 @@ class Debayer(val pattern: CfaPattern = CfaPattern.GRGB) : TransformAlgorithm {
         val rgbValues = FloatArray(3)
         val rgbCounters = IntArray(3)
 
+        fun copyCacheToRedChannel(rowIndex: Int, y: Int) {
+            if (y >= 1) {
+                val cacheIndex = y.inv() and 1
+                val startIndex = rowIndex - width
+
+                for (x in 0 until width) {
+                    source.r[startIndex + x] = cache[cacheIndex][x]
+                }
+            }
+        }
+
         for (y in 0 until height) {
+            val rowIndex = source.indexAt(0, y)
+
             for (x in 0 until width) {
-                val index = source.indexAt(x, y)
+                val index = rowIndex + x
 
                 rgbValues.fill(0f)
                 rgbCounters.fill(0)
@@ -86,12 +97,16 @@ class Debayer(val pattern: CfaPattern = CfaPattern.GRGB) : TransformAlgorithm {
                     }
                 }
 
-                cachedRed[index] = rgbValues[0] / rgbCounters[0]
+                cache[y and 1][x] = rgbValues[0] / rgbCounters[0]
                 source.g[index] = rgbValues[1] / rgbCounters[1]
                 source.b[index] = rgbValues[2] / rgbCounters[2]
             }
+
+            copyCacheToRedChannel(rowIndex, y)
         }
 
-        cachedRed.copyInto(source.r)
+        copyCacheToRedChannel(width * height, height.inv() and 1)
+
+        return source
     }
 }
