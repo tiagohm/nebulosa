@@ -1,32 +1,39 @@
 package nebulosa.desktop.logic.indi
 
-import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
-import nebulosa.desktop.logic.DeviceEventBus
 import nebulosa.desktop.logic.equipment.EquipmentManager
-import nebulosa.desktop.logic.observeOnJavaFX
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.io.Closeable
 import java.util.*
 
 @Component
-class INDIPanelControlManager(private val view: INDIPanelControlView) {
+class INDIPanelControlManager(private val view: INDIPanelControlView) : Closeable {
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
-    @Autowired private lateinit var deviceEventBus: DeviceEventBus
+    @Autowired private lateinit var eventBus: EventBus
 
     private val cacheProperties = HashMap<Device, HashMap<String, INDIPanelControlWindow.GroupPropertyVector>>()
     private val groups = ArrayList<INDIPanelControlWindow.Group>()
     private val logText = StringBuilder(1000 * 150)
-    private val subscribers = arrayOfNulls<Disposable>(1)
 
     val devices = SimpleListProperty(FXCollections.observableArrayList<Device>())
 
-    private fun onEvent(event: DeviceEvent<*>) {
+    fun initialize() {
+        eventBus.register(this)
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onEvent(event: DeviceEvent<*>) {
+        if (event.device !== view.device) return
+
         when (event) {
             is DevicePropertyChanged -> {
                 synchronized(cacheProperties) {
@@ -73,12 +80,6 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) {
 
         if (device in attachedDevices) view.device = device
         else view.device = attachedDevices.firstOrNull()
-
-        subscribers[0]?.dispose()
-        subscribers[0] = deviceEventBus
-            .filter { it.device === view.device }
-            .observeOnJavaFX()
-            .subscribe(::onEvent)
     }
 
     private fun makeLog() {
@@ -117,6 +118,10 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) {
         container: INDIPanelControlWindow.GroupPropertyVector,
     ) {
         cacheProperties[device]!![vector.name] = container
+    }
+
+    override fun close() {
+        eventBus.unregister(this)
     }
 
     private object GroupNameComparator : Comparator<String> {

@@ -1,11 +1,12 @@
 package nebulosa.desktop.logic
 
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
 import nebulosa.indi.device.*
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 @Suppress("UNCHECKED_CAST")
 abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), DeviceProperty<D> {
@@ -20,22 +21,17 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
 
     final override fun getName() = value?.name ?: ""
 
+    internal fun initialize() {
+        registerListener(this)
+        addListener(::onChanged)
+    }
+
     override fun registerListener(listener: DevicePropertyListener<D>) {
         listeners.add(listener)
     }
 
     override fun unregisterListener(listener: DevicePropertyListener<D>) {
         listeners.remove(listener)
-    }
-
-    internal fun initialize(observable: Observable<DeviceEvent<*>>) {
-        observable.filter { it.device === value }
-            .observeOnJavaFX()
-            .subscribe(::onDeviceEvent)
-
-        registerListener(this)
-
-        addListener(::onChanged)
     }
 
     override fun onChanged(prev: D?, device: D) = Unit
@@ -60,8 +56,9 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
         }
     }
 
-    protected fun onDeviceEvent(event: DeviceEvent<*>) {
-        if (closed) return
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onDeviceEvent(event: DeviceEvent<*>) {
+        if (closed || event.device !== value) return
 
         when (event) {
             is DeviceConnected -> {

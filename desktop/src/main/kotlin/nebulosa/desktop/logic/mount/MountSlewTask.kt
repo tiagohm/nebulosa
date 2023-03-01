@@ -1,17 +1,12 @@
 package nebulosa.desktop.logic.mount
 
-import io.reactivex.rxjava3.disposables.Disposable
-import nebulosa.desktop.logic.DeviceEventBus
-import nebulosa.desktop.logic.TaskEventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.task.TaskFinished
 import nebulosa.desktop.logic.task.TaskStarted
-import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.mount.Mount
-import nebulosa.indi.device.mount.MountDetached
-import nebulosa.indi.device.mount.MountSlewFailed
-import nebulosa.indi.device.mount.MountSlewingChanged
+import nebulosa.indi.device.mount.*
 import nebulosa.math.Angle
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -23,12 +18,14 @@ data class MountSlewTask(
     val slewType: MountSlewType = MountSlewType.GOTO,
 ) : MountTask {
 
-    @Autowired private lateinit var deviceEventBus: DeviceEventBus
-    @Autowired private lateinit var taskEventBus: TaskEventBus
+    @Autowired private lateinit var eventBus: EventBus
 
     private val latch = CountUpDownLatch()
 
-    private fun onEvent(event: DeviceEvent<*>) {
+    @Subscribe
+    fun onEvent(event: MountEvent) {
+        if (event.device !== mount) return
+
         when (event) {
             is MountSlewingChanged -> if (!event.device.slewing) latch.countDown()
             is MountDetached,
@@ -37,17 +34,13 @@ data class MountSlewTask(
     }
 
     override fun call() {
-        var subscriber: Disposable? = null
-
         try {
-            taskEventBus.onNext(TaskStarted(this))
+            eventBus.post(TaskStarted(this))
 
             synchronized(mount) {
-                latch.countUp()
+                eventBus.register(this)
 
-                subscriber = deviceEventBus
-                    .filter { it.device === mount }
-                    .subscribe(::onEvent)
+                latch.countUp()
 
                 LOG.info("slewing mount ${mount.name} to position ra={}, dec={}", rightAscension.hours, declination.degrees)
 
@@ -58,10 +51,12 @@ data class MountSlewTask(
 
                 latch.await()
             }
+        } catch (e: Throwable) {
+            LOG.error("mount slew failed.", e)
+            throw e
         } finally {
-            subscriber?.dispose()
-
-            taskEventBus.onNext(TaskFinished(this))
+            eventBus.unregister(this)
+            eventBus.post(TaskFinished(this))
         }
     }
 

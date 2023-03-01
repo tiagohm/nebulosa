@@ -1,5 +1,6 @@
 package nebulosa.desktop.gui
 
+import io.reactivex.rxjava3.subjects.PublishSubject
 import javafx.application.HostServices
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
@@ -8,7 +9,6 @@ import javafx.scene.control.Alert
 import javafx.scene.image.Image
 import javafx.stage.Stage
 import nebulosa.desktop.gui.home.HomeWindow
-import nebulosa.desktop.logic.newEventBus
 import nebulosa.desktop.view.View
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
@@ -162,6 +162,6 @@ abstract class AbstractWindow(
 
     companion object {
 
-        @JvmStatic internal val CLOSE = newEventBus<Boolean>()
+        @JvmStatic internal val CLOSE = PublishSubject.create<Boolean>()
     }
 }

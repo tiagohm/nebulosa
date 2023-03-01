@@ -1,19 +1,19 @@
 package nebulosa.desktop.logic.camera
 
-import io.reactivex.rxjava3.disposables.Disposable
-import nebulosa.desktop.logic.DeviceEventBus
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.logic.TaskEventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
 import nebulosa.desktop.logic.task.Task
+import nebulosa.desktop.logic.task.TaskFinished
+import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.imaging.Image
-import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.*
 import nom.tam.fits.Fits
 import nom.tam.util.FitsOutputStream
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.InputStream
@@ -52,13 +52,15 @@ data class CameraExposureTask(
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var preferences: Preferences
-    @Autowired private lateinit var deviceEventBus: DeviceEventBus
-    @Autowired private lateinit var taskEventBus: TaskEventBus
+    @Autowired private lateinit var eventBus: EventBus
 
     private val latch = CountUpDownLatch()
     private val imagePaths = arrayListOf<Path>()
 
-    private fun onEvent(event: DeviceEvent<*>) {
+    @Subscribe
+    fun onEvent(event: CameraEvent) {
+        if (event.device !== camera) return
+
         when (event) {
             is CameraFrameCaptured -> {
                 imagePaths.add(save(event.fits))
@@ -78,12 +80,8 @@ data class CameraExposureTask(
     }
 
     override fun call(): List<Path> {
-        var subscriber: Disposable? = null
-
         try {
-            subscriber = deviceEventBus
-                .filter { it.device === camera }
-                .subscribe(::onEvent)
+            eventBus.post(TaskStarted(this))
 
             val mount = equipmentManager.selectedMount.get()
             val focuser = equipmentManager.selectedFocuser.get()
@@ -115,6 +113,8 @@ data class CameraExposureTask(
 
             camera.enableBlob()
 
+            eventBus.register(this)
+
             while (camera.connected && remaining > 0) {
                 synchronized(camera) {
                     latch.countUp()
@@ -138,8 +138,12 @@ data class CameraExposureTask(
                     Task.sleep(delay, latch)
                 }
             }
+        } catch (e: Throwable) {
+            LOG.error("camera exposure failed.", e)
+            throw e
         } finally {
-            subscriber?.dispose()
+            eventBus.unregister(this)
+            eventBus.post(TaskFinished(this))
         }
 
         return imagePaths
@@ -168,7 +172,7 @@ data class CameraExposureTask(
 
             val image = Image.open(fits)
 
-            taskEventBus.onNext(CameraFrameSaved(this, image, path, autoSave))
+            eventBus.post(CameraFrameSaved(this, image, path, autoSave))
         }
 
         return path

@@ -80,6 +80,8 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
         val isMoving = mountManager.slewingProperty or mountManager.parkingProperty
         val isNotConnectedOrMoving = isNotConnected or isMoving
 
+        mountManager.initialize()
+
         mountChoiceBox.converter = MountStringConverter
         mountChoiceBox.disableProperty().bind(isConnecting or isMoving)
         mountChoiceBox.itemsProperty().bind(mountManager.mounts)

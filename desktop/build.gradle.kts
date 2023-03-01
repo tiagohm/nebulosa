@@ -24,6 +24,7 @@ dependencies {
     implementation(libs.bundles.rx)
     implementation(libs.controlsfx)
     implementation(libs.okhttp)
+    implementation(libs.eventbus)
     implementation(libs.logback)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.jetbrains.kotlin:kotlin-reflect")

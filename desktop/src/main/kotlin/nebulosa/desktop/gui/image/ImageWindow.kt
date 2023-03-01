@@ -12,8 +12,8 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ImageViewer
+import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.image.ImageManager
-import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.image.Drawable
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.imaging.Image
@@ -27,6 +27,8 @@ import java.io.File
 import java.nio.IntBuffer
 
 class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image", "nebulosa-image"), ImageView {
+
+    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
 
     @FXML private lateinit var fitsImageViewer: ImageViewer
     @FXML private lateinit var menu: ContextMenu
@@ -170,7 +172,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     override fun adjustSceneToImage() {
-        javaFxThread {
+        javaFXExecutorService.execute {
             fitsImageViewer.resetZoom()
             imageManager.adjustSceneSizeToFitImage()
         }

@@ -27,8 +27,7 @@ class FilterWheelManager(
     val filterWheels
         get() = equipmentManager.attachedFilterWheels
 
-    @PostConstruct
-    private fun initialize() {
+    fun initialize() {
         registerListener(this)
     }
 

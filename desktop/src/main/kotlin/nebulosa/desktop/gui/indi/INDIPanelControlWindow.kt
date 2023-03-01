@@ -35,6 +35,8 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "nebulosa-indi
     }
 
     override fun onCreate() {
+        indiPanelControlManager.initialize()
+
         deviceChoiceBox.converter = DeviceStringConverter
         deviceChoiceBox.itemsProperty().bind(indiPanelControlManager.devices)
         deviceChoiceBox.selectionModel.selectedItemProperty().on { indiPanelControlManager.makePanelControl() }

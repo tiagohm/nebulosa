@@ -54,6 +54,8 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "nebulosa-filterwheel"),
         val isMoving = filterWheelManager.movingProperty
         val isNotConnectedOrMoving = isNotConnected or isMoving
 
+        filterWheelManager.initialize()
+
         filterWheelChoiceBox.converter = FilterWheelStringConverter
         filterWheelChoiceBox.disableProperty().bind(isConnecting or isMoving)
         filterWheelChoiceBox.itemsProperty().bind(filterWheelManager.filterWheels)

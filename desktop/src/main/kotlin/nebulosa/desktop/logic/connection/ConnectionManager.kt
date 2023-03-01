@@ -1,12 +1,11 @@
 package nebulosa.desktop.logic.connection
 
-import nebulosa.desktop.logic.ConnectionEventBus
-import nebulosa.desktop.logic.DeviceEventBus
 import nebulosa.indi.client.DefaultINDIClient
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceEventHandler
+import org.greenrobot.eventbus.EventBus
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -16,12 +15,11 @@ class ConnectionManager : DeviceEventHandler {
     @Volatile private var client: INDIClient? = null
     @Volatile private var deviceHandler: DeviceProtocolHandler? = null
 
-    @Autowired private lateinit var connectionEventBus: ConnectionEventBus
-    @Autowired private lateinit var deviceEventBus: DeviceEventBus
+    @Autowired private lateinit var eventBus: EventBus
 
     override fun onEventReceived(event: DeviceEvent<*>) {
         if (event.device?.sender === client) {
-            deviceEventBus.onNext(event)
+            eventBus.post(event)
         }
     }
 
@@ -43,7 +41,7 @@ class ConnectionManager : DeviceEventHandler {
         this.deviceHandler = deviceHandler
         this.client = client
 
-        connectionEventBus.onNext(Connected(client))
+        eventBus.post(Connected(client))
     }
 
     @Synchronized
@@ -54,7 +52,7 @@ class ConnectionManager : DeviceEventHandler {
             deviceHandler!!.close()
             deviceHandler = null
 
-            connectionEventBus.onNext(Disconnected(client!!))
+            eventBus.post(Disconnected(client!!))
 
             client = null
         }

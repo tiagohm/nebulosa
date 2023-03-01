@@ -67,6 +67,8 @@ class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
         val isMoving = atlasManager.mountProperty.slewingProperty or atlasManager.mountProperty.parkingProperty
         val isComputing = atlasManager.computing
 
+        atlasManager.initialize()
+
         goToButton.disableProperty().bind(atlasManager.mountProperty.isNull or isNotConnected or isMoving or isComputing)
 
         slewToButton.disableProperty().bind(goToButton.disableProperty())

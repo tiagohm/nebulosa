@@ -5,8 +5,6 @@ import jakarta.annotation.PostConstruct
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
-import nebulosa.desktop.logic.ConnectionEventBus
-import nebulosa.desktop.logic.DeviceEventBus
 import nebulosa.desktop.logic.camera.DefaultCameraProperty
 import nebulosa.desktop.logic.connection.Connected
 import nebulosa.desktop.logic.connection.ConnectionEvent
@@ -15,7 +13,6 @@ import nebulosa.desktop.logic.filterwheel.DefaultFilterWheelProperty
 import nebulosa.desktop.logic.focuser.DefaultFocuserProperty
 import nebulosa.desktop.logic.gps.DefaultGPSProperty
 import nebulosa.desktop.logic.mount.DefaultMountProperty
-import nebulosa.desktop.logic.observeOnJavaFX
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
@@ -38,14 +35,17 @@ import nebulosa.indi.device.mount.MountDetached
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.indi.device.thermometer.ThermometerAttached
 import nebulosa.indi.device.thermometer.ThermometerDetached
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.io.Closeable
 
 @Service
-class EquipmentManager(@Autowired private val deviceEventBus: DeviceEventBus) : Closeable {
+class EquipmentManager : Closeable {
 
-    @Autowired private lateinit var connectionEventBus: ConnectionEventBus
+    @Autowired private lateinit var eventBus: EventBus
 
     private val subscribers = arrayOfNulls<Disposable>(2)
 
@@ -68,22 +68,22 @@ class EquipmentManager(@Autowired private val deviceEventBus: DeviceEventBus) : 
 
     @PostConstruct
     private fun initialize() {
-        selectedCamera.initialize(deviceEventBus)
-        selectedMount.initialize(deviceEventBus)
-        selectedFilterWheel.initialize(deviceEventBus)
-        selectedFocuser.initialize(deviceEventBus)
-        selectedGPS.initialize(deviceEventBus)
+        selectedCamera.initialize()
+        selectedMount.initialize()
+        selectedFilterWheel.initialize()
+        selectedFocuser.initialize()
+        selectedGPS.initialize()
 
-        subscribers[0] = deviceEventBus
-            .observeOnJavaFX()
-            .subscribe(::onDeviceEvent)
-
-        subscribers[1] = connectionEventBus
-            .observeOnJavaFX()
-            .subscribe(::onConnectionEvent)
+        eventBus.register(selectedCamera)
+        eventBus.register(selectedMount)
+        eventBus.register(selectedFilterWheel)
+        eventBus.register(selectedFocuser)
+        eventBus.register(selectedGPS)
+        eventBus.register(this)
     }
 
-    private fun onDeviceEvent(event: DeviceEvent<*>) {
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    final fun onDeviceEvent(event: DeviceEvent<*>) {
         when (event) {
             is CameraAttached -> attachedCameras.add(event.device)
             is CameraDetached -> attachedCameras.remove(event.device)
@@ -102,7 +102,8 @@ class EquipmentManager(@Autowired private val deviceEventBus: DeviceEventBus) : 
         }
     }
 
-    private fun onConnectionEvent(event: ConnectionEvent) {
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    final fun onConnectionEvent(event: ConnectionEvent) {
         when (event) {
             is Connected -> connectedProperty.set(true)
             is Disconnected -> connectedProperty.set(false)

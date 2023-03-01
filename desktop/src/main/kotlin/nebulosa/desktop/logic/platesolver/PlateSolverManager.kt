@@ -6,8 +6,8 @@ import javafx.stage.FileChooser
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.desktop.OperatingSystemType
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
-import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.desktop.view.platesolver.PlateSolverType
 import nebulosa.desktop.view.platesolver.PlateSolverView
@@ -39,6 +39,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
     @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var framingView: FramingView
     @Autowired private lateinit var operatingSystemType: OperatingSystemType
+    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
 
     private val solverTask = AtomicReference<Future<*>>()
 
@@ -157,7 +158,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
 
                 future.complete(calibration)
 
-                javaFxThread {
+                javaFXExecutorService.execute {
                     solving.set(false)
                     solved.set(true)
 
@@ -166,7 +167,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
             } catch (e: Throwable) {
                 future.completeExceptionally(e)
 
-                javaFxThread {
+                javaFXExecutorService.execute {
                     solving.set(false)
                     solved.set(false)
 

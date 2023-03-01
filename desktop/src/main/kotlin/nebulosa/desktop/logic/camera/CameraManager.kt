@@ -1,25 +1,24 @@
 package nebulosa.desktop.logic.camera
 
-import io.reactivex.rxjava3.disposables.Disposable
-import jakarta.annotation.PostConstruct
 import javafx.application.HostServices
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
 import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.logic.TaskEventBus
+import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
-import nebulosa.desktop.logic.observeOnJavaFX
 import nebulosa.desktop.logic.task.TaskEvent
 import nebulosa.desktop.logic.task.TaskExecutor
-import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.View
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.camera.ExposureMode
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.stereotype.Component
@@ -38,13 +37,13 @@ class CameraManager(
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var appDirectory: Path
-    @Autowired private lateinit var taskEventBus: TaskEventBus
+    @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var taskExecutor: TaskExecutor
     @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
     @Autowired private lateinit var imageWindowOpener: ImageWindow.Opener
     @Autowired private lateinit var beanFactory: AutowireCapableBeanFactory
+    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
 
-    private val subscribers = arrayOfNulls<Disposable>(1)
     private val imageWindows = hashSetOf<ImageWindow>()
     private val runningTask = AtomicReference<CameraExposureTask>()
 
@@ -53,13 +52,10 @@ class CameraManager(
     val cameras
         get() = equipmentManager.attachedCameras
 
-    @PostConstruct
-    private fun initialize() {
+    fun initialize() {
         registerListener(this)
 
-        subscribers[0] = taskEventBus
-            .observeOnJavaFX()
-            .subscribe(::onTaskEvent)
+        eventBus.register(this)
     }
 
     override fun onChanged(prev: Camera?, device: Camera) {
@@ -69,7 +65,8 @@ class CameraManager(
         loadPreferences(device)
     }
 
-    private fun onTaskEvent(event: TaskEvent) {
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onTaskEvent(event: TaskEvent) {
         when (event) {
             is CameraFrameSaved -> {
                 val window = imageWindowOpener.open(event.image, event.path.toFile(), event.task.camera)
@@ -231,7 +228,7 @@ class CameraManager(
             .whenComplete { _, _ ->
                 capturingProperty.set(false)
                 runningTask.set(null)
-                javaFxThread { updateStatus() }
+                javaFXExecutorService.execute(::updateStatus)
             }
 
         savePreferences()
@@ -315,5 +312,7 @@ class CameraManager(
         imageWindows.clear()
 
         unregisterListener(this)
+
+        eventBus.unregister(this)
     }
 }

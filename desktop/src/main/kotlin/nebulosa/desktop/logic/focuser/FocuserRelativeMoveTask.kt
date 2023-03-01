@@ -1,16 +1,11 @@
 package nebulosa.desktop.logic.focuser
 
-import io.reactivex.rxjava3.disposables.Disposable
-import nebulosa.desktop.logic.DeviceEventBus
-import nebulosa.desktop.logic.TaskEventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.task.TaskFinished
 import nebulosa.desktop.logic.task.TaskStarted
-import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.focuser.Focuser
-import nebulosa.indi.device.focuser.FocuserDetached
-import nebulosa.indi.device.focuser.FocuserMoveFailed
-import nebulosa.indi.device.focuser.FocuserMovingChanged
+import nebulosa.indi.device.focuser.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -20,12 +15,14 @@ data class FocuserRelativeMoveTask(
     val direction: FocuserDirection,
 ) : FocuserTask {
 
-    @Autowired private lateinit var deviceEventBus: DeviceEventBus
-    @Autowired private lateinit var taskEventBus: TaskEventBus
+    @Autowired private lateinit var eventBus: EventBus
 
     private val latch = CountUpDownLatch()
 
-    private fun onEvent(event: DeviceEvent<*>) {
+    @Subscribe
+    fun onEvent(event: FocuserEvent) {
+        if (event.device !== focuser) return
+
         when (event) {
             is FocuserMovingChanged -> if (!event.device.moving) latch.countDown()
             is FocuserDetached,
@@ -34,18 +31,14 @@ data class FocuserRelativeMoveTask(
     }
 
     override fun call() {
-        var subscriber: Disposable? = null
-
         try {
-            taskEventBus.onNext(TaskStarted(this))
+            eventBus.post(TaskStarted(this))
 
             if (increment >= 0 && increment <= focuser.maxPosition) {
                 synchronized(focuser) {
-                    latch.countUp()
+                    eventBus.register(this)
 
-                    subscriber = deviceEventBus
-                        .filter { it.device === focuser }
-                        .subscribe(::onEvent)
+                    latch.countUp()
 
                     LOG.info("moving focuser ${focuser.name} to position by $increment [{}]", direction)
 
@@ -55,10 +48,12 @@ data class FocuserRelativeMoveTask(
                     latch.await()
                 }
             }
+        } catch (e: Throwable) {
+            LOG.error("focuser relative move failed.", e)
+            throw e
         } finally {
-            subscriber?.dispose()
-
-            taskEventBus.onNext(TaskFinished(this))
+            eventBus.unregister(this)
+            eventBus.post(TaskFinished(this))
         }
     }
 

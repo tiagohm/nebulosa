@@ -1,6 +1,5 @@
 package nebulosa.desktop.logic.focuser
 
-import jakarta.annotation.PostConstruct
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
@@ -25,8 +24,7 @@ class FocuserManager(
     val focusers
         get() = equipmentManager.attachedFocusers
 
-    @PostConstruct
-    private fun initialize() {
+    fun initialize() {
         registerListener(this)
     }
 

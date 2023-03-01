@@ -1,18 +1,15 @@
 package nebulosa.desktop.logic.atlas
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import jakarta.annotation.PostConstruct
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Point2D
 import nebulosa.constants.DAYSEC
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.atlas.ephemeris.provider.BodyEphemerisProvider
 import nebulosa.desktop.logic.atlas.ephemeris.provider.HorizonsEphemerisProvider
+import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
-import nebulosa.desktop.logic.newEventBus
-import nebulosa.desktop.logic.observeOnJavaFX
 import nebulosa.desktop.logic.on
-import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.atlas.Twilight
 import nebulosa.desktop.view.framing.FramingView
@@ -63,6 +60,8 @@ import kotlin.math.max
 @EnableScheduling
 class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
 
+    private val pointsCache = hashMapOf<HorizonsEphemeris, List<Point2D>>()
+
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var objectMapper: ObjectMapper
@@ -72,10 +71,8 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
     @Autowired private lateinit var smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService
     @Autowired private lateinit var simbadService: SimbadService
     @Autowired private lateinit var systemExecutorService: ExecutorService
+    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
     @Lazy @Autowired private lateinit var framingView: FramingView
-
-    private val pointsCache = hashMapOf<HorizonsEphemeris, List<Point2D>>()
-    private val observerEventBus = newEventBus<Double>()
 
     @Volatile private var observer: GeographicPosition? = null
     @Volatile private var tabType = AtlasView.TabType.SUN
@@ -93,8 +90,7 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
 
     val computing = SimpleBooleanProperty()
 
-    @PostConstruct
-    private fun initialize() {
+    fun initialize() {
         val longitude = mount?.longitude ?: preferences.double("atlas.longitude")?.rad ?: Angle.ZERO
         val latitude = mount?.latitude ?: preferences.double("atlas.latitude")?.rad ?: Angle.ZERO
         val elevation = mount?.elevation ?: preferences.double("atlas.elevation")?.au ?: Distance.ZERO
@@ -102,16 +98,12 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
         observer = Geoid.IERS2010.latLon(longitude, latitude, elevation)
         updateTitle()
 
-        observerEventBus
-            .debounce(1L, TimeUnit.SECONDS)
-            .observeOnJavaFX()
-            .subscribe { onMountCoordinateChanged() }
-
-        mountProperty.latitudeProperty.on(observerEventBus::onNext)
-        mountProperty.longitudeProperty.on(observerEventBus::onNext)
-        mountProperty.elevationProperty.on(observerEventBus::onNext)
+        mountProperty.latitudeProperty.on { onMountCoordinateChanged() }
+        mountProperty.longitudeProperty.on { onMountCoordinateChanged() }
+        mountProperty.elevationProperty.on { onMountCoordinateChanged() }
     }
 
+    @Synchronized
     private fun onMountCoordinateChanged() {
         val mount = mount ?: return
 
@@ -263,7 +255,7 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
     }
 
     private fun drawAltitude(points: List<Point2D>) {
-        javaFxThread {
+        javaFXExecutorService.execute {
             view.updateAltitude(
                 points = points,
                 now = 0.0,
@@ -313,7 +305,7 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
 
     private fun HorizonsEphemeris.showBodyCoordinatesAndInfos(target: Any) {
         computeCoordinates(target)
-        javaFxThread { view.updateInfo(bodyName) }
+        javaFXExecutorService.execute { view.updateInfo(bodyName) }
         drawAltitude(makePoints())
     }
 
@@ -332,13 +324,13 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
         val dec = element[HorizonsQuantity.APPARENT_DEC]?.toDoubleOrNull()?.deg ?: Angle.ZERO
         val epoch = UTC.now()
         val constellation = Constellation.find(ICRF.equatorial(ra, dec, time = epoch, epoch = epoch))
-        javaFxThread { view.updateEquatorialCoordinates(ra, dec, raJ2000, decJ2000, constellation) }
+        javaFXExecutorService.execute { view.updateEquatorialCoordinates(ra, dec, raJ2000, decJ2000, constellation) }
     }
 
     private fun computeHorizontalCoordinates(element: HorizonsElement) {
         val az = element[HorizonsQuantity.APPARENT_AZ]?.toDoubleOrNull()?.deg ?: Angle.ZERO
         val alt = element[HorizonsQuantity.APPARENT_ALT]?.toDoubleOrNull()?.deg ?: Angle.ZERO
-        javaFxThread { view.updateHorizontalCoordinates(az, alt) }
+        javaFXExecutorService.execute { view.updateHorizontalCoordinates(az, alt) }
     }
 
     @Scheduled(fixedDelay = 15L, initialDelay = 15L, timeUnit = TimeUnit.MINUTES)
@@ -371,14 +363,14 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
 
             LOG.info("saving Sun image. path={}", sunImagePath.toUri())
 
-            javaFxThread { view.updateSunImage(sunImagePath.toUri().toString()) }
+            javaFXExecutorService.execute { view.updateSunImage(sunImagePath.toUri().toString()) }
         }
     }
 
     fun updateMoonImage() {
         if (!view.showing) return
 
-        javaFxThread { view.updateMoonImage("images/MOON.png") }
+        javaFXExecutorService.execute { view.updateMoonImage("images/MOON.png") }
     }
 
     fun searchMinorPlanet(text: String) {
@@ -388,7 +380,7 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
                 override fun onResponse(call: Call<SmallBody>, response: Response<SmallBody>) {
                     val smallBody = response.body() ?: return
 
-                    javaFxThread {
+                    javaFXExecutorService.execute {
                         if (!smallBody.message.isNullOrEmpty()) {
                             view.showAlert(smallBody.message!!)
                         } else if (!smallBody.list.isNullOrEmpty()) {
@@ -422,9 +414,9 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
         systemExecutorService.submit {
             try {
                 val dso = simbadService.query(query).execute().body()!!
-                javaFxThread { view.populateDSO(dso.map { AtlasView.DSO(it) }) }
+                javaFXExecutorService.execute { view.populateDSO(dso.map { AtlasView.DSO(it) }) }
             } catch (e: Throwable) {
-                javaFxThread { view.showAlert("Failed to search DSOs: ${e.message}") }
+                javaFXExecutorService.execute { view.showAlert("Failed to search DSOs: ${e.message}") }
             }
         }
     }

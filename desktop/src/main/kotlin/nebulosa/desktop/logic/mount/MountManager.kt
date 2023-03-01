@@ -7,10 +7,10 @@ import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.gui.mount.SiteAndTimeWindow
 import nebulosa.desktop.gui.telescopecontrol.TelescopeControlWindow
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlLX200Server
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlStellariumServer
-import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.gps.GPS
@@ -37,6 +37,7 @@ class MountManager(
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
+    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
 
     @Volatile private var position = Geoid.IERS2010.latLon(Angle.ZERO, Angle.ZERO, Distance.ZERO)
 
@@ -46,8 +47,7 @@ class MountManager(
     val gps
         get() = equipmentManager.attachedGPSs
 
-    @PostConstruct
-    private fun initialize() {
+    fun initialize() {
         registerListener(this)
     }
 
@@ -231,7 +231,7 @@ class MountManager(
         val timeLeftToMeridianFlip = computeTimeLeftToMeridianFlip()
         val timeToMeridianFlip = LocalDateTime.now().plusSeconds((timeLeftToMeridianFlip.hours * 3600.0).toLong())
 
-        javaFxThread {
+        javaFXExecutorService.execute {
             view.updateLSTAndMeridian(lst, timeLeftToMeridianFlip, timeToMeridianFlip)
             computeCoordinates()
         }

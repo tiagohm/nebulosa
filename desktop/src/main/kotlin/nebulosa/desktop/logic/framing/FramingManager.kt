@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.beans.property.SimpleBooleanProperty
 import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
-import nebulosa.desktop.logic.util.javaFxThread
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.erfa.PairOfAngle
 import nebulosa.hips2fits.FormatOutputType
@@ -37,6 +37,7 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var hips2FitsService: Hips2FitsService
     @Autowired private lateinit var systemExecutorService: ExecutorService
+    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
     @Autowired private lateinit var imageWindowOpener: ImageWindow.Opener
     @Autowired private lateinit var preferences: Preferences
 
@@ -52,7 +53,7 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
         val mount = device ?: equipmentManager.selectedMount.value ?: return
         mount.computeCoordinates(true, false)
         val coordinate = PairOfAngle(mount.rightAscensionJ2000, mount.declinationJ2000)
-        javaFxThread { view.updateCoordinate(coordinate.first, coordinate.second) }
+        javaFXExecutorService.execute { view.updateCoordinate(coordinate.first, coordinate.second) }
     }
 
     @Synchronized
@@ -89,12 +90,12 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
                     format = FormatOutputType.JPG,
                 ).execute().body()!!
             } catch (e: InterruptedIOException) {
-                javaFxThread { view.showAlert("Image took a long time to load. Please try again.") }
+                javaFXExecutorService.execute { view.showAlert("Image took a long time to load. Please try again.") }
                 task.completeExceptionally(e)
                 return@submit
             } catch (e: Throwable) {
                 LOG.error("failed to load image", e)
-                javaFxThread { view.showAlert("Failed to load image. Try using other survey source.") }
+                javaFXExecutorService.execute { view.showAlert("Failed to load image. Try using other survey source.") }
                 task.completeExceptionally(e)
                 return@submit
             }
@@ -106,7 +107,7 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
             tmpFile.writeBytes(data)
             imagePath.set(tmpFile)
 
-            javaFxThread {
+            javaFXExecutorService.execute {
                 val image = Image.open(ByteArrayInputStream(data))
 
                 val window = imageWindow.get()?.also { it.open(image, tmpFile.toFile()) }
@@ -125,7 +126,7 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
             val data = objectMapper.readValue(resource("data/HIPS_SURVEY_SOURCES.json")!!, Array<HipsSurvey>::class.java)
             val hipsSurveyId = preferences.string("framing.hipsSurvey") ?: DEFAULT_HIPS_SURVEY
             val selected = data.firstOrNull { it.id == hipsSurveyId }
-            javaFxThread { view.populateHipsSurveys(data.toList(), selected) }
+            javaFXExecutorService.execute { view.populateHipsSurveys(data.toList(), selected) }
         }
     }
 

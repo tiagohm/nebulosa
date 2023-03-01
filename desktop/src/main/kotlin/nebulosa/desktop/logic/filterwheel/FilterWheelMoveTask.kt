@@ -1,16 +1,11 @@
 package nebulosa.desktop.logic.filterwheel
 
-import io.reactivex.rxjava3.disposables.Disposable
-import nebulosa.desktop.logic.DeviceEventBus
-import nebulosa.desktop.logic.TaskEventBus
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.task.TaskFinished
 import nebulosa.desktop.logic.task.TaskStarted
-import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.filterwheel.FilterWheel
-import nebulosa.indi.device.filterwheel.FilterWheelDetached
-import nebulosa.indi.device.filterwheel.FilterWheelMoveFailed
-import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
+import nebulosa.indi.device.filterwheel.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -19,12 +14,14 @@ data class FilterWheelMoveTask(
     val position: Int,
 ) : FilterWheelTask {
 
-    @Autowired private lateinit var deviceEventBus: DeviceEventBus
-    @Autowired private lateinit var taskEventBus: TaskEventBus
+    @Autowired private lateinit var eventBus: EventBus
 
     private val latch = CountUpDownLatch()
 
-    private fun onEvent(event: DeviceEvent<*>) {
+    @Subscribe
+    fun onEvent(event: FilterWheelEvent) {
+        if (event.device !== filterWheel) return
+
         when (event) {
             is FilterWheelPositionChanged -> latch.countDown()
             is FilterWheelDetached,
@@ -33,20 +30,16 @@ data class FilterWheelMoveTask(
     }
 
     override fun call() {
-        var subscriber: Disposable? = null
-
         try {
-            taskEventBus.onNext(TaskStarted(this))
+            eventBus.post(TaskStarted(this))
 
             if (filterWheel.position != position
                 && position in 1..filterWheel.count
             ) {
                 synchronized(filterWheel) {
-                    latch.countUp()
+                    eventBus.register(this)
 
-                    subscriber = deviceEventBus
-                        .filter { it.device === filterWheel }
-                        .subscribe(::onEvent)
+                    latch.countUp()
 
                     LOG.info("moving filter wheel ${filterWheel.name} to position $position")
 
@@ -55,10 +48,12 @@ data class FilterWheelMoveTask(
                     latch.await()
                 }
             }
+        } catch (e: Throwable) {
+            LOG.error("filter wheel move failed.", e)
+            throw e
         } finally {
-            subscriber?.dispose()
-
-            taskEventBus.onNext(TaskFinished(this))
+            eventBus.unregister(this)
+            eventBus.post(TaskFinished(this))
         }
     }
 

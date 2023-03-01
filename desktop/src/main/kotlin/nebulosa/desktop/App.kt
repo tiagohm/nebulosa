@@ -3,8 +3,10 @@ package nebulosa.desktop
 import ch.qos.logback.classic.Level
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import javafx.application.Platform
 import javafx.scene.text.Font
-import nebulosa.desktop.logic.*
+import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.loader.IERSLoader
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.io.resource
@@ -13,6 +15,7 @@ import nebulosa.query.sbd.SmallBodyDatabaseLookupService
 import nebulosa.query.simbad.SimbadService
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
+import org.greenrobot.eventbus.EventBus
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,6 +26,7 @@ import org.springframework.context.annotation.Bean
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
+import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -68,6 +72,9 @@ class App : CommandLineRunner {
     fun systemExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
 
     @Bean
+    fun javaFXExecutorService(): ExecutorService = JavaFXExecutorService()
+
+    @Bean
     fun horizonsService() = HorizonsService()
 
     @Bean
@@ -80,13 +87,17 @@ class App : CommandLineRunner {
     fun hips2FitsService() = Hips2FitsService()
 
     @Bean
-    fun connectionEventBus(): ConnectionEventBus = newEventBus()
+    fun javaFXExecutor() = Executor(Platform::runLater)
 
     @Bean
-    fun deviceEventBus(): DeviceEventBus = newEventBus()
-
-    @Bean
-    fun taskEventBus(): TaskEventBus = newEventBus()
+    fun eventBus(javaFXExecutorService: ExecutorService) = EventBus.builder()
+        .sendNoSubscriberEvent(false)
+        .sendSubscriberExceptionEvent(false)
+        .throwSubscriberException(false)
+        .logNoSubscriberMessages(false)
+        .logSubscriberExceptions(false)
+        .executorService(javaFXExecutorService)
+        .build()!!
 
     override fun run(vararg args: String) {
         // Sets default locale to en_US.

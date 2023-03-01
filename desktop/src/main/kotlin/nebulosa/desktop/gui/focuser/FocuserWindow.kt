@@ -52,6 +52,8 @@ class FocuserWindow : AbstractWindow("Focuser", "nebulosa-focuser"), FocuserView
         val isMoving = focuserManager.movingProperty
         val isNotConnectedOrMoving = isNotConnected or isMoving
 
+        focuserManager.initialize()
+
         focuserChoiceBox.converter = FocuserStringConverter
         focuserChoiceBox.disableProperty().bind(isConnecting or isMoving)
         focuserChoiceBox.itemsProperty().bind(focuserManager.focusers)

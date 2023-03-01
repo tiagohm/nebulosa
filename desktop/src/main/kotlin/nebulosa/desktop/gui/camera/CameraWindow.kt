@@ -78,6 +78,8 @@ class CameraWindow : AbstractWindow("Camera", "nebulosa-camera"), CameraView {
         val isCapturing = cameraManager.capturingProperty
         val isNotConnectedOrCapturing = isNotConnected or isCapturing
 
+        cameraManager.initialize()
+
         cameraChoiceBox.converter = CameraStringConverter
         cameraChoiceBox.disableProperty().bind(isConnecting or isCapturing)
         cameraChoiceBox.itemsProperty().bind(cameraManager.cameras)
