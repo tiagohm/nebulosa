@@ -3,8 +3,13 @@ package nebulosa.desktop
 import javafx.application.Application
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.swing.filechooser.FileSystemView
+import kotlin.io.path.bufferedReader
 import kotlin.io.path.createDirectories
+import kotlin.io.path.exists
+import kotlin.io.path.writeBytes
 
 enum class OperatingSystemType {
     WINDOWS,
@@ -46,8 +51,30 @@ fun initAppDirectory(operatingSystemType: OperatingSystemType): Path? {
     return appDirectory
 }
 
+private fun clearLogIfPastDays(days: Long = 7L) {
+    val logPath = Paths.get(System.getProperty("app.dir"), "nebulosa.log")
+
+    if (logPath.exists()) {
+        val dateTimeRegex = Regex("^(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}).*")
+        val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+
+        for (line in logPath.bufferedReader().lines()) {
+            val dateTimeText = dateTimeRegex.matchEntire(line)?.groupValues?.get(1) ?: continue
+            val dateTime = LocalDateTime.parse(dateTimeText, dateTimeFormatter)
+
+            if (LocalDateTime.now().minusDays(days).isAfter(dateTime)) {
+                logPath.writeBytes(ByteArray(0))
+            }
+
+            break
+        }
+    }
+}
+
 fun main(args: Array<String>) {
     initAppDirectory(getOperatingSystemType())
+
+    clearLogIfPastDays()
 
     // Run the JavaFX application.
     Application.launch(Nebulosa::class.java, *args)
