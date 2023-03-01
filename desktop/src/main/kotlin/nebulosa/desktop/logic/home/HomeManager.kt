@@ -11,6 +11,7 @@ import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.filterwheel.FilterWheelView
 import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.desktop.view.framing.FramingView
+import nebulosa.desktop.view.guider.GuiderView
 import nebulosa.desktop.view.home.HomeView
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.desktop.view.mount.MountView
@@ -31,6 +32,7 @@ class HomeManager(private val view: HomeView) : Closeable {
 
     @Autowired private lateinit var cameraView: CameraView
     @Autowired private lateinit var mountView: MountView
+    @Autowired private lateinit var guiderView: GuiderView
     @Autowired private lateinit var focuserView: FocuserView
     @Autowired private lateinit var filterWheelView: FilterWheelView
     @Autowired private lateinit var atlasView: AtlasView
@@ -71,6 +73,7 @@ class HomeManager(private val view: HomeView) : Closeable {
             "NEW_IMAGE" -> openNewImage()
             "CAMERA" -> cameraView.show(bringToFront = true)
             "MOUNT" -> mountView.show(bringToFront = true)
+            "GUIDER" -> guiderView.show(bringToFront = true)
             "FOCUSER" -> focuserView.show(bringToFront = true)
             "FILTER_WHEEL" -> filterWheelView.show(bringToFront = true)
             "ATLAS" -> atlasView.show(bringToFront = true)

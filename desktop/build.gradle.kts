@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":nebulosa-query-simbad"))
     implementation(project(":nebulosa-platesolving-astap"))
     implementation(project(":nebulosa-platesolving-astrometrynet"))
+    implementation(project(":nebulosa-guiding-phd2"))
     implementation(libs.jackson)
     implementation(libs.bundles.rx)
     implementation(libs.controlsfx)

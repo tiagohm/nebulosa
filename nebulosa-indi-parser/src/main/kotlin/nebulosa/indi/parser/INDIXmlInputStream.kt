@@ -104,7 +104,7 @@ open class INDIXmlInputStream(private val source: InputStream) : INDIInputStream
     private fun NewVector<*>.parseNewVector(element: StartElement) {
         device = element.getAttributeByName(DEVICE_ATTR_NAME).value
         name = element.getAttributeByName(NAME_ATTR_NAME).value
-        timestamp = element.getAttributeByName(TIMESTAMP_ATTR_NAME).value
+        timestamp = element.getAttributeByName(TIMESTAMP_ATTR_NAME)?.value ?: ""
     }
 
     private fun parseNewSwitchVector(reader: XMLEventReader, element: StartElement): NewSwitchVector {

@@ -14,9 +14,7 @@
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <TabPane layoutX="58.0"
-             layoutY="-7.0"
-             prefHeight="200.0"
+    <TabPane prefHeight="200.0"
              prefWidth="200.0"
              tabClosingPolicy="UNAVAILABLE"
              AnchorPane.bottomAnchor="0.0"

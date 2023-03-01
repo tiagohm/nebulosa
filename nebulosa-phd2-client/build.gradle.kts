@@ -5,8 +5,6 @@ plugins {
 
 dependencies {
     api(project(":nebulosa-io"))
-    api(project(":nebulosa-guiding"))
-    api(project(":nebulosa-phd2-client"))
     implementation(libs.jackson)
     implementation(libs.logback)
     testImplementation(project(":nebulosa-test"))

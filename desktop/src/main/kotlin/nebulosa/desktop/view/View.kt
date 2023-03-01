@@ -28,7 +28,10 @@ interface View : Closeable {
 
     val titleHeight: Double
 
-    fun show(requestFocus: Boolean = false, bringToFront: Boolean = false)
+    fun show(
+        requestFocus: Boolean = false,
+        bringToFront: Boolean = false,
+    )
 
     fun showAndWait()
 

@@ -17,3 +17,4 @@
 * https://www.flaticon.com/free-icon/observatory_4861260
 * https://www.flaticon.com/free-icon/target_934640
 * https://www.flaticon.com/free-icon/night_3171773
+* https://www.flaticon.com/free-icon/target_3207593

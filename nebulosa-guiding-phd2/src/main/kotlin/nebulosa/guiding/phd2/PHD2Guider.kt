@@ -2,17 +2,14 @@ package nebulosa.guiding.phd2
 
 import nebulosa.guiding.Guider
 import nebulosa.guiding.SiderealShiftTrackingRate
-import nebulosa.indi.device.camera.Camera
-import nebulosa.indi.device.guide.GuideOutput
-import nebulosa.indi.device.mount.Mount
+import nebulosa.phd2.client.PHD2Client
+import nebulosa.phd2.client.PHD2EventListener
+import nebulosa.phd2.client.event.PHD2Event
 
 class PHD2Guider(
     host: String,
     port: Int = 4400,
-    override val mount: Mount,
-    override val camera: Camera,
-    override val guideOutput: GuideOutput,
-) : Guider {
+) : Guider, PHD2EventListener {
 
     private val client = PHD2Client(host, port)
 
@@ -27,6 +24,11 @@ class PHD2Guider(
         TODO("Not yet implemented")
     }
 
+    override fun connect() {
+        client.registerListener(this)
+        client.connect()
+    }
+
     override fun start(forceCalibration: Boolean) {
         TODO("Not yet implemented")
     }
@@ -36,7 +38,6 @@ class PHD2Guider(
     }
 
     override fun stop() {
-        TODO("Not yet implemented")
     }
 
     override fun clearCalibration() {
@@ -45,5 +46,16 @@ class PHD2Guider(
 
     override fun stopShifting() {
         TODO("Not yet implemented")
+    }
+
+    override fun onEvent(client: PHD2Client, event: PHD2Event) {
+        if (client === this.client) {
+            println(event)
+        }
+    }
+
+    override fun close() {
+        client.unregisterListener(this)
+        client.close()
     }
 }

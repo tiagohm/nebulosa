@@ -1,16 +1,8 @@
 package nebulosa.guiding
 
-import nebulosa.indi.device.camera.Camera
-import nebulosa.indi.device.guide.GuideOutput
-import nebulosa.indi.device.mount.Mount
+import java.io.Closeable
 
-interface Guider {
-
-    val mount: Mount
-
-    val camera: Camera
-
-    val guideOutput: GuideOutput
+interface Guider : Closeable {
 
     val canClearCalibration: Boolean
 
@@ -27,4 +19,6 @@ interface Guider {
     fun clearCalibration()
 
     fun stopShifting()
+
+    fun connect()
 }
