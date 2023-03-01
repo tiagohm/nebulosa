@@ -1,11 +1,8 @@
 package nebulosa.desktop.logic.framing
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.reactivex.rxjava3.disposables.Disposable
-import jakarta.annotation.PostConstruct
 import javafx.beans.property.SimpleBooleanProperty
 import nebulosa.desktop.gui.image.ImageWindow
-import nebulosa.desktop.logic.DeviceEventBus
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.util.javaFxThread
@@ -16,9 +13,6 @@ import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.hips2fits.HipsSurvey
 import nebulosa.imaging.Image
 import nebulosa.indi.device.mount.Mount
-import nebulosa.indi.device.mount.MountEquatorialCoordinatesChanged
-import nebulosa.indi.device.mount.MountEvent
-import nebulosa.indi.device.mount.MountSlewingChanged
 import nebulosa.io.resource
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
@@ -41,49 +35,23 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
 
     @Autowired private lateinit var objectMapper: ObjectMapper
     @Autowired private lateinit var equipmentManager: EquipmentManager
-    @Autowired private lateinit var deviceEventBus: DeviceEventBus
     @Autowired private lateinit var hips2FitsService: Hips2FitsService
     @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var imageWindowOpener: ImageWindow.Opener
     @Autowired private lateinit var preferences: Preferences
 
     private val imageWindow = AtomicReference<ImageWindow>()
-    private val subscribers = arrayOfNulls<Disposable>(1)
     private val imagePath = AtomicReference<Path>()
-    private val framingReloader = FramingReloader()
 
     val loading = SimpleBooleanProperty()
 
     val mount
         get() = equipmentManager.selectedMount
 
-    @PostConstruct
-    private fun initialize() {
-        subscribers[0] = deviceEventBus
-            .filter { view.showing && it is MountEvent && it.device === mount.value }
-            .cast(MountEvent::class.java)
-            .subscribe(::onMountEvent)
-
-        framingReloader.start()
-    }
-
-    private fun onMountEvent(event: MountEvent) {
-        when (event) {
-            is MountEquatorialCoordinatesChanged -> loadFromMountCoordinate(event.device)
-            is MountSlewingChanged -> if (!event.device.slewing) loadFromMountCoordinate(event.device)
-        }
-    }
-
-    fun loadFromMountCoordinate(device: Mount? = null) {
-        if (!view.syncFromMount) return
-
+    fun syncFromMount(device: Mount? = null) {
         val mount = device ?: equipmentManager.selectedMount.value ?: return
-
         mount.computeCoordinates(true, false)
-
         val coordinate = PairOfAngle(mount.rightAscensionJ2000, mount.declinationJ2000)
-        framingReloader.coordinate.set(coordinate)
-
         javaFxThread { view.updateCoordinate(coordinate.first, coordinate.second) }
     }
 
@@ -177,49 +145,7 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
     override fun close() {
         savePreferences()
 
-        subscribers.forEach { it?.dispose() }
-        subscribers.fill(null)
-
         imagePath.getAndSet(null)?.deleteIfExists()
-
-        framingReloader.interrupt()
-    }
-
-    private inner class FramingReloader : Thread("Framing Reloader") {
-
-        @JvmField val coordinate = AtomicReference<PairOfAngle>()
-
-        init {
-            isDaemon = true
-        }
-
-        override fun run() {
-            var prevCoordinate: PairOfAngle? = null
-            var lastTime = 0L
-
-            try {
-                while (true) {
-                    val coordinate = coordinate.get()
-
-                    if (coordinate == null
-                        || coordinate == prevCoordinate
-                        || System.currentTimeMillis() - lastTime < 15000L
-                    ) {
-                        sleep(1000L)
-                    } else {
-                        this.coordinate.set(null)
-                        LOG.info("starting framing reload. ra={}, dec={}", coordinate.first.hours, coordinate.second.degrees)
-                        load(coordinate.first, coordinate.second)?.get()
-                        prevCoordinate = coordinate
-                        lastTime = System.currentTimeMillis()
-                    }
-                }
-            } catch (e: InterruptedException) {
-                // empty.
-            } catch (e: Throwable) {
-                LOG.error("framing realod thread error", e)
-            }
-        }
     }
 
     companion object {

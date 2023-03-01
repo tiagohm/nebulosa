@@ -83,7 +83,7 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
     }
 
     override fun apply(shadow: Float, highlight: Float, midtone: Float) {
-        view.applySTF(shadow, highlight, midtone)
+        view.stf(shadow, highlight, midtone)
     }
 
     override fun drawHistogram() {

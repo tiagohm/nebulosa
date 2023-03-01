@@ -49,6 +49,6 @@ class SCNRWindow(private val view: ImageView) : AbstractWindow("SCNR", "nebulosa
         enabled: Boolean, channel: ImageChannel,
         protectionMethod: ProtectionMethod, amount: Float,
     ) {
-        view.applySCNR(enabled, channel, protectionMethod, amount)
+        view.scnr(enabled, channel, protectionMethod, amount)
     }
 }

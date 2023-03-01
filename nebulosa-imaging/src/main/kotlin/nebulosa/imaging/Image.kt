@@ -17,7 +17,6 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.FloatBuffer
-import java.nio.IntBuffer
 import javax.imageio.ImageIO
 
 @Suppress("NOTHING_TO_INLINE")
@@ -174,7 +173,9 @@ class Image(
         }
     }
 
-    fun writeTo(output: IntBuffer) {
+    fun writeTo(output: IntArray) {
+        var idx = 0
+
         for (y in 0 until height) {
             for (x in 0 until width) {
                 val index = indexAt(x, y)
@@ -182,13 +183,13 @@ class Image(
                 if (mono) {
                     val c = (r[index] * 255f).toInt()
                     val p = 0xFF000000.toInt() or (c shl 16) or (c shl 8) or c
-                    output.put(p)
+                    output[idx++] = p
                 } else {
                     val ri = (r[index] * 255f).toInt()
                     val gi = (g[index] * 255f).toInt()
                     val bi = (b[index] * 255f).toInt()
                     val p = 0xFF000000.toInt() or (ri shl 16) or (gi shl 8) or bi
-                    output.put(p)
+                    output[idx++] = p
                 }
             }
         }

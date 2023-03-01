@@ -2,9 +2,7 @@ package nebulosa.desktop.gui.image
 
 import com.sun.javafx.scene.control.ControlAcceleratorSupport
 import javafx.fxml.FXML
-import javafx.geometry.Bounds
-import javafx.scene.Cursor
-import javafx.scene.canvas.Canvas
+import javafx.scene.control.CheckMenuItem
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
 import javafx.scene.image.PixelBuffer
@@ -12,9 +10,11 @@ import javafx.scene.image.PixelFormat
 import javafx.scene.image.WritableImage
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
-import javafx.scene.input.ScrollEvent
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.logic.image.ImageManager
+import nebulosa.desktop.logic.util.javaFxThread
+import nebulosa.desktop.view.image.Drawable
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
@@ -28,12 +28,13 @@ import java.nio.IntBuffer
 
 class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image", "nebulosa-image"), ImageView {
 
-    @FXML private lateinit var imageCanvas: Canvas
+    @FXML private lateinit var fitsImageViewer: ImageViewer
     @FXML private lateinit var menu: ContextMenu
     @FXML private lateinit var scnrMenuItem: MenuItem
     @FXML private lateinit var fitsHeaderMenuItem: MenuItem
+    @FXML private lateinit var crosshairCheckMenuItem: CheckMenuItem
 
-    @Volatile private var buffer = IntArray(0)
+    @Volatile private var fitsBuffer = IntArray(0)
 
     private val imageManager = ImageManager(this)
 
@@ -42,49 +43,20 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     override fun onCreate() {
-        imageCanvas.addEventFilter(ScrollEvent.SCROLL) {
-            if (it.deltaX != 0.0 || it.deltaY != 0.0) {
-                imageManager.zoomWithWheel(it)
-                it.consume()
-            }
-        }
-
-        imageCanvas.addEventFilter(MouseEvent.MOUSE_DRAGGED) {
-            if (it.button == MouseButton.PRIMARY) {
-                imageCanvas.cursor = Cursor.MOVE
-                imageManager.drag(it)
-                it.consume()
-            }
-        }
-
-        imageCanvas.addEventFilter(MouseEvent.MOUSE_RELEASED) {
-            imageCanvas.cursor = Cursor.DEFAULT
-            imageManager.dragStop(it)
-        }
-
-        imageCanvas.parent.addEventFilter(MouseEvent.MOUSE_CLICKED) {
+        fitsImageViewer.addEventFilter(MouseEvent.MOUSE_CLICKED) {
             if (it.button == MouseButton.PRIMARY && it.clickCount == 2) {
-                imageManager.resetZoom()
-
-                if (maximized) {
-                    maximized = false
-                    imageManager.adjustSceneSizeToFitImage(true)
-                } else {
+                if (!maximized) {
                     imageManager.adjustSceneSizeToFitImage(false)
+                    fitsImageViewer.resetZoom()
                 }
-
-                imageManager.draw()
             } else if (it.button == MouseButton.PRIMARY) {
                 menu.hide()
                 it.consume()
             }
         }
 
-        with(imageCanvas.parent) {
-            setOnContextMenuRequested {
-                menu.show(this, it.screenX, it.screenY)
-            }
-
+        with(fitsImageViewer) {
+            setOnContextMenuRequested { menu.show(this, it.screenX, it.screenY) }
             ControlAcceleratorSupport.addAcceleratorsIntoScene(menu.items, this)
         }
     }
@@ -94,7 +66,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     override fun onStop() {
-        buffer = IntArray(0)
+        fitsBuffer = IntArray(0)
 
         imageManager.close()
     }
@@ -132,26 +104,17 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     override val scnrAmount
         get() = imageManager.scnrAmount
 
-    override var imageWidth
-        get() = imageCanvas.width
-        set(value) {
-            imageCanvas.width = value
-        }
-
-    override var imageHeight
-        get() = imageCanvas.height
-        set(value) {
-            imageCanvas.height = value
-        }
-
     override var hasScnr
         get() = !scnrMenuItem.isDisable
         set(value) {
             scnrMenuItem.isDisable = !value
         }
 
-    override val imageBounds: Bounds
-        get() = imageCanvas.parent.boundsInLocal
+    override var crosshairEnabled
+        get() = crosshairCheckMenuItem.isSelected
+        set(value) {
+            crosshairCheckMenuItem.isSelected = value
+        }
 
     @FXML
     private fun save() {
@@ -193,6 +156,11 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         imageManager.invert()
     }
 
+    @FXML
+    private fun toggleCrosshair() {
+        imageManager.toggleCrosshair()
+    }
+
     fun open(file: File) {
         imageManager.open(file)
     }
@@ -201,60 +169,29 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         imageManager.open(fits, file)
     }
 
-    override fun draw(
-        fits: Image,
-        width: Int, height: Int,
-        startX: Int, startY: Int,
-        factor: Float,
-    ) {
-        var prevIndex = -1
-        var prevColor = 0
-        var idx = 0
-
-        val area = width * height
-
-        if (area > buffer.size) buffer = IntArray(area)
-
-        for (y in 0 until height) {
-            for (x in 0 until width) {
-                val realX = ((startX + x) * factor).toInt()
-                val realY = ((startY + y) * factor).toInt()
-
-                if (realX < 0 || realY < 0 || realX >= fits.width || realY >= fits.height) {
-                    buffer[idx++] = 0
-                    continue
-                }
-
-                val index = fits.indexAt(realX, realY)
-
-                if (prevIndex == index) {
-                    buffer[idx++] = prevColor
-                } else if (fits.mono) {
-                    val c = (fits.r[index] * 255f).toInt()
-                    prevColor = 0xFF000000.toInt() or (c shl 16) or (c shl 8) or c
-                    buffer[idx++] = prevColor
-                } else {
-                    val a = (fits.r[index] * 255f).toInt()
-                    val b = (fits.g[index] * 255f).toInt()
-                    val c = (fits.b[index] * 255f).toInt()
-                    prevColor = 0xFF000000.toInt() or (a shl 16) or (b shl 8) or c
-                    buffer[idx++] = prevColor
-                }
-
-                prevIndex = index
-            }
+    override fun adjustSceneToImage() {
+        javaFxThread {
+            fitsImageViewer.resetZoom()
+            imageManager.adjustSceneSizeToFitImage()
         }
-
-        val intBuffer = IntBuffer.wrap(buffer, 0, idx)
-        val pixelBuffer = PixelBuffer(width, height, intBuffer, PixelFormat.getIntArgbPreInstance())
-        val writableImage = WritableImage(pixelBuffer)
-
-        val g = imageCanvas.graphicsContext2D
-        g.clearRect(0.0, 0.0, imageCanvas.width, imageCanvas.height)
-        g.drawImage(writableImage, 0.0, 0.0)
     }
 
-    override fun applySCNR(
+    override fun draw(fits: Image) {
+        val area = fits.width * fits.height
+
+        if (area > fitsBuffer.size) {
+            fitsBuffer = IntArray(area)
+        }
+
+        fits.writeTo(fitsBuffer)
+
+        val buffer = IntBuffer.wrap(fitsBuffer, 0, area)
+        val pixelBuffer = PixelBuffer(fits.width, fits.height, buffer, PixelFormat.getIntArgbPreInstance())
+        val writableImage = WritableImage(pixelBuffer)
+        fitsImageViewer.load(writableImage)
+    }
+
+    override fun scnr(
         enabled: Boolean, channel: ImageChannel,
         protectionMethod: ProtectionMethod, amount: Float,
     ) {
@@ -265,8 +202,44 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         )
     }
 
-    override fun applySTF(shadow: Float, highlight: Float, midtone: Float) {
+    override fun stf(shadow: Float, highlight: Float, midtone: Float) {
         imageManager.transformImage(shadow = shadow, highlight = highlight, midtone = midtone)
+    }
+
+    override fun redraw() {
+        fitsImageViewer.redraw()
+    }
+
+    override fun addFirst(element: Drawable) {
+        fitsImageViewer.addFirst(element)
+    }
+
+    override fun addLast(element: Drawable) {
+        fitsImageViewer.addLast(element)
+    }
+
+    override fun remove(element: Drawable): Boolean {
+        return fitsImageViewer.remove(element)
+    }
+
+    override fun removeFirst(): Drawable {
+        return fitsImageViewer.removeFirst()
+    }
+
+    override fun removeLast(): Drawable {
+        return fitsImageViewer.removeLast()
+    }
+
+    override fun removeAll(elements: Collection<Drawable>): Boolean {
+        return fitsImageViewer.removeAll(elements.toSet())
+    }
+
+    override fun removeAll() {
+        fitsImageViewer.clear()
+    }
+
+    override fun iterator(): Iterator<Drawable> {
+        return fitsImageViewer.iterator()
     }
 
     @Service

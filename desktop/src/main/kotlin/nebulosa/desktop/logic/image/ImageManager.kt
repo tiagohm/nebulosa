@@ -3,13 +3,12 @@ package nebulosa.desktop.logic.image
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import javafx.beans.property.SimpleObjectProperty
-import javafx.scene.input.MouseEvent
-import javafx.scene.input.ScrollEvent
 import javafx.stage.FileChooser
 import javafx.stage.Screen
 import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
+import nebulosa.desktop.gui.image.draw.Crosshair
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.platesolver.PlateSolverView
@@ -26,8 +25,6 @@ import java.io.Closeable
 import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
-import kotlin.math.max
-import kotlin.math.min
 
 class ImageManager(private val view: ImageView) : Closeable {
 
@@ -43,21 +40,9 @@ class ImageManager(private val view: ImageView) : Closeable {
     @Volatile var transformedFits: Image? = null
         private set
 
-    @Volatile var scale = 1f
-        private set
-
-    @Volatile private var scaleFactor = 0
-    @Volatile private var startX = 0
-    @Volatile private var startY = 0
-    @Volatile private var dragging = false
-    @Volatile private var dragStartX = 0.0
-    @Volatile private var dragStartY = 0.0
-
     private val screenBounds = Screen.getPrimary().bounds
     private val transformPublisher = BehaviorSubject.create<Unit>()
 
-    @Volatile private var idealSceneWidth = 640.0
-    @Volatile private var idealSceneHeight = 640.0
     @Volatile private var transformSubscriber: Disposable? = null
 
     @Volatile private var imageStretcherWindow: ImageStretcherWindow? = null
@@ -125,61 +110,24 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         updateTitle()
 
-        val adjustToDefaultSize = this.fits == null
-
         this.fits = fits
         this.transformedFits = null
         this.calibration.set(null)
 
         view.hasScnr = !fits.mono
 
-        adjustSceneSizeToFitImage(adjustToDefaultSize)
-
         transformImage()
-
         draw()
         drawHistogram()
 
         imageStretcherWindow?.updateTitle()
+
+        view.adjustSceneToImage()
     }
 
     fun draw() {
         val fits = transformedFits ?: fits ?: return
-
-        val areaWidth = min(idealSceneWidth, screenBounds.width).toInt()
-        val areaHeight = min(idealSceneHeight, screenBounds.height).toInt()
-
-        val factorW = fits.width.toFloat() / areaWidth
-        val factorH = fits.height.toFloat() / areaHeight
-        val factor = max(factorW, factorH) / scale
-
-        val maxStartX = (fits.width / factor).toInt()
-        val maxStartY = (fits.height / factor).toInt()
-
-        // Prevent move to left/up.
-        if (-startX < 0 || -startY < 0) {
-            if (maxStartX - startX <= view.sceneWidth.toInt()) {
-                startX = maxStartX - view.sceneWidth.toInt()
-            }
-            if (maxStartY - startY <= view.sceneHeight.toInt()) {
-                startY = maxStartY - view.sceneHeight.toInt()
-            }
-        }
-
-        // Prevent move to right/bottom.
-        if (startX > maxStartX) {
-            startX = maxStartX
-        } else if (startX < 0) {
-            startX = 0
-        }
-
-        if (startY > maxStartY) {
-            startY = maxStartY
-        } else if (startY < 0) {
-            startY = 0
-        }
-
-        view.draw(fits, areaWidth, areaHeight, startX, startY, factor)
+        view.draw(fits)
     }
 
     fun drawHistogram() {
@@ -227,17 +175,8 @@ class ImageManager(private val view: ImageView) : Closeable {
 
             if (invert) algorithms.add(Invert)
 
-            // algorithms.add(Crosshair)
-
             transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)
         }
-    }
-
-    fun resetZoom() {
-        startX = 0
-        startY = 0
-        scaleFactor = 0
-        scale = 1f
     }
 
     fun mirrorHorizontal() {
@@ -252,128 +191,35 @@ class ImageManager(private val view: ImageView) : Closeable {
         transformImage(invert = !invert)
     }
 
-    fun adjustSceneSizeToFitImage(defaultSize: Boolean) {
+    fun toggleCrosshair() {
+        if (view.crosshairEnabled) view.addFirst(Crosshair)
+        else view.remove(Crosshair)
+
+        view.redraw()
+    }
+
+    fun adjustSceneSizeToFitImage(defaultSize: Boolean = fits == null) {
         val fits = fits ?: return
 
         val factor = fits.width.toDouble() / fits.height.toDouble()
 
-        val defaultWidth = view.camera
+        val defaultWidth = if (defaultSize) view.camera
             ?.let { preferences.double("image.${it.name}.screen.width") }
             ?: (screenBounds.width / 2)
+        else view.width - view.borderSize * 2
 
-        val defaultHeight = view.camera
+        val defaultHeight = if (defaultSize) view.camera
             ?.let { preferences.double("image.${it.name}.screen.height") }
             ?: (screenBounds.height / 2)
-
-        val borderSize = view.borderSize
-        val titleHeight = view.titleHeight
-
-        val sceneSize = if (factor >= 1.0)
-            if (defaultSize) defaultWidth
-            else view.width - borderSize * 2
-        else if (defaultSize) defaultHeight
-        else view.height - titleHeight
+        else view.height - view.titleHeight
 
         if (factor >= 1.0) {
-            idealSceneWidth = sceneSize
-            idealSceneHeight = sceneSize / factor
+            view.width = defaultWidth + view.borderSize * 2
+            view.height = defaultWidth / factor + view.titleHeight
         } else {
-            idealSceneHeight = sceneSize
-            idealSceneWidth = sceneSize * factor
+            view.height = defaultHeight + view.titleHeight
+            view.width = defaultHeight * factor + view.borderSize * 2
         }
-
-        view.width = idealSceneWidth + borderSize * 2
-        view.height = idealSceneHeight + titleHeight
-
-        view.imageWidth = idealSceneWidth
-        view.imageHeight = idealSceneHeight
-    }
-
-    fun drag(event: MouseEvent) {
-        if (!dragging) {
-            dragging = true
-            dragStartX = event.x
-            dragStartY = event.y
-        } else {
-            val deltaX = (event.x - dragStartX).toInt()
-            val deltaY = (event.y - dragStartY).toInt()
-
-            startX -= deltaX
-            startY -= deltaY
-
-            startX = max(0, startX)
-            startY = max(0, startY)
-
-            dragStartX = event.x
-            dragStartY = event.y
-
-            draw()
-        }
-    }
-
-    fun dragStop(event: MouseEvent) {
-        dragging = false
-    }
-
-    fun zoomWithWheel(event: ScrollEvent) {
-        val delta = if (event.deltaY == 0.0 && event.deltaX != 0.0) event.deltaX else event.deltaY
-        val wheel = if (delta < 0) -1 else 1
-        val scaleFactor = max(0, min(scaleFactor + wheel, SCALE_FACTORS.size - 1))
-
-        if (scaleFactor != this.scaleFactor) {
-            this.scaleFactor = scaleFactor
-            val newScale = SCALE_FACTORS[scaleFactor]
-            zoomToPoint(newScale, event.x, event.y)
-        }
-    }
-
-    private fun zoomToPoint(
-        newScale: Double,
-        pointX: Double, pointY: Double,
-    ) {
-        val bounds = view.imageBounds
-
-        val x = ((startX + pointX) / bounds.width) * (bounds.width * newScale)
-        val y = ((startY + pointY) / bounds.height) * (bounds.height * newScale)
-
-        val toX = (x / newScale - x / scale + x * newScale) / newScale
-        val toY = (y / newScale - y / scale + y * newScale) / newScale
-
-        scale = newScale.toFloat()
-
-        startX -= ((toX - x) * scale).toInt()
-        startY -= ((toY - y) * scale).toInt()
-
-        startX = max(0, startX)
-        startY = max(0, startY)
-
-        // val areaWidth = scene.width.toInt()
-        // val areaHeight = scene.height.toInt()
-        //
-        // val factorW = fits!!.width.toFloat() / areaWidth
-        // val factorH = fits!!.height.toFloat() / areaHeight
-        // val factor = max(factorW, factorH) / scale
-        //
-        // val maxStartX = (fits!!.width / factor).toInt()
-        // val maxStartY = (fits!!.height / factor).toInt()
-        //
-        // val x0 = -startX
-        // val y0 = -startY
-        //
-        // val x1 = -startX + maxStartX
-        // val y1 = -startY + maxStartY
-        //
-        // val px = image.localToParent(pointX, pointY)
-        //
-        // if (px.x >= x0 && px.x <= x1 && px.y >= y0 && px.y <= y1) {
-        //     println("dentro $x0 $x1 $y0 $y1")
-        // } else {
-        //     println("fora")
-        //     startX = 0
-        //     startY = 0
-        // }
-
-        draw()
     }
 
     private fun writeToFile(file: File): Boolean {
@@ -480,14 +326,6 @@ class ImageManager(private val view: ImageView) : Closeable {
     override fun close() {
         fits = null
         transformedFits = null
-
-        scale = 1f
-        scaleFactor = 0
-        startX = 0
-        startY = 0
-        dragging = false
-        dragStartX = 0.0
-        dragStartY = 0.0
 
         imageStretcherWindow?.close()
         scnrWindow?.close()

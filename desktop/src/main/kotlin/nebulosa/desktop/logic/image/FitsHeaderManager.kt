@@ -27,6 +27,5 @@ class FitsHeaderManager(private val view: FitsHeaderView) {
             .joinToString("\n") { it.formatCard() }
 
         view.updateText(text)
-        view.width = maxWidth.sum() * 6.0
     }
 }

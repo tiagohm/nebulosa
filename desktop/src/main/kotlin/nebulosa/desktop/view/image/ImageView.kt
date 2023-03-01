@@ -1,19 +1,16 @@
 package nebulosa.desktop.view.image
 
-import javafx.geometry.Bounds
 import nebulosa.desktop.view.View
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 
-interface ImageView : View {
+interface ImageView : View, Iterable<Drawable> {
 
     val camera: Camera?
 
     var hasScnr: Boolean
-
-    val imageBounds: Bounds
 
     val fits: Image?
 
@@ -37,21 +34,32 @@ interface ImageView : View {
 
     val scnrAmount: Float
 
-    var imageWidth: Double
+    var crosshairEnabled: Boolean
 
-    var imageHeight: Double
+    fun stf(shadow: Float, highlight: Float, midtone: Float)
 
-    fun applySTF(shadow: Float, highlight: Float, midtone: Float)
-
-    fun applySCNR(
+    fun scnr(
         enabled: Boolean, channel: ImageChannel,
         protectionMethod: ProtectionMethod, amount: Float,
     )
 
-    fun draw(
-        fits: Image,
-        width: Int, height: Int,
-        startX: Int, startY: Int,
-        factor: Float,
-    )
+    fun adjustSceneToImage()
+
+    fun draw(fits: Image)
+
+    fun redraw()
+
+    fun addFirst(element: Drawable)
+
+    fun addLast(element: Drawable)
+
+    fun remove(element: Drawable): Boolean
+
+    fun removeFirst(): Drawable
+
+    fun removeLast(): Drawable
+
+    fun removeAll(elements: Collection<Drawable>): Boolean
+
+    fun removeAll()
 }

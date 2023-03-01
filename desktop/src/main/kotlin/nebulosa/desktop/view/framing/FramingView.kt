@@ -6,8 +6,6 @@ import nebulosa.math.Angle
 
 interface FramingView : View {
 
-    val syncFromMount: Boolean
-
     val hipsSurvey: HipsSurvey?
 
     val frameRA: Angle

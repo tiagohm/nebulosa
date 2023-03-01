@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.input.KeyCodeCombination?>
+<?import javafx.scene.input.*?>
 <?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.control.ImageViewer?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -79,15 +79,29 @@
                                             shortcut="UP"/>
                     </accelerator>
                 </CheckMenuItem>
+                <SeparatorMenuItem/>
+                <CheckMenuItem fx:id="crosshairCheckMenuItem"
+                               text="Crosshair"
+                               onAction="#toggleCrosshair">
+                </CheckMenuItem>
+                <SeparatorMenuItem/>
                 <MenuItem fx:id="fitsHeaderMenuItem"
                           text="FITS Header"
                           onAction="#openFitsHeader"/>
             </items>
         </ContextMenu>
     </fx:define>
-    <Canvas fx:id="imageCanvas"
-            AnchorPane.bottomAnchor="0.0"
-            AnchorPane.leftAnchor="0.0"
-            AnchorPane.rightAnchor="0.0"
-            AnchorPane.topAnchor="0.0"/>
+    <ImageViewer fx:id="fitsImageViewer"
+                 fitHeight="false"
+                 fitWidth="false"
+                 minScale="0.1"
+                 maxScale="100.0"
+                 hbarPolicy="NEVER"
+                 vbarPolicy="NEVER"
+                 style="-fx-background-color: black"
+                 AnchorPane.bottomAnchor="0.0"
+                 AnchorPane.leftAnchor="0.0"
+                 AnchorPane.rightAnchor="0.0"
+                 AnchorPane.topAnchor="0.0">
+    </ImageViewer>
 </AnchorPane>

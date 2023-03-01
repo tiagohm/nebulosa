@@ -4,13 +4,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.HyperlinkLabel?>
-<?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
             prefHeight="230.0"
-            prefWidth="395.0"
+            prefWidth="410.0"
             stylesheets="@css/Global.css,@css/CopyableLabel.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
@@ -36,26 +35,26 @@
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="5.0">
-                <Label maxWidth="40.0"
-                       minWidth="40.0"
-                       prefWidth="40.0"
+                <Label maxWidth="70.0"
+                       minWidth="70.0"
+                       prefWidth="70.0"
                        styleClass="text-sm,text-bold,monospaced"
-                       text="RA:"/>
+                       text="RA (J2000):"/>
                 <TextField fx:id="raTextField"
-                           maxWidth="134.0"
-                           minWidth="134.0"
-                           prefWidth="134.0"
+                           maxWidth="110.0"
+                           minWidth="110.0"
+                           prefWidth="110.0"
                            promptText="00h00m00.00s"
                            text="00h00m00.00s"/>
-                <Label maxWidth="40.0"
-                       minWidth="40.0"
-                       prefWidth="40.0"
+                <Label maxWidth="71.0"
+                       minWidth="71.0"
+                       prefWidth="71.0"
                        styleClass="text-sm,text-bold,monospaced"
-                       text="DEC:"/>
+                       text="DEC (J2000):"/>
                 <TextField fx:id="decTextField"
-                           maxWidth="134.0"
-                           minWidth="134.0"
-                           prefWidth="134.0"
+                           maxWidth="110.0"
+                           minWidth="110.0"
+                           prefWidth="110.0"
                            promptText="00°00'00.00&quot;"
                            text="00°00'00.00&quot;"/>
             </HBox>
@@ -75,9 +74,9 @@
                          min="0.1"
                          minWidth="60.0"
                          prefWidth="60.0"/>
-                <Label maxWidth="40.0"
-                       minWidth="40.0"
-                       prefWidth="40.0"
+                <Label maxWidth="47.0"
+                       minWidth="47.0"
+                       prefWidth="47.0"
                        styleClass="text-sm,text-bold,monospaced"
                        text="Width:"/>
                 <Spinner fx:id="widthSpinner"
@@ -85,10 +84,10 @@
                          editable="true"
                          initialValue="1280.0"
                          max="1280.0"
-                         maxWidth="80.0"
+                         maxWidth="83.0"
                          min="1.0"
-                         minWidth="80.0"
-                         prefWidth="80.0"/>
+                         minWidth="83.0"
+                         prefWidth="83.0"/>
                 <Label maxWidth="43.0"
                        minWidth="43.0"
                        prefWidth="43.0"
@@ -99,10 +98,10 @@
                          editable="true"
                          initialValue="1024.0"
                          max="1024.0"
-                         maxWidth="80.0"
+                         maxWidth="83.0"
                          min="1.0"
-                         minWidth="80.0"
-                         prefWidth="80.0"/>
+                         minWidth="83.0"
+                         prefWidth="83.0"/>
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
@@ -120,9 +119,9 @@
                          min="0.01"
                          minWidth="80.0"
                          prefWidth="80.0"/>
-                <Label maxWidth="103.0"
-                       minWidth="103.0"
-                       prefWidth="103.0"
+                <Label maxWidth="116.0"
+                       minWidth="116.0"
+                       prefWidth="116.0"
                        styleClass="text-sm,text-bold,monospaced"
                        text="Focal length (mm):"/>
                 <Spinner fx:id="focalLengthSpinner"
@@ -157,9 +156,14 @@
             </HBox>
             <HBox alignment="CENTER_LEFT"
                   spacing="4.0">
-                <ToggleSwitch fx:id="syncFromMountToggleSwitch"
-                              styleClass="text-bold"
-                              text="Sync from mount:"/>
+                <Button fx:id="syncFromMountButton"
+                        text="Sync from mount"
+                        onAction="#syncFromMount">
+                    <graphic>
+                        <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
+                               text="󰓦"/>
+                    </graphic>
+                </Button>
             </HBox>
         </VBox>
         <HBox alignment="CENTER">

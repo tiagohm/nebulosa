@@ -8,7 +8,6 @@ import javafx.scene.control.TextField
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.framing.FramingManager
-import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.hips2fits.HipsSurvey
@@ -16,7 +15,6 @@ import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.AngleFormatter
 import org.controlsfx.control.HyperlinkLabel
-import org.controlsfx.control.ToggleSwitch
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
@@ -29,7 +27,7 @@ class FramingWindow : AbstractWindow("Framing", "nebulosa-framing"), FramingView
     @FXML private lateinit var poweredByHyperlinkLabel: HyperlinkLabel
     @FXML private lateinit var raTextField: TextField
     @FXML private lateinit var decTextField: TextField
-    @FXML private lateinit var syncFromMountToggleSwitch: ToggleSwitch
+    @FXML private lateinit var syncFromMountButton: Button
     @FXML private lateinit var fovSpinner: Spinner<Double>
     @FXML private lateinit var widthSpinner: Spinner<Double>
     @FXML private lateinit var heightSpinner: Spinner<Double>
@@ -54,8 +52,7 @@ class FramingWindow : AbstractWindow("Framing", "nebulosa-framing"), FramingView
 
         decTextField.disableProperty().bind(isLoading)
 
-        syncFromMountToggleSwitch.disableProperty().bind(isLoading or !framingManager.mount.connectedProperty)
-        syncFromMountToggleSwitch.selectedProperty().on { if (it) framingManager.loadFromMountCoordinate() }
+        syncFromMountButton.disableProperty().bind(isLoading or !framingManager.mount.connectedProperty)
 
         fovSpinner.disableProperty().bind(isLoading)
 
@@ -78,8 +75,6 @@ class FramingWindow : AbstractWindow("Framing", "nebulosa-framing"), FramingView
     }
 
     override fun onStart() {
-        syncFromMountToggleSwitch.isSelected = false
-
         framingManager.loadPreferences()
     }
 
@@ -90,9 +85,6 @@ class FramingWindow : AbstractWindow("Framing", "nebulosa-framing"), FramingView
     override fun onClose() {
         framingManager.close()
     }
-
-    override val syncFromMount
-        get() = syncFromMountToggleSwitch.isSelected
 
     override val hipsSurvey: HipsSurvey?
         get() = hipsSurveyChoiceBox.value
@@ -120,6 +112,11 @@ class FramingWindow : AbstractWindow("Framing", "nebulosa-framing"), FramingView
         framingManager.load(frameRA, frameDEC)
     }
 
+    @FXML
+    private fun syncFromMount() {
+        framingManager.syncFromMount()
+    }
+
     override fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?) {
         hipsSurveyChoiceBox.items.setAll(data)
         hipsSurveyChoiceBox.value = selected
@@ -142,7 +139,6 @@ class FramingWindow : AbstractWindow("Framing", "nebulosa-framing"), FramingView
     ) {
         show(bringToFront = true)
 
-        syncFromMountToggleSwitch.isSelected = false
         updateCoordinate(ra, dec)
 
         if (hips != null) hipsSurveyChoiceBox.value = hips

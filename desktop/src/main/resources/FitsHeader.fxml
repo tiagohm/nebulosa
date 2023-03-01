@@ -4,10 +4,10 @@
 <?import javafx.scene.layout.*?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
-            minHeight="250.0"
-            minWidth="400.0"
-            prefHeight="250.0"
-            prefWidth="400.0"
+            minHeight="160.0"
+            minWidth="560.0"
+            prefHeight="160.0"
+            prefWidth="560.0"
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
