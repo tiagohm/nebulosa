@@ -1,13 +1,13 @@
 package nebulosa.desktop.logic.atlas.ephemeris.provider
 
 import nebulosa.constants.DAYSEC
+import nebulosa.horizons.HorizonsElement
+import nebulosa.horizons.HorizonsEphemeris
+import nebulosa.horizons.HorizonsQuantity
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
 import nebulosa.nova.position.GeographicPosition
-import nebulosa.query.horizons.HorizonsElement
-import nebulosa.query.horizons.HorizonsEphemeris
-import nebulosa.query.horizons.HorizonsQuantity
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 import org.springframework.stereotype.Service

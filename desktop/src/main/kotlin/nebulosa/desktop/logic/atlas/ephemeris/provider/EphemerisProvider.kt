@@ -1,7 +1,7 @@
 package nebulosa.desktop.logic.atlas.ephemeris.provider
 
+import nebulosa.horizons.HorizonsEphemeris
 import nebulosa.nova.position.GeographicPosition
-import nebulosa.query.horizons.HorizonsEphemeris
 
 sealed interface EphemerisProvider<in T> {
 

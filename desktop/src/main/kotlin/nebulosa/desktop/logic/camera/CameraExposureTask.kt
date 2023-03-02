@@ -10,8 +10,6 @@ import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
 import nebulosa.fits.FITS_RA_ANGLE_FORMATTER
-import nebulosa.fits.dec
-import nebulosa.fits.ra
 import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.filterwheel.FilterWheel
@@ -20,6 +18,7 @@ import nebulosa.indi.device.mount.Mount
 import nom.tam.fits.Fits
 import nom.tam.fits.ImageHDU
 import nom.tam.fits.header.ObservationDescription
+import nom.tam.fits.header.extra.SBFitsExt
 import nom.tam.util.FitsOutputStream
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -183,15 +182,17 @@ data class CameraExposureTask(
             val hdu = fits.read().firstOrNull { it is ImageHDU }
 
             hdu?.header?.also {
-                val ra = it.ra
-                val dec = it.dec
-
                 val mount = mount ?: return@also
 
-                if (ra == null || dec == null) mount.computeCoordinates(true, false)
+                mount.computeCoordinates(true, false)
 
-                if (ra == null) it.addValue(ObservationDescription.RA, mount.rightAscensionJ2000.format(FITS_RA_ANGLE_FORMATTER))
-                if (dec == null) it.addValue(ObservationDescription.DEC, mount.declinationJ2000.format(FITS_DEC_ANGLE_FORMATTER))
+                val raStr = mount.rightAscensionJ2000.format(FITS_RA_ANGLE_FORMATTER)
+                val decStr = mount.declinationJ2000.format(FITS_DEC_ANGLE_FORMATTER)
+
+                it.addValue(ObservationDescription.RA, raStr)
+                it.addValue(SBFitsExt.OBJCTRA, raStr)
+                it.addValue(ObservationDescription.DEC, decStr)
+                it.addValue(SBFitsExt.OBJCTDEC, decStr)
             }
 
             path.parent.createDirectories()

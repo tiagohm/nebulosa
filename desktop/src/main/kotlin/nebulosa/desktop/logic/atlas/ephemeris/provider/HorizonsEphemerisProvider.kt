@@ -1,10 +1,10 @@
 package nebulosa.desktop.logic.atlas.ephemeris.provider
 
 import nebulosa.constants.DAYSEC
+import nebulosa.horizons.HorizonsEphemeris
+import nebulosa.horizons.HorizonsQuantity
+import nebulosa.horizons.HorizonsService
 import nebulosa.nova.position.GeographicPosition
-import nebulosa.query.horizons.HorizonsEphemeris
-import nebulosa.query.horizons.HorizonsQuantity
-import nebulosa.query.horizons.HorizonsService
 import nebulosa.time.TimeYMDHMS
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

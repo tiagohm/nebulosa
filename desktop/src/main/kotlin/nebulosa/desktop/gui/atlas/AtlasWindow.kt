@@ -69,6 +69,8 @@ class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
 
         atlasManager.initialize()
 
+        ephemerisTabPane.disableProperty().bind(isComputing)
+
         goToButton.disableProperty().bind(atlasManager.mountProperty.isNull or isNotConnected or isMoving or isComputing)
 
         slewToButton.disableProperty().bind(goToButton.disableProperty())

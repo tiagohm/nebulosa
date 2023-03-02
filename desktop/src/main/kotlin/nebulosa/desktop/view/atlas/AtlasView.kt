@@ -8,7 +8,7 @@ import nebulosa.math.Angle.Companion.mas
 import nebulosa.math.Velocity.Companion.kms
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.astrometry.FixedStar
-import nebulosa.query.simbad.SimbadObject
+import nebulosa.simbad.SimbadObject
 
 interface AtlasView : View {
 

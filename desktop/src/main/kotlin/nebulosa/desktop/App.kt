@@ -8,10 +8,10 @@ import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.JavaFXExecutor
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.hips2fits.Hips2FitsService
+import nebulosa.horizons.HorizonsService
 import nebulosa.io.resource
-import nebulosa.query.horizons.HorizonsService
-import nebulosa.query.sbd.SmallBodyDatabaseLookupService
-import nebulosa.query.simbad.SimbadService
+import nebulosa.sbd.SmallBodyDatabaseLookupService
+import nebulosa.simbad.SimbadService
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus

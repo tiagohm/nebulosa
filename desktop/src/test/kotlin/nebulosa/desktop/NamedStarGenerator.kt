@@ -1,9 +1,9 @@
 package nebulosa.desktop
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import nebulosa.query.simbad.SimbadObject
-import nebulosa.query.simbad.SimbadQuery
-import nebulosa.query.simbad.SimbadService
+import nebulosa.simbad.SimbadObject
+import nebulosa.simbad.SimbadQuery
+import nebulosa.simbad.SimbadService
 import org.slf4j.LoggerFactory
 import java.io.File
 

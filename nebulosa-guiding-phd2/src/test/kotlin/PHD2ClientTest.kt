@@ -1,7 +1,7 @@
 import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.StringSpec
-import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.PHD2Client
+import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.event.PHD2Event
 
 @Ignored
