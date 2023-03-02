@@ -7,6 +7,7 @@ import nebulosa.desktop.logic.task.TaskExecutor
 import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.focuser.FocuserMaxPositionChanged
 import nebulosa.indi.device.focuser.FocuserMovingChanged
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -43,6 +44,10 @@ class FocuserManager(
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Focuser) {
         when (event) {
             is FocuserMovingChanged -> updateStatus()
+            is FocuserMaxPositionChanged -> {
+                updateMaxIncrement()
+                updateAbsoluteMax()
+            }
         }
     }
 

@@ -110,6 +110,8 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         updateTitle()
 
+        val adjustSceneToImage = this.fits == null
+
         this.fits = fits
         this.transformedFits = null
         this.calibration.set(null)
@@ -122,7 +124,9 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         imageStretcherWindow?.updateTitle()
 
-        view.adjustSceneToImage()
+        if (adjustSceneToImage) {
+            view.adjustSceneToImage()
+        }
     }
 
     fun draw() {
@@ -341,13 +345,5 @@ class ImageManager(private val view: ImageView) : Closeable {
     companion object {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(ImageManager::class.java)
-
-        @JvmStatic private val SCALE_FACTORS = doubleArrayOf(
-            // 0.125, 0.25, 0.5, 0.75,
-            1.0, 1.25, 1.5, 1.75, 2.0,
-            3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0,
-            10.0, 15.0, 20.0, 25.0, 50.0, 75.0, 100.0,
-            200.0, 300.0, 400.0, 500.0,
-        )
     }
 }

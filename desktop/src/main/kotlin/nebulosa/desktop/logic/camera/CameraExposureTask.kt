@@ -8,9 +8,18 @@ import nebulosa.desktop.logic.task.Task
 import nebulosa.desktop.logic.task.TaskFinished
 import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.desktop.view.camera.AutoSubFolderMode
+import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
+import nebulosa.fits.FITS_RA_ANGLE_FORMATTER
+import nebulosa.fits.dec
+import nebulosa.fits.ra
 import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.*
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.mount.Mount
 import nom.tam.fits.Fits
+import nom.tam.fits.ImageHDU
+import nom.tam.fits.header.ObservationDescription
 import nom.tam.util.FitsOutputStream
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -57,6 +66,15 @@ data class CameraExposureTask(
     private val latch = CountUpDownLatch()
     private val imagePaths = arrayListOf<Path>()
 
+    private val mount: Mount?
+        get() = equipmentManager.selectedMount.get()
+
+    private val focuser: Focuser?
+        get() = equipmentManager.selectedFocuser.get()
+
+    private val filterWheel: FilterWheel?
+        get() = equipmentManager.selectedFilterWheel.get()
+
     @Subscribe
     fun onEvent(event: CameraEvent) {
         if (event.device !== camera) return
@@ -83,24 +101,22 @@ data class CameraExposureTask(
         try {
             eventBus.post(TaskStarted(this))
 
-            val mount = equipmentManager.selectedMount.get()
-            val focuser = equipmentManager.selectedFocuser.get()
-            val filterWheel = equipmentManager.selectedFilterWheel.get()
-
             camera.snoop(listOf(mount, focuser, filterWheel))
 
-            if (filterWheel != null && frameType == FrameType.DARK) {
-                if (!filterWheel.connected) {
-                    LOG.warn("filter wheel ${filterWheel.name} is disconnected")
-                } else {
-                    val filterAsShutterPosition = preferences.int("filterWheel.${filterWheel.name}.filterAsShutter")
-
-                    if (filterAsShutterPosition != null) {
-                        LOG.info("moving filter wheel ${filterWheel.name} to dark filter")
-                        val task = FilterWheelMoveTask(filterWheel, filterAsShutterPosition)
-                        task.call()
+            if (frameType == FrameType.DARK) {
+                filterWheel?.also {
+                    if (!it.connected) {
+                        LOG.warn("filter wheel ${it.name} is disconnected")
                     } else {
-                        LOG.info("filter wheel ${filterWheel.name} dont have dark filter")
+                        val filterAsShutterPosition = preferences.int("filterWheel.${it.name}.filterAsShutter")
+
+                        if (filterAsShutterPosition != null) {
+                            LOG.info("moving filter wheel ${it.name} to dark filter")
+                            val task = FilterWheelMoveTask(it, filterAsShutterPosition)
+                            task.call()
+                        } else {
+                            LOG.info("filter wheel ${it.name} dont have dark filter")
+                        }
                     }
                 }
             }
@@ -164,8 +180,19 @@ data class CameraExposureTask(
         LOG.info("saving FITS at $path...")
 
         Fits(inputStream).use { fits ->
-            // TODO: Process custom header: val hdu = fits.read().firstOrNull { it is ImageHDU }
-            fits.read()
+            val hdu = fits.read().firstOrNull { it is ImageHDU }
+
+            hdu?.header?.also {
+                val ra = it.ra
+                val dec = it.dec
+
+                val mount = mount ?: return@also
+
+                if (ra == null || dec == null) mount.computeCoordinates(true, false)
+
+                if (ra == null) it.addValue(ObservationDescription.RA, mount.rightAscensionJ2000.format(FITS_RA_ANGLE_FORMATTER))
+                if (dec == null) it.addValue(ObservationDescription.DEC, mount.declinationJ2000.format(FITS_DEC_ANGLE_FORMATTER))
+            }
 
             path.parent.createDirectories()
             path.outputStream().use { fits.write(FitsOutputStream(it)) }
