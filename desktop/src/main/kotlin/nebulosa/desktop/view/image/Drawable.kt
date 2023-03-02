@@ -6,4 +6,3 @@ interface Drawable {
 
     fun draw(width: Double, height: Double, graphics: GraphicsContext)
 }
-

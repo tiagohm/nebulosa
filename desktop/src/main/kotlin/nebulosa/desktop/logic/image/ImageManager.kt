@@ -5,10 +5,10 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
 import javafx.beans.property.SimpleObjectProperty
 import javafx.stage.FileChooser
 import javafx.stage.Screen
+import nebulosa.desktop.gui.image.Crosshair
 import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
-import nebulosa.desktop.gui.image.draw.Crosshair
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.platesolver.PlateSolverView

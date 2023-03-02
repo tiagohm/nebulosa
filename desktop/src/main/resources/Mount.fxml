@@ -391,7 +391,8 @@
                       spacing="2.0">
                     <Button fx:id="nudgeNEButton"
                             contentDisplay="GRAPHIC_ONLY"
-                            onAction="#nudgeTo"
+                            onMousePressed="#nudgeTo"
+                            onMouseReleased="#nudgeTo"
                             prefHeight="48.0"
                             prefWidth="48.0"
                             userData="NE">
@@ -403,7 +404,8 @@
                     </Button>
                     <Button fx:id="nudgeNButton"
                             contentDisplay="GRAPHIC_ONLY"
-                            onAction="#nudgeTo"
+                            onMousePressed="#nudgeTo"
+                            onMouseReleased="#nudgeTo"
                             prefHeight="48.0"
                             prefWidth="48.0"
                             userData="N">
@@ -415,7 +417,8 @@
                     </Button>
                     <Button fx:id="nudgeNWButton"
                             contentDisplay="GRAPHIC_ONLY"
-                            onAction="#nudgeTo"
+                            onMousePressed="#nudgeTo"
+                            onMouseReleased="#nudgeTo"
                             prefHeight="48.0"
                             prefWidth="48.0"
                             userData="NW">
@@ -430,7 +433,8 @@
                       spacing="2.0">
                     <Button fx:id="nudgeEButton"
                             contentDisplay="GRAPHIC_ONLY"
-                            onAction="#nudgeTo"
+                            onMousePressed="#nudgeTo"
+                            onMouseReleased="#nudgeTo"
                             prefHeight="48.0"
                             prefWidth="48.0"
                             userData="E">
@@ -453,7 +457,8 @@
                     </Button>
                     <Button fx:id="nudgeWButton"
                             contentDisplay="GRAPHIC_ONLY"
-                            onAction="#nudgeTo"
+                            onMousePressed="#nudgeTo"
+                            onMouseReleased="#nudgeTo"
                             prefHeight="48.0"
                             prefWidth="48.0"
                             userData="W">
@@ -468,7 +473,8 @@
                       spacing="2.0">
                     <Button fx:id="nudgeSEButton"
                             contentDisplay="GRAPHIC_ONLY"
-                            onAction="#nudgeTo"
+                            onMousePressed="#nudgeTo"
+                            onMouseReleased="#nudgeTo"
                             prefHeight="48.0"
                             prefWidth="48.0"
                             userData="SE">
@@ -480,7 +486,8 @@
                     </Button>
                     <Button fx:id="nudgeSButton"
                             contentDisplay="GRAPHIC_ONLY"
-                            onAction="#nudgeTo"
+                            onMousePressed="#nudgeTo"
+                            onMouseReleased="#nudgeTo"
                             prefHeight="48.0"
                             prefWidth="48.0"
                             userData="S">
@@ -492,7 +499,8 @@
                     </Button>
                     <Button fx:id="nudgeSWButton"
                             contentDisplay="GRAPHIC_ONLY"
-                            onAction="#nudgeTo"
+                            onMousePressed="#nudgeTo"
+                            onMouseReleased="#nudgeTo"
                             prefHeight="48.0"
                             prefWidth="48.0"
                             userData="SW">

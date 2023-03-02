@@ -223,8 +223,12 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
     }
 
     @FXML
-    private fun nudgeTo(event: ActionEvent) {
-        val direction = (event.source as Node).userData as String
+    private fun nudgeTo(event: MouseEvent) {
+        if (event.button == MouseButton.PRIMARY && event.clickCount == 1) {
+            val direction = (event.source as Node).userData as String
+            val enable = event.eventType == MouseEvent.MOUSE_PRESSED
+            direction.forEach { mountManager.nudgeTo(it, enable) }
+        }
     }
 
     @FXML

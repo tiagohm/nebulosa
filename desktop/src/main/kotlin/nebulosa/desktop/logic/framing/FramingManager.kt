@@ -59,6 +59,7 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
         mount.computeCoordinates(true, false)
         val coordinate = PairOfAngle(mount.rightAscensionJ2000, mount.declinationJ2000)
         javaFXExecutorService.execute { view.updateCoordinate(coordinate.first, coordinate.second) }
+        load(coordinate.first, coordinate.second)
     }
 
     @Synchronized

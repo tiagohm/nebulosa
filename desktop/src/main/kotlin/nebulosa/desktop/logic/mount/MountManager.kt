@@ -174,6 +174,15 @@ class MountManager(
         view.isJ2000 = true
     }
 
+    fun nudgeTo(direction: Char, enable: Boolean) {
+        when (direction) {
+            'N' -> value?.moveNorth(enable)
+            'S' -> value?.moveSouth(enable)
+            'W' -> value?.moveWest(enable)
+            'E' -> value?.moveEast(enable)
+        }
+    }
+
     fun abort() {
         value.abortMotion()
     }

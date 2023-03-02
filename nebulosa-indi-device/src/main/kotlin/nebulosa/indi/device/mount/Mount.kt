@@ -77,6 +77,14 @@ interface Mount : GuideOutput, GPS {
 
     fun slewRate(rate: String)
 
+    fun moveNorth(enable: Boolean)
+
+    fun moveSouth(enable: Boolean)
+
+    fun moveWest(enable: Boolean)
+
+    fun moveEast(enable: Boolean)
+
     fun coordinates(longitude: Angle, latitude: Angle, elevation: Distance)
 
     fun time(time: OffsetDateTime)
