@@ -1,10 +1,11 @@
+import nebulosa.lx200.protocol.LX200MountHandler
 import nebulosa.lx200.protocol.LX200ProtocolServer
-import nebulosa.lx200.protocol.MountHandler
 import nebulosa.math.Angle
+import java.time.OffsetDateTime
 
 class LX200ProtocolServerTest {
 
-    companion object : MountHandler {
+    companion object : LX200MountHandler {
 
         @JvmStatic
         fun main(args: Array<String>) {
@@ -17,9 +18,9 @@ class LX200ProtocolServerTest {
             Thread.currentThread().join()
         }
 
-        override var rightAscension = Angle.from("05 15 07", true)!!
+        override var rightAscensionJ2000 = Angle.from("05 15 07", true)!!
 
-        override var declination = Angle.from("25 26 03")!!
+        override var declinationJ2000 = Angle.from("25 26 03")!!
 
         override val latitude = Angle.ZERO
 
@@ -29,12 +30,29 @@ class LX200ProtocolServerTest {
 
         override var tracking = false
 
+        override var parked = false
+
         override fun goTo(rightAscension: Angle, declination: Angle) {
-            this.rightAscension = rightAscension
-            this.declination = declination
+            this.rightAscensionJ2000 = rightAscension
+            this.declinationJ2000 = declination
         }
 
-        override fun syncTo(rightAscension: Angle, declination: Angle) {}
+        override fun syncTo(rightAscension: Angle, declination: Angle) {
+            this.rightAscensionJ2000 = rightAscension
+            this.declinationJ2000 = declination
+        }
+
+        override fun moveNorth(enable: Boolean) {}
+
+        override fun moveSouth(enable: Boolean) {}
+
+        override fun moveWest(enable: Boolean) {}
+
+        override fun moveEast(enable: Boolean) {}
+
+        override fun time(time: OffsetDateTime) {}
+
+        override fun coordinates(longitude: Angle, latitude: Angle) {}
 
         override fun abort() {}
     }

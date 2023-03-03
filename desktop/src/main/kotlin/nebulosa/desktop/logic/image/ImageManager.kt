@@ -318,6 +318,8 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     fun savePreferences() {
+        if (!view.initialized) return
+
         if (view.camera != null) {
             preferences.double("image.${view.camera!!.name}.screen.x", view.x)
             preferences.double("image.${view.camera!!.name}.screen.y", view.y)

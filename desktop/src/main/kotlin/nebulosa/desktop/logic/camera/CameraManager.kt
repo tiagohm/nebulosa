@@ -239,6 +239,8 @@ class CameraManager(
     }
 
     fun savePreferences(device: Camera? = value) {
+        if (!view.initialized) return
+
         if (device != null && device.connected) {
             preferences.double("camera.${device.name}.temperatureSetpoint", view.temperatureSetpoint)
             preferences.enum("camera.${device.name}.exposureUnit", view.exposureUnit)

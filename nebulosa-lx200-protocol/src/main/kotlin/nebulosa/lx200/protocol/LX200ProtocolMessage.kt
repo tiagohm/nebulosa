@@ -12,6 +12,8 @@ sealed interface LX200ProtocolMessage {
 
     object Zero : LX200ProtocolMessage
 
+    data class Text(val text: String) : LX200ProtocolMessage
+
     data class RAPosition(val rightAscension: Angle) : LX200ProtocolMessage
 
     data class DECPosition(val declination: Angle) : LX200ProtocolMessage
@@ -29,5 +31,5 @@ sealed interface LX200ProtocolMessage {
     data class Slewing(val slewing: Boolean) : LX200ProtocolMessage
 
     // https://www.cloudynights.com/topic/72166-lx-200-gps-serial-commands/
-    data class Status(val type: String, val tracking: Boolean) : LX200ProtocolMessage
+    data class Status(val type: String, val tracking: Boolean, val parked: Boolean) : LX200ProtocolMessage
 }

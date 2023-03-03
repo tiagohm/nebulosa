@@ -226,6 +226,8 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
     }
 
     fun savePreferences() {
+        if (!view.initialized) return
+
         preferences.enum("plateSolver.type", view.type)
         if (view.type == PlateSolverType.ASTROMETRY_NET_LOCAL) preferences.string("plateSolver.path", view.pathOrUrl)
         else preferences.string("plateSolver.url", view.pathOrUrl)

@@ -4,6 +4,7 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
 import nebulosa.math.Angle
 import nebulosa.netty.NettyServer
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Stellarium Telescope Protocol version 1.0
@@ -69,8 +70,20 @@ class StellariumProtocolServer(
     val j2000: Boolean = false,
 ) : NettyServer(), CurrentPositionHandler {
 
-    private val goToHandlers = hashSetOf<GoToHandler>()
+    private val stellariumMountHandler = AtomicReference<StellariumMountHandler>()
     private val currentPositionHandlers = hashSetOf<CurrentPositionHandler>()
+
+    val rightAscension: Angle?
+        get() = stellariumMountHandler.get()?.rightAscension
+
+    val declination: Angle?
+        get() = stellariumMountHandler.get()?.declination
+
+    val rightAscensionJ2000: Angle?
+        get() = stellariumMountHandler.get()?.rightAscensionJ2000
+
+    val declinationJ2000: Angle?
+        get() = stellariumMountHandler.get()?.declinationJ2000
 
     override val channelInitialzer = object : ChannelInitializer<SocketChannel>() {
 
@@ -96,21 +109,21 @@ class StellariumProtocolServer(
         currentPositionHandlers.remove(handler)
     }
 
-    fun registerGoToHandler(handler: GoToHandler) {
-        goToHandlers.add(handler)
+    fun attachMountHandler(handler: StellariumMountHandler) {
+        stellariumMountHandler.set(handler)
     }
 
-    fun unregisterGoToHandler(handler: GoToHandler) {
-        goToHandlers.remove(handler)
+    fun detachMountHandler() {
+        stellariumMountHandler.set(null)
     }
 
     @Synchronized
     internal fun goTo(rightAscension: Angle, declination: Angle) {
-        goToHandlers.forEach { it.goTo(rightAscension, declination, j2000) }
+        stellariumMountHandler.get()?.goTo(rightAscension, declination, j2000)
     }
 
     override fun close() {
-        goToHandlers.clear()
+        stellariumMountHandler.set(null)
         currentPositionHandlers.clear()
 
         super.close()

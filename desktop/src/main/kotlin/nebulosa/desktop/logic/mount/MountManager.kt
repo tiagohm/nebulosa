@@ -87,7 +87,7 @@ class MountManager(
     }
 
     fun openTelescopeControlServer() {
-        telescopeControlWindow.showAndWait()
+        telescopeControlWindow.show(bringToFront = true)
     }
 
     fun openSiteAndTime() {
@@ -200,6 +200,8 @@ class MountManager(
     }
 
     fun savePreferences() {
+        if (!view.initialized) return
+
         preferences.double("mount.screen.x", view.x)
         preferences.double("mount.screen.y", view.y)
     }

@@ -10,6 +10,8 @@ interface View : Closeable {
 
     val showing: Boolean
 
+    val initialized: Boolean
+
     var title: String
 
     var x: Double

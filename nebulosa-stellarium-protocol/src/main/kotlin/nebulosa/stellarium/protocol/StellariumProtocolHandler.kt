@@ -5,13 +5,15 @@ import io.netty.channel.ChannelInboundHandlerAdapter
 import nebulosa.math.Angle
 import org.slf4j.LoggerFactory
 
-class StellariumProtocolHandler(private val server: StellariumProtocolServer) : ChannelInboundHandlerAdapter(), CurrentPositionHandler {
+internal class StellariumProtocolHandler(private val server: StellariumProtocolServer) : ChannelInboundHandlerAdapter(), CurrentPositionHandler {
 
     @Volatile private var client: ChannelHandlerContext? = null
 
     override fun handlerAdded(ctx: ChannelHandlerContext) {
         client = ctx
         server.registerCurrentPositionHandler(this)
+        if (server.j2000) sendCurrentPosition(server.rightAscensionJ2000!!, server.declinationJ2000!!)
+        else sendCurrentPosition(server.rightAscension!!, server.declination!!)
         LOG.info("client connected. address={}", ctx.channel().remoteAddress())
     }
 
@@ -29,7 +31,6 @@ class StellariumProtocolHandler(private val server: StellariumProtocolServer) : 
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
         val message = msg as StellariumProtocolMessage.Goto
         server.goTo(message.rightAscension, message.declination)
-        ctx.close()
     }
 
     @Suppress("OVERRIDE_DEPRECATION")

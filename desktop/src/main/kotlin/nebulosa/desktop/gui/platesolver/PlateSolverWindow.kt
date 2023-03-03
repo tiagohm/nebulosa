@@ -127,8 +127,6 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         plateSolverManager.savePreferences()
     }
 
-    override fun onClose() = Unit
-
     override var type: PlateSolverType
         get() = typeChoiceBox.value
         set(value) {

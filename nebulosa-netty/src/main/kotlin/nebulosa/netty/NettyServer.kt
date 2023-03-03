@@ -56,7 +56,7 @@ abstract class NettyServer : Runnable, Closeable {
     }
 
     override fun close() {
-        channel.get()?.channel()?.close()
+        channel.get()?.channel()?.close()?.sync()
     }
 
     companion object {

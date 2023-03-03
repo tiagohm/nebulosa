@@ -153,6 +153,8 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
     }
 
     fun savePreferences() {
+        if (!view.initialized) return
+
         preferences.string("framing.hipsSurvey", view.hipsSurvey?.id)
         preferences.double("framing.fov", view.frameFOV.value)
         preferences.double("framing.screen.x", view.x)

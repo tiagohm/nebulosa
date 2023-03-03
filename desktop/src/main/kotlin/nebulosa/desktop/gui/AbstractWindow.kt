@@ -2,6 +2,7 @@ package nebulosa.desktop.gui
 
 import io.reactivex.rxjava3.subjects.PublishSubject
 import javafx.application.HostServices
+import javafx.application.Platform
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -12,6 +13,7 @@ import nebulosa.desktop.gui.home.HomeWindow
 import nebulosa.desktop.view.View
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import java.util.concurrent.atomic.AtomicBoolean
@@ -22,7 +24,7 @@ abstract class AbstractWindow(
     private val window: Stage = Stage(),
 ) : View {
 
-    private val showingAtFirstTime = AtomicBoolean()
+    private val showingAtFirstTime = AtomicBoolean(true)
 
     @Autowired protected lateinit var beanFactory: AutowireCapableBeanFactory
         private set
@@ -31,7 +33,7 @@ abstract class AbstractWindow(
 
     init {
         window.setOnShowing {
-            if (showingAtFirstTime.compareAndSet(false, true)) {
+            if (showingAtFirstTime.compareAndSet(true, false)) {
                 val loader = FXMLLoader(resourceUrl("$resourceName.fxml")!!)
                 loader.setController(this)
                 val root = loader.load<Parent>()
@@ -44,7 +46,7 @@ abstract class AbstractWindow(
                 CLOSE
                     .filter { !it }
                     .subscribe {
-                        if (this !is HomeWindow) {
+                        if (this !is HomeWindow && initialized) {
                             use { onClose() }
                         }
 
@@ -87,6 +89,9 @@ abstract class AbstractWindow(
 
     final override val showing
         get() = window.isShowing
+
+    override val initialized
+        get() = !showingAtFirstTime.get()
 
     final override var title
         get() = window.title!!
@@ -146,7 +151,12 @@ abstract class AbstractWindow(
     }
 
     final override fun close() {
-        window.close()
+        if (Platform.isFxApplicationThread()) {
+            LOG.info("close requested. window={}", javaClass.simpleName)
+            window.close()
+        } else {
+            LOG.warn("unable to close because not on FX application thread. window={}", javaClass.simpleName)
+        }
     }
 
     final override fun showAlert(
@@ -163,5 +173,7 @@ abstract class AbstractWindow(
     companion object {
 
         @JvmStatic internal val CLOSE = PublishSubject.create<Boolean>()
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(AbstractWindow::class.java)
     }
 }

@@ -24,6 +24,7 @@ class LX200ProtocolEncoder : MessageToByteEncoder<LX200ProtocolMessage>() {
             LX200ProtocolMessage.Ack -> output.writeByte(71)
             LX200ProtocolMessage.Ok -> output.writeByte(49)
             LX200ProtocolMessage.Zero -> output.writeByte(48)
+            is LX200ProtocolMessage.Text -> output.writeAscii(msg.text)
             is LX200ProtocolMessage.RAPosition -> {
                 val (h, m, s) = msg.rightAscension.hms()
                 output.writeAscii("+%02d:%02d:%02d#".format(Locale.ENGLISH, h.toInt(), m.toInt(), s.toInt()))
@@ -60,7 +61,9 @@ class LX200ProtocolEncoder : MessageToByteEncoder<LX200ProtocolMessage>() {
                 output.writeAscii(if (msg.slewing) "|#" else "#")
             }
             is LX200ProtocolMessage.Status -> {
-                output.writeAscii("%s%s0#".format(Locale.ENGLISH, msg.type, if (msg.tracking) "T" else "N"))
+                val b = if (msg.tracking) "T" else "N"
+                val c = if (msg.parked) "P" else "H"
+                output.writeAscii("%s%s%s#".format(Locale.ENGLISH, msg.type, b, c))
             }
         }
     }
@@ -69,7 +72,7 @@ class LX200ProtocolEncoder : MessageToByteEncoder<LX200ProtocolMessage>() {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(LX200ProtocolEncoder::class.java)
 
-        @JvmStatic private val CALENDAR_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yy")
-        @JvmStatic private val CALENDAR_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")
+        @JvmStatic internal val CALENDAR_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yy")
+        @JvmStatic internal val CALENDAR_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")
     }
 }

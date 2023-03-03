@@ -104,8 +104,8 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
     }
 
     @Synchronized
-    private fun onMountCoordinateChanged() {
-        val mount = mount ?: return
+    private fun onMountCoordinateChanged(mount: Mount? = this.mount) {
+        mount ?: return
 
         observer = Geoid.IERS2010.latLon(mount.longitude, mount.latitude, mount.elevation)
         updateTitle()
@@ -438,6 +438,8 @@ class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
     }
 
     fun savePreferences() {
+        if (!view.initialized) return
+
         preferences.double("atlas.screen.x", view.x)
         preferences.double("atlas.screen.y", view.y)
     }

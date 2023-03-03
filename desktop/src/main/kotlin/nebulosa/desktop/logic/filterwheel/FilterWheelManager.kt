@@ -106,6 +106,8 @@ class FilterWheelManager(
     }
 
     fun savePreferences() {
+        if (!view.initialized) return
+
         preferences.double("filterWheel.screen.x", view.x)
         preferences.double("filterWheel.screen.y", view.y)
     }

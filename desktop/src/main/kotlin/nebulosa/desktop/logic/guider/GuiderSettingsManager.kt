@@ -32,6 +32,8 @@ class GuiderSettingsManager(@Autowired private val view: GuiderSettingsView) {
     }
 
     fun savePreferences() {
+        if (!view.initialized) return
+
         val type = guiderView.type
 
         preferences.string("guiderSettings.$type.host", view.host)

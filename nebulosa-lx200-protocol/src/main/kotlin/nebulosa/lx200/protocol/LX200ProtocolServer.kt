@@ -4,6 +4,8 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
 import nebulosa.math.Angle
 import nebulosa.netty.NettyServer
+import org.slf4j.LoggerFactory
+import java.time.OffsetDateTime
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -16,31 +18,13 @@ class LX200ProtocolServer(
     override val port: Int = 10001,
 ) : NettyServer() {
 
-    private val mountHandler = AtomicReference<MountHandler>()
-
-    override val channelInitialzer = object : ChannelInitializer<SocketChannel>() {
-
-        override fun initChannel(ch: SocketChannel) {
-            ch.pipeline().addLast(
-                LX200ProtocolEncoder(),
-                LX200ProtocolHandler(this@LX200ProtocolServer),
-            )
-        }
-    }
-
-    fun attachMountHandler(handler: MountHandler) {
-        mountHandler.set(handler)
-    }
-
-    fun detachMountHandler() {
-        mountHandler.set(null)
-    }
+    private val mountHandler = AtomicReference<LX200MountHandler>()
 
     val rightAscension
-        get() = mountHandler.get()?.rightAscension ?: Angle.ZERO
+        get() = mountHandler.get()?.rightAscensionJ2000 ?: Angle.ZERO
 
     val declination
-        get() = mountHandler.get()?.declination ?: Angle.ZERO
+        get() = mountHandler.get()?.declinationJ2000 ?: Angle.ZERO
 
     val latitude
         get() = mountHandler.get()?.latitude ?: Angle.ZERO
@@ -54,18 +38,78 @@ class LX200ProtocolServer(
     val tracking
         get() = mountHandler.get()?.tracking ?: false
 
+    val parked
+        get() = mountHandler.get()?.parked ?: false
+
+    override val channelInitialzer = object : ChannelInitializer<SocketChannel>() {
+
+        override fun initChannel(ch: SocketChannel) {
+            ch.pipeline().addLast(
+                LX200ProtocolEncoder(),
+                LX200ProtocolHandler(this@LX200ProtocolServer),
+            )
+        }
+    }
+
+    fun attachMountHandler(handler: LX200MountHandler) {
+        mountHandler.set(handler)
+    }
+
+    fun detachMountHandler() {
+        mountHandler.set(null)
+    }
+
     @Synchronized
     internal fun goTo(rightAscension: Angle, declination: Angle) {
+        LOG.info("going to. ra={}, dec={}", rightAscension.hours, declination.degrees)
         mountHandler.get()?.goTo(rightAscension, declination)
     }
 
     @Synchronized
     internal fun syncTo(rightAscension: Angle, declination: Angle) {
+        LOG.info("syncing to. ra={}, dec={}", rightAscension.hours, declination.degrees)
         mountHandler.get()?.syncTo(rightAscension, declination)
     }
 
     @Synchronized
+    internal fun moveNorth(enable: Boolean) {
+        LOG.info("moving to north. enable={}", enable)
+        mountHandler.get()?.moveNorth(enable)
+    }
+
+    @Synchronized
+    internal fun moveSouth(enable: Boolean) {
+        LOG.info("moving to south. enable={}", enable)
+        mountHandler.get()?.moveSouth(enable)
+    }
+
+    @Synchronized
+    internal fun moveWest(enable: Boolean) {
+        LOG.info("moving to west. enable={}", enable)
+        mountHandler.get()?.moveWest(enable)
+    }
+
+    @Synchronized
+    internal fun moveEast(enable: Boolean) {
+        LOG.info("moving to east. enable={}", enable)
+        mountHandler.get()?.moveEast(enable)
+    }
+
+    @Synchronized
+    internal fun time(time: OffsetDateTime) {
+        LOG.info("sending time. time={}", time)
+        mountHandler.get()?.time(time)
+    }
+
+    @Synchronized
+    internal fun coordinates(longitude: Angle, latitude: Angle) {
+        LOG.info("sending coordinates. longitude={}, latitude={}", longitude.degrees, latitude.degrees)
+        mountHandler.get()?.coordinates(longitude, latitude)
+    }
+
+    @Synchronized
     internal fun abort() {
+        LOG.info("aborting")
         mountHandler.get()?.abort()
     }
 
@@ -73,5 +117,10 @@ class LX200ProtocolServer(
         mountHandler.set(null)
 
         super.close()
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(LX200ProtocolServer::class.java)
     }
 }

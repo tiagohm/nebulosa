@@ -5,10 +5,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import nebulosa.math.Angle
 import org.slf4j.LoggerFactory
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.ZoneId
+import java.time.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInboundHandlerAdapter() {
@@ -17,6 +14,9 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
 
     @Volatile private var rightAscension = Angle.ZERO
     @Volatile private var declination = Angle.ZERO
+    @Volatile private var date = LocalDate.now()
+    @Volatile private var time = LocalTime.now()
+    @Volatile private var offset = ZoneId.systemDefault().rules.getOffset(Instant.now())
 
     override fun handlerAdded(ctx: ChannelHandlerContext) {
         LOG.info("client connected. address={}", ctx.channel().remoteAddress())
@@ -57,37 +57,72 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
                 "#:GC#" -> ctx.writeAndFlush(LX200ProtocolMessage.Date(LocalDate.now()))
                 "#:GL#" -> ctx.writeAndFlush(LX200ProtocolMessage.Time(LocalTime.now()))
                 "#:GG#" -> ctx.writeAndFlush(LX200ProtocolMessage.ZoneOffset(ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds / 3600.0))
-                "#:GW#" -> ctx.writeAndFlush(LX200ProtocolMessage.Status("G", server.tracking)) // A = AltAz, G = German
+                "#:GW#" -> ctx.writeAndFlush(LX200ProtocolMessage.Status("G", server.tracking, server.parked))
                 "#:CM#" -> {
-                    server.goTo(rightAscension, declination)
                     ctx.writeAndFlush(LX200ProtocolMessage.Zero)
+                    server.syncTo(rightAscension, declination)
                 }
                 "#:MS#" -> {
-                    server.syncTo(rightAscension, declination)
                     ctx.writeAndFlush(LX200ProtocolMessage.Zero)
+                    server.goTo(rightAscension, declination)
                 }
                 // "#:RC#", "#:RG#", "#:RM#", "#:RS#" -> return // movement rate
-                // "#:Me#", "#:Mn#", "#:Ms#", "#:Mw#" -> return // move
-                // "#:Qe#", "#:Qn#", "#:Qs#", "#:Qw#" -> return // abort move
+                "#:Me#", "#:Mn#", "#:Ms#", "#:Mw#" -> {
+                    when (command[3]) {
+                        'n' -> server.moveNorth(true)
+                        's' -> server.moveSouth(true)
+                        'w' -> server.moveWest(true)
+                        'e' -> server.moveEast(true)
+                    }
+                }
+                "#:Qe#", "#:Qn#", "#:Qs#", "#:Qw#" -> {
+                    when (command[3]) {
+                        'n' -> server.moveNorth(false)
+                        's' -> server.moveSouth(false)
+                        'w' -> server.moveWest(false)
+                        'e' -> server.moveEast(false)
+                    }
+                }
                 "#:Q#" -> server.abort()
                 "#:D#" -> ctx.writeAndFlush(LX200ProtocolMessage.Slewing(server.slewing))
                 else -> {
                     when {
-                        command.startsWith("#:Sg") -> ctx.writeAndFlush(LX200ProtocolMessage.Ok) // Longitude
-                        command.startsWith("#:St") -> ctx.writeAndFlush(LX200ProtocolMessage.Ok) // Latitude
-                        command.startsWith("#:SL") -> ctx.writeAndFlush(LX200ProtocolMessage.Ok) // Local Time
-                        command.startsWith("#:SC") -> ctx.writeAndFlush(LX200ProtocolMessage.Ok) // Calendar Date
-                        command.startsWith("#:SG") -> ctx.writeAndFlush(LX200ProtocolMessage.Ok) // Time Offset
-                        command.startsWith("#:Sr") -> return ctx.updateRA(command.substring(4))
-                        command.startsWith("#:Sd") -> return ctx.updateDEC(command.substring(4))
+                        command.startsWith("#:Sg") -> {
+                            ctx.writeAndFlush(LX200ProtocolMessage.Ok)
+                            val longitude = -Angle.from(command.substring(4))!!
+                            server.coordinates(longitude, server.latitude)
+                        }
+                        command.startsWith("#:St") -> {
+                            ctx.writeAndFlush(LX200ProtocolMessage.Ok)
+                            val latitude = Angle.from(command.substring(4))!!
+                            server.coordinates(server.longitude, latitude)
+                        }
+                        command.startsWith("#:SL") -> {
+                            ctx.writeAndFlush(LX200ProtocolMessage.Ok)
+                            time = LocalTime.parse(command.substring(4, command.length - 1), LX200ProtocolEncoder.CALENDAR_TIME_FORMAT)
+                            server.time(OffsetDateTime.of(date, time, offset))
+                        }
+                        command.startsWith("#:SC") -> {
+                            ctx.writeAndFlush(LX200ProtocolMessage.Text("1Updating planetary data       #                              #"))
+                            date = LocalDate.parse(command.substring(4, command.length - 1), LX200ProtocolEncoder.CALENDAR_DATE_FORMAT)
+                            server.time(OffsetDateTime.of(date, time, offset))
+                        }
+                        command.startsWith("#:SG") -> {
+                            ctx.writeAndFlush(LX200ProtocolMessage.Ok)
+                            val offsetInHours = -command.substring(4, command.length - 1).toDouble()
+                            offset = ZoneOffset.ofTotalSeconds((offsetInHours * 3600.0).toInt())
+                            server.time(OffsetDateTime.of(date, time, offset))
+                        }
+                        command.startsWith("#:Sr") -> ctx.updateRA(command.substring(4))
+                        command.startsWith("#:Sd") -> ctx.updateDEC(command.substring(4))
                         else -> LOG.warn("received unknown command. command={}", command)
                     }
                 }
             }
         } else {
             if (command == "#\u0006") {
-                started.set(true)
                 ctx.writeAndFlush(LX200ProtocolMessage.Ack)
+                started.set(true)
                 LOG.info("LX200 protocol handling started")
             }
         }

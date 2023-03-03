@@ -96,6 +96,8 @@ class FocuserManager(
     }
 
     fun savePreferences() {
+        if (!view.initialized) return
+
         preferences.double("focuser.screen.x", view.x)
         preferences.double("focuser.screen.y", view.y)
     }
