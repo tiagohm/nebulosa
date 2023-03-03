@@ -1,11 +1,10 @@
 package nebulosa.desktop.view.telescopecontrol
 
-import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServerType
 import nebulosa.desktop.view.View
 
 interface TelescopeControlView : View {
 
-    val type: TelescopeControlServerType
+    val type: TelescopeControlType
 
     val host: String
 

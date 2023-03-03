@@ -65,10 +65,6 @@ class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeV
         homeManager.loadPreferences()
     }
 
-    override fun onStop() {
-        homeManager.close()
-    }
-
     override var host
         get() = hostTextField.text.trim().ifBlank { "localhost" }
         set(value) {

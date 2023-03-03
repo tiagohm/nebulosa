@@ -24,6 +24,7 @@ import nom.tam.fits.Fits
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.io.Closeable
 import java.io.File
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -32,7 +33,7 @@ import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicReference
 
 @Component
-class PlateSolverManager(@Autowired private val view: PlateSolverView) {
+class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeable {
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var equipmentManager: EquipmentManager
@@ -233,6 +234,10 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) {
         preferences.double("plateSolver.radius", view.radius.value)
         preferences.double("plateSolver.screen.x", view.x)
         preferences.double("plateSolver.screen.y", view.y)
+    }
+
+    override fun close() {
+        savePreferences()
     }
 
     companion object {

@@ -1,8 +1,8 @@
 package nebulosa.time
 
 import nebulosa.constants.MJD0
-import nebulosa.erfa.PairOfAngle
 import nebulosa.math.Angle.Companion.arcsec
+import nebulosa.math.PairOfAngle
 import nebulosa.math.search
 import java.io.InputStream
 import kotlin.math.floor

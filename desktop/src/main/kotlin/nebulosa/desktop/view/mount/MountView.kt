@@ -1,8 +1,8 @@
 package nebulosa.desktop.view.mount
 
 import nebulosa.desktop.view.View
-import nebulosa.erfa.PairOfAngle
 import nebulosa.math.Angle
+import nebulosa.math.PairOfAngle
 import java.time.LocalDateTime
 
 interface MountView : View {

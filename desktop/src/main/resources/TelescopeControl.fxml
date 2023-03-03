@@ -4,7 +4,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServerType?>
+<?import nebulosa.desktop.view.telescopecontrol.TelescopeControlType?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -32,8 +32,9 @@
                 <ChoiceBox fx:id="serverTypeChoiceBox">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
-                            <TelescopeControlServerType fx:constant="STELLARIUM"/>
-                            <TelescopeControlServerType fx:constant="LX200"/>
+                            <TelescopeControlType fx:constant="STELLARIUM_JNOW"/>
+                            <TelescopeControlType fx:constant="STELLARIUM_J2000"/>
+                            <TelescopeControlType fx:constant="LX200"/>
                         </FXCollections>
                     </items>
                 </ChoiceBox>

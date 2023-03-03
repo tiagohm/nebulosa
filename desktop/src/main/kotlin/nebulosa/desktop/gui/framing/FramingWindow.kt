@@ -82,10 +82,6 @@ class FramingWindow : AbstractWindow("Framing", "nebulosa-framing"), FramingView
         framingManager.savePreferences()
     }
 
-    override fun onClose() {
-        framingManager.close()
-    }
-
     override val hipsSurvey: HipsSurvey?
         get() = hipsSurveyChoiceBox.value
 

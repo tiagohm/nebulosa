@@ -18,9 +18,9 @@ import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.atlas.Twilight
-import nebulosa.erfa.PairOfAngle
 import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
+import nebulosa.math.PairOfAngle
 import nebulosa.nova.astrometry.Constellation
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -115,10 +115,6 @@ class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
 
     override fun onStop() {
         atlasManager.savePreferences()
-    }
-
-    override fun onClose() {
-        atlasManager.close()
     }
 
     @FXML

@@ -50,6 +50,7 @@ internal open class MountDevice(
     override var declinationJ2000 = Angle.ZERO
     override var azimuth = Angle.ZERO
     override var altitude = Angle.ZERO
+    override var constellation = Constellation.PSC
 
     override var canPulseGuide = false
     override var pulseGuiding = false
@@ -155,6 +156,8 @@ internal open class MountDevice(
                         declination = message["DEC"]!!.value.deg
 
                         handler.fireOnEventReceived(MountEquatorialCoordinatesChanged(this))
+
+                        computeCoordinates()
                     }
                     "TELESCOPE_TIMED_GUIDE_NS",
                     "TELESCOPE_TIMED_GUIDE_WE" -> {
@@ -316,28 +319,23 @@ internal open class MountDevice(
         sendNewText("TIME_UTC", "UTC" to GPS.formatTime(time.toLocalDateTime()), "OFFSET" to offset)
     }
 
-    override fun computeCoordinates(j2000: Boolean, horizontal: Boolean): Constellation? {
-        return if (j2000 || horizontal) {
-            val epoch = UTC.now()
-            val center = Geoid.IERS2010.latLon(longitude, latitude, elevation)
-            val icrf = ICRF.equatorial(rightAscension, declination, time = epoch, epoch = epoch, center = center)
+    private fun computeCoordinates() {
+        val epoch = UTC.now()
+        val center = Geoid.IERS2010.latLon(longitude, latitude, elevation)
+        val icrf = ICRF.equatorial(rightAscension, declination, time = epoch, epoch = epoch, center = center)
+        constellation = Constellation.find(icrf)
 
-            if (j2000) {
-                val raDec = icrf.equatorialJ2000()
-                rightAscensionJ2000 = raDec.longitude.normalized
-                declinationJ2000 = raDec.latitude
-            }
+        val raDec = icrf.equatorialJ2000()
+        rightAscensionJ2000 = raDec.longitude.normalized
+        declinationJ2000 = raDec.latitude
 
-            if (horizontal) {
-                val altAz = icrf.horizontal()
-                azimuth = altAz.longitude.normalized
-                altitude = altAz.latitude
-            }
+        handler.fireOnEventReceived(MountEquatorialJ2000CoordinatesChanged(this))
 
-            Constellation.find(icrf)
-        } else {
-            null
-        }
+        val altAz = icrf.horizontal()
+        azimuth = altAz.longitude.normalized
+        altitude = altAz.latitude
+
+        handler.fireOnEventReceived(MountHorizontalCoordinatesChanged(this))
     }
 
     override fun close() {

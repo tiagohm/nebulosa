@@ -94,10 +94,6 @@ class FocuserWindow : AbstractWindow("Focuser", "nebulosa-focuser"), FocuserView
         focuserManager.savePreferences()
     }
 
-    override fun onClose() {
-        focuserManager.close()
-    }
-
     override val status
         get() = statusLabel.text!!
 

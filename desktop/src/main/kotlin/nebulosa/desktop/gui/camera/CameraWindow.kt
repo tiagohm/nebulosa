@@ -165,10 +165,6 @@ class CameraWindow : AbstractWindow("Camera", "nebulosa-camera"), CameraView {
         cameraManager.savePreferences()
     }
 
-    override fun onClose() {
-        cameraManager.close()
-    }
-
     override val exposureUnit
         get() = TimeUnit.valueOf(exposureUnitToggleGroup.selectedToggle.userData as String)
 

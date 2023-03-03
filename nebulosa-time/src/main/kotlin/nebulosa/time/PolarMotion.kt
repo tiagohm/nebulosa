@@ -1,10 +1,10 @@
 package nebulosa.time
 
 import nebulosa.constants.J2000
-import nebulosa.erfa.PairOfAngle
-import nebulosa.erfa.TripleOfAngle
 import nebulosa.math.Angle.Companion.arcsec
 import nebulosa.math.Matrix3D
+import nebulosa.math.PairOfAngle
+import nebulosa.math.TripleOfAngle
 
 fun interface PolarMotion {
 

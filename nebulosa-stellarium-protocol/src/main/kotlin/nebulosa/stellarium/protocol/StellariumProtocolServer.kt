@@ -1,10 +1,9 @@
-package nebulosa.desktop.logic.telescopecontrol
+package nebulosa.stellarium.protocol
 
-import nebulosa.constants.PI
-import nebulosa.erfa.eraAnpm
-import nebulosa.math.Angle.Companion.rad
-import org.slf4j.LoggerFactory
-import java.net.Socket
+import io.netty.channel.ChannelInitializer
+import io.netty.channel.socket.SocketChannel
+import nebulosa.math.Angle
+import nebulosa.netty.NettyServer
 
 /**
  * Stellarium Telescope Protocol version 1.0
@@ -64,61 +63,56 @@ import java.net.Socket
  * @see <a href="https://free-astro.org/images/b/b7/Stellarium_telescope_protocol.txt">Protocol</a>
  * @see <a href="https://github.com/Stellarium/stellarium/blob/master/plugins/TelescopeControl/src/TelescopeClient.cpp">Stellarium Implementation</a>
  */
-object TelescopeControlStellariumServer : TelescopeControlTCPServer() {
+class StellariumProtocolServer(
+    override val host: String = "0.0.0.0",
+    override val port: Int = 10001,
+    val j2000: Boolean = false,
+) : NettyServer(), CurrentPositionHandler {
 
-    override fun sendCurrentPosition() {
-        forEach { (it as TelescopeClient).sendCurrentPosition() }
-    }
+    private val goToHandlers = hashSetOf<GoToHandler>()
+    private val currentPositionHandlers = hashSetOf<CurrentPositionHandler>()
 
-    override fun acceptSocket(socket: Socket): Client = TelescopeClient(this, socket)
+    override val channelInitialzer = object : ChannelInitializer<SocketChannel>() {
 
-    private class TelescopeClient(
-        val server: TelescopeControlStellariumServer,
-        socket: Socket,
-    ) : Client(socket) {
-
-        fun sendCurrentPosition() {
-            val mount = server.mount ?: return
-            val ra = mount.rightAscension
-            val dec = mount.declination
-
-            output.writeShortLe(24) // LENGTH
-            output.writeShortLe(0) // TYPE
-            output.writeLongLe(System.currentTimeMillis() * 1000L) // TIME
-            output.writeIntLe((eraAnpm(ra).value / PI * 0x80000000).toInt()) // RA
-            output.writeIntLe((dec.value / PI * 0x80000000).toInt()) // DEC
-            output.writeIntLe(0) // STATUS=OK
-            output.flush()
-
-            if (LOG.isDebugEnabled) {
-                LOG.debug("MessageCurrentPosition: ra=${ra.hours}, dec=${dec.degrees}")
-            }
-        }
-
-        override fun start() {
-            super.start()
-
-            sendCurrentPosition()
-        }
-
-        override fun processMessage(): Boolean {
-            val readCount = input.read(buffer, 20L)
-
-            if (buffer.size >= 20L) {
-                buffer.readShortLe() // LENGTH
-                buffer.readShortLe() // TYPE
-                buffer.readLongLe() // TIME
-                val ra = (buffer.readIntLe() * (PI / 0x80000000)).rad.normalized
-                val dec = (buffer.readIntLe() * (PI / 0x80000000)).rad
-                if (LOG.isDebugEnabled) LOG.debug("MessageGoto: ra=${ra.hours}, dec=${dec.degrees}")
-                server.mount?.goTo(ra, dec)
-            } else if (readCount < 0L) {
-                return false
-            }
-
-            return true
+        override fun initChannel(ch: SocketChannel) {
+            ch.pipeline().addLast(
+                StellariumProtocolDecoder(),
+                StellariumProtocolEncoder(),
+                StellariumProtocolHandler(this@StellariumProtocolServer),
+            )
         }
     }
 
-    @JvmStatic private val LOG = LoggerFactory.getLogger(TelescopeControlStellariumServer::class.java)
+    @Synchronized
+    override fun sendCurrentPosition(rightAscension: Angle, declination: Angle) {
+        currentPositionHandlers.forEach { it.sendCurrentPosition(rightAscension, declination) }
+    }
+
+    internal fun registerCurrentPositionHandler(handler: CurrentPositionHandler) {
+        currentPositionHandlers.add(handler)
+    }
+
+    internal fun unregisterCurrentPositionHandler(handler: CurrentPositionHandler) {
+        currentPositionHandlers.remove(handler)
+    }
+
+    fun registerGoToHandler(handler: GoToHandler) {
+        goToHandlers.add(handler)
+    }
+
+    fun unregisterGoToHandler(handler: GoToHandler) {
+        goToHandlers.remove(handler)
+    }
+
+    @Synchronized
+    internal fun goTo(rightAscension: Angle, declination: Angle) {
+        goToHandlers.forEach { it.goTo(rightAscension, declination, j2000) }
+    }
+
+    override fun close() {
+        goToHandlers.clear()
+        currentPositionHandlers.clear()
+
+        super.close()
+    }
 }

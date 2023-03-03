@@ -184,8 +184,6 @@ data class CameraExposureTask(
             hdu?.header?.also {
                 val mount = mount ?: return@also
 
-                mount.computeCoordinates(true, false)
-
                 val raStr = mount.rightAscensionJ2000.format(FITS_RA_ANGLE_FORMATTER)
                 val decStr = mount.declinationJ2000.format(FITS_DEC_ANGLE_FORMATTER)
 

@@ -7,7 +7,6 @@ import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.framing.FramingView
-import nebulosa.erfa.PairOfAngle
 import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
 import nebulosa.fits.FITS_RA_ANGLE_FORMATTER
 import nebulosa.hips2fits.FormatOutputType
@@ -18,6 +17,7 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.io.resource
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.PairOfAngle
 import nom.tam.fits.header.ObservationDescription
 import nom.tam.fits.header.Standard
 import nom.tam.fits.header.extra.MaxImDLExt
@@ -56,7 +56,6 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
 
     fun syncFromMount(device: Mount? = null) {
         val mount = device ?: equipmentManager.selectedMount.value ?: return
-        mount.computeCoordinates(true, false)
         val coordinate = PairOfAngle(mount.rightAscensionJ2000, mount.declinationJ2000)
         javaFXExecutorService.execute { view.updateCoordinate(coordinate.first, coordinate.second) }
         load(coordinate.first, coordinate.second)

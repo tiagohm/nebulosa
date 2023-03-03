@@ -3,7 +3,6 @@ package nebulosa.erfa
 import nebulosa.math.Angle
 import nebulosa.math.Distance
 
-@Suppress("NOTHING_TO_INLINE")
 data class SphericalCoordinate(
     val theta: Angle,
     val phi: Angle,

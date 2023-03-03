@@ -11,13 +11,13 @@ import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.mount.MountManager
 import nebulosa.desktop.view.mount.MountView
-import nebulosa.erfa.PairOfAngle
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.TrackMode
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.AngleFormatter
+import nebulosa.math.PairOfAngle
 import org.controlsfx.control.SegmentedButton
 import org.controlsfx.control.ToggleSwitch
 import org.springframework.beans.factory.annotation.Autowired
@@ -167,10 +167,6 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
 
     override fun onStop() {
         mountManager.savePreferences()
-    }
-
-    override fun onClose() {
-        mountManager.close()
     }
 
     override var status

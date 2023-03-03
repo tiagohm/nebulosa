@@ -8,9 +8,10 @@ import nebulosa.indi.device.DeviceEventHandler
 import org.greenrobot.eventbus.EventBus
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.io.Closeable
 
 @Service
-class ConnectionManager : DeviceEventHandler {
+class ConnectionManager : DeviceEventHandler, Closeable {
 
     @Volatile private var client: INDIClient? = null
     @Volatile private var deviceHandler: DeviceProtocolHandler? = null
@@ -44,7 +45,6 @@ class ConnectionManager : DeviceEventHandler {
         eventBus.post(Connected(client))
     }
 
-    @Synchronized
     fun disconnect() {
         if (client != null) {
             client!!.close()
@@ -56,5 +56,9 @@ class ConnectionManager : DeviceEventHandler {
 
             client = null
         }
+    }
+
+    override fun close() {
+        disconnect()
     }
 }

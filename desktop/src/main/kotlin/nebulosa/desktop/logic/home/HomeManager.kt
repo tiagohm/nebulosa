@@ -126,7 +126,6 @@ class HomeManager(private val view: HomeView) : Closeable {
     override fun close() {
         savePreferences()
 
-        equipmentManager.close()
         connectionManager.disconnect()
     }
 

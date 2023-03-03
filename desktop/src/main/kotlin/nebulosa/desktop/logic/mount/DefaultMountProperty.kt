@@ -57,12 +57,15 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
         guideRateNSProperty.set(device.guideRateNS)
         rightAscensionProperty.set(device.rightAscension.hours)
         declinationProperty.set(device.declination.degrees)
+        rightAscensionJ2000Property.set(device.rightAscensionJ2000.hours)
+        declinationJ2000Property.set(device.declinationJ2000.degrees)
+        constellationProperty.set(device.constellation)
+        azimuthProperty.set(device.azimuth.hours)
+        altitudeProperty.set(device.altitude.degrees)
         longitudeProperty.set(device.longitude.degrees)
         latitudeProperty.set(device.latitude.degrees)
         elevationProperty.set(device.elevation.meters)
         timeProperty.set(device.time)
-
-        computeCoordinates()
     }
 
     override fun onReset() {
@@ -92,7 +95,7 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
         timeProperty.set(OffsetDateTime.now())
         azimuthProperty.set(0.0)
         altitudeProperty.set(0.0)
-        constellationProperty.set(null)
+        constellationProperty.set(Constellation.PSC)
     }
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {
@@ -121,6 +124,15 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
             is MountEquatorialCoordinatesChanged -> {
                 rightAscensionProperty.set(device.rightAscension.hours)
                 declinationProperty.set(device.declination.degrees)
+            }
+            is MountEquatorialJ2000CoordinatesChanged -> {
+                rightAscensionJ2000Property.set(value.rightAscensionJ2000.hours)
+                declinationJ2000Property.set(value.declinationJ2000.degrees)
+                constellationProperty.set(value.constellation)
+            }
+            is MountHorizontalCoordinatesChanged -> {
+                azimuthProperty.set(value.azimuth.degrees)
+                altitudeProperty.set(value.altitude.degrees)
             }
             is MountGuideRateChanged -> {
                 guideRateWEProperty.set(device.guideRateWE)

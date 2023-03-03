@@ -21,7 +21,7 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
 
     final override fun getName() = value?.name ?: ""
 
-    internal fun initialize() {
+    fun initialize() {
         registerListener(this)
         addListener(::onChanged)
     }

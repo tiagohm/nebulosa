@@ -123,10 +123,6 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "nebulosa-filterwheel"),
         filterWheelManager.savePreferences()
     }
 
-    override fun onClose() {
-        filterWheelManager.close()
-    }
-
     override val status
         get() = "" // statusLabel.text
 

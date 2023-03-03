@@ -21,6 +21,8 @@ dependencies {
     implementation(project(":nebulosa-platesolving-astap"))
     implementation(project(":nebulosa-platesolving-astrometrynet"))
     implementation(project(":nebulosa-guiding-phd2"))
+    implementation(project(":nebulosa-lx200-protocol"))
+    implementation(project(":nebulosa-stellarium-protocol"))
     implementation(libs.jackson)
     implementation(libs.bundles.rx)
     implementation(libs.controlsfx)

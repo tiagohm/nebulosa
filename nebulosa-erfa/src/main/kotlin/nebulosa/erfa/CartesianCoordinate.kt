@@ -4,7 +4,6 @@ import nebulosa.math.Angle
 import nebulosa.math.Distance
 import nebulosa.math.Vector3D
 
-@Suppress("NOTHING_TO_INLINE")
 data class CartesianCoordinate(
     val x: Distance,
     val y: Distance,

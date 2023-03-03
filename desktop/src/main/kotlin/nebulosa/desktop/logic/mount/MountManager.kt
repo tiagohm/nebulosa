@@ -8,8 +8,6 @@ import nebulosa.desktop.gui.telescopecontrol.TelescopeControlWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
-import nebulosa.desktop.logic.telescopecontrol.TelescopeControlLX200Server
-import nebulosa.desktop.logic.telescopecontrol.TelescopeControlStellariumServer
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.gps.GPS
@@ -37,6 +35,7 @@ class MountManager(
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
     @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
+    @Autowired private lateinit var telescopeControlWindow: TelescopeControlWindow
 
     @Volatile private var position = Geoid.IERS2010.latLon(Angle.ZERO, Angle.ZERO, Distance.ZERO)
 
@@ -60,9 +59,6 @@ class MountManager(
 
         updateTitle()
         computePosition()
-
-        TelescopeControlStellariumServer.mount = device
-        TelescopeControlLX200Server.mount = device
     }
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {
@@ -71,7 +67,6 @@ class MountManager(
             is MountTrackingChanged,
             is MountSlewingChanged,
             is GuideOutputPulsingChanged -> updateStatus()
-            is MountEquatorialCoordinatesChanged -> TelescopeControlStellariumServer.sendCurrentPosition()
             is MountGeographicCoordinateChanged -> computePosition()
         }
     }
@@ -92,8 +87,7 @@ class MountManager(
     }
 
     fun openTelescopeControlServer() {
-        val window = TelescopeControlWindow(this)
-        window.showAndWait()
+        telescopeControlWindow.showAndWait()
     }
 
     fun openSiteAndTime() {
@@ -241,15 +235,11 @@ class MountManager(
 
         javaFXExecutorService.execute {
             view.updateLSTAndMeridian(lst, timeLeftToMeridianFlip, timeToMeridianFlip)
-            computeCoordinates()
         }
     }
 
     override fun close() {
         savePreferences()
-
-        TelescopeControlStellariumServer.close()
-        TelescopeControlLX200Server.close()
     }
 
     companion object {

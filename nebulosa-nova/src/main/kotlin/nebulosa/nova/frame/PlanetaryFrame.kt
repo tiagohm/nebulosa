@@ -1,11 +1,11 @@
 package nebulosa.nova.frame
 
 import nebulosa.constants.DAYSEC
-import nebulosa.erfa.TripleOfAngle
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
 import nebulosa.math.Matrix3D
+import nebulosa.math.TripleOfAngle
 import nebulosa.nasa.pck.PckSegment
 import nebulosa.nova.position.PlanetograhicPosition
 import nebulosa.time.InstantOfTime

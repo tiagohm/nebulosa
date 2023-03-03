@@ -53,6 +53,8 @@ interface Mount : GuideOutput, GPS {
 
     val altitude: Angle
 
+    val constellation: Constellation
+
     fun tracking(enable: Boolean)
 
     fun sync(ra: Angle, dec: Angle)
@@ -88,8 +90,6 @@ interface Mount : GuideOutput, GPS {
     fun coordinates(longitude: Angle, latitude: Angle, elevation: Distance)
 
     fun time(time: OffsetDateTime)
-
-    fun computeCoordinates(j2000: Boolean = true, horizontal: Boolean = true): Constellation?
 
     companion object {
 

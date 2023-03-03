@@ -4,24 +4,27 @@ import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.TextField
+import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.logic.mount.MountManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlManager
-import nebulosa.desktop.logic.telescopecontrol.TelescopeControlServerType
 import nebulosa.desktop.logic.toggle
+import nebulosa.desktop.view.telescopecontrol.TelescopeControlType
 import nebulosa.desktop.view.telescopecontrol.TelescopeControlView
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
+import org.springframework.stereotype.Component
 
-class TelescopeControlWindow(private val mountManager: MountManager) : AbstractWindow("TelescopeControl", "nebulosa-telescope-control"),
-    TelescopeControlView {
+@Component
+class TelescopeControlWindow : AbstractWindow("TelescopeControl", "nebulosa-telescope-control"), TelescopeControlView {
 
-    @FXML private lateinit var serverTypeChoiceBox: ChoiceBox<TelescopeControlServerType>
+    @Lazy @Autowired private lateinit var telescopeControlManager: TelescopeControlManager
+
+    @FXML private lateinit var serverTypeChoiceBox: ChoiceBox<TelescopeControlType>
     @FXML private lateinit var hostTextField: TextField
     @FXML private lateinit var portTextField: TextField
     @FXML private lateinit var connectButton: Button
-
-    private val telescopeControlManager = TelescopeControlManager(this)
 
     init {
         title = "Telescope Control"
@@ -29,8 +32,11 @@ class TelescopeControlWindow(private val mountManager: MountManager) : AbstractW
     }
 
     override fun onCreate() {
-        serverTypeChoiceBox.value = TelescopeControlServerType.STELLARIUM
+        serverTypeChoiceBox.converter = TelescopeControlTypeStringConverter
+        serverTypeChoiceBox.value = TelescopeControlType.STELLARIUM_JNOW
         serverTypeChoiceBox.valueProperty().on { telescopeControlManager.updateConnectionStatus() }
+
+        telescopeControlManager.initialize()
     }
 
     override fun onStart() {
@@ -67,6 +73,13 @@ class TelescopeControlWindow(private val mountManager: MountManager) : AbstractW
                 "Connection failed"
             )
         }
+    }
+
+    private object TelescopeControlTypeStringConverter : StringConverter<TelescopeControlType>() {
+
+        override fun toString(type: TelescopeControlType?) = type?.label ?: "No protocol selected"
+
+        override fun fromString(string: String?) = null
     }
 
     companion object {

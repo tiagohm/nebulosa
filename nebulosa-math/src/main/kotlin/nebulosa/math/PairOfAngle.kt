@@ -1,5 +1,3 @@
-package nebulosa.erfa
-
-import nebulosa.math.Angle
+package nebulosa.math
 
 data class PairOfAngle(val first: Angle, val second: Angle)
