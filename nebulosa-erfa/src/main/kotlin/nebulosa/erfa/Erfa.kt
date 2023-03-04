@@ -105,7 +105,7 @@ fun eraAe2hd(az: Angle, alt: Angle, phi: Angle): PairOfAngle {
     val y = -sa * ce
     val z = ca * ce * cp + se * sp
 
-    val r = sqrt(x * x + y * y)
+    val r = hypot(x, y)
     val ha = if (r != 0.0) atan2(y, x).rad else Angle.ZERO
     val dec = atan2(z, r).rad
 
@@ -553,7 +553,7 @@ fun eraApco(
 
     // Solve for polar motion [X,Y] with respect to local meridian.
     val c = r[0, 2]
-    val xpl = atan2(c, sqrt(a * a + b * b)).rad
+    val xpl = atan2(c, hypot(a, b)).rad
     val d = r[1, 2]
     val e = r[2, 2]
     val ypl = if (d != 0.0 || e != 0.0) (-atan2(d, e)).rad else Angle.ZERO
@@ -1615,7 +1615,7 @@ fun eraEe06a(tt1: Double, tt2: Double): Angle {
 }
 
 /**
- **  Greenwich apparent sidereal time (consistent with IAU 2000 and 2006 resolutions).
+ * Greenwich apparent sidereal time (consistent with IAU 2000 and 2006 resolutions).
  *
  * Both UT1 and TT are required, UT1 to predict the Earth rotation
  * and TT to predict the effects of precession-nutation. If UT1 is
@@ -2040,4 +2040,228 @@ fun eraC2teqx(rbpn: Matrix3D, gst: Angle, rpom: Matrix3D): Matrix3D {
 
 fun eraPn00(tt1: Double, tt2: Double, dpsi: Angle, deps: Angle) {
 
+}
+
+typealias StarDirectionCosines = DoubleArray
+typealias TangentPointDirectionCosines = DoubleArray
+
+/**
+ * In the tangent plane projection, given the rectangular coordinates
+ * of a star and its spherical coordinates, determine the spherical
+ * coordinates of the tangent point.
+ */
+fun eraTpors(xi: Angle, eta: Angle, a: Angle, b: Angle): PairOfAngle? {
+    val xi2 = xi.value * xi.value
+    val r = sqrt(1.0 + xi2 + eta.value * eta.value)
+    val sb = b.sin
+    val cb = b.cos
+    val rsb = r * sb
+    val rcb = r * cb
+    val w2 = rcb * rcb - xi2
+
+    if (w2 >= 0.0) {
+        var w = sqrt(w2)
+        var s = rsb - eta.value * w
+        var c = rsb * eta.value + w
+        if (xi.value == 0.0 && w == 0.0) w = 1.0
+        val a01 = (a - atan2(xi.value, w)).normalized
+        val b01 = atan2(s, c).rad
+
+        if (abs(rsb) < 1.0) return PairOfAngle(a01, b01)
+
+        w = -w
+        s = rsb - eta.value * w
+        c = rsb * eta.value + w
+        val a02 = (a - atan2(xi.value, w)).normalized
+        val b02 = atan2(s, c).rad
+
+        return PairOfAngle(a02, b02)
+    } else {
+        return null
+    }
+}
+
+/**
+ * In the tangent plane projection, given the rectangular coordinates
+ * of a star and its direction cosines, determine the direction
+ * cosines of the tangent point.
+ */
+fun eraTporv(xi: Angle, eta: Angle, v: StarDirectionCosines): TangentPointDirectionCosines? {
+    val x = v[0]
+    val y = v[1]
+    val z = v[2]
+    val rxy2 = x * x + y * y
+    val xi2 = xi.value * xi.value
+    val eta2p1 = eta.value * eta.value + 1.0
+    val r = sqrt(xi2 + eta2p1)
+    val rsb = r * z
+    val rcb = r * hypot(x, y)
+    val w2 = rcb * rcb - xi2
+
+    if (w2 > 0.0) {
+        var w = sqrt(w2)
+        var c = (rsb * eta.value + w) / (eta2p1 * sqrt(rxy2 * (w2 + xi2)))
+
+        val v00 = c * (x * w + y * xi.value)
+        val v01 = c * (y * w - x * xi.value)
+        val v02 = (rsb - eta.value * w) / eta2p1
+
+        if (abs(rsb) < 1.0) return doubleArrayOf(v00, v01, v02)
+
+        w = -w
+        c = (rsb * eta.value + w) / (eta2p1 * sqrt(rxy2 * (w2 + xi2)))
+        val v10 = c * (x * w + y * xi.value)
+        val v11 = c * (y * w - x * xi.value)
+        val v12 = (rsb - eta.value * w) / eta2p1
+
+        return doubleArrayOf(v10, v11, v12)
+    } else {
+        return null
+    }
+}
+
+/**
+ * In the tangent plane projection, given the star's rectangular
+ * coordinates and the spherical coordinates of the tangent point,
+ * solve for the spherical coordinates of the star.
+ */
+fun eraTpsts(xi: Angle, eta: Angle, a0: Angle, b0: Angle): PairOfAngle {
+    val sb0 = b0.sin
+    val cb0 = b0.cos
+    val d = cb0 - eta.value * sb0
+    val a = (a0 + atan2(xi.value, d)).normalized
+    val b = atan2(sb0 + eta.value * cb0, hypot(xi.value, d)).rad
+    return PairOfAngle(a, b)
+}
+
+/**
+ * In the tangent plane projection, given the star's rectangular
+ * coordinates and the direction cosines of the tangent point, solve
+ * for the direction cosines of the star.
+ */
+fun eraTpstv(xi: Angle, eta: Angle, v: TangentPointDirectionCosines): StarDirectionCosines {
+    var x = v[0]
+    val y = v[1]
+    val z = v[2]
+
+    var r = hypot(x, y)
+
+    if (r == 0.0) {
+        r = 1e-20
+        x = r
+    }
+
+    val f = sqrt(1.0 + xi.value * xi.value + eta.value * eta.value)
+
+    val v0 = (x - (xi.value * y + eta.value * x * z) / r) / f
+    val v1 = (y + (xi.value * x - eta.value * y * z) / r) / f
+    val v2 = (z + eta.value * r) / f
+
+    return doubleArrayOf(v0, v1, v2)
+}
+
+/**
+ * In the tangent plane projection, given celestial spherical
+ * coordinates for a star and the tangent point, solve for the star's
+ * rectangular coordinates in the tangent plane.
+ */
+fun eraTpxes(a: Angle, b: Angle, a0: Angle, b0: Angle): TangentPlaneCoordinate {
+    val sb0 = b0.sin
+    val sb = b.sin
+    val cb0 = b0.cos
+    val cb = b.cos
+    val da = a - a0
+    val sda = da.sin
+    val cda = da.cos
+
+    var d = sb * sb0 + cb * cb0 * cda
+
+    val j = if (d > 1e-6) 0 // OK
+    else if (d >= 0.0) 1 // star too far from axis
+    else if (d > -1e-6) 2 // antistar on tangent plane
+    else 3 // antistar too far from axis
+
+    if (j == 1) d = 1e-6
+    else if (j == 2) d = -1e-6
+
+    val xi = cb * sda / d
+    val eta = (sb * cb0 - cb * sb0 * cda) / d
+
+    return TangentPlaneCoordinate(xi.rad, eta.rad, j)
+}
+
+/**
+ * In the tangent plane projection, given celestial direction cosines
+ * for a star and the tangent point, solve for the star's rectangular
+ * coordinates in the tangent plane.
+ */
+fun eraTpxev(v: StarDirectionCosines, v0: TangentPointDirectionCosines): TangentPlaneCoordinate {
+    val x = v[0]
+    val y = v[1]
+    val z = v[2]
+    var x0 = v0[0]
+    val y0 = v0[1]
+    val z0 = v0[2]
+
+    val r2 = x0 * x0 + y0 * y0
+    var r = sqrt(r2)
+
+    if (r == 0.0) {
+        r = 1e-20
+        x0 = r
+    }
+
+    val w = x * x0 + y * y0
+    var d = w + z * z0
+
+    val j = if (d > 1e-6) 0 // OK
+    else if (d >= 0.0) 1 // star too far from axis
+    else if (d > -1e-6) 2 // antistar on tangent plane
+    else 3 // antistar too far from axis
+
+    if (j == 1) d = 1e-6
+    else if (j == 2) d = -1e-6
+
+    d *= r
+    val xi = (y * x0 - x * y0) / d
+    val eta = (z * r2 - z0 * w) / d
+
+    return TangentPlaneCoordinate(xi.rad, eta.rad, j)
+}
+
+/**
+ * This function forms three Euler angles which implement general
+ * precession from epoch J2000.0, using the IAU 2006 model.  Frame
+ * bias (the offset between ICRS and mean J2000.0) is included.
+ */
+fun eraPb06(tt1: Double, tt2: Double): EulerAngles {
+    // Precession matrix via Fukushima-Williams angles.
+    var r = eraPmat06(tt1, tt2)
+
+    // Solve for z, choosing the +/- pi alternative.
+    var y = r[5]
+    var x = -r[2]
+
+    if (x < 0.0) {
+        y = -y
+        x = -x
+    }
+
+    val z = if (x != 0.0 || y != 0.0) (-atan2(y, x)).rad else Angle.ZERO
+
+    // Derotate it out of the matrix.
+    r = r.rotateZ(z)
+
+    // Solve for the remaining two angles.
+    y = r[2]
+    x = r[8]
+
+    val theta = if (x != 0.0 || y != 0.0) (-atan2(y, x)).rad else Angle.ZERO
+
+    y = -r[3]
+    x = r[4]
+
+    val zeta = if (x != 0.0 || y != 0.0) (-atan2(y, x)).rad else Angle.ZERO
+
+    return EulerAngles(zeta, z, theta)
 }

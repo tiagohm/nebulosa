@@ -2,10 +2,13 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
+import io.kotest.matchers.ints.shouldBeExactly
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import nebulosa.constants.TAU
 import nebulosa.erfa.*
 import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.au
 import nebulosa.math.Distance.Companion.km
 import nebulosa.math.Distance.Companion.m
@@ -618,6 +621,65 @@ class ErfaTest : StringSpec() {
             rc2t[2, 0] shouldBe (0.5773474014081539467e-3 plusOrMinus 1e-12)
             rc2t[2, 1] shouldBe (0.3961832391768640871e-4 plusOrMinus 1e-12)
             rc2t[2, 2] shouldBe (0.9999998325501691969 plusOrMinus 1e-12)
+        }
+        "eraTpors" {
+            val (a, b) = eraTpors((-0.03).rad, 0.07.rad, 1.3.rad, 1.5.rad).shouldNotBeNull()
+
+            a.value shouldBe (4.004971075806584490 plusOrMinus 1e-13)
+            b.value shouldBe (1.565084088476417917 plusOrMinus 1e-13)
+        }
+        "eraTpsts" {
+            val (ra, dec) = eraTpsts((-0.03).rad, 0.07.rad, 2.3.rad, 1.5.rad)
+
+            ra.value shouldBe (0.7596127167359629775 plusOrMinus 1e-14)
+            dec.value shouldBe (1.540864645109263028 plusOrMinus 1e-13)
+        }
+        "eraTporv" {
+            val s = CartesianCoordinate.of(1.3.rad, 1.5.rad, Distance.ONE)
+            val v = doubleArrayOf(s.x.value, s.y.value, s.z.value)
+
+            val (a, b, c) = eraTporv((-0.03).rad, 0.07.rad, v).shouldNotBeNull()
+
+            a shouldBe (-0.003712211763801968173 plusOrMinus 1e-16)
+            b shouldBe (-0.004341519956299836813 plusOrMinus 1e-16)
+            c shouldBe (0.9999836852110587012 plusOrMinus 1e-14)
+        }
+        "eraTpstv" {
+            val s = CartesianCoordinate.of(2.3.rad, 1.5.rad, Distance.ONE)
+            val v = doubleArrayOf(s.x.value, s.y.value, s.z.value)
+
+            val (a, b, c) = eraTpstv((-0.03).rad, 0.07.rad, v).shouldNotBeNull()
+
+            a shouldBe (0.02170030454907376677 plusOrMinus 1e-15)
+            b shouldBe (0.02060909590535367447 plusOrMinus 1e-15)
+            c shouldBe (0.999552080658352380 plusOrMinus 1e-14)
+        }
+        "eraTpxes" {
+            val (xi, eta, j) = eraTpxes(1.3.rad, 1.55.rad, 2.3.rad, 1.5.rad)
+
+            xi.value shouldBe (-0.01753200983236980595 plusOrMinus 1e-15)
+            eta.value shouldBe (0.05962940005778712891 plusOrMinus 1e-15)
+            j shouldBeExactly 0
+        }
+        "eraTpxev" {
+            val s = CartesianCoordinate.of(1.3.rad, 1.55.rad, Distance.ONE)
+            val v = doubleArrayOf(s.x.value, s.y.value, s.z.value)
+
+            val s0 = CartesianCoordinate.of(2.3.rad, 1.5.rad, Distance.ONE)
+            val v0 = doubleArrayOf(s0.x.value, s0.y.value, s0.z.value)
+
+            val (xi, eta, j) = eraTpxev(v, v0)
+
+            xi.value shouldBe (-0.01753200983236980595 plusOrMinus 1e-15)
+            eta.value shouldBe (0.05962940005778712891 plusOrMinus 1e-15)
+            j shouldBeExactly 0
+        }
+        "eraPb06" {
+            val (zeta, z, theta) = eraPb06(2400000.5, 50123.9999)
+
+            zeta.value shouldBe (-0.5092634016326478238e-3 plusOrMinus 1e-12)
+            z.value shouldBe (-0.3602772060566044413e-3 plusOrMinus 1e-12)
+            theta.value shouldBe (-0.3779735537167811177e-3 plusOrMinus 1e-12)
         }
     }
 }
