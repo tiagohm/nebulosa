@@ -4,7 +4,6 @@ import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.nova.Session
 import nebulosa.astrometrynet.nova.Upload
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
@@ -75,19 +74,20 @@ class NovaAstrometryNetPlateSolver(
                 val body = service.jobCalibration(status.jobs[0]).execute().body()
                     ?: throw PlateSolvingException("failed to retrieve calibration")
 
-                val calibration = Calibration(
-                    body.orientation.deg,
-                    body.pixScale,
-                    body.radius.deg,
-                    body.ra.deg,
-                    body.dec.deg,
-                    body.width / 60.0,
-                    body.height / 60.0,
-                )
+                // TODO:
+                // val calibration = Calibration(
+                //     body.orientation.deg,
+                //     body.pixScale,
+                //     body.radius.deg,
+                //     body.ra.deg,
+                //     body.dec.deg,
+                //     body.width / 60.0,
+                //     body.height / 60.0,
+                // )
 
-                LOG.info("astrometry.net solved. calibration={}", calibration)
+                // LOG.info("astrometry.net solved. calibration={}", calibration)
 
-                return calibration
+                return Calibration.EMPTY
             }
 
             val timeEnd = System.currentTimeMillis()

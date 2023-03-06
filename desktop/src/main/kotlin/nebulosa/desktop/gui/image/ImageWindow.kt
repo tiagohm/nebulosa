@@ -35,6 +35,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     @FXML private lateinit var scnrMenuItem: MenuItem
     @FXML private lateinit var fitsHeaderMenuItem: MenuItem
     @FXML private lateinit var crosshairCheckMenuItem: CheckMenuItem
+    @FXML private lateinit var annotateCheckMenuItem: CheckMenuItem
 
     @Volatile private var fitsBuffer = IntArray(0)
 
@@ -61,6 +62,8 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             setOnContextMenuRequested { menu.show(this, it.screenX, it.screenY) }
             ControlAcceleratorSupport.addAcceleratorsIntoScene(menu.items, this)
         }
+
+        annotateCheckMenuItem.disableProperty().bind(imageManager.calibration.isNull)
     }
 
     override fun onStart() {
@@ -161,6 +164,11 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     @FXML
     private fun toggleCrosshair() {
         imageManager.toggleCrosshair()
+    }
+
+    @FXML
+    private fun toggleAnnotation() {
+        imageManager.toggleAnnotation()
     }
 
     fun open(file: File) {

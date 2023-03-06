@@ -5,6 +5,7 @@ import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotBeBlank
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.nova.Parity
@@ -71,6 +72,10 @@ class AstrometryNetServiceTest : StringSpec() {
             calibration.radius shouldBeExactly 0.36561535148882157
             calibration.ra shouldBeExactly 290.237669307
             calibration.dec shouldBeExactly 11.1397773954
+        }
+        "wcs" {
+            val text = service.wcs(7973139).execute().body()!!
+            text shouldContain "SIMPLE"
         }
     }
 }

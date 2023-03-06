@@ -9,8 +9,7 @@ interface DeltaTime {
 
     companion object {
 
-        @Suppress("NOTHING_TO_INLINE")
         @JvmStatic
-        inline fun offset(offset: Double) = SingleSpline(doubleArrayOf(0.0, 1.0, offset))
+        fun offset(offset: Double) = SingleSpline(doubleArrayOf(0.0, 1.0, offset))
     }
 }

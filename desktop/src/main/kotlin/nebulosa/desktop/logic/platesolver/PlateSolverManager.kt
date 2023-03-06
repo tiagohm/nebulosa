@@ -192,22 +192,22 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
 
     fun sync() {
         val calibration = calibration.get() ?: return
-        mount.value?.syncJ2000(calibration.ra, calibration.dec)
+        mount.value?.syncJ2000(calibration.rightAscension, calibration.declination)
     }
 
     fun goTo() {
         val calibration = calibration.get() ?: return
-        mount.value?.goToJ2000(calibration.ra, calibration.dec)
+        mount.value?.goToJ2000(calibration.rightAscension, calibration.declination)
     }
 
     fun slewTo() {
         val calibration = calibration.get() ?: return
-        mount.value?.slewToJ2000(calibration.ra, calibration.dec)
+        mount.value?.slewToJ2000(calibration.rightAscension, calibration.declination)
     }
 
     fun frame() {
         val calibration = calibration.get() ?: return
-        framingView.load(calibration.ra, calibration.dec)
+        framingView.load(calibration.rightAscension, calibration.declination)
     }
 
     fun loadPathOrUrlFromPreferences() {

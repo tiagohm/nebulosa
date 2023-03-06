@@ -14,13 +14,11 @@ import java.lang.reflect.Type
  * @see <a href="https://simbad.u-strasbg.fr/simbad/tap/help/adqlHelp.html">ADQL Cheat sheet</a>
  * @see <a href="http://simbad.u-strasbg.fr/guide/otypes.htx">Object types</a>
  */
-class SimbadService(url: String = "https://simbad.u-strasbg.fr/") : RetrofitService(url), Simbad {
+class SimbadService(url: String = "https://simbad.u-strasbg.fr/") : RetrofitService(url) {
 
     override val converterFactory: List<Converter.Factory> = listOf(SimbadObjectConverterFactory)
 
     private val service = retrofit.create(Simbad::class.java)
-
-    override fun query(body: FormBody) = service.query(body)
 
     fun query(query: SimbadQuery): Call<List<SimbadObject>> {
         val body = FormBody.Builder()
@@ -30,7 +28,7 @@ class SimbadService(url: String = "https://simbad.u-strasbg.fr/") : RetrofitServ
             .add("query", query.build())
             .build()
 
-        return query(body)
+        return service.query(body)
     }
 
     private object SimbadObjectConverter : Converter<ResponseBody, List<SimbadObject>> {

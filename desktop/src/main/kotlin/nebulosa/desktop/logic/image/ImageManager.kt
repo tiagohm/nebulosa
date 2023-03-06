@@ -5,11 +5,10 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
 import javafx.beans.property.SimpleObjectProperty
 import javafx.stage.FileChooser
 import javafx.stage.Screen
-import nebulosa.desktop.gui.image.Crosshair
-import nebulosa.desktop.gui.image.FitsHeaderWindow
-import nebulosa.desktop.gui.image.ImageStretcherWindow
-import nebulosa.desktop.gui.image.SCNRWindow
+import nebulosa.desktop.gui.image.*
+import nebulosa.desktop.gui.image.Annotation
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.platesolver.PlateSolverView
 import nebulosa.fits.dec
@@ -19,10 +18,12 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.platesolving.Calibration
+import nom.tam.fits.Header
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.Closeable
 import java.io.File
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 
@@ -30,6 +31,8 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var plateSolverView: PlateSolverView
+    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
+    @Autowired private lateinit var systemExecutorService: ExecutorService
 
     @Volatile var file: File? = null
         private set
@@ -44,10 +47,11 @@ class ImageManager(private val view: ImageView) : Closeable {
     private val transformPublisher = BehaviorSubject.create<Unit>()
 
     @Volatile private var transformSubscriber: Disposable? = null
-
     @Volatile private var imageStretcherWindow: ImageStretcherWindow? = null
     @Volatile private var fitsHeaderWindow: FitsHeaderWindow? = null
     @Volatile private var scnrWindow: SCNRWindow? = null
+    @Volatile private var annotationEnabled = false
+    @Volatile private var annotation: Annotation? = null
 
     @Volatile var shadow = 0f
         private set
@@ -114,7 +118,7 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         this.fits = fits
         this.transformedFits = null
-        this.calibration.set(null)
+        calibration.set(null)
 
         view.hasScnr = !fits.mono
 
@@ -196,10 +200,36 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     fun toggleCrosshair() {
-        if (view.crosshairEnabled) view.addFirst(Crosshair)
+        if (view.crosshairEnabled) view.addLast(Crosshair)
         else view.remove(Crosshair)
 
         view.redraw()
+    }
+
+    fun toggleAnnotation() {
+        val calibration = calibration.get() ?: return
+
+        annotationEnabled = !annotationEnabled
+
+        if (annotationEnabled) {
+            if (annotation == null) {
+                systemExecutorService.submit {
+                    try {
+                        annotation = Annotation(calibration, fits!!.header)
+                        view.addFirst(annotation!!)
+                        javaFXExecutorService.submit(view::redraw)
+                    } catch (e: Throwable) {
+                        LOG.error("annotation failed", e)
+                    }
+                }
+            } else {
+                view.addFirst(annotation!!)
+                view.redraw()
+            }
+        } else if (annotation != null) {
+            view.remove(annotation!!)
+            view.redraw()
+        }
     }
 
     fun adjustSceneSizeToFitImage(defaultSize: Boolean = fits == null) {
@@ -278,13 +308,14 @@ class ImageManager(private val view: ImageView) : Closeable {
         }
 
         task.whenComplete { calibration, e ->
-            this.calibration.set(calibration)
-
             if (calibration != null) {
+                fits.header.populateWithCalibration(calibration)
                 LOG.info("plate solving finished. calibration={}", calibration)
             } else if (e != null) {
                 LOG.error("plate solving failed.", e)
             }
+
+            this.calibration.set(calibration)
         }
 
         return true
@@ -347,5 +378,25 @@ class ImageManager(private val view: ImageView) : Closeable {
     companion object {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(ImageManager::class.java)
+
+        @JvmStatic
+        fun Header.populateWithCalibration(calibration: Calibration) {
+            if (!calibration.hasWCS) return
+
+            addValue("CTYPE1", calibration.ctype1, "")
+            addValue("CTYPE2", calibration.ctype2, "")
+            addValue("CRPIX1", calibration.crpix1, "")
+            addValue("CRPIX2", calibration.crpix2, "")
+            addValue("CRVAL1", calibration.crval1.degrees, "")
+            addValue("CRVAL2", calibration.crval2.degrees, "")
+            addValue("CDELT1", calibration.cdelt1.degrees, "")
+            addValue("CDETL2", calibration.cdelt2.degrees, "")
+            addValue("CROTA1", calibration.crota1.degrees, "")
+            addValue("CROTA2", calibration.crota2.degrees, "")
+            addValue("CD1_1", calibration.cd11, "")
+            addValue("CD1_2", calibration.cd12, "")
+            addValue("CD2_1", calibration.cd21, "")
+            addValue("CD2_2", calibration.cd22, "")
+        }
     }
 }

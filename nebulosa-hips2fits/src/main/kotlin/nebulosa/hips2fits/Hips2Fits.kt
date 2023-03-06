@@ -1,11 +1,13 @@
 package nebulosa.hips2fits
 
+import nebulosa.retrofit.RawAsByteArray
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
 
 internal interface Hips2Fits {
 
+    @RawAsByteArray
     @GET("hips-image-services/hips2fits")
     fun query(
         @Query("hips") hips: String,

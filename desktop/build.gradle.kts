@@ -23,6 +23,7 @@ dependencies {
     implementation(project(":nebulosa-guiding-phd2"))
     implementation(project(":nebulosa-lx200-protocol"))
     implementation(project(":nebulosa-stellarium-protocol"))
+    implementation(project(":nebulosa-wcs"))
     implementation(libs.jackson)
     implementation(libs.bundles.rx)
     implementation(libs.controlsfx)

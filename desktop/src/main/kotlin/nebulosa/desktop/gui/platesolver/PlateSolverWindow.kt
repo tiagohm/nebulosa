@@ -89,22 +89,22 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         radiusSpinner.disableProperty().bind(isSolving or blindToggleSwitch.selectedProperty())
 
         raTextField.disableProperty().bind(canNotSolve)
-        raTextField.textProperty().bind(plateSolverManager.calibration.asString { it.ra.format(AngleFormatter.HMS) })
+        raTextField.textProperty().bind(plateSolverManager.calibration.asString { it.rightAscension.format(AngleFormatter.HMS) })
 
         decTextField.disableProperty().bind(canNotSolve)
-        decTextField.textProperty().bind(plateSolverManager.calibration.asString { it.dec.format(AngleFormatter.SIGNED_DMS) })
+        decTextField.textProperty().bind(plateSolverManager.calibration.asString { it.declination.format(AngleFormatter.SIGNED_DMS) })
 
         orientationTextField.disableProperty().bind(canNotSolve)
         orientationTextField.textProperty().bind(plateSolverManager.calibration.asString { "%.6f".format(it.orientation.degrees) })
 
         scaleTextField.disableProperty().bind(canNotSolve)
-        scaleTextField.textProperty().bind(plateSolverManager.calibration.asString { "%.6f".format(it.scale) })
+        scaleTextField.textProperty().bind(plateSolverManager.calibration.asString { "%.6f".format(it.scale.arcsec) })
 
         fieldRadiusTextField.disableProperty().bind(canNotSolve)
         fieldRadiusTextField.textProperty().bind(plateSolverManager.calibration.asString { "%.04f".format(it.radius.degrees) })
 
         fieldSizeTextField.disableProperty().bind(canNotSolve)
-        fieldSizeTextField.textProperty().bind(plateSolverManager.calibration.asString { "%.02f x %.02f".format(it.width, it.height) })
+        fieldSizeTextField.textProperty().bind(plateSolverManager.calibration.asString { "%.02f x %.02f".format(it.width.arcmin, it.height.arcmin) })
 
         solveButton.disableProperty().bind(canNotSolve)
 
@@ -221,6 +221,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         this.radius = radius
 
         plateSolverManager.clearAstrometrySolution()
+
         return plateSolverManager.solve(file, blind, centerRA, centerDEC, radius)
     }
 

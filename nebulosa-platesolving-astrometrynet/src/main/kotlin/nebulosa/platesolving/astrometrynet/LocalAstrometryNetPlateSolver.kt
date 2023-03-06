@@ -1,6 +1,8 @@
 package nebulosa.platesolving.astrometrynet
 
 import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.arcmin
+import nebulosa.math.Angle.Companion.arcsec
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
@@ -11,7 +13,6 @@ import java.time.Duration
 import java.util.*
 import kotlin.concurrent.thread
 import kotlin.io.path.deleteRecursively
-import kotlin.math.hypot
 
 /**
  * @see <a href="http://astrometry.net/doc/readme.html">README</a>
@@ -91,9 +92,12 @@ class LocalAstrometryNetPlateSolver(private val path: String) : PlateSolver {
                     .parseFieldRotation(line)
                     .parsePixelScale(line)
                     .parseFieldSize(line)
-
-                LOG.info("astrometry.net solved. calibration={}", calibration)
             }
+
+            // Populate WCS headers from calibration info.
+            // TODO: calibration = calibration.copy()
+
+            LOG.info("astrometry.net solved. calibration={}", calibration)
         }
 
         try {
@@ -121,7 +125,7 @@ class LocalAstrometryNetPlateSolver(private val path: String) : PlateSolver {
         @JvmStatic
         private fun Calibration.parseFieldCenter(line: String): Calibration {
             return FIELD_CENTER_REGEX.matchEntire(line)
-                ?.let { copy(ra = it.groupValues[1].toDouble().deg, dec = it.groupValues[2].toDouble().deg) }
+                ?.let { copy(rightAscension = it.groupValues[1].toDouble().deg, declination = it.groupValues[2].toDouble().deg) }
                 ?: this
         }
 
@@ -129,10 +133,9 @@ class LocalAstrometryNetPlateSolver(private val path: String) : PlateSolver {
         private fun Calibration.parseFieldSize(line: String): Calibration {
             return FIELD_SIZE_REGEX.matchEntire(line)
                 ?.let {
-                    val width = it.groupValues[1].toDouble()
-                    val height = it.groupValues[2].toDouble()
-                    val radius = hypot(width, height) / 120.0
-                    copy(width = width, height = height, radius = radius.deg)
+                    val width = it.groupValues[1].toDouble().arcmin
+                    val height = it.groupValues[2].toDouble().arcmin
+                    copy(width = width, height = height)
                 } ?: this
         }
 
@@ -146,7 +149,7 @@ class LocalAstrometryNetPlateSolver(private val path: String) : PlateSolver {
         @JvmStatic
         private fun Calibration.parsePixelScale(line: String): Calibration {
             return PIXEL_SCALE_REGEX.matchEntire(line)
-                ?.let { copy(scale = it.groupValues[1].toDouble()) }
+                ?.let { copy(scale = it.groupValues[1].toDouble().arcsec) }
                 ?: this
         }
     }

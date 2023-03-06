@@ -10,31 +10,23 @@ import retrofit2.Call
 import java.io.File
 import java.util.*
 
-class NovaAstrometryNetService(url: String = URL) : RetrofitService(url), NovaAstrometryNet {
+class NovaAstrometryNetService(url: String = URL) : RetrofitService(url) {
 
     private val service by lazy { retrofit.create(NovaAstrometryNet::class.java) }
 
-    override fun login(body: FormBody) = service.login(body)
-
     fun login(apiKey: String): Call<Session> {
-        val body = FormBody.Builder()
+        return FormBody.Builder()
             .add("request-json", mapper.writeValueAsString(mapOf("apikey" to apiKey)))
             .build()
-
-        return login(body)
+            .let(service::login)
     }
-
-    override fun uploadFromUrl(body: FormBody) = service.uploadFromUrl(body)
 
     fun uploadFromUrl(upload: Upload): Call<Submission> {
-        val body = FormBody.Builder()
+        return FormBody.Builder()
             .add("request-json", mapper.writeValueAsString(upload))
             .build()
-
-        return uploadFromUrl(body)
+            .let(service::uploadFromUrl)
     }
-
-    override fun uploadFromFile(body: MultipartBody) = service.uploadFromFile(body)
 
     fun uploadFromFile(file: File, upload: Upload): Call<Submission> {
         val requestJsonBody = mapper.writeValueAsBytes(upload).toRequestBody(TEXT_PLAIN_MEDIA_TYPE)
@@ -51,15 +43,17 @@ class NovaAstrometryNetService(url: String = URL) : RetrofitService(url), NovaAs
         return service.uploadFromFile(body)
     }
 
-    override fun submissionStatus(subId: Int) = service.submissionStatus(subId)
+    fun submissionStatus(subId: Int) = service.submissionStatus(subId)
 
-    override fun jobStatus(jobId: Int) = service.jobStatus(jobId)
+    fun jobStatus(jobId: Int) = service.jobStatus(jobId)
 
-    override fun jobCalibration(jobId: Int) = service.jobCalibration(jobId)
+    fun jobCalibration(jobId: Int) = service.jobCalibration(jobId)
+
+    fun wcs(jobId: Int) = service.wcs(jobId)
 
     companion object {
 
-        const val URL = "https://nova.astrometry.net/api/"
+        const val URL = "https://nova.astrometry.net/"
 
         @JvmStatic private val TEXT_PLAIN_MEDIA_TYPE = "text/plain".toMediaType()
         @JvmStatic private val OCTET_STREAM_MEDIA_TYPE = "application/octet-stream".toMediaType()

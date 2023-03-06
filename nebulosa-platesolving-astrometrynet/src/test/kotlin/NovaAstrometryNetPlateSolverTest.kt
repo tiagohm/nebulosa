@@ -20,8 +20,8 @@ class NovaAstrometryNetPlateSolverTest : StringSpec() {
             calibration.orientation.degrees shouldBeExactly 90.0397051079753
             calibration.scale shouldBeExactly 2.0675124414774606
             calibration.radius.degrees shouldBeExactly 0.36561535148882157
-            calibration.ra.degrees shouldBeExactly 290.237669307
-            calibration.dec.degrees shouldBeExactly 11.1397773954
+            calibration.rightAscension.degrees shouldBeExactly 290.237669307
+            calibration.declination.degrees shouldBeExactly 11.1397773954
         }
         "!blind solve" {
             val service = NovaAstrometryNetService()
@@ -32,8 +32,8 @@ class NovaAstrometryNetPlateSolverTest : StringSpec() {
             calibration.orientation.degrees shouldBeExactly 90.0397051079753
             calibration.scale shouldBeExactly 2.0675124414774606
             calibration.radius.degrees shouldBeExactly 0.36561535148882157
-            calibration.ra.degrees shouldBeExactly 290.237669307
-            calibration.dec.degrees shouldBeExactly 11.1397773954
+            calibration.rightAscension.degrees shouldBeExactly 290.237669307
+            calibration.declination.degrees shouldBeExactly 11.1397773954
         }
     }
 }

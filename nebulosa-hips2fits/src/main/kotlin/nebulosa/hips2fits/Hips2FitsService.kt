@@ -4,13 +4,8 @@ import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.retrofit.RetrofitService
 import retrofit2.Call
-import retrofit2.Converter
-import retrofit2.Retrofit
-import java.lang.reflect.Type
 
 class Hips2FitsService(url: String = MAIN_URL) : RetrofitService(url) {
-
-    override val converterFactory: List<Converter.Factory> = listOf(ByteArrayConverterFactory)
 
     private val service by lazy { retrofit.create(Hips2Fits::class.java) }
 
@@ -28,15 +23,6 @@ class Hips2FitsService(url: String = MAIN_URL) : RetrofitService(url) {
             hips.id, ra.degrees, dec.degrees, width, height, projection.name, fov.degrees,
             coordSystem.name.lowercase(), rotation.degrees, format.name.lowercase(),
         )
-    }
-
-    private object ByteArrayConverterFactory : Converter.Factory() {
-
-        override fun responseBodyConverter(
-            type: Type,
-            annotations: Array<out Annotation>,
-            retrofit: Retrofit,
-        ) = if (type == ByteArray::class.java) ByteArrayConverter else null
     }
 
     companion object {

@@ -1,7 +1,6 @@
 package nebulosa.platesolving.astap
 
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.arcmin
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
@@ -15,7 +14,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.inputStream
 import kotlin.math.ceil
-import kotlin.math.hypot
 
 /**
  * @see <a href="https://www.hnsky.org/astap.htm#astap_command_line">README</a>
@@ -73,22 +71,43 @@ class AstapPlateSolver(private val path: String) : PlateSolver {
             val ini = Properties()
             iniFile.inputStream().use(ini::load)
 
-            val solved = ini.getProperty("PLTSOLVD") == "T"
+            val solved = ini.getProperty("PLTSOLVD").trim() == "T"
 
             if (solved) {
-                val orientation = Angle.from(ini.getProperty("CROTA2"))!!
-                val ra = Angle.from(ini.getProperty("CRVAL1"))!!
-                val dec = Angle.from(ini.getProperty("CRVAL2"))!!
+                val ctype1 = ini.getProperty("CTYPE1", "RA---TAN")
+                val ctype2 = ini.getProperty("CTYPE2", "DEC--TAN")
+                val crpix1 = ini.getProperty("CRPIX1").toDouble()
+                val crpix2 = ini.getProperty("CRPIX2").toDouble()
+                val crval1 = Angle.from(ini.getProperty("CRVAL1"))!!
+                val crval2 = Angle.from(ini.getProperty("CRVAL2"))!!
+                val cdelt1 = Angle.from(ini.getProperty("CDELT1"))!!
+                val cdelt2 = Angle.from(ini.getProperty("CDELT2"))!!
+                val crota1 = Angle.from(ini.getProperty("CROTA1"))!!
+                val crota2 = Angle.from(ini.getProperty("CROTA2"))!!
+                val cd11 = ini.getProperty("CD1_1").toDouble()
+                val cd12 = ini.getProperty("CD1_2").toDouble()
+                val cd21 = ini.getProperty("CD2_1").toDouble()
+                val cd22 = ini.getProperty("CD2_2").toDouble()
+
                 val dimensions = ini.getProperty("DIMENSIONS").split("x")
-                val scale = ini.getProperty("CDELT2")!!.toDouble() * 60.0 // arcmin
-                val width = dimensions[0].trim().toInt() * scale
-                val height = dimensions[1].trim().toInt() * scale
-                val fieldRadius = hypot(width, height) / 2.0
-                val calibration = Calibration(orientation, scale * 60.0, fieldRadius.arcmin, ra, dec, width, height)
+                val width = cdelt1 * dimensions[0].trim().toDouble()
+                val height = cdelt2 * dimensions[1].trim().toDouble()
+
+                val calibration = Calibration(
+                    true,
+                    ctype1, ctype2, crpix1, crpix2,
+                    crval1, crval2, cdelt1, cdelt2, crota1, crota2,
+                    cd11, cd12, cd21, cd22,
+                    width = width, height = height,
+                )
+
                 LOG.info("astap solved. calibration={}", calibration)
+
                 return calibration
             } else {
-                val message = ini.getProperty("ERROR") ?: ini.getProperty("WARNING") ?: "Plate solving failed."
+                val message = ini.getProperty("ERROR")
+                    ?: ini.getProperty("WARNING")
+                    ?: "Plate solving failed."
                 throw PlateSolvingException(message)
             }
         } catch (e: InterruptedException) {

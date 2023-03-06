@@ -1,8 +1,12 @@
 package nebulosa.erfa
 
 import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
 import nebulosa.math.Vector3D
+import kotlin.math.abs
+import kotlin.math.acos
+import kotlin.math.hypot
 
 data class CartesianCoordinate(
     val x: Distance,
@@ -13,6 +17,15 @@ data class CartesianCoordinate(
     val spherical by lazy { SphericalCoordinate.of(x, y, z) }
 
     val vector3D by lazy { Vector3D(x.value, y.value, z.value) }
+
+    fun angularDistance(coordinate: CartesianCoordinate): Angle {
+        val dot = x.value * coordinate.x.value + y.value * coordinate.y.value + z.value * coordinate.z.value
+        val norm0 = hypot(x.value, y.value)
+        val norm1 = hypot(coordinate.x.value, coordinate.y.value)
+        val v = dot / (norm0 * norm1)
+        return if (abs(v) > 1.0) if (v < 0.0) Angle.SEMICIRCLE else Angle.ZERO
+        else acos(v).rad
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

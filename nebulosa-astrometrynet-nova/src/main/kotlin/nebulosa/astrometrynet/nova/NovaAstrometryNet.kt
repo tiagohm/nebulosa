@@ -1,5 +1,6 @@
 package nebulosa.astrometrynet.nova
 
+import nebulosa.retrofit.RawAsString
 import okhttp3.FormBody
 import okhttp3.MultipartBody
 import retrofit2.Call
@@ -10,26 +11,25 @@ import retrofit2.http.Path
 
 interface NovaAstrometryNet {
 
-    @POST("login")
+    @POST("api/login")
     fun login(@Body body: FormBody): Call<Session>
 
-    @POST("url_upload")
+    @POST("api/url_upload")
     fun uploadFromUrl(@Body body: FormBody): Call<Submission>
 
-    @POST("upload")
+    @POST("api/upload")
     fun uploadFromFile(@Body body: MultipartBody): Call<Submission>
 
-    @GET("submissions/{subId}")
+    @GET("api/submissions/{subId}")
     fun submissionStatus(@Path("subId") subId: Int): Call<SubmissionStatus>
 
-    @GET("jobs/{jobId}")
+    @GET("api/jobs/{jobId}")
     fun jobStatus(@Path("jobId") jobId: Int): Call<JobStatus>
 
-    @GET("jobs/{jobId}/calibration")
+    @GET("api/jobs/{jobId}/calibration")
     fun jobCalibration(@Path("jobId") jobId: Int): Call<JobCalibration>
 
-    companion object {
-
-        const val DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSSSSS"
-    }
+    @RawAsString
+    @GET("wcs_file/{jobId}")
+    fun wcs(@Path("jobId") jobId: Int): Call<String>
 }
