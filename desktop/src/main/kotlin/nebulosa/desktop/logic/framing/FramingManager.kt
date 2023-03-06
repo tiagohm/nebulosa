@@ -124,7 +124,7 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
                 image.header.addValue(ObservationDescription.RA, rightAscension.format(FITS_RA_ANGLE_FORMATTER))
                 image.header.addValue(ObservationDescription.DEC, declination.format(FITS_DEC_ANGLE_FORMATTER))
                 image.header.addValue(MaxImDLExt.ROTATANG, rotation.degrees)
-                image.header.addValue(Standard.COMMENT, "Made use of hips2fits, a service provided by CDS.")
+                image.header.addValue("COMMENT", null as String?, "Made use of hips2fits, a service provided by CDS.")
 
                 val window = imageWindow.get()?.also { it.open(image, tmpFile.toFile()); it.show(requestFocus = true) }
                     ?: imageWindowOpener.open(image, tmpFile.toFile())

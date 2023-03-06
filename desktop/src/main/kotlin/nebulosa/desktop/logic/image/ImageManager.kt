@@ -308,7 +308,7 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         val task = if (ra != null && dec != null) {
             LOG.info("plate solving. path={}, ra={}, dec={}", file, ra.hours, dec.degrees)
-            plateSolverView.solve(file, false, ra, dec, 10.0.deg)
+            plateSolverView.solve(file, false, ra, dec)
         } else {
             LOG.info("blind plate solving. path={}", file)
             plateSolverView.solve(file)

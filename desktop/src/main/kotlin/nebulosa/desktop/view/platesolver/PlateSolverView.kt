@@ -32,6 +32,6 @@ interface PlateSolverView : View {
         file: File,
         blind: Boolean = true,
         centerRA: Angle = Angle.ZERO, centerDEC: Angle = Angle.ZERO,
-        radius: Angle = Angle.ZERO
+        radius: Angle = this.radius,
     ): CompletableFuture<Calibration>
 }

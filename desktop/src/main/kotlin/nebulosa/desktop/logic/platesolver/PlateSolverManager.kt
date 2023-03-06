@@ -20,6 +20,7 @@ import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.astap.AstapPlateSolver
 import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
+import nebulosa.platesolving.watney.WatneyPlateSolver
 import nom.tam.fits.Fits
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -110,6 +111,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
         PlateSolverType.ASTROMETRY_NET_LOCAL -> "solve-field"
         PlateSolverType.ASTROMETRY_NET_ONLINE -> NovaAstrometryNetService.URL
         PlateSolverType.ASTAP -> if (operatingSystemType == OperatingSystemType.WINDOWS) "C:\\Program Files\\astap\\astap.exe" else "astap"
+        PlateSolverType.WATNEY -> ""
     }
 
     @Synchronized
@@ -139,7 +141,8 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
             val solver = when (view.type) {
                 PlateSolverType.ASTROMETRY_NET_LOCAL -> LocalAstrometryNetPlateSolver(pathOrUrl)
                 PlateSolverType.ASTROMETRY_NET_ONLINE -> NovaAstrometryNetPlateSolver(NovaAstrometryNetService(pathOrUrl), apiKey)
-                else -> AstapPlateSolver(pathOrUrl)
+                PlateSolverType.WATNEY -> WatneyPlateSolver(pathOrUrl)
+                PlateSolverType.ASTAP -> AstapPlateSolver(pathOrUrl)
             }
 
             val tempFile = File.createTempFile("platesolver", ".${file.extension}")
@@ -229,7 +232,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
         if (!view.initialized) return
 
         preferences.enum("plateSolver.type", view.type)
-        if (view.type == PlateSolverType.ASTROMETRY_NET_LOCAL) preferences.string("plateSolver.path", view.pathOrUrl)
+        if (view.type != PlateSolverType.ASTROMETRY_NET_ONLINE) preferences.string("plateSolver.path", view.pathOrUrl)
         else preferences.string("plateSolver.url", view.pathOrUrl)
         preferences.string("plateSolver.apiKey", view.apiKey)
         preferences.int("plateSolver.downsampleFactor", view.downsampleFactor)

@@ -75,8 +75,8 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
 
         pathOrUrlTextField.disableProperty().bind(isSolving)
 
-        apiKeyTextField.disableProperty().bind(isSolving)
-        apiKeyTextField.visibleProperty().bind(typeChoiceBox.selectionModel.selectedItemProperty().isEqualTo(PlateSolverType.ASTROMETRY_NET_ONLINE))
+        apiKeyTextField.disableProperty()
+            .bind(isSolving or typeChoiceBox.selectionModel.selectedItemProperty().isNotEqualTo(PlateSolverType.ASTROMETRY_NET_ONLINE))
 
         blindToggleSwitch.disableProperty().bind(isSolving)
 

@@ -53,8 +53,9 @@
             <ChoiceBox fx:id="typeChoiceBox">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
-                        <PlateSolverType fx:value="ASTROMETRY_NET_LOCAL"/>
                         <PlateSolverType fx:value="ASTROMETRY_NET_ONLINE"/>
+                        <PlateSolverType fx:value="WATNEY"/>
+                        <PlateSolverType fx:value="ASTROMETRY_NET_LOCAL"/>
                         <PlateSolverType fx:value="ASTAP"/>
                     </FXCollections>
                 </items>
