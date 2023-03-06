@@ -3,12 +3,11 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.wcs.WCSTransform
-import nom.tam.fits.Header
 import kotlin.math.abs
 
 abstract class AbstractWCSTransformTest : StringSpec() {
 
-    protected abstract val header: Header
+    protected abstract val header: Map<String, Any>
 
     protected val wcs by lazy { WCSTransform(header) }
 

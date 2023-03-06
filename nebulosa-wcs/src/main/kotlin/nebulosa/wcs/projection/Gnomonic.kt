@@ -6,7 +6,7 @@ import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.PairOfAngle
-import nebulosa.wcs.projection.Projection.Companion.aatan2
+import kotlin.math.atan2
 
 /**
  * Gnomonic.
@@ -32,7 +32,7 @@ class Gnomonic internal constructor(
     override fun project(x: Double, y: Double): PairOfAngle {
         val radius = computeRadius(x * DEG2RAD, y * DEG2RAD)
         val phi = computePhi(x, y, radius)
-        val theta = aatan2(1.0, radius).rad
+        val theta = atan2(1.0, radius).rad
         return PairOfAngle(phi, theta)
     }
 

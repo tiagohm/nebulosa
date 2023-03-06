@@ -5,7 +5,6 @@ import nebulosa.constants.TAU
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.PairOfAngle
-import nebulosa.wcs.projection.Projection.Companion.aatan2
 import kotlin.math.*
 
 abstract class AbstractProjection : Projection {
@@ -63,7 +62,7 @@ abstract class AbstractProjection : Projection {
         ) {
             return thetap
         } else {
-            val deltapArg = aatan2(theta0.sin, theta0.cos * (phi - phi0).cos)
+            val deltapArg = atan2(theta0.sin, theta0.cos * (phi - phi0).cos)
             val deltapAcos = acos(crval2.sin / sqrt(1.0 - theta0.cos.pow(2.0) * (phi - phi0).sin.pow(2.0)))
             val deltap1 = deltapArg + deltapAcos
             val deltap2 = deltapArg - deltapAcos
@@ -100,7 +99,7 @@ abstract class AbstractProjection : Projection {
         else {
             val das = (phip - phi0).sin * theta0.cos / crval2.cos
             val dac = (theta0.sin - deltap.value * crval2.sin) / (deltap.cos * crval2.cos)
-            crval1 - aatan2(das, dac)
+            crval1 - atan2(das, dac)
         }
     }
 
@@ -125,7 +124,7 @@ abstract class AbstractProjection : Projection {
                 // α = αp + atan2(sinθ cosδp − cosθ sinδp cos(φ − φp), −cosθ sin(φ − φp))
                 val y = -(theta.cos) * (phi - phip).sin
                 var x = theta.sin * dp.cos - theta.cos * dp.sin * (phi - phip).cos
-                val rightAscension = ap + aatan2(y, x)
+                val rightAscension = ap + atan2(y, x)
                 // δ = asin(sinθ sinδp + cosθ cosδp cos(φ − φp))
                 x = theta.sin * dp.sin + theta.cos * dp.cos * (phi - phip).cos
                 val declination = asin(x).rad
@@ -155,7 +154,7 @@ abstract class AbstractProjection : Projection {
                 //  φ = φp + atan2(sinδ cosδp − cosδ sinδp cos(α − αp), −cosδ sin(α − αp))
                 val y = -(declination.cos) * (rightAscension - rap).sin
                 var x = declination.sin * decp.cos - declination.cos * decp.sin * (rightAscension - rap).cos
-                val phi = phip + aatan2(y, x)
+                val phi = phip + atan2(y, x)
                 // θ = asin(sinδ sinδp + cosδ cosδp cos(α − αp))
                 x = declination.sin * decp.sin + declination.cos * decp.cos * (rightAscension - rap).cos
                 val theta = asin(x).rad

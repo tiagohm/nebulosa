@@ -12,16 +12,19 @@ import nebulosa.math.PairOfAngle
 import nebulosa.platesolving.Calibration
 import nebulosa.wcs.WCSTransform
 import org.slf4j.LoggerFactory
+import kotlin.math.max
+import kotlin.math.min
 
-data class NamedStarsAnnotation(val calibration: Calibration) : Drawable {
+data class MessierAnnotation(val calibration: Calibration) : Drawable {
 
-    private data class NamedStar(
+    private data class Messier(
         val name: String,
         val coordinate: PairOfAngle,
         val magnitude: Double,
+        val diameter: Double,
     )
 
-    private val data: List<NamedStar>
+    private val data: List<Messier>
     private val wcs = WCSTransform(calibration)
 
     init {
@@ -37,41 +40,44 @@ data class NamedStarsAnnotation(val calibration: Calibration) : Drawable {
 
     override fun draw(width: Double, height: Double, graphics: GraphicsContext) {
         graphics.lineWidth = 0.5
-        graphics.textAlign = TextAlignment.LEFT
-        graphics.stroke = Color.YELLOW
-        graphics.fill = Color.YELLOW
+        graphics.textAlign = TextAlignment.CENTER
+        graphics.stroke = Color.BLUE
+        graphics.fill = Color.BLUE
 
-        for (star in data) {
-            val (x, y) = wcs.worldToPixel(star.coordinate.first, star.coordinate.second)
+        val maxSize = min(width, height) / 2.0
 
-            graphics.strokeOval(x - STAR_SIZE / 2, y - STAR_SIZE / 2, STAR_SIZE, STAR_SIZE)
-            graphics.fillText(star.name, x + STAR_SIZE / 2, y - STAR_SIZE / 2)
+        for (messier in data) {
+            val (x, y) = wcs.worldToPixel(messier.coordinate.first, messier.coordinate.second)
+
+            val size = max(NamedStarsAnnotation.STAR_SIZE, min(maxSize, messier.diameter / calibration.scale.arcmin))
+
+            graphics.strokeOval(x - size / 2, y - size / 2, size, size)
+            graphics.fillText(messier.name, x, y - size / 2 - 8.0)
         }
     }
 
     companion object {
 
-        const val STAR_SIZE = 28.0
-
-        @JvmStatic private val LOG = LoggerFactory.getLogger(NamedStarsAnnotation::class.java)
-        @JvmStatic private val DATA = ArrayList<NamedStar>(3671)
+        @JvmStatic private val LOG = LoggerFactory.getLogger(MessierAnnotation::class.java)
+        @JvmStatic private val DATA = ArrayList<Messier>(110)
 
         @JvmStatic
         private fun load() {
             if (DATA.isNotEmpty()) return
 
-            val reader = resource("data/annotation/NAMED_STARS.txt")!!.bufferedReader()
+            val reader = resource("data/annotation/MESSIER.txt")!!.bufferedReader()
 
             for (line in reader.lines().skip(1)) {
                 val parts = line.split("\t")
-                val (bhd, ra, dec, _, mag) = parts
-                val name = if (parts.size >= 8) parts[7].trim() else ""
+                val (code, ra, dec, dia, mag) = parts
+                val name = if (parts.size >= 6) parts[5].trim() else ""
 
                 DATA.add(
-                    NamedStar(
-                        if (name.isEmpty()) bhd.trim() else "%s (%s)".format(name, bhd.trim()),
+                    Messier(
+                        if (name.isEmpty()) code.trim() else "%s (%s)".format(code.trim(), name),
                         PairOfAngle(ra.trim().toDouble().hours, dec.trim().toDouble().deg),
                         mag.trim().toDouble(),
+                        dia.trim().toDouble(),
                     )
                 )
             }

@@ -12,6 +12,7 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ImageViewer
+import nebulosa.desktop.logic.asBoolean
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.image.ImageManager
 import nebulosa.desktop.view.image.Drawable
@@ -63,7 +64,8 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             ControlAcceleratorSupport.addAcceleratorsIntoScene(menu.items, this)
         }
 
-        annotateCheckMenuItem.disableProperty().bind(imageManager.calibration.isNull)
+        annotateCheckMenuItem.disableProperty()
+            .bind(imageManager.calibration.asBoolean { it == null || !it.hasWCS })
     }
 
     override fun onStart() {
@@ -177,6 +179,8 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     fun open(fits: Image, file: File? = null) {
         imageManager.open(fits, file)
+
+        annotateCheckMenuItem.isSelected = false
     }
 
     override fun adjustSceneToImage() {

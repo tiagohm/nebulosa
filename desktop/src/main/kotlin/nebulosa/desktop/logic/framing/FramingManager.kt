@@ -62,7 +62,7 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
     }
 
     @Synchronized
-    fun load(ra: Angle, dec: Angle): CompletableFuture<Path>? {
+    fun load(rightAscension: Angle, declination: Angle): CompletableFuture<Path>? {
         if (loading.get()) {
             LOG.warn("framing is already loading")
             return null
@@ -88,7 +88,7 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
 
                 LOG.info(
                     "loading image. survey={}, ra={}, dec={}, width={}, height={}, rotation={}",
-                    hipsSurvey, ra.hours, dec.degrees,
+                    hipsSurvey, rightAscension.hours, declination.degrees,
                     view.frameWidth, view.frameHeight, rotation.degrees,
                 )
 
@@ -121,14 +121,15 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
                 val image = Image.open(ByteArrayInputStream(data))
 
                 image.header.addValue(Standard.INSTRUME, hipsSurvey.id)
-                image.header.addValue(ObservationDescription.RA, ra.format(FITS_RA_ANGLE_FORMATTER))
-                image.header.addValue(ObservationDescription.DEC, ra.format(FITS_DEC_ANGLE_FORMATTER))
+                image.header.addValue(ObservationDescription.RA, rightAscension.format(FITS_RA_ANGLE_FORMATTER))
+                image.header.addValue(ObservationDescription.DEC, declination.format(FITS_DEC_ANGLE_FORMATTER))
                 image.header.addValue(MaxImDLExt.ROTATANG, rotation.degrees)
                 image.header.addValue(Standard.COMMENT, "Made use of hips2fits, a service provided by CDS.")
 
                 val window = imageWindow.get()?.also { it.open(image, tmpFile.toFile()); it.show(requestFocus = true) }
                     ?: imageWindowOpener.open(image, tmpFile.toFile())
                 imageWindow.set(window)
+
                 task.complete(tmpFile)
             }
         }

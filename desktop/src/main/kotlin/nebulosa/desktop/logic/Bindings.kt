@@ -37,6 +37,10 @@ inline infix fun ObservableObjectValue<*>.isNotEqualTo(other: ObservableObjectVa
     return Bindings.notEqual(this, other)
 }
 
+inline fun <E> ObservableValue<out E>.asBoolean(crossinline action: (E?) -> Boolean): BooleanBinding {
+    return Bindings.createBooleanBinding({ action(value) }, this)
+}
+
 inline fun ObservableObjectValue<*>.isNull(): BooleanBinding {
     return Bindings.isNull(this)
 }

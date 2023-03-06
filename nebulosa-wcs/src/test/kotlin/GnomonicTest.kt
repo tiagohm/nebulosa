@@ -1,29 +1,26 @@
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nom.tam.fits.Header
 
 @Suppress("FloatingPointLiteralPrecision")
 class GnomonicTest : AbstractWCSTransformTest() {
 
-    override val header = Header(
-        arrayOf(
-            "SIMPLE  =                    T",
-            "BITPIX  =                  -32",
-            "NAXIS   =                    2",
-            "NAXIS1  =                  192",
-            "NAXIS2  =                  192",
-            "CTYPE1  =           'RA---TAN'",
-            "CRPIX1  =  -2.680658087122E+02",
-            "CDELT1  =  -6.666666666667E-02",
-            "CRVAL1  =   0.000000000000E+00",
-            "CTYPE2  =           'DEC--TAN'",
-            "CRPIX2  =  -5.630437201085E-01",
-            "CDELT2  =   6.666666666667E-02",
-            "CRVAL2  =  -9.000000000000E+01",
-            "LONPOLE =   1.800000000000E+02",
-            "LATPOLE =  -9.000000000000E+01",
-            "EQUINOX =   2.000000000000E+03",
-        )
+    override val header = mapOf(
+        "SIMPLE" to "T",
+        "BITPIX" to -32,
+        "NAXIS" to 2,
+        "NAXIS1" to 192,
+        "NAXIS2" to 192,
+        "CTYPE1" to "RA---TAN",
+        "CRPIX1" to -2.680658087122E+02,
+        "CDELT1" to -6.666666666667E-02,
+        "CRVAL1" to 0.000000000000E+00,
+        "CTYPE2" to "DEC--TAN",
+        "CRPIX2" to -5.630437201085E-01,
+        "CDELT2" to 6.666666666667E-02,
+        "CRVAL2" to -9.000000000000E+01,
+        "LONPOLE" to 1.800000000000E+02,
+        "LATPOLE" to -9.000000000000E+01,
+        "EQUINOX" to 2.000000000000E+03,
     )
 
     init {

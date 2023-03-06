@@ -5,7 +5,7 @@ import nebulosa.erfa.CartesianCoordinate
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
-import nebulosa.wcs.projection.Projection.Companion.aatan2
+import kotlin.math.atan2
 import kotlin.math.hypot
 
 /**
@@ -36,7 +36,7 @@ abstract class ZenithalProjection(
     }
 
     protected open fun computePhi(x: Double, y: Double, radius: Double): Angle {
-        return if (radius == 0.0) Angle.ZERO else aatan2(x, -y).rad
+        return if (radius == 0.0) Angle.ZERO else atan2(x, -y).rad
     }
 
     override fun inside(longitude: Angle, latitude: Angle): Boolean {

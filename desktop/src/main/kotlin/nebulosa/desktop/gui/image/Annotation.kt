@@ -6,18 +6,18 @@ import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.PairOfAngle
 import nebulosa.platesolving.Calibration
-import nom.tam.fits.Header
 import kotlin.math.acos
 
-data class Annotation(
-    val calibration: Calibration,
-    val header: Header,
-) : Drawable {
+data class Annotation(val calibration: Calibration) : Drawable {
 
-    private val namedStars = NamedStarsAnnotation(calibration, header)
+    private val namedStars = NamedStarsAnnotation(calibration)
+    private val messier = MessierAnnotation(calibration)
+    private val ngc = NGCAnnotation(calibration)
 
     override fun draw(width: Double, height: Double, graphics: GraphicsContext) {
         namedStars.draw(width, height, graphics)
+        messier.draw(width, height, graphics)
+        ngc.draw(width, height, graphics)
     }
 
     companion object {

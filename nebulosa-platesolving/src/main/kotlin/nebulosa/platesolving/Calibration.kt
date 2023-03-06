@@ -28,7 +28,26 @@ data class Calibration(
     val declination: Angle = crval2,
     val width: Angle = Angle.ZERO,
     val height: Angle = Angle.ZERO,
-) {
+) : HashMap<String, Any>() {
+
+    init {
+        if (hasWCS) {
+            this["CTYPE1"] = ctype1
+            this["CTYPE2"] = ctype2
+            this["CRPIX1"] = crpix1
+            this["CRPIX2"] = crpix2
+            this["CRVAL1"] = crval1.degrees
+            this["CRVAL2"] = crval2.degrees
+            this["CDELT1"] = cdelt1.degrees
+            this["CDELT2"] = cdelt2.degrees
+            this["CROTA1"] = crota1.degrees
+            this["CROTA2"] = crota2.degrees
+            this["CD1_1"] = cd11
+            this["CD1_2"] = cd12
+            this["CD2_1"] = cd21
+            this["CD2_2"] = cd22
+        }
+    }
 
     val radius = hypot(width.value, height.value).rad / 2.0
 

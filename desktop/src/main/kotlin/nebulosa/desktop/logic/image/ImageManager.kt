@@ -120,6 +120,13 @@ class ImageManager(private val view: ImageView) : Closeable {
         this.transformedFits = null
         calibration.set(null)
 
+        // TODO: Extract WCS/Calibration.
+        // TODO: If annotation enable, generate new annotation.
+
+        annotation?.also(view::remove)
+        annotation = null
+        annotationEnabled = false
+
         view.hasScnr = !fits.mono
 
         transformImage()
@@ -215,7 +222,7 @@ class ImageManager(private val view: ImageView) : Closeable {
             if (annotation == null) {
                 systemExecutorService.submit {
                     try {
-                        annotation = Annotation(calibration, fits!!.header)
+                        annotation = Annotation(calibration)
                         view.addFirst(annotation!!)
                         javaFXExecutorService.submit(view::redraw)
                     } catch (e: Throwable) {

@@ -8,35 +8,33 @@ import nebulosa.math.PairOfAngle
 import nebulosa.wcs.projection.AbstractProjection
 import nebulosa.wcs.projection.Projection
 import nebulosa.wcs.projection.ProjectionType
-import nom.tam.fits.Header
 import kotlin.math.abs
 import kotlin.math.sign
 
-// TODO: Remove FITS dependency?
-class WCSTransform(@JvmField internal val header: Header) {
+class WCSTransform(@JvmField internal val header: Map<String, Any>) {
 
+    private val cd: DoubleArray
+    private val cdi: DoubleArray
     private val projection: Projection
-    private val cd: Array<DoubleArray>
-    private val cdi: Array<DoubleArray>
 
-    val lonpole = if (header.containsKey("LONPOLE")) header.getDoubleValue("LONPOLE")
-    else if (header.containsKey("PV1_3")) header.getDoubleValue("PV1_3")
-    else Double.NaN
+    val lonpole = header.getDoubleValue("LONPOLE")
+        ?: header.getDoubleValue("PV1_3")
+        ?: Double.NaN
 
-    val latpole = if (header.containsKey("LATPOLE")) header.getDoubleValue("LATPOLE")
-    else if (header.containsKey("PV1_4")) header.getDoubleValue("PV1_4")
-    else Double.NaN
+    val latpole = header.getDoubleValue("LATPOLE")
+        ?: header.getDoubleValue("PV1_4")
+        ?: Double.NaN
 
     val hasCd = header.containsKey("CD1_1") ||
             header.containsKey("CDELT1") && header.containsKey("CROTA2") ||
             header.containsKey("CDELT1") && header.containsKey("PC1_1")
 
-    val crpix1 = header.getDoubleValue("CRPIX1")
+    val crpix1 = header.getDoubleValue("CRPIX1")!!
 
-    val crpix2 = header.getDoubleValue("CRPIX2")
+    val crpix2 = header.getDoubleValue("CRPIX2")!!
 
     init {
-        val ctype1 = header.getStringValue("CTYPE1")
+        val ctype1 = header.getStringValue("CTYPE1")!!
         val projectionType = ProjectionType.valueOf(ctype1.substring(ctype1.lastIndexOf('-') + 1, ctype1.length))
         val cx = header.getStringValue("CUNIT1").convertCunitToDegrees()
         val cy = header.getStringValue("CUNIT2").convertCunitToDegrees()
@@ -45,11 +43,11 @@ class WCSTransform(@JvmField internal val header: Header) {
         if (projectionType != ProjectionType.TPV) {
             // Native longitude of the fiducial point.
             if (header.containsKey("PV1_1")) {
-                projection.phi0 = header.getDoubleValue("PV1_1").rad
+                projection.phi0 = header.getDoubleValue("PV1_1")!!.rad
             }
             // Native latitude of the celestial pole.
             if (header.containsKey("PV1_2")) {
-                projection.theta0 = header.getDoubleValue("PV1_2").rad
+                projection.theta0 = header.getDoubleValue("PV1_2")!!.rad
             }
         }
 
@@ -59,67 +57,61 @@ class WCSTransform(@JvmField internal val header: Header) {
         // Native latitude of the celestial pole.
         if (latpole.isFinite()) projection.thetap = latpole.deg
 
-        cd = createCdMatrix()
-        cdi = inverseCd(cd)
+        cd = computeCdMatrix()
+        cdi = cd.inverseMatrix()
     }
 
-    private fun createCdMatrix(): Array<DoubleArray> {
+    private fun computeCdMatrix(): DoubleArray {
         return if (hasCd) {
-            arrayOf(
-                doubleArrayOf(cd(1, 1), cd(1, 2)),
-                doubleArrayOf(cd(2, 1), cd(2, 2)),
-            )
+            doubleArrayOf(cd(1, 1), cd(1, 2), cd(2, 1), cd(2, 2))
         } else {
-            val a = header.getDoubleValue("CDELT1")
-            val b = header.getDoubleValue("CDELT2")
-            val c = header.getDoubleValue("CROTA2").deg
+            val a = header.getDoubleValue("CDELT1")!!
+            val b = header.getDoubleValue("CDELT2")!!
+            val c = header.getDoubleValue("CROTA2")?.deg ?: Angle.ZERO
             computeCdFromCdelt(a, b, c)
         }
     }
 
     private fun cd(i: Int, j: Int): Double {
         return if (header.containsKey("CD1_1")) {
-            header.getDoubleValue("CD${i}_$j")
+            header.getDoubleValue("CD${i}_$j")!!
         } else if (header.containsKey("CROTA2")) {
-            val a = header.getDoubleValue("CDELT1")
-            val b = header.getDoubleValue("CDELT2")
-            val c = header.getDoubleValue("CROTA2").deg
+            val a = header.getDoubleValue("CDELT1")!!
+            val b = header.getDoubleValue("CDELT2")!!
+            val c = header.getDoubleValue("CROTA2")!!.deg
             val cd = computeCdFromCdelt(a, b, c)
-            cd[i - 1][j - 1]
+            cd[2 * i + j - 3]
         } else if (header.containsKey("PC1_1")) {
-            val pc11 = header.getDoubleValue("PC1_1")
-            val pc12 = header.getDoubleValue("PC1_2")
-            val pc21 = header.getDoubleValue("PC2_1")
-            val pc22 = header.getDoubleValue("PC2_2")
-            val a = header.getDoubleValue("CDELT1")
-            val b = header.getDoubleValue("CDELT2")
+            val pc11 = header.getDoubleValue("PC1_1")!!
+            val pc12 = header.getDoubleValue("PC1_2")!!
+            val pc21 = header.getDoubleValue("PC2_1")!!
+            val pc22 = header.getDoubleValue("PC2_2")!!
+            val a = header.getDoubleValue("CDELT1")!!
+            val b = header.getDoubleValue("CDELT2")!!
             val cd = pc2cd(pc11, pc12, pc21, pc22, a, b)
-            cd[i - 1][j - 1]
+            cd[2 * i + j - 3]
         } else {
             throw IllegalArgumentException("cd[$i,$j] not found")
         }
     }
 
-    private fun inverseCd(cd: Array<DoubleArray>): Array<DoubleArray> {
-        val det = (cd[0][0] * cd[1][1] - cd[0][1] * cd[1][0])
-        return arrayOf(
-            doubleArrayOf(cd[1][1] / det, -cd[0][1] / det),
-            doubleArrayOf(-cd[1][0] / det, cd[0][0] / det),
-        )
+    private fun DoubleArray.inverseMatrix(): DoubleArray {
+        val det = (cd[0] * cd[3] - cd[1] * cd[2])
+        return doubleArrayOf(cd[3] / det, -cd[1] / det, -cd[2] / det, cd[0] / det)
     }
 
     fun pixelToWorld(x: Double, y: Double): PairOfAngle {
         val cx = x - crpix1
         val cy = y - crpix2
-        val v0 = cx * cd[0][0] + cy * cd[0][1]
-        val v1 = cx * cd[1][0] + cy * cd[1][1]
+        val v0 = cx * cd[0] + cy * cd[1]
+        val v1 = cx * cd[2] + cy * cd[3]
         return projection.computeCelestialSphericalCoordinate(v0, v1)
     }
 
     fun worldToPixel(rightAscension: Angle, declination: Angle): DoubleArray {
         val coord = projection.computeProjectionPlaneCoordinate(rightAscension, declination)
-        val v0 = coord[0] * cdi[0][0] + coord[1] * cdi[0][1]
-        val v1 = coord[0] * cdi[1][0] + coord[1] * cdi[1][1]
+        val v0 = coord[0] * cdi[0] + coord[1] * cdi[1]
+        val v1 = coord[0] * cdi[2] + coord[1] * cdi[3]
         return doubleArrayOf(v0 + crpix1, v1 + crpix2)
     }
 
@@ -140,14 +132,14 @@ class WCSTransform(@JvmField internal val header: Header) {
         }
 
         @JvmStatic
-        private fun computeCdFromCdelt(cdelt1: Double, cdelt2: Double, crota: Angle): Array<DoubleArray> {
+        private fun computeCdFromCdelt(cdelt1: Double, cdelt2: Double, crota: Angle): DoubleArray {
             val cos0 = crota.cos
             val sin0 = crota.sin
             val cd11 = cdelt1 * cos0
             val cd12 = abs(cdelt2) * sign(cdelt1) * sin0
             val cd21 = -abs(cdelt1) * sign(cdelt2) * sin0
             val cd22 = cdelt2 * cos0
-            return arrayOf(doubleArrayOf(cd11, cd12), doubleArrayOf(cd21, cd22))
+            return doubleArrayOf(cd11, cd12, cd21, cd22)
         }
 
         @JvmStatic
@@ -155,10 +147,7 @@ class WCSTransform(@JvmField internal val header: Header) {
             pc11: Double, pc10: Double,
             pc21: Double, pc22: Double,
             cdelt1: Double, cdelt2: Double,
-        ) = arrayOf(
-            doubleArrayOf(cdelt1 * pc11, cdelt2 * pc21),
-            doubleArrayOf(cdelt1 * pc10, cdelt2 * pc22),
-        )
+        ) = doubleArrayOf(cdelt1 * pc11, cdelt2 * pc21, cdelt1 * pc10, cdelt2 * pc22)
 
         @JvmStatic
         private fun createProjection(
@@ -203,11 +192,11 @@ class WCSTransform(@JvmField internal val header: Header) {
 
                     projectionType.type
                         ?.getConstructor(Double::class.java, Double::class.java, Double::class.java, Double::class.java)
-                        ?.newInstance(wcs.header.getDoubleValue("CRVAL1") * cx, wcs.header.getDoubleValue("CRVAL2") * cy, pv21, pv22)
+                        ?.newInstance(wcs.header.getDoubleValue("CRVAL1")!! * cx, wcs.header.getDoubleValue("CRVAL2")!! * cy, pv21, pv22)
                 } else {
                     projectionType.type
                         ?.getConstructor(Double::class.java, Double::class.java, Double::class.java)
-                        ?.newInstance(wcs.header.getDoubleValue("CRVAL1") * cx, wcs.header.getDoubleValue("CRVAL2") * cy, pv21)
+                        ?.newInstance(wcs.header.getDoubleValue("CRVAL1")!! * cx, wcs.header.getDoubleValue("CRVAL2")!! * cy, pv21)
                 }
             } catch (e: NoSuchMethodException) {
                 null
@@ -223,10 +212,22 @@ class WCSTransform(@JvmField internal val header: Header) {
             return try {
                 projectionType.type
                     ?.getConstructor(Double::class.java, Double::class.java)
-                    ?.newInstance(wcs.header.getDoubleValue("CRVAL1") * cx, wcs.header.getDoubleValue("CRVAL2") * cy)
+                    ?.newInstance(wcs.header.getDoubleValue("CRVAL1")!! * cx, wcs.header.getDoubleValue("CRVAL2")!! * cy)
             } catch (e: NoSuchMethodException) {
                 null
             }
+        }
+
+        @JvmStatic
+        private fun Map<String, Any>.getStringValue(key: String): String? {
+            return this[key]?.toString()
+        }
+
+        @JvmStatic
+        private fun Map<String, Any>.getDoubleValue(key: String): Double? {
+            val value = this[key] ?: return null
+            return if (value is String) value.toDoubleOrNull()
+            else value as? Double
         }
     }
 }

@@ -2,8 +2,6 @@ package nebulosa.wcs.projection
 
 import nebulosa.math.Angle
 import nebulosa.math.PairOfAngle
-import kotlin.math.abs
-import kotlin.math.atan2
 
 interface Projection {
 
@@ -68,15 +66,4 @@ interface Projection {
      * Checks if the line is visible.
      */
     fun isLineToDraw(x0: Double, y0: Double, x1: Double, y1: Double): Boolean
-
-    companion object {
-
-        const val DOUBLE_TOLERANCE = 1e-12
-
-        @Suppress("NOTHING_TO_INLINE")
-        internal inline fun aatan2(y: Double, x: Double, value: Double = 0.0): Double {
-            return if (abs(y) < DOUBLE_TOLERANCE && value < DOUBLE_TOLERANCE) value
-            else atan2(y, x)
-        }
-    }
 }
