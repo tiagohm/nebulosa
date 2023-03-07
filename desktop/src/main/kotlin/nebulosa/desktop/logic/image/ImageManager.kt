@@ -5,18 +5,21 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
 import javafx.beans.property.SimpleObjectProperty
 import javafx.stage.FileChooser
 import javafx.stage.Screen
-import nebulosa.desktop.gui.image.*
-import nebulosa.desktop.gui.image.Annotation
+import nebulosa.desktop.gui.image.FitsHeaderWindow
+import nebulosa.desktop.gui.image.ImageStretcherWindow
+import nebulosa.desktop.gui.image.SCNRWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
+import nebulosa.desktop.view.image.FitsHeaderView
+import nebulosa.desktop.view.image.ImageStretcherView
 import nebulosa.desktop.view.image.ImageView
+import nebulosa.desktop.view.image.SCNRView
 import nebulosa.desktop.view.platesolver.PlateSolverView
 import nebulosa.fits.dec
 import nebulosa.fits.ra
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
-import nebulosa.math.Angle.Companion.deg
 import nebulosa.platesolving.Calibration
 import nom.tam.fits.Header
 import org.slf4j.LoggerFactory
@@ -37,19 +40,19 @@ class ImageManager(private val view: ImageView) : Closeable {
     @Volatile var file: File? = null
         private set
 
-    @Volatile var fits: Image? = null
+    @Volatile var image: Image? = null
         private set
 
-    @Volatile var transformedFits: Image? = null
+    @Volatile var transformedImage: Image? = null
         private set
 
     private val screenBounds = Screen.getPrimary().bounds
     private val transformPublisher = BehaviorSubject.create<Unit>()
 
     @Volatile private var transformSubscriber: Disposable? = null
-    @Volatile private var imageStretcherWindow: ImageStretcherWindow? = null
-    @Volatile private var fitsHeaderWindow: FitsHeaderWindow? = null
-    @Volatile private var scnrWindow: SCNRWindow? = null
+    @Volatile private var imageStretcherView: ImageStretcherView? = null
+    @Volatile private var fitsHeaderView: FitsHeaderView? = null
+    @Volatile private var scnrView: SCNRView? = null
     @Volatile private var annotationEnabled = false
     @Volatile private var annotation: Annotation? = null
 
@@ -104,20 +107,20 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     @Synchronized
     fun open(file: File) {
-        val fits = Image.open(file)
-        open(fits, file)
+        val image = Image.open(file)
+        open(image, file)
     }
 
     @Synchronized
-    fun open(fits: Image, file: File? = null) {
+    fun open(image: Image, file: File? = null) {
         this.file = file
 
         updateTitle()
 
-        val adjustSceneToImage = this.fits == null
+        val adjustSceneToImage = this.image == null
 
-        this.fits = fits
-        this.transformedFits = null
+        this.image = image
+        this.transformedImage = null
         calibration.set(null)
 
         // TODO: Extract WCS/Calibration.
@@ -127,13 +130,13 @@ class ImageManager(private val view: ImageView) : Closeable {
         annotation = null
         annotationEnabled = false
 
-        view.hasScnr = !fits.mono
+        view.hasScnr = !image.mono
 
         transformImage()
         draw()
         drawHistogram()
 
-        imageStretcherWindow?.updateTitle()
+        imageStretcherView?.updateTitle()
 
         if (adjustSceneToImage) {
             view.adjustSceneToImage()
@@ -141,12 +144,12 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     fun draw() {
-        val fits = transformedFits ?: fits ?: return
-        view.draw(fits)
+        val image = transformedImage ?: image ?: return
+        view.draw(image)
     }
 
     fun drawHistogram() {
-        imageStretcherWindow?.drawHistogram()
+        imageStretcherView?.drawHistogram()
     }
 
     fun transformImage(
@@ -179,18 +182,18 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         // TODO: How to handle rotation transformation if data is copy but width/height is not?
         // TODO: Reason: Image will be rotated for each draw.
-        transformedFits = if (shouldBeTransformed) fits!!.clone() else null
+        transformedImage = if (shouldBeTransformed) image!!.clone() else null
 
-        if (transformedFits != null) {
-            val algorithms = arrayListOf<TransformAlgorithm>()
+        if (transformedImage != null) {
+            val algorithms = ArrayList<TransformAlgorithm>(5)
 
-            algorithms.add(Flip(mirrorHorizontal, mirrorVertical))
+            if (mirrorHorizontal) algorithms.add(HorizontalFlip)
+            if (mirrorVertical) algorithms.add(VerticalFlip)
             if (scnrEnabled) algorithms.add(SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode))
             algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
-
             if (invert) algorithms.add(Invert)
 
-            transformedFits = TransformAlgorithm.of(algorithms).transform(transformedFits!!)
+            transformedImage = TransformAlgorithm.of(algorithms).transform(transformedImage!!)
         }
     }
 
@@ -239,10 +242,14 @@ class ImageManager(private val view: ImageView) : Closeable {
         }
     }
 
-    fun adjustSceneSizeToFitImage(defaultSize: Boolean = fits == null) {
-        val fits = fits ?: return
+    fun toggleAnnotationOptions() {
 
-        val factor = fits.width.toDouble() / fits.height.toDouble()
+    }
+
+    fun adjustSceneSizeToFitImage(defaultSize: Boolean = image == null) {
+        val image = image ?: return
+
+        val factor = image.width.toDouble() / image.height.toDouble()
 
         val defaultWidth = if (defaultSize) view.camera
             ?.let { preferences.double("image.${it.name}.screen.width") }
@@ -264,12 +271,12 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     private fun writeToFile(file: File): Boolean {
-        val fits = fits ?: return false
+        val image = image ?: return false
 
         when (file.extension.lowercase()) {
-            "png" -> ImageIO.write(fits, "PNG", file)
-            "jpg", "jpeg" -> ImageIO.write(fits, "JPEG", file)
-            "fit", "fits" -> fits.writeAsFits(file)
+            "png" -> ImageIO.write(image, "PNG", file)
+            "jpg", "jpeg" -> ImageIO.write(image, "JPEG", file)
+            "fit", "fits" -> image.writeAsFits(file)
             else -> return false
         }
 
@@ -299,12 +306,12 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     fun plateSolve(): Boolean {
         val file = file ?: return false
-        val fits = fits ?: return false
+        val image = image ?: return false
 
         plateSolverView.show(bringToFront = true)
 
-        val ra = fits.header.ra
-        val dec = fits.header.dec
+        val ra = image.header.ra
+        val dec = image.header.dec
 
         val task = if (ra != null && dec != null) {
             LOG.info("plate solving. path={}, ra={}, dec={}", file, ra.hours, dec.degrees)
@@ -316,7 +323,7 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         task.whenComplete { calibration, e ->
             if (calibration != null) {
-                fits.header.populateWithCalibration(calibration)
+                image.header.populateWithCalibration(calibration)
                 LOG.info("plate solving finished. calibration={}", calibration)
             } else if (e != null) {
                 LOG.error("plate solving failed.", e)
@@ -329,20 +336,20 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     fun openImageStretcher() {
-        imageStretcherWindow = imageStretcherWindow ?: ImageStretcherWindow(view)
-        imageStretcherWindow!!.show(bringToFront = true)
+        imageStretcherView = imageStretcherView ?: ImageStretcherWindow(view)
+        imageStretcherView!!.show(bringToFront = true)
     }
 
     fun openSCNR() {
-        scnrWindow = scnrWindow ?: SCNRWindow(view)
-        scnrWindow!!.show(bringToFront = true)
+        scnrView = scnrView ?: SCNRWindow(view)
+        scnrView!!.show(bringToFront = true)
     }
 
     fun openFitsHeader() {
-        val header = fits?.header ?: return
-        fitsHeaderWindow = fitsHeaderWindow ?: FitsHeaderWindow()
-        fitsHeaderWindow!!.show(bringToFront = true)
-        fitsHeaderWindow!!.load(header)
+        val header = image?.header ?: return
+        fitsHeaderView = fitsHeaderView ?: FitsHeaderWindow()
+        fitsHeaderView!!.show(bringToFront = true)
+        fitsHeaderView!!.load(header)
     }
 
     fun loadPreferences() {
@@ -368,16 +375,16 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     override fun close() {
-        fits = null
-        transformedFits = null
+        image = null
+        transformedImage = null
 
-        imageStretcherWindow?.close()
-        scnrWindow?.close()
-        fitsHeaderWindow?.close()
+        imageStretcherView?.close()
+        scnrView?.close()
+        fitsHeaderView?.close()
 
-        imageStretcherWindow = null
-        fitsHeaderWindow = null
-        scnrWindow = null
+        imageStretcherView = null
+        fitsHeaderView = null
+        scnrView = null
 
         savePreferences()
     }

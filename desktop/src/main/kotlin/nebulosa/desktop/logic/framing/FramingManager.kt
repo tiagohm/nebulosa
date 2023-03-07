@@ -2,11 +2,11 @@ package nebulosa.desktop.logic.framing
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.beans.property.SimpleBooleanProperty
-import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.framing.FramingView
+import nebulosa.desktop.view.image.ImageView
 import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
 import nebulosa.fits.FITS_RA_ANGLE_FORMATTER
 import nebulosa.hips2fits.FormatOutputType
@@ -43,10 +43,10 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
     @Autowired private lateinit var hips2FitsService: Hips2FitsService
     @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
-    @Autowired private lateinit var imageWindowOpener: ImageWindow.Opener
+    @Autowired private lateinit var imageViewOpener: ImageView.Opener
     @Autowired private lateinit var preferences: Preferences
 
-    private val imageWindow = AtomicReference<ImageWindow>()
+    private val imageView = AtomicReference<ImageView>()
     private val imagePath = AtomicReference<Path>()
 
     val loading = SimpleBooleanProperty()
@@ -126,9 +126,9 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
                 image.header.addValue(MaxImDLExt.ROTATANG, rotation.degrees)
                 image.header.addValue("COMMENT", null as String?, "Made use of hips2fits, a service provided by CDS.")
 
-                val window = imageWindow.get()?.also { it.open(image, tmpFile.toFile()); it.show(requestFocus = true) }
-                    ?: imageWindowOpener.open(image, tmpFile.toFile())
-                imageWindow.set(window)
+                val window = imageView.get()?.also { it.open(image, tmpFile.toFile()); it.show(requestFocus = true) }
+                    ?: imageViewOpener.open(image, tmpFile.toFile())
+                imageView.set(window)
 
                 task.complete(tmpFile)
             }

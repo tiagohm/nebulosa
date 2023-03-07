@@ -1,9 +1,9 @@
-package nebulosa.desktop.gui.image
+package nebulosa.desktop.logic.image
 
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.paint.Color
 import javafx.scene.text.TextAlignment
-import nebulosa.desktop.gui.image.Annotation.Companion.distanceBetween
+import nebulosa.desktop.logic.image.Annotation.Companion.distanceBetween
 import nebulosa.desktop.view.image.Drawable
 import nebulosa.io.resource
 import nebulosa.math.Angle.Companion.deg

@@ -33,14 +33,35 @@
                             right="32.0"
                             top="16.0"/>
                 </padding>
-                <Label styleClass="text-md"
-                       text="Shadow &amp; Highlight">
-                    <VBox.margin>
-                        <Insets bottom="4.0"/>
-                    </VBox.margin>
-                </Label>
+                <StackPane>
+                    <HBox alignment="CENTER_RIGHT"
+                          spacing="8.0"
+                          StackPane.alignment="CENTER_RIGHT">
+                        <Button fx:id="autoStretchButton"
+                                alignment="CENTER"
+                                contentDisplay="TEXT_ONLY"
+                                minWidth="42.0"
+                                mnemonicParsing="false"
+                                onAction="#autoStretch"
+                                prefHeight="32.0"
+                                styleClass="text-blue-grey-700,mdi,mdi-sm"
+                                text="󰁨"/>
+                        <Button fx:id="resetStretchButton"
+                                alignment="CENTER"
+                                contentDisplay="TEXT_ONLY"
+                                minWidth="42.0"
+                                mnemonicParsing="false"
+                                onAction="#resetStretch"
+                                prefHeight="32.0"
+                                styleClass="text-red-700,mdi,mdi-sm"
+                                text="󰅖"/>
+                    </HBox>
+                </StackPane>
                 <HBox alignment="CENTER"
                       spacing="8.0">
+                    <VBox.margin>
+                        <Insets top="4.0"/>
+                    </VBox.margin>
                     <VBox alignment="CENTER"
                           spacing="4.0">
                         <Spinner fx:id="shadowSpinner"
@@ -60,22 +81,24 @@
                                  prefWidth="92.0">
                         </Spinner>
                     </VBox>
-                    <RangeSlider fx:id="shadowAndHighlightRangeSlider"
-                                 blockIncrement="1.0"
-                                 highValue="255.0"
-                                 lowValue="0.0"
-                                 majorTickUnit="32.0"
-                                 max="255.0"
-                                 min="0.0"
-                                 minorTickCount="3"
-                                 showTickLabels="true"
-                                 showTickMarks="true"
-                                 HBox.hgrow="ALWAYS">
-                    </RangeSlider>
+                    <VBox alignment="CENTER"
+                          HBox.hgrow="ALWAYS">
+                        <Label styleClass="text-sm"
+                               text="Shadow &amp; Highlight">
+                        </Label>
+                        <RangeSlider fx:id="shadowAndHighlightRangeSlider"
+                                     blockIncrement="1.0"
+                                     highValue="255.0"
+                                     lowValue="0.0"
+                                     majorTickUnit="32.0"
+                                     max="255.0"
+                                     min="0.0"
+                                     minorTickCount="3"
+                                     showTickLabels="true"
+                                     showTickMarks="true">
+                        </RangeSlider>
+                    </VBox>
                 </HBox>
-                <Label styleClass="text-md"
-                       text="Midtone">
-                </Label>
                 <HBox alignment="CENTER"
                       spacing="8.0">
                     <Spinner fx:id="midtoneSpinner"
@@ -86,16 +109,21 @@
                              min="0.0"
                              prefWidth="92.0">
                     </Spinner>
-                    <Slider fx:id="midtoneSlider"
-                            blockIncrement="1.0"
-                            majorTickUnit="32.0"
-                            max="255.0"
-                            minorTickCount="3"
-                            showTickLabels="true"
-                            showTickMarks="true"
-                            value="127.5"
-                            HBox.hgrow="ALWAYS">
-                    </Slider>
+                    <VBox alignment="CENTER"
+                          HBox.hgrow="ALWAYS">
+                        <Label styleClass="text-sm"
+                               text="Midtone">
+                        </Label>
+                        <Slider fx:id="midtoneSlider"
+                                blockIncrement="1.0"
+                                majorTickUnit="32.0"
+                                max="255.0"
+                                minorTickCount="3"
+                                showTickLabels="true"
+                                showTickMarks="true"
+                                value="127.5">
+                        </Slider>
+                    </VBox>
                 </HBox>
             </VBox>
         </Tab>

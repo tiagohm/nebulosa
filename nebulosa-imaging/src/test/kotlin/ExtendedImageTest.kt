@@ -7,7 +7,7 @@ import javax.imageio.ImageIO
 
 @Ignored
 @Suppress("BlockingMethodInNonBlockingContext")
-class ExtendedImageTest : ImageTest() {
+class ExtendedImageTest : AbstractImageTest() {
 
     init {
         beforeSpec {

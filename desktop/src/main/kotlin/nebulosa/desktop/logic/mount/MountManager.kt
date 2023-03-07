@@ -2,13 +2,13 @@ package nebulosa.desktop.logic.mount
 
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
-import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.gui.mount.SiteAndTimeWindow
-import nebulosa.desktop.gui.telescopecontrol.TelescopeControlWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
+import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.desktop.view.mount.MountView
+import nebulosa.desktop.view.telescopecontrol.TelescopeControlView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
@@ -33,9 +33,9 @@ class MountManager(
 ) : MountProperty by equipmentManager.selectedMount {
 
     @Autowired private lateinit var preferences: Preferences
-    @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
+    @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
     @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
-    @Autowired private lateinit var telescopeControlWindow: TelescopeControlWindow
+    @Autowired private lateinit var telescopeControlView: TelescopeControlView
 
     @Volatile private var position = Geoid.IERS2010.latLon(Angle.ZERO, Angle.ZERO, Distance.ZERO)
 
@@ -77,17 +77,17 @@ class MountManager(
     }
 
     fun openINDIPanelControl() {
-        indiPanelControlWindow.show(bringToFront = true)
-        indiPanelControlWindow.device = value
+        indiPanelControlView.show(bringToFront = true)
+        indiPanelControlView.device = value
     }
 
     fun openINDIPanelControl(gps: GPS) {
-        indiPanelControlWindow.show(bringToFront = true)
-        indiPanelControlWindow.device = gps
+        indiPanelControlView.show(bringToFront = true)
+        indiPanelControlView.device = gps
     }
 
     fun openTelescopeControlServer() {
-        telescopeControlWindow.show(bringToFront = true)
+        telescopeControlView.show(bringToFront = true)
     }
 
     fun openSiteAndTime() {

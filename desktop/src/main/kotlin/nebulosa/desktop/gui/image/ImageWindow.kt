@@ -38,7 +38,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     @FXML private lateinit var crosshairCheckMenuItem: CheckMenuItem
     @FXML private lateinit var annotateCheckMenuItem: CheckMenuItem
 
-    @Volatile private var fitsBuffer = IntArray(0)
+    @Volatile private var imageData = IntArray(0)
 
     private val imageManager = ImageManager(this)
 
@@ -73,13 +73,16 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     override fun onStop() {
-        fitsBuffer = IntArray(0)
+        imageData = IntArray(0)
 
         imageManager.close()
     }
 
-    override val fits
-        get() = imageManager.transformedFits ?: imageManager.fits
+    override val originalImage
+        get() = imageManager.image
+
+    override val transformedImage
+        get() = imageManager.transformedImage
 
     override val shadow
         get() = imageManager.shadow
@@ -173,11 +176,16 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         imageManager.toggleAnnotation()
     }
 
-    fun open(file: File) {
+    @FXML
+    private fun toggleAnnotationOptions() {
+        imageManager.toggleAnnotationOptions()
+    }
+
+    override fun open(file: File) {
         imageManager.open(file)
     }
 
-    fun open(fits: Image, file: File? = null) {
+    override fun open(fits: Image, file: File?) {
         imageManager.open(fits, file)
 
         annotateCheckMenuItem.isSelected = false
@@ -190,17 +198,17 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         }
     }
 
-    override fun draw(fits: Image) {
-        val area = fits.width * fits.height
+    override fun draw(image: Image) {
+        val area = image.width * image.height
 
-        if (area > fitsBuffer.size) {
-            fitsBuffer = IntArray(area)
+        if (area > imageData.size) {
+            imageData = IntArray(area)
         }
 
-        fits.writeTo(fitsBuffer)
+        image.writeTo(imageData)
 
-        val buffer = IntBuffer.wrap(fitsBuffer, 0, area)
-        val pixelBuffer = PixelBuffer(fits.width, fits.height, buffer, PixelFormat.getIntArgbPreInstance())
+        val buffer = IntBuffer.wrap(imageData, 0, area)
+        val pixelBuffer = PixelBuffer(image.width, image.height, buffer, PixelFormat.getIntArgbPreInstance())
         val writableImage = WritableImage(pixelBuffer)
         fitsImageViewer.load(writableImage)
     }
@@ -218,6 +226,14 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     override fun stf(shadow: Float, highlight: Float, midtone: Float) {
         imageManager.transformImage(shadow = shadow, highlight = highlight, midtone = midtone)
+    }
+
+    fun updateAnnotationOptions(
+        namedStars: Boolean, messier: Boolean, ngc: Boolean,
+        hip: Boolean, tycho: Boolean, sao: Boolean,
+        planets: Boolean, asteroids: Boolean,
+    ) {
+
     }
 
     override fun redraw() {
@@ -257,13 +273,13 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     @Service
-    class Opener {
+    class Opener : ImageView.Opener {
 
         @Autowired private lateinit var beanFactory: AutowireCapableBeanFactory
 
         private val windows = hashSetOf<ImageWindow>()
 
-        fun open(fits: Image?, file: File?, camera: Camera? = null): ImageWindow {
+        override fun open(image: Image?, file: File?, camera: Camera?): ImageView {
             val window = windows
                 .firstOrNull { if (camera == null) it.camera == null && !it.showing else it.camera === camera }
                 ?: ImageWindow(camera).also { beanFactory.autowireBean(it); beanFactory.autowireBean(it.imageManager) }
@@ -272,7 +288,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
             window.show()
 
-            if (fits != null) window.open(fits, file)
+            if (image != null) window.open(image, file)
             else if (file != null) window.open(file)
             else throw IllegalArgumentException("fits or file parameter must be provided")
 

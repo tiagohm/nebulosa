@@ -1,10 +1,10 @@
 package nebulosa.desktop.logic.focuser
 
-import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.task.TaskExecutor
 import nebulosa.desktop.view.focuser.FocuserView
+import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserMaxPositionChanged
@@ -19,7 +19,7 @@ class FocuserManager(
 ) : FocuserProperty by equipmentManager.selectedFocuser {
 
     @Autowired private lateinit var preferences: Preferences
-    @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
+    @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
     @Autowired private lateinit var taskExecutor: TaskExecutor
 
     val focusers
@@ -60,8 +60,8 @@ class FocuserManager(
     }
 
     fun openINDIPanelControl() {
-        indiPanelControlWindow.show(bringToFront = true)
-        indiPanelControlWindow.device = value
+        indiPanelControlView.show(bringToFront = true)
+        indiPanelControlView.device = value
     }
 
     fun moveIn() {

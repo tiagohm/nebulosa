@@ -5,14 +5,22 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
+import java.io.File
 
 interface ImageView : View, Iterable<Drawable> {
+
+    interface Opener {
+
+        fun open(image: Image?, file: File?, camera: Camera? = null): ImageView
+    }
 
     val camera: Camera?
 
     var hasScnr: Boolean
 
-    val fits: Image?
+    val originalImage: Image?
+
+    val transformedImage: Image?
 
     val shadow: Float
 
@@ -36,6 +44,9 @@ interface ImageView : View, Iterable<Drawable> {
 
     var crosshairEnabled: Boolean
 
+    val image
+        get() = transformedImage ?: originalImage
+
     fun stf(shadow: Float, highlight: Float, midtone: Float)
 
     fun scnr(
@@ -45,7 +56,11 @@ interface ImageView : View, Iterable<Drawable> {
 
     fun adjustSceneToImage()
 
-    fun draw(fits: Image)
+    fun draw(image: Image)
+
+    fun open(file: File)
+
+    fun open(fits: Image, file: File? = null)
 
     fun redraw()
 

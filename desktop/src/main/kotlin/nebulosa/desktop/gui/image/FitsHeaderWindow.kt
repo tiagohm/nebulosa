@@ -21,7 +21,7 @@ class FitsHeaderWindow : AbstractWindow("FitsHeader", "nebulosa-fits-header"), F
         cardsTextArea.text = text
     }
 
-    fun load(header: Header) {
+    override fun load(header: Header) {
         fitsHeaderManager.load(header)
     }
 }

@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     api(project(":nebulosa-fits"))
+    implementation(libs.logback)
     testImplementation(project(":nebulosa-test"))
 }
 

@@ -1,8 +1,10 @@
 package nebulosa.desktop.gui.image
 
+import javafx.animation.PauseTransition
 import javafx.fxml.FXML
 import javafx.scene.control.Slider
 import javafx.scene.control.Spinner
+import javafx.util.Duration
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.Histogram
 import nebulosa.desktop.logic.image.ImageStretcherManager
@@ -21,19 +23,33 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
     @FXML private lateinit var histogram: Histogram
 
     private val imageStretcherManager = ImageStretcherManager(this)
+    private val stretchParameterListener = PauseTransition(Duration.seconds(0.5))
 
     init {
         resizable = false
         title = "Image Stretch"
+
+        stretchParameterListener.setOnFinished {
+            imageStretcherManager.apply(shadow / 255f, highlight / 255f, midtone / 255f)
+        }
     }
 
     override fun onCreate() {
         shadowAndHighlightRangeSlider.lowValue = 0.0
         shadowAndHighlightRangeSlider.highValue = 255.0
 
-        shadowAndHighlightRangeSlider.lowValueProperty().on(::onShadowChanged)
-        shadowAndHighlightRangeSlider.highValueProperty().on(::onHighlightChanged)
-        midtoneSlider.valueProperty().on(::onMidtoneChanged)
+        shadowAndHighlightRangeSlider.lowValueProperty().on {
+            stretchParameterListener.playFromStart()
+            shadowSpinner.valueFactory.value = it
+        }
+        shadowAndHighlightRangeSlider.highValueProperty().on {
+            stretchParameterListener.playFromStart()
+            highlightSpinner.valueFactory.value = it
+        }
+        midtoneSlider.valueProperty().on {
+            stretchParameterListener.playFromStart()
+            midtoneSpinner.valueFactory.value = it
+        }
 
         shadowSpinner.valueProperty().on { shadowAndHighlightRangeSlider.lowValue = it!!.toDouble() }
         highlightSpinner.valueProperty().on { shadowAndHighlightRangeSlider.highValue = it!!.toDouble() }
@@ -41,56 +57,45 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
     }
 
     override fun onStart() {
-        highlight = view.highlight * 255f
-        shadow = view.shadow * 255f
-        midtone = view.midtone * 255f
-
         updateTitle()
+        updateStretchParameters(view.shadow, view.highlight, view.midtone)
         drawHistogram()
     }
 
-    override var shadow
+    override val shadow
         get() = shadowSpinner.value.toFloat()
-        set(value) {
-            shadowSpinner.valueFactory.value = value.toDouble()
-        }
 
-    override var highlight
+    override val highlight
         get() = highlightSpinner.value.toFloat()
-        set(value) {
-            highlightSpinner.valueFactory.value = value.toDouble()
-        }
 
-    override var midtone
+    override val midtone
         get() = midtoneSpinner.value.toFloat()
-        set(value) {
-            midtoneSpinner.valueFactory.value = value.toDouble()
-        }
-
-    private fun onShadowChanged(value: Double) {
-        shadowSpinner.valueFactory.value = value
-        imageStretcherManager.apply()
-    }
-
-    private fun onHighlightChanged(value: Double) {
-        highlightSpinner.valueFactory.value = value
-        imageStretcherManager.apply()
-    }
-
-    private fun onMidtoneChanged(value: Double) {
-        midtoneSpinner.valueFactory.value = value
-        imageStretcherManager.apply()
-    }
 
     override fun apply(shadow: Float, highlight: Float, midtone: Float) {
         view.stf(shadow, highlight, midtone)
     }
 
     override fun drawHistogram() {
-        histogram.draw(view.fits ?: return)
+        histogram.draw(view.image ?: return)
     }
 
     override fun updateTitle() {
         title = "Image Stretch · " + view.title.split("·").last().trim()
+    }
+
+    override fun updateStretchParameters(shadow: Float, highlight: Float, midtone: Float) {
+        shadowSpinner.valueFactory.value = shadow * 255.0
+        highlightSpinner.valueFactory.value = highlight * 255.0
+        midtoneSpinner.valueFactory.value = midtone * 255.0
+    }
+
+    @FXML
+    override fun autoStretch() {
+        imageStretcherManager.autoStretch(view.originalImage ?: return)
+    }
+
+    @FXML
+    override fun resetStretch() {
+        imageStretcherManager.resetStretch()
     }
 }

@@ -2,17 +2,29 @@ package nebulosa.imaging.algorithms
 
 import nebulosa.imaging.Image
 
+/**
+ * @see <a href="https://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html#__XISF_Data_Objects_:_XISF_Image_:_Display_Function__">Adaptive Display Function Algorithm</a>
+ * @see <a href="https://pixinsight.com/tutorials/24-bit-stf/">24-Bit Screen LUTs</a>
+ */
 class ScreenTransformFunction(
     private val midtone: Float,
     private val shadow: Float = 0f,
     private val highlight: Float = 1f,
 ) : TransformAlgorithm {
 
+    data class Parameters(
+        val midtone: Float = 0.5f,
+        val shadow: Float = 0f,
+        val highlight: Float = 1f,
+    )
+
     private val canTransform = midtone != 0.5f || shadow != 0f || highlight != 1f
     private val rangeFactor = if (shadow == highlight) 1f else (1f / (highlight - shadow))
     private val k1 = (midtone - 1f) * rangeFactor
     private val k2 = (2f * midtone - 1f) * rangeFactor
     private val lut = if (canTransform) FloatArray(65536) else FloatArray(0)
+
+    constructor(parameters: Parameters) : this(parameters.midtone, parameters.shadow, parameters.highlight)
 
     override fun transform(source: Image): Image {
         if (!canTransform) return source
@@ -30,9 +42,6 @@ class ScreenTransformFunction(
 
         return source
     }
-
-    // https://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html#__XISF_Data_Objects_:_XISF_Image_:_Display_Function__
-    // https://pixinsight.com/tutorials/24-bit-stf/
 
     private fun Float.df(midtone: Float, s: Float, h: Float, k1: Float, k2: Float): Float {
         val p = (this * 65535f).toInt()

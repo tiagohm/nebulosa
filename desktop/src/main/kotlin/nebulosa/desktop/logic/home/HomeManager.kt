@@ -1,7 +1,6 @@
 package nebulosa.desktop.logic.home
 
 import javafx.stage.FileChooser
-import nebulosa.desktop.gui.image.ImageWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
@@ -13,6 +12,7 @@ import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.desktop.view.guider.GuiderView
 import nebulosa.desktop.view.home.HomeView
+import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.desktop.view.platesolver.PlateSolverView
@@ -37,7 +37,7 @@ class HomeManager(private val view: HomeView) : Closeable {
     @Autowired private lateinit var filterWheelView: FilterWheelView
     @Autowired private lateinit var atlasView: AtlasView
     @Autowired private lateinit var plateSolverView: PlateSolverView
-    @Autowired private lateinit var imageWindowOpener: ImageWindow.Opener
+    @Autowired private lateinit var imageViewOpener: ImageView.Opener
     @Autowired private lateinit var framingView: FramingView
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
     @Autowired private lateinit var aboutView: AboutView
@@ -102,7 +102,7 @@ class HomeManager(private val view: HomeView) : Closeable {
         preferences.string("home.newImage.initialDirectory", file.parent)
 
         try {
-            imageWindowOpener.open(null, file)
+            imageViewOpener.open(null, file)
         } catch (e: Throwable) {
             LOG.error("image load error", e)
 

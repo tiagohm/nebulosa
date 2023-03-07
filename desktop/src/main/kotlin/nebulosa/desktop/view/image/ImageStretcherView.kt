@@ -4,15 +4,21 @@ import nebulosa.desktop.view.View
 
 interface ImageStretcherView : View {
 
-    var shadow: Float
+    val shadow: Float
 
-    var highlight: Float
+    val highlight: Float
 
-    var midtone: Float
+    val midtone: Float
 
     fun apply(shadow: Float, highlight: Float, midtone: Float)
 
     fun updateTitle()
+
+    fun updateStretchParameters(shadow: Float, highlight: Float, midtone: Float)
+
+    fun autoStretch()
+
+    fun resetStretch()
 
     fun drawHistogram()
 }

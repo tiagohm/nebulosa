@@ -1,4 +1,4 @@
-package nebulosa.desktop.gui.image
+package nebulosa.desktop.logic.image
 
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.paint.Color

@@ -3,8 +3,6 @@ package nebulosa.desktop.logic.camera
 import javafx.application.HostServices
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
-import nebulosa.desktop.gui.image.ImageWindow
-import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
@@ -14,6 +12,8 @@ import nebulosa.desktop.view.View
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.camera.ExposureMode
+import nebulosa.desktop.view.image.ImageView
+import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.*
 import org.greenrobot.eventbus.EventBus
@@ -39,12 +39,12 @@ class CameraManager(
     @Autowired private lateinit var appDirectory: Path
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var taskExecutor: TaskExecutor
-    @Autowired private lateinit var indiPanelControlWindow: INDIPanelControlWindow
-    @Autowired private lateinit var imageWindowOpener: ImageWindow.Opener
+    @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
+    @Autowired private lateinit var imageViewOpener: ImageView.Opener
     @Autowired private lateinit var beanFactory: AutowireCapableBeanFactory
     @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
 
-    private val imageWindows = hashSetOf<ImageWindow>()
+    private val imageViews = hashSetOf<ImageView>()
     private val runningTask = AtomicReference<CameraExposureTask>()
 
     val capturingProperty = SimpleBooleanProperty()
@@ -69,8 +69,8 @@ class CameraManager(
     fun onTaskEvent(event: TaskEvent) {
         when (event) {
             is CameraFrameSaved -> {
-                val window = imageWindowOpener.open(event.image, event.path.toFile(), event.task.camera)
-                imageWindows.add(window)
+                val window = imageViewOpener.open(event.image, event.path.toFile(), event.task.camera)
+                imageViews.add(window)
             }
         }
     }
@@ -94,8 +94,8 @@ class CameraManager(
     }
 
     fun openINDIPanelControl() {
-        indiPanelControlWindow.show(bringToFront = true)
-        indiPanelControlWindow.device = value
+        indiPanelControlView.show(bringToFront = true)
+        indiPanelControlView.device = value
     }
 
     fun openImageSavePathInFiles() {
@@ -310,8 +310,8 @@ class CameraManager(
     override fun close() {
         savePreferences()
 
-        imageWindows.forEach(View::close)
-        imageWindows.clear()
+        imageViews.forEach(View::close)
+        imageViews.clear()
 
         unregisterListener(this)
 

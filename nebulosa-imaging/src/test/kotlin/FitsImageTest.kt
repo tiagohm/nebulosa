@@ -2,13 +2,14 @@ import io.kotest.matchers.shouldBe
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
+import nebulosa.imaging.algorithms.TransformAlgorithm.Companion.transform
 import nom.tam.fits.Fits
 import java.io.File
 import java.util.*
 import javax.imageio.ImageIO
 
 @Suppress("BlockingMethodInNonBlockingContext")
-class FitsImageTest : ImageTest() {
+class FitsImageTest : AbstractImageTest() {
 
     init {
         "8-bits mono" {
@@ -144,6 +145,14 @@ class FitsImageTest : ImageTest() {
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "c0872c612faaa601ec76191eaced7fcc"
         }
+        "Auto STF" {
+            val fits = Image.open(Fits("src/test/resources/M51.8.Color.fits"))
+            val parameters = AutoScreenTransformFunction.compute(fits)
+            val image = ScreenTransformFunction(parameters).transform(fits)
+            val outputFile = File("src/test/resources/M51.8.Color.AutoSTF.png")
+            ImageIO.write(image, "PNG", outputFile)
+            outputFile.md5() shouldBe "beddeb0285d02e1ff1c1fde1566c3629"
+        }
         "CCD Simulator - Stretch" {
             val fits = Fits("src/test/resources/CCD Simulator.Gray.fits")
             val image = ScreenTransformFunction(5.8e-5f).transform(Image.open(fits))
@@ -160,21 +169,21 @@ class FitsImageTest : ImageTest() {
         }
         "Flip Vertical" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = Flip(vertical = true).transform(Image.open(fits))
+            val image = VerticalFlip.transform(Image.open(fits))
             val outputFile = File("src/test/resources/M51.8.Color.FlipV.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "f28ab67afbe41fb2f07c7cbf76f1d1b1"
         }
         "Flip Horizontal" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = Flip(horizontal = true).transform(Image.open(fits))
+            val image = HorizontalFlip.transform(Image.open(fits))
             val outputFile = File("src/test/resources/M51.8.Color.FlipH.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "01da982b44c8a016ccfbe12c8ff12735"
         }
         "Flip Vertical & Horizontal" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = Flip(horizontal = true, vertical = true).transform(Image.open(fits))
+            val image = listOf(HorizontalFlip, VerticalFlip).transform(Image.open(fits))
             val outputFile = File("src/test/resources/M51.8.Color.FlipVH.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "9ae0f01a217478a07f3e67f834b353df"
