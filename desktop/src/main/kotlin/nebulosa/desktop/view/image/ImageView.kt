@@ -11,7 +11,7 @@ interface ImageView : View, Iterable<Drawable> {
 
     interface Opener {
 
-        fun open(image: Image?, file: File?, camera: Camera? = null): ImageView
+        fun open(image: Image?, file: File?, token: Any? = null): ImageView
     }
 
     val camera: Camera?

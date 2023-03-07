@@ -278,13 +278,20 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         @Autowired private lateinit var beanFactory: AutowireCapableBeanFactory
 
         private val windows = hashSetOf<ImageWindow>()
+        private val windowsMap = hashMapOf<Any, ImageWindow>()
 
-        override fun open(image: Image?, file: File?, camera: Camera?): ImageView {
-            val window = windows
-                .firstOrNull { if (camera == null) it.camera == null && !it.showing else it.camera === camera }
-                ?: ImageWindow(camera).also { beanFactory.autowireBean(it); beanFactory.autowireBean(it.imageManager) }
+        override fun open(image: Image?, file: File?, token: Any?): ImageView {
+            val window = if (token != null) {
+                windowsMap[token] ?: ImageWindow(if (token is Camera) token else null)
+            } else {
+                windows.firstOrNull { !it.showing } ?: ImageWindow(null)
+            }
 
-            windows.add(window)
+            beanFactory.autowireBean(window)
+            beanFactory.autowireBean(window.imageManager)
+
+            if (token != null) windowsMap[token] = window
+            else windows.add(window)
 
             window.show()
 
