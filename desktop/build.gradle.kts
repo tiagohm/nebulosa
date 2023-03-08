@@ -8,6 +8,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.0"
     kotlin("plugin.spring")
     id("org.openjfx.javafxplugin")
+    id("com.github.gmazzo.buildconfig")
 }
 
 dependencies {
@@ -52,7 +53,16 @@ javafx {
 }
 
 tasks.withType<BootJar> {
+    archiveFileName.set("desktop.jar")
+
     manifest {
         attributes["Start-Class"] = "nebulosa.desktop.MainKt"
     }
+}
+
+buildConfig {
+    packageName("nebulosa.desktop")
+    useKotlinOutput()
+    buildConfigField("String", "VERSION_CODE", "\"${project.property("version.code")?.toString() ?: "0.1.0"}\"")
+    buildConfigField("String", "VERSION_NAME", "\"${project.property("version.name")?.toString() ?: ""}\"")
 }

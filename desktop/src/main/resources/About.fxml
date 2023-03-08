@@ -9,12 +9,12 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="440.0"
+            prefHeight="260.0"
             prefWidth="412.0"
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <VBox alignment="TOP_CENTER"
+    <VBox alignment="CENTER"
           spacing="4.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
@@ -26,15 +26,17 @@
                     right="16.0"
                     top="16.0"/>
         </padding>
-        <ImageView fitHeight="128.0"
+        <ImageView preserveRatio="true"
+                   fitHeight="128.0"
                    fitWidth="128.0">
             <Image url="@icons/nebulosa-512.png"/>
         </ImageView>
         <Label text="Nebulosa"
                styleClass="text-lg,text-bold,monospaced"/>
-        <Label text="v0.1.0"
+        <Label fx:id="versionLabel"
+               text="v0.1.0"
                styleClass="text-md,monospaced"/>
-        <Label text="Copyright © 2023 - Tiago Melo"
+        <Label text="Copyright © 2022-2023 - Tiago Melo"
                styleClass="text-sm,monospaced"/>
     </VBox>
 </AnchorPane>

@@ -11,6 +11,7 @@ buildscript {
         classpath("gradle.plugin.com.github.johnrengelman:shadow:8.0.0")
         classpath("com.adarshr:gradle-test-logger-plugin:3.2.0")
         classpath("org.jetbrains.kotlin:kotlin-allopen:1.8.10")
+        classpath("com.github.gmazzo:gradle-buildconfig-plugin:3.1.0")
     }
 
     repositories {
@@ -22,7 +23,7 @@ buildscript {
 
 allprojects {
     group = "com.github.tiagohm"
-    version = "0.1.0"
+    version = project.property("version.code")?.toString() ?: "0.1.0"
 
     repositories {
         mavenCentral()
