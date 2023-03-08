@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class FilterWheelManager(
-    @Autowired private val view: FilterWheelView,
-    @Autowired private val equipmentManager: EquipmentManager,
+    @Autowired internal val view: FilterWheelView,
+    @Autowired internal val equipmentManager: EquipmentManager,
 ) : FilterWheelProperty by equipmentManager.selectedFilterWheel {
 
     @Autowired private lateinit var preferences: Preferences

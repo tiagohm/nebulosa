@@ -31,8 +31,8 @@ import java.util.concurrent.atomic.AtomicReference
 
 @Component
 class CameraManager(
-    @Autowired private val view: CameraView,
-    @Autowired private val equipmentManager: EquipmentManager,
+    @Autowired internal val view: CameraView,
+    @Autowired internal val equipmentManager: EquipmentManager,
 ) : CameraProperty by equipmentManager.selectedCamera {
 
     @Autowired private lateinit var preferences: Preferences

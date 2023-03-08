@@ -33,6 +33,9 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     @FXML private lateinit var fitsImageViewer: ImageViewer
     @FXML private lateinit var menu: ContextMenu
+    @FXML private lateinit var mirrorHorizontalCheckMenuItem: CheckMenuItem
+    @FXML private lateinit var mirrorVerticalCheckMenuItem: CheckMenuItem
+    @FXML private lateinit var invertCheckMenuItem: CheckMenuItem
     @FXML private lateinit var scnrMenuItem: MenuItem
     @FXML private lateinit var fitsHeaderMenuItem: MenuItem
     @FXML private lateinit var crosshairCheckMenuItem: CheckMenuItem
@@ -47,6 +50,8 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     override fun onCreate() {
+        imageManager.initialize()
+
         fitsImageViewer.addEventFilter(MouseEvent.MOUSE_CLICKED) {
             if (it.button == MouseButton.PRIMARY && it.clickCount == 2) {
                 if (!maximized) {
@@ -93,14 +98,23 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     override val midtone
         get() = imageManager.midtone
 
-    override val mirrorHorizontal
-        get() = imageManager.mirrorHorizontal
+    override var mirrorHorizontal
+        get() = mirrorHorizontalCheckMenuItem.isSelected
+        set(value) {
+            mirrorHorizontalCheckMenuItem.isSelected = value
+        }
 
-    override val mirrorVertical
-        get() = imageManager.mirrorVertical
+    override var mirrorVertical
+        get() = mirrorVerticalCheckMenuItem.isSelected
+        set(value) {
+            mirrorVerticalCheckMenuItem.isSelected = value
+        }
 
-    override val invert
-        get() = imageManager.invert
+    override var invert
+        get() = invertCheckMenuItem.isSelected
+        set(value) {
+            invertCheckMenuItem.isSelected = value
+        }
 
     override val scnrEnabled
         get() = imageManager.scnrEnabled
@@ -132,8 +146,13 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     @FXML
-    private fun plateSolve() {
-        imageManager.plateSolve()
+    private fun solve() {
+        imageManager.solve(false)
+    }
+
+    @FXML
+    private fun blindSolve() {
+        imageManager.solve(true)
     }
 
     @FXML
@@ -181,12 +200,12 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         imageManager.toggleAnnotationOptions()
     }
 
-    override fun open(file: File) {
-        imageManager.open(file)
+    override fun open(file: File, resetTransformation: Boolean) {
+        imageManager.open(file, resetTransformation)
     }
 
-    override fun open(fits: Image, file: File?) {
-        imageManager.open(fits, file)
+    override fun open(fits: Image, file: File?, resetTransformation: Boolean) {
+        imageManager.open(fits, file, resetTransformation)
 
         annotateCheckMenuItem.isSelected = false
     }
@@ -280,7 +299,10 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         private val windows = hashSetOf<ImageWindow>()
         private val windowsMap = hashMapOf<Any, ImageWindow>()
 
-        override fun open(image: Image?, file: File?, token: Any?): ImageView {
+        override fun open(
+            image: Image?, file: File?,
+            token: Any?, resetTransformation: Boolean,
+        ): ImageView {
             val window = if (token != null) {
                 windowsMap[token] ?: ImageWindow(if (token is Camera) token else null)
             } else {
@@ -295,8 +317,8 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
             window.show()
 
-            if (image != null) window.open(image, file)
-            else if (file != null) window.open(file)
+            if (image != null) window.open(image, file, resetTransformation)
+            else if (file != null) window.open(file, resetTransformation = true)
             else throw IllegalArgumentException("fits or file parameter must be provided")
 
             return window

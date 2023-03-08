@@ -18,7 +18,7 @@ inline fun Fits.imageHDU(n: Int) = read().filterIsInstance<ImageHDU>().getOrNull
 inline fun Header.naxis(n: Int) = getIntValue(Standard.NAXISn.n(n))
 
 inline val Header.ra: Angle?
-    get() = Angle.from(getStringValue(ObservationDescription.RA), true)
+    get() = Angle.from(getStringValue(ObservationDescription.RA), true, false)
         ?: Angle.from(getStringValue(SBFitsExt.OBJCTRA), true)
         ?: getDoubleValue(NOAOExt.CRVAL1, Double.NaN).let { if (it.isFinite()) it.deg else null }
 

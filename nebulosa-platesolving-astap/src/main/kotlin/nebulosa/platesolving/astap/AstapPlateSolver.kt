@@ -97,7 +97,7 @@ class AstapPlateSolver(private val path: String) : PlateSolver {
                     true,
                     ctype1, ctype2, crpix1, crpix2,
                     crval1, crval2, cdelt1, cdelt2, crota1, crota2,
-                    cd11, cd12, cd21, cd22,
+                    true, cd11, cd12, cd21, cd22,
                     width = width, height = height,
                 )
 

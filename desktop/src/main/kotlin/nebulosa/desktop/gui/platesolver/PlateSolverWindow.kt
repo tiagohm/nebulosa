@@ -17,6 +17,7 @@ import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.AngleFormatter
 import nebulosa.platesolving.Calibration
 import org.controlsfx.control.ToggleSwitch
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
@@ -149,10 +150,10 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
         get() = blindToggleSwitch.isSelected
 
     override val centerRA
-        get() = Angle.from(centerRATextField.text, true)!!
+        get() = Angle.from(centerRATextField.text, true) ?: Angle.ZERO
 
     override val centerDEC
-        get() = Angle.from(centerDECTextField.text)!!
+        get() = Angle.from(centerDECTextField.text) ?: Angle.ZERO
 
     override var radius
         get() = radiusSpinner.value.deg
@@ -174,12 +175,9 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
     @FXML
     private fun solve() {
         try {
-            if (blind) {
-                plateSolverManager.solve(blind = true)
-            } else {
-                plateSolverManager.solve(blind = false, centerRA = centerRA, centerDEC = centerDEC, radius = radius)
-            }
+            plateSolverManager.solve()
         } catch (e: NullPointerException) {
+            LOG.error("plate solve failed.", e)
             showAlert("Center coordinate or radius value is invalid")
         }
     }
@@ -222,16 +220,24 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver")
 
         plateSolverManager.clearAstrometrySolution()
 
-        return plateSolverManager.solve(file, blind, centerRA, centerDEC, radius)
+        return plateSolverManager.solve(file)
     }
 
-    override fun updateFilePath(file: File) {
+    override fun fileWasLoaded(file: File) {
         filePathTextField.text = file.name
     }
 
-    override fun updateParameters(blind: Boolean, ra: Angle, dec: Angle) {
+    override fun updateParameters(
+        blind: Boolean,
+        centerRA: Angle, centerDEC: Angle
+    ) {
         blindToggleSwitch.isSelected = blind
-        centerRATextField.text = ra.format(AngleFormatter.HMS)
-        centerDECTextField.text = dec.format(AngleFormatter.SIGNED_DMS)
+        centerRATextField.text = centerRA.format(AngleFormatter.HMS)
+        centerDECTextField.text = centerDEC.format(AngleFormatter.SIGNED_DMS)
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(PlateSolverWindow::class.java)
     }
 }

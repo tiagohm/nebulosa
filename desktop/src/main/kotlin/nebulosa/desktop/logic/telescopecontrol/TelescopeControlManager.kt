@@ -21,7 +21,7 @@ import java.io.Closeable
 import java.time.OffsetDateTime
 
 @Component
-class TelescopeControlManager(@Autowired private val view: TelescopeControlView) :
+class TelescopeControlManager(@Autowired internal val view: TelescopeControlView) :
     Closeable, LX200MountHandler, StellariumMountHandler {
 
     @Autowired private lateinit var eventBus: EventBus

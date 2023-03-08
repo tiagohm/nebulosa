@@ -11,7 +11,11 @@ interface ImageView : View, Iterable<Drawable> {
 
     interface Opener {
 
-        fun open(image: Image?, file: File?, token: Any? = null): ImageView
+        fun open(
+            image: Image?, file: File?,
+            token: Any? = null,
+            resetTransformation: Boolean = false,
+        ): ImageView
     }
 
     val camera: Camera?
@@ -28,11 +32,11 @@ interface ImageView : View, Iterable<Drawable> {
 
     val midtone: Float
 
-    val mirrorHorizontal: Boolean
+    var mirrorHorizontal: Boolean
 
-    val mirrorVertical: Boolean
+    var mirrorVertical: Boolean
 
-    val invert: Boolean
+    var invert: Boolean
 
     val scnrEnabled: Boolean
 
@@ -58,9 +62,12 @@ interface ImageView : View, Iterable<Drawable> {
 
     fun draw(image: Image)
 
-    fun open(file: File)
+    fun open(file: File, resetTransformation: Boolean = false)
 
-    fun open(fits: Image, file: File? = null)
+    fun open(
+        fits: Image, file: File? = null,
+        resetTransformation: Boolean = false,
+    )
 
     fun redraw()
 

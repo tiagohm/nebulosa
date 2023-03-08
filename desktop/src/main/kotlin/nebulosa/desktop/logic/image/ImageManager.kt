@@ -10,6 +10,8 @@ import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
+import nebulosa.desktop.logic.platesolver.PlateSolvingEvent
+import nebulosa.desktop.logic.platesolver.PlateSolvingSolved
 import nebulosa.desktop.view.image.FitsHeaderView
 import nebulosa.desktop.view.image.ImageStretcherView
 import nebulosa.desktop.view.image.ImageView
@@ -22,6 +24,8 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.platesolving.Calibration
 import nom.tam.fits.Header
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.Closeable
@@ -36,6 +40,7 @@ class ImageManager(private val view: ImageView) : Closeable {
     @Autowired private lateinit var plateSolverView: PlateSolverView
     @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
     @Autowired private lateinit var systemExecutorService: ExecutorService
+    @Autowired private lateinit var eventBus: EventBus
 
     @Volatile var file: File? = null
         private set
@@ -65,15 +70,6 @@ class ImageManager(private val view: ImageView) : Closeable {
     @Volatile var midtone = 0.5f
         private set
 
-    @Volatile var mirrorHorizontal = false
-        private set
-
-    @Volatile var mirrorVertical = false
-        private set
-
-    @Volatile var invert = false
-        private set
-
     @Volatile var scnrEnabled = false
         private set
 
@@ -99,6 +95,26 @@ class ImageManager(private val view: ImageView) : Closeable {
             }
     }
 
+    fun initialize() {
+        eventBus.register(this)
+    }
+
+    @Subscribe
+    fun onPlateSolvingEvent(event: PlateSolvingEvent) {
+        if (event.file === file) {
+            calibration.set(if (event is PlateSolvingSolved) event.calibration else null)
+
+            annotation?.also(view::remove)
+
+            if (calibration.get() != null && annotationEnabled) {
+                annotation = Annotation(calibration.get())
+                view.addFirst(annotation!!)
+
+                javaFXExecutorService.submit(view::redraw)
+            }
+        }
+    }
+
     private fun updateTitle() {
         view.title = "Image"
             .let { if (view.camera != null) "$it · ${view.camera!!.name}" else it }
@@ -106,13 +122,13 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     @Synchronized
-    fun open(file: File) {
+    fun open(file: File, resetTransformation: Boolean = false) {
         val image = Image.open(file)
-        open(image, file)
+        open(image, file, resetTransformation)
     }
 
     @Synchronized
-    fun open(image: Image, file: File? = null) {
+    fun open(image: Image, file: File? = null, resetTransformation: Boolean = false) {
         this.file = file
 
         updateTitle()
@@ -121,16 +137,25 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         this.image = image
         this.transformedImage = null
-        calibration.set(null)
 
-        // TODO: Extract WCS/Calibration.
-        // TODO: If annotation enable, generate new annotation.
+        calibration.set(null)
 
         annotation?.also(view::remove)
         annotation = null
-        annotationEnabled = false
 
         view.hasScnr = !image.mono
+
+        if (resetTransformation) {
+            shadow = 0f
+            highlight = 1f
+            midtone = 0.5f
+            view.mirrorHorizontal = false
+            view.mirrorVertical = false
+            view.invert = false
+            scnrEnabled = false
+
+            imageStretcherView?.resetStretch(true)
+        }
 
         transformImage()
         draw()
@@ -154,8 +179,8 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     fun transformImage(
         shadow: Float = this.shadow, highlight: Float = this.highlight, midtone: Float = this.midtone,
-        mirrorHorizontal: Boolean = this.mirrorHorizontal, mirrorVertical: Boolean = this.mirrorVertical,
-        invert: Boolean = this.invert,
+        mirrorHorizontal: Boolean = view.mirrorHorizontal, mirrorVertical: Boolean = view.mirrorVertical,
+        invert: Boolean = view.invert,
         scnrEnabled: Boolean = this.scnrEnabled, scnrChannel: ImageChannel = this.scnrChannel,
         scnrProtectionMode: ProtectionMethod = this.scnrProtectionMode,
         scnrAmount: Float = this.scnrAmount,
@@ -163,9 +188,9 @@ class ImageManager(private val view: ImageView) : Closeable {
         this.shadow = shadow
         this.highlight = highlight
         this.midtone = midtone
-        this.mirrorHorizontal = mirrorHorizontal
-        this.mirrorVertical = mirrorVertical
-        this.invert = invert
+        view.mirrorHorizontal = mirrorHorizontal
+        view.mirrorVertical = mirrorVertical
+        view.invert = invert
         this.scnrEnabled = scnrEnabled
         this.scnrChannel = scnrChannel
         this.scnrProtectionMode = scnrProtectionMode
@@ -177,7 +202,7 @@ class ImageManager(private val view: ImageView) : Closeable {
     @Synchronized
     private fun transformImage() {
         val shouldBeTransformed = shadow != 0f || highlight != 1f || midtone != 0.5f
-                || mirrorHorizontal || mirrorVertical || invert
+                || view.mirrorHorizontal || view.mirrorVertical || view.invert
                 || scnrEnabled
 
         // TODO: How to handle rotation transformation if data is copy but width/height is not?
@@ -187,26 +212,26 @@ class ImageManager(private val view: ImageView) : Closeable {
         if (transformedImage != null) {
             val algorithms = ArrayList<TransformAlgorithm>(5)
 
-            if (mirrorHorizontal) algorithms.add(HorizontalFlip)
-            if (mirrorVertical) algorithms.add(VerticalFlip)
+            if (view.mirrorHorizontal) algorithms.add(HorizontalFlip)
+            if (view.mirrorVertical) algorithms.add(VerticalFlip)
             if (scnrEnabled) algorithms.add(SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode))
             algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
-            if (invert) algorithms.add(Invert)
+            if (view.invert) algorithms.add(Invert)
 
             transformedImage = TransformAlgorithm.of(algorithms).transform(transformedImage!!)
         }
     }
 
     fun mirrorHorizontal() {
-        transformImage(mirrorHorizontal = !mirrorHorizontal)
+        transformImage(mirrorHorizontal = view.mirrorHorizontal)
     }
 
     fun mirrorVertical() {
-        transformImage(mirrorVertical = !mirrorVertical)
+        transformImage(mirrorVertical = view.mirrorVertical)
     }
 
     fun invert() {
-        transformImage(invert = !invert)
+        transformImage(invert = view.invert)
     }
 
     fun toggleCrosshair() {
@@ -304,7 +329,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         }
     }
 
-    fun plateSolve(): Boolean {
+    fun solve(blind: Boolean = false): Boolean {
         val file = file ?: return false
         val image = image ?: return false
 
@@ -313,7 +338,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         val ra = image.header.ra
         val dec = image.header.dec
 
-        val task = if (ra != null && dec != null) {
+        val task = if (!blind && ra != null && dec != null) {
             LOG.info("plate solving. path={}, ra={}, dec={}", file, ra.hours, dec.degrees)
             plateSolverView.solve(file, false, ra, dec)
         } else {
@@ -386,6 +411,8 @@ class ImageManager(private val view: ImageView) : Closeable {
         fitsHeaderView = null
         scnrView = null
 
+        eventBus.unregister(this)
+
         savePreferences()
     }
 
@@ -407,10 +434,23 @@ class ImageManager(private val view: ImageView) : Closeable {
             addValue("CDETL2", calibration.cdelt2.degrees, "")
             addValue("CROTA1", calibration.crota1.degrees, "")
             addValue("CROTA2", calibration.crota2.degrees, "")
-            addValue("CD1_1", calibration.cd11, "")
-            addValue("CD1_2", calibration.cd12, "")
-            addValue("CD2_1", calibration.cd21, "")
-            addValue("CD2_2", calibration.cd22, "")
+
+            if (calibration.hasCD) {
+                addValue("CD1_1", calibration.cd11, "")
+                addValue("CD1_2", calibration.cd12, "")
+                addValue("CD2_1", calibration.cd21, "")
+                addValue("CD2_2", calibration.cd22, "")
+            }
+
+            if (calibration.hasPC) {
+                addValue("PC1_1", calibration.pc11, "")
+                addValue("PC1_2", calibration.pc12, "")
+                addValue("PC2_1", calibration.pc21, "")
+                addValue("PC2_2", calibration.pc22, "")
+            }
+
+            if (calibration.pv11 != null) addValue("PV1_1", calibration.pv11!!.degrees, "")
+            if (calibration.pv12 != null) addValue("PV1_2", calibration.pv12!!.degrees, "")
         }
     }
 }

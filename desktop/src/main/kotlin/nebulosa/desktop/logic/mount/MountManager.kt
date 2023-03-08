@@ -28,8 +28,8 @@ import java.util.concurrent.TimeUnit
 
 @Component
 class MountManager(
-    @Autowired private val view: MountView,
-    @Autowired private val equipmentManager: EquipmentManager,
+    @Autowired internal val view: MountView,
+    @Autowired internal val equipmentManager: EquipmentManager,
 ) : MountProperty by equipmentManager.selectedMount {
 
     @Autowired private lateinit var preferences: Preferences

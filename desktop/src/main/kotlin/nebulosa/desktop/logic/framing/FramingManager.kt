@@ -36,7 +36,7 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.writeBytes
 
 @Component
-class FramingManager(@Autowired private val view: FramingView) : Closeable {
+class FramingManager(@Autowired internal val view: FramingView) : Closeable {
 
     @Autowired private lateinit var objectMapper: ObjectMapper
     @Autowired private lateinit var equipmentManager: EquipmentManager
@@ -126,8 +126,8 @@ class FramingManager(@Autowired private val view: FramingView) : Closeable {
                 image.header.addValue(MaxImDLExt.ROTATANG, rotation.degrees)
                 image.header.addValue("COMMENT", null as String?, "Made use of hips2fits, a service provided by CDS.")
 
-                val window = imageView.get()?.also { it.open(image, tmpFile.toFile()); it.show(requestFocus = true) }
-                    ?: imageViewOpener.open(image, tmpFile.toFile())
+                val window = imageView.get()?.also { it.open(image, tmpFile.toFile(), resetTransformation = true); it.show(requestFocus = true) }
+                    ?: imageViewOpener.open(image, tmpFile.toFile(), resetTransformation = true)
                 imageView.set(window)
 
                 task.complete(tmpFile)

@@ -58,7 +58,7 @@ import kotlin.math.max
 
 @Component
 @EnableScheduling
-class AtlasManager(@Autowired private val view: AtlasView) : Closeable {
+class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
     private val pointsCache = hashMapOf<HorizonsEphemeris, List<Point2D>>()
 

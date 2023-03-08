@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class FocuserManager(
-    @Autowired private val view: FocuserView,
-    @Autowired private val equipmentManager: EquipmentManager,
+    @Autowired internal val view: FocuserView,
+    @Autowired internal val equipmentManager: EquipmentManager,
 ) : FocuserProperty by equipmentManager.selectedFocuser {
 
     @Autowired private lateinit var preferences: Preferences

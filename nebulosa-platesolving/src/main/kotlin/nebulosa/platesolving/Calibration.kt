@@ -17,10 +17,18 @@ data class Calibration(
     val cdelt2: Angle = Angle.ZERO,
     val crota1: Angle = Angle.ZERO,
     val crota2: Angle = Angle.ZERO,
+    val hasCD: Boolean = false,
     val cd11: Double = 0.0,
     val cd12: Double = 0.0,
     val cd21: Double = 0.0,
     val cd22: Double = 0.0,
+    val hasPC: Boolean = false,
+    val pc11: Double = 0.0,
+    val pc12: Double = 0.0,
+    val pc21: Double = 0.0,
+    val pc22: Double = 0.0,
+    val pv11: Angle? = null,
+    val pv12: Angle? = null,
     // Calibration.
     val orientation: Angle = crota2,
     val scale: Angle = cdelt2,
@@ -42,10 +50,23 @@ data class Calibration(
             this["CDELT2"] = cdelt2.degrees
             this["CROTA1"] = crota1.degrees
             this["CROTA2"] = crota2.degrees
-            this["CD1_1"] = cd11
-            this["CD1_2"] = cd12
-            this["CD2_1"] = cd21
-            this["CD2_2"] = cd22
+
+            if (hasCD) {
+                this["CD1_1"] = cd11
+                this["CD1_2"] = cd12
+                this["CD2_1"] = cd21
+                this["CD2_2"] = cd22
+            }
+
+            if (hasPC) {
+                this["PC1_1"] = pc11
+                this["PC1_2"] = pc12
+                this["PC2_1"] = pc21
+                this["PC2_2"] = pc22
+            }
+
+            if (pv11 != null) this["PV1_1"] = pv11.degrees
+            if (pv12 != null) this["PV1_2"] = pv12.degrees
         }
     }
 

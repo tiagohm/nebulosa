@@ -94,8 +94,13 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
         imageStretcherManager.autoStretch(view.originalImage ?: return)
     }
 
+    override fun resetStretch(onlyParameters: Boolean) {
+        if (onlyParameters) updateStretchParameters(0f, 1f, 0.5f)
+        else imageStretcherManager.resetStretch()
+    }
+
     @FXML
-    override fun resetStretch() {
-        imageStretcherManager.resetStretch()
+    private fun resetStretch() {
+        resetStretch(false)
     }
 }

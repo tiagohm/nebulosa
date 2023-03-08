@@ -22,6 +22,7 @@ import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
 import nebulosa.platesolving.watney.WatneyPlateSolver
 import nom.tam.fits.Fits
+import org.greenrobot.eventbus.EventBus
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -34,7 +35,7 @@ import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicReference
 
 @Component
-class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeable {
+class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closeable {
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var equipmentManager: EquipmentManager
@@ -42,6 +43,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
     @Autowired private lateinit var framingView: FramingView
     @Autowired private lateinit var operatingSystemType: OperatingSystemType
     @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
+    @Autowired private lateinit var eventBus: EventBus
 
     private val solverTask = AtomicReference<Future<*>>()
 
@@ -53,9 +55,9 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
     val mount
         get() = equipmentManager.selectedMount
 
-    private fun updateFile(file: File) {
+    private fun fileWasLoaded(file: File) {
         this.file.set(file)
-        view.updateFilePath(file)
+        view.fileWasLoaded(file)
     }
 
     fun clearAstrometrySolution() {
@@ -101,7 +103,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
                 }
             }
 
-            updateFile(file)
+            fileWasLoaded(file)
 
             clearAstrometrySolution()
         }
@@ -117,15 +119,15 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
     @Synchronized
     fun solve(
         file: File = this.file.get(),
-        blind: Boolean = true,
-        centerRA: Angle = Angle.ZERO, centerDEC: Angle = Angle.ZERO,
-        radius: Angle = Angle.ZERO,
+        blind: Boolean = view.blind,
+        centerRA: Angle = view.centerRA, centerDEC: Angle = view.centerDEC,
+        radius: Angle = view.radius,
     ): CompletableFuture<Calibration> {
         require(!solving.get()) { "plate solving in progress" }
 
         solving.set(true)
 
-        updateFile(file)
+        fileWasLoaded(file)
 
         val future = CompletableFuture<Calibration>()
 
@@ -145,15 +147,9 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
                 PlateSolverType.ASTAP -> AstapPlateSolver(pathOrUrl)
             }
 
-            val tempFile = File.createTempFile("platesolver", ".${file.extension}")
-
-            LOG.info("create temp file for plate solving. path={}", tempFile)
-
             try {
-                file.inputStream().use { input -> tempFile.outputStream().use(input::transferTo) }
-
                 val calibration = solver.solve(
-                    tempFile, blind,
+                    file, blind,
                     centerRA, centerDEC, radius,
                     view.downsampleFactor, PLATE_SOLVE_TIMEOUT,
                 )
@@ -162,14 +158,17 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
 
                 future.complete(calibration)
 
+                eventBus.post(PlateSolvingSolved(file, calibration))
+
                 javaFXExecutorService.execute {
                     solving.set(false)
-                    solved.set(calibration != Calibration.EMPTY)
-
+                    solved.set(true)
                     this.calibration.set(calibration)
                 }
             } catch (e: Throwable) {
                 future.completeExceptionally(e)
+
+                eventBus.post(PlateSolvingFailed(file))
 
                 javaFXExecutorService.execute {
                     solving.set(false)
@@ -179,8 +178,6 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
                         view.showAlert(e.message!!)
                     }
                 }
-            } finally {
-                tempFile.delete()
             }
         }
 
@@ -214,8 +211,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
     }
 
     fun loadPathOrUrlFromPreferences() {
-        view.pathOrUrl = if (view.type == PlateSolverType.ASTROMETRY_NET_ONLINE) preferences.string("plateSolver.url") ?: ""
-        else preferences.string("plateSolver.path") ?: ""
+        view.pathOrUrl = preferences.string("plateSolver.${view.type}.pathOrUrl") ?: ""
     }
 
     fun loadPreferences() {
@@ -224,6 +220,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
         preferences.string("plateSolver.apiKey")?.let { view.apiKey = it }
         preferences.int("plateSolver.downsampleFactor")?.let { view.downsampleFactor = it }
         preferences.double("plateSolver.radius")?.let { view.radius = it.rad }
+        view.updateParameters(view.blind, view.centerRA, view.centerDEC)
         preferences.double("plateSolver.screen.x")?.let { view.x = it }
         preferences.double("plateSolver.screen.y")?.let { view.y = it }
     }
@@ -232,8 +229,7 @@ class PlateSolverManager(@Autowired private val view: PlateSolverView) : Closeab
         if (!view.initialized) return
 
         preferences.enum("plateSolver.type", view.type)
-        if (view.type != PlateSolverType.ASTROMETRY_NET_ONLINE) preferences.string("plateSolver.path", view.pathOrUrl)
-        else preferences.string("plateSolver.url", view.pathOrUrl)
+        preferences.string("plateSolver.${view.type}.pathOrUrl", view.pathOrUrl)
         preferences.string("plateSolver.apiKey", view.apiKey)
         preferences.int("plateSolver.downsampleFactor", view.downsampleFactor)
         preferences.double("plateSolver.radius", view.radius.value)

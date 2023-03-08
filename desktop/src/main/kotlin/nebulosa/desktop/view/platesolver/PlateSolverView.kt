@@ -24,9 +24,12 @@ interface PlateSolverView : View {
 
     var downsampleFactor: Int
 
-    fun updateFilePath(file: File)
+    fun fileWasLoaded(file: File)
 
-    fun updateParameters(blind: Boolean, ra: Angle, dec: Angle)
+    fun updateParameters(
+        blind: Boolean,
+        centerRA: Angle, centerDEC: Angle,
+    )
 
     fun solve(
         file: File,

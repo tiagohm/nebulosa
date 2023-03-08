@@ -32,7 +32,10 @@ data class NamedStarsAnnotation(val calibration: Calibration) : Drawable {
         data = DATA
             .filter { distanceBetween(it.coordinate, center).value < calibration.radius.value }
 
-        LOG.info("found {} named stars around coordinate RA={} DEC={}", data.size, center.first.hours, center.second.degrees)
+        LOG.info(
+            "found {} named stars around coordinate. ra={}, dec={}, radius={}",
+            data.size, center.first.hours, center.second.degrees, calibration.radius.degrees,
+        )
     }
 
     override fun draw(width: Double, height: Double, graphics: GraphicsContext) {

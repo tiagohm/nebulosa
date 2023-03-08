@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 import kotlin.math.max
 import kotlin.math.min
 
-object AutoScreenTransformFunction : ComputationAlgorithm<ScreenTransformFunction.Parameters> {
+object AutoScreenTransformFunction : ComputationAlgorithm<ScreenTransformFunction.Parameters>, TransformAlgorithm {
 
     override fun compute(source: Image): ScreenTransformFunction.Parameters {
         // Find the median sample.
@@ -34,6 +34,10 @@ object AutoScreenTransformFunction : ComputationAlgorithm<ScreenTransformFunctio
         LOG.info("STF auto stretch. midtone={}, shadow={}, highlight={}", midtone, shadow, highlight)
 
         return ScreenTransformFunction.Parameters(midtone, shadow, highlight)
+    }
+
+    override fun transform(source: Image): Image {
+        return ScreenTransformFunction(compute(source)).transform(source)
     }
 
 

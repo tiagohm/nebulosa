@@ -4,6 +4,8 @@ import nebulosa.fits.imageHDU
 import nebulosa.fits.naxis
 import nebulosa.imaging.algorithms.CfaPattern.Companion.cfaPattern
 import nebulosa.imaging.algorithms.Debayer
+import nebulosa.imaging.algorithms.TransformAlgorithm
+import nebulosa.imaging.algorithms.TransformAlgorithm.Companion.transform
 import nom.tam.fits.Fits
 import nom.tam.fits.Header
 import nom.tam.fits.ImageData
@@ -266,6 +268,8 @@ class Image(
     }
 
     fun clone() = if (mono) mono() else color()
+
+    fun transform(vararg algorithms: TransformAlgorithm) = algorithms.transform(this)
 
     companion object {
 

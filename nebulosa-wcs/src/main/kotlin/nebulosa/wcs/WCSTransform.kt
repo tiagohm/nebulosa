@@ -3,7 +3,6 @@ package nebulosa.wcs
 import nebulosa.constants.RAD2DEG
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.PairOfAngle
 import nebulosa.wcs.projection.AbstractProjection
 import nebulosa.wcs.projection.Projection
@@ -43,11 +42,11 @@ class WCSTransform(@JvmField internal val header: Map<String, Any>) {
         if (projectionType != ProjectionType.TPV) {
             // Native longitude of the fiducial point.
             if (header.containsKey("PV1_1")) {
-                projection.phi0 = header.getDoubleValue("PV1_1")!!.rad
+                projection.phi0 = header.getDoubleValue("PV1_1")!!.deg
             }
-            // Native latitude of the celestial pole.
+            // Native latitude of the fiducial pole.
             if (header.containsKey("PV1_2")) {
-                projection.theta0 = header.getDoubleValue("PV1_2")!!.rad
+                projection.theta0 = header.getDoubleValue("PV1_2")!!.deg
             }
         }
 
@@ -96,8 +95,8 @@ class WCSTransform(@JvmField internal val header: Map<String, Any>) {
     }
 
     private fun DoubleArray.inverseMatrix(): DoubleArray {
-        val det = (cd[0] * cd[3] - cd[1] * cd[2])
-        return doubleArrayOf(cd[3] / det, -cd[1] / det, -cd[2] / det, cd[0] / det)
+        val det = (this[0] * this[3] - this[1] * this[2])
+        return doubleArrayOf(this[3] / det, -this[1] / det, -this[2] / det, this[0] / det)
     }
 
     fun pixelToWorld(x: Double, y: Double): PairOfAngle {

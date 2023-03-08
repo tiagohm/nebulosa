@@ -18,7 +18,7 @@ interface ImageStretcherView : View {
 
     fun autoStretch()
 
-    fun resetStretch()
+    fun resetStretch(onlyParameters: Boolean = false)
 
     fun drawHistogram()
 }

@@ -35,7 +35,10 @@ data class MessierAnnotation(val calibration: Calibration) : Drawable {
         data = DATA
             .filter { distanceBetween(it.coordinate, center).value < calibration.radius.value }
 
-        LOG.info("found {} Messier objects around coordinate RA={} DEC={}", data.size, center.first.hours, center.second.degrees)
+        LOG.info(
+            "found {} Messier objects around coordinate. ra={}, dec={}, radius={}",
+            data.size, center.first.hours, center.second.degrees, calibration.radius.degrees,
+        )
     }
 
     override fun draw(width: Double, height: Double, graphics: GraphicsContext) {

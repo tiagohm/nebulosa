@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
-class GuiderManager(@Autowired private val view: GuiderView) {
+class GuiderManager(@Autowired internal val view: GuiderView) {
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var guiderSettingsView: GuiderSettingsView

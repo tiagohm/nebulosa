@@ -29,8 +29,8 @@
                     </accelerator>
                 </MenuItem>
                 <SeparatorMenuItem/>
-                <MenuItem text="Plate Solve"
-                          onAction="#plateSolve">
+                <MenuItem text="Solve"
+                          onAction="#solve">
                     <accelerator>
                         <KeyCodeCombination alt="UP"
                                             code="P"
@@ -40,13 +40,25 @@
                                             shortcut="UP"/>
                     </accelerator>
                 </MenuItem>
+                <MenuItem text="Blind solve"
+                          onAction="#blindSolve">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP"
+                                            code="P"
+                                            control="DOWN"
+                                            meta="UP"
+                                            shift="DOWN"
+                                            shortcut="UP"/>
+                    </accelerator>
+                </MenuItem>
                 <SeparatorMenuItem/>
                 <MenuItem text="Stretch"
                           onAction="#openImageStretcher"/>
                 <MenuItem fx:id="scnrMenuItem"
                           text="SCNR"
                           onAction="#openSCNR"/>
-                <CheckMenuItem text="Horizontal Mirror"
+                <CheckMenuItem fx:id="mirrorHorizontalCheckMenuItem"
+                               text="Horizontal Mirror"
                                onAction="#mirrorHorizontal">
                     <accelerator>
                         <KeyCodeCombination alt="UP"
@@ -57,7 +69,8 @@
                                             shortcut="UP"/>
                     </accelerator>
                 </CheckMenuItem>
-                <CheckMenuItem text="Vertical Mirror"
+                <CheckMenuItem fx:id="mirrorVerticalCheckMenuItem"
+                               text="Vertical Mirror"
                                onAction="#mirrorVertical">
                     <accelerator>
                         <KeyCodeCombination alt="UP"
@@ -68,7 +81,8 @@
                                             shortcut="UP"/>
                     </accelerator>
                 </CheckMenuItem>
-                <CheckMenuItem text="Invert"
+                <CheckMenuItem fx:id="invertCheckMenuItem"
+                               text="Invert"
                                onAction="#invert">
                     <accelerator>
                         <KeyCodeCombination alt="UP"
