@@ -31,11 +31,12 @@ dependencies {
     implementation(libs.controlsfx)
     implementation(libs.okhttp)
     implementation(libs.eventbus)
+    implementation(libs.gesturefx)
+    implementation(libs.charts)
     implementation(libs.logback)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("net.kurobako:gesturefx:0.7.1")
     testImplementation(project(":nebulosa-test"))
 }
 

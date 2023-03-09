@@ -1,6 +1,6 @@
 package nebulosa.desktop.view.atlas
 
-import javafx.geometry.Point2D
+import eu.hansolo.fx.charts.data.XYItem
 import nebulosa.desktop.view.View
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
@@ -53,9 +53,11 @@ interface AtlasView : View {
         val star by lazy { FixedStar(simbad.ra.deg, simbad.dec.deg, simbad.pmRA.mas, simbad.pmDEC.mas, simbad.plx.mas, simbad.rv.kms) }
     }
 
-    fun updateAltitude(
-        points: List<Point2D>, now: Double,
-        civilTwilight: Twilight, nauticalTwilight: Twilight, astronomicalTwilight: Twilight,
+    fun drawAltitude(
+        points: List<XYItem>, now: Double,
+        civilDawn: DoubleArray, nauticalDawn: DoubleArray, astronomicalDawn: DoubleArray,
+        civilDusk: DoubleArray, nauticalDusk: DoubleArray, astronomicalDusk: DoubleArray,
+        night: DoubleArray,
     )
 
     fun updateSunImage(uri: String)

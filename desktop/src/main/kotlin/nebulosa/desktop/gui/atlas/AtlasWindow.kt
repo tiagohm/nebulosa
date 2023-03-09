@@ -1,23 +1,23 @@
 package nebulosa.desktop.gui.atlas
 
+import eu.hansolo.fx.charts.*
+import eu.hansolo.fx.charts.data.XYItem
 import javafx.collections.FXCollections
 import javafx.collections.transformation.FilteredList
 import javafx.collections.transformation.SortedList
 import javafx.event.Event
 import javafx.fxml.FXML
-import javafx.geometry.Point2D
 import javafx.scene.control.*
 import javafx.scene.control.cell.PropertyValueFactory
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.util.Callback
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.control.AltitudeGraph
+import nebulosa.desktop.gui.control.AltitudeChart
 import nebulosa.desktop.logic.atlas.AtlasManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.atlas.AtlasView
-import nebulosa.desktop.view.atlas.Twilight
 import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
 import nebulosa.math.PairOfAngle
@@ -25,6 +25,7 @@ import nebulosa.nova.astrometry.Constellation
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
+
 
 @Component
 class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
@@ -54,7 +55,7 @@ class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
     @FXML private lateinit var slewToButton: Button
     @FXML private lateinit var syncButton: Button
     @FXML private lateinit var frameButton: Button
-    @FXML private lateinit var altitudeGraph: AltitudeGraph
+    @FXML private lateinit var altitudeChart: AltitudeChart
 
     @Volatile private var started = false
 
@@ -176,12 +177,19 @@ class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
         atlasManager.searchDSO(text)
     }
 
-    override fun updateAltitude(
-        points: List<Point2D>, now: Double,
-        civilTwilight: Twilight, nauticalTwilight: Twilight,
-        astronomicalTwilight: Twilight,
+    override fun drawAltitude(
+        points: List<XYItem>,
+        now: Double,
+        civilDawn: DoubleArray, nauticalDawn: DoubleArray, astronomicalDawn: DoubleArray,
+        civilDusk: DoubleArray, nauticalDusk: DoubleArray, astronomicalDusk: DoubleArray,
+        night: DoubleArray,
     ) {
-        altitudeGraph.draw(points, now, civilTwilight, nauticalTwilight, astronomicalTwilight)
+        altitudeChart.draw(
+            points, now,
+            civilDawn, nauticalDawn, astronomicalDawn,
+            civilDusk, nauticalDusk, astronomicalDusk,
+            night,
+        )
     }
 
     override fun updateSunImage(uri: String) {
@@ -240,7 +248,7 @@ class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
         nameLabel.text = ""
         updateEquatorialCoordinates(Angle.ZERO, Angle.ZERO, Angle.ZERO, Angle.ZERO, null)
         updateHorizontalCoordinates(Angle.ZERO, Angle.ZERO)
-        altitudeGraph.draw(emptyList())
+        altitudeChart.draw(emptyList())
     }
 
     private class MagnitudeTableCell<T> : TableCell<T, Double>() {

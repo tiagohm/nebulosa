@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.control.AltitudeGraph?>
+<?import nebulosa.desktop.gui.control.AltitudeChart?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -398,16 +398,10 @@
                 </graphic>
             </Button>
         </HBox>
-        <AnchorPane maxHeight="130.0"
-                    minHeight="130.0"
-                    prefHeight="130.0">
-            <AltitudeGraph fx:id="altitudeGraph"
-                           height="130.0"
-                           AnchorPane.bottomAnchor="0.0"
-                           AnchorPane.leftAnchor="0.0"
-                           AnchorPane.rightAnchor="0.0"
-                           AnchorPane.topAnchor="0.0">
-            </AltitudeGraph>
-        </AnchorPane>
+        <AltitudeChart fx:id="altitudeChart"
+                       maxHeight="130.0"
+                       minHeight="130.0"
+                       prefHeight="130.0">
+        </AltitudeChart>
     </VBox>
 </AnchorPane>

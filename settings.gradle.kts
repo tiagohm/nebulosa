@@ -25,6 +25,7 @@ dependencyResolutionManagement {
             library("logback", "ch.qos.logback:logback-classic:1.4.5")
             library("eventbus", "org.greenrobot:eventbus-java:3.3.1")
             library("charts", "eu.hansolo.fx:charts:17.1.27")
+            library("gesturefx", "net.kurobako:gesturefx:0.7.1")
             library("netty-transport", "io.netty:netty-transport:4.1.89.Final")
             library("netty-codec", "io.netty:netty-codec:4.1.89.Final")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.5.5")

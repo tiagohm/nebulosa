@@ -17,7 +17,7 @@ class HorizonsEphemerisProvider : EphemerisProvider<String> {
 
     @Autowired private lateinit var horizonsService: HorizonsService
 
-    private var time: LocalDateTime? = null
+    @Volatile private var time: LocalDateTime? = null
     private val cache = hashMapOf<GeographicPosition, MutableMap<String, HorizonsEphemeris>>()
 
     override fun compute(
@@ -33,7 +33,9 @@ class HorizonsEphemerisProvider : EphemerisProvider<String> {
             return cache[position]!![target]
         }
 
-        LOG.info("retrieving ephemeris from JPL Horizons. target={}, startTime={}", target, startTime)
+        val endTime = startTime.plusDays(1L)
+
+        LOG.info("retrieving ephemeris from JPL Horizons. target={}, startTime={}, endTime={}", target, startTime, endTime)
 
         time = startTime
 
@@ -43,7 +45,7 @@ class HorizonsEphemerisProvider : EphemerisProvider<String> {
             .observer(
                 target,
                 position.longitude, position.latitude, position.elevation,
-                startTime, startTime.plusDays(1L),
+                startTime, endTime,
                 extraPrecision = true,
                 quantities = QUANTITIES,
             ).execute().body()
