@@ -23,9 +23,9 @@ interface FramingView : View {
     fun load(
         ra: Angle, dec: Angle,
         hips: HipsSurvey? = null,
-        width: Int = 1200, height: Int = 900,
-        rotation: Angle = Angle.ZERO,
-        fov: Angle? = null,
+        width: Int = frameWidth, height: Int = frameHeight,
+        rotation: Angle = frameRotation,
+        fov: Angle = frameFOV,
     )
 
     fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?)

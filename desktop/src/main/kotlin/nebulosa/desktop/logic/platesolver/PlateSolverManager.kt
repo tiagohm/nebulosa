@@ -33,6 +33,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.math.max
 
 @Component
 class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closeable {
@@ -207,7 +208,18 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
 
     fun frame() {
         val calibration = calibration.get() ?: return
-        framingView.load(calibration.rightAscension, calibration.declination)
+        val rotation = calibration.orientation + Angle.SEMICIRCLE
+        val factor = calibration.width / calibration.height
+        val width = if (factor > 1.0) 1200 else 900 * factor
+        val height = if (factor > 1.0) 1200 / factor else 900
+        val fov = max(calibration.width.value, calibration.height.value).rad
+
+        framingView.show(bringToFront = true)
+        framingView.load(
+            calibration.rightAscension, calibration.declination,
+            width = width.toInt(), height = height.toInt(), rotation = rotation,
+            fov = fov,
+        )
     }
 
     fun loadPathOrUrlFromPreferences() {

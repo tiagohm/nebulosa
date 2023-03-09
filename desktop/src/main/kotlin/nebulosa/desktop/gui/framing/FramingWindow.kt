@@ -131,16 +131,14 @@ class FramingWindow : AbstractWindow("Framing", "nebulosa-framing"), FramingView
         ra: Angle, dec: Angle,
         hips: HipsSurvey?,
         width: Int, height: Int,
-        rotation: Angle, fov: Angle?,
+        rotation: Angle, fov: Angle,
     ) {
-        show(bringToFront = true)
-
         updateCoordinate(ra, dec)
 
         if (hips != null) hipsSurveyChoiceBox.value = hips
         widthSpinner.valueFactory.value = width.toDouble()
         heightSpinner.valueFactory.value = height.toDouble()
-        if (fov != null) fovSpinner.valueFactory.value = fov.degrees
+        fovSpinner.valueFactory.value = fov.degrees
         rotationSpinner.valueFactory.value = rotation.degrees
 
         framingManager.load(ra, dec)

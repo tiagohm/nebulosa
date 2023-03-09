@@ -3,6 +3,7 @@ package nebulosa.desktop.logic.image
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import javafx.beans.property.SimpleObjectProperty
+import javafx.geometry.Point2D
 import javafx.stage.FileChooser
 import javafx.stage.Screen
 import nebulosa.desktop.gui.image.FitsHeaderWindow
@@ -10,6 +11,7 @@ import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
+import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.platesolver.PlateSolvingEvent
 import nebulosa.desktop.logic.platesolver.PlateSolvingSolved
 import nebulosa.desktop.view.image.FitsHeaderView
@@ -22,7 +24,9 @@ import nebulosa.fits.ra
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
+import nebulosa.indi.device.mount.Mount
 import nebulosa.platesolving.Calibration
+import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Header
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -37,6 +41,7 @@ import javax.imageio.ImageIO
 class ImageManager(private val view: ImageView) : Closeable {
 
     @Autowired private lateinit var preferences: Preferences
+    @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var plateSolverView: PlateSolverView
     @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
     @Autowired private lateinit var systemExecutorService: ExecutorService
@@ -60,6 +65,12 @@ class ImageManager(private val view: ImageView) : Closeable {
     @Volatile private var scnrView: SCNRView? = null
     @Volatile private var annotationEnabled = false
     @Volatile private var annotation: Annotation? = null
+
+    val mountProperty
+        get() = equipmentManager.selectedMount
+
+    val mount: Mount?
+        get() = mountProperty.value
 
     @Volatile var shadow = 0f
         private set
@@ -267,8 +278,13 @@ class ImageManager(private val view: ImageView) : Closeable {
         }
     }
 
-    fun toggleAnnotationOptions() {
+    fun toggleAnnotationOptions() {}
 
+    fun pointMountHere(targetPoint: Point2D) {
+        val mount = mount ?: return
+        val wcs = WCSTransform(calibration.get() ?: return)
+        val (rightAscension, declination) = wcs.pixelToWorld(targetPoint.x, targetPoint.y)
+        mount.goToJ2000(rightAscension, declination)
     }
 
     fun adjustSceneSizeToFitImage(defaultSize: Boolean = image == null) {

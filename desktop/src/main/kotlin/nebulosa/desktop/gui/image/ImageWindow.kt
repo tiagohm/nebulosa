@@ -1,7 +1,9 @@
 package nebulosa.desktop.gui.image
 
 import com.sun.javafx.scene.control.ControlAcceleratorSupport
+import javafx.beans.property.SimpleObjectProperty
 import javafx.fxml.FXML
+import javafx.geometry.Point2D
 import javafx.scene.control.CheckMenuItem
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
@@ -15,6 +17,7 @@ import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.logic.asBoolean
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.image.ImageManager
+import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.image.Drawable
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.imaging.Image
@@ -26,6 +29,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.stereotype.Service
 import java.io.File
 import java.nio.IntBuffer
+import kotlin.jvm.optionals.getOrNull
 
 class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image", "nebulosa-image"), ImageView {
 
@@ -37,11 +41,13 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     @FXML private lateinit var mirrorVerticalCheckMenuItem: CheckMenuItem
     @FXML private lateinit var invertCheckMenuItem: CheckMenuItem
     @FXML private lateinit var scnrMenuItem: MenuItem
+    @FXML private lateinit var pointMountHereMenuItem: MenuItem
     @FXML private lateinit var fitsHeaderMenuItem: MenuItem
     @FXML private lateinit var crosshairCheckMenuItem: CheckMenuItem
     @FXML private lateinit var annotateCheckMenuItem: CheckMenuItem
 
     @Volatile private var imageData = IntArray(0)
+    private val imageSecondaryClickLocation = SimpleObjectProperty<Point2D>()
 
     private val imageManager = ImageManager(this)
 
@@ -65,12 +71,23 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         }
 
         with(fitsImageViewer) {
-            setOnContextMenuRequested { menu.show(this, it.screenX, it.screenY) }
+            setOnContextMenuRequested {
+                menu.show(this, it.screenX, it.screenY)
+
+                val targetPoint = fitsImageViewer.targetPointAt(Point2D(it.x, it.y)).getOrNull()
+                imageSecondaryClickLocation.set(targetPoint)
+            }
+
             ControlAcceleratorSupport.addAcceleratorsIntoScene(menu.items, this)
         }
 
         annotateCheckMenuItem.disableProperty()
             .bind(imageManager.calibration.asBoolean { it == null || !it.hasWCS })
+
+        pointMountHereMenuItem.disableProperty().bind(
+            annotateCheckMenuItem.disableProperty() or imageSecondaryClickLocation.isNull
+                    or !imageManager.mountProperty.connectedProperty
+        )
     }
 
     override fun onStart() {
@@ -198,6 +215,12 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     @FXML
     private fun toggleAnnotationOptions() {
         imageManager.toggleAnnotationOptions()
+    }
+
+    @FXML
+    private fun pointMountHere() {
+        imageManager.pointMountHere(imageSecondaryClickLocation.get() ?: return)
+        imageSecondaryClickLocation.set(null)
     }
 
     override fun open(file: File, resetTransformation: Boolean) {

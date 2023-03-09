@@ -103,6 +103,10 @@
                                onAction="#toggleAnnotation">
                 </CheckMenuItem>
                 <SeparatorMenuItem/>
+                <MenuItem fx:id="pointMountHereMenuItem"
+                          text="Point mount here"
+                          onAction="#pointMountHere"/>
+                <SeparatorMenuItem/>
                 <MenuItem fx:id="fitsHeaderMenuItem"
                           text="FITS Header"
                           onAction="#openFitsHeader"/>

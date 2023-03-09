@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    api(libs.netty)
+    api(libs.bundles.netty)
     implementation(libs.logback)
     testImplementation(project(":nebulosa-test"))
 }
