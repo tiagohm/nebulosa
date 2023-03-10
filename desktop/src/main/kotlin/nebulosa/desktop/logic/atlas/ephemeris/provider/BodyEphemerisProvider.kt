@@ -17,23 +17,23 @@ import java.time.OffsetDateTime
 @Service
 class BodyEphemerisProvider : EphemerisProvider<Body> {
 
-    private val time = ArrayList<Pair<UTC, LocalDateTime>>(1441)
-    private val cache = hashMapOf<GeographicPosition, MutableMap<Body, HorizonsEphemeris>>()
+    private val timeCache = ArrayList<Pair<UTC, LocalDateTime>>(1441)
+    private val ephemerisCache = hashMapOf<GeographicPosition, MutableMap<Body, HorizonsEphemeris>>()
 
     private fun computeTime(): Boolean {
         val now = OffsetDateTime.now()
         val offset = now.offset.totalSeconds / DAYSEC
         val startTime = TimeYMDHMS(now.year, now.monthValue, now.dayOfMonth, 12) - offset
 
-        return if (time.isEmpty() || startTime.value > time[0].first.value) {
-            time.clear()
+        return if (timeCache.isEmpty() || startTime.value > timeCache[0].first.value) {
+            timeCache.clear()
 
             val stepCount = 24.0 * 60.0
 
             for (i in 0..stepCount.toInt()) {
                 val fraction = i / stepCount // 0..1
                 val utc = UTC(startTime.value, fraction)
-                time.add(utc to utc.asDateTime())
+                timeCache.add(utc to utc.asDateTime())
             }
 
             true
@@ -47,19 +47,19 @@ class BodyEphemerisProvider : EphemerisProvider<Body> {
         position: GeographicPosition,
         force: Boolean,
     ): HorizonsEphemeris? {
-        if (!computeTime() && !force && position in cache && target in cache[position]!!) {
-            return cache[position]!![target]
+        if (!computeTime() && !force && position in ephemerisCache && target in ephemerisCache[position]!!) {
+            return ephemerisCache[position]!![target]
         }
 
         val site = VSOP87E.EARTH + position
 
-        val elements = Array(time.size) {
-            val astrometric = site.at<Barycentric>(time[it].first).observe(target)
+        val elements = Array(timeCache.size) {
+            val astrometric = site.at<Barycentric>(timeCache[it].first).observe(target)
             val (az, alt) = astrometric.horizontal()
             val (ra, dec) = astrometric.equatorialAtDate()
             val (raJ2000, decJ2000) = astrometric.equatorialJ2000()
 
-            val element = HorizonsElement(time[it].second)
+            val element = HorizonsElement(timeCache[it].second)
             element[HorizonsQuantity.ASTROMETRIC_RA] = "${raJ2000.degrees}"
             element[HorizonsQuantity.ASTROMETRIC_DEC] = "${decJ2000.degrees}"
             element[HorizonsQuantity.APPARENT_RA] = "${ra.degrees}"
@@ -70,8 +70,8 @@ class BodyEphemerisProvider : EphemerisProvider<Body> {
         }
 
         if (elements.isEmpty()) return null
-        if (position !in cache) cache[position] = hashMapOf()
+        if (position !in ephemerisCache) ephemerisCache[position] = hashMapOf()
 
-        return HorizonsEphemeris(elements).also { cache[position]!![target] = it }
+        return HorizonsEphemeris(elements).also { ephemerisCache[position]!![target] = it }
     }
 }

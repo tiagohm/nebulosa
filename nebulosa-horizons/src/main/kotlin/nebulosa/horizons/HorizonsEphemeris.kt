@@ -8,7 +8,6 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.stream.Stream
-import kotlin.math.abs
 
 class HorizonsEphemeris(val elements: Array<HorizonsElement>) : ClosedRange<LocalDateTime> {
 
@@ -23,14 +22,8 @@ class HorizonsEphemeris(val elements: Array<HorizonsElement>) : ClosedRange<Loca
     override fun isEmpty() = elements.isEmpty()
 
     operator fun get(key: LocalDateTime): HorizonsElement? {
-        val newKey = key.withSecond(0).withNano(0)
-        val element = elements.find { it.time == key }
-        if (element != null) return element
-        val interval = endInclusive.utcSeconds - start.utcSeconds
-        val foundKey = times.indexOfFirst { it >= newKey }
-        return if (foundKey < 0) null
-        else if (abs(times[foundKey].utcSeconds - newKey.utcSeconds) <= interval) elements[foundKey]
-        else null
+        val minutes = key.utcMinutes
+        return elements.find { it.utcMinutes >= minutes }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -54,6 +47,9 @@ class HorizonsEphemeris(val elements: Array<HorizonsElement>) : ClosedRange<Loca
 
         private inline val LocalDateTime.utcSeconds
             get() = toEpochSecond(ZoneOffset.UTC)
+
+        private inline val LocalDateTime.utcMinutes
+            get() = utcSeconds / 60L
 
         @JvmStatic
         internal fun parse(stream: InputStream) = parse(stream.bufferedReader().lines())

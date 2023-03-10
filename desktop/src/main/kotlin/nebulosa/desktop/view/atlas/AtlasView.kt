@@ -79,4 +79,6 @@ interface AtlasView : View {
     fun populateDSO(dso: List<DSO>)
 
     fun updateInfo(bodyName: String)
+
+    fun updateRTS(rts: Triple<String, String, String>)
 }

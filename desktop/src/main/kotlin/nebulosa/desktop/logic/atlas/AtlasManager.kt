@@ -56,7 +56,9 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import javax.imageio.ImageIO
@@ -67,6 +69,7 @@ import kotlin.math.hypot
 class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
     private val ephemerisCache = hashMapOf<Any, HorizonsEphemeris?>()
+    private val rtsCache = hashMapOf<Any, Triple<String, String, String>>()
     private val pointsCache = hashMapOf<HorizonsEphemeris, List<XYItem>>()
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
@@ -275,15 +278,12 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         return points
     }
 
-    private fun computeTwilight() {
-        val ephemeris = ephemerisCache["10"] ?: return
-
-        LOG.info("computing twilight")
-
-        val altitudes = DoubleArray(ephemeris.elements.size) { ephemeris.elements[it][HorizonsQuantity.APPARENT_ALT]!!.toDouble() }
-        val (a) = findDiscrete(0.0, 1440.0, TwilightDiscreteFunction(altitudes), 1.0)
+    private fun computeTwilight(altitudes: DoubleArray, target: Any) {
+        LOG.info("computing twilight. target={}", target)
 
         // Expected discrete values: [4, 3, 2, 1, 2, 3, 4, 0]
+        val (a) = findDiscrete(0.0, 1440.0, TwilightDiscreteFunction(altitudes), 1.0)
+
         civilDusk[0] = a[0] / 60.0
         civilDusk[1] = a[1] / 60.0
         nauticalDusk[0] = a[1] / 60.0
@@ -298,6 +298,35 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         nauticalDawn[1] = a[6] / 60.0
         civilDawn[0] = a[6] / 60.0
         civilDawn[1] = a[7] / 60.0
+    }
+
+    private fun HorizonsEphemeris.computeRTS(altitudes: DoubleArray, target: Any, force: Boolean) {
+        if (force) {
+            LOG.info("computing RTS. target={}", target)
+
+            val (a, b) = findDiscrete(0.0, 1440.0, RisingAndSettingDiscreteFunction(altitudes), 1.0)
+
+            val risingIndex = b.indexOf(1)
+            val settingIndex = b.indexOf(0)
+            val offset = OffsetDateTime.now().offset.totalSeconds.toLong()
+            val settingTime = if (settingIndex >= 0) times[a[settingIndex].toInt()].plusSeconds(offset).format(RTS_FORMAT) else "-"
+            val risingTime = if (risingIndex >= 0) times[a[risingIndex].toInt()].plusSeconds(offset).format(RTS_FORMAT) else "-"
+
+            val maxAltitude = altitudes.max()
+            val transitIndex = altitudes.indexOfFirst { it == maxAltitude }
+            val transitTime = if (transitIndex >= 0) times[transitIndex].plusSeconds(offset).format(RTS_FORMAT) else "-"
+
+            rtsCache[target] = Triple(risingTime, transitTime, settingTime)
+        }
+
+        javaFXExecutorService.submit { view.updateRTS(rtsCache[target]!!) }
+    }
+
+    private fun HorizonsEphemeris.computeTwilightAndRTS(target: Any, force: Boolean) {
+        LOG.info("computing twilight and RTS. target={}, force={}", target, force)
+        val altitudes = DoubleArray(elements.size) { elements[it][HorizonsQuantity.APPARENT_ALT]!!.toDouble() }
+        if (force && target == "10") computeTwilight(altitudes, target)
+        computeRTS(altitudes, target, force)
     }
 
     private fun drawAltitude(points: List<XYItem>) {
@@ -327,16 +356,18 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
         systemExecutorService.submit {
             try {
+                val prevEphemeris = ephemerisCache[target]
+
                 val ephemeris = when (target) {
                     is String -> horizonsEphemerisProvider.compute(target, observer, force)
                     is Body -> bodyEphemerisProvider.compute(target, observer, force)
                     else -> null
                 }
 
-                ephemerisCache[target] = ephemeris
-
-                // Sun.
-                if (target == "10") computeTwilight()
+                if (ephemeris != null) {
+                    ephemerisCache[target] = ephemeris
+                    ephemeris.computeTwilightAndRTS(target, ephemeris !== prevEphemeris)
+                }
 
                 if (ephemeris == null) {
                     view.clearAltitudeAndCoordinates()
@@ -396,32 +427,36 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         if (!view.showing) return
 
         systemExecutorService.submit {
-            val image = ImageIO.read(URL("https://sdo.gsfc.nasa.gov/assets/img/latest/latest_512_HMIIF.jpg"))
-            val newImage = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_ARGB)
+            try {
+                val image = ImageIO.read(URL("https://sdo.gsfc.nasa.gov/assets/img/latest/latest_512_HMIIF.jpg"))
+                val newImage = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_ARGB)
 
-            for (y in 0 until image.height) {
-                for (x in 0 until image.width) {
-                    val distance = hypot(x - 256.0, y - 256.0)
-                    val color = image.getRGB(x, y)
+                for (y in 0 until image.height) {
+                    for (x in 0 until image.width) {
+                        val distance = hypot(x - 256.0, y - 256.0)
+                        val color = image.getRGB(x, y)
 
-                    if (distance > 238) {
-                        val grayLevel = ((color shr 16 and 0xff) + (color shr 8 and 0xff) + (color and 0xff)) / 3
+                        if (distance > 238) {
+                            val grayLevel = ((color shr 16 and 0xff) + (color shr 8 and 0xff) + (color and 0xff)) / 3
 
-                        if (grayLevel >= 170) {
+                            if (grayLevel >= 170) {
+                                newImage.setRGB(x, y, color)
+                            }
+                        } else {
                             newImage.setRGB(x, y, color)
                         }
-                    } else {
-                        newImage.setRGB(x, y, color)
                     }
                 }
+
+                val sunImagePath = Paths.get("$appDirectory", "SUN.png")
+                ImageIO.write(newImage, "PNG", sunImagePath.toFile())
+
+                LOG.info("saving Sun image. path={}", sunImagePath.toUri())
+
+                javaFXExecutorService.execute { view.updateSunImage(sunImagePath.toUri().toString()) }
+            } catch (e: Throwable) {
+                LOG.error("failed to download Sun image.", e)
             }
-
-            val sunImagePath = Paths.get("$appDirectory", "SUN.png")
-            ImageIO.write(newImage, "PNG", sunImagePath.toFile())
-
-            LOG.info("saving Sun image. path={}", sunImagePath.toUri())
-
-            javaFXExecutorService.execute { view.updateSunImage(sunImagePath.toUri().toString()) }
         }
     }
 
@@ -531,9 +566,20 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         }
     }
 
+    private class RisingAndSettingDiscreteFunction(private val altitudes: DoubleArray) : DiscreteFunction {
+
+        override val stepSize = 1.0
+
+        override fun compute(x: Double): Int {
+            val index = x.toInt()
+            return if (altitudes[index] >= 0.0) 1 else 0
+        }
+    }
+
     companion object {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(AtlasManager::class.java)
+        @JvmStatic private val RTS_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
 
         private const val ASTRONOMICAL_TWILIGHT = -18.0
         private const val NAUTICAL_TWILIGHT = -12.0
