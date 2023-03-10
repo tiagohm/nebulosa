@@ -151,11 +151,11 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             scnrMenuItem.isDisable = !value
         }
 
-    override var crosshairEnabled
+    override val crosshairEnabled
         get() = crosshairCheckMenuItem.isSelected
-        set(value) {
-            crosshairCheckMenuItem.isSelected = value
-        }
+
+    override val annotationEnabled
+        get() = annotateCheckMenuItem.isSelected
 
     @FXML
     private fun save() {

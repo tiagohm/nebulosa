@@ -46,7 +46,9 @@ interface ImageView : View, Iterable<Drawable> {
 
     val scnrAmount: Float
 
-    var crosshairEnabled: Boolean
+    val crosshairEnabled: Boolean
+
+    val annotationEnabled: Boolean
 
     val image
         get() = transformedImage ?: originalImage

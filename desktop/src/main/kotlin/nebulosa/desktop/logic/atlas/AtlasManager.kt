@@ -527,6 +527,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     }
 
     fun frame(ra: Angle, dec: Angle) {
+        framingView.show(bringToFront = true)
         framingView.load(ra, dec)
     }
 

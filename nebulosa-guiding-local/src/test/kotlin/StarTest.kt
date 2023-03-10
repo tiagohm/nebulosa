@@ -53,8 +53,7 @@ class StarTest : StringSpec() {
         }
         "unfocused star" {
             with(Star(303f, 177f)) {
-                find(fits2, 15f)
-                    .shouldBeTrue()
+                find(fits2, 15f).shouldBeTrue()
 
                 mass shouldBe (1260.0212f plusOrMinus 2e-4f)
                 snr shouldBe (17.8989f plusOrMinus 1e-4f)
@@ -65,8 +64,7 @@ class StarTest : StringSpec() {
             }
 
             with(Star(827f, 699f)) {
-                find(fits2, 15f)
-                    .shouldBeFalse()
+                find(fits2, 15f).shouldBeFalse()
 
                 mass shouldBeExactly 0f
                 snr shouldBeExactly 0f

@@ -26,6 +26,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](atlas.png)
 
+## Image Preview
+
+![](image.png)
+
 ## Plate Solver
 
 ![](platesolver.png)

@@ -63,7 +63,6 @@ class ImageManager(private val view: ImageView) : Closeable {
     @Volatile private var imageStretcherView: ImageStretcherView? = null
     @Volatile private var fitsHeaderView: FitsHeaderView? = null
     @Volatile private var scnrView: SCNRView? = null
-    @Volatile private var annotationEnabled = false
     @Volatile private var annotation: Annotation? = null
 
     val mountProperty
@@ -116,8 +115,9 @@ class ImageManager(private val view: ImageView) : Closeable {
             calibration.set(if (event is PlateSolvingSolved) event.calibration else null)
 
             annotation?.also(view::remove)
+            annotation = null
 
-            if (calibration.get() != null && annotationEnabled) {
+            if (calibration.get() != null && view.annotationEnabled) {
                 annotation = Annotation(calibration.get())
                 view.addFirst(annotation!!)
 
@@ -255,9 +255,7 @@ class ImageManager(private val view: ImageView) : Closeable {
     fun toggleAnnotation() {
         val calibration = calibration.get() ?: return
 
-        annotationEnabled = !annotationEnabled
-
-        if (annotationEnabled) {
+        if (view.annotationEnabled) {
             if (annotation == null) {
                 systemExecutorService.submit {
                     try {
