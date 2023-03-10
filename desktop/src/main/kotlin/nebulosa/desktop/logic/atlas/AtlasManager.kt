@@ -23,6 +23,7 @@ import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.au
+import nebulosa.math.pmod
 import nebulosa.nova.almanac.DiscreteFunction
 import nebulosa.nova.almanac.findDiscrete
 import nebulosa.nova.astrometry.Body
@@ -54,10 +55,10 @@ import java.net.URL
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneOffset
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 import kotlin.math.hypot
 
@@ -162,7 +163,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         }
     }
 
-    @Scheduled(fixedDelay = 1L, initialDelay = 1L, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(cron = "0 * * * * *")
     fun computeTab() {
         computeTab(tabType)
     }
@@ -262,9 +263,9 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         val points = ArrayList<XYItem>(25 * 2)
         var x = 0.0
 
-        forEach {
-            if (it.key.minute % 30 != 0) return@forEach
-            val y = it.value[HorizonsQuantity.APPARENT_ALT]!!.toDoubleOrNull() ?: 0.0
+        times.forEachIndexed { i, time ->
+            if (time.minute % 30 != 0) return@forEachIndexed
+            val y = elements[i][HorizonsQuantity.APPARENT_ALT]!!.toDoubleOrNull() ?: 0.0
             points.add(XYChartItem(x, y))
             x += 0.5
         }
@@ -276,28 +277,11 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
     private fun computeTwilight() {
         val ephemeris = ephemerisCache["10"] ?: return
-        val times = ephemeris.keys.toList()
-        val altitudes = ephemeris.values.map { it[HorizonsQuantity.APPARENT_ALT]!!.toDouble() }
 
-        val discrete = object : DiscreteFunction {
+        LOG.info("computing twilight")
 
-            override val stepSize = 1.0
-
-            override fun compute(x: Double): Int {
-                val index = x.toInt()
-                val altitude = altitudes[index]
-
-                return when {
-                    altitude <= ASTRONOMICAL_TWILIGHT -> 1 // Night.
-                    altitude <= NAUTICAL_TWILIGHT -> 2 // Astronomical.
-                    altitude <= CIVIL_TWILIGHT -> 3 // Nautical.
-                    altitude < 0.0 -> 4 // Civil.
-                    else -> 0
-                }
-            }
-        }
-
-        val (a, b) = findDiscrete(0.0, 1440.0, discrete, 1.0)
+        val altitudes = DoubleArray(ephemeris.elements.size) { ephemeris.elements[it][HorizonsQuantity.APPARENT_ALT]!!.toDouble() }
+        val (a) = findDiscrete(0.0, 1440.0, TwilightDiscreteFunction(altitudes), 1.0)
 
         // Expected discrete values: [4, 3, 2, 1, 2, 3, 4, 0]
         civilDusk[0] = a[0] / 60.0
@@ -317,10 +301,13 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     }
 
     private fun drawAltitude(points: List<XYItem>) {
+        val now = (LocalTime.now().toSecondOfDay() / 3600.0 - 12.0) pmod 24.0
+
+        LOG.info("drawing altitude chart. now={}", now)
+
         javaFXExecutorService.execute {
             view.drawAltitude(
-                points = points,
-                now = 0.0,
+                points, now,
                 civilDawn, nauticalDawn, astronomicalDawn,
                 civilDusk, nauticalDusk, astronomicalDusk,
                 night,
@@ -354,12 +341,12 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
                 if (ephemeris == null) {
                     view.clearAltitudeAndCoordinates()
                     LOG.error("unable to retrieve ephemeris. target={}", target)
-                } else if (ephemeris.isNotEmpty()) {
-                    LOG.info("ephemeris was retrieved. target={}, start={}, end={}", target, ephemeris.start, ephemeris.endInclusive)
-                    ephemeris.showBodyCoordinatesAndInfos(target)
-                } else {
+                } else if (ephemeris.isEmpty()) {
                     view.clearAltitudeAndCoordinates()
                     LOG.warn("retrieved empty epheremis. target={}", target)
+                } else {
+                    LOG.info("ephemeris was retrieved. target={}, start={}, end={}", target, ephemeris.start, ephemeris.endInclusive)
+                    ephemeris.showBodyCoordinatesAndInfos(target)
                 }
 
                 task.complete(ephemeris)
@@ -404,7 +391,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         javaFXExecutorService.execute { view.updateHorizontalCoordinates(az, alt) }
     }
 
-    @Scheduled(fixedDelay = 15L, initialDelay = 15L, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(cron = "0 */15 * * * *")
     fun updateSunImage() {
         if (!view.showing) return
 
@@ -524,6 +511,24 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         savePreferences()
 
         eventBus.unregister(this)
+    }
+
+    private class TwilightDiscreteFunction(private val altitudes: DoubleArray) : DiscreteFunction {
+
+        override val stepSize = 1.0
+
+        override fun compute(x: Double): Int {
+            val index = x.toInt()
+            val altitude = altitudes[index]
+
+            return when {
+                altitude <= ASTRONOMICAL_TWILIGHT -> 1 // Night.
+                altitude <= NAUTICAL_TWILIGHT -> 2 // Astronomical.
+                altitude <= CIVIL_TWILIGHT -> 3 // Nautical.
+                altitude < 0.0 -> 4 // Civil.
+                else -> 0
+            }
+        }
     }
 
     companion object {

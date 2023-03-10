@@ -53,26 +53,25 @@ class BodyEphemerisProvider : EphemerisProvider<Body> {
 
         val site = VSOP87E.EARTH + position
 
-        val ephemeris = HashMap<LocalDateTime, HorizonsElement>(time.size)
-
-        time.forEach {
-            val astrometric = site.at<Barycentric>(it.first).observe(target)
+        val elements = Array(time.size) {
+            val astrometric = site.at<Barycentric>(time[it].first).observe(target)
             val (az, alt) = astrometric.horizontal()
             val (ra, dec) = astrometric.equatorialAtDate()
             val (raJ2000, decJ2000) = astrometric.equatorialJ2000()
 
-            val element = HorizonsElement()
+            val element = HorizonsElement(time[it].second)
             element[HorizonsQuantity.ASTROMETRIC_RA] = "${raJ2000.degrees}"
             element[HorizonsQuantity.ASTROMETRIC_DEC] = "${decJ2000.degrees}"
             element[HorizonsQuantity.APPARENT_RA] = "${ra.degrees}"
             element[HorizonsQuantity.APPARENT_DEC] = "${dec.degrees}"
             element[HorizonsQuantity.APPARENT_AZ] = "${az.degrees}"
             element[HorizonsQuantity.APPARENT_ALT] = "${alt.degrees}"
-            ephemeris[it.second] = element
+            element
         }
 
+        if (elements.isEmpty()) return null
         if (position !in cache) cache[position] = hashMapOf()
 
-        return HorizonsEphemeris.of(ephemeris).also { cache[position]!![target] = it }
+        return HorizonsEphemeris(elements).also { cache[position]!![target] = it }
     }
 }

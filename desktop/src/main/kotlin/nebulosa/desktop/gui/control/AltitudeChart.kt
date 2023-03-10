@@ -83,6 +83,12 @@ class AltitudeChart : AnchorPane() {
         .symbolsVisible(false)
         .build()
 
+    private val nowSerie = XYSeriesBuilder.create()
+        .chartType(ChartType.SMOOTH_AREA)
+        .fill(Color.web("#F4433660"))
+        .symbolsVisible(false)
+        .build()
+
     private val xAxis = AxisBuilder.create(Orientation.HORIZONTAL, Position.BOTTOM)
         .type(AxisType.TEXT)
         .prefHeight(25.0)
@@ -118,6 +124,7 @@ class AltitudeChart : AnchorPane() {
         .minorVGridLinesVisible(false)
         .mediumVGridLinesVisible(false)
         .gridLineDashes(4.0, 4.0)
+        .translateX(-25.0)
         .build()
 
     private val pane = XYPane(
@@ -125,6 +132,7 @@ class AltitudeChart : AnchorPane() {
         nightSerie,
         civilDuskSerie, nauticalDuskSerie, astronomicalDuskSerie,
         dayFirstSerie, dayLastSerie,
+        nowSerie,
         altitudeSerie,
     )
 
@@ -136,13 +144,13 @@ class AltitudeChart : AnchorPane() {
     init {
         setBottomAnchor(xAxis, 0.0)
         setLeftAnchor(xAxis, 25.0)
-        setRightAnchor(xAxis, 25.0)
+        setRightAnchor(xAxis, 0.0)
 
         setTopAnchor(yAxis, 0.0)
         setBottomAnchor(yAxis, 25.0)
         setLeftAnchor(yAxis, 0.0)
 
-        setRightAnchor(grid, 25.0)
+        setRightAnchor(grid, 0.0)
         setLeftAnchor(grid, 25.0)
         setBottomAnchor(grid, 25.0)
         setTopAnchor(grid, 0.0)
@@ -183,10 +191,12 @@ class AltitudeChart : AnchorPane() {
         nauticalDusk.copyInto(this.nauticalDusk)
         astronomicalDusk.copyInto(this.astronomicalDusk)
         night.copyInto(this.night)
+        this.now = now
 
         dayFirstSerie.items.setAll(XYChartItem(0.0, 90.0), XYChartItem(civilDusk[0], 90.0))
         dayLastSerie.items.setAll(XYChartItem(civilDawn[1], 90.0), XYChartItem(24.0, 90.0))
         nightSerie.items.setAll(XYChartItem(night[0], 90.0), XYChartItem(night[1], 90.0))
+        nowSerie.items.setAll(XYChartItem(now - 2.0 / 60.0, 90.0), XYChartItem(now + 2.0 / 60.0, 90.0))
 
         civilDawnSerie.items.setAll(XYChartItem(civilDawn[0], 90.0), XYChartItem(civilDawn[1], 90.0))
         nauticalDawnSerie.items.setAll(XYChartItem(nauticalDawn[0], 90.0), XYChartItem(nauticalDawn[1], 90.0))

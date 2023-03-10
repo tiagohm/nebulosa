@@ -10,30 +10,41 @@ import java.util.*
 import java.util.stream.Stream
 import kotlin.math.abs
 
-class HorizonsEphemeris private constructor(private val ephemeris: MutableMap<LocalDateTime, HorizonsElement>) :
-    Map<LocalDateTime, HorizonsElement> by ephemeris, ClosedRange<LocalDateTime> {
+class HorizonsEphemeris(val elements: Array<HorizonsElement>) : ClosedRange<LocalDateTime> {
+
+    val times = Array(elements.size) { elements[it].time }
 
     override val start
-        get() = ephemeris.keys.first()
+        get() = elements.first().time
 
     override val endInclusive
-        get() = ephemeris.keys.last()
+        get() = elements.last().time
 
-    constructor() : this(TreeMap<LocalDateTime, HorizonsElement>())
+    override fun isEmpty() = elements.isEmpty()
 
-    override fun isEmpty() = ephemeris.isEmpty()
-
-    override operator fun get(key: LocalDateTime): HorizonsElement? {
+    operator fun get(key: LocalDateTime): HorizonsElement? {
         val newKey = key.withSecond(0).withNano(0)
-        val element = ephemeris[newKey]
+        val element = elements.find { it.time == key }
         if (element != null) return element
         val interval = endInclusive.utcSeconds - start.utcSeconds
-        val foundKey = ephemeris.keys.firstOrNull { it >= newKey } ?: return null
-        if (abs(foundKey.utcSeconds - newKey.utcSeconds) <= interval) return ephemeris[foundKey]
-        return null
+        val foundKey = times.indexOfFirst { it >= newKey }
+        return if (foundKey < 0) null
+        else if (abs(times[foundKey].utcSeconds - newKey.utcSeconds) <= interval) elements[foundKey]
+        else null
     }
 
-    override fun toString() = "HorizonsEphemeris($ephemeris)"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is HorizonsEphemeris) return false
+
+        if (!elements.contentEquals(other.elements)) return false
+
+        return true
+    }
+
+    override fun hashCode() = elements.contentHashCode()
+
+    override fun toString() = "HorizonsEphemeris(${elements.contentToString()})"
 
     companion object {
 
@@ -48,21 +59,13 @@ class HorizonsEphemeris private constructor(private val ephemeris: MutableMap<Lo
         internal fun parse(stream: InputStream) = parse(stream.bufferedReader().lines())
 
         @JvmStatic
-        fun of(elements: Map<LocalDateTime, HorizonsElement>): HorizonsEphemeris {
-            val ephemeris = HorizonsEphemeris()
-            ephemeris.ephemeris.putAll(elements)
-            return ephemeris
-        }
-
-        @JvmStatic
         internal fun parse(lines: Stream<String?>): HorizonsEphemeris {
-            val ephemeris = HorizonsEphemeris()
-
             var start = false
             var first = false
 
             val headerLine = arrayOfNulls<String>(4)
             val quantities = arrayListOf<HorizonsQuantity?>()
+            val elements = ArrayList<HorizonsElement>(1441)
 
             // TODO: Handle errors.
 
@@ -99,17 +102,17 @@ class HorizonsEphemeris private constructor(private val ephemeris: MutableMap<Lo
                 val time = LocalTime.parse(dateTimeParts[1], TIME_FORMAT)
                 val dateTime = LocalDateTime.of(date, time)
 
-                val element = HorizonsElement()
+                val element = HorizonsElement(dateTime)
 
                 for (i in 1 until parts.size) {
                     val quantity = quantities[i] ?: continue
                     element[quantity] = parts[i]
                 }
 
-                ephemeris.ephemeris[dateTime] = element
+                elements.add(element)
             }
 
-            return ephemeris
+            return HorizonsEphemeris(elements.toTypedArray())
         }
     }
 }
