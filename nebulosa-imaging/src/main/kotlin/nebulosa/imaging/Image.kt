@@ -38,6 +38,8 @@ class Image(
     @JvmField val g = buffer.g
     @JvmField val b = buffer.b
 
+    val indices = 0 until width * height
+
     inline fun indexAt(x: Int, y: Int): Int {
         return y * stride + x
     }

@@ -1,4 +1,4 @@
-package nebulosa.guiding.local
+package nebulosa.imaging.algorithms.star.hfd
 
 enum class FindMode {
     CENTROID,
