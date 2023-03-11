@@ -1,0 +1,28 @@
+package nebulosa.desktop.gui.atlas
+
+import javafx.scene.image.Image
+import javafx.scene.transform.Rotate
+import nebulosa.desktop.gui.control.ResizableCanvas
+import nebulosa.math.Angle
+import kotlin.math.min
+
+class MoonImage : ResizableCanvas() {
+
+    private val images = HashMap<Int, Image>(30)
+
+    fun draw(age: Double, angle: Angle) {
+        val gc = graphicsContext2D
+
+        val centerX = width / 2
+        val centerY = height / 2
+
+        val size = min(width, height)
+
+        val r = Rotate(angle.degrees, centerX, centerY)
+        gc.setTransform(r.mxx, r.myx, r.mxy, r.myy, r.tx, r.ty)
+
+        val phaseNum = ((age * 1.01589576574604) % 30.0).toInt() + 1
+        val image = images.getOrPut(phaseNum) { Image("images/moon/phases/%02d.png".format(phaseNum)) }
+        gc.drawImage(image, centerX - size / 2, centerY - size / 2, size, size)
+    }
+}

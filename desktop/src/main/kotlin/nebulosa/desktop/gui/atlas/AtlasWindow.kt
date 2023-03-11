@@ -42,7 +42,7 @@ class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
     @FXML private lateinit var constellationTextField: TextField
     @FXML private lateinit var rtsTextField: TextField
     @FXML private lateinit var sunImageView: ImageView
-    @FXML private lateinit var moonImageView: ImageView
+    @FXML private lateinit var moonImage: MoonImage
     @FXML private lateinit var planetTableView: TableView<AtlasView.Planet>
     @FXML private lateinit var searchMinorPlanetTextField: TextField
     @FXML private lateinit var minorPlanetTableView: TableView<AtlasView.MinorPlanet>
@@ -195,8 +195,8 @@ class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
         sunImageView.image = Image(uri)
     }
 
-    override fun updateMoonImage(uri: String) {
-        moonImageView.image = Image(uri)
+    override fun updateMoonImage(phase: Double, age: Double, angle: Angle) {
+        moonImage.draw(age, angle)
     }
 
     override fun populatePlanet(planets: List<AtlasView.Planet>) {

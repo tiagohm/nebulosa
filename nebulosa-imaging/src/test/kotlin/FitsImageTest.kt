@@ -2,7 +2,6 @@ import io.kotest.matchers.shouldBe
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
-import nebulosa.imaging.algorithms.TransformAlgorithm.Companion.transform
 import nom.tam.fits.Fits
 import java.io.File
 import java.util.*
@@ -91,113 +90,112 @@ class FitsImageTest : AbstractImageTest() {
         }
         "STF midtone = 0.1, shadow = 0.0, highlight = 1.0" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = ScreenTransformFunction(0.1f).transform(Image.open(fits))
+            val image = Image.open(fits).transform(ScreenTransformFunction(0.1f))
             val outputFile = File("src/test/resources/M51.8.Color.STF0.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "140be07d47a564b6a9fe3cc8a749ca8b"
         }
         "STF midtone = 0.9, shadow = 0.0, highlight = 1.0" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = ScreenTransformFunction(0.9f).transform(Image.open(fits))
+            val image = Image.open(fits).transform(ScreenTransformFunction(0.9f))
             val outputFile = File("src/test/resources/M51.8.Color.STF1.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "86e456cbae3b0838c807db759075af22"
         }
         "STF midtone = 0.1, shadow = 0.5, highlight = 1.0" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = ScreenTransformFunction(0.1f, shadow = 0.5f).transform(Image.open(fits))
+            val image = Image.open(fits).transform(ScreenTransformFunction(0.1f, shadow = 0.5f))
             val outputFile = File("src/test/resources/M51.8.Color.STF2.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "727cbe2ad73640efb077d6e4e70fa38e"
         }
         "STF midtone = 0.9, shadow = 0.5, highlight = 1.0" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = ScreenTransformFunction(0.9f, shadow = 0.5f).transform(Image.open(fits))
+            val image = Image.open(fits).transform(ScreenTransformFunction(0.9f, shadow = 0.5f))
             val outputFile = File("src/test/resources/M51.8.Color.STF3.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "c3575a997ee68e3908b6623cc6f19aeb"
         }
         "STF midtone = 0.1, shadow = 0.0, highlight = 0.5" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = ScreenTransformFunction(0.1f, highlight = 0.5f).transform(Image.open(fits))
+            val image = Image.open(fits).transform(ScreenTransformFunction(0.1f, highlight = 0.5f))
             val outputFile = File("src/test/resources/M51.8.Color.STF4.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "a86e45ad67b2c9c7106ca7b52f5e378c"
         }
         "STF midtone = 0.9, shadow = 0.0, highlight = 0.5" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = ScreenTransformFunction(0.9f, highlight = 0.5f).transform(Image.open(fits))
+            val image = Image.open(fits).transform(ScreenTransformFunction(0.9f, highlight = 0.5f))
             val outputFile = File("src/test/resources/M51.8.Color.STF5.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "deabe6cf1fd64360c284d44b617e55f9"
         }
         "STF midtone = 0.1, shadow = 0.4, highlight = 0.6" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = ScreenTransformFunction(0.1f, 0.4f, 0.6f).transform(Image.open(fits))
+            val image = Image.open(fits).transform(ScreenTransformFunction(0.1f, 0.4f, 0.6f))
             val outputFile = File("src/test/resources/M51.8.Color.STF6.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "a8632186ce0ea9d2ef545391e82e1f6c"
         }
         "STF midtone = 0.9, shadow = 0.4, highlight = 0.6" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = ScreenTransformFunction(0.9f, 0.4f, 0.6f).transform(Image.open(fits))
+            val image = Image.open(fits).transform(ScreenTransformFunction(0.9f, 0.4f, 0.6f))
             val outputFile = File("src/test/resources/M51.8.Color.STF7.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "c0872c612faaa601ec76191eaced7fcc"
         }
         "Auto STF" {
             val fits = Image.open(Fits("src/test/resources/M51.8.Color.fits"))
-            val parameters = AutoScreenTransformFunction.compute(fits)
-            val image = ScreenTransformFunction(parameters).transform(fits)
+            val image = fits.transform(AutoScreenTransformFunction)
             val outputFile = File("src/test/resources/M51.8.Color.AutoSTF.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "beddeb0285d02e1ff1c1fde1566c3629"
         }
         "CCD Simulator - Stretch" {
             val fits = Fits("src/test/resources/CCD Simulator.Gray.fits")
-            val image = ScreenTransformFunction(5.8e-5f).transform(Image.open(fits))
+            val image = Image.open(fits).transform(ScreenTransformFunction(5.8e-5f))
             val outputFile = File("src/test/resources/CCD Simulator.Gray.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "27e35bc8cf0d946f4e121a87e4e3e751"
         }
         "CCD Simulator - JPG" {
             val fits = Fits("src/test/resources/CCD Simulator.Gray.fits")
-            val image = ScreenTransformFunction(5.8e-5f).transform(Image.open(fits))
+            val image = Image.open(fits).transform(ScreenTransformFunction(5.8e-5f))
             val outputFile = File("src/test/resources/CCD Simulator.Gray.jpg")
             ImageIO.write(image, "JPG", outputFile)
             outputFile.md5() shouldBe "b8eaf66bb61d11ed1fab7f8273787616"
         }
         "Flip Vertical" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = VerticalFlip.transform(Image.open(fits))
+            val image = Image.open(fits).transform(VerticalFlip)
             val outputFile = File("src/test/resources/M51.8.Color.FlipV.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "f28ab67afbe41fb2f07c7cbf76f1d1b1"
         }
         "Flip Horizontal" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = HorizontalFlip.transform(Image.open(fits))
+            val image = Image.open(fits).transform(HorizontalFlip)
             val outputFile = File("src/test/resources/M51.8.Color.FlipH.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "01da982b44c8a016ccfbe12c8ff12735"
         }
         "Flip Vertical & Horizontal" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = listOf(HorizontalFlip, VerticalFlip).transform(Image.open(fits))
+            val image = Image.open(fits).transform(HorizontalFlip, VerticalFlip)
             val outputFile = File("src/test/resources/M51.8.Color.FlipVH.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "9ae0f01a217478a07f3e67f834b353df"
         }
         "Invert" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = Invert.transform(Image.open(fits))
+            val image = Image.open(fits).transform(Invert)
             val outputFile = File("src/test/resources/M51.8.Color.Invert.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "376dfbbb2df0d936a1eed56ee36a5a3c"
         }
         "Grayscale" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
-            val image = Grayscale.BT709.transform(Image.open(fits))
+            val image = Image.open(fits).transform(Grayscale.BT709)
             val outputFile = File("src/test/resources/M51.8.Color.Grayscale.BT709.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "a7313408fafa9c1d743ca34a481051b9"
@@ -212,49 +210,49 @@ class FitsImageTest : AbstractImageTest() {
         "SCNR" {
             val fits = Fits("src/test/resources/Debayer.GRBG.fits")
             val scnr = SubtractiveChromaticNoiseReduction(ImageChannel.GREEN, 0.5f, ProtectionMethod.AVERAGE_NEUTRAL)
-            val image = scnr.transform(Image.open(fits))
+            val image = Image.open(fits).transform(scnr)
             val outputFile = File("src/test/resources/Debayer.SCNR.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "223dd13ec260782e135ff64a5acedb26"
         }
         "Salt & Pepper Noise" {
             val fits = Fits("src/test/resources/Flower.fits")
-            val image = SaltAndPepperNoise(0.1f, Random(0)).transform(Image.open(fits))
+            val image = Image.open(fits).transform(SaltAndPepperNoise(0.1f, Random(0)))
             val outputFile = File("src/test/resources/Flower.SaltPepperNoise.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "7d15259b367ea973be204038f0972159"
         }
         "Blur" {
             val fits = Fits("src/test/resources/Flower.fits")
-            val image = Blur().transform(Image.open(fits))
+            val image = Image.open(fits).transform(Blur())
             val outputFile = File("src/test/resources/Flower.Blur.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "ed3bda2192ea3298e33790715808de91"
         }
         "Gaussian Blur" {
             val fits = Fits("src/test/resources/Flower.fits")
-            val image = GaussianBlur(sigma = 5.0, size = 9).transform(Image.open(fits))
+            val image = Image.open(fits).transform(GaussianBlur(sigma = 5.0, size = 9))
             val outputFile = File("src/test/resources/Flower.GaussianBlur.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "bc43543e671a1201f71f5619a2e56463"
         }
         "Edges" {
             val fits = Fits("src/test/resources/Flower.fits")
-            val image = Edges().transform(Image.open(fits))
+            val image = Image.open(fits).transform(Edges())
             val outputFile = File("src/test/resources/Flower.Edges.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "077818d1344d2b453ceed5caecbf657a"
         }
         "Sharpen" {
             val fits = Fits("src/test/resources/Flower.fits")
-            val image = Sharpen().transform(Image.open(fits))
+            val image = Image.open(fits).transform(Sharpen())
             val outputFile = File("src/test/resources/Flower.Sharpen.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "bca1608df7b4bf9bb2d1b80d04c5fad0"
         }
         "Mean" {
             val fits = Fits("src/test/resources/Flower.fits")
-            val image = TransformAlgorithm.of(SaltAndPepperNoise(0.1f, Random(0)), Mean()).transform(Image.open(fits))
+            val image = Image.open(fits).transform(SaltAndPepperNoise(0.1f, Random(0)), Mean())
             val outputFile = File("src/test/resources/Flower.Mean.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "8a348a8393125ae35ad5478113c30c1e"
@@ -282,7 +280,7 @@ class FitsImageTest : AbstractImageTest() {
             outputFile1.md5() shouldBe outputFile2.md5()
         }
         "write Mono FITS as FITS" {
-            val fits1 = ScreenTransformFunction(5.8e-5f).transform(Image.open(Fits("src/test/resources/CCD Simulator.Gray.fits")))
+            val fits1 = Image.open(Fits("src/test/resources/CCD Simulator.Gray.fits")).transform(ScreenTransformFunction(5.8e-5f))
             val outputFile1 = File("src/test/resources/CCD Simulator.Gray.Mono.Fits.1.png")
             ImageIO.write(fits1, "PNG", outputFile1)
 
@@ -293,7 +291,7 @@ class FitsImageTest : AbstractImageTest() {
             outputFile1.md5() shouldBe outputFile2.md5()
         }
         "write Mono PNG as FITS" {
-            val fits1 = ScreenTransformFunction(5.8e-5f).transform(Image.open(Fits("src/test/resources/CCD Simulator.Gray.fits")))
+            val fits1 = Image.open(Fits("src/test/resources/CCD Simulator.Gray.fits")).transform(ScreenTransformFunction(5.8e-5f))
             val outputFile1 = File("src/test/resources/CCD Simulator.Gray.Mono.PNG.1.png")
             ImageIO.write(fits1, "PNG", outputFile1)
 
@@ -302,6 +300,13 @@ class FitsImageTest : AbstractImageTest() {
             ImageIO.write(fits2, "PNG", outputFile2)
 
             // TODO: outputFile1.md5() shouldBe outputFile2.md5()
+        }
+        "SubFrame" {
+            val fits = Fits("src/test/resources/M51.8.Color.fits")
+            val image = Image.open(fits).transform(SubFrame(436, 387, 100, 100))
+            val outputFile = File("src/test/resources/M51.8.Color.Subframe.png")
+            ImageIO.write(image, "PNG", outputFile)
+            outputFile.md5() shouldBe "2544479baa64a72c1ca8a384da68cb15"
         }
     }
 }

@@ -1,6 +1,7 @@
 package nebulosa.desktop.logic.atlas.ephemeris.provider
 
 import nebulosa.horizons.HorizonsEphemeris
+import nebulosa.horizons.HorizonsQuantity
 import nebulosa.nova.position.GeographicPosition
 
 sealed interface EphemerisProvider<in T> {
@@ -9,5 +10,6 @@ sealed interface EphemerisProvider<in T> {
         target: T,
         position: GeographicPosition,
         force: Boolean = false,
+        vararg quantities: HorizonsQuantity,
     ): HorizonsEphemeris?
 }

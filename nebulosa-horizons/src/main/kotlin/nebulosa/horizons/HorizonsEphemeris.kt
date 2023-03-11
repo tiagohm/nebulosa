@@ -100,9 +100,14 @@ class HorizonsEphemeris(val elements: Array<HorizonsElement>) : ClosedRange<Loca
 
                 val element = HorizonsElement(dateTime)
 
-                for (i in 1 until parts.size) {
-                    val quantity = quantities[i] ?: continue
-                    element[quantity] = parts[i]
+                var i = 1
+
+                while (i < parts.size) {
+                    val quantity = quantities[i]
+                    if (quantity != null)
+                        element[quantity] = if (quantity.numberOfColumns == 1) parts[i]
+                        else (0 until quantity.numberOfColumns).joinToString(",") { parts[i + it] }
+                    i += quantity?.numberOfColumns ?: 1
                 }
 
                 elements.add(element)

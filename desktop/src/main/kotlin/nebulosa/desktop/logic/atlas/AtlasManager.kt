@@ -223,9 +223,9 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         return "10".computeBody()
     }
 
-    fun computeMoon(): CompletableFuture<HorizonsEphemeris>? {
+    fun computeMoon(show: Boolean = true): CompletableFuture<HorizonsEphemeris>? {
         bodyName = "Moon"
-        return "301".computeBody()
+        return "301".computeBody(show)
     }
 
     fun computePlanet(body: AtlasView.Planet? = planet): CompletableFuture<HorizonsEphemeris>? {
@@ -252,12 +252,12 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         return body.star.computeBody()
     }
 
-    private fun String.computeBody(): CompletableFuture<HorizonsEphemeris>? {
-        return if (isNotEmpty()) computeAltitude(this) else null
+    private fun String.computeBody(show: Boolean = true): CompletableFuture<HorizonsEphemeris>? {
+        return if (isNotEmpty()) computeAltitude(this, show = show) else null
     }
 
-    private fun Body.computeBody(): CompletableFuture<HorizonsEphemeris>? {
-        return computeAltitude(this)
+    private fun Body.computeBody(show: Boolean = true): CompletableFuture<HorizonsEphemeris>? {
+        return computeAltitude(this, show = show)
     }
 
     private fun HorizonsEphemeris.makePoints(): List<XYItem> {
@@ -344,48 +344,54 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         }
     }
 
-    @Synchronized
-    private fun computeAltitude(target: Any, force: Boolean = false): CompletableFuture<HorizonsEphemeris>? {
-        LOG.info("computing altitude. target={}", target)
-
+    private fun computeAltitude(
+        target: Any,
+        force: Boolean = false,
+        show: Boolean = true,
+    ): CompletableFuture<HorizonsEphemeris>? {
         val observer = observer ?: return null
-
-        computing.set(true)
 
         val task = CompletableFuture<HorizonsEphemeris>()
 
         systemExecutorService.submit {
-            try {
-                val prevEphemeris = ephemerisCache[target]
+            synchronized(this) {
+                LOG.info("computing altitude. target={}, force={}, show={}", target, force, show)
 
-                val ephemeris = when (target) {
-                    is String -> horizonsEphemerisProvider.compute(target, observer, force)
-                    is Body -> bodyEphemerisProvider.compute(target, observer, force)
-                    else -> null
+                computing.set(true)
+
+                try {
+                    val prevEphemeris = ephemerisCache[target]
+
+                    val ephemeris = when (target) {
+                        "301" -> horizonsEphemerisProvider.compute("301", observer, force, HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE)
+                        is String -> horizonsEphemerisProvider.compute(target, observer, force)
+                        is Body -> bodyEphemerisProvider.compute(target, observer, force)
+                        else -> null
+                    }
+
+                    if (ephemeris != null) {
+                        ephemerisCache[target] = ephemeris
+                        ephemeris.computeTwilightAndRTS(target, ephemeris !== prevEphemeris)
+                    }
+
+                    if (ephemeris == null) {
+                        view.clearAltitudeAndCoordinates()
+                        LOG.error("unable to retrieve ephemeris. target={}", target)
+                    } else if (ephemeris.isEmpty()) {
+                        view.clearAltitudeAndCoordinates()
+                        LOG.warn("retrieved empty epheremis. target={}", target)
+                    } else {
+                        LOG.info("ephemeris was retrieved. target={}, start={}, end={}", target, ephemeris.start, ephemeris.endInclusive)
+                        if (show) ephemeris.showBodyCoordinatesAndInfos(target)
+                    }
+
+                    task.complete(ephemeris)
+                } catch (e: Throwable) {
+                    task.completeExceptionally(e)
+                    LOG.error("failed to retrieve ephemeris.", e)
+                } finally {
+                    computing.set(false)
                 }
-
-                if (ephemeris != null) {
-                    ephemerisCache[target] = ephemeris
-                    ephemeris.computeTwilightAndRTS(target, ephemeris !== prevEphemeris)
-                }
-
-                if (ephemeris == null) {
-                    view.clearAltitudeAndCoordinates()
-                    LOG.error("unable to retrieve ephemeris. target={}", target)
-                } else if (ephemeris.isEmpty()) {
-                    view.clearAltitudeAndCoordinates()
-                    LOG.warn("retrieved empty epheremis. target={}", target)
-                } else {
-                    LOG.info("ephemeris was retrieved. target={}, start={}, end={}", target, ephemeris.start, ephemeris.endInclusive)
-                    ephemeris.showBodyCoordinatesAndInfos(target)
-                }
-
-                task.complete(ephemeris)
-            } catch (e: Throwable) {
-                task.completeExceptionally(e)
-                LOG.error("failed to retrieve ephemeris.", e)
-            } finally {
-                computing.set(false)
             }
         }
 
@@ -460,10 +466,22 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         }
     }
 
+    @Scheduled(cron = "0 0 * * * *")
     fun updateMoonImage() {
         if (!view.showing) return
 
-        javaFXExecutorService.execute { view.updateMoonImage("images/MOON.png") }
+        computeMoon(false)
+            ?.whenComplete { ephemeris, _ ->
+                val now = LocalDateTime.now(ZoneOffset.UTC)
+                val element = ephemeris[now] ?: return@whenComplete
+                val sot = element[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE]!!.split(",")
+                val angle = sot[0].toDouble()
+                val leading = sot[1] == "/L"
+                val phase = if (leading) 360.0 - angle else angle
+                val age = 29.53058868 * (phase / 360.0)
+                LOG.info("computed Moon phase. angle={}, age={}", phase, age)
+                javaFXExecutorService.execute { view.updateMoonImage(phase, age, Angle.ZERO) }
+            }
     }
 
     fun searchMinorPlanet(text: String) {

@@ -62,7 +62,7 @@ interface AtlasView : View {
 
     fun updateSunImage(uri: String)
 
-    fun updateMoonImage(uri: String)
+    fun updateMoonImage(phase: Double, age: Double, angle: Angle)
 
     fun updateEquatorialCoordinates(ra: Angle, dec: Angle, raJ2000: Angle, decJ2000: Angle, constellation: Constellation?)
 

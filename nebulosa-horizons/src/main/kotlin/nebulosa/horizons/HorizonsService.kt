@@ -31,7 +31,7 @@ class HorizonsService(url: String = "https://ssd.jpl.nasa.gov/api/") : RetrofitS
         return service.observer(
             wrap(command), wrap("${longitude.degrees},${latitude.degrees},${elevation.kilometers}"),
             wrap(startTime), wrap(endTime), wrap("${stepSize.toMinutes()}m"),
-            wrap(quantities.map { it.code }.toSet().joinToString(",")),
+            wrap(quantities.map { it.code }.toSortedSet().joinToString(",")),
             wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),
         )
     }

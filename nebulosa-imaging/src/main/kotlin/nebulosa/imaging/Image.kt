@@ -45,10 +45,18 @@ class Image(
     }
 
     inline fun write(index: Int, channel: ImageChannel, color: Float) {
-        data[channel.offset][index] = color
+        write(index, channel.offset, color)
+    }
+
+    inline fun write(index: Int, channel: Int, color: Float) {
+        data[channel][index] = color
     }
 
     inline fun write(x: Int, y: Int, channel: ImageChannel, color: Float) {
+        write(x, y, channel.offset, color)
+    }
+
+    inline fun write(x: Int, y: Int, channel: Int, color: Float) {
         write(indexAt(x, y), channel, color)
     }
 
@@ -90,10 +98,18 @@ class Image(
     }
 
     inline fun read(index: Int, channel: ImageChannel): Float {
-        return data[channel.offset][index]
+        return read(index, channel.offset)
+    }
+
+    inline fun read(index: Int, channel: Int): Float {
+        return data[channel][index]
     }
 
     inline fun read(x: Int, y: Int, channel: ImageChannel): Float {
+        return read(x, y, channel.offset)
+    }
+
+    inline fun read(x: Int, y: Int, channel: Int): Float {
         return read(indexAt(x, y), channel)
     }
 

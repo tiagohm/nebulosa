@@ -1,6 +1,7 @@
 package nebulosa.imaging.algorithms
 
 import nebulosa.imaging.Image
+import nom.tam.fits.Header
 import kotlin.math.max
 import kotlin.math.min
 
@@ -13,7 +14,9 @@ class Grayscale(
     override fun transform(source: Image): Image {
         if (source.mono) return source
 
-        val result = Image(source.width, source.height, source.header, true)
+        val header = Header(source.header.makeData())
+        header.deleteKey("NAXIS3")
+        val result = Image(source.width, source.height, header, true)
 
         for (i in source.r.indices) {
             val gray = max(0f, min(red * source.r[i] + green * source.g[i] + blue * source.b[i], 1f))

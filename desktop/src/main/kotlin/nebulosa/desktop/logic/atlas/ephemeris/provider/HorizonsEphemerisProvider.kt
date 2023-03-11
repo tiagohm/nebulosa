@@ -23,6 +23,7 @@ class HorizonsEphemerisProvider : EphemerisProvider<String> {
         target: String,
         position: GeographicPosition,
         force: Boolean,
+        vararg quantities: HorizonsQuantity,
     ): HorizonsEphemeris? {
         val now = OffsetDateTime.now()
         val offset = now.offset.totalSeconds.toLong()
@@ -47,7 +48,7 @@ class HorizonsEphemerisProvider : EphemerisProvider<String> {
                 position.longitude, position.latitude, position.elevation,
                 startTime, endTime,
                 extraPrecision = true,
-                quantities = QUANTITIES,
+                quantities = arrayOf(*QUANTITIES, *quantities),
             ).execute().body()
             ?.also { ephemerisCache[position]!![target] = it }
     }

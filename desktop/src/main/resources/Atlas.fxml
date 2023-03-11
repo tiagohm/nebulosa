@@ -4,6 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.atlas.MoonImage?>
 <?import nebulosa.desktop.gui.control.AltitudeChart?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
@@ -39,12 +40,9 @@
                  text="Moon"
                  userData="MOON">
                 <VBox alignment="CENTER">
-                    <ImageView fx:id="moonImageView"
-                               cache="true"
-                               fitHeight="260.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                    </ImageView>
+                    <MoonImage fx:id="moonImage"
+                               height="260.0"
+                               width="260.0"/>
                 </VBox>
             </Tab>
             <Tab closable="false"

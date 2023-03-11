@@ -46,6 +46,7 @@ class BodyEphemerisProvider : EphemerisProvider<Body> {
         target: Body,
         position: GeographicPosition,
         force: Boolean,
+        vararg quantities: HorizonsQuantity,
     ): HorizonsEphemeris? {
         if (!computeTime() && !force && position in ephemerisCache && target in ephemerisCache[position]!!) {
             return ephemerisCache[position]!![target]

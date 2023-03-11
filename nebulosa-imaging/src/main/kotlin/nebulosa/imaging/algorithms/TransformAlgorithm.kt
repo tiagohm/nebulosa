@@ -14,12 +14,12 @@ fun interface TransformAlgorithm {
         @JvmStatic
         fun of(algorithms: Iterable<TransformAlgorithm>) = TransformAlgorithm { algorithms.transform(it) }
 
-        @JvmStatic
         @JvmName("apply")
-        fun Array<out TransformAlgorithm>.transform(source: Image) = fold(source) { s, a -> a.transform(s) }
+        @Suppress("NOTHING_TO_INLINE")
+        inline fun Array<out TransformAlgorithm>.transform(source: Image) = fold(source) { s, a -> a.transform(s) }
 
-        @JvmStatic
         @JvmName("apply")
-        fun Iterable<TransformAlgorithm>.transform(source: Image) = fold(source) { s, a -> a.transform(s) }
+        @Suppress("NOTHING_TO_INLINE")
+        inline fun Iterable<TransformAlgorithm>.transform(source: Image) = fold(source) { s, a -> a.transform(s) }
     }
 }
