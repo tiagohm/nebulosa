@@ -49,11 +49,8 @@ import org.springframework.stereotype.Component
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.awt.image.BufferedImage
 import java.io.Closeable
-import java.net.URL
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -61,8 +58,6 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
-import javax.imageio.ImageIO
-import kotlin.math.hypot
 
 @Component
 @EnableScheduling
@@ -434,32 +429,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
         systemExecutorService.submit {
             try {
-                val image = ImageIO.read(URL("https://sdo.gsfc.nasa.gov/assets/img/latest/latest_512_HMIIF.jpg"))
-                val newImage = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_ARGB)
-
-                for (y in 0 until image.height) {
-                    for (x in 0 until image.width) {
-                        val distance = hypot(x - 256.0, y - 256.0)
-                        val color = image.getRGB(x, y)
-
-                        if (distance > 238) {
-                            val grayLevel = ((color shr 16 and 0xff) + (color shr 8 and 0xff) + (color and 0xff)) / 3
-
-                            if (grayLevel >= 170) {
-                                newImage.setRGB(x, y, color)
-                            }
-                        } else {
-                            newImage.setRGB(x, y, color)
-                        }
-                    }
-                }
-
-                val sunImagePath = Paths.get("$appDirectory", "SUN.png")
-                ImageIO.write(newImage, "PNG", sunImagePath.toFile())
-
-                LOG.info("saving Sun image. path={}", sunImagePath.toUri())
-
-                javaFXExecutorService.execute { view.updateSunImage(sunImagePath.toUri().toString()) }
+                view.updateSunImage()
             } catch (e: Throwable) {
                 LOG.error("failed to download Sun image.", e)
             }

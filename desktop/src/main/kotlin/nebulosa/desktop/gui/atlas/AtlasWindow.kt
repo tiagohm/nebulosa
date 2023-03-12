@@ -9,11 +9,11 @@ import javafx.event.Event
 import javafx.fxml.FXML
 import javafx.scene.control.*
 import javafx.scene.control.cell.PropertyValueFactory
-import javafx.scene.image.Image
-import javafx.scene.image.ImageView
 import javafx.util.Callback
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.AltitudeChart
+import nebulosa.desktop.gui.control.MoonView
+import nebulosa.desktop.gui.control.SunView
 import nebulosa.desktop.logic.atlas.AtlasManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
@@ -41,8 +41,8 @@ class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
     @FXML private lateinit var azimuthTextField: TextField
     @FXML private lateinit var constellationTextField: TextField
     @FXML private lateinit var rtsTextField: TextField
-    @FXML private lateinit var sunImageView: ImageView
-    @FXML private lateinit var moonImage: MoonImage
+    @FXML private lateinit var sunView: SunView
+    @FXML private lateinit var moonView: MoonView
     @FXML private lateinit var planetTableView: TableView<AtlasView.Planet>
     @FXML private lateinit var searchMinorPlanetTextField: TextField
     @FXML private lateinit var minorPlanetTableView: TableView<AtlasView.MinorPlanet>
@@ -191,12 +191,12 @@ class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
         )
     }
 
-    override fun updateSunImage(uri: String) {
-        sunImageView.image = Image(uri)
+    override fun updateSunImage() {
+        sunView.updateImage()
     }
 
     override fun updateMoonImage(phase: Double, age: Double, angle: Angle) {
-        moonImage.draw(age, angle)
+        moonView.draw(age, angle)
     }
 
     override fun populatePlanet(planets: List<AtlasView.Planet>) {

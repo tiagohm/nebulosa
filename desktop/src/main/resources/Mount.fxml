@@ -11,7 +11,6 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="440.0"
             prefWidth="412.0"
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"

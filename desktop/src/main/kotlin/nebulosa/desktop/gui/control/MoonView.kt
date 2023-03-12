@@ -1,12 +1,12 @@
-package nebulosa.desktop.gui.atlas
+package nebulosa.desktop.gui.control
 
+import javafx.scene.canvas.Canvas
 import javafx.scene.image.Image
 import javafx.scene.transform.Rotate
-import nebulosa.desktop.gui.control.ResizableCanvas
 import nebulosa.math.Angle
 import kotlin.math.min
 
-class MoonImage : ResizableCanvas() {
+class MoonView : Canvas() {
 
     private val images = HashMap<Int, Image>(30)
 

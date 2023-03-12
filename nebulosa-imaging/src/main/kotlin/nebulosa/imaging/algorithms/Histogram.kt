@@ -64,7 +64,7 @@ class Histogram : ComputationAlgorithm<Boolean> {
         var amount = 0
         var c = 0
 
-        while (amount < sizeOverTwo) {
+        while (amount < sizeOverTwo && c < buffer.size) {
             amount += buffer[c++]
         }
 

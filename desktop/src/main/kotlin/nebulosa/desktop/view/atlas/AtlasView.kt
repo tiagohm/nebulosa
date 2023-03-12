@@ -60,7 +60,7 @@ interface AtlasView : View {
         night: DoubleArray,
     )
 
-    fun updateSunImage(uri: String)
+    fun updateSunImage()
 
     fun updateMoonImage(phase: Double, age: Double, angle: Angle)
 

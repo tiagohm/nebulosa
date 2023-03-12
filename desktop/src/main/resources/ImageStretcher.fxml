@@ -3,13 +3,12 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.control.Histogram?>
+<?import nebulosa.desktop.gui.control.HistogramView?>
 <?import org.controlsfx.control.RangeSlider?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="200.0"
             prefWidth="400.0"
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
@@ -129,17 +128,16 @@
         </Tab>
         <Tab closable="false"
              text="Histogram">
-            <VBox prefHeight="200.0"
-                  prefWidth="100.0">
-                <AnchorPane prefHeight="200.0"
-                            prefWidth="200.0"
-                            VBox.vgrow="ALWAYS">
-                    <Histogram fx:id="histogram"
-                               AnchorPane.bottomAnchor="0.0"
-                               AnchorPane.leftAnchor="0.0"
-                               AnchorPane.rightAnchor="0.0"
-                               AnchorPane.topAnchor="0.0"/>
-                </AnchorPane>
+            <VBox alignment="CENTER">
+                <HistogramView fx:id="histogramView"
+                               VBox.vgrow="ALWAYS"/>
+                <Label fx:id="histogramStatisticsLabel"
+                       text="min: 0 | max: 65535 | median: 0 | avg: 0 | stdDev: 0"
+                       styleClass="monospaced,text-sm">
+                    <padding>
+                        <Insets topRightBottomLeft="4.0"/>
+                    </padding>
+                </Label>
             </VBox>
         </Tab>
     </TabPane>

@@ -6,7 +6,7 @@ import javafx.scene.control.Slider
 import javafx.scene.control.Spinner
 import javafx.util.Duration
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.control.Histogram
+import nebulosa.desktop.gui.control.HistogramView
 import nebulosa.desktop.logic.image.ImageStretcherManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.view.image.ImageStretcherView
@@ -20,7 +20,7 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
     @FXML private lateinit var highlightSpinner: Spinner<Double>
     @FXML private lateinit var shadowAndHighlightRangeSlider: RangeSlider
     @FXML private lateinit var midtoneSlider: Slider
-    @FXML private lateinit var histogram: Histogram
+    @FXML private lateinit var histogramView: HistogramView
 
     private val imageStretcherManager = ImageStretcherManager(this)
     private val stretchParameterListener = PauseTransition(Duration.seconds(0.5))
@@ -76,7 +76,7 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
     }
 
     override fun drawHistogram() {
-        histogram.draw(view.image ?: return)
+        histogramView.draw(view.image ?: return)
     }
 
     override fun updateTitle() {

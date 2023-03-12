@@ -2,15 +2,14 @@
 
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.atlas.MoonImage?>
 <?import nebulosa.desktop.gui.control.AltitudeChart?>
+<?import nebulosa.desktop.gui.control.MoonView?>
+<?import nebulosa.desktop.gui.control.SunView?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="590.0"
             prefWidth="480.0"
             stylesheets="@css/Global.css,@css/CopyableLabel.css"
             xmlns="http://javafx.com/javafx/19"
@@ -27,12 +26,9 @@
                  text="Sun"
                  userData="SUN">
                 <VBox alignment="CENTER">
-                    <ImageView fx:id="sunImageView"
-                               cache="true"
-                               fitHeight="260.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                    </ImageView>
+                    <SunView fx:id="sunView"
+                             height="256.0"
+                             width="256.0"/>
                 </VBox>
             </Tab>
             <Tab closable="false"
@@ -40,9 +36,9 @@
                  text="Moon"
                  userData="MOON">
                 <VBox alignment="CENTER">
-                    <MoonImage fx:id="moonImage"
-                               height="260.0"
-                               width="260.0"/>
+                    <MoonView fx:id="moonView"
+                              height="256.0"
+                              width="256.0"/>
                 </VBox>
             </Tab>
             <Tab closable="false"
