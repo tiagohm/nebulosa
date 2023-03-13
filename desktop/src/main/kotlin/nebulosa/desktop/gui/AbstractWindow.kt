@@ -13,6 +13,10 @@ import nebulosa.desktop.gui.home.HomeWindow
 import nebulosa.desktop.view.View
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
+import nebulosa.jmetro.FlatAlert
+import nebulosa.jmetro.JMetro
+import nebulosa.jmetro.JMetroStyleClass
+import nebulosa.jmetro.Style
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
@@ -38,8 +42,12 @@ abstract class AbstractWindow(
                 loader.setController(this)
                 val root = loader.load<Parent>()
 
-                window.scene = Scene(root)
+                val scene = Scene(root)
+                window.scene = scene
                 window.icons.add(Image(resource("icons/$icon.png")))
+
+                JMetro(window.scene, Style.DARK)
+                root.styleClass.add(JMetroStyleClass.BACKGROUND)
 
                 onCreate()
 
@@ -160,9 +168,10 @@ abstract class AbstractWindow(
     }
 
     final override fun showAlert(
-        message: String, title: String,
+        message: String,
+        title: String,
     ) {
-        val alert = Alert(Alert.AlertType.INFORMATION)
+        val alert = FlatAlert(Alert.AlertType.INFORMATION)
         alert.initOwner(window)
         alert.title = title
         alert.headerText = null

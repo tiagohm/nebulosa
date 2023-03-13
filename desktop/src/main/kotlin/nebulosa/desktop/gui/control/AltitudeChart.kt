@@ -124,7 +124,6 @@ class AltitudeChart : AnchorPane() {
         .minorVGridLinesVisible(false)
         .mediumVGridLinesVisible(false)
         .gridLineDashes(4.0, 4.0)
-        .translateX(-25.0)
         .build()
 
     private val pane = XYPane(
@@ -150,7 +149,7 @@ class AltitudeChart : AnchorPane() {
         setBottomAnchor(yAxis, 25.0)
         setLeftAnchor(yAxis, 0.0)
 
-        setRightAnchor(grid, 0.0)
+        setRightAnchor(grid, 25.0)
         setLeftAnchor(grid, 25.0)
         setBottomAnchor(grid, 25.0)
         setTopAnchor(grid, 0.0)

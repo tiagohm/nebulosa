@@ -8,7 +8,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="362.0"
+            prefHeight="393.0"
             prefWidth="332.0"
             stylesheets="@css/Global.css,@css/Home.css"
             xmlns="http://javafx.com/javafx/19"
@@ -70,27 +70,27 @@
                 </columnConstraints>
                 <rowConstraints>
                     <RowConstraints minHeight="10.0"
-                                    prefHeight="58.0"
+                                    prefHeight="62.0"
                                     valignment="CENTER"
                                     vgrow="SOMETIMES"/>
                     <RowConstraints minHeight="10.0"
-                                    prefHeight="58.0"
+                                    prefHeight="62.0"
                                     valignment="CENTER"
                                     vgrow="SOMETIMES"/>
                     <RowConstraints minHeight="10.0"
-                                    prefHeight="58.0"
+                                    prefHeight="62.0"
                                     valignment="CENTER"
                                     vgrow="SOMETIMES"/>
                     <RowConstraints minHeight="10.0"
-                                    prefHeight="58.0"
+                                    prefHeight="62.0"
                                     valignment="CENTER"
                                     vgrow="SOMETIMES"/>
                     <RowConstraints minHeight="10.0"
-                                    prefHeight="58.0"
+                                    prefHeight="62.0"
                                     valignment="CENTER"
                                     vgrow="SOMETIMES"/>
                     <RowConstraints minHeight="10.0"
-                                    prefHeight="58.0"
+                                    prefHeight="62.0"
                                     valignment="CENTER"
                                     vgrow="SOMETIMES"/>
                 </rowConstraints>
@@ -104,7 +104,7 @@
                         GridPane.columnIndex="0"
                         GridPane.rowIndex="0">
                     <graphic>
-                        <Label styleClass="text-grey-900,mdi"
+                        <Label styleClass="text-grey-100,mdi"
                                text="󰄄">
                         </Label>
                     </graphic>
@@ -119,7 +119,7 @@
                         GridPane.columnIndex="1"
                         GridPane.rowIndex="0">
                     <graphic>
-                        <Label styleClass="text-grey-900,mdi"
+                        <Label styleClass="text-grey-100,mdi"
                                text="󰭎">
                         </Label>
                     </graphic>
@@ -170,7 +170,7 @@
                         GridPane.columnIndex="1"
                         GridPane.rowIndex="1">
                     <graphic>
-                        <Label styleClass="text-grey-900,mdi"
+                        <Label styleClass="text-grey-100,mdi"
                                text="󰋱">
                         </Label>
                     </graphic>
@@ -275,7 +275,7 @@
                         GridPane.columnIndex="1"
                         GridPane.rowIndex="3">
                     <graphic>
-                        <Label styleClass="text-grey-900,mdi"
+                        <Label styleClass="text-grey-100,mdi"
                                text="󰓎">
                         </Label>
                     </graphic>
@@ -290,7 +290,7 @@
                         GridPane.columnIndex="2"
                         GridPane.rowIndex="3">
                     <graphic>
-                        <Label styleClass="text-grey-900,mdi"
+                        <Label styleClass="text-grey-100,mdi"
                                text="󱏁">
                         </Label>
                     </graphic>
@@ -305,7 +305,7 @@
                         GridPane.columnIndex="0"
                         GridPane.rowIndex="4">
                     <graphic>
-                        <Label styleClass="text-grey-900,mdi"
+                        <Label styleClass="text-grey-100,mdi"
                                text="󰡼">
                         </Label>
                     </graphic>
@@ -356,7 +356,7 @@
                         GridPane.columnIndex="0"
                         GridPane.rowIndex="5">
                     <graphic>
-                        <Label styleClass="text-grey-900,mdi"
+                        <Label styleClass="text-grey-100,mdi"
                                text="󰋼">
                         </Label>
                     </graphic>

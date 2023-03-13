@@ -12,18 +12,19 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":nebulosa-nova"))
-    implementation(project(":nebulosa-indi-client"))
-    implementation(project(":nebulosa-imaging"))
+    implementation(project(":nebulosa-guiding-phd2"))
     implementation(project(":nebulosa-hips2fits"))
-    implementation(project(":nebulosa-sbd"))
     implementation(project(":nebulosa-horizons"))
-    implementation(project(":nebulosa-simbad"))
+    implementation(project(":nebulosa-imaging"))
+    implementation(project(":nebulosa-indi-client"))
+    implementation(project(":nebulosa-jmetro"))
+    implementation(project(":nebulosa-lx200-protocol"))
+    implementation(project(":nebulosa-nova"))
     implementation(project(":nebulosa-platesolving-astap"))
     implementation(project(":nebulosa-platesolving-astrometrynet"))
     implementation(project(":nebulosa-platesolving-watney"))
-    implementation(project(":nebulosa-guiding-phd2"))
-    implementation(project(":nebulosa-lx200-protocol"))
+    implementation(project(":nebulosa-sbd"))
+    implementation(project(":nebulosa-simbad"))
     implementation(project(":nebulosa-stellarium-protocol"))
     implementation(project(":nebulosa-wcs"))
     implementation(libs.jackson)
@@ -32,7 +33,11 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.eventbus)
     implementation(libs.gesturefx)
-    implementation(libs.charts)
+    implementation(libs.charts) {
+        exclude(module = "countries")
+        exclude(module = "heatmap")
+        exclude(group = "org.openjfx")
+    }
     implementation(libs.logback)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -49,7 +54,7 @@ publishing {
 }
 
 javafx {
-    version = "19"
+    version = "19.0.2.1"
     modules = listOf("javafx.controls", "javafx.fxml")
 }
 

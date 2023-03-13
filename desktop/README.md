@@ -32,7 +32,7 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ## Plate Solver
 
-![](platesolver.png)
+![](plate-solver.png)
 
 ## Framing
 

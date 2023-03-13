@@ -13,9 +13,7 @@
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <TabPane prefHeight="200.0"
-             prefWidth="200.0"
-             tabClosingPolicy="UNAVAILABLE"
+    <TabPane tabClosingPolicy="UNAVAILABLE"
              AnchorPane.bottomAnchor="0.0"
              AnchorPane.leftAnchor="0.0"
              AnchorPane.rightAnchor="0.0"
@@ -43,7 +41,7 @@
                                 mnemonicParsing="false"
                                 onAction="#autoStretch"
                                 prefHeight="32.0"
-                                styleClass="text-blue-grey-700,mdi,mdi-sm"
+                                styleClass="text-blue-grey-200,mdi,mdi-sm"
                                 text="󰁨"/>
                         <Button fx:id="resetStretchButton"
                                 alignment="CENTER"

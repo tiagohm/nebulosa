@@ -77,7 +77,7 @@
                         <Button onAction="#searchMinorPlanet"
                                 text="Search">
                             <graphic>
-                                <Label styleClass="text-blue-grey-700,mdi,mdi-sm"
+                                <Label styleClass="text-blue-grey-200,mdi,mdi-sm"
                                        text="󰍉"/>
                             </graphic>
                         </Button>
@@ -118,7 +118,7 @@
                         <Button onAction="#searchStar"
                                 text="Search">
                             <graphic>
-                                <Label styleClass="text-blue-grey-700,mdi,mdi-sm"
+                                <Label styleClass="text-blue-grey-200,mdi,mdi-sm"
                                        text="󰍉"/>
                             </graphic>
                         </Button>
@@ -161,7 +161,7 @@
                         <Button onAction="#searchDSO"
                                 text="Search">
                             <graphic>
-                                <Label styleClass="text-blue-grey-700,mdi,mdi-sm"
+                                <Label styleClass="text-blue-grey-200,mdi,mdi-sm"
                                        text="󰍉"/>
                             </graphic>
                         </Button>
@@ -356,7 +356,7 @@
                     prefWidth="92.0"
                     text="Go To">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-200"
                            text="󰄬">
                     </Label>
                 </graphic>
@@ -366,7 +366,7 @@
                     prefWidth="92.0"
                     text="Slew To">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-200"
                            text="󰄬">
                     </Label>
                 </graphic>
@@ -376,7 +376,7 @@
                     prefWidth="92.0"
                     text="Sync">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-200"
                            text="󰓦">
                     </Label>
                 </graphic>
@@ -386,7 +386,7 @@
                     prefWidth="92.0"
                     text="Frame">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
+                    <Label styleClass="mdi,mdi-sm,text-blue-grey-200"
                            text="󰋩">
                     </Label>
                 </graphic>
