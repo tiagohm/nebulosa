@@ -4,8 +4,9 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.control.IconButton?>
+<?import nebulosa.desktop.gui.control.TwoStateButton?>
 <?import nebulosa.indi.device.camera.*?>
 <?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
@@ -35,32 +36,19 @@
                            prefHeight="32.0"
                            prefWidth="394.0">
                 </ChoiceBox>
-                <Button fx:id="connectButton"
-                        alignment="CENTER"
-                        contentDisplay="TEXT_ONLY"
-                        minWidth="42.0"
-                        mnemonicParsing="false"
-                        onAction="#connect"
-                        prefHeight="32.0"
-                        styleClass="text-blue-grey-700,mdi,mdi-sm"
-                        text="󱘖">
-                </Button>
-                <Button fx:id="openINDIButton"
-                        alignment="CENTER"
-                        contentDisplay="GRAPHIC_ONLY"
-                        minWidth="42.0"
-                        mnemonicParsing="false"
-                        onAction="#openINDIPanelControl"
-                        prefHeight="32.0">
-                    <graphic>
-                        <ImageView fitHeight="16.0"
-                                   fitWidth="16.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/indi.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
+                <TwoStateButton fx:id="connectButton"
+                                onAction="#connect"
+                                stateOnStyleClass="mdi,mdi-sm,text-red-500"
+                                stateOffStyleClass="mdi,mdi-sm,text-blue-700"
+                                stateOnIcon="󰅙"
+                                stateOffIcon="󱘖">
+                </TwoStateButton>
+                <IconButton fx:id="openINDIButton"
+                            onAction="#openINDIPanelControl">
+                    <image>
+                        <Image url="@icons/indi.png"/>
+                    </image>
+                </IconButton>
                 <Label alignment="CENTER"
                        minWidth="32.0"
                        onMouseClicked="#openMenu"
@@ -464,7 +452,7 @@
                     onAction="#abortCapture"
                     text="Abort">
                 <graphic>
-                    <Label styleClass="text-red-700,mdi,mdi-sm"
+                    <Label styleClass="text-red-500,mdi,mdi-sm"
                            text="󰓛">
                     </Label>
                 </graphic>

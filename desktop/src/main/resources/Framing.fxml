@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.control.*?>
 <?import org.controlsfx.control.HyperlinkLabel?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
@@ -25,157 +26,108 @@
         </padding>
         <VBox alignment="TOP_CENTER"
               spacing="4.0">
-            <HBox alignment="CENTER_RIGHT">
-                <HyperlinkLabel fx:id="poweredByHyperlinkLabel"
-                                styleClass="text-xs"
-                                text="Powered by [hips2fits], a service provided by CDS."/>
-            </HBox>
-            <HBox alignment="CENTER_LEFT"
-                  spacing="5.0">
-                <Label maxWidth="70.0"
-                       minWidth="70.0"
-                       prefWidth="70.0"
-                       styleClass="text-sm,text-bold,monospaced"
-                       text="RA (J2000):"/>
-                <TextField fx:id="raTextField"
-                           maxWidth="110.0"
-                           minWidth="110.0"
-                           prefWidth="110.0"
-                           promptText="00h00m00.00s"
-                           text="00h00m00.00s"/>
-                <Label maxWidth="71.0"
-                       minWidth="71.0"
-                       prefWidth="71.0"
-                       styleClass="text-sm,text-bold,monospaced"
-                       text="DEC (J2000):"/>
-                <TextField fx:id="decTextField"
-                           maxWidth="110.0"
-                           minWidth="110.0"
-                           prefWidth="110.0"
-                           promptText="00°00'00.00&quot;"
-                           text="00°00'00.00&quot;"/>
-            </HBox>
-            <HBox alignment="CENTER_LEFT"
+            <GridPane hgap="4.0"
+                      vgap="4.0">
+                <LabeledPane text="RA (J2000)"
+                             GridPane.rowIndex="0"
+                             GridPane.columnIndex="0"
+                             GridPane.columnSpan="2"
+                             textStyleClass="text-bold">
+                    <TextField fx:id="raTextField"
+                               promptText="00h00m00.00s"
+                               text="00h00m00.00s"/>
+                </LabeledPane>
+                <LabeledPane text="DEC (J2000)"
+                             GridPane.rowIndex="0"
+                             GridPane.columnIndex="2"
+                             GridPane.columnSpan="2"
+                             textStyleClass="text-bold">
+                    <TextField fx:id="decTextField"
+                               promptText="00°00'00.00&quot;"
+                               text="00°00'00.00&quot;"/>
+                </LabeledPane>
+                <LabeledPane text="Width"
+                             GridPane.rowIndex="1"
+                             GridPane.columnIndex="0"
+                             textStyleClass="text-bold">
+                    <Spinner fx:id="widthSpinner"
+                             amountToStepBy="0.1"
+                             editable="true"
+                             initialValue="1280.0"
+                             max="1280.0"
+                             min="1.0"/>
+                </LabeledPane>
+                <LabeledPane text="Height"
+                             GridPane.rowIndex="1"
+                             GridPane.columnIndex="1"
+                             textStyleClass="text-bold">
+                    <Spinner fx:id="heightSpinner"
+                             amountToStepBy="0.1"
+                             editable="true"
+                             initialValue="1024.0"
+                             max="1024.0"
+                             min="1.0"/>
+                </LabeledPane>
+                <LabeledPane text="FOV (deg)"
+                             GridPane.rowIndex="1"
+                             GridPane.columnIndex="2"
+                             textStyleClass="text-bold">
+                    <Spinner fx:id="fovSpinner"
+                             amountToStepBy="0.1"
+                             editable="true"
+                             initialValue="1.0"
+                             max="90.0"
+                             min="0.1"/>
+                </LabeledPane>
+                <LabeledPane text="Rotation (deg)"
+                             GridPane.rowIndex="1"
+                             GridPane.columnIndex="3"
+                             textStyleClass="text-bold">
+                    <Spinner fx:id="rotationSpinner"
+                             amountToStepBy="0.01"
+                             editable="true"
+                             initialValue="0.0"
+                             max="360.0"
+                             min="0.0"/>
+                </LabeledPane>
+                <LabeledPane text="HiPS Survey"
+                             GridPane.rowIndex="2"
+                             GridPane.columnIndex="0"
+                             GridPane.columnSpan="2"
+                             textStyleClass="text-bold">
+                    <ChoiceBox fx:id="hipsSurveyChoiceBox"
+                               prefWidth="200.0"
+                               HBox.hgrow="ALWAYS"/>
+                </LabeledPane>
+            </GridPane>
+            <HBox alignment="CENTER"
                   spacing="4.0">
-                <Label maxWidth="40.0"
-                       minWidth="40.0"
-                       prefWidth="40.0"
-                       styleClass="text-sm,text-bold,monospaced"
-                       text="FOV:"/>
-                <Spinner fx:id="fovSpinner"
-                         amountToStepBy="0.1"
-                         editable="true"
-                         initialValue="1.0"
-                         max="90.0"
-                         maxWidth="80.0"
-                         min="0.1"
-                         minWidth="80.0"
-                         prefWidth="80.0"/>
-                <Label maxWidth="47.0"
-                       minWidth="47.0"
-                       prefWidth="47.0"
-                       styleClass="text-sm,text-bold,monospaced"
-                       text="Width:"/>
-                <Spinner fx:id="widthSpinner"
-                         amountToStepBy="0.1"
-                         editable="true"
-                         initialValue="1280.0"
-                         max="1280.0"
-                         maxWidth="73.0"
-                         min="1.0"
-                         minWidth="73.0"
-                         prefWidth="73.0"/>
-                <Label maxWidth="43.0"
-                       minWidth="43.0"
-                       prefWidth="43.0"
-                       styleClass="text-sm,text-bold,monospaced"
-                       text="Height:"/>
-                <Spinner fx:id="heightSpinner"
-                         amountToStepBy="0.1"
-                         editable="true"
-                         initialValue="1024.0"
-                         max="1024.0"
-                         maxWidth="73.0"
-                         min="1.0"
-                         minWidth="73.0"
-                         prefWidth="73.0"/>
-            </HBox>
-            <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Label maxWidth="88.0"
-                       minWidth="88.0"
-                       prefWidth="88.0"
-                       styleClass="text-sm,text-bold,monospaced"
-                       text="Pixel size (μm):"/>
-                <Spinner fx:id="pixelSizeSpinner"
-                         amountToStepBy="0.01"
-                         editable="true"
-                         initialValue="4.0"
-                         max="100.0"
-                         maxWidth="80.0"
-                         min="0.01"
-                         minWidth="80.0"
-                         prefWidth="80.0"/>
-                <Label maxWidth="116.0"
-                       minWidth="116.0"
-                       prefWidth="116.0"
-                       styleClass="text-sm,text-bold,monospaced"
-                       text="Focal length (mm):"/>
-                <Spinner fx:id="focalLengthSpinner"
-                         amountToStepBy="1.0"
-                         editable="true"
-                         initialValue="500.0"
-                         max="100000.0"
-                         maxWidth="80.0"
-                         min="1.0"
-                         minWidth="80.0"
-                         prefWidth="80.0"/>
-            </HBox>
-            <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Label maxWidth="88.0"
-                       minWidth="88.0"
-                       prefWidth="88.0"
-                       styleClass="text-sm,text-bold,monospaced"
-                       text="Rotation (deg):"/>
-                <Spinner fx:id="rotationSpinner"
-                         amountToStepBy="0.01"
-                         editable="true"
-                         initialValue="0.0"
-                         max="360.0"
-                         maxWidth="80.0"
-                         min="0.0"
-                         minWidth="80.0"
-                         prefWidth="80.0"/>
-                <ChoiceBox fx:id="hipsSurveyChoiceBox"
-                           prefWidth="200.0"
-                           HBox.hgrow="ALWAYS"/>
-            </HBox>
-            <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Button fx:id="syncFromMountButton"
-                        text="Sync from mount"
-                        onAction="#syncFromMount">
+                <VBox.margin>
+                    <Insets top="16.0"/>
+                </VBox.margin>
+                <Button fx:id="syncButton"
+                        text="Sync"
+                        onAction="#sync">
                     <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
+                        <Label styleClass="mdi,mdi-sm,text-blue-700"
                                text="󰓦"/>
+                    </graphic>
+                </Button>
+                <Button fx:id="loadButton"
+                        onAction="#load"
+                        text="Load">
+                    <graphic>
+                        <Label styleClass="text-blue-700,mdi,mdi-sm"
+                               text="󰇚">
+                        </Label>
                     </graphic>
                 </Button>
             </HBox>
         </VBox>
         <HBox alignment="CENTER">
-            <VBox.margin>
-                <Insets top="16.0"/>
-            </VBox.margin>
-            <Button fx:id="loadButton"
-                    onAction="#load"
-                    text="Load">
-                <graphic>
-                    <Label styleClass="text-blue-grey-700,mdi,mdi-sm"
-                           text="󰇚">
-                    </Label>
-                </graphic>
-            </Button>
+            <HyperlinkLabel fx:id="poweredByHyperlinkLabel"
+                            styleClass="text-xs"
+                            text="Powered by [hips2fits], a service provided by CDS."/>
         </HBox>
     </VBox>
 </AnchorPane>

@@ -8,8 +8,12 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.logic.*
+import nebulosa.desktop.gui.control.TwoStateButton
+import nebulosa.desktop.logic.asString
+import nebulosa.desktop.logic.isNull
 import nebulosa.desktop.logic.mount.MountManager
+import nebulosa.desktop.logic.on
+import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.TrackMode
@@ -32,7 +36,7 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
     @Lazy @Autowired private lateinit var mountManager: MountManager
 
     @FXML private lateinit var mountChoiceBox: ChoiceBox<Mount>
-    @FXML private lateinit var connectButton: Button
+    @FXML private lateinit var connectButton: TwoStateButton
     @FXML private lateinit var openINDIButton: Button
     @FXML private lateinit var rightAscensionLabel: Label
     @FXML private lateinit var declinationLabel: Label
@@ -65,7 +69,7 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
     @FXML private lateinit var trackingToggleSwitch: ToggleSwitch
     @FXML private lateinit var trackingModeChoiceBox: ChoiceBox<TrackMode>
     @FXML private lateinit var slewSpeedChoiceBox: ChoiceBox<String>
-    @FXML private lateinit var parkButton: Button
+    @FXML private lateinit var parkButton: TwoStateButton
     @FXML private lateinit var homeButton: Button
     @FXML private lateinit var statusLabel: Label
 
@@ -88,8 +92,7 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
         mountManager.bind(mountChoiceBox.selectionModel.selectedItemProperty())
 
         connectButton.disableProperty().bind(mountManager.isNull() or isConnecting or isMoving)
-        connectButton.textProperty().bind(mountManager.connectedProperty.between("󰅙", "󱘖"))
-        mountManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
+        mountManager.connectedProperty.on { connectButton.state = it }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 
@@ -153,10 +156,7 @@ class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
         slewSpeedChoiceBox.valueProperty().on { if (it != null) mountManager.get().slewRate(it) }
 
         parkButton.disableProperty().bind(isNotConnectedOrMoving or !mountManager.canParkProperty)
-        parkButton.textProperty().bind(mountManager.parkedProperty.between("Unpark", "Park"))
-        val parkIcon = parkButton.graphic as Label
-        parkIcon.textProperty().bind(mountManager.parkedProperty.between("󰐊", "󰓛"))
-        mountManager.parkedProperty.between(parkIcon.styleClass, "text-red-700", "text-blue-grey-700")
+        mountManager.parkedProperty.on { parkButton.state = it }
 
         homeButton.disableProperty().set(true)
     }

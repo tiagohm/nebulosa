@@ -7,9 +7,10 @@ import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import javafx.stage.Stage
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.logic.between
+import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.home.HomeManager
+import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.home.HomeView
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,7 +19,7 @@ class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeV
 
     @FXML private lateinit var hostTextField: TextField
     @FXML private lateinit var portTextField: TextField
-    @FXML private lateinit var connectButton: Button
+    @FXML private lateinit var connectButton: TwoStateButton
     @FXML private lateinit var cameraButton: Button
     @FXML private lateinit var mountButton: Button
     @FXML private lateinit var guiderButton: Button
@@ -57,8 +58,7 @@ class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeV
         sequencerButton.disableProperty().bind(!homeManager.connectedProperty)
         indiButton.disableProperty().bind(!homeManager.connectedProperty)
 
-        connectButton.textProperty().bind(homeManager.connectedProperty.between("󰅙", "󱘖"))
-        homeManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
+        homeManager.connectedProperty.on { connectButton.state = it }
     }
 
     override fun onStart() {

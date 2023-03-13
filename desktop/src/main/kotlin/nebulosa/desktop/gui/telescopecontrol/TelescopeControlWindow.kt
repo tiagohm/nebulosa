@@ -1,14 +1,13 @@
 package nebulosa.desktop.gui.telescopecontrol
 
 import javafx.fxml.FXML
-import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.TextField
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlManager
-import nebulosa.desktop.logic.toggle
 import nebulosa.desktop.view.telescopecontrol.TelescopeControlType
 import nebulosa.desktop.view.telescopecontrol.TelescopeControlView
 import org.slf4j.LoggerFactory
@@ -24,7 +23,7 @@ class TelescopeControlWindow : AbstractWindow("TelescopeControl", "nebulosa-tele
     @FXML private lateinit var serverTypeChoiceBox: ChoiceBox<TelescopeControlType>
     @FXML private lateinit var hostTextField: TextField
     @FXML private lateinit var portTextField: TextField
-    @FXML private lateinit var connectButton: Button
+    @FXML private lateinit var connectButton: TwoStateButton
 
     init {
         title = "Telescope Control"
@@ -53,8 +52,7 @@ class TelescopeControlWindow : AbstractWindow("TelescopeControl", "nebulosa-tele
         get() = portTextField.text.trim().toIntOrNull() ?: -1
 
     override fun updateConnectionStatus(connected: Boolean, host: String, port: Int) {
-        connectButton.text = if (connected) "󰅙" else "󱘖"
-        connectButton.styleClass.toggle("text-red-700", "text-blue-grey-700", connected)
+        connectButton.state = connected
 
         hostTextField.text = host
         portTextField.text = if (port > 0) "$port" else ""

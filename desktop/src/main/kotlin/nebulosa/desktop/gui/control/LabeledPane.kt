@@ -4,6 +4,7 @@ import javafx.beans.DefaultProperty
 import javafx.beans.property.StringProperty
 import javafx.collections.ObservableList
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control.Label
 import javafx.scene.layout.VBox
 
@@ -45,5 +46,11 @@ class LabeledPane(text: String = "") : VBox() {
                 label.disableProperty().bind(value.disableProperty())
                 children.add(value)
             }
+        }
+
+    var graphic: Node?
+        get() = label.graphic
+        set(value) {
+            label.graphic = value
         }
 }

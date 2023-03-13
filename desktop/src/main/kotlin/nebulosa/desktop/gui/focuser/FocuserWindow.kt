@@ -8,9 +8,10 @@ import javafx.scene.control.Spinner
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.logic.between
+import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.focuser.FocuserManager
 import nebulosa.desktop.logic.isNull
+import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.indi.device.focuser.Focuser
@@ -25,7 +26,7 @@ class FocuserWindow : AbstractWindow("Focuser", "nebulosa-focuser"), FocuserView
     @Lazy @Autowired private lateinit var focuserManager: FocuserManager
 
     @FXML private lateinit var focuserChoiceBox: ChoiceBox<Focuser>
-    @FXML private lateinit var connectButton: Button
+    @FXML private lateinit var connectButton: TwoStateButton
     @FXML private lateinit var openINDIButton: Button
     @FXML private lateinit var positionLabel: Label
     @FXML private lateinit var temperatureLabel: Label
@@ -60,8 +61,7 @@ class FocuserWindow : AbstractWindow("Focuser", "nebulosa-focuser"), FocuserView
         focuserManager.bind(focuserChoiceBox.selectionModel.selectedItemProperty())
 
         connectButton.disableProperty().bind(focuserManager.isNull() or isConnecting or isMoving)
-        connectButton.textProperty().bind(focuserManager.connectedProperty.between("󰅙", "󱘖"))
-        focuserManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
+        focuserManager.connectedProperty.on { connectButton.state = it }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 

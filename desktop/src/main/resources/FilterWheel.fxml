@@ -3,8 +3,9 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.control.IconButton?>
+<?import nebulosa.desktop.gui.control.TwoStateButton?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -13,7 +14,7 @@
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <VBox spacing="8.0"
+    <VBox spacing="4.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
           AnchorPane.rightAnchor="0.0"
@@ -25,42 +26,29 @@
                     top="16.0"/>
         </padding>
         <HBox alignment="CENTER"
-              spacing="8.0">
+              spacing="4.0">
             <ChoiceBox fx:id="filterWheelChoiceBox"
                        prefHeight="32.0"
                        prefWidth="360.0">
             </ChoiceBox>
-            <Button fx:id="connectButton"
-                    alignment="CENTER"
-                    contentDisplay="TEXT_ONLY"
-                    minWidth="42.0"
-                    mnemonicParsing="false"
-                    onAction="#connect"
-                    prefHeight="32.0"
-                    styleClass="mdi,mdi-sm,text-blue-grey-700"
-                    text="󱘖">
-            </Button>
-            <Button fx:id="openINDIButton"
-                    alignment="CENTER"
-                    contentDisplay="GRAPHIC_ONLY"
-                    minWidth="42.0"
-                    mnemonicParsing="false"
-                    onAction="#openINDIPanelControl"
-                    prefHeight="32.0">
-                <graphic>
-                    <ImageView fitHeight="16.0"
-                               fitWidth="16.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/indi.png"/>
-                    </ImageView>
-                </graphic>
-            </Button>
+            <TwoStateButton fx:id="connectButton"
+                            onAction="#connect"
+                            stateOnStyleClass="mdi,mdi-sm,text-red-500"
+                            stateOffStyleClass="mdi,mdi-sm,text-blue-700"
+                            stateOnIcon="󰅙"
+                            stateOffIcon="󱘖">
+            </TwoStateButton>
+            <IconButton fx:id="openINDIButton"
+                        onAction="#openINDIPanelControl">
+                <image>
+                    <Image url="@icons/indi.png"/>
+                </image>
+            </IconButton>
             <Label alignment="CENTER"
                    minWidth="32.0"
                    onMouseClicked="#openMenu"
                    prefWidth="32.0"
-                   styleClass="text-grey-700,mdi,mdi-sm,cursor-hand"
+                   styleClass="text-grey-200,mdi,mdi-sm,cursor-hand"
                    text="󰇙">
                 <fx:define>
                     <ContextMenu fx:id="menu"
@@ -111,12 +99,10 @@
                        prefWidth="213.0">
             </ChoiceBox>
             <Button fx:id="moveToSelectedFilterButton"
-                    minHeight="28.0"
                     onAction="#moveToSelectedFilter"
-                    prefHeight="28.0"
                     text="Move To">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
+                    <Label styleClass="mdi,mdi-sm,text-blue-700"
                            text="󰁔">
                     </Label>
                 </graphic>

@@ -16,7 +16,7 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ## Filter Wheel
 
-![](filterwheel.png)
+![](filter-wheel.png)
 
 ## Focuser
 

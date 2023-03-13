@@ -41,7 +41,7 @@
                     <Insets top="9.0"/>
                 </HBox.margin>
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-200"
+                    <Label styleClass="mdi,mdi-sm,text-blue-700"
                            text="󰍉"/>
                 </graphic>
             </Button>
@@ -199,7 +199,7 @@
                     onAction="#solve"
                     text="Solve">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-yellow-200"
+                    <Label styleClass="mdi,mdi-sm,text-yellow-500"
                            text="󰓎"/>
                 </graphic>
             </Button>
@@ -207,7 +207,7 @@
                     onAction="#cancel"
                     text="Cancel">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-red-700"
+                    <Label styleClass="mdi,mdi-sm,text-red-500"
                            text="󰓛"/>
                 </graphic>
             </Button>
@@ -218,7 +218,7 @@
                     onAction="#sync"
                     text="Sync">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-200"
+                    <Label styleClass="mdi,mdi-sm,text-blue-700"
                            text="󰓦"/>
                 </graphic>
             </Button>
@@ -226,7 +226,7 @@
                     onAction="#goTo"
                     text="Go To">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-200"
+                    <Label styleClass="mdi,mdi-sm,text-green-500"
                            text="󰄬"/>
                 </graphic>
             </Button>
@@ -234,7 +234,7 @@
                     onAction="#slewTo"
                     text="Slew To">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-200"
+                    <Label styleClass="mdi,mdi-sm,text-green-500"
                            text="󰄬"/>
                 </graphic>
             </Button>
@@ -243,7 +243,7 @@
                     prefWidth="92.0"
                     text="Frame">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-200"
+                    <Label styleClass="mdi,mdi-sm,text-blue-700"
                            text="󰋩">
                     </Label>
                 </graphic>

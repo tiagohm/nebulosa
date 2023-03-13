@@ -5,7 +5,7 @@ import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.logic.between
+import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.guider.GuiderManager
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.guider.GuiderType
@@ -20,7 +20,7 @@ class GuiderWindow : AbstractWindow("Guider", "nebulosa-guider"), GuiderView {
     @Lazy @Autowired private lateinit var guiderManager: GuiderManager
 
     @FXML private lateinit var guiderTypeChoiceBox: ChoiceBox<GuiderType>
-    @FXML private lateinit var connectButton: Button
+    @FXML private lateinit var connectButton: TwoStateButton
 
     init {
         title = "Guider"
@@ -36,8 +36,6 @@ class GuiderWindow : AbstractWindow("Guider", "nebulosa-guider"), GuiderView {
         guiderTypeChoiceBox.disableProperty().bind(isConnecting or isConnected)
 
         connectButton.disableProperty().bind(isConnecting)
-        connectButton.textProperty().bind(guiderManager.connectedProperty.between("󰅙", "󱘖"))
-        guiderManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
     }
 
     override val type

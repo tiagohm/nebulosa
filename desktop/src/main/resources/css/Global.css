@@ -56,15 +56,15 @@
 }
 
 .mdi.mdi-xs {
-    -fx-font-size: 14px;
+    -fx-font-size: 12px;
 }
 
 .mdi.mdi-sm {
-    -fx-font-size: 18px;
+    -fx-font-size: 14px;
 }
 
 .mdi.mdi-md {
-    -fx-font-size: 24px;
+    -fx-font-size: 20px;
 }
 
 .button,

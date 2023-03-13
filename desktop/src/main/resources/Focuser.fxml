@@ -3,8 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.control.*?>
 <?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
@@ -14,7 +14,7 @@
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <VBox spacing="8.0"
+    <VBox spacing="4.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
           AnchorPane.rightAnchor="0.0"
@@ -26,152 +26,138 @@
                     top="16.0"/>
         </padding>
         <HBox alignment="CENTER"
-              spacing="8.0">
+              spacing="4.0">
             <ChoiceBox fx:id="focuserChoiceBox"
                        prefHeight="32.0"
                        prefWidth="394.0">
             </ChoiceBox>
-            <Button fx:id="connectButton"
-                    alignment="CENTER"
-                    contentDisplay="TEXT_ONLY"
-                    minWidth="42.0"
-                    onAction="#connect"
-                    prefHeight="32.0"
-                    styleClass="text-blue-grey-700,mdi,mdi-sm"
-                    text="󱘖">
-            </Button>
-            <Button fx:id="openINDIButton"
-                    alignment="CENTER"
-                    contentDisplay="GRAPHIC_ONLY"
-                    minWidth="42.0"
-                    mnemonicParsing="false"
-                    onAction="#openINDIPanelControl"
-                    prefHeight="32.0">
-                <graphic>
-                    <ImageView fitHeight="16.0"
-                               fitWidth="16.0"
-                               pickOnBounds="true"
-                               preserveRatio="true">
-                        <Image url="@icons/indi.png"/>
-                    </ImageView>
-                </graphic>
-            </Button>
+            <TwoStateButton fx:id="connectButton"
+                            onAction="#connect"
+                            stateOnStyleClass="mdi,mdi-sm,text-red-500"
+                            stateOffStyleClass="mdi,mdi-sm,text-blue-700"
+                            stateOnIcon="󰅙"
+                            stateOffIcon="󱘖">
+            </TwoStateButton>
+            <IconButton fx:id="openINDIButton"
+                        onAction="#openINDIPanelControl">
+                <image>
+                    <Image url="@icons/indi.png"/>
+                </image>
+            </IconButton>
         </HBox>
         <VBox alignment="CENTER"
               spacing="4.0">
-            <HBox alignment="CENTER_LEFT"
-                  spacing="8.0">
-                <Label maxWidth="81.0"
-                       minWidth="81.0"
-                       prefWidth="81.0"
-                       styleClass="text-sm,text-bold"
-                       text="Position:">
-                </Label>
-                <Label fx:id="positionLabel"
-                       alignment="CENTER_RIGHT"
-                       maxWidth="81.0"
-                       minWidth="81.0"
-                       prefWidth="81.0"
-                       styleClass="text-md"
-                       text="0">
-                </Label>
-                <Label maxWidth="81.0"
-                       minWidth="81.0"
-                       prefWidth="81.0"
-                       styleClass="text-sm,text-bold"
-                       text="Temperature:">
-                </Label>
-                <Label fx:id="temperatureLabel"
-                       alignment="CENTER_RIGHT"
-                       maxWidth="81.0"
-                       minWidth="81.0"
-                       prefWidth="81.0"
-                       styleClass="text-md"
-                       text="0.0 °C">
-                </Label>
-            </HBox>
-            <HBox alignment="CENTER_LEFT">
-                <Label fx:id="statusLabel"
-                       text="idle">
+            <GridPane hgap="4.0"
+                      vgap="4.0">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+                <LabeledPane text="Position"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="0"
+                             GridPane.columnIndex="0">
+                    <Label fx:id="positionLabel"
+                           styleClass="text-md"
+                           text="0">
+                    </Label>
+                </LabeledPane>
+                <LabeledPane text="Temperature"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="0"
+                             GridPane.columnIndex="1">
+                    <Label fx:id="temperatureLabel"
+                           styleClass="text-md"
+                           text="0.0 °C">
+                    </Label>
+                </LabeledPane>
+                <LabeledPane text="Status"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="0"
+                             GridPane.columnIndex="2">
                     <graphic>
                         <Label styleClass="text-blue-700,mdi,mdi-xs"
                                text="󰋼">
                         </Label>
                     </graphic>
-                </Label>
-            </HBox>
+                    <Label fx:id="statusLabel"
+                           text="idle">
+                    </Label>
+                </LabeledPane>
+            </GridPane>
         </VBox>
         <VBox alignment="CENTER_LEFT"
               spacing="1.0">
-            <Label styleClass="text-sm"
-                   text="Relative:">
-            </Label>
-            <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Spinner fx:id="incrementSpinner"
-                         amountToStepBy="1.0"
-                         editable="true"
-                         initialValue="100.0"
-                         max="10000.0"
-                         min="1.0"
-                         prefWidth="138.0">
-                </Spinner>
-                <Button fx:id="moveInButton"
-                        onAction="#moveIn"
-                        text="Move In">
-                    <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
-                               text="󰁍">
-                        </Label>
-                    </graphic>
-                </Button>
-                <Button fx:id="moveOutButton"
-                        onAction="#moveOut"
-                        text="Move Out">
-                    <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
-                               text="󰁔">
-                        </Label>
-                    </graphic>
-                </Button>
-            </HBox>
+            <LabeledPane text="Relative"
+                         textStyleClass="text-bold">
+                <HBox alignment="CENTER_LEFT"
+                      spacing="4.0">
+                    <Spinner fx:id="incrementSpinner"
+                             amountToStepBy="1.0"
+                             editable="true"
+                             initialValue="100.0"
+                             max="10000.0"
+                             min="1.0"
+                             prefWidth="138.0">
+                    </Spinner>
+                    <Button fx:id="moveInButton"
+                            onAction="#moveIn"
+                            text="Move In">
+                        <graphic>
+                            <Label styleClass="mdi,mdi-sm,text-blue-700"
+                                   text="󰁍">
+                            </Label>
+                        </graphic>
+                    </Button>
+                    <Button fx:id="moveOutButton"
+                            onAction="#moveOut"
+                            text="Move Out">
+                        <graphic>
+                            <Label styleClass="mdi,mdi-sm,text-blue-700"
+                                   text="󰁔">
+                            </Label>
+                        </graphic>
+                    </Button>
+                </HBox>
+            </LabeledPane>
         </VBox>
         <VBox alignment="CENTER_LEFT"
               spacing="1.0">
-            <Label styleClass="text-sm"
-                   text="Absolute:">
-            </Label>
-            <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Spinner fx:id="absoluteSpinner"
-                         amountToStepBy="1.0"
-                         editable="true"
-                         initialValue="1000.0"
-                         max="10000.0"
-                         min="0.0"
-                         prefWidth="120.0">
-                </Spinner>
-                <Button fx:id="moveToButton"
-                        onAction="#moveTo"
-                        prefWidth="144.0"
-                        text="Move To">
-                    <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
-                               text="󰹳">
-                        </Label>
-                    </graphic>
-                </Button>
-                <Button fx:id="syncButton"
-                        onAction="#sync"
-                        prefWidth="92.0"
-                        text="Sync">
-                    <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
-                               text="󰓦">
-                        </Label>
-                    </graphic>
-                </Button>
-            </HBox>
+            <LabeledPane text="Absolute"
+                         textStyleClass="text-bold">
+                <HBox alignment="CENTER_LEFT"
+                      spacing="4.0">
+                    <Spinner fx:id="absoluteSpinner"
+                             amountToStepBy="1.0"
+                             editable="true"
+                             initialValue="1000.0"
+                             max="10000.0"
+                             min="0.0"
+                             prefWidth="120.0">
+                    </Spinner>
+                    <Button fx:id="moveToButton"
+                            onAction="#moveTo"
+                            prefWidth="144.0"
+                            text="Move To">
+                        <graphic>
+                            <Label styleClass="mdi,mdi-sm,text-blue-700"
+                                   text="󰹳">
+                            </Label>
+                        </graphic>
+                    </Button>
+                    <Button fx:id="syncButton"
+                            onAction="#sync"
+                            prefWidth="92.0"
+                            text="Sync">
+                        <graphic>
+                            <Label styleClass="mdi,mdi-sm,text-blue-700"
+                                   text="󰓦">
+                            </Label>
+                        </graphic>
+                    </Button>
+                </HBox>
+            </LabeledPane>
         </VBox>
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
@@ -201,7 +187,7 @@
                     onAction="#abort"
                     text="Abort">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-red-700"
+                    <Label styleClass="mdi,mdi-sm,text-red-500"
                            text="󰓛">
                     </Label>
                 </graphic>
@@ -211,7 +197,7 @@
                     prefWidth="144.0"
                     text="Auto focus">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-700"
+                    <Label styleClass="mdi,mdi-sm,text-blue-700"
                            text="󰽎"
                            textFill="#388E3C">
                     </Label>

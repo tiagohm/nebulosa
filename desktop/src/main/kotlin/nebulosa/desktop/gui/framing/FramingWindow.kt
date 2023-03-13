@@ -27,12 +27,10 @@ class FramingWindow : AbstractWindow("Framing", "nebulosa-framing"), FramingView
     @FXML private lateinit var poweredByHyperlinkLabel: HyperlinkLabel
     @FXML private lateinit var raTextField: TextField
     @FXML private lateinit var decTextField: TextField
-    @FXML private lateinit var syncFromMountButton: Button
+    @FXML private lateinit var syncButton: Button
     @FXML private lateinit var fovSpinner: Spinner<Double>
     @FXML private lateinit var widthSpinner: Spinner<Double>
     @FXML private lateinit var heightSpinner: Spinner<Double>
-    @FXML private lateinit var pixelSizeSpinner: Spinner<Double>
-    @FXML private lateinit var focalLengthSpinner: Spinner<Double>
     @FXML private lateinit var rotationSpinner: Spinner<Double>
     @FXML private lateinit var hipsSurveyChoiceBox: ChoiceBox<HipsSurvey>
     @FXML private lateinit var loadButton: Button
@@ -52,17 +50,13 @@ class FramingWindow : AbstractWindow("Framing", "nebulosa-framing"), FramingView
 
         decTextField.disableProperty().bind(isLoading)
 
-        syncFromMountButton.disableProperty().bind(isLoading or !framingManager.mount.connectedProperty)
+        syncButton.disableProperty().bind(isLoading or !framingManager.mount.connectedProperty)
 
         fovSpinner.disableProperty().bind(isLoading)
 
         widthSpinner.disableProperty().bind(isLoading)
 
         heightSpinner.disableProperty().bind(isLoading)
-
-        pixelSizeSpinner.disableProperty().bind(isLoading)
-
-        focalLengthSpinner.disableProperty().bind(isLoading)
 
         rotationSpinner.disableProperty().bind(isLoading)
 
@@ -109,8 +103,8 @@ class FramingWindow : AbstractWindow("Framing", "nebulosa-framing"), FramingView
     }
 
     @FXML
-    private fun syncFromMount() {
-        framingManager.syncFromMount()
+    private fun sync() {
+        framingManager.sync()
     }
 
     override fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?) {

@@ -9,8 +9,12 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.logic.*
+import nebulosa.desktop.gui.control.TwoStateButton
+import nebulosa.desktop.logic.and
 import nebulosa.desktop.logic.camera.CameraManager
+import nebulosa.desktop.logic.isNull
+import nebulosa.desktop.logic.on
+import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.camera.ExposureMode
@@ -30,7 +34,7 @@ class CameraWindow : AbstractWindow("Camera", "nebulosa-camera"), CameraView {
     @Lazy @Autowired private lateinit var cameraManager: CameraManager
 
     @FXML private lateinit var cameraChoiceBox: ChoiceBox<Camera>
-    @FXML private lateinit var connectButton: Button
+    @FXML private lateinit var connectButton: TwoStateButton
     @FXML private lateinit var openINDIButton: Button
     @FXML private lateinit var menu: ContextMenu
     @FXML private lateinit var autoSaveAllExposuresMenuItem: CheckMenuItem
@@ -86,8 +90,6 @@ class CameraWindow : AbstractWindow("Camera", "nebulosa-camera"), CameraView {
         cameraManager.bind(cameraChoiceBox.selectionModel.selectedItemProperty())
 
         connectButton.disableProperty().bind(cameraManager.isNull() or isConnecting or isCapturing)
-        connectButton.textProperty().bind(cameraManager.connectedProperty.between("󰅙", "󱘖"))
-        cameraManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 

@@ -3,8 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.control.IconButton?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -37,22 +37,12 @@
                                minHeight="28.0"
                                minWidth="128.0">
                     </ChoiceBox>
-                    <Button fx:id="openINDIButton"
-                            alignment="CENTER"
-                            contentDisplay="GRAPHIC_ONLY"
-                            minWidth="42.0"
-                            mnemonicParsing="false"
-                            onAction="#openINDIPanelControl"
-                            prefHeight="32.0">
-                        <graphic>
-                            <ImageView fitHeight="16.0"
-                                       fitWidth="16.0"
-                                       pickOnBounds="true"
-                                       preserveRatio="true">
-                                <Image url="@icons/indi.png"/>
-                            </ImageView>
-                        </graphic>
-                    </Button>
+                    <IconButton fx:id="openINDIButton"
+                                onAction="#openINDIPanelControl">
+                        <image>
+                            <Image url="@icons/indi.png"/>
+                        </image>
+                    </IconButton>
                     <Button fx:id="useCoordinateFromGpsButton"
                             onAction="#useCoordinateFromGps"
                             styleClass="mdi,mdi-sm,text-blue-grey-700"

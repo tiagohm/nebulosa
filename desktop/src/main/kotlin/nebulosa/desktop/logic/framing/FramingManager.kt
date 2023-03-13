@@ -54,7 +54,7 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
     val mount
         get() = equipmentManager.selectedMount
 
-    fun syncFromMount(device: Mount? = null) {
+    fun sync(device: Mount? = null) {
         val mount = device ?: equipmentManager.selectedMount.value ?: return
         val coordinate = PairOfAngle(mount.rightAscensionJ2000, mount.declinationJ2000)
         javaFXExecutorService.execute { view.updateCoordinate(coordinate.first, coordinate.second) }

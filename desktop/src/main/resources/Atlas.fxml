@@ -46,7 +46,7 @@
                  text="Planets"
                  userData="PLANET">
                 <TableView fx:id="planetTableView"
-                           fixedCellSize="28.0"
+                           fixedCellSize="32.0"
                            maxHeight="268.0"
                            minHeight="268.0"
                            prefHeight="268.0">
@@ -77,18 +77,18 @@
                         <Button onAction="#searchMinorPlanet"
                                 text="Search">
                             <graphic>
-                                <Label styleClass="text-blue-grey-200,mdi,mdi-sm"
+                                <Label styleClass="text-blue-700,mdi,mdi-sm"
                                        text="󰍉"/>
                             </graphic>
                         </Button>
                     </HBox>
                     <TableView fx:id="minorPlanetTableView"
-                               fixedCellSize="28.0"
+                               fixedCellSize="32.0"
                                maxHeight="230.0"
                                minHeight="230.0"
                                prefHeight="230.0">
                         <columns>
-                            <TableColumn prefWidth="70.0"
+                            <TableColumn prefWidth="90.0"
                                          style="-fx-alignment: CENTER;"
                                          text="Element"/>
                             <TableColumn prefWidth="180.0"
@@ -118,13 +118,13 @@
                         <Button onAction="#searchStar"
                                 text="Search">
                             <graphic>
-                                <Label styleClass="text-blue-grey-200,mdi,mdi-sm"
+                                <Label styleClass="text-blue-700,mdi,mdi-sm"
                                        text="󰍉"/>
                             </graphic>
                         </Button>
                     </HBox>
                     <TableView fx:id="starTableView"
-                               fixedCellSize="28.0"
+                               fixedCellSize="32.0"
                                maxHeight="230.0"
                                minHeight="230.0"
                                prefHeight="230.0">
@@ -161,13 +161,13 @@
                         <Button onAction="#searchDSO"
                                 text="Search">
                             <graphic>
-                                <Label styleClass="text-blue-grey-200,mdi,mdi-sm"
+                                <Label styleClass="text-blue-700,mdi,mdi-sm"
                                        text="󰍉"/>
                             </graphic>
                         </Button>
                     </HBox>
                     <TableView fx:id="dsoTableView"
-                               fixedCellSize="28.0"
+                               fixedCellSize="32.0"
                                maxHeight="230.0"
                                minHeight="230.0"
                                prefHeight="230.0">
@@ -356,7 +356,7 @@
                     prefWidth="92.0"
                     text="Go To">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-200"
+                    <Label styleClass="mdi,mdi-sm,text-green-500"
                            text="󰄬">
                     </Label>
                 </graphic>
@@ -366,7 +366,7 @@
                     prefWidth="92.0"
                     text="Slew To">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-200"
+                    <Label styleClass="mdi,mdi-sm,text-green-500"
                            text="󰄬">
                     </Label>
                 </graphic>
@@ -376,7 +376,7 @@
                     prefWidth="92.0"
                     text="Sync">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-200"
+                    <Label styleClass="mdi,mdi-sm,text-blue-700"
                            text="󰓦">
                     </Label>
                 </graphic>
@@ -386,7 +386,7 @@
                     prefWidth="92.0"
                     text="Frame">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-grey-200"
+                    <Label styleClass="mdi,mdi-sm,text-blue-700"
                            text="󰋩">
                     </Label>
                 </graphic>

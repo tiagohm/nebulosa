@@ -14,7 +14,7 @@ import javafx.util.Callback
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ButtonValueFactory
-import nebulosa.desktop.logic.between
+import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.filterwheel.FilterWheelManager
 import nebulosa.desktop.logic.isNull
 import nebulosa.desktop.logic.on
@@ -33,7 +33,7 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "nebulosa-filterwheel"),
     @Lazy @Autowired private lateinit var filterWheelManager: FilterWheelManager
 
     @FXML private lateinit var filterWheelChoiceBox: ChoiceBox<FilterWheel>
-    @FXML private lateinit var connectButton: Button
+    @FXML private lateinit var connectButton: TwoStateButton
     @FXML private lateinit var menu: ContextMenu
     @FXML private lateinit var openINDIButton: Button
     @FXML private lateinit var compactModeMenuItem: CheckMenuItem
@@ -62,8 +62,7 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "nebulosa-filterwheel"),
         filterWheelManager.bind(filterWheelChoiceBox.selectionModel.selectedItemProperty())
 
         connectButton.disableProperty().bind(filterWheelManager.isNull() or isConnecting or isMoving)
-        connectButton.textProperty().bind(filterWheelManager.connectedProperty.between("󰅙", "󱘖"))
-        filterWheelManager.connectedProperty.between(connectButton.styleClass, "text-red-700", "text-blue-grey-700")
+        filterWheelManager.connectedProperty.on { connectButton.state = it }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 

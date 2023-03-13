@@ -4,11 +4,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.control.TwoStateButton?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="393.0"
+            prefHeight="384.0"
             prefWidth="332.0"
             stylesheets="@css/Global.css,@css/Home.css"
             xmlns="http://javafx.com/javafx/19"
@@ -38,15 +39,13 @@
                        prefWidth="94.0"
                        promptText="Port (7624)">
             </TextField>
-            <Button fx:id="connectButton"
-                    alignment="CENTER"
-                    contentDisplay="TEXT_ONLY"
-                    mnemonicParsing="false"
-                    onAction="#connect"
-                    prefHeight="32.0"
-                    styleClass="text-blue-grey-700,mdi,mdi-sm"
-                    text="󱘖">
-            </Button>
+            <TwoStateButton fx:id="connectButton"
+                            onAction="#connect"
+                            stateOnStyleClass="mdi,mdi-sm,text-red-500"
+                            stateOffStyleClass="mdi,mdi-sm,text-blue-700"
+                            stateOnIcon="󰅙"
+                            stateOffIcon="󱘖">
+            </TwoStateButton>
         </HBox>
         <ScrollPane hbarPolicy="NEVER"
                     vbarPolicy="NEVER"

@@ -9,9 +9,9 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.indi.INDIPanelControlManager
 import nebulosa.desktop.logic.on
-import nebulosa.desktop.logic.toggle
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.*
 import nebulosa.indi.protocol.PropertyPermission
@@ -221,7 +221,7 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "nebulosa-indi
             val size = min(children.size, vector.values.size)
             val property = vector.values.iterator()
 
-            repeat(size) { (children[it] as Button).updateButton(vector, property.next()) }
+            repeat(size) { (children[it] as TwoStateButton).updateButton(vector, property.next()) }
             repeat(vector.size - children.size) { makeButton(vector, property.next()) }
             repeat(children.size - vector.size) { children.removeAt(children.size - 1) }
         }
@@ -230,21 +230,28 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "nebulosa-indi
             vector: SwitchPropertyVector,
             property: SwitchProperty,
         ) {
-            val button = Button(property.label)
+            val button = TwoStateButton()
             button.cursor = Cursor.HAND
+            button.stateOnText = property.label
+            button.stateOffText = property.label
+            button.stateOnIcon = "󰄬"
+            button.stateOffIcon = "󰅖"
+            button.stateOnStyleClass.addAll("mdi", "mdi-sm", "text-green-700")
+            button.stateOffStyleClass.addAll("mdi", "mdi-sm", "text-red-700")
             button.styleClass.addAll("text-md", "text-bold")
             button.setOnAction { sendSwitchPropertyVectorMessage(vector, property) }
             button.updateButton(vector, property)
             children.add(button)
         }
 
-        private fun Button.updateButton(
+        private fun TwoStateButton.updateButton(
             vector: SwitchPropertyVector,
             property: SwitchProperty,
         ) {
             isDisable = vector.perm == PropertyPermission.RO
-            text = property.label
-            styleClass.toggle("text-green-700", "text-grey-800", property.value)
+            stateOnText = property.label
+            stateOffText = property.label
+            state = property.value
         }
 
         private fun sendSwitchPropertyVectorMessage(
