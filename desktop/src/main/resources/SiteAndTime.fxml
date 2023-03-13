@@ -14,7 +14,7 @@
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox alignment="TOP_CENTER"
-          spacing="8.0"
+          spacing="4.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
           AnchorPane.rightAnchor="0.0"
@@ -26,7 +26,7 @@
                     top="16.0"/>
         </padding>
         <HBox alignment="CENTER_LEFT"
-              spacing="8.0">
+              spacing="4.0">
             <VBox spacing="1.0">
                 <Label styleClass="text-sm"
                        text="GPS">
@@ -57,7 +57,7 @@
             </VBox>
         </HBox>
         <HBox alignment="CENTER_LEFT"
-              spacing="8.0">
+              spacing="4.0">
             <VBox spacing="1.0">
                 <Label styleClass="text-sm"
                        text="Latitude (degrees)">
@@ -97,7 +97,7 @@
             </Button>
         </HBox>
         <HBox alignment="CENTER_LEFT"
-              spacing="8.0">
+              spacing="4.0">
             <VBox spacing="1.0">
                 <Label styleClass="text-sm"
                        text="Date">

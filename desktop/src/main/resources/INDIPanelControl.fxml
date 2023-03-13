@@ -20,7 +20,7 @@
           AnchorPane.rightAnchor="0.0"
           AnchorPane.topAnchor="0.0">
         <HBox alignment="CENTER_RIGHT"
-              spacing="8.0">
+              spacing="4.0">
             <padding>
                 <Insets left="16.0"
                         right="16.0"

@@ -9,12 +9,12 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="384.0"
+            prefHeight="380.0"
             prefWidth="332.0"
             stylesheets="@css/Global.css,@css/Home.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <VBox spacing="8.0"
+    <VBox spacing="4.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
           AnchorPane.rightAnchor="0.0"
@@ -26,7 +26,7 @@
                     top="16.0"/>
         </padding>
         <HBox alignment="CENTER"
-              spacing="8.0">
+              spacing="4.0">
             <TextField fx:id="hostTextField"
                        focusTraversable="false"
                        prefHeight="32.0"
@@ -103,9 +103,12 @@
                         GridPane.columnIndex="0"
                         GridPane.rowIndex="0">
                     <graphic>
-                        <Label styleClass="text-grey-100,mdi"
-                               text="󰄄">
-                        </Label>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/camera.png"/>
+                        </ImageView>
                     </graphic>
                 </Button>
                 <Button fx:id="mountButton"
@@ -118,9 +121,12 @@
                         GridPane.columnIndex="1"
                         GridPane.rowIndex="0">
                     <graphic>
-                        <Label styleClass="text-grey-100,mdi"
-                               text="󰭎">
-                        </Label>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/telescope.png"/>
+                        </ImageView>
                     </graphic>
                 </Button>
                 <Button fx:id="guiderButton"
@@ -155,7 +161,7 @@
                                    fitWidth="24.0"
                                    pickOnBounds="true"
                                    preserveRatio="true">
-                            <Image url="@icons/fw.png"/>
+                            <Image url="@icons/rgb.png"/>
                         </ImageView>
                     </graphic>
                 </Button>
@@ -169,9 +175,12 @@
                         GridPane.columnIndex="1"
                         GridPane.rowIndex="1">
                     <graphic>
-                        <Label styleClass="text-grey-100,mdi"
-                               text="󰋱">
-                        </Label>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/focus.png"/>
+                        </ImageView>
                     </graphic>
                 </Button>
                 <Button fx:id="domeButton"
@@ -188,7 +197,7 @@
                                    fitWidth="24.0"
                                    pickOnBounds="true"
                                    preserveRatio="true">
-                            <Image url="@icons/dome.png"/>
+                            <Image url="@icons/observatory.png"/>
                         </ImageView>
                     </graphic>
                 </Button>
@@ -206,7 +215,7 @@
                                    fitWidth="24.0"
                                    pickOnBounds="true"
                                    preserveRatio="true">
-                            <Image url="@icons/rotator.png"/>
+                            <Image url="@icons/rotate.png"/>
                         </ImageView>
                     </graphic>
                 </Button>
@@ -224,7 +233,7 @@
                                    fitWidth="24.0"
                                    pickOnBounds="true"
                                    preserveRatio="true">
-                            <Image url="@icons/switches.png"/>
+                            <Image url="@icons/switch.png"/>
                         </ImageView>
                     </graphic>
                 </Button>
@@ -242,7 +251,7 @@
                                    fitWidth="24.0"
                                    pickOnBounds="true"
                                    preserveRatio="true">
-                            <Image url="@icons/atlas.png"/>
+                            <Image url="@icons/sky.png"/>
                         </ImageView>
                     </graphic>
                 </Button>
@@ -260,7 +269,7 @@
                                    fitWidth="24.0"
                                    pickOnBounds="true"
                                    preserveRatio="true">
-                            <Image url="@icons/platesolver.png"/>
+                            <Image url="@icons/big-dipper.png"/>
                         </ImageView>
                     </graphic>
                 </Button>
@@ -274,9 +283,12 @@
                         GridPane.columnIndex="1"
                         GridPane.rowIndex="3">
                     <graphic>
-                        <Label styleClass="text-grey-100,mdi"
-                               text="󰓎">
-                        </Label>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/star.png"/>
+                        </ImageView>
                     </graphic>
                 </Button>
                 <Button fx:id="sequencerButton"
@@ -289,9 +301,12 @@
                         GridPane.columnIndex="2"
                         GridPane.rowIndex="3">
                     <graphic>
-                        <Label styleClass="text-grey-100,mdi"
-                               text="󱏁">
-                        </Label>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/schedule.png"/>
+                        </ImageView>
                     </graphic>
                 </Button>
                 <Button fx:id="imageViewerButton"
@@ -304,9 +319,12 @@
                         GridPane.columnIndex="0"
                         GridPane.rowIndex="4">
                     <graphic>
-                        <Label styleClass="text-grey-100,mdi"
-                               text="󰡼">
-                        </Label>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/image.png"/>
+                        </ImageView>
                     </graphic>
                 </Button>
                 <Button fx:id="framingButton"
@@ -355,9 +373,12 @@
                         GridPane.columnIndex="0"
                         GridPane.rowIndex="5">
                     <graphic>
-                        <Label styleClass="text-grey-100,mdi"
-                               text="󰋼">
-                        </Label>
+                        <ImageView fitHeight="24.0"
+                                   fitWidth="24.0"
+                                   pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@icons/information.png"/>
+                        </ImageView>
                     </graphic>
                 </Button>
             </GridPane>

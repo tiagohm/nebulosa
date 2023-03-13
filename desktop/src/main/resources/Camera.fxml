@@ -17,7 +17,7 @@
             stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
-    <VBox spacing="8.0"
+    <VBox spacing="4.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
           AnchorPane.rightAnchor="0.0"
@@ -31,7 +31,7 @@
         <VBox alignment="CENTER"
               spacing="1.0">
             <HBox alignment="CENTER"
-                  spacing="8.0">
+                  spacing="4.0">
                 <ChoiceBox fx:id="cameraChoiceBox"
                            prefHeight="32.0"
                            prefWidth="394.0">
@@ -182,7 +182,7 @@
             </VBox>
         </HBox>
         <HBox alignment="CENTER"
-              spacing="8.0">
+              spacing="4.0">
             <VBox alignment="CENTER"
                   spacing="4.0">
                 <Label text="Exposure">
@@ -223,9 +223,9 @@
                 </HBox>
             </VBox>
             <VBox alignment="CENTER_LEFT"
-                  spacing="8.0">
+                  spacing="4.0">
                 <HBox alignment="CENTER"
-                      spacing="6.0">
+                      spacing="4.0">
                     <fx:define>
                         <ToggleGroup fx:id="exposureModeToggleGroup"/>
                     </fx:define>
@@ -370,7 +370,7 @@
             </VBox>
         </HBox>
         <HBox alignment="CENTER"
-              spacing="8.0">
+              spacing="4.0">
             <fx:define>
                 <FrameType fx:id="frameTypeInitialValue"
                            fx:constant="LIGHT"/>
@@ -409,7 +409,7 @@
             </VBox>
         </HBox>
         <HBox alignment="CENTER"
-              spacing="8.0">
+              spacing="4.0">
             <VBox alignment="CENTER_LEFT"
                   spacing="1.0">
                 <Label text="Gain">

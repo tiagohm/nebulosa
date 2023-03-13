@@ -94,7 +94,7 @@
             </TableView>
         </VBox>
         <HBox alignment="CENTER_LEFT"
-              spacing="8.0">
+              spacing="4.0">
             <ChoiceBox fx:id="filterSlotChoiceBox"
                        prefWidth="213.0">
             </ChoiceBox>
