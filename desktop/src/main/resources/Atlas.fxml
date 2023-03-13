@@ -217,7 +217,7 @@
                            maxWidth="140.0"
                            minWidth="140.0"
                            prefWidth="140.0"
-                           styleClass="copyable,text-monospaced,text-sm"
+                           styleClass="copyable,text-sm"
                            text="00h 00m 00.00s">
                 </TextField>
                 <Label maxWidth="72.0"
@@ -235,7 +235,7 @@
                            maxWidth="140.0"
                            minWidth="140.0"
                            prefWidth="140.0"
-                           styleClass="copyable,text-monospaced,text-sm"
+                           styleClass="copyable,text-sm"
                            text="+00° 00' 00.00&quot;">
                 </TextField>
             </HBox>
@@ -253,7 +253,7 @@
                            maxWidth="140.0"
                            minWidth="140.0"
                            prefWidth="140.0"
-                           styleClass="copyable,text-monospaced,text-sm"
+                           styleClass="copyable,text-sm"
                            text="00h 00m 00.00s">
                 </TextField>
                 <Label maxWidth="72.0"
@@ -271,7 +271,7 @@
                            maxWidth="140.0"
                            minWidth="140.0"
                            prefWidth="140.0"
-                           styleClass="copyable,text-monospaced,text-sm"
+                           styleClass="copyable,text-sm"
                            text="+00° 00' 00.00&quot;">
                 </TextField>
             </HBox>
@@ -289,7 +289,7 @@
                            maxWidth="140.0"
                            minWidth="140.0"
                            prefWidth="140.0"
-                           styleClass="copyable,text-monospaced,text-sm"
+                           styleClass="copyable,text-sm"
                            text="000° 00' 00.00&quot;">
                 </TextField>
                 <Label maxWidth="72.0"
@@ -308,7 +308,7 @@
                            minWidth="140.0"
                            prefHeight="10.0"
                            prefWidth="140.0"
-                           styleClass="copyable,text-monospaced,text-sm"
+                           styleClass="copyable,text-sm"
                            text="+00° 00' 00.00&quot;">
                 </TextField>
             </HBox>
@@ -326,7 +326,7 @@
                            maxWidth="140.0"
                            minWidth="140.0"
                            prefWidth="140.0"
-                           styleClass="copyable,text-monospaced,text-sm"
+                           styleClass="copyable,text-sm"
                            text="-">
                 </TextField>
                 <Label maxWidth="72.0"
@@ -344,7 +344,7 @@
                            maxWidth="140.0"
                            minWidth="140.0"
                            prefWidth="140.0"
-                           styleClass="copyable,text-monospaced,text-sm"
+                           styleClass="copyable,text-sm"
                            text="00:00 | 00:00 | 00:00">
                 </TextField>
             </HBox>

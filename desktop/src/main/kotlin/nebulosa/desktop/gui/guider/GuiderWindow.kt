@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 
 @Component
-class GuiderWindow : AbstractWindow("Guider", "nebulosa-guider"), GuiderView {
+class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
     @Lazy @Autowired private lateinit var guiderManager: GuiderManager
 

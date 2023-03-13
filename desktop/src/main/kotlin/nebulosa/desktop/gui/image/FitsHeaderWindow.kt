@@ -7,7 +7,7 @@ import nebulosa.desktop.logic.image.FitsHeaderManager
 import nebulosa.desktop.view.image.FitsHeaderView
 import nom.tam.fits.Header
 
-class FitsHeaderWindow : AbstractWindow("FitsHeader", "nebulosa-fits-header"), FitsHeaderView {
+class FitsHeaderWindow : AbstractWindow("FitsHeader", "text-box"), FitsHeaderView {
 
     @FXML private lateinit var cardsTextArea: TextArea
 

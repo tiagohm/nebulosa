@@ -26,7 +26,7 @@ import java.util.concurrent.CompletableFuture
 import kotlin.math.ceil
 
 @Component
-class PlateSolverWindow : AbstractWindow("PlateSolver", "nebulosa-plate-solver"), PlateSolverView {
+class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolverView {
 
     @Lazy @Autowired private lateinit var plateSolverManager: PlateSolverManager
 

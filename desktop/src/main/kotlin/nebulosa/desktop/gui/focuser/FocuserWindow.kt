@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 
 @Component
-class FocuserWindow : AbstractWindow("Focuser", "nebulosa-focuser"), FocuserView {
+class FocuserWindow : AbstractWindow("Focuser", "focus"), FocuserView {
 
     @Lazy @Autowired private lateinit var focuserManager: FocuserManager
 

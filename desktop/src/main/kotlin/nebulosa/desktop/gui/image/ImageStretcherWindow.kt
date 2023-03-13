@@ -13,7 +13,7 @@ import nebulosa.desktop.view.image.ImageStretcherView
 import nebulosa.desktop.view.image.ImageView
 import org.controlsfx.control.RangeSlider
 
-class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageStretcher", "nebulosa-image-stretcher"), ImageStretcherView {
+class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageStretcher", "histogram"), ImageStretcherView {
 
     @FXML private lateinit var shadowSpinner: Spinner<Double>
     @FXML private lateinit var midtoneSpinner: Spinner<Double>
@@ -26,8 +26,8 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
     private val stretchParameterListener = PauseTransition(Duration.seconds(0.5))
 
     init {
-        resizable = false
         title = "Image Stretch"
+        resizable = false
 
         stretchParameterListener.setOnFinished {
             imageStretcherManager.apply(shadow / 255f, highlight / 255f, midtone / 255f)

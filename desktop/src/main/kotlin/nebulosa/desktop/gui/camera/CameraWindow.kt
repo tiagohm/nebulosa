@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
 @Component
-class CameraWindow : AbstractWindow("Camera", "nebulosa-camera"), CameraView {
+class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
 
     @Lazy @Autowired private lateinit var cameraManager: CameraManager
 

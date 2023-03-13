@@ -31,7 +31,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Component
-class MountWindow : AbstractWindow("Mount", "nebulosa-mount"), MountView {
+class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
 
     @Lazy @Autowired private lateinit var mountManager: MountManager
 

@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 
 @Component
-class TelescopeControlWindow : AbstractWindow("TelescopeControl", "nebulosa-telescope-control"), TelescopeControlView {
+class TelescopeControlWindow : AbstractWindow("TelescopeControl", "remote-control"), TelescopeControlView {
 
     @Lazy @Autowired private lateinit var telescopeControlManager: TelescopeControlManager
 

@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 
 @Component
-class AboutWindow : AbstractWindow("About", "nebulosa-about"), AboutView {
+class AboutWindow : AbstractWindow("About", "information"), AboutView {
 
     @Lazy @Autowired private lateinit var aboutManager: AboutManager
 

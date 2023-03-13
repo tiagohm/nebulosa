@@ -31,7 +31,7 @@ import java.io.File
 import java.nio.IntBuffer
 import kotlin.jvm.optionals.getOrNull
 
-class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image", "nebulosa-image"), ImageView {
+class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image", "image"), ImageView {
 
     @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
 

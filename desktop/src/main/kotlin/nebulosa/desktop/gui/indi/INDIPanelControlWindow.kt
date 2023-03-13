@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component
 import kotlin.math.min
 
 @Component
-class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "nebulosa-indi"), INDIPanelControlView {
+class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIPanelControlView {
 
     @Lazy @Autowired private lateinit var indiPanelControlManager: INDIPanelControlManager
 

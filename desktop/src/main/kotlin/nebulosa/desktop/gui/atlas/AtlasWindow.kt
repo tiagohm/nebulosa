@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 
 @Component
-class AtlasWindow : AbstractWindow("Atlas", "nebulosa-atlas"), AtlasView {
+class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
 
     @Lazy @Autowired private lateinit var atlasManager: AtlasManager
 
