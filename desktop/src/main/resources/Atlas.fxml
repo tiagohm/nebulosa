@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.control.AltitudeChart?>
-<?import nebulosa.desktop.gui.control.MoonView?>
-<?import nebulosa.desktop.gui.control.SunView?>
+<?import nebulosa.desktop.gui.control.*?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -203,151 +201,106 @@
                        text="Sun">
                 </Label>
             </HBox>
-            <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Label maxWidth="72.0"
-                       minWidth="72.0"
-                       prefWidth="72.0"
-                       styleClass="text-sm,text-bold"
-                       text="RA:">
-                </Label>
-                <TextField fx:id="rightAscensionTextField"
-                           alignment="CENTER_RIGHT"
-                           editable="false"
-                           maxWidth="140.0"
-                           minWidth="140.0"
-                           prefWidth="140.0"
-                           styleClass="copyable,text-sm"
-                           text="00h 00m 00.00s">
-                </TextField>
-                <Label maxWidth="72.0"
-                       minWidth="72.0"
-                       prefWidth="72.0"
-                       styleClass="text-sm,text-bold"
-                       text="DEC:">
-                    <HBox.margin>
-                        <Insets left="8.0"/>
-                    </HBox.margin>
-                </Label>
-                <TextField fx:id="declinationTextField"
-                           alignment="CENTER_RIGHT"
-                           editable="false"
-                           maxWidth="140.0"
-                           minWidth="140.0"
-                           prefWidth="140.0"
-                           styleClass="copyable,text-sm"
-                           text="+00° 00' 00.00&quot;">
-                </TextField>
-            </HBox>
-            <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Label maxWidth="72.0"
-                       minWidth="72.0"
-                       prefWidth="72.0"
-                       styleClass="text-sm,text-bold"
-                       text="RA (J2000):">
-                </Label>
-                <TextField fx:id="rightAscensionJ2000TextField"
-                           alignment="CENTER_RIGHT"
-                           editable="false"
-                           maxWidth="140.0"
-                           minWidth="140.0"
-                           prefWidth="140.0"
-                           styleClass="copyable,text-sm"
-                           text="00h 00m 00.00s">
-                </TextField>
-                <Label maxWidth="72.0"
-                       minWidth="72.0"
-                       prefWidth="72.0"
-                       styleClass="text-sm,text-bold"
-                       text="DEC (J2000):">
-                    <HBox.margin>
-                        <Insets left="8.0"/>
-                    </HBox.margin>
-                </Label>
-                <TextField fx:id="declinationJ2000TextField"
-                           alignment="CENTER_RIGHT"
-                           editable="false"
-                           maxWidth="140.0"
-                           minWidth="140.0"
-                           prefWidth="140.0"
-                           styleClass="copyable,text-sm"
-                           text="+00° 00' 00.00&quot;">
-                </TextField>
-            </HBox>
-            <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Label maxWidth="72.0"
-                       minWidth="72.0"
-                       prefWidth="72.0"
-                       styleClass="text-sm,text-bold"
-                       text="Azimuth:">
-                </Label>
-                <TextField fx:id="azimuthTextField"
-                           alignment="CENTER_RIGHT"
-                           editable="false"
-                           maxWidth="140.0"
-                           minWidth="140.0"
-                           prefWidth="140.0"
-                           styleClass="copyable,text-sm"
-                           text="000° 00' 00.00&quot;">
-                </TextField>
-                <Label maxWidth="72.0"
-                       minWidth="72.0"
-                       prefWidth="72.0"
-                       styleClass="text-sm,text-bold"
-                       text="Altitude:">
-                    <HBox.margin>
-                        <Insets left="8.0"/>
-                    </HBox.margin>
-                </Label>
-                <TextField fx:id="altitudeTextField"
-                           alignment="CENTER_RIGHT"
-                           editable="false"
-                           maxWidth="140.0"
-                           minWidth="140.0"
-                           prefHeight="10.0"
-                           prefWidth="140.0"
-                           styleClass="copyable,text-sm"
-                           text="+00° 00' 00.00&quot;">
-                </TextField>
-            </HBox>
-            <HBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <Label maxWidth="72.0"
-                       minWidth="72.0"
-                       prefWidth="72.0"
-                       styleClass="text-sm,text-bold"
-                       text="Constellation:">
-                </Label>
-                <TextField fx:id="constellationTextField"
-                           alignment="CENTER_RIGHT"
-                           editable="false"
-                           maxWidth="140.0"
-                           minWidth="140.0"
-                           prefWidth="140.0"
-                           styleClass="copyable,text-sm"
-                           text="-">
-                </TextField>
-                <Label maxWidth="72.0"
-                       minWidth="72.0"
-                       prefWidth="72.0"
-                       styleClass="text-sm,text-bold"
-                       text="RTS:">
-                    <HBox.margin>
-                        <Insets left="8.0"/>
-                    </HBox.margin>
-                </Label>
-                <TextField fx:id="rtsTextField"
-                           alignment="CENTER_RIGHT"
-                           editable="false"
-                           maxWidth="140.0"
-                           minWidth="140.0"
-                           prefWidth="140.0"
-                           styleClass="copyable,text-sm"
-                           text="00:00 | 00:00 | 00:00">
-                </TextField>
-            </HBox>
+            <GridPane vgap="4.0"
+                      hgap="4.0">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+                <LabeledPane text="RA"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="0"
+                             GridPane.columnIndex="0">
+                    <TextField fx:id="rightAscensionTextField"
+                               editable="false"
+                               styleClass="copyable,text-sm"
+                               text="00h 00m 00.00s">
+                    </TextField>
+                </LabeledPane>
+                <LabeledPane text="DEC"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="0"
+                             GridPane.columnIndex="1">
+                    <TextField fx:id="declinationTextField"
+                               editable="false"
+                               styleClass="copyable,text-sm"
+                               text="+00° 00' 00.00&quot;">
+                    </TextField>
+                </LabeledPane>
+                <LabeledPane text="RA (J2000)"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="0"
+                             GridPane.columnIndex="2">
+                    <TextField fx:id="rightAscensionJ2000TextField"
+                               editable="false"
+                               styleClass="copyable,text-sm"
+                               text="00h 00m 00.00s">
+                    </TextField>
+                </LabeledPane>
+                <LabeledPane text="DEC (J2000)"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="0"
+                             GridPane.columnIndex="3">
+                    <TextField fx:id="declinationJ2000TextField"
+                               editable="false"
+                               styleClass="copyable,text-sm"
+                               text="+00° 00' 00.00&quot;">
+                    </TextField>
+                </LabeledPane>
+                <LabeledPane text="Azimuth"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="1"
+                             GridPane.columnIndex="0">
+                    <TextField fx:id="azimuthTextField"
+                               editable="false"
+                               styleClass="copyable,text-sm"
+                               text="000° 00' 00.00&quot;">
+                    </TextField>
+                </LabeledPane>
+                <LabeledPane text="Altitude"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="1"
+                             GridPane.columnIndex="1">
+                    <TextField fx:id="altitudeTextField"
+                               editable="false"
+                               styleClass="copyable,text-sm"
+                               text="+00° 00' 00.00&quot;">
+                    </TextField>
+                </LabeledPane>
+                <LabeledPane text="Distance"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="1"
+                             GridPane.columnIndex="2">
+                    <TextField fx:id="distanceTextField"
+                               editable="false"
+                               styleClass="copyable,text-sm"
+                               text="-">
+                    </TextField>
+                </LabeledPane>
+                <LabeledPane text="Constellation"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="1"
+                             GridPane.columnIndex="3">
+                    <TextField fx:id="constellationTextField"
+                               editable="false"
+                               styleClass="copyable,text-sm"
+                               text="-">
+                    </TextField>
+                </LabeledPane>
+                <LabeledPane text="RTS"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="2"
+                             GridPane.columnIndex="0"
+                             GridPane.columnSpan="2">
+                    <TextField fx:id="rtsTextField"
+                               editable="false"
+                               styleClass="copyable,text-sm"
+                               text="00:00 | 00:00 | 00:00">
+                    </TextField>
+                </LabeledPane>
+            </GridPane>
         </VBox>
         <HBox alignment="TOP_CENTER"
               spacing="4.0">

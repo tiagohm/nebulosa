@@ -54,6 +54,18 @@
                 <SeparatorMenuItem/>
                 <MenuItem text="Stretch"
                           onAction="#openImageStretcher"/>
+                <CheckMenuItem fx:id="autoStretchCheckMenuItem"
+                               text="Auto stretch"
+                               onAction="#autoStretch">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP"
+                                            code="A"
+                                            control="DOWN"
+                                            meta="UP"
+                                            shift="UP"
+                                            shortcut="UP"/>
+                    </accelerator>
+                </CheckMenuItem>
                 <MenuItem fx:id="scnrMenuItem"
                           text="SCNR"
                           onAction="#openSCNR"/>

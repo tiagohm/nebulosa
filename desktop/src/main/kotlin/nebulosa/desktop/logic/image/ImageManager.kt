@@ -99,7 +99,6 @@ class ImageManager(private val view: ImageView) : Closeable {
             .debounce(500L, TimeUnit.MILLISECONDS)
             .subscribe {
                 transformImage()
-
                 draw()
                 drawHistogram()
             }
@@ -120,8 +119,7 @@ class ImageManager(private val view: ImageView) : Closeable {
             if (calibration.get() != null && view.annotationEnabled) {
                 annotation = Annotation(calibration.get())
                 view.addFirst(annotation!!)
-
-                javaFXExecutorService.submit(view::redraw)
+                view.redraw()
             }
         }
     }
@@ -168,9 +166,13 @@ class ImageManager(private val view: ImageView) : Closeable {
             imageStretcherView?.resetStretch(true)
         }
 
-        transformImage()
-        draw()
-        drawHistogram()
+        if (view.autoStretchEnabled) {
+            autoStretch()
+        } else {
+            transformImage()
+            draw()
+            drawHistogram()
+        }
 
         imageStretcherView?.updateTitle()
 
@@ -261,7 +263,7 @@ class ImageManager(private val view: ImageView) : Closeable {
                     try {
                         annotation = Annotation(calibration)
                         view.addFirst(annotation!!)
-                        javaFXExecutorService.submit(view::redraw)
+                        view.redraw()
                     } catch (e: Throwable) {
                         LOG.error("annotation failed", e)
                     }
@@ -377,6 +379,14 @@ class ImageManager(private val view: ImageView) : Closeable {
     fun openImageStretcher() {
         imageStretcherView = imageStretcherView ?: ImageStretcherWindow(view)
         imageStretcherView!!.show(bringToFront = true)
+    }
+
+    fun autoStretch() {
+        if (view.autoStretchEnabled) {
+            val params = AutoScreenTransformFunction.compute(image ?: return)
+            imageStretcherView?.updateStretchParameters(params.shadow, params.highlight, params.midtone)
+            view.stf(params.shadow, params.highlight, params.midtone)
+        }
     }
 
     fun openSCNR() {

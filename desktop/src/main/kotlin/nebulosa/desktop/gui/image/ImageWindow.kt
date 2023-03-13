@@ -1,6 +1,7 @@
 package nebulosa.desktop.gui.image
 
 import com.sun.javafx.scene.control.ControlAcceleratorSupport
+import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.fxml.FXML
 import javafx.geometry.Point2D
@@ -37,6 +38,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     @FXML private lateinit var fitsImageViewer: ImageViewer
     @FXML private lateinit var menu: ContextMenu
+    @FXML private lateinit var autoStretchCheckMenuItem: CheckMenuItem
     @FXML private lateinit var mirrorHorizontalCheckMenuItem: CheckMenuItem
     @FXML private lateinit var mirrorVerticalCheckMenuItem: CheckMenuItem
     @FXML private lateinit var invertCheckMenuItem: CheckMenuItem
@@ -133,6 +135,9 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             invertCheckMenuItem.isSelected = value
         }
 
+    override val autoStretchEnabled
+        get() = autoStretchCheckMenuItem.isSelected
+
     override val scnrEnabled
         get() = imageManager.scnrEnabled
 
@@ -175,6 +180,11 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     @FXML
     private fun openImageStretcher() {
         imageManager.openImageStretcher()
+    }
+
+    @FXML
+    private fun autoStretch() {
+        imageManager.autoStretch()
     }
 
     @FXML
@@ -279,7 +289,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     override fun redraw() {
-        fitsImageViewer.redraw()
+        Platform.runLater { fitsImageViewer.redraw() }
     }
 
     override fun addFirst(element: Drawable) {

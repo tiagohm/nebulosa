@@ -20,6 +20,8 @@ interface ImageView : View, Iterable<Drawable> {
 
     val camera: Camera?
 
+    val autoStretchEnabled: Boolean
+
     var hasScnr: Boolean
 
     val originalImage: Image?

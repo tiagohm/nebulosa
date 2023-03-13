@@ -1,6 +1,7 @@
 package nebulosa.desktop.gui.control
 
 import javafx.geometry.Point2D
+import javafx.scene.CacheHint
 import javafx.scene.Cursor
 import javafx.scene.Node
 import javafx.scene.canvas.Canvas
@@ -23,6 +24,9 @@ class ImageViewer private constructor(private val drawables: LinkedList<Drawable
     constructor() : this(LinkedList())
 
     init {
+        canvas.isCache = false
+        canvas.cacheHint = CacheHint.SPEED
+
         content = canvas
 
         addEventFilter(ScrollEvent.SCROLL) {
