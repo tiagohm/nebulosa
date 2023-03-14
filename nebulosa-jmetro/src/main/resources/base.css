@@ -923,9 +923,9 @@ Button {
 
 /* focused */
 .text-input:focused {
-    -fx-background-color: accent_color, background_focused_color;
+    /* -fx-background-color: accent_color, background_focused_color; */
 
-    -fx-text-fill: text_focused_color;
+    /* -fx-text-fill: text_focused_color; */
 }
 
 /* disabled */
@@ -947,7 +947,7 @@ Button {
    TextField which will cause an IllegalArgumentException when creating the nebulosa.jmetro.TextFieldSkin object and passing it,
    for instance, the WebColorField */
 TextField {
-    -fx-skin: "nebulosa.jmetro.TextFieldSkin";
+    -fx-skin: "nebulosa.jmetro.FluentTextFieldSkin";
 
     -right-button-visible: true;
 }
@@ -967,7 +967,7 @@ TextField:readonly {
     -fx-cursor: default;
 
     -fx-background-insets: -0.1666665em -0.45em -0.1666665em -0.45em; /* 4 7 4 7 -> this values are subtracted by 2px in em because of the border of the textfield */
-    -fx-background-color: background_focused_color;  /* We must give it a color so that it reacts to the mouse */
+    -fx-background-color: transparent;  /* We must give it a color so that it reacts to the mouse */
 }
 
 .text-field > .right-button:hover > .right-button-graphic {
@@ -981,7 +981,7 @@ TextField:readonly {
  ******************************************************************************/
 
 .password-field {
-    -fx-skin: "nebulosa.jmetro.PasswordFieldSkin";
+    -fx-skin: "nebulosa.jmetro.FluentPasswordFieldSkin";
 
     -right-button-visible: true;
 }

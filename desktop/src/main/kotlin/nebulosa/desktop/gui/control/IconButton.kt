@@ -48,6 +48,6 @@ class IconButton(@NamedArg("size") size: Double = DEFAULT_SIZE) : Button() {
 
     companion object {
 
-        const val DEFAULT_SIZE = 35.0
+        const val DEFAULT_SIZE = 38.0
     }
 }

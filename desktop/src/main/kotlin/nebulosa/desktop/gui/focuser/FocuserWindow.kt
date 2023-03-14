@@ -8,6 +8,7 @@ import javafx.scene.control.Spinner
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.focuser.FocuserManager
 import nebulosa.desktop.logic.isNull
@@ -15,7 +16,6 @@ import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.focuser.FocuserView
 import nebulosa.indi.device.focuser.Focuser
-import org.controlsfx.control.ToggleSwitch
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
@@ -38,7 +38,7 @@ class FocuserWindow : AbstractWindow("Focuser", "focus"), FocuserView {
     @FXML private lateinit var moveToButton: Button
     @FXML private lateinit var syncButton: Button
     @FXML private lateinit var abortButton: Button
-    @FXML private lateinit var backlashCompensationToggleSwitch: ToggleSwitch
+    @FXML private lateinit var backlashCompensationSwitch: SwitchSegmentedButton
     @FXML private lateinit var backlashCompensationStepsSpinner: Spinner<Double>
     @FXML private lateinit var autoFocusButton: Button
 

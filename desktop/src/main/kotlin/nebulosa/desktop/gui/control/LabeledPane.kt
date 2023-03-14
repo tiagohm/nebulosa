@@ -19,6 +19,8 @@ class LabeledPane(text: String = "") : VBox() {
         children.add(label)
 
         alignment = Pos.CENTER_LEFT
+        spacing = 1.0
+        isFillWidth = true
     }
 
     val textProperty: StringProperty

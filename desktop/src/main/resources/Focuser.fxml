@@ -5,7 +5,6 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.layout.*?>
 <?import nebulosa.desktop.gui.control.*?>
-<?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -33,8 +32,8 @@
             </ChoiceBox>
             <TwoStateButton fx:id="connectButton"
                             onAction="#connect"
-                            stateOnStyleClass="mdi,mdi-sm,text-red-500"
-                            stateOffStyleClass="mdi,mdi-sm,text-blue-700"
+                            stateOnStyleClass="mdi,mdi-sm,text-warning-color"
+                            stateOffStyleClass="mdi,mdi-sm,text-accent-color"
                             stateOnIcon="󰅙"
                             stateOffIcon="󱘖">
             </TwoStateButton>
@@ -77,7 +76,7 @@
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="2">
                     <graphic>
-                        <Label styleClass="text-blue-700,mdi,mdi-xs"
+                        <Label styleClass="text-accent-color,mdi,mdi-xs"
                                text="󰋼">
                         </Label>
                     </graphic>
@@ -105,7 +104,7 @@
                             onAction="#moveIn"
                             text="Move In">
                         <graphic>
-                            <Label styleClass="mdi,mdi-sm,text-blue-700"
+                            <Label styleClass="mdi,mdi-sm,text-accent-color"
                                    text="󰁍">
                             </Label>
                         </graphic>
@@ -114,7 +113,7 @@
                             onAction="#moveOut"
                             text="Move Out">
                         <graphic>
-                            <Label styleClass="mdi,mdi-sm,text-blue-700"
+                            <Label styleClass="mdi,mdi-sm,text-accent-color"
                                    text="󰁔">
                             </Label>
                         </graphic>
@@ -141,7 +140,7 @@
                             prefWidth="144.0"
                             text="Move To">
                         <graphic>
-                            <Label styleClass="mdi,mdi-sm,text-blue-700"
+                            <Label styleClass="mdi,mdi-sm,text-accent-color"
                                    text="󰹳">
                             </Label>
                         </graphic>
@@ -151,7 +150,7 @@
                             prefWidth="92.0"
                             text="Sync">
                         <graphic>
-                            <Label styleClass="mdi,mdi-sm,text-blue-700"
+                            <Label styleClass="mdi,mdi-sm,text-accent-color"
                                    text="󰓦">
                             </Label>
                         </graphic>
@@ -161,25 +160,20 @@
         </VBox>
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
-            <ToggleSwitch fx:id="backlashCompensationToggleSwitch"
-                          prefWidth="172.0"
-                          styleClass="text-sm"
-                          text="Backlash compensation:">
-            </ToggleSwitch>
-            <Label styleClass="text-sm"
-                   text="Steps:">
-                <HBox.margin>
-                    <Insets left="16.0"/>
-                </HBox.margin>
-            </Label>
-            <Spinner fx:id="backlashCompensationStepsSpinner"
-                     amountToStepBy="1.0"
-                     editable="true"
-                     initialValue="100.0"
-                     max="1000.0"
-                     min="0.0"
-                     prefWidth="84.0">
-            </Spinner>
+            <LabeledPane text="Backlash compensation"
+                         textStyleClass="text-bold">
+                <SwitchSegmentedButton fx:id="backlashCompensationSwitch"/>
+            </LabeledPane>
+            <LabeledPane text="Steps"
+                         textStyleClass="text-bold">
+                <Spinner fx:id="backlashCompensationStepsSpinner"
+                         amountToStepBy="1.0"
+                         editable="true"
+                         initialValue="100.0"
+                         max="1000.0"
+                         min="0.0">
+                </Spinner>
+            </LabeledPane>
         </HBox>
         <HBox alignment="CENTER_LEFT"
               spacing="129.0">
@@ -187,7 +181,7 @@
                     onAction="#abort"
                     text="Abort">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-red-500"
+                    <Label styleClass="mdi,mdi-sm,text-warning-color"
                            text="󰓛">
                     </Label>
                 </graphic>
@@ -197,7 +191,7 @@
                     prefWidth="144.0"
                     text="Auto focus">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-700"
+                    <Label styleClass="mdi,mdi-sm,text-accent-color"
                            text="󰽎"
                            textFill="#388E3C">
                     </Label>

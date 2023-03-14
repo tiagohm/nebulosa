@@ -19,12 +19,15 @@ class TwoStateButton : Button() {
     init {
         alignment = Pos.CENTER
         isMnemonicParsing = false
-        // minHeight = DEFAULT_SIZE
+        minHeight = DEFAULT_SIZE
         maxHeight = DEFAULT_SIZE
         minWidth = DEFAULT_SIZE
 
         stateOffLabel.contentDisplay = ContentDisplay.TEXT_ONLY
         stateOnLabel.contentDisplay = ContentDisplay.TEXT_ONLY
+
+        stateOffLabel.disableProperty().bind(disableProperty())
+        stateOnLabel.disableProperty().bind(disableProperty())
 
         graphic = stateOffLabel
 
@@ -55,19 +58,19 @@ class TwoStateButton : Button() {
     var stateOnText = ""
         set(value) {
             field = value
-            text = value
+            if (state) text = value
         }
 
     var stateOffText = ""
         set(value) {
             field = value
-            text = value
+            if (!state) text = value
         }
 
     var size = DEFAULT_SIZE
         set(value) {
             field = value
-            // minHeight = value
+            minHeight = value
             maxHeight = value
             minWidth = value
         }

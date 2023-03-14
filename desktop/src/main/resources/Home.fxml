@@ -9,7 +9,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="380.0"
+            prefHeight="388.0"
             prefWidth="332.0"
             stylesheets="@css/Global.css,@css/Home.css"
             xmlns="http://javafx.com/javafx/19"
@@ -41,8 +41,8 @@
             </TextField>
             <TwoStateButton fx:id="connectButton"
                             onAction="#connect"
-                            stateOnStyleClass="mdi,mdi-sm,text-red-500"
-                            stateOffStyleClass="mdi,mdi-sm,text-blue-700"
+                            stateOnStyleClass="mdi,mdi-sm,text-warning-color"
+                            stateOffStyleClass="mdi,mdi-sm,text-accent-color"
                             stateOnIcon="󰅙"
                             stateOffIcon="󱘖">
             </TwoStateButton>

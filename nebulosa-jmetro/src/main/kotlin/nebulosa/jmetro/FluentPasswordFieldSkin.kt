@@ -4,7 +4,7 @@ import javafx.scene.control.PasswordField
 import javafx.scene.control.TextField
 import javafx.scene.input.MouseEvent
 
-class PasswordFieldSkin(textField: TextField) : TextFieldWithButtonSkin(textField) {
+class FluentPasswordFieldSkin(textField: TextField) : TextFieldWithButtonSkin(textField) {
 
     private var isMaskTextDisabled = false
 

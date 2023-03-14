@@ -30,6 +30,14 @@
     -fx-font-family: 'Monospaced';
 }
 
+.text-accent-color {
+    -fx-text-fill: '#0078d7';
+}
+
+.text-warning-color {
+    -fx-text-fill: '#d83b01';
+}
+
 .s-xs {
     -fx-spacing: 1px;
 }
@@ -52,19 +60,19 @@
 
 .mdi {
     -fx-font-family: 'Material Design Icons';
-    -fx-font-size: 24px;
+    -fx-font-size: 22px;
 }
 
 .mdi.mdi-xs {
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
 }
 
 .mdi.mdi-sm {
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
 }
 
 .mdi.mdi-md {
-    -fx-font-size: 20px;
+    -fx-font-size: 22px;
 }
 
 .button,
@@ -80,4 +88,9 @@
 
 .menu-item {
     -fx-padding: 8px;
+}
+
+.button {
+    -fx-min-height: 38px;
+    -fx-min-width: 38px;
 }

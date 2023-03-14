@@ -5,7 +5,7 @@ import javafx.beans.Observable
 import javafx.scene.control.TextField
 import javafx.scene.input.MouseEvent
 
-class TextFieldSkin(textField: TextField) : TextFieldWithButtonSkin(textField) {
+class FluentTextFieldSkin(textField: TextField) : TextFieldWithButtonSkin(textField) {
 
     init {
         textField.skinProperty().addListener(object : InvalidationListener {

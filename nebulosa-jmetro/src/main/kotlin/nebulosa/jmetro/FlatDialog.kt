@@ -29,6 +29,7 @@ class FlatDialog<R> : Dialog<R>() {
         stage.icons.addListener(::dialogIconsChanged)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun dialogIconsChanged(change: ListChangeListener.Change<out Image>) {
         // When initOwner is called on the Dialog the icon
         // is changed and this event is fired.

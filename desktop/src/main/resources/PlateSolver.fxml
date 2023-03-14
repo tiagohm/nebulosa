@@ -6,7 +6,6 @@
 <?import javafx.scene.layout.*?>
 <?import nebulosa.desktop.gui.control.*?>
 <?import nebulosa.desktop.view.platesolver.PlateSolverType?>
-<?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -41,7 +40,7 @@
                     <Insets top="9.0"/>
                 </HBox.margin>
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-700"
+                    <Label styleClass="mdi,mdi-sm,text-accent-color"
                            text="󰍉"/>
                 </graphic>
             </Button>
@@ -64,9 +63,8 @@
 
             <LabeledPane text="Blind"
                          textStyleClass="text-bold">
-                <ToggleSwitch fx:id="blindToggleSwitch"
-                              selected="true"
-                              maxWidth="25.0"/>
+                <SwitchSegmentedButton fx:id="blindSwitch"
+                                       state="true"/>
             </LabeledPane>
         </HBox>
         <Label text="Parameters:"/>
@@ -207,7 +205,7 @@
                     onAction="#cancel"
                     text="Cancel">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-red-500"
+                    <Label styleClass="mdi,mdi-sm,text-warning-color"
                            text="󰓛"/>
                 </graphic>
             </Button>
@@ -218,7 +216,7 @@
                     onAction="#sync"
                     text="Sync">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-700"
+                    <Label styleClass="mdi,mdi-sm,text-accent-color"
                            text="󰓦"/>
                 </graphic>
             </Button>
@@ -243,7 +241,7 @@
                     prefWidth="92.0"
                     text="Frame">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-700"
+                    <Label styleClass="mdi,mdi-sm,text-accent-color"
                            text="󰋩">
                     </Label>
                 </graphic>

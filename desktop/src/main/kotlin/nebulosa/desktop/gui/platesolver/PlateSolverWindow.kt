@@ -6,6 +6,7 @@ import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Spinner
 import javafx.scene.control.TextField
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.logic.asString
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
@@ -16,7 +17,6 @@ import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.AngleFormatter
 import nebulosa.platesolving.Calibration
-import org.controlsfx.control.ToggleSwitch
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -35,7 +35,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
     @FXML private lateinit var typeChoiceBox: ChoiceBox<PlateSolverType>
     @FXML private lateinit var pathOrUrlTextField: TextField
     @FXML private lateinit var apiKeyTextField: TextField
-    @FXML private lateinit var blindToggleSwitch: ToggleSwitch
+    @FXML private lateinit var blindSwitch: SwitchSegmentedButton
     @FXML private lateinit var downsampleFactorSpinner: Spinner<Double>
     @FXML private lateinit var radiusSpinner: Spinner<Double>
     @FXML private lateinit var centerRATextField: TextField
@@ -79,15 +79,15 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
         apiKeyTextField.disableProperty()
             .bind(isSolving or typeChoiceBox.selectionModel.selectedItemProperty().isNotEqualTo(PlateSolverType.ASTROMETRY_NET_ONLINE))
 
-        blindToggleSwitch.disableProperty().bind(isSolving)
+        blindSwitch.disableProperty().bind(isSolving)
 
         downsampleFactorSpinner.disableProperty().bind(isSolving)
 
-        centerRATextField.disableProperty().bind(isSolving or blindToggleSwitch.selectedProperty())
+        centerRATextField.disableProperty().bind(isSolving or blindSwitch.stateProperty)
 
-        centerDECTextField.disableProperty().bind(isSolving or blindToggleSwitch.selectedProperty())
+        centerDECTextField.disableProperty().bind(isSolving or blindSwitch.stateProperty)
 
-        radiusSpinner.disableProperty().bind(isSolving or blindToggleSwitch.selectedProperty())
+        radiusSpinner.disableProperty().bind(isSolving or blindSwitch.stateProperty)
 
         raTextField.disableProperty().bind(canNotSolve)
         raTextField.textProperty().bind(plateSolverManager.calibration.asString { it.rightAscension.format(AngleFormatter.HMS) })
@@ -147,7 +147,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
         }
 
     override val blind
-        get() = blindToggleSwitch.isSelected
+        get() = blindSwitch.state
 
     override val centerRA
         get() = Angle.from(centerRATextField.text, true) ?: Angle.ZERO
@@ -213,7 +213,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
         centerRA: Angle, centerDEC: Angle,
         radius: Angle,
     ): CompletableFuture<Calibration> {
-        blindToggleSwitch.isSelected = blind
+        blindSwitch.state = blind
         centerRATextField.text = centerRA.format(AngleFormatter.HMS)
         centerDECTextField.text = centerDEC.format(AngleFormatter.SIGNED_DMS)
         this.radius = radius
@@ -231,7 +231,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
         blind: Boolean,
         centerRA: Angle, centerDEC: Angle
     ) {
-        blindToggleSwitch.isSelected = blind
+        blindSwitch.state = blind
         centerRATextField.text = centerRA.format(AngleFormatter.HMS)
         centerDECTextField.text = centerDEC.format(AngleFormatter.SIGNED_DMS)
     }

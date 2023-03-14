@@ -40,8 +40,8 @@
             </ChoiceBox>
             <TwoStateButton fx:id="connectButton"
                             onAction="#connect"
-                            stateOnStyleClass="mdi,mdi-sm,text-red-500"
-                            stateOffStyleClass="mdi,mdi-sm,text-blue-700"
+                            stateOnStyleClass="mdi,mdi-sm,text-warning-color"
+                            stateOffStyleClass="mdi,mdi-sm,text-accent-color"
                             stateOnIcon="󰅙"
                             stateOffIcon="󱘖">
             </TwoStateButton>

@@ -5,10 +5,9 @@
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.control.LabeledPane?>
+<?import nebulosa.desktop.gui.control.*?>
 <?import nebulosa.imaging.algorithms.*?>
 <?import nebulosa.imaging.ImageChannel?>
-<?import org.controlsfx.control.ToggleSwitch?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -85,9 +84,7 @@
             </LabeledPane>
             <LabeledPane text="Enabled"
                          textStyleClass="text-bold">
-                <ToggleSwitch fx:id="enabledToggleSwitch"
-                              prefWidth="25.0">
-                </ToggleSwitch>
+                <SwitchSegmentedButton fx:id="enabledSwitch"/>
             </LabeledPane>
         </HBox>
     </VBox>

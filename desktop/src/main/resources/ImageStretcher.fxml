@@ -41,7 +41,7 @@
                                 mnemonicParsing="false"
                                 onAction="#autoStretch"
                                 prefHeight="32.0"
-                                styleClass="text-blue-700,mdi,mdi-sm"
+                                styleClass="text-accent-color,mdi,mdi-sm"
                                 text="󰁨"/>
                         <Button fx:id="resetStretchButton"
                                 alignment="CENTER"
@@ -50,7 +50,7 @@
                                 mnemonicParsing="false"
                                 onAction="#resetStretch"
                                 prefHeight="32.0"
-                                styleClass="text-red-500,mdi,mdi-sm"
+                                styleClass="text-warning-color,mdi,mdi-sm"
                                 text="󰅖"/>
                     </HBox>
                 </StackPane>

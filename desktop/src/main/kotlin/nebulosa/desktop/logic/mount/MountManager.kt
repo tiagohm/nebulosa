@@ -178,11 +178,19 @@ class MountManager(
     }
 
     fun abort() {
-        value.abortMotion()
+        value?.abortMotion()
+    }
+
+    fun toggleTracking(enable: Boolean) {
+        value?.tracking(enable)
     }
 
     fun toggleTrackingMode(mode: TrackMode) {
-        value.trackingMode(mode)
+        value?.trackingMode(mode)
+    }
+
+    fun toggleSlewRate(rate: String) {
+        value?.slewRate(rate)
     }
 
     fun updateTitle() {

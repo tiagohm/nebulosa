@@ -8,6 +8,7 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.asString
 import nebulosa.desktop.logic.isNull
@@ -23,7 +24,6 @@ import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.AngleFormatter
 import nebulosa.math.PairOfAngle
 import org.controlsfx.control.SegmentedButton
-import org.controlsfx.control.ToggleSwitch
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
@@ -66,7 +66,7 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
     @FXML private lateinit var nudgeSEButton: Button
     @FXML private lateinit var nudgeSButton: Button
     @FXML private lateinit var nudgeSWButton: Button
-    @FXML private lateinit var trackingToggleSwitch: ToggleSwitch
+    @FXML private lateinit var trackingSwitch: SwitchSegmentedButton
     @FXML private lateinit var trackingModeChoiceBox: ChoiceBox<TrackMode>
     @FXML private lateinit var slewSpeedChoiceBox: ChoiceBox<String>
     @FXML private lateinit var parkButton: TwoStateButton
@@ -141,19 +141,19 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
         nudgeSButton.disableProperty().bind(isNotConnectedOrMoving)
         nudgeSWButton.disableProperty().bind(isNotConnectedOrMoving)
 
-        trackingToggleSwitch.disableProperty().bind(isNotConnectedOrMoving)
-        mountManager.trackingProperty.on(trackingToggleSwitch::setSelected)
-        trackingToggleSwitch.selectedProperty().on { mountManager.get().tracking(it) }
+        trackingSwitch.disableProperty().bind(isNotConnectedOrMoving)
+        mountManager.trackingProperty.on { trackingSwitch.state = it }
+        trackingSwitch.stateProperty.on { mountManager.toggleTracking(it) }
 
         trackingModeChoiceBox.disableProperty().bind(isNotConnectedOrMoving)
         trackingModeChoiceBox.itemsProperty().bind(mountManager.trackModesProperty)
         mountManager.trackModeProperty.on { trackingModeChoiceBox.value = it }
-        trackingModeChoiceBox.valueProperty().on { if (it != null) mountManager.get().trackingMode(it) }
+        trackingModeChoiceBox.valueProperty().on { if (it != null) mountManager.toggleTrackingMode(it) }
 
         slewSpeedChoiceBox.disableProperty().bind(isNotConnectedOrMoving)
         slewSpeedChoiceBox.itemsProperty().bind(mountManager.slewRatesProperty)
         mountManager.slewRateProperty.on { slewSpeedChoiceBox.value = it }
-        slewSpeedChoiceBox.valueProperty().on { if (it != null) mountManager.get().slewRate(it) }
+        slewSpeedChoiceBox.valueProperty().on { if (it != null) mountManager.toggleSlewRate(it) }
 
         parkButton.disableProperty().bind(isNotConnectedOrMoving or !mountManager.canParkProperty)
         mountManager.parkedProperty.on { parkButton.state = it }

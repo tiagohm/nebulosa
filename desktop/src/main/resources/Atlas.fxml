@@ -75,7 +75,7 @@
                         <Button onAction="#searchMinorPlanet"
                                 text="Search">
                             <graphic>
-                                <Label styleClass="text-blue-700,mdi,mdi-sm"
+                                <Label styleClass="text-accent-color,mdi,mdi-sm"
                                        text="󰍉"/>
                             </graphic>
                         </Button>
@@ -116,7 +116,7 @@
                         <Button onAction="#searchStar"
                                 text="Search">
                             <graphic>
-                                <Label styleClass="text-blue-700,mdi,mdi-sm"
+                                <Label styleClass="text-accent-color,mdi,mdi-sm"
                                        text="󰍉"/>
                             </graphic>
                         </Button>
@@ -159,7 +159,7 @@
                         <Button onAction="#searchDSO"
                                 text="Search">
                             <graphic>
-                                <Label styleClass="text-blue-700,mdi,mdi-sm"
+                                <Label styleClass="text-accent-color,mdi,mdi-sm"
                                        text="󰍉"/>
                             </graphic>
                         </Button>
@@ -329,7 +329,7 @@
                     prefWidth="92.0"
                     text="Sync">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-700"
+                    <Label styleClass="mdi,mdi-sm,text-accent-color"
                            text="󰓦">
                     </Label>
                 </graphic>
@@ -339,7 +339,7 @@
                     prefWidth="92.0"
                     text="Frame">
                 <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-blue-700"
+                    <Label styleClass="mdi,mdi-sm,text-accent-color"
                            text="󰋩">
                     </Label>
                 </graphic>

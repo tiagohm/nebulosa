@@ -38,8 +38,8 @@
                 </ChoiceBox>
                 <TwoStateButton fx:id="connectButton"
                                 onAction="#connect"
-                                stateOnStyleClass="mdi,mdi-sm,text-red-500"
-                                stateOffStyleClass="mdi,mdi-sm,text-blue-700"
+                                stateOnStyleClass="mdi,mdi-sm,text-warning-color"
+                                stateOffStyleClass="mdi,mdi-sm,text-accent-color"
                                 stateOnIcon="󰅙"
                                 stateOffIcon="󱘖">
                 </TwoStateButton>
@@ -123,7 +123,7 @@
                 <Label fx:id="statusLabel"
                        text="idle">
                     <graphic>
-                        <Label styleClass="text-blue-700,mdi,mdi-xs"
+                        <Label styleClass="text-accent-color,mdi,mdi-xs"
                                text="󰋼">
                         </Label>
                     </graphic>
@@ -452,7 +452,7 @@
                     onAction="#abortCapture"
                     text="Abort">
                 <graphic>
-                    <Label styleClass="text-red-500,mdi,mdi-sm"
+                    <Label styleClass="text-warning-color,mdi,mdi-sm"
                            text="󰓛">
                     </Label>
                 </graphic>

@@ -109,7 +109,7 @@
                         text="Sync"
                         onAction="#sync">
                     <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-blue-700"
+                        <Label styleClass="mdi,mdi-sm,text-accent-color"
                                text="󰓦"/>
                     </graphic>
                 </Button>
@@ -117,7 +117,7 @@
                         onAction="#load"
                         text="Load">
                     <graphic>
-                        <Label styleClass="text-blue-700,mdi,mdi-sm"
+                        <Label styleClass="text-accent-color,mdi,mdi-sm"
                                text="󰇚">
                         </Label>
                     </graphic>
