@@ -12,6 +12,7 @@ buildscript {
         classpath("com.adarshr:gradle-test-logger-plugin:3.2.0")
         classpath("org.jetbrains.kotlin:kotlin-allopen:1.8.10")
         classpath("com.github.gmazzo:gradle-buildconfig-plugin:3.1.0")
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.8.10")
     }
 
     repositories {
@@ -20,6 +21,8 @@ buildscript {
         google()
     }
 }
+
+apply(plugin = "org.jetbrains.dokka")
 
 allprojects {
     group = "com.github.tiagohm"
@@ -48,6 +51,9 @@ subprojects {
 
     apply {
         plugin("com.adarshr.test-logger")
+        if (project.name != "desktop" && project.name != "nebulosa-jmetro") {
+            plugin("org.jetbrains.dokka")
+        }
     }
 
     configure<TestLoggerExtension> {
