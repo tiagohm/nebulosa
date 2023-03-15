@@ -100,7 +100,7 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
             .filter { it.userData == "BIND_TO_SELECTED_CAMERA" }
             .forEach { it.disableProperty().bind(isNotConnectedOrCapturing) }
 
-        coolerPowerLabel.textProperty.bind(cameraManager.coolerPowerProperty.asString(Locale.ENGLISH, "Cooler (%.1f %)"))
+        coolerPowerLabel.textProperty.bind(cameraManager.coolerPowerProperty.asString(Locale.ENGLISH, "Cooler (%.1f %%)"))
         coolerSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.hasCoolerProperty)
         cameraManager.coolerProperty.on { coolerSwitch.state = it }
         coolerSwitch.stateProperty.on { cameraManager.get().cooler(it) }
