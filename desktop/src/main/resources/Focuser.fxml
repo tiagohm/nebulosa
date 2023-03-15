@@ -49,9 +49,12 @@
             <GridPane hgap="4.0"
                       vgap="4.0">
                 <columnConstraints>
-                    <ColumnConstraints hgrow="ALWAYS"/>
-                    <ColumnConstraints hgrow="ALWAYS"/>
-                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints hgrow="ALWAYS"
+                                       percentWidth="40.0"/>
+                    <ColumnConstraints hgrow="ALWAYS"
+                                       percentWidth="30.0"/>
+                    <ColumnConstraints hgrow="ALWAYS"
+                                       percentWidth="30.0"/>
                 </columnConstraints>
                 <LabeledPane text="Position"
                              textStyleClass="text-bold"
@@ -84,119 +87,129 @@
                            text="idle">
                     </Label>
                 </LabeledPane>
-            </GridPane>
-        </VBox>
-        <VBox alignment="CENTER_LEFT"
-              spacing="1.0">
-            <LabeledPane text="Relative"
-                         textStyleClass="text-bold">
-                <HBox alignment="CENTER_LEFT"
-                      spacing="4.0">
+                <LabeledPane text="Relative"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="1"
+                             GridPane.columnIndex="0">
                     <Spinner fx:id="incrementSpinner"
                              amountToStepBy="1.0"
                              editable="true"
                              initialValue="100.0"
                              max="10000.0"
-                             min="1.0"
-                             prefWidth="138.0">
+                             min="1.0">
                     </Spinner>
-                    <Button fx:id="moveInButton"
-                            onAction="#moveIn"
-                            text="Move In">
-                        <graphic>
-                            <Label styleClass="mdi,mdi-sm,text-accent-color"
-                                   text="󰁍">
-                            </Label>
-                        </graphic>
-                    </Button>
-                    <Button fx:id="moveOutButton"
-                            onAction="#moveOut"
-                            text="Move Out">
-                        <graphic>
-                            <Label styleClass="mdi,mdi-sm,text-accent-color"
-                                   text="󰁔">
-                            </Label>
-                        </graphic>
-                    </Button>
-                </HBox>
-            </LabeledPane>
-        </VBox>
-        <VBox alignment="CENTER_LEFT"
-              spacing="1.0">
-            <LabeledPane text="Absolute"
-                         textStyleClass="text-bold">
-                <HBox alignment="CENTER_LEFT"
-                      spacing="4.0">
+                </LabeledPane>
+                <Button fx:id="moveInButton"
+                        onAction="#moveIn"
+                        text="Move In"
+                        maxWidth="Infinity"
+                        GridPane.rowIndex="1"
+                        GridPane.columnIndex="1"
+                        GridPane.fillWidth="true">
+                    <graphic>
+                        <Label styleClass="mdi,mdi-sm,text-accent-color"
+                               text="󰁍">
+                        </Label>
+                    </graphic>
+                </Button>
+                <Button fx:id="moveOutButton"
+                        onAction="#moveOut"
+                        text="Move Out"
+                        maxWidth="Infinity"
+                        GridPane.rowIndex="1"
+                        GridPane.columnIndex="2"
+                        GridPane.fillWidth="true">
+                    <graphic>
+                        <Label styleClass="mdi,mdi-sm,text-accent-color"
+                               text="󰁔">
+                        </Label>
+                    </graphic>
+                </Button>
+                <LabeledPane text="Absolute"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="2"
+                             GridPane.columnIndex="0">
                     <Spinner fx:id="absoluteSpinner"
                              amountToStepBy="1.0"
                              editable="true"
                              initialValue="1000.0"
                              max="10000.0"
-                             min="0.0"
-                             prefWidth="120.0">
+                             min="0.0">
                     </Spinner>
-                    <Button fx:id="moveToButton"
-                            onAction="#moveTo"
-                            prefWidth="144.0"
-                            text="Move To">
-                        <graphic>
-                            <Label styleClass="mdi,mdi-sm,text-accent-color"
-                                   text="󰹳">
-                            </Label>
-                        </graphic>
-                    </Button>
-                    <Button fx:id="syncButton"
-                            onAction="#sync"
-                            prefWidth="92.0"
-                            text="Sync">
-                        <graphic>
-                            <Label styleClass="mdi,mdi-sm,text-accent-color"
-                                   text="󰓦">
-                            </Label>
-                        </graphic>
-                    </Button>
-                </HBox>
-            </LabeledPane>
+                </LabeledPane>
+                <Button fx:id="moveToButton"
+                        onAction="#moveTo"
+                        text="Move To"
+                        maxWidth="Infinity"
+                        GridPane.rowIndex="2"
+                        GridPane.columnIndex="1"
+                        GridPane.fillWidth="true">
+                    <graphic>
+                        <Label styleClass="mdi,mdi-sm,text-accent-color"
+                               text="󰹳">
+                        </Label>
+                    </graphic>
+                </Button>
+                <Button fx:id="syncButton"
+                        onAction="#sync"
+                        text="Sync"
+                        maxWidth="Infinity"
+                        GridPane.rowIndex="2"
+                        GridPane.columnIndex="2"
+                        GridPane.fillWidth="true">
+                    <graphic>
+                        <Label styleClass="mdi,mdi-sm,text-accent-color"
+                               text="󰓦">
+                        </Label>
+                    </graphic>
+                </Button>
+                <LabeledPane text="Backlash compensation"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="3"
+                             GridPane.columnIndex="0">
+                    <SwitchSegmentedButton fx:id="backlashCompensationSwitch"/>
+                </LabeledPane>
+                <LabeledPane text="Steps"
+                             textStyleClass="text-bold"
+                             GridPane.rowIndex="3"
+                             GridPane.columnIndex="1">
+                    <Spinner fx:id="backlashCompensationStepsSpinner"
+                             amountToStepBy="1.0"
+                             editable="true"
+                             initialValue="100.0"
+                             max="1000.0"
+                             min="0.0">
+                    </Spinner>
+                </LabeledPane>
+                <Button fx:id="abortButton"
+                        onAction="#abort"
+                        text="Abort"
+                        maxWidth="Infinity"
+                        GridPane.rowIndex="4"
+                        GridPane.columnIndex="1"
+                        GridPane.fillWidth="true">
+                    <graphic>
+                        <Label styleClass="mdi,mdi-sm,text-warning-color"
+                               text="󰓛">
+                        </Label>
+                    </graphic>
+                </Button>
+                <Button fx:id="autoFocusButton"
+                        onAction="#openAutoFocus"
+                        text="Auto focus"
+                        disable="true"
+                        maxWidth="Infinity"
+                        GridPane.rowIndex="4"
+                        GridPane.columnIndex="2"
+                        GridPane.fillWidth="true">
+                    <graphic>
+                        <Label styleClass="mdi,mdi-sm,text-accent-color"
+                               text="󰽎"
+                               textFill="#388E3C">
+                        </Label>
+                    </graphic>
+                </Button>
+            </GridPane>
         </VBox>
-        <HBox alignment="CENTER_LEFT"
-              spacing="4.0">
-            <LabeledPane text="Backlash compensation"
-                         textStyleClass="text-bold">
-                <SwitchSegmentedButton fx:id="backlashCompensationSwitch"/>
-            </LabeledPane>
-            <LabeledPane text="Steps"
-                         textStyleClass="text-bold">
-                <Spinner fx:id="backlashCompensationStepsSpinner"
-                         amountToStepBy="1.0"
-                         editable="true"
-                         initialValue="100.0"
-                         max="1000.0"
-                         min="0.0">
-                </Spinner>
-            </LabeledPane>
-        </HBox>
-        <HBox alignment="CENTER_LEFT"
-              spacing="129.0">
-            <Button fx:id="abortButton"
-                    onAction="#abort"
-                    text="Abort">
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-warning-color"
-                           text="󰓛">
-                    </Label>
-                </graphic>
-            </Button>
-            <Button fx:id="autoFocusButton"
-                    onAction="#openAutoFocus"
-                    prefWidth="144.0"
-                    text="Auto focus">
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-accent-color"
-                           text="󰽎"
-                           textFill="#388E3C">
-                    </Label>
-                </graphic>
-            </Button>
-        </HBox>
     </VBox>
 </AnchorPane>

@@ -13,7 +13,7 @@
             xmlns:fx="http://javafx.com/fxml/1">
     <TextArea fx:id="cardsTextArea"
               editable="false"
-              styleClass="text-monospaced,text-md"
+              styleClass="text-monospaced,text-sm"
               stylesheets="@css/TextAreaWithoutFocus.css"
               AnchorPane.bottomAnchor="0.0"
               AnchorPane.leftAnchor="0.0"

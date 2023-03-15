@@ -45,9 +45,9 @@
                 </image>
             </IconButton>
             <Label alignment="CENTER"
-                   minWidth="32.0"
+                   minWidth="38.0"
+                   minHeight="38.0"
                    onMouseClicked="#openMenu"
-                   prefWidth="32.0"
                    styleClass="text-grey-200,mdi,mdi-sm,cursor-hand"
                    text="󰇙">
                 <fx:define>

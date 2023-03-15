@@ -220,10 +220,10 @@
                 </HBox>
                 <Label StackPane.alignment="BOTTOM_RIGHT"
                        alignment="CENTER"
-                       minWidth="28.0"
-                       minHeight="28.0"
+                       minWidth="38.0"
+                       minHeight="38.0"
                        onMouseClicked="#openTargetCoordinatesMenu"
-                       styleClass="text-grey-200,mdi,mdi-sm,cursor-hand"
+                       styleClass="text-grey-300,mdi,mdi-sm,cursor-hand"
                        text="󰇙">
                     <fx:define>
                         <ContextMenu fx:id="targetCoordinatesContextMenu"

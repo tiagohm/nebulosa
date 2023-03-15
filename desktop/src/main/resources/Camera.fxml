@@ -5,10 +5,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.control.IconButton?>
-<?import nebulosa.desktop.gui.control.TwoStateButton?>
+<?import nebulosa.desktop.gui.control.*?>
 <?import nebulosa.indi.device.camera.*?>
-<?import org.controlsfx.control.ToggleSwitch?>
+<?import org.controlsfx.control.SegmentedButton?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -50,9 +49,9 @@
                     </image>
                 </IconButton>
                 <Label alignment="CENTER"
-                       minWidth="32.0"
+                       minWidth="38.0"
+                       minHeight="38.0"
                        onMouseClicked="#openMenu"
-                       prefWidth="32.0"
                        styleClass="text-grey-700,mdi,mdi-sm,cursor-hand"
                        text="󰇙">
                     <fx:define>
@@ -110,7 +109,7 @@
                 </Label>
                 <Label fx:id="imageSavePathLabel"
                        onMouseClicked="#openImageSavePathInFiles"
-                       styleClass="cursor-hand"
+                       styleClass="cursor-hand,text-sm,text-grey-400"
                        text="-">
                     <graphic>
                         <Label styleClass="text-amber-700,mdi,mdi-xs"
@@ -130,256 +129,224 @@
                 </Label>
             </HBox>
         </VBox>
-        <HBox alignment="CENTER"
-              spacing="12.0">
-            <VBox.margin>
-                <Insets top="8.0"/>
-            </VBox.margin>
-            <VBox alignment="CENTER"
-                  spacing="1.0">
-                <Label fx:id="coolerPowerLabel"
-                       text="Cooler (100%)">
-                </Label>
-                <ToggleSwitch fx:id="coolerToggleSwitch"
-                              prefHeight="32.0"
-                              prefWidth="32.0">
-                </ToggleSwitch>
-            </VBox>
-            <VBox alignment="CENTER"
-                  spacing="1.0">
-                <Label text="Dew Heater">
-                </Label>
-                <ToggleSwitch fx:id="dewHeaterToggleSwitch"
-                              prefHeight="32.0"
-                              prefWidth="32.0">
-                </ToggleSwitch>
-            </VBox>
-            <VBox alignment="CENTER"
-                  spacing="4.0">
-                <Label fx:id="temperatureLabel"
-                       text="Temperature (-15.0 °C)">
-                </Label>
+        <GridPane hgap="4.0"
+                  vgap="4.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+            <LabeledPane fx:id="coolerPowerLabel"
+                         text="Cooler (100%)"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="0"
+                         GridPane.columnIndex="0">
+                <SwitchSegmentedButton fx:id="coolerSwitch"/>
+            </LabeledPane>
+            <LabeledPane text="Dew Heater"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="0"
+                         GridPane.columnIndex="1">
+                <SwitchSegmentedButton fx:id="dewHeaterSwitch"/>
+            </LabeledPane>
+            <LabeledPane fx:id="temperatureLabel"
+                         text="Temperature (-15.0 °C)"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="0"
+                         GridPane.columnIndex="2"
+                         GridPane.columnSpan="2">
                 <HBox alignment="CENTER"
-                      spacing="4.0">
+                      spacing="2.0">
                     <Spinner fx:id="temperatureSetpointSpinner"
+                             HBox.hgrow="ALWAYS"
+                             LabeledPane.master="true"
                              editable="true"
                              initialValue="0.0"
                              max="50.0"
-                             min="-50.0"
-                             prefWidth="72.0">
+                             min="-50.0">
                     </Spinner>
-                    <Button fx:id="temperatureSetpointButton"
-                            contentDisplay="GRAPHIC_ONLY"
-                            mnemonicParsing="false"
-                            onAction="#applyTemperatureSetpoint">
+                    <IconButton fx:id="temperatureSetpointButton"
+                                onAction="#applyTemperatureSetpoint">
                         <graphic>
                             <Label styleClass="text-green-700,mdi,mdi-sm"
                                    text="󰄬">
                             </Label>
                         </graphic>
-                    </Button>
+                    </IconButton>
                 </HBox>
-            </VBox>
-        </HBox>
-        <HBox alignment="CENTER"
-              spacing="4.0">
-            <VBox alignment="CENTER"
-                  spacing="4.0">
-                <Label text="Exposure">
-                </Label>
-                <Spinner fx:id="exposureSpinner"
+            </LabeledPane>
+            <LabeledPane text="Exposure Time"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="1"
+                         GridPane.columnIndex="0"
+                         GridPane.fillWidth="false"
+                         GridPane.halignment="CENTER"
+                         GridPane.columnSpan="2"
+                         GridPane.rowSpan="2">
+                <VBox>
+                    <Spinner fx:id="exposureSpinner"
+                             editable="true"
+                             LabeledPane.master="true"
+                             initialValue="1.0"
+                             max="1000000.0"
+                             min="1.0"
+                             prefWidth="144.0">
+                    </Spinner>
+                    <SegmentedButton fx:id="exposureUnitSegmentedButton"
+                                     prefWidth="144.0">
+                        <buttons>
+                            <ToggleButton text="m"
+                                          userData="MINUTES"
+                                          prefWidth="36.0"/>
+                            <ToggleButton text="s"
+                                          userData="SECONDS"
+                                          prefWidth="36.0"/>
+                            <ToggleButton text="ms"
+                                          userData="MILLISECONDS"
+                                          prefWidth="36.0"/>
+                            <ToggleButton text="µs"
+                                          selected="true"
+                                          userData="MICROSECONDS"
+                                          prefWidth="36.0"/>
+                        </buttons>
+                    </SegmentedButton>
+                </VBox>
+            </LabeledPane>
+            <LabeledPane text="Exposure Mode"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="1"
+                         GridPane.columnIndex="2"
+                         GridPane.fillWidth="false"
+                         GridPane.halignment="CENTER"
+                         GridPane.columnSpan="2">
+                <SegmentedButton fx:id="exposureModeSegmentedButton">
+                    <buttons>
+                        <ToggleButton text="Single"
+                                      selected="true"
+                                      userData="SINGLE"/>
+                        <ToggleButton text="Fixed"
+                                      userData="FIXED"/>
+                        <ToggleButton text="Loop"
+                                      userData="LOOP"/>
+                    </buttons>
+                </SegmentedButton>
+            </LabeledPane>
+            <LabeledPane text="Delay (ms)"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="2"
+                         GridPane.columnIndex="2">
+                <Spinner fx:id="exposureDelaySpinner"
+                         editable="true"
+                         initialValue="1000.0"
+                         max="30000.0"
+                         min="0.0">
+                </Spinner>
+            </LabeledPane>
+            <LabeledPane text="Count"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="2"
+                         GridPane.columnIndex="3">
+                <Spinner fx:id="exposureCountSpinner"
+                         editable="true"
+                         initialValue="100.0"
+                         max="10000.0"
+                         min="1.0">
+                </Spinner>
+            </LabeledPane>
+            <LabeledPane text="X"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="3"
+                         GridPane.columnIndex="0">
+                <Spinner fx:id="frameXSpinner"
+                         editable="true"
+                         initialValue="0.0"
+                         max="1279.0"
+                         min="0.0">
+                </Spinner>
+            </LabeledPane>
+            <LabeledPane text="Y"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="3"
+                         GridPane.columnIndex="1">
+                <Spinner fx:id="frameYSpinner"
+                         editable="true"
+                         initialValue="0.0"
+                         max="1023.0"
+                         min="0.0">
+                </Spinner>
+            </LabeledPane>
+            <LabeledPane text="Width"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="3"
+                         GridPane.columnIndex="2">
+                <Spinner fx:id="frameWidthSpinner"
+                         editable="true"
+                         initialValue="1280.0"
+                         max="1280.0"
+                         min="0.0">
+                </Spinner>
+            </LabeledPane>
+            <LabeledPane text="Height"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="3"
+                         GridPane.columnIndex="3">
+                <Spinner fx:id="frameHeightSpinner"
+                         editable="true"
+                         initialValue="1024.0"
+                         max="1024.0"
+                         min="0.0">
+                </Spinner>
+            </LabeledPane>
+            <LabeledPane text="Subframe"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="4"
+                         GridPane.columnIndex="0">
+                <SwitchSegmentedButton fx:id="subFrameSwitch"/>
+            </LabeledPane>
+            <IconButton fx:id="fullsizeButton"
+                        GridPane.rowIndex="4"
+                        GridPane.columnIndex="1"
+                        GridPane.halignment="CENTER"
+                        onAction="#fullsize">
+                <graphic>
+                    <Label styleClass="text-accent-color,mdi,mdi-sm"
+                           text="󰊓">
+                    </Label>
+                </graphic>
+            </IconButton>
+            <LabeledPane text="Bin X"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="4"
+                         GridPane.columnIndex="2">
+                <Spinner fx:id="binXSpinner"
                          editable="true"
                          initialValue="1.0"
-                         max="1000000.0"
-                         min="1.0"
-                         prefWidth="144.0">
+                         max="4.0"
+                         min="1.0">
                 </Spinner>
-                <HBox alignment="CENTER"
-                      spacing="4.0">
-                    <fx:define>
-                        <ToggleGroup fx:id="exposureUnitToggleGroup"/>
-                    </fx:define>
-                    <RadioButton onAction="#updateExposureUnit"
-                                 text="m"
-                                 toggleGroup="$exposureUnitToggleGroup"
-                                 userData="MINUTES">
-                    </RadioButton>
-                    <RadioButton onAction="#updateExposureUnit"
-                                 text="s"
-                                 toggleGroup="$exposureUnitToggleGroup"
-                                 userData="SECONDS">
-                    </RadioButton>
-                    <RadioButton onAction="#updateExposureUnit"
-                                 text="ms"
-                                 toggleGroup="$exposureUnitToggleGroup"
-                                 userData="MILLISECONDS">
-                    </RadioButton>
-                    <RadioButton onAction="#updateExposureUnit"
-                                 selected="true"
-                                 text="µs"
-                                 toggleGroup="$exposureUnitToggleGroup"
-                                 userData="MICROSECONDS">
-                    </RadioButton>
-                </HBox>
-            </VBox>
-            <VBox alignment="CENTER_LEFT"
-                  spacing="4.0">
-                <HBox alignment="CENTER"
-                      spacing="4.0">
-                    <fx:define>
-                        <ToggleGroup fx:id="exposureModeToggleGroup"/>
-                    </fx:define>
-                    <RadioButton selected="true"
-                                 text="Single"
-                                 toggleGroup="$exposureModeToggleGroup"
-                                 userData="SINGLE">
-                    </RadioButton>
-                    <RadioButton text="Fixed"
-                                 toggleGroup="$exposureModeToggleGroup"
-                                 userData="FIXED">
-                    </RadioButton>
-                    <RadioButton text="Continuous"
-                                 toggleGroup="$exposureModeToggleGroup"
-                                 userData="CONTINUOUS">
-                    </RadioButton>
-                </HBox>
-                <HBox alignment="CENTER"
-                      spacing="4.0">
-                    <VBox alignment="CENTER_LEFT"
-                          spacing="1.0">
-                        <Label text="Delay (ms)">
-                        </Label>
-                        <Spinner fx:id="exposureDelaySpinner"
-                                 editable="true"
-                                 initialValue="1000.0"
-                                 max="30000.0"
-                                 min="100.0"
-                                 prefWidth="96.0">
-                        </Spinner>
-                    </VBox>
-                    <VBox alignment="CENTER_LEFT"
-                          spacing="1.0">
-                        <Label text="Count">
-                        </Label>
-                        <Spinner fx:id="exposureCountSpinner"
-                                 editable="true"
-                                 initialValue="100.0"
-                                 max="9999.0"
-                                 min="1.0"
-                                 prefWidth="81.0">
-                        </Spinner>
-                    </VBox>
-                </HBox>
-            </VBox>
-        </HBox>
-        <HBox alignment="CENTER"
-              spacing="24.0">
-            <VBox alignment="CENTER"
-                  spacing="4.0">
-                <Label text="Subframe">
-                </Label>
-                <ToggleSwitch fx:id="subFrameToggleSwitch"
-                              prefHeight="32.0"
-                              prefWidth="32.0">
-                </ToggleSwitch>
-                <Button fx:id="fullsizeButton"
-                        contentDisplay="GRAPHIC_ONLY"
-                        mnemonicParsing="false"
-                        onAction="#fullsize">
-                    <graphic>
-                        <Label styleClass="text-blue-grey-700,mdi,mdi-sm"
-                               text="󰊓">
-                        </Label>
-                    </graphic>
-                </Button>
-            </VBox>
-            <VBox alignment="CENTER"
-                  spacing="4.0">
-                <HBox alignment="CENTER"
-                      spacing="4.0">
-                    <VBox alignment="CENTER_LEFT">
-                        <Label text="X">
-                        </Label>
-                        <Spinner fx:id="frameXSpinner"
-                                 editable="true"
-                                 initialValue="0.0"
-                                 max="1279.0"
-                                 min="0.0"
-                                 prefWidth="81.0">
-                        </Spinner>
-                    </VBox>
-                    <VBox alignment="CENTER_LEFT">
-                        <Label text="Y">
-                        </Label>
-                        <Spinner fx:id="frameYSpinner"
-                                 editable="true"
-                                 initialValue="0.0"
-                                 max="1023.0"
-                                 min="0.0"
-                                 prefWidth="81.0">
-                        </Spinner>
-                    </VBox>
-                    <VBox alignment="CENTER_LEFT">
-                        <Label text="Bin X">
-                        </Label>
-                        <Spinner fx:id="binXSpinner"
-                                 editable="true"
-                                 initialValue="1.0"
-                                 max="4.0"
-                                 min="1.0"
-                                 prefWidth="64.0">
-                        </Spinner>
-                    </VBox>
-                </HBox>
-                <HBox alignment="CENTER"
-                      spacing="4.0">
-                    <VBox alignment="CENTER_LEFT">
-                        <Label text="Width">
-                        </Label>
-                        <Spinner fx:id="frameWidthSpinner"
-                                 editable="true"
-                                 initialValue="1280.0"
-                                 max="1280.0"
-                                 min="0.0"
-                                 prefWidth="81.0">
-                        </Spinner>
-                    </VBox>
-                    <VBox alignment="CENTER_LEFT">
-                        <Label text="Height">
-                        </Label>
-                        <Spinner fx:id="frameHeightSpinner"
-                                 editable="true"
-                                 initialValue="1024.0"
-                                 max="1024.0"
-                                 min="0.0"
-                                 prefWidth="81.0">
-                        </Spinner>
-                    </VBox>
-                    <VBox alignment="CENTER_LEFT">
-                        <Label text="Bin Y">
-                        </Label>
-                        <Spinner fx:id="binYSpinner"
-                                 editable="true"
-                                 initialValue="1.0"
-                                 max="4.0"
-                                 min="1.0"
-                                 prefWidth="64.0">
-                        </Spinner>
-                    </VBox>
-                </HBox>
-            </VBox>
-        </HBox>
-        <HBox alignment="CENTER"
-              spacing="4.0">
+            </LabeledPane>
+            <LabeledPane text="Bin Y"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="4"
+                         GridPane.columnIndex="3">
+                <Spinner fx:id="binYSpinner"
+                         editable="true"
+                         initialValue="1.0"
+                         max="4.0"
+                         min="1.0">
+                </Spinner>
+            </LabeledPane>
             <fx:define>
                 <FrameType fx:id="frameTypeInitialValue"
                            fx:constant="LIGHT"/>
             </fx:define>
-            <VBox alignment="CENTER_LEFT"
-                  spacing="1.0">
-                <Label text="Frame Type">
-                </Label>
-                <ChoiceBox fx:id="frameTypeChoiceBox">
+            <LabeledPane text="Frame Type"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="5"
+                         GridPane.columnIndex="0">
+                <ChoiceBox fx:id="frameTypeChoiceBox"
+                           minWidth="96.0">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
                             <FrameType fx:value="LIGHT"/>
@@ -389,43 +356,30 @@
                         </FXCollections>
                     </items>
                 </ChoiceBox>
-            </VBox>
-            <VBox alignment="CENTER_LEFT"
-                  spacing="1.0">
-                <Label text="Frame Format">
-                </Label>
+            </LabeledPane>
+            <LabeledPane text="Frame Format"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="5"
+                         GridPane.columnIndex="1">
                 <ChoiceBox fx:id="frameFormatChoiceBox"
                            minWidth="96.0">
                 </ChoiceBox>
-            </VBox>
-            <VBox alignment="CENTER_LEFT"
-                  spacing="1.0">
-                <Label text="Speed">
-                </Label>
-                <ChoiceBox fx:id="speedChoiceBox"
-                           disable="true"
-                           minWidth="96.0">
-                </ChoiceBox>
-            </VBox>
-        </HBox>
-        <HBox alignment="CENTER"
-              spacing="4.0">
-            <VBox alignment="CENTER_LEFT"
-                  spacing="1.0">
-                <Label text="Gain">
-                </Label>
+            </LabeledPane>
+            <LabeledPane text="Gain"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="5"
+                         GridPane.columnIndex="2">
                 <Spinner fx:id="gainSpinner"
                          editable="true"
                          initialValue="0.0"
                          max="0.0"
-                         min="0.0"
-                         prefWidth="92.0">
+                         min="0.0">
                 </Spinner>
-            </VBox>
-            <VBox alignment="CENTER_LEFT"
-                  spacing="1.0">
-                <Label text="Offset">
-                </Label>
+            </LabeledPane>
+            <LabeledPane text="Offset"
+                         textStyleClass="text-bold"
+                         GridPane.rowIndex="5"
+                         GridPane.columnIndex="3">
                 <Spinner fx:id="offsetSpinner"
                          editable="true"
                          initialValue="0.0"
@@ -433,10 +387,13 @@
                          min="0.0"
                          prefWidth="92.0">
                 </Spinner>
-            </VBox>
-        </HBox>
+            </LabeledPane>
+        </GridPane>
         <HBox alignment="CENTER"
               spacing="4.0">
+            <VBox.margin>
+                <Insets top="4.0"/>
+            </VBox.margin>
             <Button fx:id="startCaptureButton"
                     mnemonicParsing="false"
                     onAction="#startCapture"

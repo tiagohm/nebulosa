@@ -1028,6 +1028,10 @@ TextField:readonly {
     -fx-background-insets: 0, 1;
 }
 
+.text-area:readonly .content {
+    -fx-background-color: border_color, background_disabled_color;
+}
+
 .text-area:disabled .content {
     -fx-background-color: border_disabled_color, background_disabled_color;
     -fx-background-radius: 0;

@@ -29,6 +29,7 @@ The complete integrated solution for all of your astronomical imaging needs.
 ## Image Preview
 
 ![](image.png)
+![](scnr.png)
 
 ## Plate Solver
 

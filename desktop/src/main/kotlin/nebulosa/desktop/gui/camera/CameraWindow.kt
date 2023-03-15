@@ -9,6 +9,8 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.LabeledPane
+import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.and
 import nebulosa.desktop.logic.camera.CameraManager
@@ -20,7 +22,7 @@ import nebulosa.desktop.view.camera.CameraView
 import nebulosa.desktop.view.camera.ExposureMode
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
-import org.controlsfx.control.ToggleSwitch
+import org.controlsfx.control.SegmentedButton
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
@@ -44,18 +46,18 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
     @FXML private lateinit var autoSaveAllExposuresIcon: Label
     @FXML private lateinit var autoSubFolderIcon: Label
     @FXML private lateinit var imageSavePathLabel: Label
-    @FXML private lateinit var coolerPowerLabel: Label
-    @FXML private lateinit var coolerToggleSwitch: ToggleSwitch
-    @FXML private lateinit var dewHeaterToggleSwitch: ToggleSwitch
-    @FXML private lateinit var temperatureLabel: Label
+    @FXML private lateinit var coolerPowerLabel: LabeledPane
+    @FXML private lateinit var coolerSwitch: SwitchSegmentedButton
+    @FXML private lateinit var dewHeaterSwitch: SwitchSegmentedButton
+    @FXML private lateinit var temperatureLabel: LabeledPane
     @FXML private lateinit var temperatureSetpointSpinner: Spinner<Double>
     @FXML private lateinit var temperatureSetpointButton: Button
     @FXML private lateinit var exposureSpinner: Spinner<Double>
-    @FXML private lateinit var exposureUnitToggleGroup: ToggleGroup
-    @FXML private lateinit var exposureModeToggleGroup: ToggleGroup
+    @FXML private lateinit var exposureUnitSegmentedButton: SegmentedButton
+    @FXML private lateinit var exposureModeSegmentedButton: SegmentedButton
     @FXML private lateinit var exposureDelaySpinner: Spinner<Double>
     @FXML private lateinit var exposureCountSpinner: Spinner<Double>
-    @FXML private lateinit var subFrameToggleSwitch: ToggleSwitch
+    @FXML private lateinit var subFrameSwitch: SwitchSegmentedButton
     @FXML private lateinit var fullsizeButton: Button
     @FXML private lateinit var frameXSpinner: Spinner<Double>
     @FXML private lateinit var frameYSpinner: Spinner<Double>
@@ -90,6 +92,7 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
         cameraManager.bind(cameraChoiceBox.selectionModel.selectedItemProperty())
 
         connectButton.disableProperty().bind(cameraManager.isNull() or isConnecting or isCapturing)
+        cameraManager.connectedProperty.on { connectButton.state = it }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 
@@ -97,38 +100,36 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
             .filter { it.userData == "BIND_TO_SELECTED_CAMERA" }
             .forEach { it.disableProperty().bind(isNotConnectedOrCapturing) }
 
-        coolerPowerLabel.textProperty().bind(cameraManager.coolerPowerProperty.asString(Locale.ENGLISH, "Cooler (%.1f °C)"))
-        coolerToggleSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.hasCoolerProperty)
-        cameraManager.coolerProperty.on(coolerToggleSwitch::setSelected)
-        coolerToggleSwitch.selectedProperty().on { cameraManager.get().cooler(it) }
+        coolerPowerLabel.textProperty.bind(cameraManager.coolerPowerProperty.asString(Locale.ENGLISH, "Cooler (%.1f %)"))
+        coolerSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.hasCoolerProperty)
+        cameraManager.coolerProperty.on { coolerSwitch.state = it }
+        coolerSwitch.stateProperty.on { cameraManager.get().cooler(it) }
 
-        dewHeaterToggleSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.hasDewHeaterProperty)
-        dewHeaterToggleSwitch.selectedProperty().bind(cameraManager.dewHeaterProperty)
-        dewHeaterToggleSwitch.selectedProperty().on { cameraManager.get().dewHeater(it) }
+        dewHeaterSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.hasDewHeaterProperty)
+        cameraManager.dewHeaterProperty.on { dewHeaterSwitch.state = it }
+        dewHeaterSwitch.stateProperty.on { cameraManager.get().dewHeater(it) }
 
-        temperatureLabel.textProperty().bind(cameraManager.temperatureProperty.asString(Locale.ENGLISH, "Temperature (%.1f °C)"))
+        temperatureLabel.textProperty.bind(cameraManager.temperatureProperty.asString(Locale.ENGLISH, "Temperature (%.1f °C)"))
         temperatureSetpointSpinner.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.canSetTemperatureProperty)
         temperatureSetpointButton.disableProperty().bind(temperatureSetpointSpinner.disableProperty())
 
         exposureSpinner.disableProperty().bind(isNotConnectedOrCapturing)
 
-        exposureUnitToggleGroup
-            .toggles.forEach { (it as RadioButton).disableProperty().bind(exposureSpinner.disableProperty()) }
+        exposureUnitSegmentedButton.disableProperty().bind(exposureSpinner.disableProperty())
+        exposureUnitSegmentedButton.toggleGroup.selectedToggleProperty().on { updateExposureUnit(it!!) }
 
-        exposureModeToggleGroup
-            .toggles.forEach { (it as RadioButton).disableProperty().bind(exposureSpinner.disableProperty()) }
-        val fixed = exposureModeToggleGroup
-            .toggles.first { it.userData == "FIXED" } as RadioButton
-        val continuous = exposureModeToggleGroup
-            .toggles.first { it.userData == "CONTINUOUS" } as RadioButton
+        exposureModeSegmentedButton.disableProperty().bind(exposureSpinner.disableProperty())
+
+        val fixed = exposureModeSegmentedButton.buttons.first { it.userData == "FIXED" } as ToggleButton
+        val loop = exposureModeSegmentedButton.buttons.first { it.userData == "LOOP" } as ToggleButton
 
         exposureDelaySpinner.disableProperty()
-            .bind((fixed.disableProperty() and continuous.disableProperty()) or (!fixed.selectedProperty() and !continuous.selectedProperty()))
+            .bind((fixed.disableProperty() and loop.disableProperty()) or (!fixed.selectedProperty() and !loop.selectedProperty()))
 
         exposureCountSpinner.disableProperty().bind(fixed.disableProperty() or !fixed.selectedProperty())
 
-        subFrameToggleSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.canSubFrameProperty)
-        fullsizeButton.disableProperty().bind(subFrameToggleSwitch.disableProperty() or !subFrameToggleSwitch.selectedProperty())
+        subFrameSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.canSubFrameProperty)
+        fullsizeButton.disableProperty().bind(subFrameSwitch.disableProperty() or !subFrameSwitch.stateProperty)
 
         frameXSpinner.disableProperty().bind(fullsizeButton.disableProperty())
         frameYSpinner.disableProperty().bind(frameXSpinner.disableProperty())
@@ -168,16 +169,17 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
     }
 
     override val exposureUnit
-        get() = TimeUnit.valueOf(exposureUnitToggleGroup.selectedToggle.userData as String)
+        get() = TimeUnit.valueOf(exposureUnitSegmentedButton.toggleGroup.selectedToggle.userData as String)
 
     override val exposure
         get() = exposureSpinner.value.toLong()
 
     override fun updateExposure(exposure: Long, unit: TimeUnit) {
         exposureSpinner.valueFactory.value = max(1.0, exposure.toDouble())
-
-        exposureUnitToggleGroup.toggles
-            .forEach { (it as RadioButton).isSelected = it.userData == unit.name }
+        val button = exposureUnitSegmentedButton.buttons.first { it.userData == unit.name }
+        // exposureUnitSegmentedButton.buttons.forEach { it.isSelected = it === button }
+        // exposureUnitSegmentedButton.toggleGroup.selectToggle(button)
+        button.isSelected = true
         exposureSpinner.userData = unit
     }
 
@@ -207,10 +209,12 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
         }
 
     override var exposureMode
-        get() = ExposureMode.valueOf(exposureModeToggleGroup.selectedToggle.userData as String)
+        get() = ExposureMode.valueOf(exposureModeSegmentedButton.toggleGroup.selectedToggle.userData as String)
         set(value) {
-            exposureModeToggleGroup
-                .toggles.forEach { (it as RadioButton).isSelected = it.userData == value.name }
+            val button = exposureModeSegmentedButton.buttons.first { it.userData == value.name }
+            // exposureModeSegmentedButton.buttons.forEach { it.isSelected = it === button }
+            // exposureModeSegmentedButton.toggleGroup.selectToggle(button)
+            button.isSelected = true
         }
 
     override var exposureDelay
@@ -220,9 +224,9 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
         }
 
     override var isSubFrame
-        get() = subFrameToggleSwitch.isSelected
+        get() = subFrameSwitch.state
         set(value) {
-            subFrameToggleSwitch.isSelected = value
+            subFrameSwitch.state = value
         }
 
     override val frameX
@@ -454,15 +458,13 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
 
     @FXML
     private fun fullsize() {
-        if (subFrameToggleSwitch.isSelected) {
+        if (subFrameSwitch.state) {
             cameraManager.fullsize()
         }
     }
 
-    @FXML
-    private fun updateExposureUnit(event: ActionEvent) {
-        val radio = event.source as RadioButton
-        val timeUnit = TimeUnit.valueOf(radio.userData as String)
+    private fun updateExposureUnit(toggle: Toggle) {
+        val timeUnit = TimeUnit.valueOf(toggle.userData as String)
         cameraManager.updateExposureUnit(exposureSpinner.userData as TimeUnit, timeUnit, exposure)
     }
 

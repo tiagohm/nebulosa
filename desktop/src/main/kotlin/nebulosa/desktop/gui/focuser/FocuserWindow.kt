@@ -83,7 +83,7 @@ class FocuserWindow : AbstractWindow("Focuser", "focus"), FocuserView {
 
         abortButton.disableProperty().bind(isNotConnectedOrMoving or !focuserManager.canAbortProperty)
 
-        autoFocusButton.disableProperty().bind(isNotConnectedOrMoving)
+        // autoFocusButton.disableProperty().bind(isNotConnectedOrMoving)
     }
 
     override fun onStart() {

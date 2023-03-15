@@ -5,6 +5,7 @@ import javafx.beans.property.StringProperty
 import javafx.collections.ObservableList
 import javafx.geometry.Pos
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.control.Label
 import javafx.scene.layout.VBox
 
@@ -45,7 +46,8 @@ class LabeledPane(text: String = "") : VBox() {
             }
 
             if (value != null) {
-                label.disableProperty().bind(value.disableProperty())
+                val master = value.findMaster()
+                label.disableProperty().bind((master ?: value).disableProperty())
                 children.add(value)
             }
         }
@@ -55,4 +57,33 @@ class LabeledPane(text: String = "") : VBox() {
         set(value) {
             label.graphic = value
         }
+
+    companion object {
+
+        @JvmStatic
+        private fun Node.findMaster(): Node? {
+            if (master(this)) {
+                return this
+            } else if (this is Parent) {
+                for (child in childrenUnmodifiable) {
+                    return child.findMaster() ?: continue
+                }
+            }
+
+            return null
+        }
+
+        @JvmStatic
+        @JvmName("setMaster")
+        fun master(node: Node, value: Boolean) {
+            node.properties["labeledpane-master"] = value
+            node.parent?.requestLayout()
+        }
+
+        @JvmStatic
+        @JvmName("getMaster")
+        fun master(node: Node): Boolean {
+            return node.hasProperties() && node.properties["labeledpane-master"] == true
+        }
+    }
 }

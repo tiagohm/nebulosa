@@ -12,7 +12,6 @@ class IconButton(@NamedArg("size") size: Double = DEFAULT_SIZE) : Button() {
     init {
         alignment = Pos.CENTER
         isMnemonicParsing = false
-        contentDisplay = ContentDisplay.GRAPHIC_ONLY
         minHeight = size
         maxHeight = size
         prefHeight = size
@@ -24,14 +23,21 @@ class IconButton(@NamedArg("size") size: Double = DEFAULT_SIZE) : Button() {
     var image: Image?
         get() = (graphic as? ImageView)?.image
         set(value) {
-            if (graphic !is ImageView) {
-                val imageView = ImageView(value)
-                imageView.fitWidth = size / 2 - 4.0
-                imageView.fitHeight = size / 2 - 4.0
-                imageView.isPreserveRatio = true
-                graphic = imageView
+            if (value != null) {
+                if (graphic !is ImageView) {
+                    val imageView = ImageView(value)
+                    imageView.fitWidth = size / 2 - 4.0
+                    imageView.fitHeight = size / 2 - 4.0
+                    imageView.isPreserveRatio = true
+                    graphic = imageView
+                } else {
+                    (graphic as ImageView).image = value
+                }
+
+                contentDisplay = ContentDisplay.GRAPHIC_ONLY
             } else {
-                (graphic as ImageView).image = value
+                graphic = null
+                contentDisplay = ContentDisplay.TEXT_ONLY
             }
         }
 
