@@ -19,7 +19,7 @@ class FixedStarTest : StringSpec() {
 
     init {
         IERSA.load(resource("finals2000A.all")!!)
-        IERS.current = IERSA
+        IERS.attach(IERSA)
 
         "polaris" {
             // https://api.noctuasky.com/api/v1/skysources/name/NAME%20Polaris

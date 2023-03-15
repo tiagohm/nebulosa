@@ -1,7 +1,12 @@
 package nebulosa.time
 
+import nebulosa.constants.DAYSEC
+import nebulosa.constants.MJD0
 import java.io.InputStream
 
+/**
+ * @see <a href="https://maia.usno.navy.mil/ser7/finals2000A.all">Table</a>
+ */
 object IERSA : IERS() {
 
     /**
@@ -37,7 +42,7 @@ object IERSA : IERS() {
         DX_B_2000A_ERR(175, 184), // Bull. B dY wrt IAU2000A Nutation (msec. of arc)
     }
 
-    override lateinit var mjd: DoubleArray
+    override lateinit var time: DoubleArray
         private set
 
     override lateinit var pmX: DoubleArray
@@ -51,17 +56,33 @@ object IERSA : IERS() {
 
     override val columns = Column.values().toList()
 
-    override fun canUseThisLine(line: String) = line.trim().length > 16
+    override fun canUseThisLine(line: String) = line.trim().length > 17 && line[16] == 'I'
 
     override fun load(source: InputStream) {
         super.load(source)
 
-        mjd = DoubleArray(size) { this[it, Column.MJD].toDouble() }
-        pmX = DoubleArray(size) { this[it, Column.PM_X_B].toDoubleOrNull() ?: this[it, Column.PM_X_A].toDouble() }
-        pmY = DoubleArray(size) { this[it, Column.PM_Y_B].toDoubleOrNull() ?: this[it, Column.PM_Y_A].toDouble() }
-        dut1 = DoubleArray(size) { this[it, Column.DUT1_B].toDoubleOrNull() ?: this[it, Column.DUT1_A].toDouble() }
+        time = DoubleArray(size) {
+            val mjd = this[it, Column.MJD].toDouble()
+            mjd + (TT_MINUS_UTC / DAYSEC + MJD0)
+        }
+
+        pmX = DoubleArray(size) { this[it, Column.PM_X_A].toDouble() }
+
+        pmY = DoubleArray(size) { this[it, Column.PM_Y_A].toDouble() }
+
+        dut1 = DoubleArray(size) { this[it, Column.DUT1_A].toDouble() }
+
+        val bigJumps = IntArray(dut1.size) { if (it > 0 && dut1[it] - dut1[it - 1] > 0.9) 1 else 0 }
+
+        for (i in dut1.indices) {
+            if (i > 0) bigJumps[i] += bigJumps[i - 1]
+            val k = bigJumps[i] + TT_MINUS_UTC
+            dut1[i] = k - dut1[i]
+        }
     }
 
     const val URL = "https://datacenter.iers.org/data/9/finals2000A.all"
+
+    private const val TT_MINUS_UTC = 32.184 + 12.0
 }
 

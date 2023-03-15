@@ -1,7 +1,6 @@
 package nebulosa.desktop.gui.guider
 
 import javafx.fxml.FXML
-import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow

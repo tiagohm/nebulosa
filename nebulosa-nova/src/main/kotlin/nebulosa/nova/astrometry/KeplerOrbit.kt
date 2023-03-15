@@ -20,6 +20,8 @@ data class KeplerOrbit(
     val rotation: Matrix3D? = null,
 ) : Body {
 
+    val osculatingElements by lazy { OsculatingElements(position, velocity, epoch, mu) }
+
     override fun compute(time: InstantOfTime): PositionAndVelocity {
         val (position, velocity) = propagate(position, velocity, epoch.tt, time.tt, mu)
 

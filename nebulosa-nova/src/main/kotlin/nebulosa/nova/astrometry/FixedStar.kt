@@ -1,9 +1,6 @@
 package nebulosa.nova.astrometry
 
-import nebulosa.constants.AU_KM
-import nebulosa.constants.DAYSEC
-import nebulosa.constants.SPEED_OF_LIGHT
-import nebulosa.constants.SPEED_OF_LIGHT_AU_DAY
+import nebulosa.constants.*
 import nebulosa.erfa.PositionAndVelocity
 import nebulosa.math.Angle
 import nebulosa.math.Vector3D
@@ -39,7 +36,7 @@ data class FixedStar(
 
     override val target = Int.MIN_VALUE
 
-    override fun observe(observer: ICRF): PositionAndVelocity {
+    override fun observedAt(observer: ICRF): PositionAndVelocity {
         // Form unit vector 'u1' in direction of star.
         val u1 = pv.position.normalized
         // Light-time returned is the projection of vector "pos_obs" onto the
@@ -83,8 +80,8 @@ data class FixedStar(
             // Convert proper motion and radial velocity to orthogonal
             // components of motion with units of au/day.
 
-            val pmr = pmRA.value / (parallax.value * 365.25) * k
-            val pmd = pmDEC.value / (parallax.value * 365.25) * k
+            val pmr = pmRA.value / (parallax.value * DAYSPERJY) * k
+            val pmd = pmDEC.value / (parallax.value * DAYSPERJY) * k
             val rvl = radial.kms * DAYSEC / AU_KM * k
 
             val velocity = Vector3D(

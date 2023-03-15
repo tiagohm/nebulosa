@@ -58,7 +58,7 @@ class IERSLoader(
 
         return try {
             path.inputStream().use { IERSA.load(it) }
-            IERS.current = IERSA
+            IERS.attach(IERSA)
             LOG.info("finals2000A.all is loaded")
             false
         } catch (e: Throwable) {
@@ -97,7 +97,7 @@ class IERSLoader(
                     bytes.inputStream().copyTo(it)
                     // TODO: Usar um IERSA Padrão.
                     IERSA.load(bytes.inputStream())
-                    IERS.current = IERSA
+                    IERS.attach(IERSA)
                     LOG.info("finals2000A.all is loaded")
                 }
             }

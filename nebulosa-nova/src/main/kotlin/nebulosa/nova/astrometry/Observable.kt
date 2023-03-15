@@ -12,5 +12,5 @@ interface Observable {
      * Computes the position of this body relative to the
      * Solar System Barycenter at [observer].
      */
-    fun observe(observer: ICRF): PositionAndVelocity
+    fun observedAt(observer: ICRF): PositionAndVelocity
 }

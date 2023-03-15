@@ -3,6 +3,7 @@
 package nebulosa.math
 
 import nebulosa.math.Angle.Companion.rad
+import kotlin.math.asin
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
@@ -21,6 +22,8 @@ value class Vector3D private constructor(@PublishedApi internal val vector: Doub
     inline operator fun minus(other: Vector3D) = Vector3D(x - other.x, y - other.y, z - other.z)
 
     inline operator fun times(scalar: Double) = Vector3D(x * scalar, y * scalar, z * scalar)
+
+    inline operator fun times(vector: Vector3D) = Vector3D(x * vector.x, y * vector.y, z * vector.z)
 
     inline operator fun div(scalar: Double) = Vector3D(x / scalar, y / scalar, z / scalar)
 
@@ -45,11 +48,17 @@ value class Vector3D private constructor(@PublishedApi internal val vector: Doub
 
     inline fun cross(other: Vector3D) = Vector3D(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x)
 
-    val length
+    inline val length
         get() = sqrt(dot(this))
 
     val normalized
         get() = length.let { if (it == 0.0) this else this / it }
+
+    inline val latitude
+        get() = asin(z / length).rad
+
+    inline val longitude
+        get() = atan2(y, x).rad.normalized
 
     fun isEmpty() = x == 0.0 && y == 0.0 && z == 0.0
 

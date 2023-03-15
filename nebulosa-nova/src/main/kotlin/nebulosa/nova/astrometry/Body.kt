@@ -30,7 +30,7 @@ interface Body : PositionAndVelocityOverTime, Observable, Iterable<Body> {
         return PositionAndVelocity(position, velocity)
     }
 
-    override fun observe(observer: ICRF): PositionAndVelocity {
+    override fun observedAt(observer: ICRF): PositionAndVelocity {
         require(center.toInt() == 0) {
             "you can only observe a body whose vector's center is the Solar System Barycenter," +
                     " but this vector has the center $center"

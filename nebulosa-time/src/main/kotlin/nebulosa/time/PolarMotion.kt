@@ -26,4 +26,9 @@ fun interface PolarMotion {
         val (sprime, x, y) = pmAngles(time)
         return Matrix3D.rotateX(y).rotateY(x).rotateZ(-sprime)
     }
+
+    object None : PolarMotion {
+
+        override fun pmXY(time: InstantOfTime) = PairOfAngle.ZERO
+    }
 }

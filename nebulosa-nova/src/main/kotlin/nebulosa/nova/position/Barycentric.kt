@@ -33,7 +33,7 @@ class Barycentric internal constructor(
      * Computes the [Astrometric] position of a [body] from this location.
      */
     fun observe(body: Observable): Astrometric {
-        val (p, v) = body.observe(this)
+        val (p, v) = body.observedAt(this)
         val target = if (body is Body) body.target else if (body is Number) body else Int.MIN_VALUE
         val astrometric = Astrometric(p, v, time, this.target, target, this)
         astrometric.centerBarycentric = this

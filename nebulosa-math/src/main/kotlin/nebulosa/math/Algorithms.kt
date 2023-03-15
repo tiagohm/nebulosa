@@ -67,11 +67,11 @@ fun interpolation(
     x: Double,
     a: DoubleArray,
     b: DoubleArray,
-    left: Double = Double.NaN,
-    right: Double = Double.NaN,
+    left: Double = b[0],
+    right: Double = b[a.size - 1],
 ): Double {
-    if (x <= a[0]) return if (left.isNaN()) b[0] else left
-    if (x >= a[a.size - 1]) return if (right.isNaN()) b[a.size - 1] else right
+    if (x <= a[0]) return left
+    if (x >= a[a.size - 1]) return right
     val i = a.binarySearch(x).let { if (it < 0) -it - 1 else it }
     return b[i - 1] + (b[i] - b[i - 1]) / (a[i] - a[i - 1]) * (x - a[i - 1])
 }
@@ -82,11 +82,11 @@ fun interpolation(
 fun interpolation(
     x: Double,
     a: DoubleArray,
-    left: Double = Double.NaN,
-    right: Double = Double.NaN,
+    left: Double = 0.0,
+    right: Double = (a.size - 1).toDouble(),
 ): Double {
-    if (x <= a[0]) return if (left.isNaN()) 0.0 else left
-    if (x >= a[a.size - 1]) return if (right.isNaN()) (a.size - 1).toDouble() else right
+    if (x <= a[0]) return left
+    if (x >= a[a.size - 1]) return right
     val i = a.binarySearch(x).let { if (it < 0) -it - 1 else it }
     return i - 1 + (x - a[i - 1]) / (a[i] - a[i - 1])
 }

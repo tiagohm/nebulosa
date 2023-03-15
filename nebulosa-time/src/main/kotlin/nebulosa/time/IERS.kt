@@ -1,11 +1,9 @@
 package nebulosa.time
 
-import nebulosa.constants.MJD0
 import nebulosa.math.Angle.Companion.arcsec
 import nebulosa.math.PairOfAngle
 import nebulosa.math.search
 import java.io.InputStream
-import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
@@ -24,13 +22,13 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
 
     protected abstract val columns: List<Column>
 
-    internal abstract val mjd: DoubleArray
+    protected abstract val time: DoubleArray
 
-    internal abstract val pmX: DoubleArray
+    protected abstract val pmX: DoubleArray
 
-    internal abstract val pmY: DoubleArray
+    protected abstract val pmY: DoubleArray
 
-    internal abstract val dut1: DoubleArray
+    protected abstract val dut1: DoubleArray
 
     protected abstract fun canUseThisLine(line: String): Boolean
 
@@ -52,27 +50,21 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
         input: DoubleArray,
         vararg data: DoubleArray,
     ): DoubleArray {
-        val (whole, fraction) = time
-        val res = DoubleArray(data.size)
-        val mjd = floor(whole - MJD0 + fraction)
-        val utc = whole - (MJD0 + mjd) + fraction
-        val i = input.search(mjd, rightSide = true)
+        val value = if (time is UT1 || time is UTC) time.value else time.tt.value
+        val i = input.search(value, rightSide = true)
         val k = max(1, min(i, input.size - 1))
-        val mjd0 = input[k - 1]
-        val mjd1 = input[k]
+        val t0 = input[k - 1]
+        val t1 = input[k]
 
-        for (j in res.indices) {
-            res[j] = if (i == 0) data[j].first()
-            else if (i >= input.size) data[j].last()
+        return DoubleArray(data.size) {
+            if (i <= 0) Double.NaN
+            else if (i >= input.size) Double.NaN
             else {
-                val a = data[j][k - 1]
-                val b = data[j][k]
-                val c = b - a
-                a + (mjd - mjd0 + utc) / (mjd1 - mjd0) * c
+                val a = data[it][k - 1]
+                val b = data[it][k]
+                a + (b - a) / (t1 - t0) * (value - t0)
             }
         }
-
-        return res
     }
 
     @Synchronized
@@ -88,24 +80,38 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
         }
     }
 
-    // TODO: CACHE?
     override fun pmXY(time: InstantOfTime): PairOfAngle {
-        val (x, y) = interpolate(time, mjd, pmX, pmY)
+        val (x, y) = interpolate(time, this.time, pmX, pmY)
         return PairOfAngle(x.arcsec, y.arcsec)
     }
 
-    // TODO: CACHE?
     override fun delta(time: InstantOfTime): Double {
-        return interpolate(time, mjd, dut1)[0]
+        val dt = interpolate(time, this.time, dut1)[0]
+        return if (dt.isNaN()) DeltaTime.Standard.delta(time)
+        else dt
     }
 
     companion object : PolarMotion, DeltaTime {
 
-        // TODO: Initialize with default IERS (empty?)
-        @Volatile lateinit var current: IERS
+        @Volatile private var polarMotion: PolarMotion = PolarMotion.None
+        @Volatile private var deltaTime: DeltaTime = DeltaTime.Standard
 
-        override fun pmXY(time: InstantOfTime) = current.pmXY(time)
+        fun attach(iers: IERS) {
+            polarMotion = iers
+            deltaTime = iers
+        }
 
-        override fun delta(time: InstantOfTime) = current.delta(time)
+        fun detach() {
+            polarMotion = PolarMotion.None
+            deltaTime = DeltaTime.Standard
+        }
+
+        override fun pmXY(time: InstantOfTime): PairOfAngle {
+            return polarMotion.pmXY(time)
+        }
+
+        override fun delta(time: InstantOfTime): Double {
+            return deltaTime.delta(time)
+        }
     }
 }
