@@ -54,7 +54,7 @@ publishing {
 }
 
 javafx {
-    version = "19.0.2.1"
+    version = properties["javaFX.version"]!!.toString()
     modules = listOf("javafx.controls", "javafx.fxml")
 }
 
@@ -69,6 +69,6 @@ tasks.withType<BootJar> {
 buildConfig {
     packageName("nebulosa.desktop")
     useKotlinOutput()
-    buildConfigField("String", "VERSION_CODE", "\"${project.property("version.code")?.toString() ?: "0.1.0"}\"")
-    buildConfigField("String", "VERSION_NAME", "\"${project.property("version.name")?.toString() ?: ""}\"")
+    buildConfigField("String", "VERSION_CODE", "\"${project.properties["version.code"]}\"")
+    buildConfigField("String", "VERSION_NAME", "\"${project.properties["version.name"]}\"")
 }

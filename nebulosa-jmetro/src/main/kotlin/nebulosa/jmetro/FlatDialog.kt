@@ -53,8 +53,8 @@ class FlatDialog<R> : Dialog<R>() {
         }
 
         @JvmStatic
-        fun initDialogIcon(dialog: Dialog<*>, isIconless: Boolean) {
-            if (!isIconless) return
+        fun initDialogIcon(dialog: Dialog<*>, iconless: Boolean) {
+            if (!iconless) return
             val stage = dialog.dialogPane.scene.window as Stage
             val whiteIcon = Image(Thread.currentThread().contextClassLoader.getResource("whiteIcon.png")!!.toExternalForm())
             stage.icons.add(whiteIcon)

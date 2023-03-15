@@ -23,7 +23,7 @@ buildscript {
 
 allprojects {
     group = "com.github.tiagohm"
-    version = project.property("version.code")?.toString() ?: "0.1.0"
+    version = project.properties["version.code"]!!.toString()
 
     repositories {
         mavenCentral()

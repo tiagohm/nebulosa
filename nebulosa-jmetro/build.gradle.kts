@@ -18,6 +18,6 @@ publishing {
 }
 
 javafx {
-    version = "19.0.2.1"
+    version = properties["javaFX.version"]!!.toString()
     modules = listOf("javafx.controls")
 }

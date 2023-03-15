@@ -1093,7 +1093,7 @@ TextField:readonly {
  ******************************************************************************/
 
 .slider {
-    -fx-skin: "nebulosa.jmetro.SliderSkin";
+    -fx-skin: "nebulosa.jmetro.FluentSliderSkin";
 }
 
 .slider {
@@ -1167,6 +1167,8 @@ TextField:readonly {
 }
 
 .spinner {
+    -fx-skin: "nebulosa.jmetro.FluentSpinnerSkin";
+
     -fx-background-color: spinner_background_color;
     -fx-background-insets: 0;
     -fx-background-radius: 0;
