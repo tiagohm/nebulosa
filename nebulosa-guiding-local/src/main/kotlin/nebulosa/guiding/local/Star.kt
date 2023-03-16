@@ -10,29 +10,29 @@ import nebulosa.imaging.algorithms.star.hfd.HalfFluxDiameter
  */
 open class Star : Point {
 
-    var mass = 0f
+    var mass = 0.0
         private set
 
-    var snr = 0f
+    var snr = 0.0
         private set
 
-    var hfd = 0f
+    var hfd = 0.0
         private set
 
-    var peak = 0f
+    var peak = 0.0
         private set
 
     var lastFindResult = FindResult.ERROR
         private set
 
-    constructor(x: Float, y: Float) : super(x, y)
+    constructor(x: Double, y: Double) : super(x, y)
 
     constructor(point: Point) : super(point)
 
     fun find(
-        image: Image, searchRegion: Float = 15f,
-        baseX: Float = x, baseY: Float = y,
-        mode: FindMode = FindMode.CENTROID, minHFD: Float = 1.5f,
+        image: Image, searchRegion: Double = 15.0,
+        baseX: Double = x, baseY: Double = y,
+        mode: FindMode = FindMode.CENTROID, minHFD: Double = 1.5,
     ): Boolean {
         val hfd = HalfFluxDiameter(baseX, baseY, searchRegion, mode, minHFD)
         val star = hfd.compute(image)
@@ -40,20 +40,21 @@ open class Star : Point {
         snr = star.snr
         this.hfd = star.hfd
         peak = star.peak
+        set(star.x, star.y)
         lastFindResult = star.result
         return wasFound
     }
 
     override fun invalidate() {
-        mass = 0f
-        snr = 0f
-        hfd = 0f
+        mass = 0.0
+        snr = 0.0
+        hfd = 0.0
         lastFindResult = FindResult.ERROR
         super.invalidate()
     }
 
     inline val wasFound
-        get() = isValid && (lastFindResult == FindResult.OK || lastFindResult == FindResult.SATURATED)
+        get() = valid && (lastFindResult == FindResult.OK || lastFindResult == FindResult.SATURATED)
 
     override fun toString(): String {
         return "Star(x=$x, y=$y," +

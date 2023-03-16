@@ -10,37 +10,40 @@ import kotlin.math.hypot
  */
 @Suppress("NOTHING_TO_INLINE")
 open class Point(
-    x: Float,
-    y: Float,
+    x: Double,
+    y: Double,
+    valid: Boolean = true,
 ) {
 
+    var valid = valid
+        protected set
+
     var x = x
-        internal set(value) {
-            field = value
-            isValid = true
-        }
-
-    var y = y
-        internal set(value) {
-            field = value
-            isValid = true
-        }
-
-    var isValid = true
         internal set
 
-    constructor(point: Point) : this(point.x, point.y) {
-        isValid = point.isValid
+    var y = y
+        internal set
+
+    constructor(point: Point) : this(point.x, point.y, point.valid)
+
+    open fun set(x: Double, y: Double) {
+        this.x = x
+        this.y = y
+        valid = true
     }
 
-    inline fun dX(point: Point) = x - point.x
+    fun set(point: Point) {
+        set(point.x, point.y)
+    }
 
-    inline fun dY(point: Point) = y - point.y
+    fun dX(point: Point) = x - point.x
+
+    fun dY(point: Point) = y - point.y
 
     inline val distance
         get() = hypot(x, y)
 
-    inline fun distance(point: Point) = hypot(dX(point), dY(point))
+    fun distance(point: Point) = hypot(dX(point), dY(point))
 
     inline val angle
         get() = angle(ZERO)
@@ -48,12 +51,12 @@ open class Point(
     fun angle(point: Point): Angle {
         val dx = dX(point)
         val dy = dY(point)
-        return if (dx != 0f || dy != 0f) atan2(dy, dx).rad
+        return if (dx != 0.0 || dy != 0.0) atan2(dy, dx).rad
         else Angle.ZERO
     }
 
     open fun invalidate() {
-        isValid = false
+        valid = false
     }
 
     inline operator fun plus(other: Point) = Point(x + other.x, y + other.y)
@@ -62,7 +65,7 @@ open class Point(
 
     companion object {
 
-        @JvmStatic val NONE = Point(Float.NaN, Float.NaN)
-        @JvmStatic val ZERO = Point(0f, 0f)
+        @JvmStatic val NONE = Point(Double.NaN, Double.NaN)
+        @JvmStatic val ZERO = Point(0.0, 0.0)
     }
 }

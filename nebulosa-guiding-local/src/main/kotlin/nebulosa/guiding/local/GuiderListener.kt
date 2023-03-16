@@ -6,5 +6,11 @@ interface GuiderListener {
 
     fun onStarSelected(guider: Guider, star: Star)
 
-    fun onGuidingDithered(guider: Guider, dx: Float, dy: Float, mountCoordinate: Boolean)
+    fun onGuidingDithered(guider: Guider, dx: Double, dy: Double, mountCoordinate: Boolean)
+
+    fun onCalibrationFailed()
+
+    fun onGuidingStopped()
+
+    fun onLockShiftLimitReached()
 }

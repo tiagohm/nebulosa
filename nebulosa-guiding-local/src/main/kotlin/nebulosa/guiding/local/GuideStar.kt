@@ -8,7 +8,7 @@ class GuideStar : Star {
 
     val referencePoint = ZERO
 
-    constructor(x: Float, y: Float) : super(x, y)
+    constructor(x: Double, y: Double) : super(x, y)
 
     constructor(point: Point) : super(point)
 }

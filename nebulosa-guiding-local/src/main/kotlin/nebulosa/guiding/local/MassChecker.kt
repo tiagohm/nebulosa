@@ -2,7 +2,7 @@ package nebulosa.guiding.local
 
 import java.util.*
 
-class MassChecker {
+internal class MassChecker {
 
     private data class Entry(
         val time: Long,

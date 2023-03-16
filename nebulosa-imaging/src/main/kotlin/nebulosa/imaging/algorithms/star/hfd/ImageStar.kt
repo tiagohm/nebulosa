@@ -1,11 +1,11 @@
 package nebulosa.imaging.algorithms.star.hfd
 
 data class ImageStar(
-    val x: Float,
-    val y: Float,
-    val mass: Float = 0f,
-    val snr: Float = 0f,
-    val hfd: Float = 0f,
-    val peak: Float = 0f,
+    val x: Double,
+    val y: Double,
+    val mass: Double = 0.0,
+    val snr: Double = 0.0,
+    val hfd: Double = 0.0,
+    val peak: Double = 0.0,
     val result: FindResult = FindResult.ERROR,
 )
