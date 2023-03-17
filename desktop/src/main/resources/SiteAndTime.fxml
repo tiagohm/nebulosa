@@ -2,9 +2,8 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.Image?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.control.IconButton?>
+<?import nebulosa.desktop.gui.control.*?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -35,105 +34,85 @@
                       spacing="4.0">
                     <ChoiceBox fx:id="gpsChoiceBox"
                                minHeight="28.0"
-                               minWidth="128.0">
-                    </ChoiceBox>
-                    <IconButton fx:id="openINDIButton"
-                                onAction="#openINDIPanelControl">
-                        <image>
-                            <Image url="@icons/indi.png"/>
-                        </image>
-                    </IconButton>
-                    <Button fx:id="useCoordinateFromGpsButton"
-                            onAction="#useCoordinateFromGps"
-                            styleClass="mdi,mdi-sm,text-blue-grey-700"
-                            text="󰓾">
-                    </Button>
-                    <Button fx:id="syncDateAndTimeButton"
-                            onAction="#syncDateAndTime"
-                            styleClass="mdi,mdi-sm,text-blue-grey-700"
-                            text="󱫬">
-                    </Button>
+                               minWidth="128.0"/>
+                    <ImageButton fx:id="openINDIButton"
+                                 onAction="#openINDIPanelControl"
+                                 url="@icons/indi.png"/>
+                    <MaterialIconButton fx:id="useCoordinateFromGpsButton"
+                                        onAction="#useCoordinateFromGps"
+                                        icon="target"/>
+                    <MaterialIconButton fx:id="syncDateAndTimeButton"
+                                        onAction="#syncDateAndTime"
+                                        icon="timer-sync"/>
                 </HBox>
             </VBox>
         </HBox>
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
-            <VBox spacing="1.0">
-                <Label styleClass="text-sm"
-                       text="Latitude (degrees)">
-                </Label>
+            <LabeledPane text="Latitude (deg)"
+                         textStyleClass="text-bold">
                 <TextField fx:id="latitudeTextField"
                            minWidth="120.0"
                            prefWidth="120.0"
-                           promptText="+00 00 00.0">
-                </TextField>
-            </VBox>
-            <VBox spacing="1.0">
-                <Label styleClass="text-sm"
-                       text="Longitude (degrees)">
-                </Label>
+                           promptText="+00 00 00.0"/>
+            </LabeledPane>
+            <LabeledPane text="Longitude (deg)"
+                         textStyleClass="text-bold">
                 <TextField fx:id="longitudeTextField"
                            minWidth="120.0"
                            prefWidth="120.0"
-                           promptText="+00 00 00.0">
-                </TextField>
-            </VBox>
-            <VBox spacing="1.0">
-                <Label styleClass="text-sm"
-                       text="Elevation (m)">
-                </Label>
+                           promptText="+00 00 00.0"/>
+            </LabeledPane>
+            <LabeledPane text="Elevation (m)"
+                         textStyleClass="text-bold">
                 <TextField fx:id="elevationTextField"
                            minWidth="101.0"
                            prefWidth="101.0"
-                           promptText="000">
-                </TextField>
-            </VBox>
-            <Button onAction="#applySite"
-                    styleClass="mdi,mdi-sm,text-green-700"
-                    text="󰄬">
-                <HBox.margin>
-                    <Insets top="8.0"/>
-                </HBox.margin>
-            </Button>
+                           promptText="000"/>
+            </LabeledPane>
+            <HBox alignment="CENTER"
+                  HBox.hgrow="ALWAYS">
+                <MaterialIconButton onAction="#applySite"
+                                    icon="check"
+                                    color="green-500">
+                    <HBox.margin>
+                        <Insets top="8.0"/>
+                    </HBox.margin>
+                </MaterialIconButton>
+            </HBox>
         </HBox>
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
-            <VBox spacing="1.0">
-                <Label styleClass="text-sm"
-                       text="Date">
-                </Label>
+            <LabeledPane text="Date"
+                         textStyleClass="text-bold">
                 <DatePicker fx:id="dateDatePicker"
                             minWidth="120.0"
-                            prefWidth="120.0">
-                </DatePicker>
-            </VBox>
-            <VBox spacing="1.0">
-                <Label styleClass="text-sm"
-                       text="Time (UTC)">
-                </Label>
+                            prefWidth="120.0"/>
+            </LabeledPane>
+            <LabeledPane text="Time (UTC)"
+                         textStyleClass="text-bold">
                 <TextField fx:id="timeTextField"
                            minWidth="120.0"
                            prefWidth="120.0"
-                           promptText="00:00:00">
-                </TextField>
-            </VBox>
-            <VBox spacing="1.0">
-                <Label styleClass="text-sm"
-                       text="Offset (minutes)">
-                </Label>
+                           promptText="00:00:00"/>
+            </LabeledPane>
+            <LabeledPane text="Offset (minutes)"
+                         textStyleClass="text-bold">
                 <TextField fx:id="offsetTextField"
                            minWidth="101.0"
                            prefWidth="101.0"
-                           promptText="-180">
-                </TextField>
-            </VBox>
-            <Button onAction="#applyDateAndTime"
-                    styleClass="mdi,mdi-sm,text-green-700"
-                    text="󰄬">
-                <HBox.margin>
-                    <Insets top="8.0"/>
-                </HBox.margin>
-            </Button>
+                           promptText="-180"/>
+            </LabeledPane>
+            <HBox alignment="CENTER"
+                  HBox.hgrow="ALWAYS">
+                <MaterialIconButton onAction="#applyDateAndTime"
+                                    icon="check"
+                                    color="green-500">
+                    <HBox.margin>
+                        <Insets top="8.0"/>
+                    </HBox.margin>
+                </MaterialIconButton>
+            </HBox>
         </HBox>
     </VBox>
 </AnchorPane>

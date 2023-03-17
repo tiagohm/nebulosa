@@ -4,6 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import nebulosa.desktop.gui.control.HistogramView?>
+<?import nebulosa.desktop.gui.control.MaterialIconButton?>
 <?import org.controlsfx.control.RangeSlider?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
@@ -34,24 +35,13 @@
                     <HBox alignment="CENTER_RIGHT"
                           spacing="4.0"
                           StackPane.alignment="CENTER_RIGHT">
-                        <Button fx:id="autoStretchButton"
-                                alignment="CENTER"
-                                contentDisplay="TEXT_ONLY"
-                                minWidth="42.0"
-                                mnemonicParsing="false"
-                                onAction="#autoStretch"
-                                prefHeight="32.0"
-                                styleClass="text-accent-color,mdi,mdi-sm"
-                                text="󰁨"/>
-                        <Button fx:id="resetStretchButton"
-                                alignment="CENTER"
-                                contentDisplay="TEXT_ONLY"
-                                minWidth="42.0"
-                                mnemonicParsing="false"
-                                onAction="#resetStretch"
-                                prefHeight="32.0"
-                                styleClass="text-warning-color,mdi,mdi-sm"
-                                text="󰅖"/>
+                        <MaterialIconButton fx:id="autoStretchButton"
+                                            onAction="#autoStretch"
+                                            icon="auto-fix"/>
+                        <MaterialIconButton fx:id="resetStretchButton"
+                                            onAction="#resetStretch"
+                                            icon="close"
+                                            color="warning"/>
                     </HBox>
                 </StackPane>
                 <HBox alignment="CENTER"
@@ -67,22 +57,19 @@
                                  initialValue="0.0"
                                  max="255.0"
                                  min="0.0"
-                                 prefWidth="92.0">
-                        </Spinner>
+                                 prefWidth="92.0"/>
                         <Spinner fx:id="highlightSpinner"
                                  amountToStepBy="0.01"
                                  editable="true"
                                  initialValue="255.0"
                                  max="255.0"
                                  min="0.0"
-                                 prefWidth="92.0">
-                        </Spinner>
+                                 prefWidth="92.0"/>
                     </VBox>
                     <VBox alignment="CENTER"
                           HBox.hgrow="ALWAYS">
                         <Label styleClass="text-sm"
-                               text="Shadow &amp; Highlight">
-                        </Label>
+                               text="Shadow &amp; Highlight"/>
                         <RangeSlider fx:id="shadowAndHighlightRangeSlider"
                                      blockIncrement="1.0"
                                      highValue="255.0"
@@ -92,8 +79,7 @@
                                      min="0.0"
                                      minorTickCount="3"
                                      showTickLabels="true"
-                                     showTickMarks="true">
-                        </RangeSlider>
+                                     showTickMarks="true"/>
                     </VBox>
                 </HBox>
                 <HBox alignment="CENTER"
@@ -104,22 +90,18 @@
                              initialValue="127.5"
                              max="255.0"
                              min="0.0"
-                             prefWidth="92.0">
-                    </Spinner>
+                             prefWidth="92.0"/>
                     <VBox alignment="CENTER"
                           HBox.hgrow="ALWAYS">
                         <Label styleClass="text-sm"
-                               text="Midtone">
-                        </Label>
+                               text="Midtone"/>
                         <Slider fx:id="midtoneSlider"
                                 blockIncrement="1.0"
                                 majorTickUnit="32.0"
                                 max="255.0"
-                                minorTickCount="3"
                                 showTickLabels="true"
                                 showTickMarks="true"
-                                value="127.5">
-                        </Slider>
+                                value="127.5"/>
                     </VBox>
                 </HBox>
             </VBox>

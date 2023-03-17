@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.control.TwoStateButton?>
+<?import nebulosa.desktop.gui.control.*?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefHeight="388.0"
-            prefWidth="332.0"
-            stylesheets="@css/Global.css,@css/Home.css"
+            prefHeight="356.0"
+            prefWidth="338.0"
+            stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="4.0"
@@ -31,356 +31,271 @@
                        focusTraversable="false"
                        prefHeight="32.0"
                        promptText="Host (localhost)"
-                       HBox.hgrow="ALWAYS">
-            </TextField>
+                       HBox.hgrow="ALWAYS"/>
             <TextField fx:id="portTextField"
                        focusTraversable="false"
                        prefHeight="32.0"
                        prefWidth="94.0"
-                       promptText="Port (7624)">
-            </TextField>
+                       promptText="Port (7624)"/>
             <TwoStateButton fx:id="connectButton"
-                            onAction="#connect"
-                            stateOnStyleClass="mdi,mdi-sm,text-warning-color"
-                            stateOffStyleClass="mdi,mdi-sm,text-accent-color"
-                            stateOnIcon="󰅙"
-                            stateOffIcon="󱘖">
+                            onAction="#connect">
+                <MaterialIcon icon="close-circle"
+                              TwoStateButton.state="true"
+                              color="warning"/>
+                <MaterialIcon icon="connection"/>
             </TwoStateButton>
         </HBox>
         <ScrollPane hbarPolicy="NEVER"
                     vbarPolicy="NEVER"
                     style="-fx-box-border: transparent;">
             <GridPane alignment="CENTER"
-                      minHeight="1.0"
-                      VBox.vgrow="NEVER">
+                      hgap="2.0"
+                      vgap="2.0">
                 <columnConstraints>
                     <ColumnConstraints halignment="CENTER"
-                                       hgrow="SOMETIMES"
-                                       minWidth="10.0"
-                                       prefWidth="99.0"/>
+                                       hgrow="ALWAYS"
+                                       prefWidth="100.0"/>
                     <ColumnConstraints halignment="CENTER"
-                                       hgrow="SOMETIMES"
-                                       minWidth="10.0"
-                                       prefWidth="99.0"/>
+                                       hgrow="ALWAYS"
+                                       prefWidth="100.0"/>
                     <ColumnConstraints halignment="CENTER"
-                                       hgrow="SOMETIMES"
-                                       minWidth="10.0"
-                                       prefWidth="99.0"/>
+                                       hgrow="ALWAYS"
+                                       prefWidth="100.0"/>
                 </columnConstraints>
                 <rowConstraints>
-                    <RowConstraints minHeight="10.0"
-                                    prefHeight="62.0"
+                    <RowConstraints minHeight="54.0"
+                                    prefHeight="54.0"
                                     valignment="CENTER"
-                                    vgrow="SOMETIMES"/>
-                    <RowConstraints minHeight="10.0"
-                                    prefHeight="62.0"
+                                    vgrow="ALWAYS"/>
+                    <RowConstraints minHeight="54.0"
+                                    prefHeight="54.0"
                                     valignment="CENTER"
-                                    vgrow="SOMETIMES"/>
-                    <RowConstraints minHeight="10.0"
-                                    prefHeight="62.0"
+                                    vgrow="ALWAYS"/>
+                    <RowConstraints minHeight="54.0"
+                                    prefHeight="54.0"
                                     valignment="CENTER"
-                                    vgrow="SOMETIMES"/>
-                    <RowConstraints minHeight="10.0"
-                                    prefHeight="62.0"
+                                    vgrow="ALWAYS"/>
+                    <RowConstraints minHeight="54.0"
+                                    prefHeight="54.0"
                                     valignment="CENTER"
-                                    vgrow="SOMETIMES"/>
-                    <RowConstraints minHeight="10.0"
-                                    prefHeight="62.0"
+                                    vgrow="ALWAYS"/>
+                    <RowConstraints minHeight="54.0"
+                                    prefHeight="54.0"
                                     valignment="CENTER"
-                                    vgrow="SOMETIMES"/>
-                    <RowConstraints minHeight="10.0"
-                                    prefHeight="62.0"
+                                    vgrow="ALWAYS"/>
+                    <RowConstraints minHeight="54.0"
+                                    prefHeight="54.0"
                                     valignment="CENTER"
-                                    vgrow="SOMETIMES"/>
+                                    vgrow="ALWAYS"/>
                 </rowConstraints>
-                <Button fx:id="cameraButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Camera"
-                        userData="CAMERA"
-                        GridPane.columnIndex="0"
-                        GridPane.rowIndex="0">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/camera.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="mountButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Mount"
-                        userData="MOUNT"
-                        GridPane.columnIndex="1"
-                        GridPane.rowIndex="0">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/telescope.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="guiderButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Guider"
-                        userData="GUIDER"
-                        GridPane.columnIndex="2"
-                        GridPane.rowIndex="0">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/target.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="filterWheelButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Filter Wheel"
-                        userData="FILTER_WHEEL"
-                        GridPane.columnIndex="0"
-                        GridPane.rowIndex="1">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/rgb.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="focuserButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Focuser"
-                        userData="FOCUSER"
-                        GridPane.columnIndex="1"
-                        GridPane.rowIndex="1">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/focus.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="domeButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Dome"
-                        userData="DOME"
-                        GridPane.columnIndex="2"
-                        GridPane.rowIndex="1">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/observatory.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="rotatorButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Rotator"
-                        userData="ROTATOR"
-                        GridPane.columnIndex="0"
-                        GridPane.rowIndex="2">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/rotate.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="switchButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Switch"
-                        userData="SWTICH"
-                        GridPane.columnIndex="1"
-                        GridPane.rowIndex="2">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/switch.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="atlasButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Atlas"
-                        userData="ATLAS"
-                        GridPane.columnIndex="2"
-                        GridPane.rowIndex="2">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/sky.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="plateSolverButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Plate Solver"
-                        userData="PLATE_SOLVER"
-                        GridPane.columnIndex="0"
-                        GridPane.rowIndex="3">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/big-dipper.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="alignmentButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Alignment"
-                        userData="ALIGNMENT"
-                        GridPane.columnIndex="1"
-                        GridPane.rowIndex="3">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/star.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="sequencerButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Sequencer"
-                        userData="SEQUENCER"
-                        GridPane.columnIndex="2"
-                        GridPane.rowIndex="3">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/schedule.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="imageViewerButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Image Viewer"
-                        userData="NEW_IMAGE"
-                        GridPane.columnIndex="0"
-                        GridPane.rowIndex="4">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/image.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="framingButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="Framing"
-                        userData="FRAMING"
-                        GridPane.columnIndex="1"
-                        GridPane.rowIndex="4">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/framing.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="indiButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="INDI"
-                        userData="INDI"
-                        GridPane.columnIndex="2"
-                        GridPane.rowIndex="4">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/indi.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
-                <Button fx:id="aboutButton"
-                        contentDisplay="TOP"
-                        mnemonicParsing="false"
-                        onAction="#open"
-                        styleClass="open"
-                        text="About"
-                        userData="ABOUT"
-                        GridPane.columnIndex="0"
-                        GridPane.rowIndex="5">
-                    <graphic>
-                        <ImageView fitHeight="24.0"
-                                   fitWidth="24.0"
-                                   pickOnBounds="true"
-                                   preserveRatio="true">
-                            <Image url="@icons/information.png"/>
-                        </ImageView>
-                    </graphic>
-                </Button>
+                <ImageButton fx:id="cameraButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Camera"
+                             userData="CAMERA"
+                             GridPane.columnIndex="0"
+                             GridPane.rowIndex="0"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/camera.png"/>
+                <ImageButton fx:id="mountButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Mount"
+                             userData="MOUNT"
+                             GridPane.columnIndex="1"
+                             GridPane.rowIndex="0"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/telescope.png"/>
+                <ImageButton fx:id="guiderButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Guider"
+                             userData="GUIDER"
+                             GridPane.columnIndex="2"
+                             GridPane.rowIndex="0"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/target.png"/>
+                <ImageButton fx:id="filterWheelButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Filter Wheel"
+                             userData="FILTER_WHEEL"
+                             GridPane.columnIndex="0"
+                             GridPane.rowIndex="1"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/filter-wheel.png"/>
+                <ImageButton fx:id="focuserButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Focuser"
+                             userData="FOCUSER"
+                             GridPane.columnIndex="1"
+                             GridPane.rowIndex="1"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/focus.png"/>
+                <ImageButton fx:id="domeButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Dome"
+                             userData="DOME"
+                             GridPane.columnIndex="2"
+                             GridPane.rowIndex="1"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/observatory.png"/>
+                <ImageButton fx:id="rotatorButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Rotator"
+                             userData="ROTATOR"
+                             GridPane.columnIndex="0"
+                             GridPane.rowIndex="2"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/rotate.png"/>
+                <ImageButton fx:id="switchButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Switch"
+                             userData="SWTICH"
+                             GridPane.columnIndex="1"
+                             GridPane.rowIndex="2"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/switch.png"/>
+                <ImageButton fx:id="atlasButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Atlas"
+                             userData="ATLAS"
+                             GridPane.columnIndex="2"
+                             GridPane.rowIndex="2"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/sky.png"/>
+                <ImageButton fx:id="plateSolverButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Plate Solver"
+                             userData="PLATE_SOLVER"
+                             GridPane.columnIndex="0"
+                             GridPane.rowIndex="3"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/big-dipper.png"/>
+                <ImageButton fx:id="alignmentButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Alignment"
+                             userData="ALIGNMENT"
+                             GridPane.columnIndex="1"
+                             GridPane.rowIndex="3"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/star.png"/>
+                <ImageButton fx:id="sequencerButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Sequencer"
+                             userData="SEQUENCER"
+                             GridPane.columnIndex="2"
+                             GridPane.rowIndex="3"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/schedule.png"/>
+                <ImageButton fx:id="imageViewerButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Image Viewer"
+                             userData="NEW_IMAGE"
+                             GridPane.columnIndex="0"
+                             GridPane.rowIndex="4"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/image.png"/>
+                <ImageButton fx:id="framingButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="Framing"
+                             userData="FRAMING"
+                             GridPane.columnIndex="1"
+                             GridPane.rowIndex="4"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/framing.png"/>
+                <ImageButton fx:id="indiButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="INDI"
+                             userData="INDI"
+                             GridPane.columnIndex="2"
+                             GridPane.rowIndex="4"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/indi.png"/>
+                <ImageButton fx:id="aboutButton"
+                             contentDisplay="TOP"
+                             onAction="#open"
+                             text="About"
+                             userData="ABOUT"
+                             GridPane.columnIndex="0"
+                             GridPane.rowIndex="5"
+                             GridPane.fillWidth="true"
+                             GridPane.fillHeight="true"
+                             maxWidth="Infinity"
+                             maxHeight="Infinity"
+                             size="24.0"
+                             url="@icons/information.png"/>
             </GridPane>
         </ScrollPane>
     </VBox>

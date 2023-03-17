@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.input.*?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.control.ImageViewer?>
+<?import nebulosa.desktop.gui.control.*?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -19,6 +19,9 @@
             <items>
                 <MenuItem text="Save"
                           onAction="#save">
+                    <graphic>
+                        <MaterialIcon icon="content-save"/>
+                    </graphic>
                     <accelerator>
                         <KeyCodeCombination alt="UP"
                                             code="S"
@@ -31,6 +34,9 @@
                 <SeparatorMenuItem/>
                 <MenuItem text="Solve"
                           onAction="#solve">
+                    <graphic>
+                        <MaterialIcon icon="sigma"/>
+                    </graphic>
                     <accelerator>
                         <KeyCodeCombination alt="UP"
                                             code="P"
@@ -42,6 +48,9 @@
                 </MenuItem>
                 <MenuItem text="Blind solve"
                           onAction="#blindSolve">
+                    <graphic>
+                        <MaterialIcon icon="sigma"/>
+                    </graphic>
                     <accelerator>
                         <KeyCodeCombination alt="UP"
                                             code="P"
@@ -53,10 +62,17 @@
                 </MenuItem>
                 <SeparatorMenuItem/>
                 <MenuItem text="Stretch"
-                          onAction="#openImageStretcher"/>
+                          onAction="#openImageStretcher">
+                    <graphic>
+                        <MaterialIcon icon="chart-histogram"/>
+                    </graphic>
+                </MenuItem>
                 <CheckMenuItem fx:id="autoStretchCheckMenuItem"
                                text="Auto stretch"
                                onAction="#autoStretch">
+                    <graphic>
+                        <MaterialIcon icon="chart-histogram"/>
+                    </graphic>
                     <accelerator>
                         <KeyCodeCombination alt="UP"
                                             code="A"
@@ -72,6 +88,9 @@
                 <CheckMenuItem fx:id="mirrorHorizontalCheckMenuItem"
                                text="Horizontal Mirror"
                                onAction="#mirrorHorizontal">
+                    <graphic>
+                        <MaterialIcon icon="arrow-left-right"/>
+                    </graphic>
                     <accelerator>
                         <KeyCodeCombination alt="UP"
                                             code="H"
@@ -84,6 +103,9 @@
                 <CheckMenuItem fx:id="mirrorVerticalCheckMenuItem"
                                text="Vertical Mirror"
                                onAction="#mirrorVertical">
+                    <graphic>
+                        <MaterialIcon icon="arrow-up-down"/>
+                    </graphic>
                     <accelerator>
                         <KeyCodeCombination alt="UP"
                                             code="V"
@@ -96,6 +118,9 @@
                 <CheckMenuItem fx:id="invertCheckMenuItem"
                                text="Invert"
                                onAction="#invert">
+                    <graphic>
+                        <MaterialIcon icon="invert-colors"/>
+                    </graphic>
                     <accelerator>
                         <KeyCodeCombination alt="UP"
                                             code="I"
@@ -106,22 +131,48 @@
                     </accelerator>
                 </CheckMenuItem>
                 <SeparatorMenuItem/>
-                <CheckMenuItem fx:id="crosshairCheckMenuItem"
-                               text="Crosshair"
-                               onAction="#toggleCrosshair">
-                </CheckMenuItem>
-                <CheckMenuItem fx:id="annotateCheckMenuItem"
-                               text="Annotate"
-                               onAction="#toggleAnnotation">
-                </CheckMenuItem>
+                <Menu text="Tools">
+                    <CheckMenuItem fx:id="crosshairCheckMenuItem"
+                                   text="Crosshair"
+                                   onAction="#toggleCrosshair">
+                        <graphic>
+                            <MaterialIcon icon="bullseye"/>
+                        </graphic>
+                        <accelerator>
+                            <KeyCodeCombination alt="UP"
+                                                code="X"
+                                                control="DOWN"
+                                                meta="UP"
+                                                shift="UP"
+                                                shortcut="UP"/>
+                        </accelerator>
+                    </CheckMenuItem>
+                    <CheckMenuItem fx:id="annotateCheckMenuItem"
+                                   text="Annotate"
+                                   onAction="#toggleAnnotation">
+                        <graphic>
+                            <MaterialIcon icon="alpha-a"
+                                          size="md"/>
+                        </graphic>
+                    </CheckMenuItem>
+                </Menu>
                 <SeparatorMenuItem/>
                 <MenuItem fx:id="pointMountHereMenuItem"
                           text="Point mount here"
-                          onAction="#pointMountHere"/>
+                          onAction="#pointMountHere">
+                    <graphic>
+                        <MaterialIcon icon="target"/>
+                    </graphic>
+                </MenuItem>
                 <SeparatorMenuItem/>
                 <MenuItem fx:id="fitsHeaderMenuItem"
                           text="FITS Header"
-                          onAction="#openFitsHeader"/>
+                          onAction="#openFitsHeader">
+                    <graphic>
+                        <MaterialIcon icon="alpha-h"
+                                      size="md"/>
+                    </graphic>
+                </MenuItem>
             </items>
         </ContextMenu>
     </fx:define>
@@ -136,6 +187,5 @@
                  AnchorPane.bottomAnchor="0.0"
                  AnchorPane.leftAnchor="0.0"
                  AnchorPane.rightAnchor="0.0"
-                 AnchorPane.topAnchor="0.0">
-    </ImageViewer>
+                 AnchorPane.topAnchor="0.0"/>
 </AnchorPane>

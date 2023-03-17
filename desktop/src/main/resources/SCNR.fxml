@@ -79,8 +79,7 @@
                          initialValue="0.5"
                          max="1.0"
                          min="0.0"
-                         prefWidth="144.0">
-                </Spinner>
+                         prefWidth="144.0"/>
             </LabeledPane>
             <LabeledPane text="Enabled"
                          textStyleClass="text-bold">

@@ -2,9 +2,12 @@ package nebulosa.nova.position
 
 import nebulosa.constants.ANGULAR_VELOCITY
 import nebulosa.constants.DAYSEC
+import nebulosa.erfa.eraRefco
 import nebulosa.erfa.eraSp00
 import nebulosa.math.*
+import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Pressure.Companion.pressure
+import nebulosa.math.Temperature.Companion.celsius
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.ITRS
 import nebulosa.time.InstantOfTime
@@ -40,14 +43,22 @@ class GeographicPosition(
      * true horizon, return an [Angle] predicting its apparent
      * altitude given the supplied [temperature] and [pressure].
      */
-//    fun refract(
-//        altitude: Angle,
-//        temperature: Temperature = 10.0.celsius,
-//        pressure: Pressure = elevation.pressure(temperature),
-//        relativeHumidity: Double = 0.5,
-//    ): Angle {
-//        eraRefco(pressure.value, temperature.value, relativeHumidity, 0.4) // TODO default wavelength
-//    }
+    fun refract(
+        altitude: Angle,
+        temperature: Temperature = 10.0.celsius,
+        pressure: Pressure = elevation.pressure(temperature),
+        relativeHumidity: Double = 0.5,
+    ): Angle {
+        val sina = altitude.sin
+        if (sina == 0.0) return altitude
+        val (a, b) = eraRefco(pressure.value, temperature.value, relativeHumidity, 0.4)
+        val cosa = altitude.cos
+        // A*tan(z)+B*tan^3(z) model.
+        val tanZ = cosa / sina
+        val w = b.value * tanZ * tanZ
+        val delta = (a.value + w) * tanZ
+        return altitude + delta.rad
+    }
 
     /**
      * Computes rotation from GCRS to this location’s altazimuth system.

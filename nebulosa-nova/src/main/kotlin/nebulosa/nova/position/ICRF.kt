@@ -268,12 +268,14 @@ open class ICRF protected constructor(
                 }
 
             val h = r * position.position
+            val coordinate = SphericalCoordinate.of(h[0].au, h[1].au, h[2].au)
 
-            // TODO: return if (position.center is GeographicPosition) {
-            //    SphericalRepresentation(position.center.refract(h.a2.rad, temperature, pressure), h.a1.rad, h.a3.au)
-            //} else {
-            return SphericalCoordinate.of(h[0].au, h[1].au, h[2].au)
-            //}
+            return if (position.center is GeographicPosition) {
+                val refracted = position.center.refract(coordinate.latitude, temperature, pressure)
+                coordinate.copy(phi = refracted)
+            } else {
+                return coordinate
+            }
         }
 
         /**

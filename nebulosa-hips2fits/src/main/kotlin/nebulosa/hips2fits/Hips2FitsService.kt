@@ -5,10 +5,17 @@ import nebulosa.math.Angle.Companion.deg
 import nebulosa.retrofit.RetrofitService
 import retrofit2.Call
 
+/**
+ * The CDS hips2fits service offers a way to extract FITS images from HiPS sky maps.
+ */
 class Hips2FitsService(url: String = MAIN_URL) : RetrofitService(url) {
 
     private val service by lazy { retrofit.create(Hips2Fits::class.java) }
 
+    /**
+     * Extracts a FITS image from a HiPS given the output image pixel size,
+     * the center of projection, the type of projection and the field of view.
+     */
     fun query(
         hips: HipsSurvey,
         ra: Angle, dec: Angle,

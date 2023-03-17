@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.control.MaterialIcon?>
 <?import nebulosa.desktop.gui.control.TwoStateButton?>
 <?import nebulosa.desktop.view.guider.GuiderType?>
 <AnchorPane maxHeight="-Infinity"
@@ -39,11 +40,11 @@
                 </items>
             </ChoiceBox>
             <TwoStateButton fx:id="connectButton"
-                            onAction="#connect"
-                            stateOnStyleClass="mdi,mdi-sm,text-warning-color"
-                            stateOffStyleClass="mdi,mdi-sm,text-accent-color"
-                            stateOnIcon="󰅙"
-                            stateOffIcon="󱘖">
+                            onAction="#connect">
+                <MaterialIcon icon="close-circle"
+                              TwoStateButton.state="true"
+                              color="warning"/>
+                <MaterialIcon icon="connection"/>
             </TwoStateButton>
             <Button alignment="CENTER"
                     contentDisplay="TEXT_ONLY"

@@ -30,11 +30,11 @@
     -fx-font-family: 'Monospaced';
 }
 
-.text-accent-color {
+.text-accent {
     -fx-text-fill: '#0078d7';
 }
 
-.text-warning-color {
+.text-warning {
     -fx-text-fill: '#d83b01';
 }
 
@@ -59,20 +59,24 @@
 }
 
 .mdi {
-    -fx-font-family: 'Material Design Icons';
+    -fx-font-family: 'Material Design Icons' !important;
     -fx-font-size: 22px;
+}
+
+.mdi.mdi-xxs {
+    -fx-font-size: 12px;
 }
 
 .mdi.mdi-xs {
-    -fx-font-size: 13px;
+    -fx-font-size: 14px;
 }
 
 .mdi.mdi-sm {
-    -fx-font-size: 16px;
+    -fx-font-size: 18px;
 }
 
 .mdi.mdi-md {
-    -fx-font-size: 22px;
+    -fx-font-size: 24px;
 }
 
 .button,

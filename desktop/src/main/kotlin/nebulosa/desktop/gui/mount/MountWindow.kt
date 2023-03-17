@@ -9,6 +9,7 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.MaterialIcon
 import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.*
@@ -69,7 +70,7 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
     @FXML private lateinit var slewSpeedChoiceBox: ChoiceBox<String>
     @FXML private lateinit var parkButton: TwoStateButton
     @FXML private lateinit var homeButton: Button
-    @FXML private lateinit var statusLabel: Label
+    @FXML private lateinit var statusIcon: MaterialIcon
 
     private val nudgeButtonPressed = SimpleObjectProperty<Node>()
 
@@ -170,9 +171,9 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
     }
 
     override var status
-        get() = statusLabel.text!!
+        get() = statusIcon.text
         set(value) {
-            statusLabel.text = value
+            statusIcon.text = value
         }
 
     override val targetCoordinates: PairOfAngle

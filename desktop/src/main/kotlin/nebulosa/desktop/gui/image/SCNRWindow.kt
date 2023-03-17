@@ -12,7 +12,7 @@ import nebulosa.desktop.view.image.SCNRView
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 
-class SCNRWindow(private val view: ImageView) : AbstractWindow("SCNR", "nebulosa-scnr"), SCNRView {
+class SCNRWindow(private val view: ImageView) : AbstractWindow("SCNR", "rgb"), SCNRView {
 
     @FXML private lateinit var channelChoiceBox: ChoiceBox<ImageChannel>
     @FXML private lateinit var protectionMethodChoiceBox: ChoiceBox<ProtectionMethod>

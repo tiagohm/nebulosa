@@ -30,5 +30,9 @@ fun interface PolarMotion {
     object None : PolarMotion {
 
         override fun pmXY(time: InstantOfTime) = PairOfAngle.ZERO
+
+        override fun pmAngles(time: InstantOfTime) = TripleOfAngle.ZERO
+
+        override fun pmMatrix(time: InstantOfTime) = Matrix3D.IDENTITY
     }
 }

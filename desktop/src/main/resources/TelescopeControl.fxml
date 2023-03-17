@@ -5,8 +5,7 @@
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.control.LabeledPane?>
-<?import nebulosa.desktop.gui.control.TwoStateButton?>
+<?import nebulosa.desktop.gui.control.*?>
 <?import nebulosa.desktop.view.telescopecontrol.TelescopeControlType?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
@@ -46,19 +45,17 @@
             <TextField fx:id="hostTextField"
                        prefHeight="32.0"
                        promptText="Host (0.0.0.0)"
-                       HBox.hgrow="ALWAYS">
-            </TextField>
+                       HBox.hgrow="ALWAYS"/>
             <TextField fx:id="portTextField"
                        prefHeight="32.0"
                        prefWidth="94.0"
-                       promptText="Port">
-            </TextField>
+                       promptText="Port"/>
             <TwoStateButton fx:id="connectButton"
-                            onAction="#connect"
-                            stateOnStyleClass="mdi,mdi-sm,text-warning-color"
-                            stateOffStyleClass="mdi,mdi-sm,text-accent-color"
-                            stateOnIcon="󰅙"
-                            stateOffIcon="󱘖">
+                            onAction="#connect">
+                <MaterialIcon icon="close-circle"
+                              TwoStateButton.state="true"
+                              color="warning"/>
+                <MaterialIcon icon="connection"/>
             </TwoStateButton>
         </HBox>
     </VBox>

@@ -2,10 +2,8 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.Image?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.control.IconButton?>
-<?import nebulosa.desktop.gui.control.TwoStateButton?>
+<?import nebulosa.desktop.gui.control.*?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -29,30 +27,24 @@
               spacing="4.0">
             <ChoiceBox fx:id="filterWheelChoiceBox"
                        prefHeight="32.0"
-                       prefWidth="360.0">
-            </ChoiceBox>
+                       prefWidth="360.0"/>
             <TwoStateButton fx:id="connectButton"
-                            onAction="#connect"
-                            stateOnStyleClass="mdi,mdi-sm,text-warning-color"
-                            stateOffStyleClass="mdi,mdi-sm,text-accent-color"
-                            stateOnIcon="󰅙"
-                            stateOffIcon="󱘖">
+                            onAction="#connect">
+                <MaterialIcon icon="close-circle"
+                              TwoStateButton.state="true"
+                              color="warning"/>
+                <MaterialIcon icon="connection"/>
             </TwoStateButton>
-            <IconButton fx:id="openINDIButton"
-                        onAction="#openINDIPanelControl">
-                <image>
-                    <Image url="@icons/indi.png"/>
-                </image>
-            </IconButton>
-            <Label alignment="CENTER"
-                   minWidth="38.0"
-                   minHeight="38.0"
-                   onMouseClicked="#openMenu"
-                   styleClass="text-grey-200,mdi,mdi-sm,cursor-hand"
-                   text="󰇙">
+            <ImageButton fx:id="openINDIButton"
+                         onAction="#openINDIPanelControl"
+                         url="@icons/indi.png"/>
+            <MaterialIconButton onMouseClicked="#openMenu"
+                                styleClass="cursor-hand"
+                                style="-fx-background-color: transparent; -fx-border-style: none; -fx-border-width: 0; -fx-border-insets: 0;"
+                                color="grey-500"
+                                icon="dots-vertical">
                 <fx:define>
-                    <ContextMenu fx:id="menu"
-                                 styleClass="text-md">
+                    <ContextMenu fx:id="menu">
                         <items>
                             <CheckMenuItem fx:id="compactModeMenuItem"
                                            onAction="#toggleCompactMode"
@@ -60,18 +52,16 @@
                         </items>
                     </ContextMenu>
                 </fx:define>
-            </Label>
+            </MaterialIconButton>
         </HBox>
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
             <CheckBox fx:id="useFilterWheelAsShutterCheckBox"
                       onAction="#toggleUseFilterWheelAsShutter"
                       styleClass="text-sm"
-                      text="Use filter wheel as shutter:">
-            </CheckBox>
+                      text="Use filter wheel as shutter:"/>
             <ChoiceBox fx:id="filterAsShutterChoiceBox"
-                       prefWidth="135.0">
-            </ChoiceBox>
+                       prefWidth="135.0"/>
         </HBox>
         <VBox alignment="TOP_CENTER">
             <TableView fx:id="filterSlotTableView"
@@ -96,17 +86,11 @@
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
             <ChoiceBox fx:id="filterSlotChoiceBox"
-                       prefWidth="213.0">
-            </ChoiceBox>
-            <Button fx:id="moveToSelectedFilterButton"
-                    onAction="#moveToSelectedFilter"
-                    text="Move To">
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-accent-color"
-                           text="󰁔">
-                    </Label>
-                </graphic>
-            </Button>
+                       prefWidth="213.0"/>
+            <MaterialIconButton fx:id="moveToSelectedFilterButton"
+                                onAction="#moveToSelectedFilter"
+                                text="Move To"
+                                icon="arrow-right-thick"/>
         </HBox>
     </VBox>
 </AnchorPane>
