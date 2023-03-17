@@ -116,7 +116,7 @@
     -fx-background-insets: 0;
     -fx-background-color: button_background_color;
 
-    -fx-font-family: "Segoe UI";
+    /* -fx-font-family: "Roboto"; */
     -fx-font-size: 1em; /* 12 */
     -fx-text-fill: text_color;
 }
@@ -249,18 +249,4 @@
 .tab-pane.underlined > .tab-header-area > .headers-region > .tab:disabled:hover > .tab-container > .tab-label {
     -fx-text-fill: text_color;
     -fx-opacity: 0.4;
-}
-
-/*******************************************************************************
- *                                                                             *
- * Segoe MDL2 Icon Font                                                        *
- *                                                                             *
- ******************************************************************************/
-
-.mdl2-assets > .text {
-    -fx-font-family: "Segoe MDL2 Assets";
-}
-
-.mdl2-assets {
-    -fx-text-fill: text_color;
 }

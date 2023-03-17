@@ -16,14 +16,16 @@ class TaskExecutor {
     @Autowired private lateinit var beanFactory: AutowireCapableBeanFactory
     @Autowired private lateinit var cameraExecutorService: ExecutorService
     @Autowired private lateinit var mountExecutorService: ExecutorService
+    @Autowired private lateinit var focuserExecutorService: ExecutorService
+    @Autowired private lateinit var filterWheelExecutorService: ExecutorService
 
     @Synchronized
     fun <T> execute(task: Task<T>): CompletableFuture<T> {
         val executorService = when (task) {
-            is CameraTask,
-            is FocuserTask,
-            is FilterWheelTask -> cameraExecutorService
+            is CameraTask -> cameraExecutorService
             is MountTask -> mountExecutorService
+            is FocuserTask -> focuserExecutorService
+            is FilterWheelTask -> filterWheelExecutorService
             else -> throw IllegalArgumentException("unable to execute the task: $task")
         }
 

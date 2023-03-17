@@ -153,7 +153,7 @@
 .toggle-switch > .main-container > .label-container > .label > .text {
     -fx-fill: text_color;
     -fx-font-size: 1em;
-    -fx-font-family: "Segoe UI";
+    /* -fx-font-family: "Roboto"; */
 }
 
 .toggle-switch > .main-container > .thumb-area > .thumb {

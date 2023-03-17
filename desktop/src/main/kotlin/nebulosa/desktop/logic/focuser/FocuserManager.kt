@@ -52,7 +52,7 @@ class FocuserManager(
     }
 
     private fun updateTitle() {
-        view.title = "Filter Wheel · $name"
+        view.title = "Focuser · $name"
     }
 
     private fun updateStatus() {

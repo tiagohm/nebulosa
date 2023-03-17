@@ -1,37 +1,30 @@
 package nebulosa.desktop
 
-import ch.qos.logback.classic.Level
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import javafx.scene.text.Font
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.JavaFXExecutor
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
-import nebulosa.io.resource
 import nebulosa.sbd.SmallBodyDatabaseLookupService
 import nebulosa.simbad.SimbadService
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
-import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @SpringBootApplication
-class App : CommandLineRunner {
+class App {
 
     @Autowired private lateinit var beanFactory: AutowireCapableBeanFactory
 
@@ -68,6 +61,12 @@ class App : CommandLineRunner {
     fun mountExecutorService(): ExecutorService = Executors.newSingleThreadExecutor()
 
     @Bean
+    fun focuserExecutorService(): ExecutorService = Executors.newSingleThreadExecutor()
+
+    @Bean
+    fun filterWheelExecutorService(): ExecutorService = Executors.newSingleThreadExecutor()
+
+    @Bean
     fun systemExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
 
     @Bean
@@ -97,21 +96,4 @@ class App : CommandLineRunner {
         .logSubscriberExceptions(false)
         .executorService(javaFXExecutorService)
         .build()!!
-
-    override fun run(vararg args: String) {
-        // Sets default locale to en_US.
-        Locale.setDefault(Locale.ENGLISH)
-
-        // Fonts.
-        Font.loadFont(resource("fonts/Material-Design-Icons.ttf"), 24.0)
-        Font.loadFont(resource("fonts/Roboto-Regular.ttf"), 12.0)
-        Font.loadFont(resource("fonts/Roboto-Bold.ttf"), 12.0)
-
-        System.setProperty("prism.lcdtext", "false")
-
-        // Log level.
-        with(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger) {
-            level = if ("-v" in args) Level.DEBUG else Level.INFO
-        }
-    }
 }
