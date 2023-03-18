@@ -26,6 +26,7 @@ dependencies {
     implementation(project(":nebulosa-sbd"))
     implementation(project(":nebulosa-simbad"))
     implementation(project(":nebulosa-stellarium-protocol"))
+    implementation(project(":nebulosa-stellarium-skycatalog"))
     implementation(project(":nebulosa-wcs"))
     implementation(libs.jackson)
     implementation(libs.bundles.rx)

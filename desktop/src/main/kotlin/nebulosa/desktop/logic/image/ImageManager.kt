@@ -26,6 +26,7 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.indi.device.mount.Mount
 import nebulosa.platesolving.Calibration
+import nebulosa.stellarium.skycatalog.Nebula
 import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Header
 import org.greenrobot.eventbus.EventBus
@@ -46,6 +47,7 @@ class ImageManager(private val view: ImageView) : Closeable {
     @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
     @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var eventBus: EventBus
+    @Autowired private lateinit var nebula: Nebula
 
     @Volatile var file: File? = null
         private set
@@ -117,7 +119,7 @@ class ImageManager(private val view: ImageView) : Closeable {
             annotation = null
 
             if (calibration.get() != null && view.annotationEnabled) {
-                annotation = Annotation(calibration.get())
+                annotation = Annotation(calibration.get(), nebula)
                 view.addFirst(annotation!!)
                 view.redraw()
             }
@@ -261,7 +263,7 @@ class ImageManager(private val view: ImageView) : Closeable {
             if (annotation == null) {
                 systemExecutorService.submit {
                     try {
-                        annotation = Annotation(calibration)
+                        annotation = Annotation(calibration, nebula)
                         view.addFirst(annotation!!)
                         view.redraw()
                     } catch (e: Throwable) {

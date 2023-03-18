@@ -8,6 +8,8 @@ import nebulosa.math.Velocity
 import nebulosa.nova.position.ICRF
 import nebulosa.time.InstantOfTime
 import nebulosa.time.TimeJD
+import kotlin.math.max
+import kotlin.math.sin
 
 /**
  * The position in the sky of a star or other "fixed" object.
@@ -30,7 +32,7 @@ data class FixedStar(
     val epoch: InstantOfTime = TimeJD.J2000,
 ) : Body {
 
-    private val pv by lazy { computePositionAndVelocity(ra, dec, pmRA, pmDEC, parallax, radial) }
+    val positionAndVelocity by lazy { computePositionAndVelocity(ra, dec, pmRA, pmDEC, parallax, radial) }
 
     override val center = 0
 
@@ -38,22 +40,25 @@ data class FixedStar(
 
     override fun observedAt(observer: ICRF): PositionAndVelocity {
         // Form unit vector 'u1' in direction of star.
-        val u1 = pv.position.normalized
+        val u1 = positionAndVelocity.position.normalized
         // Light-time returned is the projection of vector "pos_obs" onto the
         // unit vector "u1", divided by the speed of light.
         val lightTime = u1.dot(observer.position) / SPEED_OF_LIGHT_AU_DAY
-        val position = pv.position + pv.velocity *
+        val position = positionAndVelocity.position + positionAndVelocity.velocity *
                 (observer.time.tdb.whole - epoch.tt.whole + lightTime + observer.time.tdb.fraction - epoch.tt.fraction) -
                 observer.position
-        return PositionAndVelocity(position, observer.velocity - pv.velocity)
+        return PositionAndVelocity(position, observer.velocity - positionAndVelocity.velocity)
     }
 
     override fun compute(time: InstantOfTime): PositionAndVelocity {
-        val position = pv.position + pv.velocity * (time.tdb.whole - epoch.tt.whole + time.tdb.fraction - epoch.tt.fraction)
-        return PositionAndVelocity(position, pv.velocity)
+        val position =
+            positionAndVelocity.position + positionAndVelocity.velocity * (time.tdb.whole - epoch.tt.whole + time.tdb.fraction - epoch.tt.fraction)
+        return PositionAndVelocity(position, positionAndVelocity.velocity)
     }
 
     companion object {
+
+        @JvmStatic private val MIN_PARALLAX = 1.0E-6 * MILLIASEC2RAD
 
         @JvmStatic
         private fun computePositionAndVelocity(
@@ -61,8 +66,9 @@ data class FixedStar(
             pmRA: Angle = Angle.ZERO, pmDEC: Angle = Angle.ZERO,
             parallax: Angle = Angle.ZERO, radial: Velocity = Velocity.ZERO,
         ): PositionAndVelocity {
+            val plx = max(MIN_PARALLAX, parallax.value)
             // Computing the star's position as an ICRF position and velocity.
-            val dist = 1.0 / parallax.sin
+            val dist = 1.0 / sin(plx)
             val cra = ra.cos
             val sra = ra.sin
             val cdc = dec.cos
@@ -80,8 +86,8 @@ data class FixedStar(
             // Convert proper motion and radial velocity to orthogonal
             // components of motion with units of au/day.
 
-            val pmr = pmRA.value / (parallax.value * DAYSPERJY) * k
-            val pmd = pmDEC.value / (parallax.value * DAYSPERJY) * k
+            val pmr = pmRA.value / (plx * DAYSPERJY) * k
+            val pmd = pmDEC.value / (plx * DAYSPERJY) * k
             val rvl = radial.kms * DAYSEC / AU_KM * k
 
             val velocity = Vector3D(

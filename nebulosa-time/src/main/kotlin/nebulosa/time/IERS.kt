@@ -1,10 +1,7 @@
 package nebulosa.time
 
+import nebulosa.math.*
 import nebulosa.math.Angle.Companion.arcsec
-import nebulosa.math.Matrix3D
-import nebulosa.math.PairOfAngle
-import nebulosa.math.TripleOfAngle
-import nebulosa.math.search
 import java.io.InputStream
 import kotlin.math.max
 import kotlin.math.min
@@ -59,8 +56,8 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
         val t1 = input[k]
 
         return DoubleArray(data.size) {
-            if (i <= 0) 0.0
-            else if (i >= input.size) 0.0
+            if (i <= 0) Double.NaN
+            else if (i >= input.size) Double.NaN
             else {
                 val a = data[it][k - 1]
                 val b = data[it][k]
@@ -83,8 +80,11 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
     }
 
     override fun pmXY(time: InstantOfTime): PairOfAngle {
-        val (x, y) = interpolate(time, this.time, pmX, pmY)
-        return PairOfAngle(x.arcsec, y.arcsec)
+        val xy = interpolate(time, this.time, pmX, pmY)
+        if (xy[0].isNaN() && xy[1].isNaN()) return PairOfAngle.ZERO
+        val x = if (xy[0].isNaN()) Angle.ZERO else xy[0].arcsec
+        val y = if (xy[1].isNaN()) Angle.ZERO else xy[1].arcsec
+        return PairOfAngle(x, y)
     }
 
     override fun delta(time: InstantOfTime): Double {
