@@ -146,8 +146,7 @@
         </VBox>
         <HBox alignment="CENTER_LEFT"
               spacing="4.0">
-            <MaterialIcon styleClass="text-md"
-                          text="Target Coordinates:"
+            <MaterialIcon text="Target Coordinates:"
                           icon="target"
                           size="xs"/>
             <SegmentedButton fx:id="targetCoordinatesEquinoxSegmentedButton">
@@ -199,8 +198,7 @@
                                     color="grey-500"
                                     icon="dots-vertical">
                     <fx:define>
-                        <ContextMenu fx:id="targetCoordinatesContextMenu"
-                                     styleClass="text-md">
+                        <ContextMenu fx:id="targetCoordinatesContextMenu">
                             <items>
                                 <MenuItem onAction="#loadLocation"
                                           text="Load current location"

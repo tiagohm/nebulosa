@@ -11,6 +11,10 @@ abstract class SkyCatalog : Collection<SkyObject> {
 
     private val data = LinkedList<SkyObject>()
 
+    fun searchBy(text: String): List<SkyObject> {
+        return data.stream().filter(SkyCatalogFilter(text)).toList()
+    }
+
     fun searchAround(vector: Vector3D, limitFOV: Angle): List<SkyObject> {
         val res = ArrayList<SkyObject>()
         val cosLimFov = limitFOV.cos

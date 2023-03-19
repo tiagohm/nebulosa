@@ -265,7 +265,11 @@ internal open class CameraDevice(
         super.handleMessage(message)
     }
 
-    override fun cooler(enable: Boolean) = Unit
+    override fun cooler(enable: Boolean) {
+        if (hasCoolerControl && cooler != enable) {
+            sendNewSwitch("CCD_COOLER", (if (enable) "COOLER_ON" else "COOLER_OFF") to true)
+        }
+    }
 
     override fun dewHeater(enable: Boolean) = Unit
 

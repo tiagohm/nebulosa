@@ -28,6 +28,7 @@ import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.math.max
 
 @Component
 class CameraManager(
@@ -261,8 +262,8 @@ class CameraManager(
             preferences.int("camera.${device.name}.offset", view.offset)
         }
 
-        preferences.double("camera.screen.x", view.x)
-        preferences.double("camera.screen.y", view.y)
+        preferences.double("camera.screen.x", max(0.0, view.x))
+        preferences.double("camera.screen.y", max(0.0, view.y))
     }
 
     fun loadPreferences(device: Camera? = value) {

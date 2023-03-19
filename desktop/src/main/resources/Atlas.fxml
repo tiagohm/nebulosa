@@ -44,6 +44,7 @@
                  text="Planets"
                  userData="PLANET">
                 <TableView fx:id="planetTableView"
+                           styleClass="text-sm"
                            fixedCellSize="32.0"
                            maxHeight="268.0"
                            minHeight="268.0"
@@ -69,13 +70,13 @@
                         <VBox.margin>
                             <Insets top="8.0"/>
                         </VBox.margin>
-                        <TextField fx:id="searchMinorPlanetTextField"
-                                   styleClass="text-md"/>
+                        <TextField fx:id="searchMinorPlanetTextField"/>
                         <MaterialIconButton onAction="#searchMinorPlanet"
                                             text="Search"
                                             icon="magnify"/>
                     </HBox>
                     <TableView fx:id="minorPlanetTableView"
+                               styleClass="text-sm"
                                fixedCellSize="32.0"
                                maxHeight="230.0"
                                minHeight="230.0"
@@ -105,13 +106,13 @@
                         <VBox.margin>
                             <Insets top="8.0"/>
                         </VBox.margin>
-                        <TextField fx:id="searchStarTextField"
-                                   styleClass="text-md"/>
+                        <TextField fx:id="searchStarTextField"/>
                         <MaterialIconButton onAction="#searchStar"
                                             text="Search"
                                             icon="magnify"/>
                     </HBox>
                     <TableView fx:id="starTableView"
+                               styleClass="text-sm"
                                fixedCellSize="32.0"
                                maxHeight="230.0"
                                minHeight="230.0"
@@ -141,14 +142,14 @@
                         <VBox.margin>
                             <Insets top="8.0"/>
                         </VBox.margin>
-                        <TextField fx:id="searchDSOTextField"
-                                   styleClass="text-md"/>
+                        <TextField fx:id="searchDSOTextField"/>
                         <MaterialIconButton onAction="#searchDSO"
                                             text="Search"
                                             icon="magnify"/>
                     </HBox>
                     <TableView fx:id="dsoTableView"
                                fixedCellSize="32.0"
+                               styleClass="text-sm"
                                maxHeight="230.0"
                                minHeight="230.0"
                                prefHeight="230.0">
@@ -178,7 +179,7 @@
             <HBox alignment="CENTER">
                 <Label fx:id="nameLabel"
                        alignment="CENTER"
-                       styleClass="text-md,text-bold"
+                       styleClass="text-bold"
                        text="Sun"/>
             </HBox>
             <GridPane vgap="4.0"

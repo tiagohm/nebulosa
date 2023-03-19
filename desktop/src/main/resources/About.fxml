@@ -34,7 +34,7 @@
                styleClass="text-lg,text-bold,monospaced"/>
         <Label fx:id="versionLabel"
                text="v0.1.0"
-               styleClass="text-md,monospaced"/>
+               styleClass="monospaced"/>
         <Label text="Copyright © 2022-2023 - Tiago Melo"
                styleClass="text-sm,monospaced"/>
     </VBox>

@@ -38,6 +38,7 @@ import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
+import kotlin.math.max
 
 class ImageManager(private val view: ImageView) : Closeable {
 
@@ -420,8 +421,8 @@ class ImageManager(private val view: ImageView) : Closeable {
             preferences.double("image.${view.camera!!.name}.screen.x", view.x)
             preferences.double("image.${view.camera!!.name}.screen.y", view.y)
         } else {
-            preferences.double("image.screen.x", view.x)
-            preferences.double("image.screen.y", view.y)
+            preferences.double("image.screen.x", max(0.0, view.x))
+            preferences.double("image.screen.y", max(0.0, view.y))
         }
     }
 

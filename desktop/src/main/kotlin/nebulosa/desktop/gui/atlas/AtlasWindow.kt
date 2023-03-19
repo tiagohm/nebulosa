@@ -217,7 +217,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     override fun populateDSO(dso: List<AtlasView.DSO>) {
         dsoTableView.items.setAll(dso)
 
-        if (dso.isNotEmpty()) {
+        if (dso.size == 1) {
             dsoTableView.selectionModel.selectFirst()
         }
     }
@@ -260,7 +260,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
             super.updateItem(item, empty)
 
             text = if (empty || item == null) null
-            else if (item.isFinite()) "$item"
+            else if (item.isFinite() && item < 99.0) "%.1f".format(item)
             else "-"
         }
     }

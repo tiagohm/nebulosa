@@ -56,7 +56,6 @@
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="0">
                     <Label fx:id="positionLabel"
-                           styleClass="text-md"
                            text="0"/>
                 </LabeledPane>
                 <LabeledPane text="Temperature"
@@ -64,7 +63,6 @@
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="1">
                     <Label fx:id="temperatureLabel"
-                           styleClass="text-md"
                            text="0.0 °C"/>
                 </LabeledPane>
                 <LabeledPane text="Status"

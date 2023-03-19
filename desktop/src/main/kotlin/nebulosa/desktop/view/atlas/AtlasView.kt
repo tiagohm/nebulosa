@@ -9,6 +9,8 @@ import nebulosa.math.Velocity.Companion.kms
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.astrometry.FixedStar
 import nebulosa.simbad.SimbadObject
+import nebulosa.skycatalog.SkyObject
+import kotlin.math.min
 
 interface AtlasView : View {
 
@@ -44,13 +46,14 @@ interface AtlasView : View {
     }
 
     data class DSO(
-        val simbad: SimbadObject,
-        val name: String = simbad.name,
-        val magnitude: Double = simbad.v,
-        val type: String = simbad.type.description,
+        val skyObject: SkyObject,
+        val name: String = skyObject.names.firstOrNull() ?: "?",
+        val magnitude: Double = min(skyObject.mV, skyObject.mB),
+        val type: String = skyObject.type.description,
     ) {
 
-        val star by lazy { FixedStar(simbad.ra.deg, simbad.dec.deg, simbad.pmRA.mas, simbad.pmDEC.mas, simbad.plx.mas, simbad.rv.kms) }
+        inline val star
+            get() = skyObject.position
     }
 
     fun drawAltitude(

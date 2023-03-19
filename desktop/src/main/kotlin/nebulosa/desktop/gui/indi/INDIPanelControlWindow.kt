@@ -108,7 +108,6 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
 
             // Label.
             val name = Label("${vector.label}:").withState(vector)
-            name.styleClass.add("text-md")
             name.prefWidth = 192.0
             name.minWidth = 192.0
             name.maxWidth = 192.0
@@ -315,7 +314,7 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
             label.minWidth = 175.0
             label.maxWidth = 175.0
             label.prefWidth = 175.0
-            label.styleClass.addAll("text-md", "text-bold")
+            label.styleClass.addAll("text-bold")
             children.add(label)
 
             // Value.
@@ -400,7 +399,7 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
             label.minWidth = 175.0
             label.maxWidth = 175.0
             label.prefWidth = 175.0
-            label.styleClass.addAll("text-md", "text-bold")
+            label.styleClass.addAll("text-bold")
             children.add(label)
 
             // Value.

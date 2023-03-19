@@ -34,15 +34,13 @@ import nebulosa.nova.position.ICRF
 import nebulosa.sbd.SmallBody
 import nebulosa.sbd.SmallBodyDatabaseLookupService
 import nebulosa.simbad.SimbadObject
-import nebulosa.simbad.SimbadQuery
-import nebulosa.simbad.SimbadService
+import nebulosa.stellarium.skycatalog.Nebula
 import nebulosa.time.UTC
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Lazy
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -50,7 +48,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.Closeable
-import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -58,6 +55,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
+import kotlin.math.max
 
 @Component
 @EnableScheduling
@@ -70,15 +68,14 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var objectMapper: ObjectMapper
-    @Autowired private lateinit var appDirectory: Path
     @Autowired private lateinit var bodyEphemerisProvider: BodyEphemerisProvider
     @Autowired private lateinit var horizonsEphemerisProvider: HorizonsEphemerisProvider
     @Autowired private lateinit var smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService
-    @Autowired private lateinit var simbadService: SimbadService
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
-    @Lazy @Autowired private lateinit var framingView: FramingView
+    @Autowired private lateinit var nebula: Nebula
+    @Autowired private lateinit var framingView: FramingView
 
     @Volatile private var observer: GeographicPosition? = null
     @Volatile private var tabType = AtlasView.TabType.SUN
@@ -243,7 +240,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
     fun computeDSO(body: AtlasView.DSO? = dso): CompletableFuture<HorizonsEphemeris>? {
         dso = body ?: return null
-        bodyName = body.simbad.names.joinToString(", ") { it.type.format(it.name) }
+        bodyName = body.skyObject.names.joinToString(", ")
         return body.star.computeBody()
     }
 
@@ -488,18 +485,8 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     }
 
     fun searchDSO(text: String) {
-        val query = SimbadQuery()
-            .limit(500)
-            .name(text)
-
-        systemExecutorService.submit {
-            try {
-                val dso = simbadService.query(query).execute().body()!!
-                javaFXExecutorService.execute { view.populateDSO(dso.map { AtlasView.DSO(it) }) }
-            } catch (e: Throwable) {
-                javaFXExecutorService.execute { view.showAlert("Failed to search DSOs: ${e.message}") }
-            }
-        }
+        val dso = nebula.searchBy(text)
+        javaFXExecutorService.execute { view.populateDSO(dso.map { AtlasView.DSO(it) }) }
     }
 
     fun goTo(ra: Angle, dec: Angle) {
@@ -522,8 +509,8 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     fun savePreferences() {
         if (!view.initialized) return
 
-        preferences.double("atlas.screen.x", view.x)
-        preferences.double("atlas.screen.y", view.y)
+        preferences.double("atlas.screen.x", max(0.0, view.x))
+        preferences.double("atlas.screen.y", max(0.0, view.y))
     }
 
     fun loadPreferences() {

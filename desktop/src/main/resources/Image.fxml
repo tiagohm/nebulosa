@@ -14,8 +14,7 @@
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <fx:define>
-        <ContextMenu fx:id="menu"
-                     styleClass="text-md">
+        <ContextMenu fx:id="menu">
             <items>
                 <MenuItem text="Save"
                           onAction="#save">

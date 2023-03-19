@@ -9,7 +9,6 @@ import nebulosa.stellarium.skycatalog.Nebula
 import nebulosa.wcs.WCSTransform
 import org.slf4j.LoggerFactory
 import kotlin.math.max
-import kotlin.math.min
 
 class NebulaAnnotation(
     val calibration: Calibration,
@@ -33,13 +32,12 @@ class NebulaAnnotation(
         graphics.stroke = Color.GREEN
         graphics.fill = Color.GREEN
 
-        val maxSize = min(width, height) / 2.0
         val minSize = 25.0
 
         for (item in data) {
             val (x, y) = wcs.worldToPixel(item.ra, item.dec)
 
-            val majorAxisSize = max(minSize, min(maxSize, item.majorAxis / calibration.scale))
+            val majorAxisSize = max(minSize, item.majorAxis / calibration.scale)
             // val minorAxisSize = max(minSize, min(maxSize, item.minorAxis / calibration.scale))
 
             graphics.strokeOval(x - majorAxisSize / 2, y - majorAxisSize / 2, majorAxisSize, majorAxisSize)

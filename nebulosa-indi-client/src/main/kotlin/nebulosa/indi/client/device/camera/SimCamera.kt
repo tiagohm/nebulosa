@@ -54,12 +54,6 @@ internal class SimCamera(
         super.handleMessage(message)
     }
 
-    override fun cooler(enable: Boolean) {
-        if (hasCoolerControl && cooler != enable) {
-            sendNewSwitch("CCD_COOLER", (if (enable) "COOLER_ON" else "COOLER_OFF") to true)
-        }
-    }
-
     override fun gain(value: Int) {
         sendNewNumber("CCD_GAIN", "GAIN" to value.toDouble())
     }

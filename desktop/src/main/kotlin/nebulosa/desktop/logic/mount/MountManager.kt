@@ -25,6 +25,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
+import kotlin.math.max
 
 @Component
 class MountManager(
@@ -210,8 +211,8 @@ class MountManager(
     fun savePreferences() {
         if (!view.initialized) return
 
-        preferences.double("mount.screen.x", view.x)
-        preferences.double("mount.screen.y", view.y)
+        preferences.double("mount.screen.x", max(0.0, view.x))
+        preferences.double("mount.screen.y", max(0.0, view.y))
     }
 
     fun loadPreferences() {

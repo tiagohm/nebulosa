@@ -49,8 +49,7 @@
                                     color="grey-500"
                                     icon="dots-vertical">
                     <fx:define>
-                        <ContextMenu fx:id="menu"
-                                     styleClass="text-md">
+                        <ContextMenu fx:id="menu">
                             <items>
                                 <CheckMenuItem fx:id="autoSaveAllExposuresMenuItem"
                                                onAction="#toggleAutoSaveAllExposures"
