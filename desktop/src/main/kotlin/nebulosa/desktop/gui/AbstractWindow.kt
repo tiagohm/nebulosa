@@ -48,6 +48,7 @@ abstract class AbstractWindow(
 
                 JMetro(window.scene, Style.DARK)
                 root.styleClass.add(JMetroStyleClass.BACKGROUND)
+                root.stylesheets.add("css/Global.css")
 
                 onCreate()
 

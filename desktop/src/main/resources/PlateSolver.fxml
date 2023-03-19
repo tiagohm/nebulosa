@@ -11,7 +11,6 @@
             minHeight="-Infinity"
             minWidth="-Infinity"
             prefWidth="420.0"
-            stylesheets="@css/Global.css,@css/CopyableLabel.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="4.0"
@@ -133,55 +132,43 @@
                          textStyleClass="text-bold"
                          GridPane.rowIndex="0"
                          GridPane.columnIndex="0">
-                <TextField fx:id="raTextField"
-                           editable="false"
-                           styleClass="copyable"
-                           text="00h00m00.00s"/>
+                <CopyableLabel fx:id="raTextField"
+                               text="00h00m00.00s"/>
             </LabeledPane>
             <LabeledPane text="DEC (J2000)"
                          textStyleClass="text-bold"
                          GridPane.rowIndex="0"
                          GridPane.columnIndex="1">
-                <TextField fx:id="decTextField"
-                           editable="false"
-                           styleClass="copyable"
-                           text="00°00'00.00&quot;"/>
+                <CopyableLabel fx:id="decTextField"
+                               text="00°00'00.00&quot;"/>
             </LabeledPane>
             <LabeledPane text="Orientation (deg)"
                          textStyleClass="text-bold"
                          GridPane.rowIndex="0"
                          GridPane.columnIndex="2">
-                <TextField fx:id="orientationTextField"
-                           editable="false"
-                           styleClass="copyable"
-                           text="0.00"/>
+                <CopyableLabel fx:id="orientationTextField"
+                               text="0.00"/>
             </LabeledPane>
             <LabeledPane text="Scale (&quot;/px)"
                          textStyleClass="text-bold"
                          GridPane.rowIndex="1"
                          GridPane.columnIndex="0">
-                <TextField fx:id="scaleTextField"
-                           editable="false"
-                           styleClass="copyable"
-                           text="0.0000"/>
+                <CopyableLabel fx:id="scaleTextField"
+                               text="0.0000"/>
             </LabeledPane>
             <LabeledPane text="Field size (arcmin)"
                          textStyleClass="text-bold"
                          GridPane.rowIndex="1"
                          GridPane.columnIndex="1">
-                <TextField fx:id="fieldSizeTextField"
-                           editable="false"
-                           styleClass="copyable"
-                           text="0.00 x 0.00"/>
+                <CopyableLabel fx:id="fieldSizeTextField"
+                               text="0.00 x 0.00"/>
             </LabeledPane>
             <LabeledPane text="Radius (deg)"
                          textStyleClass="text-bold"
                          GridPane.rowIndex="1"
                          GridPane.columnIndex="2">
-                <TextField fx:id="fieldRadiusTextField"
-                           editable="false"
-                           styleClass="copyable"
-                           text="0.0000"/>
+                <CopyableLabel fx:id="fieldRadiusTextField"
+                               text="0.0000"/>
             </LabeledPane>
         </GridPane>
 

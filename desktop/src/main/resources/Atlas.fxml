@@ -9,7 +9,6 @@
             minHeight="-Infinity"
             minWidth="-Infinity"
             prefWidth="480.0"
-            stylesheets="@css/Global.css,@css/CopyableLabel.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="4.0"
@@ -27,6 +26,8 @@
                     <SunView fx:id="sunView"
                              height="256.0"
                              width="256.0"/>
+                    <Label text="SDO/HMI"
+                           styleClass="text-xs,text-grey-600"/>
                 </VBox>
             </Tab>
             <Tab closable="false"
@@ -194,83 +195,74 @@
                              textStyleClass="text-bold"
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="0">
-                    <TextField fx:id="rightAscensionTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="00h 00m 00.00s"/>
+                    <CopyableLabel fx:id="rightAscensionLabel"
+                                   styleClass="text-sm"
+                                   text="00h 00m 00.00s"/>
                 </LabeledPane>
                 <LabeledPane text="DEC"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="1">
-                    <TextField fx:id="declinationTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="+00° 00' 00.00&quot;"/>
+                    <CopyableLabel fx:id="declinationLabel"
+                                   styleClass="text-sm"
+                                   text="+00° 00' 00.00&quot;"/>
                 </LabeledPane>
                 <LabeledPane text="RA (J2000)"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="2">
-                    <TextField fx:id="rightAscensionJ2000TextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="00h 00m 00.00s"/>
+                    <CopyableLabel fx:id="rightAscensionJ2000Label"
+                                   styleClass="text-sm"
+                                   text="00h 00m 00.00s"/>
                 </LabeledPane>
                 <LabeledPane text="DEC (J2000)"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="3">
-                    <TextField fx:id="declinationJ2000TextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="+00° 00' 00.00&quot;"/>
+                    <CopyableLabel fx:id="declinationJ2000Label"
+                                   styleClass="text-sm"
+                                   text="+00° 00' 00.00&quot;"/>
                 </LabeledPane>
                 <LabeledPane text="Azimuth"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="0">
-                    <TextField fx:id="azimuthTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="000° 00' 00.00&quot;"/>
+                    <CopyableLabel fx:id="azimuthLabel"
+                                   styleClass="text-sm"
+                                   text="000° 00' 00.00&quot;"/>
                 </LabeledPane>
                 <LabeledPane text="Altitude"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="1">
-                    <TextField fx:id="altitudeTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="+00° 00' 00.00&quot;"/>
+                    <CopyableLabel fx:id="altitudeLabel"
+                                   styleClass="text-sm"
+                                   text="+00° 00' 00.00&quot;"/>
                 </LabeledPane>
                 <LabeledPane text="Distance"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="2">
-                    <TextField fx:id="distanceTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="-"/>
+                    <CopyableLabel fx:id="distanceLabel"
+                                   styleClass="text-sm"
+                                   text="-"/>
                 </LabeledPane>
                 <LabeledPane text="Constellation"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="3">
-                    <TextField fx:id="constellationTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="-"/>
+                    <CopyableLabel fx:id="constellationLabel"
+                                   styleClass="text-sm"
+                                   text="-"/>
                 </LabeledPane>
                 <LabeledPane text="RTS"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="2"
                              GridPane.columnIndex="0"
                              GridPane.columnSpan="2">
-                    <TextField fx:id="rtsTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="00:00 | 00:00 | 00:00"/>
+                    <CopyableLabel fx:id="rtsLabel"
+                                   styleClass="text-sm"
+                                   text="00:00 | 00:00 | 00:00"/>
                 </LabeledPane>
             </GridPane>
         </VBox>

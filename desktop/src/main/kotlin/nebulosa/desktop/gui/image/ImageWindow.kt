@@ -58,8 +58,6 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     override fun onCreate() {
-        imageManager.initialize()
-
         fitsImageViewer.addEventFilter(MouseEvent.MOUSE_CLICKED) {
             if (it.button == MouseButton.PRIMARY && it.clickCount == 2) {
                 if (!maximized) {
@@ -93,6 +91,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     override fun onStart() {
+        imageManager.initialize()
         imageManager.loadPreferences()
     }
 
