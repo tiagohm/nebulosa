@@ -1,13 +1,11 @@
 package nebulosa.desktop.logic.atlas
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import eu.hansolo.fx.charts.data.XYChartItem
 import eu.hansolo.fx.charts.data.XYItem
 import javafx.beans.property.SimpleBooleanProperty
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.atlas.ephemeris.provider.BodyEphemerisProvider
 import nebulosa.desktop.logic.atlas.ephemeris.provider.HorizonsEphemerisProvider
-import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.framing.FramingView
@@ -71,10 +69,8 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     @Autowired private lateinit var smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var systemExecutorService: ExecutorService
-    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
     @Autowired private lateinit var framingView: FramingView
     @Autowired private lateinit var nebula: Nebula
-    @Autowired private lateinit var brightStars: BrightStars
 
     @Volatile private var observer: GeographicPosition? = null
     @Volatile private var tabType = AtlasView.TabType.SUN
@@ -205,7 +201,10 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     }
 
     fun populateStars() {
-        view.populateStar(brightStars.map { AtlasView.Star(it) })
+        systemExecutorService.submit {
+            val stars = BrightStars.map { AtlasView.Star(it) }
+            view.populateStar(stars)
+        }
     }
 
     fun computeSun(): CompletableFuture<HorizonsEphemeris>? {
@@ -309,7 +308,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
             rtsCache[target] = Triple(risingTime, transitTime, settingTime)
         }
 
-        javaFXExecutorService.submit { view.updateRTS(rtsCache[target]!!) }
+        view.updateRTS(rtsCache[target]!!)
     }
 
     private fun HorizonsEphemeris.computeTwilightAndRTS(target: Any, force: Boolean) {
@@ -324,14 +323,12 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
         LOG.info("drawing altitude chart. now={}", now)
 
-        javaFXExecutorService.execute {
-            view.drawAltitude(
-                points, now,
-                civilDawn, nauticalDawn, astronomicalDawn,
-                civilDusk, nauticalDusk, astronomicalDusk,
-                night,
-            )
-        }
+        view.drawAltitude(
+            points, now,
+            civilDawn, nauticalDawn, astronomicalDawn,
+            civilDusk, nauticalDusk, astronomicalDusk,
+            night,
+        )
     }
 
     private fun computeAltitude(
@@ -390,7 +387,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
     private fun HorizonsEphemeris.showBodyCoordinatesAndInfos(target: Any) {
         computeCoordinates(target)
-        javaFXExecutorService.execute { view.updateInfo(bodyName) }
+        view.updateInfo(bodyName)
         drawAltitude(makePoints())
     }
 
@@ -409,26 +406,20 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         val dec = element[HorizonsQuantity.APPARENT_DEC]?.toDoubleOrNull()?.deg ?: Angle.ZERO
         val epoch = UTC.now()
         val constellation = Constellation.find(ICRF.equatorial(ra, dec, time = epoch, epoch = epoch))
-        javaFXExecutorService.execute { view.updateEquatorialCoordinates(ra, dec, raJ2000, decJ2000, constellation) }
+        view.updateEquatorialCoordinates(ra, dec, raJ2000, decJ2000, constellation)
     }
 
     private fun computeHorizontalCoordinates(element: HorizonsElement) {
         val az = element[HorizonsQuantity.APPARENT_AZ]?.toDoubleOrNull()?.deg ?: Angle.ZERO
         val alt = element[HorizonsQuantity.APPARENT_ALT]?.toDoubleOrNull()?.deg ?: Angle.ZERO
-        javaFXExecutorService.execute { view.updateHorizontalCoordinates(az, alt) }
+        view.updateHorizontalCoordinates(az, alt)
     }
 
     @Scheduled(cron = "0 */15 * * * *")
     fun updateSunImage() {
         if (!view.showing) return
 
-        systemExecutorService.submit {
-            try {
-                view.updateSunImage()
-            } catch (e: Throwable) {
-                LOG.error("failed to download Sun image.", e)
-            }
-        }
+        view.updateSunImage()
     }
 
     @Scheduled(cron = "0 0 * * * *")
@@ -445,7 +436,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
                 val phase = if (leading) 360.0 - angle else angle
                 val age = 29.53058868 * (phase / 360.0)
                 LOG.info("computed Moon phase. angle={}, age={}", phase, age)
-                javaFXExecutorService.execute { view.updateMoonImage(phase, age, Angle.ZERO) }
+                view.updateMoonImage(phase, age, Angle.ZERO)
             }
     }
 
@@ -456,23 +447,21 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
                 override fun onResponse(call: Call<SmallBody>, response: Response<SmallBody>) {
                     val smallBody = response.body() ?: return
 
-                    javaFXExecutorService.execute {
-                        if (!smallBody.message.isNullOrEmpty()) {
-                            view.showAlert(smallBody.message!!)
-                        } else if (!smallBody.list.isNullOrEmpty()) {
-                            view.showAlert("Found ${smallBody.list!!.size} record(s). Please refine your search criteria, and try again.")
-                        } else {
-                            val elements = smallBody
-                                .orbit!!
-                                .elements.map {
-                                    val value = if (it.value != null) "${it.value ?: ""} ${it.units ?: ""}" else ""
-                                    AtlasView.MinorPlanet(it.label, it.title, value)
-                                }
+                    if (!smallBody.message.isNullOrEmpty()) {
+                        view.showAlert(smallBody.message!!)
+                    } else if (!smallBody.list.isNullOrEmpty()) {
+                        view.showAlert("Found ${smallBody.list!!.size} record(s). Please refine your search criteria, and try again.")
+                    } else {
+                        val elements = smallBody
+                            .orbit!!
+                            .elements.map {
+                                val value = if (it.value != null) "${it.value ?: ""} ${it.units ?: ""}" else ""
+                                AtlasView.MinorPlanet(it.label, it.title, value)
+                            }
 
-                            view.populateMinorPlanet(elements)
+                        view.populateMinorPlanet(elements)
 
-                            computeMinorPlanet(smallBody)
-                        }
+                        computeMinorPlanet(smallBody)
                     }
                 }
 
@@ -484,7 +473,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
     fun searchDSO(text: String) {
         val dso = nebula.searchBy(text)
-        javaFXExecutorService.execute { view.populateDSO(dso.map { AtlasView.DSO(it) }) }
+        view.populateDSO(dso.map { AtlasView.DSO(it) })
     }
 
     fun goTo(ra: Angle, dec: Angle) {

@@ -184,12 +184,14 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         civilDusk: DoubleArray, nauticalDusk: DoubleArray, astronomicalDusk: DoubleArray,
         night: DoubleArray,
     ) {
-        altitudeChart.draw(
-            points, now,
-            civilDawn, nauticalDawn, astronomicalDawn,
-            civilDusk, nauticalDusk, astronomicalDusk,
-            night,
-        )
+        javaFXExecutorService.submit {
+            altitudeChart.draw(
+                points, now,
+                civilDawn, nauticalDawn, astronomicalDawn,
+                civilDusk, nauticalDusk, astronomicalDusk,
+                night,
+            )
+        }
     }
 
     override fun updateSunImage() {
@@ -197,7 +199,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     }
 
     override fun updateMoonImage(phase: Double, age: Double, angle: Angle) {
-        moonView.draw(age, angle)
+        javaFXExecutorService.submit { moonView.draw(age, angle) }
     }
 
     override fun populatePlanet(planets: List<AtlasView.Planet>) {
@@ -205,21 +207,26 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     }
 
     override fun populateMinorPlanet(minorPlanets: List<AtlasView.MinorPlanet>) {
-        minorPlanetTableView.items.setAll(minorPlanets)
+        javaFXExecutorService.submit { minorPlanetTableView.items.setAll(minorPlanets) }
     }
 
     override fun populateStar(stars: List<AtlasView.Star>) {
         val filteredList = FilteredList(FXCollections.observableArrayList(stars))
         val sortedList = SortedList(filteredList)
-        sortedList.comparatorProperty().bind(starTableView.comparatorProperty())
-        starTableView.items = sortedList
+
+        javaFXExecutorService.submit {
+            sortedList.comparatorProperty().bind(starTableView.comparatorProperty())
+            starTableView.items = sortedList
+        }
     }
 
     override fun populateDSO(dso: List<AtlasView.DSO>) {
-        dsoTableView.items.setAll(dso)
+        javaFXExecutorService.submit {
+            dsoTableView.items.setAll(dso)
 
-        if (dso.size == 1) {
-            dsoTableView.selectionModel.selectFirst()
+            if (dso.size == 1) {
+                dsoTableView.selectionModel.selectFirst()
+            }
         }
     }
 
@@ -228,24 +235,28 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         raJ2000: Angle, decJ2000: Angle,
         constellation: Constellation?,
     ) {
-        rightAscensionLabel.text = ra.format(AngleFormatter.HMS)
-        declinationLabel.text = dec.format(AngleFormatter.SIGNED_DMS)
-        rightAscensionJ2000Label.text = raJ2000.format(AngleFormatter.HMS)
-        declinationJ2000Label.text = decJ2000.format(AngleFormatter.SIGNED_DMS)
-        constellationLabel.text = constellation?.iau ?: "-"
+        javaFXExecutorService.submit {
+            rightAscensionLabel.text = ra.format(AngleFormatter.HMS)
+            declinationLabel.text = dec.format(AngleFormatter.SIGNED_DMS)
+            rightAscensionJ2000Label.text = raJ2000.format(AngleFormatter.HMS)
+            declinationJ2000Label.text = decJ2000.format(AngleFormatter.SIGNED_DMS)
+            constellationLabel.text = constellation?.iau ?: "-"
+        }
     }
 
     override fun updateHorizontalCoordinates(az: Angle, alt: Angle) {
-        azimuthLabel.text = az.normalized.format(AngleFormatter.DMS)
-        altitudeLabel.text = alt.format(AngleFormatter.SIGNED_DMS)
+        javaFXExecutorService.submit {
+            azimuthLabel.text = az.normalized.format(AngleFormatter.DMS)
+            altitudeLabel.text = alt.format(AngleFormatter.SIGNED_DMS)
+        }
     }
 
     override fun updateInfo(bodyName: String) {
-        nameLabel.text = bodyName
+        javaFXExecutorService.submit { nameLabel.text = bodyName }
     }
 
     override fun updateRTS(rts: Triple<String, String, String>) {
-        rtsLabel.text = "%s | %s | %s".format(rts.first, rts.second, rts.third)
+        javaFXExecutorService.submit { rtsLabel.text = "%s | %s | %s".format(rts.first, rts.second, rts.third) }
     }
 
     override fun clearAltitudeAndCoordinates() {

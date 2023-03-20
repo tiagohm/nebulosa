@@ -8,6 +8,7 @@ import nebulosa.math.Angle.Companion.deg
 import nebulosa.simbad.CatalogType
 import nebulosa.simbad.SimbadQuery
 import nebulosa.simbad.SimbadService
+import nebulosa.skycatalog.SkyObjectType
 
 class SimbadServiceTest : StringSpec() {
 
@@ -24,7 +25,7 @@ class SimbadServiceTest : StringSpec() {
             sirius.names.first { it.type == CatalogType.HD }.name shouldBe "48915"
             sirius.names.first { it.type == CatalogType.SAO }.name shouldBe "151881"
             sirius.names.filter { it.type == CatalogType.NAME }.map { it.name }.shouldContainAll("Dog Star", "Sirius", "Sirius A")
-            sirius.type shouldBe SimbadObjectType.SPECTROSCOPIC_BINARY
+            sirius.type shouldBe SkyObjectType.SPECTROSCOPIC_BINARY
             sirius.ra shouldBeExactly 101.28715533333335
             sirius.dec shouldBeExactly -16.71611586111111
             sirius.pmRA shouldBeExactly -546.01

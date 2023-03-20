@@ -9,7 +9,6 @@ import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
 import nebulosa.sbd.SmallBodyDatabaseLookupService
 import nebulosa.simbad.SimbadService
-import nebulosa.skycatalog.brightstars.BrightStars
 import nebulosa.stellarium.skycatalog.Nebula
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
@@ -101,7 +100,4 @@ class App {
 
     @Bean
     fun nebula() = Nebula()
-
-    @Bean
-    fun brightStars() = BrightStars.apply { load() }
 }

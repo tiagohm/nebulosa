@@ -6,7 +6,6 @@ class BrightStarsTest : StringSpec() {
 
     init {
         "load" {
-            BrightStars.load()
             BrightStars.size shouldBe 9225
         }
     }

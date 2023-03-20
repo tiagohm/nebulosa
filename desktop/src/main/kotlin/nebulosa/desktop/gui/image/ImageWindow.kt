@@ -16,7 +16,6 @@ import javafx.scene.input.MouseEvent
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.logic.asBoolean
-import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.image.ImageManager
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.image.Drawable
@@ -33,8 +32,6 @@ import java.nio.IntBuffer
 import kotlin.jvm.optionals.getOrNull
 
 class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image", "image"), ImageView {
-
-    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
 
     @FXML private lateinit var fitsImageViewer: ImageViewer
     @FXML private lateinit var menu: ContextMenu

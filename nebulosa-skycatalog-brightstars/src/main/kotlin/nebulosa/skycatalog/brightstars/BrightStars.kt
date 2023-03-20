@@ -8,7 +8,7 @@ import java.io.ObjectInputStream
 @Suppress("UNCHECKED_CAST")
 object BrightStars : SkyCatalog<Star>() {
 
-    fun load() {
+    init {
         val inputStream = resource("BrightStars.dat")!!
         val ois = ObjectInputStream(inputStream)
         val catalog = ois.use { ois.readObject() } as List<Star>
