@@ -4,14 +4,13 @@ import nebulosa.io.readDouble
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.mas
 import nebulosa.math.Angle.Companion.rad
+import nebulosa.skycatalog.DSO
 import nebulosa.skycatalog.SkyCatalog
-import nebulosa.skycatalog.SkyObject
-import nebulosa.skycatalog.SkyObjectType
 import okio.BufferedSource
 import okio.Source
 import okio.buffer
 
-class Nebula : SkyCatalog() {
+class Nebula : SkyCatalog<DSO>() {
 
     fun load(
         source: Source,
@@ -23,7 +22,7 @@ class Nebula : SkyCatalog() {
         buffer.readString() // Edition.
 
         val namesMap = namesSource?.loadNames() ?: emptyMap()
-        val types = SkyObjectType.values()
+        val types = NebulaType.values()
 
         while (!buffer.exhausted()) {
             val id = buffer.readInt()
@@ -110,30 +109,30 @@ class Nebula : SkyCatalog() {
             if (ru > 0) "RU $ru".findNames()
             if (vdbha > 0) "VDBHA $vdbha".findNames()
 
-            val nebula = SkyObject(
+            val nebula = DSO(
                 id,
                 names,
-                m,
-                ngc, ic,
-                c, b,
-                sh2, vdb,
-                rcw, ldn,
-                lbn, cr,
-                mel, pgc,
-                ugc, arp,
-                vv, dwb,
-                tr, st,
-                ru, vdbha,
-                ced, pk,
-                png, snrg,
-                aco, hcg,
-                eso, vdbh,
-                mB, mV,
-                ra, dec,
-                types[type], mType,
-                majorAxis, minorAxis,
-                orientation,
-                redshift, parallax, distance,
+                m = m, ngc = ngc, ic = ic,
+                c = c, b = b,
+                sh2 = sh2, vdb = vdb,
+                rcw = rcw, ldn = ldn, lbn = lbn,
+                cr = cr, mel = mel,
+                pgc = pgc, ugc = ugc,
+                arp = arp, vv = vv,
+                dwb = dwb,
+                tr = tr, st = st, ru = ru,
+                vdbha = vdbha, ced = ced,
+                pk = pk, png = png,
+                snrg = snrg, aco = aco,
+                hcg = hcg, eso = eso, vdbh = vdbh,
+                mB = mB, mV = mV,
+                rightAscension = ra, declination = dec,
+                type = types[type].type, mType = mType,
+                majorAxis = majorAxis, minorAxis = minorAxis,
+                orientation = orientation,
+                redshift = redshift,
+                parallax = parallax,
+                distance = distance,
             )
 
             add(nebula)

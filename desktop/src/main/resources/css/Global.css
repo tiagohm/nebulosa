@@ -111,6 +111,7 @@
 }
 
 .copyable-label:focused,
+.copyable-label:disabled,
 .copyable-label:hover {
     -fx-background-color: transparent;
 }

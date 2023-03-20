@@ -35,12 +35,13 @@ class NebulaAnnotation(
         graphics.font = DEFAULT_FONT
 
         val minSize = 25.0
+        val maxSize = min(width, height) / 2
 
         for (item in data) {
-            val (x, y) = wcs.worldToPixel(item.ra, item.dec)
+            val (x, y) = wcs.worldToPixel(item.rightAscension, item.declination)
 
             if (x in 0.0..width && y in 0.0..height) {
-                val majorAxisSize = max(minSize, item.majorAxis / calibration.scale)
+                val majorAxisSize = max(minSize, min(item.majorAxis / calibration.scale, maxSize))
                 // val minorAxisSize = max(minSize, min(maxSize, item.minorAxis / calibration.scale))
 
                 graphics.strokeOval(x - majorAxisSize / 2, y - majorAxisSize / 2, majorAxisSize, majorAxisSize)

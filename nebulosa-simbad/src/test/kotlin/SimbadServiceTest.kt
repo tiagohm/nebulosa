@@ -6,7 +6,6 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.simbad.CatalogType
-import nebulosa.simbad.SimbadObjectType
 import nebulosa.simbad.SimbadQuery
 import nebulosa.simbad.SimbadService
 

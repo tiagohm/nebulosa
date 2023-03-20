@@ -17,7 +17,6 @@ import nebulosa.horizons.HorizonsQuantity
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountEvent
 import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
-import nebulosa.io.resource
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.rad
@@ -33,7 +32,7 @@ import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.sbd.SmallBody
 import nebulosa.sbd.SmallBodyDatabaseLookupService
-import nebulosa.simbad.SimbadObject
+import nebulosa.skycatalog.brightstars.BrightStars
 import nebulosa.stellarium.skycatalog.Nebula
 import nebulosa.time.UTC
 import org.greenrobot.eventbus.EventBus
@@ -67,15 +66,15 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var preferences: Preferences
-    @Autowired private lateinit var objectMapper: ObjectMapper
     @Autowired private lateinit var bodyEphemerisProvider: BodyEphemerisProvider
     @Autowired private lateinit var horizonsEphemerisProvider: HorizonsEphemerisProvider
     @Autowired private lateinit var smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
-    @Autowired private lateinit var nebula: Nebula
     @Autowired private lateinit var framingView: FramingView
+    @Autowired private lateinit var nebula: Nebula
+    @Autowired private lateinit var brightStars: BrightStars
 
     @Volatile private var observer: GeographicPosition? = null
     @Volatile private var tabType = AtlasView.TabType.SUN
@@ -206,8 +205,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     }
 
     fun populateStars() {
-        val stars = objectMapper.readValue(resource("data/NAMED_STARS.json"), Array<SimbadObject>::class.java)
-        view.populateStar(stars.map { AtlasView.Star(it) })
+        view.populateStar(brightStars.map { AtlasView.Star(it) })
     }
 
     fun computeSun(): CompletableFuture<HorizonsEphemeris>? {
@@ -234,7 +232,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
     fun computeStar(body: AtlasView.Star? = star): CompletableFuture<HorizonsEphemeris>? {
         star = body ?: return null
-        bodyName = body.simbad.names.joinToString(", ") { it.type.format(it.name) }
+        bodyName = body.skyObject.names.joinToString(", ")
         return body.star.computeBody()
     }
 

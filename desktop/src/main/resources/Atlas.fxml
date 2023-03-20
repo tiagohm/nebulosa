@@ -98,7 +98,7 @@
             </Tab>
             <Tab closable="false"
                  onSelectionChanged="#tabSelectionChanged"
-                 text="Named Stars"
+                 text="Bright Stars"
                  userData="STAR">
                 <VBox alignment="TOP_CENTER"
                       spacing="4.0">

@@ -4,9 +4,10 @@ plugins {
 }
 
 dependencies {
-    api(project(":nebulosa-math"))
-    api(project(":nebulosa-retrofit"))
     api(project(":nebulosa-skycatalog"))
+    implementation(libs.logback)
+    testImplementation(project(":nebulosa-simbad"))
+    testImplementation(project(":nebulosa-vizier"))
     testImplementation(project(":nebulosa-test"))
 }
 

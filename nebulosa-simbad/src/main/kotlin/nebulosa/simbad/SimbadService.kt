@@ -1,6 +1,7 @@
 package nebulosa.simbad
 
 import nebulosa.retrofit.RetrofitService
+import nebulosa.skycatalog.SkyObjectType
 import okhttp3.FormBody
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -136,7 +137,7 @@ class SimbadService(url: String = "https://simbad.u-strasbg.fr/") : RetrofitServ
             val pmRA = parts[PM_RA].toDoubleOrNull() ?: 0.0
             val pmDEC = parts[PM_DEC].toDoubleOrNull() ?: 0.0
             val plx = parts[PLX].toDoubleOrNull() ?: 0.0
-            val type = SimbadObjectType.of(parts[OTYPE].replace("\"", "").trim())!!
+            val type = SkyObjectType.of(parts[OTYPE].replace("\"", "").trim())!!
             val spType = parts[SPTYPE].replace("\"", "").trim()
             val mType = parts[MTYPE].replace("\"", "").trim()
             val majorAxis = parts[MAJ_AXIS].toDoubleOrNull() ?: 0.0

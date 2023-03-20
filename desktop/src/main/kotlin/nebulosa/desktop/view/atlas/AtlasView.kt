@@ -3,12 +3,7 @@ package nebulosa.desktop.view.atlas
 import eu.hansolo.fx.charts.data.XYItem
 import nebulosa.desktop.view.View
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.mas
-import nebulosa.math.Velocity.Companion.kms
 import nebulosa.nova.astrometry.Constellation
-import nebulosa.nova.astrometry.FixedStar
-import nebulosa.simbad.SimbadObject
 import nebulosa.skycatalog.SkyObject
 import kotlin.math.min
 
@@ -36,13 +31,14 @@ interface AtlasView : View {
     )
 
     data class Star(
-        val simbad: SimbadObject,
-        val name: String = simbad.name,
-        val magnitude: Double = simbad.v,
-        val type: String = simbad.type.description,
+        val skyObject: SkyObject,
+        val name: String = skyObject.names.firstOrNull() ?: "?",
+        val magnitude: Double = min(skyObject.mV, skyObject.mB),
+        val type: String = skyObject.type.description,
     ) {
 
-        val star by lazy { FixedStar(simbad.ra.deg, simbad.dec.deg, simbad.pmRA.mas, simbad.pmDEC.mas, simbad.plx.mas, simbad.rv.kms) }
+        inline val star
+            get() = skyObject.position
     }
 
     data class DSO(

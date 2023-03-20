@@ -1,6 +1,7 @@
 package nebulosa.desktop.logic.loader
 
 import jakarta.annotation.PostConstruct
+import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.stellarium.skycatalog.Nebula
 import okhttp3.*
@@ -23,48 +24,58 @@ class StellariumCatalogLoader : Runnable {
 
     @Autowired private lateinit var appDirectory: Path
     @Autowired private lateinit var okHttpClient: OkHttpClient
+    @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var nebula: Nebula
 
     @PostConstruct
     override fun run() {
         val downloadLatch = CountUpDownLatch()
 
-        downloadLatch.countUp()
-        downloadLatch.countUp()
-
         val catalogPath = Paths.get("$appDirectory", "data", "stellarium", "catalog.dat")
         val namesPath = Paths.get("$appDirectory", "data", "stellarium", "names.dat")
 
         catalogPath.parent.createDirectories()
 
-        with(Request.Builder().url(CATALOG_URL).build()) {
-            okHttpClient.newCall(this).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    LOG.error("failed to download catalog.dat", e)
-                    downloadLatch.countDown()
-                }
+        val updatedAt = preferences.long("loader.stellarium.updatedAt") ?: 0L
+        val currentTime = System.currentTimeMillis()
+        val past30Days = currentTime - updatedAt >= 2592000000L
 
-                override fun onResponse(call: Call, response: Response) {
-                    LOG.info("catalog.dat downloaded successfully")
-                    catalogPath.outputStream().use { response.body.byteStream().transferTo(it) }
-                    downloadLatch.countDown()
-                }
-            })
-        }
+        if (past30Days || !catalogPath.exists() || !namesPath.exists()) {
+            downloadLatch.countUp()
+            downloadLatch.countUp()
 
-        with(Request.Builder().url(NAMES_URL).build()) {
-            okHttpClient.newCall(this).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    LOG.error("failed to download names.dat", e)
-                    downloadLatch.countDown()
-                }
+            with(Request.Builder().url(CATALOG_URL).build()) {
+                okHttpClient.newCall(this).enqueue(object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        LOG.error("failed to download catalog.dat", e)
+                        downloadLatch.countDown()
+                    }
 
-                override fun onResponse(call: Call, response: Response) {
-                    LOG.info("names.dat downloaded successfully")
-                    namesPath.outputStream().use { response.body.byteStream().transferTo(it) }
-                    downloadLatch.countDown()
-                }
-            })
+                    override fun onResponse(call: Call, response: Response) {
+                        LOG.info("catalog.dat downloaded successfully")
+                        catalogPath.outputStream().use { response.body.byteStream().transferTo(it) }
+                        preferences.long("loader.stellarium.updatedAt", currentTime)
+                        downloadLatch.countDown()
+                    }
+                })
+            }
+
+            with(Request.Builder().url(NAMES_URL).build()) {
+                okHttpClient.newCall(this).enqueue(object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        LOG.error("failed to download names.dat", e)
+                        downloadLatch.countDown()
+                    }
+
+                    override fun onResponse(call: Call, response: Response) {
+                        LOG.info("names.dat downloaded successfully")
+                        namesPath.outputStream().use { response.body.byteStream().transferTo(it) }
+                        downloadLatch.countDown()
+                    }
+                })
+            }
+        } else {
+            LOG.info("Stellarium DSO Catalog and Names are up-to-date")
         }
 
         CompletableFuture.supplyAsync {

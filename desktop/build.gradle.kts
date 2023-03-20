@@ -25,6 +25,7 @@ dependencies {
     implementation(project(":nebulosa-platesolving-watney"))
     implementation(project(":nebulosa-sbd"))
     implementation(project(":nebulosa-simbad"))
+    implementation(project(":nebulosa-skycatalog-brightstars"))
     implementation(project(":nebulosa-stellarium-protocol"))
     implementation(project(":nebulosa-stellarium-skycatalog"))
     implementation(project(":nebulosa-wcs"))
