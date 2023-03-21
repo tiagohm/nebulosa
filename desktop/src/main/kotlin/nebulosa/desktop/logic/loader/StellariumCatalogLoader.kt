@@ -1,8 +1,8 @@
 package nebulosa.desktop.logic.loader
 
 import jakarta.annotation.PostConstruct
+import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.stellarium.skycatalog.Nebula
 import okhttp3.*
 import okio.IOException

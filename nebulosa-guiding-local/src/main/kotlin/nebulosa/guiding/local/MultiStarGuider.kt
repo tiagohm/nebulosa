@@ -129,7 +129,6 @@ class MultiStarGuider : Guider() {
         var averaged = false
         var validStars = 0
         val origOffset = offset.copy()
-        var erasures = false
         var refined = false
 
         starsUsed = 1
@@ -199,7 +198,6 @@ class MultiStarGuider : Guider() {
 
                             if (star.zeroCount == 5) {
                                 guideStarsIter.remove()
-                                erasures = true
                                 continue
                             }
 
@@ -227,20 +225,13 @@ class MultiStarGuider : Guider() {
                             validStars++
                         } else {
                             guideStarsIter.remove()
-                            erasures = true
                         }
                     } else {
                         // Star not found in its search region.
                         if (++star.lostCount >= 3) {
                             guideStarsIter.remove()
-                            erasures = true
                         }
                     }
-
-                    //if (!erasures)
-                    //    ++pGS;
-                    //else
-                    //    erasures = false;
                 }
 
                 if (averaged) {
@@ -306,7 +297,7 @@ class MultiStarGuider : Guider() {
         }
     }
 
-    fun updateCurrentPosition(
+    override fun updateCurrentPosition(
         image: Image,
         offset: GuiderOffset,
     ): Boolean {
@@ -386,6 +377,16 @@ class MultiStarGuider : Guider() {
         }
 
         return true
+    }
+
+    override fun isValidLockPosition(point: Point): Boolean {
+        val image = currentImage ?: return false
+
+        val region = 1.0 + searchRegion
+        return point.x >= region &&
+                point.x + region < image.width &&
+                point.y >= region &&
+                point.y + region < image.height
     }
 
     companion object {

@@ -20,6 +20,10 @@ sealed class Guider {
     protected var avgDistanceCnt = 0
     protected var avgDistanceNeedReset = false
     protected var currentImage: Image? = null
+    protected val lockPositionShift = LockPositionShiftParams()
+
+    protected val lockPositionShiftEnabled
+        get() = lockPositionShift.shiftEnabled
 
     protected val lockPosition = ShiftPoint(Double.NaN, Double.NaN)
 
@@ -96,6 +100,13 @@ sealed class Guider {
         }
     }
 
+    fun startGuiding() {
+        // We set the state to calibrating. The state machine will
+        // automatically move from calibrating > calibrated > guiding
+        // when it can.
+        state = GuiderState.CALIBRATING_PRIMARY
+    }
+
     fun stopGuiding() {
         when (state) {
             GuiderState.UNINITIALIZED,
@@ -105,7 +116,8 @@ sealed class Guider {
             GuiderState.CALIBRATING_PRIMARY,
             GuiderState.CALIBRATING_SECONDARY,
             GuiderState.CALIBRATED -> {
-                listeners.forEach { it.onCalibrationFailed() }
+                val mount = if (state == GuiderState.CALIBRATING_SECONDARY) mount else mount
+                listeners.forEach { it.onCalibrationFailed(mount) }
             }
             GuiderState.GUIDING -> {
                 if (!mount.busy) listeners.forEach { it.onGuidingStopped() }
@@ -120,6 +132,25 @@ sealed class Guider {
 
         if (fullReset) invalidateCurrentPosition(true)
     }
+
+    protected abstract fun isValidLockPosition(point: Point): Boolean
+
+    fun shiftLockPosition(): Boolean {
+        lockPosition.updateShift()
+        return isValidLockPosition(lockPosition)
+    }
+
+    fun enableLockPositionShift(enable: Boolean) {
+        if (enable != lockPositionShift.shiftEnabled) {
+            lockPositionShift.shiftEnabled = enable
+
+            if (enable) {
+                lockPosition.beginShift()
+            }
+        }
+    }
+
+    protected abstract fun updateCurrentPosition(image: Image, offset: GuiderOffset): Boolean
 
     fun updateGuide(image: Image, stopping: Boolean) {
         currentImage = image

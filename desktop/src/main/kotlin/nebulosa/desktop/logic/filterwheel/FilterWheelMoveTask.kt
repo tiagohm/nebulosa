@@ -1,6 +1,6 @@
 package nebulosa.desktop.logic.filterwheel
 
-import nebulosa.desktop.logic.concurrency.CountUpDownLatch
+import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.task.TaskFinished
 import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.indi.device.filterwheel.*

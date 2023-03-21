@@ -12,6 +12,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":nebulosa-common"))
     implementation(project(":nebulosa-guiding-phd2"))
     implementation(project(":nebulosa-hips2fits"))
     implementation(project(":nebulosa-horizons"))

@@ -1,7 +1,7 @@
 package nebulosa.desktop.logic.camera
 
+import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
 import nebulosa.desktop.logic.task.Task
