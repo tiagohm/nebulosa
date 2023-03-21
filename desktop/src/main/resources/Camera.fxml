@@ -3,7 +3,6 @@
 <?import javafx.collections.FXCollections?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.Image?>
 <?import javafx.scene.layout.*?>
 <?import nebulosa.desktop.gui.control.*?>
 <?import nebulosa.indi.device.camera.*?>
@@ -13,7 +12,6 @@
             minHeight="-Infinity"
             minWidth="-Infinity"
             prefWidth="390.0"
-            stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="4.0"
@@ -33,30 +31,24 @@
                   spacing="4.0">
                 <ChoiceBox fx:id="cameraChoiceBox"
                            prefHeight="32.0"
-                           prefWidth="394.0">
-                </ChoiceBox>
+                           prefWidth="394.0"/>
                 <TwoStateButton fx:id="connectButton"
-                                onAction="#connect"
-                                stateOnStyleClass="mdi,mdi-sm,text-warning-color"
-                                stateOffStyleClass="mdi,mdi-sm,text-accent-color"
-                                stateOnIcon="󰅙"
-                                stateOffIcon="󱘖">
+                                onAction="#connect">
+                    <MaterialIcon icon="close-circle"
+                                  TwoStateButton.state="true"
+                                  color="warning"/>
+                    <MaterialIcon icon="connection"/>
                 </TwoStateButton>
-                <IconButton fx:id="openINDIButton"
-                            onAction="#openINDIPanelControl">
-                    <image>
-                        <Image url="@icons/indi.png"/>
-                    </image>
-                </IconButton>
-                <Label alignment="CENTER"
-                       minWidth="38.0"
-                       minHeight="38.0"
-                       onMouseClicked="#openMenu"
-                       styleClass="text-grey-700,mdi,mdi-sm,cursor-hand"
-                       text="󰇙">
+                <ImageButton fx:id="openINDIButton"
+                             onAction="#openINDIPanelControl"
+                             url="@icons/indi.png"/>
+                <MaterialIconButton onMouseClicked="#openMenu"
+                                    styleClass="cursor-hand"
+                                    style="-fx-background-color: transparent; -fx-border-style: none; -fx-border-width: 0; -fx-border-insets: 0;"
+                                    color="grey-500"
+                                    icon="dots-vertical">
                     <fx:define>
-                        <ContextMenu fx:id="menu"
-                                     styleClass="text-md">
+                        <ContextMenu fx:id="menu">
                             <items>
                                 <CheckMenuItem fx:id="autoSaveAllExposuresMenuItem"
                                                onAction="#toggleAutoSaveAllExposures"
@@ -83,50 +75,43 @@
                             </items>
                         </ContextMenu>
                     </fx:define>
-                </Label>
+                </MaterialIconButton>
             </HBox>
             <HBox alignment="CENTER_LEFT">
                 <VBox.margin>
                     <Insets top="4.0"/>
                 </VBox.margin>
-                <Label fx:id="autoSaveAllExposuresIcon"
-                       managed="false"
-                       styleClass="text-indigo-700,mdi,mdi-xs"
-                       text="󰆓"
-                       visible="false">
+                <MaterialIcon fx:id="autoSaveAllExposuresIcon"
+                              managed="false"
+                              visible="false"
+                              icon="content-save"
+                              size="xs">
                     <HBox.margin>
-                        <Insets right="8.0"/>
+                        <Insets right="6.0"/>
                     </HBox.margin>
-                </Label>
-                <Label fx:id="autoSubFolderIcon"
-                       managed="false"
-                       styleClass="text-green-700,mdi,mdi-xs"
-                       text="󰉗"
-                       visible="false">
+                </MaterialIcon>
+                <MaterialIcon fx:id="autoSubFolderIcon"
+                              managed="false"
+                              visible="false"
+                              icon="folder-plus"
+                              size="xs">
                     <HBox.margin>
-                        <Insets right="8.0"/>
+                        <Insets right="6.0"/>
                     </HBox.margin>
-                </Label>
-                <Label fx:id="imageSavePathLabel"
-                       onMouseClicked="#openImageSavePathInFiles"
-                       styleClass="cursor-hand,text-sm,text-grey-400"
-                       text="-">
-                    <graphic>
-                        <Label styleClass="text-amber-700,mdi,mdi-xs"
-                               text="󰉋">
-                        </Label>
-                    </graphic>
-                </Label>
+                </MaterialIcon>
+                <MaterialIcon fx:id="imageSavePathIcon"
+                              onMouseClicked="#openImageSavePathInFiles"
+                              styleClass="cursor-hand,text-sm,text-grey-400"
+                              text="-"
+                              icon="folder"
+                              size="xs"
+                              color="amber-700"/>
             </HBox>
             <HBox alignment="CENTER_LEFT">
-                <Label fx:id="statusLabel"
-                       text="idle">
-                    <graphic>
-                        <Label styleClass="text-accent-color,mdi,mdi-xs"
-                               text="󰋼">
-                        </Label>
-                    </graphic>
-                </Label>
+                <MaterialIcon fx:id="statusIcon"
+                              icon="information"
+                              size="xs"
+                              text="idle"/>
             </HBox>
         </VBox>
         <GridPane hgap="4.0"
@@ -164,16 +149,11 @@
                              editable="true"
                              initialValue="0.0"
                              max="50.0"
-                             min="-50.0">
-                    </Spinner>
-                    <IconButton fx:id="temperatureSetpointButton"
-                                onAction="#applyTemperatureSetpoint">
-                        <graphic>
-                            <Label styleClass="text-green-700,mdi,mdi-sm"
-                                   text="󰄬">
-                            </Label>
-                        </graphic>
-                    </IconButton>
+                             min="-50.0"/>
+                    <MaterialIconButton fx:id="temperatureSetpointButton"
+                                        onAction="#applyTemperatureSetpoint"
+                                        icon="check"
+                                        color="green-500"/>
                 </HBox>
             </LabeledPane>
             <LabeledPane text="Exposure Time"
@@ -191,24 +171,23 @@
                              initialValue="1.0"
                              max="1000000.0"
                              min="1.0"
-                             prefWidth="144.0">
-                    </Spinner>
+                             prefWidth="164.0"/>
                     <SegmentedButton fx:id="exposureUnitSegmentedButton"
-                                     prefWidth="144.0">
+                                     prefWidth="164.0">
                         <buttons>
                             <ToggleButton text="m"
                                           userData="MINUTES"
-                                          prefWidth="36.0"/>
+                                          prefWidth="41.0"/>
                             <ToggleButton text="s"
                                           userData="SECONDS"
-                                          prefWidth="36.0"/>
+                                          prefWidth="41.0"/>
                             <ToggleButton text="ms"
                                           userData="MILLISECONDS"
-                                          prefWidth="36.0"/>
+                                          prefWidth="41.0"/>
                             <ToggleButton text="µs"
                                           selected="true"
                                           userData="MICROSECONDS"
-                                          prefWidth="36.0"/>
+                                          prefWidth="41.0"/>
                         </buttons>
                     </SegmentedButton>
                 </VBox>
@@ -240,8 +219,7 @@
                          editable="true"
                          initialValue="1000.0"
                          max="30000.0"
-                         min="0.0">
-                </Spinner>
+                         min="0.0"/>
             </LabeledPane>
             <LabeledPane text="Count"
                          textStyleClass="text-bold"
@@ -251,8 +229,7 @@
                          editable="true"
                          initialValue="100.0"
                          max="10000.0"
-                         min="1.0">
-                </Spinner>
+                         min="1.0"/>
             </LabeledPane>
             <LabeledPane text="X"
                          textStyleClass="text-bold"
@@ -262,8 +239,7 @@
                          editable="true"
                          initialValue="0.0"
                          max="1279.0"
-                         min="0.0">
-                </Spinner>
+                         min="0.0"/>
             </LabeledPane>
             <LabeledPane text="Y"
                          textStyleClass="text-bold"
@@ -273,8 +249,7 @@
                          editable="true"
                          initialValue="0.0"
                          max="1023.0"
-                         min="0.0">
-                </Spinner>
+                         min="0.0"/>
             </LabeledPane>
             <LabeledPane text="Width"
                          textStyleClass="text-bold"
@@ -284,8 +259,7 @@
                          editable="true"
                          initialValue="1280.0"
                          max="1280.0"
-                         min="0.0">
-                </Spinner>
+                         min="0.0"/>
             </LabeledPane>
             <LabeledPane text="Height"
                          textStyleClass="text-bold"
@@ -295,8 +269,7 @@
                          editable="true"
                          initialValue="1024.0"
                          max="1024.0"
-                         min="0.0">
-                </Spinner>
+                         min="0.0"/>
             </LabeledPane>
             <LabeledPane text="Subframe"
                          textStyleClass="text-bold"
@@ -304,17 +277,12 @@
                          GridPane.columnIndex="0">
                 <SwitchSegmentedButton fx:id="subFrameSwitch"/>
             </LabeledPane>
-            <IconButton fx:id="fullsizeButton"
-                        GridPane.rowIndex="4"
-                        GridPane.columnIndex="1"
-                        GridPane.halignment="CENTER"
-                        onAction="#fullsize">
-                <graphic>
-                    <Label styleClass="text-accent-color,mdi,mdi-sm"
-                           text="󰊓">
-                    </Label>
-                </graphic>
-            </IconButton>
+            <MaterialIconButton fx:id="fullsizeButton"
+                                GridPane.rowIndex="4"
+                                GridPane.columnIndex="1"
+                                GridPane.halignment="CENTER"
+                                onAction="#fullsize"
+                                icon="fullscreen"/>
             <LabeledPane text="Bin X"
                          textStyleClass="text-bold"
                          GridPane.rowIndex="4"
@@ -323,8 +291,7 @@
                          editable="true"
                          initialValue="1.0"
                          max="4.0"
-                         min="1.0">
-                </Spinner>
+                         min="1.0"/>
             </LabeledPane>
             <LabeledPane text="Bin Y"
                          textStyleClass="text-bold"
@@ -334,8 +301,7 @@
                          editable="true"
                          initialValue="1.0"
                          max="4.0"
-                         min="1.0">
-                </Spinner>
+                         min="1.0"/>
             </LabeledPane>
             <fx:define>
                 <FrameType fx:id="frameTypeInitialValue"
@@ -362,8 +328,7 @@
                          GridPane.rowIndex="5"
                          GridPane.columnIndex="1">
                 <ChoiceBox fx:id="frameFormatChoiceBox"
-                           minWidth="96.0">
-                </ChoiceBox>
+                           minWidth="96.0"/>
             </LabeledPane>
             <LabeledPane text="Gain"
                          textStyleClass="text-bold"
@@ -373,8 +338,7 @@
                          editable="true"
                          initialValue="0.0"
                          max="0.0"
-                         min="0.0">
-                </Spinner>
+                         min="0.0"/>
             </LabeledPane>
             <LabeledPane text="Offset"
                          textStyleClass="text-bold"
@@ -385,8 +349,7 @@
                          initialValue="0.0"
                          max="0.0"
                          min="0.0"
-                         prefWidth="92.0">
-                </Spinner>
+                         prefWidth="92.0"/>
             </LabeledPane>
         </GridPane>
         <HBox alignment="CENTER"
@@ -394,26 +357,16 @@
             <VBox.margin>
                 <Insets top="4.0"/>
             </VBox.margin>
-            <Button fx:id="startCaptureButton"
-                    mnemonicParsing="false"
-                    onAction="#startCapture"
-                    text="Start">
-                <graphic>
-                    <Label styleClass="text-green-700,mdi,mdi-sm"
-                           text="󰐊">
-                    </Label>
-                </graphic>
-            </Button>
-            <Button fx:id="abortCaptureButton"
-                    mnemonicParsing="false"
-                    onAction="#abortCapture"
-                    text="Abort">
-                <graphic>
-                    <Label styleClass="text-warning-color,mdi,mdi-sm"
-                           text="󰓛">
-                    </Label>
-                </graphic>
-            </Button>
+            <MaterialIconButton fx:id="startCaptureButton"
+                                onAction="#startCapture"
+                                text="Start"
+                                icon="play"
+                                color="green-500"/>
+            <MaterialIconButton fx:id="abortCaptureButton"
+                                onAction="#abortCapture"
+                                text="Abort"
+                                icon="stop"
+                                color="warning"/>
         </HBox>
     </VBox>
 </AnchorPane>

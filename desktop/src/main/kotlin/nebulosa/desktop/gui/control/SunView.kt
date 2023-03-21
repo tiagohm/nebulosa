@@ -19,7 +19,6 @@ class SunView : Canvas() {
     fun updateImage() {
         val sunImage = ImageIO.read(URL("https://sdo.gsfc.nasa.gov/assets/img/latest/latest_256_HMIIF.jpg"))
         val data = IntArray(sunImage.width * sunImage.height)
-        val buffer = IntBuffer.wrap(data)
 
         for (y in 0 until sunImage.height) {
             for (x in 0 until sunImage.width) {
@@ -27,18 +26,31 @@ class SunView : Canvas() {
                 val color = sunImage.getRGB(x, y)
                 val index = y * sunImage.width + x
 
-                if (distance > 118) {
+                if (distance > 120) {
                     val gray = ((color shr 16 and 0xff) + (color shr 8 and 0xff) + (color and 0xff)) / 3
 
                     if (gray >= 170) {
                         data[index] = color
                     }
+                } else if (distance >= 118) {
+                    val colors = intArrayOf(
+                        color,
+                        sunImage.getRGB(x - 1, y - 1), sunImage.getRGB(x + 1, y - 1),
+                        sunImage.getRGB(x - 1, y + 1), sunImage.getRGB(x + 1, y + 1),
+                    )
+
+                    val red = colors.sumOf { it shr 16 and 0xff } / colors.size
+                    val green = colors.sumOf { it shr 8 and 0xff } / colors.size
+                    val blue = colors.sumOf { it and 0xff } / colors.size
+
+                    data[index] = 0xFF000000.toInt() + (red and 0xff shl 16) + (green and 0xff shl 8) + (blue and 0xff)
                 } else {
                     data[index] = color
                 }
             }
         }
 
+        val buffer = IntBuffer.wrap(data)
         val pixelBuffer = PixelBuffer(sunImage.width, sunImage.height, buffer, PixelFormat.getIntArgbPreInstance())
         image = WritableImage(pixelBuffer)
 

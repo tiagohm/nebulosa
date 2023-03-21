@@ -10,6 +10,7 @@ import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.LabeledPane
+import nebulosa.desktop.gui.control.MaterialIcon
 import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.and
@@ -43,9 +44,9 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
     @FXML private lateinit var autoSubFolderMenuItem: CheckMenuItem
     @FXML private lateinit var newSubFolderAtNoonMenuItem: CheckMenuItem
     @FXML private lateinit var newSubFolderAtMidnightMenuItem: CheckMenuItem
-    @FXML private lateinit var autoSaveAllExposuresIcon: Label
-    @FXML private lateinit var autoSubFolderIcon: Label
-    @FXML private lateinit var imageSavePathLabel: Label
+    @FXML private lateinit var autoSaveAllExposuresIcon: MaterialIcon
+    @FXML private lateinit var autoSubFolderIcon: MaterialIcon
+    @FXML private lateinit var imageSavePathIcon: MaterialIcon
     @FXML private lateinit var coolerPowerLabel: LabeledPane
     @FXML private lateinit var coolerSwitch: SwitchSegmentedButton
     @FXML private lateinit var dewHeaterSwitch: SwitchSegmentedButton
@@ -71,7 +72,7 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
     @FXML private lateinit var frameFormatChoiceBox: ChoiceBox<String>
     @FXML private lateinit var startCaptureButton: Button
     @FXML private lateinit var abortCaptureButton: Button
-    @FXML private lateinit var statusLabel: Label
+    @FXML private lateinit var statusIcon: MaterialIcon
 
     init {
         title = "Camera"
@@ -392,9 +393,9 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
     }
 
     override var status
-        get() = statusLabel.text!!
+        get() = statusIcon.text
         set(value) {
-            statusLabel.text = value
+            statusIcon.text = value
         }
 
     override var autoSubFolderMode
@@ -421,9 +422,9 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
         }
 
     override var imageSavePath
-        get() = imageSavePathLabel.text!!
+        get() = imageSavePathIcon.text
         set(value) {
-            imageSavePathLabel.text = value
+            imageSavePathIcon.text = value
         }
 
     @FXML

@@ -11,7 +11,6 @@
             minHeight="-Infinity"
             minWidth="-Infinity"
             prefWidth="420.0"
-            stylesheets="@css/Global.css,@css/CopyableLabel.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="4.0"
@@ -33,17 +32,14 @@
                 <TextField fx:id="filePathTextField"
                            disable="true"/>
             </LabeledPane>
-            <Button fx:id="browseButton"
-                    onAction="#browse"
-                    text="Browse">
+            <MaterialIconButton fx:id="browseButton"
+                                onAction="#browse"
+                                text="Browse"
+                                icon="magnify">
                 <HBox.margin>
                     <Insets top="9.0"/>
                 </HBox.margin>
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-accent-color"
-                           text="󰍉"/>
-                </graphic>
-            </Button>
+            </MaterialIconButton>
         </HBox>
         <HBox alignment="CENTER"
               spacing="16.0">
@@ -136,55 +132,43 @@
                          textStyleClass="text-bold"
                          GridPane.rowIndex="0"
                          GridPane.columnIndex="0">
-                <TextField fx:id="raTextField"
-                           editable="false"
-                           styleClass="copyable"
-                           text="00h00m00.00s"/>
+                <CopyableLabel fx:id="raTextField"
+                               text="00h00m00.00s"/>
             </LabeledPane>
             <LabeledPane text="DEC (J2000)"
                          textStyleClass="text-bold"
                          GridPane.rowIndex="0"
                          GridPane.columnIndex="1">
-                <TextField fx:id="decTextField"
-                           editable="false"
-                           styleClass="copyable"
-                           text="00°00'00.00&quot;"/>
+                <CopyableLabel fx:id="decTextField"
+                               text="00°00'00.00&quot;"/>
             </LabeledPane>
             <LabeledPane text="Orientation (deg)"
                          textStyleClass="text-bold"
                          GridPane.rowIndex="0"
                          GridPane.columnIndex="2">
-                <TextField fx:id="orientationTextField"
-                           editable="false"
-                           styleClass="copyable"
-                           text="0.00"/>
+                <CopyableLabel fx:id="orientationTextField"
+                               text="0.00"/>
             </LabeledPane>
             <LabeledPane text="Scale (&quot;/px)"
                          textStyleClass="text-bold"
                          GridPane.rowIndex="1"
                          GridPane.columnIndex="0">
-                <TextField fx:id="scaleTextField"
-                           editable="false"
-                           styleClass="copyable"
-                           text="0.0000"/>
+                <CopyableLabel fx:id="scaleTextField"
+                               text="0.0000"/>
             </LabeledPane>
             <LabeledPane text="Field size (arcmin)"
                          textStyleClass="text-bold"
                          GridPane.rowIndex="1"
                          GridPane.columnIndex="1">
-                <TextField fx:id="fieldSizeTextField"
-                           editable="false"
-                           styleClass="copyable"
-                           text="0.00 x 0.00"/>
+                <CopyableLabel fx:id="fieldSizeTextField"
+                               text="0.00 x 0.00"/>
             </LabeledPane>
             <LabeledPane text="Radius (deg)"
                          textStyleClass="text-bold"
                          GridPane.rowIndex="1"
                          GridPane.columnIndex="2">
-                <TextField fx:id="fieldRadiusTextField"
-                           editable="false"
-                           styleClass="copyable"
-                           text="0.0000"/>
+                <CopyableLabel fx:id="fieldRadiusTextField"
+                               text="0.0000"/>
             </LabeledPane>
         </GridPane>
 
@@ -193,59 +177,38 @@
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
-            <Button fx:id="solveButton"
-                    onAction="#solve"
-                    text="Solve">
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-yellow-500"
-                           text="󰓎"/>
-                </graphic>
-            </Button>
-            <Button fx:id="cancelButton"
-                    onAction="#cancel"
-                    text="Cancel">
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-warning-color"
-                           text="󰓛"/>
-                </graphic>
-            </Button>
+            <MaterialIconButton fx:id="solveButton"
+                                onAction="#solve"
+                                text="Solve"
+                                icon="star"
+                                color="yellow-500"/>
+            <MaterialIconButton fx:id="cancelButton"
+                                onAction="#cancel"
+                                text="Cancel"
+                                icon="stop"
+                                color="warning"/>
         </HBox>
         <HBox alignment="CENTER"
               spacing="4.0">
-            <Button fx:id="syncButton"
-                    onAction="#sync"
-                    text="Sync">
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-accent-color"
-                           text="󰓦"/>
-                </graphic>
-            </Button>
-            <Button fx:id="goToButton"
-                    onAction="#goTo"
-                    text="Go To">
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-green-500"
-                           text="󰄬"/>
-                </graphic>
-            </Button>
-            <Button fx:id="slewToButton"
-                    onAction="#slewTo"
-                    text="Slew To">
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-green-500"
-                           text="󰄬"/>
-                </graphic>
-            </Button>
-            <Button fx:id="frameButton"
-                    onAction="#frame"
-                    prefWidth="92.0"
-                    text="Frame">
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-accent-color"
-                           text="󰋩">
-                    </Label>
-                </graphic>
-            </Button>
+            <MaterialIconButton fx:id="syncButton"
+                                onAction="#sync"
+                                text="Sync"
+                                icon="sync"/>
+            <MaterialIconButton fx:id="goToButton"
+                                onAction="#goTo"
+                                text="Go To"
+                                icon="check"
+                                color="green-500"/>
+            <MaterialIconButton fx:id="slewToButton"
+                                onAction="#slewTo"
+                                text="Slew To"
+                                icon="check"
+                                color="green-500"/>
+            <MaterialIconButton fx:id="frameButton"
+                                onAction="#frame"
+                                prefWidth="92.0"
+                                text="Frame"
+                                icon="image"/>
         </HBox>
     </VBox>
 </AnchorPane>

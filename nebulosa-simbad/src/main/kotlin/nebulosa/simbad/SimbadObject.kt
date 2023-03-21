@@ -1,11 +1,12 @@
 package nebulosa.simbad
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import nebulosa.skycatalog.SkyObjectType
 
 data class SimbadObject(
     @field:JsonProperty("id") val id: Long = 0,
     @field:JsonProperty("name") val name: String = "",
-    @field:JsonProperty("type") val type: SimbadObjectType = SimbadObjectType.OBJECT_OF_UNKNOWN_NATURE,
+    @field:JsonProperty("type") val type: SkyObjectType = SkyObjectType.OBJECT_OF_UNKNOWN_NATURE,
     @field:JsonProperty("names") val names: List<Name> = emptyList(),
     @field:JsonProperty("ra") val ra: Double = Double.NaN,
     @field:JsonProperty("dec") val dec: Double = Double.NaN,

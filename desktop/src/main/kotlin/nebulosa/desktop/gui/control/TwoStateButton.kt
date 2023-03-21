@@ -1,39 +1,37 @@
 package nebulosa.desktop.gui.control
 
+import javafx.beans.DefaultProperty
+import javafx.beans.property.ListProperty
 import javafx.beans.property.SimpleBooleanProperty
-import javafx.collections.ObservableList
+import javafx.beans.property.SimpleListProperty
+import javafx.collections.FXCollections
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control.Button
-import javafx.scene.control.ContentDisplay
-import javafx.scene.control.Label
-import nebulosa.desktop.gui.control.IconButton.Companion.DEFAULT_SIZE
 import nebulosa.desktop.logic.on
 
+@DefaultProperty("states")
 class TwoStateButton : Button() {
 
     val stateProperty = SimpleBooleanProperty()
 
-    private val stateOnLabel = Label()
-    private val stateOffLabel = Label()
+    val states: ListProperty<MaterialIcon> = SimpleListProperty(FXCollections.observableArrayList())
+
+    @Volatile private var stateOff: MaterialIcon? = null
+    @Volatile private var stateOn: MaterialIcon? = null
 
     init {
         alignment = Pos.CENTER
         isMnemonicParsing = false
-        minHeight = DEFAULT_SIZE
-        maxHeight = DEFAULT_SIZE
-        minWidth = DEFAULT_SIZE
-
-        stateOffLabel.contentDisplay = ContentDisplay.TEXT_ONLY
-        stateOnLabel.contentDisplay = ContentDisplay.TEXT_ONLY
-
-        stateOffLabel.disableProperty().bind(disableProperty())
-        stateOnLabel.disableProperty().bind(disableProperty())
-
-        graphic = stateOffLabel
 
         stateProperty.on {
-            text = if (state) stateOnText else stateOffText
-            graphic = if (state) stateOnLabel else stateOffLabel
+            graphic = if (it) stateOn else stateOff
+        }
+
+        states.on {
+            stateOn = states.firstOrNull { state(it) }
+            stateOff = states.firstOrNull { !state(it) }
+            graphic = if (state) stateOn else stateOff
         }
     }
 
@@ -43,41 +41,19 @@ class TwoStateButton : Button() {
             stateProperty.set(value)
         }
 
-    var stateOnIcon: String
-        get() = stateOnLabel.text
-        set(value) {
-            stateOnLabel.text = value
+    companion object {
+
+        @JvmStatic
+        @JvmName("setState")
+        fun state(node: Node, value: Boolean) {
+            node.properties["twostatebutton-state"] = value
+            node.parent?.requestLayout()
         }
 
-    var stateOffIcon: String
-        get() = stateOffLabel.text
-        set(value) {
-            stateOffLabel.text = value
+        @JvmStatic
+        @JvmName("getState")
+        fun state(node: Node): Boolean {
+            return node.hasProperties() && node.properties["twostatebutton-state"] == true
         }
-
-    var stateOnText = ""
-        set(value) {
-            field = value
-            if (state) text = value
-        }
-
-    var stateOffText = ""
-        set(value) {
-            field = value
-            if (!state) text = value
-        }
-
-    var size = DEFAULT_SIZE
-        set(value) {
-            field = value
-            minHeight = value
-            maxHeight = value
-            minWidth = value
-        }
-
-    val stateOnStyleClass: ObservableList<String>
-        get() = stateOnLabel.styleClass
-
-    val stateOffStyleClass: ObservableList<String>
-        get() = stateOffLabel.styleClass
+    }
 }

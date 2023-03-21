@@ -9,7 +9,6 @@
             minHeight="-Infinity"
             minWidth="-Infinity"
             prefWidth="330.0"
-            stylesheets="@css/Global.css,@css/CopyableLabel.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="4.0"
@@ -34,7 +33,7 @@
                                    percentWidth="35.0"/>
             </columnConstraints>
             <Label text="Host:"
-                   styleClass="text-md,text-bold"
+                   styleClass="text-bold"
                    GridPane.rowIndex="0"
                    GridPane.columnIndex="0"/>
             <TextField fx:id="hostTextField"
@@ -42,7 +41,7 @@
                        GridPane.rowIndex="0"
                        GridPane.columnIndex="1"/>
             <Label text="Port:"
-                   styleClass="text-md,text-bold"
+                   styleClass="text-bold"
                    GridPane.rowIndex="1"
                    GridPane.columnIndex="0"/>
             <TextField fx:id="portTextField"
@@ -50,7 +49,7 @@
                        GridPane.rowIndex="1"
                        GridPane.columnIndex="1"/>
             <Label text="Dither (pixels):"
-                   styleClass="text-md,text-bold"
+                   styleClass="text-bold"
                    GridPane.rowIndex="2"
                    GridPane.columnIndex="0"/>
             <Spinner fx:id="ditherSpinner"
@@ -62,7 +61,7 @@
                      GridPane.rowIndex="2"
                      GridPane.columnIndex="1"/>
             <Label text="Dither in RA only:"
-                   styleClass="text-md,text-bold"
+                   styleClass="text-bold"
                    GridPane.rowIndex="3"
                    GridPane.columnIndex="0"/>
             <ToggleSwitch fx:id="ditherInRAOnlyToggleSwitch"
@@ -70,7 +69,7 @@
                           GridPane.rowIndex="3"
                           GridPane.columnIndex="1"/>
             <Label text="Settle pixel tolerance:"
-                   styleClass="text-md,text-bold"
+                   styleClass="text-bold"
                    GridPane.rowIndex="4"
                    GridPane.columnIndex="0"/>
             <Spinner fx:id="settlePixelToleranceSpinner"
@@ -82,7 +81,7 @@
                      GridPane.rowIndex="4"
                      GridPane.columnIndex="1"/>
             <Label text="Minimum settle time (s):"
-                   styleClass="text-md,text-bold"
+                   styleClass="text-bold"
                    GridPane.rowIndex="5"
                    GridPane.columnIndex="0"/>
             <Spinner fx:id="minimumSettleTimeSpinner"
@@ -94,7 +93,7 @@
                      GridPane.rowIndex="5"
                      GridPane.columnIndex="1"/>
             <Label text="Settle timeout (s):"
-                   styleClass="text-md,text-bold"
+                   styleClass="text-bold"
                    GridPane.rowIndex="6"
                    GridPane.columnIndex="0"/>
             <Spinner fx:id="settleTimeoutSpinner"
@@ -106,7 +105,7 @@
                      GridPane.rowIndex="6"
                      GridPane.columnIndex="1"/>
             <Label text="Guiding start retry:"
-                   styleClass="text-md,text-bold"
+                   styleClass="text-bold"
                    GridPane.rowIndex="7"
                    GridPane.columnIndex="0"/>
             <ToggleSwitch fx:id="guidingStartRetryToggleSwitch"
@@ -114,7 +113,7 @@
                           GridPane.rowIndex="7"
                           GridPane.columnIndex="1"/>
             <Label text="Guiding start timeout (s):"
-                   styleClass="text-md,text-bold"
+                   styleClass="text-bold"
                    GridPane.rowIndex="8"
                    GridPane.columnIndex="0"/>
             <Spinner fx:id="guidingStartTimeoutSpinner"
@@ -126,7 +125,7 @@
                      GridPane.rowIndex="8"
                      GridPane.columnIndex="1"/>
             <Label text="ROI percentage to find guide star:"
-                   styleClass="text-md,text-bold"
+                   styleClass="text-bold"
                    GridPane.rowIndex="9"
                    GridPane.columnIndex="0"/>
             <Spinner fx:id="roiPercentageToFindGuideStarSpinner"

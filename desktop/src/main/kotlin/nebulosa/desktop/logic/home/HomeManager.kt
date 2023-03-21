@@ -22,6 +22,7 @@ import java.io.Closeable
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
+import kotlin.math.max
 
 class HomeManager(private val view: HomeView) : Closeable {
 
@@ -111,8 +112,8 @@ class HomeManager(private val view: HomeView) : Closeable {
     }
 
     fun savePreferences() {
-        preferences.double("home.screen.x", view.x)
-        preferences.double("home.screen.y", view.y)
+        preferences.double("home.screen.x", max(0.0, view.x))
+        preferences.double("home.screen.y", max(0.0, view.y))
     }
 
     fun loadPreferences() {

@@ -8,7 +8,6 @@
             minWidth="560.0"
             prefHeight="160.0"
             prefWidth="560.0"
-            stylesheets="@css/Global.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <TextArea fx:id="cardsTextArea"
@@ -18,6 +17,5 @@
               AnchorPane.bottomAnchor="0.0"
               AnchorPane.leftAnchor="0.0"
               AnchorPane.rightAnchor="0.0"
-              AnchorPane.topAnchor="0.0">
-    </TextArea>
+              AnchorPane.topAnchor="0.0"/>
 </AnchorPane>

@@ -5,6 +5,7 @@ import nebulosa.desktop.logic.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
 import nebulosa.desktop.logic.task.Task
+import nebulosa.desktop.logic.task.TaskExecutor
 import nebulosa.desktop.logic.task.TaskFinished
 import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.desktop.view.camera.AutoSubFolderMode
@@ -61,6 +62,7 @@ data class CameraExposureTask(
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var eventBus: EventBus
+    @Autowired private lateinit var taskExecutor: TaskExecutor
 
     private val latch = CountUpDownLatch()
     private val imagePaths = arrayListOf<Path>()
@@ -104,17 +106,21 @@ data class CameraExposureTask(
 
             if (frameType == FrameType.DARK) {
                 filterWheel?.also {
-                    if (!it.connected) {
-                        LOG.warn("filter wheel ${it.name} is disconnected")
-                    } else {
-                        val filterAsShutterPosition = preferences.int("filterWheel.${it.name}.filterAsShutter")
+                    val useFilterAsShutter = preferences.bool("filterWheel.${it.name}.useFilterWheelAsShutter")
 
-                        if (filterAsShutterPosition != null) {
-                            LOG.info("moving filter wheel ${it.name} to dark filter")
-                            val task = FilterWheelMoveTask(it, filterAsShutterPosition)
-                            task.call()
+                    if (useFilterAsShutter) {
+                        if (!it.connected) {
+                            LOG.warn("filter wheel ${it.name} is disconnected")
                         } else {
-                            LOG.info("filter wheel ${it.name} dont have dark filter")
+                            val filterAsShutterPosition = preferences.int("filterWheel.${it.name}.filterAsShutter")
+
+                            if (filterAsShutterPosition != null) {
+                                LOG.info("moving filter wheel ${it.name} to dark filter")
+                                val task = FilterWheelMoveTask(it, filterAsShutterPosition)
+                                taskExecutor.execute(task).get()
+                            } else {
+                                LOG.info("filter wheel ${it.name} dont have dark filter")
+                            }
                         }
                     }
                 }

@@ -12,6 +12,7 @@ import javafx.scene.control.cell.PropertyValueFactory
 import javafx.util.Callback
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.AltitudeChart
+import nebulosa.desktop.gui.control.CopyableLabel
 import nebulosa.desktop.gui.control.MoonView
 import nebulosa.desktop.gui.control.SunView
 import nebulosa.desktop.logic.atlas.AtlasManager
@@ -33,14 +34,14 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
 
     @FXML private lateinit var ephemerisTabPane: TabPane
     @FXML private lateinit var nameLabel: Label
-    @FXML private lateinit var rightAscensionTextField: TextField
-    @FXML private lateinit var declinationTextField: TextField
-    @FXML private lateinit var rightAscensionJ2000TextField: TextField
-    @FXML private lateinit var declinationJ2000TextField: TextField
-    @FXML private lateinit var altitudeTextField: TextField
-    @FXML private lateinit var azimuthTextField: TextField
-    @FXML private lateinit var constellationTextField: TextField
-    @FXML private lateinit var rtsTextField: TextField
+    @FXML private lateinit var rightAscensionLabel: CopyableLabel
+    @FXML private lateinit var declinationLabel: CopyableLabel
+    @FXML private lateinit var rightAscensionJ2000Label: CopyableLabel
+    @FXML private lateinit var declinationJ2000Label: CopyableLabel
+    @FXML private lateinit var altitudeLabel: CopyableLabel
+    @FXML private lateinit var azimuthLabel: CopyableLabel
+    @FXML private lateinit var constellationLabel: CopyableLabel
+    @FXML private lateinit var rtsLabel: CopyableLabel
     @FXML private lateinit var sunView: SunView
     @FXML private lateinit var moonView: MoonView
     @FXML private lateinit var planetTableView: TableView<AtlasView.Planet>
@@ -127,10 +128,10 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     }
 
     val equatorialCoordinate
-        get() = PairOfAngle(Angle.from(rightAscensionTextField.text, true)!!, Angle.from(declinationTextField.text)!!)
+        get() = PairOfAngle(Angle.from(rightAscensionLabel.text, true)!!, Angle.from(declinationLabel.text)!!)
 
     val equatorialJ2000Coordinate
-        get() = PairOfAngle(Angle.from(rightAscensionJ2000TextField.text, true)!!, Angle.from(declinationJ2000TextField.text)!!)
+        get() = PairOfAngle(Angle.from(rightAscensionJ2000Label.text, true)!!, Angle.from(declinationJ2000Label.text)!!)
 
     @FXML
     private fun goTo() {
@@ -183,12 +184,14 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         civilDusk: DoubleArray, nauticalDusk: DoubleArray, astronomicalDusk: DoubleArray,
         night: DoubleArray,
     ) {
-        altitudeChart.draw(
-            points, now,
-            civilDawn, nauticalDawn, astronomicalDawn,
-            civilDusk, nauticalDusk, astronomicalDusk,
-            night,
-        )
+        javaFXExecutorService.submit {
+            altitudeChart.draw(
+                points, now,
+                civilDawn, nauticalDawn, astronomicalDawn,
+                civilDusk, nauticalDusk, astronomicalDusk,
+                night,
+            )
+        }
     }
 
     override fun updateSunImage() {
@@ -196,7 +199,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     }
 
     override fun updateMoonImage(phase: Double, age: Double, angle: Angle) {
-        moonView.draw(age, angle)
+        javaFXExecutorService.submit { moonView.draw(age, angle) }
     }
 
     override fun populatePlanet(planets: List<AtlasView.Planet>) {
@@ -204,21 +207,26 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     }
 
     override fun populateMinorPlanet(minorPlanets: List<AtlasView.MinorPlanet>) {
-        minorPlanetTableView.items.setAll(minorPlanets)
+        javaFXExecutorService.submit { minorPlanetTableView.items.setAll(minorPlanets) }
     }
 
     override fun populateStar(stars: List<AtlasView.Star>) {
         val filteredList = FilteredList(FXCollections.observableArrayList(stars))
         val sortedList = SortedList(filteredList)
-        sortedList.comparatorProperty().bind(starTableView.comparatorProperty())
-        starTableView.items = sortedList
+
+        javaFXExecutorService.submit {
+            sortedList.comparatorProperty().bind(starTableView.comparatorProperty())
+            starTableView.items = sortedList
+        }
     }
 
     override fun populateDSO(dso: List<AtlasView.DSO>) {
-        dsoTableView.items.setAll(dso)
+        javaFXExecutorService.submit {
+            dsoTableView.items.setAll(dso)
 
-        if (dso.isNotEmpty()) {
-            dsoTableView.selectionModel.selectFirst()
+            if (dso.size == 1) {
+                dsoTableView.selectionModel.selectFirst()
+            }
         }
     }
 
@@ -227,24 +235,28 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         raJ2000: Angle, decJ2000: Angle,
         constellation: Constellation?,
     ) {
-        rightAscensionTextField.text = ra.format(AngleFormatter.HMS)
-        declinationTextField.text = dec.format(AngleFormatter.SIGNED_DMS)
-        rightAscensionJ2000TextField.text = raJ2000.format(AngleFormatter.HMS)
-        declinationJ2000TextField.text = decJ2000.format(AngleFormatter.SIGNED_DMS)
-        constellationTextField.text = constellation?.iau ?: "-"
+        javaFXExecutorService.submit {
+            rightAscensionLabel.text = ra.format(AngleFormatter.HMS)
+            declinationLabel.text = dec.format(AngleFormatter.SIGNED_DMS)
+            rightAscensionJ2000Label.text = raJ2000.format(AngleFormatter.HMS)
+            declinationJ2000Label.text = decJ2000.format(AngleFormatter.SIGNED_DMS)
+            constellationLabel.text = constellation?.iau ?: "-"
+        }
     }
 
     override fun updateHorizontalCoordinates(az: Angle, alt: Angle) {
-        azimuthTextField.text = az.normalized.format(AngleFormatter.DMS)
-        altitudeTextField.text = alt.format(AngleFormatter.SIGNED_DMS)
+        javaFXExecutorService.submit {
+            azimuthLabel.text = az.normalized.format(AngleFormatter.DMS)
+            altitudeLabel.text = alt.format(AngleFormatter.SIGNED_DMS)
+        }
     }
 
     override fun updateInfo(bodyName: String) {
-        nameLabel.text = bodyName
+        javaFXExecutorService.submit { nameLabel.text = bodyName }
     }
 
     override fun updateRTS(rts: Triple<String, String, String>) {
-        rtsTextField.text = "%s | %s | %s".format(rts.first, rts.second, rts.third)
+        javaFXExecutorService.submit { rtsLabel.text = "%s | %s | %s".format(rts.first, rts.second, rts.third) }
     }
 
     override fun clearAltitudeAndCoordinates() {
@@ -260,7 +272,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
             super.updateItem(item, empty)
 
             text = if (empty || item == null) null
-            else if (item.isFinite()) "$item"
+            else if (item.isFinite() && item < 99.0) "%.1f".format(item)
             else "-"
         }
     }

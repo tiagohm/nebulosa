@@ -11,7 +11,7 @@
             minWidth="-Infinity"
             prefHeight="495.0"
             prefWidth="865.0"
-            stylesheets="@css/Global.css,@css/INDIPanelControl.css"
+            stylesheets="@css/INDIPanelControl.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="16.0"
@@ -29,23 +29,20 @@
             <ChoiceBox fx:id="deviceChoiceBox"
                        minHeight="32.0"
                        prefHeight="32.0"
-                       prefWidth="304.0">
-            </ChoiceBox>
+                       prefWidth="304.0"/>
         </HBox>
         <AnchorPane VBox.vgrow="ALWAYS">
             <TabPane fx:id="groupsTabPane"
                      AnchorPane.bottomAnchor="0.0"
                      AnchorPane.leftAnchor="0.0"
                      AnchorPane.rightAnchor="0.0"
-                     AnchorPane.topAnchor="0.0">
-            </TabPane>
+                     AnchorPane.topAnchor="0.0"/>
         </AnchorPane>
         <TextArea fx:id="logTextArea"
                   editable="false"
                   maxHeight="125.0"
                   minHeight="125.0"
                   prefHeight="125.0"
-                  stylesheets="@css/TextAreaWithoutFocus.css">
-        </TextArea>
+                  stylesheets="@css/TextAreaWithoutFocus.css"/>
     </VBox>
 </AnchorPane>

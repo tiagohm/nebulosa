@@ -47,6 +47,8 @@ data class FocuserRelativeMoveTask(
 
                     latch.await()
                 }
+            } else {
+                LOG.warn("increment is out of range. increment={}, min=0.0, max={}", increment, focuser.maxPosition)
             }
         } catch (e: Throwable) {
             LOG.error("focuser relative move failed.", e)

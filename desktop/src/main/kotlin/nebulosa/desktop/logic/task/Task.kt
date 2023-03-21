@@ -11,7 +11,7 @@ interface Task<T> : Callable<T>, Supplier<T> {
 
     companion object {
 
-        const val DELAY_INTERVAL = 100L
+        private const val DELAY_INTERVAL = 100L
 
         @JvmStatic
         fun sleep(delay: Long, abort: AtomicBoolean) {

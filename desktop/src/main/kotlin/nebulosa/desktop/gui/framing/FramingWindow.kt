@@ -60,8 +60,8 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
 
         rotationSpinner.disableProperty().bind(isLoading)
 
-        hipsSurveyChoiceBox.disableProperty().bind(isLoading)
         hipsSurveyChoiceBox.converter = HipsSurveySourceStringConverter
+        hipsSurveyChoiceBox.disableProperty().bind(isLoading)
 
         loadButton.disableProperty().bind(isLoading or canNotLoad)
 

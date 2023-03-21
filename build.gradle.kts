@@ -86,6 +86,7 @@ subprojects {
         }
 
         systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
+        systemProperty("github", System.getProperty("github", "false"))
     }
 
     tasks.withType<JavaCompile> {

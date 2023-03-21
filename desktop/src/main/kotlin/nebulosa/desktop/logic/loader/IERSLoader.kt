@@ -12,18 +12,20 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
 @Service
 @EnableScheduling
-class IERSLoader(
-    @Autowired private var appDirectory: Path,
-    @Autowired private var okHttpClient: OkHttpClient,
-) : Runnable {
+class IERSLoader(@Autowired private val appDirectory: Path) : Runnable {
 
-    private val path = Paths.get("$appDirectory", "finals2000A.all")
+    @Autowired private lateinit var okHttpClient: OkHttpClient
+
+    private val path = Paths
+        .get("$appDirectory", "data", "iers", "finals2000A.all")
+        .also { it.parent.createDirectories() }
 
     @Scheduled(fixedRate = 1L, initialDelay = 0L, timeUnit = TimeUnit.HOURS)
     override fun run() {
@@ -95,7 +97,6 @@ class IERSLoader(
                 path.outputStream().use {
                     val bytes = response.body.bytes()
                     bytes.inputStream().copyTo(it)
-                    // TODO: Usar um IERSA Padrão.
                     IERSA.load(bytes.inputStream())
                     IERS.attach(IERSA)
                     LOG.info("finals2000A.all is loaded")

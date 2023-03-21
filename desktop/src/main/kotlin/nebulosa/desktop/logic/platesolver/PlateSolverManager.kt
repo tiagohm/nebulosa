@@ -245,8 +245,8 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
         preferences.string("plateSolver.apiKey", view.apiKey)
         preferences.int("plateSolver.downsampleFactor", view.downsampleFactor)
         preferences.double("plateSolver.radius", view.radius.value)
-        preferences.double("plateSolver.screen.x", view.x)
-        preferences.double("plateSolver.screen.y", view.y)
+        preferences.double("plateSolver.screen.x", max(0.0, view.x))
+        preferences.double("plateSolver.screen.y", max(0.0, view.y))
     }
 
     override fun close() {

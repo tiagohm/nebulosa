@@ -16,7 +16,7 @@ data class CartesianCoordinate(
 
     val spherical by lazy { SphericalCoordinate.of(x, y, z) }
 
-    val vector3D by lazy { Vector3D(x.value, y.value, z.value) }
+    val vector by lazy { Vector3D(x.value, y.value, z.value) }
 
     fun angularDistance(coordinate: CartesianCoordinate): Angle {
         val dot = x.value * coordinate.x.value + y.value * coordinate.y.value + z.value * coordinate.z.value

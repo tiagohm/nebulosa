@@ -1,13 +1,11 @@
 package nebulosa.desktop.logic.atlas
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import eu.hansolo.fx.charts.data.XYChartItem
 import eu.hansolo.fx.charts.data.XYItem
 import javafx.beans.property.SimpleBooleanProperty
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.atlas.ephemeris.provider.BodyEphemerisProvider
 import nebulosa.desktop.logic.atlas.ephemeris.provider.HorizonsEphemerisProvider
-import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.framing.FramingView
@@ -17,7 +15,6 @@ import nebulosa.horizons.HorizonsQuantity
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountEvent
 import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
-import nebulosa.io.resource
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.rad
@@ -33,16 +30,14 @@ import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.sbd.SmallBody
 import nebulosa.sbd.SmallBodyDatabaseLookupService
-import nebulosa.simbad.SimbadObject
-import nebulosa.simbad.SimbadQuery
-import nebulosa.simbad.SimbadService
+import nebulosa.skycatalog.brightstars.BrightStars
+import nebulosa.stellarium.skycatalog.Nebula
 import nebulosa.time.UTC
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Lazy
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -50,7 +45,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.Closeable
-import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -58,6 +52,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
+import kotlin.math.max
 
 @Component
 @EnableScheduling
@@ -69,16 +64,13 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var preferences: Preferences
-    @Autowired private lateinit var objectMapper: ObjectMapper
-    @Autowired private lateinit var appDirectory: Path
     @Autowired private lateinit var bodyEphemerisProvider: BodyEphemerisProvider
     @Autowired private lateinit var horizonsEphemerisProvider: HorizonsEphemerisProvider
     @Autowired private lateinit var smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService
-    @Autowired private lateinit var simbadService: SimbadService
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var systemExecutorService: ExecutorService
-    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
-    @Lazy @Autowired private lateinit var framingView: FramingView
+    @Autowired private lateinit var framingView: FramingView
+    @Autowired private lateinit var nebula: Nebula
 
     @Volatile private var observer: GeographicPosition? = null
     @Volatile private var tabType = AtlasView.TabType.SUN
@@ -209,8 +201,10 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     }
 
     fun populateStars() {
-        val stars = objectMapper.readValue(resource("data/NAMED_STARS.json"), Array<SimbadObject>::class.java)
-        view.populateStar(stars.map { AtlasView.Star(it) })
+        systemExecutorService.submit {
+            val stars = BrightStars.map { AtlasView.Star(it) }
+            view.populateStar(stars)
+        }
     }
 
     fun computeSun(): CompletableFuture<HorizonsEphemeris>? {
@@ -237,13 +231,13 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
     fun computeStar(body: AtlasView.Star? = star): CompletableFuture<HorizonsEphemeris>? {
         star = body ?: return null
-        bodyName = body.simbad.names.joinToString(", ") { it.type.format(it.name) }
+        bodyName = body.skyObject.names.joinToString(", ")
         return body.star.computeBody()
     }
 
     fun computeDSO(body: AtlasView.DSO? = dso): CompletableFuture<HorizonsEphemeris>? {
         dso = body ?: return null
-        bodyName = body.simbad.names.joinToString(", ") { it.type.format(it.name) }
+        bodyName = body.skyObject.names.joinToString(", ")
         return body.star.computeBody()
     }
 
@@ -314,7 +308,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
             rtsCache[target] = Triple(risingTime, transitTime, settingTime)
         }
 
-        javaFXExecutorService.submit { view.updateRTS(rtsCache[target]!!) }
+        view.updateRTS(rtsCache[target]!!)
     }
 
     private fun HorizonsEphemeris.computeTwilightAndRTS(target: Any, force: Boolean) {
@@ -329,14 +323,12 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
         LOG.info("drawing altitude chart. now={}", now)
 
-        javaFXExecutorService.execute {
-            view.drawAltitude(
-                points, now,
-                civilDawn, nauticalDawn, astronomicalDawn,
-                civilDusk, nauticalDusk, astronomicalDusk,
-                night,
-            )
-        }
+        view.drawAltitude(
+            points, now,
+            civilDawn, nauticalDawn, astronomicalDawn,
+            civilDusk, nauticalDusk, astronomicalDusk,
+            night,
+        )
     }
 
     private fun computeAltitude(
@@ -395,7 +387,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
     private fun HorizonsEphemeris.showBodyCoordinatesAndInfos(target: Any) {
         computeCoordinates(target)
-        javaFXExecutorService.execute { view.updateInfo(bodyName) }
+        view.updateInfo(bodyName)
         drawAltitude(makePoints())
     }
 
@@ -414,26 +406,20 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         val dec = element[HorizonsQuantity.APPARENT_DEC]?.toDoubleOrNull()?.deg ?: Angle.ZERO
         val epoch = UTC.now()
         val constellation = Constellation.find(ICRF.equatorial(ra, dec, time = epoch, epoch = epoch))
-        javaFXExecutorService.execute { view.updateEquatorialCoordinates(ra, dec, raJ2000, decJ2000, constellation) }
+        view.updateEquatorialCoordinates(ra, dec, raJ2000, decJ2000, constellation)
     }
 
     private fun computeHorizontalCoordinates(element: HorizonsElement) {
         val az = element[HorizonsQuantity.APPARENT_AZ]?.toDoubleOrNull()?.deg ?: Angle.ZERO
         val alt = element[HorizonsQuantity.APPARENT_ALT]?.toDoubleOrNull()?.deg ?: Angle.ZERO
-        javaFXExecutorService.execute { view.updateHorizontalCoordinates(az, alt) }
+        view.updateHorizontalCoordinates(az, alt)
     }
 
     @Scheduled(cron = "0 */15 * * * *")
     fun updateSunImage() {
         if (!view.showing) return
 
-        systemExecutorService.submit {
-            try {
-                view.updateSunImage()
-            } catch (e: Throwable) {
-                LOG.error("failed to download Sun image.", e)
-            }
-        }
+        view.updateSunImage()
     }
 
     @Scheduled(cron = "0 0 * * * *")
@@ -450,7 +436,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
                 val phase = if (leading) 360.0 - angle else angle
                 val age = 29.53058868 * (phase / 360.0)
                 LOG.info("computed Moon phase. angle={}, age={}", phase, age)
-                javaFXExecutorService.execute { view.updateMoonImage(phase, age, Angle.ZERO) }
+                view.updateMoonImage(phase, age, Angle.ZERO)
             }
     }
 
@@ -461,23 +447,21 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
                 override fun onResponse(call: Call<SmallBody>, response: Response<SmallBody>) {
                     val smallBody = response.body() ?: return
 
-                    javaFXExecutorService.execute {
-                        if (!smallBody.message.isNullOrEmpty()) {
-                            view.showAlert(smallBody.message!!)
-                        } else if (!smallBody.list.isNullOrEmpty()) {
-                            view.showAlert("Found ${smallBody.list!!.size} record(s). Please refine your search criteria, and try again.")
-                        } else {
-                            val elements = smallBody
-                                .orbit!!
-                                .elements.map {
-                                    val value = if (it.value != null) "${it.value ?: ""} ${it.units ?: ""}" else ""
-                                    AtlasView.MinorPlanet(it.label, it.title, value)
-                                }
+                    if (!smallBody.message.isNullOrEmpty()) {
+                        view.showAlert(smallBody.message!!)
+                    } else if (!smallBody.list.isNullOrEmpty()) {
+                        view.showAlert("Found ${smallBody.list!!.size} record(s). Please refine your search criteria, and try again.")
+                    } else {
+                        val elements = smallBody
+                            .orbit!!
+                            .elements.map {
+                                val value = if (it.value != null) "${it.value ?: ""} ${it.units ?: ""}" else ""
+                                AtlasView.MinorPlanet(it.label, it.title, value)
+                            }
 
-                            view.populateMinorPlanet(elements)
+                        view.populateMinorPlanet(elements)
 
-                            computeMinorPlanet(smallBody)
-                        }
+                        computeMinorPlanet(smallBody)
                     }
                 }
 
@@ -488,18 +472,8 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     }
 
     fun searchDSO(text: String) {
-        val query = SimbadQuery()
-            .limit(500)
-            .name(text)
-
-        systemExecutorService.submit {
-            try {
-                val dso = simbadService.query(query).execute().body()!!
-                javaFXExecutorService.execute { view.populateDSO(dso.map { AtlasView.DSO(it) }) }
-            } catch (e: Throwable) {
-                javaFXExecutorService.execute { view.showAlert("Failed to search DSOs: ${e.message}") }
-            }
-        }
+        val dso = nebula.searchBy(text)
+        view.populateDSO(dso.map { AtlasView.DSO(it) })
     }
 
     fun goTo(ra: Angle, dec: Angle) {
@@ -522,8 +496,8 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     fun savePreferences() {
         if (!view.initialized) return
 
-        preferences.double("atlas.screen.x", view.x)
-        preferences.double("atlas.screen.y", view.y)
+        preferences.double("atlas.screen.x", max(0.0, view.x))
+        preferences.double("atlas.screen.y", max(0.0, view.y))
     }
 
     fun loadPreferences() {

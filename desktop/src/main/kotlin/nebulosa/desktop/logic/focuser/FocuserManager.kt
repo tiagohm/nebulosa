@@ -11,6 +11,7 @@ import nebulosa.indi.device.focuser.FocuserMaxPositionChanged
 import nebulosa.indi.device.focuser.FocuserMovingChanged
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import kotlin.math.max
 
 @Component
 class FocuserManager(
@@ -52,7 +53,7 @@ class FocuserManager(
     }
 
     private fun updateTitle() {
-        view.title = "Filter Wheel · $name"
+        view.title = "Focuser · $name"
     }
 
     private fun updateStatus() {
@@ -98,8 +99,8 @@ class FocuserManager(
     fun savePreferences() {
         if (!view.initialized) return
 
-        preferences.double("focuser.screen.x", view.x)
-        preferences.double("focuser.screen.y", view.y)
+        preferences.double("focuser.screen.x", max(0.0, view.x))
+        preferences.double("focuser.screen.y", max(0.0, view.y))
     }
 
     fun loadPreferences() {

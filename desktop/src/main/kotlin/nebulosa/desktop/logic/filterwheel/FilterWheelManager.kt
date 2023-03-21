@@ -12,6 +12,7 @@ import nebulosa.indi.device.filterwheel.FilterWheelMovingChanged
 import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import kotlin.math.max
 
 @Component
 class FilterWheelManager(
@@ -108,8 +109,8 @@ class FilterWheelManager(
     fun savePreferences() {
         if (!view.initialized) return
 
-        preferences.double("filterWheel.screen.x", view.x)
-        preferences.double("filterWheel.screen.y", view.y)
+        preferences.double("filterWheel.screen.x", max(0.0, view.x))
+        preferences.double("filterWheel.screen.y", max(0.0, view.y))
     }
 
     fun loadPreferences(device: FilterWheel? = value) {

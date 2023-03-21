@@ -22,3 +22,6 @@
 * https://www.flaticon.com/free-icon/rotate_3303063
 * https://www.flaticon.com/free-icon/combination_8654893
 * https://www.flaticon.com/free-icon/rgb-print_4904473
+* https://www.flaticon.com/free-icon/location_4631354
+* https://www.flaticon.com/free-icon/rgb-print_7664547
+* https://www.flaticon.com/free-icon/setting_839374

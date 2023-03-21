@@ -100,18 +100,24 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
                         command.startsWith("#:SL") -> {
                             ctx.writeAndFlush(LX200ProtocolMessage.Ok)
                             time = LocalTime.parse(command.substring(4, command.length - 1), LX200ProtocolEncoder.CALENDAR_TIME_FORMAT)
-                            server.time(OffsetDateTime.of(date, time, offset))
+                            val localTime = OffsetDateTime.of(date, time, offset)
+                            val utcTime = localTime.minusSeconds(ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds.toLong())
+                            server.time(utcTime)
                         }
                         command.startsWith("#:SC") -> {
                             ctx.writeAndFlush(LX200ProtocolMessage.Text("1Updating planetary data       #                              #"))
                             date = LocalDate.parse(command.substring(4, command.length - 1), LX200ProtocolEncoder.CALENDAR_DATE_FORMAT)
-                            server.time(OffsetDateTime.of(date, time, offset))
+                            val localTime = OffsetDateTime.of(date, time, offset)
+                            val utcTime = localTime.minusSeconds(ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds.toLong())
+                            server.time(utcTime)
                         }
                         command.startsWith("#:SG") -> {
                             ctx.writeAndFlush(LX200ProtocolMessage.Ok)
                             val offsetInHours = -command.substring(4, command.length - 1).toDouble()
                             offset = ZoneOffset.ofTotalSeconds((offsetInHours * 3600.0).toInt())
-                            server.time(OffsetDateTime.of(date, time, offset))
+                            val localTime = OffsetDateTime.of(date, time, offset)
+                            val utcTime = localTime.minusSeconds(ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds.toLong())
+                            server.time(utcTime)
                         }
                         command.startsWith("#:Sr") -> ctx.updateRA(command.substring(4))
                         command.startsWith("#:Sd") -> ctx.updateDEC(command.substring(4))

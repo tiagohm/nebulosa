@@ -1,5 +1,6 @@
 package nebulosa.desktop.gui.mount
 
+import javafx.beans.property.SimpleObjectProperty
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
 import javafx.scene.Node
@@ -8,13 +9,11 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.MaterialIcon
 import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.gui.control.TwoStateButton
-import nebulosa.desktop.logic.asString
-import nebulosa.desktop.logic.isNull
+import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.mount.MountManager
-import nebulosa.desktop.logic.on
-import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.TrackMode
@@ -71,7 +70,9 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
     @FXML private lateinit var slewSpeedChoiceBox: ChoiceBox<String>
     @FXML private lateinit var parkButton: TwoStateButton
     @FXML private lateinit var homeButton: Button
-    @FXML private lateinit var statusLabel: Label
+    @FXML private lateinit var statusIcon: MaterialIcon
+
+    private val nudgeButtonPressed = SimpleObjectProperty<Node>()
 
     init {
         title = "Mount"
@@ -131,15 +132,15 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
 
         telescopeControlServerButton.disableProperty().bind(isNotConnectedOrMoving)
 
-        nudgeNEButton.disableProperty().bind(isNotConnectedOrMoving)
-        nudgeNButton.disableProperty().bind(isNotConnectedOrMoving)
-        nudgeNWButton.disableProperty().bind(isNotConnectedOrMoving)
-        nudgeEButton.disableProperty().bind(isNotConnectedOrMoving)
+        nudgeNEButton.disableProperty().bind(isNotConnectedOrMoving and nudgeButtonPressed.asBoolean { it !== nudgeNEButton })
+        nudgeNButton.disableProperty().bind(isNotConnectedOrMoving and nudgeButtonPressed.asBoolean { it !== nudgeNButton })
+        nudgeNWButton.disableProperty().bind(isNotConnectedOrMoving and nudgeButtonPressed.asBoolean { it !== nudgeNWButton })
+        nudgeEButton.disableProperty().bind(isNotConnectedOrMoving and nudgeButtonPressed.asBoolean { it !== nudgeEButton })
         abortButton.disableProperty().bind(isNotConnected or !mountManager.canAbortProperty)
-        nudgeWButton.disableProperty().bind(isNotConnectedOrMoving)
-        nudgeSEButton.disableProperty().bind(isNotConnectedOrMoving)
-        nudgeSButton.disableProperty().bind(isNotConnectedOrMoving)
-        nudgeSWButton.disableProperty().bind(isNotConnectedOrMoving)
+        nudgeWButton.disableProperty().bind(isNotConnectedOrMoving and nudgeButtonPressed.asBoolean { it !== nudgeWButton })
+        nudgeSEButton.disableProperty().bind(isNotConnectedOrMoving and nudgeButtonPressed.asBoolean { it !== nudgeSEButton })
+        nudgeSButton.disableProperty().bind(isNotConnectedOrMoving and nudgeButtonPressed.asBoolean { it !== nudgeSButton })
+        nudgeSWButton.disableProperty().bind(isNotConnectedOrMoving and nudgeButtonPressed.asBoolean { it !== nudgeSWButton })
 
         trackingSwitch.disableProperty().bind(isNotConnectedOrMoving)
         mountManager.trackingProperty.on { trackingSwitch.state = it }
@@ -170,9 +171,9 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
     }
 
     override var status
-        get() = statusLabel.text!!
+        get() = statusIcon.text
         set(value) {
-            statusLabel.text = value
+            statusIcon.text = value
         }
 
     override val targetCoordinates: PairOfAngle
@@ -221,8 +222,10 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
     @FXML
     private fun nudgeTo(event: MouseEvent) {
         if (event.button == MouseButton.PRIMARY && event.clickCount == 1) {
-            val direction = (event.source as Node).userData as String
+            val button = event.source as Node
+            val direction = button.userData as String
             val enable = event.eventType == MouseEvent.MOUSE_PRESSED
+            nudgeButtonPressed.set(if (enable) button else null)
             direction.forEach { mountManager.nudgeTo(it, enable) }
         }
     }

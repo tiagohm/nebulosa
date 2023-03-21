@@ -24,7 +24,7 @@ import java.time.format.DateTimeFormatter
 class SiteAndTimeWindow(
     override val mount: Mount,
     private val mountManager: MountManager,
-) : AbstractWindow("SiteAndTime", "nebulosa-site-and-time"), SiteAndTimeView {
+) : AbstractWindow("SiteAndTime", "location"), SiteAndTimeView {
 
     @FXML private lateinit var latitudeTextField: TextField
     @FXML private lateinit var longitudeTextField: TextField

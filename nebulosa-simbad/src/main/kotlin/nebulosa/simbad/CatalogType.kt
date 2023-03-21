@@ -1,4 +1,4 @@
-package nebulosa.simbad;
+package nebulosa.simbad
 
 enum class CatalogType(val prefix: String) {
     /**

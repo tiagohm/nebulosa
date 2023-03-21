@@ -10,7 +10,6 @@ import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.platesolver.PlateSolvingEvent
 import nebulosa.desktop.logic.platesolver.PlateSolvingSolved
@@ -26,6 +25,7 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.indi.device.mount.Mount
 import nebulosa.platesolving.Calibration
+import nebulosa.stellarium.skycatalog.Nebula
 import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Header
 import org.greenrobot.eventbus.EventBus
@@ -37,15 +37,16 @@ import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
+import kotlin.math.max
 
 class ImageManager(private val view: ImageView) : Closeable {
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var plateSolverView: PlateSolverView
-    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
     @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var eventBus: EventBus
+    @Autowired private lateinit var nebula: Nebula
 
     @Volatile var file: File? = null
         private set
@@ -117,7 +118,7 @@ class ImageManager(private val view: ImageView) : Closeable {
             annotation = null
 
             if (calibration.get() != null && view.annotationEnabled) {
-                annotation = Annotation(calibration.get())
+                annotation = Annotation(calibration.get(), nebula)
                 view.addFirst(annotation!!)
                 view.redraw()
             }
@@ -261,7 +262,7 @@ class ImageManager(private val view: ImageView) : Closeable {
             if (annotation == null) {
                 systemExecutorService.submit {
                     try {
-                        annotation = Annotation(calibration)
+                        annotation = Annotation(calibration, nebula)
                         view.addFirst(annotation!!)
                         view.redraw()
                     } catch (e: Throwable) {
@@ -418,8 +419,8 @@ class ImageManager(private val view: ImageView) : Closeable {
             preferences.double("image.${view.camera!!.name}.screen.x", view.x)
             preferences.double("image.${view.camera!!.name}.screen.y", view.y)
         } else {
-            preferences.double("image.screen.x", view.x)
-            preferences.double("image.screen.y", view.y)
+            preferences.double("image.screen.x", max(0.0, view.x))
+            preferences.double("image.screen.y", max(0.0, view.y))
         }
     }
 

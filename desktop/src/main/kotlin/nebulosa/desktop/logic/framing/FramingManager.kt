@@ -34,6 +34,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.writeBytes
+import kotlin.math.max
 
 @Component
 class FramingManager(@Autowired internal val view: FramingView) : Closeable {
@@ -158,8 +159,8 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
 
         preferences.string("framing.hipsSurvey", view.hipsSurvey?.id)
         preferences.double("framing.fov", view.frameFOV.value)
-        preferences.double("framing.screen.x", view.x)
-        preferences.double("framing.screen.y", view.y)
+        preferences.double("framing.screen.x", max(0.0, view.x))
+        preferences.double("framing.screen.y", max(0.0, view.y))
     }
 
     override fun close() {

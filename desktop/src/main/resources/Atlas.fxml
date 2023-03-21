@@ -9,7 +9,6 @@
             minHeight="-Infinity"
             minWidth="-Infinity"
             prefWidth="480.0"
-            stylesheets="@css/Global.css,@css/CopyableLabel.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="4.0"
@@ -27,6 +26,8 @@
                     <SunView fx:id="sunView"
                              height="256.0"
                              width="256.0"/>
+                    <Label text="SDO/HMI"
+                           styleClass="text-xs,text-grey-600"/>
                 </VBox>
             </Tab>
             <Tab closable="false"
@@ -44,6 +45,7 @@
                  text="Planets"
                  userData="PLANET">
                 <TableView fx:id="planetTableView"
+                           styleClass="text-sm"
                            fixedCellSize="32.0"
                            maxHeight="268.0"
                            minHeight="268.0"
@@ -69,18 +71,13 @@
                         <VBox.margin>
                             <Insets top="8.0"/>
                         </VBox.margin>
-                        <TextField fx:id="searchMinorPlanetTextField"
-                                   styleClass="text-md">
-                        </TextField>
-                        <Button onAction="#searchMinorPlanet"
-                                text="Search">
-                            <graphic>
-                                <Label styleClass="text-accent-color,mdi,mdi-sm"
-                                       text="󰍉"/>
-                            </graphic>
-                        </Button>
+                        <TextField fx:id="searchMinorPlanetTextField"/>
+                        <MaterialIconButton onAction="#searchMinorPlanet"
+                                            text="Search"
+                                            icon="magnify"/>
                     </HBox>
                     <TableView fx:id="minorPlanetTableView"
+                               styleClass="text-sm"
                                fixedCellSize="32.0"
                                maxHeight="230.0"
                                minHeight="230.0"
@@ -101,7 +98,7 @@
             </Tab>
             <Tab closable="false"
                  onSelectionChanged="#tabSelectionChanged"
-                 text="Named Stars"
+                 text="Bright Stars"
                  userData="STAR">
                 <VBox alignment="TOP_CENTER"
                       spacing="4.0">
@@ -110,18 +107,13 @@
                         <VBox.margin>
                             <Insets top="8.0"/>
                         </VBox.margin>
-                        <TextField fx:id="searchStarTextField"
-                                   styleClass="text-md">
-                        </TextField>
-                        <Button onAction="#searchStar"
-                                text="Search">
-                            <graphic>
-                                <Label styleClass="text-accent-color,mdi,mdi-sm"
-                                       text="󰍉"/>
-                            </graphic>
-                        </Button>
+                        <TextField fx:id="searchStarTextField"/>
+                        <MaterialIconButton onAction="#searchStar"
+                                            text="Search"
+                                            icon="magnify"/>
                     </HBox>
                     <TableView fx:id="starTableView"
+                               styleClass="text-sm"
                                fixedCellSize="32.0"
                                maxHeight="230.0"
                                minHeight="230.0"
@@ -132,12 +124,10 @@
                                          text="Name"/>
                             <TableColumn prefWidth="100.0"
                                          style="-fx-alignment: CENTER;"
-                                         text="Magnitude">
-                            </TableColumn>
+                                         text="Magnitude"/>
                             <TableColumn prefWidth="180.0"
                                          style="-fx-alignment: CENTER;"
-                                         text="Type">
-                            </TableColumn>
+                                         text="Type"/>
                         </columns>
                     </TableView>
                 </VBox>
@@ -153,19 +143,14 @@
                         <VBox.margin>
                             <Insets top="8.0"/>
                         </VBox.margin>
-                        <TextField fx:id="searchDSOTextField"
-                                   styleClass="text-md">
-                        </TextField>
-                        <Button onAction="#searchDSO"
-                                text="Search">
-                            <graphic>
-                                <Label styleClass="text-accent-color,mdi,mdi-sm"
-                                       text="󰍉"/>
-                            </graphic>
-                        </Button>
+                        <TextField fx:id="searchDSOTextField"/>
+                        <MaterialIconButton onAction="#searchDSO"
+                                            text="Search"
+                                            icon="magnify"/>
                     </HBox>
                     <TableView fx:id="dsoTableView"
                                fixedCellSize="32.0"
+                               styleClass="text-sm"
                                maxHeight="230.0"
                                minHeight="230.0"
                                prefHeight="230.0">
@@ -175,12 +160,10 @@
                                          text="Name"/>
                             <TableColumn prefWidth="100.0"
                                          style="-fx-alignment: CENTER;"
-                                         text="Magnitude">
-                            </TableColumn>
+                                         text="Magnitude"/>
                             <TableColumn prefWidth="180.0"
                                          style="-fx-alignment: CENTER;"
-                                         text="Type">
-                            </TableColumn>
+                                         text="Type"/>
                         </columns>
                     </TableView>
                 </VBox>
@@ -197,9 +180,8 @@
             <HBox alignment="CENTER">
                 <Label fx:id="nameLabel"
                        alignment="CENTER"
-                       styleClass="text-md,text-bold"
-                       text="Sun">
-                </Label>
+                       styleClass="text-bold"
+                       text="Sun"/>
             </HBox>
             <GridPane vgap="4.0"
                       hgap="4.0">
@@ -213,142 +195,105 @@
                              textStyleClass="text-bold"
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="0">
-                    <TextField fx:id="rightAscensionTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="00h 00m 00.00s">
-                    </TextField>
+                    <CopyableLabel fx:id="rightAscensionLabel"
+                                   styleClass="text-sm"
+                                   text="00h 00m 00.00s"/>
                 </LabeledPane>
                 <LabeledPane text="DEC"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="1">
-                    <TextField fx:id="declinationTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="+00° 00' 00.00&quot;">
-                    </TextField>
+                    <CopyableLabel fx:id="declinationLabel"
+                                   styleClass="text-sm"
+                                   text="+00° 00' 00.00&quot;"/>
                 </LabeledPane>
                 <LabeledPane text="RA (J2000)"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="2">
-                    <TextField fx:id="rightAscensionJ2000TextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="00h 00m 00.00s">
-                    </TextField>
+                    <CopyableLabel fx:id="rightAscensionJ2000Label"
+                                   styleClass="text-sm"
+                                   text="00h 00m 00.00s"/>
                 </LabeledPane>
                 <LabeledPane text="DEC (J2000)"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="3">
-                    <TextField fx:id="declinationJ2000TextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="+00° 00' 00.00&quot;">
-                    </TextField>
+                    <CopyableLabel fx:id="declinationJ2000Label"
+                                   styleClass="text-sm"
+                                   text="+00° 00' 00.00&quot;"/>
                 </LabeledPane>
                 <LabeledPane text="Azimuth"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="0">
-                    <TextField fx:id="azimuthTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="000° 00' 00.00&quot;">
-                    </TextField>
+                    <CopyableLabel fx:id="azimuthLabel"
+                                   styleClass="text-sm"
+                                   text="000° 00' 00.00&quot;"/>
                 </LabeledPane>
                 <LabeledPane text="Altitude"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="1">
-                    <TextField fx:id="altitudeTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="+00° 00' 00.00&quot;">
-                    </TextField>
+                    <CopyableLabel fx:id="altitudeLabel"
+                                   styleClass="text-sm"
+                                   text="+00° 00' 00.00&quot;"/>
                 </LabeledPane>
                 <LabeledPane text="Distance"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="2">
-                    <TextField fx:id="distanceTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="-">
-                    </TextField>
+                    <CopyableLabel fx:id="distanceLabel"
+                                   styleClass="text-sm"
+                                   text="-"/>
                 </LabeledPane>
                 <LabeledPane text="Constellation"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="3">
-                    <TextField fx:id="constellationTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="-">
-                    </TextField>
+                    <CopyableLabel fx:id="constellationLabel"
+                                   styleClass="text-sm"
+                                   text="-"/>
                 </LabeledPane>
                 <LabeledPane text="RTS"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="2"
                              GridPane.columnIndex="0"
                              GridPane.columnSpan="2">
-                    <TextField fx:id="rtsTextField"
-                               editable="false"
-                               styleClass="copyable,text-sm"
-                               text="00:00 | 00:00 | 00:00">
-                    </TextField>
+                    <CopyableLabel fx:id="rtsLabel"
+                                   styleClass="text-sm"
+                                   text="00:00 | 00:00 | 00:00"/>
                 </LabeledPane>
             </GridPane>
         </VBox>
         <HBox alignment="TOP_CENTER"
               spacing="4.0">
-            <Button fx:id="goToButton"
-                    onAction="#goTo"
-                    prefWidth="92.0"
-                    text="Go To">
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-green-500"
-                           text="󰄬">
-                    </Label>
-                </graphic>
-            </Button>
-            <Button fx:id="slewToButton"
-                    onAction="#slewTo"
-                    prefWidth="92.0"
-                    text="Slew To">
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-green-500"
-                           text="󰄬">
-                    </Label>
-                </graphic>
-            </Button>
-            <Button fx:id="syncButton"
-                    onAction="#sync"
-                    prefWidth="92.0"
-                    text="Sync">
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-accent-color"
-                           text="󰓦">
-                    </Label>
-                </graphic>
-            </Button>
-            <Button fx:id="frameButton"
-                    onAction="#frame"
-                    prefWidth="92.0"
-                    text="Frame">
-                <graphic>
-                    <Label styleClass="mdi,mdi-sm,text-accent-color"
-                           text="󰋩">
-                    </Label>
-                </graphic>
-            </Button>
+            <MaterialIconButton fx:id="goToButton"
+                                onAction="#goTo"
+                                prefWidth="92.0"
+                                text="Go To"
+                                icon="check"
+                                color="green-500"/>
+            <MaterialIconButton fx:id="slewToButton"
+                                onAction="#slewTo"
+                                prefWidth="92.0"
+                                text="Slew To"
+                                icon="check"
+                                color="green-500"/>
+            <MaterialIconButton fx:id="syncButton"
+                                onAction="#sync"
+                                prefWidth="92.0"
+                                text="Sync"
+                                icon="sync"/>
+            <MaterialIconButton fx:id="frameButton"
+                                onAction="#frame"
+                                prefWidth="92.0"
+                                text="Frame"
+                                icon="image"/>
         </HBox>
         <AltitudeChart fx:id="altitudeChart"
                        maxHeight="130.0"
                        minHeight="130.0"
-                       prefHeight="130.0">
-        </AltitudeChart>
+                       prefHeight="130.0"/>
     </VBox>
 </AnchorPane>

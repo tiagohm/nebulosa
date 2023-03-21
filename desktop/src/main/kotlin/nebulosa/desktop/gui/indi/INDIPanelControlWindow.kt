@@ -9,6 +9,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.MaterialIcon
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.indi.INDIPanelControlManager
 import nebulosa.desktop.logic.on
@@ -107,7 +108,6 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
 
             // Label.
             val name = Label("${vector.label}:").withState(vector)
-            name.styleClass.add("text-md")
             name.prefWidth = 192.0
             name.minWidth = 192.0
             name.maxWidth = 192.0
@@ -232,13 +232,18 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
         ) {
             val button = TwoStateButton()
             button.cursor = Cursor.HAND
-            button.stateOnText = property.label
-            button.stateOffText = property.label
-            button.stateOnIcon = "󰄬"
-            button.stateOffIcon = "󰅖"
-            button.stateOnStyleClass.addAll("mdi", "mdi-sm", "text-green-700")
-            button.stateOffStyleClass.addAll("mdi", "mdi-sm", "text-red-700")
-            button.styleClass.addAll("text-md", "text-bold")
+
+            val stateOff = MaterialIcon()
+            stateOff.icon = "close"
+            stateOff.color = "red-500"
+
+            val stateOn = MaterialIcon()
+            stateOn.icon = "check"
+            stateOn.color = "green-500"
+            TwoStateButton.state(stateOn, true)
+
+            button.states.addAll(stateOff, stateOn)
+
             button.setOnAction { sendSwitchPropertyVectorMessage(vector, property) }
             button.updateButton(vector, property)
             children.add(button)
@@ -249,8 +254,7 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
             property: SwitchProperty,
         ) {
             isDisable = vector.perm == PropertyPermission.RO
-            stateOnText = property.label
-            stateOffText = property.label
+            states.forEach { it.text = property.label }
             state = property.value
         }
 
@@ -310,7 +314,7 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
             label.minWidth = 175.0
             label.maxWidth = 175.0
             label.prefWidth = 175.0
-            label.styleClass.addAll("text-md", "text-bold")
+            label.styleClass.addAll("text-bold")
             children.add(label)
 
             // Value.
@@ -395,7 +399,7 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
             label.minWidth = 175.0
             label.maxWidth = 175.0
             label.prefWidth = 175.0
-            label.styleClass.addAll("text-md", "text-bold")
+            label.styleClass.addAll("text-bold")
             children.add(label)
 
             // Value.

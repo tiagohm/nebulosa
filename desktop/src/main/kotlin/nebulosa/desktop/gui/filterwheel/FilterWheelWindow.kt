@@ -28,7 +28,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 @Component
-class FilterWheelWindow : AbstractWindow("FilterWheel", "rgb"), FilterWheelView {
+class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterWheelView {
 
     @Lazy @Autowired private lateinit var filterWheelManager: FilterWheelManager
 

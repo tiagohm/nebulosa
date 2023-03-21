@@ -10,7 +10,6 @@
             minHeight="-Infinity"
             minWidth="-Infinity"
             prefWidth="410.0"
-            stylesheets="@css/Global.css,@css/CopyableLabel.css"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="4.0"
@@ -105,29 +104,20 @@
                 <VBox.margin>
                     <Insets top="16.0"/>
                 </VBox.margin>
-                <Button fx:id="syncButton"
-                        text="Sync"
-                        onAction="#sync">
-                    <graphic>
-                        <Label styleClass="mdi,mdi-sm,text-accent-color"
-                               text="󰓦"/>
-                    </graphic>
-                </Button>
-                <Button fx:id="loadButton"
-                        onAction="#load"
-                        text="Load">
-                    <graphic>
-                        <Label styleClass="text-accent-color,mdi,mdi-sm"
-                               text="󰇚">
-                        </Label>
-                    </graphic>
-                </Button>
+                <MaterialIconButton fx:id="syncButton"
+                                    text="Sync"
+                                    onAction="#sync"
+                                    icon="sync"/>
+                <MaterialIconButton fx:id="loadButton"
+                                    onAction="#load"
+                                    text="Load"
+                                    icon="download"/>
             </HBox>
         </VBox>
         <HBox alignment="CENTER">
             <HyperlinkLabel fx:id="poweredByHyperlinkLabel"
                             styleClass="text-xs"
-                            text="Powered by [hips2fits], a service provided by CDS."/>
+                            text="Made use of [hips2fits], a service provided by CDS."/>
         </HBox>
     </VBox>
 </AnchorPane>
