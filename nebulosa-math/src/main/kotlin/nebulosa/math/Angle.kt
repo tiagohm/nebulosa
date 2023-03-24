@@ -128,6 +128,7 @@ value class Angle(val value: Double) {
         @JvmStatic val SEMICIRCLE = Angle(PI)
         @JvmStatic val CIRCLE = Angle(TAU)
         @JvmStatic val QUARTER = Angle(PIOVERTWO)
+        @JvmStatic val NaN = Angle(Double.NaN)
 
         @JvmStatic private val PARSE_COORDINATES_NOT_NUMBER_REGEX = Regex("[^\\-\\d.]+")
 

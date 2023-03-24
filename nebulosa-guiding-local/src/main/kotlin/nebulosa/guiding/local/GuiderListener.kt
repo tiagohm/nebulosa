@@ -13,4 +13,8 @@ interface GuiderListener {
     fun onGuidingStopped()
 
     fun onLockShiftLimitReached()
+
+    fun onLooping(frameNumber: Int, start: Star?)
+
+    fun onStarLost()
 }

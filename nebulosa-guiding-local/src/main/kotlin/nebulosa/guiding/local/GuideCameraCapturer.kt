@@ -1,30 +1,26 @@
 package nebulosa.guiding.local
 
 import nebulosa.common.concurrency.PauseableWorker
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.AtomicInteger
 
-class GuideCameraCapturer(
-    private val guider: Guider,
-    private val camera: AtomicReference<GuideCamera>,
-) : PauseableWorker("Guide Camera Capture Thread") {
+data class GuideCameraCapturer(private val guider: Guider) : PauseableWorker("Guide Camera Capture Thread") {
 
-    private val duration = AtomicLong(1000L) // ms
+    private val frameNumber = AtomicInteger(1)
 
-    @Synchronized
-    fun start(duration: Long) {
-        this.duration.set(duration)
-        start()
-    }
-
+    // void MyFrame::OnExposeComplete(usImage *pNewFrame, bool err)
     override fun run() {
         val startTime = System.currentTimeMillis()
+        val duration = guider.loopingDuration
 
-        camera.get()?.capture(duration.get())
-        val image = camera.get()?.image
-        if (image != null) guider.updateGuide(image, false)
+        if (guider.pauseType != PauseType.FULL) {
+            guider.camera?.also {
+                it.capture(duration)
+                val frame = Frame(it.image, frameNumber.getAndIncrement())
+                guider.updateGuide(frame, false)
+            }
+        }
 
-        val sleepDuration = duration.get() - (System.currentTimeMillis() - startTime)
-        if (sleepDuration > 0L) Thread.sleep(sleepDuration)
+        val wait = duration - (System.currentTimeMillis() - startTime)
+        if (wait > 0L) Thread.sleep(wait)
     }
 }

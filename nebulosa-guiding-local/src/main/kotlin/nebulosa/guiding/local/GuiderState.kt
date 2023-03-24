@@ -4,9 +4,14 @@ enum class GuiderState {
     UNINITIALIZED,
     SELECTING,
     SELECTED,
-    CALIBRATING_PRIMARY,
-    CALIBRATING_SECONDARY,
+    CALIBRATING,
     CALIBRATED,
     GUIDING,
-    STOP,
+    STOP;
+
+    /**
+     * Returns true for looping, but non-guiding states.
+     */
+    val looping
+        get() = this <= SELECTED
 }

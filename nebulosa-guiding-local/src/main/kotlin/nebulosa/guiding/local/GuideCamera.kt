@@ -6,5 +6,11 @@ interface GuideCamera {
 
     val image: Image
 
+    val pixelScale: Double
+
+    val exposure: Int
+
+    val autoExposure: Boolean
+
     fun capture(duration: Long)
 }

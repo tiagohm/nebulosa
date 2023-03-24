@@ -10,8 +10,8 @@ import kotlin.math.hypot
  */
 @Suppress("NOTHING_TO_INLINE")
 open class Point(
-    x: Double,
-    y: Double,
+    x: Double = 0.0,
+    y: Double = 0.0,
     valid: Boolean = true,
 ) {
 
@@ -45,7 +45,7 @@ open class Point(
 
     fun distance(point: Point) = hypot(dX(point), dY(point))
 
-    inline val angle
+    val angle
         get() = angle(ZERO)
 
     fun angle(point: Point): Angle {
@@ -65,7 +65,6 @@ open class Point(
 
     companion object {
 
-        @JvmStatic val NONE = Point(Double.NaN, Double.NaN)
-        @JvmStatic val ZERO = Point(0.0, 0.0)
+        @JvmStatic private val ZERO = Point()
     }
 }

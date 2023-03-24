@@ -6,7 +6,7 @@ class ShiftPoint : Point {
     /**
      * Rate of change (per second).
      */
-    val rate = ZERO
+    val rate = Point()
 
     private var x0 = 0.0
     private var y0 = 0.0
@@ -21,7 +21,7 @@ class ShiftPoint : Point {
         beginShift()
     }
 
-    fun setShiftRate(x: Double, y: Double) {
+    fun shiftRate(x: Double, y: Double) {
         rate.x = x
         rate.y = y
         beginShift()
