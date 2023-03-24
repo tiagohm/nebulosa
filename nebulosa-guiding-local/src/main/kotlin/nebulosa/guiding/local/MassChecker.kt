@@ -24,7 +24,7 @@ internal class MassChecker {
     private val data = LinkedList<Entry>()
     private var highMass = 0.0
     private var lowMass = Double.MAX_VALUE
-    private var exposure = 0
+    private var exposure = 0L
     private var autoExposure = false
     private var timeWindow = DEFAULT_TIME_WINDOW * 2L
 
@@ -33,7 +33,7 @@ internal class MassChecker {
         timeWindow = ms * 2L
     }
 
-    fun exposure(exposure: Int, autoExposure: Boolean) {
+    fun exposure(exposure: Long, autoExposure: Boolean) {
         if (autoExposure != this.autoExposure) {
             this.autoExposure = autoExposure
             this.exposure = exposure

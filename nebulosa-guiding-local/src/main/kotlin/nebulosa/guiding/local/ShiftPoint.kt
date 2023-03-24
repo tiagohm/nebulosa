@@ -22,8 +22,7 @@ class ShiftPoint : Point {
     }
 
     fun shiftRate(x: Double, y: Double) {
-        rate.x = x
-        rate.y = y
+        rate.set(x, y)
         beginShift()
     }
 

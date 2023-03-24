@@ -24,7 +24,9 @@ class Guider {
     private val distanceChecker = DistanceChecker(this)
 
     private val listeners = ArrayList<GuiderListener>(1)
-    private var state = GuiderState.UNINITIALIZED
+
+    var state = GuiderState.UNINITIALIZED
+        private set
 
     private var starFoundTimestamp = 0L
     private var avgDistance = 0.0   // averaged distance for distance reporting
@@ -137,9 +139,6 @@ class Guider {
             require(searchRegion <= MAX_SEARCH_REGION) { "searchRegion > $MAX_SEARCH_REGION" }
             field = value
         }
-
-    var loopingDuration = 1000L
-
 
     fun registerListener(listener: GuiderListener) {
         listeners.add(listener)
@@ -283,7 +282,7 @@ class Guider {
             }
         }
 
-        val offset = GuiderOffset(Point(0.0, 0.0), Point(0.0, 0.0))
+        val offset = GuiderOffset(Point(), Point())
 
         if (!updateCurrentPosition(frame.image, offset)) {
             when (state) {
@@ -328,13 +327,6 @@ class Guider {
                     // pFrame->SchedulePrimaryMove(pMount, GuiderOffset.ZERO, MOVEOPTS_DEDUCED_MOVE);
                 }
             } else {
-                fun calibrated() {
-                    state = GuiderState.GUIDING
-
-                    // Camera angle is known, so ok to calculate shift rate camera coords.
-                    updateLockPositionShiftCameraCoords()
-                }
-
                 when (state) {
                     GuiderState.SELECTING -> {
                         lockPosition(currentPosition)
@@ -360,11 +352,17 @@ class Guider {
                         }
 
                         if (state == GuiderState.CALIBRATED) {
-                            calibrated()
+                            state = GuiderState.GUIDING
+
+                            // Camera angle is known, so ok to calculate shift rate camera coords.
+                            updateLockPositionShiftCameraCoords()
                         }
                     }
                     GuiderState.CALIBRATED -> {
-                        calibrated()
+                        state = GuiderState.GUIDING
+
+                        // Camera angle is known, so ok to calculate shift rate camera coords.
+                        updateLockPositionShiftCameraCoords()
                     }
                     GuiderState.GUIDING -> {
                         if (ditherRecenterRemaining.valid) {
@@ -412,20 +410,24 @@ class Guider {
             if (lockPositionShift.shiftUnit == ShiftUnit.ARCSEC) {
                 val raParity = mount.raParity
                 val decParity = mount.decParity
+                var x = raDecRates.x
+                var y = raDecRates.y
 
                 if (raParity == GuideParity.ODD) {
-                    raDecRates.x = -raDecRates.x
+                    x = -x
                 }
 
                 if (decParity == GuideParity.ODD) {
-                    raDecRates.y = -raDecRates.y
+                    y = -y
                 }
 
                 val declination = mount.declination
 
                 if (declination.value.isFinite()) {
-                    raDecRates.x *= declination.cos
+                    x *= declination.cos
                 }
+
+                raDecRates.set(x, y)
             }
 
             mount.transformMountCoordinatesToCameraCoordinates(raDecRates, rate)
@@ -457,12 +459,17 @@ class Guider {
 
     fun currentPosition(image: Image, position: Point): Boolean {
         require(position.valid) { "position is invalid" }
-        require(position.x > 0.0 && position.x < image.width) { "invalid x value" }
-        require(position.y > 0.0 && position.y < image.height) { "invalid y value" }
+        return currentPosition(image, position.x, position.y)
+    }
+
+    fun currentPosition(image: Image, x: Double, y: Double): Boolean {
+        require(x > 0.0 && x < image.width) { "invalid x value" }
+        require(y > 0.0 && y < image.height) { "invalid y value" }
 
         massChecker.reset()
 
-        return primaryStar.find(image, searchRegion, position.x, position.y, FindMode.CENTROID, minStarHFD)
+        return primaryStar
+            .find(image, searchRegion, x, y, FindMode.CENTROID, minStarHFD)
     }
 
     fun autoSelect(): Boolean {
@@ -471,12 +478,11 @@ class Guider {
     }
 
     fun invalidateCurrentPosition(fullReset: Boolean) {
-        primaryStar.invalidate()
-
         if (fullReset) {
-            primaryStar.x = 0.0
-            primaryStar.y = 0.0
+            primaryStar.set(0.0, 0.0)
         }
+
+        primaryStar.invalidate()
     }
 
     val starCount
@@ -610,8 +616,7 @@ class Guider {
 
                     // Apply average only if its smaller than single-star delta.
                     if (hypot(sumX, sumY) < primaryDistance) {
-                        offset.camera.x = sumX
-                        offset.camera.y = sumY
+                        offset.camera.set(sumX, sumY)
                         refined = true
                     }
                 }
@@ -635,7 +640,7 @@ class Guider {
         require(x > searchRegion && x + searchRegion < image.width) { "outside of search region" }
         require(y > searchRegion && y + searchRegion < image.height) { "outside of search region" }
 
-        if (currentPosition(image, Point(x, y))
+        if (currentPosition(image, x, y)
             && primaryStar.valid
         ) {
             lockPosition(primaryStar)
@@ -652,7 +657,7 @@ class Guider {
 
             state = GuiderState.SELECTED
         } else {
-            throw IllegalArgumentException("no star selected at position: $x, $y")
+            println("no star selected at position: $x, $y")
         }
     }
 
@@ -707,6 +712,7 @@ class Guider {
         }
 
         primaryStar = newStar
+
         massChecker.add(newStar.mass)
 
         if (lockPosition.valid) {

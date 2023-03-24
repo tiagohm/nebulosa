@@ -8,7 +8,7 @@ interface GuideCamera {
 
     val pixelScale: Double
 
-    val exposure: Int
+    val exposure: Long
 
     val autoExposure: Boolean
 

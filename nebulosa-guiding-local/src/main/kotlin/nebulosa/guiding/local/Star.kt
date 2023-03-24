@@ -25,7 +25,7 @@ open class Star : Point {
     var lastFindResult = FindResult.ERROR
         private set
 
-    constructor(x: Double, y: Double) : super(x, y)
+    constructor(x: Double, y: Double) : super(x, y, false)
 
     constructor(point: Point) : super(point)
 

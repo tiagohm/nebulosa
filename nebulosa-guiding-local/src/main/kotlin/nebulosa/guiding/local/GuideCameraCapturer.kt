@@ -10,7 +10,7 @@ data class GuideCameraCapturer(private val guider: Guider) : PauseableWorker("Gu
     // void MyFrame::OnExposeComplete(usImage *pNewFrame, bool err)
     override fun run() {
         val startTime = System.currentTimeMillis()
-        val duration = guider.loopingDuration
+        val duration = guider.camera.exposure
 
         if (guider.pauseType != PauseType.FULL) {
             guider.camera?.also {

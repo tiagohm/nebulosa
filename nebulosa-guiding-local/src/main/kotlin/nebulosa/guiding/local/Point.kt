@@ -19,10 +19,10 @@ open class Point(
         protected set
 
     var x = x
-        internal set
+        protected set
 
     var y = y
-        internal set
+        protected set
 
     constructor(point: Point) : this(point.x, point.y, point.valid)
 
