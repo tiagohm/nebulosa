@@ -1,5 +1,6 @@
-package nebulosa.desktop.logic.concurrency
+package nebulosa.common.concurrency
 
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantLock
@@ -12,7 +13,7 @@ class CountUpDownLatch : AtomicBoolean(true) {
     private val counter = AtomicInteger(0)
 
     fun countUp() = lock.withLock {
-        val value = counter.getAndIncrement()
+        val value = counter.incrementAndGet()
         set(false)
         condition.signalAll()
         value
@@ -37,6 +38,20 @@ class CountUpDownLatch : AtomicBoolean(true) {
 
         while (counter.get() > n) {
             condition.await()
+        }
+    }
+
+    fun await(time: Long, unit: TimeUnit, n: Int = 0) = lock.withLock {
+        require(n >= 0) { "n < 0: $n" }
+        require(time > 0L) { "time <= 0: $time" }
+
+        var remainingTime = unit.toNanos(time)
+
+        while (counter.get() > n) {
+            val startTime = System.nanoTime()
+            condition.await(remainingTime, TimeUnit.NANOSECONDS)
+            val delta = System.nanoTime() - startTime
+            remainingTime -= delta
         }
     }
 }
