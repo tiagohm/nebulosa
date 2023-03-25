@@ -71,7 +71,7 @@ class App {
     fun systemExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
 
     @Bean
-    fun javaFXExecutorService(javaFXExecutor: Executor): ExecutorService = JavaFXExecutorService(javaFXExecutor)
+    fun javaFXExecutorService(): ExecutorService = JavaFXExecutorService()
 
     @Bean
     fun horizonsService() = HorizonsService()
@@ -86,7 +86,7 @@ class App {
     fun hips2FitsService() = Hips2FitsService()
 
     @Bean
-    fun javaFXExecutor() = JavaFXExecutor()
+    fun javaFXExecutor() = JavaFXExecutor
 
     @Bean
     fun eventBus(javaFXExecutorService: ExecutorService) = EventBus.builder()

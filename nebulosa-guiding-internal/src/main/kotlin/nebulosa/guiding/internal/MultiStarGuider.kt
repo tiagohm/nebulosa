@@ -14,7 +14,7 @@ import kotlin.math.min
  * making move requests to a mount by passing the difference
  * between [currentPosition] and [lockPosition].
  */
-class MultiStarGuider : Guider {
+class MultiStarGuider : Guider, Iterable<GuideStar> {
 
     private val guideStars = LinkedList<GuideStar>()
     private var starsUsed = 0
@@ -149,8 +149,12 @@ class MultiStarGuider : Guider {
         listeners.remove(listener)
     }
 
-    fun attach(guideCamera: GuideCamera) {
+    fun attachGuideCamera(guideCamera: GuideCamera) {
         this.guideCamera.set(guideCamera)
+    }
+
+    fun attachGuideMount(guideMount: GuideMount) {
+        this.guideMount.set(guideMount)
     }
 
     private fun lockPosition(position: Point): Boolean {
@@ -486,7 +490,7 @@ class MultiStarGuider : Guider {
         primaryStar.invalidate()
     }
 
-    override val starCount
+    val starCount
         get() = guideStars.size
 
     /**
@@ -690,7 +694,6 @@ class MultiStarGuider : Guider {
                 // Mass changed!
                 massChecker.add(newStar.mass)
                 distanceChecker.activate()
-
                 println("mass changed")
                 return false
             }
@@ -705,6 +708,8 @@ class MultiStarGuider : Guider {
         } else {
             0.0
         }
+
+        println("distance: $distance")
 
         val tolerance = if (tolerateJumpsEnabled) tolerateJumpsThreshold else Double.MAX_VALUE
 
@@ -775,6 +780,8 @@ class MultiStarGuider : Guider {
     fun currentErrorSmoothed(raOnly: Boolean): Double {
         return currentError(starFoundTimestamp, if (raOnly) avgDistanceLongRA else avgDistanceLong)
     }
+
+    override fun iterator() = guideStars.iterator()
 
     companion object {
 

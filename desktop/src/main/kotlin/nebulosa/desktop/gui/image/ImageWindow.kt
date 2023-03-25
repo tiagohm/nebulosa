@@ -1,7 +1,6 @@
 package nebulosa.desktop.gui.image
 
 import com.sun.javafx.scene.control.ControlAcceleratorSupport
-import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.fxml.FXML
 import javafx.geometry.Point2D
@@ -18,7 +17,6 @@ import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.logic.asBoolean
 import nebulosa.desktop.logic.image.ImageManager
 import nebulosa.desktop.logic.or
-import nebulosa.desktop.view.image.Drawable
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
@@ -33,7 +31,9 @@ import kotlin.jvm.optionals.getOrNull
 
 class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image", "image"), ImageView {
 
-    @FXML private lateinit var fitsImageViewer: ImageViewer
+    @FXML override lateinit var imageViewer: ImageViewer
+        private set
+
     @FXML private lateinit var menu: ContextMenu
     @FXML private lateinit var solveMenuItem: MenuItem
     @FXML private lateinit var blindSolveMenuItem: MenuItem
@@ -57,11 +57,11 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     override fun onCreate() {
-        fitsImageViewer.addEventFilter(MouseEvent.MOUSE_CLICKED) {
+        imageViewer.addEventFilter(MouseEvent.MOUSE_CLICKED) {
             if (it.button == MouseButton.PRIMARY && it.clickCount == 2) {
                 if (!maximized) {
                     imageManager.adjustSceneSizeToFitImage(false)
-                    fitsImageViewer.resetZoom()
+                    imageViewer.resetZoom()
                 }
             } else if (it.button == MouseButton.PRIMARY) {
                 menu.hide()
@@ -69,11 +69,11 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             }
         }
 
-        with(fitsImageViewer) {
+        with(imageViewer) {
             setOnContextMenuRequested {
                 menu.show(this, it.screenX, it.screenY)
 
-                val targetPoint = fitsImageViewer.targetPointAt(Point2D(it.x, it.y)).getOrNull()
+                val targetPoint = imageViewer.targetPointAt(Point2D(it.x, it.y)).getOrNull()
                 imageSecondaryClickLocation.set(targetPoint)
             }
 
@@ -246,7 +246,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     override fun adjustSceneToImage() {
         javaFXExecutorService.execute {
-            fitsImageViewer.resetZoom()
+            imageViewer.resetZoom()
             imageManager.adjustSceneSizeToFitImage()
         }
     }
@@ -263,7 +263,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         val buffer = IntBuffer.wrap(imageData, 0, area)
         val pixelBuffer = PixelBuffer(image.width, image.height, buffer, PixelFormat.getIntArgbPreInstance())
         val writableImage = WritableImage(pixelBuffer)
-        fitsImageViewer.load(writableImage)
+        imageViewer.load(writableImage)
     }
 
     override fun scnr(
@@ -290,39 +290,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     override fun redraw() {
-        Platform.runLater { fitsImageViewer.redraw() }
-    }
-
-    override fun addFirst(element: Drawable) {
-        fitsImageViewer.addFirst(element)
-    }
-
-    override fun addLast(element: Drawable) {
-        fitsImageViewer.addLast(element)
-    }
-
-    override fun remove(element: Drawable): Boolean {
-        return fitsImageViewer.remove(element)
-    }
-
-    override fun removeFirst(): Drawable {
-        return fitsImageViewer.removeFirst()
-    }
-
-    override fun removeLast(): Drawable {
-        return fitsImageViewer.removeLast()
-    }
-
-    override fun removeAll(elements: Collection<Drawable>): Boolean {
-        return fitsImageViewer.removeAll(elements.toSet())
-    }
-
-    override fun removeAll() {
-        fitsImageViewer.clear()
-    }
-
-    override fun iterator(): Iterator<Drawable> {
-        return fitsImageViewer.iterator()
+        javaFXExecutorService.submit { imageViewer.redraw() }
     }
 
     @Service

@@ -1,5 +1,6 @@
 package nebulosa.desktop.view.image
 
+import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.view.View
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
@@ -7,7 +8,7 @@ import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import java.io.File
 
-interface ImageView : View, Iterable<Drawable> {
+interface ImageView : View {
 
     interface Opener {
 
@@ -19,6 +20,8 @@ interface ImageView : View, Iterable<Drawable> {
     }
 
     val camera: Camera?
+
+    val imageViewer: ImageViewer
 
     val autoStretchEnabled: Boolean
 
@@ -74,18 +77,4 @@ interface ImageView : View, Iterable<Drawable> {
     )
 
     fun redraw()
-
-    fun addFirst(element: Drawable)
-
-    fun addLast(element: Drawable)
-
-    fun remove(element: Drawable): Boolean
-
-    fun removeFirst(): Drawable
-
-    fun removeLast(): Drawable
-
-    fun removeAll(elements: Collection<Drawable>): Boolean
-
-    fun removeAll()
 }

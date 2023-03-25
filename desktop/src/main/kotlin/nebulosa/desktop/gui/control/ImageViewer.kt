@@ -11,15 +11,27 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
 import nebulosa.desktop.view.image.Drawable
 import net.kurobako.gesturefx.GesturePane
+import java.awt.event.MouseListener
 import java.util.*
 import kotlin.math.exp
 
 class ImageViewer private constructor(private val drawables: LinkedList<Drawable>) :
     GesturePane(null as Node?), Deque<Drawable> by drawables {
 
-    private val canvas = Canvas()
+    fun interface MouseListener {
 
-    @Volatile private var image: Image? = null
+        fun onMouseClicked(
+            button: MouseButton,
+            clickCount: Int,
+            isControlDown: Boolean, isShiftDown: Boolean, isAltDown: Boolean,
+            mouseX: Double, mouseY: Double,
+            imageX: Double, imageY: Double,
+        )
+    }
+
+    private val canvas = Canvas()
+    private val mouseListeners = HashSet<MouseListener>(1)
+    private var image: Image? = null
 
     constructor() : this(LinkedList())
 
@@ -45,6 +57,17 @@ class ImageViewer private constructor(private val drawables: LinkedList<Drawable
             }
         }
 
+        addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
+            val target = targetPointAt(Point2D(event.x, event.y)).orElse(targetPointAtViewportCentre())
+            mouseListeners.forEach {
+                it.onMouseClicked(
+                    event.button, event.clickCount,
+                    event.isControlDown, event.isShiftDown, event.isAltDown,
+                    event.x, event.y, target.x, target.y,
+                )
+            }
+        }
+
         addEventFilter(MouseEvent.MOUSE_DRAGGED) {
             if (it.button == MouseButton.PRIMARY) {
                 cursor = Cursor.MOVE
@@ -54,6 +77,14 @@ class ImageViewer private constructor(private val drawables: LinkedList<Drawable
         addEventFilter(MouseEvent.MOUSE_RELEASED) {
             cursor = Cursor.DEFAULT
         }
+    }
+
+    fun registerMouseListener(listener: MouseListener) {
+        mouseListeners.add(listener)
+    }
+
+    fun unregisterMouseListener(listener: MouseListener) {
+        mouseListeners.remove(listener)
     }
 
     fun load(image: Image) {

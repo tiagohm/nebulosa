@@ -113,12 +113,12 @@ class ImageManager(private val view: ImageView) : Closeable {
         if (event.file === file.get()) {
             calibration.set(if (event is PlateSolvingSolved) event.calibration else null)
 
-            annotation?.also(view::remove)
+            annotation?.also(view.imageViewer::remove)
             annotation = null
 
             if (calibration.get() != null && view.annotationEnabled) {
                 annotation = Annotation(calibration.get(), nebula)
-                view.addFirst(annotation!!)
+                view.imageViewer.addFirst(annotation!!)
                 view.redraw()
             }
         }
@@ -149,7 +149,7 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         calibration.set(null)
 
-        annotation?.also(view::remove)
+        annotation?.also(view.imageViewer::remove)
         annotation = null
 
         view.hasScnr = !image.mono
@@ -248,8 +248,8 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     fun toggleCrosshair() {
-        if (view.crosshairEnabled) view.addLast(Crosshair)
-        else view.remove(Crosshair)
+        if (view.crosshairEnabled) view.imageViewer.addLast(Crosshair)
+        else view.imageViewer.remove(Crosshair)
 
         view.redraw()
     }
@@ -262,18 +262,18 @@ class ImageManager(private val view: ImageView) : Closeable {
                 systemExecutorService.submit {
                     try {
                         annotation = Annotation(calibration, nebula)
-                        view.addFirst(annotation!!)
+                        view.imageViewer.addFirst(annotation!!)
                         view.redraw()
                     } catch (e: Throwable) {
                         LOG.error("annotation failed", e)
                     }
                 }
             } else {
-                view.addFirst(annotation!!)
+                view.imageViewer.addFirst(annotation!!)
                 view.redraw()
             }
         } else if (annotation != null) {
-            view.remove(annotation!!)
+            view.imageViewer.remove(annotation!!)
             view.redraw()
         }
     }

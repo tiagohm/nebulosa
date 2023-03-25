@@ -176,7 +176,7 @@
             </items>
         </ContextMenu>
     </fx:define>
-    <ImageViewer fx:id="fitsImageViewer"
+    <ImageViewer fx:id="imageViewer"
                  fitHeight="false"
                  fitWidth="false"
                  minScale="0.1"

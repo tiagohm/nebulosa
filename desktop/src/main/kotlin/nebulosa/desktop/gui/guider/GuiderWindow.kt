@@ -3,6 +3,7 @@ package nebulosa.desktop.gui.guider
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
+import javafx.scene.input.MouseButton
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.TwoStateButton
@@ -72,6 +73,22 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML
     private fun stop() {
         guiderManager.stop()
+    }
+
+    override fun onMouseClicked(
+        button: MouseButton,
+        clickCount: Int,
+        isControlDown: Boolean, isShiftDown: Boolean, isAltDown: Boolean,
+        mouseX: Double, mouseY: Double,
+        imageX: Double, imageY: Double,
+    ) {
+        if (button == MouseButton.PRIMARY && clickCount == 1) {
+            if (!isControlDown && !isShiftDown && !isAltDown) {
+                guiderManager.selectGuideStar(imageX, imageY)
+            } else if (!isControlDown && isShiftDown && !isAltDown) {
+                guiderManager.deselectGuideStar()
+            }
+        }
     }
 
     private object GuiderStringConverter : StringConverter<Camera>() {

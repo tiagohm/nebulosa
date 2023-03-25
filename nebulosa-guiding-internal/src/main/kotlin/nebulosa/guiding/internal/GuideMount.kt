@@ -23,6 +23,10 @@ interface GuideMount {
     val guidingRAOnly
         get() = declinationGuideMode == DeclinationGuideMode.NONE
 
+    val xGuideAlgorithm: GuideAlgorithm
+
+    val yGuideAlgorithm: GuideAlgorithm
+
     fun beginCalibration(currentLocation: Point): Boolean
 
     fun updateCalibrationState(currentLocation: Point): Boolean
@@ -41,9 +45,9 @@ interface GuideMount {
 
     fun notifyDirectMove(distance: Point)
 
-    fun transformMountCoordinatesToCameraCoordinates(mount: Point, camera: Point)
+    fun transformMountCoordinatesToCameraCoordinates(mount: Point, camera: Point): Boolean
 
-    fun moveOffset(offset: GuiderOffset, vararg moveOptions: MountMoveOption)
+    fun moveOffset(offset: GuiderOffset, vararg moveOptions: MountMoveOption): Boolean
 
-    fun transformCameraCoordinatesToMountCoordinates(camera: Point, mount: Point)
+    fun transformCameraCoordinatesToMountCoordinates(camera: Point, mount: Point): Boolean
 }
