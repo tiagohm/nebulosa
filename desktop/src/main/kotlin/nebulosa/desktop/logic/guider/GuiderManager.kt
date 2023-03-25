@@ -113,8 +113,6 @@ class GuiderManager(
     override val exposure
         get() = 5000L
 
-    override var autoExposure = false
-
     override fun capture(duration: Long) {
         value?.startCapture(duration * 1000L)
     }
@@ -186,7 +184,7 @@ class GuiderManager(
         return true
     }
 
-    override fun moveOffset(offset: GuiderOffset, vararg moveOptions: MountMoveOption): Boolean {
+    override fun moveOffset(offset: GuiderOffset, moveOptions: List<MountMoveOption>): Boolean {
         if (MountMoveOption.ALGORITHM_DEDUCE in moveOptions) {
             val xDistance = xGuideAlgorithm.deduce()
             val yDistance = yGuideAlgorithm.deduce()
@@ -231,7 +229,6 @@ class GuiderManager(
     }
 
     fun selectGuideStar(x: Double, y: Double) {
-        println("$x $y")
         guider.selectGuideStar(x, y)
     }
 

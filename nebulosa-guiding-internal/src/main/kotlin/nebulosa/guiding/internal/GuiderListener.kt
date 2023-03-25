@@ -17,4 +17,8 @@ interface GuiderListener {
     fun onLooping(frameNumber: Int, start: Star?)
 
     fun onStarLost()
+
+    fun onLockPositionLost()
+
+    fun onStartCalibration()
 }

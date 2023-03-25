@@ -9,15 +9,17 @@ internal class MassChecker {
         val mass: Double,
     )
 
-    @Suppress("ArrayInDataClass")
     data class CheckedMass(
-        val limits: DoubleArray,
-        val reject: Boolean,
+        val limit0: Double = 0.0,
+        val limit1: Double = 0.0,
+        val limit2: Double = 0.0,
+        val limit3: Double = 0.0,
+        val reject: Boolean = true,
     ) {
 
         companion object {
 
-            @JvmStatic val EMPTY = CheckedMass(DoubleArray(0), true)
+            @JvmStatic val EMPTY = CheckedMass()
         }
     }
 
@@ -25,7 +27,6 @@ internal class MassChecker {
     private var highMass = 0.0
     private var lowMass = Double.MAX_VALUE
     private var exposure = 0L
-    private var autoExposure = false
     private var timeWindow = DEFAULT_TIME_WINDOW * 2L
 
     fun timeWindow(ms: Long) {
@@ -33,22 +34,11 @@ internal class MassChecker {
         timeWindow = ms * 2L
     }
 
-    fun exposure(exposure: Long, autoExposure: Boolean) {
-        if (autoExposure != this.autoExposure) {
-            this.autoExposure = autoExposure
+    fun exposure(exposure: Long) {
+        if (exposure != this.exposure) {
             this.exposure = exposure
             reset()
-        } else if (exposure != this.exposure) {
-            this.exposure = exposure
-
-            if (!this.autoExposure) {
-                reset()
-            }
         }
-    }
-
-    fun adjustedMass(mass: Double): Double {
-        return if (autoExposure) mass / exposure else mass
     }
 
     fun add(mass: Double) {
@@ -59,7 +49,7 @@ internal class MassChecker {
             data.pop()
         }
 
-        data.add(Entry(now, adjustedMass(mass)))
+        data.add(Entry(now, mass))
     }
 
     fun checkMass(mass: Double, threshold: Double = 0.5): CheckedMass {
@@ -76,24 +66,17 @@ internal class MassChecker {
         // clouds has brought it down.
         lowMass += 0.05 * (median.mass - lowMass)
 
-        val limits = DoubleArray(4)
-        limits[0] = lowMass * (1.0 - threshold)
-        limits[1] = median.mass
-        limits[2] = highMass * (1.0 + threshold)
+        val limit0 = lowMass * (1.0 - threshold)
+        val limit1 = median.mass
+        val limit2 = highMass * (1.0 + threshold)
         // When mass is depressed by sky conditions, we still want to trigger a rejection when
         // there is a large spike in mass, even if it is still below the high water mark-based
         // threhold.
-        limits[3] = median.mass * (1.0 + 2.0 * threshold)
+        val limit3 = median.mass * (1.0 + 2.0 * threshold)
 
-        val adjustedMass = adjustedMass(mass)
-        val reject = adjustedMass < limits[0] || adjustedMass > limits[2] || adjustedMass > limits[3]
+        val reject = mass < limit0 || mass > limit2 || mass > limit3
 
-        if (reject && autoExposure) {
-            // Convert back to mass-like numbers for logging by caller.
-            for (i in 0..3) limits[i] = limits[i] * exposure
-        }
-
-        return CheckedMass(limits, reject)
+        return CheckedMass(limit0, limit1, limit2, limit3, reject)
     }
 
     fun reset() {

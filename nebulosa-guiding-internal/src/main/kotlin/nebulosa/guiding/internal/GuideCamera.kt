@@ -10,7 +10,5 @@ interface GuideCamera {
 
     val exposure: Long
 
-    val autoExposure: Boolean
-
     fun capture(duration: Long)
 }

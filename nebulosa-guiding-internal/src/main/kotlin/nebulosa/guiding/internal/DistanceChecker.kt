@@ -1,5 +1,7 @@
 package nebulosa.guiding.internal
 
+import org.slf4j.LoggerFactory
+
 internal class DistanceChecker(private val guider: MultiStarGuider) {
 
     enum class State {
@@ -14,30 +16,42 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
 
     fun activate() {
         if (state == State.GUIDING) {
+            LOG.info("activated")
             state = State.WAITING
             expires = System.currentTimeMillis() + WAIT_INTERVAL
             forceTolerance = 2.0
         }
     }
 
-    private fun internalCheckDistance(distance: Double, raOnly: Boolean, tolerance: Double): Boolean {
+    private fun checkIfSmallOffset(distance: Double, raOnly: Boolean, tolerance: Double): Boolean {
         if (!guider.guiding || guider.paused || guider.settling || guider.currentErrorFrameCount < 10) {
             return true
         }
 
         val avgDist = guider.currentErrorSmoothed(raOnly)
         val threshold = tolerance * avgDist
-        return distance <= threshold
+
+        return if (distance > threshold) {
+            LOG.info(
+                "reject for large offset. distance={}, threshold={} avgDist={}, count={}",
+                distance, threshold, avgDist, guider.currentErrorFrameCount,
+            )
+
+            false
+        } else {
+            true
+        }
     }
 
     fun checkDistance(distance: Double, raOnly: Boolean, tolerance: Double): Boolean {
-        val smallOffset = internalCheckDistance(distance, raOnly, if (forceTolerance != 0.0) forceTolerance else tolerance)
+        val smallOffset = checkIfSmallOffset(distance, raOnly, if (forceTolerance != 0.0) forceTolerance else tolerance)
 
         return when (state) {
             State.GUIDING -> {
                 if (smallOffset) {
                     true
                 } else {
+                    LOG.info("activated")
                     state = State.WAITING
                     expires = System.currentTimeMillis() + WAIT_INTERVAL
                     false
@@ -45,6 +59,7 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
             }
             State.WAITING -> {
                 if (smallOffset) {
+                    LOG.info("deactivated")
                     state = State.GUIDING
                     forceTolerance = 0.0
                     true
@@ -57,13 +72,14 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
                     } else {
                         // Timed-out.
                         state = State.RECOVERING
-
+                        LOG.info("begin recovering")
                         true
                     }
                 }
             }
             State.RECOVERING -> {
                 if (smallOffset) {
+                    LOG.info("deactivated")
                     state = State.GUIDING
                 }
 
@@ -75,5 +91,7 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
     companion object {
 
         private const val WAIT_INTERVAL = 5000L
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(DistanceChecker::class.java)
     }
 }

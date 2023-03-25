@@ -47,7 +47,7 @@ interface GuideMount {
 
     fun transformMountCoordinatesToCameraCoordinates(mount: Point, camera: Point): Boolean
 
-    fun moveOffset(offset: GuiderOffset, vararg moveOptions: MountMoveOption): Boolean
+    fun moveOffset(offset: GuiderOffset, moveOptions: List<MountMoveOption>): Boolean
 
     fun transformCameraCoordinatesToMountCoordinates(camera: Point, mount: Point): Boolean
 }
