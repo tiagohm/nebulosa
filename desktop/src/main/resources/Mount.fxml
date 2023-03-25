@@ -163,12 +163,10 @@
                 <MaterialIconButton fx:id="siteAndTimeButton"
                                     onAction="#openSiteAndTime"
                                     icon="map-marker"
-                                    color="warning">
-                </MaterialIconButton>
+                                    color="warning"/>
                 <MaterialIconButton fx:id="telescopeControlServerButton"
                                     onAction="#openTelescopeControlServer"
-                                    icon="remote">
-                </MaterialIconButton>
+                                    icon="remote"/>
             </HBox>
         </HBox>
         <VBox alignment="CENTER_LEFT"

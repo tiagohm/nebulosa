@@ -2,63 +2,102 @@ package nebulosa.desktop.logic.guider
 
 import javafx.beans.property.SimpleBooleanProperty
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.view.guider.GuiderSettingsView
-import nebulosa.desktop.view.guider.GuiderType
+import nebulosa.desktop.logic.camera.CameraProperty
+import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
+import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.guider.GuiderView
-import nebulosa.guiding.Guider
-import nebulosa.guiding.phd2.PHD2Guider
+import nebulosa.desktop.view.image.ImageView
+import nebulosa.desktop.view.indi.INDIPanelControlView
+import nebulosa.guiding.internal.GuideCamera
+import nebulosa.guiding.internal.MultiStarGuider
+import nebulosa.imaging.Image
+import nebulosa.indi.device.DeviceEvent
+import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.camera.CameraFrameCaptured
+import nom.tam.fits.Fits
+import org.greenrobot.eventbus.EventBus
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.util.concurrent.LinkedBlockingQueue
 
 @Component
-class GuiderManager(@Autowired internal val view: GuiderView) {
+class GuiderManager(
+    @Autowired internal val view: GuiderView,
+    @Autowired internal val equipmentManager: EquipmentManager,
+) : CameraProperty by equipmentManager.selectedGuider, GuideCamera {
 
     @Autowired private lateinit var preferences: Preferences
-    @Autowired private lateinit var guiderSettingsView: GuiderSettingsView
+    @Autowired private lateinit var eventBus: EventBus
+    @Autowired private lateinit var imageViewOpener: ImageView.Opener
+    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
+    @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
 
-    @Volatile private var guider: Guider? = null
+    private val guider = MultiStarGuider()
 
-    val connectingProperty = SimpleBooleanProperty()
-    val connectedProperty = SimpleBooleanProperty()
+    private val imageQueue = LinkedBlockingQueue<Image>()
 
-    val connected
-        get() = connectedProperty.get()
+    val guidingProperty = SimpleBooleanProperty()
 
-    fun connect(type: GuiderType) {
-        if (connected) {
-            guider?.close()
-            guider = null
+    val cameras
+        get() = equipmentManager.attachedCameras
 
-            connectedProperty.set(false)
+    fun initialize() {
+        registerListener(this)
 
-            view.title = "Guider"
-        } else {
-            val host = preferences.string("phd2.host") ?: "localhost"
-            val port = preferences.string("phd2.port")?.toIntOrNull() ?: 4400
+        guider.attach(this)
 
-            val guider = when (type) {
-                GuiderType.PHD2 -> PHD2Guider(host, port)
-            }
+        // eventBus.register(this)
+    }
 
-            try {
-                connectingProperty.set(true)
-                guider.connect()
-                connectedProperty.set(true)
+    fun openINDIPanelControl() {
+        indiPanelControlView.show(bringToFront = true)
+        indiPanelControlView.device = value
+    }
 
-                view.title = "Guider · $type"
-            } catch (e: Throwable) {
-                LOG.error("connection error", e)
+    @Synchronized
+    fun start() {
+        guidingProperty.set(true)
+        value?.enableBlob()
+        guider.startLooping()
+    }
 
-                view.showAlert("Unable to connect to $host:$port. ${e.message}")
-            } finally {
-                connectingProperty.set(false)
+    @Synchronized
+    fun stop() {
+        guidingProperty.set(false)
+        value?.disableBlob()
+        guider.stopLooping()
+    }
+
+    override fun onChanged(prev: Camera?, device: Camera) {}
+
+    override fun onReset() {}
+
+    override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
+        when (event) {
+            is CameraFrameCaptured -> {
+                val fits = Fits(event.fits)
+                val image = Image.open(fits)
+                imageQueue.offer(image)
+
+                javaFXExecutorService.submit { imageViewOpener.open(image, null, device) }
             }
         }
     }
 
-    fun openPHD2() {
-        guiderSettingsView.show(bringToFront = true)
+    override val image: Image
+        get() = imageQueue.take()
+
+    override val pixelScale
+        get() = value?.pixelSizeX ?: 0.0
+
+    override val exposure
+        get() = 1000L
+
+    override var autoExposure = false
+
+    override fun capture(duration: Long) {
+        value?.startCapture(duration * 1000L)
     }
 
     companion object {

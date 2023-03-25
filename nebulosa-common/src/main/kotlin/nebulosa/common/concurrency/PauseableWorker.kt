@@ -23,8 +23,11 @@ abstract class PauseableWorker(private val name: String) : Worker, Pauseable {
                 }
             }
 
+            thread!!.name = name
             thread!!.isDaemon = true
             thread!!.start()
+        } else if (paused) {
+            unpause()
         }
     }
 

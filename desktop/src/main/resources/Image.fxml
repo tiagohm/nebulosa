@@ -30,7 +30,8 @@
                     </accelerator>
                 </MenuItem>
                 <SeparatorMenuItem/>
-                <MenuItem text="Solve"
+                <MenuItem fx:id="solveMenuItem"
+                          text="Solve"
                           onAction="#solve">
                     <graphic>
                         <MaterialIcon icon="sigma"/>
@@ -44,7 +45,8 @@
                                             shortcut="UP"/>
                     </accelerator>
                 </MenuItem>
-                <MenuItem text="Blind solve"
+                <MenuItem fx:id="blindSolveMenuItem"
+                          text="Blind solve"
                           onAction="#blindSolve">
                     <graphic>
                         <MaterialIcon icon="sigma"/>

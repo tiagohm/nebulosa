@@ -61,6 +61,7 @@ class EquipmentManager : Closeable {
     val attachedThermometers = SimpleListProperty(FXCollections.observableArrayList<Thermometer>())
 
     val selectedCamera = DefaultCameraProperty()
+    val selectedGuider = DefaultCameraProperty()
     val selectedMount = DefaultMountProperty()
     val selectedFilterWheel = DefaultFilterWheelProperty()
     val selectedFocuser = DefaultFocuserProperty()
@@ -69,12 +70,14 @@ class EquipmentManager : Closeable {
     @PostConstruct
     private fun initialize() {
         selectedCamera.initialize()
+        selectedGuider.initialize()
         selectedMount.initialize()
         selectedFilterWheel.initialize()
         selectedFocuser.initialize()
         selectedGPS.initialize()
 
         eventBus.register(selectedCamera)
+        eventBus.register(selectedGuider)
         eventBus.register(selectedMount)
         eventBus.register(selectedFilterWheel)
         eventBus.register(selectedFocuser)
@@ -115,6 +118,7 @@ class EquipmentManager : Closeable {
         subscribers.fill(null)
 
         selectedCamera.close()
+        selectedGuider.close()
         selectedMount.close()
         selectedFilterWheel.close()
         selectedFocuser.close()

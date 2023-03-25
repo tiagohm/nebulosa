@@ -59,13 +59,6 @@ class CameraManager(
         eventBus.register(this)
     }
 
-    override fun onChanged(prev: Camera?, device: Camera) {
-        if (prev !== device) savePreferences(prev)
-
-        updateTitle()
-        loadPreferences(device)
-    }
-
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onTaskEvent(event: TaskEvent) {
         when (event) {
@@ -75,6 +68,15 @@ class CameraManager(
             }
         }
     }
+
+    override fun onChanged(prev: Camera?, device: Camera) {
+        if (prev !== device) savePreferences(prev)
+
+        updateTitle()
+        loadPreferences(device)
+    }
+
+    override fun onReset() {}
 
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
         when (event) {

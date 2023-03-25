@@ -1,24 +1,12 @@
 package nebulosa.guiding
 
-import java.io.Closeable
+interface Guider {
 
-interface Guider : Closeable {
+    val starCount: Int
 
-    val canClearCalibration: Boolean
+    fun autoSelect(): Boolean
 
-    var shiftRate: SiderealShiftTrackingRate
+    fun selectGuideStar(x: Double, y: Double)
 
-    fun autoSelectGuideStar()
-
-    fun start(forceCalibration: Boolean)
-
-    fun dither()
-
-    fun stop()
-
-    fun clearCalibration()
-
-    fun stopShifting()
-
-    fun connect()
+    fun deselectGuideStar()
 }

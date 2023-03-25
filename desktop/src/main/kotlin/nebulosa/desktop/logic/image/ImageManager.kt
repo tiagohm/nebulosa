@@ -48,8 +48,7 @@ class ImageManager(private val view: ImageView) : Closeable {
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var nebula: Nebula
 
-    @Volatile var file: File? = null
-        private set
+    val file = SimpleObjectProperty<File>()
 
     @Volatile var image: Image? = null
         private set
@@ -111,7 +110,7 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     @Subscribe
     fun onPlateSolvingEvent(event: PlateSolvingEvent) {
-        if (event.file === file) {
+        if (event.file === file.get()) {
             calibration.set(if (event is PlateSolvingSolved) event.calibration else null)
 
             annotation?.also(view::remove)
@@ -128,7 +127,7 @@ class ImageManager(private val view: ImageView) : Closeable {
     private fun updateTitle() {
         view.title = "Image"
             .let { if (view.camera != null) "$it · ${view.camera!!.name}" else it }
-            .let { if (file != null) "$it · ${file!!.name}" else it }
+            .let { if (file.get() != null) "$it · ${file.get().name}" else it }
     }
 
     @Synchronized
@@ -139,7 +138,7 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     @Synchronized
     fun open(image: Image, file: File? = null, resetTransformation: Boolean = false) {
-        this.file = file
+        this.file.set(file)
 
         updateTitle()
 
@@ -347,7 +346,7 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     fun solve(blind: Boolean = false): Boolean {
-        val file = file ?: return false
+        val file = file.get() ?: return false
         val image = image ?: return false
 
         plateSolverView.show(bringToFront = true)

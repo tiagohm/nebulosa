@@ -1,14 +1,17 @@
 package nebulosa.desktop.gui.guider
 
 import javafx.fxml.FXML
+import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.guider.GuiderManager
+import nebulosa.desktop.logic.isNull
+import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
-import nebulosa.desktop.view.guider.GuiderType
 import nebulosa.desktop.view.guider.GuiderView
+import nebulosa.indi.device.camera.Camera
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
@@ -18,8 +21,11 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
     @Lazy @Autowired private lateinit var guiderManager: GuiderManager
 
-    @FXML private lateinit var guiderTypeChoiceBox: ChoiceBox<GuiderType>
+    @FXML private lateinit var guiderChoiceBox: ChoiceBox<Camera>
     @FXML private lateinit var connectButton: TwoStateButton
+    @FXML private lateinit var openINDIButton: Button
+    @FXML private lateinit var startButton: Button
+    @FXML private lateinit var stopButton: Button
 
     init {
         title = "Guider"
@@ -27,32 +33,50 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     }
 
     override fun onCreate() {
+        val isNotConnected = !guiderManager.connectedProperty
         val isConnecting = guiderManager.connectingProperty
-        val isConnected = guiderManager.connectedProperty
+        val isGuiding = guiderManager.guidingProperty
+        val isNotConnectedOrGuiding = isNotConnected or isGuiding
 
-        guiderTypeChoiceBox.converter = GuiderTypeStringConverter
-        guiderTypeChoiceBox.value = GuiderType.PHD2
-        guiderTypeChoiceBox.disableProperty().bind(isConnecting or isConnected)
+        guiderManager.initialize()
 
-        connectButton.disableProperty().bind(isConnecting)
+        guiderChoiceBox.converter = GuiderStringConverter
+        guiderChoiceBox.disableProperty().bind(isConnecting or isGuiding)
+        guiderChoiceBox.itemsProperty().bind(guiderManager.cameras)
+        guiderManager.bind(guiderChoiceBox.selectionModel.selectedItemProperty())
+
+        connectButton.disableProperty().bind(guiderManager.isNull() or isConnecting or isGuiding)
+        guiderManager.connectedProperty.on { connectButton.state = it }
+
+        openINDIButton.disableProperty().bind(connectButton.disableProperty())
+
+        startButton.disableProperty().bind(isNotConnectedOrGuiding)
+        stopButton.disableProperty().bind(isNotConnected or !isGuiding)
     }
-
-    override val type
-        get() = guiderTypeChoiceBox.value!!
 
     @FXML
     private fun connect() {
-        guiderManager.connect(guiderTypeChoiceBox.value)
+        guiderManager.connect()
     }
 
     @FXML
-    private fun openPHD2() {
-        guiderManager.openPHD2()
+    private fun openINDIPanelControl() {
+        guiderManager.openINDIPanelControl()
     }
 
-    private object GuiderTypeStringConverter : StringConverter<GuiderType>() {
+    @FXML
+    private fun start() {
+        guiderManager.start()
+    }
 
-        override fun toString(guider: GuiderType?) = guider?.label ?: "No guider selected"
+    @FXML
+    private fun stop() {
+        guiderManager.stop()
+    }
+
+    private object GuiderStringConverter : StringConverter<Camera>() {
+
+        override fun toString(device: Camera?) = device?.name ?: "No guiding camera selected"
 
         override fun fromString(text: String?) = null
     }

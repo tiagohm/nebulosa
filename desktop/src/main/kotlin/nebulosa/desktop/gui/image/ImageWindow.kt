@@ -35,6 +35,8 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     @FXML private lateinit var fitsImageViewer: ImageViewer
     @FXML private lateinit var menu: ContextMenu
+    @FXML private lateinit var solveMenuItem: MenuItem
+    @FXML private lateinit var blindSolveMenuItem: MenuItem
     @FXML private lateinit var autoStretchCheckMenuItem: CheckMenuItem
     @FXML private lateinit var mirrorHorizontalCheckMenuItem: CheckMenuItem
     @FXML private lateinit var mirrorVerticalCheckMenuItem: CheckMenuItem
@@ -77,6 +79,9 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
             ControlAcceleratorSupport.addAcceleratorsIntoScene(menu.items, this)
         }
+
+        solveMenuItem.disableProperty().bind(imageManager.file.isNull)
+        blindSolveMenuItem.disableProperty().bind(solveMenuItem.disableProperty())
 
         annotateCheckMenuItem.disableProperty()
             .bind(imageManager.calibration.asBoolean { it == null || !it.hasWCS })

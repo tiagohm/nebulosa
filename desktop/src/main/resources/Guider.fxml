@@ -2,17 +2,16 @@
 
 <?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.control.MaterialIcon?>
-<?import nebulosa.desktop.gui.control.TwoStateButton?>
-<?import nebulosa.desktop.view.guider.GuiderType?>
+<?import nebulosa.desktop.gui.control.*?>
+<?import nebulosa.desktop.view.guider.*?>
+<?import nebulosa.guiding.internal.DeclinationGuideMode?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefWidth="540.0"
+            prefWidth="640.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="4.0"
@@ -28,16 +27,9 @@
         </padding>
         <HBox alignment="CENTER"
               spacing="4.0">
-            <ChoiceBox fx:id="guiderTypeChoiceBox"
+            <ChoiceBox fx:id="guiderChoiceBox"
                        prefHeight="32.0"
-                       prefWidth="394.0"
-                       maxWidth="220.0">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <GuiderType fx:value="PHD2"/>
-                    </FXCollections>
-                </items>
-            </ChoiceBox>
+                       prefWidth="394.0"/>
             <TwoStateButton fx:id="connectButton"
                             onAction="#connect">
                 <MaterialIcon icon="close-circle"
@@ -45,15 +37,277 @@
                               color="warning"/>
                 <MaterialIcon icon="connection"/>
             </TwoStateButton>
-            <Button alignment="CENTER"
-                    contentDisplay="TEXT_ONLY"
-                    minWidth="42.0"
-                    mnemonicParsing="false"
-                    onAction="#openPHD2"
-                    prefHeight="32.0"
-                    styleClass="mdi,mdi-sm,text-blue-grey-700"
-                    text="󰒓">
-            </Button>
+            <ImageButton fx:id="openINDIButton"
+                         onAction="#openINDIPanelControl"
+                         url="@icons/indi.png"/>
+        </HBox>
+        <TabPane tabClosingPolicy="UNAVAILABLE">
+            <Tab text="Graph">
+
+            </Tab>
+            <Tab text="Guiding">
+
+            </Tab>
+            <Tab text="Right Ascension">
+                <GridPane vgap="4.0"
+                          hgap="4.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+                    <LabeledPane text="Algorithm"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="0">
+                        <ChoiceBox fx:id="algorithmRAChoiceBox"
+                                   maxWidth="Infinity">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <GuideAlgorithmType fx:value="HYSTERESIS"/>
+                                    <GuideAlgorithmType fx:value="LOW_PASS"/>
+                                    <GuideAlgorithmType fx:value="LOW_PASS_2"/>
+                                    <GuideAlgorithmType fx:value="RESIST_SWITCH"/>
+                                </FXCollections>
+                            </items>
+                        </ChoiceBox>
+                    </LabeledPane>
+                    <LabeledPane text="Max Duration (ms)"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="1">
+                        <Spinner fx:id="maxDurationRASpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="50.0"
+                                 initialValue="2500"
+                                 amountToStepBy="1.0"
+                                 max="8000.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Hysteresis (%)"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="0">
+                        <Spinner fx:id="hysteresisRASpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="0.0"
+                                 initialValue="10.0"
+                                 amountToStepBy="0.1"
+                                 max="99.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Aggressiveness (%)"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="1">
+                        <Spinner fx:id="aggressivenessRASpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="0.0"
+                                 initialValue="70.0"
+                                 amountToStepBy="0.1"
+                                 max="200.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Minimum Move (px)"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="2">
+                        <Spinner fx:id="minimumMoveRASpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="0.0"
+                                 initialValue="0.19"
+                                 amountToStepBy="0.01"
+                                 max="20.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Slope Weight"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="3">
+                        <Spinner fx:id="slopeWeightRASpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="0.0"
+                                 initialValue="5.0"
+                                 amountToStepBy="0.01"
+                                 max="20.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Fast Switch for Large Deflections"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="2"
+                                 GridPane.columnIndex="0">
+                        <SwitchSegmentedButton fx:id="fastSwitchForLargeDeflectionsRASwitch"/>
+                    </LabeledPane>
+                </GridPane>
+            </Tab>
+            <Tab text="Declination">
+                <GridPane vgap="4.0"
+                          hgap="4.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+                    <LabeledPane text="Algorithm"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="0">
+                        <ChoiceBox fx:id="algorithmDECChoiceBox"
+                                   maxWidth="Infinity">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <GuideAlgorithmType fx:value="HYSTERESIS"/>
+                                    <GuideAlgorithmType fx:value="LOW_PASS"/>
+                                    <GuideAlgorithmType fx:value="LOW_PASS_2"/>
+                                    <GuideAlgorithmType fx:value="RESIST_SWITCH"/>
+                                </FXCollections>
+                            </items>
+                        </ChoiceBox>
+                    </LabeledPane>
+                    <LabeledPane text="Max Duration (ms)"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="1">
+                        <Spinner fx:id="maxDurationDECSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="50.0"
+                                 initialValue="2500"
+                                 amountToStepBy="1.0"
+                                 max="8000.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Guide Mode"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="2">
+                        <ChoiceBox fx:id="guideModeDECChoiceBox"
+                                   maxWidth="Infinity">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <DeclinationGuideMode fx:value="NONE"/>
+                                    <DeclinationGuideMode fx:value="AUTO"/>
+                                    <DeclinationGuideMode fx:value="NORTH"/>
+                                    <DeclinationGuideMode fx:value="SOUTH"/>
+                                </FXCollections>
+                            </items>
+                        </ChoiceBox>
+                    </LabeledPane>
+                    <LabeledPane text="Hysteresis (%)"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="0">
+                        <Spinner fx:id="hysteresisDECSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="0.0"
+                                 initialValue="10.0"
+                                 amountToStepBy="0.1"
+                                 max="99.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Aggressiveness (%)"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="1">
+                        <Spinner fx:id="aggressivenessDECSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="0.0"
+                                 initialValue="70.0"
+                                 amountToStepBy="0.1"
+                                 max="200.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Minimum Move (px)"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="2">
+                        <Spinner fx:id="minimumMoveDECSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="0.0"
+                                 initialValue="0.19"
+                                 amountToStepBy="0.01"
+                                 max="20.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Slope Weight"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="3">
+                        <Spinner fx:id="slopeWeightDECSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="0.0"
+                                 initialValue="5.0"
+                                 amountToStepBy="0.01"
+                                 max="20.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Fast Switch for Large Deflections"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="2"
+                                 GridPane.columnIndex="0">
+                        <SwitchSegmentedButton fx:id="fastSwitchForLargeDeflectionsDECSwitch"/>
+                    </LabeledPane>
+                    <LabeledPane text="Backlash Compensation"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="3"
+                                 GridPane.columnIndex="0">
+                        <SwitchSegmentedButton fx:id="backlashCompensationSwitch"/>
+                    </LabeledPane>
+                    <LabeledPane text="Backlash Amount (ms)"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="3"
+                                 GridPane.columnIndex="1">
+                        <Spinner fx:id="backlashAmountSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="20.0"
+                                 initialValue="20.0"
+                                 amountToStepBy="20.0"
+                                 max="8000.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Backlash Min (ms)"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="3"
+                                 GridPane.columnIndex="2">
+                        <Spinner fx:id="backlashMinSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="20.0"
+                                 initialValue="20.0"
+                                 amountToStepBy="20.0"
+                                 max="8000.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Backlash Max (ms)"
+                                 styleClass="text-bold"
+                                 GridPane.rowIndex="3"
+                                 GridPane.columnIndex="3">
+                        <Spinner fx:id="backlashMaxSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="20.0"
+                                 initialValue="20.0"
+                                 amountToStepBy="20.0"
+                                 max="8000.0"/>
+                    </LabeledPane>
+                </GridPane>
+            </Tab>
+        </TabPane>
+        <HBox alignment="CENTER"
+              spacing="4.0">
+            <VBox.margin>
+                <Insets top="4.0"/>
+            </VBox.margin>
+            <MaterialIconButton fx:id="startButton"
+                                onAction="#start"
+                                text="Start"
+                                icon="play"
+                                color="green-500"/>
+            <MaterialIconButton fx:id="stopButton"
+                                onAction="#stop"
+                                text="Abort"
+                                icon="stop"
+                                color="warning"/>
         </HBox>
     </VBox>
 </AnchorPane>

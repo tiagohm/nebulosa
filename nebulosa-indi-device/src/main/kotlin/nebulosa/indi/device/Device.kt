@@ -32,6 +32,10 @@ interface Device : INDIProtocolHandler, Closeable {
         sendMessageToServer(EnableBLOB().also { it.device = name })
     }
 
+    fun disableBlob() {
+        sendMessageToServer(EnableBLOB().also { it.value = BLOBEnable.NEVER; it.device = name })
+    }
+
     fun snoop(devices: Iterable<Device?>)
 
     fun sendNewSwitch(
