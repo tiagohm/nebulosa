@@ -2,6 +2,8 @@ package nebulosa.guiding.internal
 
 sealed interface GuideAlgorithm {
 
+    val axis: GuideAxis
+
     var minMove: Double
 
     fun compute(input: Double): Double

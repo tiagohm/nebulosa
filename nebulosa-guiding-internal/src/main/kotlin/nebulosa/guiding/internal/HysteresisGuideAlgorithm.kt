@@ -2,14 +2,14 @@ package nebulosa.guiding.internal
 
 import kotlin.math.abs
 
-class HysteresisGuideAlgorithm(
-    override var minMove: Double = MIN_MOVE,
-    val hysteresis: Double = HYSTERESIS,
-    val aggression: Double = AGGRESSION,
+data class HysteresisGuideAlgorithm(
+    override val axis: GuideAxis,
+    override var minMove: Double = DEFAULT_MIN_MOVE, // [0..20] px
+    var hysteresis: Double = DEFAULT_HYSTERESIS, // [0..1]
+    var aggression: Double = DEFAULT_AGGRESSION, // [0..2]
 ) : GuideAlgorithm {
 
-    @Volatile var lastMove = 0.0
-        private set
+    private var lastMove = 0.0
 
     override fun compute(input: Double): Double {
         var res = (1.0 - hysteresis) * input + hysteresis * lastMove
@@ -31,9 +31,9 @@ class HysteresisGuideAlgorithm(
 
     companion object {
 
-        const val MIN_MOVE = 0.2
-        const val HYSTERESIS = 0.1
-        const val AGGRESSION = 0.7
+        const val DEFAULT_MIN_MOVE = 0.2
+        const val DEFAULT_HYSTERESIS = 0.1
+        const val DEFAULT_AGGRESSION = 0.7
         const val MAX_AGGRESSION = 2.0
         const val MAX_HYSTERESIS = 0.99
     }

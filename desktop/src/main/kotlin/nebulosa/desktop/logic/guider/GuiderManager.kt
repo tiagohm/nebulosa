@@ -121,7 +121,7 @@ class GuiderManager(
 
     override var busy = false
 
-    override var calibrated = false
+    override var calibrationFlipRequiresDecFlip = false
 
     override var raParity = GuideParity.UNCHANGED
 
@@ -134,9 +134,29 @@ class GuiderManager(
 
     override var declinationGuideMode = DeclinationGuideMode.AUTO
 
-    override var xGuideAlgorithm = HysteresisGuideAlgorithm()
+    override var maxDeclinationDuration = 2000
 
-    override var yGuideAlgorithm = HysteresisGuideAlgorithm()
+    override var maxRightAscensionDuration = 2000
+
+    override var xGuideAlgorithm = HysteresisGuideAlgorithm(GuideAxis.RA_X)
+
+    override var yGuideAlgorithm = HysteresisGuideAlgorithm(GuideAxis.DEC_Y)
+
+    override fun moveTo(direction: GuideDirection, duration: Int): Boolean {
+        val mount = mount ?: return false
+
+        if (!mount.canPulseGuide) return false
+
+        when (direction) {
+            GuideDirection.UP_NORTH -> mount.guideNorth(duration)
+            GuideDirection.DOWN_SOUTH -> mount.guideSouth(duration)
+            GuideDirection.LEFT_WEST -> mount.guideWest(duration)
+            GuideDirection.RIGHT_EAST -> mount.guideEast(duration)
+            else -> return false
+        }
+
+        return true
+    }
 
     override fun beginCalibration(currentLocation: Point): Boolean {
         println("beginCalibration. $currentLocation")
@@ -174,58 +194,6 @@ class GuiderManager(
 
     override fun notifyDirectMove(distance: Point) {
         println("notifyDirectMove")
-    }
-
-    override fun transformMountCoordinatesToCameraCoordinates(mount: Point, camera: Point): Boolean {
-        val distance = mount.distance
-        val mountTheta = mount.angle
-        // val xAngle = mountTheta + calibration.xAngle
-        // camera.set(cos(xAngle) * distance, sin(xAngle) * distance)
-        return true
-    }
-
-    override fun moveOffset(offset: GuiderOffset, moveOptions: List<MountMoveOption>): Boolean {
-        if (MountMoveOption.ALGORITHM_DEDUCE in moveOptions) {
-            val xDistance = xGuideAlgorithm.deduce()
-            val yDistance = yGuideAlgorithm.deduce()
-
-            if (xDistance == 0.0 && yDistance == 0.0) return true
-
-            offset.mount.set(xDistance, yDistance)
-        } else {
-            if (!offset.mount.valid) {
-                if (!transformCameraCoordinatesToMountCoordinates(offset.camera, offset.mount)) {
-                    println("Unable to transform camera coordinates")
-                    return false
-                }
-            }
-
-            var xDistance = offset.mount.x
-            var yDistance = offset.mount.y
-
-            // Let BLC track the raw offsets in Dec
-            // TODO: if (m_backlashComp)
-            //    m_backlashComp->TrackBLCResults(moveOptions, yDistance)
-
-            if (MountMoveOption.ALGORITHM_RESULT in moveOptions) {
-                xDistance = xGuideAlgorithm.compute(xDistance)
-                yDistance = yGuideAlgorithm.compute(yDistance)
-            }
-
-            // Figure out the guide directions based on the (possibly) updated distances
-            val xDirection = if (xDistance > 0.0) GuideDirection.LEFT_WEST else GuideDirection.RIGHT_EAST
-            val yDirection = if (yDistance > 0.0) GuideDirection.DOWN_SOUTH else GuideDirection.UP_NORTH
-
-            println("moving $xDistance $yDistance $xDirection $yDirection")
-
-            // TODO: Setar a calibração val requestedXAmount = abs(xDistance / xRate).round()
-        }
-
-        return true
-    }
-
-    override fun transformCameraCoordinatesToMountCoordinates(camera: Point, mount: Point): Boolean {
-        return true
     }
 
     fun selectGuideStar(x: Double, y: Double) {

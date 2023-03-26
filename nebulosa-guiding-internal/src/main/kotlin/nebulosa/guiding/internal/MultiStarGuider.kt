@@ -1,5 +1,6 @@
 package nebulosa.guiding.internal
 
+import nebulosa.constants.PIOVERTWO
 import nebulosa.guiding.Guider
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.star.hfd.FindMode
@@ -9,6 +10,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 /**
  * It is responsible for dealing with new images as they arrive,
@@ -81,8 +83,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
 
     private var minStarHFD = 1.5
 
-    private var calibration = Calibration.EMPTY
-    private var yAngleError = 0.0
+    private val guideCalibration = GuideCalibration(this)
 
     private val currentPosition
         get() = primaryStar
@@ -124,7 +125,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                     stopGuiding()
                     invalidateCurrentPosition(true)
 
-                    if (!autoSelect()) {
+                    if (autoSelect()) {
                         startGuiding()
                     }
                 }
@@ -203,7 +204,6 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
     }
 
     private fun moveLockPosition(delta: Point): Boolean {
-        val mount = mount ?: return false
         val image = image ?: return false
 
         if (!delta.valid) return false
@@ -219,7 +219,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             val tmpMount = Point(delta.x * sx, delta.y * sy)
             val tmpCamera = Point()
 
-            if (mount.transformMountCoordinatesToCameraCoordinates(tmpMount, tmpCamera)) {
+            if (transformMountCoordinatesToCameraCoordinates(tmpMount, tmpCamera)) {
                 val tmpLockPosition = lockPosition + tmpCamera
 
                 if (isValidLockPosition(tmpLockPosition)) {
@@ -305,9 +305,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                 nextState = GuiderState.SELECTING
             }
             GuiderState.CALIBRATING -> {
-                if (!mount.calibrated) {
-                    // TODO: mount.resetErrorCount()
-
+                if (!guideCalibration.calibrated) {
                     if (!mount.beginCalibration(currentPosition)) {
                         nextState = GuiderState.UNINITIALIZED
                         LOG.error("begin calibration failed")
@@ -318,7 +316,8 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             }
             GuiderState.GUIDING -> {
                 ditherRecenterRemaining.invalidate()
-                // TODO: mount.adjustCalibrationForScopePointing()
+
+                guideCalibration.adjustCalibrationForScopePointing()
 
                 if (lockPosition.valid && lockPositionIsSticky) {
                     LOG.info("keeping sticky lock position")
@@ -338,7 +337,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
         }
     }
 
-    private fun lockPositionToStarAtPosition(starPosHint: Point) {
+    fun lockPositionToStarAtPosition(starPosHint: Point) {
         if (currentPosition(image!!, starPosHint) && currentPosition.valid) {
             lockPosition(currentPosition)
         }
@@ -425,6 +424,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
         }
     }
 
+    @Synchronized
     internal fun updateGuide(frame: Frame, stopping: Boolean) {
         this.frame.set(frame)
 
@@ -460,10 +460,9 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                 GuiderState.GUIDING -> {
                     listeners.forEach { it.onStarLost() }
                     // Allow guide algorithms to attempt dead reckoning.
-                    mount.moveOffset(ZERO_OFFSET, DEDUCED_MOVE)
+                    moveOffset(ZERO_OFFSET, DEDUCED_MOVE)
                 }
-                GuiderState.CALIBRATED,
-                GuiderState.STOP -> Unit
+                else -> Unit
             }
         } else {
             if (state.looping) {
@@ -479,7 +478,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             if (paused) {
                 if (state == GuiderState.GUIDING) {
                     // Allow guide algorithms to attempt dead reckoning.
-                    mount.moveOffset(ZERO_OFFSET, DEDUCED_MOVE)
+                    moveOffset(ZERO_OFFSET, DEDUCED_MOVE)
                 }
             } else {
                 when (state) {
@@ -492,14 +491,14 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                         // StaticPaTool,PolarDriftTool -> UpdateState()
                     }
                     GuiderState.CALIBRATING -> {
-                        if (!mount.calibrated) {
+                        if (!guideCalibration.calibrated) {
                             if (!mount.updateCalibrationState(currentPosition)) {
                                 updateState(GuiderState.UNINITIALIZED)
                                 LOG.error("calibration failed")
                                 return
                             }
 
-                            if (mount.calibrated) {
+                            if (guideCalibration.calibrated) {
                                 updateState(GuiderState.CALIBRATED)
                             }
                         } else {
@@ -542,14 +541,14 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                             }
 
                             offset.mount.set(step.x * ditherRecenterDir[0], step.y * ditherRecenterDir[1])
-                            mount.transformMountCoordinatesToCameraCoordinates(offset.mount, offset.camera)
-                            mount.moveOffset(offset, RECOVERY_MOVE)
+                            transformMountCoordinatesToCameraCoordinates(offset.mount, offset.camera)
+                            moveOffset(offset, RECOVERY_MOVE)
                             // Let guide algorithms know about the direct move.
                             mount.notifyDirectMove(offset.mount)
                         } else if (measurementMode) {
                             // GuidingAssistant::NotifyBacklashStep(CurrentPosition());
                         } else {
-                            mount.moveOffset(offset, GUIDE_STEP)
+                            moveOffset(offset, GUIDE_STEP)
                         }
                     }
                     else -> Unit
@@ -591,7 +590,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                 raDecRates.set(x, y)
             }
 
-            mount.transformMountCoordinatesToCameraCoordinates(raDecRates, rate)
+            transformMountCoordinatesToCameraCoordinates(raDecRates, rate)
         } else {
             rate.set(lockPositionShift.shiftRate)
         }
@@ -904,11 +903,12 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             0.0
         }
 
-        LOG.info("distance: $distance")
+        LOG.info("checking distance. dist={}, raOnly={}", distance, mount.guidingRAOnly)
 
         val tolerance = if (tolerateJumpsEnabled) tolerateJumpsThreshold else Double.MAX_VALUE
 
         if (!distanceChecker.checkDistance(distance, mount.guidingRAOnly, tolerance)) {
+            LOG.info("check distance error")
             return false
         }
 
@@ -922,13 +922,14 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             if (multiStar && starCount > 1) {
                 if (refineOffset(image, offset)) {
                     distance = hypot(offset.camera.x, offset.camera.y)
+                    LOG.info("refined distance. dist={}", distance)
                 }
             } else {
                 starsUsed = 1
             }
 
-            if (mount.calibrated) {
-                mount.transformCameraCoordinatesToMountCoordinates(offset.camera, offset.mount)
+            if (guideCalibration.calibrated) {
+                transformCameraCoordinatesToMountCoordinates(offset.camera, offset.mount)
             }
 
             val distanceRA = if (offset.mount.valid) abs(offset.mount.x) else 0.0
@@ -957,6 +958,132 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                 point.x + 5.0 < image.width &&
                 point.y >= 5.0 &&
                 point.y + 5.0 < image.height
+    }
+
+    private fun moveOffset(offset: GuiderOffset, moveOptions: List<MountMoveOption>): Boolean {
+        val mount = mount ?: return false
+
+        if (MountMoveOption.ALGORITHM_DEDUCE in moveOptions) {
+            val xDistance = mount.xGuideAlgorithm.deduce()
+            val yDistance = mount.yGuideAlgorithm.deduce()
+
+            if (xDistance != 0.0 || yDistance != 0.0) {
+                LOG.info("deduced move. x={}, y={}", xDistance, yDistance)
+                offset.mount.set(xDistance, yDistance)
+            }
+        } else {
+            if (!offset.mount.valid) {
+                if (!transformCameraCoordinatesToMountCoordinates(offset.camera, offset.mount)) {
+                    LOG.error("unable to transform camera coordinates")
+                    return false
+                }
+            }
+
+            var xDistance = offset.mount.x
+            var yDistance = offset.mount.y
+
+            // Let BLC track the raw offsets in Dec
+            // TODO: if (m_backlashComp)
+            //    m_backlashComp->TrackBLCResults(moveOptions, yDistance)
+
+            if (MountMoveOption.ALGORITHM_RESULT in moveOptions) {
+                xDistance = mount.xGuideAlgorithm.compute(xDistance)
+                yDistance = mount.yGuideAlgorithm.compute(yDistance)
+            }
+
+            // Figure out the guide directions based on the (possibly) updated distances
+            val xDirection = if (xDistance > 0.0) GuideDirection.LEFT_WEST else GuideDirection.RIGHT_EAST
+            val yDirection = if (yDistance > 0.0) GuideDirection.DOWN_SOUTH else GuideDirection.UP_NORTH
+
+            LOG.info("move. x={}, y={}, xDir={}, yDir={}", xDistance, yDistance, xDirection, yDirection)
+
+            val requestedXAmount = abs(xDistance / guideCalibration.xRate).roundToInt()
+
+            if (mount.moveAxis(xDirection, requestedXAmount, moveOptions)) {
+                val requestedYAmount = abs(yDistance / guideCalibration.yRate).roundToInt()
+
+                // TODO: if (m_backlashComp)
+                //     m_backlashComp->ApplyBacklashComp(moveOptions, yDistance, &requestedYAmount);
+
+                mount.moveAxis(yDirection, requestedYAmount, moveOptions)
+            }
+        }
+
+        return true
+    }
+
+    private fun GuideMount.moveAxis(direction: GuideDirection, duration: Int, moveOptions: List<MountMoveOption>): Boolean {
+        LOG.info("move axis. direction={}, duration={}, options={}", direction, duration, moveOptions)
+
+        if (!guidingEnabled && MountMoveOption.MANUAL !in moveOptions) {
+            LOG.warn("guiding disabled")
+            return false
+        }
+
+        // Compute the actual guide durations.
+        var newDuration = duration
+
+        when (direction) {
+            GuideDirection.UP_NORTH,
+            GuideDirection.DOWN_SOUTH -> {
+                // Enforce DEC guide mode and max duration for guide step (or deduced step) moves.
+                if (MountMoveOption.ALGORITHM_RESULT in moveOptions ||
+                    MountMoveOption.ALGORITHM_DEDUCE in moveOptions
+                ) {
+                    if ((mount.declinationGuideMode == DeclinationGuideMode.NONE) ||
+                        (direction == GuideDirection.DOWN_SOUTH && mount.declinationGuideMode == DeclinationGuideMode.NORTH) ||
+                        (direction == GuideDirection.UP_NORTH && mount.declinationGuideMode == DeclinationGuideMode.SOUTH)
+                    ) {
+                        newDuration = 0
+                        LOG.info("duration set to 0. mode={}", mount.declinationGuideMode)
+                    }
+
+                    if (newDuration > mount.maxDeclinationDuration) {
+                        newDuration = mount.maxDeclinationDuration
+                        LOG.info("duration set to maxDeclinationDuration. duration={}", newDuration)
+                    }
+                }
+            }
+            GuideDirection.LEFT_WEST,
+            GuideDirection.RIGHT_EAST -> {
+                // Enforce RA guide mode and max duration for guide step (or deduced step) moves.
+                if (MountMoveOption.ALGORITHM_RESULT in moveOptions ||
+                    MountMoveOption.ALGORITHM_DEDUCE in moveOptions
+                ) {
+                    if (newDuration > mount.maxRightAscensionDuration) {
+                        newDuration = mount.maxRightAscensionDuration
+                        LOG.info("duration set to maxRightAscensionDuration. duration={}", newDuration)
+                    }
+                }
+            }
+            else -> Unit
+        }
+
+        return if (newDuration > 0) {
+            mount.moveTo(direction, newDuration)
+        } else {
+            false
+        }
+    }
+
+    private fun transformMountCoordinatesToCameraCoordinates(mount: Point, camera: Point): Boolean {
+        if (!mount.valid) return false
+        val distance = mount.distance
+        var mountTheta = mount.angle
+        if (abs(guideCalibration.yAngleError.value) > PIOVERTWO) mountTheta = -mountTheta
+        val xAngle = mountTheta + guideCalibration.xAngle
+        camera.set(xAngle.cos * distance, xAngle.sin * distance)
+        return true
+    }
+
+    private fun transformCameraCoordinatesToMountCoordinates(camera: Point, mount: Point): Boolean {
+        if (!camera.valid) return false
+        val distance = camera.distance
+        val cameraTheta = camera.angle
+        val xAngle = cameraTheta - guideCalibration.xAngle
+        val yAngle = cameraTheta - (guideCalibration.xAngle + guideCalibration.yAngleError)
+        mount.set(xAngle.cos * distance, yAngle.sin * distance)
+        return true
     }
 
     fun startLooping() {

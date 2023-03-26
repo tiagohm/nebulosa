@@ -8,17 +8,21 @@ interface GuideMount {
 
     val busy: Boolean
 
-    val calibrated: Boolean
-
     val raParity: GuideParity
 
     val decParity: GuideParity
+
+    val calibrationFlipRequiresDecFlip: Boolean
 
     val declination: Angle
 
     val guidingEnabled: Boolean
 
     val declinationGuideMode: DeclinationGuideMode
+
+    val maxDeclinationDuration: Int
+
+    val maxRightAscensionDuration: Int
 
     val guidingRAOnly
         get() = declinationGuideMode == DeclinationGuideMode.NONE
@@ -45,9 +49,5 @@ interface GuideMount {
 
     fun notifyDirectMove(distance: Point)
 
-    fun transformMountCoordinatesToCameraCoordinates(mount: Point, camera: Point): Boolean
-
-    fun moveOffset(offset: GuiderOffset, moveOptions: List<MountMoveOption>): Boolean
-
-    fun transformCameraCoordinatesToMountCoordinates(camera: Point, mount: Point): Boolean
+    fun moveTo(direction: GuideDirection, duration: Int): Boolean
 }
