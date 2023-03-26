@@ -1,5 +1,6 @@
 package nebulosa.guiding.internal
 
+import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.constants.PIOVERTWO
 import nebulosa.guiding.Guider
 import nebulosa.imaging.Image
@@ -26,7 +27,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
     private val primaryDistStats = DescriptiveStats()
     private val distanceChecker = DistanceChecker(this)
 
-    private val listeners = ArrayList<GuiderListener>(1)
+    internal val listeners = ArrayList<GuiderListener>(1)
 
     var state = GuiderState.UNINITIALIZED
         private set
@@ -45,7 +46,8 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
     private val ditherRecenterDir = DoubleArray(2)
     private var measurementMode = false
     private var lockPositionIsSticky = false
-    private var fastRecenterEnabled = false
+
+    var fastRecenterEnabled = false
 
     private val frame = AtomicReference<Frame>()
     private val guideMount = AtomicReference<GuideMount>()
@@ -106,13 +108,13 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
     val currentErrorFrameCount
         get() = avgDistanceCnt
 
-    private var massChangeThreshold = 0.0
+    var massChangeThreshold = 0.0
         set(value) {
             require(value >= 0.0) { "massChangeThreshold < 0" }
             field = value
         }
 
-    private var multiStar = false
+    var multiStar = false
         set(value) {
             val prevMultiStar = field
             field = value
@@ -133,7 +135,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             if (!value) stabilizing = false
         }
 
-    private var searchRegion = 15.0
+    var searchRegion = 15.0
         set(value) {
             require(searchRegion >= MIN_SEARCH_REGION) { "searchRegion < $MIN_SEARCH_REGION" }
             require(searchRegion <= MAX_SEARCH_REGION) { "searchRegion > $MAX_SEARCH_REGION" }
@@ -378,14 +380,14 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
         }
     }
 
-    private fun startGuiding() {
+    fun startGuiding() {
         // We set the state to calibrating. The state machine will
         // automatically move from calibrating > calibrated > guiding
         // when it can.
         updateState(GuiderState.CALIBRATING)
     }
 
-    private fun stopGuiding() {
+    fun stopGuiding() {
         when (state) {
             GuiderState.CALIBRATING,
             GuiderState.CALIBRATED -> {
@@ -822,7 +824,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
         val image = frame.get()?.image ?: return false
 
         if (state > GuiderState.SELECTED) {
-            LOG.warn("state > SELECTED")
+            LOG.warn("state > SELECTED. state={}", state)
             return false
         }
 
@@ -833,17 +835,16 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             return false
         }
 
-        if (currentPosition(image, x, y)
+        return if (currentPosition(image, x, y)
             && primaryStar.valid
         ) {
             lockPosition(primaryStar)
 
-            if (starCount > 1) {
-                clearSecondaryStars()
-            }
+            clearSecondaryStars()
 
             if (starCount == 0) {
                 guideStars.add(primaryStar)
+                LOG.info("primary star added. x={}, y={}", primaryStar.x, primaryStar.y)
             }
 
             LOG.info("single-star usage forced by user star selection")
@@ -851,12 +852,12 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             listeners.forEach { it.onStarSelected(this, primaryStar) }
 
             updateState(GuiderState.SELECTED)
+
+            true
         } else {
             LOG.warn("no star selected at position. x={}, y={}", x, y)
-            return false
+            false
         }
-
-        return true
     }
 
     private fun updateCurrentPosition(
@@ -1103,10 +1104,10 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
     companion object {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(MultiStarGuider::class.java)
-        @JvmStatic private val ZERO_OFFSET = GuiderOffset(Point(), Point())
-        @JvmStatic private val GUIDE_STEP = listOf(MountMoveOption.ALGORITHM_RESULT, MountMoveOption.USE_BACKSLASH_COMPENSATION)
-        @JvmStatic private val DEDUCED_MOVE = listOf(MountMoveOption.ALGORITHM_DEDUCE, MountMoveOption.USE_BACKSLASH_COMPENSATION)
-        @JvmStatic private val RECOVERY_MOVE = listOf(MountMoveOption.USE_BACKSLASH_COMPENSATION)
+        @JvmStatic internal val ZERO_OFFSET = GuiderOffset(Point(), Point())
+        @JvmStatic internal val GUIDE_STEP = listOf(MountMoveOption.ALGORITHM_RESULT, MountMoveOption.USE_BACKSLASH_COMPENSATION)
+        @JvmStatic internal val DEDUCED_MOVE = listOf(MountMoveOption.ALGORITHM_DEDUCE, MountMoveOption.USE_BACKSLASH_COMPENSATION)
+        @JvmStatic internal val RECOVERY_MOVE = listOf(MountMoveOption.USE_BACKSLASH_COMPENSATION)
 
         const val MIN_SEARCH_REGION = 7f
         const val DEFAULT_SEARCH_REGION = 15f

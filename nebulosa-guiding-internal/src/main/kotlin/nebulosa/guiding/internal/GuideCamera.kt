@@ -4,6 +4,8 @@ import nebulosa.imaging.Image
 
 interface GuideCamera {
 
+    val connected: Boolean
+
     val image: Image
 
     val pixelScale: Double

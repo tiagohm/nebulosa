@@ -16,7 +16,15 @@ interface GuideMount {
 
     val calibrationDuration: Int
 
+    val calibrationDistance: Int
+
+    val rightAscension: Angle
+
     val declination: Angle
+
+    val rightAscensionGuideRate: Double
+
+    val declinationGuideRate: Double
 
     val guidingEnabled: Boolean
 

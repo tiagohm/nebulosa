@@ -25,22 +25,50 @@
                     right="16.0"
                     top="16.0"/>
         </padding>
-        <HBox alignment="CENTER"
-              spacing="4.0">
-            <ChoiceBox fx:id="guiderChoiceBox"
-                       prefHeight="32.0"
-                       prefWidth="394.0"/>
-            <TwoStateButton fx:id="connectButton"
-                            onAction="#connect">
-                <MaterialIcon icon="close-circle"
-                              TwoStateButton.state="true"
-                              color="warning"/>
-                <MaterialIcon icon="connection"/>
-            </TwoStateButton>
-            <ImageButton fx:id="openINDIButton"
-                         onAction="#openINDIPanelControl"
-                         url="@icons/indi.png"/>
-        </HBox>
+        <GridPane hgap="4.0"
+                  vgap="4.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+            <HBox alignment="CENTER"
+                  spacing="4.0"
+                  GridPane.rowIndex="0"
+                  GridPane.columnIndex="0">
+                <ChoiceBox fx:id="guideCameraChoiceBox"
+                           prefHeight="32.0"
+                           prefWidth="394.0"/>
+                <TwoStateButton fx:id="connectGuideCameraButton"
+                                onAction="#connectGuideCamera">
+                    <MaterialIcon icon="close-circle"
+                                  TwoStateButton.state="true"
+                                  color="warning"/>
+                    <MaterialIcon icon="connection"/>
+                </TwoStateButton>
+                <ImageButton fx:id="openINDIForGuideCameraButton"
+                             onAction="#openINDIForGuideCamera"
+                             url="@icons/indi.png"/>
+            </HBox>
+            <HBox alignment="CENTER"
+                  spacing="4.0"
+                  GridPane.rowIndex="0"
+                  GridPane.columnIndex="1">
+                <ChoiceBox fx:id="guideMountChoiceBox"
+                           prefHeight="32.0"
+                           prefWidth="394.0"/>
+                <TwoStateButton fx:id="connectGuideMountButton"
+                                onAction="#connectGuideMount">
+                    <MaterialIcon icon="close-circle"
+                                  TwoStateButton.state="true"
+                                  color="warning"/>
+                    <MaterialIcon icon="connection"/>
+                </TwoStateButton>
+                <ImageButton fx:id="openINDIForGuideMountButton"
+                             onAction="#openINDIForGuideMount"
+                             url="@icons/indi.png"/>
+            </HBox>
+        </GridPane>
         <TabPane tabClosingPolicy="UNAVAILABLE">
             <Tab text="Graph">
 
@@ -294,20 +322,42 @@
             </Tab>
         </TabPane>
         <HBox alignment="CENTER"
-              spacing="4.0">
+              spacing="16.0">
             <VBox.margin>
                 <Insets top="4.0"/>
             </VBox.margin>
-            <MaterialIconButton fx:id="startButton"
-                                onAction="#start"
-                                text="Start"
-                                icon="play"
-                                color="green-500"/>
-            <MaterialIconButton fx:id="stopButton"
-                                onAction="#stop"
-                                text="Abort"
-                                icon="stop"
-                                color="warning"/>
+            <LabeledPane text="Looping"
+                         styleClass="text-bold">
+                <HBox alignment="CENTER"
+                      spacing="2.0">
+                    <MaterialIconButton fx:id="startLoopingButton"
+                                        onAction="#startLooping"
+                                        text="Start"
+                                        icon="play"
+                                        color="green-500"/>
+                    <MaterialIconButton fx:id="stopLoopingButton"
+                                        onAction="#stopLooping"
+                                        text="Abort"
+                                        icon="stop"
+                                        color="warning"/>
+                </HBox>
+            </LabeledPane>
+            <LabeledPane text="Guiding"
+                         styleClass="text-bold">
+                <HBox alignment="CENTER"
+                      spacing="2.0">
+                    <MaterialIconButton fx:id="startGuidingButton"
+                                        onAction="#startLooping"
+                                        text="Start"
+                                        icon="play"
+                                        color="green-500"/>
+                    <MaterialIconButton fx:id="stopGuidingButton"
+                                        onAction="#stopLooping"
+                                        text="Abort"
+                                        icon="stop"
+                                        color="warning"/>
+                </HBox>
+            </LabeledPane>
         </HBox>
     </VBox>
 </AnchorPane>

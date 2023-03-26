@@ -3,16 +3,16 @@ package nebulosa.guiding.internal
 import nebulosa.math.Angle
 
 data class Calibration(
-    var xRate: Double = 0.0,
-    var yRate: Double = 0.0,
-    var xAngle: Angle = Angle.ZERO,
-    var yAngle: Angle = Angle.ZERO,
-    var declination: Angle = Angle.ZERO,
-    var rotatorAngle: Angle = Angle.ZERO,
-    var binning: Int = 1,
-    var pierSideAtEast: Boolean = false,
-    var raGuideParity: GuideParity = GuideParity.UNKNOWN,
-    var decGuideParity: GuideParity = GuideParity.UNKNOWN,
+    val xRate: Double = 0.0,
+    val yRate: Double = 0.0,
+    val xAngle: Angle = Angle.ZERO,
+    val yAngle: Angle = Angle.ZERO,
+    val declination: Angle = Angle.ZERO,
+    val rotatorAngle: Angle = Angle.ZERO,
+    val binning: Int = 1,
+    val pierSideAtEast: Boolean = false,
+    val raGuideParity: GuideParity = GuideParity.UNKNOWN,
+    val decGuideParity: GuideParity = GuideParity.UNKNOWN,
 ) {
 
     companion object {

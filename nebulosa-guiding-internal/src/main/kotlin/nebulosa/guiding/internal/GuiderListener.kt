@@ -21,4 +21,11 @@ interface GuiderListener {
     fun onLockPositionLost()
 
     fun onStartCalibration()
+
+    fun onCalibrationStep(
+        calibrationState: CalibrationState,
+        direction: GuideDirection, stepNumber: Int,
+        dx: Double, dy: Double, posX: Double, posY: Double,
+        distance: Double,
+    )
 }
