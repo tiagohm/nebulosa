@@ -10,6 +10,23 @@ class GuideCalibration(private val guider: MultiStarGuider) {
         get() = guider.mount
 
     private var calibration = Calibration.EMPTY
+    private var calibrationSteps = 0
+    private var calibrationDistance = 0
+    private var recenterRemaining = 0
+    private var recenterDuration = 0
+    private var calibrationInitialLocation = Point()
+    private var calibrationStartingLocation = Point()
+    private var calibrationStartingCoords = Point()
+    private var southStartingLocation = Point()
+    private var eastStartingLocation = Point()
+    private var lastLocation = Point()
+    private var totalSouthAmt = 0.0
+    private var northDirCosX = 0.0
+    private var northDirCosY = 0.0
+    private var calibrationState = CalibrationState.CLEARED
+    private var assumeOrthogonal = false
+    private var raSteps = 0
+    private var decSteps = 0
 
     val xRate
         get() = calibration.xRate
@@ -98,6 +115,40 @@ class GuideCalibration(private val guider: MultiStarGuider) {
         val newDecParity = if (decFlipRequired) calibration.decGuideParity else calibration.decGuideParity.opposite
 
         set(calibration.copy(xAngle = newX, yAngle = newY, pierSideAtEast = pierSideAtEast, decGuideParity = newDecParity))
+    }
+
+    fun beginCalibration(currentLocation: Point): Boolean {
+        if (!currentLocation.valid) return false
+        val mount = mount ?: return false
+
+        // Make sure guide speeds or binning haven't changed underneath us.
+        checkCalibrationDuration(mount.calibrationDuration)
+        clearCalibration()
+        calibrationSteps = 0
+        calibrationInitialLocation = currentLocation
+        calibrationStartingLocation.invalidate()
+        calibrationStartingCoords.invalidate()
+        calibrationState = CalibrationState.GO_WEST
+        // calibrationDetails.raSteps.clear()
+        // calibrationDetails.decSteps.clear()
+        raSteps = 0
+        decSteps = 0
+        // calibrationDetails.lastIssue = CI_None
+
+        return true
+    }
+
+    private fun clearCalibration() {
+        calibrated = false
+        calibrationState = CalibrationState.CLEARED
+    }
+
+    fun updateCalibrationState(currentLocation: Point): Boolean {
+        return false
+    }
+
+    fun checkCalibrationDuration(currDuration: Int) {
+        // TODO:
     }
 
     /*

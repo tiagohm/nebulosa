@@ -14,6 +14,8 @@ interface GuideMount {
 
     val calibrationFlipRequiresDecFlip: Boolean
 
+    val calibrationDuration: Int
+
     val declination: Angle
 
     val guidingEnabled: Boolean
@@ -31,10 +33,6 @@ interface GuideMount {
 
     val yGuideAlgorithm: GuideAlgorithm
 
-    fun beginCalibration(currentLocation: Point): Boolean
-
-    fun updateCalibrationState(currentLocation: Point): Boolean
-
     fun notifyGuidingStarted()
 
     fun notifyGuidingStopped()
@@ -49,5 +47,10 @@ interface GuideMount {
 
     fun notifyDirectMove(distance: Point)
 
-    fun moveTo(direction: GuideDirection, duration: Int): Boolean
+    fun guideTo(direction: GuideDirection, duration: Int): Boolean
+
+    companion object {
+
+        const val DEFAULT_CALIBRATION_DURATION = 750
+    }
 }

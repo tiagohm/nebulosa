@@ -123,6 +123,8 @@ class GuiderManager(
 
     override var calibrationFlipRequiresDecFlip = false
 
+    override var calibrationDuration = GuideMount.DEFAULT_CALIBRATION_DURATION
+
     override var raParity = GuideParity.UNCHANGED
 
     override var decParity = GuideParity.UNCHANGED
@@ -142,7 +144,7 @@ class GuiderManager(
 
     override var yGuideAlgorithm = HysteresisGuideAlgorithm(GuideAxis.DEC_Y)
 
-    override fun moveTo(direction: GuideDirection, duration: Int): Boolean {
+    override fun guideTo(direction: GuideDirection, duration: Int): Boolean {
         val mount = mount ?: return false
 
         if (!mount.canPulseGuide) return false
@@ -156,16 +158,6 @@ class GuiderManager(
         }
 
         return true
-    }
-
-    override fun beginCalibration(currentLocation: Point): Boolean {
-        println("beginCalibration. $currentLocation")
-        return false
-    }
-
-    override fun updateCalibrationState(currentLocation: Point): Boolean {
-        println("updateCalibrationState. $currentLocation")
-        return false
     }
 
     override fun notifyGuidingStarted() {

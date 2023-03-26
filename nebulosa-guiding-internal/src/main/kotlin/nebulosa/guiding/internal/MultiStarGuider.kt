@@ -21,7 +21,6 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
 
     private val guideStars = LinkedList<GuideStar>()
     private var starsUsed = 0
-    private var lastStarsUsed = 0
 
     private val massChecker = MassChecker()
     private val primaryDistStats = DescriptiveStats()
@@ -33,10 +32,10 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
         private set
 
     private var starFoundTimestamp = 0L
-    private var avgDistance = 0.0   // averaged distance for distance reporting
-    private var avgDistanceRA = 0.0   // averaged distance, RA only
-    private var avgDistanceLong = 0.0   // averaged distance, more smoothed
-    private var avgDistanceLongRA = 0.0   // averaged distance, more smoothed, RA only
+    private var avgDistance = 0.0
+    private var avgDistanceRA = 0.0
+    private var avgDistanceLong = 0.0
+    private var avgDistanceLongRA = 0.0
     private var avgDistanceCnt = 0
     private var avgDistanceNeedReset = false
     private val lockPositionShift = LockPositionShiftParams()
@@ -46,10 +45,11 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
     private val ditherRecenterDir = DoubleArray(2)
     private var measurementMode = false
     private var lockPositionIsSticky = false
+    private var fastRecenterEnabled = false
 
-    internal val frame = AtomicReference<Frame>()
-    internal val guideMount = AtomicReference<GuideMount>()
-    internal val guideCamera = AtomicReference<GuideCamera>()
+    private val frame = AtomicReference<Frame>()
+    private val guideMount = AtomicReference<GuideMount>()
+    private val guideCamera = AtomicReference<GuideCamera>()
 
     private val settler = Settler(this)
 
@@ -72,7 +72,6 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
 
     private val lockPosition = ShiftPoint(Double.NaN, Double.NaN)
 
-    private var lastPrimaryDistance = 0
     private var stabilizing = false
     private var lockPositionMoved = false
 
@@ -101,7 +100,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
     val paused
         get() = pauseType != PauseType.NONE
 
-    private val lockPositionShiftEnabled
+    val lockPositionShiftEnabled
         get() = lockPositionShift.shiftEnabled
 
     val currentErrorFrameCount
@@ -254,16 +253,14 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             avgDistanceRA += distRA
             avgDistanceLongRA += distRA
 
-            // TODO:
-            // if (IsFastRecenterEnabled())
-            // {
-            //     m_ditherRecenterRemaining.SetXY(fabs(mountDelta.X), fabs(mountDelta.Y));
-            //     m_ditherRecenterDir.x = mountDelta.X < 0.0 ? 1 : -1;
-            //     m_ditherRecenterDir.y = mountDelta.Y < 0.0 ? 1 : -1;
-            //     // make each step a bit less than the full search region distance to avoid losing the star
-            //     double f = ((double) GetMaxMovePixels() * 0.7) / m_ditherRecenterRemaining.Distance();
-            //     m_ditherRecenterStep.SetXY(f * m_ditherRecenterRemaining.X, f * m_ditherRecenterRemaining.Y);
-            // }
+            if (fastRecenterEnabled) {
+                ditherRecenterRemaining.set(abs(mountDelta.x), abs(mountDelta.y))
+                ditherRecenterDir[0] = if (mountDelta.x < 0.0) 1.0 else -1.0
+                ditherRecenterDir[1] = if (mountDelta.y < 0.0) 1.0 else -1.0
+                // Make each step a bit less than the full search region distance to avoid losing the star.
+                val f = (searchRegion * 0.7) / ditherRecenterRemaining.distance
+                ditherRecenterStep.set(f * ditherRecenterRemaining.x, f * ditherRecenterRemaining.y)
+            }
 
             true
         } else {
@@ -277,7 +274,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
         var requestedState = newState
 
         if (newState == GuiderState.STOP) {
-            // We are going to stop looping exposures.  We should put
+            // We are going to stop looping exposures. We should put
             // ourselves into a good state to restart looping later.
             requestedState = when (state) {
                 GuiderState.UNINITIALIZED,
@@ -306,7 +303,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             }
             GuiderState.CALIBRATING -> {
                 if (!guideCalibration.calibrated) {
-                    if (!mount.beginCalibration(currentPosition)) {
+                    if (!guideCalibration.beginCalibration(currentPosition)) {
                         nextState = GuiderState.UNINITIALIZED
                         LOG.error("begin calibration failed")
                     } else {
@@ -370,7 +367,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
         }
 
         if (avgDistanceNeedReset) {
-            // avg distance history invalidated
+            // Avg distance history invalidated.
             avgDistance = distance
             avgDistanceLong = avgDistance
             avgDistanceRA = distanceRA
@@ -460,7 +457,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                 GuiderState.GUIDING -> {
                     listeners.forEach { it.onStarLost() }
                     // Allow guide algorithms to attempt dead reckoning.
-                    moveOffset(ZERO_OFFSET, DEDUCED_MOVE)
+                    mount.moveOffset(ZERO_OFFSET, DEDUCED_MOVE)
                 }
                 else -> Unit
             }
@@ -478,7 +475,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             if (paused) {
                 if (state == GuiderState.GUIDING) {
                     // Allow guide algorithms to attempt dead reckoning.
-                    moveOffset(ZERO_OFFSET, DEDUCED_MOVE)
+                    mount.moveOffset(ZERO_OFFSET, DEDUCED_MOVE)
                 }
             } else {
                 when (state) {
@@ -492,7 +489,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                     }
                     GuiderState.CALIBRATING -> {
                         if (!guideCalibration.calibrated) {
-                            if (!mount.updateCalibrationState(currentPosition)) {
+                            if (!guideCalibration.updateCalibrationState(currentPosition)) {
                                 updateState(GuiderState.UNINITIALIZED)
                                 LOG.error("calibration failed")
                                 return
@@ -520,7 +517,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                     }
                     GuiderState.GUIDING -> {
                         if (ditherRecenterRemaining.valid) {
-                            // Fast recenter after dither taking large steps and bypassing guide algorithms
+                            // Fast recenter after dither taking large steps and bypassing guide algorithms.
                             val step =
                                 Point(min(ditherRecenterRemaining.x, ditherRecenterStep.x), min(ditherRecenterRemaining.y, ditherRecenterStep.y))
 
@@ -534,6 +531,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                             ditherRecenterRemaining -= step
 
                             if (ditherRecenterRemaining.x < 0.5 && ditherRecenterRemaining.y < 0.5) {
+                                LOG.info("fast recenter is done")
                                 // Fast recenter is done.
                                 ditherRecenterRemaining.invalidate()
                                 // Reset distance tracker.
@@ -542,13 +540,13 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
 
                             offset.mount.set(step.x * ditherRecenterDir[0], step.y * ditherRecenterDir[1])
                             transformMountCoordinatesToCameraCoordinates(offset.mount, offset.camera)
-                            moveOffset(offset, RECOVERY_MOVE)
+                            mount.moveOffset(offset, RECOVERY_MOVE)
                             // Let guide algorithms know about the direct move.
                             mount.notifyDirectMove(offset.mount)
                         } else if (measurementMode) {
                             // GuidingAssistant::NotifyBacklashStep(CurrentPosition());
                         } else {
-                            moveOffset(offset, GUIDE_STEP)
+                            mount.moveOffset(offset, GUIDE_STEP)
                         }
                     }
                     else -> Unit
@@ -960,12 +958,10 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                 point.y + 5.0 < image.height
     }
 
-    private fun moveOffset(offset: GuiderOffset, moveOptions: List<MountMoveOption>): Boolean {
-        val mount = mount ?: return false
-
+    private fun GuideMount.moveOffset(offset: GuiderOffset, moveOptions: List<MountMoveOption>): Boolean {
         if (MountMoveOption.ALGORITHM_DEDUCE in moveOptions) {
-            val xDistance = mount.xGuideAlgorithm.deduce()
-            val yDistance = mount.yGuideAlgorithm.deduce()
+            val xDistance = xGuideAlgorithm.deduce()
+            val yDistance = yGuideAlgorithm.deduce()
 
             if (xDistance != 0.0 || yDistance != 0.0) {
                 LOG.info("deduced move. x={}, y={}", xDistance, yDistance)
@@ -987,11 +983,11 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             //    m_backlashComp->TrackBLCResults(moveOptions, yDistance)
 
             if (MountMoveOption.ALGORITHM_RESULT in moveOptions) {
-                xDistance = mount.xGuideAlgorithm.compute(xDistance)
-                yDistance = mount.yGuideAlgorithm.compute(yDistance)
+                xDistance = xGuideAlgorithm.compute(xDistance)
+                yDistance = yGuideAlgorithm.compute(yDistance)
             }
 
-            // Figure out the guide directions based on the (possibly) updated distances
+            // Figure out the guide directions based on the (possibly) updated distances.
             val xDirection = if (xDistance > 0.0) GuideDirection.LEFT_WEST else GuideDirection.RIGHT_EAST
             val yDirection = if (yDistance > 0.0) GuideDirection.DOWN_SOUTH else GuideDirection.UP_NORTH
 
@@ -999,13 +995,13 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
 
             val requestedXAmount = abs(xDistance / guideCalibration.xRate).roundToInt()
 
-            if (mount.moveAxis(xDirection, requestedXAmount, moveOptions)) {
+            if (moveAxis(xDirection, requestedXAmount, moveOptions)) {
                 val requestedYAmount = abs(yDistance / guideCalibration.yRate).roundToInt()
 
                 // TODO: if (m_backlashComp)
                 //     m_backlashComp->ApplyBacklashComp(moveOptions, yDistance, &requestedYAmount);
 
-                mount.moveAxis(yDirection, requestedYAmount, moveOptions)
+                moveAxis(yDirection, requestedYAmount, moveOptions)
             }
         }
 
@@ -1060,7 +1056,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
         }
 
         return if (newDuration > 0) {
-            mount.moveTo(direction, newDuration)
+            mount.guideTo(direction, newDuration)
         } else {
             false
         }
@@ -1123,20 +1119,6 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             if (starFoundTimestamp == 0L) return 100.0
             if (System.currentTimeMillis() - starFoundTimestamp > 20000L) return 100.0
             return avgDist
-        }
-
-        @JvmStatic
-        private fun transformCameraCoordinatesToMountCoordinates(
-            camera: Point, mount: Point,
-            calibration: Calibration,
-            yAngleError: Double,
-        ) {
-            val hyp = camera.distance
-            val cameraTheta = camera.angle
-            val xAngle = cameraTheta - calibration.xAngle
-            val yAngle = cameraTheta - (calibration.xAngle + yAngleError)
-
-            mount.set(xAngle.cos * hyp, yAngle.sin * hyp)
         }
     }
 }
