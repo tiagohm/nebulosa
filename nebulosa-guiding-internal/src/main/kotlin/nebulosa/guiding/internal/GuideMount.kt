@@ -26,6 +26,8 @@ interface GuideMount {
 
     val declinationGuideRate: Double
 
+    val pierSideAtEast: Boolean
+
     val guidingEnabled: Boolean
 
     val declinationGuideMode: DeclinationGuideMode

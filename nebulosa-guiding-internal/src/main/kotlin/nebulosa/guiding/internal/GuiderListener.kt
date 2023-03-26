@@ -28,4 +28,6 @@ interface GuiderListener {
         dx: Double, dy: Double, posX: Double, posY: Double,
         distance: Double,
     )
+
+    fun onCalibrationCompleted()
 }

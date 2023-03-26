@@ -14,6 +14,7 @@ import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraFrameCaptured
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.PierSide
 import nebulosa.math.Angle
 import nom.tam.fits.Fits
 import org.greenrobot.eventbus.EventBus
@@ -108,6 +109,9 @@ class GuiderManager(
 
     // Camera.
 
+    override val binning
+        get() = camera?.binX ?: 1
+
     override val image: Image
         get() = imageQueue.take()
 
@@ -144,6 +148,9 @@ class GuiderManager(
 
     override var maxRightAscensionDuration = 2000
 
+    override val pierSideAtEast
+        get() = mount?.pierSide == PierSide.EAST
+
     override val calibrationDistance
         get() = 25 // px
 
@@ -166,6 +173,8 @@ class GuiderManager(
         if (!mount.canPulseGuide) return false
 
         LOG.info("guiding. direction={}, duration={}", direction, duration)
+
+        if (duration <= 0) return true
 
         when (direction) {
             GuideDirection.UP_NORTH -> mount.guideNorth(duration)
@@ -249,6 +258,9 @@ class GuiderManager(
             "calibration step. state={}, direction={}, step={}, dx={}, dy={}, x={}, y={}, distance={}",
             calibrationState, direction, stepNumber, dx, dy, posX, posY, distance,
         )
+    }
+
+    override fun onCalibrationCompleted() {
     }
 
     fun selectGuideStar(x: Double, y: Double) {

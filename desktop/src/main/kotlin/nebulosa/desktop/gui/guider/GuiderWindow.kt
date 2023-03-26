@@ -49,8 +49,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         guideCameraChoiceBox.itemsProperty().bind(guiderManager.cameras)
         guideCameraChoiceBox.selectionModel.selectedItemProperty().on { guiderManager.selectedGuideCamera.set(it) }
 
-        connectGuideCameraButton.disableProperty()
-            .bind(guiderManager.selectedGuideCamera.isNull or guiderManager.selectedGuideMount.isNull or isConnecting or isGuiding)
+        connectGuideCameraButton.disableProperty().bind(guiderManager.selectedGuideCamera.isNull or isConnecting or isGuiding)
         guiderManager.selectedGuideCamera.connectedProperty.on { connectGuideCameraButton.state = it }
 
         openINDIForGuideCameraButton.disableProperty().bind(connectGuideCameraButton.disableProperty())
@@ -60,8 +59,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         guideMountChoiceBox.itemsProperty().bind(guiderManager.mounts)
         guideMountChoiceBox.selectionModel.selectedItemProperty().on { guiderManager.selectedGuideMount.set(it) }
 
-        connectGuideMountButton.disableProperty()
-            .bind(guiderManager.selectedGuideMount.isNull or guiderManager.selectedGuideMount.isNull or isConnecting or isGuiding)
+        connectGuideMountButton.disableProperty().bind(guiderManager.selectedGuideMount.isNull or isConnecting or isGuiding)
         guiderManager.selectedGuideMount.connectedProperty.on { connectGuideMountButton.state = it }
 
         openINDIForGuideMountButton.disableProperty().bind(connectGuideMountButton.disableProperty())

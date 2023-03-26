@@ -6,6 +6,8 @@ interface GuideCamera {
 
     val connected: Boolean
 
+    val binning: Int
+
     val image: Image
 
     val pixelScale: Double

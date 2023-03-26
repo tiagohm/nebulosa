@@ -3,25 +3,28 @@ package nebulosa.guiding.internal
 import nebulosa.constants.PI
 import nebulosa.constants.PIOVERTWO
 import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.rad
 import org.slf4j.LoggerFactory
-import kotlin.math.floor
-import kotlin.math.max
+import kotlin.math.*
 
 class GuideCalibration(private val guider: MultiStarGuider) {
 
     private inline val mount: GuideMount?
         get() = guider.mount
 
+    private inline val camera: GuideCamera?
+        get() = guider.camera
+
     private var calibration = Calibration.EMPTY
     private var calibrationSteps = 0
     private var recenterRemaining = 0
     private var recenterDuration = 0
-    private var calibrationInitialLocation = Point()
-    private var calibrationStartingLocation = Point()
-    private var calibrationStartingCoords = Point()
-    private var southStartingLocation = Point()
-    private var eastStartingLocation = Point()
-    private var lastLocation = Point()
+    private val calibrationInitialLocation = Point()
+    private val calibrationStartingLocation = Point()
+    private val calibrationStartingCoords = Point()
+    private val southStartingLocation = Point()
+    private val eastStartingLocation = Point()
+    private val lastLocation = Point()
     private var totalSouthAmt = 0.0
     private var northDirCosX = 0.0
     private var northDirCosY = 0.0
@@ -146,7 +149,7 @@ class GuideCalibration(private val guider: MultiStarGuider) {
         checkCalibrationDuration(mount.calibrationDuration)
         clearCalibration()
         calibrationSteps = 0
-        calibrationInitialLocation = currentLocation
+        calibrationInitialLocation.set(currentLocation)
         calibrationStartingLocation.invalidate()
         calibrationStartingCoords.invalidate()
         calibrationState = CalibrationState.GO_WEST
@@ -167,13 +170,15 @@ class GuideCalibration(private val guider: MultiStarGuider) {
     @Synchronized
     fun updateCalibrationState(currentLocation: Point): Boolean {
         val mount = mount ?: return false
+        val camera = camera ?: return false
 
         if (!mount.connected) return false
+        if (!camera.connected) return false
 
         LOG.info("updating calibration state. x={}, y={}", currentLocation.x, currentLocation.y)
 
         if (!calibrationStartingLocation.valid) {
-            calibrationStartingLocation = currentLocation
+            calibrationStartingLocation.set(currentLocation)
             calibrationStartingCoords.set(mount.rightAscension.hours, mount.declination.degrees)
         }
 
@@ -187,10 +192,7 @@ class GuideCalibration(private val guider: MultiStarGuider) {
         var nudgeDirCosX = 0.0
         var nudgeDirCosY = 0.0
         var cosTheta = 0.0
-        var theta = 0.0
-        var southDistMoved = 0.0
-        var northDistMoved = 0.0
-        var southAngle = 0.0
+        var theta = Angle.ZERO
 
         fun calibrationStatus(direction: GuideDirection) {
             guider.listeners.forEach {
@@ -209,6 +211,7 @@ class GuideCalibration(private val guider: MultiStarGuider) {
                 CalibrationState.GO_WEST -> {
                     if (dist < distCrit) {
                         if (calibrationSteps++ > MAX_CALIBRATION_STEPS) {
+                            LOG.error("calibration failed. star did not move enough.")
                             guider.listeners.forEach { it.onCalibrationFailed() }
                             return false
                         }
@@ -264,7 +267,7 @@ class GuideCalibration(private val guider: MultiStarGuider) {
 
                     calibrationSteps = (recenterRemaining + recenterDuration - 1) / recenterDuration
                     calibrationState = CalibrationState.GO_EAST
-                    eastStartingLocation = currentLocation
+                    eastStartingLocation.set(currentLocation)
                 }
                 CalibrationState.GO_EAST -> {
                     if (recenterRemaining > 0) {
@@ -277,9 +280,7 @@ class GuideCalibration(private val guider: MultiStarGuider) {
 
                         recenterRemaining -= duration
                         calibrationSteps--
-                        lastLocation = currentLocation
-
-                        // TODO: Wait guideTo complete.
+                        lastLocation.set(currentLocation)
 
                         mount.guideTo(GuideDirection.RIGHT_EAST, duration)
 
@@ -292,7 +293,7 @@ class GuideCalibration(private val guider: MultiStarGuider) {
                     dist = 0.0
                     dx = 0.0
                     dy = 0.0
-                    calibrationStartingLocation = currentLocation
+                    calibrationStartingLocation.set(currentLocation)
 
                     if (mount.declinationGuideMode == DeclinationGuideMode.NONE) {
                         LOG.info("skipping DEC calibration as declinationGuideMode == NONE")
@@ -310,7 +311,7 @@ class GuideCalibration(private val guider: MultiStarGuider) {
                     }
 
                     calibrationState = CalibrationState.CLEAR_BACKLASH
-                    blMarkerPoint = currentLocation
+                    blMarkerPoint.set(currentLocation)
                     calibrationStartingCoords.set(mount.rightAscension.hours, mount.declination.degrees)
                     blExpectedBacklashStep = calibration.xRate * mount.calibrationDuration * 0.6
 
@@ -334,7 +335,7 @@ class GuideCalibration(private val guider: MultiStarGuider) {
                     // Want to see the mount moving north for 3 moves of >= expected distance
                     // pixels without any direction reversals.
                     if (calibrationSteps == 0) {
-                        // Get things moving with the first clearing pulse
+                        // Get things moving with the first clearing pulse.
                         LOG.info("starting north clearing using pulse width of {}", mount.calibrationDuration)
                         mount.guideTo(GuideDirection.UP_NORTH, mount.calibrationDuration)
                         calibrationSteps = 1
@@ -364,37 +365,46 @@ class GuideCalibration(private val guider: MultiStarGuider) {
                         if (calibrationSteps < blMaxClearingPulses && blCumDelta < distCrit) {
                             // Still have attempts left, haven't moved the star by 25 px yet.
                             mount.guideTo(GuideDirection.UP_NORTH, mount.calibrationDuration)
+
                             calibrationSteps++
-                            blMarkerPoint = currentLocation
+
+                            blMarkerPoint.set(currentLocation)
                             calibrationStartingCoords.set(mount.rightAscension.hours, mount.declination.degrees)
                             blLastCumDistance = blCumDelta
+
                             calibrationStatus(GuideDirection.UP_NORTH)
+
                             LOG.info("last delta = {} px, cum distance = {}", blDelta, blCumDelta)
+
                             break
                         } else {
                             // Used up all our attempts - might be ok or not.
                             if (blCumDelta >= BL_MIN_CLEARING_DISTANCE) {
                                 // Exhausted all the clearing pulses without reaching the goal - but we did move the mount > 3 px (same as PHD1).
                                 calibrationSteps = 0
-                                calibrationStartingLocation = currentLocation
+                                calibrationStartingLocation.set(currentLocation)
+
                                 dx = 0.0
                                 dy = 0.0
                                 dist = 0.0
+
                                 LOG.info("reached clearing limit but total displacement > 3px - proceeding with calibration")
                             } else {
                                 guider.listeners.forEach { it.onCalibrationFailed() }
                                 LOG.error("clear backlash failed")
-                                break
+                                return false
                             }
                         }
                     } else {
                         // Got our 3 moves, move ahead.
                         // We know the last backlash clearing move was big enough - include that as a north calibration move.
-                        calibrationSteps = 1;
-                        calibrationStartingLocation = blMarkerPoint
+                        calibrationSteps = 1
+                        calibrationStartingLocation.set(blMarkerPoint)
+
                         dx = blMarkerPoint.dX(currentLocation)
                         dy = blMarkerPoint.dY(currentLocation)
                         dist = blMarkerPoint.distance(currentLocation)
+
                         LOG.info("Got 3 acceptable moves, using last move as step 1 of N calibration")
                     }
 
@@ -408,12 +418,184 @@ class GuideCalibration(private val guider: MultiStarGuider) {
                 }
                 CalibrationState.GO_NORTH -> {
                     if (dist < distCrit) {
+                        if (calibrationSteps++ > MAX_CALIBRATION_STEPS) {
+                            LOG.error("calibration failed. star did not move enough.")
+                            guider.listeners.forEach { it.onCalibrationFailed() }
+                            return false
+                        }
 
+                        LOG.info("North step {}, dist={}", calibrationSteps, dist)
+
+                        calibrationStatus(GuideDirection.UP_NORTH)
+
+                        mount.guideTo(GuideDirection.UP_NORTH, mount.calibrationDuration)
+
+                        break
                     }
+
+                    // This calculation is reversed from the ra calculation, because
+                    // that one was calibrating WEST, but the angle is really relative
+                    // to EAST.
+                    if (assumeOrthogonal) {
+                        val a1 = (calibration.xAngle + PIOVERTWO).normalized - PI
+                        val a2 = (calibration.xAngle - PIOVERTWO).normalized - PI
+                        val ya = currentLocation.angle(calibrationStartingLocation)
+                        val a1y = (a1 - ya).normalized - PI
+                        val a2y = (a2 - ya).normalized - PI
+                        val yAngle = if (abs(a1y.value) < abs(a2y.value)) a1 else a2
+                        val decDist = dist * (yAngle - calibration.yAngle).cos
+                        val yRate = decDist / (calibrationSteps * mount.calibrationDuration)
+
+                        calibration = calibration.copy(yAngle = yAngle, yRate = yRate, decGuideParity = GuideParity.UNKNOWN)
+
+                        LOG.info(
+                            "assuming orthogonal axes: measured Y angle={}, X angle={}, orthogonal={},{}, best = {}, dist = {}, decDist = {}",
+                            yAngle.degrees, calibration.xAngle.degrees, a1.degrees, a2.degrees, yAngle.degrees, dist, decDist,
+                        )
+                    } else {
+                        val yAngle = currentLocation.angle(calibrationStartingLocation)
+                        val yRate = dist / (calibrationSteps * mount.calibrationDuration)
+
+                        calibration = calibration.copy(yAngle = yAngle, yRate = yRate, decGuideParity = GuideParity.UNKNOWN)
+                    }
+
+                    decSteps = calibrationSteps
+
+                    if (calibrationStartingCoords.valid) {
+                        val endingCoords = Point(mount.rightAscension.hours, mount.declination.degrees, true)
+
+                        // True Northward motion increases DEC.
+                        val ddec = endingCoords.y - calibrationStartingCoords.y
+                        calibration = calibration.copy(
+                            decGuideParity = if (ddec < -ONE_ARCSEC_DEGREES) GuideParity.ODD
+                            else if (ddec > ONE_ARCSEC_DEGREES) GuideParity.EVEN
+                            else calibration.decGuideParity,
+                        )
+                    }
+
+                    LOG.info(
+                        "North calibration completes with angle={} rate={} parity={}",
+                        calibration.yAngle.degrees, calibration.yRate * 1000.0, calibration.decGuideParity
+                    )
+
+                    // For GO_SOUTH m_recenterRemaining contains the total remaining duration.
+                    // Choose the largest pulse size that will not lose the guide star or exceed
+                    // the user-specified max pulse.
+                    recenterRemaining = calibrationSteps * mount.calibrationDuration
+
+                    if (guider.fastRecenterEnabled) {
+                        recenterDuration = floor(0.8 * guider.searchRegion / calibration.yRate).toInt()
+                        if (recenterDuration > mount.maxDeclinationDuration) recenterDuration = mount.maxDeclinationDuration
+                        if (recenterDuration < mount.calibrationDuration) recenterDuration = mount.calibrationDuration
+                    } else {
+                        recenterDuration = mount.calibrationDuration
+                    }
+
+                    calibrationSteps = (recenterRemaining + recenterDuration - 1) / recenterDuration
+                    calibrationState = CalibrationState.GO_SOUTH
+                    southStartingLocation.set(currentLocation)
                 }
-                CalibrationState.GO_SOUTH -> TODO()
-                CalibrationState.NUDGE_SOUTH -> TODO()
-                CalibrationState.COMPLETE -> TODO()
+                CalibrationState.GO_SOUTH -> {
+                    if (recenterRemaining > 0) {
+                        var duration = recenterDuration
+                        if (duration > recenterRemaining) duration = recenterRemaining
+
+                        LOG.info("South step {}, dist={}", calibrationSteps, dist)
+
+                        calibrationStatus(GuideDirection.DOWN_SOUTH)
+
+                        recenterRemaining -= duration
+                        calibrationSteps--
+
+                        mount.guideTo(GuideDirection.DOWN_SOUTH, duration)
+
+                        break
+                    }
+
+                    lastLocation.set(currentLocation)
+
+                    // Compute the vector for the north moves we made - use it to make sure any nudging is going in the correct direction.
+                    // These are the direction cosines of the vector.
+                    northDirCosX = calibrationInitialLocation.dX(southStartingLocation) / calibrationInitialLocation.distance(southStartingLocation)
+                    northDirCosY = calibrationInitialLocation.dY(southStartingLocation) / calibrationInitialLocation.distance(southStartingLocation)
+
+                    // Get magnitude and sign convention for the south moves we already made.
+                    totalSouthAmt = mountCoords(southStartingLocation - lastLocation, calibration.xAngle, calibration.yAngle).y
+                    calibrationState = CalibrationState.NUDGE_SOUTH
+                    calibrationSteps = 0
+                }
+                CalibrationState.NUDGE_SOUTH -> {
+                    // Nudge further South on DEC, get within 2 px North/South of starting point,
+                    // don't try more than 3 times and don't do nudging at all if
+                    // we're starting too far away from the target.
+                    nudgeAmt = currentLocation.distance(calibrationInitialLocation)
+                    // Compute the direction cosines for the expected nudge op.
+                    nudgeDirCosX = currentLocation.dX(calibrationInitialLocation) / nudgeAmt
+                    nudgeDirCosY = currentLocation.dY(calibrationInitialLocation) / nudgeAmt
+                    // Compute the angle between the nudge and north move vector - they should be reversed,
+                    // i.e. something close to 180 deg.
+                    cosTheta = nudgeDirCosX * northDirCosX + nudgeDirCosY * northDirCosY
+                    theta = acos(cosTheta).rad
+
+                    LOG.info("nudge. theta={}", theta.degrees)
+
+                    // We're going at least roughly in the right direction.
+                    if (abs(abs(theta.degrees) - 180.0) < 40.0) {
+                        if (calibrationSteps <= MAX_NUDGES
+                            && nudgeAmt > NUDGE_TOLERANCE
+                            && nudgeAmt < distCrit + blDistanceMoved
+                        ) {
+                            // Compute how much more south we need to go.
+                            var decAmt = mountCoords(currentLocation - calibrationInitialLocation, calibration.xAngle, calibration.yAngle).y
+                            LOG.info("South nudging, decAmt = {}, normal south moves = {}", decAmt, totalSouthAmt)
+
+                            // Still need to move south to reach target based on matching sign.
+                            if (decAmt * totalSouthAmt > 0.0) {
+                                // Sign doesn't matter now, we're always moving south.
+                                decAmt = abs(decAmt)
+                                decAmt = min(decAmt, guider.searchRegion)
+                                var pulseAmt = floor(decAmt / calibration.yRate).toInt()
+                                // Be conservative, use durations that pushed us north in the first place.
+                                if (pulseAmt > mount.calibrationDuration) pulseAmt = mount.calibrationDuration
+
+                                LOG.info("sending nudge South pulse of duration {} ms", pulseAmt)
+
+                                calibrationSteps++
+
+                                calibrationStatus(GuideDirection.DOWN_SOUTH)
+
+                                mount.guideTo(GuideDirection.DOWN_SOUTH, pulseAmt)
+
+                                break
+                            }
+                        }
+                    } else {
+                        LOG.info("nudging discontinued, wrong direction: {}", theta)
+                    }
+
+                    LOG.info(
+                        "final south nudging status: current location={},{}, targeting={},{}",
+                        currentLocation.x, currentLocation.y, calibrationInitialLocation.x, calibrationInitialLocation.y
+                    )
+
+                    calibrationState = CalibrationState.COMPLETE
+                }
+                CalibrationState.COMPLETE -> {
+                    calibration = calibration.copy(
+                        declination = mount.declination,
+                        pierSideAtEast = mount.pierSideAtEast,
+                        // TODO: rotatorAngle
+                        binning = camera.binning,
+                    )
+
+                    set(calibration)
+
+                    LOG.info("calibration completed. calibration={}", calibration)
+
+                    guider.listeners.forEach { it.onCalibrationCompleted() }
+
+                    break
+                }
                 else -> Unit
             }
         }
@@ -437,14 +619,26 @@ class GuideCalibration(private val guider: MultiStarGuider) {
         // TODO
     }
 
+    private fun mountCoords(camera: Point, x: Angle, y: Angle): Point {
+        val hyp = camera.distance
+        val cameraTheta = camera.angle
+        val yAngleError = ((x - y) + PIOVERTWO).normalized - PI
+        val xAngle = cameraTheta - x
+        val yAngle = cameraTheta - (x + yAngleError)
+        return Point(hyp * xAngle.cos, hyp * yAngle.sin)
+    }
+
     companion object {
 
         private const val CALIBRATION_RATE_UNCALIBRATED = 123E4
         private const val MAX_CALIBRATION_STEPS = 60
         private const val ONE_ARCSEC_HOURS = 24.0 / (360.0 * 60.0 * 60.0)
+        private const val ONE_ARCSEC_DEGREES = 1.0 / (60.0 * 60.0)
         private const val BL_MIN_COUNT = 3
         private const val BL_MAX_CLEARING_TIME = 60000
         private const val BL_MIN_CLEARING_DISTANCE = 3
+        private const val MAX_NUDGES = 3
+        private const val NUDGE_TOLERANCE = 2.0
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(GuideCalibration::class.java)
     }
