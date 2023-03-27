@@ -17,7 +17,7 @@ import kotlin.math.roundToInt
  * making move requests to a mount by passing the difference
  * between [currentPosition] and [lockPosition].
  */
-class MultiStarGuider : Guider, Iterable<GuideStar> {
+class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
 
     private val guideStars = LinkedList<GuideStar>()
     private var starsUsed = 0
@@ -39,7 +39,6 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
     private var avgDistanceCnt = 0
     private var avgDistanceNeedReset = false
     private val lockPositionShift = LockPositionShiftParams()
-    private var primaryStar = GuideStar(0.0, 0.0)
     private var ditherRecenterStep = Point()
     private var ditherRecenterRemaining = Point()
     private val ditherRecenterDir = DoubleArray(2)
@@ -50,23 +49,23 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
 
     private val frame = AtomicReference<Frame>()
 
-    @Volatile internal lateinit var device: GuideDevice
-        private set
-
     private val settler = Settler(this)
 
     internal val image
         get() = frame.get()?.image
 
     internal val frameNumber
-        get() = frame.get()?.frameNumber ?: -1
+        get() = frame.get()?.number ?: -1
 
     val settling
         get() = settler.settling
 
     private val capturer = GuideCameraCapturer(this)
 
-    private val lockPosition = ShiftPoint(Double.NaN, Double.NaN)
+    override var primaryStar = GuideStar(0.0, 0.0)
+        private set
+
+    override val lockPosition = ShiftPoint(Double.NaN, Double.NaN)
 
     private var stabilizing = false
     private var lockPositionMoved = false
@@ -129,7 +128,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             if (!value) stabilizing = false
         }
 
-    var searchRegion = 15.0
+    override var searchRegion = 15.0
         set(value) {
             require(searchRegion >= MIN_SEARCH_REGION) { "searchRegion < $MIN_SEARCH_REGION" }
             require(searchRegion <= MAX_SEARCH_REGION) { "searchRegion > $MAX_SEARCH_REGION" }
@@ -148,8 +147,8 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
         listeners.remove(listener)
     }
 
-    fun attachGuideDevice(device: GuideDevice) {
-        this.device = device
+    fun clearCalibration() {
+        guideCalibrator.clearCalibration()
     }
 
     fun loadCalibration(calibration: Calibration) {
@@ -374,14 +373,14 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
         }
     }
 
-    fun startGuiding() {
+    override fun startGuiding() {
         // We set the state to calibrating. The state machine will
         // automatically move from calibrating > calibrated > guiding
         // when it can.
         updateState(GuiderState.CALIBRATING)
     }
 
-    fun stopGuiding() {
+    override fun stopGuiding() {
         when (state) {
             GuiderState.CALIBRATING,
             GuiderState.CALIBRATED -> {
@@ -436,11 +435,11 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             when (state) {
                 GuiderState.UNINITIALIZED,
                 GuiderState.SELECTING -> {
-                    listeners.forEach { it.onLooping(frameNumber, null) }
+                    listeners.forEach { it.onLooping(frame.image, frame.number, null) }
                 }
                 GuiderState.SELECTED -> {
                     // We had a current position and lost it.
-                    listeners.forEach { it.onLooping(frameNumber, null) }
+                    listeners.forEach { it.onLooping(frame.image, frame.number, null) }
 
                     if (!ignoreLostStarLooping) {
                         updateState(GuiderState.UNINITIALIZED)
@@ -458,9 +457,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                 else -> Unit
             }
         } else {
-            if (state.looping) {
-                listeners.forEach { it.onLooping(frameNumber, primaryStar) }
-            }
+            listeners.forEach { it.onLooping(frame.image, frame.number, primaryStar) }
 
             // we have a star selected, so re-enable subframes.
             if (forceFullFrame) {
@@ -521,7 +518,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                                 "dither recenter. remaining: x={}, y={}, step: x={}, y={}",
                                 ditherRecenterRemaining.x * ditherRecenterDir[0],
                                 ditherRecenterRemaining.y * ditherRecenterDir[1],
-                                step.x * ditherRecenterDir[0], step.y * ditherRecenterDir[1]
+                                step.x * ditherRecenterDir[0], step.y * ditherRecenterDir[1],
                             )
 
                             ditherRecenterRemaining -= step
@@ -906,6 +903,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
         }
 
         primaryStar = newStar
+        guideStars[0] = primaryStar
 
         massChecker.add(newStar.mass)
 
@@ -973,7 +971,7 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
             var xDistance = offset.mount.x
             var yDistance = offset.mount.y
 
-            // Let BLC track the raw offsets in Dec
+            // Let BLC track the raw offsets in DEC
             // TODO: if (m_backlashComp)
             //    m_backlashComp->TrackBLCResults(moveOptions, yDistance)
 
@@ -982,21 +980,23 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
                 yDistance = yGuideAlgorithm.compute(yDistance)
             }
 
-            // Figure out the guide directions based on the (possibly) updated distances.
-            val xDirection = if (xDistance > 0.0) GuideDirection.LEFT_WEST else GuideDirection.RIGHT_EAST
-            val yDirection = if (yDistance > 0.0) GuideDirection.DOWN_SOUTH else GuideDirection.UP_NORTH
+            if (xDistance != 0.0 || yDistance != 0.0) {
+                val xDirection = if (xDistance > 0.0) GuideDirection.LEFT_WEST else GuideDirection.RIGHT_EAST
+                val requestedXAmount = abs(xDistance / guideCalibrator.xRate).roundToInt()
 
-            LOG.info("move. x={}, y={}, xDir={}, yDir={}", xDistance, yDistance, xDirection, yDirection)
+                LOG.info("move RA. distance={}, direction={}", xDistance, xDirection)
 
-            val requestedXAmount = abs(xDistance / guideCalibrator.xRate).roundToInt()
+                if (moveAxis(xDirection, requestedXAmount, moveOptions)) {
+                    val yDirection = if (yDistance > 0.0) GuideDirection.DOWN_SOUTH else GuideDirection.UP_NORTH
+                    val requestedYAmount = abs(yDistance / guideCalibrator.yRate).roundToInt()
 
-            if (moveAxis(xDirection, requestedXAmount, moveOptions)) {
-                val requestedYAmount = abs(yDistance / guideCalibrator.yRate).roundToInt()
+                    LOG.info("move DEC. distance={}, direction={}", yDistance, yDirection)
 
-                // TODO: if (m_backlashComp)
-                //     m_backlashComp->ApplyBacklashComp(moveOptions, yDistance, &requestedYAmount);
+                    // TODO: if (m_backlashComp)
+                    //     m_backlashComp->ApplyBacklashComp(moveOptions, yDistance, &requestedYAmount);
 
-                moveAxis(yDirection, requestedYAmount, moveOptions)
+                    moveAxis(yDirection, requestedYAmount, moveOptions)
+                }
             }
         }
 
@@ -1051,7 +1051,13 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
         return if (newDuration > 0) {
             LOG.info("move axis. direction={}, duration={}", direction, newDuration)
 
-            device.guideTo(direction, newDuration)
+            when (direction) {
+                GuideDirection.UP_NORTH -> device.guideNorth(newDuration)
+                GuideDirection.DOWN_SOUTH -> device.guideSouth(newDuration)
+                GuideDirection.LEFT_WEST -> device.guideWest(newDuration)
+                GuideDirection.RIGHT_EAST -> device.guideEast(newDuration)
+                GuideDirection.NONE -> false
+            }
         } else {
             false
         }
@@ -1077,11 +1083,11 @@ class MultiStarGuider : Guider, Iterable<GuideStar> {
         return true
     }
 
-    fun startLooping() {
+    override fun startLooping() {
         capturer.start()
     }
 
-    fun stopLooping() {
+    override fun stopLooping() {
         capturer.pause()
     }
 

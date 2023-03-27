@@ -11,7 +11,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefWidth="640.0"
+            prefWidth="720.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="4.0"
@@ -28,17 +28,23 @@
         <GridPane hgap="4.0"
                   vgap="4.0">
             <columnConstraints>
-                <ColumnConstraints hgrow="ALWAYS"/>
-                <ColumnConstraints hgrow="ALWAYS"/>
-                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS"
+                                   percentWidth="33.3"/>
+                <ColumnConstraints hgrow="ALWAYS"
+                                   percentWidth="33.3"/>
+                <ColumnConstraints hgrow="ALWAYS"
+                                   percentWidth="33.3"/>
             </columnConstraints>
             <HBox alignment="CENTER"
                   spacing="4.0"
                   GridPane.rowIndex="0"
                   GridPane.columnIndex="0">
-                <ChoiceBox fx:id="guideCameraChoiceBox"
-                           prefHeight="32.0"
-                           prefWidth="394.0"/>
+                <LabeledPane text="Guiding camera"
+                             styleClass="text-bold">
+                    <ChoiceBox fx:id="guideCameraChoiceBox"
+                               HBox.hgrow="ALWAYS"
+                               maxWidth="Infinity"/>
+                </LabeledPane>
                 <TwoStateButton fx:id="connectGuideCameraButton"
                                 onAction="#connectGuideCamera">
                     <MaterialIcon icon="close-circle"
@@ -54,9 +60,12 @@
                   spacing="4.0"
                   GridPane.rowIndex="0"
                   GridPane.columnIndex="1">
-                <ChoiceBox fx:id="guideMountChoiceBox"
-                           prefHeight="32.0"
-                           prefWidth="394.0"/>
+                <LabeledPane text="Guiding mount"
+                             styleClass="text-bold">
+                    <ChoiceBox fx:id="guideMountChoiceBox"
+                               HBox.hgrow="ALWAYS"
+                               maxWidth="Infinity"/>
+                </LabeledPane>
                 <TwoStateButton fx:id="connectGuideMountButton"
                                 onAction="#connectGuideMount">
                     <MaterialIcon icon="close-circle"
@@ -66,6 +75,27 @@
                 </TwoStateButton>
                 <ImageButton fx:id="openINDIForGuideMountButton"
                              onAction="#openINDIForGuideMount"
+                             url="@icons/indi.png"/>
+            </HBox>
+            <HBox alignment="CENTER"
+                  spacing="4.0"
+                  GridPane.rowIndex="0"
+                  GridPane.columnIndex="2">
+                <LabeledPane text="Guide output"
+                             styleClass="text-bold">
+                    <ChoiceBox fx:id="guideOutputChoiceBox"
+                               HBox.hgrow="ALWAYS"
+                               maxWidth="Infinity"/>
+                </LabeledPane>
+                <TwoStateButton fx:id="connectGuideOutputButton"
+                                onAction="#connectGuideOutput">
+                    <MaterialIcon icon="close-circle"
+                                  TwoStateButton.state="true"
+                                  color="warning"/>
+                    <MaterialIcon icon="connection"/>
+                </TwoStateButton>
+                <ImageButton fx:id="openINDIForGuideOutputButton"
+                             onAction="#openINDIForGuideOutput"
                              url="@icons/indi.png"/>
             </HBox>
         </GridPane>
@@ -347,12 +377,17 @@
                 <HBox alignment="CENTER"
                       spacing="2.0">
                     <MaterialIconButton fx:id="startGuidingButton"
-                                        onAction="#startLooping"
+                                        onMousePressed="#startGuiding"
                                         text="Start"
                                         icon="play"
-                                        color="green-500"/>
+                                        color="green-500">
+                        <tooltip>
+                            <Tooltip text="Press SHIFT to force calibration"
+                                     styleClass="text-sm"/>
+                        </tooltip>
+                    </MaterialIconButton>
                     <MaterialIconButton fx:id="stopGuidingButton"
-                                        onAction="#stopLooping"
+                                        onAction="#stopGuiding"
                                         text="Stop"
                                         icon="stop"
                                         color="warning"/>

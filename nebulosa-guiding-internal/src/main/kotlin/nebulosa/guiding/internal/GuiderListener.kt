@@ -1,5 +1,7 @@
 package nebulosa.guiding.internal
 
+import nebulosa.imaging.Image
+
 interface GuiderListener {
 
     fun onLockPositionChanged(position: Point)
@@ -14,7 +16,7 @@ interface GuiderListener {
 
     fun onLockShiftLimitReached()
 
-    fun onLooping(frameNumber: Int, start: Star?)
+    fun onLooping(image: Image, number: Int, start: Star?)
 
     fun onStarLost()
 
@@ -29,5 +31,5 @@ interface GuiderListener {
         distance: Double,
     )
 
-    fun onCalibrationCompleted()
+    fun onCalibrationCompleted(calibration: Calibration)
 }

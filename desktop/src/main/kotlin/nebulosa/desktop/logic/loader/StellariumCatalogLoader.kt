@@ -41,8 +41,7 @@ class StellariumCatalogLoader : Runnable {
         val past30Days = currentTime - updatedAt >= 2592000000L
 
         if (past30Days || !catalogPath.exists() || !namesPath.exists()) {
-            downloadLatch.countUp()
-            downloadLatch.countUp()
+            downloadLatch.countUp(2)
 
             with(Request.Builder().url(CATALOG_URL).build()) {
                 okHttpClient.newCall(this).enqueue(object : Callback {

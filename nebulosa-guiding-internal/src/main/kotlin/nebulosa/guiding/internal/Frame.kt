@@ -4,5 +4,5 @@ import nebulosa.imaging.Image
 
 data class Frame(
     val image: Image,
-    val frameNumber: Int,
+    val number: Int,
 )

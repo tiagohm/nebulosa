@@ -68,7 +68,13 @@ interface GuideDevice {
 
     fun capture(duration: Long)
 
-    fun guideTo(direction: GuideDirection, duration: Int): Boolean
+    fun guideNorth(duration: Int): Boolean
+
+    fun guideSouth(duration: Int): Boolean
+
+    fun guideWest(duration: Int): Boolean
+
+    fun guideEast(duration: Int): Boolean
 
     fun notifyDirectMove(mount: Point) = Unit
 

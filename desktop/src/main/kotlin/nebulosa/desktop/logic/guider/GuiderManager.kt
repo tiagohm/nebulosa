@@ -13,6 +13,8 @@ import nebulosa.imaging.Image
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraFrameCaptured
+import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.PierSide
 import nebulosa.math.Angle
@@ -21,9 +23,12 @@ import org.greenrobot.eventbus.EventBus
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.atomic.AtomicBoolean
 
 @Component
+@Suppress("LeakingThis")
 class GuiderManager(
     @Autowired internal val view: GuiderView,
     @Autowired internal val equipmentManager: EquipmentManager,
@@ -32,15 +37,19 @@ class GuiderManager(
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var imageViewOpener: ImageView.Opener
+    @Autowired private lateinit var guiderExecutorService: ExecutorService
     @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
 
-    private val cameraPropertyListener = CameraPropertyListener()
-    private val guider = MultiStarGuider()
-    private val guideStarBox = GuideStarBox(guider)
+    private val guideCameraPropertyListener = GuideCameraPropertyListener()
+    private val guideOutputPropertyListener = GuideOutputPropertyListener()
+    private val guider = MultiStarGuider(this)
+    private val guiderIndicator = GuiderIndicator(guider)
     private val imageQueue = LinkedBlockingQueue<Image>()
-    private var imageView: ImageView? = null
+    private val pulseGuiding = AtomicBoolean()
+    @Volatile private var imageView: ImageView? = null
 
+    val loopingProperty = SimpleBooleanProperty()
     val guidingProperty = SimpleBooleanProperty()
 
     val cameras
@@ -49,11 +58,17 @@ class GuiderManager(
     val mounts
         get() = equipmentManager.attachedMounts
 
+    val guideOutputs
+        get() = equipmentManager.attachedGuideOutputs
+
     val selectedGuideCamera
         get() = equipmentManager.selectedGuideCamera
 
     val selectedGuideMount
         get() = equipmentManager.selectedGuideMount
+
+    val selectedGuideOutput
+        get() = equipmentManager.selectedGuideOutput
 
     val camera: Camera?
         get() = selectedGuideCamera.value
@@ -61,11 +76,14 @@ class GuiderManager(
     val mount: Mount?
         get() = selectedGuideMount.value
 
-    fun initialize() {
-        selectedGuideCamera.registerListener(cameraPropertyListener)
-        // selectedGuiderMount.registerListener(this)
+    val guideOutput: GuideOutput?
+        get() = selectedGuideOutput.value
 
-        guider.attachGuideDevice(this)
+    fun initialize() {
+        selectedGuideCamera.registerListener(guideCameraPropertyListener)
+        // selectedGuiderMount.registerListener(this)
+        selectedGuideOutput.registerListener(guideOutputPropertyListener)
+
         guider.registerListener(this)
 
         // eventBus.register(this)
@@ -79,6 +97,10 @@ class GuiderManager(
         mount?.connect()
     }
 
+    fun connectGuideOutput() {
+        guideOutput?.connect()
+    }
+
     fun openINDIPanelControlForGuideCamera() {
         indiPanelControlView.show(bringToFront = true)
         indiPanelControlView.device = camera
@@ -89,18 +111,60 @@ class GuiderManager(
         indiPanelControlView.device = mount
     }
 
-    @Synchronized
+    fun openINDIPanelControlForGuideOutput() {
+        indiPanelControlView.show(bringToFront = true)
+        indiPanelControlView.device = guideOutput
+    }
+
     fun startLooping() {
-        guidingProperty.set(true)
+        loopingProperty.set(true)
         camera?.enableBlob()
         guider.startLooping()
     }
 
-    @Synchronized
     fun stopLooping() {
-        guidingProperty.set(false)
+        loopingProperty.set(false)
         camera?.disableBlob()
         guider.stopLooping()
+    }
+
+    fun startGuiding(forceCalibration: Boolean = false) {
+        guidingProperty.set(true)
+
+        if (forceCalibration) {
+            LOG.info("starting guiding with force calibration")
+            guider.clearCalibration()
+        } else {
+            try {
+                val json = preferences.json<Map<String, String>>("guider.${camera?.name}.${mount?.name}.calibration")
+                val calibration = json?.let(::Calibration)
+
+                if (calibration != null && calibration != Calibration.EMPTY) {
+                    LOG.info("calibration restored. calibration={}", calibration)
+                    guider.loadCalibration(calibration)
+                } else {
+                    LOG.info("unable to restore calibration")
+                }
+            } catch (e: Throwable) {
+                LOG.error("calibration restoration error", e)
+            }
+        }
+
+        guider.startGuiding()
+    }
+
+    fun stopGuiding() {
+        guider.stopGuiding()
+    }
+
+    fun selectGuideStar(x: Double, y: Double) {
+        if (guider.selectGuideStar(x, y)) {
+            imageView?.redraw()
+        }
+    }
+
+    fun deselectGuideStar() {
+        guider.deselectGuideStar()
     }
 
     // Camera.
@@ -127,9 +191,10 @@ class GuiderManager(
     // Mount.
 
     override val mountIsConnected
-        get() = mount?.connected == true
+        get() = mount?.connected ?: false
 
-    override var mountIsBusy = false
+    override val mountIsBusy
+        get() = pulseGuiding.get()
 
     override val mountDeclination
         get() = mount?.declination ?: Angle.NaN
@@ -178,25 +243,33 @@ class GuiderManager(
 
     override var declinationCompensationEnabled = true
 
-    override fun guideTo(direction: GuideDirection, duration: Int): Boolean {
-        val mount = mount ?: return false
+    override fun guideNorth(duration: Int): Boolean {
+        val guideOutput = guideOutput ?: return false
+        LOG.info("guiding north. output={}, duration={} ms", guideOutput.name, duration)
+        return guideTo(guideOutput::guideNorth, duration)
+    }
 
-        if (!mount.canPulseGuide) return false
+    override fun guideSouth(duration: Int): Boolean {
+        val guideOutput = guideOutput ?: return false
+        LOG.info("guiding south. output={}, duration={} ms", guideOutput.name, duration)
+        return guideTo(guideOutput::guideSouth, duration)
+    }
 
-        LOG.info("guiding. direction={}, duration={}", direction, duration)
+    override fun guideWest(duration: Int): Boolean {
+        val guideOutput = guideOutput ?: return false
+        LOG.info("guiding west. output={}, duration={} ms", guideOutput.name, duration)
+        return guideTo(guideOutput::guideWest, duration)
+    }
 
-        if (duration <= 0) return true
+    override fun guideEast(duration: Int): Boolean {
+        val guideOutput = guideOutput ?: return false
+        LOG.info("guiding east. output={}, duration={} ms", guideOutput.name, duration)
+        return guideTo(guideOutput::guideEast, duration)
+    }
 
-        when (direction) {
-            GuideDirection.UP_NORTH -> mount.guideNorth(duration)
-            GuideDirection.DOWN_SOUTH -> mount.guideSouth(duration)
-            GuideDirection.LEFT_WEST -> mount.guideWest(duration)
-            GuideDirection.RIGHT_EAST -> mount.guideEast(duration)
-            else -> return false
-        }
-
-        Thread.sleep(duration.toLong())
-
+    private inline fun guideTo(crossinline callback: (Int) -> Unit, duration: Int): Boolean {
+        pulseGuiding.set(true)
+        guiderExecutorService.submit { callback(duration) }
         return true
     }
 
@@ -217,6 +290,7 @@ class GuiderManager(
     }
 
     override fun onGuidingStopped() {
+        guidingProperty.set(false)
         LOG.info("guiding stopped")
     }
 
@@ -224,8 +298,9 @@ class GuiderManager(
         LOG.info("lock shift limit reached")
     }
 
-    override fun onLooping(frameNumber: Int, start: Star?) {
-        LOG.info("looping. number={}", frameNumber)
+    override fun onLooping(image: Image, number: Int, start: Star?) {
+        LOG.info("looping. number={}", number)
+        imageView?.also { javaFXExecutorService.submit { it.open(image, null) } }
     }
 
     override fun onStarLost() {
@@ -244,7 +319,7 @@ class GuiderManager(
         calibrationState: CalibrationState,
         direction: GuideDirection, stepNumber: Int,
         dx: Double, dy: Double,
-        posX: Double, posY: Double, distance: Double
+        posX: Double, posY: Double, distance: Double,
     ) {
         LOG.info(
             "calibration step. state={}, direction={}, step={}, dx={}, dy={}, x={}, y={}, distance={}",
@@ -252,20 +327,11 @@ class GuiderManager(
         )
     }
 
-    override fun onCalibrationCompleted() {
+    override fun onCalibrationCompleted(calibration: Calibration) {
+        preferences.json("guider.${camera?.name}.${mount?.name}.calibration", calibration.toMap())
     }
 
-    fun selectGuideStar(x: Double, y: Double) {
-        if (guider.selectGuideStar(x, y)) {
-            guider.startGuiding()
-        }
-    }
-
-    fun deselectGuideStar() {
-        guider.deselectGuideStar()
-    }
-
-    private inner class CameraPropertyListener : DevicePropertyListener<Camera> {
+    private inner class GuideCameraPropertyListener : DevicePropertyListener<Camera> {
 
         override fun onChanged(prev: Camera?, device: Camera) {}
 
@@ -282,11 +348,24 @@ class GuiderManager(
                         if (imageView == null) {
                             imageView = imageViewOpener.open(image, null, device)
                             imageView!!.imageViewer.registerMouseListener(view)
-                            imageView!!.imageViewer.addFirst(guideStarBox)
-                        } else {
-                            imageView!!.open(image, null)
+                            imageView!!.imageViewer.addFirst(guiderIndicator)
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private inner class GuideOutputPropertyListener : DevicePropertyListener<GuideOutput> {
+
+        override fun onChanged(prev: GuideOutput?, device: GuideOutput) {}
+
+        override fun onReset() {}
+
+        override fun onDeviceEvent(event: DeviceEvent<*>, device: GuideOutput) {
+            when (event) {
+                is GuideOutputPulsingChanged -> {
+                    pulseGuiding.set(device.pulseGuiding)
                 }
             }
         }

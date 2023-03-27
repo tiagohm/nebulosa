@@ -12,6 +12,7 @@ import nebulosa.desktop.logic.connection.Disconnected
 import nebulosa.desktop.logic.filterwheel.DefaultFilterWheelProperty
 import nebulosa.desktop.logic.focuser.DefaultFocuserProperty
 import nebulosa.desktop.logic.gps.DefaultGPSProperty
+import nebulosa.desktop.logic.guider.DefaultGuideOutputProperty
 import nebulosa.desktop.logic.mount.DefaultMountProperty
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.Camera
@@ -67,6 +68,7 @@ class EquipmentManager : Closeable {
     val selectedFilterWheel = DefaultFilterWheelProperty()
     val selectedFocuser = DefaultFocuserProperty()
     val selectedGPS = DefaultGPSProperty()
+    val selectedGuideOutput = DefaultGuideOutputProperty()
 
     @PostConstruct
     private fun initialize() {
@@ -77,6 +79,7 @@ class EquipmentManager : Closeable {
         selectedFilterWheel.initialize()
         selectedFocuser.initialize()
         selectedGPS.initialize()
+        selectedGuideOutput.initialize()
 
         eventBus.register(selectedCamera)
         eventBus.register(selectedGuideCamera)
@@ -85,6 +88,7 @@ class EquipmentManager : Closeable {
         eventBus.register(selectedFilterWheel)
         eventBus.register(selectedFocuser)
         eventBus.register(selectedGPS)
+        eventBus.register(selectedGuideOutput)
         eventBus.register(this)
     }
 
@@ -127,5 +131,6 @@ class EquipmentManager : Closeable {
         selectedFilterWheel.close()
         selectedFocuser.close()
         selectedGPS.close()
+        selectedGuideOutput.close()
     }
 }

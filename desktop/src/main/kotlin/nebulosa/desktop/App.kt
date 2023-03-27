@@ -19,7 +19,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -66,6 +65,9 @@ class App {
 
     @Bean
     fun filterWheelExecutorService(): ExecutorService = Executors.newSingleThreadExecutor()
+
+    @Bean
+    fun guiderExecutorService(): ExecutorService = Executors.newFixedThreadPool(2)
 
     @Bean
     fun systemExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())

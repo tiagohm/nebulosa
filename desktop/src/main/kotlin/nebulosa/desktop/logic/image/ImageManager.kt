@@ -214,13 +214,15 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     @Synchronized
     private fun transformImage() {
+        val image = image ?: return
+
         val shouldBeTransformed = shadow != 0f || highlight != 1f || midtone != 0.5f
                 || view.mirrorHorizontal || view.mirrorVertical || view.invert
                 || scnrEnabled
 
         // TODO: How to handle rotation transformation if data is copy but width/height is not?
         // TODO: Reason: Image will be rotated for each draw.
-        transformedImage = if (shouldBeTransformed) image!!.clone() else null
+        transformedImage = if (shouldBeTransformed) image.clone() else null
 
         if (transformedImage != null) {
             val algorithms = ArrayList<TransformAlgorithm>(5)

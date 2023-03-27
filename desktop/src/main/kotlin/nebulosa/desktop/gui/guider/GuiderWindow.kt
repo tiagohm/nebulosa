@@ -4,6 +4,7 @@ import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.input.MouseButton
+import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.TwoStateButton
@@ -12,6 +13,7 @@ import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.guider.GuiderView
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -28,8 +30,13 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML private lateinit var guideMountChoiceBox: ChoiceBox<Mount>
     @FXML private lateinit var connectGuideMountButton: TwoStateButton
     @FXML private lateinit var openINDIForGuideMountButton: Button
+    @FXML private lateinit var guideOutputChoiceBox: ChoiceBox<GuideOutput>
+    @FXML private lateinit var connectGuideOutputButton: TwoStateButton
+    @FXML private lateinit var openINDIForGuideOutputButton: Button
     @FXML private lateinit var startLoopingButton: Button
     @FXML private lateinit var stopLoopingButton: Button
+    @FXML private lateinit var startGuidingButton: Button
+    @FXML private lateinit var stopGuidingButton: Button
 
     init {
         title = "Guider"
@@ -37,10 +44,12 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     }
 
     override fun onCreate() {
-        val isNotConnected = !guiderManager.selectedGuideCamera.connectedProperty or !guiderManager.selectedGuideMount.connectedProperty
-        val isConnecting = guiderManager.selectedGuideCamera.connectingProperty or guiderManager.selectedGuideMount.connectingProperty
+        val isNotConnected = !guiderManager.selectedGuideCamera.connectedProperty or
+                !guiderManager.selectedGuideMount.connectedProperty or !guiderManager.selectedGuideOutput.connectedProperty
+        val isConnecting = guiderManager.selectedGuideCamera.connectingProperty or
+                guiderManager.selectedGuideMount.connectingProperty or guiderManager.selectedGuideOutput.connectingProperty
+        val isLooping = guiderManager.loopingProperty
         val isGuiding = guiderManager.guidingProperty
-        val isNotConnectedOrGuiding = isNotConnected or isGuiding
 
         guiderManager.initialize()
 
@@ -64,8 +73,21 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
         openINDIForGuideMountButton.disableProperty().bind(connectGuideMountButton.disableProperty())
 
-        startLoopingButton.disableProperty().bind(isNotConnectedOrGuiding)
-        stopLoopingButton.disableProperty().bind(isNotConnected or !isGuiding)
+        guideOutputChoiceBox.converter = GuideOutputStringConverter
+        guideOutputChoiceBox.disableProperty().bind(isConnecting or isGuiding)
+        guideOutputChoiceBox.itemsProperty().bind(guiderManager.guideOutputs)
+        guideOutputChoiceBox.selectionModel.selectedItemProperty().on { guiderManager.selectedGuideOutput.set(it) }
+
+        connectGuideOutputButton.disableProperty().bind(guiderManager.selectedGuideOutput.isNull or isConnecting or isGuiding)
+        guiderManager.selectedGuideOutput.connectedProperty.on { connectGuideOutputButton.state = it }
+
+        openINDIForGuideOutputButton.disableProperty().bind(connectGuideOutputButton.disableProperty())
+
+        startLoopingButton.disableProperty().bind(isNotConnected or isLooping)
+        stopLoopingButton.disableProperty().bind(isNotConnected or !isLooping)
+
+        startGuidingButton.disableProperty().bind(isNotConnected or !isLooping or isGuiding)
+        stopGuidingButton.disableProperty().bind(isNotConnected or !isLooping or !isGuiding)
     }
 
     @FXML
@@ -79,6 +101,11 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     }
 
     @FXML
+    private fun connectGuideOutput() {
+        guiderManager.connectGuideOutput()
+    }
+
+    @FXML
     private fun openINDIForGuideCamera() {
         guiderManager.openINDIPanelControlForGuideCamera()
     }
@@ -89,6 +116,11 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     }
 
     @FXML
+    private fun openINDIForGuideOutput() {
+        guiderManager.openINDIPanelControlForGuideOutput()
+    }
+
+    @FXML
     private fun startLooping() {
         guiderManager.startLooping()
     }
@@ -96,6 +128,16 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML
     private fun stopLooping() {
         guiderManager.stopLooping()
+    }
+
+    @FXML
+    private fun startGuiding(event: MouseEvent) {
+        guiderManager.startGuiding(event.isShiftDown)
+    }
+
+    @FXML
+    private fun stopGuiding() {
+        guiderManager.stopGuiding()
     }
 
     override fun onMouseClicked(
@@ -124,6 +166,13 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     private object GuideMountStringConverter : StringConverter<Mount>() {
 
         override fun toString(device: Mount?) = device?.name ?: "No guiding mount selected"
+
+        override fun fromString(text: String?) = null
+    }
+
+    private object GuideOutputStringConverter : StringConverter<GuideOutput>() {
+
+        override fun toString(device: GuideOutput?) = device?.name ?: "No guiding output selected"
 
         override fun fromString(text: String?) = null
     }

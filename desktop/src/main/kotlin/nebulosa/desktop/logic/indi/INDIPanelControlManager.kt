@@ -1,7 +1,9 @@
 package nebulosa.desktop.logic.indi
 
+import javafx.animation.PauseTransition
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
+import javafx.util.Duration
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.indi.INDIPanelControlView
@@ -23,11 +25,14 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : Closeabl
     private val cacheProperties = HashMap<Device, HashMap<String, INDIPanelControlWindow.GroupPropertyVector>>()
     private val groups = ArrayList<INDIPanelControlWindow.Group>()
     private val logText = StringBuilder(1000 * 150)
+    private val logTextDelay = PauseTransition(Duration.seconds(5.0))
 
     val devices = SimpleListProperty(FXCollections.observableArrayList<Device>())
 
     fun initialize() {
         eventBus.register(this)
+
+        logTextDelay.setOnFinished { makeLog() }
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -56,6 +61,9 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : Closeabl
                     container?.delete()
                     cacheProperties[event.device]!!.remove(event.property.name)
                 }
+            }
+            is DeviceMessageReceived -> {
+                logTextDelay.playFromStart()
             }
         }
     }

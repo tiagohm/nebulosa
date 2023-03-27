@@ -1,5 +1,6 @@
 package nebulosa.guiding.internal
 
+import nebulosa.guiding.GuidePoint
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import kotlin.math.atan2
@@ -13,15 +14,15 @@ open class Point(
     x: Double = 0.0,
     y: Double = 0.0,
     valid: Boolean = true,
-) {
+) : GuidePoint {
 
-    var valid = valid
+    override var valid = valid
         protected set
 
-    var x = x
+    override var x = x
         protected set
 
-    var y = y
+    override var y = y
         protected set
 
     constructor(point: Point) : this(point.x, point.y, point.valid)

@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
+import kotlin.math.min
 
 class CountUpDownLatch : AtomicBoolean(true) {
 
@@ -12,15 +13,18 @@ class CountUpDownLatch : AtomicBoolean(true) {
     private val condition = lock.newCondition()
     private val counter = AtomicInteger(0)
 
-    fun countUp() = lock.withLock {
-        val value = counter.incrementAndGet()
+    fun countUp(n: Int = 1) = lock.withLock {
+        require(n >= 1) { "n < 1: $n" }
+        val value = counter.addAndGet(n)
         set(false)
         condition.signalAll()
         value
     }
 
-    fun countDown() = lock.withLock {
-        val value = if (counter.get() <= 0) 0 else counter.decrementAndGet()
+    fun countDown(n: Int = 1) = lock.withLock {
+        require(n >= 1) { "n < 1: $n" }
+        val maxToSubtract = min(n, counter.get())
+        val value = counter.addAndGet(-maxToSubtract)
         set(value == 0)
         condition.signalAll()
         value
