@@ -1,6 +1,6 @@
 package nebulosa.guiding.internal
 
-data class LockPositionShiftParams(
+internal data class LockPositionShiftParams(
     var shiftEnabled: Boolean = false,
     var shiftRate: Point = Point(),
     var shiftIsMountCoords: Boolean = false,

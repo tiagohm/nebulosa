@@ -27,7 +27,7 @@ import java.util.concurrent.LinkedBlockingQueue
 class GuiderManager(
     @Autowired internal val view: GuiderView,
     @Autowired internal val equipmentManager: EquipmentManager,
-) : GuideCamera, GuideMount, GuiderListener {
+) : GuideDevice, GuiderListener {
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var eventBus: EventBus
@@ -65,8 +65,7 @@ class GuiderManager(
         selectedGuideCamera.registerListener(cameraPropertyListener)
         // selectedGuiderMount.registerListener(this)
 
-        guider.attachGuideCamera(this)
-        guider.attachGuideMount(this)
+        guider.attachGuideDevice(this)
         guider.registerListener(this)
 
         // eventBus.register(this)
@@ -104,21 +103,21 @@ class GuiderManager(
         guider.stopLooping()
     }
 
-    override val connected
-        get() = camera?.connected == true && mount?.connected == true
-
     // Camera.
 
-    override val binning
+    override val cameraIsConnected
+        get() = camera?.connected == true
+
+    override val cameraBinning
         get() = camera?.binX ?: 1
 
-    override val image: Image
+    override val cameraImage: Image
         get() = imageQueue.take()
 
-    override val pixelScale
+    override val cameraPixelScale
         get() = camera?.pixelSizeX ?: 0.0
 
-    override val exposure
+    override val cameraExposure
         get() = 5000L
 
     override fun capture(duration: Long) {
@@ -127,45 +126,57 @@ class GuiderManager(
 
     // Mount.
 
-    override var busy = false
+    override val mountIsConnected
+        get() = mount?.connected == true
+
+    override var mountIsBusy = false
+
+    override val mountDeclination
+        get() = mount?.declination ?: Angle.NaN
+
+    override val mountRightAscension
+        get() = mount?.rightAscension ?: Angle.NaN
+
+    override val mountRightAscensionGuideRate
+        get() = 0.5
+
+    override val mountDeclinationGuideRate
+        get() = 0.5
+
+    override val mountPierSideAtEast
+        get() = mount?.pierSide == PierSide.EAST
+
+    // Rotator.
+
+    override val rotatorAngle
+        get() = Angle.ZERO
+
+    // Guiding.
 
     override var calibrationFlipRequiresDecFlip = false
 
-    override var calibrationDuration = GuideMount.DEFAULT_CALIBRATION_DURATION
+    override var calibrationDuration = GuideDevice.DEFAULT_CALIBRATION_DURATION
 
-    override var raParity = GuideParity.UNCHANGED
+    override var rightAscensionParity = GuideParity.UNCHANGED
 
-    override var decParity = GuideParity.UNCHANGED
-
-    override val declination
-        get() = mount?.declination ?: Angle.NaN
-
-    override var guidingEnabled = true
+    override var declinationParity = GuideParity.UNCHANGED
 
     override var declinationGuideMode = DeclinationGuideMode.AUTO
+
+    override var guidingEnabled = true
 
     override var maxDeclinationDuration = 2000
 
     override var maxRightAscensionDuration = 2000
 
-    override val pierSideAtEast
-        get() = mount?.pierSide == PierSide.EAST
-
     override val calibrationDistance
         get() = 25 // px
-
-    override val rightAscension
-        get() = mount?.rightAscension ?: Angle.NaN
-
-    override val rightAscensionGuideRate
-        get() = 0.5
-
-    override val declinationGuideRate
-        get() = 0.5
 
     override var xGuideAlgorithm = HysteresisGuideAlgorithm(GuideAxis.RA_X)
 
     override var yGuideAlgorithm = HysteresisGuideAlgorithm(GuideAxis.DEC_Y)
+
+    override var declinationCompensationEnabled = true
 
     override fun guideTo(direction: GuideDirection, duration: Int): Boolean {
         val mount = mount ?: return false
@@ -189,50 +200,28 @@ class GuiderManager(
         return true
     }
 
-    override fun notifyGuidingStarted() {
-        println("notifyGuidingStarted")
+    override fun onLockPositionChanged(position: Point) {
+        LOG.info("lock position changed. x={}, y={}", position.x, position.y)
     }
 
-    override fun notifyGuidingStopped() {
-        println("notifyGuidingStopped")
+    override fun onStarSelected(star: Star) {
+        LOG.info("star selected. x={}, y={}, mass={}, hfd={}, snr={}, peak={}", star.x, star.y, star.mass, star.hfd, star.snr, star.peak)
     }
 
-    override fun notifyGuidingPaused() {
-        println("notifyGuidingPaused")
-    }
-
-    override fun notifyGuidingResumed() {
-        println("notifyGuidingResumed")
-    }
-
-    override fun notifyGuidingDithered(dx: Double, dy: Double, mountCoords: Boolean) {
-        println("notifyGuidingDithered. $dx $dy $mountCoords")
-    }
-
-    override fun notifyGuidingDitherSettleDone(success: Boolean) {
-        println("notifyGuidingDitherSettleDone")
-    }
-
-    override fun notifyDirectMove(distance: Point) {
-        println("notifyDirectMove")
-    }
-
-    override fun onLockPositionChanged(guider: MultiStarGuider, position: Point) {
-    }
-
-    override fun onStarSelected(guider: MultiStarGuider, star: Star) {
-    }
-
-    override fun onGuidingDithered(guider: MultiStarGuider, dx: Double, dy: Double, mountCoordinate: Boolean) {
+    override fun onGuidingDithered(dx: Double, dy: Double, mountCoordinate: Boolean) {
+        LOG.info("guiding dither. dx={}, dy={}, mountCoordinate={}", dx, dy, mountCoordinate)
     }
 
     override fun onCalibrationFailed() {
+        LOG.info("calibration failed")
     }
 
     override fun onGuidingStopped() {
+        LOG.info("guiding stopped")
     }
 
     override fun onLockShiftLimitReached() {
+        LOG.info("lock shift limit reached")
     }
 
     override fun onLooping(frameNumber: Int, start: Star?) {
@@ -240,12 +229,15 @@ class GuiderManager(
     }
 
     override fun onStarLost() {
+        LOG.info("star lost")
     }
 
     override fun onLockPositionLost() {
+        LOG.info("lock position lost")
     }
 
     override fun onStartCalibration() {
+        LOG.info("start calibration")
     }
 
     override fun onCalibrationStep(

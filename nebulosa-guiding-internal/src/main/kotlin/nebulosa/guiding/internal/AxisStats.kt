@@ -6,7 +6,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
-open class AxisStats {
+internal open class AxisStats {
 
     data class LinearFit(
         val slope: Double = 0.0,

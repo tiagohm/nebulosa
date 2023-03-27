@@ -66,6 +66,9 @@ value class Angle(val value: Double) {
     inline val tan
         get() = tan(value)
 
+    inline val valid
+        get() = value.isFinite()
+
     fun hms(): DoubleArray {
         val hours = normalized.hours
         val minutes = (hours - hours.toInt()) * 60.0 % 60.0

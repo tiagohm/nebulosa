@@ -29,7 +29,7 @@ open class Star : Point {
 
     constructor(point: Point) : super(point)
 
-    fun find(
+    internal fun find(
         image: Image, searchRegion: Double = 15.0,
         baseX: Double = x, baseY: Double = y,
         mode: FindMode = FindMode.CENTROID, minHFD: Double = 1.5,
@@ -57,7 +57,7 @@ open class Star : Point {
         get() = valid && (lastFindResult == FindResult.OK || lastFindResult == FindResult.SATURATED)
 
     override fun toString(): String {
-        return "Star(x=$x, y=$y," +
+        return "Star(valid=$valid, x=$x, y=$y," +
                 " mass=$mass, snr=$snr, hfd=$hfd, peak=$peak," +
                 " lastFindResult=$lastFindResult)"
     }

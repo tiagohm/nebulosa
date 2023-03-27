@@ -1,6 +1,6 @@
 package nebulosa.guiding.internal
 
-data class StarDisplacement(
+internal data class StarDisplacement(
     val deltaTime: Double,
     val starPos: Double,
     val guided: Boolean = false,

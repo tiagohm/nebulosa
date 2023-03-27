@@ -2,12 +2,17 @@ package nebulosa.guiding.internal
 
 class GuideStar : Star {
 
-    @JvmField var missCount = 0
-    @JvmField var zeroCount = 0
-    @JvmField var lostCount = 0
+    var missCount = 0
+        internal set
 
-    @JvmField val offsetFromPrimary = Point()
-    @JvmField val referencePoint = Point()
+    var zeroCount = 0
+        internal set
+
+    var lostCount = 0
+        internal set
+
+    val offsetFromPrimary = Point()
+    val referencePoint = Point()
 
     constructor(x: Double, y: Double) : super(x, y)
 

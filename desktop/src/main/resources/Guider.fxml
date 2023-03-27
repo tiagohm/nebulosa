@@ -337,7 +337,7 @@
                                         color="green-500"/>
                     <MaterialIconButton fx:id="stopLoopingButton"
                                         onAction="#stopLooping"
-                                        text="Abort"
+                                        text="Stop"
                                         icon="stop"
                                         color="warning"/>
                 </HBox>
@@ -353,7 +353,7 @@
                                         color="green-500"/>
                     <MaterialIconButton fx:id="stopGuidingButton"
                                         onAction="#stopLooping"
-                                        text="Abort"
+                                        text="Stop"
                                         icon="stop"
                                         color="warning"/>
                 </HBox>

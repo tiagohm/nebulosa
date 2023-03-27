@@ -1,6 +1,5 @@
 package nebulosa.guiding.internal
 
-@Suppress("NOTHING_TO_INLINE")
 class ShiftPoint : Point {
 
     /**
@@ -21,12 +20,12 @@ class ShiftPoint : Point {
         beginShift()
     }
 
-    fun shiftRate(x: Double, y: Double) {
+    internal fun shiftRate(x: Double, y: Double) {
         rate.set(x, y)
         beginShift()
     }
 
-    fun beginShift() {
+    internal fun beginShift() {
         if (valid) {
             x0 = x
             y0 = y
@@ -34,13 +33,13 @@ class ShiftPoint : Point {
         }
     }
 
-    inline fun disableShift() {
+    internal fun disableShift() {
         rate.invalidate()
     }
 
-    fun updateShift() {
+    internal fun updateShift() {
         if (valid && rate.valid) {
-            val dt = (System.currentTimeMillis() - t0) / 1000f
+            val dt = (System.currentTimeMillis() - t0) / 1000.0
             x = x0 + rate.x * dt
             y = y0 + rate.y * dt
         }

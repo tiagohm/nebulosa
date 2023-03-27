@@ -4,7 +4,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class WindowedAxisStats(val autoWindowSize: Int = 0) : AxisStats() {
+internal class WindowedAxisStats(val autoWindowSize: Int = 0) : AxisStats() {
 
     val autoWindowing = autoWindowSize > 0
 
