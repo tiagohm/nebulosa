@@ -31,7 +31,7 @@ import nebulosa.nova.position.ICRF
 import nebulosa.sbd.SmallBody
 import nebulosa.sbd.SmallBodyDatabaseLookupService
 import nebulosa.skycatalog.brightstars.BrightStars
-import nebulosa.stellarium.skycatalog.Nebula
+import nebulosa.skycatalog.stellarium.Nebula
 import nebulosa.time.UTC
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe

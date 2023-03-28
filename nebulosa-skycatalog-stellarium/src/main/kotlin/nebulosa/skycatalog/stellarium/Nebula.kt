@@ -1,4 +1,4 @@
-package nebulosa.stellarium.skycatalog
+package nebulosa.skycatalog.stellarium
 
 import nebulosa.io.readDouble
 import nebulosa.math.Angle.Companion.deg

@@ -4,7 +4,7 @@ import io.kotest.matchers.ints.shouldBeExactly
 import nebulosa.io.resource
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
-import nebulosa.stellarium.skycatalog.Nebula
+import nebulosa.skycatalog.stellarium.Nebula
 import okio.gzip
 import okio.source
 

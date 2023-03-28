@@ -6,7 +6,7 @@ import javafx.scene.text.Font
 import javafx.scene.text.TextAlignment
 import nebulosa.desktop.view.image.Drawable
 import nebulosa.platesolving.Calibration
-import nebulosa.stellarium.skycatalog.Nebula
+import nebulosa.skycatalog.stellarium.Nebula
 import nebulosa.wcs.WCSTransform
 import org.slf4j.LoggerFactory
 import kotlin.math.max

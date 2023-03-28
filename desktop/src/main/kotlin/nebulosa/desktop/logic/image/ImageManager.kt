@@ -25,7 +25,7 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.indi.device.mount.Mount
 import nebulosa.platesolving.Calibration
-import nebulosa.stellarium.skycatalog.Nebula
+import nebulosa.skycatalog.stellarium.Nebula
 import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Header
 import org.greenrobot.eventbus.EventBus
