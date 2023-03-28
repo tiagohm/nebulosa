@@ -1,5 +1,6 @@
 package nebulosa.guiding.internal
 
+import nebulosa.guiding.GuideAxis
 import kotlin.math.abs
 
 class LowPassGuideAlgorithm(

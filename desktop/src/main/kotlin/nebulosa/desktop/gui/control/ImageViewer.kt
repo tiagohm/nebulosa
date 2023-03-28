@@ -58,7 +58,9 @@ class ImageViewer private constructor(private val drawables: LinkedList<Drawable
         }
 
         addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
-            val target = targetPointAt(Point2D(event.x, event.y)).orElse(targetPointAtViewportCentre())
+            val target = targetPointAt(Point2D(event.x, event.y))
+                .orElse(targetPointAtViewportCentre())
+
             mouseListeners.forEach {
                 it.onMouseClicked(
                     event.button, event.clickCount,

@@ -7,6 +7,7 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.MaterialIcon
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.guider.GuiderManager
 import nebulosa.desktop.logic.on
@@ -37,6 +38,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML private lateinit var stopLoopingButton: Button
     @FXML private lateinit var startGuidingButton: Button
     @FXML private lateinit var stopGuidingButton: Button
+    @FXML private lateinit var statusIcon: MaterialIcon
 
     init {
         title = "Guider"
@@ -138,6 +140,10 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML
     private fun stopGuiding() {
         guiderManager.stopGuiding()
+    }
+
+    override fun updateStatus(text: String) {
+        javaFXExecutorService.submit { statusIcon.text = text }
     }
 
     override fun onMouseClicked(

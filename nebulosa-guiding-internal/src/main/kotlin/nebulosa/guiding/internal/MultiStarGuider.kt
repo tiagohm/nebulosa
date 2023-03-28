@@ -1,11 +1,12 @@
 package nebulosa.guiding.internal
 
 import nebulosa.constants.PIOVERTWO
-import nebulosa.guiding.Guider
+import nebulosa.guiding.*
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.star.hfd.FindMode
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
 import kotlin.math.hypot
@@ -17,7 +18,10 @@ import kotlin.math.roundToInt
  * making move requests to a mount by passing the difference
  * between [currentPosition] and [lockPosition].
  */
-class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
+class MultiStarGuider(
+    @JvmField internal val device: GuideDevice,
+    private val executor: ExecutorService,
+) : Guider {
 
     private val guideStars = LinkedList<GuideStar>()
     private var starsUsed = 0
@@ -47,15 +51,12 @@ class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
 
     var fastRecenterEnabled = false
 
-    private val frame = AtomicReference<Frame>()
+    private val frame = AtomicReference<Image>()
 
     private val settler = Settler(this)
 
-    internal val image
-        get() = frame.get()?.image
-
-    internal val frameNumber
-        get() = frame.get()?.number ?: -1
+    internal val image: Image?
+        get() = frame.get()
 
     val settling
         get() = settler.settling
@@ -147,12 +148,12 @@ class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
         listeners.remove(listener)
     }
 
-    fun clearCalibration() {
-        guideCalibrator.clearCalibration()
+    override fun clearCalibration() {
+        guideCalibrator.clear()
     }
 
-    fun loadCalibration(calibration: Calibration) {
-        guideCalibrator.set(calibration)
+    override fun loadCalibration(calibration: Calibration) {
+        guideCalibrator.load(calibration)
     }
 
     fun pause(type: PauseType) {
@@ -387,7 +388,7 @@ class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
                 listeners.forEach { it.onCalibrationFailed() }
             }
             GuiderState.GUIDING -> {
-                if (!device.mountIsBusy) listeners.forEach { it.onGuidingStopped() }
+                listeners.forEach { it.onGuidingStopped() }
             }
             else -> Unit
         }
@@ -395,7 +396,7 @@ class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
         updateState(GuiderState.STOP)
     }
 
-    private fun reset(fullReset: Boolean) {
+    override fun reset(fullReset: Boolean) {
         updateState(GuiderState.UNINITIALIZED)
 
         if (fullReset) invalidateCurrentPosition(true)
@@ -417,7 +418,7 @@ class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
     }
 
     @Synchronized
-    internal fun updateGuide(frame: Frame, stopping: Boolean) {
+    internal fun updateGuide(frame: Image, frameNumber: Int, stopping: Boolean) {
         this.frame.set(frame)
 
         if (stopping) return stopGuiding()
@@ -431,15 +432,15 @@ class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
 
         val offset = GuiderOffset(Point(), Point())
 
-        if (!updateCurrentPosition(frame.image, offset)) {
+        if (!updateCurrentPosition(frame, offset)) {
             when (state) {
                 GuiderState.UNINITIALIZED,
                 GuiderState.SELECTING -> {
-                    listeners.forEach { it.onLooping(frame.image, frame.number, null) }
+                    listeners.forEach { it.onLooping(frame, frameNumber, null) }
                 }
                 GuiderState.SELECTED -> {
                     // We had a current position and lost it.
-                    listeners.forEach { it.onLooping(frame.image, frame.number, null) }
+                    listeners.forEach { it.onLooping(frame, frameNumber, null) }
 
                     if (!ignoreLostStarLooping) {
                         updateState(GuiderState.UNINITIALIZED)
@@ -457,7 +458,7 @@ class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
                 else -> Unit
             }
         } else {
-            listeners.forEach { it.onLooping(frame.image, frame.number, primaryStar) }
+            listeners.forEach { it.onLooping(frame, frameNumber, primaryStar) }
 
             // we have a star selected, so re-enable subframes.
             if (forceFullFrame) {
@@ -812,7 +813,7 @@ class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
     override fun selectGuideStar(
         x: Double, y: Double,
     ): Boolean {
-        val image = frame.get()?.image ?: return false
+        val image = image ?: return false
 
         if (state > GuiderState.SELECTED) {
             LOG.warn("state > SELECTED. state={}", state)
@@ -1084,7 +1085,11 @@ class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
     }
 
     override fun startLooping() {
-        capturer.start()
+        if (capturer.stopped) {
+            executor.submit(capturer)
+        } else {
+            capturer.unpause()
+        }
     }
 
     override fun stopLooping() {

@@ -2,6 +2,10 @@ package nebulosa.guiding.internal
 
 import nebulosa.constants.PI
 import nebulosa.constants.PIOVERTWO
+import nebulosa.guiding.Calibration
+import nebulosa.guiding.CalibrationState
+import nebulosa.guiding.GuideDirection
+import nebulosa.guiding.GuideParity
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import org.slf4j.LoggerFactory
@@ -84,7 +88,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
     val yAngle
         get() = (calibration.xAngle - yAngleError + PIOVERTWO).normalized - PI
 
-    internal fun set(newCalibration: Calibration) {
+    internal fun load(newCalibration: Calibration) {
         calibration = calibration.copy(
             xRate = newCalibration.xRate,
             yRate = newCalibration.yRate,
@@ -131,13 +135,13 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
         // For mounts with calibrationFlipRequiresDecFlip, the parity does not change after the flip.
         val newDecParity = if (decFlipRequired) calibration.decGuideParity else calibration.decGuideParity.opposite
 
-        set(calibration.copy(xAngle = newX, yAngle = newY, pierSideAtEast = pierSideAtEast, decGuideParity = newDecParity))
+        load(calibration.copy(xAngle = newX, yAngle = newY, pierSideAtEast = pierSideAtEast, decGuideParity = newDecParity))
     }
 
     fun beginCalibration(currentLocation: Point): Boolean {
         if (!currentLocation.valid) return false
 
-        clearCalibration()
+        clear()
 
         calibrationSteps = 0
         calibrationInitialLocation.set(currentLocation)
@@ -150,7 +154,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
         return true
     }
 
-    fun clearCalibration() {
+    fun clear() {
         calibrated = false
         calibrationState = CalibrationState.CLEARED
         calibration = Calibration.EMPTY
@@ -567,7 +571,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         binning = device.cameraBinning,
                     )
 
-                    set(calibration)
+                    load(calibration)
 
                     LOG.info("calibration completed. calibration={}", calibration)
 
@@ -608,13 +612,13 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                 calibration.binning, binning, calibration.xRate, xRate, calibration.yRate, yRate,
             )
 
-            set(calibration.copy(xRate = xRate, yRate = yRate, binning = binning))
+            load(calibration.copy(xRate = xRate, yRate = yRate, binning = binning))
         }
 
         // If the image scale has changed, make some other adjustments.
         if (abs(scaleAdjustment - 1.0) >= 0.01) {
             LOG.info("image scale ratio changed. scaleAdjustment={}", scaleAdjustment)
-            clearCalibration()
+            clear()
         }
 
         if (pierSideAtEast != calibration.pierSideAtEast) {
@@ -638,7 +642,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                 val xAngle = (calibration.xAngle - da).normalized - PI
                 val yAngle = (calibration.yAngle - da).normalized - PI
 
-                set(calibration.copy(xAngle = xAngle, yAngle = yAngle))
+                load(calibration.copy(xAngle = xAngle, yAngle = yAngle))
             }
         }
 

@@ -1,4 +1,4 @@
-package nebulosa.guiding.internal
+package nebulosa.guiding
 
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad

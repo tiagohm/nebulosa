@@ -1,9 +1,11 @@
+import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import nebulosa.io.resource
 import nebulosa.skycatalog.hyg.HygDatabase
 
+@EnabledIf(NonGitHubOnlyCondition::class)
 class HygDatabaseTest : StringSpec() {
 
     init {

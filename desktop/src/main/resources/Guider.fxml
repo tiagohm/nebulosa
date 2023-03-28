@@ -40,9 +40,10 @@
                   GridPane.rowIndex="0"
                   GridPane.columnIndex="0">
                 <LabeledPane text="Guiding camera"
+                             GridPane.fillWidth="true"
                              styleClass="text-bold">
                     <ChoiceBox fx:id="guideCameraChoiceBox"
-                               HBox.hgrow="ALWAYS"
+                               prefWidth="200.0"
                                maxWidth="Infinity"/>
                 </LabeledPane>
                 <TwoStateButton fx:id="connectGuideCameraButton"
@@ -61,9 +62,10 @@
                   GridPane.rowIndex="0"
                   GridPane.columnIndex="1">
                 <LabeledPane text="Guiding mount"
+                             GridPane.fillWidth="true"
                              styleClass="text-bold">
                     <ChoiceBox fx:id="guideMountChoiceBox"
-                               HBox.hgrow="ALWAYS"
+                               prefWidth="200.0"
                                maxWidth="Infinity"/>
                 </LabeledPane>
                 <TwoStateButton fx:id="connectGuideMountButton"
@@ -82,9 +84,10 @@
                   GridPane.rowIndex="0"
                   GridPane.columnIndex="2">
                 <LabeledPane text="Guide output"
+                             GridPane.fillWidth="true"
                              styleClass="text-bold">
                     <ChoiceBox fx:id="guideOutputChoiceBox"
-                               HBox.hgrow="ALWAYS"
+                               prefWidth="200.0"
                                maxWidth="Infinity"/>
                 </LabeledPane>
                 <TwoStateButton fx:id="connectGuideOutputButton"
@@ -393,6 +396,12 @@
                                         color="warning"/>
                 </HBox>
             </LabeledPane>
+        </HBox>
+        <HBox alignment="CENTER_LEFT">
+            <MaterialIcon fx:id="statusIcon"
+                          icon="information"
+                          size="xs"
+                          text="idle"/>
         </HBox>
     </VBox>
 </AnchorPane>

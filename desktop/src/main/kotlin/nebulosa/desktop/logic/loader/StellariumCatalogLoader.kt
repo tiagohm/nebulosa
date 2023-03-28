@@ -4,8 +4,8 @@ import jakarta.annotation.PostConstruct
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.Preferences
 import nebulosa.skycatalog.stellarium.Nebula
-import okhttp3.*
-import okio.IOException
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okio.gzip
 import okio.source
 import org.slf4j.LoggerFactory
@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
@@ -25,6 +25,7 @@ class StellariumCatalogLoader : Runnable {
     @Autowired private lateinit var appDirectory: Path
     @Autowired private lateinit var okHttpClient: OkHttpClient
     @Autowired private lateinit var preferences: Preferences
+    @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var nebula: Nebula
 
     @PostConstruct
@@ -43,53 +44,53 @@ class StellariumCatalogLoader : Runnable {
         if (past30Days || !catalogPath.exists() || !namesPath.exists()) {
             downloadLatch.countUp(2)
 
-            with(Request.Builder().url(CATALOG_URL).build()) {
-                okHttpClient.newCall(this).enqueue(object : Callback {
-                    override fun onFailure(call: Call, e: IOException) {
-                        LOG.error("failed to download catalog.dat", e)
-                        downloadLatch.countDown()
-                    }
+            systemExecutorService.submit {
+                with(Request.Builder().url(CATALOG_URL).build()) {
+                    try {
+                        val response = okHttpClient.newCall(this).execute()
 
-                    override fun onResponse(call: Call, response: Response) {
-                        LOG.info("catalog.dat downloaded successfully")
-                        catalogPath.outputStream().use(response.body.byteStream()::transferTo)
-                        preferences.long("loader.stellarium.updatedAt", currentTime)
+                        response.use {
+                            LOG.info("catalog.dat downloaded successfully")
+                            catalogPath.outputStream().use(it.body.byteStream()::transferTo)
+                            preferences.long("loader.stellarium.updatedAt", currentTime)
+                        }
+                    } finally {
                         downloadLatch.countDown()
                     }
-                })
+                }
             }
 
-            with(Request.Builder().url(NAMES_URL).build()) {
-                okHttpClient.newCall(this).enqueue(object : Callback {
-                    override fun onFailure(call: Call, e: IOException) {
-                        LOG.error("failed to download names.dat", e)
-                        downloadLatch.countDown()
-                    }
+            systemExecutorService.submit {
+                with(Request.Builder().url(NAMES_URL).build()) {
+                    val response = okHttpClient.newCall(this).execute()
 
-                    override fun onResponse(call: Call, response: Response) {
-                        LOG.info("names.dat downloaded successfully")
-                        namesPath.outputStream().use(response.body.byteStream()::transferTo)
+                    try {
+                        response.use {
+                            LOG.info("names.dat downloaded successfully")
+                            namesPath.outputStream().use(response.body.byteStream()::transferTo)
+                        }
+                    } finally {
                         downloadLatch.countDown()
                     }
-                })
+                }
             }
         } else {
             LOG.info("Stellarium DSO Catalog and Names are up-to-date")
         }
 
-        CompletableFuture.supplyAsync {
+        systemExecutorService.submit {
             downloadLatch.await()
 
             if (catalogPath.exists()) {
                 catalogPath.inputStream().use { catalog ->
                     if (namesPath.exists()) {
                         namesPath.inputStream().use { names ->
-                            LOG.info("loading Stellarium DSO Catalog and Names")
                             nebula.load(catalog.source().gzip(), names.source())
+                            LOG.info("Stellarium DSO Catalog and Names loaded. size={} entries", nebula.size)
                         }
                     } else {
-                        LOG.info("loading Stellarium DSO Catalog only")
                         nebula.load(catalog.source().gzip())
+                        LOG.info("Stellarium DSO Catalog loaded. size={} entries", nebula.size)
                     }
                 }
             } else {

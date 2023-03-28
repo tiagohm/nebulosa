@@ -1,6 +1,7 @@
 package nebulosa.desktop.logic.guider
 
 import javafx.beans.property.SimpleBooleanProperty
+import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.DevicePropertyListener
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
@@ -8,7 +9,11 @@ import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.guider.GuiderView
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.indi.INDIPanelControlView
-import nebulosa.guiding.internal.*
+import nebulosa.guiding.*
+import nebulosa.guiding.internal.DeclinationGuideMode
+import nebulosa.guiding.internal.GuideDevice
+import nebulosa.guiding.internal.HysteresisGuideAlgorithm
+import nebulosa.guiding.internal.MultiStarGuider
 import nebulosa.imaging.Image
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.Camera
@@ -25,10 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.atomic.AtomicBoolean
 
 @Component
-@Suppress("LeakingThis")
 class GuiderManager(
     @Autowired internal val view: GuiderView,
     @Autowired internal val equipmentManager: EquipmentManager,
@@ -43,10 +46,10 @@ class GuiderManager(
 
     private val guideCameraPropertyListener = GuideCameraPropertyListener()
     private val guideOutputPropertyListener = GuideOutputPropertyListener()
-    private val guider = MultiStarGuider(this)
-    private val guiderIndicator = GuiderIndicator(guider)
+    private lateinit var guider: Guider
+    private lateinit var guiderIndicator: GuiderIndicator
     private val imageQueue = LinkedBlockingQueue<Image>()
-    private val pulseGuiding = AtomicBoolean()
+    private val pulseGuidingLatch = CountUpDownLatch()
     @Volatile private var imageView: ImageView? = null
 
     val loopingProperty = SimpleBooleanProperty()
@@ -84,7 +87,11 @@ class GuiderManager(
         // selectedGuiderMount.registerListener(this)
         selectedGuideOutput.registerListener(guideOutputPropertyListener)
 
-        guider.registerListener(this)
+        with(MultiStarGuider(this, guiderExecutorService)) {
+            registerListener(this@GuiderManager)
+            guider = this
+            guiderIndicator = GuiderIndicator(this)
+        }
 
         // eventBus.register(this)
     }
@@ -199,9 +206,6 @@ class GuiderManager(
     override val mountIsConnected
         get() = mount?.connected ?: false
 
-    override val mountIsBusy
-        get() = pulseGuiding.get()
-
     override val mountDeclination
         get() = mount?.declination ?: Angle.NaN
 
@@ -216,6 +220,10 @@ class GuiderManager(
 
     override val mountPierSideAtEast
         get() = mount?.pierSide == PierSide.EAST
+
+    override fun awaitIfMountIsBusy() {
+        pulseGuidingLatch.await()
+    }
 
     // Rotator.
 
@@ -274,17 +282,21 @@ class GuiderManager(
     }
 
     private inline fun guideTo(crossinline callback: (Int) -> Unit, duration: Int): Boolean {
-        pulseGuiding.set(true)
+        pulseGuidingLatch.countUp()
         guiderExecutorService.submit { callback(duration) }
         return true
     }
 
-    override fun onLockPositionChanged(position: Point) {
-        LOG.info("lock position changed. x={}, y={}", position.x, position.y)
+    override fun onLockPositionChanged(position: GuidePoint) {
+        view.updateStatus("lock position changed. x=%.1f, y=%.1f".format(position.x, position.y))
     }
 
-    override fun onStarSelected(star: Star) {
-        LOG.info("star selected. x={}, y={}, mass={}, hfd={}, snr={}, peak={}", star.x, star.y, star.mass, star.hfd, star.snr, star.peak)
+    override fun onStarSelected(star: StarPoint) {
+        view.updateStatus(
+            "star selected. x=%.1f, y=%.1f, mass=%.1f, hfd=%.1f, snr=%.1f, peak=%.1f".format(
+                star.x, star.y, star.mass, star.hfd, star.snr, star.peak,
+            )
+        )
     }
 
     override fun onGuidingDithered(dx: Double, dy: Double, mountCoordinate: Boolean) {
@@ -292,33 +304,33 @@ class GuiderManager(
     }
 
     override fun onCalibrationFailed() {
-        LOG.info("calibration failed")
+        view.updateStatus("calibration failed")
     }
 
     override fun onGuidingStopped() {
         guidingProperty.set(false)
-        LOG.info("guiding stopped")
+        view.updateStatus("guiding stopped")
     }
 
     override fun onLockShiftLimitReached() {
-        LOG.info("lock shift limit reached")
+        view.updateStatus("lock shift limit reached")
     }
 
-    override fun onLooping(image: Image, number: Int, start: Star?) {
-        LOG.info("looping. number={}", number)
+    override fun onLooping(image: Image, number: Int, star: StarPoint?) {
+        view.updateStatus("looping. number=$number")
         imageView?.also { javaFXExecutorService.submit { it.open(image, null) } }
     }
 
     override fun onStarLost() {
-        LOG.info("star lost")
+        view.updateStatus("star lost")
     }
 
     override fun onLockPositionLost() {
-        LOG.info("lock position lost")
+        view.updateStatus("lock position lost")
     }
 
     override fun onStartCalibration() {
-        LOG.info("start calibration")
+        view.updateStatus("calibration started")
     }
 
     override fun onCalibrationStep(
@@ -334,6 +346,7 @@ class GuiderManager(
     }
 
     override fun onCalibrationCompleted(calibration: Calibration) {
+        view.updateStatus("calibration completed")
         preferences.json("guider.${camera?.name}.${mount?.name}.calibration", calibration.toMap())
     }
 
@@ -371,7 +384,9 @@ class GuiderManager(
         override fun onDeviceEvent(event: DeviceEvent<*>, device: GuideOutput) {
             when (event) {
                 is GuideOutputPulsingChanged -> {
-                    pulseGuiding.set(device.pulseGuiding)
+                    if (!device.pulseGuiding) {
+                        pulseGuidingLatch.countDown()
+                    }
                 }
             }
         }

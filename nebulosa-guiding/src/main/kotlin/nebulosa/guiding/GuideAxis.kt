@@ -1,4 +1,4 @@
-package nebulosa.guiding.internal
+package nebulosa.guiding
 
 enum class GuideAxis {
     RA_X,

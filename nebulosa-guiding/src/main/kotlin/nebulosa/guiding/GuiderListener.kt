@@ -1,12 +1,12 @@
-package nebulosa.guiding.internal
+package nebulosa.guiding
 
 import nebulosa.imaging.Image
 
 interface GuiderListener {
 
-    fun onLockPositionChanged(position: Point)
+    fun onLockPositionChanged(position: GuidePoint)
 
-    fun onStarSelected(star: Star)
+    fun onStarSelected(star: StarPoint)
 
     fun onGuidingDithered(dx: Double, dy: Double, mountCoordinate: Boolean)
 
@@ -16,7 +16,7 @@ interface GuiderListener {
 
     fun onLockShiftLimitReached()
 
-    fun onLooping(image: Image, number: Int, start: Star?)
+    fun onLooping(image: Image, number: Int, star: StarPoint?)
 
     fun onStarLost()
 

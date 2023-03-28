@@ -21,4 +21,10 @@ interface Guider : Iterable<GuidePoint> {
     fun startGuiding()
 
     fun stopGuiding()
+
+    fun reset(fullReset: Boolean)
+
+    fun clearCalibration()
+
+    fun loadCalibration(calibration: Calibration)
 }

@@ -1,25 +1,25 @@
 package nebulosa.guiding.internal
 
-import nebulosa.common.concurrency.PauseableWorker
+import nebulosa.common.concurrency.Worker
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.max
 
-internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : PauseableWorker("Guide Camera Capture Thread") {
+internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : Worker() {
 
     private val frameNumber = AtomicInteger(1)
 
-    override fun run() {
+    override fun execute() {
         val startTime = System.currentTimeMillis()
         val duration = guider.device.cameraExposure
 
         if (guider.pauseType != PauseType.FULL) {
-            while (guider.device.mountIsBusy) Thread.sleep(10)
+            guider.device.awaitIfMountIsBusy()
             LOG.info("starting frame capture. exposure={} ms", duration)
             guider.device.capture(duration)
-            val frame = Frame(guider.device.cameraImage, frameNumber.getAndIncrement())
-            LOG.info("frame capture finished.")
-            guider.updateGuide(frame, false)
+            val frame = guider.device.cameraImage
+            LOG.info("frame capture finished")
+            guider.updateGuide(frame, frameNumber.getAndIncrement(), false)
         }
 
         val delta = System.currentTimeMillis() - startTime

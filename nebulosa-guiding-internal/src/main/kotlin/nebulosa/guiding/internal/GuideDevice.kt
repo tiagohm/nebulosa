@@ -1,5 +1,6 @@
 package nebulosa.guiding.internal
 
+import nebulosa.guiding.GuideParity
 import nebulosa.imaging.Image
 import nebulosa.math.Angle
 
@@ -21,8 +22,6 @@ interface GuideDevice {
 
     val mountIsConnected: Boolean
 
-    val mountIsBusy: Boolean
-
     val mountRightAscension: Angle
 
     val mountDeclination: Angle
@@ -32,6 +31,8 @@ interface GuideDevice {
     val mountDeclinationGuideRate: Double
 
     val mountPierSideAtEast: Boolean
+
+    fun awaitIfMountIsBusy()
 
     // Rotator.
 

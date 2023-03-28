@@ -2,8 +2,8 @@ package nebulosa.desktop.logic.loader
 
 import jakarta.annotation.PostConstruct
 import nebulosa.skycatalog.hyg.HygDatabase
-import okhttp3.*
-import okio.IOException
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -36,23 +36,17 @@ class HygDatabaseLoader : Runnable {
         } else {
             LOG.info("downloading hyg database")
 
-            with(Request.Builder().url(DATABASE_URL).build()) {
-                okHttpClient.newCall(this).enqueue(object : Callback {
+            systemExecutorService.submit {
+                with(Request.Builder().url(DATABASE_URL).build()) {
+                    val response = okHttpClient.newCall(this).execute()
 
-                    override fun onFailure(call: Call, e: IOException) {
-                        LOG.error("failed to download hyg database", e)
-                    }
-
-                    override fun onResponse(call: Call, response: Response) {
+                    response.use {
                         LOG.info("hyg database downloaded successfully")
-
-                        systemExecutorService.submit {
-                            catalogPath.outputStream().use(response.body.byteStream()::transferTo)
-                            hygDatabase.load(catalogPath)
-                            LOG.info("hyg database loaded. size={} stars", hygDatabase.size)
-                        }
+                        catalogPath.outputStream().use(it.body.byteStream()::transferTo)
+                        hygDatabase.load(catalogPath)
+                        LOG.info("hyg database loaded. size={} stars", hygDatabase.size)
                     }
-                })
+                }
             }
         }
     }

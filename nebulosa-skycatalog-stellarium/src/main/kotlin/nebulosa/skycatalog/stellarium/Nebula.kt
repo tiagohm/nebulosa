@@ -13,7 +13,7 @@ import okio.BufferedSource
 import okio.Source
 import okio.buffer
 
-class Nebula : SkyCatalog<DSO>() {
+class Nebula : SkyCatalog<DSO>(94661) {
 
     fun load(
         source: Source,

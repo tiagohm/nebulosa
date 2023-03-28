@@ -21,7 +21,7 @@ import kotlin.io.path.inputStream
  *
  * @see <a href="https://github.com/astronexus/HYG-Database">GitHub</a>
  */
-class HygDatabase : SkyCatalog<Star>() {
+class HygDatabase : SkyCatalog<Star>(118005) {
 
     fun load(path: Path) {
         path.inputStream().use(::load)

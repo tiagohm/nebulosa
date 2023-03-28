@@ -1,5 +1,6 @@
 package nebulosa.guiding.internal
 
+import nebulosa.guiding.StarPoint
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.star.hfd.FindMode
 import nebulosa.imaging.algorithms.star.hfd.FindResult
@@ -8,21 +9,21 @@ import nebulosa.imaging.algorithms.star.hfd.HalfFluxDiameter
 /**
  * Represents a star.
  */
-open class Star : Point {
+open class Star : Point, StarPoint {
 
-    var mass = 0.0
+    final override var mass = 0.0
         private set
 
-    var snr = 0.0
+    final override var snr = 0.0
         private set
 
-    var hfd = 0.0
+    final override var hfd = 0.0
         private set
 
-    var peak = 0.0
+    final override var peak = 0.0
         private set
 
-    var lastFindResult = FindResult.ERROR
+    var findResult = FindResult.ERROR
         private set
 
     constructor(x: Double, y: Double) : super(x, y, false)
@@ -41,7 +42,7 @@ open class Star : Point {
         this.hfd = star.hfd
         peak = star.peak
         set(star.x, star.y)
-        lastFindResult = star.result
+        findResult = star.result
         return wasFound
     }
 
@@ -49,16 +50,16 @@ open class Star : Point {
         mass = 0.0
         snr = 0.0
         hfd = 0.0
-        lastFindResult = FindResult.ERROR
+        findResult = FindResult.ERROR
         super.invalidate()
     }
 
-    inline val wasFound
-        get() = valid && (lastFindResult == FindResult.OK || lastFindResult == FindResult.SATURATED)
+    override val wasFound
+        get() = valid && (findResult == FindResult.OK || findResult == FindResult.SATURATED)
 
     override fun toString(): String {
         return "Star(valid=$valid, x=$x, y=$y," +
                 " mass=$mass, snr=$snr, hfd=$hfd, peak=$peak," +
-                " lastFindResult=$lastFindResult)"
+                " findResult=$findResult)"
     }
 }
