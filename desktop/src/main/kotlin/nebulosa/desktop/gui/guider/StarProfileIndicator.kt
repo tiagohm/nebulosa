@@ -1,39 +1,71 @@
 package nebulosa.desktop.gui.guider
 
-import javafx.scene.canvas.GraphicsContext
 import javafx.scene.paint.Color
-import nebulosa.desktop.view.image.Drawable
+import javafx.scene.shape.Circle
+import javafx.scene.shape.Line
+import nebulosa.desktop.gui.control.Drawable
 import nebulosa.guiding.GuidePoint
 
-class StarProfileIndicator : Drawable {
+class StarProfileIndicator : Drawable() {
 
-    var regionSize = 0.0
-    lateinit var lockPosition: GuidePoint
-    lateinit var primaryStar: GuidePoint
+    private val crosshairLineHor = Line()
+    private val crosshairLineVer = Line()
+    private val primaryStarDot = Circle()
 
-    override fun draw(width: Double, height: Double, graphics: GraphicsContext) {
-        graphics.lineWidth = LINE_WIDTH
-        graphics.stroke = Color.YELLOW
+    @Volatile private var initialized = false
+    @Volatile private lateinit var lockPosition: GuidePoint
+    @Volatile private lateinit var primaryStar: GuidePoint
 
-        val centerX = width / 2.0
-        val centerY = height / 2.0
+    init {
+        with(crosshairLineHor) {
+            stroke = Color.YELLOW
+            strokeWidth = 1.0
+            strokeDashArray.addAll(2.0, 2.0)
+            add(this)
+        }
 
-        graphics.setLineDashes(*DASH_PATTERN)
-        graphics.strokeLine(0.0, centerY, width, centerY)
-        graphics.strokeLine(centerX, 0.0, centerX, height)
+        with(crosshairLineVer) {
+            stroke = Color.YELLOW
+            strokeWidth = 1.0
+            strokeDashArray.addAll(2.0, 2.0)
+            add(this)
+        }
 
-        if (lockPosition.valid && primaryStar.valid) {
-            graphics.fill = Color.RED
-            val dotSize = 1.0
-            val offsetX = centerX + primaryStar.x - lockPosition.x
-            val offsetY = centerY + primaryStar.y - lockPosition.y
-            graphics.fillOval(offsetX - dotSize / 2.0, offsetY - dotSize / 2.0, dotSize, dotSize)
+        with(primaryStarDot) {
+            fill = Color.RED
+            radius = 1.0
+            add(this)
         }
     }
 
-    companion object {
+    fun draw(lockPosition: GuidePoint, primaryStar: GuidePoint) {
+        this.lockPosition = lockPosition
+        this.primaryStar = primaryStar
+        initialized = true
+        redraw()
+    }
 
-        private const val LINE_WIDTH = 1.0
-        @JvmStatic private val DASH_PATTERN = doubleArrayOf(4.0, 4.0)
+    override fun redraw() {
+        val centerX = width / 2.0
+        val centerY = height / 2.0
+
+        crosshairLineHor.startX = 0.0
+        crosshairLineHor.startY = centerY
+        crosshairLineHor.endX = width
+        crosshairLineHor.endY = centerY
+
+        crosshairLineVer.startX = centerX
+        crosshairLineVer.startY = 0.0
+        crosshairLineVer.endX = centerX
+        crosshairLineVer.endY = height
+
+        primaryStarDot.isVisible = initialized && primaryStar.valid
+
+        if (initialized && primaryStar.valid) {
+            val offsetX = centerX + primaryStar.x - lockPosition.x
+            val offsetY = centerY + primaryStar.y - lockPosition.y
+            primaryStarDot.centerX = offsetX
+            primaryStarDot.centerY = offsetY
+        }
     }
 }

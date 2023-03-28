@@ -4,7 +4,6 @@ import javafx.beans.property.SimpleBooleanProperty
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.DevicePropertyListener
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.guider.GuiderView
 import nebulosa.desktop.view.image.ImageView
@@ -41,7 +40,7 @@ class GuiderManager(
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var imageViewOpener: ImageView.Opener
     @Autowired private lateinit var guiderExecutorService: ExecutorService
-    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
+    @Autowired private lateinit var javaFXExecutorService: ExecutorService
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
 
     private val guideCameraPropertyListener = GuideCameraPropertyListener()
@@ -172,7 +171,7 @@ class GuiderManager(
 
     fun selectGuideStar(x: Double, y: Double) {
         if (guider.selectGuideStar(x, y)) {
-            imageView?.redraw()
+            guiderIndicator.redraw()
         }
     }
 
@@ -313,6 +312,7 @@ class GuiderManager(
     override fun onLooping(image: Image, number: Int, star: StarPoint?) {
         view.updateStatus("looping. number=$number")
         imageView?.also { javaFXExecutorService.submit { it.open(image, null) } }
+        javaFXExecutorService.submit { guiderIndicator.redraw() }
         view.updateStarProfile(image, guider.searchRegion * 2.0, guider.lockPosition, guider.primaryStar)
     }
 
@@ -361,8 +361,8 @@ class GuiderManager(
                     javaFXExecutorService.submit {
                         if (imageView == null) {
                             imageView = imageViewOpener.open(image, null, device)
-                            imageView!!.imageViewer.registerMouseListener(view)
-                            imageView!!.imageViewer.addFirst(guiderIndicator)
+                            imageView!!.registerMouseListener(view)
+                            imageView!!.addFirst(guiderIndicator)
                         }
                     }
                 }

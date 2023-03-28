@@ -168,10 +168,6 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         lockPosition: GuidePoint, primaryStar: StarPoint,
     ) {
         if (lockPosition.valid) {
-            starProfileIndicator.regionSize = regionSize
-            starProfileIndicator.lockPosition = lockPosition
-            starProfileIndicator.primaryStar = primaryStar
-
             val size = min(regionSize, 64.0)
 
             systemExecutorService.submit {
@@ -185,7 +181,10 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
                 val pixelBuffer = PixelBuffer(profileImage.width, profileImage.height, buffer, PixelFormat.getIntArgbPreInstance())
                 val writableImage = WritableImage(pixelBuffer)
 
-                javaFXExecutorService.submit { starProfileImageViewer.load(writableImage) }
+                javaFXExecutorService.submit {
+                    starProfileImageViewer.load(writableImage)
+                    starProfileIndicator.draw(lockPosition, primaryStar)
+                }
             }
         }
     }

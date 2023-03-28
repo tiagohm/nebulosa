@@ -3,7 +3,6 @@ package nebulosa.desktop.logic.framing
 import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.beans.property.SimpleBooleanProperty
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.desktop.view.image.ImageView
@@ -43,7 +42,7 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var hips2FitsService: Hips2FitsService
     @Autowired private lateinit var systemExecutorService: ExecutorService
-    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
+    @Autowired private lateinit var javaFXExecutorService: ExecutorService
     @Autowired private lateinit var imageViewOpener: ImageView.Opener
     @Autowired private lateinit var preferences: Preferences
 

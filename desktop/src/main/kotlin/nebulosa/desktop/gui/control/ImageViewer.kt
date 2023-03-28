@@ -1,6 +1,7 @@
 package nebulosa.desktop.gui.control
 
 import javafx.geometry.Point2D
+import javafx.geometry.Pos
 import javafx.scene.CacheHint
 import javafx.scene.Cursor
 import javafx.scene.Node
@@ -9,14 +10,12 @@ import javafx.scene.image.Image
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
-import nebulosa.desktop.view.image.Drawable
+import javafx.scene.layout.StackPane
 import net.kurobako.gesturefx.GesturePane
-import java.awt.event.MouseListener
-import java.util.*
 import kotlin.math.exp
+import kotlin.math.max
 
-class ImageViewer private constructor(private val drawables: LinkedList<Drawable>) :
-    GesturePane(null as Node?), Deque<Drawable> by drawables {
+class ImageViewer : GesturePane(null as Node?) {
 
     fun interface MouseListener {
 
@@ -31,15 +30,18 @@ class ImageViewer private constructor(private val drawables: LinkedList<Drawable
 
     private val canvas = Canvas()
     private val mouseListeners = HashSet<MouseListener>(1)
+    private val root = StackPane()
     private var image: Image? = null
-
-    constructor() : this(LinkedList())
 
     init {
         canvas.isCache = false
         canvas.cacheHint = CacheHint.SPEED
+        canvas.graphicsContext2D.isImageSmoothing = false
 
-        content = canvas
+        root.alignment = Pos.TOP_LEFT
+        root.children.add(canvas)
+
+        content = root
 
         addEventFilter(ScrollEvent.SCROLL) {
             if (it.deltaX != 0.0 || it.deltaY != 0.0) {
@@ -91,26 +93,53 @@ class ImageViewer private constructor(private val drawables: LinkedList<Drawable
 
     fun load(image: Image) {
         this.image = image
+        root.prefWidth = image.width
+        root.prefHeight = image.height
         redraw()
     }
 
     fun redraw() {
         val image = image ?: return
 
-        canvas.width = image.width
-        canvas.height = image.height
+        // TODO: Escalar melhor isso aqui!
+        canvas.width = max(image.width, width)
+        canvas.height = max(image.height, height)
 
         with(canvas.graphicsContext2D) {
-            isImageSmoothing = false
-
             clearRect(0.0, 0.0, canvas.width, canvas.height)
             drawImage(image, 0.0, 0.0, canvas.width, canvas.height)
-
-            drawables.forEach { it.draw(canvas.width, canvas.height, this) }
         }
     }
 
     fun resetZoom() {
         zoomTo(0.0, targetPointAtViewportCentre())
+    }
+
+    fun addFirst(shape: Node) {
+        root.children.add(1, shape)
+    }
+
+    fun addLast(shape: Node) {
+        root.children.add(shape)
+    }
+
+    fun remove(shape: Node) {
+        root.children.remove(shape)
+    }
+
+    fun removeFirst(): Node? {
+        return if (root.children.size > 1) {
+            root.children.removeAt(1)
+        } else {
+            null
+        }
+    }
+
+    fun removeLast(): Node? {
+        return if (root.children.size > 1) {
+            root.children.removeLast()
+        } else {
+            null
+        }
     }
 }

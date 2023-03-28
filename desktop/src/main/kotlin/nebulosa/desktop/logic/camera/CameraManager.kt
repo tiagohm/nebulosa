@@ -4,7 +4,6 @@ import javafx.application.HostServices
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.task.TaskEvent
 import nebulosa.desktop.logic.task.TaskExecutor
@@ -26,6 +25,7 @@ import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.max
@@ -43,7 +43,7 @@ class CameraManager(
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
     @Autowired private lateinit var imageViewOpener: ImageView.Opener
     @Autowired private lateinit var beanFactory: AutowireCapableBeanFactory
-    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
+    @Autowired private lateinit var javaFXExecutorService: ExecutorService
 
     private val imageViews = hashSetOf<ImageView>()
     private val runningTask = AtomicReference<CameraExposureTask>()

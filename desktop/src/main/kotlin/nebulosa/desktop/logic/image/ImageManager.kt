@@ -45,6 +45,7 @@ class ImageManager(private val view: ImageView) : Closeable {
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var plateSolverView: PlateSolverView
+    @Autowired private lateinit var javaFXExecutorService: ExecutorService
     @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var nebula: Nebula
@@ -60,6 +61,7 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     private val screenBounds = Screen.getPrimary().bounds
     private val transformPublisher = BehaviorSubject.create<Unit>()
+    private val crosshair = Crosshair()
 
     @Volatile private var transformSubscriber: Disposable? = null
     @Volatile private var imageStretcherView: ImageStretcherView? = null
@@ -108,6 +110,8 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     fun initialize() {
         eventBus.register(this)
+
+        crosshair.isVisible = false
     }
 
     @Subscribe
@@ -115,13 +119,16 @@ class ImageManager(private val view: ImageView) : Closeable {
         if (event.file === file.get()) {
             calibration.set(if (event is PlateSolvingSolved) event.calibration else null)
 
-            annotation?.also(view.imageViewer::remove)
+            annotation?.also(view::remove)
             annotation = null
 
             if (calibration.get() != null && view.annotationEnabled) {
                 annotation = Annotation(calibration.get(), nebula, hygDatabase)
-                view.imageViewer.addFirst(annotation!!)
-                view.redraw()
+
+                javaFXExecutorService.submit {
+                    view.addFirst(annotation!!)
+                    view.redraw()
+                }
             }
         }
     }
@@ -151,7 +158,7 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         calibration.set(null)
 
-        annotation?.also(view.imageViewer::remove)
+        annotation?.also(view::remove)
         annotation = null
 
         view.hasScnr = !image.mono
@@ -175,6 +182,9 @@ class ImageManager(private val view: ImageView) : Closeable {
             draw()
             drawHistogram()
         }
+
+        view.remove(crosshair)
+        view.addFirst(crosshair)
 
         imageStretcherView?.updateTitle()
 
@@ -252,10 +262,7 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     fun toggleCrosshair() {
-        if (view.crosshairEnabled) view.imageViewer.addLast(Crosshair)
-        else view.imageViewer.remove(Crosshair)
-
-        view.redraw()
+        crosshair.isVisible = !crosshair.isVisible
     }
 
     fun toggleAnnotation() {
@@ -266,19 +273,21 @@ class ImageManager(private val view: ImageView) : Closeable {
                 systemExecutorService.submit {
                     try {
                         annotation = Annotation(calibration, nebula, hygDatabase)
-                        view.imageViewer.addFirst(annotation!!)
-                        view.redraw()
+                        annotation!!.initialize()
+
+                        javaFXExecutorService.submit {
+                            annotation!!.initialize()
+                            view.addFirst(annotation!!)
+                        }
                     } catch (e: Throwable) {
                         LOG.error("annotation failed", e)
                     }
                 }
             } else {
-                view.imageViewer.addFirst(annotation!!)
-                view.redraw()
+                view.addFirst(annotation!!)
             }
         } else if (annotation != null) {
-            view.imageViewer.remove(annotation!!)
-            view.redraw()
+            view.remove(annotation!!)
         }
     }
 

@@ -1,5 +1,6 @@
 package nebulosa.desktop.view.image
 
+import javafx.scene.Node
 import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.view.View
 import nebulosa.imaging.Image
@@ -20,8 +21,6 @@ interface ImageView : View {
     }
 
     val camera: Camera?
-
-    val imageViewer: ImageViewer
 
     val autoStretchEnabled: Boolean
 
@@ -77,4 +76,18 @@ interface ImageView : View {
     )
 
     fun redraw()
+
+    fun addFirst(shape: Node)
+
+    fun addLast(shape: Node)
+
+    fun remove(shape: Node)
+
+    fun removeFirst(): Node?
+
+    fun removeLast(): Node?
+
+    fun registerMouseListener(listener: ImageViewer.MouseListener)
+
+    fun unregisterMouseListener(listener: ImageViewer.MouseListener)
 }

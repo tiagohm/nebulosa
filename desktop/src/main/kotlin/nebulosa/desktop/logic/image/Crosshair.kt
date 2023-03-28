@@ -1,34 +1,61 @@
 package nebulosa.desktop.logic.image
 
-import javafx.scene.canvas.GraphicsContext
 import javafx.scene.paint.Color
-import nebulosa.desktop.view.image.Drawable
+import javafx.scene.shape.Circle
+import javafx.scene.shape.Line
+import nebulosa.desktop.gui.control.Drawable
 import kotlin.math.min
 
-object Crosshair : Drawable {
+class Crosshair : Drawable() {
 
-    private const val LINE_WIDTH = 2.0
+    private val lineHor = Line()
+    private val lineVer = Line()
+    private val circles = Array(4) { Circle() }
 
-    override fun draw(width: Double, height: Double, graphics: GraphicsContext) {
+    init {
+        with(lineHor) {
+            stroke = Color.RED
+            strokeWidth = 2.0
+            add(this)
+        }
+
+        with(lineVer) {
+            stroke = Color.RED
+            strokeWidth = 2.0
+            add(this)
+        }
+
+        for (circle in circles) {
+            with(circle) {
+                fill = Color.TRANSPARENT
+                stroke = Color.RED
+                strokeWidth = 2.0
+                add(this)
+            }
+        }
+    }
+
+    override fun redraw() {
         val centerX = width / 2.0
         val centerY = height / 2.0
 
-        graphics.stroke = Color.RED
-        graphics.lineWidth = LINE_WIDTH
+        lineHor.startX = 0.0
+        lineHor.startY = centerY
+        lineHor.endX = width
+        lineHor.endY = centerY
 
-        // Horizontal line.
-        graphics.strokeLine(0.0, centerY - LINE_WIDTH / 2.0, width, centerY - LINE_WIDTH / 2.0)
+        lineVer.startX = centerX
+        lineVer.startY = 0.0
+        lineVer.endX = centerX
+        lineVer.endY = height
 
-        // Vertical line.
-        graphics.strokeLine(centerX - LINE_WIDTH / 2.0, 0.0, centerX - LINE_WIDTH / 2.0, height)
+        var radius = min(width, height) / 4.0
 
-        // Circles.
-        var size = min(width, height) / 2.0
-
-        repeat(4) {
-            val nextSize = size / 2.0
-            graphics.strokeOval(centerX - nextSize, centerY - nextSize, size, size)
-            size = nextSize
+        for (circle in circles) {
+            circle.centerX = centerX
+            circle.centerY = centerY
+            circle.radius = radius
+            radius /= 2.0
         }
     }
 }

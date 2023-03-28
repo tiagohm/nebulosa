@@ -4,6 +4,7 @@ import com.sun.javafx.scene.control.ControlAcceleratorSupport
 import javafx.beans.property.SimpleObjectProperty
 import javafx.fxml.FXML
 import javafx.geometry.Point2D
+import javafx.scene.Node
 import javafx.scene.control.CheckMenuItem
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
@@ -31,9 +32,7 @@ import kotlin.jvm.optionals.getOrNull
 
 class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image", "image"), ImageView {
 
-    @FXML override lateinit var imageViewer: ImageViewer
-        private set
-
+    @FXML private lateinit var imageViewer: ImageViewer
     @FXML private lateinit var menu: ContextMenu
     @FXML private lateinit var solveMenuItem: MenuItem
     @FXML private lateinit var blindSolveMenuItem: MenuItem
@@ -291,6 +290,34 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     override fun redraw() {
         javaFXExecutorService.submit { imageViewer.redraw() }
+    }
+
+    override fun addFirst(shape: Node) {
+        imageViewer.addFirst(shape)
+    }
+
+    override fun addLast(shape: Node) {
+        imageViewer.addLast(shape)
+    }
+
+    override fun remove(shape: Node) {
+        imageViewer.remove(shape)
+    }
+
+    override fun removeFirst(): Node? {
+        return imageViewer.removeFirst()
+    }
+
+    override fun removeLast(): Node? {
+        return imageViewer.removeLast()
+    }
+
+    override fun registerMouseListener(listener: ImageViewer.MouseListener) {
+        imageViewer.registerMouseListener(listener)
+    }
+
+    override fun unregisterMouseListener(listener: ImageViewer.MouseListener) {
+        imageViewer.unregisterMouseListener(listener)
     }
 
     @Service

@@ -1,63 +1,74 @@
 package nebulosa.desktop.logic.guider
 
-import javafx.scene.canvas.GraphicsContext
 import javafx.scene.paint.Color
-import nebulosa.desktop.view.image.Drawable
-import nebulosa.guiding.GuidePoint
+import javafx.scene.shape.Line
+import javafx.scene.shape.Rectangle
+import nebulosa.desktop.gui.control.Drawable
 import nebulosa.guiding.Guider
 
-data class GuiderIndicator(private val guider: Guider) : Drawable {
+data class GuiderIndicator(private val guider: Guider) : Drawable() {
 
-    override fun draw(width: Double, height: Double, graphics: GraphicsContext) {
-        graphics.lineWidth = LINE_WIDTH
+    private val lockPositionCrosshairLineHor = Line()
+    private val lockPositionCrosshairLineVer = Line()
+    private val primaryStarBox = Rectangle()
 
-        val radius = guider.searchRegion
-        val boxSize = radius * 2.0
-
-        graphics.drawPrimaryStar(guider.primaryStar, boxSize)
-
-        guider.forEach {
-            if (it !== guider.primaryStar) {
-                graphics.drawSecondaryStar(it, radius)
-            }
+    init {
+        with(lockPositionCrosshairLineHor) {
+            stroke = Color.YELLOW
+            strokeWidth = 2.0
+            strokeDashArray.addAll(4.0, 4.0)
+            add(this)
         }
 
-        graphics.drawLockPositionCrosshair(guider.lockPosition, width, height)
+        with(lockPositionCrosshairLineVer) {
+            stroke = Color.YELLOW
+            strokeWidth = 2.0
+            strokeDashArray.addAll(4.0, 4.0)
+            add(this)
+        }
+
+        with(primaryStarBox) {
+            fill = Color.TRANSPARENT
+            stroke = Color.CYAN
+            strokeWidth = 2.0
+            add(this)
+        }
     }
 
-    companion object {
+    override fun redraw() {
+        with(guider.lockPosition) {
+            lockPositionCrosshairLineHor.isVisible = valid
+            lockPositionCrosshairLineVer.isVisible = valid
 
-        private const val LINE_WIDTH = 1.2
-        @JvmStatic private val DASH_PATTERN = doubleArrayOf(4.0, 4.0)
+            if (valid) {
+                lockPositionCrosshairLineHor.startX = 0.0
+                lockPositionCrosshairLineHor.startY = y
+                lockPositionCrosshairLineHor.endX = width
+                lockPositionCrosshairLineHor.endY = y
 
-        @JvmStatic
-        private fun GraphicsContext.drawLockPositionCrosshair(point: GuidePoint, width: Double, height: Double) {
-            if (point.valid) {
-                stroke = Color.YELLOW
-                setLineDashes(*DASH_PATTERN)
-                strokeLine(0.0, point.y - LINE_WIDTH / 2, width, point.y - LINE_WIDTH / 2)
-                strokeLine(point.x - LINE_WIDTH / 2, 0.0, point.x - LINE_WIDTH / 2, height)
+                lockPositionCrosshairLineVer.startX = x
+                lockPositionCrosshairLineVer.startY = 0.0
+                lockPositionCrosshairLineVer.endX = x
+                lockPositionCrosshairLineVer.endY = height
             }
         }
 
-        @JvmStatic
-        private fun GraphicsContext.drawPrimaryStar(point: GuidePoint, size: Double) {
-            stroke = if (point.valid) Color.CYAN
-            else if (point.x != 0.0 && point.y != 0.0 && point.x.isFinite() && point.y.isFinite()) Color.INDIANRED
-            else return
+        with(guider.primaryStar) {
+            primaryStarBox.stroke = if (valid) Color.CYAN
+            else if (x != 0.0 && y != 0.0 && x.isFinite() && y.isFinite()) Color.INDIANRED
+            else {
+                primaryStarBox.isVisible = false
+                return@with
+            }
 
-            setLineDashes()
-            strokeRect(point.x - size / 2 - LINE_WIDTH / 2, point.y - size / 2 - LINE_WIDTH / 2, size, size)
-        }
+            primaryStarBox.isVisible = true
 
-        @JvmStatic
-        private fun GraphicsContext.drawSecondaryStar(point: GuidePoint, size: Double) {
-            stroke = if (point.valid) Color.CYAN
-            else if (point.x.isFinite() && point.y.isFinite()) Color.INDIANRED
-            else return
+            val size = guider.searchRegion
 
-            setLineDashes(*DASH_PATTERN)
-            strokeOval(point.x - size / 2 - LINE_WIDTH / 2, point.y - size / 2 - LINE_WIDTH / 2, size, size)
+            primaryStarBox.x = x - size
+            primaryStarBox.y = y - size
+            primaryStarBox.width = size * 2
+            primaryStarBox.height = primaryStarBox.width
         }
     }
 }

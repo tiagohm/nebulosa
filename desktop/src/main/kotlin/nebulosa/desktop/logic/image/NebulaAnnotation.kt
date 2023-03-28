@@ -4,7 +4,7 @@ import javafx.scene.canvas.GraphicsContext
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.TextAlignment
-import nebulosa.desktop.view.image.Drawable
+import nebulosa.desktop.gui.control.Drawable
 import nebulosa.platesolving.Calibration
 import nebulosa.skycatalog.stellarium.Nebula
 import nebulosa.wcs.WCSTransform
@@ -15,7 +15,7 @@ import kotlin.math.min
 class NebulaAnnotation(
     val calibration: Calibration,
     nebula: Nebula,
-) : Drawable {
+) : Drawable() {
 
     private val wcs = WCSTransform(calibration)
     private val data = nebula
@@ -28,7 +28,11 @@ class NebulaAnnotation(
         )
     }
 
-    override fun draw(width: Double, height: Double, graphics: GraphicsContext) {
+    fun initialize() {}
+
+    override fun redraw() {}
+
+    fun draw(width: Double, height: Double, graphics: GraphicsContext) {
         graphics.lineWidth = 5.0
         graphics.stroke = Color.GREEN
         graphics.fill = Color.GREEN

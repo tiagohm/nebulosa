@@ -4,7 +4,6 @@ import nebulosa.constants.PI
 import nebulosa.constants.TAU
 import nebulosa.desktop.gui.mount.SiteAndTimeWindow
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.desktop.view.mount.MountView
@@ -24,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
@@ -35,7 +35,7 @@ class MountManager(
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
-    @Autowired private lateinit var javaFXExecutorService: JavaFXExecutorService
+    @Autowired private lateinit var javaFXExecutorService: ExecutorService
     @Autowired private lateinit var telescopeControlView: TelescopeControlView
 
     @Volatile private var position = Geoid.IERS2010.latLon(Angle.ZERO, Angle.ZERO, Distance.ZERO)
