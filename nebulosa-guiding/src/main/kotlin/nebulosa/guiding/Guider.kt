@@ -2,7 +2,7 @@ package nebulosa.guiding
 
 interface Guider : Iterable<GuidePoint> {
 
-    val primaryStar: GuidePoint
+    val primaryStar: StarPoint
 
     val lockPosition: GuidePoint
 

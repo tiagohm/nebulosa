@@ -162,9 +162,6 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
     @Synchronized
     fun updateCalibrationState(currentLocation: Point): Boolean {
-        if (!device.mountIsConnected) return false
-        if (!device.cameraIsConnected) return false
-
         LOG.info("updating calibration state. x={}, y={}", currentLocation.x, currentLocation.y)
 
         if (!calibrationStartingLocation.valid) {

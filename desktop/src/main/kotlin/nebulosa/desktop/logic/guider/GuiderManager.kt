@@ -182,9 +182,6 @@ class GuiderManager(
 
     // Camera.
 
-    override val cameraIsConnected
-        get() = camera?.connected == true
-
     override val cameraBinning
         get() = camera?.binX ?: 1
 
@@ -202,9 +199,6 @@ class GuiderManager(
     }
 
     // Mount.
-
-    override val mountIsConnected
-        get() = mount?.connected ?: false
 
     override val mountDeclination
         get() = mount?.declination ?: Angle.NaN
@@ -319,6 +313,7 @@ class GuiderManager(
     override fun onLooping(image: Image, number: Int, star: StarPoint?) {
         view.updateStatus("looping. number=$number")
         imageView?.also { javaFXExecutorService.submit { it.open(image, null) } }
+        view.updateStarProfile(image, guider.searchRegion * 2.0, guider.lockPosition, guider.primaryStar)
     }
 
     override fun onStarLost() {

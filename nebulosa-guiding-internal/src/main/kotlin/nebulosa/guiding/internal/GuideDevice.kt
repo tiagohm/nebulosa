@@ -8,8 +8,6 @@ interface GuideDevice {
 
     // Camera.
 
-    val cameraIsConnected: Boolean
-
     val cameraBinning: Int
 
     val cameraImage: Image
@@ -19,8 +17,6 @@ interface GuideDevice {
     val cameraExposure: Long
 
     // Mount.
-
-    val mountIsConnected: Boolean
 
     val mountRightAscension: Angle
 

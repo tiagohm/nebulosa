@@ -104,7 +104,32 @@
         </GridPane>
         <TabPane tabClosingPolicy="UNAVAILABLE">
             <Tab text="Graph">
-
+                <HBox alignment="CENTER">
+                    <AnchorPane maxWidth="Infinity"
+                                HBox.hgrow="ALWAYS">
+                    </AnchorPane>
+                    <VBox alignment="TOP_CENTER">
+                        <AnchorPane minWidth="92.0"
+                                    minHeight="92.0"
+                                    prefWidth="92.0"
+                                    prefHeight="92.0"
+                                    maxWidth="92.0"
+                                    maxHeight="92.0">
+                            <ImageViewer fx:id="starProfileImageViewer"
+                                         fitHeight="false"
+                                         fitWidth="false"
+                                         minScale="1.0"
+                                         maxScale="10.0"
+                                         hbarPolicy="NEVER"
+                                         vbarPolicy="NEVER"
+                                         style="-fx-background-color: black"
+                                         AnchorPane.bottomAnchor="0.0"
+                                         AnchorPane.leftAnchor="0.0"
+                                         AnchorPane.rightAnchor="0.0"
+                                         AnchorPane.topAnchor="0.0"/>
+                        </AnchorPane>
+                    </VBox>
+                </HBox>
             </Tab>
             <Tab text="Guiding">
 

@@ -3,22 +3,33 @@ package nebulosa.desktop.gui.guider
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
+import javafx.scene.image.PixelBuffer
+import javafx.scene.image.PixelFormat
+import javafx.scene.image.WritableImage
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.gui.control.MaterialIcon
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.guider.GuiderManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.guider.GuiderView
+import nebulosa.guiding.GuidePoint
+import nebulosa.guiding.StarPoint
+import nebulosa.imaging.Image
+import nebulosa.imaging.algorithms.AutoScreenTransformFunction
+import nebulosa.imaging.algorithms.SubFrame
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
+import java.nio.IntBuffer
+import kotlin.math.min
 
 @Component
 class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
@@ -39,6 +50,10 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML private lateinit var startGuidingButton: Button
     @FXML private lateinit var stopGuidingButton: Button
     @FXML private lateinit var statusIcon: MaterialIcon
+    @FXML private lateinit var starProfileImageViewer: ImageViewer
+
+    private val starProfileData = IntArray(64 * 64)
+    private val starProfileIndicator = StarProfileIndicator()
 
     init {
         title = "Guider"
@@ -90,6 +105,8 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
         startGuidingButton.disableProperty().bind(isNotConnected or !isLooping or isGuiding)
         stopGuidingButton.disableProperty().bind(isNotConnected or !isLooping or !isGuiding)
+
+        starProfileImageViewer.addFirst(starProfileIndicator)
     }
 
     @FXML
@@ -144,6 +161,33 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
     override fun updateStatus(text: String) {
         javaFXExecutorService.submit { statusIcon.text = text }
+    }
+
+    override fun updateStarProfile(
+        image: Image, regionSize: Double,
+        lockPosition: GuidePoint, primaryStar: StarPoint,
+    ) {
+        if (lockPosition.valid) {
+            starProfileIndicator.regionSize = regionSize
+            starProfileIndicator.lockPosition = lockPosition
+            starProfileIndicator.primaryStar = primaryStar
+
+            val size = min(regionSize, 64.0)
+
+            systemExecutorService.submit {
+                val centerX = (lockPosition.x - size / 2).toInt()
+                val centerY = (lockPosition.y - size / 2).toInt()
+                val profileImage = image.transform(SubFrame(centerX, centerY, size.toInt(), size.toInt()), AutoScreenTransformFunction)
+
+                profileImage.writeTo(starProfileData)
+
+                val buffer = IntBuffer.wrap(starProfileData)
+                val pixelBuffer = PixelBuffer(profileImage.width, profileImage.height, buffer, PixelFormat.getIntArgbPreInstance())
+                val writableImage = WritableImage(pixelBuffer)
+
+                javaFXExecutorService.submit { starProfileImageViewer.load(writableImage) }
+            }
+        }
     }
 
     override fun onMouseClicked(

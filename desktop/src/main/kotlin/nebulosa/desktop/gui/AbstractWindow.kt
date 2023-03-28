@@ -21,6 +21,7 @@ import nebulosa.jmetro.Style
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class AbstractWindow(
@@ -35,6 +36,7 @@ abstract class AbstractWindow(
         private set
 
     protected val hostServices by lazy { beanFactory.getBean(HostServices::class.java) }
+    protected val systemExecutorService by lazy { beanFactory.getBean("systemExecutorService") as ExecutorService }
     protected val javaFXExecutorService by lazy { beanFactory.getBean(JavaFXExecutorService::class.java) }
 
     init {
