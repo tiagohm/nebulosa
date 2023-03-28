@@ -2,7 +2,7 @@ package nebulosa.skycatalog
 
 import nebulosa.math.Angle
 import nebulosa.math.Velocity
-import nebulosa.nova.astrometry.FixedStar
+import nebulosa.nova.astrometry.Constellation
 
 data class DSO(
     override val id: Int = 0,
@@ -51,22 +51,21 @@ data class DSO(
     override val distance: Double = 0.0, // Distance (Mpc for galaxies, kpc for other objects)
     override val pmRA: Angle = Angle.ZERO,
     override val pmDEC: Angle = Angle.ZERO,
+    override val constellation: Constellation = Constellation.AND,
 ) : SkyObject {
 
-    @delegate:Transient override val position by lazy { FixedStar(rightAscension, declination, pmRA, pmDEC, parallax) }
-
     // Dunlop Catalogue.
-    val dunlop = ngc > 0 && DUNLOP.contains(ngc)
+    @Transient val dunlop = ngc > 0 && DUNLOP.contains(ngc)
 
     // Bennett Catalogue.
-    val bennett = ngc > 0 && BENNET.contains(ngc) || mel == 105 || ic == 1459 || tr == 23
+    @Transient val bennett = ngc > 0 && BENNET.contains(ngc) || mel == 105 || ic == 1459 || tr == 23
 
     // Herschel 400 Catalogue.
-    val h400 = ngc > 0 && H400.contains(ngc)
+    @Transient val h400 = ngc > 0 && H400.contains(ngc)
 
     companion object {
 
-        @JvmStatic private val serialVersionUID = 1L
+        @JvmStatic private val serialVersionUID = 2L
 
         @JvmStatic private val H400 = intArrayOf(
             40, 129, 136, 157, 185, 205, 225, 246, 247, 253, 278, 288,

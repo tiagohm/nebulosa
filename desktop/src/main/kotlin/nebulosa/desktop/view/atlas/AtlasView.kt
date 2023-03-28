@@ -34,23 +34,16 @@ interface AtlasView : View {
         val skyObject: SkyObject,
         val name: String = skyObject.names.firstOrNull() ?: "?",
         val magnitude: Double = min(skyObject.mV, skyObject.mB),
-        val type: String = skyObject.type.description,
-    ) {
-
-        inline val star
-            get() = skyObject.position
-    }
+        val constellation: String = skyObject.constellation.iau,
+    )
 
     data class DSO(
         val skyObject: SkyObject,
         val name: String = skyObject.names.firstOrNull() ?: "?",
         val magnitude: Double = min(skyObject.mV, skyObject.mB),
         val type: String = skyObject.type.description,
-    ) {
-
-        inline val star
-            get() = skyObject.position
-    }
+        val constellation: String = skyObject.constellation.iau,
+    )
 
     fun drawAltitude(
         points: List<XYItem>, now: Double,
@@ -75,7 +68,7 @@ interface AtlasView : View {
 
     fun populateStar(stars: List<Star>)
 
-    fun populateDSO(dso: List<DSO>)
+    fun populateDSOs(dsos: List<DSO>)
 
     fun updateInfo(bodyName: String)
 

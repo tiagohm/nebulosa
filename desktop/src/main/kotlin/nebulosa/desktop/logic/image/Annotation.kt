@@ -3,18 +3,20 @@ package nebulosa.desktop.logic.image
 import javafx.scene.canvas.GraphicsContext
 import nebulosa.desktop.view.image.Drawable
 import nebulosa.platesolving.Calibration
+import nebulosa.skycatalog.hyg.HygDatabase
 import nebulosa.skycatalog.stellarium.Nebula
 
-data class Annotation(
-    val calibration: Calibration,
-    val nebula: Nebula,
+class Annotation(
+    calibration: Calibration,
+    nebula: Nebula,
+    hygDatabase: HygDatabase,
 ) : Drawable {
 
-    private val brightStars = BrightStarsAnnotation(calibration)
-    private val nebulaStars = NebulaAnnotation(calibration, nebula)
+    private val stars = StarsAnnotation(calibration, hygDatabase)
+    private val nebula = NebulaAnnotation(calibration, nebula)
 
     override fun draw(width: Double, height: Double, graphics: GraphicsContext) {
-        brightStars.draw(width, height, graphics)
-        nebulaStars.draw(width, height, graphics)
+        stars.draw(width, height, graphics)
+        nebula.draw(width, height, graphics)
     }
 }

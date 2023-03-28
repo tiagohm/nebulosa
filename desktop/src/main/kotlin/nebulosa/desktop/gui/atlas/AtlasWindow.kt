@@ -23,9 +23,11 @@ import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
 import nebulosa.math.PairOfAngle
 import nebulosa.nova.astrometry.Constellation
+import nebulosa.skycatalog.SkyCatalogFilter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
+import java.util.function.Predicate
 
 @Component
 class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
@@ -50,7 +52,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     @FXML private lateinit var searchStarTextField: TextField
     @FXML private lateinit var starTableView: TableView<AtlasView.Star>
     @FXML private lateinit var searchDSOTextField: TextField
-    @FXML private lateinit var dsoTableView: TableView<AtlasView.DSO>
+    @FXML private lateinit var dsosTableView: TableView<AtlasView.DSO>
     @FXML private lateinit var goToButton: Button
     @FXML private lateinit var slewToButton: Button
     @FXML private lateinit var syncButton: Button
@@ -80,6 +82,8 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
 
         frameButton.disableProperty().bind(isComputing)
 
+        // TODO: Criar uma classe tipo PropertyValueFactory mas sem o uso do reflection.
+
         planetTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("name")
         planetTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("type")
         planetTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computePlanet(it) }
@@ -91,14 +95,15 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         starTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.Star, String>("name")
         starTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.Star, Double>("magnitude")
         starTableView.columns[1].cellFactory = Callback { _ -> MagnitudeTableCell<AtlasView.Star>() }
-        starTableView.columns[2].cellValueFactory = PropertyValueFactory<AtlasView.Star, String>("type")
+        starTableView.columns[2].cellValueFactory = PropertyValueFactory<AtlasView.Star, String>("constellation")
         starTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computeStar(it) }
 
-        dsoTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.DSO, String>("name")
-        dsoTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.DSO, Double>("magnitude")
-        dsoTableView.columns[1].cellFactory = Callback { _ -> MagnitudeTableCell<AtlasView.DSO>() }
-        dsoTableView.columns[2].cellValueFactory = PropertyValueFactory<AtlasView.DSO, String>("type")
-        dsoTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computeDSO(it) }
+        dsosTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.DSO, String>("name")
+        dsosTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.DSO, Double>("magnitude")
+        dsosTableView.columns[1].cellFactory = Callback { _ -> MagnitudeTableCell<AtlasView.DSO>() }
+        dsosTableView.columns[2].cellValueFactory = PropertyValueFactory<AtlasView.DSO, String>("type")
+        dsosTableView.columns[3].cellValueFactory = PropertyValueFactory<AtlasView.DSO, String>("constellation")
+        dsosTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computeDSO(it) }
     }
 
     override fun onStart() {
@@ -110,6 +115,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         atlasManager.updateMoonImage()
         atlasManager.populatePlanets()
         atlasManager.populateStars()
+        atlasManager.populateDSOs()
 
         atlasManager.computeTab(AtlasView.TabType.SUN)
     }
@@ -167,14 +173,18 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     @Suppress("UNCHECKED_CAST")
     private fun searchStar() {
         val text = searchStarTextField.text.trim()
-        ((starTableView.items as SortedList<*>).source as FilteredList<AtlasView.Star>)
-            .setPredicate { text.isBlank() || it.name.contains(text, true) }
+        with((starTableView.items as SortedList<*>).source as FilteredList<AtlasView.Star>) {
+            predicate = StarFilter(text)
+        }
     }
 
     @FXML
+    @Suppress("UNCHECKED_CAST")
     private fun searchDSO() {
-        val text = searchDSOTextField.text.trim().ifEmpty { null } ?: return
-        atlasManager.searchDSO(text)
+        val text = searchDSOTextField.text.trim()
+        with((dsosTableView.items as SortedList<*>).source as FilteredList<AtlasView.DSO>) {
+            predicate = DSOFilter(text)
+        }
     }
 
     override fun drawAltitude(
@@ -220,13 +230,13 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         }
     }
 
-    override fun populateDSO(dso: List<AtlasView.DSO>) {
-        javaFXExecutorService.submit {
-            dsoTableView.items.setAll(dso)
+    override fun populateDSOs(dsos: List<AtlasView.DSO>) {
+        val filteredList = FilteredList(FXCollections.observableArrayList(dsos))
+        val sortedList = SortedList(filteredList)
 
-            if (dso.size == 1) {
-                dsoTableView.selectionModel.selectFirst()
-            }
+        javaFXExecutorService.submit {
+            sortedList.comparatorProperty().bind(dsosTableView.comparatorProperty())
+            dsosTableView.items = sortedList
         }
     }
 
@@ -275,5 +285,19 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
             else if (item.isFinite() && item < 99.0) "%.1f".format(item)
             else "-"
         }
+    }
+
+    private class StarFilter(text: String) : Predicate<AtlasView.Star> {
+
+        private val predicate = SkyCatalogFilter(text)
+
+        override fun test(star: AtlasView.Star) = predicate.test(star.skyObject)
+    }
+
+    private class DSOFilter(text: String) : Predicate<AtlasView.DSO> {
+
+        private val predicate = SkyCatalogFilter(text)
+
+        override fun test(star: AtlasView.DSO) = predicate.test(star.skyObject)
     }
 }

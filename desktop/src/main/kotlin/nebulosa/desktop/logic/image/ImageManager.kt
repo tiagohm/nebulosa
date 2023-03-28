@@ -25,6 +25,7 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.indi.device.mount.Mount
 import nebulosa.platesolving.Calibration
+import nebulosa.skycatalog.hyg.HygDatabase
 import nebulosa.skycatalog.stellarium.Nebula
 import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Header
@@ -47,6 +48,7 @@ class ImageManager(private val view: ImageView) : Closeable {
     @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var nebula: Nebula
+    @Autowired private lateinit var hygDatabase: HygDatabase
 
     val file = SimpleObjectProperty<File>()
 
@@ -117,7 +119,7 @@ class ImageManager(private val view: ImageView) : Closeable {
             annotation = null
 
             if (calibration.get() != null && view.annotationEnabled) {
-                annotation = Annotation(calibration.get(), nebula)
+                annotation = Annotation(calibration.get(), nebula, hygDatabase)
                 view.imageViewer.addFirst(annotation!!)
                 view.redraw()
             }
@@ -263,7 +265,7 @@ class ImageManager(private val view: ImageView) : Closeable {
             if (annotation == null) {
                 systemExecutorService.submit {
                     try {
-                        annotation = Annotation(calibration, nebula)
+                        annotation = Annotation(calibration, nebula, hygDatabase)
                         view.imageViewer.addFirst(annotation!!)
                         view.redraw()
                     } catch (e: Throwable) {

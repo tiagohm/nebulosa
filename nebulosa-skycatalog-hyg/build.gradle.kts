@@ -5,9 +5,8 @@ plugins {
 
 dependencies {
     api(project(":nebulosa-skycatalog"))
+    implementation(libs.csv)
     implementation(libs.logback)
-    testImplementation(project(":nebulosa-simbad"))
-    testImplementation(project(":nebulosa-vizier"))
     testImplementation(project(":nebulosa-test"))
 }
 

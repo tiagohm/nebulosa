@@ -52,7 +52,7 @@ class StellariumCatalogLoader : Runnable {
 
                     override fun onResponse(call: Call, response: Response) {
                         LOG.info("catalog.dat downloaded successfully")
-                        catalogPath.outputStream().use { response.body.byteStream().transferTo(it) }
+                        catalogPath.outputStream().use(response.body.byteStream()::transferTo)
                         preferences.long("loader.stellarium.updatedAt", currentTime)
                         downloadLatch.countDown()
                     }
@@ -68,7 +68,7 @@ class StellariumCatalogLoader : Runnable {
 
                     override fun onResponse(call: Call, response: Response) {
                         LOG.info("names.dat downloaded successfully")
-                        namesPath.outputStream().use { response.body.byteStream().transferTo(it) }
+                        namesPath.outputStream().use(response.body.byteStream()::transferTo)
                         downloadLatch.countDown()
                     }
                 })

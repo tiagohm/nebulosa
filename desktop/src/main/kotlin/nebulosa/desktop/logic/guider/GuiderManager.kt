@@ -90,15 +90,21 @@ class GuiderManager(
     }
 
     fun connectGuideCamera() {
-        camera?.connect()
+        val camera = camera ?: return
+        if (camera.connected) camera.disconnect()
+        else camera.connect()
     }
 
     fun connectGuideMount() {
-        mount?.connect()
+        val mount = mount ?: return
+        if (mount.connected) mount.disconnect()
+        else mount.connect()
     }
 
     fun connectGuideOutput() {
-        guideOutput?.connect()
+        val guideOutput = guideOutput ?: return
+        if (guideOutput.connected) guideOutput.disconnect()
+        else guideOutput.connect()
     }
 
     fun openINDIPanelControlForGuideCamera() {

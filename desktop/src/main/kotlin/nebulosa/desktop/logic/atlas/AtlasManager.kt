@@ -30,7 +30,7 @@ import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.sbd.SmallBody
 import nebulosa.sbd.SmallBodyDatabaseLookupService
-import nebulosa.skycatalog.brightstars.BrightStars
+import nebulosa.skycatalog.hyg.HygDatabase
 import nebulosa.skycatalog.stellarium.Nebula
 import nebulosa.time.UTC
 import org.greenrobot.eventbus.EventBus
@@ -71,6 +71,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var framingView: FramingView
     @Autowired private lateinit var nebula: Nebula
+    @Autowired private lateinit var hygDatabase: HygDatabase
 
     @Volatile private var observer: GeographicPosition? = null
     @Volatile private var tabType = AtlasView.TabType.SUN
@@ -202,8 +203,15 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
 
     fun populateStars() {
         systemExecutorService.submit {
-            val stars = BrightStars.map { AtlasView.Star(it) }
+            val stars = hygDatabase.map { AtlasView.Star(it) }
             view.populateStar(stars)
+        }
+    }
+
+    fun populateDSOs() {
+        systemExecutorService.submit {
+            val dsos = nebula.map { AtlasView.DSO(it) }
+            view.populateDSOs(dsos)
         }
     }
 
@@ -232,13 +240,13 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     fun computeStar(body: AtlasView.Star? = star): CompletableFuture<HorizonsEphemeris>? {
         star = body ?: return null
         bodyName = body.skyObject.names.joinToString(", ")
-        return body.star.computeBody()
+        return hygDatabase.position(body.skyObject).computeBody()
     }
 
     fun computeDSO(body: AtlasView.DSO? = dso): CompletableFuture<HorizonsEphemeris>? {
         dso = body ?: return null
         bodyName = body.skyObject.names.joinToString(", ")
-        return body.star.computeBody()
+        return nebula.position(body.skyObject).computeBody()
     }
 
     private fun String.computeBody(show: Boolean = true): CompletableFuture<HorizonsEphemeris>? {
@@ -469,11 +477,6 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
                     t.printStackTrace()
                 }
             })
-    }
-
-    fun searchDSO(text: String) {
-        val dso = nebula.searchBy(text)
-        view.populateDSO(dso.map { AtlasView.DSO(it) })
     }
 
     fun goTo(ra: Angle, dec: Angle) {

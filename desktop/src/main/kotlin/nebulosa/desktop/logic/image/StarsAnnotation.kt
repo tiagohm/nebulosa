@@ -7,16 +7,19 @@ import javafx.scene.text.TextAlignment
 import nebulosa.desktop.view.image.Drawable
 import nebulosa.math.PairOfAngle
 import nebulosa.platesolving.Calibration
-import nebulosa.skycatalog.brightstars.BrightStars
+import nebulosa.skycatalog.hyg.HygDatabase
 import nebulosa.wcs.WCSTransform
 import org.slf4j.LoggerFactory
 import kotlin.math.max
 import kotlin.math.min
 
-data class BrightStarsAnnotation(val calibration: Calibration) : Drawable {
+data class StarsAnnotation(
+    val calibration: Calibration,
+    val hygDatabase: HygDatabase,
+) : Drawable {
 
     private val wcs = WCSTransform(calibration)
-    private val data = BrightStars
+    private val data = hygDatabase
         .searchAround(calibration.rightAscension, calibration.declination, calibration.radius)
 
     init {
@@ -55,7 +58,7 @@ data class BrightStarsAnnotation(val calibration: Calibration) : Drawable {
 
         const val STAR_SIZE = 28.0
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(BrightStarsAnnotation::class.java)
+        @JvmStatic private val LOG = LoggerFactory.getLogger(StarsAnnotation::class.java)
         @JvmStatic private val DEFAULT_FONT = Font.font(22.0)
     }
 }

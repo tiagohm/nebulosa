@@ -5,11 +5,16 @@ import nebulosa.erfa.SphericalCoordinate
 import nebulosa.math.Angle
 import nebulosa.math.Distance
 import nebulosa.math.Vector3D
-import java.util.*
+import nebulosa.nova.astrometry.FixedStar
 
-abstract class SkyCatalog<T : SkyObject> : Collection<T> {
+abstract class SkyCatalog<T : SkyObject>(estimatedSize: Int = 0) : Collection<T> {
 
-    private val data = LinkedList<T>()
+    private val data = ArrayList<T>(estimatedSize)
+    private var positions = HashMap<Int, FixedStar>(0) // TODO: Can be optimized?
+
+    fun position(star: SkyObject): FixedStar {
+        return positions[star.id]!!
+    }
 
     fun searchBy(text: String): List<T> {
         return data.stream().filter(SkyCatalogFilter(text)).toList()
@@ -20,9 +25,9 @@ abstract class SkyCatalog<T : SkyObject> : Collection<T> {
         val cosLimFov = limitFOV.cos
         val normalizedVector = vector.normalized
 
-        for (star in this) {
-            val starPos = star.position.positionAndVelocity.position.normalized
-
+        for (star in data) {
+            val body = positions[star.id]!!
+            val starPos = body.positionAndVelocity.position.normalized
             val cosAngle = starPos.dot(normalizedVector)
 
             if (cosAngle >= cosLimFov) {
@@ -45,6 +50,14 @@ abstract class SkyCatalog<T : SkyObject> : Collection<T> {
         return searchAround(SphericalCoordinate(rightAscension, declination, Distance.ONE), limitFOV)
     }
 
+    protected fun notifyLoadFinished() {
+        positions = HashMap(data.size)
+
+        for (it in data) {
+            positions[it.id] = FixedStar(it.rightAscension, it.declination, it.pmRA, it.pmDEC, it.parallax)
+        }
+    }
+
     override val size
         get() = data.size
 
@@ -52,45 +65,13 @@ abstract class SkyCatalog<T : SkyObject> : Collection<T> {
 
     override fun isEmpty() = data.isEmpty()
 
-    protected fun poll(): T? = data.poll()
+    protected fun removeFirst() = data.removeFirst()
 
-    protected fun element(): T = data.element()
+    protected fun removeLast() = data.removeLast()
 
-    protected fun peek(): T? = data.peek()
+    protected fun getFirst() = data.first()
 
-    protected fun removeFirst(): T = data.removeFirst()
-
-    protected fun removeLast(): T = data.removeLast()
-
-    protected fun pollFirst(): T? = data.pollFirst()
-
-    protected fun pollLast(): T? = data.pollLast()
-
-    protected fun getFirst(): T = data.first
-
-    protected fun getLast(): T = data.last
-
-    protected fun peekFirst(): T? = data.peekFirst()
-
-    protected fun peekLast(): T? = data.peekLast()
-
-    protected fun removeFirstOccurrence(o: T) = data.removeFirstOccurrence(o)
-
-    protected fun removeLastOccurrence(o: T) = data.removeLastOccurrence(o)
-
-    protected fun pop(): T = data.pop()
-
-    protected fun push(e: T) = data.push(e)
-
-    protected fun offerLast(e: T) = data.offerLast(e)
-
-    protected fun offerFirst(e: T) = data.offerFirst(e)
-
-    protected fun addLast(e: T) = data.addLast(e)
-
-    protected fun addFirst(e: T) = data.addFirst(e)
-
-    protected fun offer(e: T) = data.offer(e)
+    protected fun getLast() = data.last()
 
     protected fun add(element: T) = data.add(element)
 
@@ -99,8 +80,6 @@ abstract class SkyCatalog<T : SkyObject> : Collection<T> {
     protected fun clear() = data.clear()
 
     override fun iterator() = data.iterator()
-
-    protected fun remove(): T = data.remove()
 
     protected fun retainAll(elements: Collection<T>) = data.retainAll(elements.toSet())
 

@@ -1,9 +1,12 @@
 package nebulosa.skycatalog.stellarium
 
 import nebulosa.io.readDouble
+import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.mas
 import nebulosa.math.Angle.Companion.rad
+import nebulosa.nova.astrometry.Constellation
+import nebulosa.nova.position.ICRF
 import nebulosa.skycatalog.DSO
 import nebulosa.skycatalog.SkyCatalog
 import okio.BufferedSource
@@ -133,20 +136,23 @@ class Nebula : SkyCatalog<DSO>() {
                 redshift = redshift,
                 parallax = parallax,
                 distance = distance,
+                constellation = computeConstellation(ra, dec),
             )
 
             add(nebula)
         }
+
+        notifyLoadFinished()
     }
 
     companion object {
+
+        @JvmStatic private val DSO_NAME_REGEX = Regex(".*_\\(\"(.*?)\"\\).*")
 
         @Suppress("NOTHING_TO_INLINE")
         private inline fun BufferedSource.readString(): String {
             return readString(readInt().toLong(), Charsets.UTF_16)
         }
-
-        @JvmStatic private val DSO_NAME_REGEX = Regex(".*_\\(\"(.*?)\"\\).*")
 
         /**
          * Loads the Stellarium DSO Catalog Names file.
@@ -173,6 +179,11 @@ class Nebula : SkyCatalog<DSO>() {
             }
 
             return res
+        }
+
+        @JvmStatic
+        private fun computeConstellation(rightAscension: Angle, declination: Angle): Constellation {
+            return Constellation.find(ICRF.equatorial(rightAscension, declination))
         }
     }
 }
