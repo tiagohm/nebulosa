@@ -6,12 +6,10 @@ import kotlin.math.min
 
 abstract class Convolution(
     private val kernel: Array<FloatArray>,
-    val divisor: Float,
+    private val divisor: Float,
 ) : TransformAlgorithm {
 
     @JvmField val size = kernel.size
-
-    private val cached = Array(3) { FloatArray(0) }
 
     init {
         require(kernel.size in 3..99) { "kernel size in [3..99]: ${kernel.size}" }
@@ -25,7 +23,8 @@ abstract class Convolution(
         val c = FloatArray(source.numberOfChannels)
         val kernelSize = size * size
 
-        for (i in c.indices) cached[i] = FloatArray(source.width * source.height)
+        // TODO: Otimizar isso!
+        val cached = Array(3) { FloatArray(source.width * source.height) }
 
         for (y in 0 until source.height) {
             for (x in 0 until source.width) {
@@ -73,8 +72,6 @@ abstract class Convolution(
         for (i in cached.indices) {
             cached[i].copyInto(source.data[i])
         }
-
-        cached.fill(FloatArray(0)) // clear.
 
         return source
     }

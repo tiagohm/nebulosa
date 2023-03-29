@@ -4,9 +4,9 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-internal class WindowedAxisStats(val autoWindowSize: Int = 0) : AxisStats() {
+internal class WindowedAxisStats(private val autoWindowSize: Int = 0) : AxisStats() {
 
-    val autoWindowing = autoWindowSize > 0
+    private val autoWindowing = autoWindowSize > 0
 
     override fun add(deltaTime: Double, starPos: Double, guideAmount: Double) {
         super.add(deltaTime, starPos, guideAmount)

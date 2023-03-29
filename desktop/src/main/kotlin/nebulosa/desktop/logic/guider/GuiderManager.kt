@@ -351,6 +351,9 @@ class GuiderManager(
         preferences.json("guider.${camera?.name}.${mount?.name}.calibration", calibration.toMap())
     }
 
+    override fun onGuideStep() {
+    }
+
     private inner class GuideCameraPropertyListener : DevicePropertyListener<Camera> {
 
         override fun onChanged(prev: Camera?, device: Camera) {}

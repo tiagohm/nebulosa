@@ -23,6 +23,18 @@ class MultiStarGuider(
     private val executor: ExecutorService,
 ) : Guider {
 
+    private data class MoveResult(
+        val status: Boolean,
+        val amountMoved: Int,
+        val limitReached: Boolean,
+    ) {
+
+        companion object {
+
+            @JvmStatic val FAILED = MoveResult(false, 0, true)
+        }
+    }
+
     private val guideStars = LinkedList<GuideStar>()
     private var starsUsed = 0
 
@@ -79,6 +91,7 @@ class MultiStarGuider(
     private var minStarHFD = 1.5
 
     private val guideCalibrator = GuideCalibrator(this)
+    private val guideGraph = GuideGraph(this, 100)
 
     private val currentPosition
         get() = primaryStar
@@ -89,6 +102,8 @@ class MultiStarGuider(
 
     var forceFullFrame = false
     var ignoreLostStarLooping = false
+
+    var noiseReductionMethod = NoiseReductionMethod.NONE
 
     val guiding
         get() = state == GuiderState.GUIDING
@@ -987,7 +1002,9 @@ class MultiStarGuider(
 
                 LOG.info("move RA. distance={}, direction={}", xDistance, xDirection)
 
-                if (moveAxis(xDirection, requestedXAmount, moveOptions)) {
+                val xResult = moveAxis(xDirection, requestedXAmount, moveOptions)
+
+                if (xResult.status) {
                     val yDirection = if (yDistance > 0.0) GuideDirection.DOWN_SOUTH else GuideDirection.UP_NORTH
                     val requestedYAmount = abs(yDistance / guideCalibrator.yRate).roundToInt()
 
@@ -996,7 +1013,9 @@ class MultiStarGuider(
                     // TODO: if (m_backlashComp)
                     //     m_backlashComp->ApplyBacklashComp(moveOptions, yDistance, &requestedYAmount);
 
-                    moveAxis(yDirection, requestedYAmount, moveOptions)
+                    val yResult = moveAxis(yDirection, requestedYAmount, moveOptions)
+
+                    val history = guideGraph.add(offset, xResult.amountMoved, yResult.amountMoved, xDirection, yDirection)
                 }
             }
         }
@@ -1004,14 +1023,16 @@ class MultiStarGuider(
         return true
     }
 
-    private fun GuideDevice.moveAxis(direction: GuideDirection, duration: Int, moveOptions: List<MountMoveOption>): Boolean {
+    private fun GuideDevice.moveAxis(direction: GuideDirection, duration: Int, moveOptions: List<MountMoveOption>): MoveResult {
         if (!guidingEnabled && MountMoveOption.MANUAL !in moveOptions) {
             LOG.warn("guiding disabled")
-            return false
+            return MoveResult.FAILED
         }
 
         // Compute the actual guide durations.
         var newDuration = duration
+
+        var limitReached = false
 
         when (direction) {
             GuideDirection.UP_NORTH,
@@ -1030,6 +1051,7 @@ class MultiStarGuider(
 
                     if (newDuration > device.maxDeclinationDuration) {
                         newDuration = device.maxDeclinationDuration
+                        limitReached = true
                         LOG.info("duration set to maxDeclinationDuration. duration={}", newDuration)
                     }
                 }
@@ -1042,6 +1064,7 @@ class MultiStarGuider(
                 ) {
                     if (newDuration > device.maxRightAscensionDuration) {
                         newDuration = device.maxRightAscensionDuration
+                        limitReached = true
                         LOG.info("duration set to maxRightAscensionDuration. duration={}", newDuration)
                     }
                 }
@@ -1052,15 +1075,17 @@ class MultiStarGuider(
         return if (newDuration > 0) {
             LOG.info("move axis. direction={}, duration={}", direction, newDuration)
 
-            when (direction) {
+            val status = when (direction) {
                 GuideDirection.UP_NORTH -> device.guideNorth(newDuration)
                 GuideDirection.DOWN_SOUTH -> device.guideSouth(newDuration)
                 GuideDirection.LEFT_WEST -> device.guideWest(newDuration)
                 GuideDirection.RIGHT_EAST -> device.guideEast(newDuration)
                 GuideDirection.NONE -> false
             }
+
+            MoveResult(status, newDuration, limitReached)
         } else {
-            false
+            MoveResult.FAILED
         }
     }
 

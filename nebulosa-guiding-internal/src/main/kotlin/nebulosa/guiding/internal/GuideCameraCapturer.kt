@@ -1,6 +1,8 @@
 package nebulosa.guiding.internal
 
 import nebulosa.common.concurrency.Worker
+import nebulosa.guiding.NoiseReductionMethod
+import nebulosa.imaging.algorithms.Mean
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.max
@@ -19,6 +21,11 @@ internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : W
             guider.device.capture(duration)
             val frame = guider.device.cameraImage
             LOG.info("frame capture finished")
+
+            if (guider.noiseReductionMethod == NoiseReductionMethod.MEAN) {
+                // TODO: Descomentar quando otimizar o Mean frame = frame.transform(MEAN_FILTER)
+            }
+
             guider.updateGuide(frame, frameNumber.getAndIncrement(), false)
         }
 
@@ -31,5 +38,6 @@ internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : W
     companion object {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(GuideCameraCapturer::class.java)
+        @JvmStatic private val MEAN_FILTER = Mean()
     }
 }

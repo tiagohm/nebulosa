@@ -32,4 +32,6 @@ interface GuiderListener {
     )
 
     fun onCalibrationCompleted(calibration: Calibration)
+
+    fun onGuideStep()
 }
