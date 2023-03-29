@@ -6,7 +6,6 @@ import javafx.scene.control.Slider
 import javafx.scene.control.Spinner
 import javafx.util.Duration
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.control.HistogramView
 import nebulosa.desktop.logic.image.ImageStretcherManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.view.image.ImageStretcherView

@@ -1,9 +1,11 @@
 package nebulosa.math
 
 import nebulosa.constants.*
-import nebulosa.constants.PI
 import java.util.*
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.tan
 
 /**
  * Represents an Angle [value] in radians.

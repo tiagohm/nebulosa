@@ -4,8 +4,10 @@ import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.math.*
+import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.Matrix3D
+import nebulosa.math.Vector3D
 
 @Suppress("FloatingPointLiteralPrecision")
 class Matrix3DTest : StringSpec() {

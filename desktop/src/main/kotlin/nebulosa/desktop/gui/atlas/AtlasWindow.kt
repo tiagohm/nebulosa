@@ -1,6 +1,5 @@
 package nebulosa.desktop.gui.atlas
 
-import eu.hansolo.fx.charts.*
 import eu.hansolo.fx.charts.data.XYItem
 import javafx.collections.FXCollections
 import javafx.collections.transformation.FilteredList
@@ -11,10 +10,7 @@ import javafx.scene.control.*
 import javafx.scene.control.cell.PropertyValueFactory
 import javafx.util.Callback
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.control.AltitudeChart
 import nebulosa.desktop.gui.control.CopyableLabel
-import nebulosa.desktop.gui.control.MoonView
-import nebulosa.desktop.gui.control.SunView
 import nebulosa.desktop.logic.atlas.AtlasManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or

@@ -3,6 +3,7 @@ package nebulosa.desktop.gui.guider
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
+import javafx.scene.control.Label
 import javafx.scene.image.PixelBuffer
 import javafx.scene.image.PixelFormat
 import javafx.scene.image.WritableImage
@@ -49,7 +50,11 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML private lateinit var startGuidingButton: Button
     @FXML private lateinit var stopGuidingButton: Button
     @FXML private lateinit var statusIcon: MaterialIcon
-    @FXML private lateinit var starProfileImageViewer: ImageViewer
+    @FXML private lateinit var starProfileImage: ImageViewer
+    @FXML private lateinit var starProfileGraph: StarProfileGraph
+    @FXML private lateinit var peakLabel: Label
+    @FXML private lateinit var fwhmLabel: Label
+    @FXML private lateinit var hfdLabel: Label
 
     private val starProfileData = IntArray(64 * 64)
     private val starProfileIndicator = StarProfileIndicator()
@@ -105,7 +110,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         startGuidingButton.disableProperty().bind(isNotConnected or !isLooping or isGuiding)
         stopGuidingButton.disableProperty().bind(isNotConnected or !isLooping or !isGuiding)
 
-        starProfileImageViewer.addFirst(starProfileIndicator)
+        starProfileImage.addFirst(starProfileIndicator)
     }
 
     @FXML
@@ -181,8 +186,12 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
                 val writableImage = WritableImage(pixelBuffer)
 
                 javaFXExecutorService.submit {
-                    starProfileImageViewer.load(writableImage)
-                    starProfileIndicator.draw(guider)
+                    starProfileImage.load(writableImage)
+                    starProfileIndicator.draw(guider.lockPosition, guider.primaryStar, regionSize)
+                    val fwhm = starProfileGraph.draw(image, guider.primaryStar)
+                    peakLabel.text = "%.0f".format(guider.primaryStar.peak)
+                    fwhmLabel.text = "%.2f".format(fwhm)
+                    hfdLabel.text = "%.2f".format(guider.primaryStar.hfd)
                 }
             }
         }

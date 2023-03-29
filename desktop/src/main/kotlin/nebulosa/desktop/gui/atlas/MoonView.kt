@@ -1,4 +1,4 @@
-package nebulosa.desktop.gui.control
+package nebulosa.desktop.gui.atlas
 
 import javafx.scene.canvas.Canvas
 import javafx.scene.image.Image

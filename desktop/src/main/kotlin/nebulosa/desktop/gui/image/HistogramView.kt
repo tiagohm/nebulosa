@@ -1,4 +1,4 @@
-package nebulosa.desktop.gui.control
+package nebulosa.desktop.gui.image
 
 import javafx.scene.canvas.Canvas
 import javafx.scene.paint.Color
@@ -7,7 +7,7 @@ import nebulosa.imaging.algorithms.Histogram
 
 class HistogramView : Canvas() {
 
-    val histogram = Histogram()
+    private val histogram = Histogram()
 
     override fun isResizable() = true
 

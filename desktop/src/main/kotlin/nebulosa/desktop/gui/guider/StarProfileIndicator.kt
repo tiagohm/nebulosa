@@ -5,7 +5,6 @@ import javafx.scene.shape.Circle
 import javafx.scene.shape.Line
 import nebulosa.desktop.gui.control.Drawable
 import nebulosa.guiding.GuidePoint
-import nebulosa.guiding.Guider
 import nebulosa.guiding.StarPoint
 import nebulosa.guiding.internal.Point
 import nebulosa.guiding.internal.Star
@@ -42,10 +41,10 @@ class StarProfileIndicator : Drawable() {
         }
     }
 
-    fun draw(guider: Guider) {
-        lockPosition = guider.lockPosition
-        primaryStar = guider.primaryStar
-        boxSize = guider.searchRegion * 2.0
+    fun draw(lockPosition: GuidePoint, primaryStar: StarPoint, boxSize: Double) {
+        this.lockPosition = lockPosition
+        this.primaryStar = primaryStar
+        this.boxSize = boxSize
         redraw()
     }
 

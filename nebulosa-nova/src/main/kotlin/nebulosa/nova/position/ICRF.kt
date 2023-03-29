@@ -15,7 +15,6 @@ import nebulosa.math.Velocity.Companion.kms
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.ITRS
-import nebulosa.nova.position.*
 import nebulosa.time.InstantOfTime
 import nebulosa.time.TimeJD
 import nebulosa.time.UTC

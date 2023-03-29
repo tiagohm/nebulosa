@@ -5,6 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import nebulosa.desktop.gui.control.*?>
+<?import nebulosa.desktop.gui.guider.StarProfileGraph?>
 <?import nebulosa.desktop.view.guider.*?>
 <?import nebulosa.guiding.internal.DeclinationGuideMode?>
 <AnchorPane maxHeight="-Infinity"
@@ -108,25 +109,37 @@
                     <AnchorPane maxWidth="Infinity"
                                 HBox.hgrow="ALWAYS">
                     </AnchorPane>
-                    <VBox alignment="TOP_CENTER">
+                    <VBox alignment="TOP_CENTER"
+                          spacing="2.0">
                         <AnchorPane minWidth="92.0"
                                     minHeight="92.0"
                                     prefWidth="92.0"
                                     prefHeight="92.0"
                                     maxWidth="92.0"
                                     maxHeight="92.0">
-                            <ImageViewer fx:id="starProfileImageViewer"
+                            <ImageViewer fx:id="starProfileImage"
                                          fitHeight="false"
                                          fitWidth="false"
                                          minScale="1.0"
                                          maxScale="10.0"
                                          hbarPolicy="NEVER"
                                          vbarPolicy="NEVER"
-                                         style="-fx-background-color: black"
                                          AnchorPane.bottomAnchor="0.0"
                                          AnchorPane.leftAnchor="0.0"
                                          AnchorPane.rightAnchor="0.0"
                                          AnchorPane.topAnchor="0.0"/>
+                        </AnchorPane>
+                        <AnchorPane minWidth="92.0"
+                                    minHeight="92.0"
+                                    prefWidth="92.0"
+                                    prefHeight="92.0"
+                                    maxWidth="92.0"
+                                    maxHeight="92.0">
+                            <StarProfileGraph fx:id="starProfileGraph"
+                                              AnchorPane.bottomAnchor="0.0"
+                                              AnchorPane.leftAnchor="0.0"
+                                              AnchorPane.rightAnchor="0.0"
+                                              AnchorPane.topAnchor="0.0"/>
                         </AnchorPane>
                     </VBox>
                 </HBox>
@@ -379,49 +392,88 @@
                 </GridPane>
             </Tab>
         </TabPane>
-        <HBox alignment="CENTER"
-              spacing="16.0">
+        <StackPane>
             <VBox.margin>
                 <Insets top="4.0"/>
             </VBox.margin>
-            <LabeledPane text="Looping"
-                         styleClass="text-bold">
-                <HBox alignment="CENTER"
-                      spacing="2.0">
-                    <MaterialIconButton fx:id="startLoopingButton"
-                                        onAction="#startLooping"
-                                        text="Start"
-                                        icon="play"
-                                        color="green-500"/>
-                    <MaterialIconButton fx:id="stopLoopingButton"
-                                        onAction="#stopLooping"
-                                        text="Stop"
-                                        icon="stop"
-                                        color="warning"/>
+            <HBox alignment="CENTER"
+                  StackPane.alignment="CENTER"
+                  spacing="16.0">
+                <LabeledPane text="Looping"
+                             styleClass="text-bold">
+                    <HBox alignment="CENTER"
+                          spacing="2.0">
+                        <MaterialIconButton fx:id="startLoopingButton"
+                                            onAction="#startLooping"
+                                            text="Start"
+                                            icon="play"
+                                            color="green-500"/>
+                        <MaterialIconButton fx:id="stopLoopingButton"
+                                            onAction="#stopLooping"
+                                            text="Stop"
+                                            icon="stop"
+                                            color="warning"/>
+                    </HBox>
+                </LabeledPane>
+                <LabeledPane text="Guiding"
+                             styleClass="text-bold">
+                    <HBox alignment="CENTER"
+                          spacing="2.0">
+                        <MaterialIconButton fx:id="startGuidingButton"
+                                            onMousePressed="#startGuiding"
+                                            text="Start"
+                                            icon="play"
+                                            color="green-500">
+                            <tooltip>
+                                <Tooltip text="Press SHIFT to force calibration"
+                                         styleClass="text-sm"/>
+                            </tooltip>
+                        </MaterialIconButton>
+                        <MaterialIconButton fx:id="stopGuidingButton"
+                                            onAction="#stopGuiding"
+                                            text="Stop"
+                                            icon="stop"
+                                            color="warning"/>
+                    </HBox>
+                </LabeledPane>
+            </HBox>
+            <VBox spacing="1.0"
+                  StackPane.alignment="TOP_RIGHT"
+                  fillWidth="false"
+                  minWidth="92.0"
+                  maxWidth="92.0">
+                <HBox spacing="1.0">
+                    <Label text="Peak:"
+                           minWidth="46.0"
+                           styleClass="text-xs,text-bold"/>
+                    <Label fx:id="peakLabel"
+                           text="0"
+                           alignment="CENTER_RIGHT"
+                           minWidth="46.0"
+                           styleClass="text-xs"/>
                 </HBox>
-            </LabeledPane>
-            <LabeledPane text="Guiding"
-                         styleClass="text-bold">
-                <HBox alignment="CENTER"
-                      spacing="2.0">
-                    <MaterialIconButton fx:id="startGuidingButton"
-                                        onMousePressed="#startGuiding"
-                                        text="Start"
-                                        icon="play"
-                                        color="green-500">
-                        <tooltip>
-                            <Tooltip text="Press SHIFT to force calibration"
-                                     styleClass="text-sm"/>
-                        </tooltip>
-                    </MaterialIconButton>
-                    <MaterialIconButton fx:id="stopGuidingButton"
-                                        onAction="#stopGuiding"
-                                        text="Stop"
-                                        icon="stop"
-                                        color="warning"/>
+                <HBox spacing="1.0">
+                    <Label text="FWHM:"
+                           minWidth="46.0"
+                           styleClass="text-xs,text-bold"/>
+                    <Label fx:id="fwhmLabel"
+                           text="0.00"
+                           alignment="CENTER_RIGHT"
+                           minWidth="46.0"
+                           styleClass="text-xs"/>
                 </HBox>
-            </LabeledPane>
-        </HBox>
+                <HBox spacing="1.0">
+                    <Label text="HFD:"
+                           minWidth="46.0"
+                           styleClass="text-xs,text-bold"/>
+                    <Label fx:id="hfdLabel"
+                           text="0.00"
+                           alignment="CENTER_RIGHT"
+                           minWidth="46.0"
+                           styleClass="text-xs"/>
+                </HBox>
+            </VBox>
+        </StackPane>
         <HBox alignment="CENTER_LEFT">
             <MaterialIcon fx:id="statusIcon"
                           icon="information"
