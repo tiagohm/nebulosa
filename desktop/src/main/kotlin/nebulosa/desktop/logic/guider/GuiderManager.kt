@@ -18,7 +18,6 @@ import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraFrameCaptured
 import nebulosa.indi.device.guide.GuideOutput
-import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.PierSide
 import nebulosa.math.Angle
@@ -172,6 +171,7 @@ class GuiderManager(
     fun selectGuideStar(x: Double, y: Double) {
         if (guider.selectGuideStar(x, y)) {
             guiderIndicator.redraw()
+            view.updateStarProfile(guider)
         }
     }
 
@@ -276,7 +276,13 @@ class GuiderManager(
 
     private inline fun guideTo(crossinline callback: (Int) -> Unit, duration: Int): Boolean {
         pulseGuidingLatch.countUp()
-        guiderExecutorService.submit { callback(duration) }
+
+        guiderExecutorService.submit {
+            callback(duration)
+            Thread.sleep(duration + 50L)
+            pulseGuidingLatch.countDown()
+        }
+
         return true
     }
 
@@ -313,7 +319,7 @@ class GuiderManager(
         view.updateStatus("looping. number=$number")
         imageView?.also { javaFXExecutorService.submit { it.open(image, null) } }
         javaFXExecutorService.submit { guiderIndicator.redraw() }
-        view.updateStarProfile(image, guider.searchRegion * 2.0, guider.lockPosition, guider.primaryStar)
+        view.updateStarProfile(guider, image)
     }
 
     override fun onStarLost() {
@@ -376,15 +382,7 @@ class GuiderManager(
 
         override fun onReset() {}
 
-        override fun onDeviceEvent(event: DeviceEvent<*>, device: GuideOutput) {
-            when (event) {
-                is GuideOutputPulsingChanged -> {
-                    if (!device.pulseGuiding) {
-                        pulseGuidingLatch.countDown()
-                    }
-                }
-            }
-        }
+        override fun onDeviceEvent(event: DeviceEvent<*>, device: GuideOutput) {}
     }
 
     companion object {

@@ -55,7 +55,7 @@ class MultiStarGuider(
 
     private val settler = Settler(this)
 
-    internal val image: Image?
+    override val image: Image?
         get() = frame.get()
 
     val settling

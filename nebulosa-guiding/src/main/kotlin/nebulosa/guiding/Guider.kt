@@ -1,5 +1,7 @@
 package nebulosa.guiding
 
+import nebulosa.imaging.Image
+
 interface Guider : Iterable<GuidePoint> {
 
     val primaryStar: StarPoint
@@ -7,6 +9,8 @@ interface Guider : Iterable<GuidePoint> {
     val lockPosition: GuidePoint
 
     var searchRegion: Double
+
+    val image: Image?
 
     fun autoSelect(): Boolean
 

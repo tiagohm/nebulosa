@@ -17,8 +17,7 @@ import nebulosa.desktop.logic.guider.GuiderManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.guider.GuiderView
-import nebulosa.guiding.GuidePoint
-import nebulosa.guiding.StarPoint
+import nebulosa.guiding.Guider
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.AutoScreenTransformFunction
 import nebulosa.imaging.algorithms.SubFrame
@@ -163,10 +162,10 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         javaFXExecutorService.submit { statusIcon.text = text }
     }
 
-    override fun updateStarProfile(
-        image: Image, regionSize: Double,
-        lockPosition: GuidePoint, primaryStar: StarPoint,
-    ) {
+    override fun updateStarProfile(guider: Guider, image: Image) {
+        val lockPosition = guider.lockPosition
+        val regionSize = guider.searchRegion * 2.0
+
         if (lockPosition.valid) {
             val size = min(regionSize, 64.0)
 
@@ -183,7 +182,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
                 javaFXExecutorService.submit {
                     starProfileImageViewer.load(writableImage)
-                    starProfileIndicator.draw(lockPosition, primaryStar)
+                    starProfileIndicator.draw(guider)
                 }
             }
         }

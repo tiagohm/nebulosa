@@ -5,6 +5,10 @@ import javafx.scene.shape.Circle
 import javafx.scene.shape.Line
 import nebulosa.desktop.gui.control.Drawable
 import nebulosa.guiding.GuidePoint
+import nebulosa.guiding.Guider
+import nebulosa.guiding.StarPoint
+import nebulosa.guiding.internal.Point
+import nebulosa.guiding.internal.Star
 
 class StarProfileIndicator : Drawable() {
 
@@ -12,9 +16,9 @@ class StarProfileIndicator : Drawable() {
     private val crosshairLineVer = Line()
     private val primaryStarDot = Circle()
 
-    @Volatile private var initialized = false
-    @Volatile private lateinit var lockPosition: GuidePoint
-    @Volatile private lateinit var primaryStar: GuidePoint
+    @Volatile private var lockPosition: GuidePoint = Point()
+    @Volatile private var primaryStar: StarPoint = Star()
+    @Volatile private var boxSize = 0.0
 
     init {
         with(crosshairLineHor) {
@@ -33,15 +37,15 @@ class StarProfileIndicator : Drawable() {
 
         with(primaryStarDot) {
             fill = Color.RED
-            radius = 1.0
+            radius = 3.0
             add(this)
         }
     }
 
-    fun draw(lockPosition: GuidePoint, primaryStar: GuidePoint) {
-        this.lockPosition = lockPosition
-        this.primaryStar = primaryStar
-        initialized = true
+    fun draw(guider: Guider) {
+        lockPosition = guider.lockPosition
+        primaryStar = guider.primaryStar
+        boxSize = guider.searchRegion * 2.0
         redraw()
     }
 
@@ -59,13 +63,19 @@ class StarProfileIndicator : Drawable() {
         crosshairLineVer.endX = centerX
         crosshairLineVer.endY = height
 
-        primaryStarDot.isVisible = initialized && primaryStar.valid
+        primaryStarDot.isVisible = if (primaryStar.valid) {
+            val offsetX = centerX - lockPosition.dX(primaryStar) * (width / boxSize)
+            val offsetY = centerY - lockPosition.dY(primaryStar) * (height / boxSize)
 
-        if (initialized && primaryStar.valid) {
-            val offsetX = centerX + primaryStar.x - lockPosition.x
-            val offsetY = centerY + primaryStar.y - lockPosition.y
-            primaryStarDot.centerX = offsetX
-            primaryStarDot.centerY = offsetY
+            if (offsetX >= 0 && offsetX < width && offsetY >= 0 && offsetY < height) {
+                primaryStarDot.centerX = offsetX
+                primaryStarDot.centerY = offsetY
+                true
+            } else {
+                false
+            }
+        } else {
+            false
         }
     }
 }

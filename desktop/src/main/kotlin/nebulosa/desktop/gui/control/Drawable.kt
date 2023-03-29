@@ -4,6 +4,7 @@ import javafx.beans.property.DoubleProperty
 import javafx.beans.property.DoublePropertyBase
 import javafx.scene.Group
 import javafx.scene.Node
+import javafx.scene.paint.Color
 import javafx.scene.shape.Line
 
 // TODO: Como eliminar o comportamento do Group?
@@ -38,10 +39,12 @@ abstract class Drawable : Group() {
         add(fakeLineHor)
         add(fakeLineVer)
 
+        fakeLineHor.stroke = Color.TRANSPARENT
         fakeLineHor.startX = 0.0
         fakeLineHor.startY = 0.0
         fakeLineHor.endX = 0.0
 
+        fakeLineVer.stroke = Color.TRANSPARENT
         fakeLineVer.startX = 0.0
         fakeLineVer.startY = 0.0
         fakeLineVer.endY = 0.0

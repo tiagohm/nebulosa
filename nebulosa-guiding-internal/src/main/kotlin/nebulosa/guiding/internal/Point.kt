@@ -33,28 +33,28 @@ open class Point(
         valid = true
     }
 
-    internal inline fun set(point: Point) {
+    internal inline fun set(point: GuidePoint) {
         set(point.x, point.y)
     }
 
-    inline fun dX(point: Point): Double {
+    override fun dX(point: GuidePoint): Double {
         return x - point.x
     }
 
-    inline fun dY(point: Point): Double {
+    override fun dY(point: GuidePoint): Double {
         return y - point.y
     }
 
-    inline val distance
+    override val distance
         get() = hypot(x, y)
 
-    fun distance(point: Point) = hypot(dX(point), dY(point))
+    override fun distance(point: GuidePoint) = hypot(dX(point), dY(point))
 
-    val angle
+    override val angle
         get() = if (x != 0.0 || y != 0.0) atan2(y, x).rad
         else Angle.ZERO
 
-    fun angle(point: Point): Angle {
+    override fun angle(point: GuidePoint): Angle {
         val dx = dX(point)
         val dy = dY(point)
         return if (dx != 0.0 || dy != 0.0) atan2(dy, dx).rad
