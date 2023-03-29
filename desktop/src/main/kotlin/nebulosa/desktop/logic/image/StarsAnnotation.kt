@@ -18,21 +18,28 @@ data class StarsAnnotation(
     private var data = hygDatabase
         .searchAround(calibration.rightAscension, calibration.declination, calibration.radius)
 
-    fun initialize() {
+    init {
+        val width = calibration.crpix1 * 2.0
+        val height = calibration.crpix2 * 2.0
+
         data.forEach {
-            val xy = wcs.worldToPixel(it.rightAscension, it.declination)
-            val circle = Circle(xy[0], xy[1], 28.0)
+            val (x, y) = wcs.worldToPixel(it.rightAscension, it.declination)
+
+            // TODO: Ver comentário na classe Drawable.
+            if (x < 0 || y < 0 || x >= width || y >= height) return@forEach
+
+            val circle = Circle(x, y, 28.0)
             circle.fill = Color.TRANSPARENT
             circle.stroke = Color.YELLOW
             circle.strokeWidth = 2.0
             add(circle)
 
-            val text = Text(xy[0], xy[1], it.names.joinToString(" | "))
+            val text = Text(x, y, it.names.joinToString(" | "))
             text.stroke = Color.YELLOW
             text.textAlignment = TextAlignment.CENTER
             add(text)
         }
     }
 
-    override fun redraw() {}
+    override fun redraw(width: Double, height: Double) {}
 }

@@ -11,21 +11,16 @@ class Annotation(
     hygDatabase: HygDatabase,
 ) : Drawable() {
 
-    private val stars = StarsAnnotation(calibration, hygDatabase)
-    private val nebula = NebulaAnnotation(calibration, nebula)
+    private val annotations = arrayOf(
+        StarsAnnotation(calibration, hygDatabase),
+        NebulaAnnotation(calibration, nebula),
+    )
 
     init {
-        add(stars)
-        add(this.nebula)
+        annotations.forEach(::add)
     }
 
-    fun initialize() {
-        stars.initialize()
-        nebula.initialize()
-    }
-
-    override fun redraw() {
-        stars.redraw()
-        nebula.redraw()
+    override fun redraw(width: Double, height: Double) {
+        annotations.forEach { it.redraw(width, height) }
     }
 }

@@ -35,7 +35,7 @@ class Crosshair : Drawable() {
         }
     }
 
-    override fun redraw() {
+    override fun redraw(width: Double, height: Double) {
         val centerX = width / 2.0
         val centerY = height / 2.0
 

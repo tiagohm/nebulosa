@@ -125,10 +125,7 @@ class ImageManager(private val view: ImageView) : Closeable {
             if (calibration.get() != null && view.annotationEnabled) {
                 annotation = Annotation(calibration.get(), nebula, hygDatabase)
 
-                javaFXExecutorService.submit {
-                    view.addFirst(annotation!!)
-                    view.redraw()
-                }
+                javaFXExecutorService.submit { view.addFirst(annotation!!) }
             }
         }
     }
@@ -273,12 +270,8 @@ class ImageManager(private val view: ImageView) : Closeable {
                 systemExecutorService.submit {
                     try {
                         annotation = Annotation(calibration, nebula, hygDatabase)
-                        annotation!!.initialize()
 
-                        javaFXExecutorService.submit {
-                            annotation!!.initialize()
-                            view.addFirst(annotation!!)
-                        }
+                        javaFXExecutorService.submit { view.addFirst(annotation!!) }
                     } catch (e: Throwable) {
                         LOG.error("annotation failed", e)
                     }

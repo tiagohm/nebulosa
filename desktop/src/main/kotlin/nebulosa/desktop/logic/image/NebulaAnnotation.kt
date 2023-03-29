@@ -1,16 +1,13 @@
 package nebulosa.desktop.logic.image
 
-import javafx.scene.canvas.GraphicsContext
 import javafx.scene.paint.Color
-import javafx.scene.text.Font
+import javafx.scene.shape.Circle
+import javafx.scene.text.Text
 import javafx.scene.text.TextAlignment
 import nebulosa.desktop.gui.control.Drawable
 import nebulosa.platesolving.Calibration
 import nebulosa.skycatalog.stellarium.Nebula
 import nebulosa.wcs.WCSTransform
-import org.slf4j.LoggerFactory
-import kotlin.math.max
-import kotlin.math.min
 
 class NebulaAnnotation(
     val calibration: Calibration,
@@ -22,50 +19,27 @@ class NebulaAnnotation(
         .searchAround(calibration.rightAscension, calibration.declination, calibration.radius)
 
     init {
-        LOG.info(
-            "found {} DSO objects around coordinates. ra={}, dec={}",
-            data.size, calibration.rightAscension.hours, calibration.declination.hours
-        )
-    }
+        val width = calibration.crpix1 * 2.0
+        val height = calibration.crpix2 * 2.0
 
-    fun initialize() {}
+        data.forEach {
+            val (x, y) = wcs.worldToPixel(it.rightAscension, it.declination)
 
-    override fun redraw() {}
+            // TODO: Ver comentário na classe Drawable.
+            if (x < 0 || y < 0 || x >= width || y >= height) return@forEach
 
-    fun draw(width: Double, height: Double, graphics: GraphicsContext) {
-        graphics.lineWidth = 5.0
-        graphics.stroke = Color.GREEN
-        graphics.fill = Color.GREEN
-        graphics.font = DEFAULT_FONT
+            val circle = Circle(x, y, 64.0)
+            circle.fill = Color.TRANSPARENT
+            circle.stroke = Color.GREEN
+            circle.strokeWidth = 2.0
+            add(circle)
 
-        val minSize = 25.0
-        val maxSize = min(width, height) / 2
-
-        for (item in data) {
-            val (x, y) = wcs.worldToPixel(item.rightAscension, item.declination)
-
-            if (x in 0.0..width && y in 0.0..height) {
-                val majorAxisSize = max(minSize, min(item.majorAxis / calibration.scale, maxSize))
-                // val minorAxisSize = max(minSize, min(maxSize, item.minorAxis / calibration.scale))
-
-                graphics.strokeOval(x - majorAxisSize / 2, y - majorAxisSize / 2, majorAxisSize, majorAxisSize)
-
-                val textX = max(18.0, min(x, width - 18.0))
-                val textY = max(18.0, min(y - majorAxisSize / 2 - 18.0, height))
-                val text = item.names.joinToString(" | ")
-
-                graphics.textAlign = if (textX > width * 0.9) TextAlignment.RIGHT
-                else if (textX > width * 0.1) TextAlignment.CENTER
-                else TextAlignment.LEFT
-
-                graphics.fillText(text, textX, textY)
-            }
+            val text = Text(x, y, it.names.joinToString(" | "))
+            text.stroke = Color.GREEN
+            text.textAlignment = TextAlignment.CENTER
+            add(text)
         }
     }
 
-    companion object {
-
-        @JvmStatic private val LOG = LoggerFactory.getLogger(NebulaAnnotation::class.java)
-        @JvmStatic private val DEFAULT_FONT = Font.font(22.0)
-    }
+    override fun redraw(width: Double, height: Double) {}
 }

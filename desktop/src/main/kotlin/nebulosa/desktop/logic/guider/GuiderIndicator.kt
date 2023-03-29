@@ -35,7 +35,7 @@ data class GuiderIndicator(private val guider: Guider) : Drawable() {
         }
     }
 
-    override fun redraw() {
+    override fun redraw(width: Double, height: Double) {
         with(guider.lockPosition) {
             lockPositionCrosshairLineHor.isVisible = valid
             lockPositionCrosshairLineVer.isVisible = valid
