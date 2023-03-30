@@ -1,7 +1,6 @@
 package nebulosa.desktop.logic.guider
 
 import javafx.beans.property.SimpleBooleanProperty
-import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.DevicePropertyListener
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
@@ -28,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.LinkedBlockingQueue
+import kotlin.math.hypot
 
 @Component
 class GuiderManager(
@@ -47,7 +47,6 @@ class GuiderManager(
     private lateinit var guider: Guider
     private lateinit var guiderIndicator: GuiderIndicator
     private val imageQueue = LinkedBlockingQueue<Image>()
-    private val pulseGuidingLatch = CountUpDownLatch()
     @Volatile private var imageView: ImageView? = null
 
     val loopingProperty = SimpleBooleanProperty()
@@ -214,10 +213,6 @@ class GuiderManager(
     override val mountPierSideAtEast
         get() = mount?.pierSide == PierSide.EAST
 
-    override fun awaitIfMountIsBusy() {
-        pulseGuidingLatch.await()
-    }
-
     // Rotator.
 
     override val rotatorAngle
@@ -229,17 +224,17 @@ class GuiderManager(
 
     override var calibrationDuration = GuideDevice.DEFAULT_CALIBRATION_DURATION
 
-    override var rightAscensionParity = GuideParity.UNCHANGED
+    override var parityRA = GuideParity.UNCHANGED
 
-    override var declinationParity = GuideParity.UNCHANGED
+    override var parityDEC = GuideParity.UNCHANGED
 
     override var declinationGuideMode = DeclinationGuideMode.AUTO
 
     override var guidingEnabled = true
 
-    override var maxDeclinationDuration = 2000
+    override var maxDECDuration = 2000
 
-    override var maxRightAscensionDuration = 2000
+    override var maxRADuration = 2000
 
     override val calibrationDistance
         get() = 25 // px
@@ -275,14 +270,7 @@ class GuiderManager(
     }
 
     private inline fun guideTo(crossinline callback: (Int) -> Unit, duration: Int): Boolean {
-        pulseGuidingLatch.countUp()
-
-        guiderExecutorService.submit {
-            callback(duration)
-            Thread.sleep(duration + 50L)
-            pulseGuidingLatch.countDown()
-        }
-
+        guiderExecutorService.submit { callback(duration) }
         return true
     }
 
@@ -317,8 +305,8 @@ class GuiderManager(
 
     override fun onLooping(image: Image, number: Int, star: StarPoint?) {
         view.updateStatus("looping. number=$number")
-        imageView?.also { javaFXExecutorService.submit { it.open(image, null) } }
-        javaFXExecutorService.submit { guiderIndicator.redraw() }
+        imageView?.also { javaFXExecutorService.execute { it.open(image, null) } }
+        javaFXExecutorService.execute { guiderIndicator.redraw() }
         view.updateStarProfile(guider, image)
     }
 
@@ -351,7 +339,11 @@ class GuiderManager(
         preferences.json("guider.${camera?.name}.${mount?.name}.calibration", calibration.toMap())
     }
 
-    override fun onGuideStep() {
+    override fun onGuideStep(stats: GuideStats) {
+        LOG.info("guiding step. RMS RA={}, RMS DEC={} dx={}, dy={}", stats.rmsRA, stats.rmsDEC, stats.dx, stats.dy)
+        view.updateGraph(guider.stats, maxRADuration.toDouble(), maxDECDuration.toDouble())
+        val rmsTotal = hypot(stats.rmsRA, stats.rmsDEC)
+        view.updateGraphInfo(stats.rmsRA, stats.rmsDEC, rmsTotal, cameraPixelScale)
     }
 
     private inner class GuideCameraPropertyListener : DevicePropertyListener<Camera> {
@@ -367,7 +359,7 @@ class GuiderManager(
                     val image = Image.open(fits)
                     imageQueue.offer(image)
 
-                    javaFXExecutorService.submit {
+                    javaFXExecutorService.execute {
                         if (imageView == null) {
                             imageView = imageViewOpener.open(image, null, device)
                             imageView!!.registerMouseListener(view)

@@ -18,6 +18,7 @@ import nebulosa.desktop.logic.guider.GuiderManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.guider.GuiderView
+import nebulosa.guiding.GuideStats
 import nebulosa.guiding.Guider
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.AutoScreenTransformFunction
@@ -55,6 +56,11 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML private lateinit var peakLabel: Label
     @FXML private lateinit var fwhmLabel: Label
     @FXML private lateinit var hfdLabel: Label
+    @FXML private lateinit var snrLabel: Label
+    @FXML private lateinit var guiderChart: GuiderChart
+    @FXML private lateinit var rmsRALabel: Label
+    @FXML private lateinit var rmsDECLabel: Label
+    @FXML private lateinit var rmsTotalLabel: Label
 
     private val starProfileData = IntArray(64 * 64)
     private val starProfileIndicator = StarProfileIndicator()
@@ -164,7 +170,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     }
 
     override fun updateStatus(text: String) {
-        javaFXExecutorService.submit { statusIcon.text = text }
+        javaFXExecutorService.execute { statusIcon.text = text }
     }
 
     override fun updateStarProfile(guider: Guider, image: Image) {
@@ -185,15 +191,31 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
                 val pixelBuffer = PixelBuffer(profileImage.width, profileImage.height, buffer, PixelFormat.getIntArgbPreInstance())
                 val writableImage = WritableImage(pixelBuffer)
 
-                javaFXExecutorService.submit {
+                javaFXExecutorService.execute {
                     starProfileImage.load(writableImage)
                     starProfileIndicator.draw(guider.lockPosition, guider.primaryStar, regionSize)
                     val fwhm = starProfileGraph.draw(image, guider.primaryStar)
                     peakLabel.text = "%.0f".format(guider.primaryStar.peak)
                     fwhmLabel.text = "%.2f".format(fwhm)
                     hfdLabel.text = "%.2f".format(guider.primaryStar.hfd)
+                    snrLabel.text = "%.2f".format(guider.primaryStar.snr)
                 }
             }
+        }
+    }
+
+    override fun updateGraph(
+        stats: List<GuideStats>,
+        maxRADuration: Double, maxDECDuration: Double,
+    ) {
+        javaFXExecutorService.execute { guiderChart.draw(stats, maxRADuration, maxDECDuration) }
+    }
+
+    override fun updateGraphInfo(rmsRA: Double, rmsDEC: Double, rmsTotal: Double, pixelScale: Double) {
+        javaFXExecutorService.execute {
+            rmsRALabel.text = "%.2f px | %.2f \"".format(rmsRA, rmsRA * pixelScale)
+            rmsDECLabel.text = "%.2f px | %.2f \"".format(rmsDEC, rmsDEC * pixelScale)
+            rmsTotalLabel.text = "%.2f px | %.2f \"".format(rmsTotal, rmsTotal * pixelScale)
         }
     }
 

@@ -1,6 +1,7 @@
 package nebulosa.guiding.internal
 
 import nebulosa.guiding.GuideDirection
+import nebulosa.guiding.GuideStats
 import java.util.*
 import kotlin.math.max
 import kotlin.math.sqrt
@@ -8,7 +9,7 @@ import kotlin.math.sqrt
 internal class GuideGraph(
     private val guider: MultiStarGuider,
     private val maxLength: Int,
-) : LinkedList<GuideHistory>() {
+) : LinkedList<GuideStats>() {
 
     private data class TrendLineAccum(
         @JvmField var sumY: Double = 0.0,
@@ -30,10 +31,10 @@ internal class GuideGraph(
         offset: GuiderOffset,
         xDuration: Int, yDuration: Int,
         xDirection: GuideDirection, yDirection: GuideDirection,
-    ): GuideHistory {
+    ): GuideStats {
         val nr = size
 
-        val oldest = firstOrNull() ?: GuideHistory.EMPTY
+        val oldest = firstOrNull() ?: GuideStats.EMPTY
 
         trendLineAccum[0].update(nr, maxLength, offset.camera.x, oldest.dx)
         trendLineAccum[1].update(nr, maxLength, offset.camera.y, oldest.dy)
@@ -63,7 +64,7 @@ internal class GuideGraph(
             removeFirst()
         }
 
-        val entry = GuideHistory(
+        val entry = GuideStats(
             timestamp = System.currentTimeMillis(),
             dx = offset.camera.x, dy = offset.camera.y,
             ra = offset.mount.x, dec = offset.mount.y,

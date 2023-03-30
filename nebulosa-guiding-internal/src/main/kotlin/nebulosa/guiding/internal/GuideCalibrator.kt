@@ -239,7 +239,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                     if (guider.fastRecenterEnabled) {
                         recenterDuration = floor(guider.searchRegion / calibration.xRate).toInt()
-                        if (recenterDuration > device.maxRightAscensionDuration) recenterDuration = device.maxRightAscensionDuration
+                        if (recenterDuration > device.maxRADuration) recenterDuration = device.maxRADuration
                         if (recenterDuration < device.calibrationDuration) recenterDuration = device.calibrationDuration
                     } else {
                         recenterDuration = device.calibrationDuration
@@ -465,7 +465,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                     if (guider.fastRecenterEnabled) {
                         recenterDuration = floor(0.8 * guider.searchRegion / calibration.yRate).toInt()
-                        if (recenterDuration > device.maxDeclinationDuration) recenterDuration = device.maxDeclinationDuration
+                        if (recenterDuration > device.maxDECDuration) recenterDuration = device.maxDECDuration
                         if (recenterDuration < device.calibrationDuration) recenterDuration = device.calibrationDuration
                     } else {
                         recenterDuration = device.calibrationDuration

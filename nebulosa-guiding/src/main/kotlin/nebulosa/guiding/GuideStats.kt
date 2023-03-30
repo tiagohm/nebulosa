@@ -1,15 +1,13 @@
-package nebulosa.guiding.internal
+package nebulosa.guiding
 
-import nebulosa.guiding.GuideDirection
-
-data class GuideHistory(
+data class GuideStats(
     val timestamp: Long = 0L,
     val dx: Double = 0.0,
     val dy: Double = 0.0,
     val ra: Double = 0.0,
     val dec: Double = 0.0,
-    val starSNR: Double = 0.0,
-    val starMass: Double = 0.0,
+    // val starSNR: Double = 0.0,
+    // val starMass: Double = 0.0,
     val raDuration: Int = 0,
     val decDuration: Int = 0,
     val raDirection: GuideDirection = GuideDirection.NONE,
@@ -22,6 +20,6 @@ data class GuideHistory(
 
     companion object {
 
-        @JvmStatic val EMPTY = GuideHistory()
+        @JvmStatic val EMPTY = GuideStats()
     }
 }

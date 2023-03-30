@@ -289,7 +289,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     override fun redraw() {
-        javaFXExecutorService.submit { imageViewer.redraw() }
+        javaFXExecutorService.execute { imageViewer.redraw() }
     }
 
     override fun addFirst(shape: Node) {

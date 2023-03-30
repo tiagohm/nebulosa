@@ -3,6 +3,9 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.atlas.AltitudeChart?>
+<?import nebulosa.desktop.gui.atlas.MoonView?>
+<?import nebulosa.desktop.gui.atlas.SunView?>
 <?import nebulosa.desktop.gui.control.*?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"

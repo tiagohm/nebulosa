@@ -6,6 +6,7 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.star.hfd.FindMode
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
@@ -92,6 +93,9 @@ class MultiStarGuider(
 
     private val guideCalibrator = GuideCalibrator(this)
     private val guideGraph = GuideGraph(this, 100)
+
+    override val stats: List<GuideStats>
+        get() = guideGraph
 
     private val currentPosition
         get() = primaryStar
@@ -575,8 +579,8 @@ class MultiStarGuider(
             val raDecRates = lockPositionShift.shiftRate
 
             if (lockPositionShift.shiftUnit == ShiftUnit.ARCSEC) {
-                val raParity = device.rightAscensionParity
-                val decParity = device.declinationParity
+                val raParity = device.parityRA
+                val decParity = device.parityDEC
                 var x = raDecRates.x
                 var y = raDecRates.y
 
@@ -996,43 +1000,40 @@ class MultiStarGuider(
                 yDistance = yGuideAlgorithm.compute(yDistance)
             }
 
-            if (xDistance != 0.0 || yDistance != 0.0) {
-                val xDirection = if (xDistance > 0.0) GuideDirection.LEFT_WEST else GuideDirection.RIGHT_EAST
-                val requestedXAmount = abs(xDistance / guideCalibrator.xRate).roundToInt()
+            val xDirection = if (xDistance > 0.0) GuideDirection.LEFT_WEST else GuideDirection.RIGHT_EAST
+            val requestedXAmount = abs(xDistance / guideCalibrator.xRate).roundToInt()
 
-                LOG.info("move RA. distance={}, direction={}", xDistance, xDirection)
+            val yDirection = if (yDistance > 0.0) GuideDirection.DOWN_SOUTH else GuideDirection.UP_NORTH
+            val requestedYAmount = abs(yDistance / guideCalibrator.yRate).roundToInt()
 
-                val xResult = moveAxis(xDirection, requestedXAmount, moveOptions)
+            val xResult = moveAxis(xDirection, requestedXAmount, moveOptions)
+            val yResult = moveAxis(yDirection, requestedYAmount, moveOptions)
 
-                if (xResult.status) {
-                    val yDirection = if (yDistance > 0.0) GuideDirection.DOWN_SOUTH else GuideDirection.UP_NORTH
-                    val requestedYAmount = abs(yDistance / guideCalibrator.yRate).roundToInt()
+            CompletableFuture.allOf(xResult, yResult).join()
 
-                    LOG.info("move DEC. distance={}, direction={}", yDistance, yDirection)
+            // TODO: if (m_backlashComp)
+            //     m_backlashComp->ApplyBacklashComp(moveOptions, yDistance, &requestedYAmount);
 
-                    // TODO: if (m_backlashComp)
-                    //     m_backlashComp->ApplyBacklashComp(moveOptions, yDistance, &requestedYAmount);
+            val stats = guideGraph.add(offset, xResult.get().amountMoved, yResult.get().amountMoved, xDirection, yDirection)
 
-                    val yResult = moveAxis(yDirection, requestedYAmount, moveOptions)
-
-                    val history = guideGraph.add(offset, xResult.amountMoved, yResult.amountMoved, xDirection, yDirection)
-                }
-            }
+            listeners.forEach { it.onGuideStep(stats) }
         }
 
         return true
     }
 
-    private fun GuideDevice.moveAxis(direction: GuideDirection, duration: Int, moveOptions: List<MountMoveOption>): MoveResult {
+    private fun GuideDevice.moveAxis(direction: GuideDirection, duration: Int, moveOptions: List<MountMoveOption>): CompletableFuture<MoveResult> {
+        val task = CompletableFuture<MoveResult>()
+
         if (!guidingEnabled && MountMoveOption.MANUAL !in moveOptions) {
             LOG.warn("guiding disabled")
-            return MoveResult.FAILED
+            task.complete(MoveResult.FAILED)
+            return task
         }
 
+        var limitReached = false
         // Compute the actual guide durations.
         var newDuration = duration
-
-        var limitReached = false
 
         when (direction) {
             GuideDirection.UP_NORTH,
@@ -1049,8 +1050,8 @@ class MultiStarGuider(
                         LOG.info("duration set to 0. mode={}", device.declinationGuideMode)
                     }
 
-                    if (newDuration > device.maxDeclinationDuration) {
-                        newDuration = device.maxDeclinationDuration
+                    if (newDuration > device.maxDECDuration) {
+                        newDuration = device.maxDECDuration
                         limitReached = true
                         LOG.info("duration set to maxDeclinationDuration. duration={}", newDuration)
                     }
@@ -1062,8 +1063,8 @@ class MultiStarGuider(
                 if (MountMoveOption.ALGORITHM_RESULT in moveOptions ||
                     MountMoveOption.ALGORITHM_DEDUCE in moveOptions
                 ) {
-                    if (newDuration > device.maxRightAscensionDuration) {
-                        newDuration = device.maxRightAscensionDuration
+                    if (newDuration > device.maxRADuration) {
+                        newDuration = device.maxRADuration
                         limitReached = true
                         LOG.info("duration set to maxRightAscensionDuration. duration={}", newDuration)
                     }
@@ -1072,21 +1073,28 @@ class MultiStarGuider(
             else -> Unit
         }
 
-        return if (newDuration > 0) {
+        if (newDuration > 0) {
             LOG.info("move axis. direction={}, duration={}", direction, newDuration)
 
-            val status = when (direction) {
-                GuideDirection.UP_NORTH -> device.guideNorth(newDuration)
-                GuideDirection.DOWN_SOUTH -> device.guideSouth(newDuration)
-                GuideDirection.LEFT_WEST -> device.guideWest(newDuration)
-                GuideDirection.RIGHT_EAST -> device.guideEast(newDuration)
-                GuideDirection.NONE -> false
+            executor.submit {
+                val status = when (direction) {
+                    GuideDirection.UP_NORTH -> device.guideNorth(newDuration)
+                    GuideDirection.DOWN_SOUTH -> device.guideSouth(newDuration)
+                    GuideDirection.LEFT_WEST -> device.guideWest(newDuration)
+                    GuideDirection.RIGHT_EAST -> device.guideEast(newDuration)
+                    GuideDirection.NONE -> false
+                }
+
+                Thread.sleep(newDuration - 10L)
+
+                task.complete(MoveResult(status, newDuration, limitReached))
             }
 
-            MoveResult(status, newDuration, limitReached)
         } else {
-            MoveResult.FAILED
+            task.complete(MoveResult.FAILED)
         }
+
+        return task
     }
 
     private fun transformMountCoordinatesToCameraCoordinates(mount: Point, camera: Point): Boolean {

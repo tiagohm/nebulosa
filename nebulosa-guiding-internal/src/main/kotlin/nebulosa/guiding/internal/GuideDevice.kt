@@ -28,17 +28,15 @@ interface GuideDevice {
 
     val mountPierSideAtEast: Boolean
 
-    fun awaitIfMountIsBusy()
-
     // Rotator.
 
     val rotatorAngle: Angle
 
     // Guiding.
 
-    val rightAscensionParity: GuideParity
+    val parityRA: GuideParity
 
-    val declinationParity: GuideParity
+    val parityDEC: GuideParity
 
     val calibrationFlipRequiresDecFlip: Boolean
 
@@ -52,9 +50,9 @@ interface GuideDevice {
 
     val declinationGuideMode: DeclinationGuideMode
 
-    val maxDeclinationDuration: Int
+    val maxDECDuration: Int
 
-    val maxRightAscensionDuration: Int
+    val maxRADuration: Int
 
     val guidingRAOnly
         get() = declinationGuideMode == DeclinationGuideMode.NONE

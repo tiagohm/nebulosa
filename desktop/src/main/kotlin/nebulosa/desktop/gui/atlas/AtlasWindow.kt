@@ -190,7 +190,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         civilDusk: DoubleArray, nauticalDusk: DoubleArray, astronomicalDusk: DoubleArray,
         night: DoubleArray,
     ) {
-        javaFXExecutorService.submit {
+        javaFXExecutorService.execute {
             altitudeChart.draw(
                 points, now,
                 civilDawn, nauticalDawn, astronomicalDawn,
@@ -205,7 +205,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     }
 
     override fun updateMoonImage(phase: Double, age: Double, angle: Angle) {
-        javaFXExecutorService.submit { moonView.draw(age, angle) }
+        javaFXExecutorService.execute { moonView.draw(age, angle) }
     }
 
     override fun populatePlanet(planets: List<AtlasView.Planet>) {
@@ -213,14 +213,14 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     }
 
     override fun populateMinorPlanet(minorPlanets: List<AtlasView.MinorPlanet>) {
-        javaFXExecutorService.submit { minorPlanetTableView.items.setAll(minorPlanets) }
+        javaFXExecutorService.execute { minorPlanetTableView.items.setAll(minorPlanets) }
     }
 
     override fun populateStar(stars: List<AtlasView.Star>) {
         val filteredList = FilteredList(FXCollections.observableArrayList(stars))
         val sortedList = SortedList(filteredList)
 
-        javaFXExecutorService.submit {
+        javaFXExecutorService.execute {
             sortedList.comparatorProperty().bind(starTableView.comparatorProperty())
             starTableView.items = sortedList
         }
@@ -230,7 +230,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         val filteredList = FilteredList(FXCollections.observableArrayList(dsos))
         val sortedList = SortedList(filteredList)
 
-        javaFXExecutorService.submit {
+        javaFXExecutorService.execute {
             sortedList.comparatorProperty().bind(dsosTableView.comparatorProperty())
             dsosTableView.items = sortedList
         }
@@ -241,7 +241,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         raJ2000: Angle, decJ2000: Angle,
         constellation: Constellation?,
     ) {
-        javaFXExecutorService.submit {
+        javaFXExecutorService.execute {
             rightAscensionLabel.text = ra.format(AngleFormatter.HMS)
             declinationLabel.text = dec.format(AngleFormatter.SIGNED_DMS)
             rightAscensionJ2000Label.text = raJ2000.format(AngleFormatter.HMS)
@@ -251,18 +251,18 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     }
 
     override fun updateHorizontalCoordinates(az: Angle, alt: Angle) {
-        javaFXExecutorService.submit {
+        javaFXExecutorService.execute {
             azimuthLabel.text = az.normalized.format(AngleFormatter.DMS)
             altitudeLabel.text = alt.format(AngleFormatter.SIGNED_DMS)
         }
     }
 
     override fun updateInfo(bodyName: String) {
-        javaFXExecutorService.submit { nameLabel.text = bodyName }
+        javaFXExecutorService.execute { nameLabel.text = bodyName }
     }
 
     override fun updateRTS(rts: Triple<String, String, String>) {
-        javaFXExecutorService.submit { rtsLabel.text = "%s | %s | %s".format(rts.first, rts.second, rts.third) }
+        javaFXExecutorService.execute { rtsLabel.text = "%s | %s | %s".format(rts.first, rts.second, rts.third) }
     }
 
     override fun clearAltitudeAndCoordinates() {

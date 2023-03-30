@@ -5,6 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import nebulosa.desktop.gui.control.*?>
+<?import nebulosa.desktop.gui.guider.GuiderChart?>
 <?import nebulosa.desktop.gui.guider.StarProfileGraph?>
 <?import nebulosa.desktop.view.guider.*?>
 <?import nebulosa.guiding.internal.DeclinationGuideMode?>
@@ -106,9 +107,108 @@
         <TabPane tabClosingPolicy="UNAVAILABLE">
             <Tab text="Graph">
                 <HBox alignment="CENTER">
-                    <AnchorPane maxWidth="Infinity"
-                                HBox.hgrow="ALWAYS">
-                    </AnchorPane>
+                    <VBox alignment="CENTER"
+                          HBox.hgrow="ALWAYS"
+                          spacing="4.0">
+                        <HBox alignment="CENTER">
+                            <GridPane maxHeight="Infinity">
+                                <HBox.margin>
+                                    <Insets left="2.0"
+                                            right="2.0"/>
+                                </HBox.margin>
+                                <columnConstraints>
+                                    <ColumnConstraints hgrow="ALWAYS"/>
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints vgrow="ALWAYS"
+                                                    percentHeight="9.09"/>
+                                </rowConstraints>
+                                <Label text=" 1.0&quot;"
+                                       styleClass="text-xs"
+                                       GridPane.vgrow="ALWAYS"
+                                       GridPane.valignment="TOP"
+                                       GridPane.rowIndex="0"/>
+                                <Label text=" 0.8&quot;"
+                                       styleClass="text-xs"
+                                       GridPane.vgrow="ALWAYS"
+                                       GridPane.valignment="TOP"
+                                       GridPane.rowIndex="1"/>
+                                <Label text=" 0.6&quot;"
+                                       styleClass="text-xs"
+                                       GridPane.vgrow="ALWAYS"
+                                       GridPane.valignment="TOP"
+                                       GridPane.rowIndex="2"/>
+                                <Label text=" 0.4&quot;"
+                                       styleClass="text-xs"
+                                       GridPane.vgrow="ALWAYS"
+                                       GridPane.valignment="TOP"
+                                       GridPane.rowIndex="3"/>
+                                <Label text=" 0.2&quot;"
+                                       styleClass="text-xs"
+                                       GridPane.vgrow="ALWAYS"
+                                       GridPane.valignment="TOP"
+                                       GridPane.rowIndex="4"/>
+                                <Label text=" 0.0&quot;"
+                                       styleClass="text-xs"
+                                       GridPane.vgrow="ALWAYS"
+                                       GridPane.valignment="CENTER"
+                                       GridPane.rowIndex="5"/>
+                                <Label text="-0.2&quot;"
+                                       styleClass="text-xs"
+                                       GridPane.vgrow="ALWAYS"
+                                       GridPane.valignment="BOTTOM"
+                                       GridPane.rowIndex="6"/>
+                                <Label text="-0.4&quot;"
+                                       styleClass="text-xs"
+                                       GridPane.vgrow="ALWAYS"
+                                       GridPane.valignment="BOTTOM"
+                                       GridPane.rowIndex="7"/>
+                                <Label text="-0.6&quot;"
+                                       styleClass="text-xs"
+                                       GridPane.vgrow="ALWAYS"
+                                       GridPane.valignment="BOTTOM"
+                                       GridPane.rowIndex="8"/>
+                                <Label text="-0.8&quot;"
+                                       styleClass="text-xs"
+                                       GridPane.vgrow="ALWAYS"
+                                       GridPane.valignment="BOTTOM"
+                                       GridPane.rowIndex="9"/>
+                                <Label text="-1.0&quot;"
+                                       styleClass="text-xs"
+                                       GridPane.vgrow="ALWAYS"
+                                       GridPane.valignment="BOTTOM"
+                                       GridPane.rowIndex="10"/>
+                            </GridPane>
+                            <GuiderChart fx:id="guiderChart"
+                                         HBox.hgrow="ALWAYS"
+                                         maxWidth="Infinity"
+                                         maxHeight="186.0"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT"
+                              spacing="16.0">
+                            <VBox.margin>
+                                <Insets left="25.0"/>
+                            </VBox.margin>
+                            <LabeledPane text="RMS RA"
+                                         styleClass="text-sm,text-bold">
+                                <Label fx:id="rmsRALabel"
+                                       text="0.00"
+                                       styleClass="text-md,text-normal"/>
+                            </LabeledPane>
+                            <LabeledPane text="RMS DEC"
+                                         styleClass="text-sm,text-bold">
+                                <Label fx:id="rmsDECLabel"
+                                       text="0.00"
+                                       styleClass="text-md,text-normal"/>
+                            </LabeledPane>
+                            <LabeledPane text="RMS Total"
+                                         styleClass="text-sm,text-bold">
+                                <Label fx:id="rmsTotalLabel"
+                                       text="0.00"
+                                       styleClass="text-md,text-normal"/>
+                            </LabeledPane>
+                        </HBox>
+                    </VBox>
                     <VBox alignment="TOP_CENTER"
                           spacing="2.0">
                         <AnchorPane minWidth="92.0"
@@ -467,6 +567,16 @@
                            minWidth="46.0"
                            styleClass="text-xs,text-bold"/>
                     <Label fx:id="hfdLabel"
+                           text="0.00"
+                           alignment="CENTER_RIGHT"
+                           minWidth="46.0"
+                           styleClass="text-xs"/>
+                </HBox>
+                <HBox spacing="1.0">
+                    <Label text="SNR:"
+                           minWidth="46.0"
+                           styleClass="text-xs,text-bold"/>
+                    <Label fx:id="snrLabel"
                            text="0.00"
                            alignment="CENTER_RIGHT"
                            minWidth="46.0"

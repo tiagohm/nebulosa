@@ -16,7 +16,6 @@ internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : W
         val duration = guider.device.cameraExposure
 
         if (guider.pauseType != PauseType.FULL) {
-            guider.device.awaitIfMountIsBusy()
             LOG.info("starting frame capture. exposure={} ms", duration)
             guider.device.capture(duration)
             val frame = guider.device.cameraImage

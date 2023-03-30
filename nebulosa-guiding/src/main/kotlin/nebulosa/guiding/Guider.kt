@@ -12,6 +12,8 @@ interface Guider : Iterable<GuidePoint> {
 
     val image: Image?
 
+    val stats: List<GuideStats>
+
     fun autoSelect(): Boolean
 
     fun selectGuideStar(x: Double, y: Double): Boolean

@@ -22,8 +22,8 @@ internal open class AxisStats {
     }
 
     protected val guidingEntries = LinkedList<StarDisplacement>()
-    protected var prevMove = 0.0
-    protected var prevPosition = 0.0
+    private var prevMove = 0.0
+    private var prevPosition = 0.0
     protected var sumX = 0.0
     protected var sumY = 0.0
     protected var sumXY = 0.0
@@ -65,10 +65,10 @@ internal open class AxisStats {
             else (sortedEntries[ctr].starPos + sortedEntries[ctr - 1].starPos) / 2.0
         }
 
-    var maxDisplacement = Double.MAX_VALUE
+    var maxDisplacement = Double.MIN_VALUE
         protected set
 
-    var minDisplacement = Double.MIN_VALUE
+    var minDisplacement = Double.MAX_VALUE
         protected set
 
     val count
