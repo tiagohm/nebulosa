@@ -9,6 +9,7 @@ import javafx.scene.image.PixelFormat
 import javafx.scene.image.WritableImage
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
+import javafx.scene.input.ScrollEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ImageViewer
@@ -61,6 +62,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML private lateinit var rmsRALabel: Label
     @FXML private lateinit var rmsDECLabel: Label
     @FXML private lateinit var rmsTotalLabel: Label
+    @FXML private lateinit var guiderChartTicks: GuiderChartTicks
 
     private val starProfileData = IntArray(64 * 64)
     private val starProfileIndicator = StarProfileIndicator()
@@ -169,6 +171,17 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         guiderManager.stopGuiding()
     }
 
+    @FXML
+    private fun changeGuideChartScale(event: ScrollEvent) {
+        val delta = if (event.deltaY == 0.0 && event.deltaX != 0.0) event.deltaX else event.deltaY
+
+        if (delta > 0) guiderChartTicks.incrementScale()
+        else if (delta < 0) guiderChartTicks.decrementScale()
+        else return
+
+        guiderChart.changeScale(guiderChartTicks.scale.toDouble())
+    }
+
     override fun updateStatus(text: String) {
         javaFXExecutorService.execute { statusIcon.text = text }
     }
@@ -213,9 +226,9 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
     override fun updateGraphInfo(rmsRA: Double, rmsDEC: Double, rmsTotal: Double, pixelScale: Double) {
         javaFXExecutorService.execute {
-            rmsRALabel.text = "%.2f px | %.2f \"".format(rmsRA, rmsRA * pixelScale)
-            rmsDECLabel.text = "%.2f px | %.2f \"".format(rmsDEC, rmsDEC * pixelScale)
-            rmsTotalLabel.text = "%.2f px | %.2f \"".format(rmsTotal, rmsTotal * pixelScale)
+            rmsRALabel.text = "%.2f px | %.2f\"".format(rmsRA, rmsRA * pixelScale)
+            rmsDECLabel.text = "%.2f px | %.2f\"".format(rmsDEC, rmsDEC * pixelScale)
+            rmsTotalLabel.text = "%.2f px | %.2f\"".format(rmsTotal, rmsTotal * pixelScale)
         }
     }
 
@@ -255,4 +268,6 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
         override fun fromString(text: String?) = null
     }
+
+
 }

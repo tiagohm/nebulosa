@@ -2,12 +2,29 @@
 
 <?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.control.*?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import nebulosa.desktop.gui.control.ImageButton?>
+<?import nebulosa.desktop.gui.control.ImageViewer?>
+<?import nebulosa.desktop.gui.control.LabeledPane?>
+<?import nebulosa.desktop.gui.control.MaterialIcon?>
+<?import nebulosa.desktop.gui.control.MaterialIconButton?>
+<?import nebulosa.desktop.gui.control.SwitchSegmentedButton?>
+<?import nebulosa.desktop.gui.control.TwoStateButton?>
 <?import nebulosa.desktop.gui.guider.GuiderChart?>
+<?import nebulosa.desktop.gui.guider.GuiderChartTicks?>
 <?import nebulosa.desktop.gui.guider.StarProfileGraph?>
-<?import nebulosa.desktop.view.guider.*?>
+<?import nebulosa.desktop.view.guider.GuideAlgorithmType?>
 <?import nebulosa.guiding.internal.DeclinationGuideMode?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
@@ -43,7 +60,7 @@
                   GridPane.columnIndex="0">
                 <LabeledPane text="Guiding camera"
                              GridPane.fillWidth="true"
-                             styleClass="text-bold">
+                             textStyleClass="text-bold">
                     <ChoiceBox fx:id="guideCameraChoiceBox"
                                prefWidth="200.0"
                                maxWidth="Infinity"/>
@@ -65,7 +82,7 @@
                   GridPane.columnIndex="1">
                 <LabeledPane text="Guiding mount"
                              GridPane.fillWidth="true"
-                             styleClass="text-bold">
+                             textStyleClass="text-bold">
                     <ChoiceBox fx:id="guideMountChoiceBox"
                                prefWidth="200.0"
                                maxWidth="Infinity"/>
@@ -87,7 +104,7 @@
                   GridPane.columnIndex="2">
                 <LabeledPane text="Guide output"
                              GridPane.fillWidth="true"
-                             styleClass="text-bold">
+                             textStyleClass="text-bold">
                     <ChoiceBox fx:id="guideOutputChoiceBox"
                                prefWidth="200.0"
                                maxWidth="Infinity"/>
@@ -111,101 +128,45 @@
                           HBox.hgrow="ALWAYS"
                           spacing="4.0">
                         <HBox alignment="CENTER">
-                            <GridPane maxHeight="Infinity">
+                            <GuiderChartTicks fx:id="guiderChartTicks"
+                                              amount="11"
+                                              minScale="0.5"
+                                              maxScale="16.0"
+                                              minValue="-1.0"
+                                              maxValue="1.0">
                                 <HBox.margin>
                                     <Insets left="2.0"
                                             right="2.0"/>
                                 </HBox.margin>
-                                <columnConstraints>
-                                    <ColumnConstraints hgrow="ALWAYS"/>
-                                </columnConstraints>
-                                <rowConstraints>
-                                    <RowConstraints vgrow="ALWAYS"
-                                                    percentHeight="9.09"/>
-                                </rowConstraints>
-                                <Label text=" 1.0&quot;"
-                                       styleClass="text-xs"
-                                       GridPane.vgrow="ALWAYS"
-                                       GridPane.valignment="TOP"
-                                       GridPane.rowIndex="0"/>
-                                <Label text=" 0.8&quot;"
-                                       styleClass="text-xs"
-                                       GridPane.vgrow="ALWAYS"
-                                       GridPane.valignment="TOP"
-                                       GridPane.rowIndex="1"/>
-                                <Label text=" 0.6&quot;"
-                                       styleClass="text-xs"
-                                       GridPane.vgrow="ALWAYS"
-                                       GridPane.valignment="TOP"
-                                       GridPane.rowIndex="2"/>
-                                <Label text=" 0.4&quot;"
-                                       styleClass="text-xs"
-                                       GridPane.vgrow="ALWAYS"
-                                       GridPane.valignment="TOP"
-                                       GridPane.rowIndex="3"/>
-                                <Label text=" 0.2&quot;"
-                                       styleClass="text-xs"
-                                       GridPane.vgrow="ALWAYS"
-                                       GridPane.valignment="TOP"
-                                       GridPane.rowIndex="4"/>
-                                <Label text=" 0.0&quot;"
-                                       styleClass="text-xs"
-                                       GridPane.vgrow="ALWAYS"
-                                       GridPane.valignment="CENTER"
-                                       GridPane.rowIndex="5"/>
-                                <Label text="-0.2&quot;"
-                                       styleClass="text-xs"
-                                       GridPane.vgrow="ALWAYS"
-                                       GridPane.valignment="BOTTOM"
-                                       GridPane.rowIndex="6"/>
-                                <Label text="-0.4&quot;"
-                                       styleClass="text-xs"
-                                       GridPane.vgrow="ALWAYS"
-                                       GridPane.valignment="BOTTOM"
-                                       GridPane.rowIndex="7"/>
-                                <Label text="-0.6&quot;"
-                                       styleClass="text-xs"
-                                       GridPane.vgrow="ALWAYS"
-                                       GridPane.valignment="BOTTOM"
-                                       GridPane.rowIndex="8"/>
-                                <Label text="-0.8&quot;"
-                                       styleClass="text-xs"
-                                       GridPane.vgrow="ALWAYS"
-                                       GridPane.valignment="BOTTOM"
-                                       GridPane.rowIndex="9"/>
-                                <Label text="-1.0&quot;"
-                                       styleClass="text-xs"
-                                       GridPane.vgrow="ALWAYS"
-                                       GridPane.valignment="BOTTOM"
-                                       GridPane.rowIndex="10"/>
-                            </GridPane>
+                            </GuiderChartTicks>
                             <GuiderChart fx:id="guiderChart"
                                          HBox.hgrow="ALWAYS"
                                          maxWidth="Infinity"
-                                         maxHeight="186.0"/>
+                                         maxHeight="186.0"
+                                         onScroll="#changeGuideChartScale"/>
                         </HBox>
                         <HBox alignment="CENTER_LEFT"
                               spacing="16.0">
                             <VBox.margin>
-                                <Insets left="25.0"/>
+                                <Insets left="32.0"/>
                             </VBox.margin>
                             <LabeledPane text="RMS RA"
-                                         styleClass="text-sm,text-bold">
+                                         textStyleClass="text-xs,text-bold">
                                 <Label fx:id="rmsRALabel"
-                                       text="0.00"
-                                       styleClass="text-md,text-normal"/>
+                                       text="0.00 px | 0.00&quot;"
+                                       styleClass="text-sm"/>
                             </LabeledPane>
                             <LabeledPane text="RMS DEC"
-                                         styleClass="text-sm,text-bold">
+                                         textStyleClass="text-xs,text-bold">
                                 <Label fx:id="rmsDECLabel"
-                                       text="0.00"
-                                       styleClass="text-md,text-normal"/>
+                                       text="0.00 px | 0.00&quot;"
+                                       styleClass="text-sm"/>
                             </LabeledPane>
                             <LabeledPane text="RMS Total"
-                                         styleClass="text-sm,text-bold">
+                                         textStyleClass="text-xs,text-bold">
                                 <Label fx:id="rmsTotalLabel"
-                                       text="0.00"
-                                       styleClass="text-md,text-normal"/>
+                                       text="0.00 px | 0.00&quot;"
+                                       styleClass="text-sm"/>
                             </LabeledPane>
                         </HBox>
                     </VBox>
@@ -257,7 +218,7 @@
                         <ColumnConstraints hgrow="ALWAYS"/>
                     </columnConstraints>
                     <LabeledPane text="Algorithm"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="0"
                                  GridPane.columnIndex="0">
                         <ChoiceBox fx:id="algorithmRAChoiceBox"
@@ -273,7 +234,7 @@
                         </ChoiceBox>
                     </LabeledPane>
                     <LabeledPane text="Max Duration (ms)"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="0"
                                  GridPane.columnIndex="1">
                         <Spinner fx:id="maxDurationRASpinner"
@@ -285,7 +246,7 @@
                                  max="8000.0"/>
                     </LabeledPane>
                     <LabeledPane text="Hysteresis (%)"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="1"
                                  GridPane.columnIndex="0">
                         <Spinner fx:id="hysteresisRASpinner"
@@ -297,7 +258,7 @@
                                  max="99.0"/>
                     </LabeledPane>
                     <LabeledPane text="Aggressiveness (%)"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="1"
                                  GridPane.columnIndex="1">
                         <Spinner fx:id="aggressivenessRASpinner"
@@ -309,7 +270,7 @@
                                  max="200.0"/>
                     </LabeledPane>
                     <LabeledPane text="Minimum Move (px)"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="1"
                                  GridPane.columnIndex="2">
                         <Spinner fx:id="minimumMoveRASpinner"
@@ -321,7 +282,7 @@
                                  max="20.0"/>
                     </LabeledPane>
                     <LabeledPane text="Slope Weight"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="1"
                                  GridPane.columnIndex="3">
                         <Spinner fx:id="slopeWeightRASpinner"
@@ -333,7 +294,7 @@
                                  max="20.0"/>
                     </LabeledPane>
                     <LabeledPane text="Fast Switch for Large Deflections"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="2"
                                  GridPane.columnIndex="0">
                         <SwitchSegmentedButton fx:id="fastSwitchForLargeDeflectionsRASwitch"/>
@@ -350,7 +311,7 @@
                         <ColumnConstraints hgrow="ALWAYS"/>
                     </columnConstraints>
                     <LabeledPane text="Algorithm"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="0"
                                  GridPane.columnIndex="0">
                         <ChoiceBox fx:id="algorithmDECChoiceBox"
@@ -366,7 +327,7 @@
                         </ChoiceBox>
                     </LabeledPane>
                     <LabeledPane text="Max Duration (ms)"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="0"
                                  GridPane.columnIndex="1">
                         <Spinner fx:id="maxDurationDECSpinner"
@@ -378,7 +339,7 @@
                                  max="8000.0"/>
                     </LabeledPane>
                     <LabeledPane text="Guide Mode"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="0"
                                  GridPane.columnIndex="2">
                         <ChoiceBox fx:id="guideModeDECChoiceBox"
@@ -394,7 +355,7 @@
                         </ChoiceBox>
                     </LabeledPane>
                     <LabeledPane text="Hysteresis (%)"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="1"
                                  GridPane.columnIndex="0">
                         <Spinner fx:id="hysteresisDECSpinner"
@@ -406,7 +367,7 @@
                                  max="99.0"/>
                     </LabeledPane>
                     <LabeledPane text="Aggressiveness (%)"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="1"
                                  GridPane.columnIndex="1">
                         <Spinner fx:id="aggressivenessDECSpinner"
@@ -418,7 +379,7 @@
                                  max="200.0"/>
                     </LabeledPane>
                     <LabeledPane text="Minimum Move (px)"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="1"
                                  GridPane.columnIndex="2">
                         <Spinner fx:id="minimumMoveDECSpinner"
@@ -430,7 +391,7 @@
                                  max="20.0"/>
                     </LabeledPane>
                     <LabeledPane text="Slope Weight"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="1"
                                  GridPane.columnIndex="3">
                         <Spinner fx:id="slopeWeightDECSpinner"
@@ -442,19 +403,19 @@
                                  max="20.0"/>
                     </LabeledPane>
                     <LabeledPane text="Fast Switch for Large Deflections"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="2"
                                  GridPane.columnIndex="0">
                         <SwitchSegmentedButton fx:id="fastSwitchForLargeDeflectionsDECSwitch"/>
                     </LabeledPane>
                     <LabeledPane text="Backlash Compensation"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="3"
                                  GridPane.columnIndex="0">
                         <SwitchSegmentedButton fx:id="backlashCompensationSwitch"/>
                     </LabeledPane>
                     <LabeledPane text="Backlash Amount (ms)"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="3"
                                  GridPane.columnIndex="1">
                         <Spinner fx:id="backlashAmountSpinner"
@@ -466,7 +427,7 @@
                                  max="8000.0"/>
                     </LabeledPane>
                     <LabeledPane text="Backlash Min (ms)"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="3"
                                  GridPane.columnIndex="2">
                         <Spinner fx:id="backlashMinSpinner"
@@ -478,7 +439,7 @@
                                  max="8000.0"/>
                     </LabeledPane>
                     <LabeledPane text="Backlash Max (ms)"
-                                 styleClass="text-bold"
+                                 textStyleClass="text-bold"
                                  GridPane.rowIndex="3"
                                  GridPane.columnIndex="3">
                         <Spinner fx:id="backlashMaxSpinner"
@@ -500,7 +461,7 @@
                   StackPane.alignment="CENTER"
                   spacing="16.0">
                 <LabeledPane text="Looping"
-                             styleClass="text-bold">
+                             textStyleClass="text-bold">
                     <HBox alignment="CENTER"
                           spacing="2.0">
                         <MaterialIconButton fx:id="startLoopingButton"
@@ -516,7 +477,7 @@
                     </HBox>
                 </LabeledPane>
                 <LabeledPane text="Guiding"
-                             styleClass="text-bold">
+                             textStyleClass="text-bold">
                     <HBox alignment="CENTER"
                           spacing="2.0">
                         <MaterialIconButton fx:id="startGuidingButton"
@@ -545,41 +506,49 @@
                 <HBox spacing="1.0">
                     <Label text="Peak:"
                            minWidth="46.0"
+                           maxWidth="46.0"
                            styleClass="text-xs,text-bold"/>
                     <Label fx:id="peakLabel"
                            text="0"
                            alignment="CENTER_RIGHT"
                            minWidth="46.0"
+                           maxWidth="46.0"
                            styleClass="text-xs"/>
                 </HBox>
                 <HBox spacing="1.0">
                     <Label text="FWHM:"
                            minWidth="46.0"
+                           maxWidth="46.0"
                            styleClass="text-xs,text-bold"/>
                     <Label fx:id="fwhmLabel"
                            text="0.00"
                            alignment="CENTER_RIGHT"
                            minWidth="46.0"
+                           maxWidth="46.0"
                            styleClass="text-xs"/>
                 </HBox>
                 <HBox spacing="1.0">
                     <Label text="HFD:"
                            minWidth="46.0"
+                           maxWidth="46.0"
                            styleClass="text-xs,text-bold"/>
                     <Label fx:id="hfdLabel"
                            text="0.00"
                            alignment="CENTER_RIGHT"
                            minWidth="46.0"
+                           maxWidth="46.0"
                            styleClass="text-xs"/>
                 </HBox>
                 <HBox spacing="1.0">
                     <Label text="SNR:"
                            minWidth="46.0"
+                           maxWidth="46.0"
                            styleClass="text-xs,text-bold"/>
                     <Label fx:id="snrLabel"
                            text="0.00"
                            alignment="CENTER_RIGHT"
                            minWidth="46.0"
+                           maxWidth="46.0"
                            styleClass="text-xs"/>
                 </HBox>
             </VBox>

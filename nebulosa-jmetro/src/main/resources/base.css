@@ -152,7 +152,6 @@ Text {
     /* -fx-font-family: "Roboto"; */
     -fx-font-size: 1em; /* 12 */
     -fx-text-fill: text_color;
-    -fx-font-weight: normal;
 }
 
 .button:hover,
@@ -1182,7 +1181,6 @@ TextField:readonly {
     -fx-background-color: spinner_background_color;
     -fx-background-insets: 0;
     -fx-background-radius: 0;
-    -fx-font-weight: normal;
 }
 
 /* TODO: Below doesn't work when spinner is in SPLIT_ARROWS_HORIZONTAL and is not focused
@@ -1449,7 +1447,6 @@ TextField:readonly {
 
     /* -fx-font-family: "Roboto"; */
     -fx-font-size: 1em; /* 12 */
-    -fx-font-weight: normal;
 }
 
 .choice-box > .open-button {

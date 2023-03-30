@@ -15,6 +15,7 @@ class GuiderChart : AnchorPane() {
     private val decSerieItems = ArrayList<XYItem>(100)
     private val raDurationSerieItems = ArrayList<XYItem>(100)
     private val decDurationSerieItems = ArrayList<XYItem>(100)
+    private var scale = 1.0
 
     private val raSerie = XYSeriesBuilder.create()
         .chartType(ChartType.LINE)
@@ -52,7 +53,7 @@ class GuiderChart : AnchorPane() {
         .type(AxisType.LINEAR)
         .prefHeight(0.0)
         .minValue(0.0)
-        .maxValue(100.0)
+        .maxValue(100.0) // status size is always 100.
         .autoScale(true)
         .axisColor(Color.web("#607D8B50"))
         .tickLabelsVisible(false)
@@ -114,7 +115,6 @@ class GuiderChart : AnchorPane() {
         stats: List<GuideStats>,
         maxRADuration: Double, maxDECDuration: Double,
     ) {
-        // stats is always max 100.
         if (stats.size > raSerieItems.size) {
             val x = raSerieItems.size.toDouble()
             raSerieItems.add(XYChartItem(x, 0.0))
@@ -124,10 +124,27 @@ class GuiderChart : AnchorPane() {
         }
 
         for (i in stats.indices) {
-            raSerieItems[i].y = stats[i].ra
-            decSerieItems[i].y = stats[i].dec
-            raDurationSerieItems[i].y = stats[i].raDuration / maxRADuration
-            decDurationSerieItems[i].y = stats[i].decDuration / maxDECDuration
+            raSerieItems[i].y = stats[i].ra / scale
+            decSerieItems[i].y = stats[i].dec / scale
+            raDurationSerieItems[i].y = (stats[i].raDuration / maxRADuration) / scale
+            decDurationSerieItems[i].y = (stats[i].decDuration / maxDECDuration) / scale
+        }
+
+        raSerie.items.setAll(raSerieItems)
+        decSerie.items.setAll(decSerieItems)
+        raDurationSerie.items.setAll(raDurationSerieItems)
+        decDurationSerie.items.setAll(decDurationSerieItems)
+    }
+
+    fun changeScale(scale: Double) {
+        val factor = this.scale / scale
+        this.scale = scale
+
+        for (i in raSerieItems.indices) {
+            raSerieItems[i].y *= factor
+            decSerieItems[i].y *= factor
+            raDurationSerieItems[i].y *= factor
+            decDurationSerieItems[i].y *= factor
         }
 
         raSerie.items.setAll(raSerieItems)
