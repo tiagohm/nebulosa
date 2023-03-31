@@ -4,14 +4,12 @@ import javafx.beans.property.SimpleBooleanProperty
 import nebulosa.desktop.logic.DevicePropertyListener
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
+import nebulosa.desktop.view.guider.GuideAlgorithmType
 import nebulosa.desktop.view.guider.GuiderView
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.guiding.*
-import nebulosa.guiding.internal.DeclinationGuideMode
-import nebulosa.guiding.internal.GuideDevice
-import nebulosa.guiding.internal.HysteresisGuideAlgorithm
-import nebulosa.guiding.internal.MultiStarGuider
+import nebulosa.guiding.internal.*
 import nebulosa.imaging.Image
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.Camera
@@ -21,7 +19,6 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.PierSide
 import nebulosa.math.Angle
 import nom.tam.fits.Fits
-import org.greenrobot.eventbus.EventBus
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -36,18 +33,26 @@ class GuiderManager(
 ) : GuideDevice, GuiderListener {
 
     @Autowired private lateinit var preferences: Preferences
-    @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var imageViewOpener: ImageView.Opener
     @Autowired private lateinit var guiderExecutorService: ExecutorService
     @Autowired private lateinit var javaFXExecutorService: ExecutorService
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
 
     private val guideCameraPropertyListener = GuideCameraPropertyListener()
-    private val guideOutputPropertyListener = GuideOutputPropertyListener()
     private lateinit var guider: Guider
     private lateinit var guiderIndicator: GuiderIndicator
     private val imageQueue = LinkedBlockingQueue<Image>()
     @Volatile private var imageView: ImageView? = null
+
+    private val xGuideAlgorithms = hashMapOf(
+        GuideAlgorithmType.HYSTERESIS to HysteresisGuideAlgorithm(GuideAxis.RA_X),
+        GuideAlgorithmType.LOW_PASS to LowPassGuideAlgorithm(GuideAxis.RA_X),
+    )
+
+    private val yGuideAlgorithms = hashMapOf(
+        GuideAlgorithmType.HYSTERESIS to HysteresisGuideAlgorithm(GuideAxis.DEC_Y),
+        GuideAlgorithmType.LOW_PASS to LowPassGuideAlgorithm(GuideAxis.DEC_Y),
+    )
 
     val loopingProperty = SimpleBooleanProperty()
     val guidingProperty = SimpleBooleanProperty()
@@ -81,16 +86,12 @@ class GuiderManager(
 
     fun initialize() {
         selectedGuideCamera.registerListener(guideCameraPropertyListener)
-        // selectedGuiderMount.registerListener(this)
-        selectedGuideOutput.registerListener(guideOutputPropertyListener)
 
         with(MultiStarGuider(this, guiderExecutorService)) {
             registerListener(this@GuiderManager)
             guider = this
             guiderIndicator = GuiderIndicator(this)
         }
-
-        // eventBus.register(this)
     }
 
     fun connectGuideCamera() {
@@ -140,6 +141,9 @@ class GuiderManager(
 
     fun startGuiding(forceCalibration: Boolean = false) {
         guidingProperty.set(true)
+
+        xGuideAlgorithms.values.forEach(GuideAlgorithm::reset)
+        yGuideAlgorithms.values.forEach(GuideAlgorithm::reset)
 
         if (forceCalibration) {
             LOG.info("starting guiding with force calibration")
@@ -205,7 +209,7 @@ class GuiderManager(
         get() = mount?.rightAscension ?: Angle.NaN
 
     override val mountRightAscensionGuideRate
-        get() = 0.5
+        get() = 0.5 // TODO: Implement Guide Rate property on mount device.
 
     override val mountDeclinationGuideRate
         get() = 0.5
@@ -216,34 +220,40 @@ class GuiderManager(
     // Rotator.
 
     override val rotatorAngle
-        get() = Angle.ZERO
+        get() = Angle.ZERO // TODO: Pass the rotator angle when implement it.
 
     // Guiding.
 
     override var calibrationFlipRequiresDecFlip = false
 
-    override var calibrationDuration = GuideDevice.DEFAULT_CALIBRATION_DURATION
+    override val calibrationStep
+        get() = view.calibrationStep
 
-    override var parityRA = GuideParity.UNCHANGED
-
-    override var parityDEC = GuideParity.UNCHANGED
-
-    override var declinationGuideMode = DeclinationGuideMode.AUTO
+    override val declinationGuideMode
+        get() = view.guideModeDEC
 
     override var guidingEnabled = true
 
-    override var maxDECDuration = 2000
+    override val maxDECDuration
+        get() = view.maxDurationDEC
 
-    override var maxRADuration = 2000
+    override val maxRADuration
+        get() = view.maxDurationRA
 
     override val calibrationDistance
         get() = 25 // px
 
-    override var xGuideAlgorithm = HysteresisGuideAlgorithm(GuideAxis.RA_X)
+    override val xGuideAlgorithm
+        get() = xGuideAlgorithms[view.algorithmRA]!!.updateParameters()
 
-    override var yGuideAlgorithm = HysteresisGuideAlgorithm(GuideAxis.DEC_Y)
+    override val yGuideAlgorithm
+        get() = yGuideAlgorithms[view.algorithmDEC]!!.updateParameters()
 
-    override var declinationCompensationEnabled = true
+    override val useDECCompensation
+        get() = view.useDECCompensation
+
+    override val assumeDECOrthogonalToRA
+        get() = view.assumeDECOrthogonalToRA
 
     override fun guideNorth(duration: Int): Boolean {
         val guideOutput = guideOutput ?: return false
@@ -346,6 +356,25 @@ class GuiderManager(
         view.updateGraphInfo(stats.rmsRA, stats.rmsDEC, rmsTotal, cameraPixelScale)
     }
 
+    private fun GuideAlgorithm.updateParameters(): GuideAlgorithm {
+        minMove = if (axis == GuideAxis.RA_X) view.minimumMoveRA else view.minimumMoveDEC
+        val hysteresisRADEC = if (axis == GuideAxis.RA_X) view.hysteresisRA else view.hysteresisDEC
+        val aggressivenessRADEC = if (axis == GuideAxis.RA_X) view.aggressivenessRA else view.aggressivenessDEC
+        val slopeWeightRADEC = if (axis == GuideAxis.RA_X) view.slopeWeightRA else view.slopeWeightDEC
+
+        when (this) {
+            is HysteresisGuideAlgorithm -> {
+                hysteresis = hysteresisRADEC
+                aggression = aggressivenessRADEC
+            }
+            is LowPassGuideAlgorithm -> {
+                slopeWeight = slopeWeightRADEC
+            }
+        }
+
+        return this
+    }
+
     private inner class GuideCameraPropertyListener : DevicePropertyListener<Camera> {
 
         override fun onChanged(prev: Camera?, device: Camera) {}
@@ -369,15 +398,6 @@ class GuiderManager(
                 }
             }
         }
-    }
-
-    private inner class GuideOutputPropertyListener : DevicePropertyListener<GuideOutput> {
-
-        override fun onChanged(prev: GuideOutput?, device: GuideOutput) {}
-
-        override fun onReset() {}
-
-        override fun onDeviceEvent(event: DeviceEvent<*>, device: GuideOutput) {}
     }
 
     companion object {

@@ -200,7 +200,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                         calibrationStatus(GuideDirection.LEFT_WEST)
 
-                        device.guideWest(device.calibrationDuration)
+                        device.guideWest(device.calibrationStep)
 
                         break
                     }
@@ -209,7 +209,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                     calibration = calibration.copy(
                         xAngle = calibrationStartingLocation.angle(currentLocation),
-                        xRate = dist / (calibrationSteps * device.calibrationDuration),
+                        xRate = dist / (calibrationSteps * device.calibrationStep),
                         raGuideParity = GuideParity.UNKNOWN,
                     )
 
@@ -235,14 +235,14 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     // For GO_EAST recenterRemaining contains the total remaining duration.
                     // Choose the largest pulse size that will not lose the guide star or exceed
                     // the user-specified max pulse.
-                    recenterRemaining = calibrationSteps * device.calibrationDuration
+                    recenterRemaining = calibrationSteps * device.calibrationStep
 
                     if (guider.fastRecenterEnabled) {
                         recenterDuration = floor(guider.searchRegion / calibration.xRate).toInt()
                         if (recenterDuration > device.maxRADuration) recenterDuration = device.maxRADuration
-                        if (recenterDuration < device.calibrationDuration) recenterDuration = device.calibrationDuration
+                        if (recenterDuration < device.calibrationStep) recenterDuration = device.calibrationStep
                     } else {
-                        recenterDuration = device.calibrationDuration
+                        recenterDuration = device.calibrationStep
                     }
 
                     calibrationSteps = (recenterRemaining + recenterDuration - 1) / recenterDuration
@@ -293,7 +293,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     calibrationState = CalibrationState.CLEAR_BACKLASH
                     blMarkerPoint.set(currentLocation)
                     calibrationStartingCoords.set(device.mountRightAscension.hours, device.mountDeclination.degrees)
-                    blExpectedBacklashStep = calibration.xRate * device.calibrationDuration * 0.6
+                    blExpectedBacklashStep = calibration.xRate * device.calibrationStep * 0.6
 
                     val raSpeed = device.mountRightAscensionGuideRate
                     val decSpeed = device.mountDeclinationGuideRate
@@ -302,7 +302,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         blExpectedBacklashStep *= decSpeed / raSpeed
                     }
 
-                    blMaxClearingPulses = max(8, BL_MAX_CLEARING_TIME / device.calibrationDuration)
+                    blMaxClearingPulses = max(8, BL_MAX_CLEARING_TIME / device.calibrationStep)
                     blLastCumDistance = 0.0
                     blAcceptedMoves = 0
 
@@ -316,8 +316,8 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     // pixels without any direction reversals.
                     if (calibrationSteps == 0) {
                         // Get things moving with the first clearing pulse.
-                        LOG.info("starting north clearing using pulse width of {}", device.calibrationDuration)
-                        device.guideNorth(device.calibrationDuration)
+                        LOG.info("starting north clearing using pulse width of {}", device.calibrationStep)
+                        device.guideNorth(device.calibrationStep)
                         calibrationSteps = 1
                         calibrationStatus(GuideDirection.UP_NORTH)
                         break
@@ -344,7 +344,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     if (blAcceptedMoves < BL_MIN_COUNT) {
                         if (calibrationSteps < blMaxClearingPulses && blCumDelta < distCrit) {
                             // Still have attempts left, haven't moved the star by 25 px yet.
-                            device.guideNorth(device.calibrationDuration)
+                            device.guideNorth(device.calibrationStep)
 
                             calibrationSteps++
 
@@ -408,7 +408,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                         calibrationStatus(GuideDirection.UP_NORTH)
 
-                        device.guideNorth(device.calibrationDuration)
+                        device.guideNorth(device.calibrationStep)
 
                         break
                     }
@@ -416,7 +416,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     // This calculation is reversed from the ra calculation, because
                     // that one was calibrating WEST, but the angle is really relative
                     // to EAST.
-                    if (assumeOrthogonal) {
+                    if (device.assumeDECOrthogonalToRA) {
                         val a1 = (calibration.xAngle + PIOVERTWO).normalized - PI
                         val a2 = (calibration.xAngle - PIOVERTWO).normalized - PI
                         val ya = currentLocation.angle(calibrationStartingLocation)
@@ -424,7 +424,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         val a2y = (a2 - ya).normalized - PI
                         val yAngle = if (abs(a1y.value) < abs(a2y.value)) a1 else a2
                         val decDist = dist * (yAngle - calibration.yAngle).cos
-                        val yRate = decDist / (calibrationSteps * device.calibrationDuration)
+                        val yRate = decDist / (calibrationSteps * device.calibrationStep)
 
                         calibration = calibration.copy(yAngle = yAngle, yRate = yRate, decGuideParity = GuideParity.UNKNOWN)
 
@@ -434,7 +434,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         )
                     } else {
                         val yAngle = currentLocation.angle(calibrationStartingLocation)
-                        val yRate = dist / (calibrationSteps * device.calibrationDuration)
+                        val yRate = dist / (calibrationSteps * device.calibrationStep)
 
                         calibration = calibration.copy(yAngle = yAngle, yRate = yRate, decGuideParity = GuideParity.UNKNOWN)
                     }
@@ -461,14 +461,14 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     // For GO_SOUTH m_recenterRemaining contains the total remaining duration.
                     // Choose the largest pulse size that will not lose the guide star or exceed
                     // the user-specified max pulse.
-                    recenterRemaining = calibrationSteps * device.calibrationDuration
+                    recenterRemaining = calibrationSteps * device.calibrationStep
 
                     if (guider.fastRecenterEnabled) {
                         recenterDuration = floor(0.8 * guider.searchRegion / calibration.yRate).toInt()
                         if (recenterDuration > device.maxDECDuration) recenterDuration = device.maxDECDuration
-                        if (recenterDuration < device.calibrationDuration) recenterDuration = device.calibrationDuration
+                        if (recenterDuration < device.calibrationStep) recenterDuration = device.calibrationStep
                     } else {
-                        recenterDuration = device.calibrationDuration
+                        recenterDuration = device.calibrationStep
                     }
 
                     calibrationSteps = (recenterRemaining + recenterDuration - 1) / recenterDuration
@@ -536,7 +536,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                                 decAmt = min(decAmt, guider.searchRegion)
                                 var pulseAmt = floor(decAmt / calibration.yRate).toInt()
                                 // Be conservative, use durations that pushed us north in the first place.
-                                if (pulseAmt > device.calibrationDuration) pulseAmt = device.calibrationDuration
+                                if (pulseAmt > device.calibrationStep) pulseAmt = device.calibrationStep
 
                                 LOG.info("sending nudge South pulse of duration {} ms", pulseAmt)
 
@@ -646,7 +646,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
         var declinationCompensated = false
 
         if (declination != calibration.declination) {
-            if (!device.declinationCompensationEnabled) {
+            if (!device.useDECCompensation) {
                 LOG.info("skipping declination compensation")
             } else {
                 // Don't do a full dec comp too close to pole - xRate will become

@@ -8,7 +8,7 @@ interface GuiderListener {
 
     fun onStarSelected(star: StarPoint)
 
-    fun onGuidingDithered(dx: Double, dy: Double, mountCoordinate: Boolean)
+    fun onGuidingDithered(dx: Double, dy: Double)
 
     fun onCalibrationFailed()
 

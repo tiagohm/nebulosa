@@ -4,9 +4,46 @@ import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.view.View
 import nebulosa.guiding.GuideStats
 import nebulosa.guiding.Guider
+import nebulosa.guiding.internal.DeclinationGuideMode
 import nebulosa.imaging.Image
 
 interface GuiderView : View, ImageViewer.MouseListener {
+
+    val algorithmRA: GuideAlgorithmType
+
+    val maxDurationRA: Int
+
+    val hysteresisRA: Double
+
+    val aggressivenessRA: Double
+
+    val minimumMoveRA: Double
+
+    val slopeWeightRA: Double
+
+    val fastSwitchForLargeDeflectionsRA: Boolean
+
+    val algorithmDEC: GuideAlgorithmType
+
+    val maxDurationDEC: Int
+
+    val guideModeDEC: DeclinationGuideMode
+
+    val hysteresisDEC: Double
+
+    val aggressivenessDEC: Double
+
+    val minimumMoveDEC: Double
+
+    val slopeWeightDEC: Double
+
+    val fastSwitchForLargeDeflectionsDEC: Boolean
+
+    val calibrationStep: Int
+
+    val useDECCompensation: Boolean
+
+    val assumeDECOrthogonalToRA: Boolean
 
     fun updateStatus(text: String)
 

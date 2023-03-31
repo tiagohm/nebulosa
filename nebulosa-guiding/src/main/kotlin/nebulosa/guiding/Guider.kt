@@ -33,4 +33,6 @@ interface Guider : Iterable<GuidePoint> {
     fun clearCalibration()
 
     fun loadCalibration(calibration: Calibration)
+
+    fun dither()
 }

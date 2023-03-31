@@ -4,6 +4,7 @@ import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Label
+import javafx.scene.control.Spinner
 import javafx.scene.image.PixelBuffer
 import javafx.scene.image.PixelFormat
 import javafx.scene.image.WritableImage
@@ -14,13 +15,16 @@ import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.gui.control.MaterialIcon
+import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.guider.GuiderManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
+import nebulosa.desktop.view.guider.GuideAlgorithmType
 import nebulosa.desktop.view.guider.GuiderView
 import nebulosa.guiding.GuideStats
 import nebulosa.guiding.Guider
+import nebulosa.guiding.internal.DeclinationGuideMode
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.AutoScreenTransformFunction
 import nebulosa.imaging.algorithms.SubFrame
@@ -63,6 +67,24 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML private lateinit var rmsDECLabel: Label
     @FXML private lateinit var rmsTotalLabel: Label
     @FXML private lateinit var guiderChartTicks: GuiderChartTicks
+    @FXML private lateinit var algorithmRAChoiceBox: ChoiceBox<GuideAlgorithmType>
+    @FXML private lateinit var maxDurationRASpinner: Spinner<Double>
+    @FXML private lateinit var hysteresisRASpinner: Spinner<Double>
+    @FXML private lateinit var aggressivenessRASpinner: Spinner<Double>
+    @FXML private lateinit var minimumMoveRASpinner: Spinner<Double>
+    @FXML private lateinit var slopeWeightRASpinner: Spinner<Double>
+    @FXML private lateinit var fastSwitchForLargeDeflectionsRASwitch: SwitchSegmentedButton
+    @FXML private lateinit var algorithmDECChoiceBox: ChoiceBox<GuideAlgorithmType>
+    @FXML private lateinit var maxDurationDECSpinner: Spinner<Double>
+    @FXML private lateinit var guideModeDECChoiceBox: ChoiceBox<DeclinationGuideMode>
+    @FXML private lateinit var hysteresisDECSpinner: Spinner<Double>
+    @FXML private lateinit var aggressivenessDECSpinner: Spinner<Double>
+    @FXML private lateinit var minimumMoveDECSpinner: Spinner<Double>
+    @FXML private lateinit var slopeWeightDECSpinner: Spinner<Double>
+    @FXML private lateinit var fastSwitchForLargeDeflectionsDECSwitch: SwitchSegmentedButton
+    @FXML private lateinit var calibrationStepSpinner: Spinner<Double>
+    @FXML private lateinit var assumeDECOrthogonalToRASwitch: SwitchSegmentedButton
+    @FXML private lateinit var useDECCompensationSwitch: SwitchSegmentedButton
 
     private val starProfileData = IntArray(64 * 64)
     private val starProfileIndicator = StarProfileIndicator()
@@ -119,6 +141,12 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         stopGuidingButton.disableProperty().bind(isNotConnected or !isLooping or !isGuiding)
 
         starProfileImage.addFirst(starProfileIndicator)
+
+        algorithmRAChoiceBox.converter = GuideAlgorithmTypeStringConverter
+        algorithmRAChoiceBox.value = GuideAlgorithmType.HYSTERESIS
+
+        algorithmDECChoiceBox.converter = GuideAlgorithmTypeStringConverter
+        algorithmDECChoiceBox.value = GuideAlgorithmType.HYSTERESIS
     }
 
     @FXML
@@ -181,6 +209,60 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
         guiderChart.changeScale(guiderChartTicks.scale.toDouble())
     }
+
+    override val algorithmRA
+        get() = algorithmRAChoiceBox.value ?: GuideAlgorithmType.HYSTERESIS
+
+    override val maxDurationRA
+        get() = maxDurationRASpinner.value!!.toInt()
+
+    override val hysteresisRA
+        get() = hysteresisRASpinner.value!! / 100.0
+
+    override val aggressivenessRA
+        get() = aggressivenessRASpinner.value!! / 100.0
+
+    override val minimumMoveRA
+        get() = minimumMoveRASpinner.value!!
+
+    override val slopeWeightRA
+        get() = slopeWeightRASpinner.value!!
+
+    override val fastSwitchForLargeDeflectionsRA
+        get() = fastSwitchForLargeDeflectionsRASwitch.state
+
+    override val algorithmDEC
+        get() = algorithmDECChoiceBox.value ?: GuideAlgorithmType.HYSTERESIS
+
+    override val maxDurationDEC
+        get() = maxDurationDECSpinner.value!!.toInt()
+
+    override val guideModeDEC
+        get() = guideModeDECChoiceBox.value ?: DeclinationGuideMode.AUTO
+
+    override val hysteresisDEC
+        get() = hysteresisDECSpinner.value!! / 100.0
+
+    override val aggressivenessDEC
+        get() = aggressivenessDECSpinner.value!! / 100.0
+
+    override val minimumMoveDEC
+        get() = minimumMoveDECSpinner.value!!
+
+    override val slopeWeightDEC
+        get() = slopeWeightDECSpinner.value!!
+
+    override val fastSwitchForLargeDeflectionsDEC
+        get() = fastSwitchForLargeDeflectionsDECSwitch.state
+
+    override val calibrationStep
+        get() = calibrationStepSpinner.value!!.toInt()
+
+    override val assumeDECOrthogonalToRA
+        get() = assumeDECOrthogonalToRASwitch.state
+
+    override val useDECCompensation
+        get() = useDECCompensationSwitch.state
 
     override fun updateStatus(text: String) {
         javaFXExecutorService.execute { statusIcon.text = text }
@@ -269,5 +351,10 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         override fun fromString(text: String?) = null
     }
 
+    private object GuideAlgorithmTypeStringConverter : StringConverter<GuideAlgorithmType>() {
 
+        override fun toString(device: GuideAlgorithmType?) = device?.label ?: "No algorithm selected"
+
+        override fun fromString(text: String?) = null
+    }
 }

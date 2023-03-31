@@ -200,7 +200,7 @@ class MultiStarGuider(
             listeners.forEach { it.onLockPositionChanged(position) }
 
             if (state == GuiderState.GUIDING) {
-                listeners.forEach { it.onGuidingDithered(position.x - lockPosition.x, position.y - lockPosition.y, false) }
+                listeners.forEach { it.onGuidingDithered(position.x - lockPosition.x, position.y - lockPosition.y) }
             }
         }
 
@@ -217,10 +217,13 @@ class MultiStarGuider(
         return true
     }
 
-    private fun moveLockPosition(delta: Point): Boolean {
-        val image = image ?: return false
-
+    internal fun moveLockPosition(delta: Point): Boolean {
         if (!delta.valid) return false
+        return moveLockPosition(delta.x, delta.y)
+    }
+
+    internal fun moveLockPosition(dx: Double, dy: Double): Boolean {
+        val image = image ?: return false
 
         var cameraDelta = Point()
         var mountDelta = Point()
@@ -230,7 +233,7 @@ class MultiStarGuider(
             val sx = 1 - (q and 1 shl 1)
             val sy = 1 - (q and 2)
 
-            val tmpMount = Point(delta.x * sx, delta.y * sy)
+            val tmpMount = Point(dx * sx, dy * sy)
             val tmpCamera = Point()
 
             if (transformMountCoordinatesToCameraCoordinates(tmpMount, tmpCamera)) {
@@ -579,8 +582,8 @@ class MultiStarGuider(
             val raDecRates = lockPositionShift.shiftRate
 
             if (lockPositionShift.shiftUnit == ShiftUnit.ARCSEC) {
-                val raParity = device.parityRA
-                val decParity = device.parityDEC
+                val raParity = guideCalibrator.raGuideParity
+                val decParity = guideCalibrator.decGuideParity
                 var x = raDecRates.x
                 var y = raDecRates.y
 
@@ -969,6 +972,17 @@ class MultiStarGuider(
                 point.x + 5.0 < image.width &&
                 point.y >= 5.0 &&
                 point.y + 5.0 < image.height
+    }
+
+    override fun dither() {
+        val amount = device.ditherAmount
+        val (dx, dy) = device.dither.get(amount, device.ditherRAOnly)
+
+        if (moveLockPosition(dx, dy)) {
+            LOG.info("dithered. size={}, ra={}, dec={}", amount, dx, dy)
+        } else {
+            LOG.error("unable to move lock position on dithering")
+        }
     }
 
     private fun GuideDevice.moveOffset(offset: GuiderOffset, moveOptions: List<MountMoveOption>): Boolean {

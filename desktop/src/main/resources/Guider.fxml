@@ -205,17 +205,67 @@
                     </VBox>
                 </HBox>
             </Tab>
+            <Tab text="Calibration">
+                <GridPane vgap="4.0"
+                          hgap="4.0">
+                    <padding>
+                        <Insets top="4.0"/>
+                    </padding>
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                    </columnConstraints>
+                    <LabeledPane text="Step (ms)"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="0">
+                        <Spinner fx:id="calibrationStepSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="1.0"
+                                 initialValue="1000.0"
+                                 amountToStepBy="1.0"
+                                 max="10000.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Assume DEC Orthogonal to RA"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="1">
+                        <SwitchSegmentedButton fx:id="assumeDECOrthogonalToRASwitch"/>
+                    </LabeledPane>
+                    <LabeledPane text="Use DEC Compensation"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="2">
+                        <SwitchSegmentedButton fx:id="useDECCompensationSwitch"
+                                               state="true"/>
+                    </LabeledPane>
+                </GridPane>
+            </Tab>
             <Tab text="Guiding">
 
             </Tab>
             <Tab text="Right Ascension">
                 <GridPane vgap="4.0"
                           hgap="4.0">
+                    <padding>
+                        <Insets top="4.0"/>
+                    </padding>
                     <columnConstraints>
-                        <ColumnConstraints hgrow="ALWAYS"/>
-                        <ColumnConstraints hgrow="ALWAYS"/>
-                        <ColumnConstraints hgrow="ALWAYS"/>
-                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
                     </columnConstraints>
                     <LabeledPane text="Algorithm"
                                  textStyleClass="text-bold"
@@ -225,10 +275,9 @@
                                    maxWidth="Infinity">
                             <items>
                                 <FXCollections fx:factory="observableArrayList">
+                                    <GuideAlgorithmType fx:value="IDENTITY"/>
                                     <GuideAlgorithmType fx:value="HYSTERESIS"/>
                                     <GuideAlgorithmType fx:value="LOW_PASS"/>
-                                    <GuideAlgorithmType fx:value="LOW_PASS_2"/>
-                                    <GuideAlgorithmType fx:value="RESIST_SWITCH"/>
                                 </FXCollections>
                             </items>
                         </ChoiceBox>
@@ -304,11 +353,18 @@
             <Tab text="Declination">
                 <GridPane vgap="4.0"
                           hgap="4.0">
+                    <padding>
+                        <Insets top="4.0"/>
+                    </padding>
                     <columnConstraints>
-                        <ColumnConstraints hgrow="ALWAYS"/>
-                        <ColumnConstraints hgrow="ALWAYS"/>
-                        <ColumnConstraints hgrow="ALWAYS"/>
-                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
                     </columnConstraints>
                     <LabeledPane text="Algorithm"
                                  textStyleClass="text-bold"
@@ -318,10 +374,9 @@
                                    maxWidth="Infinity">
                             <items>
                                 <FXCollections fx:factory="observableArrayList">
+                                    <GuideAlgorithmType fx:value="IDENTITY"/>
                                     <GuideAlgorithmType fx:value="HYSTERESIS"/>
                                     <GuideAlgorithmType fx:value="LOW_PASS"/>
-                                    <GuideAlgorithmType fx:value="LOW_PASS_2"/>
-                                    <GuideAlgorithmType fx:value="RESIST_SWITCH"/>
                                 </FXCollections>
                             </items>
                         </ChoiceBox>

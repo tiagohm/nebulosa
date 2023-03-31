@@ -1,6 +1,6 @@
 package nebulosa.guiding.internal
 
-import nebulosa.guiding.GuideParity
+import nebulosa.guiding.Dither
 import nebulosa.imaging.Image
 import nebulosa.math.Angle
 
@@ -34,17 +34,21 @@ interface GuideDevice {
 
     // Guiding.
 
-    val parityRA: GuideParity
+    val dither: Dither
 
-    val parityDEC: GuideParity
+    val ditherAmount: Double
+
+    val ditherRAOnly: Boolean
 
     val calibrationFlipRequiresDecFlip: Boolean
 
-    val calibrationDuration: Int
+    val assumeDECOrthogonalToRA: Boolean
+
+    val calibrationStep: Int
 
     val calibrationDistance: Int
 
-    val declinationCompensationEnabled: Boolean
+    val useDECCompensation: Boolean
 
     val guidingEnabled: Boolean
 
@@ -72,9 +76,4 @@ interface GuideDevice {
     fun guideEast(duration: Int): Boolean
 
     fun notifyDirectMove(mount: Point) = Unit
-
-    companion object {
-
-        const val DEFAULT_CALIBRATION_DURATION = 750
-    }
 }

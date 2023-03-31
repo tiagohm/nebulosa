@@ -3,7 +3,7 @@ package nebulosa.guiding.internal
 import nebulosa.guiding.GuideAxis
 import kotlin.math.abs
 
-class LowPassGuideAlgorithm(
+data class LowPassGuideAlgorithm(
     override val axis: GuideAxis,
     override var minMove: Double = DEFAULT_MIN_MOVE,
     var slopeWeight: Double = DEFAULT_SLOPE_WEIGHT,
