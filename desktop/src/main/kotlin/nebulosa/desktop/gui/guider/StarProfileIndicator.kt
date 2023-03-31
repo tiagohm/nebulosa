@@ -3,13 +3,13 @@ package nebulosa.desktop.gui.guider
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Line
-import nebulosa.desktop.gui.control.Drawable
+import nebulosa.desktop.gui.control.ShapePane
 import nebulosa.guiding.GuidePoint
 import nebulosa.guiding.StarPoint
 import nebulosa.guiding.internal.Point
 import nebulosa.guiding.internal.Star
 
-class StarProfileIndicator : Drawable() {
+class StarProfileIndicator : ShapePane() {
 
     private val crosshairLineHor = Line()
     private val crosshairLineVer = Line()

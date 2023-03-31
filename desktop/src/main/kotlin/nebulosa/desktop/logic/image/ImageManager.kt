@@ -3,9 +3,11 @@ package nebulosa.desktop.logic.image
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import javafx.beans.property.SimpleObjectProperty
-import javafx.geometry.Point2D
+import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import javafx.stage.Screen
+import nebulosa.desktop.gui.control.annotation.Crosshair
+import nebulosa.desktop.gui.control.annotation.SkyCatalogAnnotation
 import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
@@ -62,12 +64,12 @@ class ImageManager(private val view: ImageView) : Closeable {
     private val screenBounds = Screen.getPrimary().bounds
     private val transformPublisher = BehaviorSubject.create<Unit>()
     private val crosshair = Crosshair()
+    private val skyCatalogAnnotation = SkyCatalogAnnotation()
 
     @Volatile private var transformSubscriber: Disposable? = null
     @Volatile private var imageStretcherView: ImageStretcherView? = null
     @Volatile private var fitsHeaderView: FitsHeaderView? = null
     @Volatile private var scnrView: SCNRView? = null
-    @Volatile private var annotation: Annotation? = null
 
     val mountProperty
         get() = equipmentManager.selectedMount
@@ -112,20 +114,27 @@ class ImageManager(private val view: ImageView) : Closeable {
         eventBus.register(this)
 
         crosshair.isVisible = false
+        skyCatalogAnnotation.isVisible = false
+
+        skyCatalogAnnotation.add(hygDatabase, Color.YELLOW)
+        skyCatalogAnnotation.add(nebula, Color.LIGHTGREEN)
+
+        view.addFirst(crosshair)
+        view.addFirst(skyCatalogAnnotation)
     }
 
     @Subscribe
     fun onPlateSolvingEvent(event: PlateSolvingEvent) {
         if (event.file === file.get()) {
-            calibration.set(if (event is PlateSolvingSolved) event.calibration else null)
+            with(if (event is PlateSolvingSolved) event.calibration else null) {
+                calibration.set(this)
 
-            annotation?.also(view::remove)
-            annotation = null
-
-            if (calibration.get() != null && view.annotationEnabled) {
-                annotation = Annotation(calibration.get(), nebula, hygDatabase)
-
-                javaFXExecutorService.execute { view.addFirst(annotation!!) }
+                if (this != null) {
+                    skyCatalogAnnotation.drawAround(this)
+                    javaFXExecutorService.execute { skyCatalogAnnotation.isVisible = view.annotationEnabled }
+                } else {
+                    javaFXExecutorService.execute { skyCatalogAnnotation.isVisible = false }
+                }
             }
         }
     }
@@ -155,8 +164,7 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         calibration.set(null)
 
-        annotation?.also(view::remove)
-        annotation = null
+        skyCatalogAnnotation.isVisible = false
 
         view.hasScnr = !image.mono
 
@@ -179,9 +187,6 @@ class ImageManager(private val view: ImageView) : Closeable {
             draw()
             drawHistogram()
         }
-
-        view.remove(crosshair)
-        view.addFirst(crosshair)
 
         imageStretcherView?.updateTitle()
 
@@ -263,33 +268,15 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     fun toggleAnnotation() {
-        val calibration = calibration.get() ?: return
-
-        if (view.annotationEnabled) {
-            if (annotation == null) {
-                systemExecutorService.submit {
-                    try {
-                        annotation = Annotation(calibration, nebula, hygDatabase)
-
-                        javaFXExecutorService.execute { view.addFirst(annotation!!) }
-                    } catch (e: Throwable) {
-                        LOG.error("annotation failed", e)
-                    }
-                }
-            } else {
-                view.addFirst(annotation!!)
-            }
-        } else if (annotation != null) {
-            view.remove(annotation!!)
-        }
+        skyCatalogAnnotation.isVisible = view.annotationEnabled
     }
 
     fun toggleAnnotationOptions() {}
 
-    fun pointMountHere(targetPoint: Point2D) {
+    fun pointMountHere(x: Double, y: Double) {
         val mount = mount ?: return
         val wcs = WCSTransform(calibration.get() ?: return)
-        val (rightAscension, declination) = wcs.pixelToWorld(targetPoint.x, targetPoint.y)
+        val (rightAscension, declination) = wcs.pixelToWorld(x, y)
         mount.goToJ2000(rightAscension, declination)
     }
 

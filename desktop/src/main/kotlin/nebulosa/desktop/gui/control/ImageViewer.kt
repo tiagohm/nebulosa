@@ -116,11 +116,15 @@ class ImageViewer : GesturePane(null as Node?) {
     }
 
     fun addFirst(shape: Node) {
-        root.children.add(1, shape)
+        if (shape !in root.children) {
+            root.children.add(1, shape)
+        }
     }
 
     fun addLast(shape: Node) {
-        root.children.add(shape)
+        if (shape !in root.children) {
+            root.children.add(shape)
+        }
     }
 
     fun remove(shape: Node) {

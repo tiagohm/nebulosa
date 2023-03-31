@@ -1,12 +1,12 @@
-package nebulosa.desktop.logic.image
+package nebulosa.desktop.gui.control.annotation
 
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Line
-import nebulosa.desktop.gui.control.Drawable
+import nebulosa.desktop.gui.control.ShapePane
 import kotlin.math.min
 
-class Crosshair : Drawable() {
+class Crosshair : ShapePane() {
 
     private val lineHor = Line()
     private val lineVer = Line()

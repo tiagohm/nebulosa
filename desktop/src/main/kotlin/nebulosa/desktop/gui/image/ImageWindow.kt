@@ -229,7 +229,8 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     @FXML
     private fun pointMountHere() {
-        imageManager.pointMountHere(imageSecondaryClickLocation.get() ?: return)
+        val target = imageSecondaryClickLocation.get() ?: return
+        imageManager.pointMountHere(target.x, target.y)
         imageSecondaryClickLocation.set(null)
     }
 

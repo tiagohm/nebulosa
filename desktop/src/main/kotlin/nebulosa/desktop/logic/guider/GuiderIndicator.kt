@@ -3,10 +3,10 @@ package nebulosa.desktop.logic.guider
 import javafx.scene.paint.Color
 import javafx.scene.shape.Line
 import javafx.scene.shape.Rectangle
-import nebulosa.desktop.gui.control.Drawable
+import nebulosa.desktop.gui.control.ShapePane
 import nebulosa.guiding.Guider
 
-data class GuiderIndicator(private val guider: Guider) : Drawable() {
+data class GuiderIndicator(private val guider: Guider) : ShapePane() {
 
     private val lockPositionCrosshairLineHor = Line()
     private val lockPositionCrosshairLineVer = Line()
