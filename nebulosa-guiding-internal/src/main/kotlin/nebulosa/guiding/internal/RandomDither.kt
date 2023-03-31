@@ -11,9 +11,7 @@ class RandomDither(private val random: Random = Random.Default) : Dither {
         return doubleArrayOf(ra, dec)
     }
 
-    override fun reset() {
-        TODO("Not yet implemented")
-    }
+    override fun reset() {}
 
     companion object {
 

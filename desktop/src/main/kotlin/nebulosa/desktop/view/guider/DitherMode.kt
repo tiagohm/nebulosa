@@ -1,6 +1,6 @@
 package nebulosa.desktop.view.guider
 
-enum class DitherMode {
-    RANDOM,
-    SPIRAL,
+enum class DitherMode(@JvmField val label: String) {
+    RANDOM("Random"),
+    SPIRAL("Spiral"),
 }

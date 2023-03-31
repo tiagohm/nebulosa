@@ -45,6 +45,12 @@ interface GuiderView : View, ImageViewer.MouseListener {
 
     val assumeDECOrthogonalToRA: Boolean
 
+    val ditherMode: DitherMode
+
+    val ditherAmount: Double
+
+    val ditherRAOnly: Boolean
+
     fun updateStatus(text: String)
 
     fun updateStarProfile(guider: Guider, image: Image = guider.image!!)

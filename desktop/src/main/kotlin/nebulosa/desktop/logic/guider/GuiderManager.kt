@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import nebulosa.desktop.logic.DevicePropertyListener
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
+import nebulosa.desktop.view.guider.DitherMode
 import nebulosa.desktop.view.guider.GuideAlgorithmType
 import nebulosa.desktop.view.guider.GuiderView
 import nebulosa.desktop.view.image.ImageView
@@ -39,20 +40,28 @@ class GuiderManager(
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
 
     private val guideCameraPropertyListener = GuideCameraPropertyListener()
+    private val guideMountPropertyListener = GuideMountPropertyListener()
+    private val guideOutputPropertyListener = GuideOutputPropertyListener()
+    private val imageQueue = LinkedBlockingQueue<Image>()
+
     private lateinit var guider: Guider
     private lateinit var guiderIndicator: GuiderIndicator
-    private val imageQueue = LinkedBlockingQueue<Image>()
     @Volatile private var imageView: ImageView? = null
 
     private val xGuideAlgorithms = hashMapOf(
         GuideAlgorithmType.HYSTERESIS to HysteresisGuideAlgorithm(GuideAxis.RA_X),
         GuideAlgorithmType.LOW_PASS to LowPassGuideAlgorithm(GuideAxis.RA_X),
+        GuideAlgorithmType.RESIST_SWITCH to ResistSwitchGuideAlgorithm(GuideAxis.RA_X),
     )
 
     private val yGuideAlgorithms = hashMapOf(
         GuideAlgorithmType.HYSTERESIS to HysteresisGuideAlgorithm(GuideAxis.DEC_Y),
         GuideAlgorithmType.LOW_PASS to LowPassGuideAlgorithm(GuideAxis.DEC_Y),
+        GuideAlgorithmType.RESIST_SWITCH to ResistSwitchGuideAlgorithm(GuideAxis.DEC_Y),
     )
+
+    private val randomDither = RandomDither()
+    private val spiralDither = SpiralDither()
 
     val loopingProperty = SimpleBooleanProperty()
     val guidingProperty = SimpleBooleanProperty()
@@ -86,6 +95,8 @@ class GuiderManager(
 
     fun initialize() {
         selectedGuideCamera.registerListener(guideCameraPropertyListener)
+        selectedGuideMount.registerListener(guideMountPropertyListener)
+        selectedGuideOutput.registerListener(guideOutputPropertyListener)
 
         with(MultiStarGuider(this, guiderExecutorService)) {
             registerListener(this@GuiderManager)
@@ -224,6 +235,15 @@ class GuiderManager(
 
     // Guiding.
 
+    override val dither
+        get() = if (view.ditherMode == DitherMode.RANDOM) randomDither else spiralDither
+
+    override val ditherAmount
+        get() = view.ditherAmount
+
+    override val ditherRAOnly
+        get() = view.ditherRAOnly
+
     override var calibrationFlipRequiresDecFlip = false
 
     override val calibrationStep
@@ -296,8 +316,8 @@ class GuiderManager(
         )
     }
 
-    override fun onGuidingDithered(dx: Double, dy: Double, mountCoordinate: Boolean) {
-        LOG.info("guiding dither. dx={}, dy={}, mountCoordinate={}", dx, dy, mountCoordinate)
+    override fun onGuidingDithered(dx: Double, dy: Double) {
+        LOG.info("guiding dither. dx={}, dy={}", dx, dy)
     }
 
     override fun onCalibrationFailed() {
@@ -357,27 +377,52 @@ class GuiderManager(
     }
 
     private fun GuideAlgorithm.updateParameters(): GuideAlgorithm {
-        minMove = if (axis == GuideAxis.RA_X) view.minimumMoveRA else view.minimumMoveDEC
-        val hysteresisRADEC = if (axis == GuideAxis.RA_X) view.hysteresisRA else view.hysteresisDEC
-        val aggressivenessRADEC = if (axis == GuideAxis.RA_X) view.aggressivenessRA else view.aggressivenessDEC
-        val slopeWeightRADEC = if (axis == GuideAxis.RA_X) view.slopeWeightRA else view.slopeWeightDEC
+        val axisRA = axis == GuideAxis.RA_X
+
+        minMove = if (axisRA) view.minimumMoveRA else view.minimumMoveDEC
 
         when (this) {
             is HysteresisGuideAlgorithm -> {
-                hysteresis = hysteresisRADEC
-                aggression = aggressivenessRADEC
+                hysteresis = if (axisRA) view.hysteresisRA else view.hysteresisDEC
+                aggression = if (axisRA) view.aggressivenessRA else view.aggressivenessDEC
             }
             is LowPassGuideAlgorithm -> {
-                slopeWeight = slopeWeightRADEC
+                slopeWeight = if (axisRA) view.slopeWeightRA else view.slopeWeightDEC
+            }
+            is ResistSwitchGuideAlgorithm -> {
+                aggression = if (axisRA) view.aggressivenessRA else view.aggressivenessDEC
+                fastSwitchForLargeDeflections = if (axisRA) view.fastSwitchForLargeDeflectionsRA else view.fastSwitchForLargeDeflectionsDEC
             }
         }
 
         return this
     }
 
+    fun loadPreferences(
+        camera: Camera? = this.camera,
+        mount: Mount? = this.mount,
+        guideOutput: GuideOutput? = this.guideOutput,
+    ) {
+        if (camera != null && mount != null && guideOutput != null) {
+
+        }
+    }
+
+    fun savePreferences(
+        camera: Camera? = this.camera,
+        mount: Mount? = this.mount,
+        guideOutput: GuideOutput? = this.guideOutput,
+    ) {
+        if (!view.showing) return
+    }
+
     private inner class GuideCameraPropertyListener : DevicePropertyListener<Camera> {
 
-        override fun onChanged(prev: Camera?, device: Camera) {}
+        override fun onChanged(prev: Camera?, device: Camera) {
+            if (prev !== device) savePreferences(prev)
+
+            loadPreferences(device)
+        }
 
         override fun onReset() {}
 
@@ -398,6 +443,32 @@ class GuiderManager(
                 }
             }
         }
+    }
+
+    private inner class GuideMountPropertyListener : DevicePropertyListener<Mount> {
+
+        override fun onChanged(prev: Mount?, device: Mount) {
+            if (prev !== device) savePreferences(mount = prev)
+
+            loadPreferences(mount = device)
+        }
+
+        override fun onReset() {}
+
+        override fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {}
+    }
+
+    private inner class GuideOutputPropertyListener : DevicePropertyListener<GuideOutput> {
+
+        override fun onChanged(prev: GuideOutput?, device: GuideOutput) {
+            if (prev !== device) savePreferences(guideOutput = prev)
+
+            loadPreferences(guideOutput = device)
+        }
+
+        override fun onReset() {}
+
+        override fun onDeviceEvent(event: DeviceEvent<*>, device: GuideOutput) {}
     }
 
     companion object {

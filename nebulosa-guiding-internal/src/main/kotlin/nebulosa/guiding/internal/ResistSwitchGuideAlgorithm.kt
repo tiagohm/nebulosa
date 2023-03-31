@@ -7,7 +7,7 @@ import kotlin.math.sign
 
 data class ResistSwitchGuideAlgorithm(
     override val axis: GuideAxis,
-    override var minMove: Double,
+    override var minMove: Double = DEFAULT_MIN_MOVE,
     var aggression: Double = DEFAULT_AGGRESSION, // [0..1]
     var fastSwitchForLargeDeflections: Boolean = true,
 ) : GuideAlgorithm {
@@ -88,7 +88,8 @@ data class ResistSwitchGuideAlgorithm(
     companion object {
 
         private const val HISTORY_SIZE = 10
-        const val DEFAULT_AGGRESSION = 0.7
+        const val DEFAULT_MIN_MOVE = 0.2
+        const val DEFAULT_AGGRESSION = 1.0
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(ResistSwitchGuideAlgorithm::class.java)
     }

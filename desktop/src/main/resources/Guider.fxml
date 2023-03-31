@@ -24,6 +24,7 @@
 <?import nebulosa.desktop.gui.guider.GuiderChart?>
 <?import nebulosa.desktop.gui.guider.GuiderChartTicks?>
 <?import nebulosa.desktop.gui.guider.StarProfileGraph?>
+<?import nebulosa.desktop.view.guider.DitherMode?>
 <?import nebulosa.desktop.view.guider.GuideAlgorithmType?>
 <?import nebulosa.guiding.internal.DeclinationGuideMode?>
 <AnchorPane maxHeight="-Infinity"
@@ -251,6 +252,98 @@
             <Tab text="Guiding">
 
             </Tab>
+            <Tab text="Dithering">
+                <GridPane vgap="4.0"
+                          hgap="4.0">
+                    <padding>
+                        <Insets top="4.0"/>
+                    </padding>
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                    </columnConstraints>
+                    <LabeledPane text="Enabled"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="0">
+                        <SwitchSegmentedButton fx:id="ditherEnabledSwitch"/>
+                    </LabeledPane>
+                    <LabeledPane text="Mode"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="1">
+                        <ChoiceBox fx:id="ditherModeChoiceBox"
+                                   maxWidth="Infinity">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <DitherMode fx:value="RANDOM"/>
+                                    <DitherMode fx:value="SPIRAL"/>
+                                </FXCollections>
+                            </items>
+                        </ChoiceBox>
+                    </LabeledPane>
+                    <LabeledPane text="Amount (px)"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="2">
+                        <Spinner fx:id="ditherAmountSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="1.0"
+                                 initialValue="5"
+                                 amountToStepBy="1.0"
+                                 max="100.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="RA Only"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="3">
+                        <SwitchSegmentedButton fx:id="ditherRAOnlySwitch"/>
+                    </LabeledPane>
+                    <LabeledPane text="Settle Pixel Tolerance (px)"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="0">
+                        <Spinner fx:id="settlePixelToleranceSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="1.0"
+                                 max="100.0"
+                                 initialValue="1.5"
+                                 amountToStepBy="0.1"/>
+                    </LabeledPane>
+                    <LabeledPane text="Minium Settle Time (s)"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="1">
+                        <Spinner fx:id="minimumSettleTimeSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="1.0"
+                                 max="300.0"
+                                 initialValue="12"
+                                 amountToStepBy="1.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Settle Timeout (s)"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="2">
+                        <Spinner fx:id="settleTimeoutSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="1.0"
+                                 max="300.0"
+                                 initialValue="60"
+                                 amountToStepBy="1.0"/>
+                    </LabeledPane>
+                </GridPane>
+            </Tab>
             <Tab text="Right Ascension">
                 <GridPane vgap="4.0"
                           hgap="4.0">
@@ -293,6 +386,12 @@
                                  initialValue="2500"
                                  amountToStepBy="1.0"
                                  max="8000.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Fast Switch for Large Deflections"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="2">
+                        <SwitchSegmentedButton fx:id="fastSwitchForLargeDeflectionsRASwitch"/>
                     </LabeledPane>
                     <LabeledPane text="Hysteresis (%)"
                                  textStyleClass="text-bold"
@@ -341,12 +440,6 @@
                                  initialValue="5.0"
                                  amountToStepBy="0.01"
                                  max="20.0"/>
-                    </LabeledPane>
-                    <LabeledPane text="Fast Switch for Large Deflections"
-                                 textStyleClass="text-bold"
-                                 GridPane.rowIndex="2"
-                                 GridPane.columnIndex="0">
-                        <SwitchSegmentedButton fx:id="fastSwitchForLargeDeflectionsRASwitch"/>
                     </LabeledPane>
                 </GridPane>
             </Tab>
@@ -409,6 +502,12 @@
                             </items>
                         </ChoiceBox>
                     </LabeledPane>
+                    <LabeledPane text="Fast Switch for Large Deflections"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="3">
+                        <SwitchSegmentedButton fx:id="fastSwitchForLargeDeflectionsDECSwitch"/>
+                    </LabeledPane>
                     <LabeledPane text="Hysteresis (%)"
                                  textStyleClass="text-bold"
                                  GridPane.rowIndex="1"
@@ -456,12 +555,6 @@
                                  initialValue="5.0"
                                  amountToStepBy="0.01"
                                  max="20.0"/>
-                    </LabeledPane>
-                    <LabeledPane text="Fast Switch for Large Deflections"
-                                 textStyleClass="text-bold"
-                                 GridPane.rowIndex="2"
-                                 GridPane.columnIndex="0">
-                        <SwitchSegmentedButton fx:id="fastSwitchForLargeDeflectionsDECSwitch"/>
                     </LabeledPane>
                     <LabeledPane text="Backlash Compensation"
                                  textStyleClass="text-bold"

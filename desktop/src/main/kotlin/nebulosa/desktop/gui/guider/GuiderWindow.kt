@@ -20,6 +20,7 @@ import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.guider.GuiderManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
+import nebulosa.desktop.view.guider.DitherMode
 import nebulosa.desktop.view.guider.GuideAlgorithmType
 import nebulosa.desktop.view.guider.GuiderView
 import nebulosa.guiding.GuideStats
@@ -85,6 +86,13 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML private lateinit var calibrationStepSpinner: Spinner<Double>
     @FXML private lateinit var assumeDECOrthogonalToRASwitch: SwitchSegmentedButton
     @FXML private lateinit var useDECCompensationSwitch: SwitchSegmentedButton
+    @FXML private lateinit var ditherEnabledSwitch: SwitchSegmentedButton
+    @FXML private lateinit var ditherModeChoiceBox: ChoiceBox<DitherMode>
+    @FXML private lateinit var ditherAmountSpinner: Spinner<Double>
+    @FXML private lateinit var ditherRAOnlySwitch: SwitchSegmentedButton
+    @FXML private lateinit var settlePixelToleranceSpinner: Spinner<Double>
+    @FXML private lateinit var minimumSettleTimeSpinner: Spinner<Double>
+    @FXML private lateinit var settleTimeoutSpinner: Spinner<Double>
 
     private val starProfileData = IntArray(64 * 64)
     private val starProfileIndicator = StarProfileIndicator()
@@ -142,11 +150,24 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
         starProfileImage.addFirst(starProfileIndicator)
 
+        // Settings.
+
         algorithmRAChoiceBox.converter = GuideAlgorithmTypeStringConverter
         algorithmRAChoiceBox.value = GuideAlgorithmType.HYSTERESIS
 
         algorithmDECChoiceBox.converter = GuideAlgorithmTypeStringConverter
         algorithmDECChoiceBox.value = GuideAlgorithmType.HYSTERESIS
+
+        ditherModeChoiceBox.converter = DitherModeStringConverter
+        ditherModeChoiceBox.value = DitherMode.RANDOM
+    }
+
+    override fun onStart() {
+        guiderManager.loadPreferences()
+    }
+
+    override fun onStop() {
+        guiderManager.savePreferences()
     }
 
     @FXML
@@ -264,6 +285,15 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     override val useDECCompensation
         get() = useDECCompensationSwitch.state
 
+    override val ditherMode
+        get() = ditherModeChoiceBox.value!!
+
+    override val ditherAmount
+        get() = ditherAmountSpinner.value!!
+
+    override val ditherRAOnly
+        get() = ditherRAOnlySwitch.state
+
     override fun updateStatus(text: String) {
         javaFXExecutorService.execute { statusIcon.text = text }
     }
@@ -354,6 +384,13 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     private object GuideAlgorithmTypeStringConverter : StringConverter<GuideAlgorithmType>() {
 
         override fun toString(device: GuideAlgorithmType?) = device?.label ?: "No algorithm selected"
+
+        override fun fromString(text: String?) = null
+    }
+
+    private object DitherModeStringConverter : StringConverter<DitherMode>() {
+
+        override fun toString(device: DitherMode?) = device?.label ?: "No mode selected"
 
         override fun fromString(text: String?) = null
     }
