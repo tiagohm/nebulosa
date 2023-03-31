@@ -22,9 +22,9 @@ import nebulosa.imaging.ImageChannel
  * @See <a href="https://www.pixinsight.com/doc/legacy/LE/21_noise_reduction/scnr/scnr.html">PixInsight</a>
  */
 class SubtractiveChromaticNoiseReduction(
-    val channel: ImageChannel,
-    val amount: Float,
-    val protectionMethod: ProtectionMethod,
+    private val channel: ImageChannel,
+    private val amount: Float,
+    private val protectionMethod: ProtectionMethod,
 ) : TransformAlgorithm {
 
     override fun transform(source: Image): Image {

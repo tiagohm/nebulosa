@@ -251,6 +251,8 @@ class MountManager(
 
     override fun close() {
         savePreferences()
+
+        "NSWE".forEach { nudgeTo(it, false) }
     }
 
     companion object {

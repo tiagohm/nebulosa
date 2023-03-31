@@ -4,8 +4,8 @@ import nebulosa.imaging.Image
 import nom.tam.fits.Header
 
 class SubFrame(
-    val x: Int, val y: Int,
-    val width: Int, val height: Int
+    private val x: Int, private val y: Int,
+    private val width: Int, private val height: Int
 ) : TransformAlgorithm {
 
     init {

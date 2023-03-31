@@ -18,11 +18,11 @@ internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : W
         if (guider.pauseType != PauseType.FULL) {
             LOG.info("starting frame capture. exposure={} ms", duration)
             guider.device.capture(duration)
-            val frame = guider.device.cameraImage
+            var frame = guider.device.cameraImage
             LOG.info("frame capture finished")
 
             if (guider.noiseReductionMethod == NoiseReductionMethod.MEAN) {
-                // TODO: Descomentar quando otimizar o Mean frame = frame.transform(MEAN_FILTER)
+                frame = frame.transform(MEAN_FILTER)
             }
 
             guider.updateGuide(frame, frameNumber.getAndIncrement(), false)

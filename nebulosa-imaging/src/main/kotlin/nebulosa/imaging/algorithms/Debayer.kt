@@ -2,7 +2,7 @@ package nebulosa.imaging.algorithms
 
 import nebulosa.imaging.Image
 
-class Debayer(val pattern: CfaPattern = CfaPattern.GRGB) : TransformAlgorithm {
+class Debayer(private val pattern: CfaPattern = CfaPattern.GRGB) : TransformAlgorithm {
 
     override fun transform(source: Image): Image {
         return if (source.mono) {

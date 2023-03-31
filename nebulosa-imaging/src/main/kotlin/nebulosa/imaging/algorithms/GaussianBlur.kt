@@ -3,7 +3,7 @@ package nebulosa.imaging.algorithms
 import kotlin.math.exp
 
 class GaussianBlur(
-    val sigma: Double = 1.4,
+    private val sigma: Double = 1.4,
     size: Int = 5,
 ) : Convolution(kernel2D(sigma * sigma, size)) {
 

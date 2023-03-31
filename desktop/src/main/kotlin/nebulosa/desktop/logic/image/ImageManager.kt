@@ -275,9 +275,12 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     fun pointMountHere(x: Double, y: Double) {
         val mount = mount ?: return
-        val wcs = WCSTransform(calibration.get() ?: return)
+        val calibration = calibration.get() ?: return
+        val wcs = WCSTransform(calibration)
         val (rightAscension, declination) = wcs.pixelToWorld(x, y)
-        mount.goToJ2000(rightAscension, declination)
+        val raOffset = calibration.rightAscension - mount.rightAscensionJ2000
+        val decOffset = calibration.declination - mount.declinationJ2000
+        mount.goToJ2000(rightAscension + raOffset, declination + decOffset)
     }
 
     fun adjustSceneSizeToFitImage(defaultSize: Boolean = image == null) {
