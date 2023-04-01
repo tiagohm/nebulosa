@@ -38,6 +38,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -201,18 +202,16 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         view.populatePlanet(planets)
     }
 
+    @Async("systemExecutorService")
     fun populateStars() {
-        systemExecutorService.submit {
-            val stars = hygDatabase.map { AtlasView.Star(it) }
-            view.populateStar(stars)
-        }
+        val stars = hygDatabase.map { AtlasView.Star(it) }
+        view.populateStar(stars)
     }
 
+    @Async("systemExecutorService")
     fun populateDSOs() {
-        systemExecutorService.submit {
-            val dsos = nebula.map { AtlasView.DSO(it) }
-            view.populateDSOs(dsos)
-        }
+        val dsos = nebula.map { AtlasView.DSO(it) }
+        view.populateDSOs(dsos)
     }
 
     fun computeSun(): CompletableFuture<HorizonsEphemeris>? {
@@ -423,6 +422,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         view.updateHorizontalCoordinates(az, alt)
     }
 
+    @Async("systemExecutorService")
     @Scheduled(cron = "0 */15 * * * *")
     fun updateSunImage() {
         if (!view.showing) return

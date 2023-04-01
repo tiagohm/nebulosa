@@ -22,6 +22,7 @@ import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyCatalogFilter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.util.function.Predicate
 
@@ -183,6 +184,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         }
     }
 
+    @Async("javaFXExecutorService")
     override fun drawAltitude(
         points: List<XYItem>,
         now: Double,
@@ -190,81 +192,78 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         civilDusk: DoubleArray, nauticalDusk: DoubleArray, astronomicalDusk: DoubleArray,
         night: DoubleArray,
     ) {
-        javaFXExecutorService.execute {
-            altitudeChart.draw(
-                points, now,
-                civilDawn, nauticalDawn, astronomicalDawn,
-                civilDusk, nauticalDusk, astronomicalDusk,
-                night,
-            )
-        }
+        altitudeChart.draw(
+            points, now,
+            civilDawn, nauticalDawn, astronomicalDawn,
+            civilDusk, nauticalDusk, astronomicalDusk,
+            night,
+        )
     }
 
     override fun updateSunImage() {
         sunView.updateImage()
     }
 
+    @Async("javaFXExecutorService")
     override fun updateMoonImage(phase: Double, age: Double, angle: Angle) {
-        javaFXExecutorService.execute { moonView.draw(age, angle) }
+        moonView.draw(age, angle)
     }
 
     override fun populatePlanet(planets: List<AtlasView.Planet>) {
         planetTableView.items.setAll(planets)
     }
 
+    @Async("javaFXExecutorService")
     override fun populateMinorPlanet(minorPlanets: List<AtlasView.MinorPlanet>) {
-        javaFXExecutorService.execute { minorPlanetTableView.items.setAll(minorPlanets) }
+        minorPlanetTableView.items.setAll(minorPlanets)
     }
 
+    @Async("javaFXExecutorService")
     override fun populateStar(stars: List<AtlasView.Star>) {
         val filteredList = FilteredList(FXCollections.observableArrayList(stars))
         val sortedList = SortedList(filteredList)
-
-        javaFXExecutorService.execute {
-            sortedList.comparatorProperty().bind(starTableView.comparatorProperty())
-            starTableView.items = sortedList
-        }
+        sortedList.comparatorProperty().bind(starTableView.comparatorProperty())
+        starTableView.items = sortedList
     }
 
+    @Async("javaFXExecutorService")
     override fun populateDSOs(dsos: List<AtlasView.DSO>) {
         val filteredList = FilteredList(FXCollections.observableArrayList(dsos))
         val sortedList = SortedList(filteredList)
-
-        javaFXExecutorService.execute {
-            sortedList.comparatorProperty().bind(dsosTableView.comparatorProperty())
-            dsosTableView.items = sortedList
-        }
+        sortedList.comparatorProperty().bind(dsosTableView.comparatorProperty())
+        dsosTableView.items = sortedList
     }
 
+    @Async("javaFXExecutorService")
     override fun updateEquatorialCoordinates(
         ra: Angle, dec: Angle,
         raJ2000: Angle, decJ2000: Angle,
         constellation: Constellation?,
     ) {
-        javaFXExecutorService.execute {
-            rightAscensionLabel.text = ra.format(AngleFormatter.HMS)
-            declinationLabel.text = dec.format(AngleFormatter.SIGNED_DMS)
-            rightAscensionJ2000Label.text = raJ2000.format(AngleFormatter.HMS)
-            declinationJ2000Label.text = decJ2000.format(AngleFormatter.SIGNED_DMS)
-            constellationLabel.text = constellation?.iau ?: "-"
-        }
+        rightAscensionLabel.text = ra.format(AngleFormatter.HMS)
+        declinationLabel.text = dec.format(AngleFormatter.SIGNED_DMS)
+        rightAscensionJ2000Label.text = raJ2000.format(AngleFormatter.HMS)
+        declinationJ2000Label.text = decJ2000.format(AngleFormatter.SIGNED_DMS)
+        constellationLabel.text = constellation?.iau ?: "-"
     }
 
+    @Async("javaFXExecutorService")
     override fun updateHorizontalCoordinates(az: Angle, alt: Angle) {
-        javaFXExecutorService.execute {
-            azimuthLabel.text = az.normalized.format(AngleFormatter.DMS)
-            altitudeLabel.text = alt.format(AngleFormatter.SIGNED_DMS)
-        }
+        azimuthLabel.text = az.normalized.format(AngleFormatter.DMS)
+        altitudeLabel.text = alt.format(AngleFormatter.SIGNED_DMS)
     }
 
+    @Async("javaFXExecutorService")
     override fun updateInfo(bodyName: String) {
-        javaFXExecutorService.execute { nameLabel.text = bodyName }
+        nameLabel.text = bodyName
     }
 
+    @Async("javaFXExecutorService")
     override fun updateRTS(rts: Triple<String, String, String>) {
-        javaFXExecutorService.execute { rtsLabel.text = "%s | %s | %s".format(rts.first, rts.second, rts.third) }
+        rtsLabel.text = "%s | %s | %s".format(rts.first, rts.second, rts.third)
     }
 
+    @Async("javaFXExecutorService")
     override fun clearAltitudeAndCoordinates() {
         nameLabel.text = ""
         updateEquatorialCoordinates(Angle.ZERO, Angle.ZERO, Angle.ZERO, Angle.ZERO, null)

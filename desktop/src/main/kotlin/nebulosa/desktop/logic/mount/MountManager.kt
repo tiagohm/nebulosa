@@ -244,9 +244,7 @@ class MountManager(
         val timeLeftToMeridianFlip = computeTimeLeftToMeridianFlip()
         val timeToMeridianFlip = LocalDateTime.now().plusSeconds((timeLeftToMeridianFlip.hours * 3600.0).toLong())
 
-        javaFXExecutorService.execute {
-            view.updateLSTAndMeridian(lst, timeLeftToMeridianFlip, timeToMeridianFlip)
-        }
+        view.updateLSTAndMeridian(lst, timeLeftToMeridianFlip, timeToMeridianFlip)
     }
 
     override fun close() {

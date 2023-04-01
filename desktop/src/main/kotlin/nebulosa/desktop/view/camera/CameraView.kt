@@ -6,8 +6,6 @@ import java.util.concurrent.TimeUnit
 
 interface CameraView : View {
 
-    var status: String
-
     val frameMaxX: Int
 
     val frameMinX: Int
@@ -105,4 +103,6 @@ interface CameraView : View {
     var frameFormat: String?
 
     var frameType: FrameType
+
+    fun updateStatus(text: String)
 }

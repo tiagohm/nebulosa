@@ -34,6 +34,7 @@ import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.nio.IntBuffer
 import kotlin.math.min
@@ -294,8 +295,9 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     override val ditherRAOnly
         get() = ditherRAOnlySwitch.state
 
+    @Async("javaFXExecutorService")
     override fun updateStatus(text: String) {
-        javaFXExecutorService.execute { statusIcon.text = text }
+        statusIcon.text = text
     }
 
     override fun updateStarProfile(guider: Guider, image: Image) {
@@ -305,7 +307,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         if (lockPosition.valid) {
             val size = min(regionSize, 64.0)
 
-            systemExecutorService.submit {
+            systemExecutorService.execute {
                 val centerX = (lockPosition.x - size / 2).toInt()
                 val centerY = (lockPosition.y - size / 2).toInt()
                 val profileImage = image.transform(SubFrame(centerX, centerY, size.toInt(), size.toInt()), AutoScreenTransformFunction)
@@ -329,19 +331,19 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         }
     }
 
+    @Async("javaFXExecutorService")
     override fun updateGraph(
         stats: List<GuideStats>,
         maxRADuration: Double, maxDECDuration: Double,
     ) {
-        javaFXExecutorService.execute { guiderChart.draw(stats, maxRADuration, maxDECDuration) }
+        guiderChart.draw(stats, maxRADuration, maxDECDuration)
     }
 
+    @Async("javaFXExecutorService")
     override fun updateGraphInfo(rmsRA: Double, rmsDEC: Double, rmsTotal: Double, pixelScale: Double) {
-        javaFXExecutorService.execute {
-            rmsRALabel.text = "%.2f px | %.2f\"".format(rmsRA, rmsRA * pixelScale)
-            rmsDECLabel.text = "%.2f px | %.2f\"".format(rmsDEC, rmsDEC * pixelScale)
-            rmsTotalLabel.text = "%.2f px | %.2f\"".format(rmsTotal, rmsTotal * pixelScale)
-        }
+        rmsRALabel.text = "%.2f px | %.2f\"".format(rmsRA, rmsRA * pixelScale)
+        rmsDECLabel.text = "%.2f px | %.2f\"".format(rmsDEC, rmsDEC * pixelScale)
+        rmsTotalLabel.text = "%.2f px | %.2f\"".format(rmsTotal, rmsTotal * pixelScale)
     }
 
     override fun onMouseClicked(

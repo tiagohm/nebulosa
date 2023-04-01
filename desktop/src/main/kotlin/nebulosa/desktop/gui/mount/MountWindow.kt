@@ -25,6 +25,7 @@ import nebulosa.math.PairOfAngle
 import org.controlsfx.control.SegmentedButton
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -287,6 +288,7 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
         targetDeclinationTextField.text = dec.format(AngleFormatter.SIGNED_DMS)
     }
 
+    @Async("javaFXExecutorService")
     override fun updateLSTAndMeridian(lst: Angle, timeLeftToMeridianFlip: Angle, timeToMeridianFlip: LocalDateTime) {
         meridianAtLabel.text = "%s (%s)".format(timeToMeridianFlip.format(MERIDIAN_TIME_FORMAT), timeLeftToMeridianFlip.format(LST_FORMAT))
         lstLabel.text = lst.format(LST_FORMAT)

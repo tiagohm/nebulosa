@@ -20,6 +20,7 @@ import nebulosa.jmetro.Style
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+import org.springframework.scheduling.annotation.Async
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -171,6 +172,7 @@ abstract class AbstractWindow(
         }
     }
 
+    @Async("javaFXExecutorService")
     final override fun showAlert(
         message: String,
         title: String,
@@ -180,7 +182,7 @@ abstract class AbstractWindow(
         alert.title = title
         alert.headerText = null
         alert.contentText = message
-        Platform.runLater { alert.showAndWait() }
+        alert.showAndWait()
     }
 
     companion object {

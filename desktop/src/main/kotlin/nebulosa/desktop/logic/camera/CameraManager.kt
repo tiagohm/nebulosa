@@ -59,12 +59,12 @@ class CameraManager(
         eventBus.register(this)
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
+    @Subscribe
     fun onTaskEvent(event: TaskEvent) {
         when (event) {
             is CameraFrameSaved -> {
                 val window = imageViewOpener.open(event.image, event.path.toFile(), event.task.camera)
-                imageViews.add(window)
+                imageViews.add(window.get())
             }
         }
     }
@@ -108,7 +108,7 @@ class CameraManager(
     }
 
     private fun updateStatus() {
-        view.status = buildString(128) {
+        val text = buildString(128) {
             val task = runningTask.get()
 
             if (task != null && capturingProperty.get()) {
@@ -126,6 +126,8 @@ class CameraManager(
                 append("idle")
             }
         }
+
+        view.updateStatus(text)
     }
 
     private fun updateFrame() {
@@ -231,7 +233,7 @@ class CameraManager(
             .whenComplete { _, _ ->
                 capturingProperty.set(false)
                 runningTask.set(null)
-                javaFXExecutorService.execute(::updateStatus)
+                updateStatus()
             }
 
         savePreferences()

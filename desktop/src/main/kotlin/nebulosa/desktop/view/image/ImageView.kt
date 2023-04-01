@@ -8,6 +8,7 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import java.io.File
+import java.util.concurrent.CompletableFuture
 
 interface ImageView : View {
 
@@ -17,7 +18,7 @@ interface ImageView : View {
             image: Image?, file: File?,
             token: Any? = null,
             resetTransformation: Boolean = false,
-        ): ImageView
+        ): CompletableFuture<ImageView>
     }
 
     val camera: Camera?

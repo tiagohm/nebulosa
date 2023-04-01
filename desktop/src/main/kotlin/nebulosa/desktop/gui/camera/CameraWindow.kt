@@ -26,6 +26,7 @@ import nebulosa.indi.device.camera.FrameType
 import org.controlsfx.control.SegmentedButton
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -392,11 +393,10 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
         }
     }
 
-    override var status
-        get() = statusIcon.text
-        set(value) {
-            statusIcon.text = value
-        }
+    @Async("javaFXExecutorService")
+    override fun updateStatus(text: String) {
+        statusIcon.text = text
+    }
 
     override var autoSubFolderMode
         get() = if (newSubFolderAtMidnightMenuItem.isSelected) AutoSubFolderMode.MIDNIGHT else AutoSubFolderMode.NOON

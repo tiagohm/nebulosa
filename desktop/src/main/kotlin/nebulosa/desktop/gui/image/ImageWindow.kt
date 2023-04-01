@@ -25,9 +25,11 @@ import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.io.File
 import java.nio.IntBuffer
+import java.util.concurrent.CompletableFuture
 import kotlin.jvm.optionals.getOrNull
 
 class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image", "image"), ImageView {
@@ -234,23 +236,25 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         imageSecondaryClickLocation.set(null)
     }
 
+    @Async("javaFXExecutorService")
     override fun open(file: File, resetTransformation: Boolean) {
         imageManager.open(file, resetTransformation)
-    }
-
-    override fun open(fits: Image, file: File?, resetTransformation: Boolean) {
-        imageManager.open(fits, file, resetTransformation)
-
         annotateCheckMenuItem.isSelected = false
     }
 
-    override fun adjustSceneToImage() {
-        javaFXExecutorService.execute {
-            imageViewer.resetZoom()
-            imageManager.adjustSceneSizeToFitImage()
-        }
+    @Async("javaFXExecutorService")
+    override fun open(fits: Image, file: File?, resetTransformation: Boolean) {
+        imageManager.open(fits, file, resetTransformation)
+        annotateCheckMenuItem.isSelected = false
     }
 
+    @Async("javaFXExecutorService")
+    override fun adjustSceneToImage() {
+        imageViewer.resetZoom()
+        imageManager.adjustSceneSizeToFitImage()
+    }
+
+    @Async("javaFXExecutorService")
     override fun draw(image: Image) {
         val area = image.width * image.height
 
@@ -289,8 +293,9 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     }
 
+    @Async("javaFXExecutorService")
     override fun redraw() {
-        javaFXExecutorService.execute { imageViewer.redraw() }
+        imageViewer.redraw()
     }
 
     override fun addFirst(shape: Node) {
@@ -329,10 +334,11 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         private val windows = hashSetOf<ImageWindow>()
         private val windowsMap = hashMapOf<Any, ImageWindow>()
 
+        @Async("javaFXExecutorService")
         override fun open(
             image: Image?, file: File?,
             token: Any?, resetTransformation: Boolean,
-        ): ImageView {
+        ): CompletableFuture<ImageView> {
             val window = if (token != null) {
                 windowsMap[token] ?: ImageWindow(if (token is Camera) token else null)
             } else {
@@ -351,7 +357,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             else if (file != null) window.open(file, resetTransformation = true)
             else throw IllegalArgumentException("fits or file parameter must be provided")
 
-            return window
+            return CompletableFuture.completedFuture(window)
         }
     }
 }

@@ -44,7 +44,7 @@ class StellariumCatalogLoader : Runnable {
         if (past30Days || !catalogPath.exists() || !namesPath.exists()) {
             downloadLatch.countUp(2)
 
-            systemExecutorService.submit {
+            systemExecutorService.execute {
                 with(Request.Builder().url(CATALOG_URL).build()) {
                     try {
                         val response = okHttpClient.newCall(this).execute()
@@ -60,7 +60,7 @@ class StellariumCatalogLoader : Runnable {
                 }
             }
 
-            systemExecutorService.submit {
+            systemExecutorService.execute {
                 with(Request.Builder().url(NAMES_URL).build()) {
                     val response = okHttpClient.newCall(this).execute()
 
@@ -78,7 +78,7 @@ class StellariumCatalogLoader : Runnable {
             LOG.info("Stellarium DSO Catalog and Names are up-to-date")
         }
 
-        systemExecutorService.submit {
+        systemExecutorService.execute {
             downloadLatch.await()
 
             if (catalogPath.exists()) {

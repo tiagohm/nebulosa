@@ -22,6 +22,7 @@ import nom.tam.fits.header.Standard
 import nom.tam.fits.header.extra.MaxImDLExt
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.io.ByteArrayInputStream
 import java.io.Closeable
@@ -54,10 +55,11 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
     val mount
         get() = equipmentManager.selectedMount
 
+    @Async("javaFXExecutorService")
     fun sync(device: Mount? = null) {
         val mount = device ?: equipmentManager.selectedMount.value ?: return
         val coordinate = PairOfAngle(mount.rightAscensionJ2000, mount.declinationJ2000)
-        javaFXExecutorService.execute { view.updateCoordinate(coordinate.first, coordinate.second) }
+        view.updateCoordinate(coordinate.first, coordinate.second)
         load(coordinate.first, coordinate.second)
     }
 
@@ -100,12 +102,12 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
                     format = FormatOutputType.JPG,
                 ).execute().body()!!
             } catch (e: InterruptedIOException) {
-                javaFXExecutorService.execute { view.showAlert("Image took a long time to load. Please try again.") }
+                view.showAlert("Image took a long time to load. Please try again.")
                 task.completeExceptionally(e)
                 return@submit
             } catch (e: Throwable) {
                 LOG.error("failed to load image", e)
-                javaFXExecutorService.execute { view.showAlert("Failed to load image. Try using other survey source.") }
+                view.showAlert("Failed to load image. Try using other survey source.")
                 task.completeExceptionally(e)
                 return@submit
             }
@@ -117,34 +119,43 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
             tmpFile.writeBytes(data)
             imagePath.set(tmpFile)
 
-            javaFXExecutorService.execute {
-                val image = Image.open(ByteArrayInputStream(data))
+            val image = Image.open(ByteArrayInputStream(data))
 
-                image.header.addValue(Standard.INSTRUME, hipsSurvey.id)
-                image.header.addValue(ObservationDescription.RA, rightAscension.format(FITS_RA_ANGLE_FORMATTER))
-                image.header.addValue(ObservationDescription.DEC, declination.format(FITS_DEC_ANGLE_FORMATTER))
-                image.header.addValue(MaxImDLExt.ROTATANG, rotation.degrees)
-                image.header.addValue("COMMENT", null as String?, "Made use of hips2fits, a service provided by CDS.")
+            image.header.addValue(Standard.INSTRUME, hipsSurvey.id)
+            image.header.addValue(ObservationDescription.RA, rightAscension.format(FITS_RA_ANGLE_FORMATTER))
+            image.header.addValue(ObservationDescription.DEC, declination.format(FITS_DEC_ANGLE_FORMATTER))
+            image.header.addValue(MaxImDLExt.ROTATANG, rotation.degrees)
+            image.header.addValue("COMMENT", null as String?, "Made use of hips2fits, a service provided by CDS.")
 
-                val window = imageView.get()?.also { it.open(image, tmpFile.toFile(), resetTransformation = true); it.show(requestFocus = true) }
-                    ?: imageViewOpener.open(image, tmpFile.toFile(), resetTransformation = true)
-                imageView.set(window)
+            val currentImageView = imageView.get()
 
-                task.complete(tmpFile)
+            if (currentImageView != null) {
+                currentImageView.open(image, tmpFile.toFile(), resetTransformation = true)
+                javaFXExecutorService.execute {
+                    currentImageView.show(requestFocus = true)
+                    task.complete(tmpFile)
+                }
+            } else {
+                imageViewOpener.open(image, tmpFile.toFile(), resetTransformation = true)
+                    .whenComplete { window, _ ->
+                        imageView.set(window)
+                        task.complete(tmpFile)
+                    }
             }
+
+            task.complete(tmpFile)
         }
 
         return task
             .whenComplete { _, _ -> loading.set(false) }
     }
 
+    @Async("systemExecutorService")
     fun populateHipsSurveys() {
-        systemExecutorService.submit {
-            val data = objectMapper.readValue(resource("data/HIPS_SURVEY_SOURCES.json")!!, Array<HipsSurvey>::class.java)
-            val hipsSurveyId = preferences.string("framing.hipsSurvey") ?: DEFAULT_HIPS_SURVEY
-            val selected = data.firstOrNull { it.id == hipsSurveyId }
-            javaFXExecutorService.execute { view.populateHipsSurveys(data.toList(), selected) }
-        }
+        val data = objectMapper.readValue(resource("data/HIPS_SURVEY_SOURCES.json")!!, Array<HipsSurvey>::class.java)
+        val hipsSurveyId = preferences.string("framing.hipsSurvey") ?: DEFAULT_HIPS_SURVEY
+        val selected = data.firstOrNull { it.id == hipsSurveyId }
+        view.populateHipsSurveys(data.toList(), selected)
     }
 
     fun loadPreferences() {

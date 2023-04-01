@@ -36,6 +36,7 @@ class GuiderManager(
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var imageViewOpener: ImageView.Opener
     @Autowired private lateinit var guiderExecutorService: ExecutorService
+    @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var javaFXExecutorService: ExecutorService
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
 
@@ -335,8 +336,8 @@ class GuiderManager(
 
     override fun onLooping(image: Image, number: Int, star: StarPoint?) {
         view.updateStatus("looping. number=$number")
-        imageView?.also { javaFXExecutorService.execute { it.open(image, null) } }
-        javaFXExecutorService.execute { guiderIndicator.redraw() }
+        imageView?.also { it.open(image, null) }
+        guiderIndicator.redraw()
         view.updateStarProfile(guider, image)
     }
 
@@ -429,15 +430,17 @@ class GuiderManager(
         override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
             when (event) {
                 is CameraFrameCaptured -> {
-                    val fits = Fits(event.fits)
-                    val image = Image.open(fits)
-                    imageQueue.offer(image)
+                    systemExecutorService.execute {
+                        val fits = Fits(event.fits)
+                        val image = Image.open(fits)
+                        imageQueue.offer(image)
 
-                    javaFXExecutorService.execute {
-                        if (imageView == null) {
-                            imageView = imageViewOpener.open(image, null, device)
-                            imageView!!.registerMouseListener(view)
-                            imageView!!.addFirst(guiderIndicator)
+                        javaFXExecutorService.execute {
+                            if (imageView == null) {
+                                imageView = imageViewOpener.open(image, null, device).get()
+                                imageView!!.registerMouseListener(view)
+                                imageView!!.addFirst(guiderIndicator)
+                            }
                         }
                     }
                 }

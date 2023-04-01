@@ -33,6 +33,7 @@ import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Header
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.Closeable
@@ -123,17 +124,17 @@ class ImageManager(private val view: ImageView) : Closeable {
         view.addFirst(skyCatalogAnnotation)
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onPlateSolvingEvent(event: PlateSolvingEvent) {
         if (event.file === file.get()) {
             with(if (event is PlateSolvingSolved) event.calibration else null) {
                 calibration.set(this)
 
                 if (this != null) {
-                    skyCatalogAnnotation.drawAround(this)
-                    javaFXExecutorService.execute { skyCatalogAnnotation.isVisible = view.annotationEnabled }
+                    systemExecutorService.execute { skyCatalogAnnotation.drawAround(this) }
+                    skyCatalogAnnotation.isVisible = view.annotationEnabled
                 } else {
-                    javaFXExecutorService.execute { skyCatalogAnnotation.isVisible = false }
+                    skyCatalogAnnotation.isVisible = false
                 }
             }
         }
@@ -180,12 +181,14 @@ class ImageManager(private val view: ImageView) : Closeable {
             imageStretcherView?.resetStretch(true)
         }
 
-        if (view.autoStretchEnabled) {
-            autoStretch()
-        } else {
-            transformImage()
-            draw()
-            drawHistogram()
+        systemExecutorService.execute {
+            if (view.autoStretchEnabled) {
+                autoStretch()
+            } else {
+                transformImage()
+                draw()
+                drawHistogram()
+            }
         }
 
         imageStretcherView?.updateTitle()

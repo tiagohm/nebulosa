@@ -1,5 +1,6 @@
 package nebulosa.desktop.gui.image
 
+import javafx.application.Platform
 import javafx.scene.canvas.Canvas
 import javafx.scene.paint.Color
 import nebulosa.imaging.Image
@@ -30,10 +31,10 @@ class HistogramView : Canvas() {
 
     fun draw(image: Image) {
         histogram.compute(image)
-        draw()
+        Platform.runLater { draw() }
     }
 
-    fun draw() {
+    private fun draw() {
         val gc = graphicsContext2D
 
         gc.fill = Color.TRANSPARENT
