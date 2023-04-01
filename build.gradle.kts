@@ -10,7 +10,7 @@ buildscript {
         classpath("org.openjfx:javafx-plugin:0.0.13")
         classpath("gradle.plugin.com.github.johnrengelman:shadow:8.0.0")
         classpath("com.adarshr:gradle-test-logger-plugin:3.2.0")
-        classpath("org.jetbrains.kotlin:kotlin-allopen:1.8.10")
+        classpath("org.jetbrains.kotlin:kotlin-allopen:1.8.20")
         classpath("com.github.gmazzo:gradle-buildconfig-plugin:3.1.0")
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.8.10")
     }
