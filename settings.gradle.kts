@@ -27,7 +27,7 @@ dependencyResolutionManagement {
             library("charts", "eu.hansolo.fx:charts:17.1.27")
             library("gesturefx", "net.kurobako:gesturefx:0.7.1")
             library("netty-transport", "io.netty:netty-transport:4.1.89.Final")
-            library("netty-codec", "io.netty:netty-codec:4.1.89.Final")
+            library("netty-codec", "io.netty:netty-codec:4.1.90.Final")
             library("csv", "org.apache.commons:commons-csv:1.10.0")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.5.5")
             library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.5.5")
