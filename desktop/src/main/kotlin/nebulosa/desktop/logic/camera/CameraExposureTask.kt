@@ -4,6 +4,7 @@ import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
+import nebulosa.desktop.logic.filterwheel.filterName
 import nebulosa.desktop.logic.task.Task
 import nebulosa.desktop.logic.task.TaskExecutor
 import nebulosa.desktop.logic.task.TaskFinished
@@ -30,14 +31,15 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.createDirectories
 import kotlin.io.path.outputStream
 
 data class CameraExposureTask(
     override val camera: Camera,
-    val exposure: Long,
+    val exposure: Long, // us
     val amount: Int,
-    val delay: Long,
+    val delay: Long, // ms
     val x: Int,
     val y: Int,
     val width: Int,
@@ -56,8 +58,13 @@ data class CameraExposureTask(
     @Volatile var progress = 0.0
         private set
 
-    @Volatile var remaining = amount
+    @Volatile var remainingAmount = amount
         private set
+
+    @Volatile var remainingTime = 0L
+        private set
+
+    val totalExposureTime = exposure * amount + (amount - 1) * delay * 1000L
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var preferences: Preferences
@@ -66,6 +73,7 @@ data class CameraExposureTask(
 
     private val latch = CountUpDownLatch()
     private val imagePaths = arrayListOf<Path>()
+    private val forceAbort = AtomicBoolean()
 
     private val mount: Mount?
         get() = equipmentManager.selectedMount.get()
@@ -75,6 +83,9 @@ data class CameraExposureTask(
 
     private val filterWheel: FilterWheel?
         get() = equipmentManager.selectedFilterWheel.get()
+
+    val filter
+        get() = filterWheel?.let { preferences.filterName(it) }
 
     @Subscribe
     fun onEvent(event: CameraEvent) {
@@ -89,10 +100,11 @@ data class CameraExposureTask(
             is CameraExposureFailed,
             is CameraDetached -> {
                 latch.reset()
-                remaining = 0
+                remainingAmount = 0
             }
             is CameraExposureProgressChanged -> {
-                progress = (amount - remaining - 1).toDouble() / amount +
+                remainingTime = event.device.exposure
+                progress = (amount - remainingAmount - 1).toDouble() / amount +
                         (exposure - camera.exposure).toDouble() / exposure * (1.0 / amount)
             }
         }
@@ -136,11 +148,11 @@ data class CameraExposureTask(
 
             eventBus.register(this)
 
-            while (camera.connected && remaining > 0) {
+            while (camera.connected && remainingAmount > 0 && !forceAbort.get()) {
                 synchronized(camera) {
                     latch.countUp()
 
-                    remaining--
+                    remainingAmount--
 
                     camera.frame(x, y, width, height)
                     camera.frameType(frameType)
@@ -156,7 +168,11 @@ data class CameraExposureTask(
 
                     LOG.info("camera exposure finished")
 
-                    Task.sleep(delay, latch)
+                    if (forceAbort.get()) {
+                        return@synchronized
+                    } else {
+                        Task.sleep(delay, latch)
+                    }
                 }
             }
         } catch (e: Throwable) {
@@ -168,6 +184,11 @@ data class CameraExposureTask(
         }
 
         return imagePaths
+    }
+
+    fun abort() {
+        camera.abortCapture()
+        forceAbort.set(true)
     }
 
     @Synchronized

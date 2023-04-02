@@ -214,6 +214,9 @@ class GuiderManager(
 
     // Mount.
 
+    override val mountIsSlewing
+        get() = mount?.slewing ?: false
+
     override val mountDeclination
         get() = mount?.declination ?: Angle.NaN
 

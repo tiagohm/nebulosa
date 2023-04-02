@@ -15,6 +15,7 @@ import nebulosa.horizons.HorizonsQuantity
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountEvent
 import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
+import nebulosa.indi.device.mount.TrackMode
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.rad
@@ -479,11 +480,24 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
             })
     }
 
+    private fun trackModeFromCurrentTab() {
+        val mount = mount ?: return
+
+        when (tabType) {
+            AtlasView.TabType.SUN -> mount.trackingMode(TrackMode.SOLAR)
+            AtlasView.TabType.MOON -> mount.trackingMode(TrackMode.LUNAR)
+            else -> if (TrackMode.KING in mount.trackModes) mount.trackingMode(TrackMode.KING)
+            else mount.trackingMode(TrackMode.SIDEREAL)
+        }
+    }
+
     fun goTo(ra: Angle, dec: Angle) {
+        trackModeFromCurrentTab()
         mount?.goTo(ra, dec)
     }
 
     fun slewTo(ra: Angle, dec: Angle) {
+        trackModeFromCurrentTab()
         mount?.slewTo(ra, dec)
     }
 

@@ -17,14 +17,13 @@ import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.stereotype.Component
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
+import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
@@ -112,16 +111,21 @@ class CameraManager(
             val task = runningTask.get()
 
             if (task != null && capturingProperty.get()) {
-                val exposure = if (task.exposure >= 1000000L) "${task.exposure / 1000000.0} s"
-                else if (task.exposure >= 1000L) "${task.exposure / 1000.0} ms"
-                else "${task.exposure} µs"
-
                 append("capturing ")
-                append("%d of %d (%s)".format(task.amount - task.remaining, task.amount, exposure))
+                append("%d of %d (%s)".format(task.amount - task.remainingAmount, task.amount, task.exposure.formatTime()))
                 append(" | ")
-                append("%.1f%%".format(Locale.ENGLISH, task.progress * 100.0))
+                append(task.remainingTime.formatTime())
                 append(" | ")
-                append("%s".format(Locale.ENGLISH, task.frameType))
+                append(task.totalExposureTime.formatTime())
+                append(" | ")
+                append("%.1f%%".format(task.progress * 100.0))
+                append(" | ")
+                append("%s".format(task.frameType))
+
+                task.filter?.also {
+                    append(" | ")
+                    append(it)
+                }
             } else {
                 append("idle")
             }
@@ -240,7 +244,7 @@ class CameraManager(
     }
 
     fun abortCapture() {
-        value?.abortCapture()
+        runningTask.get()?.abort()
     }
 
     fun savePreferences(device: Camera? = value) {
@@ -321,5 +325,26 @@ class CameraManager(
         unregisterListener(this)
 
         eventBus.unregister(this)
+    }
+
+    companion object {
+
+        @JvmStatic
+        private fun Long.formatTime(): String {
+            val duration = Duration.ofNanos(this * 1000L)
+
+            return if (this >= 3600000000) {
+                "%02dh%02dm%02.1fs"
+                    .format(duration.toHoursPart(), duration.toMinutesPart(), duration.toSecondsPart() + duration.toMillisPart() / 1000f)
+            } else if (this >= 60000000) {
+                "%02dm%02.1fs"
+                    .format(duration.toMinutesPart(), duration.toSecondsPart() + duration.toMillisPart() / 1000f)
+            } else if (this >= 1000000) {
+                "%02ds%03dms"
+                    .format(duration.toSecondsPart(), duration.toMillisPart())
+            } else {
+                "%d μs".format(this)
+            }
+        }
     }
 }

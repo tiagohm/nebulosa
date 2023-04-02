@@ -10,6 +10,7 @@ import javafx.scene.control.Alert
 import javafx.scene.image.Image
 import javafx.stage.Stage
 import nebulosa.desktop.gui.home.HomeWindow
+import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.view.View
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
@@ -38,6 +39,7 @@ abstract class AbstractWindow(
     protected val hostServices by lazy { beanFactory.getBean(HostServices::class.java) }
     protected val systemExecutorService by lazy { beanFactory.getBean("systemExecutorService") as ExecutorService }
     protected val javaFXExecutorService by lazy { beanFactory.getBean("javaFXExecutorService") as ExecutorService }
+    protected val preferences by lazy { beanFactory.getBean("preferences") as Preferences }
 
     init {
         window.setOnShowing {

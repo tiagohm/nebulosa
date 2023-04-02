@@ -7,10 +7,10 @@ import javafx.collections.transformation.SortedList
 import javafx.event.Event
 import javafx.fxml.FXML
 import javafx.scene.control.*
-import javafx.scene.control.cell.PropertyValueFactory
 import javafx.util.Callback
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.CopyableLabel
+import nebulosa.desktop.gui.control.PropertyValueFactory
 import nebulosa.desktop.logic.atlas.AtlasManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
@@ -62,6 +62,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         resizable = false
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun onCreate() {
         val isNotConnected = !atlasManager.mountProperty.connectedProperty
         val isMoving = atlasManager.mountProperty.slewingProperty or atlasManager.mountProperty.parkingProperty
@@ -79,27 +80,25 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
 
         frameButton.disableProperty().bind(isComputing)
 
-        // TODO: Criar uma classe tipo PropertyValueFactory mas sem o uso do reflection.
-
-        planetTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("name")
-        planetTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.Planet, String>("type")
+        (planetTableView.columns[0] as TableColumn<AtlasView.Planet, String>).cellValueFactory = PropertyValueFactory { it.name }
+        (planetTableView.columns[1] as TableColumn<AtlasView.Planet, String>).cellValueFactory = PropertyValueFactory { it.type }
         planetTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computePlanet(it) }
 
-        minorPlanetTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("element")
-        minorPlanetTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("description")
-        minorPlanetTableView.columns[2].cellValueFactory = PropertyValueFactory<AtlasView.MinorPlanet, String>("value")
+        (minorPlanetTableView.columns[0] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.element }
+        (minorPlanetTableView.columns[1] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.description }
+        (minorPlanetTableView.columns[2] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.value }
 
-        starTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.Star, String>("name")
-        starTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.Star, Double>("magnitude")
-        starTableView.columns[1].cellFactory = Callback { _ -> MagnitudeTableCell<AtlasView.Star>() }
-        starTableView.columns[2].cellValueFactory = PropertyValueFactory<AtlasView.Star, String>("constellation")
+        (starTableView.columns[0] as TableColumn<AtlasView.Star, String>).cellValueFactory = PropertyValueFactory { it.name }
+        (starTableView.columns[1] as TableColumn<AtlasView.Star, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
+        (starTableView.columns[1] as TableColumn<AtlasView.Star, Double>).cellFactory = Callback { _ -> MagnitudeTableCell<AtlasView.Star>() }
+        (starTableView.columns[2] as TableColumn<AtlasView.Star, String>).cellValueFactory = PropertyValueFactory { it.constellation }
         starTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computeStar(it) }
 
-        dsosTableView.columns[0].cellValueFactory = PropertyValueFactory<AtlasView.DSO, String>("name")
-        dsosTableView.columns[1].cellValueFactory = PropertyValueFactory<AtlasView.DSO, Double>("magnitude")
-        dsosTableView.columns[1].cellFactory = Callback { _ -> MagnitudeTableCell<AtlasView.DSO>() }
-        dsosTableView.columns[2].cellValueFactory = PropertyValueFactory<AtlasView.DSO, String>("type")
-        dsosTableView.columns[3].cellValueFactory = PropertyValueFactory<AtlasView.DSO, String>("constellation")
+        (dsosTableView.columns[0] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.name }
+        (dsosTableView.columns[1] as TableColumn<AtlasView.DSO, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
+        (dsosTableView.columns[1] as TableColumn<AtlasView.DSO, Double>).cellFactory = Callback { _ -> MagnitudeTableCell<AtlasView.DSO>() }
+        (dsosTableView.columns[2] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.type }
+        (dsosTableView.columns[3] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.constellation }
         dsosTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computeDSO(it) }
     }
 

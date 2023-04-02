@@ -48,11 +48,15 @@ class FilterWheelManager(
     }
 
     val filterNames
-        get() = (1..count).map(::computeFilterName)
+        get() = (1..count).map { preferences.filterName(value, it) }
 
     fun updateTitle() {
-        val filterName = computeFilterName(position)
-        view.title = "Filter Wheel · $name · $filterName"
+        if (value == null) {
+            view.title = "Filter Wheel"
+        } else {
+            val filterName = preferences.filterName(value, position)
+            view.title = "Filter Wheel · $name · $filterName"
+        }
     }
 
     fun updateStatus() {
@@ -95,11 +99,6 @@ class FilterWheelManager(
     fun moveTo(position: Int) {
         val task = FilterWheelMoveTask(value ?: return, position)
         taskExecutor.execute(task)
-    }
-
-    fun computeFilterName(position: Int): String {
-        val label = preferences.string("filterWheel.$name.filter.$position.label") ?: ""
-        return label.ifEmpty { "Filter #$position" }
     }
 
     fun syncFilterNames() {
