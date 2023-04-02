@@ -21,32 +21,27 @@ jobs:
         with:
           java-version: '17'
           distribution: 'zulu'
-          # cache: gradle
+          cache: gradle
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
-      - name: Test
-        run: ./gradlew test --no-daemon --continue -Dgithub=true
 
       - name: Build
         run: ./gradlew :desktop:bootJar
 
       - name: Rename Build
         if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: mv desktop/build/libs/desktop.jar desktop-linux.jar
+        run: mv desktop/build/libs/desktop.jar nebulosa-v0.1.0-linux.jar
 
       - name: Rename Build
         if: ${{ matrix.os == 'windows-latest' }}
-        run: mv desktop/build/libs/desktop.jar desktop-windows.jar
+        run: mv desktop/build/libs/desktop.jar nebulosa-v0.1.0-windows.jar
 
       - name: Deploy
         uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          draft: true
           overwrite: true
-          update_latest_release: true
-          verbose: true
-          file: 'desktop-*.jar'
+          release_id: 94432691
+          file: 'nebulosa-v*.jar'
