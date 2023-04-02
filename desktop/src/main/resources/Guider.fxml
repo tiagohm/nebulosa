@@ -1,31 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.collections.FXCollections?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Spinner?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
-<?import nebulosa.desktop.gui.control.ImageButton?>
-<?import nebulosa.desktop.gui.control.ImageViewer?>
-<?import nebulosa.desktop.gui.control.LabeledPane?>
-<?import nebulosa.desktop.gui.control.MaterialIcon?>
-<?import nebulosa.desktop.gui.control.MaterialIconButton?>
-<?import nebulosa.desktop.gui.control.SwitchSegmentedButton?>
-<?import nebulosa.desktop.gui.control.TwoStateButton?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.control.*?>
 <?import nebulosa.desktop.gui.guider.GuiderChart?>
 <?import nebulosa.desktop.gui.guider.GuiderChartTicks?>
 <?import nebulosa.desktop.gui.guider.StarProfileGraph?>
-<?import nebulosa.desktop.view.guider.DitherMode?>
-<?import nebulosa.desktop.view.guider.GuideAlgorithmType?>
+<?import nebulosa.desktop.view.guider.*?>
 <?import nebulosa.guiding.internal.DeclinationGuideMode?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
@@ -250,7 +233,96 @@
                 </GridPane>
             </Tab>
             <Tab text="Guiding">
-
+                <GridPane vgap="4.0"
+                          hgap="4.0">
+                    <padding>
+                        <Insets top="4.0"/>
+                    </padding>
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                    </columnConstraints>
+                    <LabeledPane text="Exposure Time (ms)"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="0">
+                        <Spinner fx:id="exposureTimeSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="1.0"
+                                 initialValue="1000.0"
+                                 amountToStepBy="1.0"
+                                 max="60000.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Exposure Delay (s)"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="1">
+                        <Spinner fx:id="exposureDelaySpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="0.0"
+                                 initialValue="0.0"
+                                 amountToStepBy="1.0"
+                                 max="60.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Search Region (px)"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="0">
+                        <Spinner fx:id="searchRegionSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="7.0"
+                                 initialValue="15.0"
+                                 amountToStepBy="1.0"
+                                 max="50.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Minimum Star HFD (px)"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="1">
+                        <Spinner fx:id="minimumStarHFDSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="0.1"
+                                 initialValue="1.5"
+                                 amountToStepBy="0.1"
+                                 max="10.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Multiple Stars"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="2">
+                        <SwitchSegmentedButton fx:id="multipleStarsSwitch"
+                                               state="true"/>
+                    </LabeledPane>
+                    <LabeledPane text="Star Mass Detection"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="2"
+                                 GridPane.columnIndex="0">
+                        <SwitchSegmentedButton fx:id="starMassDetectionSwitch"
+                                               state="true"/>
+                    </LabeledPane>
+                    <LabeledPane text="Star Mass Tolerance (%)"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="1"
+                                 GridPane.columnIndex="1">
+                        <Spinner fx:id="starMassDetectionToleranceSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="10.0"
+                                 initialValue="50.0"
+                                 amountToStepBy="0.1"
+                                 max="100.0"/>
+                    </LabeledPane>
+                </GridPane>
             </Tab>
             <Tab text="Dithering">
                 <GridPane vgap="4.0"

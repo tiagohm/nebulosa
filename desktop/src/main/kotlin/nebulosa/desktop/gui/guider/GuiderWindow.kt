@@ -94,8 +94,15 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML private lateinit var settlePixelToleranceSpinner: Spinner<Double>
     @FXML private lateinit var minimumSettleTimeSpinner: Spinner<Double>
     @FXML private lateinit var settleTimeoutSpinner: Spinner<Double>
+    @FXML private lateinit var exposureTimeSpinner: Spinner<Double>
+    @FXML private lateinit var exposureDelaySpinner: Spinner<Double>
+    @FXML private lateinit var searchRegionSpinner: Spinner<Double>
+    @FXML private lateinit var minimumStarHFDSpinner: Spinner<Double>
+    @FXML private lateinit var multipleStarsSwitch: SwitchSegmentedButton
+    @FXML private lateinit var starMassDetectionSwitch: SwitchSegmentedButton
+    @FXML private lateinit var starMassDetectionToleranceSpinner: Spinner<Double>
 
-    private val starProfileData = IntArray(64 * 64)
+    private val starProfileImageData = IntArray(64 * 64)
     private val starProfileIndicator = StarProfileIndicator()
 
     init {
@@ -312,9 +319,9 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
                 val centerY = (lockPosition.y - size / 2).toInt()
                 val profileImage = image.transform(SubFrame(centerX, centerY, size.toInt(), size.toInt()), AutoScreenTransformFunction)
 
-                profileImage.writeTo(starProfileData)
+                profileImage.writeTo(starProfileImageData)
 
-                val buffer = IntBuffer.wrap(starProfileData)
+                val buffer = IntBuffer.wrap(starProfileImageData)
                 val pixelBuffer = PixelBuffer(profileImage.width, profileImage.height, buffer, PixelFormat.getIntArgbPreInstance())
                 val writableImage = WritableImage(pixelBuffer)
 
