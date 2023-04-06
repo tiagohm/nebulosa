@@ -19,7 +19,6 @@ import nebulosa.jmetro.FlatAlert
 import nebulosa.jmetro.JMetro
 import nebulosa.jmetro.JMetroStyleClass
 import nebulosa.jmetro.Style
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import java.util.concurrent.ExecutorService
@@ -58,7 +57,7 @@ abstract class AbstractWindow(
                 root.styleClass.add(JMetroStyleClass.BACKGROUND)
                 root.stylesheets.add("css/Global.css")
 
-                mainScope.launch(Dispatchers.Main) { onCreate() }
+                launch { onCreate() }
 
                 CLOSE
                     .filter { !it }
@@ -72,10 +71,10 @@ abstract class AbstractWindow(
             }
         }
 
-        window.setOnShown { mainScope.launch(Dispatchers.Main) { onStart() } }
+        window.setOnShown { launch { onStart() } }
 
         window.setOnHiding {
-            mainScope.launch(Dispatchers.Main) {
+            launch {
                 onStop()
 
                 if (this@AbstractWindow is HomeWindow) {
@@ -195,15 +194,8 @@ abstract class AbstractWindow(
         return mainScope.launch(Dispatchers.Main, block = block)
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    protected inline fun launchIO(noinline block: suspend CoroutineScope.() -> Unit): Job {
-        return mainScope.launch(Dispatchers.IO, block = block)
-    }
-
     companion object {
 
         @JvmStatic internal val CLOSE = PublishSubject.create<Boolean>()
-
-        @JvmStatic private val LOG = LoggerFactory.getLogger(AbstractWindow::class.java)
     }
 }

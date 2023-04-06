@@ -1,11 +1,12 @@
 package nebulosa.desktop.gui.control.annotation
 
-import javafx.application.Platform
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.text.Text
 import javafx.scene.text.TextAlignment
 import nebulosa.desktop.gui.control.ShapePane
+import nebulosa.desktop.withIO
+import nebulosa.desktop.withMain
 import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import nebulosa.skycatalog.DSO
@@ -34,7 +35,7 @@ class SkyCatalogAnnotation : ShapePane() {
         colors.remove(catalog)
     }
 
-    fun drawAround(calibration: Calibration) {
+    suspend fun drawAround(calibration: Calibration) = withIO {
         val wcs = WCSTransform(calibration)
 
         val stars = ArrayList<Pair<Circle, Text>>(32)
@@ -44,13 +45,14 @@ class SkyCatalogAnnotation : ShapePane() {
         for (catalog in catalogs) {
             val color = colors[catalog] ?: Color.YELLOW
 
-            stars.addAll(catalog
-                .searchAround(calibration.rightAscension, calibration.declination, calibration.radius)
-                .map { wcs.worldToPixel(it.rightAscension, it.declination).makeShapes(it, calibration, color) }
-                .filter { it.first.intersects(0.0, 0.0, width, height) })
+            stars.addAll(
+                catalog
+                    .searchAround(calibration.rightAscension, calibration.declination, calibration.radius)
+                    .map { wcs.worldToPixel(it.rightAscension, it.declination).makeShapes(it, calibration, color) }
+                    .filter { it.first.intersects(0.0, 0.0, width, height) })
         }
 
-        Platform.runLater {
+        withMain {
             children.removeAll { it is Circle || it is Text }
             stars.forEach { add(it.first); add(it.second) }
             redraw()

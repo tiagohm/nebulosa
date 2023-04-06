@@ -2,12 +2,12 @@ package nebulosa.desktop.logic.framing
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.beans.property.SimpleBooleanProperty
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.desktop.view.image.ImageView
+import nebulosa.desktop.withIO
+import nebulosa.desktop.withMain
 import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
 import nebulosa.fits.FITS_RA_ANGLE_FORMATTER
 import nebulosa.hips2fits.FormatOutputType
@@ -70,13 +70,13 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
             return null
         }
 
-        withContext(Dispatchers.Main) { loading.set(true) }
+        withMain { loading.set(true) }
 
         val rotation = view.frameRotation
         lateinit var hipsSurvey: HipsSurvey
         var path: Path? = null
 
-        withContext(Dispatchers.IO) {
+        withIO {
             val data = try {
                 hipsSurvey = view.hipsSurvey!!
 
@@ -95,11 +95,11 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
                 ).execute().body()!!
             } catch (e: InterruptedIOException) {
                 view.showAlert("Image took a long time to load. Please try again.")
-                return@withContext
+                return@withIO
             } catch (e: Throwable) {
                 LOG.error("failed to load image", e)
                 view.showAlert("Failed to load image. Try using other survey source.")
-                return@withContext
+                return@withIO
             }
 
             savePreferences()
@@ -119,7 +119,7 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
 
             val currentImageView = imageView.get()
 
-            withContext(Dispatchers.Main) {
+            withMain {
                 try {
                     if (currentImageView != null) {
                         currentImageView.open(image, path!!.toFile(), resetTransformation = true)
@@ -134,16 +134,13 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
             }
         }
 
-        withContext(Dispatchers.Main) { loading.set(false) }
+        withMain { loading.set(false) }
 
         return path
     }
 
-    suspend fun populateHipsSurveys() {
-        val data = withContext(Dispatchers.IO) {
-            objectMapper.readValue(resource("data/HIPS_SURVEY_SOURCES.json")!!, Array<HipsSurvey>::class.java)
-        }
-
+    suspend fun populateHipsSurveys() = withIO {
+        val data = objectMapper.readValue(resource("data/HIPS_SURVEY_SOURCES.json")!!, Array<HipsSurvey>::class.java)
         val hipsSurveyId = preferences.string("framing.hipsSurvey") ?: DEFAULT_HIPS_SURVEY
         val selected = data.firstOrNull { it.id == hipsSurveyId }
         view.populateHipsSurveys(data.toList(), selected)

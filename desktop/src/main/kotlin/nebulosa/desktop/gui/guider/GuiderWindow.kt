@@ -12,8 +12,6 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
 import javafx.util.StringConverter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.gui.control.MaterialIcon
@@ -25,6 +23,8 @@ import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.guider.DitherMode
 import nebulosa.desktop.view.guider.GuideAlgorithmType
 import nebulosa.desktop.view.guider.GuiderView
+import nebulosa.desktop.withIO
+import nebulosa.desktop.withMain
 import nebulosa.guiding.GuideStats
 import nebulosa.guiding.Guider
 import nebulosa.guiding.NoiseReductionMethod
@@ -320,18 +320,18 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     override val noiseReductionMethod
         get() = noiseReductionMethodChoiceBox.value!!
 
-    override suspend fun updateStatus(text: String) = withContext(Dispatchers.Main) {
+    override suspend fun updateStatus(text: String) = withMain {
         statusIcon.text = text
     }
 
-    override suspend fun updateStarProfile(guider: Guider, image: Image) = withContext(Dispatchers.Main) {
+    override suspend fun updateStarProfile(guider: Guider, image: Image) = withMain {
         val lockPosition = guider.lockPosition
         val trackBoxSize = searchRegion * 2.0
 
         if (lockPosition.valid) {
             val size = min(trackBoxSize, 64.0)
 
-            systemExecutorService.execute {
+            withIO {
                 val centerX = (lockPosition.x - size / 2).toInt()
                 val centerY = (lockPosition.y - size / 2).toInt()
                 val profileImage = image.transform(SubFrame(centerX, centerY, size.toInt(), size.toInt()), AutoScreenTransformFunction)
@@ -342,7 +342,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
                 val pixelBuffer = PixelBuffer(profileImage.width, profileImage.height, buffer, PixelFormat.getIntArgbPreInstance())
                 val writableImage = WritableImage(pixelBuffer)
 
-                javaFXExecutorService.execute {
+                withMain {
                     starProfileImage.load(writableImage)
                     starProfileIndicator.draw(guider.lockPosition, guider.primaryStar, trackBoxSize)
                     val fwhm = starProfileGraph.draw(image, guider.primaryStar)
@@ -358,14 +358,14 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     override suspend fun updateGraph(
         stats: List<GuideStats>,
         maxRADuration: Double, maxDECDuration: Double,
-    ) = withContext(Dispatchers.Main) {
+    ) = withMain {
         guiderChart.draw(stats, maxRADuration, maxDECDuration)
     }
 
     override suspend fun updateGraphInfo(
         rmsRA: Double, rmsDEC: Double,
         rmsTotal: Double, pixelScale: Double
-    ) = withContext(Dispatchers.Main) {
+    ) = withMain {
         rmsRALabel.text = "%.2f px | %.2f\"".format(rmsRA, rmsRA * pixelScale)
         rmsDECLabel.text = "%.2f px | %.2f\"".format(rmsDEC, rmsDEC * pixelScale)
         rmsTotalLabel.text = "%.2f px | %.2f\"".format(rmsTotal, rmsTotal * pixelScale)

@@ -1,6 +1,7 @@
 package nebulosa.desktop.gui.image
 
 import com.sun.javafx.scene.control.ControlAcceleratorSupport
+import javafx.animation.PauseTransition
 import javafx.beans.property.SimpleObjectProperty
 import javafx.fxml.FXML
 import javafx.geometry.Point2D
@@ -13,18 +14,19 @@ import javafx.scene.image.PixelFormat
 import javafx.scene.image.WritableImage
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import javafx.util.Duration
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.logic.asBoolean
 import nebulosa.desktop.logic.image.ImageManager
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.image.ImageView
+import nebulosa.desktop.withMain
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.stereotype.Service
@@ -50,11 +52,15 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     @Volatile private var imageData = IntArray(0)
     private val imageSecondaryClickLocation = SimpleObjectProperty<Point2D>()
-
+    private val transformer = PauseTransition(Duration.seconds(0.5))
     private val imageManager = ImageManager(this)
 
     init {
         title = "Image"
+
+        transformer.setOnFinished {
+            launch { imageManager.transformAndDraw() }
+        }
     }
 
     override suspend fun onCreate() {
@@ -168,17 +174,17 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     @FXML
     private fun save() {
-        launchIO { imageManager.save() }
+        launch { imageManager.save() }
     }
 
     @FXML
     private fun solve() {
-        launchIO { imageManager.solve(false) }
+        launch { imageManager.solve(false) }
     }
 
     @FXML
     private fun blindSolve() {
-        launchIO { imageManager.solve(true) }
+        launch { imageManager.solve(true) }
     }
 
     @FXML
@@ -188,7 +194,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     @FXML
     private fun autoStretch() {
-        launchIO { imageManager.autoStretch() }
+        launch { imageManager.autoStretch() }
     }
 
     @FXML
@@ -218,12 +224,12 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     @FXML
     private fun toggleCrosshair() {
-        imageManager.toggleCrosshair()
+        launch { imageManager.toggleCrosshair() }
     }
 
     @FXML
     private fun toggleAnnotation() {
-        imageManager.toggleAnnotation()
+        launch { imageManager.toggleAnnotation() }
     }
 
     @FXML
@@ -238,14 +244,14 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         imageSecondaryClickLocation.set(null)
     }
 
-    override suspend fun open(file: File, resetTransformation: Boolean) {
+    override suspend fun open(file: File, resetTransformation: Boolean) = withMain {
         imageManager.open(file, resetTransformation)
-        withContext(Dispatchers.Main) { annotateCheckMenuItem.isSelected = false }
+        annotateCheckMenuItem.isSelected = false
     }
 
-    override suspend fun open(fits: Image, file: File?, resetTransformation: Boolean) {
+    override suspend fun open(fits: Image, file: File?, resetTransformation: Boolean) = withMain {
         imageManager.open(fits, file, resetTransformation)
-        withContext(Dispatchers.Main) { annotateCheckMenuItem.isSelected = false }
+        annotateCheckMenuItem.isSelected = false
     }
 
     override suspend fun adjustSceneToImage() {
@@ -272,7 +278,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     override suspend fun scnr(
         enabled: Boolean, channel: ImageChannel,
         protectionMethod: ProtectionMethod, amount: Float,
-    ) = withContext(Dispatchers.Main) {
+    ) = withMain {
         imageManager.transformImage(
             scnrEnabled = enabled, scnrChannel = channel,
             scnrProtectionMode = protectionMethod,
@@ -280,8 +286,12 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         )
     }
 
-    override suspend fun stf(shadow: Float, highlight: Float, midtone: Float) = withContext(Dispatchers.Main) {
+    override suspend fun stf(shadow: Float, highlight: Float, midtone: Float) = withMain {
         imageManager.transformImage(shadow = shadow, highlight = highlight, midtone = midtone)
+    }
+
+    override fun transformAndDraw() {
+        transformer.playFromStart()
     }
 
     fun updateAnnotationOptions(
@@ -336,7 +346,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             image: Image?, file: File?,
             token: Any?, resetTransformation: Boolean,
         ): ImageView {
-            val window = withContext(Dispatchers.Main) {
+            val window = withMain {
                 if (token != null) {
                     windowsMap[token] ?: ImageWindow(if (token is Camera) token else null)
                 } else {
@@ -350,13 +360,20 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             if (token != null) windowsMap[token] = window
             else windows.add(window)
 
-            withContext(Dispatchers.Main) { window.show() }
+            withMain {
+                window.show().join()
 
-            if (image != null) window.open(image, file, resetTransformation)
-            else if (file != null) window.open(file, resetTransformation = true)
-            else throw IllegalArgumentException("fits or file parameter must be provided")
+                if (image != null) window.open(image, file, resetTransformation)
+                else if (file != null) window.open(file, resetTransformation = true)
+                else LOG.error("fits or file parameter must be provided")
+            }
 
             return window
+        }
+
+        companion object {
+
+            @JvmStatic private val LOG = LoggerFactory.getLogger(Opener::class.java)
         }
     }
 }

@@ -1,8 +1,10 @@
 package nebulosa.desktop.gui.image
 
+import javafx.animation.PauseTransition
 import javafx.fxml.FXML
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Spinner
+import javafx.util.Duration
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.logic.image.SCNRManager
@@ -20,17 +22,20 @@ class SCNRWindow(private val view: ImageView) : AbstractWindow("SCNR", "rgb"), S
     @FXML private lateinit var amountSpinner: Spinner<Double>
 
     private val scnrManager = SCNRManager(this)
+    private val transformer = PauseTransition(Duration.seconds(0.5))
 
     init {
         title = "SCNR"
         resizable = false
+
+        transformer.setOnFinished { launch { scnrManager.apply() } }
     }
 
     override suspend fun onCreate() {
-        channelChoiceBox.valueProperty().on { launchIO { scnrManager.apply() } }
-        protectionMethodChoiceBox.valueProperty().on { launchIO { scnrManager.apply() } }
-        amountSpinner.valueProperty().on { launchIO { scnrManager.apply() } }
-        enabledSwitch.stateProperty.on { launchIO { scnrManager.apply() } }
+        channelChoiceBox.valueProperty().on { transformer.playFromStart() }
+        protectionMethodChoiceBox.valueProperty().on { transformer.playFromStart() }
+        amountSpinner.valueProperty().on { transformer.playFromStart() }
+        enabledSwitch.stateProperty.on { transformer.playFromStart() }
     }
 
     override val amount

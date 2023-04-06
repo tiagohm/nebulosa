@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.image.FitsHeaderManager
 import nebulosa.desktop.view.image.FitsHeaderView
+import nebulosa.desktop.withMain
 import nom.tam.fits.Header
 
 class FitsHeaderWindow : AbstractWindow("FitsHeader", "text-box"), FitsHeaderView {
@@ -19,11 +20,11 @@ class FitsHeaderWindow : AbstractWindow("FitsHeader", "text-box"), FitsHeaderVie
         title = "FITS Header"
     }
 
-    override suspend fun updateText(text: String) = withContext(Dispatchers.Main) {
+    override suspend fun updateText(text: String) = withMain {
         cardsTextArea.text = text
     }
 
-    override suspend fun load(header: Header) = withContext(Dispatchers.Main) {
+    override suspend fun load(header: Header) = withMain {
         fitsHeaderManager.load(header)
     }
 }

@@ -3,13 +3,17 @@ package nebulosa.desktop.logic.atlas
 import eu.hansolo.fx.charts.data.XYChartItem
 import eu.hansolo.fx.charts.data.XYItem
 import javafx.beans.property.SimpleBooleanProperty
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.atlas.ephemeris.provider.BodyEphemerisProvider
 import nebulosa.desktop.logic.atlas.ephemeris.provider.HorizonsEphemerisProvider
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.framing.FramingView
+import nebulosa.desktop.withIO
+import nebulosa.desktop.withMain
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsEphemeris
 import nebulosa.horizons.HorizonsQuantity
@@ -42,7 +46,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import java.io.Closeable
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -52,7 +55,7 @@ import kotlin.math.max
 
 @Component
 @EnableScheduling
-class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
+class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() {
 
     private val ephemerisCache = hashMapOf<Any, HorizonsEphemeris?>()
     private val rtsCache = hashMapOf<Any, Triple<String, String, String>>()
@@ -95,24 +98,22 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     fun initialize() {
         eventBus.register(this)
 
-        val longitude = mount?.longitude ?: preferences.double("atlas.longitude")?.rad ?: Angle.ZERO
-        val latitude = mount?.latitude ?: preferences.double("atlas.latitude")?.rad ?: Angle.ZERO
-        val elevation = mount?.elevation ?: preferences.double("atlas.elevation")?.au ?: Distance.ZERO
+        launch {
+            val longitude = mount?.longitude ?: preferences.double("atlas.longitude")?.rad ?: Angle.ZERO
+            val latitude = mount?.latitude ?: preferences.double("atlas.latitude")?.rad ?: Angle.ZERO
+            val elevation = mount?.elevation ?: preferences.double("atlas.elevation")?.au ?: Distance.ZERO
 
-        observer = Geoid.IERS2010.latLon(longitude, latitude, elevation)
-        updateTitle()
+            observer = Geoid.IERS2010.latLon(longitude, latitude, elevation)
+            updateTitle()
+        }
     }
 
     @Subscribe
-    @OptIn(DelicateCoroutinesApi::class)
     fun onMountEvent(event: MountEvent) {
         if (event.device !== equipmentManager.selectedMount.value) return
 
         when (event) {
             is MountGeographicCoordinateChanged -> {
-                observer = Geoid.IERS2010.latLon(event.device.longitude, event.device.latitude, event.device.elevation)
-                updateTitle()
-
                 preferences.double("atlas.longitude", event.device.longitude.value)
                 preferences.double("atlas.latitude", event.device.latitude.value)
                 preferences.double("atlas.elevation", event.device.elevation.value)
@@ -120,7 +121,10 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
                 ephemerisCache.clear()
                 pointsCache.clear()
 
-                GlobalScope.launch(Dispatchers.IO) {
+                launch {
+                    observer = Geoid.IERS2010.latLon(event.device.longitude, event.device.latitude, event.device.elevation)
+                    updateTitle()
+
                     computeSun()
                     computeTab()
                 }
@@ -128,7 +132,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         }
     }
 
-    private fun updateTitle() {
+    private suspend fun updateTitle() = withMain {
         view.title = "Atlas · LAT: %.04f° LNG: %.04f° ELEV: %.0fm".format(
             observer!!.latitude.degrees, observer!!.longitude.degrees, observer!!.elevation.meters
         )
@@ -160,7 +164,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         runBlocking { computeTab() }
     }
 
-    suspend fun populatePlanets() {
+    suspend fun populatePlanets() = withIO {
         val planets = listOf(
             AtlasView.Planet("Mercury", "Planet", "199"),
             AtlasView.Planet("Venus", "Planet", "299"),
@@ -202,13 +206,13 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         view.populatePlanet(planets)
     }
 
-    suspend fun populateStars() {
-        val stars = withContext(Dispatchers.IO) { hygDatabase.map { AtlasView.Star(it) } }
+    suspend fun populateStars() = withIO {
+        val stars = hygDatabase.map { AtlasView.Star(it) }
         view.populateStar(stars)
     }
 
-    suspend fun populateDSOs() {
-        val dsos = withContext(Dispatchers.IO) { nebula.map { AtlasView.DSO(it) } }
+    suspend fun populateDSOs() = withIO {
+        val dsos = nebula.map { AtlasView.DSO(it) }
         view.populateDSOs(dsos)
     }
 
@@ -294,7 +298,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         civilDawn[1] = a[7] / 60.0
     }
 
-    private suspend fun HorizonsEphemeris.computeRTS(altitudes: DoubleArray, target: Any, force: Boolean) = withContext(Dispatchers.IO) {
+    private suspend fun HorizonsEphemeris.computeRTS(altitudes: DoubleArray, target: Any, force: Boolean) = withIO {
         if (force) {
             LOG.info("computing RTS. target={}", target)
 
@@ -316,14 +320,14 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         view.updateRTS(rtsCache[target]!!)
     }
 
-    private suspend fun HorizonsEphemeris.computeTwilightAndRTS(target: Any, force: Boolean) = withContext(Dispatchers.Main) {
+    private suspend fun HorizonsEphemeris.computeTwilightAndRTS(target: Any, force: Boolean) = withIO {
         LOG.info("computing twilight and RTS. target={}, force={}", target, force)
         val altitudes = DoubleArray(elements.size) { elements[it][HorizonsQuantity.APPARENT_ALT]!!.toDouble() }
         if (force && target == "10") computeTwilight(altitudes, target)
         computeRTS(altitudes, target, force)
     }
 
-    private suspend fun drawAltitude(points: List<XYItem>) = withContext(Dispatchers.IO) {
+    private suspend fun drawAltitude(points: List<XYItem>) = withIO {
         val now = (LocalTime.now().toSecondOfDay() / 3600.0 - 12.0) pmod 24.0
 
         LOG.info("drawing altitude chart. now={}", now)
@@ -340,48 +344,46 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         target: Any,
         force: Boolean = false,
         show: Boolean = true,
-    ): HorizonsEphemeris? {
-        val observer = observer ?: return null
+    ) = withIO {
+        val observer = observer ?: return@withIO null
 
-        withContext(Dispatchers.Main) { computing.set(true) }
+        withMain { computing.set(true) }
 
-        return withContext(Dispatchers.IO) {
-            LOG.info("computing altitude. target={}, force={}, show={}", target, force, show)
+        LOG.info("computing altitude. target={}, force={}, show={}", target, force, show)
 
-            try {
-                val prevEphemeris = ephemerisCache[target]
+        try {
+            val prevEphemeris = ephemerisCache[target]
 
-                val ephemeris = when (target) {
-                    "301" -> horizonsEphemerisProvider.compute("301", observer, force, HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE)
-                    is String -> horizonsEphemerisProvider.compute(target, observer, force)
-                    is Body -> bodyEphemerisProvider.compute(target, observer, force)
-                    else -> null
-                }
-
-                if (ephemeris != null) {
-                    ephemerisCache[target] = ephemeris
-
-                    ephemeris.computeTwilightAndRTS(target, ephemeris !== prevEphemeris)
-                }
-
-                if (ephemeris == null) {
-                    view.clearAltitudeAndCoordinates()
-                    LOG.error("unable to retrieve ephemeris. target={}", target)
-                } else if (ephemeris.isEmpty()) {
-                    view.clearAltitudeAndCoordinates()
-                    LOG.warn("retrieved empty epheremis. target={}", target)
-                } else {
-                    LOG.info("ephemeris was retrieved. target={}, start={}, end={}", target, ephemeris.start, ephemeris.endInclusive)
-                    if (show) ephemeris.showBodyCoordinatesAndInfos(target)
-                }
-
-                ephemeris
-            } catch (e: Throwable) {
-                LOG.error("failed to retrieve ephemeris.", e)
-                null
-            } finally {
-                withContext(Dispatchers.Main) { computing.set(false) }
+            val ephemeris = when (target) {
+                "301" -> horizonsEphemerisProvider.compute("301", observer, force, HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE)
+                is String -> horizonsEphemerisProvider.compute(target, observer, force)
+                is Body -> bodyEphemerisProvider.compute(target, observer, force)
+                else -> null
             }
+
+            if (ephemeris != null) {
+                ephemerisCache[target] = ephemeris
+
+                ephemeris.computeTwilightAndRTS(target, ephemeris !== prevEphemeris)
+            }
+
+            if (ephemeris == null) {
+                view.clearAltitudeAndCoordinates()
+                LOG.error("unable to retrieve ephemeris. target={}", target)
+            } else if (ephemeris.isEmpty()) {
+                view.clearAltitudeAndCoordinates()
+                LOG.warn("retrieved empty epheremis. target={}", target)
+            } else {
+                LOG.info("ephemeris was retrieved. target={}, start={}, end={}", target, ephemeris.start, ephemeris.endInclusive)
+                if (show) ephemeris.showBodyCoordinatesAndInfos(target)
+            }
+
+            ephemeris
+        } catch (e: Throwable) {
+            LOG.error("failed to retrieve ephemeris.", e)
+            null
+        } finally {
+            withMain { computing.set(false) }
         }
     }
 
@@ -399,7 +401,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         computeHorizontalCoordinates(element)
     }
 
-    private suspend fun computeEquatorialCoordinates(element: HorizonsElement) {
+    private suspend fun computeEquatorialCoordinates(element: HorizonsElement) = withIO {
         val raJ2000 = element[HorizonsQuantity.ASTROMETRIC_RA]?.toDoubleOrNull()?.deg ?: Angle.ZERO
         val decJ2000 = element[HorizonsQuantity.ASTROMETRIC_DEC]?.toDoubleOrNull()?.deg ?: Angle.ZERO
         val ra = element[HorizonsQuantity.APPARENT_RA]?.toDoubleOrNull()?.deg ?: Angle.ZERO
@@ -409,7 +411,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         view.updateEquatorialCoordinates(ra, dec, raJ2000, decJ2000, constellation)
     }
 
-    private suspend fun computeHorizontalCoordinates(element: HorizonsElement) {
+    private suspend fun computeHorizontalCoordinates(element: HorizonsElement) = withIO {
         val az = element[HorizonsQuantity.APPARENT_AZ]?.toDoubleOrNull()?.deg ?: Angle.ZERO
         val alt = element[HorizonsQuantity.APPARENT_ALT]?.toDoubleOrNull()?.deg ?: Angle.ZERO
         view.updateHorizontalCoordinates(az, alt)
@@ -464,6 +466,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
                 }
 
             view.populateMinorPlanet(elements)
+
             computeMinorPlanet(smallBody)
         }
     }
@@ -494,7 +497,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     }
 
     suspend fun frame(ra: Angle, dec: Angle) {
-        framingView.show(bringToFront = true)
+        framingView.show(bringToFront = true).join()
         framingView.load(ra, dec)
     }
 
@@ -511,6 +514,8 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
     }
 
     override fun close() {
+        super.close()
+
         savePreferences()
 
         eventBus.unregister(this)

@@ -15,6 +15,7 @@ import nebulosa.desktop.logic.or
 import nebulosa.desktop.logic.platesolver.PlateSolverManager
 import nebulosa.desktop.view.platesolver.PlateSolverType
 import nebulosa.desktop.view.platesolver.PlateSolverView
+import nebulosa.desktop.withMain
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.AngleFormatter
@@ -174,11 +175,13 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
 
     @FXML
     private fun solve() {
-        try {
-            launchIO { plateSolverManager.solve() }
-        } catch (e: NullPointerException) {
-            LOG.error("plate solve failed.", e)
-            showAlert("Center coordinate or radius value is invalid")
+        launch {
+            try {
+                plateSolverManager.solve()
+            } catch (e: NullPointerException) {
+                LOG.error("plate solve failed.", e)
+                showAlert("Center coordinate or radius value is invalid")
+            }
         }
     }
 
@@ -204,7 +207,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
 
     @FXML
     private fun frame() {
-        launchIO { plateSolverManager.frame() }
+        launch { plateSolverManager.frame() }
     }
 
     override suspend fun solve(
@@ -212,7 +215,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
         blind: Boolean,
         centerRA: Angle, centerDEC: Angle,
         radius: Angle,
-    ) = withContext(Dispatchers.Main) {
+    ) = withMain {
         blindSwitch.state = blind
         centerRATextField.text = centerRA.format(AngleFormatter.HMS)
         centerDECTextField.text = centerDEC.format(AngleFormatter.SIGNED_DMS)

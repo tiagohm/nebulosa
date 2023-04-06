@@ -1,10 +1,10 @@
 package nebulosa.desktop.gui.control
 
-import javafx.application.Platform
 import javafx.beans.property.DoubleProperty
 import javafx.beans.property.DoublePropertyBase
 import javafx.scene.Node
 import javafx.scene.layout.Pane
+import nebulosa.desktop.withMain
 
 abstract class ShapePane : Pane() {
 
@@ -24,9 +24,8 @@ abstract class ShapePane : Pane() {
 
     internal abstract fun redraw(width: Double, height: Double)
 
-    fun redraw() {
-        if (Platform.isFxApplicationThread()) redraw(widthProperty.get(), heightProperty.get())
-        else Platform.runLater { redraw(widthProperty.get(), heightProperty.get()) }
+    suspend fun redraw() = withMain {
+        redraw(widthProperty.get(), heightProperty.get())
     }
 
     final override fun isResizable() = true

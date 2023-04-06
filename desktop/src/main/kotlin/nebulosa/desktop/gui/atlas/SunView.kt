@@ -6,6 +6,8 @@ import javafx.scene.image.PixelFormat
 import javafx.scene.image.WritableImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import nebulosa.desktop.withIO
+import nebulosa.desktop.withMain
 import java.net.URL
 import java.nio.IntBuffer
 import javax.imageio.ImageIO
@@ -16,7 +18,7 @@ class SunView : Canvas() {
 
     @Volatile private var image: WritableImage? = null
 
-    suspend fun updateImage() = withContext(Dispatchers.IO) {
+    suspend fun updateImage() = withIO {
         val sunImage = ImageIO.read(URL("https://sdo.gsfc.nasa.gov/assets/img/latest/latest_256_HMIIF.jpg"))
         val data = IntArray(sunImage.width * sunImage.height)
 
@@ -54,7 +56,7 @@ class SunView : Canvas() {
         val pixelBuffer = PixelBuffer(sunImage.width, sunImage.height, buffer, PixelFormat.getIntArgbPreInstance())
         image = WritableImage(pixelBuffer)
 
-        withContext(Dispatchers.Main) { draw() }
+        withMain { draw() }
     }
 
     fun draw() {

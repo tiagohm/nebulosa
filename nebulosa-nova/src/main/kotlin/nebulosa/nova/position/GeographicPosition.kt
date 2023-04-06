@@ -2,10 +2,8 @@ package nebulosa.nova.position
 
 import nebulosa.constants.ANGULAR_VELOCITY
 import nebulosa.constants.DAYSEC
-import nebulosa.erfa.eraRefco
 import nebulosa.erfa.eraSp00
 import nebulosa.math.*
-import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Pressure.Companion.pressure
 import nebulosa.math.Temperature.Companion.celsius
 import nebulosa.nova.frame.Frame
@@ -49,15 +47,17 @@ class GeographicPosition(
         pressure: Pressure = elevation.pressure(temperature),
         relativeHumidity: Double = 0.5,
     ): Angle {
-        val sina = altitude.sin
-        if (sina == 0.0) return altitude
-        val (a, b) = eraRefco(pressure.value, temperature.value, relativeHumidity, 0.4)
-        val cosa = altitude.cos
-        // A*tan(z)+B*tan^3(z) model.
-        val tanZ = cosa / sina
-        val w = b.value * tanZ * tanZ
-        val delta = (a.value + w) * tanZ
-        return altitude + delta.rad
+        return altitude
+        // TODO: Fix it.
+        // val sina = altitude.sin
+        // if (sina == 0.0) return altitude
+        // val (a, b) = eraRefco(pressure.value, temperature.value, relativeHumidity, 0.4)
+        // val cosa = altitude.cos
+        // // A*tan(z)+B*tan^3(z) model.
+        // val tanZ = cosa / sina
+        // val w = b.value * tanZ * tanZ
+        // val delta = (a.value + w) * tanZ
+        // return altitude + delta.rad
     }
 
     /**

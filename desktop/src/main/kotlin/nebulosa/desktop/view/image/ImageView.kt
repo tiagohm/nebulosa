@@ -75,6 +75,8 @@ interface ImageView : View {
         resetTransformation: Boolean = false,
     )
 
+    fun transformAndDraw()
+
     fun redraw()
 
     fun addFirst(shape: Node)

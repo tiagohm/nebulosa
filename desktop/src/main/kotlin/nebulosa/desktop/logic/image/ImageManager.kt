@@ -1,20 +1,17 @@
 package nebulosa.desktop.logic.image
 
-import javafx.animation.PauseTransition
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import javafx.stage.Screen
-import javafx.util.Duration
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runBlocking
 import nebulosa.desktop.gui.control.annotation.Crosshair
 import nebulosa.desktop.gui.control.annotation.SkyCatalogAnnotation
 import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
+import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.platesolver.PlateSolvingEvent
@@ -24,6 +21,8 @@ import nebulosa.desktop.view.image.ImageStretcherView
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.image.SCNRView
 import nebulosa.desktop.view.platesolver.PlateSolverView
+import nebulosa.desktop.withIO
+import nebulosa.desktop.withMain
 import nebulosa.fits.dec
 import nebulosa.fits.ra
 import nebulosa.imaging.Image
@@ -37,22 +36,17 @@ import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Header
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import java.io.Closeable
 import java.io.File
-import java.util.concurrent.ExecutorService
 import javax.imageio.ImageIO
 import kotlin.math.max
 
-class ImageManager(private val view: ImageView) : Closeable {
+class ImageManager(private val view: ImageView) : AbstractManager() {
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var plateSolverView: PlateSolverView
-    @Autowired private lateinit var javaFXExecutorService: ExecutorService
-    @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var nebula: Nebula
     @Autowired private lateinit var hygDatabase: HygDatabase
@@ -68,7 +62,6 @@ class ImageManager(private val view: ImageView) : Closeable {
     private val screenBounds = Screen.getPrimary().bounds
     private val crosshair = Crosshair()
     private val skyCatalogAnnotation = SkyCatalogAnnotation()
-    private val transformer = PauseTransition(Duration.seconds(0.5))
 
     @Volatile private var imageStretcherView: ImageStretcherView? = null
     @Volatile private var fitsHeaderView: FitsHeaderView? = null
@@ -103,12 +96,6 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     val calibration = SimpleObjectProperty<Calibration>()
 
-    init {
-        transformer.setOnFinished {
-            GlobalScope.launch { transformAndDraw() }
-        }
-    }
-
     fun initialize() {
         eventBus.register(this)
 
@@ -122,35 +109,35 @@ class ImageManager(private val view: ImageView) : Closeable {
         view.addFirst(skyCatalogAnnotation)
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
+    @Subscribe
     fun onPlateSolvingEvent(event: PlateSolvingEvent) {
         if (event.file === file.get()) {
-            with(if (event is PlateSolvingSolved) event.calibration else null) {
-                calibration.set(this)
+            runBlocking(Dispatchers.Main) {
+                with(if (event is PlateSolvingSolved) event.calibration else null) {
+                    calibration.set(this)
 
-                if (this != null) {
-                    systemExecutorService.execute { skyCatalogAnnotation.drawAround(this) }
-                    skyCatalogAnnotation.isVisible = view.annotationEnabled
-                } else {
-                    skyCatalogAnnotation.isVisible = false
+                    if (this != null) {
+                        skyCatalogAnnotation.drawAround(this)
+                        skyCatalogAnnotation.isVisible = view.annotationEnabled
+                    } else {
+                        skyCatalogAnnotation.isVisible = false
+                    }
                 }
             }
         }
     }
 
-    private suspend fun updateTitle() {
+    private suspend fun updateTitle() = withMain {
         val title = "Image"
             .let { if (view.camera != null) "$it · ${view.camera!!.name}" else it }
             .let { if (file.get() != null) "$it · ${file.get().name}" else it }
 
-        withContext(Dispatchers.Main) { view.title = title }
+        view.title = title
     }
 
-    suspend fun open(file: File, resetTransformation: Boolean = false) {
-        withContext(Dispatchers.IO) {
-            val image = Image.open(file)
-            open(image, file, resetTransformation)
-        }
+    suspend fun open(file: File, resetTransformation: Boolean = false) = withIO {
+        val image = Image.open(file)
+        open(image, file, resetTransformation)
     }
 
     suspend fun open(image: Image, file: File? = null, resetTransformation: Boolean = false) {
@@ -165,9 +152,10 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         calibration.set(null)
 
-        skyCatalogAnnotation.isVisible = false
-
-        withContext(Dispatchers.Main) { view.hasScnr = !image.mono }
+        withMain {
+            skyCatalogAnnotation.isVisible = false
+            view.hasScnr = !image.mono
+        }
 
         if (resetTransformation) {
             shadow = 0f
@@ -219,8 +207,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         this.scnrProtectionMode = scnrProtectionMode
         this.scnrAmount = scnrAmount
 
-        // TODO: Mover todos os PauseTransition para o View.
-        transformer.playFromStart()
+        view.transformAndDraw()
     }
 
     @Synchronized
@@ -248,12 +235,10 @@ class ImageManager(private val view: ImageView) : Closeable {
         }
     }
 
-    private suspend fun transformAndDraw() {
-        withContext(Dispatchers.IO) {
-            transformImage()
-            draw()
-            drawHistogram()
-        }
+    suspend fun transformAndDraw() = withIO {
+        transformImage()
+        draw()
+        drawHistogram()
     }
 
     fun mirrorHorizontal() {
@@ -268,11 +253,11 @@ class ImageManager(private val view: ImageView) : Closeable {
         transformImage(invert = view.invert)
     }
 
-    fun toggleCrosshair() {
+    suspend fun toggleCrosshair() = withMain {
         crosshair.isVisible = !crosshair.isVisible
     }
 
-    fun toggleAnnotation() {
+    suspend fun toggleAnnotation() = withMain {
         skyCatalogAnnotation.isVisible = view.annotationEnabled
     }
 
@@ -303,7 +288,7 @@ class ImageManager(private val view: ImageView) : Closeable {
             ?: (screenBounds.height / 2)
         else view.height - view.titleHeight
 
-        withContext(Dispatchers.Main) {
+        withMain {
             if (factor >= 1.0) {
                 view.width = defaultWidth + view.borderSize
                 view.height = defaultWidth / factor + view.titleHeight
@@ -352,9 +337,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         val file = file.get() ?: return false
         val image = image ?: return false
 
-        val job = plateSolverView.show(bringToFront = true)
-
-        job.join()
+        plateSolverView.show(bringToFront = true).join()
 
         val ra = image.header.ra
         val dec = image.header.dec
@@ -398,7 +381,7 @@ class ImageManager(private val view: ImageView) : Closeable {
     suspend fun openFitsHeader() {
         val header = image?.header ?: return
         fitsHeaderView = fitsHeaderView ?: FitsHeaderWindow()
-        fitsHeaderView!!.show(bringToFront = true)
+        fitsHeaderView!!.show(bringToFront = true).join()
         fitsHeaderView!!.load(header)
     }
 
@@ -425,6 +408,8 @@ class ImageManager(private val view: ImageView) : Closeable {
     }
 
     override fun close() {
+        super.close()
+
         image = null
         transformedImage = null
 

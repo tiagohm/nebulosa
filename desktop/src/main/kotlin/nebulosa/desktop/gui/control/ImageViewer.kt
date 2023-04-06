@@ -13,6 +13,7 @@ import javafx.scene.input.ScrollEvent
 import javafx.scene.layout.StackPane
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import nebulosa.desktop.withMain
 import net.kurobako.gesturefx.GesturePane
 import kotlin.math.exp
 import kotlin.math.max
@@ -113,7 +114,7 @@ class ImageViewer : GesturePane(null as Node?) {
         }
     }
 
-    suspend fun resetZoom() = withContext(Dispatchers.Main) {
+    suspend fun resetZoom() = withMain {
         zoomTo(0.0, targetPointAtViewportCentre())
     }
 

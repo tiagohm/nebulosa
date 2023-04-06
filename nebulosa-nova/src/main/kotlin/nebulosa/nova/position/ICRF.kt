@@ -273,7 +273,7 @@ open class ICRF protected constructor(
                 val refracted = position.center.refract(coordinate.latitude, temperature, pressure)
                 coordinate.copy(phi = refracted)
             } else {
-                return coordinate
+                coordinate
             }
         }
 

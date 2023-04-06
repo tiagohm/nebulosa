@@ -5,13 +5,12 @@ import javafx.fxml.FXML
 import javafx.scene.control.Slider
 import javafx.scene.control.Spinner
 import javafx.util.Duration
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.image.ImageStretcherManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.view.image.ImageStretcherView
 import nebulosa.desktop.view.image.ImageView
+import nebulosa.desktop.withMain
 import org.controlsfx.control.RangeSlider
 
 class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageStretcher", "histogram"), ImageStretcherView {
@@ -31,7 +30,7 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
         resizable = false
 
         stretchParameterListener.setOnFinished {
-            launchIO { imageStretcherManager.apply(shadow / 255f, highlight / 255f, midtone / 255f) }
+            launch { imageStretcherManager.apply(shadow / 255f, highlight / 255f, midtone / 255f) }
         }
     }
 
@@ -80,11 +79,11 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
         histogramView.draw(view.image ?: return)
     }
 
-    override suspend fun updateTitle() = withContext(Dispatchers.Main) {
+    override suspend fun updateTitle() = withMain {
         title = "Image Stretch · " + view.title.split("·").last().trim()
     }
 
-    override suspend fun updateStretchParameters(shadow: Float, highlight: Float, midtone: Float) = withContext(Dispatchers.Main) {
+    override suspend fun updateStretchParameters(shadow: Float, highlight: Float, midtone: Float) = withMain {
         shadowSpinner.valueFactory.value = shadow * 255.0
         highlightSpinner.valueFactory.value = highlight * 255.0
         midtoneSpinner.valueFactory.value = midtone * 255.0
@@ -92,7 +91,7 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
 
     @FXML
     override fun autoStretch() {
-        launchIO { imageStretcherManager.autoStretch(view.originalImage ?: return@launchIO) }
+        launch { imageStretcherManager.autoStretch(view.originalImage ?: return@launch) }
     }
 
     override suspend fun resetStretch(onlyParameters: Boolean) {
@@ -102,6 +101,6 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
 
     @FXML
     private fun resetStretch() {
-        launchIO { resetStretch(false) }
+        launch { resetStretch(false) }
     }
 }

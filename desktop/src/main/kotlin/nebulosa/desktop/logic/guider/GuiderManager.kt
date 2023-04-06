@@ -1,7 +1,8 @@
 package nebulosa.desktop.logic.guider
 
 import javafx.beans.property.SimpleBooleanProperty
-import kotlinx.coroutines.*
+import kotlinx.coroutines.runBlocking
+import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.DevicePropertyListener
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
@@ -10,6 +11,7 @@ import nebulosa.desktop.view.guider.GuideAlgorithmType
 import nebulosa.desktop.view.guider.GuiderView
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.indi.INDIPanelControlView
+import nebulosa.desktop.withMain
 import nebulosa.guiding.*
 import nebulosa.guiding.internal.*
 import nebulosa.imaging.Image
@@ -32,13 +34,11 @@ import kotlin.math.hypot
 class GuiderManager(
     @Autowired internal val view: GuiderView,
     @Autowired internal val equipmentManager: EquipmentManager,
-) : GuideDevice, GuiderListener {
+) : AbstractManager(), GuideDevice, GuiderListener {
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var imageViewOpener: ImageView.Opener
     @Autowired private lateinit var guiderExecutorService: ExecutorService
-    @Autowired private lateinit var systemExecutorService: ExecutorService
-    @Autowired private lateinit var javaFXExecutorService: ExecutorService
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
 
     private val guideCameraPropertyListener = GuideCameraPropertyListener()
@@ -186,7 +186,7 @@ class GuiderManager(
 
     fun selectGuideStar(x: Double, y: Double) {
         if (guider.selectGuideStar(x, y)) {
-            GlobalScope.launch(Dispatchers.Main) {
+            launch {
                 guiderIndicator.redraw()
                 view.updateStarProfile(guider)
             }
@@ -451,18 +451,16 @@ class GuiderManager(
         override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
             when (event) {
                 is CameraFrameCaptured -> {
-                    GlobalScope.launch {
-                        withContext(Dispatchers.IO) {
-                            val fits = Fits(event.fits)
-                            val image = Image.open(fits)
-                            imageQueue.offer(image)
+                    launch {
+                        val fits = Fits(event.fits)
+                        val image = Image.open(fits)
+                        imageQueue.offer(image)
 
-                            withContext(Dispatchers.Main) {
-                                if (imageView == null) {
-                                    imageView = imageViewOpener.open(image, null, device)
-                                    imageView!!.registerMouseListener(view)
-                                    imageView!!.addFirst(guiderIndicator)
-                                }
+                        if (imageView == null) {
+                            withMain {
+                                imageView = imageViewOpener.open(image, null, device)
+                                imageView!!.registerMouseListener(view)
+                                imageView!!.addFirst(guiderIndicator)
                             }
                         }
                     }

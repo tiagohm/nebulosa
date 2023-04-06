@@ -3,8 +3,6 @@ package nebulosa.desktop.logic.platesolver
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.stage.FileChooser
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.desktop.OperatingSystemType
 import nebulosa.desktop.logic.Preferences
@@ -12,6 +10,8 @@ import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.desktop.view.platesolver.PlateSolverType
 import nebulosa.desktop.view.platesolver.PlateSolverView
+import nebulosa.desktop.withIO
+import nebulosa.desktop.withMain
 import nebulosa.fits.dec
 import nebulosa.fits.imageHDU
 import nebulosa.fits.ra
@@ -30,7 +30,6 @@ import org.springframework.stereotype.Component
 import java.io.Closeable
 import java.io.File
 import java.time.Duration
-import java.util.concurrent.ExecutorService
 import kotlin.math.max
 
 @Component
@@ -38,8 +37,6 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var equipmentManager: EquipmentManager
-    @Autowired private lateinit var systemExecutorService: ExecutorService
-    @Autowired private lateinit var javaFXExecutorService: ExecutorService
     @Autowired private lateinit var framingView: FramingView
     @Autowired private lateinit var operatingSystemType: OperatingSystemType
     @Autowired private lateinit var eventBus: EventBus
@@ -121,11 +118,11 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
     ): Calibration? {
         require(!solving.get()) { "plate solving in progress" }
 
-        withContext(Dispatchers.Main) { solving.set(true) }
+        withMain { solving.set(true) }
 
         fileWasLoaded(file)
 
-        return withContext(Dispatchers.IO) {
+        return withIO {
             val pathOrUrl = when (view.type) {
                 PlateSolverType.ASTROMETRY_NET_LOCAL -> view.pathOrUrl
                 PlateSolverType.ASTROMETRY_NET_ONLINE -> view.pathOrUrl
@@ -152,7 +149,7 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
 
                 eventBus.post(PlateSolvingSolved(file, calibration))
 
-                withContext(Dispatchers.Main) {
+                withMain {
                     solving.set(false)
                     solved.set(true)
                     this@PlateSolverManager.calibration.set(calibration)
@@ -164,7 +161,7 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
 
                 eventBus.post(PlateSolvingFailed(file))
 
-                withContext(Dispatchers.Main) {
+                withMain {
                     solving.set(false)
                     solved.set(false)
 
@@ -201,7 +198,7 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
         val height = if (factor > 1.0) 1200 / factor else 900
         val fov = max(calibration.width.value, calibration.height.value).rad
 
-        framingView.show(bringToFront = true)
+        framingView.show(bringToFront = true).join()
         framingView.load(
             calibration.rightAscension, calibration.declination,
             width = width.toInt(), height = height.toInt(), rotation = rotation,

@@ -1,15 +1,14 @@
 package nebulosa.desktop.logic.image
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import nebulosa.desktop.view.image.ImageStretcherView
+import nebulosa.desktop.withIO
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.AutoScreenTransformFunction
 
 class ImageStretcherManager(private val view: ImageStretcherView) {
 
-    suspend fun autoStretch(image: Image) {
-        val params = withContext(Dispatchers.IO) { AutoScreenTransformFunction.compute(image) }
+    suspend fun autoStretch(image: Image) = withIO {
+        val params = AutoScreenTransformFunction.compute(image)
         view.updateStretchParameters(params.shadow, params.highlight, params.midtone)
         apply(params.shadow, params.highlight, params.midtone)
     }

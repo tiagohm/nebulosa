@@ -8,9 +8,7 @@ import javafx.event.Event
 import javafx.fxml.FXML
 import javafx.scene.control.*
 import javafx.util.Callback
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.withContext
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.CopyableLabel
 import nebulosa.desktop.gui.control.PropertyValueFactory
@@ -18,6 +16,7 @@ import nebulosa.desktop.logic.atlas.AtlasManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.atlas.AtlasView
+import nebulosa.desktop.withMain
 import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
 import nebulosa.math.PairOfAngle
@@ -85,7 +84,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         (planetTableView.columns[0] as TableColumn<AtlasView.Planet, String>).cellValueFactory = PropertyValueFactory { it.name }
         (planetTableView.columns[1] as TableColumn<AtlasView.Planet, String>).cellValueFactory = PropertyValueFactory { it.type }
         planetTableView.selectionModel.selectedItemProperty()
-            .on { if (it != null) launchIO { atlasManager.computePlanet(it) } }
+            .on { if (it != null) launch { atlasManager.computePlanet(it) } }
 
         (minorPlanetTableView.columns[0] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.element }
         (minorPlanetTableView.columns[1] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.description }
@@ -96,7 +95,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         (starTableView.columns[1] as TableColumn<AtlasView.Star, Double>).cellFactory = Callback { _ -> MagnitudeTableCell<AtlasView.Star>() }
         (starTableView.columns[2] as TableColumn<AtlasView.Star, String>).cellValueFactory = PropertyValueFactory { it.constellation }
         starTableView.selectionModel.selectedItemProperty()
-            .on { if (it != null) launchIO { atlasManager.computeStar(it) } }
+            .on { if (it != null) launch { atlasManager.computeStar(it) } }
 
         (dsosTableView.columns[0] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.name }
         (dsosTableView.columns[1] as TableColumn<AtlasView.DSO, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
@@ -104,11 +103,11 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         (dsosTableView.columns[2] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.type }
         (dsosTableView.columns[3] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.constellation }
         dsosTableView.selectionModel.selectedItemProperty()
-            .on { if (it != null) launchIO { atlasManager.computeDSO(it) } }
+            .on { if (it != null) launch { atlasManager.computeDSO(it) } }
 
-        launchIO { atlasManager.populatePlanets() }
-        launchIO { atlasManager.populateStars() }
-        launchIO { atlasManager.populateDSOs() }
+        launch { atlasManager.populatePlanets() }
+        launch { atlasManager.populateStars() }
+        launch { atlasManager.populateDSOs() }
     }
 
     override suspend fun onStart() {
@@ -116,9 +115,9 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
 
         atlasManager.loadPreferences()
 
-        launchIO { atlasManager.updateSunImage() }
-        launchIO { atlasManager.updateMoonImage() }
-        launchIO { atlasManager.computeTab(AtlasView.TabType.SUN) }
+        launch { atlasManager.updateSunImage() }
+        launch { atlasManager.updateMoonImage() }
+        launch { atlasManager.computeTab(AtlasView.TabType.SUN) }
     }
 
     override suspend fun onStop() {
@@ -135,7 +134,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         if (!(event.source as Tab).isSelected) return
         val userData = ephemerisTabPane.selectionModel.selectedItem.userData as String
         val tabType = AtlasView.TabType.valueOf(userData)
-        launchIO { atlasManager.computeTab(tabType) }
+        launch { atlasManager.computeTab(tabType) }
     }
 
     val equatorialCoordinate
@@ -165,13 +164,13 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     @FXML
     private fun frame() {
         val (ra, dec) = equatorialJ2000Coordinate
-        launchIO { atlasManager.frame(ra, dec) }
+        launch { atlasManager.frame(ra, dec) }
     }
 
     @FXML
     private fun searchMinorPlanet() {
         val text = searchMinorPlanetTextField.text.trim().ifEmpty { null } ?: return
-        launchIO { atlasManager.searchMinorPlanet(text) }
+        launch { atlasManager.searchMinorPlanet(text) }
     }
 
     @FXML
@@ -198,7 +197,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         civilDawn: DoubleArray, nauticalDawn: DoubleArray, astronomicalDawn: DoubleArray,
         civilDusk: DoubleArray, nauticalDusk: DoubleArray, astronomicalDusk: DoubleArray,
         night: DoubleArray,
-    ) = withContext(Dispatchers.Main) {
+    ) = withMain {
         altitudeChart.draw(
             points, now,
             civilDawn, nauticalDawn, astronomicalDawn,
@@ -207,30 +206,30 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         )
     }
 
-    override suspend fun updateSunImage() = withContext(Dispatchers.Main) {
+    override suspend fun updateSunImage() = withMain {
         sunView.updateImage()
     }
 
-    override suspend fun updateMoonImage(phase: Double, age: Double, angle: Angle) = withContext(Dispatchers.Main) {
+    override suspend fun updateMoonImage(phase: Double, age: Double, angle: Angle) = withMain {
         moonView.draw(age, angle)
     }
 
-    override suspend fun populatePlanet(planets: List<AtlasView.Planet>): Unit = withContext(Dispatchers.Main) {
+    override suspend fun populatePlanet(planets: List<AtlasView.Planet>): Unit = withMain {
         planetTableView.items.setAll(planets)
     }
 
-    override suspend fun populateMinorPlanet(minorPlanets: List<AtlasView.MinorPlanet>): Unit = withContext(Dispatchers.Main) {
+    override suspend fun populateMinorPlanet(minorPlanets: List<AtlasView.MinorPlanet>): Unit = withMain {
         minorPlanetTableView.items.setAll(minorPlanets)
     }
 
-    override suspend fun populateStar(stars: List<AtlasView.Star>) = withContext(Dispatchers.Main) {
+    override suspend fun populateStar(stars: List<AtlasView.Star>) = withMain {
         val filteredList = FilteredList(FXCollections.observableArrayList(stars))
         val sortedList = SortedList(filteredList)
         sortedList.comparatorProperty().bind(starTableView.comparatorProperty())
         starTableView.items = sortedList
     }
 
-    override suspend fun populateDSOs(dsos: List<AtlasView.DSO>) = withContext(Dispatchers.Main) {
+    override suspend fun populateDSOs(dsos: List<AtlasView.DSO>) = withMain {
         val filteredList = FilteredList(FXCollections.observableArrayList(dsos))
         val sortedList = SortedList(filteredList)
         sortedList.comparatorProperty().bind(dsosTableView.comparatorProperty())
@@ -241,7 +240,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         ra: Angle, dec: Angle,
         raJ2000: Angle, decJ2000: Angle,
         constellation: Constellation?,
-    ) = withContext(Dispatchers.Main) {
+    ) = withMain {
         rightAscensionLabel.text = ra.format(AngleFormatter.HMS)
         declinationLabel.text = dec.format(AngleFormatter.SIGNED_DMS)
         rightAscensionJ2000Label.text = raJ2000.format(AngleFormatter.HMS)
@@ -249,20 +248,20 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         constellationLabel.text = constellation?.iau ?: "-"
     }
 
-    override suspend fun updateHorizontalCoordinates(az: Angle, alt: Angle) = withContext(Dispatchers.Main) {
+    override suspend fun updateHorizontalCoordinates(az: Angle, alt: Angle) = withMain {
         azimuthLabel.text = az.normalized.format(AngleFormatter.DMS)
         altitudeLabel.text = alt.format(AngleFormatter.SIGNED_DMS)
     }
 
-    override suspend fun updateInfo(bodyName: String) = withContext(Dispatchers.Main) {
+    override suspend fun updateInfo(bodyName: String) = withMain {
         nameLabel.text = bodyName
     }
 
-    override suspend fun updateRTS(rts: Triple<String, String, String>) = withContext(Dispatchers.Main) {
+    override suspend fun updateRTS(rts: Triple<String, String, String>) = withMain {
         rtsLabel.text = "%s | %s | %s".format(rts.first, rts.second, rts.third)
     }
 
-    override suspend fun clearAltitudeAndCoordinates() = withContext(Dispatchers.Main) {
+    override suspend fun clearAltitudeAndCoordinates() = withMain {
         nameLabel.text = ""
         updateEquatorialCoordinates(Angle.ZERO, Angle.ZERO, Angle.ZERO, Angle.ZERO, null)
         updateHorizontalCoordinates(Angle.ZERO, Angle.ZERO)

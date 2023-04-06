@@ -6,12 +6,11 @@ import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Spinner
 import javafx.scene.control.TextField
 import javafx.util.StringConverter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.framing.FramingManager
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.framing.FramingView
+import nebulosa.desktop.withMain
 import nebulosa.hips2fits.HipsSurvey
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
@@ -101,25 +100,25 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
 
     @FXML
     private fun load() {
-        launchIO { framingManager.load(frameRA, frameDEC) }
+        launch { framingManager.load(frameRA, frameDEC) }
     }
 
     @FXML
     private fun sync() {
-        launchIO { framingManager.sync() }
+        launch { framingManager.sync() }
     }
 
-    override suspend fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?) = withContext(Dispatchers.Main) {
+    override suspend fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?) = withMain {
         hipsSurveyChoiceBox.items.setAll(data)
         hipsSurveyChoiceBox.value = selected
     }
 
-    override suspend fun updateCoordinate(ra: Angle, dec: Angle) = withContext(Dispatchers.Main) {
+    override suspend fun updateCoordinate(ra: Angle, dec: Angle) = withMain {
         raTextField.text = ra.format(AngleFormatter.HMS)
         decTextField.text = dec.format(AngleFormatter.SIGNED_DMS)
     }
 
-    override suspend fun updateFOV(fov: Angle) = withContext(Dispatchers.Main) {
+    override suspend fun updateFOV(fov: Angle) = withMain {
         fovSpinner.valueFactory.value = fov.degrees
     }
 
@@ -128,7 +127,7 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
         hips: HipsSurvey?,
         width: Int, height: Int,
         rotation: Angle, fov: Angle,
-    ): Unit = withContext(Dispatchers.Main) {
+    ): Unit = withMain {
         updateCoordinate(ra, dec)
 
         if (hips != null) hipsSurveyChoiceBox.value = hips
