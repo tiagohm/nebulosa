@@ -14,7 +14,7 @@ interface SCNRView : View {
 
     val enabled: Boolean
 
-    fun applySCNR(
+    suspend fun applySCNR(
         enabled: Boolean, channel: ImageChannel,
         protectionMethod: ProtectionMethod, amount: Float,
     )

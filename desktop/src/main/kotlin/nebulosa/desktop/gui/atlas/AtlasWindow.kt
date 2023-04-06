@@ -8,7 +8,9 @@ import javafx.event.Event
 import javafx.fxml.FXML
 import javafx.scene.control.*
 import javafx.util.Callback
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.withContext
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.CopyableLabel
 import nebulosa.desktop.gui.control.PropertyValueFactory
@@ -28,8 +30,6 @@ import java.util.function.Predicate
 
 @Component
 class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
-
-    private val mainScope = MainScope()
 
     @Lazy @Autowired private lateinit var atlasManager: AtlasManager
 
@@ -65,7 +65,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun onCreate() {
+    override suspend fun onCreate() {
         val isNotConnected = !atlasManager.mountProperty.connectedProperty
         val isMoving = atlasManager.mountProperty.slewingProperty or atlasManager.mountProperty.parkingProperty
         val isComputing = atlasManager.computing
@@ -85,7 +85,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         (planetTableView.columns[0] as TableColumn<AtlasView.Planet, String>).cellValueFactory = PropertyValueFactory { it.name }
         (planetTableView.columns[1] as TableColumn<AtlasView.Planet, String>).cellValueFactory = PropertyValueFactory { it.type }
         planetTableView.selectionModel.selectedItemProperty()
-            .on { if (it != null) mainScope.launch(Dispatchers.IO) { atlasManager.computePlanet(it) } }
+            .on { if (it != null) launchIO { atlasManager.computePlanet(it) } }
 
         (minorPlanetTableView.columns[0] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.element }
         (minorPlanetTableView.columns[1] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.description }
@@ -96,7 +96,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         (starTableView.columns[1] as TableColumn<AtlasView.Star, Double>).cellFactory = Callback { _ -> MagnitudeTableCell<AtlasView.Star>() }
         (starTableView.columns[2] as TableColumn<AtlasView.Star, String>).cellValueFactory = PropertyValueFactory { it.constellation }
         starTableView.selectionModel.selectedItemProperty()
-            .on { if (it != null) mainScope.launch(Dispatchers.IO) { atlasManager.computeStar(it) } }
+            .on { if (it != null) launchIO { atlasManager.computeStar(it) } }
 
         (dsosTableView.columns[0] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.name }
         (dsosTableView.columns[1] as TableColumn<AtlasView.DSO, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
@@ -104,28 +104,24 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         (dsosTableView.columns[2] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.type }
         (dsosTableView.columns[3] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.constellation }
         dsosTableView.selectionModel.selectedItemProperty()
-            .on { if (it != null) mainScope.launch(Dispatchers.IO) { atlasManager.computeDSO(it) } }
+            .on { if (it != null) launchIO { atlasManager.computeDSO(it) } }
 
-        mainScope.launch(Dispatchers.IO) {
-            launch { atlasManager.populatePlanets() }
-            launch { atlasManager.populateStars() }
-            launch { atlasManager.populateDSOs() }
-        }
+        launchIO { atlasManager.populatePlanets() }
+        launchIO { atlasManager.populateStars() }
+        launchIO { atlasManager.populateDSOs() }
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         started = true
 
         atlasManager.loadPreferences()
 
-        mainScope.launch(Dispatchers.IO) {
-            launch { atlasManager.updateSunImage() }
-            launch { atlasManager.updateMoonImage() }
-            launch { atlasManager.computeTab(AtlasView.TabType.SUN) }
-        }
+        launchIO { atlasManager.updateSunImage() }
+        launchIO { atlasManager.updateMoonImage() }
+        launchIO { atlasManager.computeTab(AtlasView.TabType.SUN) }
     }
 
-    override fun onStop() {
+    override suspend fun onStop() {
         atlasManager.savePreferences()
     }
 
@@ -139,7 +135,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         if (!(event.source as Tab).isSelected) return
         val userData = ephemerisTabPane.selectionModel.selectedItem.userData as String
         val tabType = AtlasView.TabType.valueOf(userData)
-        mainScope.launch(Dispatchers.IO) { atlasManager.computeTab(tabType) }
+        launchIO { atlasManager.computeTab(tabType) }
     }
 
     val equatorialCoordinate
@@ -169,13 +165,13 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     @FXML
     private fun frame() {
         val (ra, dec) = equatorialJ2000Coordinate
-        atlasManager.frame(ra, dec)
+        launchIO { atlasManager.frame(ra, dec) }
     }
 
     @FXML
     private fun searchMinorPlanet() {
         val text = searchMinorPlanetTextField.text.trim().ifEmpty { null } ?: return
-        mainScope.launch { atlasManager.searchMinorPlanet(text) }
+        launchIO { atlasManager.searchMinorPlanet(text) }
     }
 
     @FXML

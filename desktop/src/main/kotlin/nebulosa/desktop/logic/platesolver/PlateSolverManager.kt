@@ -3,6 +3,8 @@ package nebulosa.desktop.logic.platesolver
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.stage.FileChooser
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.desktop.OperatingSystemType
 import nebulosa.desktop.logic.Preferences
@@ -28,10 +30,7 @@ import org.springframework.stereotype.Component
 import java.io.Closeable
 import java.io.File
 import java.time.Duration
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Future
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.max
 
 @Component
@@ -44,8 +43,6 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
     @Autowired private lateinit var framingView: FramingView
     @Autowired private lateinit var operatingSystemType: OperatingSystemType
     @Autowired private lateinit var eventBus: EventBus
-
-    private val solverTask = AtomicReference<Future<*>>()
 
     val file = SimpleObjectProperty<File>()
     val solving = SimpleBooleanProperty()
@@ -116,22 +113,19 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
         PlateSolverType.WATNEY -> ""
     }
 
-    @Synchronized
-    fun solve(
+    suspend fun solve(
         file: File = this.file.get(),
         blind: Boolean = view.blind,
         centerRA: Angle = view.centerRA, centerDEC: Angle = view.centerDEC,
         radius: Angle = view.radius,
-    ): CompletableFuture<Calibration> {
+    ): Calibration? {
         require(!solving.get()) { "plate solving in progress" }
 
-        solving.set(true)
+        withContext(Dispatchers.Main) { solving.set(true) }
 
         fileWasLoaded(file)
 
-        val future = CompletableFuture<Calibration>()
-
-        val task = systemExecutorService.submit {
+        return withContext(Dispatchers.IO) {
             val pathOrUrl = when (view.type) {
                 PlateSolverType.ASTROMETRY_NET_LOCAL -> view.pathOrUrl
                 PlateSolverType.ASTROMETRY_NET_ONLINE -> view.pathOrUrl
@@ -156,21 +150,21 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
 
                 savePreferences()
 
-                future.complete(calibration)
-
                 eventBus.post(PlateSolvingSolved(file, calibration))
 
-                javaFXExecutorService.execute {
+                withContext(Dispatchers.Main) {
                     solving.set(false)
                     solved.set(true)
-                    this.calibration.set(calibration)
+                    this@PlateSolverManager.calibration.set(calibration)
                 }
+
+                calibration
             } catch (e: Throwable) {
-                future.completeExceptionally(e)
+                LOG.error("plate solver failed", e)
 
                 eventBus.post(PlateSolvingFailed(file))
 
-                javaFXExecutorService.execute {
+                withContext(Dispatchers.Main) {
                     solving.set(false)
                     solved.set(false)
 
@@ -178,16 +172,10 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
                         view.showAlert(e.message!!)
                     }
                 }
+
+                null
             }
         }
-
-        solverTask.set(task)
-
-        return future
-    }
-
-    fun cancel() {
-        solverTask.getAndSet(null)?.cancel(true)
     }
 
     fun sync() {
@@ -205,7 +193,7 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
         mount.value?.slewToJ2000(calibration.rightAscension, calibration.declination)
     }
 
-    fun frame() {
+    suspend fun frame() {
         val calibration = calibration.get() ?: return
         val rotation = calibration.orientation + Angle.SEMICIRCLE
         val factor = calibration.width / calibration.height

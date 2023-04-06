@@ -1,10 +1,11 @@
 package nebulosa.desktop.gui.atlas
 
-import javafx.application.Platform
 import javafx.scene.canvas.Canvas
 import javafx.scene.image.PixelBuffer
 import javafx.scene.image.PixelFormat
 import javafx.scene.image.WritableImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.net.URL
 import java.nio.IntBuffer
 import javax.imageio.ImageIO
@@ -15,8 +16,7 @@ class SunView : Canvas() {
 
     @Volatile private var image: WritableImage? = null
 
-    @Synchronized
-    fun updateImage() {
+    suspend fun updateImage() = withContext(Dispatchers.IO) {
         val sunImage = ImageIO.read(URL("https://sdo.gsfc.nasa.gov/assets/img/latest/latest_256_HMIIF.jpg"))
         val data = IntArray(sunImage.width * sunImage.height)
 
@@ -54,7 +54,7 @@ class SunView : Canvas() {
         val pixelBuffer = PixelBuffer(sunImage.width, sunImage.height, buffer, PixelFormat.getIntArgbPreInstance())
         image = WritableImage(pixelBuffer)
 
-        Platform.runLater { draw() }
+        withContext(Dispatchers.Main) { draw() }
     }
 
     fun draw() {

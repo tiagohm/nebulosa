@@ -9,6 +9,7 @@ import javafx.scene.Scene
 import javafx.scene.control.Alert
 import javafx.scene.image.Image
 import javafx.stage.Stage
+import kotlinx.coroutines.*
 import nebulosa.desktop.gui.home.HomeWindow
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.view.View
@@ -21,7 +22,6 @@ import nebulosa.jmetro.Style
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
-import org.springframework.scheduling.annotation.Async
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -41,6 +41,8 @@ abstract class AbstractWindow(
     protected val javaFXExecutorService by lazy { beanFactory.getBean("javaFXExecutorService") as ExecutorService }
     protected val preferences by lazy { beanFactory.getBean("preferences") as Preferences }
 
+    protected val mainScope = MainScope()
+
     init {
         window.setOnShowing {
             if (showingAtFirstTime.compareAndSet(true, false)) {
@@ -56,7 +58,7 @@ abstract class AbstractWindow(
                 root.styleClass.add(JMetroStyleClass.BACKGROUND)
                 root.stylesheets.add("css/Global.css")
 
-                onCreate()
+                mainScope.launch(Dispatchers.Main) { onCreate() }
 
                 CLOSE
                     .filter { !it }
@@ -70,23 +72,25 @@ abstract class AbstractWindow(
             }
         }
 
-        window.setOnShown { onStart() }
+        window.setOnShown { mainScope.launch(Dispatchers.Main) { onStart() } }
 
         window.setOnHiding {
-            onStop()
+            mainScope.launch(Dispatchers.Main) {
+                onStop()
 
-            if (this is HomeWindow) {
-                onClose()
-                CLOSE.onNext(false)
+                if (this@AbstractWindow is HomeWindow) {
+                    onClose()
+                    CLOSE.onNext(false)
+                }
             }
         }
     }
 
-    protected open fun onCreate() = Unit
+    protected open suspend fun onCreate() = Unit
 
-    protected open fun onStart() = Unit
+    protected open suspend fun onStart() = Unit
 
-    protected open fun onStop() = Unit
+    protected open suspend fun onStop() = Unit
 
     protected open fun onClose() = Unit
 
@@ -150,41 +154,50 @@ abstract class AbstractWindow(
     final override val titleHeight
         get() = (height - sceneHeight) - borderSize
 
-    @Synchronized
     final override fun show(
         requestFocus: Boolean,
         bringToFront: Boolean,
-    ) {
-        window.show()
+    ): Job {
+        return launch {
+            window.show()
 
-        if (requestFocus) window.requestFocus()
-        if (bringToFront) window.toFront()
+            if (requestFocus) window.requestFocus()
+            if (bringToFront) window.toFront()
+        }
     }
 
     final override fun showAndWait() {
-        window.showAndWait()
+        launch { window.showAndWait() }
     }
 
     final override fun close() {
         if (Platform.isFxApplicationThread()) {
-            LOG.info("close requested. window={}", javaClass.simpleName)
             window.close()
-        } else {
-            LOG.warn("unable to close because not on FX application thread. window={}", javaClass.simpleName)
         }
     }
 
-    @Async("javaFXExecutorService")
     final override fun showAlert(
         message: String,
         title: String,
     ) {
-        val alert = FlatAlert(Alert.AlertType.INFORMATION)
-        alert.initOwner(window)
-        alert.title = title
-        alert.headerText = null
-        alert.contentText = message
-        alert.showAndWait()
+        launch {
+            val alert = FlatAlert(Alert.AlertType.INFORMATION)
+            alert.initOwner(window)
+            alert.title = title
+            alert.headerText = null
+            alert.contentText = message
+            alert.showAndWait()
+        }
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    protected inline fun launch(noinline block: suspend CoroutineScope.() -> Unit): Job {
+        return mainScope.launch(Dispatchers.Main, block = block)
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    protected inline fun launchIO(noinline block: suspend CoroutineScope.() -> Unit): Job {
+        return mainScope.launch(Dispatchers.IO, block = block)
     }
 
     companion object {

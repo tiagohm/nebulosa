@@ -3,6 +3,8 @@ package nebulosa.desktop.logic.camera
 import javafx.application.HostServices
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.task.TaskEvent
@@ -69,8 +71,10 @@ class CameraManager(
                 }
             }
             is CameraFrameSaved -> {
-                val window = imageViewOpener.open(event.image, event.path.toFile(), event.task.camera)
-                imageViews.add(window)
+                GlobalScope.launch {
+                    val window = imageViewOpener.open(event.image, event.path.toFile(), event.task.camera)
+                    imageViews.add(window)
+                }
             }
         }
     }

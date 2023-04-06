@@ -1,6 +1,7 @@
 package nebulosa.desktop.logic.guider
 
 import javafx.beans.property.SimpleBooleanProperty
+import kotlinx.coroutines.*
 import nebulosa.desktop.logic.DevicePropertyListener
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
@@ -185,8 +186,10 @@ class GuiderManager(
 
     fun selectGuideStar(x: Double, y: Double) {
         if (guider.selectGuideStar(x, y)) {
-            guiderIndicator.redraw()
-            view.updateStarProfile(guider)
+            GlobalScope.launch(Dispatchers.Main) {
+                guiderIndicator.redraw()
+                view.updateStarProfile(guider)
+            }
         }
     }
 
@@ -317,15 +320,17 @@ class GuiderManager(
     }
 
     override fun onLockPositionChanged(position: GuidePoint) {
-        view.updateStatus("lock position changed. x=%.1f, y=%.1f".format(position.x, position.y))
+        runBlocking { view.updateStatus("lock position changed. x=%.1f, y=%.1f".format(position.x, position.y)) }
     }
 
     override fun onStarSelected(star: StarPoint) {
-        view.updateStatus(
-            "star selected. x=%.1f, y=%.1f, mass=%.1f, hfd=%.1f, snr=%.1f, peak=%.1f".format(
-                star.x, star.y, star.mass, star.hfd, star.snr, star.peak,
+        runBlocking {
+            view.updateStatus(
+                "star selected. x=%.1f, y=%.1f, mass=%.1f, hfd=%.1f, snr=%.1f, peak=%.1f".format(
+                    star.x, star.y, star.mass, star.hfd, star.snr, star.peak,
+                )
             )
-        )
+        }
     }
 
     override fun onGuidingDithered(dx: Double, dy: Double) {
@@ -333,35 +338,37 @@ class GuiderManager(
     }
 
     override fun onCalibrationFailed() {
-        view.updateStatus("calibration failed")
+        runBlocking { view.updateStatus("calibration failed") }
     }
 
     override fun onGuidingStopped() {
         guidingProperty.set(false)
-        view.updateStatus("guiding stopped")
+        runBlocking { view.updateStatus("guiding stopped") }
     }
 
     override fun onLockShiftLimitReached() {
-        view.updateStatus("lock shift limit reached")
+        runBlocking { view.updateStatus("lock shift limit reached") }
     }
 
     override fun onLooping(image: Image, number: Int, star: StarPoint?) {
-        view.updateStatus("looping. number=$number")
-        imageView?.also { it.open(image, null) }
-        guiderIndicator.redraw()
-        view.updateStarProfile(guider, image)
+        runBlocking {
+            view.updateStatus("looping. number=$number")
+            imageView?.also { it.open(image, null) }
+            guiderIndicator.redraw()
+            view.updateStarProfile(guider, image)
+        }
     }
 
     override fun onStarLost() {
-        view.updateStatus("star lost")
+        runBlocking { view.updateStatus("star lost") }
     }
 
     override fun onLockPositionLost() {
-        view.updateStatus("lock position lost")
+        runBlocking { view.updateStatus("lock position lost") }
     }
 
     override fun onStartCalibration() {
-        view.updateStatus("calibration started")
+        runBlocking { view.updateStatus("calibration started") }
     }
 
     override fun onCalibrationStep(
@@ -377,15 +384,18 @@ class GuiderManager(
     }
 
     override fun onCalibrationCompleted(calibration: Calibration) {
-        view.updateStatus("calibration completed")
+        runBlocking { view.updateStatus("calibration completed") }
         preferences.json("guider.${camera?.name}.${mount?.name}.calibration", calibration.toMap())
     }
 
     override fun onGuideStep(stats: GuideStats) {
         LOG.info("guiding step. RMS RA={}, RMS DEC={} dx={}, dy={}", stats.rmsRA, stats.rmsDEC, stats.dx, stats.dy)
-        view.updateGraph(guider.stats, maxRADuration.toDouble(), maxDECDuration.toDouble())
-        val rmsTotal = hypot(stats.rmsRA, stats.rmsDEC)
-        view.updateGraphInfo(stats.rmsRA, stats.rmsDEC, rmsTotal, cameraPixelScale)
+
+        runBlocking {
+            view.updateGraph(guider.stats, maxRADuration.toDouble(), maxDECDuration.toDouble())
+            val rmsTotal = hypot(stats.rmsRA, stats.rmsDEC)
+            view.updateGraphInfo(stats.rmsRA, stats.rmsDEC, rmsTotal, cameraPixelScale)
+        }
     }
 
     private fun GuideAlgorithm.updateParameters(): GuideAlgorithm {
@@ -441,16 +451,18 @@ class GuiderManager(
         override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
             when (event) {
                 is CameraFrameCaptured -> {
-                    systemExecutorService.execute {
-                        val fits = Fits(event.fits)
-                        val image = Image.open(fits)
-                        imageQueue.offer(image)
+                    GlobalScope.launch {
+                        withContext(Dispatchers.IO) {
+                            val fits = Fits(event.fits)
+                            val image = Image.open(fits)
+                            imageQueue.offer(image)
 
-                        javaFXExecutorService.execute {
-                            if (imageView == null) {
-                                imageView = imageViewOpener.open(image, null, device)
-                                imageView!!.registerMouseListener(view)
-                                imageView!!.addFirst(guiderIndicator)
+                            withContext(Dispatchers.Main) {
+                                if (imageView == null) {
+                                    imageView = imageViewOpener.open(image, null, device)
+                                    imageView!!.registerMouseListener(view)
+                                    imageView!!.addFirst(guiderIndicator)
+                                }
                             }
                         }
                     }

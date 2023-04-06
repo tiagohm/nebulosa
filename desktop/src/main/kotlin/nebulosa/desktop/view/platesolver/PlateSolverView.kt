@@ -31,10 +31,10 @@ interface PlateSolverView : View {
         centerRA: Angle, centerDEC: Angle,
     )
 
-    fun solve(
+    suspend fun solve(
         file: File,
         blind: Boolean = true,
         centerRA: Angle = Angle.ZERO, centerDEC: Angle = Angle.ZERO,
         radius: Angle = this.radius,
-    ): CompletableFuture<Calibration>
+    ): Calibration?
 }

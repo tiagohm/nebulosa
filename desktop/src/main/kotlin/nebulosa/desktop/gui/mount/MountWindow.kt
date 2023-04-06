@@ -25,7 +25,6 @@ import nebulosa.math.PairOfAngle
 import org.controlsfx.control.SegmentedButton
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -80,7 +79,7 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
         resizable = false
     }
 
-    override fun onCreate() {
+    override suspend fun onCreate() {
         val isNotConnected = mountManager.connectedProperty.not()
         val isConnecting = mountManager.connectingProperty
         val isMoving = mountManager.slewingProperty or mountManager.parkingProperty
@@ -163,11 +162,11 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
         homeButton.disableProperty().set(true)
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         mountManager.loadPreferences()
     }
 
-    override fun onStop() {
+    override suspend fun onStop() {
         mountManager.savePreferences()
     }
 
@@ -199,7 +198,7 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
 
     @FXML
     private fun openINDIPanelControl() {
-        mountManager.openINDIPanelControl()
+        launch { mountManager.openINDIPanelControl() }
     }
 
     @FXML
@@ -212,7 +211,7 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
 
     @FXML
     private fun openTelescopeControlServer() {
-        mountManager.openTelescopeControlServer()
+        launch { mountManager.openTelescopeControlServer() }
     }
 
     @FXML

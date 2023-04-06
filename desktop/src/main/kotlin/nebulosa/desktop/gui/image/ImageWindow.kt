@@ -13,6 +13,8 @@ import javafx.scene.image.PixelFormat
 import javafx.scene.image.WritableImage
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.logic.asBoolean
@@ -55,12 +57,14 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         title = "Image"
     }
 
-    override fun onCreate() {
+    override suspend fun onCreate() {
         imageViewer.addEventFilter(MouseEvent.MOUSE_CLICKED) {
             if (it.button == MouseButton.PRIMARY && it.clickCount == 2) {
                 if (!maximized) {
-                    imageManager.adjustSceneSizeToFitImage(false)
-                    imageViewer.resetZoom()
+                    launch {
+                        imageManager.adjustSceneSizeToFitImage(false)
+                        imageViewer.resetZoom()
+                    }
                 }
             } else if (it.button == MouseButton.PRIMARY) {
                 menu.hide()
@@ -91,12 +95,12 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         )
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         imageManager.initialize()
         imageManager.loadPreferences()
     }
 
-    override fun onStop() {
+    override suspend fun onStop() {
         imageData = IntArray(0)
 
         imageManager.close()
@@ -164,37 +168,37 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     @FXML
     private fun save() {
-        imageManager.save()
+        launchIO { imageManager.save() }
     }
 
     @FXML
     private fun solve() {
-        imageManager.solve(false)
+        launchIO { imageManager.solve(false) }
     }
 
     @FXML
     private fun blindSolve() {
-        imageManager.solve(true)
+        launchIO { imageManager.solve(true) }
     }
 
     @FXML
     private fun openImageStretcher() {
-        imageManager.openImageStretcher()
+        launch { imageManager.openImageStretcher() }
     }
 
     @FXML
     private fun autoStretch() {
-        imageManager.autoStretch()
+        launchIO { imageManager.autoStretch() }
     }
 
     @FXML
     private fun openSCNR() {
-        imageManager.openSCNR()
+        launch { imageManager.openSCNR() }
     }
 
     @FXML
     private fun openFitsHeader() {
-        imageManager.openFitsHeader()
+        launch { imageManager.openFitsHeader() }
     }
 
     @FXML
@@ -234,17 +238,17 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         imageSecondaryClickLocation.set(null)
     }
 
-    override fun open(file: File, resetTransformation: Boolean) {
+    override suspend fun open(file: File, resetTransformation: Boolean) {
         imageManager.open(file, resetTransformation)
-        annotateCheckMenuItem.isSelected = false
+        withContext(Dispatchers.Main) { annotateCheckMenuItem.isSelected = false }
     }
 
-    override fun open(fits: Image, file: File?, resetTransformation: Boolean) {
+    override suspend fun open(fits: Image, file: File?, resetTransformation: Boolean) {
         imageManager.open(fits, file, resetTransformation)
-        annotateCheckMenuItem.isSelected = false
+        withContext(Dispatchers.Main) { annotateCheckMenuItem.isSelected = false }
     }
 
-    override fun adjustSceneToImage() {
+    override suspend fun adjustSceneToImage() {
         imageViewer.resetZoom()
         imageManager.adjustSceneSizeToFitImage()
     }
@@ -265,10 +269,10 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         javaFXExecutorService.execute { imageViewer.load(writableImage) }
     }
 
-    override fun scnr(
+    override suspend fun scnr(
         enabled: Boolean, channel: ImageChannel,
         protectionMethod: ProtectionMethod, amount: Float,
-    ) {
+    ) = withContext(Dispatchers.Main) {
         imageManager.transformImage(
             scnrEnabled = enabled, scnrChannel = channel,
             scnrProtectionMode = protectionMethod,
@@ -276,7 +280,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         )
     }
 
-    override fun stf(shadow: Float, highlight: Float, midtone: Float) {
+    override suspend fun stf(shadow: Float, highlight: Float, midtone: Float) = withContext(Dispatchers.Main) {
         imageManager.transformImage(shadow = shadow, highlight = highlight, midtone = midtone)
     }
 
@@ -328,14 +332,16 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         private val windows = hashSetOf<ImageWindow>()
         private val windowsMap = hashMapOf<Any, ImageWindow>()
 
-        override fun open(
+        override suspend fun open(
             image: Image?, file: File?,
             token: Any?, resetTransformation: Boolean,
         ): ImageView {
-            val window = if (token != null) {
-                windowsMap[token] ?: ImageWindow(if (token is Camera) token else null)
-            } else {
-                windows.firstOrNull { !it.showing } ?: ImageWindow(null)
+            val window = withContext(Dispatchers.Main) {
+                if (token != null) {
+                    windowsMap[token] ?: ImageWindow(if (token is Camera) token else null)
+                } else {
+                    windows.firstOrNull { !it.showing } ?: ImageWindow(null)
+                }
             }
 
             beanFactory.autowireBean(window)
@@ -344,7 +350,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             if (token != null) windowsMap[token] = window
             else windows.add(window)
 
-            window.show()
+            withContext(Dispatchers.Main) { window.show() }
 
             if (image != null) window.open(image, file, resetTransformation)
             else if (file != null) window.open(file, resetTransformation = true)

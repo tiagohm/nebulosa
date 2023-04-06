@@ -30,7 +30,7 @@ class TelescopeControlWindow : AbstractWindow("TelescopeControl", "remote-contro
         resizable = false
     }
 
-    override fun onCreate() {
+    override suspend fun onCreate() {
         serverTypeChoiceBox.converter = TelescopeControlTypeStringConverter
         serverTypeChoiceBox.value = TelescopeControlType.STELLARIUM_JNOW
         serverTypeChoiceBox.valueProperty().on { telescopeControlManager.updateConnectionStatus() }
@@ -38,7 +38,7 @@ class TelescopeControlWindow : AbstractWindow("TelescopeControl", "remote-contro
         telescopeControlManager.initialize()
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         telescopeControlManager.updateConnectionStatus()
     }
 

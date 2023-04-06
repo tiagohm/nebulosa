@@ -11,6 +11,8 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
 import javafx.scene.layout.StackPane
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.kurobako.gesturefx.GesturePane
 import kotlin.math.exp
 import kotlin.math.max
@@ -111,7 +113,7 @@ class ImageViewer : GesturePane(null as Node?) {
         }
     }
 
-    fun resetZoom() {
+    suspend fun resetZoom() = withContext(Dispatchers.Main) {
         zoomTo(0.0, targetPointAtViewportCentre())
     }
 

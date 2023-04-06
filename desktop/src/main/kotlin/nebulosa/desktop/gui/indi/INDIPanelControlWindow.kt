@@ -35,7 +35,7 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
         title = "INDI Panel Control"
     }
 
-    override fun onCreate() {
+    override suspend fun onCreate() {
         indiPanelControlManager.initialize()
 
         deviceChoiceBox.converter = DeviceStringConverter
@@ -43,7 +43,7 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
         deviceChoiceBox.selectionModel.selectedItemProperty().on { indiPanelControlManager.makePanelControl() }
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         indiPanelControlManager.populate()
     }
 

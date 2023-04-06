@@ -26,11 +26,11 @@ class SCNRWindow(private val view: ImageView) : AbstractWindow("SCNR", "rgb"), S
         resizable = false
     }
 
-    override fun onCreate() {
-        channelChoiceBox.valueProperty().on { scnrManager.apply() }
-        protectionMethodChoiceBox.valueProperty().on { scnrManager.apply() }
-        amountSpinner.valueProperty().on { scnrManager.apply() }
-        enabledSwitch.stateProperty.on { scnrManager.apply() }
+    override suspend fun onCreate() {
+        channelChoiceBox.valueProperty().on { launchIO { scnrManager.apply() } }
+        protectionMethodChoiceBox.valueProperty().on { launchIO { scnrManager.apply() } }
+        amountSpinner.valueProperty().on { launchIO { scnrManager.apply() } }
+        enabledSwitch.stateProperty.on { launchIO { scnrManager.apply() } }
     }
 
     override val amount
@@ -45,7 +45,7 @@ class SCNRWindow(private val view: ImageView) : AbstractWindow("SCNR", "rgb"), S
     override val enabled
         get() = enabledSwitch.state
 
-    override fun applySCNR(
+    override suspend fun applySCNR(
         enabled: Boolean, channel: ImageChannel,
         protectionMethod: ProtectionMethod, amount: Float,
     ) {

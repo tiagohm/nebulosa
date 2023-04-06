@@ -5,6 +5,8 @@ import javafx.fxml.FXML
 import javafx.scene.control.Slider
 import javafx.scene.control.Spinner
 import javafx.util.Duration
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.image.ImageStretcherManager
 import nebulosa.desktop.logic.on
@@ -29,11 +31,11 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
         resizable = false
 
         stretchParameterListener.setOnFinished {
-            imageStretcherManager.apply(shadow / 255f, highlight / 255f, midtone / 255f)
+            launchIO { imageStretcherManager.apply(shadow / 255f, highlight / 255f, midtone / 255f) }
         }
     }
 
-    override fun onCreate() {
+    override suspend fun onCreate() {
         shadowAndHighlightRangeSlider.lowValue = 0.0
         shadowAndHighlightRangeSlider.highValue = 255.0
 
@@ -55,7 +57,7 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
         midtoneSpinner.valueProperty().on { midtoneSlider.value = it!!.toDouble() }
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         updateTitle()
         updateStretchParameters(view.shadow, view.highlight, view.midtone)
         drawHistogram()
@@ -70,19 +72,19 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
     override val midtone
         get() = midtoneSpinner.value.toFloat()
 
-    override fun apply(shadow: Float, highlight: Float, midtone: Float) {
+    override suspend fun apply(shadow: Float, highlight: Float, midtone: Float) {
         view.stf(shadow, highlight, midtone)
     }
 
-    override fun drawHistogram() {
+    override suspend fun drawHistogram() {
         histogramView.draw(view.image ?: return)
     }
 
-    override fun updateTitle() {
+    override suspend fun updateTitle() = withContext(Dispatchers.Main) {
         title = "Image Stretch · " + view.title.split("·").last().trim()
     }
 
-    override fun updateStretchParameters(shadow: Float, highlight: Float, midtone: Float) {
+    override suspend fun updateStretchParameters(shadow: Float, highlight: Float, midtone: Float) = withContext(Dispatchers.Main) {
         shadowSpinner.valueFactory.value = shadow * 255.0
         highlightSpinner.valueFactory.value = highlight * 255.0
         midtoneSpinner.valueFactory.value = midtone * 255.0
@@ -90,16 +92,16 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
 
     @FXML
     override fun autoStretch() {
-        imageStretcherManager.autoStretch(view.originalImage ?: return)
+        launchIO { imageStretcherManager.autoStretch(view.originalImage ?: return@launchIO) }
     }
 
-    override fun resetStretch(onlyParameters: Boolean) {
+    override suspend fun resetStretch(onlyParameters: Boolean) {
         if (onlyParameters) updateStretchParameters(0f, 1f, 0.5f)
         else imageStretcherManager.resetStretch()
     }
 
     @FXML
     private fun resetStretch() {
-        resetStretch(false)
+        launchIO { resetStretch(false) }
     }
 }

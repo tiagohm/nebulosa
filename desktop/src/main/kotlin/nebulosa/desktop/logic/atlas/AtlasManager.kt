@@ -493,7 +493,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : Closeable {
         mount?.sync(ra, dec)
     }
 
-    fun frame(ra: Angle, dec: Angle) {
+    suspend fun frame(ra: Angle, dec: Angle) {
         framingView.show(bringToFront = true)
         framingView.load(ra, dec)
     }

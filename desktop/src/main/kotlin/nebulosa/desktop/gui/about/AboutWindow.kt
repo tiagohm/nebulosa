@@ -22,7 +22,7 @@ class AboutWindow : AbstractWindow("About", "information"), AboutView {
         resizable = false
     }
 
-    override fun onCreate() {
+    override suspend fun onCreate() {
         versionLabel.text = "v${BuildConfig.VERSION_CODE} - ${BuildConfig.VERSION_NAME}"
     }
 }

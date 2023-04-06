@@ -12,6 +12,8 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
 import javafx.util.StringConverter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.gui.control.MaterialIcon
@@ -35,7 +37,6 @@ import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.nio.IntBuffer
 import kotlin.math.min
@@ -112,7 +113,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         resizable = false
     }
 
-    override fun onCreate() {
+    override suspend fun onCreate() {
         val isNotConnected = !guiderManager.selectedGuideCamera.connectedProperty or
                 !guiderManager.selectedGuideMount.connectedProperty or !guiderManager.selectedGuideOutput.connectedProperty
         val isConnecting = guiderManager.selectedGuideCamera.connectingProperty or
@@ -175,11 +176,11 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         noiseReductionMethodChoiceBox.value = NoiseReductionMethod.NONE
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         guiderManager.loadPreferences()
     }
 
-    override fun onStop() {
+    override suspend fun onStop() {
         guiderManager.savePreferences()
     }
 
@@ -319,11 +320,11 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     override val noiseReductionMethod
         get() = noiseReductionMethodChoiceBox.value!!
 
-    override fun updateStatus(text: String) {
+    override suspend fun updateStatus(text: String) = withContext(Dispatchers.Main) {
         statusIcon.text = text
     }
 
-    override fun updateStarProfile(guider: Guider, image: Image) {
+    override suspend fun updateStarProfile(guider: Guider, image: Image) = withContext(Dispatchers.Main) {
         val lockPosition = guider.lockPosition
         val trackBoxSize = searchRegion * 2.0
 
@@ -354,14 +355,17 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         }
     }
 
-    override fun updateGraph(
+    override suspend fun updateGraph(
         stats: List<GuideStats>,
         maxRADuration: Double, maxDECDuration: Double,
-    ) {
+    ) = withContext(Dispatchers.Main) {
         guiderChart.draw(stats, maxRADuration, maxDECDuration)
     }
 
-    override fun updateGraphInfo(rmsRA: Double, rmsDEC: Double, rmsTotal: Double, pixelScale: Double) {
+    override suspend fun updateGraphInfo(
+        rmsRA: Double, rmsDEC: Double,
+        rmsTotal: Double, pixelScale: Double
+    ) = withContext(Dispatchers.Main) {
         rmsRALabel.text = "%.2f px | %.2f\"".format(rmsRA, rmsRA * pixelScale)
         rmsDECLabel.text = "%.2f px | %.2f\"".format(rmsDEC, rmsDEC * pixelScale)
         rmsTotalLabel.text = "%.2f px | %.2f\"".format(rmsTotal, rmsTotal * pixelScale)

@@ -6,6 +6,7 @@ import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import javafx.stage.Stage
+import kotlinx.coroutines.launch
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.equipment.EquipmentManager
@@ -43,7 +44,7 @@ class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeV
         resizable = false
     }
 
-    override fun onCreate() {
+    override suspend fun onCreate() {
         hostTextField.disableProperty().bind(homeManager.connectedProperty)
         portTextField.disableProperty().bind(homeManager.connectedProperty)
         cameraButton.disableProperty().bind(!homeManager.connectedProperty or equipmentManager.attachedCameras.emptyProperty())
@@ -62,7 +63,7 @@ class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeV
         homeManager.connectedProperty.on { connectButton.state = it }
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         homeManager.loadPreferences()
     }
 
@@ -87,6 +88,6 @@ class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeV
     @FXML
     @Synchronized
     private fun open(event: ActionEvent) {
-        homeManager.open((event.source as Node).userData as String)
+        launch { homeManager.open((event.source as Node).userData as String) }
     }
 }

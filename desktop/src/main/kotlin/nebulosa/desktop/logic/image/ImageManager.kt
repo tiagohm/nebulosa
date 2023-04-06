@@ -6,6 +6,10 @@ import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import javafx.stage.Screen
 import javafx.util.Duration
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import nebulosa.desktop.gui.control.annotation.Crosshair
 import nebulosa.desktop.gui.control.annotation.SkyCatalogAnnotation
 import nebulosa.desktop.gui.image.FitsHeaderWindow
@@ -100,7 +104,9 @@ class ImageManager(private val view: ImageView) : Closeable {
     val calibration = SimpleObjectProperty<Calibration>()
 
     init {
-        transformer.setOnFinished { transformAndDraw() }
+        transformer.setOnFinished {
+            GlobalScope.launch { transformAndDraw() }
+        }
     }
 
     fun initialize() {
@@ -132,24 +138,22 @@ class ImageManager(private val view: ImageView) : Closeable {
         }
     }
 
-    private fun updateTitle() {
-        view.title = "Image"
+    private suspend fun updateTitle() {
+        val title = "Image"
             .let { if (view.camera != null) "$it · ${view.camera!!.name}" else it }
             .let { if (file.get() != null) "$it · ${file.get().name}" else it }
+
+        withContext(Dispatchers.Main) { view.title = title }
     }
 
-    @Synchronized
-    fun open(file: File, resetTransformation: Boolean = false) {
-        systemExecutorService.execute {
+    suspend fun open(file: File, resetTransformation: Boolean = false) {
+        withContext(Dispatchers.IO) {
             val image = Image.open(file)
-            javaFXExecutorService.execute {
-                open(image, file, resetTransformation)
-            }
+            open(image, file, resetTransformation)
         }
     }
 
-    @Synchronized
-    fun open(image: Image, file: File? = null, resetTransformation: Boolean = false) {
+    suspend fun open(image: Image, file: File? = null, resetTransformation: Boolean = false) {
         this.file.set(file)
 
         updateTitle()
@@ -163,7 +167,7 @@ class ImageManager(private val view: ImageView) : Closeable {
 
         skyCatalogAnnotation.isVisible = false
 
-        view.hasScnr = !image.mono
+        withContext(Dispatchers.Main) { view.hasScnr = !image.mono }
 
         if (resetTransformation) {
             shadow = 0f
@@ -192,7 +196,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         view.draw(image)
     }
 
-    fun drawHistogram() {
+    suspend fun drawHistogram() {
         imageStretcherView?.drawHistogram()
     }
 
@@ -215,6 +219,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         this.scnrProtectionMode = scnrProtectionMode
         this.scnrAmount = scnrAmount
 
+        // TODO: Mover todos os PauseTransition para o View.
         transformer.playFromStart()
     }
 
@@ -243,13 +248,11 @@ class ImageManager(private val view: ImageView) : Closeable {
         }
     }
 
-    private fun transformAndDraw() {
-        systemExecutorService.execute {
+    private suspend fun transformAndDraw() {
+        withContext(Dispatchers.IO) {
             transformImage()
-            javaFXExecutorService.execute {
-                draw()
-                drawHistogram()
-            }
+            draw()
+            drawHistogram()
         }
     }
 
@@ -285,7 +288,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         mount.goToJ2000(rightAscension + raOffset, declination + decOffset)
     }
 
-    fun adjustSceneSizeToFitImage(defaultSize: Boolean = image == null) {
+    suspend fun adjustSceneSizeToFitImage(defaultSize: Boolean = image == null) {
         val image = image ?: return
 
         val factor = image.width.toDouble() / image.height.toDouble()
@@ -300,12 +303,14 @@ class ImageManager(private val view: ImageView) : Closeable {
             ?: (screenBounds.height / 2)
         else view.height - view.titleHeight
 
-        if (factor >= 1.0) {
-            view.width = defaultWidth + view.borderSize
-            view.height = defaultWidth / factor + view.titleHeight
-        } else {
-            view.height = defaultHeight + view.titleHeight
-            view.width = defaultHeight * factor + view.borderSize
+        withContext(Dispatchers.Main) {
+            if (factor >= 1.0) {
+                view.width = defaultWidth + view.borderSize
+                view.height = defaultWidth / factor + view.titleHeight
+            } else {
+                view.height = defaultHeight + view.titleHeight
+                view.width = defaultHeight * factor + view.borderSize
+            }
         }
     }
 
@@ -322,7 +327,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         return true
     }
 
-    fun save() {
+    suspend fun save() {
         with(FileChooser()) {
             title = "Save Image"
 
@@ -343,16 +348,18 @@ class ImageManager(private val view: ImageView) : Closeable {
         }
     }
 
-    fun solve(blind: Boolean = false): Boolean {
+    suspend fun solve(blind: Boolean = false): Boolean {
         val file = file.get() ?: return false
         val image = image ?: return false
 
-        plateSolverView.show(bringToFront = true)
+        val job = plateSolverView.show(bringToFront = true)
+
+        job.join()
 
         val ra = image.header.ra
         val dec = image.header.dec
 
-        val task = if (!blind && ra != null && dec != null) {
+        val calibration = if (!blind && ra != null && dec != null) {
             LOG.info("plate solving. path={}, ra={}, dec={}", file, ra.hours, dec.degrees)
             plateSolverView.solve(file, false, ra, dec)
         } else {
@@ -360,26 +367,22 @@ class ImageManager(private val view: ImageView) : Closeable {
             plateSolverView.solve(file)
         }
 
-        task.whenComplete { calibration, e ->
-            if (calibration != null) {
-                image.header.populateWithCalibration(calibration)
-                LOG.info("plate solving finished. calibration={}", calibration)
-            } else if (e != null) {
-                LOG.error("plate solving failed.", e)
-            }
-
-            this.calibration.set(calibration)
+        if (calibration != null) {
+            image.header.populateWithCalibration(calibration)
+            LOG.info("plate solving finished. calibration={}", calibration)
         }
+
+        this.calibration.set(calibration)
 
         return true
     }
 
-    fun openImageStretcher() {
+    suspend fun openImageStretcher() {
         imageStretcherView = imageStretcherView ?: ImageStretcherWindow(view)
         imageStretcherView!!.show(bringToFront = true)
     }
 
-    fun autoStretch() {
+    suspend fun autoStretch() {
         if (view.autoStretchEnabled) {
             val params = AutoScreenTransformFunction.compute(image ?: return)
             imageStretcherView?.updateStretchParameters(params.shadow, params.highlight, params.midtone)
@@ -387,12 +390,12 @@ class ImageManager(private val view: ImageView) : Closeable {
         }
     }
 
-    fun openSCNR() {
+    suspend fun openSCNR() {
         scnrView = scnrView ?: SCNRWindow(view)
         scnrView!!.show(bringToFront = true)
     }
 
-    fun openFitsHeader() {
+    suspend fun openFitsHeader() {
         val header = image?.header ?: return
         fitsHeaderView = fitsHeaderView ?: FitsHeaderWindow()
         fitsHeaderView!!.show(bringToFront = true)

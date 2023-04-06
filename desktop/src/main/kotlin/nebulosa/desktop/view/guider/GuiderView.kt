@@ -60,11 +60,11 @@ interface GuiderView : View, ImageViewer.MouseListener {
 
     val noiseReductionMethod: NoiseReductionMethod
 
-    fun updateStatus(text: String)
+    suspend fun updateStatus(text: String)
 
-    fun updateStarProfile(guider: Guider, image: Image = guider.image!!)
+    suspend fun updateStarProfile(guider: Guider, image: Image = guider.image!!)
 
-    fun updateGraph(stats: List<GuideStats>, maxRADuration: Double, maxDECDuration: Double)
+    suspend fun updateGraph(stats: List<GuideStats>, maxRADuration: Double, maxDECDuration: Double)
 
-    fun updateGraphInfo(rmsRA: Double, rmsDEC: Double, rmsTotal: Double, pixelScale: Double)
+    suspend fun updateGraphInfo(rmsRA: Double, rmsDEC: Double, rmsTotal: Double, pixelScale: Double)
 }

@@ -6,6 +6,8 @@ import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Spinner
 import javafx.scene.control.TextField
 import javafx.util.StringConverter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.logic.framing.FramingManager
 import nebulosa.desktop.logic.or
@@ -17,7 +19,6 @@ import nebulosa.math.AngleFormatter
 import org.controlsfx.control.HyperlinkLabel
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 
 @Component
@@ -41,7 +42,7 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
         resizable = false
     }
 
-    override fun onCreate() {
+    override suspend fun onCreate() {
         val isLoading = framingManager.loading
         val canNotLoad = hipsSurveyChoiceBox.valueProperty().isNull
 
@@ -69,11 +70,11 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
         framingManager.populateHipsSurveys()
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         framingManager.loadPreferences()
     }
 
-    override fun onStop() {
+    override suspend fun onStop() {
         framingManager.savePreferences()
     }
 
@@ -100,34 +101,34 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
 
     @FXML
     private fun load() {
-        framingManager.load(frameRA, frameDEC)
+        launchIO { framingManager.load(frameRA, frameDEC) }
     }
 
     @FXML
     private fun sync() {
-        framingManager.sync()
+        launchIO { framingManager.sync() }
     }
 
-    override fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?) {
+    override suspend fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?) = withContext(Dispatchers.Main) {
         hipsSurveyChoiceBox.items.setAll(data)
         hipsSurveyChoiceBox.value = selected
     }
 
-    override fun updateCoordinate(ra: Angle, dec: Angle) {
+    override suspend fun updateCoordinate(ra: Angle, dec: Angle) = withContext(Dispatchers.Main) {
         raTextField.text = ra.format(AngleFormatter.HMS)
         decTextField.text = dec.format(AngleFormatter.SIGNED_DMS)
     }
 
-    override fun updateFOV(fov: Angle) {
+    override suspend fun updateFOV(fov: Angle) = withContext(Dispatchers.Main) {
         fovSpinner.valueFactory.value = fov.degrees
     }
 
-    override fun load(
+    override suspend fun load(
         ra: Angle, dec: Angle,
         hips: HipsSurvey?,
         width: Int, height: Int,
         rotation: Angle, fov: Angle,
-    ) {
+    ): Unit = withContext(Dispatchers.Main) {
         updateCoordinate(ra, dec)
 
         if (hips != null) hipsSurveyChoiceBox.value = hips

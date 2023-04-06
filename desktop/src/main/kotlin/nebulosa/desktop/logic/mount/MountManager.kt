@@ -77,17 +77,17 @@ class MountManager(
         position = Geoid.IERS2010.latLon(mount.longitude, mount.latitude, mount.elevation)
     }
 
-    fun openINDIPanelControl() {
+    suspend fun openINDIPanelControl() {
         indiPanelControlView.show(bringToFront = true)
         indiPanelControlView.device = value
     }
 
-    fun openINDIPanelControl(gps: GPS) {
+    suspend fun openINDIPanelControl(gps: GPS) {
         indiPanelControlView.show(bringToFront = true)
         indiPanelControlView.device = gps
     }
 
-    fun openTelescopeControlServer() {
+    suspend fun openTelescopeControlServer() {
         telescopeControlView.show(bringToFront = true)
     }
 

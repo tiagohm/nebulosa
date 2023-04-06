@@ -69,7 +69,7 @@ class HomeManager(private val view: HomeView) : Closeable {
         }
     }
 
-    fun open(name: String) {
+    suspend fun open(name: String) {
         when (name) {
             "NEW_IMAGE" -> openNewImage()
             "CAMERA" -> cameraView.show(bringToFront = true)
@@ -85,7 +85,7 @@ class HomeManager(private val view: HomeView) : Closeable {
         }
     }
 
-    private fun openNewImage() {
+    private suspend fun openNewImage() {
         val initialDirectoryPath = preferences
             .string("home.newImage.initialDirectory")
             ?.let(::Path)?.takeIf { it.exists() }

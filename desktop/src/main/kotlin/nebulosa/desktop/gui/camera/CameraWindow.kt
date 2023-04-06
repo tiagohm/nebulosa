@@ -26,7 +26,6 @@ import nebulosa.indi.device.camera.FrameType
 import org.controlsfx.control.SegmentedButton
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -80,7 +79,7 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
         resizable = false
     }
 
-    override fun onCreate() {
+    override suspend fun onCreate() {
         val isNotConnected = !cameraManager.connectedProperty
         val isConnecting = cameraManager.connectingProperty
         val isCapturing = cameraManager.capturingProperty
@@ -162,11 +161,11 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
         cameraManager.loadPreferences(null)
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         cameraManager.loadPreferences()
     }
 
-    override fun onStop() {
+    override suspend fun onStop() {
         cameraManager.savePreferences()
     }
 

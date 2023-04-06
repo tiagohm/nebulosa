@@ -4,7 +4,7 @@ import nebulosa.desktop.view.image.SCNRView
 
 class SCNRManager(private val view: SCNRView) {
 
-    fun apply() {
+    suspend fun apply() {
         view.applySCNR(view.enabled, view.channel, view.protectionMethod, view.amount)
     }
 }

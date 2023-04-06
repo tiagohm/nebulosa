@@ -13,7 +13,7 @@ interface ImageView : View {
 
     interface Opener {
 
-        fun open(
+        suspend fun open(
             image: Image?, file: File?,
             token: Any? = null,
             resetTransformation: Boolean = false,
@@ -57,20 +57,20 @@ interface ImageView : View {
     val image
         get() = transformedImage ?: originalImage
 
-    fun stf(shadow: Float, highlight: Float, midtone: Float)
+    suspend fun stf(shadow: Float, highlight: Float, midtone: Float)
 
-    fun scnr(
+    suspend fun scnr(
         enabled: Boolean, channel: ImageChannel,
         protectionMethod: ProtectionMethod, amount: Float,
     )
 
-    fun adjustSceneToImage()
+    suspend fun adjustSceneToImage()
 
     fun draw(image: Image)
 
-    fun open(file: File, resetTransformation: Boolean = false)
+    suspend fun open(file: File, resetTransformation: Boolean = false)
 
-    fun open(
+    suspend fun open(
         fits: Image, file: File? = null,
         resetTransformation: Boolean = false,
     )

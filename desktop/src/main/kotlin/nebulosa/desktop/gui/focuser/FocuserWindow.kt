@@ -47,7 +47,7 @@ class FocuserWindow : AbstractWindow("Focuser", "focus"), FocuserView {
         resizable = false
     }
 
-    override fun onCreate() {
+    override suspend fun onCreate() {
         val isNotConnected = focuserManager.connectedProperty.not()
         val isConnecting = focuserManager.connectingProperty
         val isMoving = focuserManager.movingProperty
@@ -86,11 +86,11 @@ class FocuserWindow : AbstractWindow("Focuser", "focus"), FocuserView {
         // autoFocusButton.disableProperty().bind(isNotConnectedOrMoving)
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         focuserManager.loadPreferences()
     }
 
-    override fun onStop() {
+    override suspend fun onStop() {
         focuserManager.savePreferences()
     }
 

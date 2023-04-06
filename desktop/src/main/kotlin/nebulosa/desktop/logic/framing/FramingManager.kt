@@ -2,6 +2,8 @@ package nebulosa.desktop.logic.framing
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.beans.property.SimpleBooleanProperty
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.framing.FramingView
@@ -28,8 +30,6 @@ import java.io.Closeable
 import java.io.InterruptedIOException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.writeBytes
@@ -41,8 +41,6 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
     @Autowired private lateinit var objectMapper: ObjectMapper
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var hips2FitsService: Hips2FitsService
-    @Autowired private lateinit var systemExecutorService: ExecutorService
-    @Autowired private lateinit var javaFXExecutorService: ExecutorService
     @Autowired private lateinit var imageViewOpener: ImageView.Opener
     @Autowired private lateinit var preferences: Preferences
 
@@ -54,15 +52,14 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
     val mount
         get() = equipmentManager.selectedMount
 
-    fun sync(device: Mount? = null) {
+    suspend fun sync(device: Mount? = null) {
         val mount = device ?: equipmentManager.selectedMount.value ?: return
         val coordinate = PairOfAngle(mount.rightAscensionJ2000, mount.declinationJ2000)
         view.updateCoordinate(coordinate.first, coordinate.second)
         load(coordinate.first, coordinate.second)
     }
 
-    @Synchronized
-    fun load(rightAscension: Angle, declination: Angle): CompletableFuture<Path>? {
+    suspend fun load(rightAscension: Angle, declination: Angle): Path? {
         if (loading.get()) {
             LOG.warn("framing is already loading")
             return null
@@ -73,17 +70,14 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
             return null
         }
 
-        loading.set(true)
-
-        val task = CompletableFuture<Path>()
+        withContext(Dispatchers.Main) { loading.set(true) }
 
         val rotation = view.frameRotation
         lateinit var hipsSurvey: HipsSurvey
+        var path: Path? = null
 
-        systemExecutorService.submit {
+        withContext(Dispatchers.IO) {
             val data = try {
-                while (view.hipsSurvey == null) Thread.sleep(100L)
-
                 hipsSurvey = view.hipsSurvey!!
 
                 LOG.info(
@@ -101,21 +95,19 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
                 ).execute().body()!!
             } catch (e: InterruptedIOException) {
                 view.showAlert("Image took a long time to load. Please try again.")
-                task.completeExceptionally(e)
-                return@submit
+                return@withContext
             } catch (e: Throwable) {
                 LOG.error("failed to load image", e)
                 view.showAlert("Failed to load image. Try using other survey source.")
-                task.completeExceptionally(e)
-                return@submit
+                return@withContext
             }
 
             savePreferences()
 
             imagePath.get()?.deleteIfExists()
-            val tmpFile = Files.createTempFile("framing", ".jpg")
-            tmpFile.writeBytes(data)
-            imagePath.set(tmpFile)
+            path = Files.createTempFile("framing", ".jpg")
+            path!!.writeBytes(data)
+            imagePath.set(path)
 
             val image = Image.open(ByteArrayInputStream(data))
 
@@ -127,35 +119,37 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
 
             val currentImageView = imageView.get()
 
-            javaFXExecutorService.execute {
+            withContext(Dispatchers.Main) {
                 try {
                     if (currentImageView != null) {
-                        currentImageView.open(image, tmpFile.toFile(), resetTransformation = true)
+                        currentImageView.open(image, path!!.toFile(), resetTransformation = true)
                         currentImageView.show(requestFocus = true)
                     } else {
-                        val window = imageViewOpener.open(image, tmpFile.toFile(), resetTransformation = true)
+                        val window = imageViewOpener.open(image, path!!.toFile(), resetTransformation = true)
                         imageView.set(window)
                     }
                 } catch (e: Throwable) {
                     LOG.error("image open failed", e)
                 }
-
-                task.complete(tmpFile)
             }
         }
 
-        return task
-            .whenComplete { _, _ -> loading.set(false) }
+        withContext(Dispatchers.Main) { loading.set(false) }
+
+        return path
     }
 
-    fun populateHipsSurveys() {
-        val data = objectMapper.readValue(resource("data/HIPS_SURVEY_SOURCES.json")!!, Array<HipsSurvey>::class.java)
+    suspend fun populateHipsSurveys() {
+        val data = withContext(Dispatchers.IO) {
+            objectMapper.readValue(resource("data/HIPS_SURVEY_SOURCES.json")!!, Array<HipsSurvey>::class.java)
+        }
+
         val hipsSurveyId = preferences.string("framing.hipsSurvey") ?: DEFAULT_HIPS_SURVEY
         val selected = data.firstOrNull { it.id == hipsSurveyId }
         view.populateHipsSurveys(data.toList(), selected)
     }
 
-    fun loadPreferences() {
+    suspend fun loadPreferences() {
         preferences.double("framing.fov")?.let { view.updateFOV(it.rad) }
         preferences.double("framing.screen.x")?.let { view.x = it }
         preferences.double("framing.screen.y")?.let { view.y = it }

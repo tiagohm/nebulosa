@@ -1,5 +1,6 @@
 package nebulosa.desktop.view
 
+import kotlinx.coroutines.Job
 import java.io.Closeable
 
 interface View : Closeable {
@@ -33,7 +34,7 @@ interface View : Closeable {
     fun show(
         requestFocus: Boolean = false,
         bringToFront: Boolean = false,
-    )
+    ): Job
 
     fun showAndWait()
 

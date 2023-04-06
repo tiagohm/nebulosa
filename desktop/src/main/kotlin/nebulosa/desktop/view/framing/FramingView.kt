@@ -20,7 +20,7 @@ interface FramingView : View {
 
     val frameRotation: Angle
 
-    fun load(
+    suspend fun load(
         ra: Angle, dec: Angle,
         hips: HipsSurvey? = null,
         width: Int = frameWidth, height: Int = frameHeight,
@@ -28,9 +28,9 @@ interface FramingView : View {
         fov: Angle = frameFOV,
     )
 
-    fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?)
+    suspend fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?)
 
-    fun updateCoordinate(ra: Angle, dec: Angle)
+    suspend fun updateCoordinate(ra: Angle, dec: Angle)
 
-    fun updateFOV(fov: Angle)
+    suspend fun updateFOV(fov: Angle)
 }

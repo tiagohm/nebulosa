@@ -10,15 +10,15 @@ interface ImageStretcherView : View {
 
     val midtone: Float
 
-    fun apply(shadow: Float, highlight: Float, midtone: Float)
+    suspend fun apply(shadow: Float, highlight: Float, midtone: Float)
 
-    fun updateTitle()
+    suspend fun updateTitle()
 
-    fun updateStretchParameters(shadow: Float, highlight: Float, midtone: Float)
+    suspend fun updateStretchParameters(shadow: Float, highlight: Float, midtone: Float)
 
     fun autoStretch()
 
-    fun resetStretch(onlyParameters: Boolean = false)
+    suspend fun resetStretch(onlyParameters: Boolean = false)
 
-    fun drawHistogram()
+    suspend fun drawHistogram()
 }

@@ -5,7 +5,7 @@ import nom.tam.fits.Header
 
 interface FitsHeaderView : View {
 
-    fun updateText(text: String)
+    suspend fun updateText(text: String)
 
-    fun load(header: Header)
+    suspend fun load(header: Header)
 }

@@ -1,8 +1,9 @@
 package nebulosa.desktop.gui.image
 
-import javafx.application.Platform
 import javafx.scene.canvas.Canvas
 import javafx.scene.paint.Color
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.Histogram
 
@@ -29,9 +30,9 @@ class HistogramView : Canvas() {
         this.height = height
     }
 
-    fun draw(image: Image) {
-        histogram.compute(image)
-        Platform.runLater { draw() }
+    suspend fun draw(image: Image) {
+        withContext(Dispatchers.IO) { histogram.compute(image) }
+        withContext(Dispatchers.Main) { draw() }
     }
 
     private fun draw() {

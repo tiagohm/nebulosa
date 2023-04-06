@@ -5,6 +5,8 @@ import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Spinner
 import javafx.scene.control.TextField
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.logic.asString
@@ -16,13 +18,11 @@ import nebulosa.desktop.view.platesolver.PlateSolverView
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.AngleFormatter
-import nebulosa.platesolving.Calibration
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import java.io.File
-import java.util.concurrent.CompletableFuture
 import kotlin.math.ceil
 
 @Component
@@ -58,7 +58,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
         resizable = false
     }
 
-    override fun onCreate() {
+    override suspend fun onCreate() {
         val isSolving = plateSolverManager.solving
         val canNotSolve = plateSolverManager.file.isNull or isSolving
         val canNotSlew = !plateSolverManager.mount.connectedProperty or plateSolverManager.mount.slewingProperty
@@ -120,11 +120,11 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
         frameButton.disableProperty().bind(canNotSolve or isNotSolved)
     }
 
-    override fun onStart() {
+    override suspend fun onStart() {
         plateSolverManager.loadPreferences()
     }
 
-    override fun onStop() {
+    override suspend fun onStop() {
         plateSolverManager.savePreferences()
     }
 
@@ -175,7 +175,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
     @FXML
     private fun solve() {
         try {
-            plateSolverManager.solve()
+            launchIO { plateSolverManager.solve() }
         } catch (e: NullPointerException) {
             LOG.error("plate solve failed.", e)
             showAlert("Center coordinate or radius value is invalid")
@@ -184,7 +184,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
 
     @FXML
     private fun cancel() {
-        plateSolverManager.cancel()
+        // TODO: plateSolverManager.cancel()
     }
 
     @FXML
@@ -204,23 +204,22 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
 
     @FXML
     private fun frame() {
-        plateSolverManager.frame()
+        launchIO { plateSolverManager.frame() }
     }
 
-    override fun solve(
+    override suspend fun solve(
         file: File,
         blind: Boolean,
         centerRA: Angle, centerDEC: Angle,
         radius: Angle,
-    ): CompletableFuture<Calibration> {
+    ) = withContext(Dispatchers.Main) {
         blindSwitch.state = blind
         centerRATextField.text = centerRA.format(AngleFormatter.HMS)
         centerDECTextField.text = centerDEC.format(AngleFormatter.SIGNED_DMS)
-        this.radius = radius
+        this@PlateSolverWindow.radius = radius
 
         plateSolverManager.clearAstrometrySolution()
-
-        return plateSolverManager.solve(file)
+        plateSolverManager.solve(file)
     }
 
     override fun fileWasLoaded(file: File) {
