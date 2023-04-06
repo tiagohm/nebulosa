@@ -1,13 +1,12 @@
 package nebulosa.sbd
 
-import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
 
 internal interface SmallBodyDatabaseLookup {
 
     @GET(API_URL)
-    fun search(@Query("sstr") text: String): Call<SmallBody>
+    suspend fun search(@Query("sstr") text: String): SmallBody
 
     companion object {
 

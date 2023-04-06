@@ -8,6 +8,7 @@ import javafx.event.Event
 import javafx.fxml.FXML
 import javafx.scene.control.*
 import javafx.util.Callback
+import kotlinx.coroutines.*
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.CopyableLabel
 import nebulosa.desktop.gui.control.PropertyValueFactory
@@ -22,12 +23,13 @@ import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyCatalogFilter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.util.function.Predicate
 
 @Component
 class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
+
+    private val mainScope = MainScope()
 
     @Lazy @Autowired private lateinit var atlasManager: AtlasManager
 
@@ -82,7 +84,8 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
 
         (planetTableView.columns[0] as TableColumn<AtlasView.Planet, String>).cellValueFactory = PropertyValueFactory { it.name }
         (planetTableView.columns[1] as TableColumn<AtlasView.Planet, String>).cellValueFactory = PropertyValueFactory { it.type }
-        planetTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computePlanet(it) }
+        planetTableView.selectionModel.selectedItemProperty()
+            .on { if (it != null) mainScope.launch(Dispatchers.IO) { atlasManager.computePlanet(it) } }
 
         (minorPlanetTableView.columns[0] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.element }
         (minorPlanetTableView.columns[1] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.description }
@@ -92,14 +95,22 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         (starTableView.columns[1] as TableColumn<AtlasView.Star, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
         (starTableView.columns[1] as TableColumn<AtlasView.Star, Double>).cellFactory = Callback { _ -> MagnitudeTableCell<AtlasView.Star>() }
         (starTableView.columns[2] as TableColumn<AtlasView.Star, String>).cellValueFactory = PropertyValueFactory { it.constellation }
-        starTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computeStar(it) }
+        starTableView.selectionModel.selectedItemProperty()
+            .on { if (it != null) mainScope.launch(Dispatchers.IO) { atlasManager.computeStar(it) } }
 
         (dsosTableView.columns[0] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.name }
         (dsosTableView.columns[1] as TableColumn<AtlasView.DSO, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
         (dsosTableView.columns[1] as TableColumn<AtlasView.DSO, Double>).cellFactory = Callback { _ -> MagnitudeTableCell<AtlasView.DSO>() }
         (dsosTableView.columns[2] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.type }
         (dsosTableView.columns[3] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.constellation }
-        dsosTableView.selectionModel.selectedItemProperty().on { if (it != null) atlasManager.computeDSO(it) }
+        dsosTableView.selectionModel.selectedItemProperty()
+            .on { if (it != null) mainScope.launch(Dispatchers.IO) { atlasManager.computeDSO(it) } }
+
+        mainScope.launch(Dispatchers.IO) {
+            launch { atlasManager.populatePlanets() }
+            launch { atlasManager.populateStars() }
+            launch { atlasManager.populateDSOs() }
+        }
     }
 
     override fun onStart() {
@@ -107,17 +118,19 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
 
         atlasManager.loadPreferences()
 
-        atlasManager.updateSunImage()
-        atlasManager.updateMoonImage()
-        atlasManager.populatePlanets()
-        atlasManager.populateStars()
-        atlasManager.populateDSOs()
-
-        atlasManager.computeTab(AtlasView.TabType.SUN)
+        mainScope.launch(Dispatchers.IO) {
+            launch { atlasManager.updateSunImage() }
+            launch { atlasManager.updateMoonImage() }
+            launch { atlasManager.computeTab(AtlasView.TabType.SUN) }
+        }
     }
 
     override fun onStop() {
         atlasManager.savePreferences()
+    }
+
+    override fun onClose() {
+        mainScope.cancel()
     }
 
     @FXML
@@ -126,7 +139,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         if (!(event.source as Tab).isSelected) return
         val userData = ephemerisTabPane.selectionModel.selectedItem.userData as String
         val tabType = AtlasView.TabType.valueOf(userData)
-        atlasManager.computeTab(tabType)
+        mainScope.launch(Dispatchers.IO) { atlasManager.computeTab(tabType) }
     }
 
     val equatorialCoordinate
@@ -162,7 +175,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     @FXML
     private fun searchMinorPlanet() {
         val text = searchMinorPlanetTextField.text.trim().ifEmpty { null } ?: return
-        atlasManager.searchMinorPlanet(text)
+        mainScope.launch { atlasManager.searchMinorPlanet(text) }
     }
 
     @FXML
@@ -183,14 +196,13 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         }
     }
 
-    @Async("javaFXExecutorService")
-    override fun drawAltitude(
+    override suspend fun drawAltitude(
         points: List<XYItem>,
         now: Double,
         civilDawn: DoubleArray, nauticalDawn: DoubleArray, astronomicalDawn: DoubleArray,
         civilDusk: DoubleArray, nauticalDusk: DoubleArray, astronomicalDusk: DoubleArray,
         night: DoubleArray,
-    ) {
+    ) = withContext(Dispatchers.Main) {
         altitudeChart.draw(
             points, now,
             civilDawn, nauticalDawn, astronomicalDawn,
@@ -199,46 +211,41 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         )
     }
 
-    override fun updateSunImage() {
+    override suspend fun updateSunImage() = withContext(Dispatchers.Main) {
         sunView.updateImage()
     }
 
-    @Async("javaFXExecutorService")
-    override fun updateMoonImage(phase: Double, age: Double, angle: Angle) {
+    override suspend fun updateMoonImage(phase: Double, age: Double, angle: Angle) = withContext(Dispatchers.Main) {
         moonView.draw(age, angle)
     }
 
-    override fun populatePlanet(planets: List<AtlasView.Planet>) {
+    override suspend fun populatePlanet(planets: List<AtlasView.Planet>): Unit = withContext(Dispatchers.Main) {
         planetTableView.items.setAll(planets)
     }
 
-    @Async("javaFXExecutorService")
-    override fun populateMinorPlanet(minorPlanets: List<AtlasView.MinorPlanet>) {
+    override suspend fun populateMinorPlanet(minorPlanets: List<AtlasView.MinorPlanet>): Unit = withContext(Dispatchers.Main) {
         minorPlanetTableView.items.setAll(minorPlanets)
     }
 
-    @Async("javaFXExecutorService")
-    override fun populateStar(stars: List<AtlasView.Star>) {
+    override suspend fun populateStar(stars: List<AtlasView.Star>) = withContext(Dispatchers.Main) {
         val filteredList = FilteredList(FXCollections.observableArrayList(stars))
         val sortedList = SortedList(filteredList)
         sortedList.comparatorProperty().bind(starTableView.comparatorProperty())
         starTableView.items = sortedList
     }
 
-    @Async("javaFXExecutorService")
-    override fun populateDSOs(dsos: List<AtlasView.DSO>) {
+    override suspend fun populateDSOs(dsos: List<AtlasView.DSO>) = withContext(Dispatchers.Main) {
         val filteredList = FilteredList(FXCollections.observableArrayList(dsos))
         val sortedList = SortedList(filteredList)
         sortedList.comparatorProperty().bind(dsosTableView.comparatorProperty())
         dsosTableView.items = sortedList
     }
 
-    @Async("javaFXExecutorService")
-    override fun updateEquatorialCoordinates(
+    override suspend fun updateEquatorialCoordinates(
         ra: Angle, dec: Angle,
         raJ2000: Angle, decJ2000: Angle,
         constellation: Constellation?,
-    ) {
+    ) = withContext(Dispatchers.Main) {
         rightAscensionLabel.text = ra.format(AngleFormatter.HMS)
         declinationLabel.text = dec.format(AngleFormatter.SIGNED_DMS)
         rightAscensionJ2000Label.text = raJ2000.format(AngleFormatter.HMS)
@@ -246,24 +253,20 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         constellationLabel.text = constellation?.iau ?: "-"
     }
 
-    @Async("javaFXExecutorService")
-    override fun updateHorizontalCoordinates(az: Angle, alt: Angle) {
+    override suspend fun updateHorizontalCoordinates(az: Angle, alt: Angle) = withContext(Dispatchers.Main) {
         azimuthLabel.text = az.normalized.format(AngleFormatter.DMS)
         altitudeLabel.text = alt.format(AngleFormatter.SIGNED_DMS)
     }
 
-    @Async("javaFXExecutorService")
-    override fun updateInfo(bodyName: String) {
+    override suspend fun updateInfo(bodyName: String) = withContext(Dispatchers.Main) {
         nameLabel.text = bodyName
     }
 
-    @Async("javaFXExecutorService")
-    override fun updateRTS(rts: Triple<String, String, String>) {
+    override suspend fun updateRTS(rts: Triple<String, String, String>) = withContext(Dispatchers.Main) {
         rtsLabel.text = "%s | %s | %s".format(rts.first, rts.second, rts.third)
     }
 
-    @Async("javaFXExecutorService")
-    override fun clearAltitudeAndCoordinates() {
+    override suspend fun clearAltitudeAndCoordinates() = withContext(Dispatchers.Main) {
         nameLabel.text = ""
         updateEquatorialCoordinates(Angle.ZERO, Angle.ZERO, Angle.ZERO, Angle.ZERO, null)
         updateHorizontalCoordinates(Angle.ZERO, Angle.ZERO)

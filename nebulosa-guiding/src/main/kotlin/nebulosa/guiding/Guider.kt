@@ -8,7 +8,7 @@ interface Guider : Iterable<GuidePoint> {
 
     val lockPosition: GuidePoint
 
-    var searchRegion: Double
+    val searchRegion: Double
 
     val image: Image?
 
@@ -35,4 +35,8 @@ interface Guider : Iterable<GuidePoint> {
     fun loadCalibration(calibration: Calibration)
 
     fun dither()
+
+    fun registerListener(listener: GuiderListener)
+
+    fun unregisterListener(listener: GuiderListener)
 }

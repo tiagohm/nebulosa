@@ -131,7 +131,7 @@
                     </accelerator>
                 </CheckMenuItem>
                 <SeparatorMenuItem/>
-                <Menu text="Tools">
+                <Menu text="Overlay">
                     <CheckMenuItem fx:id="crosshairCheckMenuItem"
                                    text="Crosshair"
                                    onAction="#toggleCrosshair">

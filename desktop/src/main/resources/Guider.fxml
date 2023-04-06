@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.collections.FXCollections?>
+<?import javafx.collections.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -10,6 +10,7 @@
 <?import nebulosa.desktop.gui.guider.StarProfileGraph?>
 <?import nebulosa.desktop.view.guider.*?>
 <?import nebulosa.guiding.internal.DeclinationGuideMode?>
+<?import nebulosa.guiding.NoiseReductionMethod?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -152,6 +153,34 @@
                                        text="0.00 px | 0.00&quot;"
                                        styleClass="text-sm"/>
                             </LabeledPane>
+                            <LabeledPane text="Peak"
+                                         textStyleClass="text-xs,text-bold"
+                                         minWidth="42.0">
+                                <Label fx:id="peakLabel"
+                                       text="0"
+                                       styleClass="text-sm"/>
+                            </LabeledPane>
+                            <LabeledPane text="FWHM"
+                                         textStyleClass="text-xs,text-bold"
+                                         minWidth="42.0">
+                                <Label fx:id="fwhmLabel"
+                                       text="0.00"
+                                       styleClass="text-sm"/>
+                            </LabeledPane>
+                            <LabeledPane text="HFD"
+                                         textStyleClass="text-xs,text-bold"
+                                         minWidth="42.0">
+                                <Label fx:id="hfdLabel"
+                                       text="0.00"
+                                       styleClass="text-sm"/>
+                            </LabeledPane>
+                            <LabeledPane text="SNR"
+                                         textStyleClass="text-xs,text-bold"
+                                         minWidth="42.0">
+                                <Label fx:id="snrLabel"
+                                       text="0.00"
+                                       styleClass="text-sm"/>
+                            </LabeledPane>
                         </HBox>
                     </VBox>
                     <VBox alignment="TOP_CENTER"
@@ -272,6 +301,20 @@
                                  amountToStepBy="1.0"
                                  max="60.0"/>
                     </LabeledPane>
+                    <LabeledPane text="Algorithm"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="2">
+                        <ChoiceBox fx:id="noiseReductionMethodChoiceBox"
+                                   maxWidth="Infinity">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <NoiseReductionMethod fx:value="NONE"/>
+                                    <NoiseReductionMethod fx:value="MEAN"/>
+                                </FXCollections>
+                            </items>
+                        </ChoiceBox>
+                    </LabeledPane>
                     <LabeledPane text="Search Region (px)"
                                  textStyleClass="text-bold"
                                  GridPane.rowIndex="1"
@@ -312,7 +355,7 @@
                     </LabeledPane>
                     <LabeledPane text="Star Mass Tolerance (%)"
                                  textStyleClass="text-bold"
-                                 GridPane.rowIndex="1"
+                                 GridPane.rowIndex="2"
                                  GridPane.columnIndex="1">
                         <Spinner fx:id="starMassDetectionToleranceSpinner"
                                  maxWidth="Infinity"
@@ -718,60 +761,6 @@
                     </HBox>
                 </LabeledPane>
             </HBox>
-            <VBox spacing="1.0"
-                  StackPane.alignment="TOP_RIGHT"
-                  fillWidth="false"
-                  minWidth="92.0"
-                  maxWidth="92.0">
-                <HBox spacing="1.0">
-                    <Label text="Peak:"
-                           minWidth="46.0"
-                           maxWidth="46.0"
-                           styleClass="text-xs,text-bold"/>
-                    <Label fx:id="peakLabel"
-                           text="0"
-                           alignment="CENTER_RIGHT"
-                           minWidth="46.0"
-                           maxWidth="46.0"
-                           styleClass="text-xs"/>
-                </HBox>
-                <HBox spacing="1.0">
-                    <Label text="FWHM:"
-                           minWidth="46.0"
-                           maxWidth="46.0"
-                           styleClass="text-xs,text-bold"/>
-                    <Label fx:id="fwhmLabel"
-                           text="0.00"
-                           alignment="CENTER_RIGHT"
-                           minWidth="46.0"
-                           maxWidth="46.0"
-                           styleClass="text-xs"/>
-                </HBox>
-                <HBox spacing="1.0">
-                    <Label text="HFD:"
-                           minWidth="46.0"
-                           maxWidth="46.0"
-                           styleClass="text-xs,text-bold"/>
-                    <Label fx:id="hfdLabel"
-                           text="0.00"
-                           alignment="CENTER_RIGHT"
-                           minWidth="46.0"
-                           maxWidth="46.0"
-                           styleClass="text-xs"/>
-                </HBox>
-                <HBox spacing="1.0">
-                    <Label text="SNR:"
-                           minWidth="46.0"
-                           maxWidth="46.0"
-                           styleClass="text-xs,text-bold"/>
-                    <Label fx:id="snrLabel"
-                           text="0.00"
-                           alignment="CENTER_RIGHT"
-                           minWidth="46.0"
-                           maxWidth="46.0"
-                           styleClass="text-xs"/>
-                </HBox>
-            </VBox>
         </StackPane>
         <HBox alignment="CENTER_LEFT">
             <MaterialIcon fx:id="statusIcon"

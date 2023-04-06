@@ -25,6 +25,7 @@ import nebulosa.desktop.view.guider.GuideAlgorithmType
 import nebulosa.desktop.view.guider.GuiderView
 import nebulosa.guiding.GuideStats
 import nebulosa.guiding.Guider
+import nebulosa.guiding.NoiseReductionMethod
 import nebulosa.guiding.internal.DeclinationGuideMode
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.AutoScreenTransformFunction
@@ -96,6 +97,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML private lateinit var settleTimeoutSpinner: Spinner<Double>
     @FXML private lateinit var exposureTimeSpinner: Spinner<Double>
     @FXML private lateinit var exposureDelaySpinner: Spinner<Double>
+    @FXML private lateinit var noiseReductionMethodChoiceBox: ChoiceBox<NoiseReductionMethod>
     @FXML private lateinit var searchRegionSpinner: Spinner<Double>
     @FXML private lateinit var minimumStarHFDSpinner: Spinner<Double>
     @FXML private lateinit var multipleStarsSwitch: SwitchSegmentedButton
@@ -168,6 +170,9 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
         ditherModeChoiceBox.converter = DitherModeStringConverter
         ditherModeChoiceBox.value = DitherMode.RANDOM
+
+        noiseReductionMethodChoiceBox.converter = NoiseReductionMethodStringConverter
+        noiseReductionMethodChoiceBox.value = NoiseReductionMethod.NONE
     }
 
     override fun onStart() {
@@ -302,17 +307,28 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     override val ditherRAOnly
         get() = ditherRAOnlySwitch.state
 
-    @Async("javaFXExecutorService")
+    override val exposureTime
+        get() = exposureTimeSpinner.value!!.toLong()
+
+    override val exposureDelay
+        get() = exposureDelaySpinner.value!!.toLong() * 1000L
+
+    override val searchRegion
+        get() = searchRegionSpinner.value!!
+
+    override val noiseReductionMethod
+        get() = noiseReductionMethodChoiceBox.value!!
+
     override fun updateStatus(text: String) {
         statusIcon.text = text
     }
 
     override fun updateStarProfile(guider: Guider, image: Image) {
         val lockPosition = guider.lockPosition
-        val regionSize = guider.searchRegion * 2.0
+        val trackBoxSize = searchRegion * 2.0
 
         if (lockPosition.valid) {
-            val size = min(regionSize, 64.0)
+            val size = min(trackBoxSize, 64.0)
 
             systemExecutorService.execute {
                 val centerX = (lockPosition.x - size / 2).toInt()
@@ -327,7 +343,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
                 javaFXExecutorService.execute {
                     starProfileImage.load(writableImage)
-                    starProfileIndicator.draw(guider.lockPosition, guider.primaryStar, regionSize)
+                    starProfileIndicator.draw(guider.lockPosition, guider.primaryStar, trackBoxSize)
                     val fwhm = starProfileGraph.draw(image, guider.primaryStar)
                     peakLabel.text = "%.0f".format(guider.primaryStar.peak)
                     fwhmLabel.text = "%.2f".format(fwhm)
@@ -338,7 +354,6 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         }
     }
 
-    @Async("javaFXExecutorService")
     override fun updateGraph(
         stats: List<GuideStats>,
         maxRADuration: Double, maxDECDuration: Double,
@@ -346,7 +361,6 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         guiderChart.draw(stats, maxRADuration, maxDECDuration)
     }
 
-    @Async("javaFXExecutorService")
     override fun updateGraphInfo(rmsRA: Double, rmsDEC: Double, rmsTotal: Double, pixelScale: Double) {
         rmsRALabel.text = "%.2f px | %.2f\"".format(rmsRA, rmsRA * pixelScale)
         rmsDECLabel.text = "%.2f px | %.2f\"".format(rmsDEC, rmsDEC * pixelScale)
@@ -392,14 +406,25 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
     private object GuideAlgorithmTypeStringConverter : StringConverter<GuideAlgorithmType>() {
 
-        override fun toString(device: GuideAlgorithmType?) = device?.label ?: "No algorithm selected"
+        override fun toString(type: GuideAlgorithmType?) = type?.label ?: "No algorithm selected"
 
         override fun fromString(text: String?) = null
     }
 
     private object DitherModeStringConverter : StringConverter<DitherMode>() {
 
-        override fun toString(device: DitherMode?) = device?.label ?: "No mode selected"
+        override fun toString(mode: DitherMode?) = mode?.label ?: "No mode selected"
+
+        override fun fromString(text: String?) = null
+    }
+
+    private object NoiseReductionMethodStringConverter : StringConverter<NoiseReductionMethod>() {
+
+        override fun toString(method: NoiseReductionMethod?) = when (method) {
+            NoiseReductionMethod.NONE -> "None"
+            NoiseReductionMethod.MEAN -> "Mean"
+            else -> "No method selected"
+        }
 
         override fun fromString(text: String?) = null
     }

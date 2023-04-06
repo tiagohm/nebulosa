@@ -108,7 +108,6 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
         framingManager.sync()
     }
 
-    @Async("javaFXExecutorService")
     override fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?) {
         hipsSurveyChoiceBox.items.setAll(data)
         hipsSurveyChoiceBox.value = selected

@@ -1,6 +1,7 @@
 package nebulosa.guiding.internal
 
 import nebulosa.guiding.Dither
+import nebulosa.guiding.NoiseReductionMethod
 import nebulosa.imaging.Image
 import nebulosa.math.Angle
 
@@ -10,11 +11,11 @@ interface GuideDevice {
 
     val cameraBinning: Int
 
-    val cameraImage: Image
-
     val cameraPixelScale: Double
 
-    val cameraExposure: Long
+    val cameraExposureTime: Long
+
+    val cameraExposureDelay: Long
 
     // Mount.
 
@@ -67,7 +68,11 @@ interface GuideDevice {
 
     val yGuideAlgorithm: GuideAlgorithm
 
-    fun capture(duration: Long)
+    val searchRegion: Double
+
+    val noiseReductionMethod: NoiseReductionMethod
+
+    fun capture(duration: Long): Image
 
     fun guideNorth(duration: Int): Boolean
 

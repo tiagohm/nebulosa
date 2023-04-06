@@ -13,21 +13,24 @@ internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : W
 
     override fun execute() {
         val startTime = System.currentTimeMillis()
-        val duration = guider.device.cameraExposure
+        val duration = guider.device.cameraExposureTime
 
         if (guider.pauseType != PauseType.FULL) {
             while (guider.device.mountIsSlewing) Thread.sleep(10L)
             LOG.info("starting frame capture. exposure={} ms", duration)
-            guider.device.capture(duration)
-            var frame = guider.device.cameraImage
+            var frame = guider.device.capture(duration)
             LOG.info("frame capture finished")
 
-            if (guider.noiseReductionMethod == NoiseReductionMethod.MEAN) {
+            if (guider.device.noiseReductionMethod == NoiseReductionMethod.MEAN) {
                 frame = frame.transform(MEAN_FILTER)
             }
 
             if (!guider.device.mountIsSlewing) {
                 guider.updateGuide(frame, frameNumber.getAndIncrement(), false)
+            }
+
+            if (guider.device.cameraExposureDelay > 0L) {
+                Thread.sleep(guider.device.cameraExposureDelay)
             }
         }
 

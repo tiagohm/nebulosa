@@ -288,7 +288,6 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
         targetDeclinationTextField.text = dec.format(AngleFormatter.SIGNED_DMS)
     }
 
-    @Async("javaFXExecutorService")
     override fun updateLSTAndMeridian(lst: Angle, timeLeftToMeridianFlip: Angle, timeToMeridianFlip: LocalDateTime) {
         meridianAtLabel.text = "%s (%s)".format(timeToMeridianFlip.format(MERIDIAN_TIME_FORMAT), timeLeftToMeridianFlip.format(LST_FORMAT))
         lstLabel.text = lst.format(LST_FORMAT)

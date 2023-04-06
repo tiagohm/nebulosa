@@ -4,6 +4,7 @@ import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.view.View
 import nebulosa.guiding.GuideStats
 import nebulosa.guiding.Guider
+import nebulosa.guiding.NoiseReductionMethod
 import nebulosa.guiding.internal.DeclinationGuideMode
 import nebulosa.imaging.Image
 
@@ -50,6 +51,14 @@ interface GuiderView : View, ImageViewer.MouseListener {
     val ditherAmount: Double
 
     val ditherRAOnly: Boolean
+
+    val exposureTime: Long
+
+    val exposureDelay: Long
+
+    val searchRegion: Double
+
+    val noiseReductionMethod: NoiseReductionMethod
 
     fun updateStatus(text: String)
 

@@ -393,7 +393,6 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
         }
     }
 
-    @Async("javaFXExecutorService")
     override fun updateStatus(text: String) {
         statusIcon.text = text
     }

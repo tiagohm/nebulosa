@@ -1,11 +1,11 @@
 package nebulosa.desktop.logic.image
 
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.subjects.BehaviorSubject
+import javafx.animation.PauseTransition
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import javafx.stage.Screen
+import javafx.util.Duration
 import nebulosa.desktop.gui.control.annotation.Crosshair
 import nebulosa.desktop.gui.control.annotation.SkyCatalogAnnotation
 import nebulosa.desktop.gui.image.FitsHeaderWindow
@@ -39,7 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.io.Closeable
 import java.io.File
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 import kotlin.math.max
 
@@ -63,11 +62,10 @@ class ImageManager(private val view: ImageView) : Closeable {
         private set
 
     private val screenBounds = Screen.getPrimary().bounds
-    private val transformPublisher = BehaviorSubject.create<Unit>()
     private val crosshair = Crosshair()
     private val skyCatalogAnnotation = SkyCatalogAnnotation()
+    private val transformer = PauseTransition(Duration.seconds(0.5))
 
-    @Volatile private var transformSubscriber: Disposable? = null
     @Volatile private var imageStretcherView: ImageStretcherView? = null
     @Volatile private var fitsHeaderView: FitsHeaderView? = null
     @Volatile private var scnrView: SCNRView? = null
@@ -102,13 +100,7 @@ class ImageManager(private val view: ImageView) : Closeable {
     val calibration = SimpleObjectProperty<Calibration>()
 
     init {
-        transformSubscriber = transformPublisher
-            .debounce(500L, TimeUnit.MILLISECONDS)
-            .subscribe {
-                transformImage()
-                draw()
-                drawHistogram()
-            }
+        transformer.setOnFinished { transformAndDraw() }
     }
 
     fun initialize() {
@@ -148,8 +140,12 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     @Synchronized
     fun open(file: File, resetTransformation: Boolean = false) {
-        val image = Image.open(file)
-        open(image, file, resetTransformation)
+        systemExecutorService.execute {
+            val image = Image.open(file)
+            javaFXExecutorService.execute {
+                open(image, file, resetTransformation)
+            }
+        }
     }
 
     @Synchronized
@@ -181,15 +177,8 @@ class ImageManager(private val view: ImageView) : Closeable {
             imageStretcherView?.resetStretch(true)
         }
 
-        systemExecutorService.execute {
-            if (view.autoStretchEnabled) {
-                autoStretch()
-            } else {
-                transformImage()
-                draw()
-                drawHistogram()
-            }
-        }
+        if (view.autoStretchEnabled) autoStretch()
+        else transformAndDraw()
 
         imageStretcherView?.updateTitle()
 
@@ -226,7 +215,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         this.scnrProtectionMode = scnrProtectionMode
         this.scnrAmount = scnrAmount
 
-        transformPublisher.onNext(Unit)
+        transformer.playFromStart()
     }
 
     @Synchronized
@@ -251,6 +240,16 @@ class ImageManager(private val view: ImageView) : Closeable {
             if (view.invert) algorithms.add(Invert)
 
             transformedImage = TransformAlgorithm.of(algorithms).transform(transformedImage!!)
+        }
+    }
+
+    private fun transformAndDraw() {
+        systemExecutorService.execute {
+            transformImage()
+            javaFXExecutorService.execute {
+                draw()
+                drawHistogram()
+            }
         }
     }
 

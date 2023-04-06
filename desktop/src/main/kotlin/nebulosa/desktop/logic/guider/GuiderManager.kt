@@ -199,17 +199,18 @@ class GuiderManager(
     override val cameraBinning
         get() = camera?.binX ?: 1
 
-    override val cameraImage: Image
-        get() = imageQueue.take()
-
     override val cameraPixelScale
         get() = camera?.pixelSizeX ?: 0.0
 
-    override val cameraExposure
-        get() = 5000L
+    override val cameraExposureTime
+        get() = view.exposureTime
 
-    override fun capture(duration: Long) {
+    override val cameraExposureDelay
+        get() = view.exposureDelay
+
+    override fun capture(duration: Long): Image {
         camera?.startCapture(duration * 1000L)
+        return imageQueue.take()
     }
 
     // Mount.
@@ -256,7 +257,8 @@ class GuiderManager(
     override val declinationGuideMode
         get() = view.guideModeDEC
 
-    override var guidingEnabled = true
+    override val guidingEnabled
+        get() = true
 
     override val maxDECDuration
         get() = view.maxDurationDEC
@@ -265,7 +267,7 @@ class GuiderManager(
         get() = view.maxDurationRA
 
     override val calibrationDistance
-        get() = 25 // px
+        get() = view.calibrationStep
 
     override val xGuideAlgorithm
         get() = xGuideAlgorithms[view.algorithmRA]!!.updateParameters()
@@ -278,6 +280,12 @@ class GuiderManager(
 
     override val assumeDECOrthogonalToRA
         get() = view.assumeDECOrthogonalToRA
+
+    override val searchRegion
+        get() = view.searchRegion
+
+    override val noiseReductionMethod
+        get() = view.noiseReductionMethod
 
     override fun guideNorth(duration: Int): Boolean {
         val guideOutput = guideOutput ?: return false
@@ -440,7 +448,7 @@ class GuiderManager(
 
                         javaFXExecutorService.execute {
                             if (imageView == null) {
-                                imageView = imageViewOpener.open(image, null, device).get()
+                                imageView = imageViewOpener.open(image, null, device)
                                 imageView!!.registerMouseListener(view)
                                 imageView!!.addFirst(guiderIndicator)
                             }

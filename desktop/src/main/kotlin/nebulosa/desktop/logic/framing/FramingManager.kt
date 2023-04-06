@@ -22,7 +22,6 @@ import nom.tam.fits.header.Standard
 import nom.tam.fits.header.extra.MaxImDLExt
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.io.ByteArrayInputStream
 import java.io.Closeable
@@ -55,7 +54,6 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
     val mount
         get() = equipmentManager.selectedMount
 
-    @Async("javaFXExecutorService")
     fun sync(device: Mount? = null) {
         val mount = device ?: equipmentManager.selectedMount.value ?: return
         val coordinate = PairOfAngle(mount.rightAscensionJ2000, mount.declinationJ2000)
@@ -129,28 +127,27 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
 
             val currentImageView = imageView.get()
 
-            if (currentImageView != null) {
-                currentImageView.open(image, tmpFile.toFile(), resetTransformation = true)
-                javaFXExecutorService.execute {
-                    currentImageView.show(requestFocus = true)
-                    task.complete(tmpFile)
-                }
-            } else {
-                imageViewOpener.open(image, tmpFile.toFile(), resetTransformation = true)
-                    .whenComplete { window, _ ->
+            javaFXExecutorService.execute {
+                try {
+                    if (currentImageView != null) {
+                        currentImageView.open(image, tmpFile.toFile(), resetTransformation = true)
+                        currentImageView.show(requestFocus = true)
+                    } else {
+                        val window = imageViewOpener.open(image, tmpFile.toFile(), resetTransformation = true)
                         imageView.set(window)
-                        task.complete(tmpFile)
                     }
-            }
+                } catch (e: Throwable) {
+                    LOG.error("image open failed", e)
+                }
 
-            task.complete(tmpFile)
+                task.complete(tmpFile)
+            }
         }
 
         return task
             .whenComplete { _, _ -> loading.set(false) }
     }
 
-    @Async("systemExecutorService")
     fun populateHipsSurveys() {
         val data = objectMapper.readValue(resource("data/HIPS_SURVEY_SOURCES.json")!!, Array<HipsSurvey>::class.java)
         val hipsSurveyId = preferences.string("framing.hipsSurvey") ?: DEFAULT_HIPS_SURVEY

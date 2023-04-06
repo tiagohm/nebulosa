@@ -107,8 +107,6 @@ class MultiStarGuider(
     var forceFullFrame = false
     var ignoreLostStarLooping = false
 
-    var noiseReductionMethod = NoiseReductionMethod.NONE
-
     val guiding
         get() = state == GuiderState.GUIDING
 
@@ -148,22 +146,18 @@ class MultiStarGuider(
             if (!value) stabilizing = false
         }
 
-    override var searchRegion = 15.0
-        set(value) {
-            require(searchRegion >= MIN_SEARCH_REGION) { "searchRegion < $MIN_SEARCH_REGION" }
-            require(searchRegion <= MAX_SEARCH_REGION) { "searchRegion > $MAX_SEARCH_REGION" }
-            field = value
-        }
+    override val searchRegion
+        get() = device.searchRegion
 
     init {
         updateState(GuiderState.UNINITIALIZED)
     }
 
-    fun registerListener(listener: GuiderListener) {
+    override fun registerListener(listener: GuiderListener) {
         listeners.add(listener)
     }
 
-    fun unregisterListener(listener: GuiderListener) {
+    override fun unregisterListener(listener: GuiderListener) {
         listeners.remove(listener)
     }
 
@@ -894,7 +888,7 @@ class MultiStarGuider(
         // check to see if it seems like the star we just found was the
         // same as the original star by comparing the mass.
         if (massChangeThresholdEnabled) {
-            massChecker.exposure(device.cameraExposure)
+            massChecker.exposure(device.cameraExposureTime)
 
             val checkedMass = massChecker.checkMass(newStar.mass, massChangeThreshold)
 
@@ -1161,9 +1155,6 @@ class MultiStarGuider(
         @JvmStatic internal val DEDUCED_MOVE = listOf(MountMoveOption.ALGORITHM_DEDUCE, MountMoveOption.USE_BACKSLASH_COMPENSATION)
         @JvmStatic internal val RECOVERY_MOVE = listOf(MountMoveOption.USE_BACKSLASH_COMPENSATION)
 
-        const val MIN_SEARCH_REGION = 7f
-        const val DEFAULT_SEARCH_REGION = 15f
-        const val MAX_SEARCH_REGION = 50f
         const val DEFAULT_MAX_STAR_COUNT = 9
         const val DEFAULT_STABILITY_SIGMAX = 5f
 

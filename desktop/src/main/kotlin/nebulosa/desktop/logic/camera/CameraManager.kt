@@ -7,6 +7,7 @@ import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.task.TaskEvent
 import nebulosa.desktop.logic.task.TaskExecutor
+import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.desktop.view.View
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.desktop.view.camera.CameraView
@@ -17,6 +18,7 @@ import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.stereotype.Component
@@ -58,12 +60,17 @@ class CameraManager(
         eventBus.register(this)
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onTaskEvent(event: TaskEvent) {
         when (event) {
+            is TaskStarted -> {
+                if (event.task === runningTask.get()) {
+                    updateStatus()
+                }
+            }
             is CameraFrameSaved -> {
                 val window = imageViewOpener.open(event.image, event.path.toFile(), event.task.camera)
-                imageViews.add(window.get())
+                imageViews.add(window)
             }
         }
     }
@@ -230,7 +237,6 @@ class CameraManager(
 
         runningTask.set(task)
         capturingProperty.set(true)
-        updateStatus()
 
         taskExecutor
             .execute(task)

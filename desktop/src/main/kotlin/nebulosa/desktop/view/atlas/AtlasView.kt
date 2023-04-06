@@ -45,32 +45,32 @@ interface AtlasView : View {
         val constellation: String = skyObject.constellation.iau,
     )
 
-    fun drawAltitude(
+    suspend fun drawAltitude(
         points: List<XYItem>, now: Double,
         civilDawn: DoubleArray, nauticalDawn: DoubleArray, astronomicalDawn: DoubleArray,
         civilDusk: DoubleArray, nauticalDusk: DoubleArray, astronomicalDusk: DoubleArray,
         night: DoubleArray,
     )
 
-    fun updateSunImage()
+    suspend fun updateSunImage()
 
-    fun updateMoonImage(phase: Double, age: Double, angle: Angle)
+    suspend fun updateMoonImage(phase: Double, age: Double, angle: Angle)
 
-    fun updateEquatorialCoordinates(ra: Angle, dec: Angle, raJ2000: Angle, decJ2000: Angle, constellation: Constellation?)
+    suspend fun updateEquatorialCoordinates(ra: Angle, dec: Angle, raJ2000: Angle, decJ2000: Angle, constellation: Constellation?)
 
-    fun updateHorizontalCoordinates(az: Angle, alt: Angle)
+    suspend fun updateHorizontalCoordinates(az: Angle, alt: Angle)
 
-    fun clearAltitudeAndCoordinates()
+    suspend fun clearAltitudeAndCoordinates()
 
-    fun populatePlanet(planets: List<Planet>)
+    suspend fun populatePlanet(planets: List<Planet>)
 
-    fun populateMinorPlanet(minorPlanets: List<MinorPlanet>)
+    suspend fun populateMinorPlanet(minorPlanets: List<MinorPlanet>)
 
-    fun populateStar(stars: List<Star>)
+    suspend fun populateStar(stars: List<Star>)
 
-    fun populateDSOs(dsos: List<DSO>)
+    suspend fun populateDSOs(dsos: List<DSO>)
 
-    fun updateInfo(bodyName: String)
+    suspend fun updateInfo(bodyName: String)
 
-    fun updateRTS(rts: Triple<String, String, String>)
+    suspend fun updateRTS(rts: Triple<String, String, String>)
 }
