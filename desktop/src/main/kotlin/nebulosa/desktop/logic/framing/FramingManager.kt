@@ -15,7 +15,6 @@ import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.hips2fits.HipsSurvey
 import nebulosa.imaging.Image
 import nebulosa.indi.device.mount.Mount
-import nebulosa.io.resource
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.PairOfAngle
@@ -139,11 +138,10 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
         return path
     }
 
-    suspend fun populateHipsSurveys() = withIO {
-        val data = objectMapper.readValue(resource("data/HIPS_SURVEY_SOURCES.json")!!, Array<HipsSurvey>::class.java)
+    fun populateHipsSurveys() {
         val hipsSurveyId = preferences.string("framing.hipsSurvey") ?: DEFAULT_HIPS_SURVEY
-        val selected = data.firstOrNull { it.id == hipsSurveyId }
-        view.populateHipsSurveys(data.toList(), selected)
+        val selected = HIPS_SURVEY_SOURCES.firstOrNull { it.id == hipsSurveyId }
+        view.populateHipsSurveys(HIPS_SURVEY_SOURCES, selected)
     }
 
     suspend fun loadPreferences() {
@@ -172,5 +170,60 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
         const val DEFAULT_HIPS_SURVEY = "CDS/P/DSS2/color"
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(FramingManager::class.java)
+
+        @JvmStatic private val HIPS_SURVEY_SOURCES = listOf(
+            HipsSurvey("CDS/P/DSS2/NIR", "Image/Optical/DSS", "equatorial", "Optical", 16, 2.236E-4, 0.9955),
+            HipsSurvey("CDS/P/DSS2/blue", "Image/Optical/DSS", "equatorial", "Optical", 16, 2.236E-4, 0.9972),
+            HipsSurvey("CDS/P/DSS2/color", "Image/Optical/DSS", "equatorial", "Optical", 0, 2.236E-4, 1.0),
+            HipsSurvey("CDS/P/DSS2/red", "Image/Optical/DSS", "equatorial", "Optical", 16, 2.236E-4, 1.0),
+            HipsSurvey("fzu.cz/P/CTA-FRAM/survey/B", "Image/Optical/CTA-FRAM", "equatorial", "Optical", -64, 0.003579, 1.0),
+            HipsSurvey("fzu.cz/P/CTA-FRAM/survey/R", "Image/Optical/CTA-FRAM", "equatorial", "Optical", -64, 0.003579, 1.0),
+            HipsSurvey("fzu.cz/P/CTA-FRAM/survey/V", "Image/Optical/CTA-FRAM", "equatorial", "Optical", -64, 0.003579, 1.0),
+            HipsSurvey("fzu.cz/P/CTA-FRAM/survey/color", "Image/Optical/CTA-FRAM", "equatorial", "Optical", 0, 0.003579, 1.0),
+            HipsSurvey("CDS/P/2MASS/H", "Image/Infrared/2MASS", "equatorial", "Infrared", -32, 2.236E-4, 1.0),
+            HipsSurvey("CDS/P/2MASS/J", "Image/Infrared/2MASS", "equatorial", "Infrared", -32, 2.236E-4, 1.0),
+            HipsSurvey("CDS/P/2MASS/K", "Image/Infrared/2MASS", "equatorial", "Infrared", -32, 2.236E-4, 1.0),
+            HipsSurvey("CDS/P/2MASS/color", "Image/Infrared/2MASS", "equatorial", "Infrared", 0, 2.236E-4, 1.0),
+            HipsSurvey("CDS/P/AKARI/FIS/Color", "Image/Infrared/AKARI-FIS", "equatorial", "Infrared", 0, 0.003579, 1.0),
+            HipsSurvey("CDS/P/AKARI/FIS/N160", "Image/Infrared/AKARI-FIS", "equatorial", "Infrared", -32, 0.003579, 1.0),
+            HipsSurvey("CDS/P/AKARI/FIS/N60", "Image/Infrared/AKARI-FIS", "equatorial", "Infrared", -32, 0.003579, 1.0),
+            HipsSurvey("CDS/P/AKARI/FIS/WideL", "Image/Infrared/AKARI-FIS", "equatorial", "Infrared", -32, 0.003579, 1.0),
+            HipsSurvey("CDS/P/AKARI/FIS/WideS", "Image/Infrared/AKARI-FIS", "equatorial", "Infrared", -32, 0.003579, 1.0),
+            HipsSurvey("CDS/P/NEOWISER/Color", "Image/Infrared/WISE/NEOWISER", "equatorial", "Infrared", 0, 4.473E-4, 1.0),
+            HipsSurvey("CDS/P/NEOWISER/W1", "Image/Infrared/WISE/NEOWISER", "equatorial", "Infrared", -32, 4.473E-4, 1.0),
+            HipsSurvey("CDS/P/NEOWISER/W2", "Image/Infrared/WISE/NEOWISER", "equatorial", "Infrared", -32, 4.473E-4, 1.0),
+            HipsSurvey("CDS/P/WISE/WSSA/12um", "Image/Infrared/WISE/WSSA", "equatorial", "Infrared", -32, 8.946E-4, 1.0),
+            HipsSurvey("CDS/P/allWISE/W1", "Image/Infrared/WISE", "equatorial", "Infrared", -32, 4.473E-4, 1.0),
+            HipsSurvey("CDS/P/allWISE/W2", "Image/Infrared/WISE", "equatorial", "Infrared", -32, 4.473E-4, 1.0),
+            HipsSurvey("CDS/P/allWISE/W3", "Image/Infrared/WISE", "equatorial", "Infrared", -32, 4.473E-4, 0.9999),
+            HipsSurvey("CDS/P/allWISE/W4", "Image/Infrared/WISE", "equatorial", "Infrared", -32, 4.473E-4, 1.0),
+            HipsSurvey("CDS/P/allWISE/color", "Image/Infrared/WISE", "equatorial", "Infrared", 0, 4.473E-4, 1.0),
+            HipsSurvey("CDS/P/unWISE/W1", "Image/Infrared/WISE/unWISE", "equatorial", "Infrared", -32, 0.229, 1.0),
+            HipsSurvey("CDS/P/unWISE/W2", "Image/Infrared/WISE/unWISE", "equatorial", "Infrared", -32, 0.229, 1.0),
+            HipsSurvey("CDS/P/unWISE/color-W2-W1W2-W1", "Image/Infrared/WISE/unWISE", "equatorial", "Infrared", -32, 4.473E-4, 1.0),
+            HipsSurvey("CDS/P/RASS", "Image/X/ROSAT", "equatorial", "X-ray", 16, 0.007157, 1.0),
+            HipsSurvey("JAXA/P/ASCA_GIS", "Image/X/ASCA", "equatorial", "X-ray", 0, 0.001789, 1.0),
+            HipsSurvey("JAXA/P/ASCA_SIS", "Image/X/ASCA", "equatorial", "X-ray", 0, 0.001789, 1.0),
+            HipsSurvey("JAXA/P/MAXI-GSC", "Image/X/MAXI", "equatorial", "X-ray", 0, 0.001789, 1.0),
+            HipsSurvey("JAXA/P/MAXI-SSC", "Image/X/MAXI", "equatorial", "X-ray", 0, 0.1145, 1.0),
+            HipsSurvey("JAXA/P/SUZAKU", "Image/X", "equatorial", "X-ray", 0, 0.001789, 1.0),
+            HipsSurvey("JAXA/P/SWIFT_BAT_FLUX", "Image/X", "equatorial", "X-ray", 0, 0.001789, 1.0),
+            HipsSurvey("CDS/P/EGRET/Dif/100-150", "Image/Gamma-ray/EGRET/Diffuse", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/EGRET/Dif/1000-2000", "Image/Gamma-ray/EGRET/Diffuse", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/EGRET/Dif/150-300", "Image/Gamma-ray/EGRET/Diffuse", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/EGRET/Dif/2000-4000", "Image/Gamma-ray/EGRET/Diffuse", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/EGRET/Dif/30-50", "Image/Gamma-ray/EGRET/Diffuse", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/EGRET/Dif/300-500", "Image/Gamma-ray/EGRET/Diffuse", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/EGRET/Dif/4000-10000", "Image/Gamma-ray/EGRET/Diffuse", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/EGRET/Dif/50-70", "Image/Gamma-ray/EGRET/Diffuse", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/EGRET/Dif/500-1000", "Image/Gamma-ray/EGRET/Diffuse", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/EGRET/Dif/70-100", "Image/Gamma-ray/EGRET/Diffuse", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/EGRET/inf100", "Image/Gamma-ray/EGRET", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/EGRET/sup100", "Image/Gamma-ray/EGRET", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/Fermi/3", "Image/Gamma-ray", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/Fermi/4", "Image/Gamma-ray", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/Fermi/5", "Image/Gamma-ray", "equatorial", "Gamma-ray", -32, 0.01431, 1.0),
+            HipsSurvey("CDS/P/Fermi/color", "Image/Gamma-ray", "equatorial", "Gamma-ray", 0, 0.01431, 1.0),
+        )
     }
 }

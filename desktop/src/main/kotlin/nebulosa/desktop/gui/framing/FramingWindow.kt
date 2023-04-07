@@ -108,7 +108,7 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
         launch { framingManager.sync() }
     }
 
-    override suspend fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?) = withMain {
+    override fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?) {
         hipsSurveyChoiceBox.items.setAll(data)
         hipsSurveyChoiceBox.value = selected
     }

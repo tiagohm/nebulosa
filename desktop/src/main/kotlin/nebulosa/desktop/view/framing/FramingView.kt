@@ -28,7 +28,7 @@ interface FramingView : View {
         fov: Angle = frameFOV,
     )
 
-    suspend fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?)
+    fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?)
 
     suspend fun updateCoordinate(ra: Angle, dec: Angle)
 
