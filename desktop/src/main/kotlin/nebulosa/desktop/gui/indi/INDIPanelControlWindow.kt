@@ -47,14 +47,16 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
         indiPanelControlManager.populate()
     }
 
-    override var device: Device?
+    override val device: Device?
         get() = deviceChoiceBox.value
-        set(value) {
-            deviceChoiceBox.value = value
-        }
 
     val tabs: MutableList<Tab>
         get() = groupsTabPane.tabs
+
+    override fun show(device: Device) {
+        deviceChoiceBox.value = device
+        show(true, true)
+    }
 
     override fun updateLog(text: String) {
         logTextArea.text = text

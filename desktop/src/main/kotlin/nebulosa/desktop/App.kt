@@ -3,8 +3,6 @@ package nebulosa.desktop
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import nebulosa.desktop.logic.Preferences
-import nebulosa.desktop.logic.concurrency.JavaFXExecutor
-import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
 import nebulosa.sbd.SmallBodyDatabaseLookupService
@@ -76,9 +74,6 @@ class App {
     fun systemExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
 
     @Bean
-    fun javaFXExecutorService(): ExecutorService = JavaFXExecutorService()
-
-    @Bean
     fun horizonsService() = HorizonsService()
 
     @Bean
@@ -91,16 +86,12 @@ class App {
     fun hips2FitsService() = Hips2FitsService()
 
     @Bean
-    fun javaFXExecutor() = JavaFXExecutor
-
-    @Bean
-    fun eventBus(javaFXExecutorService: ExecutorService) = EventBus.builder()
+    fun eventBus() = EventBus.builder()
         .sendNoSubscriberEvent(false)
         .sendSubscriberExceptionEvent(false)
         .throwSubscriberException(false)
         .logNoSubscriberMessages(false)
         .logSubscriberExceptions(false)
-        .executorService(javaFXExecutorService)
         .build()!!
 
     @Bean

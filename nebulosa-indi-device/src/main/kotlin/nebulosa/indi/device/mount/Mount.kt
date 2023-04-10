@@ -91,6 +91,8 @@ interface Mount : GuideOutput, GPS {
 
     fun time(time: OffsetDateTime)
 
+    fun computeCoordinates(j2000: Boolean = true, horizontal: Boolean = true)
+
     companion object {
 
         @JvmStatic val DRIVERS = setOf(

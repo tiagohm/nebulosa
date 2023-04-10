@@ -1,5 +1,7 @@
 package nebulosa.desktop.logic.mount
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
 import nebulosa.desktop.gui.mount.SiteAndTimeWindow
@@ -23,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
@@ -35,7 +36,6 @@ class MountManager(
 
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
-    @Autowired private lateinit var javaFXExecutorService: ExecutorService
     @Autowired private lateinit var telescopeControlView: TelescopeControlView
 
     @Volatile private var position = Geoid.IERS2010.latLon(Angle.ZERO, Angle.ZERO, Distance.ZERO)
@@ -78,13 +78,11 @@ class MountManager(
     }
 
     suspend fun openINDIPanelControl() {
-        indiPanelControlView.show(bringToFront = true)
-        indiPanelControlView.device = value
+        indiPanelControlView.show(value)
     }
 
     suspend fun openINDIPanelControl(gps: GPS) {
-        indiPanelControlView.show(bringToFront = true)
-        indiPanelControlView.device = gps
+        indiPanelControlView.show(gps)
     }
 
     suspend fun openTelescopeControlServer() {
@@ -238,19 +236,29 @@ class MountManager(
 
     @Scheduled(fixedRate = 1L, initialDelay = 1L, timeUnit = TimeUnit.SECONDS)
     fun onTimerHit() {
-        if (value == null || !view.showing) return
+        val mount = value ?: return
+
+        if (!view.showing) return
 
         val lst = computeLST()
         val timeLeftToMeridianFlip = computeTimeLeftToMeridianFlip()
         val timeToMeridianFlip = LocalDateTime.now().plusSeconds((timeLeftToMeridianFlip.hours * 3600.0).toLong())
 
-        view.updateLSTAndMeridian(lst, timeLeftToMeridianFlip, timeToMeridianFlip)
+        if (mount.tracking) {
+            mount.computeCoordinates(j2000 = false)
+        }
+
+        runBlocking(Dispatchers.Main) {
+            view.updateLSTAndMeridian(lst, timeLeftToMeridianFlip, timeToMeridianFlip)
+        }
     }
 
     override fun close() {
         savePreferences()
 
-        "NSWE".forEach { nudgeTo(it, false) }
+        for (direction in "NSWE") {
+            nudgeTo(direction, false)
+        }
     }
 
     companion object {

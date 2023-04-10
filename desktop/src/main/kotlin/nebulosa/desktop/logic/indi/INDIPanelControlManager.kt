@@ -4,6 +4,8 @@ import javafx.animation.PauseTransition
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
 import javafx.util.Duration
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.indi.INDIPanelControlView
@@ -35,9 +37,9 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : Closeabl
         logTextDelay.setOnFinished { makeLog() }
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onEvent(event: DeviceEvent<*>) {
-        if (event.device !== view.device) return
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    fun onEvent(event: DeviceEvent<*>): Unit = runBlocking(Dispatchers.Main) {
+        if (event.device !== view.device) return@runBlocking
 
         when (event) {
             is DevicePropertyChanged -> {
@@ -86,8 +88,7 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : Closeabl
         attachedDevices.forEach { if (it !in cacheProperties) cacheProperties[it] = HashMap(256) }
         devices.setAll(attachedDevices)
 
-        if (device in attachedDevices) view.device = device
-        else view.device = attachedDevices.firstOrNull()
+        view.show((if (device in attachedDevices) device else attachedDevices.firstOrNull()) ?: return)
     }
 
     private fun makeLog() {

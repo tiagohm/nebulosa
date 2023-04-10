@@ -41,6 +41,7 @@ import nebulosa.skycatalog.stellarium.Nebula
 import nebulosa.time.UTC
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -62,7 +63,6 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     private val pointsCache = hashMapOf<HorizonsEphemeris, List<XYItem>>()
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
-    @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var bodyEphemerisProvider: BodyEphemerisProvider
     @Autowired private lateinit var horizonsEphemerisProvider: HorizonsEphemerisProvider
     @Autowired private lateinit var smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService
@@ -108,7 +108,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onMountEvent(event: MountEvent) {
         if (event.device !== equipmentManager.selectedMount.value) return
 

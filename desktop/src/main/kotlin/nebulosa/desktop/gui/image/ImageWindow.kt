@@ -21,6 +21,7 @@ import nebulosa.desktop.logic.asBoolean
 import nebulosa.desktop.logic.image.ImageManager
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.image.ImageView
+import nebulosa.desktop.withIO
 import nebulosa.desktop.withMain
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
@@ -259,7 +260,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         imageManager.adjustSceneSizeToFitImage()
     }
 
-    override fun draw(image: Image) {
+    override suspend fun draw(image: Image) = withIO {
         val area = image.width * image.height
 
         if (area > imageData.size) {
@@ -272,7 +273,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         val pixelBuffer = PixelBuffer(image.width, image.height, buffer, PixelFormat.getIntArgbPreInstance())
         val writableImage = WritableImage(pixelBuffer)
 
-        javaFXExecutorService.execute { imageViewer.load(writableImage) }
+        withMain { imageViewer.load(writableImage) }
     }
 
     override suspend fun scnr(

@@ -36,8 +36,6 @@ abstract class AbstractWindow(
         private set
 
     protected val hostServices by lazy { beanFactory.getBean(HostServices::class.java) }
-    protected val systemExecutorService by lazy { beanFactory.getBean("systemExecutorService") as ExecutorService }
-    protected val javaFXExecutorService by lazy { beanFactory.getBean("javaFXExecutorService") as ExecutorService }
     protected val preferences by lazy { beanFactory.getBean("preferences") as Preferences }
 
     protected val mainScope = MainScope()

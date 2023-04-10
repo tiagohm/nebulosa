@@ -379,10 +379,12 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         imageX: Double, imageY: Double,
     ) {
         if (button == MouseButton.PRIMARY && clickCount == 1) {
-            if (!isControlDown && !isShiftDown && !isAltDown) {
-                guiderManager.selectGuideStar(imageX, imageY)
-            } else if (!isControlDown && isShiftDown && !isAltDown) {
-                guiderManager.deselectGuideStar()
+            launch {
+                if (!isControlDown && !isShiftDown && !isAltDown) {
+                    guiderManager.selectGuideStar(imageX, imageY)
+                } else if (!isControlDown && isShiftDown && !isAltDown) {
+                    guiderManager.deselectGuideStar()
+                }
             }
         }
     }

@@ -4,6 +4,8 @@ import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import nebulosa.indi.device.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -56,9 +58,9 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onDeviceEvent(event: DeviceEvent<*>) {
-        if (closed || event.device !== value) return
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    fun onDeviceEvent(event: DeviceEvent<*>) = runBlocking(Dispatchers.Main) {
+        if (closed || event.device !== value) return@runBlocking
 
         when (event) {
             is DeviceConnected -> {

@@ -30,12 +30,11 @@ class HistogramView : Canvas() {
         this.height = height
     }
 
-    suspend fun draw(image: Image) {
-        withIO { histogram.compute(image) }
-        withMain { draw() }
+    fun compute(image: Image) {
+        histogram.compute(image)
     }
 
-    private fun draw() {
+    fun draw() {
         val gc = graphicsContext2D
 
         gc.fill = Color.TRANSPARENT

@@ -64,8 +64,7 @@ class FilterWheelManager(
     }
 
     fun openINDIPanelControl() {
-        indiPanelControlView.show(bringToFront = true)
-        indiPanelControlView.device = value
+        indiPanelControlView.show(value)
     }
 
     fun toggleUseFilterWheelAsShutter(enable: Boolean) {

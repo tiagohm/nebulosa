@@ -1,5 +1,7 @@
 package nebulosa.desktop.logic.telescopecontrol
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.telescopecontrol.TelescopeControlType
@@ -15,6 +17,7 @@ import nebulosa.stellarium.protocol.StellariumMountHandler
 import nebulosa.stellarium.protocol.StellariumProtocolServer
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.io.Closeable
@@ -38,17 +41,17 @@ class TelescopeControlManager(@Autowired internal val view: TelescopeControlView
         eventBus.register(this)
     }
 
-    @Subscribe
-    fun onEvent(event: MountEvent) {
-        if (event.device !== mount) return
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    fun onEvent(event: MountEvent): Unit = runBlocking(Dispatchers.Main) {
+        if (event.device !== mount) return@runBlocking
 
         when (event) {
             is MountEquatorialCoordinatesChanged -> {
-                val server = stellariumProtocolServer ?: return
+                val server = stellariumProtocolServer ?: return@runBlocking
                 if (!server.j2000) server.sendCurrentPosition(event.device.rightAscension, event.device.declination)
             }
             is MountEquatorialJ2000CoordinatesChanged -> {
-                val server = stellariumProtocolServer ?: return
+                val server = stellariumProtocolServer ?: return@runBlocking
                 if (server.j2000) server.sendCurrentPosition(event.device.rightAscensionJ2000, event.device.declinationJ2000)
             }
         }

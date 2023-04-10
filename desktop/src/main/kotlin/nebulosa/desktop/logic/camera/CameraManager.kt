@@ -3,9 +3,9 @@ package nebulosa.desktop.logic.camera
 import javafx.application.HostServices
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import nebulosa.desktop.logic.Preferences
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.task.TaskEvent
 import nebulosa.desktop.logic.task.TaskExecutor
@@ -18,6 +18,7 @@ import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.*
+import org.apache.commons.lang3.time.DurationFormatUtils
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -27,8 +28,6 @@ import org.springframework.stereotype.Component
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.time.Duration
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.max
@@ -37,16 +36,14 @@ import kotlin.math.max
 class CameraManager(
     @Autowired internal val view: CameraView,
     @Autowired internal val equipmentManager: EquipmentManager,
-) : CameraProperty by equipmentManager.selectedCamera {
+) : AbstractManager(), CameraProperty by equipmentManager.selectedCamera {
 
-    @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var appDirectory: Path
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var taskExecutor: TaskExecutor
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
     @Autowired private lateinit var imageViewOpener: ImageView.Opener
     @Autowired private lateinit var beanFactory: AutowireCapableBeanFactory
-    @Autowired private lateinit var javaFXExecutorService: ExecutorService
 
     private val imageViews = hashSetOf<ImageView>()
     private val runningTask = AtomicReference<CameraExposureTask>()
@@ -62,8 +59,8 @@ class CameraManager(
         eventBus.register(this)
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onTaskEvent(event: TaskEvent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    fun onTaskEvent(event: TaskEvent): Unit = runBlocking(Dispatchers.Main) {
         when (event) {
             is TaskStarted -> {
                 if (event.task === runningTask.get()) {
@@ -71,10 +68,8 @@ class CameraManager(
                 }
             }
             is CameraFrameSaved -> {
-                GlobalScope.launch {
-                    val window = imageViewOpener.open(event.image, event.path.toFile(), event.task.camera)
-                    imageViews.add(window)
-                }
+                val window = imageViewOpener.open(event.image, event.path.toFile(), event.task.camera)
+                imageViews.add(window)
             }
         }
     }
@@ -107,8 +102,7 @@ class CameraManager(
     }
 
     fun openINDIPanelControl() {
-        indiPanelControlView.show(bringToFront = true)
-        indiPanelControlView.device = value
+        indiPanelControlView.show(value)
     }
 
     fun openImageSavePathInFiles() {
@@ -123,17 +117,19 @@ class CameraManager(
 
             if (task != null && capturingProperty.get()) {
                 append("capturing ")
-                append("%d of %d (%s)".format(task.amount - task.remainingAmount, task.amount, task.exposure.formatTime()))
+                append("%d of %d".format(task.amount - task.remainingAmount, task.amount))
                 append(" | ")
                 append(task.remainingTime.formatTime())
                 append(" | ")
+                append(task.elapsedTime.formatTime())
+                append(" of ")
                 append(task.totalExposureTime.formatTime())
                 append(" | ")
                 append("%.1f%%".format(task.progress * 100.0))
                 append(" | ")
                 append("%s".format(task.frameType))
 
-                task.filter?.also {
+                task.filterName?.also {
                     append(" | ")
                     append(it)
                 }
@@ -245,9 +241,11 @@ class CameraManager(
         taskExecutor
             .execute(task)
             .whenComplete { _, _ ->
-                capturingProperty.set(false)
-                runningTask.set(null)
-                updateStatus()
+                runBlocking(Dispatchers.Main) {
+                    capturingProperty.set(false)
+                    runningTask.set(null)
+                    updateStatus()
+                }
             }
 
         savePreferences()
@@ -327,6 +325,8 @@ class CameraManager(
     }
 
     override fun close() {
+        super.close()
+
         savePreferences()
 
         imageViews.forEach(View::close)
@@ -341,19 +341,12 @@ class CameraManager(
 
         @JvmStatic
         private fun Long.formatTime(): String {
-            val duration = Duration.ofNanos(this * 1000L)
-
-            return if (this >= 3600000000) {
-                "%02dh%02dm%02.1fs"
-                    .format(duration.toHoursPart(), duration.toMinutesPart(), duration.toSecondsPart() + duration.toMillisPart() / 1000f)
-            } else if (this >= 60000000) {
-                "%02dm%02.1fs"
-                    .format(duration.toMinutesPart(), duration.toSecondsPart() + duration.toMillisPart() / 1000f)
-            } else if (this >= 1000000) {
-                "%02ds%03dms"
-                    .format(duration.toSecondsPart(), duration.toMillisPart())
+            return if (this >= 1000000L) {
+                DurationFormatUtils.formatDuration(this / 1000L, "HH:mm:ss")
+            } else if (this >= 1000L) {
+                "${this / 1000L} ms"
             } else {
-                "%d μs".format(this)
+                "$this µs"
             }
         }
     }

@@ -7,7 +7,9 @@ import nebulosa.indi.device.PropertyVector
 
 interface INDIPanelControlView : View {
 
-    var device: Device?
+    val device: Device?
+
+    fun show(device: Device)
 
     fun updateLog(text: String)
 

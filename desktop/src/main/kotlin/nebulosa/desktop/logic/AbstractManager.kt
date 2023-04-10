@@ -1,9 +1,12 @@
 package nebulosa.desktop.logic
 
 import kotlinx.coroutines.*
+import org.springframework.beans.factory.annotation.Autowired
 import java.io.Closeable
 
 abstract class AbstractManager : Closeable, CoroutineScope {
+
+    @Autowired protected lateinit var preferences: Preferences
 
     private val job = SupervisorJob()
 

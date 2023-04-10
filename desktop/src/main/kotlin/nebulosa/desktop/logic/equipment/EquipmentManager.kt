@@ -5,6 +5,8 @@ import jakarta.annotation.PostConstruct
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import nebulosa.desktop.logic.camera.DefaultCameraProperty
 import nebulosa.desktop.logic.connection.Connected
 import nebulosa.desktop.logic.connection.ConnectionEvent
@@ -92,8 +94,8 @@ class EquipmentManager : Closeable {
         eventBus.register(this)
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    final fun onDeviceEvent(event: DeviceEvent<*>) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    final fun onDeviceEvent(event: DeviceEvent<*>): Unit = runBlocking(Dispatchers.Main) {
         when (event) {
             is CameraAttached -> attachedCameras.add(event.device)
             is CameraDetached -> attachedCameras.remove(event.device)
@@ -112,8 +114,8 @@ class EquipmentManager : Closeable {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    final fun onConnectionEvent(event: ConnectionEvent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    final fun onConnectionEvent(event: ConnectionEvent) = runBlocking(Dispatchers.Main) {
         when (event) {
             is Connected -> connectedProperty.set(true)
             is Disconnected -> connectedProperty.set(false)

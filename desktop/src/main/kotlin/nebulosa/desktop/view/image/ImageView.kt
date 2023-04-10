@@ -66,7 +66,7 @@ interface ImageView : View {
 
     suspend fun adjustSceneToImage()
 
-    fun draw(image: Image)
+    suspend fun draw(image: Image)
 
     suspend fun open(file: File, resetTransformation: Boolean = false)
 

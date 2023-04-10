@@ -7,6 +7,7 @@ import nebulosa.indi.device.mount.*
 import nebulosa.math.Angle
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -22,7 +23,7 @@ data class MountSlewTask(
 
     private val latch = CountUpDownLatch()
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onEvent(event: MountEvent) {
         if (event.device !== mount) return
 

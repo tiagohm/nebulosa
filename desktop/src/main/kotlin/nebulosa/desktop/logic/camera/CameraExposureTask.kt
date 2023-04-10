@@ -22,8 +22,10 @@ import nom.tam.fits.ImageHDU
 import nom.tam.fits.header.ObservationDescription
 import nom.tam.fits.header.extra.SBFitsExt
 import nom.tam.util.FitsOutputStream
+import org.apache.commons.lang3.time.StopWatch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.InputStream
@@ -64,6 +66,9 @@ data class CameraExposureTask(
     @Volatile var remainingTime = 0L
         private set
 
+    val elapsedTime
+        get() = stopWatch.nanoTime / 1000L
+
     val totalExposureTime = exposure * amount + (amount - 1) * delay * 1000L
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
@@ -74,6 +79,7 @@ data class CameraExposureTask(
     private val latch = CountUpDownLatch()
     private val imagePaths = arrayListOf<Path>()
     private val forceAbort = AtomicBoolean()
+    private val stopWatch = StopWatch()
 
     private val mount: Mount?
         get() = equipmentManager.selectedMount.get()
@@ -84,10 +90,10 @@ data class CameraExposureTask(
     private val filterWheel: FilterWheel?
         get() = equipmentManager.selectedFilterWheel.get()
 
-    val filter
+    val filterName
         get() = filterWheel?.let { preferences.filterName(it) }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onEvent(event: CameraEvent) {
         if (event.device !== camera) return
 
@@ -148,6 +154,8 @@ data class CameraExposureTask(
 
             eventBus.register(this)
 
+            stopWatch.start()
+
             while (camera.connected && remainingAmount > 0 && !forceAbort.get()) {
                 synchronized(camera) {
                     latch.countUp()
@@ -170,8 +178,8 @@ data class CameraExposureTask(
 
                     if (forceAbort.get()) {
                         return@synchronized
-                    } else {
-                        Task.sleep(delay, latch)
+                    } else if (remainingAmount > 0) {
+                        Task.sleep(delay, forceAbort)
                     }
                 }
             }
@@ -181,6 +189,7 @@ data class CameraExposureTask(
         } finally {
             eventBus.unregister(this)
             eventBus.post(TaskFinished(this))
+            stopWatch.stop()
         }
 
         return imagePaths

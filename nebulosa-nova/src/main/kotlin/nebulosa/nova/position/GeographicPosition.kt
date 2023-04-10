@@ -2,13 +2,16 @@ package nebulosa.nova.position
 
 import nebulosa.constants.ANGULAR_VELOCITY
 import nebulosa.constants.DAYSEC
+import nebulosa.constants.DEG2RAD
 import nebulosa.erfa.eraSp00
 import nebulosa.math.*
+import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Pressure.Companion.pressure
 import nebulosa.math.Temperature.Companion.celsius
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.ITRS
 import nebulosa.time.InstantOfTime
+import kotlin.math.tan
 
 class GeographicPosition(
     val longitude: Angle,
@@ -45,19 +48,16 @@ class GeographicPosition(
         altitude: Angle,
         temperature: Temperature = 10.0.celsius,
         pressure: Pressure = elevation.pressure(temperature),
-        relativeHumidity: Double = 0.5,
     ): Angle {
-        return altitude
-        // TODO: Fix it.
-        // val sina = altitude.sin
-        // if (sina == 0.0) return altitude
-        // val (a, b) = eraRefco(pressure.value, temperature.value, relativeHumidity, 0.4)
-        // val cosa = altitude.cos
-        // // A*tan(z)+B*tan^3(z) model.
-        // val tanZ = cosa / sina
-        // val w = b.value * tanZ * tanZ
-        // val delta = (a.value + w) * tanZ
-        // return altitude + delta.rad
+        val a = altitude.degrees
+
+        return if (a >= -1.0 && a <= 89.9) {
+            val r = 0.016667 / tan((a + 7.31 / (a + 4.4)) * DEG2RAD)
+            val d = r * (0.28 * pressure.value / temperature.kelvin)
+            (a + d).deg
+        } else {
+            altitude
+        }
     }
 
     /**
@@ -94,9 +94,7 @@ class GeographicPosition(
         if (longitude != other.longitude) return false
         if (latitude != other.latitude) return false
         if (elevation != other.elevation) return false
-        if (model != other.model) return false
-
-        return true
+        return model == other.model
     }
 
     override fun hashCode(): Int {

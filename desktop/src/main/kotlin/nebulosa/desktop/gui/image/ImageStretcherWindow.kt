@@ -10,6 +10,7 @@ import nebulosa.desktop.logic.image.ImageStretcherManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.view.image.ImageStretcherView
 import nebulosa.desktop.view.image.ImageView
+import nebulosa.desktop.withIO
 import nebulosa.desktop.withMain
 import org.controlsfx.control.RangeSlider
 
@@ -76,7 +77,9 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
     }
 
     override suspend fun drawHistogram() {
-        histogramView.draw(view.image ?: return)
+        val image = view.image ?: return
+        withIO { histogramView.compute(image) }
+        withMain { histogramView.draw() }
     }
 
     override suspend fun updateTitle() = withMain {

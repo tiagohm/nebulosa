@@ -19,7 +19,7 @@ class AltitudeChart : AnchorPane() {
     private val night = DoubleArray(2)
 
     private val altitudeSerie = XYSeriesBuilder.create()
-        .chartType(ChartType.SMOOTH_LINE)
+        .chartType(ChartType.LINE)
         .fill(Color.TRANSPARENT)
         .stroke(Color.web("#039BE5"))
         .symbolFill(Color.web("#01579B"))
@@ -30,61 +30,61 @@ class AltitudeChart : AnchorPane() {
         .build()
 
     private val civilDawnSerie = XYSeriesBuilder.create()
-        .chartType(ChartType.SMOOTH_AREA)
+        .chartType(ChartType.AREA)
         .fill(Color.web("#B39DDB60"))
         .symbolsVisible(false)
         .build()
 
     private val nauticalDawnSerie = XYSeriesBuilder.create()
-        .chartType(ChartType.SMOOTH_AREA)
+        .chartType(ChartType.AREA)
         .fill(Color.web("#3F51B560"))
         .symbolsVisible(false)
         .build()
 
     private val astronomicalDawnSerie = XYSeriesBuilder.create()
-        .chartType(ChartType.SMOOTH_AREA)
+        .chartType(ChartType.AREA)
         .fill(Color.web("#3949AB60"))
         .symbolsVisible(false)
         .build()
 
     private val nightSerie = XYSeriesBuilder.create()
-        .chartType(ChartType.SMOOTH_AREA)
+        .chartType(ChartType.AREA)
         .fill(Color.web("#0F154D60"))
         .symbolsVisible(false)
         .build()
 
     private val civilDuskSerie = XYSeriesBuilder.create()
-        .chartType(ChartType.SMOOTH_AREA)
+        .chartType(ChartType.AREA)
         .fill(Color.web("#B39DDB60"))
         .symbolsVisible(false)
         .build()
 
     private val nauticalDuskSerie = XYSeriesBuilder.create()
-        .chartType(ChartType.SMOOTH_AREA)
+        .chartType(ChartType.AREA)
         .fill(Color.web("#3F51B560"))
         .symbolsVisible(false)
         .build()
 
     private val astronomicalDuskSerie = XYSeriesBuilder.create()
-        .chartType(ChartType.SMOOTH_AREA)
+        .chartType(ChartType.AREA)
         .fill(Color.web("#3949AB60"))
         .symbolsVisible(false)
         .build()
 
     private val dayFirstSerie = XYSeriesBuilder.create()
-        .chartType(ChartType.SMOOTH_AREA)
+        .chartType(ChartType.AREA)
         .fill(Color.web("#FFF17660"))
         .symbolsVisible(false)
         .build()
 
     private val dayLastSerie = XYSeriesBuilder.create()
-        .chartType(ChartType.SMOOTH_AREA)
+        .chartType(ChartType.AREA)
         .fill(Color.web("#FFF17660"))
         .symbolsVisible(false)
         .build()
 
     private val nowSerie = XYSeriesBuilder.create()
-        .chartType(ChartType.SMOOTH_AREA)
+        .chartType(ChartType.AREA)
         .fill(Color.web("#F4433660"))
         .symbolsVisible(false)
         .build()
@@ -131,8 +131,8 @@ class AltitudeChart : AnchorPane() {
         nightSerie,
         civilDuskSerie, nauticalDuskSerie, astronomicalDuskSerie,
         dayFirstSerie, dayLastSerie,
-        nowSerie,
         altitudeSerie,
+        nowSerie,
     )
 
     private val chart = XYChart(pane, grid, xAxis, yAxis)
@@ -181,6 +181,7 @@ class AltitudeChart : AnchorPane() {
         if (points !== this.points) {
             this.points.clear()
             this.points.addAll(points)
+            altitudeSerie.items.setAll(points)
         }
 
         civilDawn.copyInto(this.civilDawn)
@@ -203,8 +204,6 @@ class AltitudeChart : AnchorPane() {
         astronomicalDuskSerie.items.setAll(XYChartItem(astronomicalDusk[0], 90.0), XYChartItem(astronomicalDusk[1], 90.0))
         nauticalDuskSerie.items.setAll(XYChartItem(nauticalDusk[0], 90.0), XYChartItem(nauticalDusk[1], 90.0))
         civilDuskSerie.items.setAll(XYChartItem(civilDusk[0], 90.0), XYChartItem(civilDusk[1], 90.0))
-
-        altitudeSerie.items.setAll(points)
     }
 
     companion object {

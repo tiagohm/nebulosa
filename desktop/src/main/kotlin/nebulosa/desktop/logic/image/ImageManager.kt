@@ -12,7 +12,6 @@ import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
 import nebulosa.desktop.logic.AbstractManager
-import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.platesolver.PlateSolvingEvent
 import nebulosa.desktop.logic.platesolver.PlateSolvingSolved
@@ -36,6 +35,7 @@ import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Header
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.File
@@ -44,7 +44,6 @@ import kotlin.math.max
 
 class ImageManager(private val view: ImageView) : AbstractManager() {
 
-    @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var plateSolverView: PlateSolverView
     @Autowired private lateinit var eventBus: EventBus
@@ -109,19 +108,17 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         view.addFirst(skyCatalogAnnotation)
     }
 
-    @Subscribe
-    fun onPlateSolvingEvent(event: PlateSolvingEvent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    fun onPlateSolvingEvent(event: PlateSolvingEvent) = runBlocking(Dispatchers.Main) {
         if (event.file === file.get()) {
-            runBlocking(Dispatchers.Main) {
-                with(if (event is PlateSolvingSolved) event.calibration else null) {
-                    calibration.set(this)
+            with(if (event is PlateSolvingSolved) event.calibration else null) {
+                calibration.set(this)
 
-                    if (this != null) {
-                        skyCatalogAnnotation.drawAround(this)
-                        skyCatalogAnnotation.isVisible = view.annotationEnabled
-                    } else {
-                        skyCatalogAnnotation.isVisible = false
-                    }
+                if (this != null) {
+                    skyCatalogAnnotation.drawAround(this)
+                    skyCatalogAnnotation.isVisible = view.annotationEnabled
+                } else {
+                    skyCatalogAnnotation.isVisible = false
                 }
             }
         }
@@ -179,7 +176,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         }
     }
 
-    fun draw() {
+    suspend fun draw() {
         val image = transformedImage ?: image ?: return
         view.draw(image)
     }

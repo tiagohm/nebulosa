@@ -61,8 +61,7 @@ class FocuserManager(
     }
 
     fun openINDIPanelControl() {
-        indiPanelControlView.show(bringToFront = true)
-        indiPanelControlView.device = value
+        indiPanelControlView.show(value)
     }
 
     fun moveIn() {

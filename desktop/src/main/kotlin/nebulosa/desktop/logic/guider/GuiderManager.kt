@@ -4,7 +4,6 @@ import javafx.beans.property.SimpleBooleanProperty
 import kotlinx.coroutines.runBlocking
 import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.DevicePropertyListener
-import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.guider.DitherMode
 import nebulosa.desktop.view.guider.GuideAlgorithmType
@@ -36,7 +35,6 @@ class GuiderManager(
     @Autowired internal val equipmentManager: EquipmentManager,
 ) : AbstractManager(), GuideDevice, GuiderListener {
 
-    @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var imageViewOpener: ImageView.Opener
     @Autowired private lateinit var guiderExecutorService: ExecutorService
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
@@ -126,18 +124,15 @@ class GuiderManager(
     }
 
     fun openINDIPanelControlForGuideCamera() {
-        indiPanelControlView.show(bringToFront = true)
-        indiPanelControlView.device = camera
+        indiPanelControlView.show(camera ?: return)
     }
 
     fun openINDIPanelControlForGuideMount() {
-        indiPanelControlView.show(bringToFront = true)
-        indiPanelControlView.device = mount
+        indiPanelControlView.show(mount ?: return)
     }
 
     fun openINDIPanelControlForGuideOutput() {
-        indiPanelControlView.show(bringToFront = true)
-        indiPanelControlView.device = guideOutput
+        indiPanelControlView.show(guideOutput ?: return)
     }
 
     fun startLooping() {
@@ -184,12 +179,10 @@ class GuiderManager(
         guider.stopGuiding()
     }
 
-    fun selectGuideStar(x: Double, y: Double) {
+    suspend fun selectGuideStar(x: Double, y: Double) {
         if (guider.selectGuideStar(x, y)) {
-            launch {
-                guiderIndicator.redraw()
-                view.updateStarProfile(guider)
-            }
+            guiderIndicator.redraw()
+            view.updateStarProfile(guider)
         }
     }
 

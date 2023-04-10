@@ -32,6 +32,7 @@ dependencyResolutionManagement {
             library("coroutines", "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0-Beta")
             library("coroutines-javafx", "org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.7.0-Beta")
             library("coroutines-rx3", "org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.7.0-Beta")
+            library("apache-lang3", "org.apache.commons:commons-lang3:3.12.0")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.5.5")
             library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.5.5")
             bundle("kotest", listOf("kotest-assertions-core", "kotest-runner-junit5"))
