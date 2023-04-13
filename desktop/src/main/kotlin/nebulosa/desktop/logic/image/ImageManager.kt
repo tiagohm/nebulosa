@@ -334,7 +334,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         val file = file.get() ?: return false
         val image = image ?: return false
 
-        plateSolverView.show(bringToFront = true).join()
+        plateSolverView.show(bringToFront = true)
 
         val ra = image.header.ra
         val dec = image.header.dec
@@ -378,7 +378,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
     suspend fun openFitsHeader() {
         val header = image?.header ?: return
         fitsHeaderView = fitsHeaderView ?: FitsHeaderWindow()
-        fitsHeaderView!!.show(bringToFront = true).join()
+        fitsHeaderView!!.show(bringToFront = true)
         fitsHeaderView!!.load(header)
     }
 

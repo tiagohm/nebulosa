@@ -497,7 +497,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     }
 
     suspend fun frame(ra: Angle, dec: Angle) {
-        framingView.show(bringToFront = true).join()
+        framingView.show(requestFocus = true)
         framingView.load(ra, dec)
     }
 

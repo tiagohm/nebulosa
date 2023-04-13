@@ -1,6 +1,8 @@
 <configuration>
+    <timestamp key="date"
+               datePattern="yyyy-MM-dd"/>
     <property name="LOG_FILE"
-              value="${app.dir}/nebulosa.log"/>
+              value="${app.dir}/logs/nebulosa-${date}.log"/>
 
     <appender name="STDOUT"
               class="ch.qos.logback.core.ConsoleAppender">

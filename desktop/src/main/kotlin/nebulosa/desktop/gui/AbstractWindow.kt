@@ -21,7 +21,6 @@ import nebulosa.jmetro.JMetroStyleClass
 import nebulosa.jmetro.Style
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class AbstractWindow(
@@ -55,7 +54,7 @@ abstract class AbstractWindow(
                 root.styleClass.add(JMetroStyleClass.BACKGROUND)
                 root.stylesheets.add("css/Global.css")
 
-                launch { onCreate() }
+                runBlocking { onCreate() }
 
                 CLOSE
                     .filter { !it }
@@ -69,10 +68,10 @@ abstract class AbstractWindow(
             }
         }
 
-        window.setOnShown { launch { onStart() } }
+        window.setOnShown { runBlocking { onStart() } }
 
         window.setOnHiding {
-            launch {
+            runBlocking {
                 onStop()
 
                 if (this@AbstractWindow is HomeWindow) {
@@ -154,13 +153,11 @@ abstract class AbstractWindow(
     final override fun show(
         requestFocus: Boolean,
         bringToFront: Boolean,
-    ): Job {
-        return launch {
-            window.show()
+    ) {
+        window.show()
 
-            if (requestFocus) window.requestFocus()
-            if (bringToFront) window.toFront()
-        }
+        if (requestFocus) window.requestFocus()
+        if (bringToFront) window.toFront()
     }
 
     final override fun showAndWait() {

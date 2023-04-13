@@ -4,7 +4,6 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.stage.FileChooser
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
-import nebulosa.desktop.OperatingSystemType
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.framing.FramingView
@@ -27,6 +26,8 @@ import org.greenrobot.eventbus.EventBus
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import oshi.PlatformEnum
+import oshi.SystemInfo
 import java.io.Closeable
 import java.io.File
 import java.time.Duration
@@ -38,7 +39,6 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
     @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var framingView: FramingView
-    @Autowired private lateinit var operatingSystemType: OperatingSystemType
     @Autowired private lateinit var eventBus: EventBus
 
     val file = SimpleObjectProperty<File>()
@@ -106,7 +106,7 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
     fun pathOrUrl(type: PlateSolverType) = when (type) {
         PlateSolverType.ASTROMETRY_NET_LOCAL -> "solve-field"
         PlateSolverType.ASTROMETRY_NET_ONLINE -> NovaAstrometryNetService.URL
-        PlateSolverType.ASTAP -> if (operatingSystemType == OperatingSystemType.WINDOWS) "C:\\Program Files\\astap\\astap.exe" else "astap"
+        PlateSolverType.ASTAP -> if (SystemInfo.getCurrentPlatform() == PlatformEnum.WINDOWS) "C:\\Program Files\\astap\\astap.exe" else "astap"
         PlateSolverType.WATNEY -> ""
     }
 
@@ -198,7 +198,7 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
         val height = if (factor > 1.0) 1200 / factor else 900
         val fov = max(calibration.width.value, calibration.height.value).rad
 
-        framingView.show(bringToFront = true).join()
+        framingView.show(bringToFront = true)
         framingView.load(
             calibration.rightAscension, calibration.declination,
             width = width.toInt(), height = height.toInt(), rotation = rotation,

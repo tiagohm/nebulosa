@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.coroutines)
     implementation(libs.coroutines.javafx)
     implementation(libs.apache.lang3)
+    implementation(libs.oshi)
     implementation(libs.logback)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.jetbrains.kotlin:kotlin-reflect")

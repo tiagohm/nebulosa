@@ -34,7 +34,7 @@ interface View : Closeable {
     fun show(
         requestFocus: Boolean = false,
         bringToFront: Boolean = false,
-    ): Job
+    )
 
     fun showAndWait()
 

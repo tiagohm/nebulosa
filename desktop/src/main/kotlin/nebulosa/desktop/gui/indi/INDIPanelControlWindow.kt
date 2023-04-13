@@ -1,5 +1,6 @@
 package nebulosa.desktop.gui.indi
 
+import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.geometry.Pos
 import javafx.scene.Cursor
@@ -54,8 +55,8 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
         get() = groupsTabPane.tabs
 
     override fun show(device: Device) {
-        deviceChoiceBox.value = device
         show(true, true)
+        deviceChoiceBox.value = device
     }
 
     override fun updateLog(text: String) {

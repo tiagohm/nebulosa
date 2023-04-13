@@ -12,8 +12,6 @@ import nebulosa.skycatalog.stellarium.Nebula
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.scheduling.annotation.EnableAsync
@@ -26,11 +24,6 @@ import java.util.concurrent.TimeUnit
 @EnableAsync
 @SpringBootApplication
 class App {
-
-    @Autowired private lateinit var beanFactory: AutowireCapableBeanFactory
-
-    @Bean
-    fun operatingSystemType() = getOperatingSystemType()
 
     @Bean
     fun appDirectory(): Path = Paths.get(System.getProperty("app.dir"))

@@ -362,7 +362,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             else windows.add(window)
 
             withMain {
-                window.show().join()
+                window.show()
 
                 if (image != null) window.open(image, file, resetTransformation)
                 else if (file != null) window.open(file, resetTransformation = true)
