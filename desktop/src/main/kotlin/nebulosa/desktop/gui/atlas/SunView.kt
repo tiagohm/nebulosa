@@ -4,10 +4,8 @@ import javafx.scene.canvas.Canvas
 import javafx.scene.image.PixelBuffer
 import javafx.scene.image.PixelFormat
 import javafx.scene.image.WritableImage
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import nebulosa.desktop.withIO
-import nebulosa.desktop.withMain
+import nebulosa.desktop.helper.withIO
+import nebulosa.desktop.helper.withMain
 import java.net.URL
 import java.nio.IntBuffer
 import javax.imageio.ImageIO

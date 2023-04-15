@@ -5,15 +5,15 @@ import eu.hansolo.fx.charts.data.XYItem
 import javafx.beans.property.SimpleBooleanProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import nebulosa.desktop.helper.runBlockingIO
+import nebulosa.desktop.helper.withIO
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.AbstractManager
-import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.atlas.ephemeris.provider.BodyEphemerisProvider
 import nebulosa.desktop.logic.atlas.ephemeris.provider.HorizonsEphemerisProvider
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.framing.FramingView
-import nebulosa.desktop.withIO
-import nebulosa.desktop.withMain
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsEphemeris
 import nebulosa.horizons.HorizonsQuantity
@@ -160,8 +160,8 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     }
 
     @Scheduled(cron = "0 * * * * *")
-    private fun computeTabAtScheduledTime() {
-        runBlocking { computeTab() }
+    private fun computeTabAtScheduledTime() = runBlockingIO {
+        computeTab()
     }
 
     suspend fun populatePlanets() = withIO {
@@ -298,7 +298,10 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         civilDawn[1] = a[7] / 60.0
     }
 
-    private suspend fun HorizonsEphemeris.computeRTS(altitudes: DoubleArray, target: Any, force: Boolean) = withIO {
+    private suspend fun HorizonsEphemeris.computeRTS(
+        altitudes: DoubleArray,
+        target: Any, force: Boolean, show: Boolean,
+    ) = withIO {
         if (force) {
             LOG.info("computing RTS. target={}", target)
 
@@ -317,14 +320,17 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
             rtsCache[target] = Triple(risingTime, transitTime, settingTime)
         }
 
-        view.updateRTS(rtsCache[target]!!)
+        if (show) view.updateRTS(rtsCache[target]!!)
     }
 
-    private suspend fun HorizonsEphemeris.computeTwilightAndRTS(target: Any, force: Boolean) = withIO {
+    private suspend fun HorizonsEphemeris.computeTwilightAndRTS(
+        target: Any,
+        force: Boolean, show: Boolean
+    ) = withIO {
         LOG.info("computing twilight and RTS. target={}, force={}", target, force)
         val altitudes = DoubleArray(elements.size) { elements[it][HorizonsQuantity.APPARENT_ALT]!!.toDouble() }
-        if (force && target == "10") computeTwilight(altitudes, target)
-        computeRTS(altitudes, target, force)
+        if (show && force && target == "10") computeTwilight(altitudes, target)
+        computeRTS(altitudes, target, force, show)
     }
 
     private suspend fun drawAltitude(points: List<XYItem>) = withIO {
@@ -364,7 +370,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
             if (ephemeris != null) {
                 ephemerisCache[target] = ephemeris
 
-                ephemeris.computeTwilightAndRTS(target, ephemeris !== prevEphemeris)
+                ephemeris.computeTwilightAndRTS(target, ephemeris !== prevEphemeris, show)
             }
 
             if (ephemeris == null) {
@@ -496,7 +502,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         mount?.sync(ra, dec)
     }
 
-    suspend fun frame(ra: Angle, dec: Angle) {
+    suspend fun frame(ra: Angle, dec: Angle) = withMain {
         framingView.show(requestFocus = true)
         framingView.load(ra, dec)
     }
@@ -508,7 +514,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         preferences.double("atlas.screen.y", max(0.0, view.y))
     }
 
-    fun loadPreferences() {
+    suspend fun loadPreferences() = withMain {
         preferences.double("atlas.screen.x")?.also { view.x = it }
         preferences.double("atlas.screen.y")?.also { view.y = it }
     }

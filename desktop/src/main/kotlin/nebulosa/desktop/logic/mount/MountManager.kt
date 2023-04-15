@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
 import nebulosa.desktop.gui.mount.SiteAndTimeWindow
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.indi.INDIPanelControlView
@@ -213,7 +214,7 @@ class MountManager(
         preferences.double("mount.screen.y", max(0.0, view.y))
     }
 
-    fun loadPreferences() {
+    suspend fun loadPreferences() = withMain {
         preferences.double("mount.screen.x")?.also { view.x = it }
         preferences.double("mount.screen.y")?.also { view.y = it }
     }

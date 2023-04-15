@@ -79,7 +79,7 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
         resizable = false
     }
 
-    override suspend fun onCreate() {
+    override fun onCreate() {
         val isNotConnected = !cameraManager.connectedProperty
         val isConnecting = cameraManager.connectingProperty
         val isCapturing = cameraManager.capturingProperty
@@ -161,11 +161,11 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
         cameraManager.loadPreferences(null)
     }
 
-    override suspend fun onStart() {
+    override fun onStart() {
         cameraManager.loadPreferences()
     }
 
-    override suspend fun onStop() {
+    override fun onStop() {
         cameraManager.savePreferences()
     }
 

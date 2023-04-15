@@ -12,11 +12,11 @@ import kotlinx.coroutines.cancel
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.CopyableLabel
 import nebulosa.desktop.gui.control.PropertyValueFactory
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.atlas.AtlasManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.atlas.AtlasView
-import nebulosa.desktop.withMain
 import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
 import nebulosa.math.PairOfAngle
@@ -64,7 +64,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     }
 
     @Suppress("UNCHECKED_CAST")
-    override suspend fun onCreate() {
+    override fun onCreate() {
         val isNotConnected = !atlasManager.mountProperty.connectedProperty
         val isMoving = atlasManager.mountProperty.slewingProperty or atlasManager.mountProperty.parkingProperty
         val isComputing = atlasManager.computing
@@ -110,17 +110,16 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         launch { atlasManager.populateDSOs() }
     }
 
-    override suspend fun onStart() {
+    override fun onStart() {
         started = true
 
-        atlasManager.loadPreferences()
-
+        launch { atlasManager.loadPreferences() }
         launch { atlasManager.updateSunImage() }
         launch { atlasManager.updateMoonImage() }
         launch { atlasManager.computeTab(AtlasView.TabType.SUN) }
     }
 
-    override suspend fun onStop() {
+    override fun onStop() {
         atlasManager.savePreferences()
     }
 

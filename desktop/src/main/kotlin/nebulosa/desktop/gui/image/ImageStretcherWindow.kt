@@ -6,12 +6,12 @@ import javafx.scene.control.Slider
 import javafx.scene.control.Spinner
 import javafx.util.Duration
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.helper.withIO
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.image.ImageStretcherManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.view.image.ImageStretcherView
 import nebulosa.desktop.view.image.ImageView
-import nebulosa.desktop.withIO
-import nebulosa.desktop.withMain
 import org.controlsfx.control.RangeSlider
 
 class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageStretcher", "histogram"), ImageStretcherView {
@@ -35,7 +35,7 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
         }
     }
 
-    override suspend fun onCreate() {
+    override fun onCreate() {
         shadowAndHighlightRangeSlider.lowValue = 0.0
         shadowAndHighlightRangeSlider.highValue = 255.0
 
@@ -57,10 +57,10 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
         midtoneSpinner.valueProperty().on { midtoneSlider.value = it!!.toDouble() }
     }
 
-    override suspend fun onStart() {
-        updateTitle()
-        updateStretchParameters(view.shadow, view.highlight, view.midtone)
-        drawHistogram()
+    override fun onStart() {
+        launch { updateTitle() }
+        launch { updateStretchParameters(view.shadow, view.highlight, view.midtone) }
+        launch { drawHistogram() }
     }
 
     override val shadow

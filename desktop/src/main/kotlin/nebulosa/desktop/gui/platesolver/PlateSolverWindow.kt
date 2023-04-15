@@ -5,17 +5,15 @@ import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Spinner
 import javafx.scene.control.TextField
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.SwitchSegmentedButton
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.asString
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.logic.platesolver.PlateSolverManager
 import nebulosa.desktop.view.platesolver.PlateSolverType
 import nebulosa.desktop.view.platesolver.PlateSolverView
-import nebulosa.desktop.withMain
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.AngleFormatter
@@ -59,7 +57,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
         resizable = false
     }
 
-    override suspend fun onCreate() {
+    override fun onCreate() {
         val isSolving = plateSolverManager.solving
         val canNotSolve = plateSolverManager.file.isNull or isSolving
         val canNotSlew = !plateSolverManager.mount.connectedProperty or plateSolverManager.mount.slewingProperty
@@ -121,11 +119,11 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
         frameButton.disableProperty().bind(canNotSolve or isNotSolved)
     }
 
-    override suspend fun onStart() {
-        plateSolverManager.loadPreferences()
+    override fun onStart() {
+        launch { plateSolverManager.loadPreferences() }
     }
 
-    override suspend fun onStop() {
+    override fun onStop() {
         plateSolverManager.savePreferences()
     }
 

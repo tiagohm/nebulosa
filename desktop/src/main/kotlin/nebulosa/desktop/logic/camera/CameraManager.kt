@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import nebulosa.desktop.helper.runBlockingMain
 import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.task.TaskEvent
@@ -60,7 +61,7 @@ class CameraManager(
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    fun onTaskEvent(event: TaskEvent): Unit = runBlocking(Dispatchers.Main) {
+    fun onTaskEvent(event: TaskEvent): Unit = runBlockingMain {
         when (event) {
             is TaskStarted -> {
                 if (event.task === runningTask.get()) {

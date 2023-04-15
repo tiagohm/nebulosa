@@ -54,7 +54,7 @@ abstract class AbstractWindow(
                 root.styleClass.add(JMetroStyleClass.BACKGROUND)
                 root.stylesheets.add("css/Global.css")
 
-                runBlocking { onCreate() }
+                onCreate()
 
                 CLOSE
                     .filter { !it }
@@ -68,25 +68,23 @@ abstract class AbstractWindow(
             }
         }
 
-        window.setOnShown { runBlocking { onStart() } }
+        window.setOnShown { onStart() }
 
         window.setOnHiding {
-            runBlocking {
-                onStop()
+            onStop()
 
-                if (this@AbstractWindow is HomeWindow) {
-                    onClose()
-                    CLOSE.onNext(false)
-                }
+            if (this@AbstractWindow is HomeWindow) {
+                onClose()
+                CLOSE.onNext(false)
             }
         }
     }
 
-    protected open suspend fun onCreate() = Unit
+    protected open fun onCreate() = Unit
 
-    protected open suspend fun onStart() = Unit
+    protected open fun onStart() = Unit
 
-    protected open suspend fun onStop() = Unit
+    protected open fun onStop() = Unit
 
     protected open fun onClose() = Unit
 

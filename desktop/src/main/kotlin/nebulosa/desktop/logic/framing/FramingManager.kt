@@ -2,12 +2,12 @@ package nebulosa.desktop.logic.framing
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.beans.property.SimpleBooleanProperty
+import nebulosa.desktop.helper.withIO
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.desktop.view.image.ImageView
-import nebulosa.desktop.withIO
-import nebulosa.desktop.withMain
 import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
 import nebulosa.fits.FITS_RA_ANGLE_FORMATTER
 import nebulosa.hips2fits.FormatOutputType
@@ -144,7 +144,7 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
         view.populateHipsSurveys(HIPS_SURVEY_SOURCES, selected)
     }
 
-    suspend fun loadPreferences() {
+    suspend fun loadPreferences() = withMain {
         preferences.double("framing.fov")?.let { view.updateFOV(it.rad) }
         preferences.double("framing.screen.x")?.let { view.x = it }
         preferences.double("framing.screen.y")?.let { view.y = it }

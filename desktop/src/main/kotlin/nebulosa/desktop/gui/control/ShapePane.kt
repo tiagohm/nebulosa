@@ -4,7 +4,6 @@ import javafx.beans.property.DoubleProperty
 import javafx.beans.property.DoublePropertyBase
 import javafx.scene.Node
 import javafx.scene.layout.Pane
-import nebulosa.desktop.withMain
 
 abstract class ShapePane : Pane() {
 
@@ -24,7 +23,7 @@ abstract class ShapePane : Pane() {
 
     internal abstract fun redraw(width: Double, height: Double)
 
-    suspend fun redraw() = withMain {
+    fun redraw() {
         redraw(widthProperty.get(), heightProperty.get())
     }
 

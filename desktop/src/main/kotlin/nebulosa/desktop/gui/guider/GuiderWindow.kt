@@ -17,14 +17,14 @@ import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.gui.control.MaterialIcon
 import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.gui.control.TwoStateButton
+import nebulosa.desktop.helper.withIO
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.guider.GuiderManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.guider.DitherMode
 import nebulosa.desktop.view.guider.GuideAlgorithmType
 import nebulosa.desktop.view.guider.GuiderView
-import nebulosa.desktop.withIO
-import nebulosa.desktop.withMain
 import nebulosa.guiding.GuideStats
 import nebulosa.guiding.Guider
 import nebulosa.guiding.NoiseReductionMethod
@@ -113,7 +113,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         resizable = false
     }
 
-    override suspend fun onCreate() {
+    override fun onCreate() {
         val isNotConnected = !guiderManager.selectedGuideCamera.connectedProperty or
                 !guiderManager.selectedGuideMount.connectedProperty or !guiderManager.selectedGuideOutput.connectedProperty
         val isConnecting = guiderManager.selectedGuideCamera.connectingProperty or
@@ -176,11 +176,11 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
         noiseReductionMethodChoiceBox.value = NoiseReductionMethod.NONE
     }
 
-    override suspend fun onStart() {
+    override fun onStart() {
         guiderManager.loadPreferences()
     }
 
-    override suspend fun onStop() {
+    override fun onStop() {
         guiderManager.savePreferences()
     }
 

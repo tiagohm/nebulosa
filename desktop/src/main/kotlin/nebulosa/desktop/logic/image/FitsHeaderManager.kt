@@ -1,9 +1,7 @@
 package nebulosa.desktop.logic.image
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.view.image.FitsHeaderView
-import nebulosa.desktop.withIO
 import nom.tam.fits.Header
 import nom.tam.fits.HeaderCard
 import kotlin.math.max

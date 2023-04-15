@@ -4,13 +4,13 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.stage.FileChooser
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
+import nebulosa.desktop.helper.withIO
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.desktop.view.platesolver.PlateSolverType
 import nebulosa.desktop.view.platesolver.PlateSolverView
-import nebulosa.desktop.withIO
-import nebulosa.desktop.withMain
 import nebulosa.fits.dec
 import nebulosa.fits.imageHDU
 import nebulosa.fits.ra
@@ -210,7 +210,7 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
         view.pathOrUrl = preferences.string("plateSolver.${view.type}.pathOrUrl") ?: ""
     }
 
-    fun loadPreferences() {
+    suspend fun loadPreferences() = withMain {
         view.type = preferences.enum<PlateSolverType>("plateSolver.type") ?: PlateSolverType.ASTROMETRY_NET_ONLINE
         loadPathOrUrlFromPreferences()
         preferences.string("plateSolver.apiKey")?.let { view.apiKey = it }

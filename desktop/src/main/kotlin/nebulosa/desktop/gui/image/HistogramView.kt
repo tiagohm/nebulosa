@@ -2,8 +2,6 @@ package nebulosa.desktop.gui.image
 
 import javafx.scene.canvas.Canvas
 import javafx.scene.paint.Color
-import nebulosa.desktop.withIO
-import nebulosa.desktop.withMain
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.Histogram
 

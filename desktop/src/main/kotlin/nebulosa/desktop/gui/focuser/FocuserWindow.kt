@@ -10,6 +10,7 @@ import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.gui.control.TwoStateButton
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.focuser.FocuserManager
 import nebulosa.desktop.logic.isNull
 import nebulosa.desktop.logic.on
@@ -47,7 +48,7 @@ class FocuserWindow : AbstractWindow("Focuser", "focus"), FocuserView {
         resizable = false
     }
 
-    override suspend fun onCreate() {
+    override fun onCreate() {
         val isNotConnected = focuserManager.connectedProperty.not()
         val isConnecting = focuserManager.connectingProperty
         val isMoving = focuserManager.movingProperty
@@ -86,11 +87,11 @@ class FocuserWindow : AbstractWindow("Focuser", "focus"), FocuserView {
         // autoFocusButton.disableProperty().bind(isNotConnectedOrMoving)
     }
 
-    override suspend fun onStart() {
-        focuserManager.loadPreferences()
+    override fun onStart() {
+        launch { focuserManager.loadPreferences() }
     }
 
-    override suspend fun onStop() {
+    override fun onStop() {
         focuserManager.savePreferences()
     }
 
@@ -109,15 +110,15 @@ class FocuserWindow : AbstractWindow("Focuser", "focus"), FocuserView {
     override val absoluteMax
         get() = (absoluteSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
 
-    override fun updateStatus(status: String) {
+    override suspend fun updateStatus(status: String) = withMain {
         statusLabel.text = status
     }
 
-    override fun updateMaxIncrement(value: Int) {
+    override suspend fun updateMaxIncrement(value: Int) = withMain {
         (incrementSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
     }
 
-    override fun updateAbsoluteMax(value: Int) {
+    override suspend fun updateAbsoluteMax(value: Int) = withMain {
         (absoluteSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
     }
 

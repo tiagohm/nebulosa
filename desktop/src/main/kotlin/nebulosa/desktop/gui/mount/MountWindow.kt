@@ -79,7 +79,7 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
         resizable = false
     }
 
-    override suspend fun onCreate() {
+    override fun onCreate() {
         val isNotConnected = mountManager.connectedProperty.not()
         val isConnecting = mountManager.connectingProperty
         val isMoving = mountManager.slewingProperty or mountManager.parkingProperty
@@ -162,11 +162,11 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
         homeButton.disableProperty().set(true)
     }
 
-    override suspend fun onStart() {
-        mountManager.loadPreferences()
+    override fun onStart() {
+        launch { mountManager.loadPreferences() }
     }
 
-    override suspend fun onStop() {
+    override fun onStop() {
         mountManager.savePreferences()
     }
 

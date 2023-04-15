@@ -31,7 +31,7 @@ class SCNRWindow(private val view: ImageView) : AbstractWindow("SCNR", "rgb"), S
         transformer.setOnFinished { launch { scnrManager.apply() } }
     }
 
-    override suspend fun onCreate() {
+    override fun onCreate() {
         channelChoiceBox.valueProperty().on { transformer.playFromStart() }
         protectionMethodChoiceBox.valueProperty().on { transformer.playFromStart() }
         amountSpinner.valueProperty().on { transformer.playFromStart() }

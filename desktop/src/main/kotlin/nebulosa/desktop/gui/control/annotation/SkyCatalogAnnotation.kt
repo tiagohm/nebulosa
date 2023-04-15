@@ -5,8 +5,8 @@ import javafx.scene.shape.Circle
 import javafx.scene.text.Text
 import javafx.scene.text.TextAlignment
 import nebulosa.desktop.gui.control.ShapePane
-import nebulosa.desktop.withIO
-import nebulosa.desktop.withMain
+import nebulosa.desktop.helper.withIO
+import nebulosa.desktop.helper.withMain
 import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import nebulosa.skycatalog.DSO

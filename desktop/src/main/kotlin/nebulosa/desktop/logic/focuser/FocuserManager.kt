@@ -1,6 +1,8 @@
 package nebulosa.desktop.logic.focuser
 
-import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.helper.runBlockingMain
+import nebulosa.desktop.helper.withMain
+import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.task.TaskExecutor
 import nebulosa.desktop.view.focuser.FocuserView
@@ -17,9 +19,8 @@ import kotlin.math.max
 class FocuserManager(
     @Autowired internal val view: FocuserView,
     @Autowired internal val equipmentManager: EquipmentManager,
-) : FocuserProperty by equipmentManager.selectedFocuser {
+) : AbstractManager(), FocuserProperty by equipmentManager.selectedFocuser {
 
-    @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
     @Autowired private lateinit var taskExecutor: TaskExecutor
 
@@ -33,16 +34,15 @@ class FocuserManager(
     override fun onChanged(prev: Focuser?, device: Focuser) {
         if (prev !== device) savePreferences()
 
-        updateTitle()
-        updateMaxIncrement()
-        updateAbsoluteMax()
-
-        loadPreferences()
+        launch { updateTitle() }
+        launch { updateMaxIncrement() }
+        launch { updateAbsoluteMax() }
+        launch { loadPreferences() }
     }
 
     override fun onReset() = Unit
 
-    override fun onDeviceEvent(event: DeviceEvent<*>, device: Focuser) {
+    override fun onDeviceEvent(event: DeviceEvent<*>, device: Focuser) = runBlockingMain {
         when (event) {
             is FocuserMovingChanged -> updateStatus()
             is FocuserMaxPositionChanged -> {
@@ -52,11 +52,11 @@ class FocuserManager(
         }
     }
 
-    private fun updateTitle() {
+    private suspend fun updateTitle() = withMain {
         view.title = "Focuser · $name"
     }
 
-    private fun updateStatus() {
+    private suspend fun updateStatus() {
         view.updateStatus(if (moving) "moving" else "idle")
     }
 
@@ -87,11 +87,11 @@ class FocuserManager(
         value?.abortFocus()
     }
 
-    private fun updateMaxIncrement() {
+    private suspend fun updateMaxIncrement() {
         view.updateMaxIncrement(value?.maxPosition ?: 0)
     }
 
-    private fun updateAbsoluteMax() {
+    private suspend fun updateAbsoluteMax() {
         view.updateAbsoluteMax(value?.maxPosition ?: 0)
     }
 
@@ -102,7 +102,7 @@ class FocuserManager(
         preferences.double("focuser.screen.y", max(0.0, view.y))
     }
 
-    fun loadPreferences() {
+    suspend fun loadPreferences() = withMain {
         preferences.double("focuser.screen.x")?.let { view.x = it }
         preferences.double("focuser.screen.y")?.let { view.y = it }
     }

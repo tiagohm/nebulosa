@@ -44,7 +44,7 @@ class SiteAndTimeWindow(
         resizable = false
     }
 
-    override suspend fun onCreate() {
+    override fun onCreate() {
         updateSite(mount.longitude, mount.latitude, mount.elevation)
         updateDateAndTime(mount.time)
 

@@ -4,9 +4,8 @@ import javafx.animation.PauseTransition
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
 import javafx.util.Duration
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
+import nebulosa.desktop.helper.runBlockingMain
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.*
@@ -38,8 +37,8 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : Closeabl
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    fun onEvent(event: DeviceEvent<*>): Unit = runBlocking(Dispatchers.Main) {
-        if (event.device !== view.device) return@runBlocking
+    fun onEvent(event: DeviceEvent<*>): Unit = runBlockingMain {
+        if (event.device !== view.device) return@runBlockingMain
 
         when (event) {
             is DevicePropertyChanged -> {

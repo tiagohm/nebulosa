@@ -47,7 +47,7 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
     }
 
     @Suppress("UNCHECKED_CAST")
-    override suspend fun onCreate() {
+    override fun onCreate() {
         val isNotConnected = filterWheelManager.connectedProperty.not()
         val isConnecting = filterWheelManager.connectingProperty
         val isMoving = filterWheelManager.movingProperty
@@ -114,11 +114,11 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
         filterWheelManager.loadPreferences(null)
     }
 
-    override suspend fun onStart() {
+    override fun onStart() {
         filterWheelManager.loadPreferences()
     }
 
-    override suspend fun onStop() {
+    override fun onStop() {
         filterWheelManager.savePreferences()
     }
 

@@ -17,12 +17,12 @@ import javafx.scene.input.MouseEvent
 import javafx.util.Duration
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ImageViewer
+import nebulosa.desktop.helper.withIO
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.asBoolean
 import nebulosa.desktop.logic.image.ImageManager
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.image.ImageView
-import nebulosa.desktop.withIO
-import nebulosa.desktop.withMain
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
@@ -64,7 +64,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         }
     }
 
-    override suspend fun onCreate() {
+    override fun onCreate() {
         imageViewer.addEventFilter(MouseEvent.MOUSE_CLICKED) {
             if (it.button == MouseButton.PRIMARY && it.clickCount == 2) {
                 if (!maximized) {
@@ -102,12 +102,12 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         )
     }
 
-    override suspend fun onStart() {
+    override fun onStart() {
         imageManager.initialize()
-        imageManager.loadPreferences()
+        launch { imageManager.loadPreferences() }
     }
 
-    override suspend fun onStop() {
+    override fun onStop() {
         imageData = IntArray(0)
 
         imageManager.close()

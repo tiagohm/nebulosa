@@ -1,6 +1,5 @@
 package nebulosa.desktop.gui.indi
 
-import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.geometry.Pos
 import javafx.scene.Cursor
@@ -36,7 +35,7 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
         title = "INDI Panel Control"
     }
 
-    override suspend fun onCreate() {
+    override fun onCreate() {
         indiPanelControlManager.initialize()
 
         deviceChoiceBox.converter = DeviceStringConverter
@@ -44,7 +43,7 @@ class INDIPanelControlWindow : AbstractWindow("INDIPanelControl", "indi"), INDIP
         deviceChoiceBox.selectionModel.selectedItemProperty().on { indiPanelControlManager.makePanelControl() }
     }
 
-    override suspend fun onStart() {
+    override fun onStart() {
         indiPanelControlManager.populate()
     }
 

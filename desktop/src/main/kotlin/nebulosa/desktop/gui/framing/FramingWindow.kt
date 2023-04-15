@@ -7,10 +7,10 @@ import javafx.scene.control.Spinner
 import javafx.scene.control.TextField
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.framing.FramingManager
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.framing.FramingView
-import nebulosa.desktop.withMain
 import nebulosa.hips2fits.HipsSurvey
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
@@ -41,7 +41,7 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
         resizable = false
     }
 
-    override suspend fun onCreate() {
+    override fun onCreate() {
         val isLoading = framingManager.loading
         val canNotLoad = hipsSurveyChoiceBox.valueProperty().isNull
 
@@ -69,11 +69,11 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
         framingManager.populateHipsSurveys()
     }
 
-    override suspend fun onStart() {
-        framingManager.loadPreferences()
+    override fun onStart() {
+        launch { framingManager.loadPreferences() }
     }
 
-    override suspend fun onStop() {
+    override fun onStop() {
         framingManager.savePreferences()
     }
 

@@ -1,7 +1,6 @@
 package nebulosa.desktop.logic.telescopecontrol
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import nebulosa.desktop.helper.runBlockingMain
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.telescopecontrol.TelescopeControlType
@@ -42,16 +41,16 @@ class TelescopeControlManager(@Autowired internal val view: TelescopeControlView
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    fun onEvent(event: MountEvent): Unit = runBlocking(Dispatchers.Main) {
-        if (event.device !== mount) return@runBlocking
+    fun onEvent(event: MountEvent): Unit = runBlockingMain {
+        if (event.device !== mount) return@runBlockingMain
 
         when (event) {
             is MountEquatorialCoordinatesChanged -> {
-                val server = stellariumProtocolServer ?: return@runBlocking
+                val server = stellariumProtocolServer ?: return@runBlockingMain
                 if (!server.j2000) server.sendCurrentPosition(event.device.rightAscension, event.device.declination)
             }
             is MountEquatorialJ2000CoordinatesChanged -> {
-                val server = stellariumProtocolServer ?: return@runBlocking
+                val server = stellariumProtocolServer ?: return@runBlockingMain
                 if (server.j2000) server.sendCurrentPosition(event.device.rightAscensionJ2000, event.device.declinationJ2000)
             }
         }

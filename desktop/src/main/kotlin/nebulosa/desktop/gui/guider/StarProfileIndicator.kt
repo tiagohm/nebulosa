@@ -41,7 +41,7 @@ class StarProfileIndicator : ShapePane() {
         }
     }
 
-    suspend fun draw(lockPosition: GuidePoint, primaryStar: StarPoint, boxSize: Double) {
+    fun draw(lockPosition: GuidePoint, primaryStar: StarPoint, boxSize: Double) {
         this.lockPosition = lockPosition
         this.primaryStar = primaryStar
         this.boxSize = boxSize

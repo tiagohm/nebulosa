@@ -1,7 +1,7 @@
 package nebulosa.desktop.logic.image
 
+import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.view.image.ImageStretcherView
-import nebulosa.desktop.withIO
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.AutoScreenTransformFunction
 

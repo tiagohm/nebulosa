@@ -1,7 +1,9 @@
 package nebulosa.desktop.logic.guider
 
 import javafx.beans.property.SimpleBooleanProperty
-import kotlinx.coroutines.runBlocking
+import nebulosa.desktop.helper.runBlockingMain
+import nebulosa.desktop.helper.withIO
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.DevicePropertyListener
 import nebulosa.desktop.logic.equipment.EquipmentManager
@@ -10,7 +12,6 @@ import nebulosa.desktop.view.guider.GuideAlgorithmType
 import nebulosa.desktop.view.guider.GuiderView
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.indi.INDIPanelControlView
-import nebulosa.desktop.withMain
 import nebulosa.guiding.*
 import nebulosa.guiding.internal.*
 import nebulosa.imaging.Image
@@ -179,9 +180,9 @@ class GuiderManager(
         guider.stopGuiding()
     }
 
-    suspend fun selectGuideStar(x: Double, y: Double) {
+    suspend fun selectGuideStar(x: Double, y: Double) = withIO {
         if (guider.selectGuideStar(x, y)) {
-            guiderIndicator.redraw()
+            withMain { guiderIndicator.redraw() }
             view.updateStarProfile(guider)
         }
     }
@@ -312,56 +313,52 @@ class GuiderManager(
         return true
     }
 
-    override fun onLockPositionChanged(position: GuidePoint) {
-        runBlocking { view.updateStatus("lock position changed. x=%.1f, y=%.1f".format(position.x, position.y)) }
+    override fun onLockPositionChanged(position: GuidePoint) = runBlockingMain {
+        view.updateStatus("lock position changed. x=%.1f, y=%.1f".format(position.x, position.y))
     }
 
-    override fun onStarSelected(star: StarPoint) {
-        runBlocking {
-            view.updateStatus(
-                "star selected. x=%.1f, y=%.1f, mass=%.1f, hfd=%.1f, snr=%.1f, peak=%.1f".format(
-                    star.x, star.y, star.mass, star.hfd, star.snr, star.peak,
-                )
+    override fun onStarSelected(star: StarPoint) = runBlockingMain {
+        view.updateStatus(
+            "star selected. x=%.1f, y=%.1f, mass=%.1f, hfd=%.1f, snr=%.1f, peak=%.1f".format(
+                star.x, star.y, star.mass, star.hfd, star.snr, star.peak,
             )
-        }
+        )
     }
 
     override fun onGuidingDithered(dx: Double, dy: Double) {
         LOG.info("guiding dither. dx={}, dy={}", dx, dy)
     }
 
-    override fun onCalibrationFailed() {
-        runBlocking { view.updateStatus("calibration failed") }
+    override fun onCalibrationFailed() = runBlockingMain {
+        view.updateStatus("calibration failed")
     }
 
-    override fun onGuidingStopped() {
+    override fun onGuidingStopped() = runBlockingMain {
         guidingProperty.set(false)
-        runBlocking { view.updateStatus("guiding stopped") }
+        view.updateStatus("guiding stopped")
     }
 
-    override fun onLockShiftLimitReached() {
-        runBlocking { view.updateStatus("lock shift limit reached") }
+    override fun onLockShiftLimitReached() = runBlockingMain {
+        view.updateStatus("lock shift limit reached")
     }
 
-    override fun onLooping(image: Image, number: Int, star: StarPoint?) {
-        runBlocking {
-            view.updateStatus("looping. number=$number")
-            imageView?.also { it.open(image, null) }
-            guiderIndicator.redraw()
-            view.updateStarProfile(guider, image)
-        }
+    override fun onLooping(image: Image, number: Int, star: StarPoint?) = runBlockingMain {
+        view.updateStatus("looping. number=$number")
+        imageView?.also { it.open(image, null) }
+        guiderIndicator.redraw()
+        view.updateStarProfile(guider, image)
     }
 
-    override fun onStarLost() {
-        runBlocking { view.updateStatus("star lost") }
+    override fun onStarLost() = runBlockingMain {
+        view.updateStatus("star lost")
     }
 
-    override fun onLockPositionLost() {
-        runBlocking { view.updateStatus("lock position lost") }
+    override fun onLockPositionLost() = runBlockingMain {
+        view.updateStatus("lock position lost")
     }
 
-    override fun onStartCalibration() {
-        runBlocking { view.updateStatus("calibration started") }
+    override fun onStartCalibration() = runBlockingMain {
+        view.updateStatus("calibration started")
     }
 
     override fun onCalibrationStep(
@@ -376,19 +373,17 @@ class GuiderManager(
         )
     }
 
-    override fun onCalibrationCompleted(calibration: Calibration) {
-        runBlocking { view.updateStatus("calibration completed") }
+    override fun onCalibrationCompleted(calibration: Calibration) = runBlockingMain {
+        view.updateStatus("calibration completed")
         preferences.json("guider.${camera?.name}.${mount?.name}.calibration", calibration.toMap())
     }
 
-    override fun onGuideStep(stats: GuideStats) {
+    override fun onGuideStep(stats: GuideStats) = runBlockingMain {
         LOG.info("guiding step. RMS RA={}, RMS DEC={} dx={}, dy={}", stats.rmsRA, stats.rmsDEC, stats.dx, stats.dy)
 
-        runBlocking {
-            view.updateGraph(guider.stats, maxRADuration.toDouble(), maxDECDuration.toDouble())
-            val rmsTotal = hypot(stats.rmsRA, stats.rmsDEC)
-            view.updateGraphInfo(stats.rmsRA, stats.rmsDEC, rmsTotal, cameraPixelScale)
-        }
+        view.updateGraph(guider.stats, maxRADuration.toDouble(), maxDECDuration.toDouble())
+        val rmsTotal = hypot(stats.rmsRA, stats.rmsDEC)
+        view.updateGraphInfo(stats.rmsRA, stats.rmsDEC, rmsTotal, cameraPixelScale)
     }
 
     private fun GuideAlgorithm.updateParameters(): GuideAlgorithm {

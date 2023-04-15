@@ -11,9 +11,7 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
 import javafx.scene.layout.StackPane
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import nebulosa.desktop.withMain
+import nebulosa.desktop.helper.withMain
 import net.kurobako.gesturefx.GesturePane
 import kotlin.math.exp
 import kotlin.math.max

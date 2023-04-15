@@ -4,13 +4,14 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import javafx.stage.Screen
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import nebulosa.desktop.gui.control.annotation.Crosshair
 import nebulosa.desktop.gui.control.annotation.SkyCatalogAnnotation
 import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
+import nebulosa.desktop.helper.runBlockingMain
+import nebulosa.desktop.helper.withIO
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.platesolver.PlateSolvingEvent
@@ -20,8 +21,6 @@ import nebulosa.desktop.view.image.ImageStretcherView
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.image.SCNRView
 import nebulosa.desktop.view.platesolver.PlateSolverView
-import nebulosa.desktop.withIO
-import nebulosa.desktop.withMain
 import nebulosa.fits.dec
 import nebulosa.fits.ra
 import nebulosa.imaging.Image
@@ -109,7 +108,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    fun onPlateSolvingEvent(event: PlateSolvingEvent) = runBlocking(Dispatchers.Main) {
+    fun onPlateSolvingEvent(event: PlateSolvingEvent) = runBlockingMain {
         if (event.file === file.get()) {
             with(if (event is PlateSolvingSolved) event.calibration else null) {
                 calibration.set(this)
@@ -382,7 +381,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         fitsHeaderView!!.load(header)
     }
 
-    fun loadPreferences() {
+    suspend fun loadPreferences() = withMain {
         if (view.camera != null) {
             preferences.double("image.${view.camera!!.name}.screen.x")?.let { view.x = it }
             preferences.double("image.${view.camera!!.name}.screen.y")?.let { view.y = it }
