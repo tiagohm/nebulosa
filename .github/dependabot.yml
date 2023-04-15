@@ -8,6 +8,7 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
+      day: "friday"
     open-pull-requests-limit: 32
     target-branch: "dependabot"
