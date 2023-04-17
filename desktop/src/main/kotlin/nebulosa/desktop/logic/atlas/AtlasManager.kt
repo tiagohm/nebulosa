@@ -5,6 +5,8 @@ import eu.hansolo.fx.charts.data.XYItem
 import javafx.beans.property.SimpleBooleanProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import nebulosa.constants.AU_KM
+import nebulosa.constants.SPEED_OF_LIGHT
 import nebulosa.desktop.helper.runBlockingIO
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
@@ -47,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import retrofit2.await
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -218,12 +221,12 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
     suspend fun computeSun(): HorizonsEphemeris? {
         bodyName = "Sun"
-        return "10".computeBody()
+        return SUN_TARGET.computeBody()
     }
 
     suspend fun computeMoon(show: Boolean = true): HorizonsEphemeris? {
         bodyName = "Moon"
-        return "301".computeBody(show)
+        return MOON_TARGET.computeBody(show)
     }
 
     suspend fun computePlanet(body: AtlasView.Planet? = planet): HorizonsEphemeris? {
@@ -235,7 +238,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     suspend fun computeMinorPlanet(body: SmallBody? = minorPlanet): HorizonsEphemeris? {
         minorPlanet = body ?: return null
         bodyName = body.body!!.fullname
-        return "DES=${body.body!!.spkId};".computeBody()
+        return "DES=${body.body!!.spkId};".computeBody() ?: body.computeBody()
     }
 
     suspend fun computeStar(body: AtlasView.Star? = star): HorizonsEphemeris? {
@@ -255,6 +258,10 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     }
 
     private suspend fun Body.computeBody(show: Boolean = true): HorizonsEphemeris? {
+        return computeAltitude(this, show = show)
+    }
+
+    private suspend fun SmallBody.computeBody(show: Boolean = true): HorizonsEphemeris? {
         return computeAltitude(this, show = show)
     }
 
@@ -302,7 +309,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         altitudes: DoubleArray,
         target: Any, force: Boolean, show: Boolean,
     ) = withIO {
-        if (force) {
+        if (force || target !in rtsCache) {
             LOG.info("computing RTS. target={}", target)
 
             val (a, b) = findDiscrete(0.0, 1440.0, RisingAndSettingDiscreteFunction(altitudes), 1.0)
@@ -320,7 +327,9 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
             rtsCache[target] = Triple(risingTime, transitTime, settingTime)
         }
 
-        if (show) view.updateRTS(rtsCache[target]!!)
+        if (show) {
+            view.updateRTS(rtsCache[target]!!)
+        }
     }
 
     private suspend fun HorizonsEphemeris.computeTwilightAndRTS(
@@ -329,7 +338,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     ) = withIO {
         LOG.info("computing twilight and RTS. target={}, force={}", target, force)
         val altitudes = DoubleArray(elements.size) { elements[it][HorizonsQuantity.APPARENT_ALT]!!.toDouble() }
-        if (show && force && target == "10") computeTwilight(altitudes, target)
+        if (show && force && target == SUN_TARGET) computeTwilight(altitudes, target)
         computeRTS(altitudes, target, force, show)
     }
 
@@ -361,13 +370,14 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
             val prevEphemeris = ephemerisCache[target]
 
             val ephemeris = when (target) {
-                "301" -> horizonsEphemerisProvider.compute("301", observer, force, HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE)
+                is SmallBody -> horizonsEphemerisProvider.compute(target, observer, force)
+                MOON_TARGET -> horizonsEphemerisProvider.compute(MOON_TARGET, observer, force, HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE)
                 is String -> horizonsEphemerisProvider.compute(target, observer, force)
                 is Body -> bodyEphemerisProvider.compute(target, observer, force)
                 else -> null
             }
 
-            if (ephemeris != null) {
+            if (ephemeris != null && !ephemeris.isEmpty()) {
                 ephemerisCache[target] = ephemeris
 
                 ephemeris.computeTwilightAndRTS(target, ephemeris !== prevEphemeris, show)
@@ -376,15 +386,16 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
             if (ephemeris == null) {
                 view.clearAltitudeAndCoordinates()
                 LOG.error("unable to retrieve ephemeris. target={}", target)
+                null
             } else if (ephemeris.isEmpty()) {
                 view.clearAltitudeAndCoordinates()
                 LOG.warn("retrieved empty epheremis. target={}", target)
+                null
             } else {
                 LOG.info("ephemeris was retrieved. target={}, start={}, end={}", target, ephemeris.start, ephemeris.endInclusive)
                 if (show) ephemeris.showBodyCoordinatesAndInfos(target)
+                ephemeris
             }
-
-            ephemeris
         } catch (e: Throwable) {
             LOG.error("failed to retrieve ephemeris.", e)
             null
@@ -395,14 +406,28 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
     private suspend fun HorizonsEphemeris.showBodyCoordinatesAndInfos(target: Any) {
         computeCoordinates(target)
-        view.updateInfo(bodyName)
         drawAltitude(makePoints())
     }
 
     private suspend fun HorizonsEphemeris.computeCoordinates(target: Any) {
         val now = LocalDateTime.now(ZoneOffset.UTC)
         val element = this[now] ?: return
+
         LOG.info("computing coordinates. now={}, target={}, element={}", now, target, element)
+
+        val extra = ArrayList<Pair<String, String>>(2)
+
+        val lightTime = element[HorizonsQuantity.ONE_WAY_LIGHT_TIME]?.toDoubleOrNull() ?: 0.0
+        val distance = lightTime * (SPEED_OF_LIGHT * 0.06) // km
+        if (distance <= 0.0) extra.add("Distance" to "-")
+        else if (distance >= AU_KM) extra.add("Distance (AU)" to "%.06f".format(distance / AU_KM))
+        else extra.add("Distance (km)" to "%.03f".format(distance))
+
+        val magnitude = element[HorizonsQuantity.VISUAL_MAGNITUDE]?.ifBlank { null }
+        if (magnitude != null) extra.add("Magnitude" to magnitude)
+
+        view.updateInfo(bodyName, extra)
+
         computeEquatorialCoordinates(element)
         computeHorizontalCoordinates(element)
     }
@@ -456,28 +481,40 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         runBlocking(Dispatchers.IO) { updateMoonImage() }
     }
 
-    suspend fun searchMinorPlanet(text: String) {
-        val smallBody = smallBodyDatabaseLookupService.search(text)
+    suspend fun searchMinorPlanet(text: String) = withIO {
+        withMain { computing.set(true) }
+
+        val smallBody = smallBodyDatabaseLookupService.search(text).await()
 
         if (!smallBody.message.isNullOrEmpty()) {
             view.showAlert(smallBody.message!!)
         } else if (!smallBody.list.isNullOrEmpty()) {
             view.showAlert("Found ${smallBody.list!!.size} record(s). Please refine your search criteria, and try again.")
         } else {
-            val elements = smallBody
-                .orbit!!
-                .elements.map {
-                    val value = if (it.value != null) "${it.value ?: ""} ${it.units ?: ""}" else ""
-                    AtlasView.MinorPlanet(it.label, it.title, value)
-                }
+            val elements = ArrayList<AtlasView.MinorPlanet>(16)
+
+            fun makeValue(value: String?, unit: String?) = buildString {
+                if (!value.isNullOrEmpty()) append(value)
+                if (!unit.isNullOrEmpty()) append(" ").append(unit)
+            }
+
+            smallBody.orbit!!.elements.map {
+                elements.add(AtlasView.MinorPlanet(it.label, it.title, makeValue(it.value, it.units)))
+            }
+
+            smallBody.physical?.map {
+                elements.add(AtlasView.MinorPlanet(it.name, it.title, makeValue(it.value, it.units)))
+            }
 
             view.populateMinorPlanet(elements)
 
             computeMinorPlanet(smallBody)
         }
+
+        withMain { computing.set(false) }
     }
 
-    private fun trackModeFromCurrentTab() {
+    private fun trackModeForCurrentTab() {
         val mount = mount ?: return
 
         when (tabType) {
@@ -489,12 +526,12 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     }
 
     fun goTo(ra: Angle, dec: Angle) {
-        trackModeFromCurrentTab()
+        trackModeForCurrentTab()
         mount?.goTo(ra, dec)
     }
 
     fun slewTo(ra: Angle, dec: Angle) {
-        trackModeFromCurrentTab()
+        trackModeForCurrentTab()
         mount?.slewTo(ra, dec)
     }
 
@@ -559,6 +596,9 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(AtlasManager::class.java)
         @JvmStatic private val RTS_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
+
+        private const val SUN_TARGET = "10"
+        private const val MOON_TARGET = "301"
 
         private const val ASTRONOMICAL_TWILIGHT = -18.0
         private const val NAUTICAL_TWILIGHT = -12.0

@@ -30,14 +30,13 @@ abstract class AbstractWindow(
 ) : View {
 
     private val showingAtFirstTime = AtomicBoolean(true)
+    private val mainScope = MainScope()
 
     @Autowired protected lateinit var beanFactory: AutowireCapableBeanFactory
         private set
 
     protected val hostServices by lazy { beanFactory.getBean(HostServices::class.java) }
     protected val preferences by lazy { beanFactory.getBean("preferences") as Preferences }
-
-    protected val mainScope = MainScope()
 
     init {
         window.setOnShowing {
@@ -74,7 +73,10 @@ abstract class AbstractWindow(
             onStop()
 
             if (this@AbstractWindow is HomeWindow) {
+                mainScope.cancel()
+
                 onClose()
+
                 CLOSE.onNext(false)
             }
         }
@@ -178,12 +180,11 @@ abstract class AbstractWindow(
             alert.title = title
             alert.headerText = null
             alert.contentText = message
-            alert.showAndWait()
+            alert.show()
         }
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    protected inline fun launch(noinline block: suspend CoroutineScope.() -> Unit): Job {
+    protected fun launch(block: suspend CoroutineScope.() -> Unit): Job {
         return mainScope.launch(Dispatchers.Main, block = block)
     }
 

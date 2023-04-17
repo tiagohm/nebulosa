@@ -21,5 +21,5 @@ class SmallBodyDatabaseLookupService(url: String = "https://ssd-api.jpl.nasa.gov
         }
     }
 
-    suspend fun search(text: String) = service.search(text)
+    fun search(text: String) = service.search(text)
 }

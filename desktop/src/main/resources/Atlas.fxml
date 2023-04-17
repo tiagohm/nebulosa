@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import nebulosa.desktop.gui.atlas.AltitudeChart?>
 <?import nebulosa.desktop.gui.atlas.MoonView?>
 <?import nebulosa.desktop.gui.atlas.SunView?>
-<?import nebulosa.desktop.gui.control.*?>
+<?import nebulosa.desktop.gui.control.CopyableLabel?>
+<?import nebulosa.desktop.gui.control.LabeledPane?>
+<?import nebulosa.desktop.gui.control.MaterialIconButton?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
             minHeight="-Infinity"
@@ -245,11 +256,12 @@
                                    styleClass="text-sm"
                                    text="+00° 00' 00.00&quot;"/>
                 </LabeledPane>
-                <LabeledPane text="Distance"
+                <LabeledPane text="Extra"
                              textStyleClass="text-bold"
+                             visible="false"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="2">
-                    <CopyableLabel fx:id="distanceLabel"
+                    <CopyableLabel fx:id="extra1Label"
                                    styleClass="text-sm"
                                    text="-"/>
                 </LabeledPane>
@@ -264,11 +276,37 @@
                 <LabeledPane text="RTS"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="2"
-                             GridPane.columnIndex="0"
-                             GridPane.columnSpan="2">
+                             GridPane.columnIndex="0">
                     <CopyableLabel fx:id="rtsLabel"
                                    styleClass="text-sm"
                                    text="00:00 | 00:00 | 00:00"/>
+                </LabeledPane>
+                <LabeledPane text="Extra"
+                             textStyleClass="text-bold"
+                             visible="false"
+                             GridPane.rowIndex="2"
+                             GridPane.columnIndex="1">
+                    <CopyableLabel fx:id="extra2Label"
+                                   styleClass="text-sm"
+                                   text="-"/>
+                </LabeledPane>
+                <LabeledPane text="Extra"
+                             textStyleClass="text-bold"
+                             visible="false"
+                             GridPane.rowIndex="2"
+                             GridPane.columnIndex="2">
+                    <CopyableLabel fx:id="extra3Label"
+                                   styleClass="text-sm"
+                                   text="-"/>
+                </LabeledPane>
+                <LabeledPane text="Extra"
+                             textStyleClass="text-bold"
+                             visible="false"
+                             GridPane.rowIndex="2"
+                             GridPane.columnIndex="3">
+                    <CopyableLabel fx:id="extra4Label"
+                                   styleClass="text-sm"
+                                   text="-"/>
                 </LabeledPane>
             </GridPane>
         </VBox>

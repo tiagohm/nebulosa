@@ -8,9 +8,9 @@ import javafx.event.Event
 import javafx.fxml.FXML
 import javafx.scene.control.*
 import javafx.util.Callback
-import kotlinx.coroutines.cancel
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.CopyableLabel
+import nebulosa.desktop.gui.control.LabeledPane
 import nebulosa.desktop.gui.control.PropertyValueFactory
 import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.atlas.AtlasManager
@@ -40,6 +40,10 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     @FXML private lateinit var declinationJ2000Label: CopyableLabel
     @FXML private lateinit var altitudeLabel: CopyableLabel
     @FXML private lateinit var azimuthLabel: CopyableLabel
+    @FXML private lateinit var extra1Label: CopyableLabel
+    @FXML private lateinit var extra2Label: CopyableLabel
+    @FXML private lateinit var extra3Label: CopyableLabel
+    @FXML private lateinit var extra4Label: CopyableLabel
     @FXML private lateinit var constellationLabel: CopyableLabel
     @FXML private lateinit var rtsLabel: CopyableLabel
     @FXML private lateinit var sunView: SunView
@@ -59,12 +63,18 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
 
     @Volatile private var started = false
 
+    private lateinit var extraLabels: Array<CopyableLabel>
+    private lateinit var extraPanes: Array<LabeledPane>
+
     init {
         resizable = false
     }
 
     @Suppress("UNCHECKED_CAST")
     override fun onCreate() {
+        extraLabels = arrayOf(extra1Label, extra2Label, extra3Label, extra4Label)
+        extraPanes = Array(3) { extraLabels[it].parent as LabeledPane }
+
         val isNotConnected = !atlasManager.mountProperty.connectedProperty
         val isMoving = atlasManager.mountProperty.slewingProperty or atlasManager.mountProperty.parkingProperty
         val isComputing = atlasManager.computing
@@ -121,10 +131,6 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
 
     override fun onStop() {
         atlasManager.savePreferences()
-    }
-
-    override fun onClose() {
-        mainScope.cancel()
     }
 
     @FXML
@@ -252,8 +258,21 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         altitudeLabel.text = alt.format(AngleFormatter.SIGNED_DMS)
     }
 
-    override suspend fun updateInfo(bodyName: String) = withMain {
+    override suspend fun updateInfo(
+        bodyName: String,
+        extra: List<Pair<String, String>>,
+    ) = withMain {
         nameLabel.text = bodyName
+
+        for (i in extraPanes.indices) {
+            if (i < extra.size) {
+                extraPanes[i].isVisible = true
+                extraPanes[i].text = extra[i].first
+                extraLabels[i].text = extra[i].second
+            } else {
+                extraPanes[i].isVisible = false
+            }
+        }
     }
 
     override suspend fun updateRTS(rts: Triple<String, String, String>) = withMain {

@@ -70,7 +70,7 @@ interface AtlasView : View {
 
     suspend fun populateDSOs(dsos: List<DSO>)
 
-    suspend fun updateInfo(bodyName: String)
+    suspend fun updateInfo(bodyName: String, extra: List<Pair<String, String>> = emptyList())
 
     suspend fun updateRTS(rts: Triple<String, String, String>)
 }

@@ -1,5 +1,6 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -7,10 +8,12 @@ import nebulosa.horizons.HorizonsQuantity
 import nebulosa.horizons.HorizonsService
 import nebulosa.io.source
 import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Distance.Companion.km
 import nebulosa.math.Distance.Companion.m
 import nebulosa.nasa.daf.SourceDaf
 import nebulosa.nasa.spk.Spk
 import okio.ByteString.Companion.decodeBase64
+import java.time.Duration
 import java.time.LocalDateTime
 
 class HorizonsServiceTest : StringSpec() {
@@ -26,7 +29,9 @@ class HorizonsServiceTest : StringSpec() {
                 LocalDateTime.of(2022, 12, 25, 23, 0, 0),
                 extraPrecision = true,
             ).execute()
-            .body().shouldNotBeNull()
+            .body()
+            .shouldNotBeNull()
+            .also { it.elements.shouldNotBeEmpty() }
 
         "spk" {
             val start = LocalDateTime.of(2023, 1, 1, 0, 0)
@@ -74,6 +79,27 @@ class HorizonsServiceTest : StringSpec() {
             val dateTime = LocalDateTime.of(2022, 12, 25, 22, 0, 0)
             ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldBe "185.928928437"
             ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldBe "9.903483500"
+        }
+        "observer: osculating elements" {
+            val ephemeris = service
+                .observerWithOsculationElements(
+                    "(2023 GA2)", "2460049.5", ".6183399929327511",
+                    "30.04427847488657", "30.56835826458952", "19.84449491210952",
+                    ".3107780828530178", "2459989.479453452084",
+                    null, null, null,
+                    314.4173.deg, (-22.5354318).deg, 1.81754.km,
+                    LocalDateTime.of(2023, 3, 11, 0, 0, 0),
+                    LocalDateTime.of(2023, 4, 11, 0, 0, 0),
+                    extraPrecision = true,
+                    stepSize = Duration.ofDays(1L),
+                ).execute()
+                .body().shouldNotBeNull()
+
+            ephemeris.elements.shouldNotBeEmpty()
+
+            val dateTime = LocalDateTime.of(2023, 3, 11, 0, 0, 0)
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldBe "344.455910583"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldBe "14.430860639"
         }
     }
 }

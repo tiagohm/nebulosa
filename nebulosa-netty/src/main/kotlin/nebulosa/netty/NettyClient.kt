@@ -1,6 +1,6 @@
 package nebulosa.netty
 
-import io.netty.bootstrap.ServerBootstrap
+import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.util.concurrent.atomic.AtomicReference
 
-abstract class NettyServer : Runnable, Closeable {
+abstract class NettyClient : Runnable, Closeable {
 
     protected val channel = AtomicReference<ChannelFuture>()
 
@@ -28,30 +28,26 @@ abstract class NettyServer : Runnable, Closeable {
         require(!running) { "the server has already been started" }
 
         val masterGroup = NioEventLoopGroup()
-        val workerGroup = NioEventLoopGroup()
 
-        val b = ServerBootstrap()
+        val b = Bootstrap()
 
-        b.group(masterGroup, workerGroup)
+        b.group(masterGroup)
             .channel(NioServerSocketChannel::class.java)
-            .childHandler(channelInitialzer)
+            .handler(channelInitialzer)
             .option(ChannelOption.SO_BACKLOG, 128)
-            .childOption(ChannelOption.SO_KEEPALIVE, true)
 
-        // Bind and start to accept incoming connections.
-        val future = b.bind(host, port).sync()
+        val future = b.connect(host, port).sync()
 
         channel.set(future)
 
-        LOG.info("server is running. host={}, port={}", host, port)
+        LOG.info("client is running. host={}, port={}", host, port)
 
         future.channel().closeFuture().addListener {
-            workerGroup.shutdownGracefully()
             masterGroup.shutdownGracefully()
 
             channel.set(null)
 
-            LOG.info("server is closed")
+            LOG.info("client is closed")
         }
     }
 
@@ -61,6 +57,6 @@ abstract class NettyServer : Runnable, Closeable {
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(NettyServer::class.java)
+        @JvmStatic private val LOG = LoggerFactory.getLogger(NettyClient::class.java)
     }
 }
