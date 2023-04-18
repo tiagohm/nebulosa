@@ -63,7 +63,7 @@ class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeV
     }
 
     override fun onStart() {
-        launch { homeManager.loadPreferences() }
+        homeManager.loadPreferences()
     }
 
     override var host

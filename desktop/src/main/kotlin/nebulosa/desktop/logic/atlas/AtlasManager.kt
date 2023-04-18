@@ -551,7 +551,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         preferences.double("atlas.screen.y", max(0.0, view.y))
     }
 
-    suspend fun loadPreferences() = withMain {
+    fun loadPreferences() {
         preferences.double("atlas.screen.x")?.also { view.x = it }
         preferences.double("atlas.screen.y")?.also { view.y = it }
     }

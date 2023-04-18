@@ -144,7 +144,7 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
         view.populateHipsSurveys(HIPS_SURVEY_SOURCES, selected)
     }
 
-    suspend fun loadPreferences() = withMain {
+    fun loadPreferences() {
         preferences.double("framing.fov")?.let { view.updateFOV(it.rad) }
         preferences.double("framing.screen.x")?.let { view.x = it }
         preferences.double("framing.screen.y")?.let { view.y = it }

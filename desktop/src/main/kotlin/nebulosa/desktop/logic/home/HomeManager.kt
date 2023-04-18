@@ -1,7 +1,6 @@
 package nebulosa.desktop.logic.home
 
 import javafx.stage.FileChooser
-import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
@@ -117,7 +116,7 @@ class HomeManager(private val view: HomeView) : Closeable {
         preferences.double("home.screen.y", max(0.0, view.y))
     }
 
-    suspend fun loadPreferences() = withMain {
+    fun loadPreferences() {
         view.host = preferences.string("connection.host") ?: ""
         view.port = preferences.int("connection.port") ?: 7624
 

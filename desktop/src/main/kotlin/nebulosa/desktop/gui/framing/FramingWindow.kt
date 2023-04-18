@@ -70,7 +70,7 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
     }
 
     override fun onStart() {
-        launch { framingManager.loadPreferences() }
+        framingManager.loadPreferences()
     }
 
     override fun onStop() {
@@ -118,7 +118,7 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
         decTextField.text = dec.format(AngleFormatter.SIGNED_DMS)
     }
 
-    override suspend fun updateFOV(fov: Angle) = withMain {
+    override fun updateFOV(fov: Angle) {
         fovSpinner.valueFactory.value = fov.degrees
     }
 

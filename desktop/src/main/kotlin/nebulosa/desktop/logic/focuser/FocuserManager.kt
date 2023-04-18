@@ -102,7 +102,7 @@ class FocuserManager(
         preferences.double("focuser.screen.y", max(0.0, view.y))
     }
 
-    suspend fun loadPreferences() = withMain {
+    fun loadPreferences() {
         preferences.double("focuser.screen.x")?.let { view.x = it }
         preferences.double("focuser.screen.y")?.let { view.y = it }
     }

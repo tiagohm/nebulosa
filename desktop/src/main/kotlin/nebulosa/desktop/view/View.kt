@@ -1,6 +1,5 @@
 package nebulosa.desktop.view
 
-import kotlinx.coroutines.Job
 import java.io.Closeable
 
 interface View : Closeable {

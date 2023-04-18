@@ -88,7 +88,7 @@ class FocuserWindow : AbstractWindow("Focuser", "focus"), FocuserView {
     }
 
     override fun onStart() {
-        launch { focuserManager.loadPreferences() }
+        focuserManager.loadPreferences()
     }
 
     override fun onStop() {

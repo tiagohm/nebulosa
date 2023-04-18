@@ -4,7 +4,7 @@ import nebulosa.imaging.Image
 import java.util.*
 
 class SaltAndPepperNoise(
-    private  val amount: Float,
+    private val amount: Float,
     private val random: Random = Random(),
 ) : TransformAlgorithm {
 

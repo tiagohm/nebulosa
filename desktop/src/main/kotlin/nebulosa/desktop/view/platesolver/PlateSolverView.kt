@@ -4,7 +4,6 @@ import nebulosa.desktop.view.View
 import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import java.io.File
-import java.util.concurrent.CompletableFuture
 
 interface PlateSolverView : View {
 

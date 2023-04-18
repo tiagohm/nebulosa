@@ -163,7 +163,7 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
     }
 
     override fun onStart() {
-        launch { mountManager.loadPreferences() }
+        mountManager.loadPreferences()
     }
 
     override fun onStop() {

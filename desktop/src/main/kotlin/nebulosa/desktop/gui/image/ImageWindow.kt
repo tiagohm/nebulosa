@@ -104,7 +104,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     override fun onStart() {
         imageManager.initialize()
-        launch { imageManager.loadPreferences() }
+        imageManager.loadPreferences()
     }
 
     override fun onStop() {
@@ -175,7 +175,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     @FXML
     private fun save() {
-        launch { imageManager.save() }
+        imageManager.save()
     }
 
     @FXML
@@ -190,7 +190,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     @FXML
     private fun openImageStretcher() {
-        launch { imageManager.openImageStretcher() }
+        imageManager.openImageStretcher()
     }
 
     @FXML
@@ -200,7 +200,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     @FXML
     private fun openSCNR() {
-        launch { imageManager.openSCNR() }
+        imageManager.openSCNR()
     }
 
     @FXML

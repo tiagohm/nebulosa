@@ -120,7 +120,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
     }
 
     override fun onStart() {
-        launch { plateSolverManager.loadPreferences() }
+        plateSolverManager.loadPreferences()
     }
 
     override fun onStop() {

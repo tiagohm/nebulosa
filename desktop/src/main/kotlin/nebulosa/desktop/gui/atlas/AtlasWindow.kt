@@ -123,7 +123,8 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     override fun onStart() {
         started = true
 
-        launch { atlasManager.loadPreferences() }
+        atlasManager.loadPreferences()
+
         launch { atlasManager.updateSunImage() }
         launch { atlasManager.updateMoonImage() }
         launch { atlasManager.computeTab(AtlasView.TabType.SUN) }

@@ -32,5 +32,5 @@ interface FramingView : View {
 
     suspend fun updateCoordinate(ra: Angle, dec: Angle)
 
-    suspend fun updateFOV(fov: Angle)
+    fun updateFOV(fov: Angle)
 }

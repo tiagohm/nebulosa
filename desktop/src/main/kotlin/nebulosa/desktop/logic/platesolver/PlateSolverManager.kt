@@ -192,7 +192,7 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
 
     suspend fun frame() {
         val calibration = calibration.get() ?: return
-        val rotation = calibration.orientation + Angle.SEMICIRCLE
+        val rotation = calibration.orientation.normalized
         val factor = calibration.width / calibration.height
         val width = if (factor > 1.0) 1200 else 900 * factor
         val height = if (factor > 1.0) 1200 / factor else 900
@@ -210,7 +210,7 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
         view.pathOrUrl = preferences.string("plateSolver.${view.type}.pathOrUrl") ?: ""
     }
 
-    suspend fun loadPreferences() = withMain {
+    fun loadPreferences() {
         view.type = preferences.enum<PlateSolverType>("plateSolver.type") ?: PlateSolverType.ASTROMETRY_NET_ONLINE
         loadPathOrUrlFromPreferences()
         preferences.string("plateSolver.apiKey")?.let { view.apiKey = it }

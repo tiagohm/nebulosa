@@ -308,7 +308,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         return true
     }
 
-    suspend fun save() {
+    fun save() {
         with(FileChooser()) {
             title = "Save Image"
 
@@ -356,7 +356,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         return true
     }
 
-    suspend fun openImageStretcher() {
+    fun openImageStretcher() {
         imageStretcherView = imageStretcherView ?: ImageStretcherWindow(view)
         imageStretcherView!!.show(bringToFront = true)
     }
@@ -369,7 +369,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         }
     }
 
-    suspend fun openSCNR() {
+    fun openSCNR() {
         scnrView = scnrView ?: SCNRWindow(view)
         scnrView!!.show(bringToFront = true)
     }
@@ -381,7 +381,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         fitsHeaderView!!.load(header)
     }
 
-    suspend fun loadPreferences() = withMain {
+    fun loadPreferences() {
         if (view.camera != null) {
             preferences.double("image.${view.camera!!.name}.screen.x")?.let { view.x = it }
             preferences.double("image.${view.camera!!.name}.screen.y")?.let { view.y = it }
