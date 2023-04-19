@@ -30,9 +30,7 @@ sealed class DefVector<E : DefElement<*>> : INDIProtocol(), Vector<E> {
         if (label != other.label) return false
         if (perm != other.perm) return false
         if (state != other.state) return false
-        if (timeout != other.timeout) return false
-
-        return true
+        return timeout == other.timeout
     }
 
     override fun hashCode(): Int {

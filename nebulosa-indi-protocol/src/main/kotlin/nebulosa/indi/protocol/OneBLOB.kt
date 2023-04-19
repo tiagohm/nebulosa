@@ -25,9 +25,7 @@ class OneBLOB : OneElement<String>(), BLOBElement {
 
         if (format != other.format) return false
         if (size != other.size) return false
-        if (value != other.value) return false
-
-        return true
+        return value == other.value
     }
 
     override fun hashCode(): Int {

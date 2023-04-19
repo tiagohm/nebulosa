@@ -1,8 +1,8 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.nulls.shouldNotBeNull
-import nebulosa.indi.parser.INDIXmlInputStream
 import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.parser.INDIXmlInputStream
 import java.io.ByteArrayInputStream
 
 class INDIXmlInputStreamTest : StringSpec() {

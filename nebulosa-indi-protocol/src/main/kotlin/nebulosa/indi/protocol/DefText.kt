@@ -18,9 +18,7 @@ class DefText : DefElement<String>(), TextElement {
         if (other !is DefText) return false
         if (!super.equals(other)) return false
 
-        if (value != other.value) return false
-
-        return true
+        return value == other.value
     }
 
     override fun hashCode(): Int {

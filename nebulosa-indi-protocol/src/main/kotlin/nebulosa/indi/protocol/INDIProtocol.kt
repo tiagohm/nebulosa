@@ -30,9 +30,7 @@ sealed class INDIProtocol : HasName, Serializable {
         if (device != other.device) return false
         if (name != other.name) return false
         if (message != other.message) return false
-        if (timestamp != other.timestamp) return false
-
-        return true
+        return timestamp == other.timestamp
     }
 
     override fun hashCode(): Int {

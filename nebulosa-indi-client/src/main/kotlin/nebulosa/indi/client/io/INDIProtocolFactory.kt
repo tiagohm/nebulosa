@@ -1,9 +1,9 @@
 package nebulosa.indi.client.io
 
-import nebulosa.indi.parser.INDIXmlInputStream
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.io.INDIInputStream
 import nebulosa.indi.protocol.io.INDIOutputStream
+import nebulosa.indi.protocol.parser.INDIXmlInputStream
 import nebulosa.io.MinimalBlockingInputStream
 import java.io.ByteArrayInputStream
 import java.io.InputStream

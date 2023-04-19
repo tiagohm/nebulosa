@@ -26,9 +26,7 @@ class DefSwitchVector : DefVector<DefSwitch>(), SwitchVector<DefSwitch> {
         if (other !is DefSwitchVector) return false
         if (!super.equals(other)) return false
 
-        if (rule != other.rule) return false
-
-        return true
+        return rule == other.rule
     }
 
     override fun hashCode(): Int {

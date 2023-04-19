@@ -35,9 +35,7 @@ class DefNumber : DefElement<Double>(), NumberElement {
         if (format != other.format) return false
         if (max != other.max) return false
         if (min != other.min) return false
-        if (step != other.step) return false
-
-        return true
+        return step == other.step
     }
 
     override fun hashCode(): Int {
