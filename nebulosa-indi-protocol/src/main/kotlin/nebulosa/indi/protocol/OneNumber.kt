@@ -1,6 +1,6 @@
 package nebulosa.indi.protocol
 
-import nebulosa.indi.protocol.xml.XmlBuilder
+import java.io.PrintStream
 
 class OneNumber : OneElement<Double>(), NumberElement {
 
@@ -10,11 +10,10 @@ class OneNumber : OneElement<Double>(), NumberElement {
 
     override var value = 0.0
 
-    override fun toXML() = XmlBuilder()
-        .name("oneNumber")
-        .attr("name", name)
-        .value(value)
-        .build()
+    override fun writeTo(stream: PrintStream) = stream.writeXML(
+        "oneNumber", value,
+        "name", name,
+    )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

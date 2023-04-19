@@ -1,18 +1,17 @@
 package nebulosa.indi.protocol
 
-import nebulosa.indi.protocol.xml.XmlBuilder
+import java.io.PrintStream
 
 @Suppress("CanSealedSubClassBeObject")
 class SetTextVector : SetVector<OneText>(), TextVector<OneText> {
 
-    override fun toXML() = XmlBuilder()
-        .name("setTextVector")
-        .attr("device", device)
-        .attr("name", name)
-        .attr("state", state)
-        .attr("timeout", timeout)
-        .attr("timestamp", timestamp)
-        .attr("message", message)
-        .value(elements.toXML())
-        .build()
+    override fun writeTo(stream: PrintStream) = stream.writeXML(
+        "setTextVector", elements,
+        "device", device,
+        "name", name,
+        "state", state,
+        "timeout", timeout,
+        "timestamp", timestamp,
+        "message", message,
+    )
 }

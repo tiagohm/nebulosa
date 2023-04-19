@@ -1,17 +1,16 @@
 package nebulosa.indi.protocol
 
-import nebulosa.indi.protocol.xml.XmlBuilder
+import java.io.PrintStream
 
 class DefSwitch : DefElement<Boolean>(), SwitchElement {
 
     override var value = false
 
-    override fun toXML() = XmlBuilder()
-        .name("defSwitch")
-        .attr("name", name)
-        .attr("label", label)
-        .value(value)
-        .build()
+    override fun writeTo(stream: PrintStream) = stream.writeXML(
+        "defSwitch", value,
+        "name", name,
+        "label", label,
+    )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

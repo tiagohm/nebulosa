@@ -1,15 +1,14 @@
 package nebulosa.indi.protocol
 
-import nebulosa.indi.protocol.xml.XmlBuilder
+import java.io.PrintStream
 
 @Suppress("CanSealedSubClassBeObject")
 class NewSwitchVector : NewVector<OneSwitch>(), SwitchVector<OneSwitch> {
 
-    override fun toXML() = XmlBuilder()
-        .name("newSwitchVector")
-        .attr("device", device)
-        .attr("name", name)
-        .attr("timestamp", timestamp)
-        .value(elements.toXML())
-        .build()
+    override fun writeTo(stream: PrintStream) = stream.writeXML(
+        "newSwitchVector", elements,
+        "device", device,
+        "name", name,
+        "timestamp", timestamp,
+    )
 }

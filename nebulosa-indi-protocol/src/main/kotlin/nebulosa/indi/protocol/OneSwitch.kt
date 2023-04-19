@@ -1,16 +1,15 @@
 package nebulosa.indi.protocol
 
-import nebulosa.indi.protocol.xml.XmlBuilder
+import java.io.PrintStream
 
 class OneSwitch : OneElement<Boolean>(), SwitchElement {
 
     override var value = false
 
-    override fun toXML() = XmlBuilder()
-        .name("oneSwitch")
-        .attr("name", name)
-        .value(if (value) "On" else "Off")
-        .build()
+    override fun writeTo(stream: PrintStream) = stream.writeXML(
+        "oneSwitch", if (value) "On" else "Off",
+        "name", name,
+    )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

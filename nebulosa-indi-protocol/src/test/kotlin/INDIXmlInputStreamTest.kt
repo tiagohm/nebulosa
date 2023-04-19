@@ -4,6 +4,9 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.parser.INDIXmlInputStream
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.io.PrintStream
 
 class INDIXmlInputStreamTest : StringSpec() {
 
@@ -291,7 +294,11 @@ class INDIXmlInputStreamTest : StringSpec() {
 
     companion object {
 
-        @Suppress("NOTHING_TO_INLINE")
-        private inline fun INDIProtocol.toInputStream() = ByteArrayInputStream(toXML().encodeToByteArray())
+        @JvmStatic
+        private fun INDIProtocol.toInputStream(): InputStream {
+            val baos = ByteArrayOutputStream(256)
+            writeTo(PrintStream(baos))
+            return ByteArrayInputStream(baos.toByteArray())
+        }
     }
 }
