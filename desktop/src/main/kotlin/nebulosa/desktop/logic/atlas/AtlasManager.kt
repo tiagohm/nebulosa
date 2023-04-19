@@ -3,6 +3,7 @@ package nebulosa.desktop.logic.atlas
 import eu.hansolo.fx.charts.data.XYChartItem
 import eu.hansolo.fx.charts.data.XYItem
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import nebulosa.constants.AU_KM
@@ -77,7 +78,6 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     @Autowired private lateinit var starCatalogProvider: CatalogProvider<*>
     @Autowired private lateinit var dsoCatalogProvider: CatalogProvider<*>
 
-    @Volatile private var observer: GeographicPosition? = null
     @Volatile private var tabType = AtlasView.TabType.SUN
     @Volatile private var planet: AtlasView.Planet? = null
     @Volatile private var minorPlanet: SmallBody? = null
@@ -99,19 +99,17 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     val mount: Mount?
         get() = mountProperty.value
 
+    val observer = SimpleObjectProperty<GeographicPosition>()
     val computing = SimpleBooleanProperty()
 
     fun initialize() {
         eventBus.register(this)
 
-        launch {
             val longitude = mount?.longitude ?: preferences.double("atlas.longitude")?.rad ?: Angle.ZERO
             val latitude = mount?.latitude ?: preferences.double("atlas.latitude")?.rad ?: Angle.ZERO
             val elevation = mount?.elevation ?: preferences.double("atlas.elevation")?.au ?: Distance.ZERO
 
-            observer = Geoid.IERS2010.latLon(longitude, latitude, elevation)
-            updateTitle()
-        }
+        observer.set(Geoid.IERS2010.latLon(longitude, latitude, elevation))
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -128,20 +126,16 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
                 pointsCache.clear()
 
                 launch {
-                    observer = Geoid.IERS2010.latLon(event.device.longitude, event.device.latitude, event.device.elevation)
-                    updateTitle()
+                    withMain { observer.set(Geoid.IERS2010.latLon(event.device.longitude, event.device.latitude, event.device.elevation)) }
 
                     computeSun()
-                    computeTab()
+
+                    if (tabType != AtlasView.TabType.SUN) {
+                        computeTab()
+                    }
                 }
             }
         }
-    }
-
-    private suspend fun updateTitle() = withMain {
-        view.title = "Atlas · LAT: %.04f° LNG: %.04f° ELEV: %.0fm".format(
-            observer!!.latitude.degrees, observer!!.longitude.degrees, observer!!.elevation.meters
-        )
     }
 
     suspend fun computeTab(type: AtlasView.TabType): HorizonsEphemeris? {
@@ -353,7 +347,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         force: Boolean = false,
         show: Boolean = true,
     ) = withIO {
-        val observer = observer ?: return@withIO null
+        val observer = observer.get() ?: return@withIO null
 
         withMain { computing.set(true) }
 
@@ -620,6 +614,9 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
                     body.rightAscension, body.declination,
                     body.pmRA, body.pmDEC, body.parallax, body.radialVelocity,
                 )
+
+                LOG.info("created new fixed star for body. star={}, body={}", star, body)
+
                 this[body.id] = star
                 star
             } else {

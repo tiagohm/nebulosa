@@ -66,6 +66,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
 
     init {
         resizable = false
+        title = "Atlas"
     }
 
     @Suppress("UNCHECKED_CAST")

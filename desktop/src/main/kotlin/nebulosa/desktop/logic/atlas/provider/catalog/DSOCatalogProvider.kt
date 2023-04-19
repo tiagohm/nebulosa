@@ -23,21 +23,18 @@ class DSOCatalogProvider : AbstractCatalogProvider<DSO>() {
         declination: Angle,
         radius: Angle,
     ): List<DSO> {
-        fun ResultRow.filterByDistance(): Boolean {
-            return CatalogProvider
-                .distanceBetween(
-                    this[DeepSkyObjects.rightAscension], this[DeepSkyObjects.declination],
-                    rightAscension.value, declination.value
-                ) <= radius.value
-        }
-
         return transaction {
             addLogger(DSOCatalogProvider)
 
+            val names = Names.name.groupConcat(GROUP_CONCAT_SEPARATOR).alias("names")
+
             DeepSkyObjects
-                .selectAll()
-                .filter { it.filterByDistance() }
-                .map { it.makeDSO() }
+                .join(Names, JoinType.INNER, additionalConstraint = { DeepSkyObjects.id eq Names.dso })
+                .slice(names, *DEEP_SKY_OBJECTS_COLUMNS)
+                .select { distance(DeepSkyObjects.rightAscension, DeepSkyObjects.declination, rightAscension, declination, radius) }
+                .groupBy(DeepSkyObjects.id)
+                .limit(1000)
+                .map { it.makeDSO(names) }
         }
     }
 
@@ -45,35 +42,34 @@ class DSOCatalogProvider : AbstractCatalogProvider<DSO>() {
         return transaction {
             addLogger(DSOCatalogProvider)
 
+            val names = Names.name.groupConcat(GROUP_CONCAT_SEPARATOR).alias("names")
+
             DeepSkyObjects
                 .join(Names, JoinType.INNER, additionalConstraint = { (DeepSkyObjects.id eq Names.dso) and (Names.name like name) })
-                .slice(DeepSkyObjects.columns)
+                .slice(names, *DEEP_SKY_OBJECTS_COLUMNS)
                 .selectAll()
-                .withDistinct()
+                .groupBy(DeepSkyObjects.id)
                 .limit(1000)
-                .map { it.makeDSO() }
+                .map { it.makeDSO(names) }
         }
     }
 
     companion object : SqlLogger {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(DSOCatalogProvider::class.java)
+        @JvmStatic private val DEEP_SKY_OBJECTS_COLUMNS = DeepSkyObjects.columns.toTypedArray()
+
+        private const val GROUP_CONCAT_SEPARATOR = ":"
 
         override fun log(context: StatementContext, transaction: Transaction) {
-            if (LOG.isDebugEnabled) {
-                LOG.debug(context.expandArgs(transaction))
-            }
+            LOG.info(context.expandArgs(transaction))
         }
 
         @JvmStatic
-        private fun ResultRow.makeDSO(): DSO {
-            val names = Names
-                .select { Names.dso eq this@makeDSO[DeepSkyObjects.id] }
-                .map { it[Names.name] }
-
+        private fun ResultRow.makeDSO(names: Expression<String>): DSO {
             return DSO(
                 id = this[DeepSkyObjects.id],
-                names = names,
+                names = this[names].split(GROUP_CONCAT_SEPARATOR),
                 m = this[DeepSkyObjects.m],
                 ngc = this[DeepSkyObjects.ngc],
                 ic = this[DeepSkyObjects.ic],

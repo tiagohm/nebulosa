@@ -23,21 +23,18 @@ class StarCatalogProvider : AbstractCatalogProvider<Star>() {
         declination: Angle,
         radius: Angle,
     ): List<Star> {
-        fun ResultRow.filterByDistance(): Boolean {
-            return CatalogProvider
-                .distanceBetween(
-                    this[Stars.rightAscension], this[Stars.declination],
-                    rightAscension.value, declination.value
-                ) <= radius.value
-        }
-
         return transaction {
             addLogger(StarCatalogProvider)
 
+            val names = Names.name.groupConcat(GROUP_CONCAT_SEPARATOR).alias("names")
+
             Stars
-                .selectAll()
-                .filter { it.filterByDistance() }
-                .map { it.makeStar() }
+                .join(Names, JoinType.INNER, additionalConstraint = { Stars.id eq Names.star })
+                .slice(names, *STARS_COLUMNS)
+                .select { distance(Stars.rightAscension, Stars.declination, rightAscension, declination, radius) }
+                .groupBy(Stars.id)
+                .limit(1000)
+                .map { it.makeStar(names) }
         }
     }
 
@@ -45,35 +42,34 @@ class StarCatalogProvider : AbstractCatalogProvider<Star>() {
         return transaction {
             addLogger(StarCatalogProvider)
 
+            val names = Names.name.groupConcat(GROUP_CONCAT_SEPARATOR).alias("names")
+
             Stars
                 .join(Names, JoinType.INNER, additionalConstraint = { (Stars.id eq Names.star) and (Names.name like name) })
-                .slice(Stars.columns)
+                .slice(names, *STARS_COLUMNS)
                 .selectAll()
-                .withDistinct()
+                .groupBy(Stars.id)
                 .limit(1000)
-                .map { it.makeStar() }
+                .map { it.makeStar(names) }
         }
     }
 
     companion object : SqlLogger {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(StarCatalogProvider::class.java)
+        @JvmStatic private val STARS_COLUMNS = Stars.columns.toTypedArray()
+
+        private const val GROUP_CONCAT_SEPARATOR = ":"
 
         override fun log(context: StatementContext, transaction: Transaction) {
-            if (LOG.isDebugEnabled) {
-                LOG.debug(context.expandArgs(transaction))
-            }
+            LOG.info(context.expandArgs(transaction))
         }
 
         @JvmStatic
-        private fun ResultRow.makeStar(): Star {
-            val names = Names
-                .select { Names.star eq this@makeStar[Stars.id] }
-                .map { it[Names.name] }
-
+        private fun ResultRow.makeStar(names: Expression<String>): Star {
             return Star(
                 id = this[Stars.id],
-                names = names,
+                names = this[names].split(GROUP_CONCAT_SEPARATOR),
                 hr = this[Stars.hr],
                 hd = this[Stars.hd],
                 hip = this[Stars.hip],
