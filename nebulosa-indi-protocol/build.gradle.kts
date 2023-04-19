@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation(libs.logback)
     testImplementation(project(":nebulosa-test"))
 }
 

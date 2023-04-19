@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":nebulosa-indi-connection"))
+    api(project(":nebulosa-indi-protocol"))
     implementation(libs.logback)
     testImplementation(project(":nebulosa-test"))
 }

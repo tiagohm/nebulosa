@@ -2,19 +2,9 @@
 
 <?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Spinner?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<?import nebulosa.desktop.gui.control.CopyableLabel?>
-<?import nebulosa.desktop.gui.control.LabeledPane?>
-<?import nebulosa.desktop.gui.control.MaterialIconButton?>
-<?import nebulosa.desktop.gui.control.SwitchSegmentedButton?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.control.*?>
 <?import nebulosa.desktop.view.platesolver.PlateSolverType?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"

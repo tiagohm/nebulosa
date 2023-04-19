@@ -1,10 +1,10 @@
-package nebulosa.indi.parser
+package nebulosa.indi.protocol.parser
 
 import org.slf4j.LoggerFactory
 import java.io.Closeable
 
 class INDIProtocolReader(
-    val parser: INDIProtocolParser,
+    private val parser: INDIProtocolParser,
     priority: Int = NORM_PRIORITY,
 ) : Thread(), Closeable {
 

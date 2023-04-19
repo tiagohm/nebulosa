@@ -73,7 +73,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     @Suppress("UNCHECKED_CAST")
     override fun onCreate() {
         extraLabels = arrayOf(extra1Label, extra2Label, extra3Label, extra4Label)
-        extraPanes = Array(3) { extraLabels[it].parent as LabeledPane }
+        extraPanes = Array(extraLabels.size) { extraLabels[it].parent as LabeledPane }
 
         val isNotConnected = !atlasManager.mountProperty.connectedProperty
         val isMoving = atlasManager.mountProperty.slewingProperty or atlasManager.mountProperty.parkingProperty

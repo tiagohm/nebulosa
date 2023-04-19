@@ -36,15 +36,22 @@
                                promptText="00h00m00.00s"
                                text="00h00m00.00s"/>
                 </LabeledPane>
-                <LabeledPane text="DEC (J2000)"
-                             GridPane.rowIndex="0"
-                             GridPane.columnIndex="2"
-                             GridPane.columnSpan="2"
-                             textStyleClass="text-bold">
-                    <TextField fx:id="decTextField"
-                               promptText="00°00'00.00&quot;"
-                               text="00°00'00.00&quot;"/>
-                </LabeledPane>
+                <HBox alignment="CENTER"
+                      spacing="4.0"
+                      GridPane.rowIndex="0"
+                      GridPane.columnIndex="2"
+                      GridPane.columnSpan="2">
+                    <LabeledPane text="DEC (J2000)"
+                                 maxWidth="Infinity"
+                                 textStyleClass="text-bold">
+                        <TextField fx:id="decTextField"
+                                   promptText="00°00'00.00&quot;"
+                                   text="00°00'00.00&quot;"/>
+                    </LabeledPane>
+                    <MaterialIconButton fx:id="syncButton"
+                                        onAction="#sync"
+                                        icon="sync"/>
+                </HBox>
                 <LabeledPane text="Width"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="0"
@@ -104,10 +111,6 @@
                 <VBox.margin>
                     <Insets top="16.0"/>
                 </VBox.margin>
-                <MaterialIconButton fx:id="syncButton"
-                                    text="Sync"
-                                    onAction="#sync"
-                                    icon="sync"/>
                 <MaterialIconButton fx:id="loadButton"
                                     onAction="#load"
                                     text="Load"

@@ -371,7 +371,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
             val ephemeris = when (target) {
                 is SmallBody -> horizonsEphemerisProvider.compute(target, observer, force)
-                MOON_TARGET -> horizonsEphemerisProvider.compute(MOON_TARGET, observer, force, HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE)
+                MOON_TARGET -> horizonsEphemerisProvider.compute(MOON_TARGET, observer, force)
                 is String -> horizonsEphemerisProvider.compute(target, observer, force)
                 is Body -> bodyEphemerisProvider.compute(target, observer, force)
                 else -> null
@@ -415,7 +415,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
         LOG.info("computing coordinates. now={}, target={}, element={}", now, target, element)
 
-        val extra = ArrayList<Pair<String, String>>(2)
+        val extra = ArrayList<Pair<String, String>>(4)
 
         val lightTime = element[HorizonsQuantity.ONE_WAY_LIGHT_TIME]?.toDoubleOrNull() ?: 0.0
         val distance = lightTime * (SPEED_OF_LIGHT * 0.06) // km
@@ -425,6 +425,12 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
         val magnitude = element[HorizonsQuantity.VISUAL_MAGNITUDE]?.ifBlank { null }
         if (magnitude != null) extra.add("Magnitude" to magnitude)
+
+        val illuminated = element[HorizonsQuantity.ILLUMINATED_FRACTION]?.ifBlank { null }
+        if (illuminated != null) extra.add("Illuminated (%)" to illuminated)
+
+        val elongation = element[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE]?.split(",")?.first()
+        if (elongation != null) extra.add("Elongation (deg)" to elongation)
 
         view.updateInfo(bodyName, extra)
 

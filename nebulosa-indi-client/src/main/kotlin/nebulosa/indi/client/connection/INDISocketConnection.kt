@@ -1,8 +1,8 @@
 package nebulosa.indi.client.connection
 
 import nebulosa.indi.client.io.INDIProtocolFactory
-import nebulosa.indi.connection.INDIConnection
 import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.io.INDIConnection
 import java.net.InetSocketAddress
 import java.net.Socket
 

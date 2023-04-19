@@ -30,12 +30,10 @@ fun initAppDirectory(): Path? {
             val documentsDir = FileSystemView.getFileSystemView().defaultDirectory.path
             Paths.get(documentsDir, "Nebulosa")
         }
-        else -> {
-            null
-        }
+        else -> return null
     }
 
-    appDirectory?.createDirectories()
+    appDirectory.createDirectories()
 
     System.setProperty("app.dir", "$appDirectory")
 

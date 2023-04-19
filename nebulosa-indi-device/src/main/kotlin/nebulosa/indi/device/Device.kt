@@ -1,7 +1,7 @@
 package nebulosa.indi.device
 
-import nebulosa.indi.parser.INDIProtocolHandler
 import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.parser.INDIProtocolHandler
 import java.io.Closeable
 
 interface Device : INDIProtocolHandler, Closeable {

@@ -1,7 +1,7 @@
 package nebulosa.indi.parser
 
-import nebulosa.indi.connection.io.INDIInputStream
 import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.io.INDIInputStream
 import java.io.InputStream
 import javax.xml.namespace.QName
 import javax.xml.stream.XMLEventReader
