@@ -7,10 +7,10 @@ import javafx.scene.text.TextAlignment
 import nebulosa.desktop.gui.control.ShapePane
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
+import nebulosa.desktop.logic.atlas.provider.catalog.CatalogProvider
 import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import nebulosa.skycatalog.DSO
-import nebulosa.skycatalog.SkyCatalog
 import nebulosa.skycatalog.SkyObject
 import nebulosa.wcs.WCSTransform
 import kotlin.math.max
@@ -18,11 +18,11 @@ import kotlin.math.min
 
 class SkyCatalogAnnotation : ShapePane() {
 
-    private val catalogs = HashSet<SkyCatalog<*>>(2)
-    private val colors = HashMap<SkyCatalog<*>, Color>()
+    private val catalogs = HashSet<CatalogProvider<*>>(2)
+    private val colors = HashMap<CatalogProvider<*>, Color>()
 
     fun add(
-        catalog: SkyCatalog<*>,
+        catalog: CatalogProvider<*>,
         color: Color = Color.YELLOW,
     ) {
         if (catalogs.add(catalog)) {
@@ -30,7 +30,7 @@ class SkyCatalogAnnotation : ShapePane() {
         }
     }
 
-    fun remove(catalog: SkyCatalog<*>) {
+    fun remove(catalog: CatalogProvider<*>) {
         catalogs.remove(catalog)
         colors.remove(catalog)
     }

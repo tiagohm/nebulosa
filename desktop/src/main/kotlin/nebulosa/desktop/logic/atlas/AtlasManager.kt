@@ -11,8 +11,9 @@ import nebulosa.desktop.helper.runBlockingIO
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.AbstractManager
-import nebulosa.desktop.logic.atlas.ephemeris.provider.BodyEphemerisProvider
-import nebulosa.desktop.logic.atlas.ephemeris.provider.HorizonsEphemerisProvider
+import nebulosa.desktop.logic.atlas.provider.catalog.CatalogProvider
+import nebulosa.desktop.logic.atlas.provider.ephemeris.BodyEphemerisProvider
+import nebulosa.desktop.logic.atlas.provider.ephemeris.HorizonsEphemerisProvider
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.framing.FramingView
@@ -33,13 +34,13 @@ import nebulosa.nova.almanac.DiscreteFunction
 import nebulosa.nova.almanac.findDiscrete
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
+import nebulosa.nova.astrometry.FixedStar
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.sbd.SmallBody
 import nebulosa.sbd.SmallBodyDatabaseLookupService
-import nebulosa.skycatalog.hyg.HygDatabase
-import nebulosa.skycatalog.stellarium.Nebula
+import nebulosa.skycatalog.SkyObject
 import nebulosa.time.UTC
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -64,6 +65,8 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     private val ephemerisCache = hashMapOf<Any, HorizonsEphemeris?>()
     private val rtsCache = hashMapOf<Any, Triple<String, String, String>>()
     private val pointsCache = hashMapOf<HorizonsEphemeris, List<XYItem>>()
+    private val starsCache = hashMapOf<Int, Body>()
+    private val dsosCache = hashMapOf<Int, Body>()
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var bodyEphemerisProvider: BodyEphemerisProvider
@@ -71,8 +74,8 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     @Autowired private lateinit var smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var framingView: FramingView
-    @Autowired private lateinit var nebula: Nebula
-    @Autowired private lateinit var hygDatabase: HygDatabase
+    @Autowired private lateinit var starCatalogProvider: CatalogProvider<*>
+    @Autowired private lateinit var dsoCatalogProvider: CatalogProvider<*>
 
     @Volatile private var observer: GeographicPosition? = null
     @Volatile private var tabType = AtlasView.TabType.SUN
@@ -209,16 +212,6 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         view.populatePlanet(planets)
     }
 
-    suspend fun populateStars() = withIO {
-        val stars = hygDatabase.map { AtlasView.Star(it) }
-        view.populateStar(stars)
-    }
-
-    suspend fun populateDSOs() = withIO {
-        val dsos = nebula.map { AtlasView.DSO(it) }
-        view.populateDSOs(dsos)
-    }
-
     suspend fun computeSun(): HorizonsEphemeris? {
         bodyName = "Sun"
         return SUN_TARGET.computeBody()
@@ -244,13 +237,13 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     suspend fun computeStar(body: AtlasView.Star? = star): HorizonsEphemeris? {
         star = body ?: return null
         bodyName = body.skyObject.names.joinToString(", ")
-        return hygDatabase.position(body.skyObject).computeBody()
+        return starsCache.computeFixedStar(body.skyObject).computeBody()
     }
 
     suspend fun computeDSO(body: AtlasView.DSO? = dso): HorizonsEphemeris? {
         dso = body ?: return null
         bodyName = body.skyObject.names.joinToString(", ")
-        return nebula.position(body.skyObject).computeBody()
+        return dsosCache.computeFixedStar(body.skyObject).computeBody()
     }
 
     private suspend fun String.computeBody(show: Boolean = true): HorizonsEphemeris? {
@@ -520,6 +513,16 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         withMain { computing.set(false) }
     }
 
+    suspend fun searchStar(text: String) = withIO {
+        val dsos = starCatalogProvider.searchBy(text)
+        view.populateStar(dsos.map { AtlasView.Star(it) })
+    }
+
+    suspend fun searchDSO(text: String) = withIO {
+        val dsos = dsoCatalogProvider.searchBy(text)
+        view.populateDSOs(dsos.map { AtlasView.DSO(it) })
+    }
+
     private fun trackModeForCurrentTab() {
         val mount = mount ?: return
 
@@ -609,5 +612,19 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         private const val ASTRONOMICAL_TWILIGHT = -18.0
         private const val NAUTICAL_TWILIGHT = -12.0
         private const val CIVIL_TWILIGHT = -6.0
+
+        @JvmStatic
+        private fun MutableMap<Int, Body>.computeFixedStar(body: SkyObject): Body {
+            return if (body.id !in this) {
+                val star = FixedStar(
+                    body.rightAscension, body.declination,
+                    body.pmRA, body.pmDEC, body.parallax, body.radialVelocity,
+                )
+                this[body.id] = star
+                star
+            } else {
+                this[body.id]!!
+            }
+        }
     }
 }

@@ -21,11 +21,9 @@ import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
 import nebulosa.math.PairOfAngle
 import nebulosa.nova.astrometry.Constellation
-import nebulosa.skycatalog.SkyCatalogFilter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
-import java.util.function.Predicate
 
 @Component
 class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
@@ -116,8 +114,6 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
             .on { if (it != null) launch { atlasManager.computeDSO(it) } }
 
         launch { atlasManager.populatePlanets() }
-        launch { atlasManager.populateStars() }
-        launch { atlasManager.populateDSOs() }
     }
 
     override fun onStart() {
@@ -180,21 +176,15 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     }
 
     @FXML
-    @Suppress("UNCHECKED_CAST")
     private fun searchStar() {
         val text = searchStarTextField.text.trim()
-        with((starTableView.items as SortedList<*>).source as FilteredList<AtlasView.Star>) {
-            predicate = StarFilter(text)
-        }
+        launch { atlasManager.searchStar(text) }
     }
 
     @FXML
-    @Suppress("UNCHECKED_CAST")
     private fun searchDSO() {
         val text = searchDSOTextField.text.trim()
-        with((dsosTableView.items as SortedList<*>).source as FilteredList<AtlasView.DSO>) {
-            predicate = DSOFilter(text)
-        }
+        launch { atlasManager.searchDSO(text) }
     }
 
     override suspend fun drawAltitude(
@@ -296,19 +286,5 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
             else if (item.isFinite() && item < 99.0) "%.1f".format(item)
             else "-"
         }
-    }
-
-    private class StarFilter(text: String) : Predicate<AtlasView.Star> {
-
-        private val predicate = SkyCatalogFilter(text)
-
-        override fun test(star: AtlasView.Star) = predicate.test(star.skyObject)
-    }
-
-    private class DSOFilter(text: String) : Predicate<AtlasView.DSO> {
-
-        private val predicate = SkyCatalogFilter(text)
-
-        override fun test(star: AtlasView.DSO) = predicate.test(star.skyObject)
     }
 }

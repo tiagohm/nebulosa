@@ -7,8 +7,6 @@ import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
 import nebulosa.sbd.SmallBodyDatabaseLookupService
 import nebulosa.simbad.SimbadService
-import nebulosa.skycatalog.hyg.HygDatabase
-import nebulosa.skycatalog.stellarium.Nebula
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
@@ -86,10 +84,4 @@ class App {
         .logNoSubscriberMessages(false)
         .logSubscriberExceptions(false)
         .build()!!
-
-    @Bean
-    fun nebula() = Nebula()
-
-    @Bean
-    fun hygDatabase() = HygDatabase()
 }

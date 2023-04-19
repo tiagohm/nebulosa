@@ -13,6 +13,7 @@ import nebulosa.desktop.helper.runBlockingMain
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.AbstractManager
+import nebulosa.desktop.logic.atlas.provider.catalog.CatalogProvider
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.platesolver.PlateSolvingEvent
 import nebulosa.desktop.logic.platesolver.PlateSolvingSolved
@@ -28,8 +29,6 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.indi.device.mount.Mount
 import nebulosa.platesolving.Calibration
-import nebulosa.skycatalog.hyg.HygDatabase
-import nebulosa.skycatalog.stellarium.Nebula
 import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Header
 import org.greenrobot.eventbus.EventBus
@@ -46,8 +45,8 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var plateSolverView: PlateSolverView
     @Autowired private lateinit var eventBus: EventBus
-    @Autowired private lateinit var nebula: Nebula
-    @Autowired private lateinit var hygDatabase: HygDatabase
+    @Autowired private lateinit var starCatalogProvider: CatalogProvider<*>
+    @Autowired private lateinit var dsoCatalogProvider: CatalogProvider<*>
 
     val file = SimpleObjectProperty<File>()
 
@@ -100,8 +99,8 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         crosshair.isVisible = false
         skyCatalogAnnotation.isVisible = false
 
-        skyCatalogAnnotation.add(hygDatabase, Color.YELLOW)
-        skyCatalogAnnotation.add(nebula, Color.LIGHTGREEN)
+        skyCatalogAnnotation.add(starCatalogProvider, Color.YELLOW)
+        skyCatalogAnnotation.add(dsoCatalogProvider, Color.LIGHTGREEN)
 
         view.addFirst(crosshair)
         view.addFirst(skyCatalogAnnotation)
