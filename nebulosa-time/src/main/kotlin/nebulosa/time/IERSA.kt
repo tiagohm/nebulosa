@@ -7,7 +7,7 @@ import java.io.InputStream
 /**
  * @see <a href="https://maia.usno.navy.mil/ser7/finals2000A.all">Table</a>
  */
-object IERSA : IERS() {
+class IERSA : IERS() {
 
     /**
      * @see <a href="https://maia.usno.navy.mil/ser7/readme.finals2000A">Reference</a>
@@ -81,8 +81,11 @@ object IERSA : IERS() {
         }
     }
 
-    const val URL = "https://datacenter.iers.org/data/9/finals2000A.all"
+    companion object {
 
-    private const val TT_MINUS_UTC = 32.184 + 12.0
+        const val URL = "https://datacenter.iers.org/data/9/finals2000A.all"
+
+        private const val TT_MINUS_UTC = 32.184 + 12.0
+    }
 }
 

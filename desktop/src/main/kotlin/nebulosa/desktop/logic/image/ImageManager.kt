@@ -4,8 +4,8 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import javafx.stage.Screen
-import nebulosa.desktop.gui.control.annotation.Crosshair
-import nebulosa.desktop.gui.control.annotation.SkyCatalogAnnotation
+import nebulosa.desktop.gui.control.Annotation
+import nebulosa.desktop.gui.control.Crosshair
 import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
@@ -58,7 +58,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
 
     private val screenBounds = Screen.getPrimary().bounds
     private val crosshair = Crosshair()
-    private val skyCatalogAnnotation = SkyCatalogAnnotation()
+    private val annotation = Annotation()
 
     @Volatile private var imageStretcherView: ImageStretcherView? = null
     @Volatile private var fitsHeaderView: FitsHeaderView? = null
@@ -97,13 +97,13 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         eventBus.register(this)
 
         crosshair.isVisible = false
-        skyCatalogAnnotation.isVisible = false
+        annotation.isVisible = false
 
-        skyCatalogAnnotation.add(starCatalogProvider, Color.YELLOW)
-        skyCatalogAnnotation.add(dsoCatalogProvider, Color.LIGHTGREEN)
+        annotation.add(starCatalogProvider, Color.YELLOW)
+        annotation.add(dsoCatalogProvider, Color.LIGHTGREEN)
 
         view.addFirst(crosshair)
-        view.addFirst(skyCatalogAnnotation)
+        view.addFirst(annotation)
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -113,10 +113,10 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
                 calibration.set(this)
 
                 if (this != null) {
-                    skyCatalogAnnotation.drawAround(this)
-                    skyCatalogAnnotation.isVisible = view.annotationEnabled
+                    annotation.drawAround(this)
+                    annotation.isVisible = view.annotationEnabled
                 } else {
-                    skyCatalogAnnotation.isVisible = false
+                    annotation.isVisible = false
                 }
             }
         }
@@ -148,7 +148,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         calibration.set(null)
 
         withMain {
-            skyCatalogAnnotation.isVisible = false
+            annotation.isVisible = false
             view.hasScnr = !image.mono
         }
 
@@ -253,7 +253,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
     }
 
     suspend fun toggleAnnotation() = withMain {
-        skyCatalogAnnotation.isVisible = view.annotationEnabled
+        annotation.isVisible = view.annotationEnabled
     }
 
     fun toggleAnnotationOptions() {}

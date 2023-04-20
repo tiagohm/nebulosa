@@ -15,8 +15,9 @@ import nebulosa.time.TimeYMDHMS
 class ICRFTest : StringSpec() {
 
     init {
-        IERSA.load(resource("finals2000A.all")!!)
-        IERS.attach(IERSA)
+        val iersa = IERSA()
+        iersa.load(resource("finals2000A.all")!!)
+        IERS.attach(iersa)
 
         "equatorial at date to equatorial J2000" {
             val ra = 2.15105.deg

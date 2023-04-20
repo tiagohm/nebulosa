@@ -1,6 +1,7 @@
-import nebulosa.desktop.model.DeepSkyObjects
-import nebulosa.desktop.model.Names
-import nebulosa.desktop.model.Stars
+import nebulosa.desktop.model.DsoEntity
+import nebulosa.desktop.model.NameEntity
+import nebulosa.desktop.model.StarEntity
+import nebulosa.io.transferAndClose
 import nebulosa.skycatalog.hyg.HygDatabase
 import nebulosa.skycatalog.stellarium.Nebula
 import okhttp3.Cache
@@ -28,7 +29,7 @@ object StarCatalogGenerator {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        Paths.get("desktop/src/main/resources/data/star.catalog.db").deleteIfExists()
+        Paths.get("desktop/src/main/resources/data/StarCatalog.db").deleteIfExists()
 
         val client = OkHttpClient.Builder()
             .cache(Cache(File(".cache"), 1024 * 1024 * 32))
@@ -40,12 +41,12 @@ object StarCatalogGenerator {
 
         Database
             .connect(
-                "jdbc:sqlite:desktop/src/main/resources/data/star.catalog.db",
+                "jdbc:sqlite:desktop/src/main/resources/data/StarCatalog.db",
                 driver = JDBC::class.java.name
             )
 
         transaction {
-            SchemaUtils.create(DeepSkyObjects, Stars, Names)
+            SchemaUtils.create(DsoEntity, StarEntity, NameEntity)
 
             val catalog = client.download(
                 "https://github.com/Stellarium/stellarium/raw/master/nebulae/default/catalog.dat",
@@ -63,7 +64,7 @@ object StarCatalogGenerator {
                 load(catalog, names)
 
                 for (item in this) {
-                    DeepSkyObjects.insert {
+                    DsoEntity.insert {
                         it[id] = item.id
                         it[m] = item.m
                         it[ngc] = item.ngc
@@ -86,20 +87,20 @@ object StarCatalogGenerator {
                         it[st] = item.st
                         it[ru] = item.ru
                         it[vdbha] = item.vdbha
-                        it[ced] = item.ced
-                        it[pk] = item.pk
-                        it[png] = item.png
-                        it[snrg] = item.snrg
-                        it[aco] = item.aco
-                        it[hcg] = item.hcg
-                        it[eso] = item.eso
-                        it[vdbh] = item.vdbh
+                        it[ced] = item.ced?.ifEmpty { null }
+                        it[pk] = item.pk?.ifEmpty { null }
+                        it[png] = item.png?.ifEmpty { null }
+                        it[snrg] = item.snrg?.ifEmpty { null }
+                        it[aco] = item.aco?.ifEmpty { null }
+                        it[hcg] = item.hcg?.ifEmpty { null }
+                        it[eso] = item.eso?.ifEmpty { null }
+                        it[vdbh] = item.vdbh?.ifEmpty { null }
                         it[mB] = item.mB
                         it[mV] = item.mV
                         it[rightAscension] = item.rightAscension.value
                         it[declination] = item.declination.value
-                        it[type] = item.type.name
-                        it[mType] = item.mType
+                        it[type] = item.type
+                        it[mType] = item.mType?.ifEmpty { null }
                         it[majorAxis] = item.majorAxis.value
                         it[minorAxis] = item.minorAxis.value
                         it[orientation] = item.orientation.value
@@ -109,11 +110,11 @@ object StarCatalogGenerator {
                         it[distance] = item.distance
                         it[pmRA] = item.pmRA.value
                         it[pmDEC] = item.pmDEC.value
-                        it[constellation] = item.constellation.name
+                        it[constellation] = item.constellation
                     }
 
                     for (dsoName in item.names) {
-                        Names.insert {
+                        NameEntity.insert {
                             it[id] = namesId.getAndIncrement()
                             it[name] = dsoName
                             it[dso] = item.id
@@ -131,29 +132,29 @@ object StarCatalogGenerator {
                 load(hyg.buffer().inputStream())
 
                 for (item in this) {
-                    Stars.insert {
+                    StarEntity.insert {
                         it[id] = item.id
-                        it[hr] = item.hr
-                        it[hd] = item.hd
-                        it[hip] = item.hip
-                        it[sao] = item.sao
+                        it[hr] = item.hr?.ifEmpty { null }
+                        it[hd] = item.hd?.ifEmpty { null }
+                        it[hip] = item.hip?.ifEmpty { null }
+                        it[sao] = item.sao?.ifEmpty { null }
                         it[mB] = item.mB
                         it[mV] = item.mV
                         it[rightAscension] = item.rightAscension.value
                         it[declination] = item.declination.value
-                        it[spType] = item.spType
+                        it[spType] = item.spType?.ifEmpty { null }
                         it[redshift] = item.redshift
                         it[parallax] = item.parallax.value
                         it[radialVelocity] = item.radialVelocity.value
                         it[distance] = item.distance
                         it[pmRA] = item.pmRA.value
                         it[pmDEC] = item.pmDEC.value
-                        it[type] = item.type.name
-                        it[constellation] = item.constellation.name
+                        it[type] = item.type
+                        it[constellation] = item.constellation
                     }
 
                     for (dsoName in item.names) {
-                        Names.insert {
+                        NameEntity.insert {
                             it[id] = namesId.getAndIncrement()
                             it[name] = dsoName
                             it[star] = item.id
@@ -168,7 +169,7 @@ object StarCatalogGenerator {
     private fun OkHttpClient.download(url: String, output: Path): Source {
         return with(Request.Builder().url(url).build()) {
             val response = newCall(this).execute()
-            response.use { output.outputStream().use(it.body.byteStream()::transferTo) }
+            response.use { it.body.byteStream().transferAndClose(output.outputStream()) }
             output.inputStream().source()
         }
     }

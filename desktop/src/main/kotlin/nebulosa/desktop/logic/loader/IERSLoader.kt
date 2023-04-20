@@ -59,9 +59,10 @@ class IERSLoader(@Autowired private val appDirectory: Path) : Runnable {
         }
 
         return try {
-            path.inputStream().use { IERSA.load(it) }
-            IERS.attach(IERSA)
-            LOG.info("finals2000A.all is loaded")
+            val iersa = IERSA()
+            path.inputStream().use { iersa.load(it) }
+            IERS.attach(iersa)
+            LOG.info("finals2000A.all loaded")
             false
         } catch (e: Throwable) {
             LOG.warn("finals2000A.all is corrupted")
@@ -97,9 +98,10 @@ class IERSLoader(@Autowired private val appDirectory: Path) : Runnable {
                 path.outputStream().use {
                     val bytes = response.body.bytes()
                     bytes.inputStream().copyTo(it)
-                    IERSA.load(bytes.inputStream())
-                    IERS.attach(IERSA)
-                    LOG.info("finals2000A.all is loaded")
+                    val iersa = IERSA()
+                    iersa.load(bytes.inputStream())
+                    IERS.attach(iersa)
+                    LOG.info("finals2000A.all loaded")
                 }
             }
     }

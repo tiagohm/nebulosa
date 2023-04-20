@@ -4,6 +4,7 @@ import io.kotest.matchers.doubles.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import nebulosa.io.resource
 import nebulosa.time.DeltaTime
+import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import nebulosa.time.TimeYMDHMS
 import kotlin.math.abs
@@ -11,7 +12,9 @@ import kotlin.math.abs
 class StandardDeltaTimeTest : StringSpec() {
 
     init {
-        IERSA.load(resource("finals2000A.all")!!)
+        val iersa = IERSA()
+        iersa.load(resource("finals2000A.all")!!)
+        IERS.attach(iersa)
 
         "delta" {
             DeltaTime.Standard.delta(TimeYMDHMS(-720)) shouldBe (20370.94276516515 plusOrMinus 1e-4)
@@ -26,7 +29,7 @@ class StandardDeltaTimeTest : StringSpec() {
             for (i in 1800..2300) {
                 val time = TimeYMDHMS(i)
                 val dt0 = DeltaTime.Standard.delta(time)
-                val dt1 = IERSA.delta(time)
+                val dt1 = iersa.delta(time)
                 dt0 shouldBe (dt1 plusOrMinus 1e-4)
                 diff += abs(dt1 - dt0)
             }

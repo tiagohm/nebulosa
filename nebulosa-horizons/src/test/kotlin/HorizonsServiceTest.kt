@@ -86,10 +86,9 @@ class HorizonsServiceTest : StringSpec() {
                     "(2023 GA2)", "2460049.5", ".6183399929327511",
                     "30.04427847488657", "30.56835826458952", "19.84449491210952",
                     ".3107780828530178", "2459989.479453452084",
-                    null, null, null,
-                    314.4173.deg, (-22.5354318).deg, 1.81754.km,
-                    LocalDateTime.of(2023, 3, 11, 0, 0, 0),
-                    LocalDateTime.of(2023, 4, 11, 0, 0, 0),
+                    longitude = 314.4173.deg, latitude = (-22.5354318).deg, elevation = 1.81754.km,
+                    startTime = LocalDateTime.of(2023, 3, 11, 0, 0, 0),
+                    endTime = LocalDateTime.of(2023, 4, 11, 0, 0, 0),
                     extraPrecision = true,
                     stepSize = Duration.ofDays(1L),
                 ).execute()

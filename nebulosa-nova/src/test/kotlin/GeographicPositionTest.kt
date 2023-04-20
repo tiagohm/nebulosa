@@ -14,8 +14,9 @@ import nebulosa.time.UT1
 class GeographicPositionTest : StringSpec() {
 
     init {
-        IERSA.load(resource("finals2000A.all")!!)
-        IERS.attach(IERSA)
+        val iersa = IERSA()
+        iersa.load(resource("finals2000A.all")!!)
+        IERS.attach(iersa)
 
         "lst" {
             val latitude = Angle.from("-23 32 51.00")!!

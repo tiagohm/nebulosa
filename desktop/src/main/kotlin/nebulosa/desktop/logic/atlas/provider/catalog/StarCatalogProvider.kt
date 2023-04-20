@@ -1,12 +1,10 @@
 package nebulosa.desktop.logic.atlas.provider.catalog
 
-import nebulosa.desktop.model.Names
-import nebulosa.desktop.model.Stars
+import nebulosa.desktop.model.NameEntity
+import nebulosa.desktop.model.StarEntity
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Velocity.Companion.auDay
-import nebulosa.nova.astrometry.Constellation
-import nebulosa.skycatalog.SkyObjectType
 import nebulosa.skycatalog.Star
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.StatementContext
@@ -23,32 +21,36 @@ class StarCatalogProvider : AbstractCatalogProvider<Star>() {
         declination: Angle,
         radius: Angle,
     ): List<Star> {
+        if (radius.value <= 0.0) return emptyList()
+
         return transaction {
             addLogger(StarCatalogProvider)
 
-            val names = Names.name.groupConcat(GROUP_CONCAT_SEPARATOR).alias("names")
+            val names = NameEntity.name.groupConcat(GROUP_CONCAT_SEPARATOR).alias("names")
 
-            Stars
-                .join(Names, JoinType.INNER, additionalConstraint = { Stars.id eq Names.star })
+            StarEntity
+                .join(NameEntity, JoinType.INNER, additionalConstraint = { StarEntity.id eq NameEntity.star })
                 .slice(names, *STARS_COLUMNS)
-                .select { distance(Stars.rightAscension, Stars.declination, rightAscension, declination, radius) }
-                .groupBy(Stars.id)
+                .select { distance(StarEntity.rightAscension, StarEntity.declination, rightAscension, declination, radius) }
+                .groupBy(StarEntity.id)
                 .limit(1000)
                 .map { it.makeStar(names) }
         }
     }
 
     override fun searchBy(name: String): List<Star> {
+        if (name.isBlank()) return emptyList()
+
         return transaction {
             addLogger(StarCatalogProvider)
 
-            val names = Names.name.groupConcat(GROUP_CONCAT_SEPARATOR).alias("names")
+            val names = NameEntity.name.groupConcat(GROUP_CONCAT_SEPARATOR).alias("names")
 
-            Stars
-                .join(Names, JoinType.INNER, additionalConstraint = { (Stars.id eq Names.star) and (Names.name like name) })
+            StarEntity
+                .join(NameEntity, JoinType.INNER, additionalConstraint = { (StarEntity.id eq NameEntity.star) and (NameEntity.name like name) })
                 .slice(names, *STARS_COLUMNS)
                 .selectAll()
-                .groupBy(Stars.id)
+                .groupBy(StarEntity.id)
                 .limit(1000)
                 .map { it.makeStar(names) }
         }
@@ -57,7 +59,7 @@ class StarCatalogProvider : AbstractCatalogProvider<Star>() {
     companion object : SqlLogger {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(StarCatalogProvider::class.java)
-        @JvmStatic private val STARS_COLUMNS = Stars.columns.toTypedArray()
+        @JvmStatic private val STARS_COLUMNS = StarEntity.columns.toTypedArray()
 
         private const val GROUP_CONCAT_SEPARATOR = ":"
 
@@ -68,25 +70,25 @@ class StarCatalogProvider : AbstractCatalogProvider<Star>() {
         @JvmStatic
         private fun ResultRow.makeStar(names: Expression<String>): Star {
             return Star(
-                id = this[Stars.id],
+                id = this[StarEntity.id],
                 names = this[names].split(GROUP_CONCAT_SEPARATOR),
-                hr = this[Stars.hr],
-                hd = this[Stars.hd],
-                hip = this[Stars.hip],
-                sao = this[Stars.sao],
-                mB = this[Stars.mB],
-                mV = this[Stars.mV],
-                rightAscension = this[Stars.rightAscension].rad,
-                declination = this[Stars.declination].rad,
-                spType = this[Stars.spType],
-                redshift = this[Stars.redshift],
-                parallax = this[Stars.parallax].rad,
-                radialVelocity = this[Stars.radialVelocity].auDay,
-                distance = this[Stars.distance],
-                pmRA = this[Stars.pmRA].rad,
-                pmDEC = this[Stars.pmDEC].rad,
-                type = SkyObjectType.valueOf(this[Stars.type]),
-                constellation = Constellation.valueOf(this[Stars.constellation]),
+                hr = this[StarEntity.hr],
+                hd = this[StarEntity.hd],
+                hip = this[StarEntity.hip],
+                sao = this[StarEntity.sao],
+                mB = this[StarEntity.mB],
+                mV = this[StarEntity.mV],
+                rightAscension = this[StarEntity.rightAscension].rad,
+                declination = this[StarEntity.declination].rad,
+                spType = this[StarEntity.spType],
+                redshift = this[StarEntity.redshift],
+                parallax = this[StarEntity.parallax].rad,
+                radialVelocity = this[StarEntity.radialVelocity].auDay,
+                distance = this[StarEntity.distance],
+                pmRA = this[StarEntity.pmRA].rad,
+                pmDEC = this[StarEntity.pmDEC].rad,
+                type = this[StarEntity.type],
+                constellation = this[StarEntity.constellation],
             )
         }
     }
