@@ -7,6 +7,7 @@ import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
 import nebulosa.sbd.SmallBodyDatabaseLookupService
 import nebulosa.simbad.SimbadService
+import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
@@ -18,6 +19,7 @@ import java.nio.file.Paths
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.createDirectories
 
 @EnableAsync
 @SpringBootApplication
@@ -35,8 +37,12 @@ class App {
     fun connectionPool() = ConnectionPool(32, 5L, TimeUnit.MINUTES)
 
     @Bean
-    fun okHttpClient(connectionPool: ConnectionPool) = OkHttpClient.Builder()
+    fun cache(appDirectory: Path) = Cache(Paths.get("$appDirectory", "cache").createDirectories().toFile(), MAX_CACHE_SIZE)
+
+    @Bean
+    fun okHttpClient(connectionPool: ConnectionPool, cache: Cache) = OkHttpClient.Builder()
         .connectionPool(connectionPool)
+        .cache(cache)
         .readTimeout(30L, TimeUnit.SECONDS)
         .writeTimeout(30L, TimeUnit.SECONDS)
         .connectTimeout(30L, TimeUnit.SECONDS)
@@ -84,4 +90,9 @@ class App {
         .logNoSubscriberMessages(false)
         .logSubscriberExceptions(false)
         .build()!!
+
+    companion object {
+
+        const val MAX_CACHE_SIZE = 1024L * 1024L * 512L // 512MB
+    }
 }

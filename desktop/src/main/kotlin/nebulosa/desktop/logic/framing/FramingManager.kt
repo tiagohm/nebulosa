@@ -18,6 +18,7 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.PairOfAngle
+import nebulosa.platesolving.Calibration
 import nom.tam.fits.header.ObservationDescription
 import nom.tam.fits.header.Standard
 import nom.tam.fits.header.extra.MaxImDLExt
@@ -120,12 +121,30 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
 
             withMain {
                 try {
+                    val crot = view.frameRotation + Angle.SEMICIRCLE
+                    val cdelt = view.frameFOV / max(view.frameWidth, view.frameHeight)
+
+                    val calibration = Calibration(
+                        hasWCS = true,
+                        ctype1 = "RA---TAN", ctype2 = "DEC--TAN",
+                        crpix1 = view.frameWidth / 2.0, crpix2 = view.frameHeight / 2.0,
+                        crval1 = view.frameRA, crval2 = view.frameDEC,
+                        cdelt1 = cdelt, cdelt2 = cdelt,
+                        crota1 = crot, crota2 = crot,
+                        width = cdelt * view.frameWidth,
+                        height = cdelt * view.frameHeight,
+                    )
+
                     if (currentImageView != null) {
-                        currentImageView.open(image, path!!.toFile(), resetTransformation = true)
+                        currentImageView.open(image, path!!.toFile(), true, calibration)
                         currentImageView.show(requestFocus = true)
                     } else {
-                        val window = imageViewOpener.open(image, path!!.toFile(), resetTransformation = true)
-                        imageView.set(window)
+                        imageView.set(
+                            imageViewOpener.open(
+                                image, path!!.toFile(),
+                                resetTransformation = true, calibration = calibration,
+                            )
+                        )
                     }
                 } catch (e: Throwable) {
                     LOG.error("image open failed", e)

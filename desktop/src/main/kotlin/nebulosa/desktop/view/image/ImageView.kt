@@ -7,6 +7,7 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
+import nebulosa.platesolving.Calibration
 import java.io.File
 
 interface ImageView : View {
@@ -17,6 +18,7 @@ interface ImageView : View {
             image: Image?, file: File?,
             token: Any? = null,
             resetTransformation: Boolean = false,
+            calibration: Calibration? = null,
         ): ImageView
     }
 
@@ -68,11 +70,16 @@ interface ImageView : View {
 
     suspend fun draw(image: Image)
 
-    suspend fun open(file: File, resetTransformation: Boolean = false)
+    suspend fun open(
+        file: File,
+        resetTransformation: Boolean = false,
+        calibration: Calibration? = null,
+    )
 
     suspend fun open(
         fits: Image, file: File? = null,
         resetTransformation: Boolean = false,
+        calibration: Calibration? = null,
     )
 
     fun transformAndDraw()

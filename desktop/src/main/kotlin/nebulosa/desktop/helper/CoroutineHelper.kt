@@ -1,9 +1,12 @@
 package nebulosa.desktop.helper
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.Response
+import okio.IOException
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 suspend inline fun <T> withDefault(noinline block: suspend CoroutineScope.() -> T): T {
     return withContext(Dispatchers.Default, block)
@@ -30,4 +33,20 @@ inline fun runBlockingMain(noinline block: suspend CoroutineScope.() -> Unit) {
 @Suppress("NOTHING_TO_INLINE")
 inline fun runBlockingIO(noinline block: suspend CoroutineScope.() -> Unit) {
     runBlocking(Dispatchers.IO, block)
+}
+
+suspend fun Call.await() = suspendCancellableCoroutine { continuation ->
+    continuation.invokeOnCancellation {
+        cancel()
+    }
+
+    enqueue(object : Callback {
+        override fun onResponse(call: Call, response: Response) {
+            continuation.resume(response)
+        }
+
+        override fun onFailure(call: Call, e: IOException) {
+            continuation.resumeWithException(e)
+        }
+    })
 }

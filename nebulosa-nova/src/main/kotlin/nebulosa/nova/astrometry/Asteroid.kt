@@ -32,7 +32,6 @@ class Asteroid(
 
     companion object {
 
-        // TODO: Criar um módulo pra isso. nebulosa-mpc (skyCatalog)
         @JvmStatic private val MPC_COLUMNS = mapOf(
             // "designation_packed" to 0..6,
             // "magnitude_H" to 8..12,

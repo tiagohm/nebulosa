@@ -22,7 +22,6 @@ import nom.tam.fits.ImageHDU
 import nom.tam.fits.header.ObservationDescription
 import nom.tam.fits.header.extra.SBFitsExt
 import nom.tam.util.FitsOutputStream
-import org.apache.commons.lang3.time.StopWatch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -57,9 +56,6 @@ data class CameraExposureTask(
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
 ) : CameraTask {
 
-    @Volatile var progress = 0.0
-        private set
-
     @Volatile var remainingAmount = amount
         private set
 
@@ -67,7 +63,7 @@ data class CameraExposureTask(
         private set
 
     val elapsedTime
-        get() = stopWatch.nanoTime / 1000L
+        get() = (System.nanoTime() - stopWatch) / 1000L
 
     val totalExposureTime = exposure * amount + (amount - 1) * delay * 1000L
 
@@ -79,7 +75,8 @@ data class CameraExposureTask(
     private val latch = CountUpDownLatch()
     private val imagePaths = arrayListOf<Path>()
     private val forceAbort = AtomicBoolean()
-    private val stopWatch = StopWatch()
+
+    @Volatile private var stopWatch = 0L
 
     private val mount: Mount?
         get() = equipmentManager.selectedMount.get()
@@ -110,8 +107,6 @@ data class CameraExposureTask(
             }
             is CameraExposureProgressChanged -> {
                 remainingTime = event.device.exposure
-                progress = (amount - remainingAmount - 1).toDouble() / amount +
-                        (exposure - camera.exposure).toDouble() / exposure * (1.0 / amount)
             }
         }
     }
@@ -154,7 +149,7 @@ data class CameraExposureTask(
 
             eventBus.register(this)
 
-            stopWatch.start()
+            stopWatch = System.nanoTime()
 
             while (camera.connected && remainingAmount > 0 && !forceAbort.get()) {
                 synchronized(camera) {
@@ -189,7 +184,6 @@ data class CameraExposureTask(
         } finally {
             eventBus.unregister(this)
             eventBus.post(TaskFinished(this))
-            stopWatch.stop()
         }
 
         return imagePaths

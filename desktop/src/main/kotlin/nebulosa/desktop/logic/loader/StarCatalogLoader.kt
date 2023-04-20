@@ -34,18 +34,12 @@ class StarCatalogLoader : Runnable {
 
             resource("data/StarCatalog.db")!!.transferAndClose(catalog.outputStream())
 
-            Database
-                .connect(
-                    "jdbc:sqlite:$catalog",
-                    driver = JDBC::class.java.name
-                )
+            Database.connect("jdbc:sqlite:$catalog", driver = JDBC::class.java.name)
 
             transaction {
                 LOG.info(
                     "star catalog loaded. dsos={}, stars={}, names={}",
-                    DsoEntity.selectAll().count(),
-                    StarEntity.selectAll().count(),
-                    NameEntity.selectAll().count(),
+                    DsoEntity.selectAll().count(), StarEntity.selectAll().count(), NameEntity.selectAll().count(),
                 )
             }
         }

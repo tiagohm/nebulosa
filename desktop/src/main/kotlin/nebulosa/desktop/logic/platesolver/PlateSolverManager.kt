@@ -192,7 +192,9 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
 
     suspend fun frame() {
         val calibration = calibration.get() ?: return
-        val rotation = calibration.orientation.normalized
+        // https://www.hnsky.org/astap.htm#viewer_angle
+        val rotation = if (calibration.cdelt1.value * calibration.cdelt2.value > 0.0) (-calibration.orientation).normalized
+        else calibration.orientation
         val factor = calibration.width / calibration.height
         val width = if (factor > 1.0) 1200 else 900 * factor
         val height = if (factor > 1.0) 1200 / factor else 900

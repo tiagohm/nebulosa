@@ -12,6 +12,7 @@ import nebulosa.platesolving.Calibration
 import nebulosa.skycatalog.DSO
 import nebulosa.skycatalog.SkyObject
 import nebulosa.wcs.WCSTransform
+import org.slf4j.LoggerFactory
 import kotlin.math.max
 import kotlin.math.min
 
@@ -41,12 +42,18 @@ class Annotation : ShapePane() {
         val width = calibration.crpix1 * 2.0
         val height = calibration.crpix2 * 2.0
 
+        LOG.info(
+            "annotation around star. ra={}, dec={}, radius={}",
+            calibration.rightAscension.degrees, calibration.declination.degrees, calibration.radius.degrees
+        )
+
         for (catalog in catalogs) {
             val color = colors[catalog] ?: Color.YELLOW
 
             stars.addAll(
                 catalog
                     .searchAround(calibration.rightAscension, calibration.declination, calibration.radius)
+                    .onEach { LOG.info("annotation star. names={}, ra={}, dec={}", it.names, it.rightAscension.degrees, it.declination.degrees) }
                     .map { wcs.worldToPixel(it.rightAscension, it.declination).makeShapes(it, calibration, color) }
                     .filter { it.first.intersects(0.0, 0.0, width, height) })
         }
@@ -62,10 +69,12 @@ class Annotation : ShapePane() {
 
     companion object {
 
+        @JvmStatic private val LOG = LoggerFactory.getLogger(Annotation::class.java)
+
         @JvmStatic
         private fun DoubleArray.makeShapes(star: SkyObject, calibration: Calibration, color: Color): Pair<Circle, Text> {
             val majorAxis = if (star is DSO) star.majorAxis else Angle.ZERO
-            val majorAxisSize = max(14.0, min(majorAxis / calibration.scale, 256.0))
+            val majorAxisSize = max(14.0, min(majorAxis / calibration.scale, 380.0))
 
             val circle = Circle(this[0], this[1], 64.0)
 

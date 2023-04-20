@@ -42,7 +42,6 @@ dependencies {
     }
     implementation(libs.coroutines)
     implementation(libs.coroutines.javafx)
-    implementation(libs.apache.lang3)
     implementation(libs.oshi)
     implementation(libs.sqlite)
     implementation(libs.exposed.core)

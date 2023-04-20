@@ -2,6 +2,7 @@
   <configuration default="false" name="Main" type="JetRunConfigurationType">
     <option name="MAIN_CLASS_NAME" value="nebulosa.desktop.MainKt" />
     <module name="nebulosa.desktop.main" />
+    <option name="PROGRAM_PARAMETERS" value="-v" />
     <shortenClasspath name="NONE" />
     <method v="2">
       <option name="Make" enabled="true" />

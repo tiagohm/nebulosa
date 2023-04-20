@@ -27,6 +27,7 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
+import nebulosa.platesolving.Calibration
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
@@ -245,13 +246,21 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         imageSecondaryClickLocation.set(null)
     }
 
-    override suspend fun open(file: File, resetTransformation: Boolean) = withMain {
+    override suspend fun open(
+        file: File,
+        resetTransformation: Boolean,
+        calibration: Calibration?,
+    ) = withMain {
         imageManager.open(file, resetTransformation)
         annotateCheckMenuItem.isSelected = false
     }
 
-    override suspend fun open(fits: Image, file: File?, resetTransformation: Boolean) = withMain {
-        imageManager.open(fits, file, resetTransformation)
+    override suspend fun open(
+        fits: Image, file: File?,
+        resetTransformation: Boolean,
+        calibration: Calibration?,
+    ) = withMain {
+        imageManager.open(fits, file, resetTransformation, calibration)
         annotateCheckMenuItem.isSelected = false
     }
 
@@ -346,12 +355,13 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         override suspend fun open(
             image: Image?, file: File?,
             token: Any?, resetTransformation: Boolean,
+            calibration: Calibration?,
         ): ImageView {
             val window = withMain {
                 if (token != null) {
                     windowsMap[token] ?: ImageWindow(if (token is Camera) token else null)
                 } else {
-                    windows.firstOrNull { !it.showing } ?: ImageWindow(null)
+                    windows.firstOrNull { !it.showing } ?: ImageWindow()
                 }
             }
 
@@ -364,8 +374,8 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             withMain {
                 window.show()
 
-                if (image != null) window.open(image, file, resetTransformation)
-                else if (file != null) window.open(file, resetTransformation = true)
+                if (image != null) window.open(image, file, resetTransformation, calibration)
+                else if (file != null) window.open(file, true, calibration)
                 else LOG.error("fits or file parameter must be provided")
             }
 

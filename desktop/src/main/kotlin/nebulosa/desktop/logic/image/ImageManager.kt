@@ -130,12 +130,20 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         view.title = title
     }
 
-    suspend fun open(file: File, resetTransformation: Boolean = false) = withIO {
+    suspend fun open(
+        file: File,
+        resetTransformation: Boolean = false,
+        calibration: Calibration? = null,
+    ) = withIO {
         val image = Image.open(file)
-        open(image, file, resetTransformation)
+        open(image, file, resetTransformation, calibration)
     }
 
-    suspend fun open(image: Image, file: File? = null, resetTransformation: Boolean = false) {
+    suspend fun open(
+        image: Image, file: File? = null,
+        resetTransformation: Boolean = false,
+        calibration: Calibration? = null,
+    ) {
         this.file.set(file)
 
         updateTitle()
@@ -145,10 +153,12 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         this.image = image
         this.transformedImage = null
 
-        calibration.set(null)
+        this.calibration.set(calibration)
+
+        if (calibration != null) annotation.drawAround(calibration)
 
         withMain {
-            annotation.isVisible = false
+            annotation.isVisible = calibration != null && view.annotationEnabled
             view.hasScnr = !image.mono
         }
 

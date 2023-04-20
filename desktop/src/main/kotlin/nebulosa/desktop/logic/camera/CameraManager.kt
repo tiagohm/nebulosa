@@ -19,7 +19,6 @@ import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.*
-import org.apache.commons.lang3.time.DurationFormatUtils
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -87,7 +86,7 @@ class CameraManager(
     override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
         when (event) {
             is CameraExposureAborted,
-            is CameraExposureFailed -> updateStatus()
+            is CameraExposureFailed,
             is CameraExposureProgressChanged -> updateStatus()
             is CameraExposureMinMaxChanged,
             is CameraFrameChanged,
@@ -113,20 +112,17 @@ class CameraManager(
     }
 
     private fun updateStatus() {
-        val text = buildString(128) {
+        val text = buildString(64) {
             val task = runningTask.get()
 
             if (task != null && capturingProperty.get()) {
-                append("capturing ")
                 append("%d of %d".format(task.amount - task.remainingAmount, task.amount))
                 append(" | ")
-                append(task.remainingTime.formatTime())
+                append("%.1fs".format(task.remainingTime / 1000000.0))
                 append(" | ")
-                append(task.elapsedTime.formatTime())
+                append("%.1fs".format(task.elapsedTime / 1000000.0))
                 append(" of ")
-                append(task.totalExposureTime.formatTime())
-                append(" | ")
-                append("%.1f%%".format(task.progress * 100.0))
+                append("%.1fs".format(task.totalExposureTime / 1000000.0))
                 append(" | ")
                 append("%s".format(task.frameType))
 
@@ -336,19 +332,5 @@ class CameraManager(
         unregisterListener(this)
 
         eventBus.unregister(this)
-    }
-
-    companion object {
-
-        @JvmStatic
-        private fun Long.formatTime(): String {
-            return if (this >= 1000000L) {
-                DurationFormatUtils.formatDuration(this / 1000L, "HH:mm:ss")
-            } else if (this >= 1000L) {
-                "${this / 1000L} ms"
-            } else {
-                "$this µs"
-            }
-        }
     }
 }
