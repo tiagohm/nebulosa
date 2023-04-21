@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm")
     id("maven-publish")
     // id("io.objectbox")
-    id("org.springframework.boot") version "3.0.5"
+    id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     kotlin("plugin.spring")
     id("org.openjfx.javafxplugin")
