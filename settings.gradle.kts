@@ -30,7 +30,7 @@ dependencyResolutionManagement {
             library("netty-codec", "io.netty:netty-codec:4.1.91.Final")
             library("csv", "org.apache.commons:commons-csv:1.10.0")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.5.5")
-            library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.5.5")
+            library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.6.1")
             bundle("kotest", listOf("kotest-assertions-core", "kotest-runner-junit5"))
             bundle("rx", listOf("rx-java"))
             bundle("netty", listOf("netty-transport", "netty-codec"))
