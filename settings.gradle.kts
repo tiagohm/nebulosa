@@ -22,7 +22,7 @@ dependencyResolutionManagement {
             library("retrofit-jackson", "com.squareup.retrofit2:converter-jackson:2.9.0")
             library("rx-java", "io.reactivex.rxjava3:rxjava:3.1.6")
             library("controlsfx", "org.controlsfx:controlsfx:11.1.2")
-            library("logback", "ch.qos.logback:logback-classic:1.4.6")
+            library("logback", "ch.qos.logback:logback-classic:1.4.7")
             library("eventbus", "org.greenrobot:eventbus-java:3.3.1")
             library("charts", "eu.hansolo.fx:charts:17.1.35")
             library("gesturefx", "net.kurobako:gesturefx:0.7.1")
