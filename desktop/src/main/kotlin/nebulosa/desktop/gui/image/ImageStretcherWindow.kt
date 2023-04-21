@@ -36,9 +36,6 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
     }
 
     override fun onCreate() {
-        shadowAndHighlightRangeSlider.lowValue = 0.0
-        shadowAndHighlightRangeSlider.highValue = 255.0
-
         shadowAndHighlightRangeSlider.lowValueProperty().on {
             stretchParameterListener.playFromStart()
             shadowSpinner.valueFactory.value = it

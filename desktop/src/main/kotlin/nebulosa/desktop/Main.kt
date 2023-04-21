@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.swing.filechooser.FileSystemView
 import kotlin.io.path.createDirectories
-import kotlin.io.path.deleteExisting
+import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 
@@ -53,7 +53,7 @@ private fun Path.clearLogIfPastDays(days: Long = 7L) {
                 ?: continue
 
             if (pastDays.isAfter(logDate)) {
-                deleteExisting()
+                entry.deleteIfExists()
             }
         }
     }

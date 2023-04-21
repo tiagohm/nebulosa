@@ -25,3 +25,4 @@
 * https://www.flaticon.com/free-icon/location_4631354
 * https://www.flaticon.com/free-icon/rgb-print_7664547
 * https://www.flaticon.com/free-icon/setting_839374
+* https://www.flaticon.com/free-icon/filter_679991

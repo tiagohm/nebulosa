@@ -35,7 +35,7 @@ interface View : Closeable {
         bringToFront: Boolean = false,
     )
 
-    fun showAndWait()
+    fun showAndWait(owner: View? = null, closed: () -> Unit = {})
 
     fun showAlert(message: String, title: String = "Information")
 }

@@ -12,10 +12,10 @@ import nebulosa.desktop.helper.runBlockingIO
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.AbstractManager
-import nebulosa.desktop.logic.atlas.provider.catalog.CatalogProvider
 import nebulosa.desktop.logic.atlas.provider.ephemeris.BodyEphemerisProvider
 import nebulosa.desktop.logic.atlas.provider.ephemeris.HorizonsEphemerisProvider
 import nebulosa.desktop.logic.equipment.EquipmentManager
+import nebulosa.desktop.repository.SkyObjectRepository
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.horizons.HorizonsElement
@@ -75,15 +75,16 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     @Autowired private lateinit var smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var framingView: FramingView
-    @Autowired private lateinit var starCatalogProvider: CatalogProvider<*>
-    @Autowired private lateinit var dsoCatalogProvider: CatalogProvider<*>
+    @Autowired private lateinit var skyObjectRepository: SkyObjectRepository
 
     @Volatile private var tabType = AtlasView.TabType.SUN
     @Volatile private var planet: AtlasView.Planet? = null
     @Volatile private var minorPlanet: SmallBody? = null
-    @Volatile private var star: AtlasView.Star? = null
-    @Volatile private var dso: AtlasView.DSO? = null
+    @Volatile private var star: SkyObject? = null
+    @Volatile private var dso: SkyObject? = null
     @Volatile private var bodyName = ""
+    @Volatile private var starFilter = SkyObjectRepository.Filter.EMPTY
+    @Volatile private var dsoFilter = SkyObjectRepository.Filter.EMPTY
 
     private val civilDusk = doubleArrayOf(0.0, 0.0)
     private val nauticalDusk = doubleArrayOf(0.0, 0.0)
@@ -228,16 +229,16 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         return "DES=${body.body!!.spkId};".computeBody() ?: body.computeBody()
     }
 
-    suspend fun computeStar(body: AtlasView.Star? = star): HorizonsEphemeris? {
+    suspend fun computeStar(body: SkyObject? = star): HorizonsEphemeris? {
         star = body ?: return null
-        bodyName = body.skyObject.names.joinToString(", ")
-        return starsCache.computeFixedStar(body.skyObject).computeBody()
+        bodyName = body.names.joinToString(", ")
+        return starsCache.computeFixedStar(body).computeBody()
     }
 
-    suspend fun computeDSO(body: AtlasView.DSO? = dso): HorizonsEphemeris? {
+    suspend fun computeDSO(body: SkyObject? = dso): HorizonsEphemeris? {
         dso = body ?: return null
-        bodyName = body.skyObject.names.joinToString(", ")
-        return dsosCache.computeFixedStar(body.skyObject).computeBody()
+        bodyName = body.names.joinToString(", ")
+        return dsosCache.computeFixedStar(body).computeBody()
     }
 
     private suspend fun String.computeBody(show: Boolean = true): HorizonsEphemeris? {
@@ -507,14 +508,18 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         withMain { computing.set(false) }
     }
 
-    suspend fun searchStar(text: String) = withIO {
-        val dsos = starCatalogProvider.searchBy(text)
-        view.populateStar(dsos.map { AtlasView.Star(it) })
+    suspend fun searchStar(text: String, filter: SkyObjectRepository.Filter? = null) = withIO {
+        withMain { computing.set(true) }
+        starFilter = filter ?: starFilter
+        view.populateStar(skyObjectRepository.searchStar(text, starFilter))
+        withMain { computing.set(false) }
     }
 
-    suspend fun searchDSO(text: String) = withIO {
-        val dsos = dsoCatalogProvider.searchBy(text)
-        view.populateDSOs(dsos.map { AtlasView.DSO(it) })
+    suspend fun searchDSO(text: String, filter: SkyObjectRepository.Filter? = null) = withIO {
+        withMain { computing.set(true) }
+        dsoFilter = filter ?: dsoFilter
+        view.populateDSOs(skyObjectRepository.searchDSO(text, dsoFilter))
+        withMain { computing.set(false) }
     }
 
     private fun trackModeForCurrentTab() {

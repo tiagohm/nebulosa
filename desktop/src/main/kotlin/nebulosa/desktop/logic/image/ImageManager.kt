@@ -13,10 +13,10 @@ import nebulosa.desktop.helper.runBlockingMain
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.AbstractManager
-import nebulosa.desktop.logic.atlas.provider.catalog.CatalogProvider
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.platesolver.PlateSolvingEvent
 import nebulosa.desktop.logic.platesolver.PlateSolvingSolved
+import nebulosa.desktop.repository.SkyObjectRepository
 import nebulosa.desktop.view.image.FitsHeaderView
 import nebulosa.desktop.view.image.ImageStretcherView
 import nebulosa.desktop.view.image.ImageView
@@ -45,8 +45,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var plateSolverView: PlateSolverView
     @Autowired private lateinit var eventBus: EventBus
-    @Autowired private lateinit var starCatalogProvider: CatalogProvider<*>
-    @Autowired private lateinit var dsoCatalogProvider: CatalogProvider<*>
+    @Autowired private lateinit var skyObjectRepository: SkyObjectRepository
 
     val file = SimpleObjectProperty<File>()
 
@@ -99,8 +98,8 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         crosshair.isVisible = false
         annotation.isVisible = false
 
-        annotation.add(starCatalogProvider, Color.YELLOW)
-        annotation.add(dsoCatalogProvider, Color.LIGHTGREEN)
+        annotation.add(skyObjectRepository::searchStar, Color.YELLOW)
+        annotation.add(skyObjectRepository::searchDSO, Color.LIGHTGREEN)
 
         view.addFirst(crosshair)
         view.addFirst(annotation)

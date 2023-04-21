@@ -5,7 +5,7 @@ import nebulosa.desktop.view.View
 import nebulosa.math.Angle
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
-import kotlin.math.min
+import nebulosa.skycatalog.SkyObjectType
 
 interface AtlasView : View {
 
@@ -30,21 +30,6 @@ interface AtlasView : View {
         val value: String,
     )
 
-    data class Star(
-        val skyObject: SkyObject,
-        val name: String = skyObject.names.firstOrNull() ?: "?",
-        val magnitude: Double = min(skyObject.mV, skyObject.mB),
-        val constellation: String = skyObject.constellation.iau,
-    )
-
-    data class DSO(
-        val skyObject: SkyObject,
-        val name: String = skyObject.names.firstOrNull() ?: "?",
-        val magnitude: Double = min(skyObject.mV, skyObject.mB),
-        val type: String = skyObject.type.description,
-        val constellation: String = skyObject.constellation.iau,
-    )
-
     suspend fun drawAltitude(
         points: List<XYItem>, now: Double,
         civilDawn: DoubleArray, nauticalDawn: DoubleArray, astronomicalDawn: DoubleArray,
@@ -66,9 +51,9 @@ interface AtlasView : View {
 
     suspend fun populateMinorPlanet(minorPlanets: List<MinorPlanet>)
 
-    suspend fun populateStar(stars: List<Star>)
+    suspend fun populateStar(stars: List<SkyObject>)
 
-    suspend fun populateDSOs(dsos: List<DSO>)
+    suspend fun populateDSOs(dsos: List<SkyObject>)
 
     suspend fun updateInfo(bodyName: String, extra: List<Pair<String, String>> = emptyList())
 

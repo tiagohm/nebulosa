@@ -91,7 +91,7 @@ class MountManager(
 
     fun openSiteAndTime() {
         val window = SiteAndTimeWindow(value ?: return, this)
-        window.showAndWait()
+        window.showAndWait(view)
     }
 
     fun park() {

@@ -8,6 +8,7 @@ import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.Alert
 import javafx.scene.image.Image
+import javafx.stage.Modality
 import javafx.stage.Stage
 import kotlinx.coroutines.*
 import nebulosa.desktop.gui.home.HomeWindow
@@ -160,8 +161,17 @@ abstract class AbstractWindow(
         if (bringToFront) window.toFront()
     }
 
-    final override fun showAndWait() {
-        launch { window.showAndWait() }
+    final override fun showAndWait(owner: View?, closed: () -> Unit) {
+        launch {
+            if (window.owner == null) {
+                window.initModality(Modality.WINDOW_MODAL)
+                if (owner is AbstractWindow && owner !== this) window.initOwner(owner.window)
+            }
+
+            window.showAndWait()
+
+            closed()
+        }
     }
 
     final override fun close() {

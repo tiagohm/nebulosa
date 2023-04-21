@@ -16,11 +16,13 @@ import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.atlas.AtlasManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
+import nebulosa.desktop.repository.SkyObjectRepository
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
 import nebulosa.math.PairOfAngle
 import nebulosa.nova.astrometry.Constellation
+import nebulosa.skycatalog.SkyObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
@@ -50,9 +52,9 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     @FXML private lateinit var searchMinorPlanetTextField: TextField
     @FXML private lateinit var minorPlanetTableView: TableView<AtlasView.MinorPlanet>
     @FXML private lateinit var searchStarTextField: TextField
-    @FXML private lateinit var starTableView: TableView<AtlasView.Star>
+    @FXML private lateinit var starTableView: TableView<SkyObject>
     @FXML private lateinit var searchDSOTextField: TextField
-    @FXML private lateinit var dsosTableView: TableView<AtlasView.DSO>
+    @FXML private lateinit var dsosTableView: TableView<SkyObject>
     @FXML private lateinit var goToButton: Button
     @FXML private lateinit var slewToButton: Button
     @FXML private lateinit var syncButton: Button
@@ -63,6 +65,9 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
 
     private lateinit var extraLabels: Array<CopyableLabel>
     private lateinit var extraPanes: Array<LabeledPane>
+
+    private val searchStarFilterWindow by lazy { beanFactory.createBean(DeepSkyFilterWindow::class.java) }
+    private val searchDSOFilterWindow by lazy { beanFactory.createBean(DeepSkyFilterWindow::class.java) }
 
     init {
         resizable = false
@@ -99,18 +104,18 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         (minorPlanetTableView.columns[1] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.description }
         (minorPlanetTableView.columns[2] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.value }
 
-        (starTableView.columns[0] as TableColumn<AtlasView.Star, String>).cellValueFactory = PropertyValueFactory { it.name }
-        (starTableView.columns[1] as TableColumn<AtlasView.Star, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
-        (starTableView.columns[1] as TableColumn<AtlasView.Star, Double>).cellFactory = Callback { _ -> MagnitudeTableCell<AtlasView.Star>() }
-        (starTableView.columns[2] as TableColumn<AtlasView.Star, String>).cellValueFactory = PropertyValueFactory { it.constellation }
+        (starTableView.columns[0] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.names.first() }
+        (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellValueFactory = PropertyValueFactory { it.mV }
+        (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = Callback { _ -> MagnitudeTableCell() }
+        (starTableView.columns[2] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
         starTableView.selectionModel.selectedItemProperty()
             .on { if (it != null) launch { atlasManager.computeStar(it) } }
 
-        (dsosTableView.columns[0] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.name }
-        (dsosTableView.columns[1] as TableColumn<AtlasView.DSO, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
-        (dsosTableView.columns[1] as TableColumn<AtlasView.DSO, Double>).cellFactory = Callback { _ -> MagnitudeTableCell<AtlasView.DSO>() }
-        (dsosTableView.columns[2] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.type }
-        (dsosTableView.columns[3] as TableColumn<AtlasView.DSO, String>).cellValueFactory = PropertyValueFactory { it.constellation }
+        (dsosTableView.columns[0] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.names.first() }
+        (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellValueFactory = PropertyValueFactory { it.mV }
+        (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = Callback { _ -> MagnitudeTableCell() }
+        (dsosTableView.columns[2] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.type.description }
+        (dsosTableView.columns[3] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
         dsosTableView.selectionModel.selectedItemProperty()
             .on { if (it != null) launch { atlasManager.computeDSO(it) } }
 
@@ -183,9 +188,48 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     }
 
     @FXML
+    private fun openFilterStar() {
+        searchStarFilterWindow.showAndWait(this) {
+            if (searchStarFilterWindow.filtered) {
+                val text = searchStarTextField.text.trim()
+                val filter = SkyObjectRepository.Filter(
+                    searchStarFilterWindow.rightAscension,
+                    searchStarFilterWindow.declination,
+                    searchStarFilterWindow.radius,
+                    searchStarFilterWindow.constellation,
+                    searchStarFilterWindow.mangitudeMin,
+                    searchStarFilterWindow.magnitudeMax,
+                )
+
+                launch { atlasManager.searchStar(text, filter) }
+            }
+        }
+    }
+
+    @FXML
     private fun searchDSO() {
         val text = searchDSOTextField.text.trim()
         launch { atlasManager.searchDSO(text) }
+    }
+
+    @FXML
+    private fun openFilterDSO() {
+        searchDSOFilterWindow.showAndWait(this) {
+            if (searchDSOFilterWindow.filtered) {
+                val text = searchDSOTextField.text.trim()
+                val filter = SkyObjectRepository.Filter(
+                    searchDSOFilterWindow.rightAscension,
+                    searchDSOFilterWindow.declination,
+                    searchDSOFilterWindow.radius,
+                    searchDSOFilterWindow.constellation,
+                    searchDSOFilterWindow.mangitudeMin,
+                    searchDSOFilterWindow.magnitudeMax,
+                    searchDSOFilterWindow.type,
+                )
+
+                launch { atlasManager.searchDSO(text, filter) }
+            }
+        }
     }
 
     override suspend fun drawAltitude(
@@ -219,14 +263,14 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         minorPlanetTableView.items.setAll(minorPlanets)
     }
 
-    override suspend fun populateStar(stars: List<AtlasView.Star>) = withMain {
+    override suspend fun populateStar(stars: List<SkyObject>) = withMain {
         val filteredList = FilteredList(FXCollections.observableArrayList(stars))
         val sortedList = SortedList(filteredList)
         sortedList.comparatorProperty().bind(starTableView.comparatorProperty())
         starTableView.items = sortedList
     }
 
-    override suspend fun populateDSOs(dsos: List<AtlasView.DSO>) = withMain {
+    override suspend fun populateDSOs(dsos: List<SkyObject>) = withMain {
         val filteredList = FilteredList(FXCollections.observableArrayList(dsos))
         val sortedList = SortedList(filteredList)
         sortedList.comparatorProperty().bind(dsosTableView.comparatorProperty())
@@ -278,7 +322,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         altitudeChart.draw(emptyList())
     }
 
-    private class MagnitudeTableCell<T> : TableCell<T, Double>() {
+    private class MagnitudeTableCell : TableCell<SkyObject, Double>() {
 
         override fun updateItem(item: Double?, empty: Boolean) {
             super.updateItem(item, empty)

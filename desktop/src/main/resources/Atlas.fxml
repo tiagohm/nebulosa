@@ -114,6 +114,8 @@
                         <MaterialIconButton onAction="#searchStar"
                                             text="Search"
                                             icon="magnify"/>
+                        <MaterialIconButton onAction="#openFilterStar"
+                                            icon="filter"/>
                     </HBox>
                     <TableView fx:id="starTableView"
                                styleClass="text-sm"
@@ -150,6 +152,8 @@
                         <MaterialIconButton onAction="#searchDSO"
                                             text="Search"
                                             icon="magnify"/>
+                        <MaterialIconButton onAction="#openFilterDSO"
+                                            icon="filter"/>
                     </HBox>
                     <TableView fx:id="dsosTableView"
                                fixedCellSize="32.0"

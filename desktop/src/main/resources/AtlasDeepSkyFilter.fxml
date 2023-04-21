@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.control.*?>
+<?import org.controlsfx.control.RangeSlider?>
+<AnchorPane maxHeight="-Infinity"
+            maxWidth="-Infinity"
+            minHeight="-Infinity"
+            minWidth="-Infinity"
+            prefWidth="390.0"
+            xmlns="http://javafx.com/javafx/19"
+            xmlns:fx="http://javafx.com/fxml/1">
+    <VBox spacing="4.0"
+          AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0"
+          AnchorPane.topAnchor="0.0">
+        <padding>
+            <Insets bottom="16.0"
+                    left="16.0"
+                    right="16.0"
+                    top="16.0"/>
+        </padding>
+        <VBox alignment="TOP_CENTER"
+              spacing="4.0">
+            <GridPane hgap="4.0"
+                      vgap="4.0">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="10.0"/>
+                    <ColumnConstraints percentWidth="35.0"/>
+                    <ColumnConstraints percentWidth="35.0"/>
+                    <ColumnConstraints percentWidth="20.0"/>
+                </columnConstraints>
+                <LabeledPane text="Region"
+                             GridPane.rowIndex="0"
+                             GridPane.columnIndex="0"
+                             textStyleClass="text-bold">
+                    <CheckBox fx:id="regionEnabledCheckbox"/>
+                </LabeledPane>
+                <LabeledPane text="RA (J2000)"
+                             GridPane.rowIndex="0"
+                             GridPane.columnIndex="1"
+                             textStyleClass="text-bold">
+                    <TextField fx:id="raTextField"
+                               promptText="00h00m00.00s"
+                               text="00h00m00.00s"/>
+                </LabeledPane>
+                <LabeledPane text="DEC (J2000)"
+                             GridPane.rowIndex="0"
+                             GridPane.columnIndex="2"
+                             textStyleClass="text-bold">
+                    <TextField fx:id="decTextField"
+                               promptText="00°00'00.00&quot;"
+                               text="00°00'00.00&quot;"/>
+                </LabeledPane>
+                <LabeledPane text="Radius"
+                             GridPane.rowIndex="0"
+                             GridPane.columnIndex="3"
+                             textStyleClass="text-bold">
+                    <Spinner fx:id="radiusSpinner"
+                             amountToStepBy="0.1"
+                             editable="true"
+                             initialValue="1.0"
+                             max="90.0"
+                             min="0.1"/>
+                </LabeledPane>
+                <LabeledPane text="Constellation"
+                             GridPane.rowIndex="1"
+                             GridPane.columnIndex="0"
+                             GridPane.columnSpan="2"
+                             textStyleClass="text-bold">
+                    <ChoiceBox fx:id="constellationChoiceBox"
+                               maxWidth="Infinity"/>
+                </LabeledPane>
+                <LabeledPane text="Type"
+                             GridPane.rowIndex="1"
+                             GridPane.columnIndex="2"
+                             GridPane.columnSpan="2"
+                             textStyleClass="text-bold">
+                    <ChoiceBox fx:id="typeChoiceBox"
+                               maxWidth="Infinity"/>
+                </LabeledPane>
+                <LabeledPane text="Magnitude"
+                             GridPane.rowIndex="2"
+                             GridPane.columnIndex="0"
+                             GridPane.columnSpan="4"
+                             textStyleClass="text-bold">
+                    <RangeSlider fx:id="magnitudeRangeSlider"
+                                 maxWidth="Infinity"
+                                 blockIncrement="0.1"
+                                 max="100.0"
+                                 min="-100.0"
+                                 highValue="100.0"
+                                 lowValue="-100.0"
+                                 majorTickUnit="10.0"
+                                 minorTickCount="1"
+                                 showTickLabels="true"
+                                 showTickMarks="true"/>
+                </LabeledPane>
+            </GridPane>
+            <HBox alignment="CENTER"
+                  spacing="4.0">
+                <VBox.margin>
+                    <Insets top="16.0"/>
+                </VBox.margin>
+                <MaterialIconButton fx:id="filterButton"
+                                    onAction="#filter"
+                                    text="Filter"
+                                    icon="filter"/>
+            </HBox>
+        </VBox>
+    </VBox>
+</AnchorPane>
