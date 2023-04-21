@@ -94,7 +94,7 @@ class SkyObjectRepository {
             } else {
                 val names = NameEntity.name.groupConcat(GROUP_CONCAT_SEPARATOR).alias("names")
 
-                val additionalConstraint = (entity.id eq joinId)
+                val joinConstraint = (entity.id eq joinId)
                     .let { if (text.isBlank()) it else it and (NameEntity.name like text) }
 
                 val select = ArrayList<Op<Boolean>>(4)
@@ -111,21 +111,16 @@ class SkyObjectRepository {
                     select.add(entity.type eq type)
                 }
 
-                if (magnitudeMin in MAGNITUDE_RANGE ||
-                    magnitudeMax in MAGNITUDE_RANGE
-                ) {
-                    select.add(
-                        entity.mV.between(magnitudeMin, magnitudeMax)
-                                or entity.mB.between(magnitudeMin, magnitudeMax)
-                    )
+                if (magnitudeMin in MAGNITUDE_RANGE || magnitudeMax in MAGNITUDE_RANGE) {
+                    select.add(entity.magnitude.between(magnitudeMin, magnitudeMax))
                 }
 
                 entity
-                    .join(NameEntity, JoinType.INNER, additionalConstraint = { additionalConstraint })
+                    .join(NameEntity, JoinType.INNER, additionalConstraint = { joinConstraint })
                     .slice(names, *columns)
                     .let { if (select.isEmpty()) it.selectAll() else it.select { select.foldWithAnd() } }
                     .groupBy(entity.id)
-                    .orderBy(entity.mV)
+                    .orderBy(entity.magnitude)
                     .limit(1000)
                     .map { mapper(it, names) }
             }
@@ -191,9 +186,7 @@ class SkyObjectRepository {
                 hr = row[StarEntity.hr],
                 hd = row[StarEntity.hd],
                 hip = row[StarEntity.hip],
-                sao = row[StarEntity.sao],
-                mB = row[StarEntity.mB],
-                mV = row[StarEntity.mV],
+                magnitude = row[StarEntity.magnitude],
                 rightAscension = row[StarEntity.rightAscension].rad,
                 declination = row[StarEntity.declination].rad,
                 spType = row[StarEntity.spType],
@@ -242,8 +235,7 @@ class SkyObjectRepository {
                 hcg = row[DsoEntity.hcg],
                 eso = row[DsoEntity.eso],
                 vdbh = row[DsoEntity.vdbh],
-                mB = row[DsoEntity.mB],
-                mV = row[DsoEntity.mV],
+                magnitude = row[DsoEntity.magnitude],
                 rightAscension = row[DsoEntity.rightAscension].rad,
                 declination = row[DsoEntity.declination].rad,
                 type = row[DsoEntity.type],

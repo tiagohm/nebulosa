@@ -3,20 +3,25 @@ package nebulosa.horizons
 import nebulosa.math.Angle
 import nebulosa.math.Distance
 import nebulosa.retrofit.RetrofitService
+import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Retrofit
+import retrofit2.create
 import java.lang.reflect.Type
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class HorizonsService(url: String = URL) : RetrofitService(url) {
+class HorizonsService(
+    url: String = URL,
+    okHttpClient: OkHttpClient? = null,
+) : RetrofitService(url, okHttpClient) {
 
     override val converterFactory: List<Converter.Factory> = listOf(HorizonsEphemerisConverterFactory)
 
-    private val service by lazy { retrofit.create(Horizons::class.java) }
+    private val service by lazy { retrofit.create<Horizons>() }
 
     fun observer(
         command: String,

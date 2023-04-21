@@ -5,7 +5,6 @@ import nebulosa.desktop.view.View
 import nebulosa.math.Angle
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
-import nebulosa.skycatalog.SkyObjectType
 
 interface AtlasView : View {
 

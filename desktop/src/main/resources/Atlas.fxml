@@ -56,9 +56,11 @@
                     <columns>
                         <TableColumn prefWidth="170.0"
                                      style="-fx-alignment: CENTER;"
+                                     styleClass="text-xs"
                                      text="Name"/>
                         <TableColumn prefWidth="130.0"
                                      style="-fx-alignment: CENTER-LEFT;"
+                                     styleClass="text-xs"
                                      text="Type"/>
                     </columns>
                 </TableView>
@@ -88,12 +90,15 @@
                         <columns>
                             <TableColumn prefWidth="90.0"
                                          style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
                                          text="Element"/>
                             <TableColumn prefWidth="180.0"
                                          style="-fx-alignment: CENTER-LEFT;"
+                                         styleClass="text-xs"
                                          text="Description"/>
                             <TableColumn prefWidth="190.0"
                                          style="-fx-alignment: CENTER-RIGHT;"
+                                         styleClass="text-xs"
                                          text="Value"/>
                         </columns>
                     </TableView>
@@ -126,12 +131,19 @@
                         <columns>
                             <TableColumn prefWidth="140.0"
                                          style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
                                          text="Name"/>
-                            <TableColumn prefWidth="90.0"
+                            <TableColumn prefWidth="80.0"
                                          style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
                                          text="Magnitude"/>
+                            <TableColumn prefWidth="130.0"
+                                         style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
+                                         text="Type"/>
                             <TableColumn prefWidth="100.0"
                                          style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
                                          text="Constellation"/>
                         </columns>
                     </TableView>
@@ -164,15 +176,19 @@
                         <columns>
                             <TableColumn prefWidth="140.0"
                                          style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
                                          text="Name"/>
-                            <TableColumn prefWidth="90.0"
+                            <TableColumn prefWidth="80.0"
                                          style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
                                          text="Magnitude"/>
-                            <TableColumn prefWidth="120.0"
+                            <TableColumn prefWidth="130.0"
                                          style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
                                          text="Type"/>
                             <TableColumn prefWidth="100.0"
                                          style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
                                          text="Constellation"/>
                         </columns>
                     </TableView>

@@ -12,6 +12,7 @@ import nebulosa.skycatalog.SkyCatalog
 import okio.BufferedSource
 import okio.Source
 import okio.buffer
+import kotlin.math.min
 
 class Nebula : SkyCatalog<DSO>(94661) {
 
@@ -128,14 +129,14 @@ class Nebula : SkyCatalog<DSO>(94661) {
                 pk = pk, png = png,
                 snrg = snrg, aco = aco,
                 hcg = hcg, eso = eso, vdbh = vdbh,
-                mB = mB, mV = mV,
+                magnitude = min(mB, mV),
                 rightAscension = ra, declination = dec,
                 type = types[type].type, mType = mType,
                 majorAxis = majorAxis, minorAxis = minorAxis,
                 orientation = orientation,
                 redshift = redshift,
                 parallax = parallax,
-                distance = distance,
+                distance = distance * 3261.5637769,
                 constellation = computeConstellation(ra, dec),
             )
 

@@ -2,6 +2,12 @@ import nebulosa.desktop.model.DsoEntity
 import nebulosa.desktop.model.NameEntity
 import nebulosa.desktop.model.StarEntity
 import nebulosa.io.transferAndClose
+import nebulosa.math.Angle.Companion.mas
+import nebulosa.math.Velocity.Companion.kms
+import nebulosa.simbad.CatalogType
+import nebulosa.simbad.SimbadObject
+import nebulosa.simbad.SimbadQuery
+import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.hyg.HygDatabase
 import nebulosa.skycatalog.stellarium.Nebula
 import okhttp3.Cache
@@ -31,13 +37,15 @@ object StarCatalogGenerator {
     fun main(args: Array<String>) {
         Paths.get("desktop/src/main/resources/data/StarCatalog.db").deleteIfExists()
 
-        val client = OkHttpClient.Builder()
+        val okHttpClient = OkHttpClient.Builder()
             .cache(Cache(File(".cache"), 1024 * 1024 * 32))
             .connectTimeout(1L, TimeUnit.MINUTES)
             .writeTimeout(1L, TimeUnit.MINUTES)
             .readTimeout(1L, TimeUnit.MINUTES)
             .callTimeout(1L, TimeUnit.MINUTES)
             .build()
+
+        val simbadService = SimbadService(okHttpClient = okHttpClient)
 
         Database
             .connect(
@@ -48,12 +56,12 @@ object StarCatalogGenerator {
         transaction {
             SchemaUtils.create(DsoEntity, StarEntity, NameEntity)
 
-            val catalog = client.download(
+            val catalog = okHttpClient.download(
                 "https://github.com/Stellarium/stellarium/raw/master/nebulae/default/catalog.dat",
                 Paths.get(".cache/catalog.dat"),
             ).gzip()
 
-            val names = client.download(
+            val names = okHttpClient.download(
                 "https://github.com/Stellarium/stellarium/raw/master/nebulae/default/names.dat",
                 Paths.get(".cache/names.dat"),
             )
@@ -95,8 +103,7 @@ object StarCatalogGenerator {
                         it[hcg] = item.hcg?.ifEmpty { null }
                         it[eso] = item.eso?.ifEmpty { null }
                         it[vdbh] = item.vdbh?.ifEmpty { null }
-                        it[mB] = item.mB
-                        it[mV] = item.mV
+                        it[magnitude] = item.magnitude
                         it[rightAscension] = item.rightAscension.value
                         it[declination] = item.declination.value
                         it[type] = item.type
@@ -123,7 +130,7 @@ object StarCatalogGenerator {
                 }
             }
 
-            val hyg = client.download(
+            val hyg = okHttpClient.download(
                 "https://github.com/astronexus/HYG-Database/raw/master/hygdata_v3.csv",
                 Paths.get(".cache/hygdata_v3.csv")
             )
@@ -131,25 +138,29 @@ object StarCatalogGenerator {
             with(HygDatabase()) {
                 load(hyg.buffer().inputStream())
 
+                val hipCatalog = simbadService.simbadCatalog(CatalogType.HIP)
+                val hdCatalog = simbadService.simbadCatalog(CatalogType.HD)
+
                 for (item in this) {
+                    val simbadObject = hipCatalog[item.hip] ?: hdCatalog[item.hd]
+                    val plx = simbadObject?.plx?.mas ?: item.parallax
+
                     StarEntity.insert {
                         it[id] = item.id
                         it[hr] = item.hr?.ifEmpty { null }
                         it[hd] = item.hd?.ifEmpty { null }
                         it[hip] = item.hip?.ifEmpty { null }
-                        it[sao] = item.sao?.ifEmpty { null }
-                        it[mB] = item.mB
-                        it[mV] = item.mV
+                        it[magnitude] = item.magnitude
                         it[rightAscension] = item.rightAscension.value
                         it[declination] = item.declination.value
-                        it[spType] = item.spType?.ifEmpty { null }
-                        it[redshift] = item.redshift
-                        it[parallax] = item.parallax.value
-                        it[radialVelocity] = item.radialVelocity.value
-                        it[distance] = item.distance
+                        it[spType] = (simbadObject?.spType ?: item.spType)?.ifEmpty { null }
+                        it[redshift] = simbadObject?.redshift ?: item.redshift
+                        it[parallax] = simbadObject?.plx?.mas?.value ?: item.parallax.value
+                        it[radialVelocity] = simbadObject?.rv?.kms?.value ?: item.radialVelocity.value
+                        it[distance] = if (item.distance == 0.0 && plx.value != 0.0) 3.2615637769 / plx.arcsec else item.distance
                         it[pmRA] = item.pmRA.value
                         it[pmDEC] = item.pmDEC.value
-                        it[type] = item.type
+                        it[type] = simbadObject?.type ?: item.type
                         it[constellation] = item.constellation
                     }
 
@@ -172,5 +183,30 @@ object StarCatalogGenerator {
             response.use { it.body.byteStream().transferAndClose(output.outputStream()) }
             output.inputStream().source()
         }
+    }
+
+    @JvmStatic
+    private fun SimbadService.simbadCatalog(type: CatalogType): Map<String, SimbadObject> {
+        val res = LinkedHashMap<String, SimbadObject>()
+        val query = SimbadQuery()
+
+        query.catalog(type)
+        query.id(0)
+        query.limit(20000)
+        query.magnitude(max = 10.0)
+
+        while (true) {
+            val data = query(query).execute().body() ?: break
+            if (data.isEmpty()) break
+
+            for (item in data) {
+                val key = item.names.first { it.type == type }.name
+                res[key] = item
+            }
+
+            query.id(data.last().id.toInt() + 1)
+        }
+
+        return res
     }
 }

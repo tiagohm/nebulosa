@@ -36,8 +36,7 @@ data class DSO(
     val hcg: String? = null, // HCG number (Hickson Compact Group (Hickson, 1989))
     val eso: String? = null, // ESO number (ESO/Uppsala Survey of the ESO(B) Atlas (Lauberts, 1982))
     val vdbh: String? = null, // VdBH number (Southern Stars embedded in nebulosity (van den Bergh+, 1975))
-    override val mB: Double = Double.MAX_VALUE,
-    override val mV: Double = Double.MAX_VALUE,
+    override val magnitude: Double = Double.MAX_VALUE,
     override val rightAscension: Angle = Angle.ZERO,
     override val declination: Angle = Angle.ZERO,
     override val type: SkyObjectType = SkyObjectType.OBJECT_OF_UNKNOWN_NATURE,
@@ -55,13 +54,16 @@ data class DSO(
 ) : SkyObject {
 
     // Dunlop Catalogue.
-    @Transient val dunlop = ngc > 0 && DUNLOP.contains(ngc)
+    val dunlop
+        get() = ngc > 0 && ngc in DUNLOP
 
     // Bennett Catalogue.
-    @Transient val bennett = ngc > 0 && BENNET.contains(ngc) || mel == 105 || ic == 1459 || tr == 23
+    val bennett
+        get() = ngc > 0 && ngc in BENNET || mel == 105 || ic == 1459 || tr == 23
 
     // Herschel 400 Catalogue.
-    @Transient val h400 = ngc > 0 && H400.contains(ngc)
+    val h400
+        get() = ngc > 0 && ngc in H400
 
     companion object {
 

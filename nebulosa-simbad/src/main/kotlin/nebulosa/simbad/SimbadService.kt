@@ -3,10 +3,13 @@ package nebulosa.simbad
 import nebulosa.retrofit.RetrofitService
 import nebulosa.skycatalog.SkyObjectType
 import okhttp3.FormBody
+import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
+import org.slf4j.LoggerFactory
 import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Retrofit
+import retrofit2.create
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
@@ -15,21 +18,28 @@ import java.lang.reflect.Type
  * @see <a href="https://simbad.u-strasbg.fr/simbad/tap/help/adqlHelp.html">ADQL Cheat sheet</a>
  * @see <a href="http://simbad.u-strasbg.fr/guide/otypes.htx">Object types</a>
  */
-class SimbadService(url: String = "https://simbad.u-strasbg.fr/") : RetrofitService(url) {
+class SimbadService(
+    url: String = "https://simbad.u-strasbg.fr/",
+    okHttpClient: OkHttpClient? = null,
+) : RetrofitService(url, okHttpClient) {
 
     override val converterFactory: List<Converter.Factory> = listOf(SimbadObjectConverterFactory)
 
-    private val service = retrofit.create(Simbad::class.java)
+    private val service by lazy { retrofit.create<Simbad>() }
 
     fun query(query: SimbadQuery): Call<List<SimbadObject>> {
-        val body = FormBody.Builder()
-            .add("request", "doQuery")
-            .add("lang", "adql")
-            .add("format", "tsv")
-            .add("query", query.build())
-            .build()
+        return with(query.build()) {
+            val body = FormBody.Builder()
+                .add("request", "doQuery")
+                .add("lang", "adql")
+                .add("format", "tsv")
+                .add("query", this)
+                .build()
 
-        return service.query(body)
+            LOG.info("query={}", this)
+
+            service.query(body)
+        }
     }
 
     private object SimbadObjectConverter : Converter<ResponseBody, List<SimbadObject>> {
@@ -101,6 +111,7 @@ class SimbadService(url: String = "https://simbad.u-strasbg.fr/") : RetrofitServ
         private const val IDS = 22
 
         @JvmStatic private val CATALOG_TYPES = CatalogType.values()
+        @JvmStatic private val LOG = LoggerFactory.getLogger(SimbadService::class.java)
 
         @JvmStatic private val MAIN_CATALOG_TYPES = arrayOf(
             CatalogType.NAME, CatalogType.STAR,

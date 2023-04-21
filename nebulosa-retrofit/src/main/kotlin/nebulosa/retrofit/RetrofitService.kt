@@ -12,7 +12,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import java.util.concurrent.TimeUnit
 
-abstract class RetrofitService(val url: String) {
+abstract class RetrofitService(
+    val url: String,
+    private val okHttpClient: OkHttpClient? = null,
+) {
 
     protected open val converterFactory = emptyList<Converter.Factory>()
 
@@ -35,7 +38,7 @@ abstract class RetrofitService(val url: String) {
         builder.addConverterFactory(JacksonConverterFactory.create(mapper))
         callAdaptorFactory?.also(builder::addCallAdapterFactory)
 
-        with(HTTP_CLIENT.newBuilder()) {
+        with((okHttpClient ?: HTTP_CLIENT).newBuilder()) {
             logLevel?.also { addInterceptor(HttpLoggingInterceptor().setLevel(it)) }
             handleOkHttpClientBuilder(this)
             builder.client(build())

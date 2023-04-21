@@ -71,16 +71,16 @@ class App {
     fun systemExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
 
     @Bean
-    fun horizonsService() = HorizonsService()
+    fun horizonsService(okHttpClient: OkHttpClient) = HorizonsService(okHttpClient = okHttpClient)
 
     @Bean
-    fun simbadService() = SimbadService()
+    fun simbadService(okHttpClient: OkHttpClient) = SimbadService(okHttpClient = okHttpClient)
 
     @Bean
-    fun smallBodyDatabaseLookupService() = SmallBodyDatabaseLookupService()
+    fun smallBodyDatabaseLookupService(okHttpClient: OkHttpClient) = SmallBodyDatabaseLookupService(okHttpClient = okHttpClient)
 
     @Bean
-    fun hips2FitsService() = Hips2FitsService()
+    fun hips2FitsService(okHttpClient: OkHttpClient) = Hips2FitsService(okHttpClient = okHttpClient)
 
     @Bean
     fun eventBus() = EventBus.builder()

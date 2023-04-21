@@ -8,9 +8,7 @@ sealed interface SkyObjectEntity {
 
     val id: Column<Int>
 
-    val mB: Column<Double>
-
-    val mV: Column<Double>
+    val magnitude: Column<Double>
 
     val rightAscension: Column<Double>
 

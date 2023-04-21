@@ -11,9 +11,7 @@ interface SkyObject : Serializable {
 
     val names: List<String>
 
-    val mB: Double
-
-    val mV: Double
+    val magnitude: Double
 
     val rightAscension: Angle
 

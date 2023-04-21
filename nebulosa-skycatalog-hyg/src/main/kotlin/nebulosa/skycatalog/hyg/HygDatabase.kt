@@ -49,7 +49,7 @@ class HygDatabase : SkyCatalog<Star>(118005) {
             val pmRA = record.get("pmra").toDouble().mas
             val pmDEC = record.get("pmdec").toDouble().mas
             val radialVelocity = record.get("rv").toDouble().kms
-            val mV = record.get("mag").toDouble()
+            val magnitude = record.get("mag").toDouble()
             val spType = record.get("spect")
             val bayer = record.get("bayer")
             val flamsteed = record.get("flam").toIntOrNull() ?: 0
@@ -76,7 +76,7 @@ class HygDatabase : SkyCatalog<Star>(118005) {
                 hr = hr,
                 hd = hd,
                 hip = hip,
-                mV = mV,
+                magnitude = magnitude,
                 rightAscension = rightAscension,
                 declination = declination,
                 spType = spType,

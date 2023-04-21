@@ -106,9 +106,9 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     fun initialize() {
         eventBus.register(this)
 
-            val longitude = mount?.longitude ?: preferences.double("atlas.longitude")?.rad ?: Angle.ZERO
-            val latitude = mount?.latitude ?: preferences.double("atlas.latitude")?.rad ?: Angle.ZERO
-            val elevation = mount?.elevation ?: preferences.double("atlas.elevation")?.au ?: Distance.ZERO
+        val longitude = mount?.longitude ?: preferences.double("atlas.longitude")?.rad ?: Angle.ZERO
+        val latitude = mount?.latitude ?: preferences.double("atlas.latitude")?.rad ?: Angle.ZERO
+        val elevation = mount?.elevation ?: preferences.double("atlas.elevation")?.au ?: Distance.ZERO
 
         observer.set(Geoid.IERS2010.latLon(longitude, latitude, elevation))
     }
@@ -232,21 +232,24 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     suspend fun computeStar(body: SkyObject? = star): HorizonsEphemeris? {
         star = body ?: return null
         bodyName = body.names.joinToString(", ")
-        return starsCache.computeFixedStar(body).computeBody()
+        return starsCache.computeFixedStar(body).computeBody(body = star)
     }
 
     suspend fun computeDSO(body: SkyObject? = dso): HorizonsEphemeris? {
         dso = body ?: return null
         bodyName = body.names.joinToString(", ")
-        return dsosCache.computeFixedStar(body).computeBody()
+        return dsosCache.computeFixedStar(body).computeBody(body = dso)
     }
 
     private suspend fun String.computeBody(show: Boolean = true): HorizonsEphemeris? {
         return if (isNotEmpty()) computeAltitude(this, show = show) else null
     }
 
-    private suspend fun Body.computeBody(show: Boolean = true): HorizonsEphemeris? {
-        return computeAltitude(this, show = show)
+    private suspend fun Body.computeBody(
+        show: Boolean = true,
+        body: SkyObject? = null,
+    ): HorizonsEphemeris? {
+        return computeAltitude(this, show = show, body = body)
     }
 
     private suspend fun SmallBody.computeBody(show: Boolean = true): HorizonsEphemeris? {
@@ -347,6 +350,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         target: Any,
         force: Boolean = false,
         show: Boolean = true,
+        body: SkyObject? = null,
     ) = withIO {
         val observer = observer.get() ?: return@withIO null
 
@@ -381,7 +385,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
                 null
             } else {
                 LOG.info("ephemeris was retrieved. target={}, start={}, end={}", target, ephemeris.start, ephemeris.endInclusive)
-                if (show) ephemeris.showBodyCoordinatesAndInfos(target)
+                if (show) ephemeris.showBodyCoordinatesAndInfos(target, body)
                 ephemeris
             }
         } catch (e: Throwable) {
@@ -392,12 +396,12 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         }
     }
 
-    private suspend fun HorizonsEphemeris.showBodyCoordinatesAndInfos(target: Any) {
-        computeCoordinates(target)
+    private suspend fun HorizonsEphemeris.showBodyCoordinatesAndInfos(target: Any, body: SkyObject?) {
+        computeCoordinates(target, body)
         drawAltitude(makePoints())
     }
 
-    private suspend fun HorizonsEphemeris.computeCoordinates(target: Any) {
+    private suspend fun HorizonsEphemeris.computeCoordinates(target: Any, body: SkyObject?) {
         val now = LocalDateTime.now(ZoneOffset.UTC)
         val element = this[now] ?: return
 
@@ -405,11 +409,17 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
         val extra = ArrayList<Pair<String, String>>(4)
 
-        val lightTime = element[HorizonsQuantity.ONE_WAY_LIGHT_TIME]?.toDoubleOrNull() ?: 0.0
-        val distance = lightTime * (SPEED_OF_LIGHT * 0.06) // km
-        if (distance <= 0.0) extra.add("Distance" to "-")
-        else if (distance >= AU_KM) extra.add("Distance (AU)" to "%.06f".format(distance / AU_KM))
-        else extra.add("Distance (km)" to "%.03f".format(distance))
+        if (body == null) {
+            val lightTime = element[HorizonsQuantity.ONE_WAY_LIGHT_TIME]?.toDoubleOrNull() ?: 0.0
+            val distance = lightTime * (SPEED_OF_LIGHT * 0.06) // km
+            if (distance <= 0.0) extra.add("Distance" to "-")
+            else if (distance >= AU_KM) extra.add("Distance (AU)" to "%.06f".format(distance / AU_KM))
+            else extra.add("Distance (km)" to "%.03f".format(distance))
+        } else if (body.distance > 0.0) {
+            extra.add("Distance (ly)" to "%.1f".format(body.distance))
+        } else {
+            extra.add("Distance" to "-")
+        }
 
         val magnitude = element[HorizonsQuantity.VISUAL_MAGNITUDE]?.ifBlank { null }
         if (magnitude != null) extra.add("Magnitude" to magnitude)

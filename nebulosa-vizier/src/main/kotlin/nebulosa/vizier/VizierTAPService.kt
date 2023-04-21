@@ -9,6 +9,7 @@ import org.apache.commons.csv.CSVRecord
 import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Retrofit
+import retrofit2.create
 import java.lang.reflect.Type
 
 /**
@@ -18,7 +19,7 @@ class VizierTAPService(url: String = URL) : RetrofitService(url) {
 
     override val converterFactory: List<Converter.Factory> = listOf(CSVRecordListConverterFactory)
 
-    private val service by lazy { retrofit.create(VizierTAP::class.java) }
+    private val service by lazy { retrofit.create<VizierTAP>() }
 
     fun query(query: String): Call<List<CSVRecord>> {
         val body = FormBody.Builder()

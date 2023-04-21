@@ -105,19 +105,18 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         (minorPlanetTableView.columns[2] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.value }
 
         (starTableView.columns[0] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.names.first() }
-        (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellValueFactory = PropertyValueFactory { it.mV }
+        (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
         (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = Callback { _ -> MagnitudeTableCell() }
-        (starTableView.columns[2] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
-        starTableView.selectionModel.selectedItemProperty()
-            .on { if (it != null) launch { atlasManager.computeStar(it) } }
+        (starTableView.columns[2] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.type.description }
+        (starTableView.columns[3] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
+        starTableView.selectionModel.selectedItemProperty().on { if (it != null) launch { atlasManager.computeStar(it) } }
 
         (dsosTableView.columns[0] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.names.first() }
-        (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellValueFactory = PropertyValueFactory { it.mV }
+        (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
         (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = Callback { _ -> MagnitudeTableCell() }
         (dsosTableView.columns[2] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.type.description }
         (dsosTableView.columns[3] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
-        dsosTableView.selectionModel.selectedItemProperty()
-            .on { if (it != null) launch { atlasManager.computeDSO(it) } }
+        dsosTableView.selectionModel.selectedItemProperty().on { if (it != null) launch { atlasManager.computeDSO(it) } }
 
         launch { atlasManager.populatePlanets() }
     }
