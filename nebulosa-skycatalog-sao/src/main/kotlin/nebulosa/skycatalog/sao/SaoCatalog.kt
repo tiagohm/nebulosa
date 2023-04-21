@@ -53,7 +53,7 @@ class SaoCatalog : SkyCatalog<Star>(258997) {
                 rightAscension = rightAscension,
                 declination = declination,
                 spType = spType,
-                mV = magnitude,
+                magnitude = magnitude,
                 pmRA = pmRA.toDouble().rad,
                 pmDEC = pmDEC.toDouble().rad,
             )

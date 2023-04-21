@@ -38,7 +38,7 @@ object StarCatalogGenerator {
         Paths.get("desktop/src/main/resources/data/StarCatalog.db").deleteIfExists()
 
         val okHttpClient = OkHttpClient.Builder()
-            .cache(Cache(File(".cache"), 1024 * 1024 * 32))
+            .cache(Cache(File(".cache"), 1024 * 1024 * 128))
             .connectTimeout(1L, TimeUnit.MINUTES)
             .writeTimeout(1L, TimeUnit.MINUTES)
             .readTimeout(1L, TimeUnit.MINUTES)

@@ -252,7 +252,6 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         calibration: Calibration?,
     ) = withMain {
         imageManager.open(file, resetTransformation)
-        annotateCheckMenuItem.isSelected = false
     }
 
     override suspend fun open(
@@ -261,7 +260,6 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         calibration: Calibration?,
     ) = withMain {
         imageManager.open(fits, file, resetTransformation, calibration)
-        annotateCheckMenuItem.isSelected = false
     }
 
     override suspend fun adjustSceneToImage() {

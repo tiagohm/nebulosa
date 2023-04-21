@@ -18,13 +18,13 @@ class SaoCatalogTest : StringSpec() {
             catalog.first().id shouldBe 1
             catalog.first().rightAscension.value shouldBe (Angle.from("0  00  05.097", true)!!.value plusOrMinus 1e-14)
             catalog.first().declination.value shouldBe (Angle.from("82  41  41.82")!!.value plusOrMinus 1e-14)
-            catalog.first().mV shouldBe 7.2
+            catalog.first().magnitude shouldBe 7.2
             catalog.first().spType shouldBe "A0"
 
             catalog.last().id shouldBe 258997
             catalog.last().rightAscension.value shouldBe (Angle.from("23 58 52.487", true)!!.value plusOrMinus 1e-14)
             catalog.last().declination.value shouldBe (Angle.from("-83 48 05.02")!!.value plusOrMinus 1e-14)
-            catalog.last().mV shouldBe 8.9
+            catalog.last().magnitude shouldBe 8.9
             catalog.last().spType shouldBe "K0"
         }
     }

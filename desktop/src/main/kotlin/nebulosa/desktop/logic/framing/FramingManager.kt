@@ -1,6 +1,5 @@
 package nebulosa.desktop.logic.framing
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import javafx.beans.property.SimpleBooleanProperty
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
@@ -38,7 +37,6 @@ import kotlin.math.max
 @Component
 class FramingManager(@Autowired internal val view: FramingView) : Closeable {
 
-    @Autowired private lateinit var objectMapper: ObjectMapper
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var hips2FitsService: Hips2FitsService
     @Autowired private lateinit var imageViewOpener: ImageView.Opener
@@ -121,7 +119,7 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
 
             withMain {
                 try {
-                    val crot = view.frameRotation + Angle.SEMICIRCLE
+                    val crot = -view.frameRotation + Angle.SEMICIRCLE
                     val cdelt = view.frameFOV / max(view.frameWidth, view.frameHeight)
 
                     val calibration = Calibration(
