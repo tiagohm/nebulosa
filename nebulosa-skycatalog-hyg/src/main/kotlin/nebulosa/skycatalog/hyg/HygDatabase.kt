@@ -12,8 +12,6 @@ import nebulosa.skycatalog.Star
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import java.io.InputStream
-import java.nio.file.Path
-import kotlin.io.path.inputStream
 
 /**
  * HYG star database archive.
@@ -21,10 +19,6 @@ import kotlin.io.path.inputStream
  * @see <a href="https://github.com/astronexus/HYG-Database">GitHub</a>
  */
 class HygDatabase : SkyCatalog<Star>(118005) {
-
-    fun load(path: Path) {
-        path.inputStream().use(::load)
-    }
 
     fun load(inputStream: InputStream) {
         clear()
@@ -37,13 +31,13 @@ class HygDatabase : SkyCatalog<Star>(118005) {
         for (record in parser) {
             val id = record.get("id").toInt()
             if (id == 0) continue
-            val hip = record.get("hip")
-            val hd = record.get("hd")
-            val hr = record.get("hr")
+            val hip = record.get("hip").takeIf { it.isNotEmpty() }?.toInt() ?: 0
+            val hd = record.get("hd").takeIf { it.isNotEmpty() }?.toInt() ?: 0
+            val hr = record.get("hr").takeIf { it.isNotEmpty() }?.toInt() ?: 0
             val rightAscension = record.get("ra").toDouble().hours
             val declination = record.get("dec").toDouble().deg
             // val name = record.get("proper")
-            val name = IAU_STAR_NAMES[hip] ?: ""
+            val name = IAU_STAR_NAMES["$hip"] ?: ""
             // TODO: Distance, Parallax.
             // val distance = record.get("dist").toDouble()
             val pmRA = record.get("pmra").toDouble().mas
@@ -64,9 +58,9 @@ class HygDatabase : SkyCatalog<Star>(118005) {
             if (name.isNotEmpty()) names.add(name)
             if (bayer.isNotEmpty()) names.add("$bayer ${constellation.iau}")
             if (flamsteed > 0) names.add("$flamsteed ${constellation.iau}")
-            if (hip.isNotEmpty()) names.add("HIP $hip")
-            if (hd.isNotEmpty()) names.add("HD $hd")
-            if (hr.isNotEmpty()) names.add("HR $hr")
+            if (hip > 0) names.add("HIP $hip")
+            if (hd > 0) names.add("HD $hd")
+            if (hr > 0) names.add("HR $hr")
 
             if (names.isEmpty()) continue
 

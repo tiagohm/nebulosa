@@ -6,9 +6,9 @@ import org.jetbrains.exposed.sql.Table
 
 object StarEntity : Table("stars"), SkyObjectEntity {
     override val id = integer("id")
-    val hr = text("hr").nullable()
-    val hd = text("hd").nullable()
-    val hip = text("hip").nullable()
+    val hr = integer("hr")
+    val hd = integer("hd")
+    val hip = integer("hip")
     override val magnitude = double("magnitude")
     override val rightAscension = double("rightAscension")
     override val declination = double("declination")

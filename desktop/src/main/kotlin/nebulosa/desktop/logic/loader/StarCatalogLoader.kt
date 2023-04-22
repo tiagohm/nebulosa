@@ -16,6 +16,7 @@ import org.sqlite.JDBC
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ExecutorService
+import java.util.zip.GZIPInputStream
 import kotlin.io.path.createDirectories
 import kotlin.io.path.outputStream
 
@@ -32,7 +33,7 @@ class StarCatalogLoader : Runnable {
 
             catalog.parent.createDirectories()
 
-            resource("data/StarCatalog.db")!!.transferAndClose(catalog.outputStream())
+            GZIPInputStream(resource("data/StarCatalog.db.gz")!!).transferAndClose(catalog.outputStream())
 
             Database.connect("jdbc:sqlite:$catalog", driver = JDBC::class.java.name)
 

@@ -77,9 +77,9 @@ class Nebula : SkyCatalog<DSO>(94661) {
 
             val names = ArrayList<String>(2)
 
-            fun String.findNames(addKey: Boolean = true) {
+            fun String.findNames(useKeyAsName: Boolean = true) {
                 if (this in namesMap) names.addAll(namesMap[this]!!)
-                if (addKey) names.add(this)
+                if (useKeyAsName) names.add(this)
             }
 
             "$id".findNames(false)

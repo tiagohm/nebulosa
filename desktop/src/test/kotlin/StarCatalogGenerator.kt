@@ -13,10 +13,7 @@ import nebulosa.skycatalog.stellarium.Nebula
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okio.Source
-import okio.buffer
-import okio.gzip
-import okio.source
+import okio.*
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.insert
@@ -30,12 +27,14 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
+import kotlin.io.use
 
 object StarCatalogGenerator {
 
     @JvmStatic
     fun main(args: Array<String>) {
         Paths.get("desktop/src/main/resources/data/StarCatalog.db").deleteIfExists()
+        Paths.get("desktop/src/main/resources/data/StarCatalog.db.gz").deleteIfExists()
 
         val okHttpClient = OkHttpClient.Builder()
             .cache(Cache(File(".cache"), 1024 * 1024 * 128))
@@ -131,8 +130,8 @@ object StarCatalogGenerator {
             }
 
             val hyg = okHttpClient.download(
-                "https://github.com/astronexus/HYG-Database/raw/master/hygdata_v3.csv",
-                Paths.get(".cache/hygdata_v3.csv")
+                "https://github.com/astronexus/HYG-Database/raw/master/hyg/v3/hyg.csv",
+                Paths.get(".cache/hyg.csv")
             )
 
             with(HygDatabase()) {
@@ -142,14 +141,14 @@ object StarCatalogGenerator {
                 val hdCatalog = simbadService.simbadCatalog(CatalogType.HD)
 
                 for (item in this) {
-                    val simbadObject = hipCatalog[item.hip] ?: hdCatalog[item.hd]
+                    val simbadObject = hipCatalog["${item.hip}"] ?: hdCatalog["${item.hd}"]
                     val plx = simbadObject?.plx?.mas ?: item.parallax
 
                     StarEntity.insert {
                         it[id] = item.id
-                        it[hr] = item.hr?.ifEmpty { null }
-                        it[hd] = item.hd?.ifEmpty { null }
-                        it[hip] = item.hip?.ifEmpty { null }
+                        it[hr] = item.hr
+                        it[hd] = item.hd
+                        it[hip] = item.hip
                         it[magnitude] = item.magnitude
                         it[rightAscension] = item.rightAscension.value
                         it[declination] = item.declination.value
@@ -164,16 +163,22 @@ object StarCatalogGenerator {
                         it[constellation] = item.constellation
                     }
 
-                    for (dsoName in item.names) {
+                    for (starName in item.names) {
                         NameEntity.insert {
                             it[id] = namesId.getAndIncrement()
-                            it[name] = dsoName
+                            it[name] = starName
                             it[star] = item.id
                         }
                     }
                 }
             }
         }
+
+        Paths.get("desktop/src/main/resources/data/StarCatalog.db.gz")
+            .sink().gzip().use {
+                Paths.get("desktop/src/main/resources/data/StarCatalog.db").source().use(it.buffer()::writeAll)
+                it.flush()
+            }
     }
 
     @JvmStatic
