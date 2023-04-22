@@ -2,6 +2,7 @@ package nebulosa.desktop.gui.image
 
 import javafx.animation.PauseTransition
 import javafx.fxml.FXML
+import javafx.scene.control.Label
 import javafx.scene.control.Slider
 import javafx.scene.control.Spinner
 import javafx.util.Duration
@@ -22,6 +23,7 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
     @FXML private lateinit var shadowAndHighlightRangeSlider: RangeSlider
     @FXML private lateinit var midtoneSlider: Slider
     @FXML private lateinit var histogramView: HistogramView
+    @FXML private lateinit var histogramStatisticsLabel: Label
 
     private val imageStretcherManager = ImageStretcherManager(this)
     private val stretchParameterListener = PauseTransition(Duration.seconds(0.5))
@@ -73,10 +75,18 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
         view.stf(shadow, highlight, midtone)
     }
 
-    override suspend fun drawHistogram() {
-        val image = view.image ?: return
-        withIO { histogramView.compute(image) }
-        withMain { histogramView.draw() }
+    override suspend fun drawHistogram() = withMain {
+        val image = view.image ?: return@withMain
+
+        val histogram = withIO { histogramView.compute(image) }
+
+        histogramView.draw()
+
+        histogramStatisticsLabel.text = "min: %d | max: %d | median: %d | avg: %d | stdDev: %d"
+            .format(
+                histogram.minValue, histogram.maxValue, histogram.median.as16Bits(),
+                histogram.pixelAvg.as16Bits(), histogram.stdDev.as16Bits(),
+            )
     }
 
     override suspend fun updateTitle() = withMain {
@@ -102,5 +112,11 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
     @FXML
     private fun resetStretch() {
         launch { resetStretch(false) }
+    }
+
+    companion object {
+
+        @Suppress("NOTHING_TO_INLINE")
+        private inline fun Float.as16Bits() = (this * 65535f).toInt()
     }
 }

@@ -68,7 +68,8 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
 
                 listeners.forEach { it.onDeviceConnected() }
             }
-            is DeviceDisconnected -> {
+            is DeviceDisconnected,
+            is DeviceConnectionFailed -> {
                 connectedProperty.set(false)
                 connectingProperty.set(false)
 

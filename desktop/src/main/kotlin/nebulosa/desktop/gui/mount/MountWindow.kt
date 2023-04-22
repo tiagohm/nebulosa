@@ -12,6 +12,7 @@ import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.MaterialIcon
 import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.gui.control.TwoStateButton
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.mount.MountManager
 import nebulosa.desktop.view.mount.MountView
@@ -255,12 +256,12 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
         val userData = (event.source as MenuItem).userData as String
 
         when {
-            "JNOW" in userData -> mountManager.loadCurrentLocation()
-            "J2000" in userData -> mountManager.loadCurrentLocationJ2000()
-            "ZENITH" in userData -> mountManager.loadZenithLocation()
-            "NORTH_POLE" in userData -> mountManager.loadNorthCelestialPoleLocation()
-            "SOUTH_POLE" in userData -> mountManager.loadSouthCelestialPoleLocation()
-            "GALACTIC_CENTER" in userData -> mountManager.loadGalacticCenterLocation()
+            "JNOW" in userData -> launch { mountManager.loadCurrentLocation() }
+            "J2000" in userData -> launch { mountManager.loadCurrentLocationJ2000() }
+            "ZENITH" in userData -> launch { mountManager.loadZenithLocation() }
+            "NORTH_POLE" in userData -> launch { mountManager.loadNorthCelestialPoleLocation() }
+            "SOUTH_POLE" in userData -> launch { mountManager.loadSouthCelestialPoleLocation() }
+            "GALACTIC_CENTER" in userData -> launch { mountManager.loadGalacticCenterLocation() }
         }
     }
 
@@ -282,12 +283,12 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
         mountManager.toggleTrackingMode(mode)
     }
 
-    override fun updateTargetPosition(ra: Angle, dec: Angle) {
+    override suspend fun updateTargetPosition(ra: Angle, dec: Angle) = withMain {
         targetRightAscensionTextField.text = ra.format(AngleFormatter.HMS)
         targetDeclinationTextField.text = dec.format(AngleFormatter.SIGNED_DMS)
     }
 
-    override fun updateLSTAndMeridian(lst: Angle, timeLeftToMeridianFlip: Angle, timeToMeridianFlip: LocalDateTime) {
+    override suspend fun updateLSTAndMeridian(lst: Angle, timeLeftToMeridianFlip: Angle, timeToMeridianFlip: LocalDateTime) = withMain {
         meridianAtLabel.text = "%s (%s)".format(timeToMeridianFlip.format(MERIDIAN_TIME_FORMAT), timeLeftToMeridianFlip.format(LST_FORMAT))
         lstLabel.text = lst.format(LST_FORMAT)
     }

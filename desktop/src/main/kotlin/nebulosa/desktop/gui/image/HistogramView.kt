@@ -28,8 +28,9 @@ class HistogramView : Canvas() {
         this.height = height
     }
 
-    fun compute(image: Image) {
+    fun compute(image: Image): Histogram {
         histogram.compute(image)
+        return histogram
     }
 
     fun draw() {
@@ -39,7 +40,7 @@ class HistogramView : Canvas() {
         gc.clearRect(0.0, 0.0, width, height)
 
         val factor = width / 65536.0
-        val maxValue = histogram.peakCount
+        val maxValue = histogram.maxCount
 
         gc.lineWidth = 0.2
         gc.stroke = Color.BLACK

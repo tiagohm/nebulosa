@@ -66,8 +66,8 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     private lateinit var extraLabels: Array<CopyableLabel>
     private lateinit var extraPanes: Array<LabeledPane>
 
-    private val searchStarFilterWindow by lazy { beanFactory.createBean(DeepSkyFilterWindow::class.java) }
-    private val searchDSOFilterWindow by lazy { beanFactory.createBean(DeepSkyFilterWindow::class.java) }
+    private val searchStarFilterWindow by lazy { beanFactory.createBean(SkyObjectFilterWindow::class.java) }
+    private val searchDSOFilterWindow by lazy { beanFactory.createBean(SkyObjectFilterWindow::class.java) }
 
     init {
         resizable = false
@@ -198,6 +198,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
                     searchStarFilterWindow.constellation,
                     searchStarFilterWindow.mangitudeMin,
                     searchStarFilterWindow.magnitudeMax,
+                    searchStarFilterWindow.type,
                 )
 
                 launch { atlasManager.searchStar(text, filter) }

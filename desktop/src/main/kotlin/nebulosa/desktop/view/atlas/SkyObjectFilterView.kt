@@ -5,7 +5,7 @@ import nebulosa.math.Angle
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObjectType
 
-interface DeepSkyFilterView : View {
+interface SkyObjectFilterView : View {
 
     val filtered: Boolean
 

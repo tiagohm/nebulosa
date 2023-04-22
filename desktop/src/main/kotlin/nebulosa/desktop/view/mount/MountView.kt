@@ -13,7 +13,7 @@ interface MountView : View {
 
     var isJ2000: Boolean
 
-    fun updateTargetPosition(ra: Angle, dec: Angle)
+    suspend fun updateTargetPosition(ra: Angle, dec: Angle)
 
-    fun updateLSTAndMeridian(lst: Angle, timeLeftToMeridianFlip: Angle, timeToMeridianFlip: LocalDateTime)
+    suspend fun updateLSTAndMeridian(lst: Angle, timeLeftToMeridianFlip: Angle, timeToMeridianFlip: LocalDateTime)
 }

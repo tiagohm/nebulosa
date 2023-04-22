@@ -7,14 +7,16 @@ import javafx.scene.control.Spinner
 import javafx.scene.control.TextField
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.view.atlas.DeepSkyFilterView
+import nebulosa.desktop.gui.control.LabeledPane
+import nebulosa.desktop.logic.on
+import nebulosa.desktop.view.atlas.SkyObjectFilterView
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObjectType
 import org.controlsfx.control.RangeSlider
 
-class DeepSkyFilterWindow : AbstractWindow("AtlasDeepSkyFilter", "filter"), DeepSkyFilterView {
+class SkyObjectFilterWindow : AbstractWindow("SkyObjectFilter", "filter"), SkyObjectFilterView {
 
     @FXML private lateinit var regionEnabledCheckbox: CheckBox
     @FXML private lateinit var raTextField: TextField
@@ -26,7 +28,7 @@ class DeepSkyFilterWindow : AbstractWindow("AtlasDeepSkyFilter", "filter"), Deep
 
     init {
         resizable = false
-        title = "Atlas Filter"
+        title = "Sky Object Filter"
     }
 
     override fun onCreate() {
@@ -41,6 +43,10 @@ class DeepSkyFilterWindow : AbstractWindow("AtlasDeepSkyFilter", "filter"), Deep
         typeChoiceBox.converter = SkyObjectTypeStringConverter
         typeChoiceBox.items.add(null)
         typeChoiceBox.items.addAll(SkyObjectType.values().sortedBy { it.description })
+
+        val magnitudeRangeLabel = magnitudeRangeSlider.parent as LabeledPane
+        magnitudeRangeSlider.lowValueProperty().on { magnitudeRangeLabel.text = MAGNITUDE_LABEL_TEXT.format(it, magnitudeRangeSlider.highValue) }
+        magnitudeRangeSlider.highValueProperty().on { magnitudeRangeLabel.text = MAGNITUDE_LABEL_TEXT.format(magnitudeRangeSlider.lowValue, it) }
     }
 
     override fun onStart() {
@@ -90,5 +96,10 @@ class DeepSkyFilterWindow : AbstractWindow("AtlasDeepSkyFilter", "filter"), Deep
         override fun toString(type: SkyObjectType?) = type?.description ?: "All"
 
         override fun fromString(text: String?) = null
+    }
+
+    companion object {
+
+        private const val MAGNITUDE_LABEL_TEXT = "Magnitude (min: %.1f max: %.1f)"
     }
 }

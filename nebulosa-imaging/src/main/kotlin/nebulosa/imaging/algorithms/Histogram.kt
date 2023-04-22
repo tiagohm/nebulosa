@@ -2,6 +2,7 @@ package nebulosa.imaging.algorithms
 
 import nebulosa.imaging.Image
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sqrt
 
 class Histogram : ComputationAlgorithm<Boolean> {
@@ -11,10 +12,13 @@ class Histogram : ComputationAlgorithm<Boolean> {
     var median = 0f
         private set
 
-    var peakCount = 0
+    var maxCount = 0
         private set
 
-    var peakValue = 0f
+    var maxValue = 0
+        private set
+
+    var minValue = 0
         private set
 
     var pixelSum = 0f
@@ -32,8 +36,9 @@ class Histogram : ComputationAlgorithm<Boolean> {
         val size = source.width * source.height
         val sizeOverTwo = size / 2
 
-        peakCount = 0
-        peakValue = 0f
+        maxCount = 0
+        maxValue = 0
+        minValue = 65535
         pixelSum = 0f
         pixelAvg = 0f
 
@@ -45,8 +50,9 @@ class Histogram : ComputationAlgorithm<Boolean> {
             val value = (pixel * 65535f).toInt()
             buffer[value]++
 
-            peakValue = max(peakValue, pixel)
-            peakCount = max(peakCount, buffer[value])
+            maxValue = max(maxValue, value)
+            maxCount = max(maxCount, buffer[value])
+            minValue = min(minValue, value)
             pixelSum += pixel
         }
 

@@ -1,11 +1,11 @@
 package nebulosa.desktop.logic.mount
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
 import nebulosa.desktop.gui.mount.SiteAndTimeWindow
-import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.helper.withIO
+import nebulosa.desktop.helper.withMain
+import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.desktop.view.mount.MountView
@@ -32,9 +32,8 @@ import kotlin.math.max
 class MountManager(
     @Autowired internal val view: MountView,
     @Autowired internal val equipmentManager: EquipmentManager,
-) : MountProperty by equipmentManager.selectedMount {
+) : AbstractManager(), MountProperty by equipmentManager.selectedMount {
 
-    @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
     @Autowired private lateinit var telescopeControlView: TelescopeControlView
 
@@ -135,32 +134,32 @@ class MountManager(
         else value.sync(ra, dec)
     }
 
-    fun loadCurrentLocation() {
+    suspend fun loadCurrentLocation() = withMain {
         view.updateTargetPosition(value.rightAscension, value.declination)
         view.isJ2000 = false
     }
 
-    fun loadCurrentLocationJ2000() {
+    suspend fun loadCurrentLocationJ2000() = withMain {
         view.updateTargetPosition(rightAscensionJ2000.hours, declinationJ2000.deg)
         view.isJ2000 = true
     }
 
-    fun loadZenithLocation() {
+    suspend fun loadZenithLocation() = withMain {
         view.updateTargetPosition(computeLST(), value.latitude)
         view.isJ2000 = false
     }
 
-    fun loadNorthCelestialPoleLocation() {
+    suspend fun loadNorthCelestialPoleLocation() = withMain {
         view.updateTargetPosition(computeLST(), Angle.QUARTER)
         view.isJ2000 = false
     }
 
-    fun loadSouthCelestialPoleLocation() {
+    suspend fun loadSouthCelestialPoleLocation() = withMain {
         view.updateTargetPosition(computeLST(), -Angle.QUARTER)
         view.isJ2000 = false
     }
 
-    fun loadGalacticCenterLocation() {
+    suspend fun loadGalacticCenterLocation() = withMain {
         val ra = Angle.from("17 45 40.04", true)!!
         val dec = Angle.from("−29 00 28.1")!!
         view.updateTargetPosition(ra, dec)
@@ -218,37 +217,35 @@ class MountManager(
         preferences.double("mount.screen.y")?.also { view.y = it }
     }
 
-    private fun computeLST(time: InstantOfTime = UTC.now()): Angle {
-        return if (value == null) Angle.ZERO else position.lstAt(time)
+    private suspend fun computeLST(time: InstantOfTime = UTC.now()) = withIO {
+        if (value == null) Angle.ZERO else position.lstAt(time)
     }
 
-    private fun computeTimeLeftToMeridianFlip(): Angle {
-        if (value == null) return Angle.ZERO
-        val timeLeft = value.rightAscension - computeLST()
-        return if (timeLeft.value < 0.0) timeLeft - SIDEREAL_TIME_DIFF * (timeLeft.normalized.value / TAU)
-        else timeLeft + SIDEREAL_TIME_DIFF * (1.0 - timeLeft.value / TAU)
-    }
-
-    private fun computeHourAngle(): Angle {
-        if (value == null) return Angle.ZERO
-        return (computeLST() - value.rightAscension).normalized
+    private suspend fun computeTimeLeftToMeridianFlip() = withIO {
+        if (value == null) Angle.ZERO
+        else {
+            val timeLeft = value.rightAscension - computeLST()
+            if (timeLeft.value < 0.0) timeLeft - SIDEREAL_TIME_DIFF * (timeLeft.normalized.value / TAU)
+            else timeLeft + SIDEREAL_TIME_DIFF * (1.0 - timeLeft.value / TAU)
+        }
     }
 
     @Scheduled(fixedRate = 1L, initialDelay = 1L, timeUnit = TimeUnit.SECONDS)
     fun onTimerHit() {
         val mount = value ?: return
 
+        if (!mount.connected) return
         if (!view.showing) return
 
-        val lst = computeLST()
-        val timeLeftToMeridianFlip = computeTimeLeftToMeridianFlip()
-        val timeToMeridianFlip = LocalDateTime.now().plusSeconds((timeLeftToMeridianFlip.hours * 3600.0).toLong())
+        launch {
+            val lst = computeLST()
+            val timeLeftToMeridianFlip = computeTimeLeftToMeridianFlip()
+            val timeToMeridianFlip = LocalDateTime.now().plusSeconds((timeLeftToMeridianFlip.hours * 3600.0).toLong())
 
-        if (mount.tracking) {
-            mount.computeCoordinates(j2000 = false)
-        }
+            if (mount.tracking) {
+                mount.computeCoordinates(j2000 = false)
+            }
 
-        runBlocking(Dispatchers.Main) {
             view.updateLSTAndMeridian(lst, timeLeftToMeridianFlip, timeToMeridianFlip)
         }
     }

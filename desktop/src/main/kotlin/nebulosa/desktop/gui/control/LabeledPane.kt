@@ -19,7 +19,7 @@ class LabeledPane(text: String = "") : VBox() {
         label.styleClass.add("text-xs")
         children.add(label)
 
-        alignment = Pos.CENTER_LEFT
+        alignment = Pos.TOP_LEFT
         spacing = 1.0
         isFillWidth = true
     }

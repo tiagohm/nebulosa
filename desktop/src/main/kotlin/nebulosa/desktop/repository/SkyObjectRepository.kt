@@ -53,7 +53,7 @@ class SkyObjectRepository {
             text,
             filter.rightAscension, filter.declination, filter.radius,
             filter.constellation, filter.magnitudeMin, filter.magnitudeMax,
-            null, STARS_COLUMNS, NameEntity.star, ::makeStar,
+            filter.type, STARS_COLUMNS, NameEntity.star, ::makeStar,
         )
     }
 
@@ -131,7 +131,7 @@ class SkyObjectRepository {
 
         private const val GROUP_CONCAT_SEPARATOR = ":"
 
-        @JvmStatic private val MAGNITUDE_RANGE = -99.9..99.9
+        @JvmStatic private val MAGNITUDE_RANGE = -29.9..29.9
         @JvmStatic private val LOG = LoggerFactory.getLogger(SkyObjectRepository::class.java)
         @JvmStatic private val STARS_COLUMNS = StarEntity.columns.toTypedArray()
         @JvmStatic private val DEEP_SKY_OBJECTS_COLUMNS = DsoEntity.columns.toTypedArray()

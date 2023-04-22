@@ -82,7 +82,7 @@
                     <ChoiceBox fx:id="typeChoiceBox"
                                maxWidth="Infinity"/>
                 </LabeledPane>
-                <LabeledPane text="Magnitude"
+                <LabeledPane text="Magnitude (min: -30.0, max: 30.0)"
                              GridPane.rowIndex="2"
                              GridPane.columnIndex="0"
                              GridPane.columnSpan="4"
@@ -90,10 +90,10 @@
                     <RangeSlider fx:id="magnitudeRangeSlider"
                                  maxWidth="Infinity"
                                  blockIncrement="0.1"
-                                 max="100.0"
-                                 min="-100.0"
-                                 highValue="100.0"
-                                 lowValue="-100.0"
+                                 max="30.0"
+                                 min="-30.0"
+                                 highValue="30.0"
+                                 lowValue="-30.0"
                                  majorTickUnit="10.0"
                                  minorTickCount="1"
                                  showTickLabels="true"
