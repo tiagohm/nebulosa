@@ -19,7 +19,7 @@ interface GuideDevice {
 
     // Mount.
 
-    val mountIsSlewing: Boolean
+    val mountIsBusy: Boolean
 
     val mountRightAscension: Angle
 

@@ -82,9 +82,9 @@
                     <Spinner fx:id="incrementSpinner"
                              amountToStepBy="1.0"
                              editable="true"
-                             initialValue="100.0"
+                             min="1.0"
                              max="10000.0"
-                             min="1.0"/>
+                             initialValue="100.0"/>
                 </LabeledPane>
                 <MaterialIconButton fx:id="moveInButton"
                                     onAction="#moveIn"
@@ -142,9 +142,9 @@
                     <Spinner fx:id="backlashCompensationStepsSpinner"
                              amountToStepBy="1.0"
                              editable="true"
-                             initialValue="100.0"
+                             min="0.0"
                              max="1000.0"
-                             min="0.0"/>
+                             initialValue="100.0"/>
                 </LabeledPane>
                 <MaterialIconButton fx:id="abortButton"
                                     onAction="#abort"

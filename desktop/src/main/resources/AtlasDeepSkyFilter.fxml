@@ -62,9 +62,9 @@
                     <Spinner fx:id="radiusSpinner"
                              amountToStepBy="0.1"
                              editable="true"
-                             initialValue="1.0"
+                             min="0.1"
                              max="90.0"
-                             min="0.1"/>
+                             initialValue="1.0"/>
                 </LabeledPane>
                 <LabeledPane text="Constellation"
                              GridPane.rowIndex="1"

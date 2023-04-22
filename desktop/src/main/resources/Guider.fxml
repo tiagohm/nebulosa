@@ -242,20 +242,32 @@
                                  maxWidth="Infinity"
                                  editable="true"
                                  min="1.0"
+                                 max="10000.0"
                                  initialValue="1000.0"
-                                 amountToStepBy="1.0"
-                                 max="10000.0"/>
+                                 amountToStepBy="1.0"/>
+                    </LabeledPane>
+                    <LabeledPane text="Distance (px)"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="1">
+                        <Spinner fx:id="calibrationDistanceSpinner"
+                                 maxWidth="Infinity"
+                                 editable="true"
+                                 min="10.0"
+                                 max="200.0"
+                                 initialValue="25.0"
+                                 amountToStepBy="1.0"/>
                     </LabeledPane>
                     <LabeledPane text="Assume DEC Orthogonal to RA"
                                  textStyleClass="text-bold"
                                  GridPane.rowIndex="0"
-                                 GridPane.columnIndex="1">
+                                 GridPane.columnIndex="2">
                         <SwitchSegmentedButton fx:id="assumeDECOrthogonalToRASwitch"/>
                     </LabeledPane>
                     <LabeledPane text="Use DEC Compensation"
                                  textStyleClass="text-bold"
                                  GridPane.rowIndex="0"
-                                 GridPane.columnIndex="2">
+                                 GridPane.columnIndex="3">
                         <SwitchSegmentedButton fx:id="useDECCompensationSwitch"
                                                state="true"/>
                     </LabeledPane>

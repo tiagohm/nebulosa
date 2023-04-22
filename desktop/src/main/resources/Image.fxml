@@ -148,12 +148,20 @@
                         </accelerator>
                     </CheckMenuItem>
                     <CheckMenuItem fx:id="annotateCheckMenuItem"
-                                   text="Annotate"
+                                   text="Annotation"
                                    onAction="#toggleAnnotation">
                         <graphic>
                             <MaterialIcon icon="alpha-a"
                                           size="md"/>
                         </graphic>
+                        <accelerator>
+                            <KeyCodeCombination alt="UP"
+                                                code="T"
+                                                control="DOWN"
+                                                meta="UP"
+                                                shift="UP"
+                                                shortcut="UP"/>
+                        </accelerator>
                     </CheckMenuItem>
                 </Menu>
                 <SeparatorMenuItem/>

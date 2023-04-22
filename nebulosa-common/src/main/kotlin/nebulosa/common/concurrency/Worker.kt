@@ -15,7 +15,6 @@ abstract class Worker : Executable, Pauseable {
 
     final override fun run() {
         if (running.compareAndSet(false, true)) {
-
             try {
                 while (running.get()) {
                     pauser.await()

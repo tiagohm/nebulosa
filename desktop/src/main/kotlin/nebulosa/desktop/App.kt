@@ -65,7 +65,7 @@ class App {
     fun filterWheelExecutorService(): ExecutorService = Executors.newSingleThreadExecutor()
 
     @Bean
-    fun guiderExecutorService(): ExecutorService = Executors.newFixedThreadPool(3)
+    fun guiderExecutorService(): ExecutorService = Executors.newSingleThreadExecutor()
 
     @Bean
     fun systemExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())

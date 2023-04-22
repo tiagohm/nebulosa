@@ -87,6 +87,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML private lateinit var slopeWeightDECSpinner: Spinner<Double>
     @FXML private lateinit var fastSwitchForLargeDeflectionsDECSwitch: SwitchSegmentedButton
     @FXML private lateinit var calibrationStepSpinner: Spinner<Double>
+    @FXML private lateinit var calibrationDistanceSpinner: Spinner<Double>
     @FXML private lateinit var assumeDECOrthogonalToRASwitch: SwitchSegmentedButton
     @FXML private lateinit var useDECCompensationSwitch: SwitchSegmentedButton
     @FXML private lateinit var ditherEnabledSwitch: SwitchSegmentedButton
@@ -292,6 +293,9 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
 
     override val calibrationStep
         get() = calibrationStepSpinner.value!!.toInt()
+
+    override val calibrationDistance
+        get() = calibrationDistanceSpinner.value!!.toInt()
 
     override val assumeDECOrthogonalToRA
         get() = assumeDECOrthogonalToRASwitch.state

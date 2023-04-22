@@ -16,7 +16,7 @@ internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : W
         val duration = guider.device.cameraExposureTime
 
         if (guider.pauseType != PauseType.FULL) {
-            while (guider.device.mountIsSlewing) Thread.sleep(10L)
+            while (guider.device.mountIsBusy) Thread.sleep(10L)
             LOG.info("starting frame capture. exposure={} ms", duration)
             var frame = guider.device.capture(duration)
             LOG.info("frame capture finished")
@@ -25,7 +25,7 @@ internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : W
                 frame = frame.transform(MEAN_FILTER)
             }
 
-            if (!guider.device.mountIsSlewing) {
+            if (!guider.device.mountIsBusy) {
                 guider.updateGuide(frame, frameNumber.getAndIncrement(), false)
             }
 

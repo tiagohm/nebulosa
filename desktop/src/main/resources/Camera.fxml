@@ -147,9 +147,9 @@
                              HBox.hgrow="ALWAYS"
                              LabeledPane.master="true"
                              editable="true"
-                             initialValue="0.0"
+                             min="-50.0"
                              max="50.0"
-                             min="-50.0"/>
+                             initialValue="0.0"/>
                     <MaterialIconButton fx:id="temperatureSetpointButton"
                                         onAction="#applyTemperatureSetpoint"
                                         icon="check"

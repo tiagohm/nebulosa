@@ -270,25 +270,25 @@ internal open class MountDevice(
 
     override fun guideNorth(duration: Int) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_N" to duration.toDouble())
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_N" to duration.toDouble(), "TIMED_GUIDE_S" to 0.0)
         }
     }
 
     override fun guideSouth(duration: Int) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_S" to duration.toDouble())
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_S" to duration.toDouble(), "TIMED_GUIDE_N" to 0.0)
         }
     }
 
     override fun guideEast(duration: Int) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_E" to duration.toDouble())
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_E" to duration.toDouble(), "TIMED_GUIDE_W" to 0.0)
         }
     }
 
     override fun guideWest(duration: Int) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_W" to duration.toDouble())
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_W" to duration.toDouble(), "TIMED_GUIDE_E" to 0.0)
         }
     }
 

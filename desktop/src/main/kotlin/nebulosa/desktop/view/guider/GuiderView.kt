@@ -42,6 +42,8 @@ interface GuiderView : View, ImageViewer.MouseListener {
 
     val calibrationStep: Int
 
+    val calibrationDistance: Int
+
     val useDECCompensation: Boolean
 
     val assumeDECOrthogonalToRA: Boolean

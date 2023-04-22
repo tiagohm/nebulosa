@@ -211,8 +211,8 @@ class GuiderManager(
 
     // Mount.
 
-    override val mountIsSlewing
-        get() = mount?.slewing ?: false
+    override val mountIsBusy
+        get() = mount?.let { it.slewing || it.pulseGuiding || it.parking } ?: false
 
     override val mountDeclination
         get() = mount?.declination ?: Angle.NaN
@@ -263,7 +263,7 @@ class GuiderManager(
         get() = view.maxDurationRA
 
     override val calibrationDistance
-        get() = view.calibrationStep
+        get() = view.calibrationDistance
 
     override val xGuideAlgorithm
         get() = xGuideAlgorithms[view.algorithmRA]!!.updateParameters()
@@ -286,29 +286,28 @@ class GuiderManager(
     override fun guideNorth(duration: Int): Boolean {
         val guideOutput = guideOutput ?: return false
         LOG.info("guiding north. output={}, duration={} ms", guideOutput.name, duration)
-        return guideTo(guideOutput::guideNorth, duration)
+        guideOutput.guideNorth(duration)
+        return true
     }
 
     override fun guideSouth(duration: Int): Boolean {
         val guideOutput = guideOutput ?: return false
         LOG.info("guiding south. output={}, duration={} ms", guideOutput.name, duration)
-        return guideTo(guideOutput::guideSouth, duration)
+        guideOutput.guideSouth(duration)
+        return true
     }
 
     override fun guideWest(duration: Int): Boolean {
         val guideOutput = guideOutput ?: return false
         LOG.info("guiding west. output={}, duration={} ms", guideOutput.name, duration)
-        return guideTo(guideOutput::guideWest, duration)
+        guideOutput.guideWest(duration)
+        return true
     }
 
     override fun guideEast(duration: Int): Boolean {
         val guideOutput = guideOutput ?: return false
         LOG.info("guiding east. output={}, duration={} ms", guideOutput.name, duration)
-        return guideTo(guideOutput::guideEast, duration)
-    }
-
-    private inline fun guideTo(crossinline callback: (Int) -> Unit, duration: Int): Boolean {
-        guiderExecutorService.submit { callback(duration) }
+        guideOutput.guideEast(duration)
         return true
     }
 

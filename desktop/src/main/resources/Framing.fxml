@@ -59,9 +59,9 @@
                     <Spinner fx:id="widthSpinner"
                              amountToStepBy="0.1"
                              editable="true"
-                             initialValue="1280.0"
+                             min="1.0"
                              max="1280.0"
-                             min="1.0"/>
+                             initialValue="1280.0"/>
                 </LabeledPane>
                 <LabeledPane text="Height"
                              GridPane.rowIndex="1"
