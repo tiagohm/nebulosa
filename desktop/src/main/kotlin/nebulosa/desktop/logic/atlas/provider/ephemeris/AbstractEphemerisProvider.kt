@@ -12,7 +12,6 @@ import java.time.OffsetDateTime
 
 abstract class AbstractEphemerisProvider<T> : EphemerisProvider<T> {
 
-    private val timeCache = ArrayList<Pair<UTC, LocalDateTime>>(1441)
     private val ephemerisCache = hashMapOf<GeographicPosition, MutableMap<T, HorizonsEphemeris>>()
 
     abstract fun compute(
@@ -22,25 +21,26 @@ abstract class AbstractEphemerisProvider<T> : EphemerisProvider<T> {
         vararg quantities: HorizonsQuantity,
     ): HorizonsEphemeris?
 
-    @Synchronized
-    private fun shouldCompute(force: Boolean, startTime: LocalDateTime): Boolean {
-        return if (force || timeCache.isEmpty() || startTime != timeCache[0].second) {
-            timeCache.clear()
+    private fun computeTime(force: Boolean, startTime: LocalDateTime): Boolean {
+        return synchronized(TIME_BUCKET) {
+            if (force || TIME_BUCKET.isEmpty() || startTime != TIME_BUCKET[0].second) {
+                TIME_BUCKET.clear()
 
-            val stepCount = 24.0 * 60.0
-            val whole = TimeYMDHMS(startTime).value
+                val step = 1.0 / STEP_COUNT
+                val whole = TimeYMDHMS(startTime).value
 
-            LOG.info("computing time. startTime={}", startTime)
+                LOG.info("computing time. startTime={}, step={}", startTime, step)
 
-            for (i in 0..stepCount.toInt()) {
-                val fraction = i / stepCount // 0..1
-                val utc = UTC(whole, fraction)
-                timeCache.add(utc to startTime.plusSeconds((fraction * DAYSEC).toLong()))
+                for (i in 0..STEP_COUNT) {
+                    val fraction = i * step
+                    val utc = UTC(whole, fraction)
+                    TIME_BUCKET.add(utc to startTime.plusSeconds((fraction * DAYSEC).toLong()))
+                }
+
+                true
+            } else {
+                false
             }
-
-            true
-        } else {
-            false
         }
     }
 
@@ -57,15 +57,15 @@ abstract class AbstractEphemerisProvider<T> : EphemerisProvider<T> {
 
         if (position !in ephemerisCache) ephemerisCache[position] = hashMapOf()
 
-        return if (shouldCompute(force, startTime) || target !in ephemerisCache[position]!!) {
-            val endTime = timeCache.last().second
+        return if (computeTime(force, startTime) || target !in ephemerisCache[position]!!) {
+            val endTime = TIME_BUCKET.last().second
 
             LOG.info(
                 "retrieving ephemeris from JPL Horizons. interval={}, target={}, startTime={}, endTime={}",
-                timeCache.size, target, startTime, endTime,
+                TIME_BUCKET.size, target, startTime, endTime,
             )
 
-            compute(target, position, timeCache, *quantities)
+            compute(target, position, TIME_BUCKET, *quantities)
                 ?.also { ephemerisCache[position]!![target] = it }
         } else {
             ephemerisCache[position]!![target]
@@ -74,6 +74,9 @@ abstract class AbstractEphemerisProvider<T> : EphemerisProvider<T> {
 
     companion object {
 
+        private const val STEP_COUNT = 24 * 60
+
         @JvmStatic private val LOG = LoggerFactory.getLogger(AbstractEphemerisProvider::class.java)
+        @JvmStatic private val TIME_BUCKET = ArrayList<Pair<UTC, LocalDateTime>>(1441)
     }
 }

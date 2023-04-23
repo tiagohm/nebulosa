@@ -39,7 +39,7 @@ class FilterWheelManager(
         loadPreferences(device)
     }
 
-    override fun onDeviceEvent(event: DeviceEvent<*>, device: FilterWheel) {
+    override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: FilterWheel) {
         when (event) {
             is FilterWheelPositionChanged -> updateTitle()
             is FilterWheelCountChanged -> updateFilterNames()

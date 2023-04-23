@@ -27,7 +27,7 @@ open class DefaultFilterWheelProperty : AbstractDeviceProperty<FilterWheel>(), F
         movingProperty.set(false)
     }
 
-    override fun onDeviceEvent(event: DeviceEvent<*>, device: FilterWheel) {
+    override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: FilterWheel) {
         when (event) {
             is FilterWheelCountChanged -> countProperty.set(device.count)
             is FilterWheelPositionChanged -> positionProperty.set(device.position)

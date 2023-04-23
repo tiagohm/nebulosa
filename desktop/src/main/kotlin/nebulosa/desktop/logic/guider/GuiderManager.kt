@@ -442,7 +442,7 @@ class GuiderManager(
 
         override fun onReset() {}
 
-        override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
+        override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
             when (event) {
                 is CameraFrameCaptured -> {
                     launch {
@@ -473,7 +473,7 @@ class GuiderManager(
 
         override fun onReset() {}
 
-        override fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {}
+        override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {}
     }
 
     private inner class GuideOutputPropertyListener : DevicePropertyListener<GuideOutput> {
@@ -486,7 +486,7 @@ class GuiderManager(
 
         override fun onReset() {}
 
-        override fun onDeviceEvent(event: DeviceEvent<*>, device: GuideOutput) {}
+        override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: GuideOutput) {}
     }
 
     companion object {

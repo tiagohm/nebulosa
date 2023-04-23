@@ -83,7 +83,7 @@ class CameraManager(
 
     override fun onReset() {}
 
-    override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
+    override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
         when (event) {
             is CameraExposureAborted,
             is CameraExposureFailed,

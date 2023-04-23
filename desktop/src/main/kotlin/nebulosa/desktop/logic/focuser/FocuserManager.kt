@@ -1,6 +1,5 @@
 package nebulosa.desktop.logic.focuser
 
-import nebulosa.desktop.helper.runBlockingMain
 import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
@@ -42,7 +41,7 @@ class FocuserManager(
 
     override fun onReset() = Unit
 
-    override fun onDeviceEvent(event: DeviceEvent<*>, device: Focuser) = runBlockingMain {
+    override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: Focuser) {
         when (event) {
             is FocuserMovingChanged -> updateStatus()
             is FocuserMaxPositionChanged -> {

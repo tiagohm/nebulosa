@@ -61,7 +61,7 @@ class MountManager(
         computePosition()
     }
 
-    override fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {
+    override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {
         when (event) {
             is MountParkChanged,
             is MountTrackingChanged,

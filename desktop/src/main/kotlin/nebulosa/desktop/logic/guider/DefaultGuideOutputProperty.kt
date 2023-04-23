@@ -21,7 +21,7 @@ open class DefaultGuideOutputProperty : AbstractDeviceProperty<GuideOutput>(), G
         pulseGuidingProperty.set(false)
     }
 
-    override fun onDeviceEvent(event: DeviceEvent<*>, device: GuideOutput) {
+    override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: GuideOutput) {
         when (event) {
             is GuideOutputPulsingChanged -> pulseGuidingProperty.set(device.pulseGuiding)
         }
