@@ -25,7 +25,7 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
 
     private val job = SupervisorJob()
 
-    final override val coroutineContext = job + Dispatchers.IO
+    override val coroutineContext = job + Dispatchers.IO
 
     final override fun getName() = value?.name ?: ""
 

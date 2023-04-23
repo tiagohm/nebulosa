@@ -1,12 +1,8 @@
 package nebulosa.desktop
 
-import ch.qos.logback.classic.Level
 import javafx.application.Application
 import javafx.scene.text.Font
 import nebulosa.io.resource
-import nebulosa.io.resourceUrl
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import oshi.PlatformEnum
 import oshi.SystemInfo
 import java.nio.file.Path
@@ -68,16 +64,11 @@ fun main(args: Array<String>) {
     Locale.setDefault(Locale.ENGLISH)
 
     // Fonts.
-    Font.loadFont(resourceUrl("fonts/Material-Design-Icons.ttf")!!.toExternalForm(), 22.0)
-    Font.loadFont(resource("fonts/Roboto-Regular.ttf"), 12.0)
-    Font.loadFont(resource("fonts/Roboto-Bold.ttf"), 12.0)
+    resource("fonts/Material-Design-Icons.ttf").use { Font.loadFont(it, 22.0) }
+    resource("fonts/Roboto-Regular.ttf").use { Font.loadFont(it, 12.0) }
+    resource("fonts/Roboto-Bold.ttf").use { Font.loadFont(it, 12.0) }
 
     System.setProperty("prism.lcdtext", "false")
-
-    // Log level.
-    with(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger) {
-        level = if ("-v" in args) Level.DEBUG else Level.INFO
-    }
 
     // Run the JavaFX application.
     Application.launch(Nebulosa::class.java, *args)

@@ -1,8 +1,10 @@
 package nebulosa.desktop
 
+import ch.qos.logback.classic.Level
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.atlas.provider.ephemeris.TimeBucket
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
 import nebulosa.sbd.SmallBodyDatabaseLookupService
@@ -11,6 +13,9 @@ import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.scheduling.annotation.EnableAsync
@@ -20,10 +25,11 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
+import ch.qos.logback.classic.Logger as LogbackLogger
 
 @EnableAsync
 @SpringBootApplication
-class App {
+class App : CommandLineRunner {
 
     @Bean
     fun appDirectory(): Path = Paths.get(System.getProperty("app.dir"))
@@ -91,8 +97,21 @@ class App {
         .logSubscriberExceptions(false)
         .build()!!
 
+    @Bean
+    fun timeBucket() = TimeBucket()
+
+    override fun run(vararg args: String) {
+        with(if ("-v" in args) Level.DEBUG else Level.INFO) {
+            logger(Logger.ROOT_LOGGER_NAME).level = this
+            logger("javafx").level = Level.WARN
+        }
+    }
+
     companion object {
 
         const val MAX_CACHE_SIZE = 1024L * 1024L * 512L // 512MB
+
+        @Suppress("NOTHING_TO_INLINE")
+        private inline fun logger(name: String) = LoggerFactory.getLogger(name) as LogbackLogger
     }
 }

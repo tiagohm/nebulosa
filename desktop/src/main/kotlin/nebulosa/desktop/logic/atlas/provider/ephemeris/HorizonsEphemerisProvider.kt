@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
 @Service
-class HorizonsEphemerisProvider : AbstractEphemerisProvider<Any>() {
+class HorizonsEphemerisProvider(@Autowired override val timeBucket: TimeBucket) : AbstractEphemerisProvider<Any>() {
 
     @Autowired private lateinit var horizonsService: HorizonsService
 

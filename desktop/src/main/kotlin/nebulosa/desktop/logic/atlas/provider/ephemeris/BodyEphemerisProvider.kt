@@ -8,11 +8,12 @@ import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.time.UTC
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
 @Service
-class BodyEphemerisProvider : AbstractEphemerisProvider<Body>() {
+class BodyEphemerisProvider(@Autowired override val timeBucket: TimeBucket) : AbstractEphemerisProvider<Body>() {
 
     override fun compute(
         target: Body,

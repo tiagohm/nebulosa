@@ -10,7 +10,7 @@ abstract class AbstractManager : Closeable, CoroutineScope {
 
     private val job = SupervisorJob()
 
-    final override val coroutineContext = job + Dispatchers.IO
+    override val coroutineContext = job + Dispatchers.IO
 
     override fun close() {
         job.cancel()
