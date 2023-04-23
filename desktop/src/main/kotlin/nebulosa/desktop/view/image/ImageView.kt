@@ -8,6 +8,7 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import nebulosa.platesolving.Calibration
+import nebulosa.skycatalog.SkyObject
 import java.io.File
 
 interface ImageView : View {
@@ -102,4 +103,6 @@ interface ImageView : View {
     fun registerMouseListener(listener: ImageViewer.MouseListener)
 
     fun unregisterMouseListener(listener: ImageViewer.MouseListener)
+
+    fun showStarInfo(star: SkyObject)
 }

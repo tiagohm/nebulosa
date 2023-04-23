@@ -29,6 +29,7 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.indi.device.mount.Mount
 import nebulosa.platesolving.Calibration
+import nebulosa.skycatalog.SkyObject
 import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Header
 import org.greenrobot.eventbus.EventBus
@@ -40,7 +41,7 @@ import java.io.File
 import javax.imageio.ImageIO
 import kotlin.math.max
 
-class ImageManager(private val view: ImageView) : AbstractManager() {
+class ImageManager(private val view: ImageView) : AbstractManager(), Annotation.EventListener {
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var plateSolverView: PlateSolverView
@@ -100,6 +101,7 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
 
         annotation.add(skyObjectRepository::searchStar, Color.YELLOW)
         annotation.add(skyObjectRepository::searchDSO, Color.LIGHTGREEN)
+        annotation.registerEventListener(this)
 
         view.addFirst(crosshair)
         view.addFirst(annotation)
@@ -119,6 +121,10 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
                 }
             }
         }
+    }
+
+    override fun onStarClicked(star: SkyObject) {
+        view.showStarInfo(star)
     }
 
     private suspend fun updateTitle(text: String? = null) = withMain {

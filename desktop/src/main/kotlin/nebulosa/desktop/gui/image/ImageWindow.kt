@@ -27,7 +27,9 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
+import nebulosa.math.AngleFormatter
 import nebulosa.platesolving.Calibration
+import nebulosa.skycatalog.SkyObject
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
@@ -302,6 +304,18 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     override fun transformAndDraw() {
         transformer.playFromStart()
+    }
+
+    override fun showStarInfo(star: SkyObject) {
+        showAlert(buildString(256) {
+            appendLine("NAME: ${star.names.joinToString(", ")}")
+            append("RA: ${star.rightAscension.format(AngleFormatter.HMS)} ")
+            appendLine("DEC: ${star.declination.format(AngleFormatter.SIGNED_DMS)}")
+            appendLine("MAGNITUDE: %.2f".format(star.magnitude))
+            appendLine("TYPE: ${star.type.description}")
+            if (star.distance > 0.0) appendLine("DISTANCE: %.1f ly".format(star.distance))
+            appendLine("CONSTELLATION: ${star.constellation.latinName} (${star.constellation.iau})")
+        })
     }
 
     fun updateAnnotationOptions(

@@ -186,6 +186,7 @@ abstract class AbstractWindow(
     ) {
         launch {
             val alert = FlatAlert(Alert.AlertType.INFORMATION)
+            alert.initModality(Modality.WINDOW_MODAL)
             alert.initOwner(window)
             alert.title = title
             alert.headerText = null
