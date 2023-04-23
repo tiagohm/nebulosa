@@ -20,6 +20,8 @@ interface FramingView : View {
 
     val frameRotation: Angle
 
+    val alwaysOpenInNewWindow: Boolean
+
     suspend fun load(
         ra: Angle, dec: Angle,
         hips: HipsSurvey? = null,

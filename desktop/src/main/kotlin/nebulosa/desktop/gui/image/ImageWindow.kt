@@ -250,16 +250,18 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         file: File,
         resetTransformation: Boolean,
         calibration: Calibration?,
+        title: String?,
     ) = withMain {
-        imageManager.open(file, resetTransformation)
+        imageManager.open(file, resetTransformation, calibration, title)
     }
 
     override suspend fun open(
         fits: Image, file: File?,
         resetTransformation: Boolean,
         calibration: Calibration?,
+        title: String?,
     ) = withMain {
-        imageManager.open(fits, file, resetTransformation, calibration)
+        imageManager.open(fits, file, resetTransformation, calibration, title)
     }
 
     override suspend fun adjustSceneToImage() {
@@ -354,6 +356,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             image: Image?, file: File?,
             token: Any?, resetTransformation: Boolean,
             calibration: Calibration?,
+            title: String?,
         ): ImageView {
             val window = withMain {
                 if (token != null) {
@@ -372,8 +375,8 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             withMain {
                 window.show()
 
-                if (image != null) window.open(image, file, resetTransformation, calibration)
-                else if (file != null) window.open(file, true, calibration)
+                if (image != null) window.open(image, file, resetTransformation, calibration, title)
+                else if (file != null) window.open(file, true, calibration, title)
                 else LOG.error("fits or file parameter must be provided")
             }
 

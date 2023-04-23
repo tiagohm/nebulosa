@@ -80,8 +80,6 @@ class SkyObjectRepository {
         mapper: (ResultRow, Expression<String>) -> R,
     ): List<R> where T : SkyObjectEntity, T : Table {
         return transaction {
-            addLogger(SkyObjectRepository)
-
             val entity = this@search
 
             val shouldUseFilter = radius.value > 0.0 ||

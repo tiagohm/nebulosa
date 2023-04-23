@@ -38,7 +38,7 @@ import kotlin.io.path.outputStream
 
 data class CameraExposureTask(
     override val camera: Camera,
-    val exposure: Long, // us
+    val exposure: Long, // µs
     val amount: Int,
     val delay: Long, // ms
     val x: Int,
@@ -78,13 +78,13 @@ data class CameraExposureTask(
 
     @Volatile private var stopWatch = 0L
 
-    private val mount: Mount?
+    private inline val mount: Mount?
         get() = equipmentManager.selectedMount.get()
 
-    private val focuser: Focuser?
+    private inline val focuser: Focuser?
         get() = equipmentManager.selectedFocuser.get()
 
-    private val filterWheel: FilterWheel?
+    private inline val filterWheel: FilterWheel?
         get() = equipmentManager.selectedFilterWheel.get()
 
     val filterName
@@ -113,6 +113,8 @@ data class CameraExposureTask(
 
     override fun call(): List<Path> {
         try {
+            stopWatch = System.nanoTime()
+
             eventBus.post(TaskStarted(this))
 
             camera.snoop(listOf(mount, focuser, filterWheel))
@@ -149,8 +151,6 @@ data class CameraExposureTask(
 
             eventBus.register(this)
 
-            stopWatch = System.nanoTime()
-
             while (camera.connected && remainingAmount > 0 && !forceAbort.get()) {
                 synchronized(camera) {
                     latch.countUp()
@@ -184,6 +184,8 @@ data class CameraExposureTask(
         } finally {
             eventBus.unregister(this)
             eventBus.post(TaskFinished(this))
+
+            camera.disableBlob()
         }
 
         return imagePaths

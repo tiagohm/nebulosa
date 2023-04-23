@@ -5,6 +5,7 @@ import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
+import nebulosa.desktop.view.View
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.desktop.view.image.ImageView
 import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
@@ -16,6 +17,7 @@ import nebulosa.imaging.Image
 import nebulosa.indi.device.mount.Mount
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.AngleFormatter
 import nebulosa.math.PairOfAngle
 import nebulosa.platesolving.Calibration
 import nom.tam.fits.header.ObservationDescription
@@ -42,7 +44,7 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
     @Autowired private lateinit var imageViewOpener: ImageView.Opener
     @Autowired private lateinit var preferences: Preferences
 
-    private val imageView = AtomicReference<ImageView>()
+    private val imageViews = hashSetOf<ImageView>()
     private val imagePath = AtomicReference<Path>()
 
     val loading = SimpleBooleanProperty()
@@ -115,7 +117,7 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
             image.header.addValue(MaxImDLExt.ROTATANG, rotation.degrees)
             image.header.addValue("COMMENT", null as String?, "Made use of hips2fits, a service provided by CDS.")
 
-            val currentImageView = imageView.get()
+            val currentImageView = imageViews.firstOrNull { it.showing }
 
             withMain {
                 try {
@@ -133,16 +135,22 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
                         height = cdelt * view.frameHeight,
                     )
 
-                    if (currentImageView != null) {
-                        currentImageView.open(image, path!!.toFile(), true, calibration)
-                        currentImageView.show(requestFocus = true)
-                    } else {
-                        imageView.set(
+                    val title = "%s · %s %s %.2f° %.2f°".format(
+                        hipsSurvey.id, view.frameRA.format(AngleFormatter.HMS),
+                        view.frameDEC.format(AngleFormatter.SIGNED_DMS),
+                        view.frameFOV.degrees, view.frameRotation.degrees,
+                    )
+
+                    if (view.alwaysOpenInNewWindow || currentImageView == null) {
+                        imageViews.add(
                             imageViewOpener.open(
                                 image, path!!.toFile(),
-                                resetTransformation = true, calibration = calibration,
+                                resetTransformation = true, calibration = calibration, title = title,
                             )
                         )
+                    } else {
+                        currentImageView.open(image, path!!.toFile(), true, calibration, title)
+                        currentImageView.show(bringToFront = true)
                     }
                 } catch (e: Throwable) {
                     LOG.error("image open failed", e)
@@ -159,6 +167,10 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
         val hipsSurveyId = preferences.string("framing.hipsSurvey") ?: DEFAULT_HIPS_SURVEY
         val selected = HIPS_SURVEY_SOURCES.firstOrNull { it.id == hipsSurveyId }
         view.populateHipsSurveys(HIPS_SURVEY_SOURCES, selected)
+    }
+
+    fun closeOpenWindows() {
+        imageViews.forEach(View::close)
     }
 
     fun loadPreferences() {

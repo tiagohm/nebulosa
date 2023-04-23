@@ -116,13 +116,15 @@ class CameraManager(
             val task = runningTask.get()
 
             if (task != null && capturingProperty.get()) {
-                append("%d of %d".format(task.amount - task.remainingAmount, task.amount))
+                append("%d of %d".format(task.amount - task.remainingAmount, if (task.amount >= Int.MAX_VALUE) "∞" else task.amount))
                 append(" | ")
                 append("%.1fs".format(task.remainingTime / 1000000.0))
                 append(" | ")
                 append("%.1fs".format(task.elapsedTime / 1000000.0))
-                append(" of ")
-                append("%.1fs".format(task.totalExposureTime / 1000000.0))
+                if (task.amount < Int.MAX_VALUE) {
+                    append(" of ")
+                    append("%.1fs".format(task.totalExposureTime / 1000000.0))
+                }
                 append(" | ")
                 append("%s".format(task.frameType))
 

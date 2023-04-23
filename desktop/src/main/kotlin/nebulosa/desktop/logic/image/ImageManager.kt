@@ -121,31 +121,32 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
         }
     }
 
-    private suspend fun updateTitle() = withMain {
-        val title = "Image"
+    private suspend fun updateTitle(text: String? = null) = withMain {
+        view.title = if (text.isNullOrEmpty()) "Image"
             .let { if (view.camera != null) "$it · ${view.camera!!.name}" else it }
             .let { if (file.get() != null) "$it · ${file.get().name}" else it }
-
-        view.title = title
+        else "Image · $text"
     }
 
     suspend fun open(
         file: File,
         resetTransformation: Boolean = false,
         calibration: Calibration? = null,
+        title: String? = null,
     ) = withIO {
         val image = Image.open(file)
-        open(image, file, resetTransformation, calibration)
+        open(image, file, resetTransformation, calibration, title)
     }
 
     suspend fun open(
         image: Image, file: File? = null,
         resetTransformation: Boolean = false,
         calibration: Calibration? = null,
+        title: String? = null,
     ) {
         this.file.set(file)
 
-        updateTitle()
+        updateTitle(title)
 
         val adjustSceneToImage = this.image == null
 
@@ -412,6 +413,8 @@ class ImageManager(private val view: ImageView) : AbstractManager() {
     }
 
     override fun close() {
+        if (image == null) return
+
         super.close()
 
         image = null

@@ -19,6 +19,7 @@ interface ImageView : View {
             token: Any? = null,
             resetTransformation: Boolean = false,
             calibration: Calibration? = null,
+            title: String? = null,
         ): ImageView
     }
 
@@ -74,12 +75,14 @@ interface ImageView : View {
         file: File,
         resetTransformation: Boolean = false,
         calibration: Calibration? = null,
+        title: String? = null,
     )
 
     suspend fun open(
         fits: Image, file: File? = null,
         resetTransformation: Boolean = false,
         calibration: Calibration? = null,
+        title: String? = null,
     )
 
     fun transformAndDraw()
