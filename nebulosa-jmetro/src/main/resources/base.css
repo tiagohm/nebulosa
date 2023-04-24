@@ -2742,12 +2742,12 @@ TextField:readonly {
 
 .dialog-pane:header .header-panel .label {
     /* -fx-font-family: "Roboto"; */
-    -fx-font-size: 1.666667em; /* 20 */
+    -fx-font-size: 1.333333em; /* 16 */
 }
 
 .dialog-pane > .content.label {
     /* -fx-font-family: "Roboto"; */
-    -fx-font-size: 1.166667em; /* 14 */
+    -fx-font-size: 1.083333333333em; /* 13 */
 }
 
 .dialog-pane > .content {

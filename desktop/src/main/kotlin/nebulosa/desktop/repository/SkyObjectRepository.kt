@@ -15,8 +15,8 @@ import nebulosa.skycatalog.Star
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.between
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.minus
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.plus
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.times
@@ -92,8 +92,17 @@ class SkyObjectRepository {
             } else {
                 val names = NameEntity.name.groupConcat(GROUP_CONCAT_SEPARATOR).alias("names")
 
+                val trimmedText = text.trim().trim('%')
+
+                val ids = if (trimmedText.isBlank()) emptyList() else NameEntity
+                    .slice(joinId)
+                    .select { joinId.isNotNull() and (NameEntity.name like text) }
+                    .withDistinct()
+                    .limit(1000)
+                    .map { it[joinId]!! }
+
                 val joinConstraint = (entity.id eq joinId)
-                    .let { if (text.isBlank()) it else it and (NameEntity.name like text) }
+                    .let { if (ids.isEmpty()) it else it and (entity.id inList ids) }
 
                 val select = ArrayList<Op<Boolean>>(4)
 

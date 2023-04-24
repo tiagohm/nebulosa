@@ -78,6 +78,8 @@ class Annotation : ShapePane() {
                     .filter { it.first.intersects(0.0, 0.0, width, height) })
         }
 
+        stars.sortByDescending { it.first.radius }
+
         withMain {
             children.removeAll { it is Circle || it is Text }
             stars.forEach { add(it.first); add(it.second) }
@@ -100,6 +102,7 @@ class Annotation : ShapePane() {
 
             val starClicked = EventHandler<MouseEvent> { event ->
                 if (event.button == MouseButton.PRIMARY && event.clickCount == 2) {
+                    event.consume()
                     annotation.eventListeners.forEach { it.onStarClicked(star) }
                 }
             }
@@ -109,7 +112,7 @@ class Annotation : ShapePane() {
                 stroke = color
                 strokeWidth = 1.0
                 radius = majorAxisSize
-                onMouseClicked = starClicked
+                addEventHandler(MouseEvent.MOUSE_CLICKED, starClicked)
             }
 
             val text = Text(this[0], this[1], star.names.joinToString(" | "))
@@ -118,7 +121,7 @@ class Annotation : ShapePane() {
                 fill = color
                 stroke = color
                 textAlignment = TextAlignment.CENTER
-                onMouseClicked = starClicked
+                addEventHandler(MouseEvent.MOUSE_CLICKED, starClicked)
             }
 
             return circle to text

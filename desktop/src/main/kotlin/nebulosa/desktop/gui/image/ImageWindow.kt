@@ -8,12 +8,14 @@ import javafx.geometry.Point2D
 import javafx.scene.Node
 import javafx.scene.control.CheckMenuItem
 import javafx.scene.control.ContextMenu
+import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
 import javafx.scene.image.PixelBuffer
 import javafx.scene.image.PixelFormat
 import javafx.scene.image.WritableImage
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
+import javafx.scene.layout.VBox
 import javafx.util.Duration
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ImageViewer
@@ -30,6 +32,7 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.math.AngleFormatter
 import nebulosa.platesolving.Calibration
 import nebulosa.skycatalog.SkyObject
+import net.kurobako.gesturefx.AffineEvent
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
@@ -53,11 +56,13 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     @FXML private lateinit var fitsHeaderMenuItem: MenuItem
     @FXML private lateinit var crosshairCheckMenuItem: CheckMenuItem
     @FXML private lateinit var annotateCheckMenuItem: CheckMenuItem
+    @FXML private lateinit var zoomFactorLabel: Label
 
     @Volatile private var imageData = IntArray(0)
     private val imageSecondaryClickLocation = SimpleObjectProperty<Point2D>()
     private val transformer = PauseTransition(Duration.seconds(0.5))
     private val imageManager = ImageManager(this)
+    private val zoomTextTransition = PauseTransition(Duration.seconds(2.0))
 
     init {
         title = "Image"
@@ -65,10 +70,14 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
         transformer.setOnFinished {
             launch { imageManager.transformAndDraw() }
         }
+
+        zoomTextTransition.setOnFinished {
+            zoomFactorLabel.isVisible = false
+        }
     }
 
     override fun onCreate() {
-        imageViewer.addEventFilter(MouseEvent.MOUSE_CLICKED) {
+        imageViewer.addEventHandler(MouseEvent.MOUSE_CLICKED) {
             if (it.button == MouseButton.PRIMARY && it.clickCount == 2) {
                 if (!maximized) {
                     launch {
@@ -80,6 +89,13 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
                 menu.hide()
                 it.consume()
             }
+        }
+
+        imageViewer.addEventFilter(AffineEvent.CHANGE_FINISHED) {
+            zoomFactorLabel.text = "%.2fx".format(imageViewer.currentScale)
+            zoomFactorLabel.isVisible = true
+
+            zoomTextTransition.playFromStart()
         }
 
         with(imageViewer) {
@@ -183,7 +199,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
     @FXML
     private fun solve() {
-        launch { imageManager.solve(false) }
+        launch { imageManager.solve() }
     }
 
     @FXML
@@ -307,15 +323,19 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     }
 
     override fun showStarInfo(star: SkyObject) {
-        showAlert(buildString(256) {
-            appendLine("NAME: ${star.names.joinToString(", ")}")
-            append("RA: ${star.rightAscension.format(AngleFormatter.HMS)} ")
-            appendLine("DEC: ${star.declination.format(AngleFormatter.SIGNED_DMS)}")
-            appendLine("MAGNITUDE: %.2f".format(star.magnitude))
-            appendLine("TYPE: ${star.type.description}")
-            if (star.distance > 0.0) appendLine("DISTANCE: %.1f ly".format(star.distance))
-            appendLine("CONSTELLATION: ${star.constellation.latinName} (${star.constellation.iau})")
-        })
+        showAlert {
+            val box = VBox()
+            headerText = star.names.joinToString(", ")
+            val rightAscension = star.rightAscension.format(AngleFormatter.HMS)
+            val declination = star.declination.format(AngleFormatter.SIGNED_DMS)
+            box.children.add(Label("RA: $rightAscension DEC: $declination"))
+            if (star.magnitude < 99.0) box.children.add(Label("MAGNITUDE: %.2f".format(star.magnitude)))
+            box.children.add(Label("TYPE: ${star.type.description}"))
+            if (star.distance > 0.0) box.children.add(Label("DISTANCE: %.1f ly".format(star.distance)))
+            box.children.add(Label("CONSTELLATION: ${star.constellation.latinName} (${star.constellation.iau})"))
+            children.add(box)
+            content = box
+        }
     }
 
     fun updateAnnotationOptions(

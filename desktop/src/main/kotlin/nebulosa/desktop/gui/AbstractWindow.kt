@@ -3,10 +3,14 @@ package nebulosa.desktop.gui
 import io.reactivex.rxjava3.subjects.PublishSubject
 import javafx.application.HostServices
 import javafx.application.Platform
+import javafx.event.Event
+import javafx.event.EventHandler
+import javafx.event.EventType
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.Alert
+import javafx.scene.control.DialogPane
 import javafx.scene.image.Image
 import javafx.stage.Modality
 import javafx.stage.Stage
@@ -180,10 +184,7 @@ abstract class AbstractWindow(
         }
     }
 
-    final override fun showAlert(
-        message: String,
-        title: String,
-    ) {
+    final override fun showAlert(message: String, title: String) {
         launch {
             val alert = FlatAlert(Alert.AlertType.INFORMATION)
             alert.initModality(Modality.WINDOW_MODAL)
@@ -193,6 +194,25 @@ abstract class AbstractWindow(
             alert.contentText = message
             alert.show()
         }
+    }
+
+    final override fun showAlert(title: String, block: DialogPane.() -> Unit) {
+        launch {
+            val alert = FlatAlert(Alert.AlertType.INFORMATION)
+            alert.initModality(Modality.WINDOW_MODAL)
+            alert.initOwner(window)
+            alert.title = title
+            alert.dialogPane.block()
+            alert.show()
+        }
+    }
+
+    override fun <T : Event> addEventFilter(eventType: EventType<T>, eventFilter: EventHandler<T>) {
+        window.addEventFilter(eventType, eventFilter)
+    }
+
+    override fun <T : Event> addEventHandler(eventType: EventType<T>, eventFilter: EventHandler<T>) {
+        window.addEventHandler(eventType, eventFilter)
     }
 
     protected fun launch(block: suspend CoroutineScope.() -> Unit): Job {

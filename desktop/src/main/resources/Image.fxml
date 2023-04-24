@@ -196,4 +196,11 @@
                  AnchorPane.leftAnchor="0.0"
                  AnchorPane.rightAnchor="0.0"
                  AnchorPane.topAnchor="0.0"/>
+    <Label fx:id="zoomFactorLabel"
+           styleClass="text-white"
+           style="-fx-background-color: rgba(0, 0, 0, 0.5); -fx-background-radius: 4px; -fx-padding: 8 12 8 12"
+           text="1.00x"
+           visible="false"
+           AnchorPane.leftAnchor="5.0"
+           AnchorPane.topAnchor="5.0"/>
 </AnchorPane>
