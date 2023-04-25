@@ -4,8 +4,6 @@ import eu.hansolo.fx.charts.data.XYChartItem
 import eu.hansolo.fx.charts.data.XYItem
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import nebulosa.constants.AU_KM
 import nebulosa.constants.SPEED_OF_LIGHT
 import nebulosa.desktop.helper.runBlockingIO
@@ -459,8 +457,8 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     }
 
     @Scheduled(cron = "0 */15 * * * *")
-    private fun updateSunImageAtSchduledTime() {
-        runBlocking(Dispatchers.IO) { updateSunImage() }
+    private fun updateSunImageAtSchduledTime() = runBlockingIO {
+        updateSunImage()
     }
 
     suspend fun updateMoonImage() {
@@ -481,8 +479,8 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     }
 
     @Scheduled(cron = "0 0 * * * *")
-    private fun updateMoonImageAtSheduledTime() {
-        runBlocking(Dispatchers.IO) { updateMoonImage() }
+    private fun updateMoonImageAtSheduledTime() = runBlockingIO {
+        updateMoonImage()
     }
 
     suspend fun searchMinorPlanet(text: String) = withIO {

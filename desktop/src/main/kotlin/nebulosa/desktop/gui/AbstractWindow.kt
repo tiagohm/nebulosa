@@ -192,6 +192,7 @@ abstract class AbstractWindow(
             alert.title = title
             alert.headerText = null
             alert.contentText = message
+            alert.dialogPane.stylesheets.add("css/Global.css")
             alert.show()
         }
     }
@@ -202,6 +203,7 @@ abstract class AbstractWindow(
             alert.initModality(Modality.WINDOW_MODAL)
             alert.initOwner(window)
             alert.title = title
+            alert.dialogPane.stylesheets.add("css/Global.css")
             alert.dialogPane.block()
             alert.show()
         }

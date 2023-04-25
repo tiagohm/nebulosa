@@ -18,6 +18,7 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.layout.VBox
 import javafx.util.Duration
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.gui.control.CopyableLabel
 import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
@@ -31,6 +32,7 @@ import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import nebulosa.math.AngleFormatter
 import nebulosa.platesolving.Calibration
+import nebulosa.skycatalog.DSO
 import nebulosa.skycatalog.SkyObject
 import net.kurobako.gesturefx.AffineEvent
 import org.slf4j.LoggerFactory
@@ -59,6 +61,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     @FXML private lateinit var zoomFactorLabel: Label
 
     @Volatile private var imageData = IntArray(0)
+
     private val imageSecondaryClickLocation = SimpleObjectProperty<Point2D>()
     private val transformer = PauseTransition(Duration.seconds(0.5))
     private val imageManager = ImageManager(this)
@@ -91,11 +94,14 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             }
         }
 
-        imageViewer.addEventFilter(AffineEvent.CHANGE_FINISHED) {
-            zoomFactorLabel.text = "%.2fx".format(imageViewer.currentScale)
-            zoomFactorLabel.isVisible = true
+        imageViewer.addEventFilter(AffineEvent.CHANGED) {
+            val prev = it.previous().getOrNull() ?: return@addEventFilter
 
-            zoomTextTransition.playFromStart()
+            if (prev.mxx != it.current().mxx) {
+                zoomFactorLabel.text = "%.2fx".format(imageViewer.currentScale)
+                zoomFactorLabel.isVisible = true
+                zoomTextTransition.playFromStart()
+            }
         }
 
         with(imageViewer) {
@@ -325,25 +331,19 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     override fun showStarInfo(star: SkyObject) {
         showAlert {
             val box = VBox()
-            headerText = star.names.joinToString(", ")
+            header = CopyableLabel(star.names.joinToString(", "))
+            header.styleClass.add("text-bold")
             val rightAscension = star.rightAscension.format(AngleFormatter.HMS)
             val declination = star.declination.format(AngleFormatter.SIGNED_DMS)
-            box.children.add(Label("RA: $rightAscension DEC: $declination"))
-            if (star.magnitude < 99.0) box.children.add(Label("MAGNITUDE: %.2f".format(star.magnitude)))
-            box.children.add(Label("TYPE: ${star.type.description}"))
-            if (star.distance > 0.0) box.children.add(Label("DISTANCE: %.1f ly".format(star.distance)))
-            box.children.add(Label("CONSTELLATION: ${star.constellation.latinName} (${star.constellation.iau})"))
-            children.add(box)
+            box.children.add(CopyableLabel("RA: $rightAscension DEC: $declination"))
+            if (star.magnitude < 99.0) box.children.add(CopyableLabel("MAGNITUDE: %.2f".format(star.magnitude)))
+            box.children.add(CopyableLabel("TYPE: ${star.type.description}"))
+            if (star.distance > 0.0) box.children.add(CopyableLabel("DISTANCE: %.1f ly".format(star.distance)))
+            if (star is DSO) box.children.add(CopyableLabel("SIZE (arcmin): %.2f x %.2f".format(star.minorAxis.arcmin, star.majorAxis.arcmin)))
+            box.children.add(CopyableLabel("CONSTELLATION: ${star.constellation.latinName} (${star.constellation.iau})"))
+            minWidth = 380.0
             content = box
         }
-    }
-
-    fun updateAnnotationOptions(
-        namedStars: Boolean, messier: Boolean, ngc: Boolean,
-        hip: Boolean, tycho: Boolean, sao: Boolean,
-        planets: Boolean, asteroids: Boolean,
-    ) {
-
     }
 
     override fun redraw() {

@@ -7,9 +7,11 @@ import kotlin.math.min
 
 object AutoScreenTransformFunction : ComputationAlgorithm<ScreenTransformFunction.Parameters>, TransformAlgorithm {
 
+    @JvmStatic private val MEDIAN = Median()
+
     override fun compute(source: Image): ScreenTransformFunction.Parameters {
         // Find the median sample.
-        val median = Median.compute(source)
+        val median = MEDIAN.compute(source)
         // Find the Median deviation: 1.4826 * median of abs(sample[i] - median).
         val medianDeviation = MedianDeviation(median).compute(source)
         // Compute parameters.
@@ -39,7 +41,6 @@ object AutoScreenTransformFunction : ComputationAlgorithm<ScreenTransformFunctio
     override fun transform(source: Image): Image {
         return ScreenTransformFunction(compute(source)).transform(source)
     }
-
 
     @JvmStatic private val LOG = LoggerFactory.getLogger(AutoScreenTransformFunction::class.java)
 }

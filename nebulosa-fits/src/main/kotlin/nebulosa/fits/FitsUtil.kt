@@ -17,6 +17,9 @@ inline fun Fits.imageHDU(n: Int) = read().filterIsInstance<ImageHDU>().getOrNull
 @Suppress("NOTHING_TO_INLINE")
 inline fun Header.naxis(n: Int) = getIntValue(Standard.NAXISn.n(n))
 
+@Suppress("NOTHING_TO_INLINE")
+inline fun Header.clone() = Header(makeData())
+
 inline val Header.ra: Angle?
     get() = Angle.from(getStringValue(ObservationDescription.RA), true, false)
         ?: Angle.from(getStringValue(SBFitsExt.OBJCTRA), true)

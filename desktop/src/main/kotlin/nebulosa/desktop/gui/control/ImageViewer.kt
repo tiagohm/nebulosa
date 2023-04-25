@@ -49,7 +49,7 @@ class ImageViewer : GesturePane(null as Node?) {
                 val delta = if (it.deltaY == 0.0 && it.deltaX != 0.0) it.deltaX else it.deltaY
                 val wheel = if (delta < 0) -1 else 1
 
-                val newScale = currentScale * exp((wheel * 0.25) / 3)
+                val newScale = currentScale * exp((wheel * 0.3) / 3)
 
                 val pivotOnTarget = targetPointAt(Point2D(it.x, it.y))
                     .orElse(targetPointAtViewportCentre())

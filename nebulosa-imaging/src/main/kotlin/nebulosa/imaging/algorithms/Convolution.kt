@@ -10,10 +10,10 @@ abstract class Convolution(
     private val dynamicDivisorForEdges: Boolean = true,
 ) : TransformAlgorithm {
 
-    @JvmField val size = kernel.size
+    val size = kernel.size
 
     init {
-        require(kernel.size in 3..99) { "kernel size in [3..99]: ${kernel.size}" }
+        require(kernel.size in 3..99) { "kernel size bust be in range [3..99]: ${kernel.size}" }
         require(kernel.size % 2 == 1) { "kernel size must be odd: ${kernel.size}" }
     }
 

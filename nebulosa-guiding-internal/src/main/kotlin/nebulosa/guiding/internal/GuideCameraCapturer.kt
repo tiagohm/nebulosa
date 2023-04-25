@@ -22,7 +22,7 @@ internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : W
             LOG.info("frame capture finished")
 
             if (guider.device.noiseReductionMethod == NoiseReductionMethod.MEAN) {
-                frame = frame.transform(MEAN_FILTER)
+                frame = frame.transform(Mean)
             }
 
             if (!guider.device.mountIsBusy) {
@@ -43,6 +43,5 @@ internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : W
     companion object {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(GuideCameraCapturer::class.java)
-        @JvmStatic private val MEAN_FILTER = Mean()
     }
 }

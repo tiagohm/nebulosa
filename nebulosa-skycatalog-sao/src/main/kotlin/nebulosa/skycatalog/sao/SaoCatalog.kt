@@ -49,7 +49,7 @@ class SaoCatalog : SkyCatalog<Star>(258997) {
 
             val star = Star(
                 id = id,
-                sao = "$id",
+                sao = id,
                 rightAscension = rightAscension,
                 declination = declination,
                 spType = spType,

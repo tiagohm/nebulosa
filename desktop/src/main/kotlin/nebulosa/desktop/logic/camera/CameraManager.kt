@@ -240,7 +240,7 @@ class CameraManager(
         taskExecutor
             .execute(task)
             .whenComplete { _, _ ->
-                runBlocking(Dispatchers.Main) {
+                runBlockingMain {
                     capturingProperty.set(false)
                     runningTask.set(null)
                     updateStatus()

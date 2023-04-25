@@ -224,7 +224,7 @@ class FitsImageTest : AbstractImageTest() {
         }
         "Blur" {
             val fits = Fits("src/test/resources/Flower.fits")
-            val image = Image.open(fits).transform(Blur())
+            val image = Image.open(fits).transform(Blur)
             val outputFile = File("src/test/resources/Flower.Blur.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "ed3bda2192ea3298e33790715808de91"
@@ -238,21 +238,21 @@ class FitsImageTest : AbstractImageTest() {
         }
         "Edges" {
             val fits = Fits("src/test/resources/Flower.fits")
-            val image = Image.open(fits).transform(Edges())
+            val image = Image.open(fits).transform(Edges)
             val outputFile = File("src/test/resources/Flower.Edges.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "077818d1344d2b453ceed5caecbf657a"
         }
         "Sharpen" {
             val fits = Fits("src/test/resources/Flower.fits")
-            val image = Image.open(fits).transform(Sharpen())
+            val image = Image.open(fits).transform(Sharpen)
             val outputFile = File("src/test/resources/Flower.Sharpen.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "bca1608df7b4bf9bb2d1b80d04c5fad0"
         }
         "Mean" {
             val fits = Fits("src/test/resources/Flower.fits")
-            val image = Image.open(fits).transform(SaltAndPepperNoise(0.1f, Random(0)), Mean())
+            val image = Image.open(fits).transform(SaltAndPepperNoise(0.1f, Random(0)), Mean)
             val outputFile = File("src/test/resources/Flower.Mean.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "8a348a8393125ae35ad5478113c30c1e"
