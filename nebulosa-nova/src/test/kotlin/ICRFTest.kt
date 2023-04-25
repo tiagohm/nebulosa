@@ -46,9 +46,9 @@ class ICRFTest : StringSpec() {
             val site = Geoid.IERS2010.latLon(longitude, latitude, elevation)
 
             val icrf = ICRF.equatorial(ra, dec, time = time, center = site)
-            val azAlt = icrf.horizontal() // TODO: Apply refraction and retest!
-            // azAlt.longitude.normalized.degrees shouldBe (90.778 plusOrMinus 1e-1)
-            // azAlt.latitude.degrees shouldBe (44.3538 plusOrMinus 1e-1)
+            val azAlt = icrf.horizontal()
+            azAlt.longitude.normalized.degrees shouldBe (90.778 plusOrMinus 1e-1)
+            azAlt.latitude.degrees shouldBe (44.3538 plusOrMinus 1e-1)
         }
     }
 }
