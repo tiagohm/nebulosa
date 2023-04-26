@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS preferences(
+    key TEXT PRIMARY KEY UNIQUE,
+    value TEXT NOT NULL
+);

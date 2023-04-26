@@ -7,32 +7,109 @@ import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.atlas.provider.ephemeris.TimeBucket
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
+import nebulosa.io.resource
+import nebulosa.io.transferAndClose
 import nebulosa.sbd.SmallBodyDatabaseLookupService
 import nebulosa.simbad.SimbadService
 import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
+import org.hibernate.community.dialect.SQLiteDialect
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.jdbc.datasource.DriverManagerDataSource
+import org.springframework.orm.jpa.JpaTransactionManager
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean
 import org.springframework.scheduling.annotation.EnableAsync
+import org.springframework.transaction.annotation.EnableTransactionManagement
+import org.sqlite.JDBC
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.zip.GZIPInputStream
+import javax.sql.DataSource
 import kotlin.io.path.createDirectories
+import kotlin.io.path.outputStream
 import ch.qos.logback.classic.Logger as LogbackLogger
 
 @EnableAsync
 @SpringBootApplication
 class App : CommandLineRunner {
 
+    @Configuration
+    @EnableTransactionManagement
+    @EnableJpaRepositories(
+        entityManagerFactoryRef = "appEntityManagerFactory",
+        transactionManagerRef = "appTransactionManager",
+        basePackages = ["nebulosa.desktop.app.*"],
+    )
+    class AppDatabaseConfig {
+
+        @Bean
+        @Primary
+        fun appEntityManagerFactory(builder: EntityManagerFactoryBuilder, appDataSource: DataSource) = builder
+            .dataSource(appDataSource)
+            .properties(mapOf("hibernate.dialect" to SQLiteDialect::class.java.name))
+            .packages("nebulosa.desktop.app.*")
+            .build()!!
+
+        @Bean
+        fun appTransactionManager(appEntityManagerFactory: LocalContainerEntityManagerFactoryBean) =
+            JpaTransactionManager(appEntityManagerFactory.`object`!!)
+    }
+
+    @Configuration
+    @EnableTransactionManagement
+    @EnableJpaRepositories(
+        entityManagerFactoryRef = "skyEntityManagerFactory",
+        transactionManagerRef = "skyTransactionManager",
+        basePackages = ["nebulosa.desktop.sky.*"],
+    )
+    class SkyDatabaseConfig {
+
+        @Bean
+        fun skyEntityManagerFactory(builder: EntityManagerFactoryBuilder, skyDataSource: DataSource) = builder
+            .dataSource(skyDataSource)
+            .properties(mapOf("hibernate.dialect" to SQLiteDialect::class.java.name))
+            .packages("nebulosa.desktop.sky.*")
+            .build()!!
+
+        @Bean
+        fun skyTransactionManager(skyEntityManagerFactory: LocalContainerEntityManagerFactoryBean) =
+            JpaTransactionManager(skyEntityManagerFactory.`object`!!)
+    }
+
     @Bean
     fun appDirectory(): Path = Paths.get(System.getProperty("app.dir"))
+
+    @Bean
+    @Primary
+    fun appDataSource(appDirectory: Path) = DriverManagerDataSource().apply {
+        val path = Paths.get("$appDirectory", "data", "database", "app.db")
+        path.parent.createDirectories()
+        initialize(path)
+    }
+
+    @Bean
+    fun skyDataSource(appDirectory: Path) = DriverManagerDataSource().apply {
+        val path = Paths.get("$appDirectory", "data", "database", "sky.db")
+        path.parent.createDirectories()
+
+        GZIPInputStream(resource("data/StarCatalog.db.gz")!!).transferAndClose(path.outputStream())
+
+        initialize(path)
+    }
 
     @Bean
     fun objectMapper() = ObjectMapper()
@@ -113,5 +190,11 @@ class App : CommandLineRunner {
 
         @Suppress("NOTHING_TO_INLINE")
         private inline fun logger(name: String) = LoggerFactory.getLogger(name) as LogbackLogger
+
+        @JvmStatic
+        private fun DriverManagerDataSource.initialize(path: Path) {
+            setDriverClassName(JDBC::class.java.name)
+            url = "jdbc:sqlite:$path"
+        }
     }
 }
