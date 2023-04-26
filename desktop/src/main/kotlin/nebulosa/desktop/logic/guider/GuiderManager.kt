@@ -158,7 +158,7 @@ class GuiderManager(
             guider.clearCalibration()
         } else {
             try {
-                val json = preferences.json<Map<String, String>>("guider.${camera?.name}.${mount?.name}.calibration")
+                val json = preferenceService.json<Map<String, String>>("guider.${camera?.name}.${mount?.name}.calibration")
                 val calibration = json?.let(::Calibration)
 
                 if (calibration != null && calibration != Calibration.EMPTY) {
@@ -379,7 +379,7 @@ class GuiderManager(
 
     override fun onCalibrationCompleted(calibration: Calibration) {
         launch { view.updateStatus("calibration completed") }
-        preferences.json("guider.${camera?.name}.${mount?.name}.calibration", calibration.toMap())
+        preferenceService.json("guider.${camera?.name}.${mount?.name}.calibration", calibration.toMap())
     }
 
     override fun onGuideStep(stats: GuideStats) {

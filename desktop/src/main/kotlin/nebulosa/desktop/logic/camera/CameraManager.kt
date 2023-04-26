@@ -3,8 +3,6 @@ package nebulosa.desktop.logic.camera
 import javafx.application.HostServices
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.DirectoryChooser
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import nebulosa.desktop.helper.runBlockingMain
 import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
@@ -106,7 +104,7 @@ class CameraManager(
     }
 
     fun openImageSavePathInFiles() {
-        val imageSavePath = preferences.string("camera.$name.imageSavePath") ?: return
+        val imageSavePath = preferenceService.string("camera.$name.imageSavePath") ?: return
         val hostServices = beanFactory.getBean(HostServices::class.java)
         hostServices.showDocument(imageSavePath)
     }
@@ -175,36 +173,36 @@ class CameraManager(
     }
 
     fun autoSaveAllExposures(enable: Boolean) {
-        preferences.bool("camera.$name.autoSaveAllExposures", enable)
+        preferenceService.bool("camera.$name.autoSaveAllExposures", enable)
         view.isAutoSaveAllExposures = enable
     }
 
     fun autoSubFolder(enable: Boolean) {
-        preferences.bool("camera.$name.autoSubFolder", enable)
+        preferenceService.bool("camera.$name.autoSubFolder", enable)
         view.isAutoSubFolder = enable
     }
 
     fun chooseNewSubFolderAt(mode: AutoSubFolderMode) {
-        preferences.enum("camera.$name.newSubFolderAt", mode)
+        preferenceService.enum("camera.$name.newSubFolderAt", mode)
         view.autoSubFolderMode = mode
     }
 
     fun applyTemperatureSetpoint() {
         val temperature = view.temperatureSetpoint
         value?.temperature(temperature) ?: return
-        preferences.double("camera.$name.temperatureSetpoint", temperature)
+        preferenceService.double("camera.$name.temperatureSetpoint", temperature)
     }
 
     fun chooseImageSavePath() {
         with(DirectoryChooser()) {
             title = "Open Image Save Path"
 
-            val imageSavePath = preferences.string("camera.$name.imageSavePath")
+            val imageSavePath = preferenceService.string("camera.$name.imageSavePath")
             if (!imageSavePath.isNullOrBlank()) initialDirectory = File(imageSavePath)
 
             val file = showDialog(null) ?: return
 
-            preferences.string("camera.$name.imageSavePath", "$file")
+            preferenceService.string("camera.$name.imageSavePath", "$file")
             view.imageSavePath = "$file"
         }
     }
@@ -258,27 +256,27 @@ class CameraManager(
         if (!view.initialized) return
 
         if (device != null && device.connected) {
-            preferences.double("camera.${device.name}.temperatureSetpoint", view.temperatureSetpoint)
-            preferences.enum("camera.${device.name}.exposureUnit", view.exposureUnit)
-            preferences.long("camera.${device.name}.exposure", view.exposureInMicros)
-            preferences.int("camera.${device.name}.exposureCount", view.exposureCount)
-            preferences.enum("camera.${device.name}.exposureMode", view.exposureMode)
-            preferences.long("camera.${device.name}.exposureDelay", view.exposureDelay)
-            preferences.bool("camera.${device.name}.isSubFrame", view.isSubFrame)
-            preferences.int("camera.${device.name}.frameX", view.frameX)
-            preferences.int("camera.${device.name}.frameY", view.frameY)
-            preferences.int("camera.${device.name}.frameWidth", view.frameWidth)
-            preferences.int("camera.${device.name}.frameHeight", view.frameHeight)
-            preferences.enum("camera.${device.name}.frameType", view.frameType)
-            preferences.string("camera.${device.name}.frameFormat", view.frameFormat)
-            preferences.int("camera.${device.name}.binX", view.binX)
-            preferences.int("camera.${device.name}.binY", view.binY)
-            preferences.int("camera.${device.name}.gain", view.gain)
-            preferences.int("camera.${device.name}.offset", view.offset)
+            preferenceService.double("camera.${device.name}.temperatureSetpoint", view.temperatureSetpoint)
+            preferenceService.enum("camera.${device.name}.exposureUnit", view.exposureUnit)
+            preferenceService.long("camera.${device.name}.exposure", view.exposureInMicros)
+            preferenceService.int("camera.${device.name}.exposureCount", view.exposureCount)
+            preferenceService.enum("camera.${device.name}.exposureMode", view.exposureMode)
+            preferenceService.long("camera.${device.name}.exposureDelay", view.exposureDelay)
+            preferenceService.bool("camera.${device.name}.isSubFrame", view.isSubFrame)
+            preferenceService.int("camera.${device.name}.frameX", view.frameX)
+            preferenceService.int("camera.${device.name}.frameY", view.frameY)
+            preferenceService.int("camera.${device.name}.frameWidth", view.frameWidth)
+            preferenceService.int("camera.${device.name}.frameHeight", view.frameHeight)
+            preferenceService.enum("camera.${device.name}.frameType", view.frameType)
+            preferenceService.string("camera.${device.name}.frameFormat", view.frameFormat)
+            preferenceService.int("camera.${device.name}.binX", view.binX)
+            preferenceService.int("camera.${device.name}.binY", view.binY)
+            preferenceService.int("camera.${device.name}.gain", view.gain)
+            preferenceService.int("camera.${device.name}.offset", view.offset)
         }
 
-        preferences.double("camera.screen.x", max(0.0, view.x))
-        preferences.double("camera.screen.y", max(0.0, view.y))
+        preferenceService.double("camera.screen.x", max(0.0, view.x))
+        preferenceService.double("camera.screen.y", max(0.0, view.y))
     }
 
     fun loadPreferences(device: Camera? = value) {
@@ -289,38 +287,38 @@ class CameraManager(
             updateGainMinMax()
             updateOffsetMinMax()
 
-            view.temperatureSetpoint = preferences.double("camera.${device.name}.temperatureSetpoint") ?: 0.0
-            val exposureUnit = preferences.enum("camera.${device.name}.exposureUnit") ?: TimeUnit.MICROSECONDS
-            val exposureTimeInMicros = preferences.long("camera.${device.name}.exposure") ?: exposureMin
-            view.exposureCount = preferences.int("camera.${device.name}.exposureCount") ?: 1
-            view.exposureMode = preferences.enum<ExposureMode>("camera.${device.name}.exposureMode") ?: ExposureMode.SINGLE
-            view.exposureDelay = preferences.long("camera.${device.name}.exposureDelay") ?: 100L
-            view.isSubFrame = preferences.bool("camera.${device.name}.isSubFrame")
-            val frameX = preferences.int("camera.${device.name}.frameX") ?: minX
-            val frameY = preferences.int("camera.${device.name}.frameY") ?: minY
-            val frameWidth = preferences.int("camera.${device.name}.frameWidth") ?: maxWidth
-            val frameHeight = preferences.int("camera.${device.name}.frameHeight") ?: maxHeight
+            view.temperatureSetpoint = preferenceService.double("camera.${device.name}.temperatureSetpoint") ?: 0.0
+            val exposureUnit = preferenceService.enum("camera.${device.name}.exposureUnit") ?: TimeUnit.MICROSECONDS
+            val exposureTimeInMicros = preferenceService.long("camera.${device.name}.exposure") ?: exposureMin
+            view.exposureCount = preferenceService.int("camera.${device.name}.exposureCount") ?: 1
+            view.exposureMode = preferenceService.enum<ExposureMode>("camera.${device.name}.exposureMode") ?: ExposureMode.SINGLE
+            view.exposureDelay = preferenceService.long("camera.${device.name}.exposureDelay") ?: 100L
+            view.isSubFrame = preferenceService.bool("camera.${device.name}.isSubFrame")
+            val frameX = preferenceService.int("camera.${device.name}.frameX") ?: minX
+            val frameY = preferenceService.int("camera.${device.name}.frameY") ?: minY
+            val frameWidth = preferenceService.int("camera.${device.name}.frameWidth") ?: maxWidth
+            val frameHeight = preferenceService.int("camera.${device.name}.frameHeight") ?: maxHeight
             view.updateFrame(frameX, frameY, frameWidth, frameHeight)
-            view.frameType = preferences.enum<FrameType>("camera.${device.name}.frameType") ?: FrameType.LIGHT
-            (preferences.string("camera.${device.name}.frameFormat") ?: frameFormats.firstOrNull())?.let { view.frameFormat = it }
-            val binX = preferences.int("camera.${device.name}.binX") ?: 1
-            val binY = preferences.int("camera.${device.name}.binY") ?: 1
-            val gain = preferences.int("camera.${device.name}.gain") ?: 0
-            val offset = preferences.int("camera.${device.name}.offset") ?: 0
+            view.frameType = preferenceService.enum<FrameType>("camera.${device.name}.frameType") ?: FrameType.LIGHT
+            (preferenceService.string("camera.${device.name}.frameFormat") ?: frameFormats.firstOrNull())?.let { view.frameFormat = it }
+            val binX = preferenceService.int("camera.${device.name}.binX") ?: 1
+            val binY = preferenceService.int("camera.${device.name}.binY") ?: 1
+            val gain = preferenceService.int("camera.${device.name}.gain") ?: 0
+            val offset = preferenceService.int("camera.${device.name}.offset") ?: 0
             view.updateBin(binX, binY)
             view.updateGainAndOffset(gain, offset)
 
             updateExposureUnit(TimeUnit.MICROSECONDS, exposureUnit, exposureTimeInMicros)
 
-            view.isAutoSaveAllExposures = preferences.bool("camera.${device.name}.autoSaveAllExposures")
-            view.isAutoSubFolder = preferences.bool("camera.${device.name}.autoSubFolder")
-            view.autoSubFolderMode = preferences.enum<AutoSubFolderMode>("camera.${device.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON
+            view.isAutoSaveAllExposures = preferenceService.bool("camera.${device.name}.autoSaveAllExposures")
+            view.isAutoSubFolder = preferenceService.bool("camera.${device.name}.autoSubFolder")
+            view.autoSubFolderMode = preferenceService.enum<AutoSubFolderMode>("camera.${device.name}.newSubFolderAt") ?: AutoSubFolderMode.NOON
             view.imageSavePath =
-                preferences.string("camera.${device.name}.imageSavePath") ?: Paths.get("$appDirectory", "captures", device.name).toString()
+                preferenceService.string("camera.${device.name}.imageSavePath") ?: Paths.get("$appDirectory", "captures", device.name).toString()
         }
 
-        preferences.double("camera.screen.x")?.let { view.x = it }
-        preferences.double("camera.screen.y")?.let { view.y = it }
+        preferenceService.double("camera.screen.x")?.let { view.x = it }
+        preferenceService.double("camera.screen.y")?.let { view.y = it }
     }
 
     override fun close() {

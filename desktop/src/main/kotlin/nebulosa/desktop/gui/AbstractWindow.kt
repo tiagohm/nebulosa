@@ -16,7 +16,7 @@ import javafx.stage.Modality
 import javafx.stage.Stage
 import kotlinx.coroutines.*
 import nebulosa.desktop.gui.home.HomeWindow
-import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.service.PreferenceService
 import nebulosa.desktop.view.View
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
@@ -41,7 +41,7 @@ abstract class AbstractWindow(
         private set
 
     protected val hostServices by lazy { beanFactory.getBean(HostServices::class.java) }
-    protected val preferences by lazy { beanFactory.getBean("preferences") as Preferences }
+    protected val preferenceService by lazy { beanFactory.getBean("preferenceService") as PreferenceService }
 
     init {
         window.setOnShowing {

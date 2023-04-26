@@ -97,13 +97,13 @@ class FocuserManager(
     fun savePreferences() {
         if (!view.initialized) return
 
-        preferences.double("focuser.screen.x", max(0.0, view.x))
-        preferences.double("focuser.screen.y", max(0.0, view.y))
+        preferenceService.double("focuser.screen.x", max(0.0, view.x))
+        preferenceService.double("focuser.screen.y", max(0.0, view.y))
     }
 
     fun loadPreferences() {
-        preferences.double("focuser.screen.x")?.let { view.x = it }
-        preferences.double("focuser.screen.y")?.let { view.y = it }
+        preferenceService.double("focuser.screen.x")?.let { view.x = it }
+        preferenceService.double("focuser.screen.y")?.let { view.y = it }
     }
 
     override fun close() {

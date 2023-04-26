@@ -2,7 +2,7 @@ package nebulosa.desktop.logic.loader
 
 import kotlinx.coroutines.runBlocking
 import nebulosa.desktop.helper.await
-import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.service.PreferenceService
 import nebulosa.io.transferAndClose
 import nebulosa.time.IERS
 import nebulosa.time.IERSA
@@ -26,7 +26,7 @@ import kotlin.io.path.outputStream
 class IERSLoader : Runnable {
 
     @Autowired private lateinit var appDirectory: Path
-    @Autowired private lateinit var preferences: Preferences
+    @Autowired private lateinit var preferenceService: PreferenceService
     @Autowired private lateinit var okHttpClient: OkHttpClient
 
     @Scheduled(fixedRate = 1L, initialDelay = 0L, timeUnit = TimeUnit.HOURS)
@@ -56,9 +56,9 @@ class IERSLoader : Runnable {
     }
 
     private suspend fun Path.shouldBeDownloaded(): Boolean {
-        return LAST_MODIFIED_KEY !in preferences
+        return LAST_MODIFIED_KEY !in preferenceService
                 || !exists()
-                || preferences.long(LAST_MODIFIED_KEY) != lastModifiedDate()
+                || preferenceService.long(LAST_MODIFIED_KEY) != lastModifiedDate()
     }
 
     private suspend fun lastModifiedDate(): Long {
@@ -87,7 +87,7 @@ class IERSLoader : Runnable {
             okHttpClient.newCall(request).await().use {
                 it.body.byteStream().transferAndClose(outputStream())
                 val lastModified = it.headers.getDate("Last-Modified")?.time
-                if (lastModified != null) preferences.long(LAST_MODIFIED_KEY, lastModified)
+                if (lastModified != null) preferenceService.long(LAST_MODIFIED_KEY, lastModified)
             }
         } catch (e: Throwable) {
             LOG.error("failed to download finals2000A.all", e)

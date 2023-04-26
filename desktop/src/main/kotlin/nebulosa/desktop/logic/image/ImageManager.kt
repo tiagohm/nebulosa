@@ -16,7 +16,7 @@ import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.platesolver.PlateSolvingEvent
 import nebulosa.desktop.logic.platesolver.PlateSolvingSolved
-import nebulosa.desktop.repository.SkyObjectRepository
+import nebulosa.desktop.service.SkyObjectService
 import nebulosa.desktop.view.image.FitsHeaderView
 import nebulosa.desktop.view.image.ImageStretcherView
 import nebulosa.desktop.view.image.ImageView
@@ -46,7 +46,7 @@ class ImageManager(private val view: ImageView) : AbstractManager(), Annotation.
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var plateSolverView: PlateSolverView
     @Autowired private lateinit var eventBus: EventBus
-    @Autowired private lateinit var skyObjectRepository: SkyObjectRepository
+    @Autowired private lateinit var skyObjectService: SkyObjectService
 
     val file = SimpleObjectProperty<File>()
 
@@ -99,8 +99,8 @@ class ImageManager(private val view: ImageView) : AbstractManager(), Annotation.
         crosshair.isVisible = false
         annotation.isVisible = false
 
-        annotation.add(skyObjectRepository::searchStar, Color.YELLOW)
-        annotation.add(skyObjectRepository::searchDSO, Color.LIGHTGREEN)
+        annotation.add(skyObjectService::searchStar, Color.YELLOW)
+        annotation.add(skyObjectService::searchDSO, Color.LIGHTGREEN)
         annotation.registerEventListener(this)
 
         view.addFirst(crosshair)
@@ -290,12 +290,12 @@ class ImageManager(private val view: ImageView) : AbstractManager(), Annotation.
         val factor = image.width.toDouble() / image.height.toDouble()
 
         val defaultWidth = if (defaultSize) view.camera
-            ?.let { preferences.double("image.${it.name}.screen.width") }
+            ?.let { preferenceService.double("image.${it.name}.screen.width") }
             ?: (screenBounds.width / 2)
         else view.width - view.borderSize
 
         val defaultHeight = if (defaultSize) view.camera
-            ?.let { preferences.double("image.${it.name}.screen.height") }
+            ?.let { preferenceService.double("image.${it.name}.screen.height") }
             ?: (screenBounds.height / 2)
         else view.height - view.titleHeight
 
@@ -327,7 +327,7 @@ class ImageManager(private val view: ImageView) : AbstractManager(), Annotation.
         with(FileChooser()) {
             title = "Save Image"
 
-            val imageSavePath = preferences.string("image.savePath")
+            val imageSavePath = preferenceService.string("image.savePath")
             if (!imageSavePath.isNullOrBlank()) initialDirectory = File(imageSavePath)
 
             extensionFilters.add(FileChooser.ExtensionFilter("FITS", "*.fits", "*.fit"))
@@ -340,7 +340,7 @@ class ImageManager(private val view: ImageView) : AbstractManager(), Annotation.
                 return view.showAlert("Unsupported format: ${file.extension}", "Save Error")
             }
 
-            preferences.string("image.savePath", file.parent)
+            preferenceService.string("image.savePath", file.parent)
         }
     }
 
@@ -398,11 +398,11 @@ class ImageManager(private val view: ImageView) : AbstractManager(), Annotation.
 
     fun loadPreferences() {
         if (view.camera != null) {
-            preferences.double("image.${view.camera!!.name}.screen.x")?.let { view.x = it }
-            preferences.double("image.${view.camera!!.name}.screen.y")?.let { view.y = it }
+            preferenceService.double("image.${view.camera!!.name}.screen.x")?.let { view.x = it }
+            preferenceService.double("image.${view.camera!!.name}.screen.y")?.let { view.y = it }
         } else {
-            preferences.double("image.screen.x")?.let { view.x = it }
-            preferences.double("image.screen.y")?.let { view.y = it }
+            preferenceService.double("image.screen.x")?.let { view.x = it }
+            preferenceService.double("image.screen.y")?.let { view.y = it }
         }
     }
 
@@ -410,11 +410,11 @@ class ImageManager(private val view: ImageView) : AbstractManager(), Annotation.
         if (!view.initialized) return
 
         if (view.camera != null) {
-            preferences.double("image.${view.camera!!.name}.screen.x", view.x)
-            preferences.double("image.${view.camera!!.name}.screen.y", view.y)
+            preferenceService.double("image.${view.camera!!.name}.screen.x", view.x)
+            preferenceService.double("image.${view.camera!!.name}.screen.y", view.y)
         } else {
-            preferences.double("image.screen.x", max(0.0, view.x))
-            preferences.double("image.screen.y", max(0.0, view.y))
+            preferenceService.double("image.screen.x", max(0.0, view.x))
+            preferenceService.double("image.screen.y", max(0.0, view.y))
         }
     }
 

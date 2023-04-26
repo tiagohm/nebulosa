@@ -3,7 +3,7 @@ package nebulosa.desktop.logic.framing
 import javafx.beans.property.SimpleBooleanProperty
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
-import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.View
 import nebulosa.desktop.view.framing.FramingView
@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.io.ByteArrayInputStream
-import java.io.Closeable
 import java.io.InterruptedIOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -37,12 +36,11 @@ import kotlin.io.path.writeBytes
 import kotlin.math.max
 
 @Component
-class FramingManager(@Autowired internal val view: FramingView) : Closeable {
+class FramingManager(@Autowired internal val view: FramingView) : AbstractManager() {
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var hips2FitsService: Hips2FitsService
     @Autowired private lateinit var imageViewOpener: ImageView.Opener
-    @Autowired private lateinit var preferences: Preferences
 
     private val imageViews = hashSetOf<ImageView>()
     private val imagePath = AtomicReference<Path>()
@@ -164,7 +162,7 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
     }
 
     fun populateHipsSurveys() {
-        val hipsSurveyId = preferences.string("framing.hipsSurvey") ?: DEFAULT_HIPS_SURVEY
+        val hipsSurveyId = preferenceService.string("framing.hipsSurvey") ?: DEFAULT_HIPS_SURVEY
         val selected = HIPS_SURVEY_SOURCES.firstOrNull { it.id == hipsSurveyId }
         view.populateHipsSurveys(HIPS_SURVEY_SOURCES, selected)
     }
@@ -174,18 +172,18 @@ class FramingManager(@Autowired internal val view: FramingView) : Closeable {
     }
 
     fun loadPreferences() {
-        preferences.double("framing.fov")?.let { view.updateFOV(it.rad) }
-        preferences.double("framing.screen.x")?.let { view.x = it }
-        preferences.double("framing.screen.y")?.let { view.y = it }
+        preferenceService.double("framing.fov")?.let { view.updateFOV(it.rad) }
+        preferenceService.double("framing.screen.x")?.let { view.x = it }
+        preferenceService.double("framing.screen.y")?.let { view.y = it }
     }
 
     fun savePreferences() {
         if (!view.initialized) return
 
-        preferences.string("framing.hipsSurvey", view.hipsSurvey?.id)
-        preferences.double("framing.fov", view.frameFOV.value)
-        preferences.double("framing.screen.x", max(0.0, view.x))
-        preferences.double("framing.screen.y", max(0.0, view.y))
+        preferenceService.string("framing.hipsSurvey", view.hipsSurvey?.id)
+        preferenceService.double("framing.fov", view.frameFOV.value)
+        preferenceService.double("framing.screen.x", max(0.0, view.x))
+        preferenceService.double("framing.screen.y", max(0.0, view.y))
     }
 
     override fun close() {

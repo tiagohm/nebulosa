@@ -13,7 +13,7 @@ import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.atlas.provider.ephemeris.BodyEphemerisProvider
 import nebulosa.desktop.logic.atlas.provider.ephemeris.HorizonsEphemerisProvider
 import nebulosa.desktop.logic.equipment.EquipmentManager
-import nebulosa.desktop.repository.SkyObjectRepository
+import nebulosa.desktop.service.SkyObjectService
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.horizons.HorizonsElement
@@ -73,7 +73,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     @Autowired private lateinit var smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var framingView: FramingView
-    @Autowired private lateinit var skyObjectRepository: SkyObjectRepository
+    @Autowired private lateinit var skyObjectService: SkyObjectService
 
     @Volatile private var tabType = AtlasView.TabType.SUN
     @Volatile private var planet: AtlasView.Planet? = null
@@ -81,8 +81,8 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     @Volatile private var star: SkyObject? = null
     @Volatile private var dso: SkyObject? = null
     @Volatile private var bodyName = ""
-    @Volatile private var starFilter = SkyObjectRepository.Filter.EMPTY
-    @Volatile private var dsoFilter = SkyObjectRepository.Filter.EMPTY
+    @Volatile private var starFilter = SkyObjectService.Filter.EMPTY
+    @Volatile private var dsoFilter = SkyObjectService.Filter.EMPTY
 
     private val civilDusk = doubleArrayOf(0.0, 0.0)
     private val nauticalDusk = doubleArrayOf(0.0, 0.0)
@@ -104,9 +104,9 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     fun initialize() {
         eventBus.register(this)
 
-        val longitude = mount?.longitude ?: preferences.double("atlas.longitude")?.rad ?: Angle.ZERO
-        val latitude = mount?.latitude ?: preferences.double("atlas.latitude")?.rad ?: Angle.ZERO
-        val elevation = mount?.elevation ?: preferences.double("atlas.elevation")?.au ?: Distance.ZERO
+        val longitude = mount?.longitude ?: preferenceService.double("atlas.longitude")?.rad ?: Angle.ZERO
+        val latitude = mount?.latitude ?: preferenceService.double("atlas.latitude")?.rad ?: Angle.ZERO
+        val elevation = mount?.elevation ?: preferenceService.double("atlas.elevation")?.au ?: Distance.ZERO
 
         observer.set(Geoid.IERS2010.latLon(longitude, latitude, elevation))
     }
@@ -117,9 +117,9 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
         when (event) {
             is MountGeographicCoordinateChanged -> {
-                preferences.double("atlas.longitude", event.device.longitude.value)
-                preferences.double("atlas.latitude", event.device.latitude.value)
-                preferences.double("atlas.elevation", event.device.elevation.value)
+                preferenceService.double("atlas.longitude", event.device.longitude.value)
+                preferenceService.double("atlas.latitude", event.device.latitude.value)
+                preferenceService.double("atlas.elevation", event.device.elevation.value)
 
                 ephemerisCache.clear()
                 pointsCache.clear()
@@ -516,17 +516,17 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         withMain { computing.set(false) }
     }
 
-    suspend fun searchStar(text: String, filter: SkyObjectRepository.Filter? = null) = withIO {
+    suspend fun searchStar(text: String, filter: SkyObjectService.Filter? = null) = withIO {
         withMain { computing.set(true) }
         starFilter = filter ?: starFilter
-        view.populateStar(skyObjectRepository.searchStar(text, starFilter))
+        view.populateStar(skyObjectService.searchStar(text, starFilter))
         withMain { computing.set(false) }
     }
 
-    suspend fun searchDSO(text: String, filter: SkyObjectRepository.Filter? = null) = withIO {
+    suspend fun searchDSO(text: String, filter: SkyObjectService.Filter? = null) = withIO {
         withMain { computing.set(true) }
         dsoFilter = filter ?: dsoFilter
-        view.populateDSOs(skyObjectRepository.searchDSO(text, dsoFilter))
+        view.populateDSOs(skyObjectService.searchDSO(text, dsoFilter))
         withMain { computing.set(false) }
     }
 
@@ -563,13 +563,13 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     fun savePreferences() {
         if (!view.initialized) return
 
-        preferences.double("atlas.screen.x", max(0.0, view.x))
-        preferences.double("atlas.screen.y", max(0.0, view.y))
+        preferenceService.double("atlas.screen.x", max(0.0, view.x))
+        preferenceService.double("atlas.screen.y", max(0.0, view.y))
     }
 
     fun loadPreferences() {
-        preferences.double("atlas.screen.x")?.also { view.x = it }
-        preferences.double("atlas.screen.y")?.also { view.y = it }
+        preferenceService.double("atlas.screen.x")?.also { view.x = it }
+        preferenceService.double("atlas.screen.y")?.also { view.y = it }
     }
 
     override fun close() {

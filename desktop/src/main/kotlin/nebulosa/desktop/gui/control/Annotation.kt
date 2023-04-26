@@ -9,7 +9,7 @@ import javafx.scene.text.Text
 import javafx.scene.text.TextAlignment
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
-import nebulosa.desktop.repository.SkyObjectRepository
+import nebulosa.desktop.service.SkyObjectService
 import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import nebulosa.skycatalog.DSO
@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory
 import kotlin.math.max
 import kotlin.math.min
 
-typealias AnnotationFilter = (String, SkyObjectRepository.Filter) -> List<SkyObject>
+typealias AnnotationFilter = (String, SkyObjectService.Filter) -> List<SkyObject>
 
 class Annotation : ShapePane() {
 
@@ -66,7 +66,7 @@ class Annotation : ShapePane() {
             calibration.rightAscension.degrees, calibration.declination.degrees, calibration.radius.degrees
         )
 
-        val filter = SkyObjectRepository.Filter(calibration.rightAscension, calibration.declination, calibration.radius)
+        val filter = SkyObjectService.Filter(calibration.rightAscension, calibration.declination, calibration.radius)
 
         for (catalog in catalogs) {
             val color = colors[catalog] ?: Color.YELLOW

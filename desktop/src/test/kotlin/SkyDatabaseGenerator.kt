@@ -1,13 +1,12 @@
-import nebulosa.desktop.model.DsoEntity
-import nebulosa.desktop.model.NameEntity
-import nebulosa.desktop.model.StarEntity
 import nebulosa.io.transferAndClose
 import nebulosa.math.Angle.Companion.mas
 import nebulosa.math.Velocity.Companion.kms
+import nebulosa.nova.astrometry.Constellation
 import nebulosa.simbad.CatalogType
 import nebulosa.simbad.SimbadObject
 import nebulosa.simbad.SimbadQuery
 import nebulosa.simbad.SimbadService
+import nebulosa.skycatalog.SkyObjectType
 import nebulosa.skycatalog.hyg.HygDatabase
 import nebulosa.skycatalog.stellarium.Nebula
 import okhttp3.Cache
@@ -16,6 +15,7 @@ import okhttp3.Request
 import okio.*
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.sqlite.JDBC
@@ -29,12 +29,95 @@ import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 import kotlin.io.use
 
-object StarCatalogGenerator {
+object SkyDatabaseGenerator {
+
+    object NameEntity : Table("names") {
+        val id = integer("id")
+        val name = text("name")
+        val dso = (integer("dso") references DsoEntity.id).nullable()
+        val star = (integer("star") references StarEntity.id).nullable()
+
+        override val primaryKey = PrimaryKey(id, name = "pk_names_id")
+    }
+
+    object StarEntity : Table("stars") {
+        val id = integer("id")
+        val hr = integer("hr")
+        val hd = integer("hd")
+        val hip = integer("hip")
+        val magnitude = double("magnitude")
+        val rightAscension = double("rightAscension")
+        val declination = double("declination")
+        val spType = text("spType").nullable()
+        val redshift = double("redshift")
+        val parallax = double("parallax")
+        val radialVelocity = double("radialVelocity")
+        val distance = double("distance")
+        val pmRA = double("pmRA")
+        val pmDEC = double("pmDEC")
+        val type = enumeration<SkyObjectType>("type")
+        val constellation = enumeration<Constellation>("constellation")
+
+        override val primaryKey = PrimaryKey(id, name = "pk_stars_id")
+    }
+
+    object DsoEntity : Table("dsos") {
+        val id = integer("id")
+        val m = integer("m")
+        val ngc = integer("ngc")
+        val ic = integer("ic")
+        val c = integer("c")
+        val b = integer("b")
+        val sh2 = integer("sh2")
+        val vdb = integer("vdb")
+        val rcw = integer("rcw")
+        val ldn = integer("ldn")
+        val lbn = integer("lbn")
+        val cr = integer("cr")
+        val mel = integer("mel")
+        val pgc = integer("pgc")
+        val ugc = integer("ugc")
+        val arp = integer("arp")
+        val vv = integer("vv")
+        val dwb = integer("dwb")
+        val tr = integer("tr")
+        val st = integer("st")
+        val ru = integer("ru")
+        val vdbha = integer("vdbha")
+        val ced = text("ced").nullable()
+        val pk = text("pk").nullable()
+        val png = text("png").nullable()
+        val snrg = text("snrg").nullable()
+        val aco = text("aco").nullable()
+        val hcg = text("hcg").nullable()
+        val eso = text("eso").nullable()
+        val vdbh = text("vdbh").nullable()
+        val magnitude = double("magnitude")
+        val rightAscension = double("rightAscension")
+        val declination = double("declination")
+        val type = enumeration<SkyObjectType>("type")
+        val mType = text("mType").nullable()
+        val majorAxis = double("majorAxis")
+        val minorAxis = double("minorAxis")
+        val orientation = double("orientation")
+        val redshift = double("redshift")
+        val parallax = double("parallax")
+        val radialVelocity = double("radialVelocity")
+        val distance = double("distance")
+        val pmRA = double("pmRA")
+        val pmDEC = double("pmDEC")
+        val constellation = enumeration<Constellation>("constellation")
+
+        override val primaryKey = PrimaryKey(id, name = "pk_dsos_id")
+    }
+
+    @JvmStatic private val DATABASE_PATH = Paths.get("desktop/src/main/resources/data/SkyDatabase.db")
+    @JvmStatic private val ZIPPED_DATABASE_PATH = Paths.get("desktop/src/main/resources/data/SkyDatabase.db.gz")
 
     @JvmStatic
     fun main(args: Array<String>) {
-        Paths.get("desktop/src/main/resources/data/StarCatalog.db").deleteIfExists()
-        Paths.get("desktop/src/main/resources/data/StarCatalog.db.gz").deleteIfExists()
+        DATABASE_PATH.deleteIfExists()
+        ZIPPED_DATABASE_PATH.deleteIfExists()
 
         val okHttpClient = OkHttpClient.Builder()
             .cache(Cache(File(".cache"), 1024 * 1024 * 128))
@@ -46,11 +129,7 @@ object StarCatalogGenerator {
 
         val simbadService = SimbadService(okHttpClient = okHttpClient)
 
-        Database
-            .connect(
-                "jdbc:sqlite:desktop/src/main/resources/data/StarCatalog.db",
-                driver = JDBC::class.java.name
-            )
+        Database.connect("jdbc:sqlite:$DATABASE_PATH", driver = JDBC::class.java.name)
 
         transaction {
             SchemaUtils.create(DsoEntity, StarEntity, NameEntity)
@@ -174,9 +253,9 @@ object StarCatalogGenerator {
             }
         }
 
-        Paths.get("desktop/src/main/resources/data/StarCatalog.db.gz")
+        ZIPPED_DATABASE_PATH
             .sink().gzip().use {
-                Paths.get("desktop/src/main/resources/data/StarCatalog.db").source().use(it.buffer()::writeAll)
+                DATABASE_PATH.source().use(it.buffer()::writeAll)
                 it.flush()
             }
     }

@@ -1,7 +1,6 @@
 package nebulosa.desktop.logic.camera
 
 import nebulosa.common.concurrency.CountUpDownLatch
-import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
 import nebulosa.desktop.logic.filterwheel.filterName
@@ -9,6 +8,7 @@ import nebulosa.desktop.logic.task.Task
 import nebulosa.desktop.logic.task.TaskExecutor
 import nebulosa.desktop.logic.task.TaskFinished
 import nebulosa.desktop.logic.task.TaskStarted
+import nebulosa.desktop.service.PreferenceService
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
 import nebulosa.fits.FITS_RA_ANGLE_FORMATTER
@@ -68,7 +68,7 @@ data class CameraExposureTask(
     val totalExposureTime = exposure * amount + (amount - 1) * delay * 1000L
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
-    @Autowired private lateinit var preferences: Preferences
+    @Autowired private lateinit var preferenceService: PreferenceService
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var taskExecutor: TaskExecutor
 
@@ -88,7 +88,7 @@ data class CameraExposureTask(
         get() = equipmentManager.selectedFilterWheel.get()
 
     val filterName
-        get() = filterWheel?.let { preferences.filterName(it) }
+        get() = filterWheel?.let { preferenceService.filterName(it) }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onEvent(event: CameraEvent) {
@@ -121,13 +121,13 @@ data class CameraExposureTask(
 
             if (frameType == FrameType.DARK) {
                 filterWheel?.also {
-                    val useFilterAsShutter = preferences.bool("filterWheel.${it.name}.useFilterWheelAsShutter")
+                    val useFilterAsShutter = preferenceService.bool("filterWheel.${it.name}.useFilterWheelAsShutter")
 
                     if (useFilterAsShutter) {
                         if (!it.connected) {
                             LOG.warn("filter wheel ${it.name} is disconnected")
                         } else {
-                            val filterAsShutterPosition = preferences.int("filterWheel.${it.name}.filterAsShutter")
+                            val filterAsShutterPosition = preferenceService.int("filterWheel.${it.name}.filterAsShutter")
 
                             if (filterAsShutterPosition != null) {
                                 LOG.info("moving filter wheel ${it.name} to dark filter")

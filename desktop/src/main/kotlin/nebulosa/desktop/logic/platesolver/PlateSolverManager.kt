@@ -6,7 +6,7 @@ import javafx.stage.FileChooser
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
-import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.framing.FramingView
 import nebulosa.desktop.view.platesolver.PlateSolverType
@@ -28,15 +28,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import oshi.PlatformEnum
 import oshi.SystemInfo
-import java.io.Closeable
 import java.io.File
 import java.time.Duration
 import kotlin.math.max
 
 @Component
-class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closeable {
+class PlateSolverManager(@Autowired internal val view: PlateSolverView) : AbstractManager() {
 
-    @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var framingView: FramingView
     @Autowired private lateinit var eventBus: EventBus
@@ -62,7 +60,7 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
         with(FileChooser()) {
             title = "Open Image"
 
-            val imageOpenPath = preferences.string("plateSolver.browsePath")
+            val imageOpenPath = preferenceService.string("plateSolver.browsePath")
             if (!imageOpenPath.isNullOrBlank()) initialDirectory = File(imageOpenPath)
 
             extensionFilters.add(FileChooser.ExtensionFilter("All Image Files", "*.fits", "*.fit", "*.png", "*.jpeg", "*.jpg", "*.bmp"))
@@ -71,7 +69,7 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
 
             val file = showOpenDialog(null) ?: return
 
-            preferences.string("plateSolver.browsePath", file.parent)
+            preferenceService.string("plateSolver.browsePath", file.parent)
 
             view.updateParameters(true, Angle.ZERO, Angle.ZERO)
 
@@ -209,30 +207,30 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Closea
     }
 
     fun loadPathOrUrlFromPreferences() {
-        view.pathOrUrl = preferences.string("plateSolver.${view.type}.pathOrUrl") ?: ""
+        view.pathOrUrl = preferenceService.string("plateSolver.${view.type}.pathOrUrl") ?: ""
     }
 
     fun loadPreferences() {
-        view.type = preferences.enum<PlateSolverType>("plateSolver.type") ?: PlateSolverType.ASTROMETRY_NET_ONLINE
+        view.type = preferenceService.enum<PlateSolverType>("plateSolver.type") ?: PlateSolverType.ASTROMETRY_NET_ONLINE
         loadPathOrUrlFromPreferences()
-        preferences.string("plateSolver.apiKey")?.let { view.apiKey = it }
-        preferences.int("plateSolver.downsampleFactor")?.let { view.downsampleFactor = it }
-        preferences.double("plateSolver.radius")?.let { view.radius = it.rad }
+        preferenceService.string("plateSolver.apiKey")?.let { view.apiKey = it }
+        preferenceService.int("plateSolver.downsampleFactor")?.let { view.downsampleFactor = it }
+        preferenceService.double("plateSolver.radius")?.let { view.radius = it.rad }
         view.updateParameters(view.blind, view.centerRA, view.centerDEC)
-        preferences.double("plateSolver.screen.x")?.let { view.x = it }
-        preferences.double("plateSolver.screen.y")?.let { view.y = it }
+        preferenceService.double("plateSolver.screen.x")?.let { view.x = it }
+        preferenceService.double("plateSolver.screen.y")?.let { view.y = it }
     }
 
     fun savePreferences() {
         if (!view.initialized) return
 
-        preferences.enum("plateSolver.type", view.type)
-        preferences.string("plateSolver.${view.type}.pathOrUrl", view.pathOrUrl)
-        preferences.string("plateSolver.apiKey", view.apiKey)
-        preferences.int("plateSolver.downsampleFactor", view.downsampleFactor)
-        preferences.double("plateSolver.radius", view.radius.value)
-        preferences.double("plateSolver.screen.x", max(0.0, view.x))
-        preferences.double("plateSolver.screen.y", max(0.0, view.y))
+        preferenceService.enum("plateSolver.type", view.type)
+        preferenceService.string("plateSolver.${view.type}.pathOrUrl", view.pathOrUrl)
+        preferenceService.string("plateSolver.apiKey", view.apiKey)
+        preferenceService.int("plateSolver.downsampleFactor", view.downsampleFactor)
+        preferenceService.double("plateSolver.radius", view.radius.value)
+        preferenceService.double("plateSolver.screen.x", max(0.0, view.x))
+        preferenceService.double("plateSolver.screen.y", max(0.0, view.y))
     }
 
     override fun close() {

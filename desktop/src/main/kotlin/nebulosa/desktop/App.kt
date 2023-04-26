@@ -3,8 +3,12 @@ package nebulosa.desktop
 import ch.qos.logback.classic.Level
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.data.DeepSkyObjectEntity
+import nebulosa.desktop.data.PreferenceEntity
+import nebulosa.desktop.data.StarEntity
 import nebulosa.desktop.logic.atlas.provider.ephemeris.TimeBucket
+import nebulosa.desktop.repository.app.PreferenceRepository
+import nebulosa.desktop.repository.sky.DeepSkyObjectRepository
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
 import nebulosa.io.resource
@@ -18,9 +22,9 @@ import org.greenrobot.eventbus.EventBus
 import org.hibernate.community.dialect.SQLiteDialect
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -52,7 +56,7 @@ class App : CommandLineRunner {
     @EnableJpaRepositories(
         entityManagerFactoryRef = "appEntityManagerFactory",
         transactionManagerRef = "appTransactionManager",
-        basePackages = ["nebulosa.desktop.app.*"],
+        basePackageClasses = [PreferenceRepository::class],
     )
     class AppDatabaseConfig {
 
@@ -61,7 +65,7 @@ class App : CommandLineRunner {
         fun appEntityManagerFactory(builder: EntityManagerFactoryBuilder, appDataSource: DataSource) = builder
             .dataSource(appDataSource)
             .properties(mapOf("hibernate.dialect" to SQLiteDialect::class.java.name))
-            .packages("nebulosa.desktop.app.*")
+            .packages(PreferenceEntity::class.java)
             .build()!!
 
         @Bean
@@ -74,19 +78,19 @@ class App : CommandLineRunner {
     @EnableJpaRepositories(
         entityManagerFactoryRef = "skyEntityManagerFactory",
         transactionManagerRef = "skyTransactionManager",
-        basePackages = ["nebulosa.desktop.sky.*"],
+        basePackageClasses = [DeepSkyObjectRepository::class],
     )
     class SkyDatabaseConfig {
 
         @Bean
-        fun skyEntityManagerFactory(builder: EntityManagerFactoryBuilder, skyDataSource: DataSource) = builder
+        fun skyEntityManagerFactory(builder: EntityManagerFactoryBuilder, @Qualifier("skyDataSource") skyDataSource: DataSource) = builder
             .dataSource(skyDataSource)
-            .properties(mapOf("hibernate.dialect" to SQLiteDialect::class.java.name))
-            .packages("nebulosa.desktop.sky.*")
+            .properties(mapOf("hibernate.dialect" to SQLiteDialect::class.java.name, "open_mode" to "1"))
+            .packages(DeepSkyObjectEntity::class.java, StarEntity::class.java)
             .build()!!
 
         @Bean
-        fun skyTransactionManager(skyEntityManagerFactory: LocalContainerEntityManagerFactoryBean) =
+        fun skyTransactionManager(@Qualifier("skyEntityManagerFactory") skyEntityManagerFactory: LocalContainerEntityManagerFactoryBean) =
             JpaTransactionManager(skyEntityManagerFactory.`object`!!)
     }
 
@@ -131,9 +135,6 @@ class App : CommandLineRunner {
         .connectTimeout(30L, TimeUnit.SECONDS)
         .callTimeout(30L, TimeUnit.SECONDS)
         .build()
-
-    @Bean
-    fun preferences(appDirectory: Path, objectMapper: ObjectMapper) = Preferences(Paths.get("$appDirectory", "preferences.properties"), objectMapper)
 
     @Bean
     fun cameraExecutorService(): ExecutorService = Executors.newSingleThreadExecutor()
@@ -181,6 +182,8 @@ class App : CommandLineRunner {
         with(if ("-v" in args) Level.DEBUG else Level.INFO) {
             logger(Logger.ROOT_LOGGER_NAME).level = this
             logger("javafx").level = Level.WARN
+            logger("org.hibernate").level = Level.WARN
+            logger("org.hibernate.SQL").level = this
         }
     }
 

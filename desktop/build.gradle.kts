@@ -7,6 +7,7 @@ plugins {
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     kotlin("plugin.spring")
+    kotlin("plugin.noarg")
     id("org.openjfx.javafxplugin")
     id("com.github.gmazzo.buildconfig")
 }
@@ -44,8 +45,6 @@ dependencies {
     implementation(libs.coroutines.javafx)
     implementation(libs.oshi)
     implementation(libs.sqlite)
-    implementation(libs.exposed.core)
-    implementation(libs.exposed.jdbc)
     implementation(libs.flyway)
     implementation(libs.bundles.hibernate)
     implementation(libs.logback)
@@ -56,6 +55,8 @@ dependencies {
     testImplementation(project(":nebulosa-skycatalog-hyg"))
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))
+    testImplementation(libs.exposed.core)
+    testImplementation(libs.exposed.jdbc)
 }
 
 publishing {
@@ -84,4 +85,8 @@ buildConfig {
     useKotlinOutput()
     buildConfigField("String", "VERSION_CODE", "\"${project.properties["version.code"]}\"")
     buildConfigField("String", "VERSION_NAME", "\"${project.properties["version.name"]}\"")
+}
+
+noArg {
+    invokeInitializers = true
 }

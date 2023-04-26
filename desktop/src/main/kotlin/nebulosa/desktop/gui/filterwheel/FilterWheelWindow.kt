@@ -72,7 +72,7 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
         (filterSlotTableView.columns[0] as TableColumn<Int, Int>).cellValueFactory = PropertyValueFactory { it }
         (filterSlotTableView.columns[1] as TableColumn<Int, String>).cellFactory = TextFieldTableCell.forTableColumn()
         (filterSlotTableView.columns[1] as TableColumn<Int, String>).cellValueFactory =
-            PropertyValueFactory { preferences.filterName(filterWheelManager.value, it) }
+            PropertyValueFactory { preferenceService.filterName(filterWheelManager.value, it) }
         (filterSlotTableView.columns[1] as TableColumn<Int, *>).setOnEditCommit {
             val label = it.newValue as? String ?: return@setOnEditCommit
             val position = it.tableView.items[it.tablePosition.row]
@@ -235,7 +235,7 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
 
     private inner class FilterSlotStringConverter : StringConverter<Int>() {
 
-        override fun toString(slot: Int?) = slot?.let { preferences.filterName(filterWheelManager.value, it) } ?: "No filter selected"
+        override fun toString(slot: Int?) = slot?.let { preferenceService.filterName(filterWheelManager.value, it) } ?: "No filter selected"
 
         override fun fromString(text: String?) = null
     }

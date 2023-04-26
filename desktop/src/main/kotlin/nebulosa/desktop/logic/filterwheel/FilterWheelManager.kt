@@ -1,6 +1,6 @@
 package nebulosa.desktop.logic.filterwheel
 
-import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.task.TaskExecutor
 import nebulosa.desktop.view.filterwheel.FilterWheelView
@@ -18,9 +18,8 @@ import kotlin.math.max
 class FilterWheelManager(
     @Autowired internal val view: FilterWheelView,
     @Autowired internal val equipmentManager: EquipmentManager,
-) : FilterWheelProperty by equipmentManager.selectedFilterWheel {
+) : AbstractManager(), FilterWheelProperty by equipmentManager.selectedFilterWheel {
 
-    @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
     @Autowired private lateinit var taskExecutor: TaskExecutor
 
@@ -48,13 +47,13 @@ class FilterWheelManager(
     }
 
     val filterNames
-        get() = (1..count).map { preferences.filterName(value, it) }
+        get() = (1..count).map { preferenceService.filterName(value, it) }
 
     fun updateTitle() {
         if (value == null) {
             view.title = "Filter Wheel"
         } else {
-            val filterName = preferences.filterName(value, position)
+            val filterName = preferenceService.filterName(value, position)
             view.title = "Filter Wheel · $name · $filterName"
         }
     }
@@ -68,29 +67,29 @@ class FilterWheelManager(
     }
 
     fun toggleUseFilterWheelAsShutter(enable: Boolean) {
-        preferences.bool("filterWheel.$name.useFilterWheelAsShutter", enable)
+        preferenceService.bool("filterWheel.$name.useFilterWheelAsShutter", enable)
     }
 
     fun updateFilterAsShutter(position: Int) {
         if (position !in 1..count) return
-        preferences.int("filterWheel.$name.filterAsShutter", position)
+        preferenceService.int("filterWheel.$name.filterAsShutter", position)
     }
 
     fun toggleCompactMode(enable: Boolean) {
-        preferences.bool("filterWheel.compactMode", enable)
+        preferenceService.bool("filterWheel.compactMode", enable)
         view.useCompactMode(enable)
     }
 
     fun updateFilterName(position: Int, label: String) {
         if (label.isBlank()) return
-        preferences.string("filterWheel.$name.filter.$position.label", label)
+        preferenceService.string("filterWheel.$name.filter.$position.label", label)
         updateFilterNames()
         syncFilterNames()
     }
 
     fun updateFilterNames() {
-        val useFilterWheelAsShutter = preferences.bool("filterWheel.$name.useFilterWheelAsShutter")
-        val filterAsShutter = preferences.int("filterWheel.$name.filterAsShutter") ?: 1
+        val useFilterWheelAsShutter = preferenceService.bool("filterWheel.$name.useFilterWheelAsShutter")
+        val filterAsShutter = preferenceService.int("filterWheel.$name.filterAsShutter") ?: 1
         view.updateFilterNames(filterNames, useFilterWheelAsShutter, filterAsShutter, position)
         updateTitle()
     }
@@ -107,8 +106,8 @@ class FilterWheelManager(
     fun savePreferences() {
         if (!view.initialized) return
 
-        preferences.double("filterWheel.screen.x", max(0.0, view.x))
-        preferences.double("filterWheel.screen.y", max(0.0, view.y))
+        preferenceService.double("filterWheel.screen.x", max(0.0, view.x))
+        preferenceService.double("filterWheel.screen.y", max(0.0, view.y))
     }
 
     fun loadPreferences(device: FilterWheel? = value) {
@@ -117,10 +116,10 @@ class FilterWheelManager(
             syncFilterNames()
         }
 
-        view.useCompactMode(preferences.bool("filterWheel.compactMode"))
+        view.useCompactMode(preferenceService.bool("filterWheel.compactMode"))
 
-        preferences.double("filterWheel.screen.x")?.let { view.x = it }
-        preferences.double("filterWheel.screen.y")?.let { view.y = it }
+        preferenceService.double("filterWheel.screen.x")?.let { view.x = it }
+        preferenceService.double("filterWheel.screen.y")?.let { view.y = it }
     }
 
     override fun close() {

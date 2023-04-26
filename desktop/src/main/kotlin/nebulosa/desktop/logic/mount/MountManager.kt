@@ -208,13 +208,13 @@ class MountManager(
     fun savePreferences() {
         if (!view.initialized) return
 
-        preferences.double("mount.screen.x", max(0.0, view.x))
-        preferences.double("mount.screen.y", max(0.0, view.y))
+        preferenceService.double("mount.screen.x", max(0.0, view.x))
+        preferenceService.double("mount.screen.y", max(0.0, view.y))
     }
 
     fun loadPreferences() {
-        preferences.double("mount.screen.x")?.also { view.x = it }
-        preferences.double("mount.screen.y")?.also { view.y = it }
+        preferenceService.double("mount.screen.x")?.also { view.x = it }
+        preferenceService.double("mount.screen.y")?.also { view.y = it }
     }
 
     private suspend fun computeLST(time: InstantOfTime = UTC.now()) = withIO {

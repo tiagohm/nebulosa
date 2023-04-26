@@ -1,7 +1,7 @@
 package nebulosa.desktop.logic.telescopecontrol
 
 import nebulosa.desktop.helper.runBlockingIO
-import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.telescopecontrol.TelescopeControlType
 import nebulosa.desktop.view.telescopecontrol.TelescopeControlView
@@ -19,16 +19,14 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.io.Closeable
 import java.time.OffsetDateTime
 
 @Component
 class TelescopeControlManager(@Autowired internal val view: TelescopeControlView) :
-    Closeable, LX200MountHandler, StellariumMountHandler {
+    AbstractManager(), LX200MountHandler, StellariumMountHandler {
 
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var equipmentManager: EquipmentManager
-    @Autowired private lateinit var preferences: Preferences
 
     @Volatile private var stellariumProtocolServer: StellariumProtocolServer? = null
     @Volatile private var lx200ProtocolServer: LX200ProtocolServer? = null
@@ -61,8 +59,8 @@ class TelescopeControlManager(@Autowired internal val view: TelescopeControlView
         else stellariumProtocolServer
 
         if (server == null) {
-            val host = preferences.string("telescopeControl.${view.type}.host") ?: ""
-            val port = preferences.int("telescopeControl.${view.type}.port") ?: 0
+            val host = preferenceService.string("telescopeControl.${view.type}.host") ?: ""
+            val port = preferenceService.int("telescopeControl.${view.type}.port") ?: 0
             view.updateConnectionStatus(false, host, port)
         } else {
             view.updateConnectionStatus(server.running, server.host, server.port)
@@ -95,8 +93,8 @@ class TelescopeControlManager(@Autowired internal val view: TelescopeControlView
 
             server.run()
 
-            preferences.string("telescopeControl.${view.type}.host", server.host)
-            preferences.int("telescopeControl.${view.type}.port", server.port)
+            preferenceService.string("telescopeControl.${view.type}.host", server.host)
+            preferenceService.int("telescopeControl.${view.type}.port", server.port)
         }
 
         updateConnectionStatus()

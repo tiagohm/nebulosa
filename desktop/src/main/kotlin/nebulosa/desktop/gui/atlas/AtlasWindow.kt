@@ -16,7 +16,7 @@ import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.atlas.AtlasManager
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
-import nebulosa.desktop.repository.SkyObjectRepository
+import nebulosa.desktop.service.SkyObjectService
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
@@ -191,7 +191,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         searchStarFilterWindow.showAndWait(this) {
             if (searchStarFilterWindow.filtered) {
                 val text = searchStarTextField.text.trim()
-                val filter = SkyObjectRepository.Filter(
+                val filter = SkyObjectService.Filter(
                     searchStarFilterWindow.rightAscension,
                     searchStarFilterWindow.declination,
                     searchStarFilterWindow.radius,
@@ -217,7 +217,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         searchDSOFilterWindow.showAndWait(this) {
             if (searchDSOFilterWindow.filtered) {
                 val text = searchDSOTextField.text.trim()
-                val filter = SkyObjectRepository.Filter(
+                val filter = SkyObjectService.Filter(
                     searchDSOFilterWindow.rightAscension,
                     searchDSOFilterWindow.declination,
                     searchDSOFilterWindow.radius,
