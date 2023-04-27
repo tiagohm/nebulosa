@@ -8,6 +8,7 @@ import nebulosa.math.Velocity.Companion.kms
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.ICRF
 import nebulosa.skycatalog.SkyCatalog
+import nebulosa.skycatalog.SkyObject.Companion.NAME_SEPARATOR
 import nebulosa.skycatalog.Star
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
@@ -66,7 +67,7 @@ class HygDatabase : SkyCatalog<Star>(118005) {
 
             val star = Star(
                 id = id,
-                names = names.toList(),
+                names = names.joinToString(NAME_SEPARATOR).trim(),
                 hr = hr,
                 hd = hd,
                 hip = hip,

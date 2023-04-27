@@ -6,7 +6,7 @@ import nebulosa.nova.astrometry.Constellation
 
 data class Star(
     override val id: Int = 0,
-    override val names: List<String> = emptyList(),
+    override val names: String = "",
     val hr: Int = 0,
     val hd: Int = 0,
     val hip: Int = 0,

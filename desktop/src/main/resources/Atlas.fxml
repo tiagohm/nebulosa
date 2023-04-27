@@ -203,11 +203,11 @@
                         right="16.0"
                         top="2.0"/>
             </padding>
-            <HBox alignment="CENTER">
-                <Label fx:id="nameLabel"
-                       alignment="CENTER"
-                       styleClass="text-bold"
-                       text="Sun"/>
+            <HBox alignment="CENTER_LEFT">
+                <CopyableLabel fx:id="nameLabel"
+                               HBox.hgrow="ALWAYS"
+                               styleClass="text-bold"
+                               text="Sun"/>
             </HBox>
             <GridPane vgap="4.0"
                       hgap="4.0">

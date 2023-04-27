@@ -13,13 +13,13 @@ import org.springframework.stereotype.Repository
 interface StarRepository : JpaRepository<StarEntity, Int> {
 
     @Query(
-        "SELECT dso FROM StarEntity dso JOIN FETCH dso.names n WHERE " +
-                "(:text IS NULL OR n LIKE :text) AND " +
-                "(:constellation IS NULL OR dso.constellation = :constellation) AND " +
-                "(:type IS NULL OR dso.type = :type) AND " +
-                "(dso.magnitude BETWEEN :magnitudeMin AND :magnitudeMax) AND " +
-                "(:radius <= 0.0 OR acos(sin(dso.declination) * sin(:declination) + cos(dso.declination) * cos(:declination) * cos(dso.rightAscension - :rightAscension)) <= :radius) " +
-                "ORDER BY dso.magnitude ASC"
+        "SELECT star FROM StarEntity star WHERE " +
+                "(:text IS NULL OR star.names LIKE :text) AND " +
+                "(:constellation IS NULL OR star.constellation = :constellation) AND " +
+                "(:type IS NULL OR star.type = :type) AND " +
+                "(star.magnitude BETWEEN :magnitudeMin AND :magnitudeMax) AND " +
+                "(:radius <= 0.0 OR acos(sin(star.declination) * sin(:declination) + cos(star.declination) * cos(:declination) * cos(star.rightAscension - :rightAscension)) <= :radius) " +
+                "ORDER BY star.magnitude ASC"
     )
     fun search(
         text: String? = null,

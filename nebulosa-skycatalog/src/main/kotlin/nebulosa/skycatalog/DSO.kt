@@ -6,7 +6,7 @@ import nebulosa.nova.astrometry.Constellation
 
 data class DSO(
     override val id: Int = 0,
-    override val names: List<String> = emptyList(),
+    override val names: String = "",
     val m: Int = 0, // Messier Catalog number
     val ngc: Int = 0, // New General Catalog number
     val ic: Int = 0, // Index Catalog number

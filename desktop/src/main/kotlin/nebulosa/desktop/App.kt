@@ -110,7 +110,7 @@ class App : CommandLineRunner {
         val path = Paths.get("$appDirectory", "data", "database", "sky.db")
         path.parent.createDirectories()
 
-        GZIPInputStream(resource("data/StarCatalog.db.gz")!!).transferAndClose(path.outputStream())
+        GZIPInputStream(resource("data/SkyDatabase.db.gz")!!).transferAndClose(path.outputStream())
 
         initialize(path)
     }

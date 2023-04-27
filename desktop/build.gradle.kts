@@ -7,7 +7,6 @@ plugins {
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     kotlin("plugin.spring")
-    kotlin("plugin.noarg")
     id("org.openjfx.javafxplugin")
     id("com.github.gmazzo.buildconfig")
 }
@@ -85,8 +84,4 @@ buildConfig {
     useKotlinOutput()
     buildConfigField("String", "VERSION_CODE", "\"${project.properties["version.code"]}\"")
     buildConfigField("String", "VERSION_NAME", "\"${project.properties["version.name"]}\"")
-}
-
-noArg {
-    invokeInitializers = true
 }

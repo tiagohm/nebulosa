@@ -331,7 +331,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     override fun showStarInfo(star: SkyObject) {
         showAlert {
             val box = VBox()
-            header = CopyableLabel(star.names.joinToString(", "))
+            header = CopyableLabel(star.names)
             header.styleClass.add("text-bold")
             val rightAscension = star.rightAscension.format(AngleFormatter.HMS)
             val declination = star.declination.format(AngleFormatter.SIGNED_DMS)

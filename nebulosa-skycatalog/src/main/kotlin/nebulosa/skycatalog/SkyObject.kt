@@ -9,7 +9,7 @@ interface SkyObject : Serializable {
 
     val id: Int
 
-    val names: List<String>
+    val names: String
 
     val magnitude: Double
 
@@ -34,4 +34,9 @@ interface SkyObject : Serializable {
     val pmDEC: Angle
 
     val constellation: Constellation
+
+    companion object {
+
+        const val NAME_SEPARATOR = " · "
+    }
 }

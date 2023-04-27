@@ -23,6 +23,7 @@ import nebulosa.math.AngleFormatter
 import nebulosa.math.PairOfAngle
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
+import nebulosa.skycatalog.SkyObject.Companion.NAME_SEPARATOR
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
@@ -33,7 +34,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     @Lazy @Autowired private lateinit var atlasManager: AtlasManager
 
     @FXML private lateinit var ephemerisTabPane: TabPane
-    @FXML private lateinit var nameLabel: Label
+    @FXML private lateinit var nameLabel: CopyableLabel
     @FXML private lateinit var rightAscensionLabel: CopyableLabel
     @FXML private lateinit var declinationLabel: CopyableLabel
     @FXML private lateinit var rightAscensionJ2000Label: CopyableLabel
@@ -104,14 +105,14 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         (minorPlanetTableView.columns[1] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.description }
         (minorPlanetTableView.columns[2] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.value }
 
-        (starTableView.columns[0] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.names.first() }
+        (starTableView.columns[0] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.names.firstName() }
         (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
         (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = Callback { _ -> MagnitudeTableCell() }
         (starTableView.columns[2] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.type.description }
         (starTableView.columns[3] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
         starTableView.selectionModel.selectedItemProperty().on { if (it != null) launch { atlasManager.computeStar(it) } }
 
-        (dsosTableView.columns[0] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.names.first() }
+        (dsosTableView.columns[0] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.names.firstName() }
         (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
         (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = Callback { _ -> MagnitudeTableCell() }
         (dsosTableView.columns[2] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.type.description }
@@ -330,6 +331,15 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
             text = if (empty || item == null) null
             else if (item.isFinite() && item < 99.0) "%.1f".format(item)
             else "-"
+        }
+    }
+
+    companion object {
+
+        @JvmStatic
+        private fun String.firstName(): String {
+            val index = indexOf(NAME_SEPARATOR)
+            return if (index < 0) this else substring(0, index)
         }
     }
 }

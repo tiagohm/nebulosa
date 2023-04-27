@@ -9,6 +9,7 @@ import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.ICRF
 import nebulosa.skycatalog.DSO
 import nebulosa.skycatalog.SkyCatalog
+import nebulosa.skycatalog.SkyObject.Companion.NAME_SEPARATOR
 import okio.BufferedSource
 import okio.Source
 import okio.buffer
@@ -27,6 +28,7 @@ class Nebula : SkyCatalog<DSO>(94661) {
 
         val namesMap = namesSource?.loadNames() ?: emptyMap()
         val types = NebulaType.values()
+        val names = ArrayList<String>(8)
 
         while (!buffer.exhausted()) {
             val id = buffer.readInt()
@@ -75,7 +77,7 @@ class Nebula : SkyCatalog<DSO>(94661) {
             val ru = buffer.readInt()
             val vdbha = buffer.readInt()
 
-            val names = ArrayList<String>(2)
+            names.clear()
 
             fun String.findNames(useKeyAsName: Boolean = true) {
                 if (this in namesMap) names.addAll(namesMap[this]!!)
@@ -115,7 +117,7 @@ class Nebula : SkyCatalog<DSO>(94661) {
 
             val nebula = DSO(
                 id,
-                names,
+                names.joinToString(NAME_SEPARATOR).trim(),
                 m = m, ngc = ngc, ic = ic,
                 c = c, b = b,
                 sh2 = sh2, vdb = vdb,

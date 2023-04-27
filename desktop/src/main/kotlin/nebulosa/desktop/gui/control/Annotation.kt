@@ -115,7 +115,7 @@ class Annotation : ShapePane() {
                 addEventHandler(MouseEvent.MOUSE_CLICKED, starClicked)
             }
 
-            val text = Text(this[0], this[1], star.names.joinToString(" | "))
+            val text = Text(this[0], this[1], star.names)
 
             with(text) {
                 fill = color

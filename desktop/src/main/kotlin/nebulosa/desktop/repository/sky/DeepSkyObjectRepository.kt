@@ -13,8 +13,8 @@ import org.springframework.stereotype.Repository
 interface DeepSkyObjectRepository : JpaRepository<DeepSkyObjectEntity, Int> {
 
     @Query(
-        "SELECT dso FROM DeepSkyObjectEntity dso JOIN FETCH dso.names n WHERE " +
-                "(:text IS NULL OR n LIKE :text) AND " +
+        "SELECT dso FROM DeepSkyObjectEntity dso WHERE " +
+                "(:text IS NULL OR dso.names LIKE :text) AND " +
                 "(:constellation IS NULL OR dso.constellation = :constellation) AND " +
                 "(:type IS NULL OR dso.type = :type) AND " +
                 "(dso.magnitude BETWEEN :magnitudeMin AND :magnitudeMax) AND " +

@@ -153,14 +153,14 @@ class SimbadService(
             val mType = parts[MTYPE].replace("\"", "").trim()
             val majorAxis = parts[MAJ_AXIS].toDoubleOrNull() ?: 0.0
             val minorAxis = parts[MIN_AXIS].toDoubleOrNull() ?: 0.0
-            val u = parts[FLUX_U].toDoubleOrNull() ?: Double.NaN
-            val b = parts[FLUX_B].toDoubleOrNull() ?: Double.NaN
-            val v = parts[FLUX_V].toDoubleOrNull() ?: Double.NaN
-            val r = parts[FLUX_R].toDoubleOrNull() ?: Double.NaN
-            val i = parts[FLUX_I].toDoubleOrNull() ?: Double.NaN
-            val j = parts[FLUX_J].toDoubleOrNull() ?: Double.NaN
-            val h = parts[FLUX_H].toDoubleOrNull() ?: Double.NaN
-            val k = parts[FLUX_K].toDoubleOrNull() ?: Double.NaN
+            val u = parts[FLUX_U].toDoubleOrNull() ?: 99.0
+            val b = parts[FLUX_B].toDoubleOrNull() ?: 99.0
+            val v = parts[FLUX_V].toDoubleOrNull() ?: 99.0
+            val r = parts[FLUX_R].toDoubleOrNull() ?: 99.0
+            val i = parts[FLUX_I].toDoubleOrNull() ?: 99.0
+            val j = parts[FLUX_J].toDoubleOrNull() ?: 99.0
+            val h = parts[FLUX_H].toDoubleOrNull() ?: 99.0
+            val k = parts[FLUX_K].toDoubleOrNull() ?: 99.0
             val redshift = parts[REDSHIFT].toDoubleOrNull() ?: 0.0
             val rv = parts[RADVEL].toDoubleOrNull() ?: 0.0
 

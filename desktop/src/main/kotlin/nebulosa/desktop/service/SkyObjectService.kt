@@ -36,7 +36,7 @@ class SkyObjectService {
 
     fun searchDSO(text: String, filter: Filter): List<DeepSkyObjectEntity> {
         return deepSkyObjectRepository.search(
-            text.ifBlank { null },
+            text.ifBlank { null }?.let { "%$it%" },
             filter.rightAscension, filter.declination, filter.radius,
             filter.constellation, filter.magnitudeMin.clampInRange(), filter.magnitudeMax.clampInRange(), filter.type,
             Pageable.ofSize(1000),
@@ -45,7 +45,7 @@ class SkyObjectService {
 
     fun searchStar(text: String, filter: Filter): List<StarEntity> {
         return starRepository.search(
-            text.ifBlank { null },
+            text.ifBlank { null }?.let { "%$it%" },
             filter.rightAscension, filter.declination, filter.radius,
             filter.constellation, filter.magnitudeMin.clampInRange(), filter.magnitudeMax.clampInRange(), filter.type,
             Pageable.ofSize(1000),

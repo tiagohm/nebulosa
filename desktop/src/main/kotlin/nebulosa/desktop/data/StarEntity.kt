@@ -25,10 +25,8 @@ class StarEntity : SkyObject, Serializable {
     @Column(name = "hip", columnDefinition = "INTEGER")
     var hip = 0
 
-    @ElementCollection
-    @Column(name = "name", nullable = false, columnDefinition = "TEXT")
-    @CollectionTable(name = "names", joinColumns = [JoinColumn(name = "star")])
-    override var names = emptyList<String>()
+    @Column(name = "names", nullable = false, columnDefinition = "TEXT")
+    override var names = ""
 
     @Column(name = "magnitude", nullable = false, columnDefinition = "REAL")
     override var magnitude = Double.MAX_VALUE

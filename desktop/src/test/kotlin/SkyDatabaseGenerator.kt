@@ -1,4 +1,5 @@
 import nebulosa.io.transferAndClose
+import nebulosa.math.Angle.Companion.arcmin
 import nebulosa.math.Angle.Companion.mas
 import nebulosa.math.Velocity.Companion.kms
 import nebulosa.nova.astrometry.Constellation
@@ -12,7 +13,10 @@ import nebulosa.skycatalog.stellarium.Nebula
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okio.*
+import okio.Source
+import okio.buffer
+import okio.gzip
+import okio.source
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
@@ -23,22 +27,12 @@ import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
-import kotlin.io.use
+import kotlin.math.min
 
 object SkyDatabaseGenerator {
-
-    object NameEntity : Table("names") {
-        val id = integer("id")
-        val name = text("name")
-        val dso = (integer("dso") references DsoEntity.id).nullable()
-        val star = (integer("star") references StarEntity.id).nullable()
-
-        override val primaryKey = PrimaryKey(id, name = "pk_names_id")
-    }
 
     object StarEntity : Table("stars") {
         val id = integer("id")
@@ -57,6 +51,7 @@ object SkyDatabaseGenerator {
         val pmDEC = double("pmDEC")
         val type = enumeration<SkyObjectType>("type")
         val constellation = enumeration<Constellation>("constellation")
+        val names = text("names")
 
         override val primaryKey = PrimaryKey(id, name = "pk_stars_id")
     }
@@ -107,17 +102,16 @@ object SkyDatabaseGenerator {
         val pmRA = double("pmRA")
         val pmDEC = double("pmDEC")
         val constellation = enumeration<Constellation>("constellation")
+        val names = text("names")
 
         override val primaryKey = PrimaryKey(id, name = "pk_dsos_id")
     }
 
     @JvmStatic private val DATABASE_PATH = Paths.get("desktop/src/main/resources/data/SkyDatabase.db")
-    @JvmStatic private val ZIPPED_DATABASE_PATH = Paths.get("desktop/src/main/resources/data/SkyDatabase.db.gz")
 
     @JvmStatic
     fun main(args: Array<String>) {
         DATABASE_PATH.deleteIfExists()
-        ZIPPED_DATABASE_PATH.deleteIfExists()
 
         val okHttpClient = OkHttpClient.Builder()
             .cache(Cache(File(".cache"), 1024 * 1024 * 128))
@@ -129,29 +123,40 @@ object SkyDatabaseGenerator {
 
         val simbadService = SimbadService(okHttpClient = okHttpClient)
 
+        val messierCatalog = simbadService.simbadCatalog(CatalogType.M)
+        val ngcCatalog = simbadService.simbadCatalog(CatalogType.NGC)
+        val icCatalog = simbadService.simbadCatalog(CatalogType.IC)
+        val ledaCatalog = simbadService.simbadCatalog(CatalogType.LEDA)
+        val hipCatalog = simbadService.simbadCatalog(CatalogType.HIP)
+        val hdCatalog = simbadService.simbadCatalog(CatalogType.HD)
+
         Database.connect("jdbc:sqlite:$DATABASE_PATH", driver = JDBC::class.java.name)
 
         transaction {
-            SchemaUtils.create(DsoEntity, StarEntity, NameEntity)
+            SchemaUtils.create(DsoEntity, StarEntity)
 
-            val catalog = okHttpClient.download(
+            val catalogSource = okHttpClient.download(
                 "https://github.com/Stellarium/stellarium/raw/master/nebulae/default/catalog.dat",
                 Paths.get(".cache/catalog.dat"),
             ).gzip()
 
-            val names = okHttpClient.download(
+            val namesSource = okHttpClient.download(
                 "https://github.com/Stellarium/stellarium/raw/master/nebulae/default/names.dat",
                 Paths.get(".cache/names.dat"),
             )
 
-            val namesId = AtomicInteger(1)
-
             with(Nebula()) {
-                load(catalog, names)
+                load(catalogSource, namesSource)
 
                 for (item in this) {
+                    val simbadObject = messierCatalog["${item.m}"] ?: ngcCatalog["${item.ngc}"]
+                    ?: icCatalog["${item.ic}"] ?: ledaCatalog["${item.pgc}"]
+
+                    val plx = simbadObject?.plx?.mas ?: item.parallax
+
                     DsoEntity.insert {
                         it[id] = item.id
+                        it[names] = item.names
                         it[m] = item.m
                         it[ngc] = item.ngc
                         it[ic] = item.ic
@@ -181,29 +186,21 @@ object SkyDatabaseGenerator {
                         it[hcg] = item.hcg?.ifEmpty { null }
                         it[eso] = item.eso?.ifEmpty { null }
                         it[vdbh] = item.vdbh?.ifEmpty { null }
-                        it[magnitude] = item.magnitude
+                        it[magnitude] = min(item.magnitude, simbadObject?.magnitude ?: 99.0)
                         it[rightAscension] = item.rightAscension.value
                         it[declination] = item.declination.value
-                        it[type] = item.type
+                        it[type] = simbadObject?.type ?: item.type
                         it[mType] = item.mType?.ifEmpty { null }
-                        it[majorAxis] = item.majorAxis.value
-                        it[minorAxis] = item.minorAxis.value
+                        it[majorAxis] = simbadObject?.majorAxis?.arcmin?.value ?: item.majorAxis.value
+                        it[minorAxis] = simbadObject?.minorAxis?.arcmin?.value ?: item.minorAxis.value
                         it[orientation] = item.orientation.value
-                        it[redshift] = item.redshift
-                        it[parallax] = item.parallax.value
-                        it[radialVelocity] = item.radialVelocity.value
-                        it[distance] = item.distance
-                        it[pmRA] = item.pmRA.value
-                        it[pmDEC] = item.pmDEC.value
+                        it[redshift] = simbadObject?.redshift ?: item.redshift
+                        it[parallax] = simbadObject?.plx?.mas?.value ?: item.parallax.value
+                        it[radialVelocity] = simbadObject?.rv?.kms?.value ?: item.radialVelocity.value
+                        it[distance] = if (item.distance == 0.0 && plx.value != 0.0) 3.2615637769 / plx.arcsec else item.distance
+                        it[pmRA] = simbadObject?.pmRA?.mas?.value ?: item.pmRA.value
+                        it[pmDEC] = simbadObject?.pmDEC?.mas?.value ?: item.pmDEC.value
                         it[constellation] = item.constellation
-                    }
-
-                    for (dsoName in item.names) {
-                        NameEntity.insert {
-                            it[id] = namesId.getAndIncrement()
-                            it[name] = dsoName
-                            it[dso] = item.id
-                        }
                     }
                 }
             }
@@ -216,19 +213,17 @@ object SkyDatabaseGenerator {
             with(HygDatabase()) {
                 load(hyg.buffer().inputStream())
 
-                val hipCatalog = simbadService.simbadCatalog(CatalogType.HIP)
-                val hdCatalog = simbadService.simbadCatalog(CatalogType.HD)
-
                 for (item in this) {
                     val simbadObject = hipCatalog["${item.hip}"] ?: hdCatalog["${item.hd}"]
                     val plx = simbadObject?.plx?.mas ?: item.parallax
 
                     StarEntity.insert {
                         it[id] = item.id
+                        it[names] = item.names
                         it[hr] = item.hr
                         it[hd] = item.hd
                         it[hip] = item.hip
-                        it[magnitude] = item.magnitude
+                        it[magnitude] = min(item.magnitude, simbadObject?.magnitude ?: 99.0)
                         it[rightAscension] = item.rightAscension.value
                         it[declination] = item.declination.value
                         it[spType] = (simbadObject?.spType ?: item.spType)?.ifEmpty { null }
@@ -236,28 +231,17 @@ object SkyDatabaseGenerator {
                         it[parallax] = simbadObject?.plx?.mas?.value ?: item.parallax.value
                         it[radialVelocity] = simbadObject?.rv?.kms?.value ?: item.radialVelocity.value
                         it[distance] = if (item.distance == 0.0 && plx.value != 0.0) 3.2615637769 / plx.arcsec else item.distance
-                        it[pmRA] = item.pmRA.value
-                        it[pmDEC] = item.pmDEC.value
+                        it[pmRA] = simbadObject?.pmRA?.mas?.value ?: item.pmRA.value
+                        it[pmDEC] = simbadObject?.pmDEC?.mas?.value ?: item.pmDEC.value
                         it[type] = simbadObject?.type ?: item.type
                         it[constellation] = item.constellation
-                    }
-
-                    for (starName in item.names) {
-                        NameEntity.insert {
-                            it[id] = namesId.getAndIncrement()
-                            it[name] = starName
-                            it[star] = item.id
-                        }
                     }
                 }
             }
         }
 
-        ZIPPED_DATABASE_PATH
-            .sink().gzip().use {
-                DATABASE_PATH.source().use(it.buffer()::writeAll)
-                it.flush()
-            }
+        Runtime.getRuntime().exec("sqlite3 $DATABASE_PATH 'VACUUM'").waitFor()
+        Runtime.getRuntime().exec("gzip -f -6 $DATABASE_PATH").waitFor()
     }
 
     @JvmStatic
@@ -277,14 +261,14 @@ object SkyDatabaseGenerator {
         query.catalog(type)
         query.id(0)
         query.limit(20000)
-        query.magnitude(max = 10.0)
+        query.magnitude(max = 20.0)
 
         while (true) {
             val data = query(query).execute().body() ?: break
             if (data.isEmpty()) break
 
             for (item in data) {
-                val key = item.names.first { it.type == type }.name
+                val key = item.names.firstOrNull { it.type == type }?.name ?: continue
                 res[key] = item
             }
 

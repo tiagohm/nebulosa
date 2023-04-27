@@ -229,13 +229,13 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
     suspend fun computeStar(body: SkyObject? = star): HorizonsEphemeris? {
         star = body ?: return null
-        bodyName = body.names.joinToString(", ")
+        bodyName = body.names
         return starsCache.computeFixedStar(body).computeBody(body = star)
     }
 
     suspend fun computeDSO(body: SkyObject? = dso): HorizonsEphemeris? {
         dso = body ?: return null
-        bodyName = body.names.joinToString(", ")
+        bodyName = body.names
         return dsosCache.computeFixedStar(body).computeBody(body = dso)
     }
 

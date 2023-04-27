@@ -16,10 +16,8 @@ class DeepSkyObjectEntity : SkyObject, Serializable {
     @Column(name = "id", columnDefinition = "INTEGER")
     override var id = 0
 
-    @ElementCollection
-    @Column(name = "name", nullable = false, columnDefinition = "TEXT")
-    @CollectionTable(name = "names", joinColumns = [JoinColumn(name = "dso")])
-    override var names = emptyList<String>()
+    @Column(name = "names", nullable = false, columnDefinition = "TEXT")
+    override var names = ""
 
     @Column(name = "m", nullable = false, columnDefinition = "INTEGER")
     var m = 0
