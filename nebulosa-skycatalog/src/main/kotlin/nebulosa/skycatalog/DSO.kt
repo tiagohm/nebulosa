@@ -41,9 +41,9 @@ data class DSO(
     override val declination: Angle = Angle.ZERO,
     override val type: SkyObjectType = SkyObjectType.OBJECT_OF_UNKNOWN_NATURE,
     val mType: String? = null,
-    val majorAxis: Angle = Angle.ZERO,
-    val minorAxis: Angle = Angle.ZERO,
-    val orientation: Angle = Angle.ZERO,
+    override val majorAxis: Angle = Angle.ZERO,
+    override val minorAxis: Angle = Angle.ZERO,
+    override val orientation: Angle = Angle.ZERO,
     override val redshift: Double = 0.0,
     override val parallax: Angle = Angle.ZERO,
     override val radialVelocity: Velocity = Velocity.ZERO,
@@ -51,7 +51,7 @@ data class DSO(
     override val pmRA: Angle = Angle.ZERO,
     override val pmDEC: Angle = Angle.ZERO,
     override val constellation: Constellation = Constellation.AND,
-) : SkyObject {
+) : SkyObject, HasAxisSize {
 
     // Dunlop Catalogue.
     val dunlop

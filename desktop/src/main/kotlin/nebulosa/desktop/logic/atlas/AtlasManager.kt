@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import nebulosa.constants.AU_KM
 import nebulosa.constants.SPEED_OF_LIGHT
+import nebulosa.desktop.data.DeepSkyObjectEntity
 import nebulosa.desktop.helper.runBlockingIO
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
@@ -39,6 +40,7 @@ import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.sbd.SmallBody
 import nebulosa.sbd.SmallBodyDatabaseLookupService
+import nebulosa.skycatalog.HasAxisSize
 import nebulosa.skycatalog.SkyObject
 import nebulosa.time.UTC
 import org.greenrobot.eventbus.EventBus
@@ -427,6 +429,12 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
         val elongation = element[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE]?.split(",")?.first()
         if (elongation != null) extra.add("Elongation (deg)" to elongation)
+
+        if (body is HasAxisSize) {
+            if (body.majorAxis.value > 0.0 || body.minorAxis.value > 0.0) {
+                extra.add("Size (arcmin)" to "%.2f x %.2f".format(body.minorAxis.arcmin, body.majorAxis.arcmin))
+            }
+        }
 
         view.updateInfo(bodyName, extra)
 

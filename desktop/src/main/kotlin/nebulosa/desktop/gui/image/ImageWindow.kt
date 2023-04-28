@@ -32,7 +32,7 @@ import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import nebulosa.math.AngleFormatter
 import nebulosa.platesolving.Calibration
-import nebulosa.skycatalog.DSO
+import nebulosa.skycatalog.HasAxisSize
 import nebulosa.skycatalog.SkyObject
 import net.kurobako.gesturefx.AffineEvent
 import org.slf4j.LoggerFactory
@@ -339,7 +339,10 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             if (star.magnitude < 99.0) box.children.add(CopyableLabel("MAGNITUDE: %.2f".format(star.magnitude)))
             box.children.add(CopyableLabel("TYPE: ${star.type.description}"))
             if (star.distance > 0.0) box.children.add(CopyableLabel("DISTANCE: %.1f ly".format(star.distance)))
-            if (star is DSO) box.children.add(CopyableLabel("SIZE (arcmin): %.2f x %.2f".format(star.minorAxis.arcmin, star.majorAxis.arcmin)))
+            if (star is HasAxisSize && (star.majorAxis.value > 0.0 || star.minorAxis.value > 0.0)) {
+                val label = CopyableLabel("SIZE (arcmin): %.2f x %.2f".format(star.minorAxis.arcmin, star.majorAxis.arcmin))
+                box.children.add(label)
+            }
             box.children.add(CopyableLabel("CONSTELLATION: ${star.constellation.latinName} (${star.constellation.iau})"))
             minWidth = 380.0
             content = box
