@@ -4,7 +4,7 @@ import nebulosa.math.Angle
 import nebulosa.math.Velocity
 import nebulosa.nova.astrometry.Constellation
 
-data class DSO(
+data class DeepSkyObject(
     override val id: Int = 0,
     override val names: String = "",
     val m: Int = 0, // Messier Catalog number

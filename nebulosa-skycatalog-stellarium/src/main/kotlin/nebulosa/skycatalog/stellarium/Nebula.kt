@@ -7,7 +7,7 @@ import nebulosa.math.Angle.Companion.mas
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.ICRF
-import nebulosa.skycatalog.DSO
+import nebulosa.skycatalog.DeepSkyObject
 import nebulosa.skycatalog.SkyCatalog
 import nebulosa.skycatalog.SkyObject.Companion.NAME_SEPARATOR
 import okio.BufferedSource
@@ -15,7 +15,7 @@ import okio.Source
 import okio.buffer
 import kotlin.math.min
 
-class Nebula : SkyCatalog<DSO>(94661) {
+class Nebula : SkyCatalog<DeepSkyObject>(94661) {
 
     fun load(
         source: Source,
@@ -115,7 +115,7 @@ class Nebula : SkyCatalog<DSO>(94661) {
             if (ru > 0) "RU $ru".findNames()
             if (vdbha > 0) "VDBHA $vdbha".findNames()
 
-            val nebula = DSO(
+            val nebula = DeepSkyObject(
                 id,
                 names.joinToString(NAME_SEPARATOR).trim(),
                 m = m, ngc = ngc, ic = ic,
