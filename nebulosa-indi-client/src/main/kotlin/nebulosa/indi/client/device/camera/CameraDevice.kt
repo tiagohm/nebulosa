@@ -250,9 +250,9 @@ internal open class CameraDevice(
                 when (message.name) {
                     "CCD1" -> {
                         val ccd1 = message["CCD1"]!!
-                        // TODO: Handle zipped format.
                         val fits = Base64InputStream(ccd1.value)
-                        handler.fireOnEventReceived(CameraFrameCaptured(this, fits))
+                        val compressed = COMPRESSION_FORMATS.any { ccd1.format.endsWith(it, true) }
+                        handler.fireOnEventReceived(CameraFrameCaptured(this, fits, compressed))
                     }
                     "CCD2" -> {
                         // TODO: Handle Guider Head frame.
@@ -369,5 +369,10 @@ internal open class CameraDevice(
                 " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
                 " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
                 " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
+    }
+
+    companion object {
+
+        @JvmStatic private val COMPRESSION_FORMATS = arrayOf(".fz", ".gz")
     }
 }

@@ -96,7 +96,7 @@ data class CameraExposureTask(
 
         when (event) {
             is CameraFrameCaptured -> {
-                imagePaths.add(save(event.fits))
+                imagePaths.add(save(event.fits, event.compressed))
                 latch.countDown()
             }
             is CameraExposureAborted,
@@ -169,7 +169,7 @@ data class CameraExposureTask(
 
                     latch.await()
 
-                    LOG.info("camera exposure finished")
+                    LOG.info("camera exposure finished. abort={}", forceAbort.get())
 
                     if (forceAbort.get()) {
                         return@synchronized
@@ -197,7 +197,7 @@ data class CameraExposureTask(
     }
 
     @Synchronized
-    private fun save(inputStream: InputStream): Path {
+    private fun save(inputStream: InputStream, compressed: Boolean): Path {
         val path = if (autoSave) {
             val folderName = autoSubFolderMode.folderName()
             val fileName = "%s-%s.fits".format(LocalDateTime.now().format(DATE_TIME_FORMAT), frameType)
@@ -210,27 +210,36 @@ data class CameraExposureTask(
 
         LOG.info("saving FITS at $path...")
 
-        Fits(inputStream).use { fits ->
-            val hdu = fits.read().firstOrNull { it is ImageHDU }
+        try {
+            Fits(inputStream).use { fits ->
+                val hdu = fits.read().firstOrNull { it is ImageHDU }
 
-            hdu?.header?.also {
-                val mount = mount ?: return@also
+                if (hdu != null) {
+                    hdu.header.also {
+                        val mount = mount ?: return@also
 
-                val raStr = mount.rightAscensionJ2000.format(FITS_RA_ANGLE_FORMATTER)
-                val decStr = mount.declinationJ2000.format(FITS_DEC_ANGLE_FORMATTER)
+                        val raStr = mount.rightAscensionJ2000.format(FITS_RA_ANGLE_FORMATTER)
+                        val decStr = mount.declinationJ2000.format(FITS_DEC_ANGLE_FORMATTER)
 
-                it.addValue(ObservationDescription.RA, raStr)
-                it.addValue(SBFitsExt.OBJCTRA, raStr)
-                it.addValue(ObservationDescription.DEC, decStr)
-                it.addValue(SBFitsExt.OBJCTDEC, decStr)
+                        it.addValue(ObservationDescription.RA, raStr)
+                        it.addValue(SBFitsExt.OBJCTRA, raStr)
+                        it.addValue(ObservationDescription.DEC, decStr)
+                        it.addValue(SBFitsExt.OBJCTDEC, decStr)
+                    }
+
+                    path.parent.createDirectories()
+                    path.outputStream().use { fits.write(FitsOutputStream(it)) }
+
+                    val image = Image.open(fits)
+
+                    eventBus.post(CameraFrameSaved(this, image, path, autoSave))
+                } else {
+                    LOG.warn("FITS does not contains an image")
+                }
             }
-
-            path.parent.createDirectories()
-            path.outputStream().use { fits.write(FitsOutputStream(it)) }
-
-            val image = Image.open(fits)
-
-            eventBus.post(CameraFrameSaved(this, image, path, autoSave))
+        } catch (e: Throwable) {
+            LOG.error("failed to read FITS", e)
+            forceAbort.set(true)
         }
 
         return path

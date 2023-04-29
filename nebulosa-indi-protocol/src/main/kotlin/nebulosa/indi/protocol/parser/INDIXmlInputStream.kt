@@ -265,6 +265,8 @@ class INDIXmlInputStream(private val source: InputStream) : INDIInputStream {
 
     private fun parseOneBLOB() = OneBLOB().apply {
         parseOneElement()
+        size = reader.attribute(SIZE_ATTR_NAME) ?: ""
+        format = reader.attribute(FORMAT_ATTR_NAME) ?: ""
         value = reader.elementText
     }
 
@@ -333,6 +335,7 @@ class INDIXmlInputStream(private val source: InputStream) : INDIInputStream {
         private const val PERM_ATTR_NAME = "perm"
         private const val TIMEOUT_ATTR_NAME = "timeout"
         private const val TIMESTAMP_ATTR_NAME = "timestamp"
+        private const val SIZE_ATTR_NAME = "size"
         private const val FORMAT_ATTR_NAME = "format"
         private const val MIN_ATTR_NAME = "min"
         private const val MAX_ATTR_NAME = "max"
