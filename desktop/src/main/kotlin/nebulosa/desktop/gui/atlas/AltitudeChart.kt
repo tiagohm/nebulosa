@@ -152,9 +152,20 @@ class AltitudeChart : AnchorPane() {
         children.add(chart)
     }
 
-    fun draw(
-        points: List<XYItem> = this.points,
-        now: Double = this.now,
+    fun drawPoints(points: List<XYItem> = this.points) {
+        if (points !== this.points) {
+            this.points.clear()
+            this.points.addAll(points)
+            altitudeSerie.items.setAll(points)
+        }
+    }
+
+    fun drawNow(now: Double = this.now) {
+        this.now = now
+        nowSerie.items.setAll(XYChartItem(now - 2.0 / 60.0, 90.0), XYChartItem(now + 2.0 / 60.0, 90.0))
+    }
+
+    fun drawTwilight(
         civilDawn: DoubleArray = this.civilDawn,
         nauticalDawn: DoubleArray = this.nauticalDawn,
         astronomicalDawn: DoubleArray = this.astronomicalDawn,
@@ -163,12 +174,6 @@ class AltitudeChart : AnchorPane() {
         astronomicalDusk: DoubleArray = this.astronomicalDusk,
         night: DoubleArray = this.night,
     ) {
-        if (points !== this.points) {
-            this.points.clear()
-            this.points.addAll(points)
-            altitudeSerie.items.setAll(points)
-        }
-
         civilDawn.copyInto(this.civilDawn)
         nauticalDawn.copyInto(this.nauticalDawn)
         astronomicalDawn.copyInto(this.astronomicalDawn)
@@ -176,12 +181,10 @@ class AltitudeChart : AnchorPane() {
         nauticalDusk.copyInto(this.nauticalDusk)
         astronomicalDusk.copyInto(this.astronomicalDusk)
         night.copyInto(this.night)
-        this.now = now
 
         dayFirstSerie.items.setAll(XYChartItem(0.0, 90.0), XYChartItem(civilDusk[0], 90.0))
         dayLastSerie.items.setAll(XYChartItem(civilDawn[1], 90.0), XYChartItem(24.0, 90.0))
         nightSerie.items.setAll(XYChartItem(night[0], 90.0), XYChartItem(night[1], 90.0))
-        nowSerie.items.setAll(XYChartItem(now - 2.0 / 60.0, 90.0), XYChartItem(now + 2.0 / 60.0, 90.0))
 
         civilDawnSerie.items.setAll(XYChartItem(civilDawn[0], 90.0), XYChartItem(civilDawn[1], 90.0))
         nauticalDawnSerie.items.setAll(XYChartItem(nauticalDawn[0], 90.0), XYChartItem(nauticalDawn[1], 90.0))

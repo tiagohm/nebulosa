@@ -109,34 +109,50 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
     fun initialize() {
         eventBus.register(this)
+    }
 
+    fun loadCoordinatesFromMount() {
         val longitude = mount?.longitude ?: preferenceService.double("atlas.longitude")?.rad ?: Angle.ZERO
         val latitude = mount?.latitude ?: preferenceService.double("atlas.latitude")?.rad ?: Angle.ZERO
         val elevation = mount?.elevation ?: preferenceService.double("atlas.elevation")?.au ?: Distance.ZERO
 
+        loadCoordinates(latitude, longitude, elevation)
+    }
+
+    fun loadCoordinates(latitude: Angle, longitude: Angle, elevation: Distance = Distance.ZERO, fromMount: Boolean = false) {
         observer.set(Geoid.IERS2010.latLon(longitude, latitude, elevation))
+
+        LOG.info("using coordinates. latitude={}, longitude={}, elevation={}", latitude.degrees, longitude.degrees, elevation.meters)
+
+        preferenceService.double("atlas.longitude", longitude.value)
+        preferenceService.double("atlas.latitude", latitude.value)
+        preferenceService.double("atlas.elevation", elevation.value)
+    }
+
+    private fun clearCache() {
+        ephemerisCache.clear()
+        pointsCache.clear()
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onMountEvent(event: MountEvent) {
-        if (event.device !== equipmentManager.selectedMount.value) return
+        if (event.device !== mount) return
 
         when (event) {
             is MountGeographicCoordinateChanged -> {
-                preferenceService.double("atlas.longitude", event.device.longitude.value)
-                preferenceService.double("atlas.latitude", event.device.latitude.value)
-                preferenceService.double("atlas.elevation", event.device.elevation.value)
+                val useCoordinatesFromMount = preferenceService.bool("atlas.useCoordinatesFromMount")
 
-                ephemerisCache.clear()
-                pointsCache.clear()
+                if (useCoordinatesFromMount) {
+                    clearCache()
 
-                launch {
-                    withMain { observer.set(Geoid.IERS2010.latLon(event.device.longitude, event.device.latitude, event.device.elevation)) }
+                    launch {
+                        withMain { loadCoordinatesFromMount() }
 
-                    computeSun()
+                        computeSun(tabType == AtlasView.TabType.SUN)
 
-                    if (tabType != AtlasView.TabType.SUN) {
-                        computeTab()
+                        if (tabType != AtlasView.TabType.SUN) {
+                            computeTab()
+                        }
                     }
                 }
             }
@@ -148,9 +164,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
         LOG.info("computing tab. type={}", type)
 
-        tabType = type
-
-        return when (type) {
+        val ephemeris = when (type) {
             AtlasView.TabType.SUN -> computeSun()
             AtlasView.TabType.MOON -> computeMoon()
             AtlasView.TabType.PLANET -> computePlanet()
@@ -158,6 +172,12 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
             AtlasView.TabType.STAR -> computeStar()
             AtlasView.TabType.DSO -> computeDSO()
         }
+
+        if (ephemeris != null) {
+            tabType = type
+        }
+
+        return ephemeris
     }
 
     suspend fun computeTab(): HorizonsEphemeris? {
@@ -211,9 +231,9 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         view.populatePlanet(planets)
     }
 
-    suspend fun computeSun(): HorizonsEphemeris? {
+    suspend fun computeSun(show: Boolean = true): HorizonsEphemeris? {
         bodyName = "Sun"
-        return SUN_TARGET.computeBody()
+        return SUN_TARGET.computeBody(show)
     }
 
     suspend fun computeMoon(show: Boolean = true): HorizonsEphemeris? {
@@ -269,7 +289,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         times.forEachIndexed { i, time ->
             if (time.minute % 30 != 0) return@forEachIndexed
             val y = elements[i][HorizonsQuantity.APPARENT_ALT]!!.toDoubleOrNull() ?: 0.0
-            points.add(XYChartItem(x, y))
+            points.add(XYChartItem(x, y, "", "%02d:%02d · %.0f°".format((12 + x.toInt()) % 24, time.minute, y)))
             x += 0.5
         }
 
@@ -329,21 +349,29 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
     private suspend fun HorizonsEphemeris.computeTwilightAndRTS(
         target: Any,
-        force: Boolean, show: Boolean
+        force: Boolean, show: Boolean,
     ) = withIO {
         LOG.info("computing twilight and RTS. target={}, force={}", target, force)
         val altitudes = DoubleArray(elements.size) { elements[it][HorizonsQuantity.APPARENT_ALT]!!.toDouble() }
-        if (show && force && target == SUN_TARGET) computeTwilight(altitudes, target)
+        if (force && target == SUN_TARGET) computeTwilight(altitudes, target)
         computeRTS(altitudes, target, force, show)
     }
 
-    private suspend fun drawAltitude(points: List<XYItem>) = withIO {
+    private suspend fun drawAltitude(points: List<XYItem>) {
+        LOG.info("drawing altitude chart")
+        view.drawPoints(points)
+    }
+
+    private suspend fun drawNow() = withIO {
         val now = (LocalTime.now().toSecondOfDay() / 3600.0 - 12.0) pmod 24.0
+        LOG.info("drawing now chart. now={}", now)
+        view.drawNow(now)
+    }
 
-        LOG.info("drawing altitude chart. now={}", now)
+    private suspend fun drawTwilight() {
+        LOG.info("drawing twilight chart")
 
-        view.drawAltitude(
-            points, now,
+        view.drawTwilight(
             civilDawn, nauticalDawn, astronomicalDawn,
             civilDusk, nauticalDusk, astronomicalDusk,
             night,
@@ -366,10 +394,10 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
             val prevEphemeris = ephemerisCache[target]
 
             val ephemeris = when (target) {
-                is SmallBody -> horizonsEphemerisProvider.compute(target, observer, force)
-                MOON_TARGET -> horizonsEphemerisProvider.compute(MOON_TARGET, observer, force)
-                is String -> horizonsEphemerisProvider.compute(target, observer, force)
-                is Body -> bodyEphemerisProvider.compute(target, observer, force)
+                is SmallBody -> horizonsEphemerisProvider.compute(target, observer, view.date, force)
+                MOON_TARGET -> horizonsEphemerisProvider.compute(MOON_TARGET, observer, view.date, force)
+                is String -> horizonsEphemerisProvider.compute(target, observer, view.date, force)
+                is Body -> bodyEphemerisProvider.compute(target, observer, view.date, force)
                 else -> null
             }
 
@@ -403,11 +431,13 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     private suspend fun HorizonsEphemeris.showBodyCoordinatesAndInfos(target: Any, body: SkyObject?) {
         computeCoordinates(target, body)
         drawAltitude(makePoints())
+        drawNow()
+        drawTwilight()
     }
 
     private suspend fun HorizonsEphemeris.computeCoordinates(target: Any, body: SkyObject?) {
-        val now = LocalDateTime.now(ZoneOffset.UTC)
-        val element = this[now] ?: return
+        val now = LocalDateTime.of(view.date, LocalTime.now(ZoneOffset.UTC))
+        val element = this[now] ?: return LOG.warn("ephemeris not found. now={}", now)
 
         LOG.info("computing coordinates. now={}, target={}, element={}", now, target, element)
 
@@ -580,6 +610,26 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         framingView.load(ra, dec)
     }
 
+    fun applySettings(useCoordinatesFromMount: Boolean) {
+        clearCache()
+
+        if (useCoordinatesFromMount) {
+            loadCoordinatesFromMount()
+        } else {
+            loadCoordinates(view.latitude, view.longitude, view.elevation)
+        }
+
+        preferenceService.bool("atlas.useCoordinatesFromMount", useCoordinatesFromMount)
+
+        launch {
+            computeSun(tabType == AtlasView.TabType.SUN)
+
+            if (tabType != AtlasView.TabType.SUN) {
+                computeTab()
+            }
+        }
+    }
+
     fun savePreferences() {
         if (!view.initialized) return
 
@@ -590,6 +640,19 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     fun loadPreferences() {
         preferenceService.double("atlas.screen.x")?.also { view.x = it }
         preferenceService.double("atlas.screen.y")?.also { view.y = it }
+
+        val useCoordinatesFromMount = "atlas.useCoordinatesFromMount" !in preferenceService || preferenceService.bool("atlas.useCoordinatesFromMount")
+        val longitude = preferenceService.double("atlas.longitude")?.rad ?: Angle.ZERO
+        val latitude = preferenceService.double("atlas.latitude")?.rad ?: Angle.ZERO
+        val elevation = preferenceService.double("atlas.elevation")?.au ?: Distance.ZERO
+
+        if (useCoordinatesFromMount) {
+            loadCoordinatesFromMount()
+        } else {
+            loadCoordinates(latitude, longitude, elevation)
+        }
+
+        view.loadCoordinates(useCoordinatesFromMount, latitude, longitude, elevation)
     }
 
     override fun close() {

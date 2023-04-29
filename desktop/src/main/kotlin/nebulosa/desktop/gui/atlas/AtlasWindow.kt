@@ -8,10 +8,12 @@ import javafx.event.Event
 import javafx.fxml.FXML
 import javafx.scene.control.*
 import javafx.util.Callback
+import javafx.util.converter.LocalDateStringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.CopyableLabel
 import nebulosa.desktop.gui.control.LabeledPane
 import nebulosa.desktop.gui.control.PropertyValueFactory
+import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.atlas.AtlasManager
 import nebulosa.desktop.logic.on
@@ -20,6 +22,8 @@ import nebulosa.desktop.service.SkyObjectService
 import nebulosa.desktop.view.atlas.AtlasView
 import nebulosa.math.Angle
 import nebulosa.math.AngleFormatter
+import nebulosa.math.Distance
+import nebulosa.math.Distance.Companion.m
 import nebulosa.math.PairOfAngle
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
@@ -28,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import java.awt.image.BufferedImage
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Component
 class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
@@ -62,6 +68,11 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     @FXML private lateinit var syncButton: Button
     @FXML private lateinit var frameButton: Button
     @FXML private lateinit var altitudeChart: AltitudeChart
+    @FXML private lateinit var latitudeTextField: TextField
+    @FXML private lateinit var longitudeTextField: TextField
+    @FXML private lateinit var elevationTextField: TextField
+    @FXML private lateinit var useCoordinatesFromMountSwitch: SwitchSegmentedButton
+    @FXML private lateinit var dateDatePicker: DatePicker
 
     @Volatile private var started = false
 
@@ -120,6 +131,10 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         (dsosTableView.columns[3] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
         dsosTableView.selectionModel.selectedItemProperty().on { if (it != null) launch { atlasManager.computeDSO(it) } }
 
+        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        dateDatePicker.converter = LocalDateStringConverter(dateFormatter, dateFormatter)
+        dateDatePicker.value = LocalDate.now()
+
         launch { atlasManager.populatePlanets() }
     }
 
@@ -136,6 +151,18 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     override fun onStop() {
         atlasManager.savePreferences()
     }
+
+    override val latitude
+        get() = Angle.from(latitudeTextField.text) ?: Angle.ZERO
+
+    override val longitude
+        get() = Angle.from(longitudeTextField.text) ?: Angle.ZERO
+
+    override val elevation
+        get() = elevationTextField.text?.toDoubleOrNull()?.m ?: Distance.ZERO
+
+    override val date
+        get() = dateDatePicker.value ?: LocalDate.now()!!
 
     @FXML
     private fun tabSelectionChanged(event: Event) {
@@ -234,15 +261,25 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         }
     }
 
-    override suspend fun drawAltitude(
-        points: List<XYItem>,
-        now: Double,
+    @FXML
+    private fun applySettings() {
+        atlasManager.applySettings(useCoordinatesFromMountSwitch.state)
+    }
+
+    override suspend fun drawPoints(points: List<XYItem>) = withMain {
+        altitudeChart.drawPoints(points)
+    }
+
+    override suspend fun drawNow(now: Double) = withMain {
+        altitudeChart.drawNow(now)
+    }
+
+    override suspend fun drawTwilight(
         civilDawn: DoubleArray, nauticalDawn: DoubleArray, astronomicalDawn: DoubleArray,
         civilDusk: DoubleArray, nauticalDusk: DoubleArray, astronomicalDusk: DoubleArray,
         night: DoubleArray,
     ) = withMain {
-        altitudeChart.draw(
-            points, now,
+        altitudeChart.drawTwilight(
             civilDawn, nauticalDawn, astronomicalDawn,
             civilDusk, nauticalDusk, astronomicalDusk,
             night,
@@ -288,7 +325,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         declinationLabel.text = dec.format(AngleFormatter.SIGNED_DMS)
         rightAscensionJ2000Label.text = raJ2000.format(AngleFormatter.HMS)
         declinationJ2000Label.text = decJ2000.format(AngleFormatter.SIGNED_DMS)
-        constellationLabel.text = constellation?.iau ?: "-"
+        constellationLabel.text = constellation?.let { "%s (%s)".format(it.latinName, it.iau) } ?: "-"
     }
 
     override suspend fun updateHorizontalCoordinates(az: Angle, alt: Angle) = withMain {
@@ -321,7 +358,14 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         nameLabel.text = ""
         updateEquatorialCoordinates(Angle.ZERO, Angle.ZERO, Angle.ZERO, Angle.ZERO, null)
         updateHorizontalCoordinates(Angle.ZERO, Angle.ZERO)
-        altitudeChart.draw(emptyList())
+        altitudeChart.drawPoints(emptyList())
+    }
+
+    override fun loadCoordinates(useCoordinatesFromMount: Boolean, latitude: Angle, longitude: Angle, elevation: Distance) {
+        useCoordinatesFromMountSwitch.state = useCoordinatesFromMount
+        latitudeTextField.text = latitude.format(AngleFormatter.SIGNED_DMS)
+        longitudeTextField.text = longitude.format(AngleFormatter.SIGNED_DMS)
+        elevationTextField.text = "%.1f".format(elevation.meters)
     }
 
     private class MagnitudeTableCell : TableCell<SkyObject, Double>() {

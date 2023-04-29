@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import nebulosa.desktop.gui.atlas.AltitudeChart?>
@@ -20,9 +20,9 @@
           AnchorPane.rightAnchor="0.0"
           AnchorPane.topAnchor="0.0">
         <TabPane fx:id="ephemerisTabPane"
+                 tabClosingPolicy="UNAVAILABLE"
                  VBox.vgrow="ALWAYS">
-            <Tab closable="false"
-                 onSelectionChanged="#tabSelectionChanged"
+            <Tab onSelectionChanged="#tabSelectionChanged"
                  text="Sun"
                  userData="SUN">
                 <VBox alignment="CENTER">
@@ -33,8 +33,7 @@
                            styleClass="text-xs,text-grey-600"/>
                 </VBox>
             </Tab>
-            <Tab closable="false"
-                 onSelectionChanged="#tabSelectionChanged"
+            <Tab onSelectionChanged="#tabSelectionChanged"
                  text="Moon"
                  userData="MOON">
                 <VBox alignment="CENTER">
@@ -43,8 +42,7 @@
                               width="206.0"/>
                 </VBox>
             </Tab>
-            <Tab closable="false"
-                 onSelectionChanged="#tabSelectionChanged"
+            <Tab onSelectionChanged="#tabSelectionChanged"
                  text="Planets"
                  userData="PLANET">
                 <TableView fx:id="planetTableView"
@@ -65,8 +63,7 @@
                     </columns>
                 </TableView>
             </Tab>
-            <Tab closable="false"
-                 onSelectionChanged="#tabSelectionChanged"
+            <Tab onSelectionChanged="#tabSelectionChanged"
                  text="Minor Planets"
                  userData="MINOR_PLANET">
                 <VBox alignment="TOP_CENTER"
@@ -104,8 +101,7 @@
                     </TableView>
                 </VBox>
             </Tab>
-            <Tab closable="false"
-                 onSelectionChanged="#tabSelectionChanged"
+            <Tab onSelectionChanged="#tabSelectionChanged"
                  text="Stars"
                  userData="STAR">
                 <VBox alignment="TOP_CENTER"
@@ -149,8 +145,7 @@
                     </TableView>
                 </VBox>
             </Tab>
-            <Tab closable="false"
-                 onSelectionChanged="#tabSelectionChanged"
+            <Tab onSelectionChanged="#tabSelectionChanged"
                  text="DSOs"
                  userData="DSO">
                 <VBox alignment="TOP_CENTER"
@@ -192,6 +187,67 @@
                                          text="Constellation"/>
                         </columns>
                     </TableView>
+                </VBox>
+            </Tab>
+            <Tab text="Settings">
+                <VBox spacing="8.0">
+                    <padding>
+                        <Insets topRightBottomLeft="16.0"/>
+                    </padding>
+                    <GridPane vgap="4.0"
+                              hgap="4.0">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="ALWAYS"
+                                               percentWidth="33.33"/>
+                            <ColumnConstraints hgrow="ALWAYS"
+                                               percentWidth="33.33"/>
+                            <ColumnConstraints hgrow="ALWAYS"
+                                               percentWidth="33.33"/>
+                        </columnConstraints>
+                        <LabeledPane text="Latitude (deg)"
+                                     textStyleClass="text-bold"
+                                     GridPane.rowIndex="0"
+                                     GridPane.columnIndex="0">
+                            <TextField fx:id="latitudeTextField"
+                                       styleClass="text-sm"
+                                       promptText="+00 00 00.0"/>
+                        </LabeledPane>
+                        <LabeledPane text="Longitude (deg)"
+                                     textStyleClass="text-bold"
+                                     GridPane.rowIndex="0"
+                                     GridPane.columnIndex="1">
+                            <TextField fx:id="longitudeTextField"
+                                       styleClass="text-sm"
+                                       promptText="+00 00 00.0"/>
+                        </LabeledPane>
+                        <LabeledPane text="Elevation (m)"
+                                     textStyleClass="text-bold"
+                                     GridPane.rowIndex="0"
+                                     GridPane.columnIndex="2">
+                            <TextField fx:id="elevationTextField"
+                                       styleClass="text-sm"
+                                       promptText="0.0"/>
+                        </LabeledPane>
+                        <LabeledPane text="Use coordinates from mount"
+                                     textStyleClass="text-bold"
+                                     GridPane.rowIndex="1"
+                                     GridPane.columnIndex="0">
+                            <SwitchSegmentedButton fx:id="useCoordinatesFromMountSwitch"
+                                                   state="true"/>
+                        </LabeledPane>
+                        <LabeledPane text="Date"
+                                     textStyleClass="text-bold"
+                                     GridPane.rowIndex="1"
+                                     GridPane.columnIndex="1">
+                            <DatePicker fx:id="dateDatePicker"
+                                        maxWidth="Infinity"/>
+                        </LabeledPane>
+                    </GridPane>
+                    <HBox alignment="CENTER">
+                        <MaterialIconButton icon="check"
+                                            text="Apply"
+                                            onAction="#applySettings"/>
+                    </HBox>
                 </VBox>
             </Tab>
         </TabPane>
