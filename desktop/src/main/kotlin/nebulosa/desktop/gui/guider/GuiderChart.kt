@@ -7,6 +7,7 @@ import eu.hansolo.fx.charts.series.XYSeriesBuilder
 import javafx.geometry.Orientation
 import javafx.scene.layout.AnchorPane
 import javafx.scene.paint.Color
+import nebulosa.desktop.helper.anchor
 import nebulosa.guiding.GuideStats
 
 class GuiderChart : AnchorPane() {
@@ -85,28 +86,11 @@ class GuiderChart : AnchorPane() {
     private val chart = XYChart(pane, grid, xAxis, yAxis)
 
     init {
-        setBottomAnchor(xAxis, 0.0)
-        setLeftAnchor(xAxis, 0.0)
-        setRightAnchor(xAxis, 0.0)
-
-        setTopAnchor(yAxis, 0.0)
-        setBottomAnchor(yAxis, 0.0)
-        setLeftAnchor(yAxis, 0.0)
-
-        setRightAnchor(grid, 0.0)
-        setLeftAnchor(grid, 0.0)
-        setBottomAnchor(grid, 0.0)
-        setTopAnchor(grid, 0.0)
-
-        setRightAnchor(pane, 0.0)
-        setLeftAnchor(pane, 0.0)
-        setBottomAnchor(pane, 0.0)
-        setTopAnchor(pane, 0.0)
-
-        setRightAnchor(chart, 0.0)
-        setLeftAnchor(chart, 0.0)
-        setBottomAnchor(chart, 0.0)
-        setTopAnchor(chart, 0.0)
+        xAxis.anchor(0.0, 0.0, 0.0, 0.0)
+        yAxis.anchor(0.0, 0.0, 0.0, 0.0)
+        grid.anchor(0.0, 0.0, 0.0, 0.0)
+        pane.anchor(0.0, 0.0, 0.0, 0.0)
+        chart.anchor(0.0, 0.0, 0.0, 0.0)
 
         children.add(chart)
     }

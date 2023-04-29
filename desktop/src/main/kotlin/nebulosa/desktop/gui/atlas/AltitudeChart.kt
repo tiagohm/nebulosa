@@ -7,6 +7,8 @@ import eu.hansolo.fx.charts.series.XYSeriesBuilder
 import javafx.geometry.Orientation
 import javafx.scene.layout.AnchorPane
 import javafx.scene.paint.Color
+import javafx.util.StringConverter
+import nebulosa.desktop.helper.anchor
 
 class AltitudeChart : AnchorPane() {
 
@@ -90,39 +92,40 @@ class AltitudeChart : AnchorPane() {
         .build()
 
     private val xAxis = AxisBuilder.create(Orientation.HORIZONTAL, Position.BOTTOM)
-        .type(AxisType.TEXT)
-        .prefHeight(25.0)
-        .categories(DEFAULT_CATEGORIES)
+        .type(AxisType.LINEAR)
+        .prefHeight(16.0)
         .minValue(0.0)
         .maxValue(24.0)
-        .autoScale(true)
-        .axisColor(Color.web("#607D8B"))
-        .tickLabelColor(Color.web("#607D8B"))
-        .tickMarkColor(Color.web("#607D8B"))
+        .autoScale(false)
+        .numberFormatter(YAxisStringConverter)
+        .axisColor(Color.web("#B0BEC5"))
+        .tickLabelColor(Color.web("#B0BEC5"))
+        .tickMarkColor(Color.web("#B0BEC5"))
         .tickMarksVisible(true)
         .majorTickMarksVisible(true)
-        .mediumTimeAxisTickLabelsVisible(true)
-        .sameTickMarkLength(true)
+        .mediumTickMarksVisible(true)
         .build()
 
     private val yAxis = AxisBuilder.create(Orientation.VERTICAL, Position.LEFT)
         .type(AxisType.LINEAR)
-        .prefWidth(25.0)
+        .prefWidth(24.0)
         .minValue(0.0)
         .maxValue(90.0)
         .autoScale(true)
-        .axisColor(Color.web("#607D8B"))
-        .tickLabelColor(Color.web("#607D8B"))
-        .tickMarkColor(Color.web("#607D8B"))
+        .axisColor(Color.web("#B0BEC5"))
+        .tickLabelColor(Color.web("#B0BEC5"))
+        .tickMarkColor(Color.web("#B0BEC5"))
         .tickMarksVisible(true)
         .build()
 
     private val grid = GridBuilder.create(xAxis, yAxis)
-        .gridLinePaint(Color.web("#CFD8DC"))
+        .gridLinePaint(Color.web("#CFD8DC80"))
         .minorHGridLinesVisible(false)
         .mediumHGridLinesVisible(false)
-        .minorVGridLinesVisible(false)
-        .mediumVGridLinesVisible(false)
+        .majorHGridLinesVisible(true)
+        .minorVGridLinesVisible(true)
+        .mediumVGridLinesVisible(true)
+        .majorVGridLinesVisible(true)
         .gridLineDashes(4.0, 4.0)
         .build()
 
@@ -136,33 +139,15 @@ class AltitudeChart : AnchorPane() {
     )
 
     private val chart = XYChart(pane, grid, xAxis, yAxis)
-
     private val points = arrayListOf<XYItem>()
     private var now = 0.0
 
     init {
-        setBottomAnchor(xAxis, 0.0)
-        setLeftAnchor(xAxis, 25.0)
-        setRightAnchor(xAxis, 0.0)
-
-        setTopAnchor(yAxis, 0.0)
-        setBottomAnchor(yAxis, 25.0)
-        setLeftAnchor(yAxis, 0.0)
-
-        setRightAnchor(grid, 25.0)
-        setLeftAnchor(grid, 25.0)
-        setBottomAnchor(grid, 25.0)
-        setTopAnchor(grid, 0.0)
-
-        setRightAnchor(pane, 0.0)
-        setLeftAnchor(pane, 25.0)
-        setBottomAnchor(pane, 25.0)
-        setTopAnchor(pane, 0.0)
-
-        setRightAnchor(chart, 0.0)
-        setLeftAnchor(chart, 0.0)
-        setBottomAnchor(chart, 0.0)
-        setTopAnchor(chart, 0.0)
+        xAxis.anchor(null, 16.0, 0.0, 24.0)
+        yAxis.anchor(8.0, null, 16.0, 0.0)
+        grid.anchor(8.0, 16.0, 16.0, 24.0)
+        pane.anchor(8.0, 16.0, 16.0, 24.0)
+        chart.anchor(0.0, 0.0, 0.0, 0.0)
 
         children.add(chart)
     }
@@ -206,11 +191,10 @@ class AltitudeChart : AnchorPane() {
         civilDuskSerie.items.setAll(XYChartItem(civilDusk[0], 90.0), XYChartItem(civilDusk[1], 90.0))
     }
 
-    companion object {
+    private object YAxisStringConverter : StringConverter<Number>() {
 
-        @JvmStatic private val DEFAULT_CATEGORIES = listOf(
-            "12h", "13h", "14h", "15h", "16h", "17h", "18h", "19h", "20h", "21h", "22h", "23h",
-            "0h", "1h", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "9h", "10h", "11h", "12h",
-        )
+        override fun toString(number: Number) = "%dh".format((number.toInt() + 12) % 24)
+
+        override fun fromString(string: String?) = null
     }
 }

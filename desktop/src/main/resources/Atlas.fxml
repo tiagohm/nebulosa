@@ -27,8 +27,8 @@
                  userData="SUN">
                 <VBox alignment="CENTER">
                     <SunView fx:id="sunView"
-                             height="256.0"
-                             width="256.0"/>
+                             height="206.0"
+                             width="206.0"/>
                     <Label text="SDO/HMI"
                            styleClass="text-xs,text-grey-600"/>
                 </VBox>
@@ -39,8 +39,8 @@
                  userData="MOON">
                 <VBox alignment="CENTER">
                     <MoonView fx:id="moonView"
-                              height="256.0"
-                              width="256.0"/>
+                              height="206.0"
+                              width="206.0"/>
                 </VBox>
             </Tab>
             <Tab closable="false"
@@ -50,9 +50,9 @@
                 <TableView fx:id="planetTableView"
                            styleClass="text-sm"
                            fixedCellSize="32.0"
-                           maxHeight="268.0"
-                           minHeight="268.0"
-                           prefHeight="268.0">
+                           maxHeight="218.0"
+                           minHeight="218.0"
+                           prefHeight="218.0">
                     <columns>
                         <TableColumn prefWidth="170.0"
                                      style="-fx-alignment: CENTER;"
@@ -84,9 +84,9 @@
                     <TableView fx:id="minorPlanetTableView"
                                styleClass="text-sm"
                                fixedCellSize="32.0"
-                               maxHeight="230.0"
-                               minHeight="230.0"
-                               prefHeight="230.0">
+                               maxHeight="180.0"
+                               minHeight="180.0"
+                               prefHeight="180.0">
                         <columns>
                             <TableColumn prefWidth="90.0"
                                          style="-fx-alignment: CENTER;"
@@ -125,9 +125,9 @@
                     <TableView fx:id="starTableView"
                                styleClass="text-sm"
                                fixedCellSize="32.0"
-                               maxHeight="230.0"
-                               minHeight="230.0"
-                               prefHeight="230.0">
+                               maxHeight="180.0"
+                               minHeight="180.0"
+                               prefHeight="180.0">
                         <columns>
                             <TableColumn prefWidth="140.0"
                                          style="-fx-alignment: CENTER;"
@@ -170,9 +170,9 @@
                     <TableView fx:id="dsosTableView"
                                fixedCellSize="32.0"
                                styleClass="text-sm"
-                               maxHeight="230.0"
-                               minHeight="230.0"
-                               prefHeight="230.0">
+                               maxHeight="180.0"
+                               minHeight="180.0"
+                               prefHeight="180.0">
                         <columns>
                             <TableColumn prefWidth="140.0"
                                          style="-fx-alignment: CENTER;"

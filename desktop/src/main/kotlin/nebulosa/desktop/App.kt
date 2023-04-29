@@ -18,6 +18,7 @@ import nebulosa.simbad.SimbadService
 import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import org.greenrobot.eventbus.EventBus
 import org.hibernate.community.dialect.SQLiteDialect
 import org.slf4j.Logger
@@ -130,6 +131,7 @@ class App : CommandLineRunner {
     fun okHttpClient(connectionPool: ConnectionPool, cache: Cache) = OkHttpClient.Builder()
         .connectionPool(connectionPool)
         .cache(cache)
+        .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
         .readTimeout(30L, TimeUnit.SECONDS)
         .writeTimeout(30L, TimeUnit.SECONDS)
         .connectTimeout(30L, TimeUnit.SECONDS)
@@ -189,7 +191,7 @@ class App : CommandLineRunner {
 
     companion object {
 
-        const val MAX_CACHE_SIZE = 1024L * 1024L * 512L // 512MB
+        const val MAX_CACHE_SIZE = 1024L * 1024L * 32L // 32MB
 
         @Suppress("NOTHING_TO_INLINE")
         private inline fun logger(name: String) = LoggerFactory.getLogger(name) as LogbackLogger

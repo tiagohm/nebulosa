@@ -5,6 +5,7 @@ import nebulosa.desktop.view.View
 import nebulosa.math.Angle
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
+import java.awt.image.BufferedImage
 
 interface AtlasView : View {
 
@@ -36,7 +37,7 @@ interface AtlasView : View {
         night: DoubleArray,
     )
 
-    suspend fun updateSunImage()
+    suspend fun updateSunImage(image: BufferedImage)
 
     suspend fun updateMoonImage(phase: Double, age: Double, angle: Angle)
 

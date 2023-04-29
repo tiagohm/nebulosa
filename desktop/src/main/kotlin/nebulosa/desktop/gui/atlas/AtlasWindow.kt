@@ -27,6 +27,7 @@ import nebulosa.skycatalog.SkyObject.Companion.NAME_SEPARATOR
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
+import java.awt.image.BufferedImage
 
 @Component
 class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
@@ -248,8 +249,8 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         )
     }
 
-    override suspend fun updateSunImage() = withMain {
-        sunView.updateImage()
+    override suspend fun updateSunImage(image: BufferedImage) {
+        sunView.updateImage(image)
     }
 
     override suspend fun updateMoonImage(phase: Double, age: Double, angle: Angle) = withMain {

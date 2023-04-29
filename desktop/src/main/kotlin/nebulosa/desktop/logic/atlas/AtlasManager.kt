@@ -6,7 +6,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import nebulosa.constants.AU_KM
 import nebulosa.constants.SPEED_OF_LIGHT
-import nebulosa.desktop.data.DeepSkyObjectEntity
+import nebulosa.desktop.helper.await
 import nebulosa.desktop.helper.runBlockingIO
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
@@ -43,6 +43,8 @@ import nebulosa.sbd.SmallBodyDatabaseLookupService
 import nebulosa.skycatalog.HasAxisSize
 import nebulosa.skycatalog.SkyObject
 import nebulosa.time.UTC
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -57,6 +59,7 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import javax.imageio.ImageIO
 import kotlin.math.max
 
 @Component
@@ -76,6 +79,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var framingView: FramingView
     @Autowired private lateinit var skyObjectService: SkyObjectService
+    @Autowired private lateinit var okHttpClient: OkHttpClient
 
     @Volatile private var tabType = AtlasView.TabType.SUN
     @Volatile private var planet: AtlasView.Planet? = null
@@ -461,7 +465,15 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     suspend fun updateSunImage() {
         if (!view.showing) return
 
-        view.updateSunImage()
+        val request = Request.Builder()
+            .url("https://sdo.gsfc.nasa.gov/assets/img/latest/latest_256_HMIIF.jpg")
+            .build()
+
+        okHttpClient.newCall(request)
+            .await().use {
+                val image = ImageIO.read(it.body.byteStream())
+                view.updateSunImage(image)
+            }
     }
 
     @Scheduled(cron = "0 */15 * * * *")

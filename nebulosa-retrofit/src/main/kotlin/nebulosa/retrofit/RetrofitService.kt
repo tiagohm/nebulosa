@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.CallAdapter
 import retrofit2.Converter
 import retrofit2.Retrofit
@@ -25,8 +24,6 @@ abstract class RetrofitService(
         .setSerializationInclusion(JsonInclude.Include.NON_NULL)
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)!!
 
-    protected open val logLevel: HttpLoggingInterceptor.Level? = HttpLoggingInterceptor.Level.BASIC
-
     protected open fun handleOkHttpClientBuilder(builder: OkHttpClient.Builder) = Unit
 
     protected open val retrofit by lazy {
@@ -39,7 +36,6 @@ abstract class RetrofitService(
         callAdaptorFactory?.also(builder::addCallAdapterFactory)
 
         with((okHttpClient ?: HTTP_CLIENT).newBuilder()) {
-            logLevel?.also { addInterceptor(HttpLoggingInterceptor().setLevel(it)) }
             handleOkHttpClientBuilder(this)
             builder.client(build())
         }

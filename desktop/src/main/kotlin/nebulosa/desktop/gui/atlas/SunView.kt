@@ -6,6 +6,7 @@ import javafx.scene.image.PixelFormat
 import javafx.scene.image.WritableImage
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
+import java.awt.image.BufferedImage
 import java.net.URL
 import java.nio.IntBuffer
 import javax.imageio.ImageIO
@@ -16,34 +17,23 @@ class SunView : Canvas() {
 
     @Volatile private var image: WritableImage? = null
 
-    suspend fun updateImage() = withIO {
-        val sunImage = ImageIO.read(URL("https://sdo.gsfc.nasa.gov/assets/img/latest/latest_256_HMIIF.jpg"))
+    suspend fun updateImage(sunImage: BufferedImage) = withIO {
         val data = IntArray(sunImage.width * sunImage.height)
+        val centerX = sunImage.width / 2.0
+        val centerY = sunImage.height / 2.0
 
         for (y in 0 until sunImage.height) {
             for (x in 0 until sunImage.width) {
-                val distance = hypot(x - 128.0, y - 128.0)
+                val distance = hypot(x - centerX, y - centerY)
                 val color = sunImage.getRGB(x, y)
                 val index = y * sunImage.width + x
 
-                if (distance > 120) {
+                if (distance > 117) {
                     val gray = ((color shr 16 and 0xff) + (color shr 8 and 0xff) + (color and 0xff)) / 3
 
                     if (gray >= 170) {
                         data[index] = color
                     }
-                } else if (distance >= 118) {
-                    val colors = intArrayOf(
-                        color,
-                        sunImage.getRGB(x - 1, y - 1), sunImage.getRGB(x + 1, y - 1),
-                        sunImage.getRGB(x - 1, y + 1), sunImage.getRGB(x + 1, y + 1),
-                    )
-
-                    val red = colors.sumOf { it shr 16 and 0xff } / colors.size
-                    val green = colors.sumOf { it shr 8 and 0xff } / colors.size
-                    val blue = colors.sumOf { it and 0xff } / colors.size
-
-                    data[index] = 0xFF000000.toInt() + (red and 0xff shl 16) + (green and 0xff shl 8) + (blue and 0xff)
                 } else {
                     data[index] = color
                 }
