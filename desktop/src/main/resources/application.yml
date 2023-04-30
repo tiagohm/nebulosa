@@ -1,6 +1,7 @@
 spring:
   main:
     banner-mode: off
+    lazy-initialization: true
   flyway:
     baseline-on-migrate: true
     baseline-version: 0

@@ -184,7 +184,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
     @Scheduled(cron = "0 * * * * *")
     private fun computeTabAtScheduledTime() = runBlockingIO {
-        if (!view.manualMode) {
+        if (view.initialized && !view.manualMode) {
             computeTab()
         }
     }
