@@ -39,13 +39,12 @@ fun initAppDirectory(): Path? {
 private fun Path.clearLogIfPastDays(days: Long = 7L) {
     if (exists()) {
         val pastDays = LocalDate.now().minusDays(days)
-        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
         for (entry in listDirectoryEntries("nebulosa-*.log")) {
             val logDate = entry.fileName.toString()
                 .replace("nebulosa-", "")
                 .replace(".log", "")
-                .let { runCatching { LocalDate.parse(it, dateFormatter) }.getOrNull() }
+                .let { runCatching { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }.getOrNull() }
                 ?: continue
 
             if (pastDays.isAfter(logDate)) {

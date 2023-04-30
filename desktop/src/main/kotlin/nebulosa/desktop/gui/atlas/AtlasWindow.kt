@@ -131,8 +131,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         (dsosTableView.columns[3] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
         dsosTableView.selectionModel.selectedItemProperty().on { if (it != null) launch { atlasManager.computeDSO(it) } }
 
-        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        dateDatePicker.converter = LocalDateStringConverter(dateFormatter, dateFormatter)
+        dateDatePicker.converter = LocalDateStringConverter(DateTimeFormatter.ISO_LOCAL_DATE, DateTimeFormatter.ISO_LOCAL_DATE)
         dateDatePicker.value = LocalDate.now()
 
         launch { atlasManager.populatePlanets() }

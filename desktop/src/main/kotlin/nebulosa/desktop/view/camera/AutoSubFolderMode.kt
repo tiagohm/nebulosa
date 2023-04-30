@@ -10,14 +10,10 @@ enum class AutoSubFolderMode {
 
     fun folderName(time: LocalDateTime = LocalDateTime.now()): String {
         return when {
-            this == NOON -> if (time.hour >= 12) time.minusHours(12).format(DATE_FORMAT) else time.format(DATE_FORMAT)
-            this == MIDNIGHT -> time.format(DATE_FORMAT)
+            this == NOON -> if (time.hour >= 12) time.minusHours(12)
+                .format(DateTimeFormatter.ISO_LOCAL_DATE) else time.format(DateTimeFormatter.ISO_LOCAL_DATE)
+            this == MIDNIGHT -> time.format(DateTimeFormatter.ISO_LOCAL_DATE)
             else -> ""
         }
-    }
-
-    companion object {
-
-        @JvmStatic private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     }
 }
