@@ -37,6 +37,7 @@ interface SkyObject : Serializable {
 
     companion object {
 
+        const val UNKNOWN_MAGNITUDE = 99.0
         const val NAME_SEPARATOR = " · "
     }
 }

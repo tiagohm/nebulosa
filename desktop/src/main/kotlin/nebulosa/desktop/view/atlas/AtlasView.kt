@@ -8,6 +8,7 @@ import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
 import java.awt.image.BufferedImage
 import java.time.LocalDate
+import java.time.LocalTime
 
 interface AtlasView : View {
 
@@ -40,9 +41,13 @@ interface AtlasView : View {
 
     val date: LocalDate
 
+    val time: LocalTime
+
+    val manualMode: Boolean
+
     suspend fun drawPoints(points: List<XYItem>)
 
-    suspend fun drawNow(now: Double)
+    suspend fun drawNow()
 
     suspend fun drawTwilight(
         civilDawn: DoubleArray, nauticalDawn: DoubleArray, astronomicalDawn: DoubleArray,

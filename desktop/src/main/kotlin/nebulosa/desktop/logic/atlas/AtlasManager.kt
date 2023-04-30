@@ -29,7 +29,6 @@ import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.au
-import nebulosa.math.pmod
 import nebulosa.nova.almanac.DiscreteFunction
 import nebulosa.nova.almanac.findDiscrete
 import nebulosa.nova.astrometry.Body
@@ -55,7 +54,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import retrofit2.await
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -186,7 +184,9 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
     @Scheduled(cron = "0 * * * * *")
     private fun computeTabAtScheduledTime() = runBlockingIO {
-        computeTab()
+        if (!view.manualMode) {
+            computeTab()
+        }
     }
 
     suspend fun populatePlanets() = withIO {
@@ -358,19 +358,14 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     }
 
     private suspend fun drawAltitude(points: List<XYItem>) {
-        LOG.info("drawing altitude chart")
         view.drawPoints(points)
     }
 
-    private suspend fun drawNow() = withIO {
-        val now = (LocalTime.now().toSecondOfDay() / 3600.0 - 12.0) pmod 24.0
-        LOG.info("drawing now chart. now={}", now)
-        view.drawNow(now)
+    private suspend fun drawNow() {
+        view.drawNow()
     }
 
     private suspend fun drawTwilight() {
-        LOG.info("drawing twilight chart")
-
         view.drawTwilight(
             civilDawn, nauticalDawn, astronomicalDawn,
             civilDusk, nauticalDusk, astronomicalDusk,
@@ -429,14 +424,14 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     }
 
     private suspend fun HorizonsEphemeris.showBodyCoordinatesAndInfos(target: Any, body: SkyObject?) {
+        drawNow()
         computeCoordinates(target, body)
         drawAltitude(makePoints())
-        drawNow()
         drawTwilight()
     }
 
     private suspend fun HorizonsEphemeris.computeCoordinates(target: Any, body: SkyObject?) {
-        val now = LocalDateTime.of(view.date, LocalTime.now(ZoneOffset.UTC))
+        val now = LocalDateTime.of(view.date, view.time)
         val element = this[now] ?: return LOG.warn("ephemeris not found. now={}", now)
 
         LOG.info("computing coordinates. now={}, target={}, element={}", now, target, element)
@@ -496,7 +491,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         if (!view.showing) return
 
         val request = Request.Builder()
-            .url("https://sdo.gsfc.nasa.gov/assets/img/latest/latest_256_HMIIF.jpg")
+            .url("https://sdo.gsfc.nasa.gov/assets/img/latest/latest_256_HMIIC.jpg")
             .build()
 
         okHttpClient.newCall(request)

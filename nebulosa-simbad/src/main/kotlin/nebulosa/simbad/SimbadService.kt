@@ -1,6 +1,7 @@
 package nebulosa.simbad
 
 import nebulosa.retrofit.RetrofitService
+import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
@@ -153,14 +154,14 @@ class SimbadService(
             val mType = parts[MTYPE].replace("\"", "").trim()
             val majorAxis = parts[MAJ_AXIS].toDoubleOrNull() ?: 0.0
             val minorAxis = parts[MIN_AXIS].toDoubleOrNull() ?: 0.0
-            val u = parts[FLUX_U].toDoubleOrNull() ?: 99.0
-            val b = parts[FLUX_B].toDoubleOrNull() ?: 99.0
-            val v = parts[FLUX_V].toDoubleOrNull() ?: 99.0
-            val r = parts[FLUX_R].toDoubleOrNull() ?: 99.0
-            val i = parts[FLUX_I].toDoubleOrNull() ?: 99.0
-            val j = parts[FLUX_J].toDoubleOrNull() ?: 99.0
-            val h = parts[FLUX_H].toDoubleOrNull() ?: 99.0
-            val k = parts[FLUX_K].toDoubleOrNull() ?: 99.0
+            val u = parts[FLUX_U].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val b = parts[FLUX_B].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val v = parts[FLUX_V].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val r = parts[FLUX_R].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val i = parts[FLUX_I].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val j = parts[FLUX_J].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val h = parts[FLUX_H].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val k = parts[FLUX_K].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
             val redshift = parts[REDSHIFT].toDoubleOrNull() ?: 0.0
             val rv = parts[RADVEL].toDoubleOrNull() ?: 0.0
 

@@ -32,11 +32,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import java.awt.image.BufferedImage
-import java.time.LocalDate
+import java.time.*
 import java.time.format.DateTimeFormatter
 
 @Component
-class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
+class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.NowListener {
 
     @Lazy @Autowired private lateinit var atlasManager: AtlasManager
 
@@ -134,6 +134,8 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         dateDatePicker.converter = LocalDateStringConverter(DateTimeFormatter.ISO_LOCAL_DATE, DateTimeFormatter.ISO_LOCAL_DATE)
         dateDatePicker.value = LocalDate.now()
 
+        altitudeChart.registerNowListener(this)
+
         launch { atlasManager.populatePlanets() }
     }
 
@@ -160,8 +162,14 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     override val elevation
         get() = elevationTextField.text?.toDoubleOrNull()?.m ?: Distance.ZERO
 
-    override val date
-        get() = dateDatePicker.value ?: LocalDate.now()!!
+    override val date: LocalDate
+        get() = dateDatePicker.value ?: LocalDate.now()
+
+    override val time
+        get() = altitudeChart.now
+
+    override val manualMode
+        get() = altitudeChart.manualMode
 
     @FXML
     private fun tabSelectionChanged(event: Event) {
@@ -269,8 +277,8 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         altitudeChart.drawPoints(points)
     }
 
-    override suspend fun drawNow(now: Double) = withMain {
-        altitudeChart.drawNow(now)
+    override suspend fun drawNow() = withMain {
+        altitudeChart.drawNow()
     }
 
     override suspend fun drawTwilight(
@@ -367,13 +375,22 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
         elevationTextField.text = "%.1f".format(elevation.meters)
     }
 
+    override fun onNowChanged(time: LocalTime, manual: Boolean) {
+        val dateTime = OffsetDateTime.of(date, time, ZoneOffset.UTC).atZoneSameInstant(ZoneId.systemDefault())
+        title = "Atlas · %s %s".format(dateTime.format(DateTimeFormatter.ISO_LOCAL_DATE), dateTime.format(DateTimeFormatter.ISO_LOCAL_TIME))
+
+        if (manual) {
+            launch { atlasManager.computeTab() }
+        }
+    }
+
     private class MagnitudeTableCell : TableCell<SkyObject, Double>() {
 
         override fun updateItem(item: Double?, empty: Boolean) {
             super.updateItem(item, empty)
 
             text = if (empty || item == null) null
-            else if (item.isFinite() && item < 99.0) "%.1f".format(item)
+            else if (item.isFinite() && item < SkyObject.UNKNOWN_MAGNITUDE) "%.1f".format(item)
             else "-"
         }
     }
@@ -381,9 +398,6 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView {
     companion object {
 
         @JvmStatic
-        private fun String.firstName(): String {
-            val index = indexOf(NAME_SEPARATOR)
-            return if (index < 0) this else substring(0, index)
-        }
+        private fun String.firstName() = indexOf(NAME_SEPARATOR).let { if (it < 0) this else substring(0, it) }
     }
 }

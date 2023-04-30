@@ -6,6 +6,7 @@ import nebulosa.desktop.repository.sky.DeepSkyObjectRepository
 import nebulosa.desktop.repository.sky.StarRepository
 import nebulosa.math.Angle
 import nebulosa.nova.astrometry.Constellation
+import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
@@ -19,8 +20,8 @@ class SkyObjectService {
         val declination: Angle = Angle.ZERO,
         val radius: Angle = Angle.ZERO,
         val constellation: Constellation? = null,
-        val magnitudeMin: Double = -99.0,
-        val magnitudeMax: Double = 99.0,
+        val magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE,
+        val magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         val type: SkyObjectType? = null,
     ) {
 
@@ -59,8 +60,8 @@ class SkyObjectService {
         @JvmStatic
         private fun Double.clampInRange(range: ClosedFloatingPointRange<Double> = MAGNITUDE_RANGE): Double {
             return if (this in range) this
-            else if (this < 0.0) -99.0
-            else 99.0
+            else if (this < 0.0) -SkyObject.UNKNOWN_MAGNITUDE
+            else SkyObject.UNKNOWN_MAGNITUDE
         }
     }
 }

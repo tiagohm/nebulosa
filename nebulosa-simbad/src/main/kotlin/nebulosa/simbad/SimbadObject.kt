@@ -1,6 +1,7 @@
 package nebulosa.simbad
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import kotlin.math.min
 
@@ -18,18 +19,18 @@ data class SimbadObject(
     @field:JsonProperty("morphType") val morphType: String = "",
     @field:JsonProperty("majorAxis") val majorAxis: Double = 0.0,
     @field:JsonProperty("minorAxis") val minorAxis: Double = 0.0,
-    @field:JsonProperty("u") val u: Double = 99.0,
-    @field:JsonProperty("b") val b: Double = 99.0,
-    @field:JsonProperty("v") val v: Double = 99.0,
-    @field:JsonProperty("r") val r: Double = 99.0,
-    @field:JsonProperty("i") val i: Double = 99.0,
-    @field:JsonProperty("j") val j: Double = 99.0,
-    @field:JsonProperty("h") val h: Double = 99.0,
-    @field:JsonProperty("k") val k: Double = 99.0,
+    @field:JsonProperty("u") val u: Double = SkyObject.UNKNOWN_MAGNITUDE,
+    @field:JsonProperty("b") val b: Double = SkyObject.UNKNOWN_MAGNITUDE,
+    @field:JsonProperty("v") val v: Double = SkyObject.UNKNOWN_MAGNITUDE,
+    @field:JsonProperty("r") val r: Double = SkyObject.UNKNOWN_MAGNITUDE,
+    @field:JsonProperty("i") val i: Double = SkyObject.UNKNOWN_MAGNITUDE,
+    @field:JsonProperty("j") val j: Double = SkyObject.UNKNOWN_MAGNITUDE,
+    @field:JsonProperty("h") val h: Double = SkyObject.UNKNOWN_MAGNITUDE,
+    @field:JsonProperty("k") val k: Double = SkyObject.UNKNOWN_MAGNITUDE,
     @field:JsonProperty("redshift") val redshift: Double = 0.0,
     @field:JsonProperty("rv") val rv: Double = 0.0,
 ) {
 
     val magnitude
-        get() = min(v, b).let { if (it < 99.0) it else min(u, min(r, min(i, min(j, min(h, k))))) }
+        get() = min(v, b).let { if (it < SkyObject.UNKNOWN_MAGNITUDE) it else min(u, min(r, min(i, min(j, min(h, k))))) }
 }

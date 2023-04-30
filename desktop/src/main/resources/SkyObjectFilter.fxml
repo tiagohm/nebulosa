@@ -55,7 +55,7 @@
                                promptText="00°00'00.00&quot;"
                                text="00°00'00.00&quot;"/>
                 </LabeledPane>
-                <LabeledPane text="Radius"
+                <LabeledPane text="Radius (deg)"
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="3"
                              textStyleClass="text-bold">

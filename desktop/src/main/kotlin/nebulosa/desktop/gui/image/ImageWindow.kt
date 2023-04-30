@@ -336,7 +336,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             val rightAscension = star.rightAscension.format(AngleFormatter.HMS)
             val declination = star.declination.format(AngleFormatter.SIGNED_DMS)
             box.children.add(CopyableLabel("RA: $rightAscension DEC: $declination"))
-            if (star.magnitude < 99.0) box.children.add(CopyableLabel("MAGNITUDE: %.2f".format(star.magnitude)))
+            if (star.magnitude < SkyObject.UNKNOWN_MAGNITUDE) box.children.add(CopyableLabel("MAGNITUDE: %.2f".format(star.magnitude)))
             box.children.add(CopyableLabel("TYPE: ${star.type.description}"))
             if (star.distance > 0.0) box.children.add(CopyableLabel("DISTANCE: %.1f ly".format(star.distance)))
             if (star is HasAxisSize && (star.majorAxis.value > 0.0 || star.minorAxis.value > 0.0)) {

@@ -7,6 +7,7 @@ import nebulosa.simbad.CatalogType
 import nebulosa.simbad.SimbadObject
 import nebulosa.simbad.SimbadQuery
 import nebulosa.simbad.SimbadService
+import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import nebulosa.skycatalog.hyg.HygDatabase
 import nebulosa.skycatalog.stellarium.Nebula
@@ -186,7 +187,7 @@ object SkyDatabaseGenerator {
                         it[hcg] = item.hcg?.ifEmpty { null }
                         it[eso] = item.eso?.ifEmpty { null }
                         it[vdbh] = item.vdbh?.ifEmpty { null }
-                        it[magnitude] = min(item.magnitude, simbadObject?.magnitude ?: 99.0)
+                        it[magnitude] = min(item.magnitude, simbadObject?.magnitude ?: SkyObject.UNKNOWN_MAGNITUDE)
                         it[rightAscension] = item.rightAscension.value
                         it[declination] = item.declination.value
                         it[type] = simbadObject?.type ?: item.type
@@ -223,7 +224,7 @@ object SkyDatabaseGenerator {
                         it[hr] = item.hr
                         it[hd] = item.hd
                         it[hip] = item.hip
-                        it[magnitude] = min(item.magnitude, simbadObject?.magnitude ?: 99.0)
+                        it[magnitude] = min(item.magnitude, simbadObject?.magnitude ?: SkyObject.UNKNOWN_MAGNITUDE)
                         it[rightAscension] = item.rightAscension.value
                         it[declination] = item.declination.value
                         it[spType] = (simbadObject?.spType ?: item.spType)?.ifEmpty { null }
