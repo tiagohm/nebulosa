@@ -115,19 +115,19 @@
                                     onAction="#load"
                                     text="Load"
                                     icon="download"/>
-                <MaterialIconButton onMouseClicked="#openMenu"
+                <MaterialIconButton fx:id="loadMenuButton"
                                     styleClass="cursor-hand"
                                     style="-fx-background-color: transparent; -fx-border-style: none; -fx-border-width: 0; -fx-border-insets: 0;"
                                     color="grey-500"
                                     icon="dots-vertical">
-                    <fx:define>
-                        <ContextMenu fx:id="menu">
+                    <contextMenu>
+                        <ContextMenu>
                             <items>
                                 <CheckMenuItem fx:id="alwaysOpenInNewWindowMenuItem"
                                                text="Always open in new window"/>
                             </items>
                         </ContextMenu>
-                    </fx:define>
+                    </contextMenu>
                 </MaterialIconButton>
             </HBox>
         </VBox>

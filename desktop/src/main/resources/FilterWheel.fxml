@@ -37,20 +37,20 @@
             <ImageButton fx:id="openINDIButton"
                          onAction="#openINDIPanelControl"
                          url="@icons/indi.png"/>
-            <MaterialIconButton onMouseClicked="#openMenu"
+            <MaterialIconButton fx:id="filterWheelMenuButton"
                                 styleClass="cursor-hand"
                                 style="-fx-background-color: transparent; -fx-border-style: none; -fx-border-width: 0; -fx-border-insets: 0;"
                                 color="grey-500"
                                 icon="dots-vertical">
-                <fx:define>
-                    <ContextMenu fx:id="menu">
+                <contextMenu>
+                    <ContextMenu>
                         <items>
                             <CheckMenuItem fx:id="compactModeMenuItem"
                                            onAction="#toggleCompactMode"
                                            text="Compact Mode"/>
                         </items>
                     </ContextMenu>
-                </fx:define>
+                </contextMenu>
             </MaterialIconButton>
         </HBox>
         <HBox alignment="CENTER_LEFT"

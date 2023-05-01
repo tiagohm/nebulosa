@@ -111,7 +111,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
         (planetTableView.columns[0] as TableColumn<AtlasView.Planet, String>).cellValueFactory = PropertyValueFactory { it.name }
         (planetTableView.columns[1] as TableColumn<AtlasView.Planet, String>).cellValueFactory = PropertyValueFactory { it.type }
         planetTableView.selectionModel.selectedItemProperty()
-            .on { if (it != null) launch { atlasManager.computePlanet(it) } }
+            .on { if (it != null) launch { atlasManager.computeBody(AtlasView.TabType.PLANET, it) } }
 
         (minorPlanetTableView.columns[0] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.element }
         (minorPlanetTableView.columns[1] as TableColumn<AtlasView.MinorPlanet, String>).cellValueFactory = PropertyValueFactory { it.description }
@@ -122,14 +122,14 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
         (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = Callback { _ -> MagnitudeTableCell() }
         (starTableView.columns[2] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.type.description }
         (starTableView.columns[3] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
-        starTableView.selectionModel.selectedItemProperty().on { if (it != null) launch { atlasManager.computeStar(it) } }
+        starTableView.selectionModel.selectedItemProperty().on { if (it != null) launch { atlasManager.computeBody(AtlasView.TabType.STAR, it) } }
 
         (dsosTableView.columns[0] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.names.firstName() }
         (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
         (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = Callback { _ -> MagnitudeTableCell() }
         (dsosTableView.columns[2] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.type.description }
         (dsosTableView.columns[3] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
-        dsosTableView.selectionModel.selectedItemProperty().on { if (it != null) launch { atlasManager.computeDSO(it) } }
+        dsosTableView.selectionModel.selectedItemProperty().on { if (it != null) launch { atlasManager.computeBody(AtlasView.TabType.DSO, it) } }
 
         dateDatePicker.converter = LocalDateStringConverter(DateTimeFormatter.ISO_LOCAL_DATE, DateTimeFormatter.ISO_LOCAL_DATE)
         dateDatePicker.value = LocalDate.now()

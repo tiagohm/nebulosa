@@ -6,7 +6,7 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
-import io.netty.channel.socket.nio.NioServerSocketChannel
+import io.netty.channel.socket.nio.NioSocketChannel
 import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.util.concurrent.atomic.AtomicReference
@@ -32,9 +32,10 @@ abstract class NettyClient : Runnable, Closeable {
         val b = Bootstrap()
 
         b.group(masterGroup)
-            .channel(NioServerSocketChannel::class.java)
+            .channel(NioSocketChannel::class.java)
             .handler(channelInitialzer)
             .option(ChannelOption.SO_BACKLOG, 128)
+            .option(ChannelOption.TCP_NODELAY, true)
 
         val future = b.connect(host, port).sync()
 

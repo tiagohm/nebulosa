@@ -1,10 +1,7 @@
 package nebulosa.desktop.gui.framing
 
 import javafx.fxml.FXML
-import javafx.scene.Node
 import javafx.scene.control.*
-import javafx.scene.input.MouseButton
-import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.helper.withMain
@@ -35,7 +32,7 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
     @FXML private lateinit var rotationSpinner: Spinner<Double>
     @FXML private lateinit var hipsSurveyChoiceBox: ChoiceBox<HipsSurvey>
     @FXML private lateinit var loadButton: Button
-    @FXML private lateinit var menu: ContextMenu
+    @FXML private lateinit var loadMenuButton: Button
     @FXML private lateinit var alwaysOpenInNewWindowMenuItem: CheckMenuItem
 
     init {
@@ -67,6 +64,8 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
         hipsSurveyChoiceBox.disableProperty().bind(isLoading)
 
         loadButton.disableProperty().bind(isLoading or canNotLoad)
+
+        loadMenuButton.disableProperty().bind(loadButton.disableProperty())
 
         framingManager.populateHipsSurveys()
     }
@@ -112,14 +111,6 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
     @FXML
     private fun sync() {
         launch { framingManager.sync() }
-    }
-
-    @FXML
-    private fun openMenu(event: MouseEvent) {
-        if (event.button == MouseButton.PRIMARY) {
-            menu.show(event.source as Node, event.screenX, event.screenY)
-            event.consume()
-        }
     }
 
     override fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?) {

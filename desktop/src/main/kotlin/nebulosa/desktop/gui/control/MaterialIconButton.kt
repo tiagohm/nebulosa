@@ -1,7 +1,10 @@
 package nebulosa.desktop.gui.control
 
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control.Button
+import javafx.scene.input.MouseButton
+import javafx.scene.input.MouseEvent
 
 class MaterialIconButton : Button() {
 
@@ -11,6 +14,13 @@ class MaterialIconButton : Button() {
         alignment = Pos.CENTER
         isMnemonicParsing = false
         graphic = materialIcon
+
+        addEventHandler(MouseEvent.MOUSE_CLICKED) {
+            if (contextMenu != null && it.button == MouseButton.PRIMARY) {
+                contextMenu.show(it.source as Node, it.screenX, it.screenY)
+                it.consume()
+            }
+        }
     }
 
     var icon

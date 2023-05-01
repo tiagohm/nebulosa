@@ -5,8 +5,6 @@ import javafx.scene.Cursor
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.TextFieldTableCell
-import javafx.scene.input.MouseButton
-import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ButtonValueFactory
@@ -32,7 +30,7 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
 
     @FXML private lateinit var filterWheelChoiceBox: ChoiceBox<FilterWheel>
     @FXML private lateinit var connectButton: TwoStateButton
-    @FXML private lateinit var menu: ContextMenu
+    @FXML private lateinit var filterWheelMenuButton: Button
     @FXML private lateinit var openINDIButton: Button
     @FXML private lateinit var compactModeMenuItem: CheckMenuItem
     @FXML private lateinit var useFilterWheelAsShutterCheckBox: CheckBox
@@ -64,6 +62,8 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
         filterWheelManager.connectedProperty.on { connectButton.state = it }
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
+
+        filterWheelMenuButton.disableProperty().bind(isNotConnected)
 
         useFilterWheelAsShutterCheckBox.disableProperty().bind(isNotConnectedOrMoving)
         filterAsShutterChoiceBox.disableProperty().bind(isNotConnectedOrMoving or !useFilterWheelAsShutterCheckBox.selectedProperty())
@@ -151,14 +151,6 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
     @FXML
     private fun connect() {
         filterWheelManager.connect()
-    }
-
-    @FXML
-    private fun openMenu(event: MouseEvent) {
-        if (event.button == MouseButton.PRIMARY) {
-            menu.show(event.source as Node, event.screenX, event.screenY)
-            event.consume()
-        }
     }
 
     @FXML

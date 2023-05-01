@@ -231,35 +231,51 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         view.populatePlanet(planets)
     }
 
-    suspend fun computeSun(show: Boolean = true): HorizonsEphemeris? {
+    suspend fun computeBody(type: AtlasView.TabType, body: Any? = null): HorizonsEphemeris? {
+        val ephemeris = if (type == AtlasView.TabType.SUN) computeSun()
+        else if (type == AtlasView.TabType.MOON) computeMoon()
+        else if (type == AtlasView.TabType.PLANET && body is AtlasView.Planet) computePlanet(body)
+        else if (type == AtlasView.TabType.MINOR_PLANET && body is SmallBody) computeMinorPlanet(body)
+        else if (type == AtlasView.TabType.STAR && body is SkyObject) computeStar(body)
+        else if (type == AtlasView.TabType.DSO && body is SkyObject) computeDSO(body)
+        else null
+
+        if (ephemeris != null) {
+            tabType = type
+        }
+
+        return ephemeris
+    }
+
+    private suspend fun computeSun(show: Boolean = true): HorizonsEphemeris? {
         bodyName = "Sun"
         return SUN_TARGET.computeBody(show)
     }
 
-    suspend fun computeMoon(show: Boolean = true): HorizonsEphemeris? {
+    private suspend fun computeMoon(show: Boolean = true): HorizonsEphemeris? {
         bodyName = "Moon"
         return MOON_TARGET.computeBody(show)
     }
 
-    suspend fun computePlanet(body: AtlasView.Planet? = planet): HorizonsEphemeris? {
+    private suspend fun computePlanet(body: AtlasView.Planet? = planet): HorizonsEphemeris? {
         planet = body ?: return null
         bodyName = body.name
         return body.command.computeBody()
     }
 
-    suspend fun computeMinorPlanet(body: SmallBody? = minorPlanet): HorizonsEphemeris? {
+    private suspend fun computeMinorPlanet(body: SmallBody? = minorPlanet): HorizonsEphemeris? {
         minorPlanet = body ?: return null
         bodyName = body.body!!.fullname
         return "DES=${body.body!!.spkId};".computeBody() ?: body.computeBody()
     }
 
-    suspend fun computeStar(body: SkyObject? = star): HorizonsEphemeris? {
+    private suspend fun computeStar(body: SkyObject? = star): HorizonsEphemeris? {
         star = body ?: return null
         bodyName = body.names
         return starsCache.computeFixedStar(body).computeBody(body = star)
     }
 
-    suspend fun computeDSO(body: SkyObject? = dso): HorizonsEphemeris? {
+    private suspend fun computeDSO(body: SkyObject? = dso): HorizonsEphemeris? {
         dso = body ?: return null
         bodyName = body.names
         return dsosCache.computeFixedStar(body).computeBody(body = dso)

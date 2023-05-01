@@ -159,8 +159,6 @@ internal open class MountDevice(
                         declination = message["DEC"]!!.value.deg
 
                         handler.fireOnEventReceived(MountEquatorialCoordinatesChanged(this))
-
-                        computeCoordinates()
                     }
                     "TELESCOPE_TIMED_GUIDE_NS",
                     "TELESCOPE_TIMED_GUIDE_WE" -> {
@@ -324,10 +322,9 @@ internal open class MountDevice(
         sendNewText("TIME_UTC", "UTC" to GPS.formatTime(time.toLocalDateTime()), "OFFSET" to offset)
     }
 
-    override fun computeCoordinates(j2000: Boolean, horizontal: Boolean) {
+    override fun computeCoordinates(j2000: Boolean, horizontal: Boolean, epoch: UTC) {
         val center = centerPosition ?: return
 
-        val epoch = UTC.now()
         val icrf = ICRF.equatorial(rightAscension, declination, time = epoch, epoch = epoch, center = center)
         constellation = Constellation.find(icrf)
 

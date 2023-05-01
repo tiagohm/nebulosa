@@ -18,8 +18,10 @@ import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Distance
+import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.Geoid
-import nebulosa.time.InstantOfTime
+import nebulosa.nova.position.ICRF
+import nebulosa.time.TimeJD
 import nebulosa.time.UTC
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
@@ -37,6 +39,7 @@ class MountManager(
     @Autowired private lateinit var indiPanelControlView: INDIPanelControlView
     @Autowired private lateinit var telescopeControlView: TelescopeControlView
 
+    @Volatile private var timeUTC = UTC.now()
     @Volatile private var position = Geoid.IERS2010.latLon(Angle.ZERO, Angle.ZERO, Distance.ZERO)
 
     val mounts
@@ -58,7 +61,8 @@ class MountManager(
         if (prev !== device) savePreferences()
 
         updateTitle()
-        computePosition()
+        device.computePosition()
+        device.computeCoordinates(epoch = timeUTC)
     }
 
     override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {
@@ -67,13 +71,13 @@ class MountManager(
             is MountTrackingChanged,
             is MountSlewingChanged,
             is GuideOutputPulsingChanged -> updateStatus()
-            is MountGeographicCoordinateChanged -> computePosition()
+            is MountEquatorialCoordinatesChanged -> device.computeCoordinates(epoch = timeUTC)
+            is MountGeographicCoordinateChanged -> device.computePosition()
         }
     }
 
-    private fun computePosition() {
-        val mount = value ?: return
-        position = Geoid.IERS2010.latLon(mount.longitude, mount.latitude, mount.elevation)
+    private fun Mount.computePosition() {
+        position = Geoid.IERS2010.latLon(longitude, latitude, elevation)
     }
 
     suspend fun openINDIPanelControl() {
@@ -102,36 +106,39 @@ class MountManager(
     }
 
     fun goTo() {
-        val (ra, dec) = try {
-            view.targetCoordinates
-        } catch (e: NumberFormatException) {
+        val rightAscension = view.targetRightAscension
+        val declination = view.targetDeclination
+
+        if (rightAscension.valid && declination.valid) {
+            if (view.isJ2000) value.goToJ2000(rightAscension, declination)
+            else value.goTo(rightAscension, declination)
+        } else {
             return view.showAlert("Invalid target coordinates")
         }
-
-        if (view.isJ2000) value.goToJ2000(ra, dec)
-        else value.goTo(ra, dec)
     }
 
     fun slewTo() {
-        val (ra, dec) = try {
-            view.targetCoordinates
-        } catch (e: NumberFormatException) {
+        val rightAscension = view.targetRightAscension
+        val declination = view.targetDeclination
+
+        if (rightAscension.valid && declination.valid) {
+            if (view.isJ2000) value.slewToJ2000(rightAscension, declination)
+            else value.slewTo(rightAscension, declination)
+        } else {
             return view.showAlert("Invalid target coordinates")
         }
-
-        if (view.isJ2000) value.slewToJ2000(ra, dec)
-        else value.slewTo(ra, dec)
     }
 
     fun sync() {
-        val (ra, dec) = try {
-            view.targetCoordinates
-        } catch (e: NumberFormatException) {
+        val rightAscension = view.targetRightAscension
+        val declination = view.targetDeclination
+
+        if (rightAscension.valid && declination.valid) {
+            if (view.isJ2000) value.syncJ2000(rightAscension, declination)
+            else value.sync(rightAscension, declination)
+        } else {
             return view.showAlert("Invalid target coordinates")
         }
-
-        if (view.isJ2000) value.syncJ2000(ra, dec)
-        else value.sync(ra, dec)
     }
 
     suspend fun loadCurrentLocation() = withMain {
@@ -160,9 +167,7 @@ class MountManager(
     }
 
     suspend fun loadGalacticCenterLocation() = withMain {
-        val ra = Angle.from("17 45 40.04", true)!!
-        val dec = Angle.from("−29 00 28.1")!!
-        view.updateTargetPosition(ra, dec)
+        view.updateTargetPosition(GALACTIC_CENTER_RA, GALACTIC_CENTER_DEC)
         view.isJ2000 = true
     }
 
@@ -217,17 +222,14 @@ class MountManager(
         preferenceService.double("mount.screen.y")?.also { view.y = it }
     }
 
-    private suspend fun computeLST(time: InstantOfTime = UTC.now()) = withIO {
-        if (value == null) Angle.ZERO else position.lstAt(time)
+    private suspend fun computeLST(time: UTC = timeUTC) = withIO {
+        position.lstAt(time)
     }
 
-    private suspend fun computeTimeLeftToMeridianFlip() = withIO {
-        if (value == null) Angle.ZERO
-        else {
-            val timeLeft = value.rightAscension - computeLST()
-            if (timeLeft.value < 0.0) timeLeft - SIDEREAL_TIME_DIFF * (timeLeft.normalized.value / TAU)
-            else timeLeft + SIDEREAL_TIME_DIFF * (1.0 - timeLeft.value / TAU)
-        }
+    private suspend fun computeTimeLeftToMeridianFlip(rightAscension: Angle, lst: Angle) = withIO {
+        val timeLeft = rightAscension - lst
+        if (timeLeft.value < 0.0) timeLeft - SIDEREAL_TIME_DIFF * (timeLeft.normalized.value / TAU)
+        else timeLeft + SIDEREAL_TIME_DIFF * (1.0 - timeLeft.value / TAU)
     }
 
     @Scheduled(fixedRate = 1L, initialDelay = 1L, timeUnit = TimeUnit.SECONDS)
@@ -237,16 +239,39 @@ class MountManager(
         if (!mount.connected) return
         if (!view.showing) return
 
+        timeUTC = UTC.now()
+
         launch {
             val lst = computeLST()
-            val timeLeftToMeridianFlip = computeTimeLeftToMeridianFlip()
-            val timeToMeridianFlip = LocalDateTime.now().plusSeconds((timeLeftToMeridianFlip.hours * 3600.0).toLong())
+            val now = LocalDateTime.now()
+            val timeLeftToMeridianFlip = computeTimeLeftToMeridianFlip(mount.rightAscension, lst)
+            val timeToMeridianFlip = now.plusSeconds((timeLeftToMeridianFlip.hours * 3600.0).toLong())
 
             if (mount.tracking) {
-                mount.computeCoordinates(j2000 = false)
+                mount.computeCoordinates(j2000 = false, epoch = timeUTC)
             }
 
             view.updateLSTAndMeridian(lst, timeLeftToMeridianFlip, timeToMeridianFlip)
+
+            runCatching {
+                val targetRA = view.targetRightAscension
+                val targetDEC = view.targetDeclination
+
+                if (!targetRA.valid || !targetDEC.valid) return@runCatching
+
+                val epoch = if (view.isJ2000) TimeJD.J2000 else timeUTC
+                val icrf = ICRF.equatorial(targetRA, targetDEC, time = timeUTC, epoch = epoch, center = position)
+                val targetConstellation = Constellation.find(icrf)
+
+                val horizontal = icrf.horizontal()
+                val targetAzimuth = horizontal.longitude.normalized
+                val targetAltitude = horizontal.latitude
+
+                val targetTimeLeftToMeridianFlip = computeTimeLeftToMeridianFlip(targetRA, lst)
+                val targetTimeToMeridianFlip = now.plusSeconds((targetTimeLeftToMeridianFlip.hours * 3600.0).toLong())
+
+                view.updateTargetInfo(targetAzimuth, targetAltitude, targetConstellation, targetTimeLeftToMeridianFlip, targetTimeToMeridianFlip)
+            }
         }
     }
 
@@ -261,5 +286,8 @@ class MountManager(
     companion object {
 
         private const val SIDEREAL_TIME_DIFF = 0.06552777 * PI / 12.0
+
+        @JvmStatic private val GALACTIC_CENTER_RA = Angle.from("17 45 40.04", true)!!
+        @JvmStatic private val GALACTIC_CENTER_DEC = Angle.from("−29 00 28.1")!!
     }
 }
