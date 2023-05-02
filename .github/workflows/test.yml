@@ -25,3 +25,6 @@ jobs:
 
       - name: Test
         run: ./gradlew test --no-daemon --continue -Dgithub=true
+
+      - name: Detekt
+        run: ./gradlew detekt

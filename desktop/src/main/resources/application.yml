@@ -7,4 +7,4 @@ spring:
     baseline-version: 0
     table: migrations
     locations:
-      - 'classpath:migrations'
+      - 'classpath:migrations/app'

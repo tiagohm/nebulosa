@@ -9,6 +9,7 @@ import nebulosa.desktop.data.StarEntity
 import nebulosa.desktop.logic.atlas.provider.ephemeris.TimeBucket
 import nebulosa.desktop.repository.app.PreferenceRepository
 import nebulosa.desktop.repository.sky.DeepSkyObjectRepository
+import nebulosa.desktop.service.PreferenceService
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
 import nebulosa.io.resource
@@ -19,6 +20,7 @@ import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.flywaydb.core.Flyway
 import org.greenrobot.eventbus.EventBus
 import org.hibernate.community.dialect.SQLiteDialect
 import org.slf4j.Logger
@@ -45,6 +47,7 @@ import java.util.concurrent.TimeUnit
 import java.util.zip.GZIPInputStream
 import javax.sql.DataSource
 import kotlin.io.path.createDirectories
+import kotlin.io.path.exists
 import kotlin.io.path.outputStream
 import ch.qos.logback.classic.Logger as LogbackLogger
 
@@ -107,13 +110,28 @@ class App : CommandLineRunner {
     }
 
     @Bean
-    fun skyDataSource(appDirectory: Path) = DriverManagerDataSource().apply {
+    fun skyDataSource(appDirectory: Path, preferenceService: PreferenceService) = DriverManagerDataSource().apply {
         val path = Paths.get("$appDirectory", "data", "database", "sky.db")
         path.parent.createDirectories()
 
-        GZIPInputStream(resource("data/SkyDatabase.db.gz")!!).transferAndClose(path.outputStream())
-
         initialize(path)
+
+        if (!path.exists() || preferenceService.int("app.skyDatabase.version") != SKY_DATABASE_VERSION) {
+            LOG.info("unzipping sky database")
+            GZIPInputStream(resource("data/SkyDatabase.db.gz")!!).transferAndClose(path.outputStream())
+            preferenceService.int("app.skyDatabase.version", SKY_DATABASE_VERSION)
+
+            LOG.info("migrating sky database")
+
+            Flyway.configure()
+                .dataSource(this)
+                .locations("migrations/sky")
+                .baselineOnMigrate(true)
+                .baselineVersion("0")
+                .table("migrations")
+                .load()
+                .migrate()
+        }
     }
 
     @Bean
@@ -192,6 +210,9 @@ class App : CommandLineRunner {
     companion object {
 
         const val MAX_CACHE_SIZE = 1024L * 1024L * 32L // 32MB
+        const val SKY_DATABASE_VERSION = 1
+
+        @JvmStatic private val LOG = LoggerFactory.getLogger(App::class.java)
 
         @Suppress("NOTHING_TO_INLINE")
         private inline fun logger(name: String) = LoggerFactory.getLogger(name) as LogbackLogger
