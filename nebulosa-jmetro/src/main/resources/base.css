@@ -45,7 +45,7 @@
 .choice-box > .open-button > .arrow ,
 .menu-button > .arrow-button > .arrow ,
 .split-menu-button > .arrow-button > .arrow {
-    -fx-padding: 0.208em 0.358em 0.208em 0.358em; /* 2.5px 4.29px 2.5px 4.29px */
+    -fx-padding: 0.208em 0.358em; /* 2.5px 4.29px 2.5px 4.29px */
     -fx-shape: "M21.361,12.736l0.527,0.527L16,19.152l-5.889-5.889l0.527-0.527L16,18.098L21.361,12.736z";
 
     -fx-background-color: arrow_color;
@@ -66,12 +66,12 @@
 /* ====   CONTROLS WITH CELLS WITH DISCLOSURE BUTTONS ======================================= */
 
 .tree-cell > .tree-disclosure-node {
-    -fx-padding: 0.333333em 0.75em 0.333333em 0.75em; /* 4 9 4 9 */
+    -fx-padding: 0.333333em 0.75em; /* 4 9 4 9 */
 }
 
 .tree-table-row-cell .arrow ,
 .tree-cell > .tree-disclosure-node > .arrow {
-    -fx-padding: 0.333333em 0.25em 0.333333em 0.25em; /* 4 3 4 3 */
+    -fx-padding: 0.333333em 0.25em; /* 4 3 4 3 */
     -fx-shape: "M8.06,20.938L7,20l8-8L7,4l1.06-0.938L16.917,12L8.06,20.938z";
 }
 
@@ -92,7 +92,7 @@
 totally specific, always using direct child, and cover all cases, which would be more performant) */
 .table-view > .column-header-background .nested-column-header > .column-header > GridPane > .arrow ,
 .tree-table-view > .column-header-background .nested-column-header > .column-header > GridPane > .arrow {
-    -fx-padding: 0.5em 0.416667em 0.5em 0.416667em; /* 6 5 6 5 */
+    -fx-padding: 0.5em 0.416667em; /* 6 5 6 5 */
     -fx-shape: "M 15 4 L 15 24.0625 L 8.21875 17.28125 L 6.78125 18.71875 L 15.28125 27.21875 L 16 27.90625 L 16.71875 27.21875 L 25.21875 18.71875 L 23.78125 17.28125 L 17 24.0625 L 17 4 Z ";
     -fx-background-color: sort_arrow_color;
 }
@@ -170,10 +170,10 @@ Text {
 .button:focused, .toggle-button:focused
 {
     -fx-border-color: transparent, focus_ring_border_color;
-    -fx-border-width: 1, 1;
+    -fx-border-width: 1;
     /*noinspection CssInvalidFunction*/
     -fx-border-style: solid, segments(1, 2);
-    -fx-border-radius: 0, 0;
+    -fx-border-radius: 0;
     -fx-border-insets: 1 1 1 1, 0;
 }
 
@@ -256,7 +256,7 @@ Button {
     -fx-border-width: 2px;
     -fx-border-style: solid;
 
-    -fx-padding: 0.166667em 0px 0.166667em 0px;     /* 2 0 2 0 */
+    -fx-padding: 0.166667em 0px;     /* 2 0 2 0 */
 }
 
 /* hover */
@@ -513,7 +513,7 @@ Button {
     -fx-background-insets: 0;
     -fx-background-radius: 0 0 0 0;
 
-    -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em;  /*4 8 4 8 */
+    -fx-padding: 0.333333em 0.666667em;  /*4 8 4 8 */
 
     /* -fx-font-family: "Roboto Semilight"; */
     -fx-text-fill: text_color;
@@ -665,12 +665,12 @@ Button {
     -fx-background-insets: 0;
     -fx-background-radius: 0;
 
-    -fx-padding: 0.5em 0.25em 0.5em 0.25em; /* 6 3 6 3*/
+    -fx-padding: 0.5em 0.25em; /* 6 3 6 3*/
 }
 
 .scroll-bar:horizontal > .increment-button,
 .scroll-bar:horizontal > .decrement-button {
-    -fx-padding: 0.25em 0.5em 0.25em 0.5em ; /* 3 6 3 6*/
+    -fx-padding: 0.25em 0.5em; /* 3 6 3 6*/
 }
 
 .scroll-bar > .increment-button:hover,
@@ -713,12 +713,12 @@ Button {
 
 .scroll-bar:vertical > .increment-button > .increment-arrow,
 .scroll-bar:vertical > .decrement-button > .decrement-arrow {
-    -fx-padding: 0.208333em 0.333333em 0.208333em 0.333333em; /* 2.5 4 2.5 4*/
+    -fx-padding: 0.208333em 0.333333em; /* 2.5 4 2.5 4*/
 }
 
 .scroll-bar:horizontal > .increment-button > .increment-arrow,
 .scroll-bar:horizontal > .decrement-button > .decrement-arrow {
-    -fx-padding: 0.333333em 0.208333em 0.333333em 0.208333em; /* 4 2.5 4 2.5 */
+    -fx-padding: 0.333333em 0.208333em; /* 4 2.5 4 2.5 */
     -fx-translate-y: -1; /* HACK:  Somehow the arrow is not centered so we add this to center it */
 }
 
@@ -767,7 +767,7 @@ Button {
 .combo-box-base  {
     -fx-background-color: transparent, border_color, transparent, combo_box_background_color;
     -fx-background-radius: 0, 0, 0, 0;
-    -fx-padding: 0.166667em 0.166667em 0.166667em 0.166667em; /* 2 2px 2 2px*/
+    -fx-padding: 0.166667em; /* 2 2px 2 2px*/
 
     /* -fx-font-family: "Roboto"; */
     -fx-font-size: 1em; /* 12 */
@@ -987,7 +987,7 @@ TextField:readonly {
 }
 
 .password-field > .right-button {
-    -fx-padding: 0 0.166667em 0 0.166667em;
+    -fx-padding: 0 0.166667em;
 }
 
 .password-field > .right-button > .right-button-graphic {
@@ -1105,13 +1105,13 @@ TextField:readonly {
     -fx-background-insets: 0;
     -fx-background-radius: 0.5em; /* 6 */
 
-    -fx-padding: 1em 0.333333em 1em 0.333333em;  /* 12 4 12 4 */
+    -fx-padding: 1em 0.333333em;  /* 12 4 12 4 */
 
     -fx-effect: null;
 }
 
 .slider:vertical .thumb {
-    -fx-padding: 0.333333em 1em 0.333333em 1em; /* 4 12 4 12 */
+    -fx-padding: 0.333333em 1em; /* 4 12 4 12 */
 }
 
 .slider .track {
@@ -1153,7 +1153,7 @@ TextField:readonly {
 
     -fx-text-fill: #111;
 
-    -fx-padding: 0.5em 0.75em 0.5em 0.75em; /* 6 9 6 9 */
+    -fx-padding: 0.5em 0.75em; /* 6 9 6 9 */
 }
 
 /*******************************************************************************
@@ -1336,7 +1336,7 @@ TextField:readonly {
 }
 
 .date-picker-popup > * > .spinner > .button {
-    -fx-padding: 0.25em 0.583333em 0.25em 0.583333em; /* 3 7 3 7 */
+    -fx-padding: 0.25em 0.583333em; /* 3 7 3 7 */
 }
 
 .date-picker-popup > * > .spinner > .button {
@@ -1403,7 +1403,7 @@ TextField:readonly {
 
 .date-picker-popup > * > .day-name-cell {
     -fx-font-size: 0.833333em; /* 10 */
-    -fx-padding: 0 0 0.75em 0;
+    -fx-padding: 0 0 0.75em;
 }
 
 /* Day Cells */
@@ -1413,7 +1413,7 @@ TextField:readonly {
 
     -fx-text-fill: text_color;
 
-    -fx-padding: 0.5em 0.5em 0.5em 0.5em; /* 6 6 6 6 */
+    -fx-padding: 0.5em; /* 6 6 6 6 */
 }
 
 .date-picker-popup > * > .day-cell:hover {
@@ -1443,7 +1443,7 @@ TextField:readonly {
 .choice-box  {
     -fx-background-color: transparent, border_color, transparent, choice_box_background_color;
     -fx-background-radius: 0, 0, 0, 0;
-    -fx-padding: 0.166667em 0.166667em 0.166667em 0.166667em; /* 2 2 2 2*/
+    -fx-padding: 0.166667em; /* 2 2 2 2*/
 
     /* -fx-font-family: "Roboto"; */
     -fx-font-size: 1em; /* 12 */
@@ -1506,7 +1506,7 @@ TextField:readonly {
 /********************* ListView List Cells ********************************/
 
 .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
-    -fx-padding: 0.666667em 1em 0.666667em 1em; /* 8 12 8 12 */
+    -fx-padding: 0.666667em 1em; /* 8 12 8 12 */
     /* -fx-font-family: "Roboto"; */
     -fx-text-fill: text_color;
 }
@@ -1603,7 +1603,7 @@ TextField:readonly {
 .table-view > .column-header-background > .filler {
     -fx-background-color: table_background_color;
     -fx-border-insets: 0 0 0 0;
-    -fx-border-width: 0 0 1 0;
+    -fx-border-width: 0 0 1;
     -fx-border-color: table_view_border_color;
 }
 
@@ -1749,7 +1749,7 @@ TextField:readonly {
 .tree-table-view > .column-header-background > .show-hide-columns-button {
     -fx-background-color: table_background_color;
     -fx-background-insets: 0;
-    -fx-padding: 0.166667em 0.333333em 0.166667em 0.333333em;
+    -fx-padding: 0.166667em 0.333333em;
 }
 
 .table-view > .column-header-background > .show-hide-columns-button:hover,
@@ -2033,7 +2033,7 @@ TextField:readonly {
 
 .tree-table-view .column-resize-line {
     -fx-background-color: table_column_vline_color;
-    -fx-padding: 0.0em 0.0416667em 0.0em 0.0416667em; /* 0 0.571429 0 0.571429 */
+    -fx-padding: 0.0em 0.0416667em; /* 0 0.571429 0 0.571429 */
 }
 
 /* Header with bottom border */
@@ -2041,7 +2041,7 @@ TextField:readonly {
 .tree-table-view > .column-header-background > .filler {
     -fx-background-color: table_background_color;
     -fx-border-insets: 0 0 0 0;
-    -fx-border-width: 0 0 1 0;
+    -fx-border-width: 0 0 1;
     -fx-border-color: table_border_color;
 }
 
@@ -2056,7 +2056,7 @@ TextField:readonly {
 .tree-table-view > .column-header-background > .nested-column-header > .table-column:last-visible,
 .tree-table-view > .column-header-background > .nested-column-header > .nested-column-header > .table-column:last-visible {
     -fx-border-insets: 0 0 0 0;
-    -fx-border-width: 0 0 0 0;
+    -fx-border-width: 0;
 }
 
 .tree-table-view > .column-header-background > .nested-column-header > .table-column > .label,
@@ -2109,7 +2109,7 @@ TextField:readonly {
 .tab-pane > .tab-header-area > .headers-region > .tab {
     -fx-background-color: transparent, transparent, tab_pane_background_color;
     -fx-background-radius: 0 0 0 0, 0 0 0 0, 0 0 0 0;
-    -fx-padding: 0.083333em 1.5em 0.0769em 1.5em; /* 1 18 0.99 18 */
+    -fx-padding: 0.083333em 1.5em 0.0769em; /* 1 18 0.99 18 */
 }
 
 .tab-pane > .tab-header-area > .headers-region > .tab:selected {
@@ -2144,8 +2144,8 @@ TextField:readonly {
 }
 
 .tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
-    -fx-border-width: 0, 0;
-    -fx-border-color: transparent, transparent;
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
 }
 
 /* TabPane button to see more tabs (when space is constricted) */
@@ -2153,7 +2153,7 @@ TextField:readonly {
 .tab-pane > .tab-header-area > .control-buttons-tab > .container > .tab-down-button {
     -fx-background-color: transparent;
     -fx-background-insets: 0 0 4 0;
-    -fx-padding: 4 8 9 8;
+    -fx-padding: 4 8 9;
     -fx-background-radius: 0;
 }
 
@@ -2186,7 +2186,7 @@ TextField:readonly {
     -fx-background-color: menu_background_color;
     -fx-background-insets: 0, 1, 2;
     -fx-background-radius: 0 0 0 0, 0 0 0 0, 0 0 0 0;
-    -fx-padding: 0.5em 0em 0.5em 0em; /* 6 0 6 0 */
+    -fx-padding: 0.5em 0em; /* 6 0 6 0 */
 
     -fx-border-color: context_menu_border_color;
     -fx-border-style: solid;
@@ -2198,11 +2198,11 @@ TextField:readonly {
 
 /* separator */
 .context-menu .separator {
-    -fx-padding: 0.58333275em 1em 0.58333275em 1em;  /*7 12 7 12 */
+    -fx-padding: 0.58333275em 1em;  /*7 12 7 12 */
 }
 
 .context-menu .separator:horizontal .line {
-    -fx-border-color: separator_color transparent transparent transparent;
+    -fx-border-color: separator_color transparent transparent;
     -fx-border-insets: 0;
 }
 
@@ -2228,7 +2228,7 @@ TextField:readonly {
 }
 
 .menu-bar > .container > .menu-button > .arrow-button > .arrow {
-    -fx-padding: 0.167em 0 0.25em 0; /* 2 0 3 0 */
+    -fx-padding: 0.167em 0 0.25em; /* 2 0 3 0 */
 }
 
 .menu-bar > .container > .menu-button > .label {
@@ -2237,7 +2237,7 @@ TextField:readonly {
 }
 
 .menu-bar > .container > .menu > .arrow-button {
-    -fx-padding: 0.5em 0 0.5em 0; /* 6 0 6 0 */
+    -fx-padding: 0.5em 0; /* 6 0 6 0 */
 }
 
 .menu-bar > .container > .menu-button:hover,
@@ -2259,7 +2259,7 @@ TextField:readonly {
 .menu-item {
     -fx-text-fill: text_color;
     -fx-background-color: menu_background_color;
-    -fx-padding: 0.583333em 1em 0.583333em 1em;   /*7 12 7 12 */
+    -fx-padding: 0.583333em 1em;   /*7 12 7 12 */
 }
 
 .menu-item > .right-container,
@@ -2281,14 +2281,14 @@ TextField:readonly {
 .radio-menu-item:checked > .left-container > .radio {
     -fx-shape: "M17.939,5.439L7.5,15.889l-5.439-5.449l0.879-0.879L7.5,14.111 l9.561-9.551L17.939,5.439z";
 
-    -fx-padding: 0.416667em 0.583333em 0.416667em 0.583333em;  /* 5 7 5 7 */
+    -fx-padding: 0.416667em 0.583333em;  /* 5 7 5 7 */
     -fx-scale-shape: true;
 }
 
 .check-menu-item:checked > .left-container > .check {
     -fx-shape: "M17.939,5.439L7.5,15.889l-5.439-5.449l0.879-0.879L7.5,14.111 l9.561-9.551L17.939,5.439z";
 
-    -fx-padding: 0.416667em 0.583333em 0.416667em 0.583333em;; /* 5 7 5 7 */
+    -fx-padding: 0.416667em 0.583333em; /* 5 7 5 7 */
     -fx-scale-shape: true;
 }
 
@@ -2301,7 +2301,7 @@ TextField:readonly {
 }
 
 .menu > .right-container > .arrow {
-    -fx-padding: 0.458em 0.333333em 0.458em 0.333333em; /* >5 4 >5 4 */
+    -fx-padding: 0.458em 0.333333em; /* >5 4 >5 4 */
     -fx-shape: "M8.06,20.938L7,20l8-8L7,4l1.06-0.938L16.917,12L8.06,20.938z";
     -fx-scale-shape: true;
 }
@@ -2392,7 +2392,7 @@ TextField:readonly {
     -fx-background-color: border_color, content_background_color;
     -fx-background-insets: -1 0 0 0, 0 1 1 1;
 
-    -fx-padding: 0.166667em 0 0.166667em 0; /* 2 0 2 0 */
+    -fx-padding: 0.166667em 0; /* 2 0 2 0 */
 }
 
 /* Disabled */
@@ -2512,7 +2512,7 @@ TextField:readonly {
 .separator:vertical .line {
     -fx-border-color: transparent transparent transparent border_color,
                       transparent transparent transparent transparent;
-    -fx-border-width: 1, 1;
+    -fx-border-width: 1;
     -fx-border-insets: 7 0 7 0, 0 0 0 1;
 }
 
@@ -2526,7 +2526,7 @@ TextField:readonly {
     -fx-background-color: menu_button_background_color;
     -fx-background-radius: 0;
     -fx-background-insets: 0;
-    -fx-padding: 0em 0em 0em 0em; /* 0 8 0 8 */
+    -fx-padding: 0em; /* 0 8 0 8 */
 
     -fx-border-color: transparent;
     -fx-border-width: 2px;
@@ -2554,10 +2554,10 @@ TextField:readonly {
 
 .menu-button:focused {
     -fx-border-color: transparent, white;
-    -fx-border-width: 1, 1;
+    -fx-border-width: 1;
     /*noinspection CssInvalidFunction*/
     -fx-border-style: solid, segments(1, 2);
-    -fx-border-radius: 0, 0;
+    -fx-border-radius: 0;
     -fx-border-insets: 1 1 1 1, 0;
 }
 
@@ -2705,20 +2705,20 @@ TextField:readonly {
 
 .color-picker.button:focused {
     -fx-border-color: transparent, focus_ring_border_color;
-    -fx-border-width: 1, 1;
+    -fx-border-width: 1;
     /*noinspection CssInvalidFunction*/
     -fx-border-style: solid, segments(1, 2);
-    -fx-border-radius: 0, 0;
+    -fx-border-radius: 0;
     -fx-border-insets: 1 1 1 1, 0;
 }
 
 .color-picker.button:showing {
     -fx-border-color: transparent, focus_ring_border_color;
     -fx-background-color: background_pressed_color;
-    -fx-border-width: 1, 1;
+    -fx-border-width: 1;
     /*noinspection CssInvalidFunction*/
     -fx-border-style: solid, segments(1, 2);
-    -fx-border-radius: 0, 0;
+    -fx-border-radius: 0;
     -fx-border-insets: 1 1 1 1, 0;
 }
 
@@ -2730,14 +2730,14 @@ TextField:readonly {
 
 .dialog-pane {
     -fx-background-color: dialog_background_color;
-    -fx-padding: 0 0.5em 0.5em 0.5em; /* 0 6 6 6 */
+    -fx-padding: 0 0.5em 0.5em; /* 0 6 6 6 */
 }
 
 .dialog-pane:header .header-panel {
     -fx-background-color: dialog_background_color;
     -fx-background-insets: 0;
 
-    -fx-padding: 0em 0.833em 0 0.833em; /* 0 10 0 10*/
+    -fx-padding: 0em 0.833em 0; /* 0 10 0 10*/
 }
 
 .dialog-pane:header .header-panel .label {
@@ -2751,7 +2751,7 @@ TextField:readonly {
 }
 
 .dialog-pane > .content {
-    -fx-padding: 1.083333em 0.833em 2.5em 0.833em; /* 13 10 30 10 */
+    -fx-padding: 1.083333em 0.833em 2.5em; /* 13 10 30 10 */
 }
 
 .dialog-pane > .button-bar > .container > .details-button {
@@ -2855,24 +2855,24 @@ TextField:readonly {
     -fx-tick-label-fill: derive(-fx-text-background-color, 30%);
 }
 .axis:top {
-    -fx-border-color: transparent transparent AXIS_COLOR transparent;
+    -fx-border-color: transparent transparent AXIS_COLOR;
 }
 .axis:right {
     -fx-border-color: transparent transparent transparent AXIS_COLOR;
 }
 .axis:bottom {
-    -fx-border-color: AXIS_COLOR transparent transparent transparent;
+    -fx-border-color: AXIS_COLOR transparent transparent;
 }
 .axis:left {
     -fx-border-color: transparent AXIS_COLOR transparent transparent;
 }
 .axis:top > .axis-label,
 .axis:left > .axis-label {
-    -fx-padding: 0 0 4px 0;
+    -fx-padding: 0 0 4px;
 }
 .axis:bottom > .axis-label,
 .axis:right > .axis-label {
-    -fx-padding: 4px 0 0 0;
+    -fx-padding: 4px 0 0;
 }
 .axis-tick-mark,
 .axis-minor-tick-mark {
@@ -2925,7 +2925,7 @@ TextField:readonly {
 .default-color2.chart-symbol { /* solid diamond */
     -fx-background-color: CHART_COLOR_3;
     -fx-background-radius: 0;
-    -fx-padding: 7px 5px 7px 5px;
+    -fx-padding: 7px 5px;
     -fx-shape: "M5,0 L10,9 L5,18 L0,9 Z";
 }
 .default-color3.chart-symbol { /* cross */
@@ -2955,7 +2955,7 @@ TextField:readonly {
     -fx-background-color: CHART_COLOR_8, white;
     -fx-background-radius: 0;
     -fx-background-insets: 0, 2.5;
-    -fx-padding: 7px 5px 7px 5px;
+    -fx-padding: 7px 5px;
     -fx-shape: "M5,0 L10,9 L5,18 L0,9 Z";
 }
 
