@@ -21,7 +21,7 @@ class Histogram : ComputationAlgorithm<Boolean> {
     var minValue = 0
         private set
 
-    var pixelSum = 0f
+    var pixelSum = 0L
         private set
 
     var pixelAvg = 0f
@@ -39,7 +39,7 @@ class Histogram : ComputationAlgorithm<Boolean> {
         maxCount = 0
         maxValue = 0
         minValue = 65535
-        pixelSum = 0f
+        pixelSum = 0
         pixelAvg = 0f
 
         buffer.fill(0)
@@ -53,15 +53,15 @@ class Histogram : ComputationAlgorithm<Boolean> {
             maxValue = max(maxValue, value)
             maxCount = max(maxCount, buffer[value])
             minValue = min(minValue, value)
-            pixelSum += pixel
+            pixelSum += value
         }
 
-        pixelAvg = pixelSum / size
+        pixelAvg = pixelSum.toFloat() / size
 
         var diffSquared = 0f
 
         for (i in buffer.indices) {
-            val s = (i / 65535f) - pixelAvg
+            val s = i - pixelAvg
             diffSquared += s * s * buffer[i]
         }
 
@@ -70,11 +70,11 @@ class Histogram : ComputationAlgorithm<Boolean> {
         var amount = 0
         var c = 0
 
-        while (amount < sizeOverTwo && c < buffer.size) {
+        while (amount <= sizeOverTwo && c < buffer.size) {
             amount += buffer[c++]
         }
 
-        median = c / 65535f
+        median = c.toFloat()
 
         return true
     }

@@ -82,10 +82,10 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
 
         histogramView.draw()
 
-        histogramStatisticsLabel.text = "min: %d | max: %d | median: %d | avg: %d | stdDev: %d"
+        histogramStatisticsLabel.text = "min: %d | max: %d | median: %.1f | avg: %.1f | stdDev: %.1f"
             .format(
-                histogram.minValue, histogram.maxValue, histogram.median.as16Bits(),
-                histogram.pixelAvg.as16Bits(), histogram.stdDev.as16Bits(),
+                histogram.minValue, histogram.maxValue, histogram.median,
+                histogram.pixelAvg, histogram.stdDev,
             )
     }
 
@@ -112,11 +112,5 @@ class ImageStretcherWindow(private val view: ImageView) : AbstractWindow("ImageS
     @FXML
     private fun resetStretch() {
         launch { resetStretch(false) }
-    }
-
-    companion object {
-
-        @Suppress("NOTHING_TO_INLINE")
-        private inline fun Float.as16Bits() = (this * 65535f).toInt()
     }
 }
