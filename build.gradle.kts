@@ -1,5 +1,6 @@
 import com.adarshr.gradle.testlogger.TestLoggerExtension
 import com.adarshr.gradle.testlogger.theme.ThemeType
+import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -13,6 +14,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-allopen:1.8.21")
         classpath("com.github.gmazzo:gradle-buildconfig-plugin:3.1.0")
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.8.10")
+        classpath("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.0-RC3")
     }
 
     repositories {
@@ -51,6 +53,7 @@ subprojects {
 
     apply {
         plugin("com.adarshr.test-logger")
+        plugin("io.gitlab.arturbosch.detekt")
         if (project.name != "desktop" && project.name != "nebulosa-jmetro") {
             plugin("org.jetbrains.dokka")
         }
@@ -66,6 +69,10 @@ subprojects {
         showSkippedStandardStreams = false
         showFailedStandardStreams = true
         logLevel = LogLevel.QUIET
+    }
+
+    configure<DetektExtension> {
+        config.from("$rootDir/detekt.yml")
     }
 
     tasks.withType<KotlinCompile> {

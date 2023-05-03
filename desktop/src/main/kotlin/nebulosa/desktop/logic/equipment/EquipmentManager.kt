@@ -5,6 +5,7 @@ import jakarta.annotation.PostConstruct
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
+import nebulosa.desktop.helper.runBlockingMain
 import nebulosa.desktop.logic.camera.DefaultCameraProperty
 import nebulosa.desktop.logic.connection.Connected
 import nebulosa.desktop.logic.connection.ConnectionEvent
@@ -12,6 +13,7 @@ import nebulosa.desktop.logic.connection.Disconnected
 import nebulosa.desktop.logic.filterwheel.DefaultFilterWheelProperty
 import nebulosa.desktop.logic.focuser.DefaultFocuserProperty
 import nebulosa.desktop.logic.gps.DefaultGPSProperty
+import nebulosa.desktop.logic.guider.DefaultGuideOutputProperty
 import nebulosa.desktop.logic.mount.DefaultMountProperty
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.camera.Camera
@@ -61,29 +63,38 @@ class EquipmentManager : Closeable {
     val attachedThermometers = SimpleListProperty(FXCollections.observableArrayList<Thermometer>())
 
     val selectedCamera = DefaultCameraProperty()
+    val selectedGuideCamera = DefaultCameraProperty()
     val selectedMount = DefaultMountProperty()
+    val selectedGuideMount = DefaultMountProperty()
     val selectedFilterWheel = DefaultFilterWheelProperty()
     val selectedFocuser = DefaultFocuserProperty()
     val selectedGPS = DefaultGPSProperty()
+    val selectedGuideOutput = DefaultGuideOutputProperty()
 
     @PostConstruct
     private fun initialize() {
         selectedCamera.initialize()
+        selectedGuideCamera.initialize()
         selectedMount.initialize()
+        selectedGuideMount.initialize()
         selectedFilterWheel.initialize()
         selectedFocuser.initialize()
         selectedGPS.initialize()
+        selectedGuideOutput.initialize()
 
         eventBus.register(selectedCamera)
+        eventBus.register(selectedGuideCamera)
         eventBus.register(selectedMount)
+        eventBus.register(selectedGuideMount)
         eventBus.register(selectedFilterWheel)
         eventBus.register(selectedFocuser)
         eventBus.register(selectedGPS)
+        eventBus.register(selectedGuideOutput)
         eventBus.register(this)
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    final fun onDeviceEvent(event: DeviceEvent<*>) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    final fun onDeviceEvent(event: DeviceEvent<*>): Unit = runBlockingMain {
         when (event) {
             is CameraAttached -> attachedCameras.add(event.device)
             is CameraDetached -> attachedCameras.remove(event.device)
@@ -102,8 +113,8 @@ class EquipmentManager : Closeable {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    final fun onConnectionEvent(event: ConnectionEvent) {
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    final fun onConnectionEvent(event: ConnectionEvent) = runBlockingMain {
         when (event) {
             is Connected -> connectedProperty.set(true)
             is Disconnected -> connectedProperty.set(false)
@@ -115,9 +126,12 @@ class EquipmentManager : Closeable {
         subscribers.fill(null)
 
         selectedCamera.close()
+        selectedGuideCamera.close()
         selectedMount.close()
+        selectedGuideMount.close()
         selectedFilterWheel.close()
         selectedFocuser.close()
         selectedGPS.close()
+        selectedGuideOutput.close()
     }
 }

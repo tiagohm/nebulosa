@@ -9,7 +9,7 @@
             maxWidth="-Infinity"
             minHeight="-Infinity"
             minWidth="-Infinity"
-            prefWidth="410.0"
+            prefWidth="370.0"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="4.0"
@@ -36,15 +36,22 @@
                                promptText="00h00m00.00s"
                                text="00h00m00.00s"/>
                 </LabeledPane>
-                <LabeledPane text="DEC (J2000)"
-                             GridPane.rowIndex="0"
-                             GridPane.columnIndex="2"
-                             GridPane.columnSpan="2"
-                             textStyleClass="text-bold">
-                    <TextField fx:id="decTextField"
-                               promptText="00°00'00.00&quot;"
-                               text="00°00'00.00&quot;"/>
-                </LabeledPane>
+                <HBox alignment="CENTER"
+                      spacing="4.0"
+                      GridPane.rowIndex="0"
+                      GridPane.columnIndex="2"
+                      GridPane.columnSpan="2">
+                    <LabeledPane text="DEC (J2000)"
+                                 maxWidth="Infinity"
+                                 textStyleClass="text-bold">
+                        <TextField fx:id="decTextField"
+                                   promptText="00°00'00.00&quot;"
+                                   text="00°00'00.00&quot;"/>
+                    </LabeledPane>
+                    <MaterialIconButton fx:id="syncButton"
+                                        onAction="#sync"
+                                        icon="sync"/>
+                </HBox>
                 <LabeledPane text="Width"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="0"
@@ -52,9 +59,9 @@
                     <Spinner fx:id="widthSpinner"
                              amountToStepBy="0.1"
                              editable="true"
-                             initialValue="1280.0"
+                             min="1.0"
                              max="1280.0"
-                             min="1.0"/>
+                             initialValue="1280.0"/>
                 </LabeledPane>
                 <LabeledPane text="Height"
                              GridPane.rowIndex="1"
@@ -92,10 +99,10 @@
                 <LabeledPane text="HiPS Survey"
                              GridPane.rowIndex="2"
                              GridPane.columnIndex="0"
-                             GridPane.columnSpan="2"
+                             GridPane.columnSpan="3"
                              textStyleClass="text-bold">
                     <ChoiceBox fx:id="hipsSurveyChoiceBox"
-                               prefWidth="200.0"
+                               maxWidth="Infinity"
                                HBox.hgrow="ALWAYS"/>
                 </LabeledPane>
             </GridPane>
@@ -104,14 +111,24 @@
                 <VBox.margin>
                     <Insets top="16.0"/>
                 </VBox.margin>
-                <MaterialIconButton fx:id="syncButton"
-                                    text="Sync"
-                                    onAction="#sync"
-                                    icon="sync"/>
                 <MaterialIconButton fx:id="loadButton"
                                     onAction="#load"
                                     text="Load"
                                     icon="download"/>
+                <MaterialIconButton fx:id="loadMenuButton"
+                                    styleClass="cursor-hand"
+                                    style="-fx-background-color: transparent; -fx-border-style: none; -fx-border-width: 0; -fx-border-insets: 0;"
+                                    color="grey-500"
+                                    icon="dots-vertical">
+                    <contextMenu>
+                        <ContextMenu>
+                            <items>
+                                <CheckMenuItem fx:id="alwaysOpenInNewWindowMenuItem"
+                                               text="Always open in new window"/>
+                            </items>
+                        </ContextMenu>
+                    </contextMenu>
+                </MaterialIconButton>
             </HBox>
         </VBox>
         <HBox alignment="CENTER">

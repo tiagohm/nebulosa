@@ -50,7 +50,7 @@ open class DefaultFocuserProperty : AbstractDeviceProperty<Focuser>(), FocuserPr
         temperatureProperty.set(0.0)
     }
 
-    override fun onDeviceEvent(event: DeviceEvent<*>, device: Focuser) {
+    override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: Focuser) {
         when (event) {
             is FocuserPositionChanged -> positionProperty.set(device.position)
             is FocuserCanAbsoluteMoveChanged -> canAbsoluteMoveProperty.set(device.canAbsoluteMove)

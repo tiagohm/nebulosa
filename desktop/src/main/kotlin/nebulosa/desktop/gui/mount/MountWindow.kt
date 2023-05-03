@@ -4,14 +4,18 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
 import javafx.scene.Node
-import javafx.scene.control.*
+import javafx.scene.control.Button
+import javafx.scene.control.ChoiceBox
+import javafx.scene.control.MenuItem
+import javafx.scene.control.TextField
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.control.MaterialIcon
+import nebulosa.desktop.gui.control.CopyableLabel
 import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.gui.control.TwoStateButton
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.mount.MountManager
 import nebulosa.desktop.view.mount.MountView
@@ -21,7 +25,7 @@ import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.AngleFormatter
-import nebulosa.math.PairOfAngle
+import nebulosa.nova.astrometry.Constellation
 import org.controlsfx.control.SegmentedButton
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -37,16 +41,16 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
     @FXML private lateinit var mountChoiceBox: ChoiceBox<Mount>
     @FXML private lateinit var connectButton: TwoStateButton
     @FXML private lateinit var openINDIButton: Button
-    @FXML private lateinit var rightAscensionLabel: Label
-    @FXML private lateinit var declinationLabel: Label
-    @FXML private lateinit var rightAscensionJ2000Label: Label
-    @FXML private lateinit var declinationJ2000Label: Label
-    @FXML private lateinit var altitudeLabel: Label
-    @FXML private lateinit var azimuthLabel: Label
-    @FXML private lateinit var pierSideLabel: Label
-    @FXML private lateinit var meridianAtLabel: Label
-    @FXML private lateinit var lstLabel: Label
-    @FXML private lateinit var constellationLabel: Label
+    @FXML private lateinit var rightAscensionLabel: CopyableLabel
+    @FXML private lateinit var declinationLabel: CopyableLabel
+    @FXML private lateinit var rightAscensionJ2000Label: CopyableLabel
+    @FXML private lateinit var declinationJ2000Label: CopyableLabel
+    @FXML private lateinit var altitudeLabel: CopyableLabel
+    @FXML private lateinit var azimuthLabel: CopyableLabel
+    @FXML private lateinit var pierSideLabel: CopyableLabel
+    @FXML private lateinit var meridianAtLabel: CopyableLabel
+    @FXML private lateinit var lstLabel: CopyableLabel
+    @FXML private lateinit var constellationLabel: CopyableLabel
     @FXML private lateinit var targetCoordinatesEquinoxSegmentedButton: SegmentedButton
     @FXML private lateinit var siteAndTimeButton: Button
     @FXML private lateinit var targetRightAscensionTextField: TextField
@@ -54,7 +58,7 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
     @FXML private lateinit var goToButton: Button
     @FXML private lateinit var slewToButton: Button
     @FXML private lateinit var syncButton: Button
-    @FXML private lateinit var targetCoordinatesContextMenu: ContextMenu
+    @FXML private lateinit var targetCoordinatesContextMenuButton: Button
     @FXML private lateinit var telescopeControlServerButton: Button
     @FXML private lateinit var nudgeNEButton: Button
     @FXML private lateinit var nudgeNButton: Button
@@ -70,7 +74,11 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
     @FXML private lateinit var slewSpeedChoiceBox: ChoiceBox<String>
     @FXML private lateinit var parkButton: TwoStateButton
     @FXML private lateinit var homeButton: Button
-    @FXML private lateinit var statusIcon: MaterialIcon
+    @FXML private lateinit var statusLabel: CopyableLabel
+    @FXML private lateinit var targetAzimuthLabel: CopyableLabel
+    @FXML private lateinit var targetAltitudeLabel: CopyableLabel
+    @FXML private lateinit var targetConstellationLabel: CopyableLabel
+    @FXML private lateinit var targetMeridianAtLabel: CopyableLabel
 
     private val nudgeButtonPressed = SimpleObjectProperty<Node>()
 
@@ -106,7 +114,7 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
 
         declinationJ2000Label.textProperty().bind(mountManager.declinationJ2000Property.asString { it.deg.format(AngleFormatter.SIGNED_DMS) })
 
-        azimuthLabel.textProperty().bind(mountManager.azimuthProperty.asString { it.deg.format(AngleFormatter.SIGNED_DMS) })
+        azimuthLabel.textProperty().bind(mountManager.azimuthProperty.asString { it.deg.format(AngleFormatter.DMS) })
 
         altitudeLabel.textProperty().bind(mountManager.altitudeProperty.asString { it.deg.format(AngleFormatter.SIGNED_DMS) })
 
@@ -119,16 +127,16 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
         siteAndTimeButton.disableProperty().bind(isNotConnectedOrMoving)
 
         targetRightAscensionTextField.disableProperty().bind(isNotConnectedOrMoving)
+        targetRightAscensionTextField.textProperty().on { targetRightAscension = Angle.from(it, true) ?: Angle.NaN }
 
         targetDeclinationTextField.disableProperty().bind(isNotConnectedOrMoving)
+        targetDeclinationTextField.textProperty().on { targetDeclination = Angle.from(it) ?: Angle.NaN }
 
         goToButton.disableProperty().bind(isNotConnectedOrMoving)
         slewToButton.disableProperty().bind(isNotConnectedOrMoving)
         syncButton.disableProperty().bind(isNotConnectedOrMoving or !mountManager.canSyncProperty)
 
-        targetCoordinatesContextMenu.items
-            .filter { "BIND_TO_SELECTED_MOUNT" in (it.userData as String) }
-            .forEach { it.disableProperty().bind(isNotConnectedOrMoving) }
+        targetCoordinatesContextMenuButton.disableProperty().bind(isNotConnectedOrMoving)
 
         telescopeControlServerButton.disableProperty().bind(isNotConnectedOrMoving)
 
@@ -171,17 +179,16 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
     }
 
     override var status
-        get() = statusIcon.text
+        get() = statusLabel.text ?: ""
         set(value) {
-            statusIcon.text = value
+            statusLabel.text = value
         }
 
-    override val targetCoordinates: PairOfAngle
-        get() {
-            val ra = Angle.from(targetRightAscensionTextField.text, true)!!
-            val dec = Angle.from(targetDeclinationTextField.text)!!
-            return PairOfAngle(ra.normalized, dec)
-        }
+    override var targetRightAscension = Angle.ZERO
+        protected set
+
+    override var targetDeclination = Angle.ZERO
+        protected set
 
     override var isJ2000
         get() = targetCoordinatesEquinoxSegmentedButton.toggleGroup.selectedToggle.userData == "J2000"
@@ -198,20 +205,12 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
 
     @FXML
     private fun openINDIPanelControl() {
-        mountManager.openINDIPanelControl()
-    }
-
-    @FXML
-    private fun openTargetCoordinatesMenu(event: MouseEvent) {
-        if (event.button == MouseButton.PRIMARY) {
-            targetCoordinatesContextMenu.show(event.source as Node, event.screenX, event.screenY)
-            event.consume()
-        }
+        launch { mountManager.openINDIPanelControl() }
     }
 
     @FXML
     private fun openTelescopeControlServer() {
-        mountManager.openTelescopeControlServer()
+        launch { mountManager.openTelescopeControlServer() }
     }
 
     @FXML
@@ -252,15 +251,13 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
 
     @FXML
     private fun loadLocation(event: ActionEvent) {
-        val userData = (event.source as MenuItem).userData as String
-
-        when {
-            "JNOW" in userData -> mountManager.loadCurrentLocation()
-            "J2000" in userData -> mountManager.loadCurrentLocationJ2000()
-            "ZENITH" in userData -> mountManager.loadZenithLocation()
-            "NORTH_POLE" in userData -> mountManager.loadNorthCelestialPoleLocation()
-            "SOUTH_POLE" in userData -> mountManager.loadSouthCelestialPoleLocation()
-            "GALACTIC_CENTER" in userData -> mountManager.loadGalacticCenterLocation()
+        when ((event.source as MenuItem).userData as String) {
+            "JNOW" -> launch { mountManager.loadCurrentLocation() }
+            "J2000" -> launch { mountManager.loadCurrentLocationJ2000() }
+            "ZENITH" -> launch { mountManager.loadZenithLocation() }
+            "NORTH_POLE" -> launch { mountManager.loadNorthCelestialPoleLocation() }
+            "SOUTH_POLE" -> launch { mountManager.loadSouthCelestialPoleLocation() }
+            "GALACTIC_CENTER" -> launch { mountManager.loadGalacticCenterLocation() }
         }
     }
 
@@ -282,14 +279,24 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
         mountManager.toggleTrackingMode(mode)
     }
 
-    override fun updateTargetPosition(ra: Angle, dec: Angle) {
+    override suspend fun updateTargetPosition(ra: Angle, dec: Angle) = withMain {
         targetRightAscensionTextField.text = ra.format(AngleFormatter.HMS)
         targetDeclinationTextField.text = dec.format(AngleFormatter.SIGNED_DMS)
     }
 
-    override fun updateLSTAndMeridian(lst: Angle, timeLeftToMeridianFlip: Angle, timeToMeridianFlip: LocalDateTime) {
+    override suspend fun updateLSTAndMeridian(lst: Angle, timeLeftToMeridianFlip: Angle, timeToMeridianFlip: LocalDateTime) = withMain {
         meridianAtLabel.text = "%s (%s)".format(timeToMeridianFlip.format(MERIDIAN_TIME_FORMAT), timeLeftToMeridianFlip.format(LST_FORMAT))
         lstLabel.text = lst.format(LST_FORMAT)
+    }
+
+    override suspend fun updateTargetInfo(
+        azimuth: Angle, altitude: Angle, constellation: Constellation,
+        timeLeftToMeridianFlip: Angle, timeToMeridianFlip: LocalDateTime,
+    ) = withMain {
+        targetAzimuthLabel.text = azimuth.format(AngleFormatter.DMS)
+        targetAltitudeLabel.text = altitude.format(AngleFormatter.SIGNED_DMS)
+        targetConstellationLabel.text = constellation.iau
+        targetMeridianAtLabel.text = "%s (%s)".format(timeToMeridianFlip.format(MERIDIAN_TIME_FORMAT), timeLeftToMeridianFlip.format(LST_FORMAT))
     }
 
     private object MountStringConverter : StringConverter<Mount>() {

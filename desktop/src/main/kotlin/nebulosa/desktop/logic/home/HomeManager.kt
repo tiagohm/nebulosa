@@ -1,7 +1,7 @@
 package nebulosa.desktop.logic.home
 
 import javafx.stage.FileChooser
-import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.connection.ConnectionManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.about.AboutView
@@ -24,9 +24,8 @@ import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.math.max
 
-class HomeManager(private val view: HomeView) : Closeable {
+class HomeManager(private val view: HomeView) : AbstractManager(), Closeable {
 
-    @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var connectionManager: ConnectionManager
     @Autowired private lateinit var appDirectory: Path
@@ -62,14 +61,14 @@ class HomeManager(private val view: HomeView) : Closeable {
                 )
             }
 
-            preferences.string("connection.host", host)
-            preferences.int("connection.port", port)
+            preferenceService.string("connection.host", host)
+            preferenceService.int("connection.port", port)
         } else {
             connectionManager.disconnect()
         }
     }
 
-    fun open(name: String) {
+    suspend fun open(name: String) {
         when (name) {
             "NEW_IMAGE" -> openNewImage()
             "CAMERA" -> cameraView.show(bringToFront = true)
@@ -85,8 +84,8 @@ class HomeManager(private val view: HomeView) : Closeable {
         }
     }
 
-    private fun openNewImage() {
-        val initialDirectoryPath = preferences
+    private suspend fun openNewImage() {
+        val initialDirectoryPath = preferenceService
             .string("home.newImage.initialDirectory")
             ?.let(::Path)?.takeIf { it.exists() }
             ?: appDirectory
@@ -100,7 +99,7 @@ class HomeManager(private val view: HomeView) : Closeable {
             showOpenDialog(null) ?: return
         }
 
-        preferences.string("home.newImage.initialDirectory", file.parent)
+        preferenceService.string("home.newImage.initialDirectory", file.parent)
 
         try {
             imageViewOpener.open(null, file, resetTransformation = true)
@@ -112,16 +111,16 @@ class HomeManager(private val view: HomeView) : Closeable {
     }
 
     fun savePreferences() {
-        preferences.double("home.screen.x", max(0.0, view.x))
-        preferences.double("home.screen.y", max(0.0, view.y))
+        preferenceService.double("home.screen.x", max(0.0, view.x))
+        preferenceService.double("home.screen.y", max(0.0, view.y))
     }
 
     fun loadPreferences() {
-        view.host = preferences.string("connection.host") ?: ""
-        view.port = preferences.int("connection.port") ?: 7624
+        view.host = preferenceService.string("connection.host") ?: ""
+        view.port = preferenceService.int("connection.port") ?: 7624
 
-        preferences.double("home.screen.x")?.let { view.x = it }
-        preferences.double("home.screen.y")?.let { view.y = it }
+        preferenceService.double("home.screen.x")?.let { view.x = it }
+        preferenceService.double("home.screen.y")?.let { view.y = it }
     }
 
     override fun close() {

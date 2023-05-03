@@ -19,6 +19,13 @@ class SmallBodyDatabaseLookupServiceTest : StringSpec() {
             body.body!!.fullname shouldBe "C/2017 K2 (PANSTARRS)"
             body.body!!.spkId shouldBeExactly 1003517
         }
+        "search NEO" {
+            val body = service.search("2023 GA2").execute().body().shouldNotBeNull()
+            body.list.shouldBeNull()
+            body.orbit!!.equinox shouldBe "J2000"
+            body.body!!.fullname shouldBe "(2023 GA2)"
+            body.body!!.spkId shouldBeExactly 54354395
+        }
         "search matches multiple records" {
             val body = service.search("PANSTARRS").execute().body().shouldNotBeNull()
             val list = body.list.shouldNotBeNull()

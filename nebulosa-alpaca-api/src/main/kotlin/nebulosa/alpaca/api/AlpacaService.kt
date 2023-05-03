@@ -1,6 +1,8 @@
 package nebulosa.alpaca.api
 
 import nebulosa.retrofit.RetrofitService
+import okhttp3.OkHttpClient
+import retrofit2.create
 
 /**
  * The Alpaca API uses RESTful techniques and TCP/IP to enable ASCOM
@@ -8,11 +10,14 @@ import nebulosa.retrofit.RetrofitService
  *
  * @see <a href="https://ascom-standards.org/api/">ASCOM Alpaca Device API</a>
  */
-class AlpacaService(url: String) : RetrofitService(url) {
+class AlpacaService(
+    url: String,
+    okHttpClient: OkHttpClient? = null,
+) : RetrofitService(url, okHttpClient) {
 
-    val management by lazy { retrofit.create(Management::class.java) }
+    val management by lazy { retrofit.create<Management>() }
 
-    val camera by lazy { retrofit.create(Camera::class.java) }
+    val camera by lazy { retrofit.create<Camera>() }
 
-    val telescope by lazy { retrofit.create(Telescope::class.java) }
+    val telescope by lazy { retrofit.create<Telescope>() }
 }

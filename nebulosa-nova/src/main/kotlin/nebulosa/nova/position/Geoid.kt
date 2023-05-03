@@ -41,14 +41,14 @@ data class Geoid(
         val c = 1.0 / sqrt(cosphi * cosphi + sinphi * sinphi * oneMinusFlatteningSquared)
         val s = oneMinusFlatteningSquared * c
 
-        val ach = radius * c + elevation
-        val ash = radius * s + elevation
+        val radiusXY = radius * c + elevation
+        val radiusZ = radius * s + elevation
 
-        val ac = ach * cosphi
-        val acsst = ac * longitude.sin
-        val accst = ac * longitude.cos
+        val xy = radiusXY * cosphi
+        val x = xy * longitude.cos
+        val y = xy * longitude.sin
 
-        val itrs = Vector3D(accst.value, acsst.value, (ash * sinphi).value)
+        val itrs = Vector3D(y.value, x.value, (radiusZ * sinphi).value)
 
         return GeographicPosition(longitude, latitude, elevation, itrs, this)
     }

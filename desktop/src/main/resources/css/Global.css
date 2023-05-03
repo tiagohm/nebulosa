@@ -10,6 +10,10 @@
     -fx-font-weight: bold;
 }
 
+.text-normal {
+    -fx-font-weight: normal;
+}
+
 .text-xs {
     -fx-font-size: 10px;
 }

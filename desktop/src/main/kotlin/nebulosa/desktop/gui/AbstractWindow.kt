@@ -3,14 +3,20 @@ package nebulosa.desktop.gui
 import io.reactivex.rxjava3.subjects.PublishSubject
 import javafx.application.HostServices
 import javafx.application.Platform
+import javafx.event.Event
+import javafx.event.EventHandler
+import javafx.event.EventType
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.Alert
+import javafx.scene.control.DialogPane
 import javafx.scene.image.Image
+import javafx.stage.Modality
 import javafx.stage.Stage
+import kotlinx.coroutines.*
 import nebulosa.desktop.gui.home.HomeWindow
-import nebulosa.desktop.logic.concurrency.JavaFXExecutorService
+import nebulosa.desktop.service.PreferenceService
 import nebulosa.desktop.view.View
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
@@ -18,7 +24,6 @@ import nebulosa.jmetro.FlatAlert
 import nebulosa.jmetro.JMetro
 import nebulosa.jmetro.JMetroStyleClass
 import nebulosa.jmetro.Style
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import java.util.concurrent.atomic.AtomicBoolean
@@ -30,12 +35,13 @@ abstract class AbstractWindow(
 ) : View {
 
     private val showingAtFirstTime = AtomicBoolean(true)
+    private val mainScope = MainScope()
 
     @Autowired protected lateinit var beanFactory: AutowireCapableBeanFactory
         private set
 
     protected val hostServices by lazy { beanFactory.getBean(HostServices::class.java) }
-    protected val javaFXExecutorService by lazy { beanFactory.getBean(JavaFXExecutorService::class.java) }
+    protected val preferenceService by lazy { beanFactory.getBean("preferenceService") as PreferenceService }
 
     init {
         window.setOnShowing {
@@ -71,8 +77,11 @@ abstract class AbstractWindow(
         window.setOnHiding {
             onStop()
 
-            if (this is HomeWindow) {
+            if (this@AbstractWindow is HomeWindow) {
+                mainScope.cancel()
+
                 onClose()
+
                 CLOSE.onNext(false)
             }
         }
@@ -146,7 +155,6 @@ abstract class AbstractWindow(
     final override val titleHeight
         get() = (height - sceneHeight) - borderSize
 
-    @Synchronized
     final override fun show(
         requestFocus: Boolean,
         bringToFront: Boolean,
@@ -157,35 +165,64 @@ abstract class AbstractWindow(
         if (bringToFront) window.toFront()
     }
 
-    final override fun showAndWait() {
-        window.showAndWait()
+    final override fun showAndWait(owner: View?, closed: () -> Unit) {
+        launch {
+            if (window.owner == null) {
+                window.initModality(Modality.WINDOW_MODAL)
+                if (owner is AbstractWindow && owner !== this) window.initOwner(owner.window)
+            }
+
+            window.showAndWait()
+
+            closed()
+        }
     }
 
     final override fun close() {
         if (Platform.isFxApplicationThread()) {
-            LOG.info("close requested. window={}", javaClass.simpleName)
             window.close()
-        } else {
-            LOG.warn("unable to close because not on FX application thread. window={}", javaClass.simpleName)
         }
     }
 
-    final override fun showAlert(
-        message: String,
-        title: String,
-    ) {
-        val alert = FlatAlert(Alert.AlertType.INFORMATION)
-        alert.initOwner(window)
-        alert.title = title
-        alert.headerText = null
-        alert.contentText = message
-        Platform.runLater { alert.showAndWait() }
+    final override fun showAlert(message: String, title: String) {
+        launch {
+            val alert = FlatAlert(Alert.AlertType.INFORMATION)
+            alert.initModality(Modality.WINDOW_MODAL)
+            alert.initOwner(window)
+            alert.title = title
+            alert.headerText = null
+            alert.contentText = message
+            alert.dialogPane.stylesheets.add("css/Global.css")
+            alert.show()
+        }
+    }
+
+    final override fun showAlert(title: String, block: DialogPane.() -> Unit) {
+        launch {
+            val alert = FlatAlert(Alert.AlertType.INFORMATION)
+            alert.initModality(Modality.WINDOW_MODAL)
+            alert.initOwner(window)
+            alert.title = title
+            alert.dialogPane.stylesheets.add("css/Global.css")
+            alert.dialogPane.block()
+            alert.show()
+        }
+    }
+
+    override fun <T : Event> addEventFilter(eventType: EventType<T>, eventFilter: EventHandler<T>) {
+        window.addEventFilter(eventType, eventFilter)
+    }
+
+    override fun <T : Event> addEventHandler(eventType: EventType<T>, eventFilter: EventHandler<T>) {
+        window.addEventHandler(eventType, eventFilter)
+    }
+
+    protected fun launch(block: suspend CoroutineScope.() -> Unit): Job {
+        return mainScope.launch(Dispatchers.Main, block = block)
     }
 
     companion object {
 
         @JvmStatic internal val CLOSE = PublishSubject.create<Boolean>()
-
-        @JvmStatic private val LOG = LoggerFactory.getLogger(AbstractWindow::class.java)
     }
 }

@@ -14,9 +14,9 @@ interface FocuserView : View {
 
     val absoluteMax: Int
 
-    fun updateStatus(status: String)
+    suspend fun updateStatus(status: String)
 
-    fun updateMaxIncrement(value: Int)
+    suspend fun updateMaxIncrement(value: Int)
 
-    fun updateAbsoluteMax(value: Int)
+    suspend fun updateAbsoluteMax(value: Int)
 }

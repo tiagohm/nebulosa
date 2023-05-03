@@ -1,14 +1,14 @@
 package nebulosa.indi.protocol
 
-import nebulosa.indi.protocol.xml.XmlBuilder
+import java.io.PrintStream
 
 class DelProperty : INDIProtocol() {
 
-    override fun toXML() = XmlBuilder()
-        .name("delProperty")
-        .attr("device", device)
-        .attr("name", name)
-        .attr("timestamp", timestamp)
-        .attr("message", message)
-        .build()
+    override fun writeTo(stream: PrintStream) = stream.writeXML(
+        "delProperty", null,
+        "device", device,
+        "name", name,
+        "timestamp", timestamp,
+        "message", message,
+    )
 }

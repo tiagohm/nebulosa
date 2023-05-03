@@ -1,0 +1,10 @@
+spring:
+  main:
+    banner-mode: off
+    lazy-initialization: true
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 0
+    table: migrations
+    locations:
+      - 'classpath:migrations/app'

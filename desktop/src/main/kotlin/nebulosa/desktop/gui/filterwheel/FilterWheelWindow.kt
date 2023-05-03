@@ -1,21 +1,17 @@
 package nebulosa.desktop.gui.filterwheel
 
-import javafx.beans.property.ReadOnlyIntegerWrapper
-import javafx.beans.property.ReadOnlyStringWrapper
-import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.scene.Cursor
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.TextFieldTableCell
-import javafx.scene.input.MouseButton
-import javafx.scene.input.MouseEvent
-import javafx.util.Callback
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.ButtonValueFactory
+import nebulosa.desktop.gui.control.PropertyValueFactory
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.filterwheel.FilterWheelManager
+import nebulosa.desktop.logic.filterwheel.filterName
 import nebulosa.desktop.logic.isNull
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
@@ -34,7 +30,7 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
 
     @FXML private lateinit var filterWheelChoiceBox: ChoiceBox<FilterWheel>
     @FXML private lateinit var connectButton: TwoStateButton
-    @FXML private lateinit var menu: ContextMenu
+    @FXML private lateinit var filterWheelMenuButton: Button
     @FXML private lateinit var openINDIButton: Button
     @FXML private lateinit var compactModeMenuItem: CheckMenuItem
     @FXML private lateinit var useFilterWheelAsShutterCheckBox: CheckBox
@@ -48,6 +44,7 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
         resizable = false
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun onCreate() {
         val isNotConnected = filterWheelManager.connectedProperty.not()
         val isConnecting = filterWheelManager.connectingProperty
@@ -66,20 +63,23 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 
+        filterWheelMenuButton.disableProperty().bind(isNotConnected)
+
         useFilterWheelAsShutterCheckBox.disableProperty().bind(isNotConnectedOrMoving)
         filterAsShutterChoiceBox.disableProperty().bind(isNotConnectedOrMoving or !useFilterWheelAsShutterCheckBox.selectedProperty())
 
         filterSlotTableView.disableProperty().bind(isNotConnectedOrMoving)
-        filterSlotTableView.columns[0].cellValueFactory = FilterSlotValueFactory(0)
-        filterSlotTableView.columns[1].cellFactory = TextFieldTableCell.forTableColumn()
-        filterSlotTableView.columns[1].cellValueFactory = FilterSlotValueFactory(1)
-        filterSlotTableView.columns[1].setOnEditCommit {
+        (filterSlotTableView.columns[0] as TableColumn<Int, Int>).cellValueFactory = PropertyValueFactory { it }
+        (filterSlotTableView.columns[1] as TableColumn<Int, String>).cellFactory = TextFieldTableCell.forTableColumn()
+        (filterSlotTableView.columns[1] as TableColumn<Int, String>).cellValueFactory =
+            PropertyValueFactory { preferenceService.filterName(filterWheelManager.value, it) }
+        (filterSlotTableView.columns[1] as TableColumn<Int, *>).setOnEditCommit {
             val label = it.newValue as? String ?: return@setOnEditCommit
             val position = it.tableView.items[it.tablePosition.row]
             filterWheelManager.updateFilterName(position, label)
         }
 
-        filterSlotTableView.columns[2].cellFactory = object : ButtonValueFactory<Int, String> {
+        (filterSlotTableView.columns[2] as TableColumn<Int, String>).cellFactory = object : ButtonValueFactory<Int, String> {
 
             override fun cell(item: Int, node: Node?): Node {
                 val button = node as? Button
@@ -154,14 +154,6 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
     }
 
     @FXML
-    private fun openMenu(event: MouseEvent) {
-        if (event.button == MouseButton.PRIMARY) {
-            menu.show(event.source as Node, event.screenX, event.screenY)
-            event.consume()
-        }
-    }
-
-    @FXML
     private fun openINDIPanelControl() {
         filterWheelManager.openINDIPanelControl()
     }
@@ -226,17 +218,6 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
         updateScreenHeight()
     }
 
-    private inner class FilterSlotValueFactory(val index: Int) : Callback<TableColumn.CellDataFeatures<Int, Any>, ObservableValue<out Any>> {
-
-        override fun call(param: TableColumn.CellDataFeatures<Int, Any>): ObservableValue<out Any>? {
-            return when (index) {
-                0 -> ReadOnlyIntegerWrapper(param.value)
-                1 -> ReadOnlyStringWrapper(filterWheelManager.computeFilterName(param.value))
-                else -> null
-            }
-        }
-    }
-
     private object FilterWheelStringConverter : StringConverter<FilterWheel>() {
 
         override fun toString(device: FilterWheel?) = device?.name ?: "No filter wheel selected"
@@ -246,7 +227,7 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
 
     private inner class FilterSlotStringConverter : StringConverter<Int>() {
 
-        override fun toString(slot: Int?) = slot?.let(filterWheelManager::computeFilterName) ?: "No filter selected"
+        override fun toString(slot: Int?) = slot?.let { preferenceService.filterName(filterWheelManager.value, it) } ?: "No filter selected"
 
         override fun fromString(text: String?) = null
     }

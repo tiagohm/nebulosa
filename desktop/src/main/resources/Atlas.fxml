@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import nebulosa.desktop.gui.atlas.AltitudeChart?>
+<?import nebulosa.desktop.gui.atlas.MoonView?>
+<?import nebulosa.desktop.gui.atlas.SunView?>
 <?import nebulosa.desktop.gui.control.*?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
@@ -17,51 +20,50 @@
           AnchorPane.rightAnchor="0.0"
           AnchorPane.topAnchor="0.0">
         <TabPane fx:id="ephemerisTabPane"
+                 tabClosingPolicy="UNAVAILABLE"
                  VBox.vgrow="ALWAYS">
-            <Tab closable="false"
-                 onSelectionChanged="#tabSelectionChanged"
+            <Tab onSelectionChanged="#tabSelectionChanged"
                  text="Sun"
                  userData="SUN">
                 <VBox alignment="CENTER">
                     <SunView fx:id="sunView"
-                             height="256.0"
-                             width="256.0"/>
+                             height="206.0"
+                             width="206.0"/>
                     <Label text="SDO/HMI"
                            styleClass="text-xs,text-grey-600"/>
                 </VBox>
             </Tab>
-            <Tab closable="false"
-                 onSelectionChanged="#tabSelectionChanged"
+            <Tab onSelectionChanged="#tabSelectionChanged"
                  text="Moon"
                  userData="MOON">
                 <VBox alignment="CENTER">
                     <MoonView fx:id="moonView"
-                              height="256.0"
-                              width="256.0"/>
+                              height="206.0"
+                              width="206.0"/>
                 </VBox>
             </Tab>
-            <Tab closable="false"
-                 onSelectionChanged="#tabSelectionChanged"
+            <Tab onSelectionChanged="#tabSelectionChanged"
                  text="Planets"
                  userData="PLANET">
                 <TableView fx:id="planetTableView"
                            styleClass="text-sm"
                            fixedCellSize="32.0"
-                           maxHeight="268.0"
-                           minHeight="268.0"
-                           prefHeight="268.0">
+                           maxHeight="218.0"
+                           minHeight="218.0"
+                           prefHeight="218.0">
                     <columns>
                         <TableColumn prefWidth="170.0"
                                      style="-fx-alignment: CENTER;"
+                                     styleClass="text-xs"
                                      text="Name"/>
                         <TableColumn prefWidth="130.0"
                                      style="-fx-alignment: CENTER-LEFT;"
+                                     styleClass="text-xs"
                                      text="Type"/>
                     </columns>
                 </TableView>
             </Tab>
-            <Tab closable="false"
-                 onSelectionChanged="#tabSelectionChanged"
+            <Tab onSelectionChanged="#tabSelectionChanged"
                  text="Minor Planets"
                  userData="MINOR_PLANET">
                 <VBox alignment="TOP_CENTER"
@@ -79,26 +81,28 @@
                     <TableView fx:id="minorPlanetTableView"
                                styleClass="text-sm"
                                fixedCellSize="32.0"
-                               maxHeight="230.0"
-                               minHeight="230.0"
-                               prefHeight="230.0">
+                               maxHeight="180.0"
+                               minHeight="180.0"
+                               prefHeight="180.0">
                         <columns>
                             <TableColumn prefWidth="90.0"
                                          style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
                                          text="Element"/>
                             <TableColumn prefWidth="180.0"
                                          style="-fx-alignment: CENTER-LEFT;"
+                                         styleClass="text-xs"
                                          text="Description"/>
                             <TableColumn prefWidth="190.0"
                                          style="-fx-alignment: CENTER-RIGHT;"
+                                         styleClass="text-xs"
                                          text="Value"/>
                         </columns>
                     </TableView>
                 </VBox>
             </Tab>
-            <Tab closable="false"
-                 onSelectionChanged="#tabSelectionChanged"
-                 text="Bright Stars"
+            <Tab onSelectionChanged="#tabSelectionChanged"
+                 text="Stars"
                  userData="STAR">
                 <VBox alignment="TOP_CENTER"
                       spacing="4.0">
@@ -111,29 +115,37 @@
                         <MaterialIconButton onAction="#searchStar"
                                             text="Search"
                                             icon="magnify"/>
+                        <MaterialIconButton onAction="#openFilterStar"
+                                            icon="filter"/>
                     </HBox>
                     <TableView fx:id="starTableView"
                                styleClass="text-sm"
                                fixedCellSize="32.0"
-                               maxHeight="230.0"
-                               minHeight="230.0"
-                               prefHeight="230.0">
+                               maxHeight="180.0"
+                               minHeight="180.0"
+                               prefHeight="180.0">
                         <columns>
                             <TableColumn prefWidth="140.0"
                                          style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
                                          text="Name"/>
+                            <TableColumn prefWidth="80.0"
+                                         style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
+                                         text="Magnitude"/>
+                            <TableColumn prefWidth="130.0"
+                                         style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
+                                         text="Type"/>
                             <TableColumn prefWidth="100.0"
                                          style="-fx-alignment: CENTER;"
-                                         text="Magnitude"/>
-                            <TableColumn prefWidth="180.0"
-                                         style="-fx-alignment: CENTER;"
-                                         text="Type"/>
+                                         styleClass="text-xs"
+                                         text="Constellation"/>
                         </columns>
                     </TableView>
                 </VBox>
             </Tab>
-            <Tab closable="false"
-                 onSelectionChanged="#tabSelectionChanged"
+            <Tab onSelectionChanged="#tabSelectionChanged"
                  text="DSOs"
                  userData="DSO">
                 <VBox alignment="TOP_CENTER"
@@ -147,25 +159,95 @@
                         <MaterialIconButton onAction="#searchDSO"
                                             text="Search"
                                             icon="magnify"/>
+                        <MaterialIconButton onAction="#openFilterDSO"
+                                            icon="filter"/>
                     </HBox>
-                    <TableView fx:id="dsoTableView"
+                    <TableView fx:id="dsosTableView"
                                fixedCellSize="32.0"
                                styleClass="text-sm"
-                               maxHeight="230.0"
-                               minHeight="230.0"
-                               prefHeight="230.0">
+                               maxHeight="180.0"
+                               minHeight="180.0"
+                               prefHeight="180.0">
                         <columns>
                             <TableColumn prefWidth="140.0"
                                          style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
                                          text="Name"/>
+                            <TableColumn prefWidth="80.0"
+                                         style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
+                                         text="Magnitude"/>
+                            <TableColumn prefWidth="130.0"
+                                         style="-fx-alignment: CENTER;"
+                                         styleClass="text-xs"
+                                         text="Type"/>
                             <TableColumn prefWidth="100.0"
                                          style="-fx-alignment: CENTER;"
-                                         text="Magnitude"/>
-                            <TableColumn prefWidth="180.0"
-                                         style="-fx-alignment: CENTER;"
-                                         text="Type"/>
+                                         styleClass="text-xs"
+                                         text="Constellation"/>
                         </columns>
                     </TableView>
+                </VBox>
+            </Tab>
+            <Tab text="Settings">
+                <VBox spacing="8.0">
+                    <padding>
+                        <Insets topRightBottomLeft="16.0"/>
+                    </padding>
+                    <GridPane vgap="4.0"
+                              hgap="4.0">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="ALWAYS"
+                                               percentWidth="33.33"/>
+                            <ColumnConstraints hgrow="ALWAYS"
+                                               percentWidth="33.33"/>
+                            <ColumnConstraints hgrow="ALWAYS"
+                                               percentWidth="33.33"/>
+                        </columnConstraints>
+                        <LabeledPane text="Latitude (deg)"
+                                     textStyleClass="text-bold"
+                                     GridPane.rowIndex="0"
+                                     GridPane.columnIndex="0">
+                            <TextField fx:id="latitudeTextField"
+                                       styleClass="text-sm"
+                                       promptText="+00 00 00.0"/>
+                        </LabeledPane>
+                        <LabeledPane text="Longitude (deg)"
+                                     textStyleClass="text-bold"
+                                     GridPane.rowIndex="0"
+                                     GridPane.columnIndex="1">
+                            <TextField fx:id="longitudeTextField"
+                                       styleClass="text-sm"
+                                       promptText="+00 00 00.0"/>
+                        </LabeledPane>
+                        <LabeledPane text="Elevation (m)"
+                                     textStyleClass="text-bold"
+                                     GridPane.rowIndex="0"
+                                     GridPane.columnIndex="2">
+                            <TextField fx:id="elevationTextField"
+                                       styleClass="text-sm"
+                                       promptText="0.0"/>
+                        </LabeledPane>
+                        <LabeledPane text="Use coordinates from mount"
+                                     textStyleClass="text-bold"
+                                     GridPane.rowIndex="1"
+                                     GridPane.columnIndex="0">
+                            <SwitchSegmentedButton fx:id="useCoordinatesFromMountSwitch"
+                                                   state="true"/>
+                        </LabeledPane>
+                        <LabeledPane text="Date"
+                                     textStyleClass="text-bold"
+                                     GridPane.rowIndex="1"
+                                     GridPane.columnIndex="1">
+                            <DatePicker fx:id="dateDatePicker"
+                                        maxWidth="Infinity"/>
+                        </LabeledPane>
+                    </GridPane>
+                    <HBox alignment="CENTER">
+                        <MaterialIconButton icon="check"
+                                            text="Apply"
+                                            onAction="#applySettings"/>
+                    </HBox>
                 </VBox>
             </Tab>
         </TabPane>
@@ -177,11 +259,11 @@
                         right="16.0"
                         top="2.0"/>
             </padding>
-            <HBox alignment="CENTER">
-                <Label fx:id="nameLabel"
-                       alignment="CENTER"
-                       styleClass="text-bold"
-                       text="Sun"/>
+            <HBox alignment="CENTER_LEFT">
+                <CopyableLabel fx:id="nameLabel"
+                               HBox.hgrow="ALWAYS"
+                               styleClass="text-bold"
+                               text="Sun"/>
             </HBox>
             <GridPane vgap="4.0"
                       hgap="4.0">
@@ -239,11 +321,12 @@
                                    styleClass="text-sm"
                                    text="+00° 00' 00.00&quot;"/>
                 </LabeledPane>
-                <LabeledPane text="Distance"
+                <LabeledPane text="Extra"
                              textStyleClass="text-bold"
+                             visible="false"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="2">
-                    <CopyableLabel fx:id="distanceLabel"
+                    <CopyableLabel fx:id="extra1Label"
                                    styleClass="text-sm"
                                    text="-"/>
                 </LabeledPane>
@@ -258,11 +341,37 @@
                 <LabeledPane text="RTS"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="2"
-                             GridPane.columnIndex="0"
-                             GridPane.columnSpan="2">
+                             GridPane.columnIndex="0">
                     <CopyableLabel fx:id="rtsLabel"
                                    styleClass="text-sm"
                                    text="00:00 | 00:00 | 00:00"/>
+                </LabeledPane>
+                <LabeledPane text="Extra"
+                             textStyleClass="text-bold"
+                             visible="false"
+                             GridPane.rowIndex="2"
+                             GridPane.columnIndex="1">
+                    <CopyableLabel fx:id="extra2Label"
+                                   styleClass="text-sm"
+                                   text="-"/>
+                </LabeledPane>
+                <LabeledPane text="Extra"
+                             textStyleClass="text-bold"
+                             visible="false"
+                             GridPane.rowIndex="2"
+                             GridPane.columnIndex="2">
+                    <CopyableLabel fx:id="extra3Label"
+                                   styleClass="text-sm"
+                                   text="-"/>
+                </LabeledPane>
+                <LabeledPane text="Extra"
+                             textStyleClass="text-bold"
+                             visible="false"
+                             GridPane.rowIndex="2"
+                             GridPane.columnIndex="3">
+                    <CopyableLabel fx:id="extra4Label"
+                                   styleClass="text-sm"
+                                   text="-"/>
                 </LabeledPane>
             </GridPane>
         </VBox>

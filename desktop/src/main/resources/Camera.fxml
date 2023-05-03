@@ -42,27 +42,24 @@
                 <ImageButton fx:id="openINDIButton"
                              onAction="#openINDIPanelControl"
                              url="@icons/indi.png"/>
-                <MaterialIconButton onMouseClicked="#openMenu"
+                <MaterialIconButton fx:id="cameraMenuButton"
                                     styleClass="cursor-hand"
                                     style="-fx-background-color: transparent; -fx-border-style: none; -fx-border-width: 0; -fx-border-insets: 0;"
                                     color="grey-500"
                                     icon="dots-vertical">
-                    <fx:define>
-                        <ContextMenu fx:id="menu">
+                    <contextMenu>
+                        <ContextMenu>
                             <items>
                                 <CheckMenuItem fx:id="autoSaveAllExposuresMenuItem"
                                                onAction="#toggleAutoSaveAllExposures"
-                                               text="Auto Save All Exposures"
-                                               userData="BIND_TO_SELECTED_CAMERA"/>
+                                               text="Auto Save All Exposures"/>
                                 <MenuItem onAction="#chooseImageSavePath"
-                                          text="Image Save Path..."
-                                          userData="BIND_TO_SELECTED_CAMERA"/>
+                                          text="Image Save Path..."/>
                                 <CheckMenuItem fx:id="autoSubFolderMenuItem"
                                                onAction="#toggleAutoSubFolder"
                                                text="Auto Sub Folder"
                                                userData="BIND_TO_SELECTED_CAMERA"/>
-                                <Menu text="New Sub Folder At"
-                                      userData="BIND_TO_SELECTED_CAMERA">
+                                <Menu text="New Sub Folder At">
                                     <CheckMenuItem fx:id="newSubFolderAtNoonMenuItem"
                                                    onAction="#chooseNewSubFolderAt"
                                                    text="Noon"
@@ -74,7 +71,7 @@
                                 </Menu>
                             </items>
                         </ContextMenu>
-                    </fx:define>
+                    </contextMenu>
                 </MaterialIconButton>
             </HBox>
             <HBox alignment="CENTER_LEFT">
@@ -147,9 +144,9 @@
                              HBox.hgrow="ALWAYS"
                              LabeledPane.master="true"
                              editable="true"
-                             initialValue="0.0"
+                             min="-50.0"
                              max="50.0"
-                             min="-50.0"/>
+                             initialValue="0.0"/>
                     <MaterialIconButton fx:id="temperatureSetpointButton"
                                         onAction="#applyTemperatureSetpoint"
                                         icon="check"

@@ -5,14 +5,16 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.CallAdapter
 import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import java.util.concurrent.TimeUnit
 
-abstract class RetrofitService(val url: String) {
+abstract class RetrofitService(
+    val url: String,
+    private val okHttpClient: OkHttpClient? = null,
+) {
 
     protected open val converterFactory = emptyList<Converter.Factory>()
 
@@ -21,8 +23,6 @@ abstract class RetrofitService(val url: String) {
     protected open val mapper = ObjectMapper()
         .setSerializationInclusion(JsonInclude.Include.NON_NULL)
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)!!
-
-    protected open val logLevel: HttpLoggingInterceptor.Level? = HttpLoggingInterceptor.Level.BASIC
 
     protected open fun handleOkHttpClientBuilder(builder: OkHttpClient.Builder) = Unit
 
@@ -35,8 +35,7 @@ abstract class RetrofitService(val url: String) {
         builder.addConverterFactory(JacksonConverterFactory.create(mapper))
         callAdaptorFactory?.also(builder::addCallAdapterFactory)
 
-        with(HTTP_CLIENT.newBuilder()) {
-            logLevel?.also { addInterceptor(HttpLoggingInterceptor().setLevel(it)) }
+        with((okHttpClient ?: HTTP_CLIENT).newBuilder()) {
             handleOkHttpClientBuilder(this)
             builder.client(build())
         }

@@ -7,12 +7,14 @@ plugins {
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     kotlin("plugin.spring")
+    kotlin("kapt")
     id("org.openjfx.javafxplugin")
     id("com.github.gmazzo.buildconfig")
 }
 
 dependencies {
     implementation(project(":nebulosa-common"))
+    implementation(project(":nebulosa-guiding-internal"))
     implementation(project(":nebulosa-guiding-phd2"))
     implementation(project(":nebulosa-hips2fits"))
     implementation(project(":nebulosa-horizons"))
@@ -26,9 +28,7 @@ dependencies {
     implementation(project(":nebulosa-platesolving-watney"))
     implementation(project(":nebulosa-sbd"))
     implementation(project(":nebulosa-simbad"))
-    implementation(project(":nebulosa-skycatalog-brightstars"))
     implementation(project(":nebulosa-stellarium-protocol"))
-    implementation(project(":nebulosa-stellarium-skycatalog"))
     implementation(project(":nebulosa-wcs"))
     implementation(libs.jackson)
     implementation(libs.bundles.rx)
@@ -41,11 +41,23 @@ dependencies {
         exclude(module = "heatmap")
         exclude(group = "org.openjfx")
     }
+    implementation(libs.coroutines)
+    implementation(libs.coroutines.javafx)
+    implementation(libs.oshi)
+    implementation(libs.sqlite)
+    implementation(libs.flyway)
+    implementation(libs.bundles.hibernate)
     implementation(libs.logback)
     implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    kapt("org.springframework:spring-context-indexer:6.0.8")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    testImplementation(project(":nebulosa-skycatalog-hyg"))
+    testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))
+    testImplementation(libs.exposed.core)
+    testImplementation(libs.exposed.jdbc)
 }
 
 publishing {

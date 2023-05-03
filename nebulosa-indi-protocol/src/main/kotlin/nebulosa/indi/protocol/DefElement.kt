@@ -8,10 +8,7 @@ sealed class DefElement<T> : INDIProtocol(), Element<T> {
         if (this === other) return true
         if (other !is DefElement<*>) return false
         if (!super.equals(other)) return false
-
-        if (label != other.label) return false
-
-        return true
+        return label == other.label
     }
 
     override fun hashCode(): Int {

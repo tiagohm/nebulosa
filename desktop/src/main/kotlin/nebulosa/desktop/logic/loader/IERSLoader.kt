@@ -1,5 +1,9 @@
 package nebulosa.desktop.logic.loader
 
+import kotlinx.coroutines.runBlocking
+import nebulosa.desktop.helper.await
+import nebulosa.desktop.service.PreferenceService
+import nebulosa.io.transferAndClose
 import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import okhttp3.OkHttpClient
@@ -19,92 +23,80 @@ import kotlin.io.path.outputStream
 
 @Service
 @EnableScheduling
-class IERSLoader(@Autowired private val appDirectory: Path) : Runnable {
+class IERSLoader : Runnable {
 
+    @Autowired private lateinit var appDirectory: Path
+    @Autowired private lateinit var preferenceService: PreferenceService
     @Autowired private lateinit var okHttpClient: OkHttpClient
-
-    private val path = Paths
-        .get("$appDirectory", "data", "iers", "finals2000A.all")
-        .also { it.parent.createDirectories() }
 
     @Scheduled(fixedRate = 1L, initialDelay = 0L, timeUnit = TimeUnit.HOURS)
     override fun run() {
+        val finals2000A = Paths.get("$appDirectory", "data", "iers", "finals2000A.all")
+
+        finals2000A.parent.createDirectories()
+
         LOG.info("checking finals2000A.all")
 
-        if (shouldBeDownloaded()) {
-            LOG.info("downloading finals2000A.all")
+        runBlocking {
+            if (finals2000A.shouldBeDownloaded()) {
+                LOG.info("downloading finals2000A.all")
+                finals2000A.download()
+            }
 
             try {
-                download()
+                val iersa = IERSA()
+                finals2000A.inputStream().use(iersa::load)
+                IERS.attach(iersa)
+
+                LOG.info("finals2000A.all loaded")
             } catch (e: Throwable) {
-                LOG.error("finals2000A.all download failed", e)
+                LOG.error("failed to load finals2000A.all", e)
             }
         }
     }
 
-    private fun shouldBeDownloaded(): Boolean {
-        if (!path.exists()) {
-            LOG.warn("finals2000A.all don't exists")
-            return true
-        }
-
-        if (lastModifiedDateOfIERS() > path.toFile().lastModified()) {
-            LOG.warn("finals2000A.all is out of date")
-            return true
-        }
-
-        if (path.toFile().length() <= 0) {
-            LOG.warn("finals2000A.all is empty")
-            return true
-        }
-
-        return try {
-            path.inputStream().use { IERSA.load(it) }
-            IERS.attach(IERSA)
-            LOG.info("finals2000A.all is loaded")
-            false
-        } catch (e: Throwable) {
-            LOG.warn("finals2000A.all is corrupted")
-            true
-        }
+    private suspend fun Path.shouldBeDownloaded(): Boolean {
+        return LAST_MODIFIED_KEY !in preferenceService
+                || !exists()
+                || preferenceService.long(LAST_MODIFIED_KEY) != lastModifiedDate()
     }
 
-    private fun lastModifiedDateOfIERS(): Long {
+    private suspend fun lastModifiedDate(): Long {
         val request = Request.Builder()
             .head()
             .url(IERSA.URL)
             .build()
 
         return try {
-            okHttpClient.newCall(request)
-                .execute()
-                .use { it.headers.getDate("Last-Modified")?.time ?: 0L }
+            okHttpClient.newCall(request).await().use {
+                it.headers.getDate("Last-Modified")?.time ?: System.currentTimeMillis()
+            }
         } catch (e: Throwable) {
-            LOG.error("failed to check last modified date", e)
+            LOG.error("failed to head finals2000A.all", e)
             System.currentTimeMillis()
         }
     }
 
-    private fun download() {
+    private suspend fun Path.download() {
         val request = Request.Builder()
             .get()
             .url(IERSA.URL)
             .build()
 
-        okHttpClient.newCall(request)
-            .execute()
-            .use { response ->
-                path.outputStream().use {
-                    val bytes = response.body.bytes()
-                    bytes.inputStream().copyTo(it)
-                    IERSA.load(bytes.inputStream())
-                    IERS.attach(IERSA)
-                    LOG.info("finals2000A.all is loaded")
-                }
+        try {
+            okHttpClient.newCall(request).await().use {
+                it.body.byteStream().transferAndClose(outputStream())
+                val lastModified = it.headers.getDate("Last-Modified")?.time
+                if (lastModified != null) preferenceService.long(LAST_MODIFIED_KEY, lastModified)
             }
+        } catch (e: Throwable) {
+            LOG.error("failed to download finals2000A.all", e)
+        }
     }
 
     companion object {
+
+        private const val LAST_MODIFIED_KEY = "iersLoader.lastModified"
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(IERSLoader::class.java)
     }

@@ -1,8 +1,8 @@
 package nebulosa.indi.client.connection
 
-import nebulosa.indi.connection.INDIConnection
-import nebulosa.indi.connection.io.INDIInputStream
 import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.io.INDIConnection
+import nebulosa.indi.protocol.io.INDIInputStream
 import java.io.Closeable
 import java.util.concurrent.BlockingQueue
 

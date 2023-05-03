@@ -5,11 +5,11 @@ import nebulosa.imaging.algorithms.ComputationAlgorithm
 import kotlin.math.*
 
 class HalfFluxDiameter(
-    val x: Float,
-    val y: Float,
-    val searchRegion: Float = 15f,
+    val x: Double,
+    val y: Double,
+    val searchRegion: Double = 15.0,
     val mode: FindMode = FindMode.CENTROID,
-    val minHFD: Float = 1.5f,
+    val minHFD: Double = 1.5,
 ) : ComputationAlgorithm<ImageStar> {
 
     override fun compute(source: Image): ImageStar {
@@ -27,14 +27,14 @@ class HalfFluxDiameter(
 
         var peakX = 0
         var peakY = 0
-        var peak = 0f
-        val rawPeak: Float
-        val max3 = FloatArray(3)
+        var peak = 0.0
+        val rawPeak: Double
+        val max3 = DoubleArray(3)
 
         if (mode == FindMode.PEAK) {
             for (y in startY..endY) {
                 for (x in startX..endY) {
-                    val p = source.readGray(x, y) * 65535f
+                    val p = source.readGray(x, y) * 65535.0
 
                     if (p > peak) {
                         peak = p
@@ -50,17 +50,17 @@ class HalfFluxDiameter(
             // using a smoothing function also check for saturation.
             for (y in startY + 1 until endY) {
                 for (x in startX + 1 until endX) {
-                    var p = source.readGray(x, y) * 65535f
+                    var p = source.readGray(x, y) * 65535.0
 
                     // TODO: Optimize this using stride instead of call readGray and remove 65535 multiplication.
-                    val pv = 4 * p + source.readGray(x - 1, y - 1) * 65535f +
-                            source.readGray(x + 1, y - 1) * 65535f +
-                            source.readGray(x - 1, y + 1) * 65535f +
-                            source.readGray(x + 1, y + 1) * 65535f +
-                            2 * source.readGray(x + 0, y - 1) * 65535f +
-                            2 * source.readGray(x - 1, y + 0) * 65535f +
-                            2 * source.readGray(x + 1, y + 0) * 65535f +
-                            2 * source.readGray(x + 0, y + 1) * 65535f
+                    val pv = 4 * p + source.readGray(x - 1, y - 1) * 65535.0 +
+                            source.readGray(x + 1, y - 1) * 65535.0 +
+                            source.readGray(x - 1, y + 1) * 65535.0 +
+                            source.readGray(x + 1, y + 1) * 65535.0 +
+                            2 * source.readGray(x + 0, y - 1) * 65535.0 +
+                            2 * source.readGray(x - 1, y + 0) * 65535.0 +
+                            2 * source.readGray(x + 1, y + 0) * 65535.0 +
+                            2 * source.readGray(x + 0, y + 1) * 65535.0
 
                     if (pv > peak) {
                         peak = pv
@@ -98,15 +98,15 @@ class HalfFluxDiameter(
 
         // Find the mean and stdev of the background.
         var nbg = 0
-        var meanBg = 0f
-        var prevMeanBg: Float
-        var sigma2Bg = 0f
-        var sigmaBg = 0f
+        var meanBg = 0.0
+        var prevMeanBg: Double
+        var sigma2Bg = 0.0
+        var sigmaBg = 0.0
 
         for (i in 0..8) {
-            var sum = 0f
-            var a = 0f
-            var q = 0f
+            var sum = 0.0
+            var a = 0.0
+            var q = 0.0
             nbg = 0
 
             for (y in startY..endY) {
@@ -147,11 +147,11 @@ class HalfFluxDiameter(
             if (i > 0 && abs(meanBg - prevMeanBg) < 0.5) break
         }
 
-        val thresh: Float
+        val thresh: Double
 
-        var cx = 0f
-        var cy = 0f
-        var mass = 0f
+        var cx = 0.0
+        var cy = 0.0
+        var mass = 0.0
         var n: Int
 
         val hfrvec = ArrayList<R2M>(searchRegion.toInt() * searchRegion.toInt())
@@ -159,7 +159,7 @@ class HalfFluxDiameter(
         if (mode == FindMode.PEAK) {
             mass = peak
             n = 1
-            thresh = 0f
+            thresh = 0.0
         } else {
             thresh = truncate(meanBg + 3f * sigmaBg + 0.5f)
 
@@ -195,30 +195,30 @@ class HalfFluxDiameter(
                     mass += d
                     n++
 
-                    hfrvec.add(R2M(x.toFloat(), y.toFloat(), d))
+                    hfrvec.add(R2M(x.toDouble(), y.toDouble(), d))
                 }
             }
         }
 
         // SNR estimate from: Measuring the Signal-to-Noise Ratio S/N of the CCD Image of a Star or Nebula, J.H.Simonetti, 2004 January 8
         // http://www.phys.vt.edu/~jhs/phys3154/snr20040108.pdf
-        var snr = if (n > 0) mass / sqrt(mass / 0.5f + sigma2Bg * n * (1f + 1f / nbg)) else 0f
+        var snr = if (n > 0) mass / sqrt(mass / 0.5f + sigma2Bg * n * (1f + 1f / nbg)) else 0.0
 
         // A few scattered pixels over threshold can give a false positive
         // avoid this by requiring the smoothed peak value to be above the threshold.
         if (peak <= thresh && snr >= LOW_SNR) {
-            snr = LOW_SNR - 0.1f
+            snr = LOW_SNR - 0.1
         }
 
         if (mass < 10f) {
-            return ImageStar(x, y, mass, snr, 0f, rawPeak, FindResult.LOWMASS)
+            return ImageStar(x, y, mass, snr, 0.0, rawPeak, FindResult.LOWMASS)
         }
 
         val newX = peakX + cx / mass
         val newY = peakY + cy / mass
 
         if (snr < LOW_SNR) {
-            return ImageStar(newX, newY, mass, snr, 0f, rawPeak, FindResult.LOWSNR)
+            return ImageStar(newX, newY, mass, snr, 0.0, rawPeak, FindResult.LOWSNR)
         }
 
         val hfd = 2f * HalfFluxRadius(newX, newY, mass, hfrvec).compute()

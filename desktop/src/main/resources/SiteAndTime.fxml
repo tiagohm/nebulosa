@@ -67,7 +67,7 @@
                 <TextField fx:id="elevationTextField"
                            minWidth="101.0"
                            prefWidth="101.0"
-                           promptText="000"/>
+                           promptText="0.0"/>
             </LabeledPane>
             <HBox alignment="CENTER"
                   HBox.hgrow="ALWAYS">

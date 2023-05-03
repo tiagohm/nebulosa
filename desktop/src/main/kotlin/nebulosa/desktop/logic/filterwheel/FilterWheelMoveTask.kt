@@ -6,6 +6,7 @@ import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.indi.device.filterwheel.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -18,7 +19,7 @@ data class FilterWheelMoveTask(
 
     private val latch = CountUpDownLatch()
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onEvent(event: FilterWheelEvent) {
         if (event.device !== filterWheel) return
 

@@ -7,6 +7,7 @@ import javafx.scene.control.Spinner
 import javafx.scene.control.TextField
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.SwitchSegmentedButton
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.asString
 import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
@@ -16,13 +17,11 @@ import nebulosa.desktop.view.platesolver.PlateSolverView
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.AngleFormatter
-import nebulosa.platesolving.Calibration
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import java.io.File
-import java.util.concurrent.CompletableFuture
 import kotlin.math.ceil
 
 @Component
@@ -174,17 +173,19 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
 
     @FXML
     private fun solve() {
-        try {
-            plateSolverManager.solve()
-        } catch (e: NullPointerException) {
-            LOG.error("plate solve failed.", e)
-            showAlert("Center coordinate or radius value is invalid")
+        launch {
+            try {
+                plateSolverManager.solve()
+            } catch (e: NullPointerException) {
+                LOG.error("plate solve failed.", e)
+                showAlert("Center coordinate or radius value is invalid")
+            }
         }
     }
 
     @FXML
     private fun cancel() {
-        plateSolverManager.cancel()
+        // TODO: plateSolverManager.cancel()
     }
 
     @FXML
@@ -204,23 +205,22 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
 
     @FXML
     private fun frame() {
-        plateSolverManager.frame()
+        launch { plateSolverManager.frame() }
     }
 
-    override fun solve(
+    override suspend fun solve(
         file: File,
         blind: Boolean,
         centerRA: Angle, centerDEC: Angle,
         radius: Angle,
-    ): CompletableFuture<Calibration> {
+    ) = withMain {
         blindSwitch.state = blind
         centerRATextField.text = centerRA.format(AngleFormatter.HMS)
         centerDECTextField.text = centerDEC.format(AngleFormatter.SIGNED_DMS)
-        this.radius = radius
+        this@PlateSolverWindow.radius = radius
 
         plateSolverManager.clearAstrometrySolution()
-
-        return plateSolverManager.solve(file)
+        plateSolverManager.solve(file)
     }
 
     override fun fileWasLoaded(file: File) {

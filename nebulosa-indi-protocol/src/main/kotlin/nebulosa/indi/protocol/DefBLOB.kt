@@ -1,25 +1,22 @@
 package nebulosa.indi.protocol
 
-import nebulosa.indi.protocol.xml.XmlBuilder
+import java.io.PrintStream
 
 class DefBLOB : DefElement<String>(), BLOBElement {
 
     override var value = ""
 
-    override fun toXML() = XmlBuilder()
-        .name("defBLOB")
-        .attr("name", name)
-        .attr("label", label)
-        .build()
+    override fun writeTo(stream: PrintStream) = stream.writeXML(
+        "defBLOB", null,
+        "name", name,
+        "label", label,
+    )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is DefBLOB) return false
         if (!super.equals(other)) return false
-
-        if (value != other.value) return false
-
-        return true
+        return value == other.value
     }
 
     override fun hashCode(): Int {

@@ -129,7 +129,7 @@ class SiteAndTimeWindow(
     }
 
     override fun openINDIPanelControl(gps: GPS) {
-        mountManager.openINDIPanelControl(gps)
+        launch { mountManager.openINDIPanelControl(gps) }
     }
 
     override fun updateSite(longitude: Angle, latitude: Angle, elevation: Distance) {

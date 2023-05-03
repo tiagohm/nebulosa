@@ -54,7 +54,7 @@ data class SmallBody(
         @field:JsonProperty("sigma") val sigma: String? = null,
         @field:JsonProperty("units") val units: String? = null,
         @field:JsonProperty("name") val name: String = "",
-        @field:JsonProperty("value") val value: String = "",
+        @field:JsonProperty("value") val value: String? = null,
         @field:JsonProperty("desc") val description: String = "",
         @field:JsonProperty("notes") val notes: String? = null,
     )

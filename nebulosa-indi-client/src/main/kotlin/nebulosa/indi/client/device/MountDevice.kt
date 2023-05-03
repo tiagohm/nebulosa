@@ -16,6 +16,7 @@ import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.m
 import nebulosa.nova.astrometry.Constellation
+import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.time.UTC
@@ -60,6 +61,8 @@ internal open class MountDevice(
     override var latitude = Angle.ZERO
     override var elevation = Distance.ZERO
     override var time = OffsetDateTime.now()!!
+
+    @Volatile private var centerPosition: GeographicPosition? = null
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -156,8 +159,6 @@ internal open class MountDevice(
                         declination = message["DEC"]!!.value.deg
 
                         handler.fireOnEventReceived(MountEquatorialCoordinatesChanged(this))
-
-                        computeCoordinates()
                     }
                     "TELESCOPE_TIMED_GUIDE_NS",
                     "TELESCOPE_TIMED_GUIDE_WE" -> {
@@ -180,6 +181,8 @@ internal open class MountDevice(
                         latitude = message["LAT"]!!.value.deg
                         longitude = message["LONG"]!!.value.deg
                         elevation = message["ELEV"]!!.value.m
+
+                        centerPosition = Geoid.IERS2010.latLon(longitude, latitude, elevation)
 
                         handler.fireOnEventReceived(MountGeographicCoordinateChanged(this))
                     }
@@ -265,25 +268,25 @@ internal open class MountDevice(
 
     override fun guideNorth(duration: Int) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_N" to duration.toDouble())
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_N" to duration.toDouble(), "TIMED_GUIDE_S" to 0.0)
         }
     }
 
     override fun guideSouth(duration: Int) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_S" to duration.toDouble())
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_S" to duration.toDouble(), "TIMED_GUIDE_N" to 0.0)
         }
     }
 
     override fun guideEast(duration: Int) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_E" to duration.toDouble())
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_E" to duration.toDouble(), "TIMED_GUIDE_W" to 0.0)
         }
     }
 
     override fun guideWest(duration: Int) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_W" to duration.toDouble())
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_W" to duration.toDouble(), "TIMED_GUIDE_E" to 0.0)
         }
     }
 
@@ -319,23 +322,27 @@ internal open class MountDevice(
         sendNewText("TIME_UTC", "UTC" to GPS.formatTime(time.toLocalDateTime()), "OFFSET" to offset)
     }
 
-    private fun computeCoordinates() {
-        val epoch = UTC.now()
-        val center = Geoid.IERS2010.latLon(longitude, latitude, elevation)
+    override fun computeCoordinates(j2000: Boolean, horizontal: Boolean, epoch: UTC) {
+        val center = centerPosition ?: return
+
         val icrf = ICRF.equatorial(rightAscension, declination, time = epoch, epoch = epoch, center = center)
         constellation = Constellation.find(icrf)
 
-        val raDec = icrf.equatorialJ2000()
-        rightAscensionJ2000 = raDec.longitude.normalized
-        declinationJ2000 = raDec.latitude
+        if (j2000) {
+            val raDec = icrf.equatorialJ2000()
+            rightAscensionJ2000 = raDec.longitude.normalized
+            declinationJ2000 = raDec.latitude
 
-        handler.fireOnEventReceived(MountEquatorialJ2000CoordinatesChanged(this))
+            handler.fireOnEventReceived(MountEquatorialJ2000CoordinatesChanged(this))
+        }
 
-        val altAz = icrf.horizontal()
-        azimuth = altAz.longitude.normalized
-        altitude = altAz.latitude
+        if (horizontal) {
+            val altAz = icrf.horizontal()
+            azimuth = altAz.longitude.normalized
+            altitude = altAz.latitude
 
-        handler.fireOnEventReceived(MountHorizontalCoordinatesChanged(this))
+            handler.fireOnEventReceived(MountHorizontalCoordinatesChanged(this))
+        }
     }
 
     override fun close() {

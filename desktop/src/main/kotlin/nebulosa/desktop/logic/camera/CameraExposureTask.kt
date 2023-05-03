@@ -1,13 +1,14 @@
 package nebulosa.desktop.logic.camera
 
 import nebulosa.common.concurrency.CountUpDownLatch
-import nebulosa.desktop.logic.Preferences
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.filterwheel.FilterWheelMoveTask
+import nebulosa.desktop.logic.filterwheel.filterName
 import nebulosa.desktop.logic.task.Task
 import nebulosa.desktop.logic.task.TaskExecutor
 import nebulosa.desktop.logic.task.TaskFinished
 import nebulosa.desktop.logic.task.TaskStarted
+import nebulosa.desktop.service.PreferenceService
 import nebulosa.desktop.view.camera.AutoSubFolderMode
 import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
 import nebulosa.fits.FITS_RA_ANGLE_FORMATTER
@@ -23,6 +24,7 @@ import nom.tam.fits.header.extra.SBFitsExt
 import nom.tam.util.FitsOutputStream
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.InputStream
@@ -30,14 +32,15 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.createDirectories
 import kotlin.io.path.outputStream
 
 data class CameraExposureTask(
     override val camera: Camera,
-    val exposure: Long,
+    val exposure: Long, // µs
     val amount: Int,
-    val delay: Long,
+    val delay: Long, // ms
     val x: Int,
     val y: Int,
     val width: Int,
@@ -53,66 +56,78 @@ data class CameraExposureTask(
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
 ) : CameraTask {
 
-    @Volatile var progress = 0.0
+    @Volatile var remainingAmount = amount
         private set
 
-    @Volatile var remaining = amount
+    @Volatile var remainingTime = 0L
         private set
+
+    val elapsedTime
+        get() = (System.nanoTime() - stopWatch) / 1000L
+
+    val totalExposureTime = exposure * amount + (amount - 1) * delay * 1000L
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
-    @Autowired private lateinit var preferences: Preferences
+    @Autowired private lateinit var preferenceService: PreferenceService
     @Autowired private lateinit var eventBus: EventBus
     @Autowired private lateinit var taskExecutor: TaskExecutor
 
     private val latch = CountUpDownLatch()
     private val imagePaths = arrayListOf<Path>()
+    private val forceAbort = AtomicBoolean()
 
-    private val mount: Mount?
+    @Volatile private var stopWatch = 0L
+
+    private inline val mount: Mount?
         get() = equipmentManager.selectedMount.get()
 
-    private val focuser: Focuser?
+    private inline val focuser: Focuser?
         get() = equipmentManager.selectedFocuser.get()
 
-    private val filterWheel: FilterWheel?
+    private inline val filterWheel: FilterWheel?
         get() = equipmentManager.selectedFilterWheel.get()
 
-    @Subscribe
+    val filterName
+        get() = filterWheel?.let { preferenceService.filterName(it) }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onEvent(event: CameraEvent) {
         if (event.device !== camera) return
 
         when (event) {
             is CameraFrameCaptured -> {
-                imagePaths.add(save(event.fits))
+                imagePaths.add(save(event.fits, event.compressed))
                 latch.countDown()
             }
             is CameraExposureAborted,
             is CameraExposureFailed,
             is CameraDetached -> {
                 latch.reset()
-                remaining = 0
+                remainingAmount = 0
             }
             is CameraExposureProgressChanged -> {
-                progress = (amount - remaining - 1).toDouble() / amount +
-                        (exposure - camera.exposure).toDouble() / exposure * (1.0 / amount)
+                remainingTime = event.device.exposure
             }
         }
     }
 
     override fun call(): List<Path> {
         try {
+            stopWatch = System.nanoTime()
+
             eventBus.post(TaskStarted(this))
 
             camera.snoop(listOf(mount, focuser, filterWheel))
 
             if (frameType == FrameType.DARK) {
                 filterWheel?.also {
-                    val useFilterAsShutter = preferences.bool("filterWheel.${it.name}.useFilterWheelAsShutter")
+                    val useFilterAsShutter = preferenceService.bool("filterWheel.${it.name}.useFilterWheelAsShutter")
 
                     if (useFilterAsShutter) {
                         if (!it.connected) {
                             LOG.warn("filter wheel ${it.name} is disconnected")
                         } else {
-                            val filterAsShutterPosition = preferences.int("filterWheel.${it.name}.filterAsShutter")
+                            val filterAsShutterPosition = preferenceService.int("filterWheel.${it.name}.filterAsShutter")
 
                             if (filterAsShutterPosition != null) {
                                 LOG.info("moving filter wheel ${it.name} to dark filter")
@@ -136,11 +151,11 @@ data class CameraExposureTask(
 
             eventBus.register(this)
 
-            while (camera.connected && remaining > 0) {
+            while (camera.connected && remainingAmount > 0 && !forceAbort.get()) {
                 synchronized(camera) {
                     latch.countUp()
 
-                    remaining--
+                    remainingAmount--
 
                     camera.frame(x, y, width, height)
                     camera.frameType(frameType)
@@ -154,9 +169,13 @@ data class CameraExposureTask(
 
                     latch.await()
 
-                    LOG.info("camera exposure finished")
+                    LOG.info("camera exposure finished. abort={}", forceAbort.get())
 
-                    Task.sleep(delay, latch)
+                    if (forceAbort.get()) {
+                        return@synchronized
+                    } else if (remainingAmount > 0) {
+                        Task.sleep(delay, forceAbort)
+                    }
                 }
             }
         } catch (e: Throwable) {
@@ -165,13 +184,20 @@ data class CameraExposureTask(
         } finally {
             eventBus.unregister(this)
             eventBus.post(TaskFinished(this))
+
+            camera.disableBlob()
         }
 
         return imagePaths
     }
 
+    fun abort() {
+        camera.abortCapture()
+        forceAbort.set(true)
+    }
+
     @Synchronized
-    private fun save(inputStream: InputStream): Path {
+    private fun save(inputStream: InputStream, compressed: Boolean): Path {
         val path = if (autoSave) {
             val folderName = autoSubFolderMode.folderName()
             val fileName = "%s-%s.fits".format(LocalDateTime.now().format(DATE_TIME_FORMAT), frameType)
@@ -184,27 +210,36 @@ data class CameraExposureTask(
 
         LOG.info("saving FITS at $path...")
 
-        Fits(inputStream).use { fits ->
-            val hdu = fits.read().firstOrNull { it is ImageHDU }
+        try {
+            Fits(inputStream).use { fits ->
+                val hdu = fits.read().firstOrNull { it is ImageHDU }
 
-            hdu?.header?.also {
-                val mount = mount ?: return@also
+                if (hdu != null) {
+                    hdu.header.also {
+                        val mount = mount ?: return@also
 
-                val raStr = mount.rightAscensionJ2000.format(FITS_RA_ANGLE_FORMATTER)
-                val decStr = mount.declinationJ2000.format(FITS_DEC_ANGLE_FORMATTER)
+                        val raStr = mount.rightAscensionJ2000.format(FITS_RA_ANGLE_FORMATTER)
+                        val decStr = mount.declinationJ2000.format(FITS_DEC_ANGLE_FORMATTER)
 
-                it.addValue(ObservationDescription.RA, raStr)
-                it.addValue(SBFitsExt.OBJCTRA, raStr)
-                it.addValue(ObservationDescription.DEC, decStr)
-                it.addValue(SBFitsExt.OBJCTDEC, decStr)
+                        it.addValue(ObservationDescription.RA, raStr)
+                        it.addValue(SBFitsExt.OBJCTRA, raStr)
+                        it.addValue(ObservationDescription.DEC, decStr)
+                        it.addValue(SBFitsExt.OBJCTDEC, decStr)
+                    }
+
+                    path.parent.createDirectories()
+                    path.outputStream().use { fits.write(FitsOutputStream(it)) }
+
+                    val image = Image.open(fits)
+
+                    eventBus.post(CameraFrameSaved(this, image, path, autoSave))
+                } else {
+                    LOG.warn("FITS does not contains an image")
+                }
             }
-
-            path.parent.createDirectories()
-            path.outputStream().use { fits.write(FitsOutputStream(it)) }
-
-            val image = Image.open(fits)
-
-            eventBus.post(CameraFrameSaved(this, image, path, autoSave))
+        } catch (e: Throwable) {
+            LOG.error("failed to read FITS", e)
+            forceAbort.set(true)
         }
 
         return path

@@ -12,9 +12,7 @@ sealed class NewVector<E : OneElement<*>> : INDIProtocol(), Vector<E> {
         if (!super.equals(other)) return false
 
         if (elements != other.elements) return false
-        if (state != other.state) return false
-
-        return true
+        return state == other.state
     }
 
     override fun hashCode(): Int {

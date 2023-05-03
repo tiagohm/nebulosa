@@ -14,3 +14,5 @@
 *.ttf           binary
 *.xcf           binary
 *.png           binary
+*.db            binary
+*.gz            binary

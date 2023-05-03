@@ -85,4 +85,17 @@ class SimbadQuery {
 
         return "$builder"
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is SimbadQuery) return false
+
+        return data == other.data
+    }
+
+    override fun hashCode() = data.hashCode()
+
+    override fun toString(): String {
+        return "SimbadQuery(data=$data)"
+    }
 }

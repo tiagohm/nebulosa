@@ -15,9 +15,7 @@ sealed class SetVector<E : OneElement<*>> : INDIProtocol(), Vector<E> {
 
         if (elements != other.elements) return false
         if (state != other.state) return false
-        if (timeout != other.timeout) return false
-
-        return true
+        return timeout == other.timeout
     }
 
     override fun hashCode(): Int {

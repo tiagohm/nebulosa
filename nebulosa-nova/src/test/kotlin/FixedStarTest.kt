@@ -18,8 +18,9 @@ import nebulosa.time.UTC
 class FixedStarTest : StringSpec() {
 
     init {
-        IERSA.load(resource("finals2000A.all")!!)
-        IERS.attach(IERSA)
+        val iersa = IERSA()
+        iersa.load(resource("finals2000A.all")!!)
+        IERS.attach(iersa)
 
         "polaris" {
             // https://api.noctuasky.com/api/v1/skysources/name/NAME%20Polaris

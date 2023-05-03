@@ -1,12 +1,16 @@
 package nebulosa.simbad
 
 import nebulosa.retrofit.RetrofitService
+import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import okhttp3.FormBody
+import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
+import org.slf4j.LoggerFactory
 import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Retrofit
+import retrofit2.create
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
@@ -15,21 +19,28 @@ import java.lang.reflect.Type
  * @see <a href="https://simbad.u-strasbg.fr/simbad/tap/help/adqlHelp.html">ADQL Cheat sheet</a>
  * @see <a href="http://simbad.u-strasbg.fr/guide/otypes.htx">Object types</a>
  */
-class SimbadService(url: String = "https://simbad.u-strasbg.fr/") : RetrofitService(url) {
+class SimbadService(
+    url: String = "https://simbad.u-strasbg.fr/",
+    okHttpClient: OkHttpClient? = null,
+) : RetrofitService(url, okHttpClient) {
 
     override val converterFactory: List<Converter.Factory> = listOf(SimbadObjectConverterFactory)
 
-    private val service = retrofit.create(Simbad::class.java)
+    private val service by lazy { retrofit.create<Simbad>() }
 
     fun query(query: SimbadQuery): Call<List<SimbadObject>> {
-        val body = FormBody.Builder()
-            .add("request", "doQuery")
-            .add("lang", "adql")
-            .add("format", "tsv")
-            .add("query", query.build())
-            .build()
+        return with(query.build()) {
+            val body = FormBody.Builder()
+                .add("request", "doQuery")
+                .add("lang", "adql")
+                .add("format", "tsv")
+                .add("query", this)
+                .build()
 
-        return service.query(body)
+            LOG.info("query={}", this)
+
+            service.query(body)
+        }
     }
 
     private object SimbadObjectConverter : Converter<ResponseBody, List<SimbadObject>> {
@@ -101,6 +112,7 @@ class SimbadService(url: String = "https://simbad.u-strasbg.fr/") : RetrofitServ
         private const val IDS = 22
 
         @JvmStatic private val CATALOG_TYPES = CatalogType.values()
+        @JvmStatic private val LOG = LoggerFactory.getLogger(SimbadService::class.java)
 
         @JvmStatic private val MAIN_CATALOG_TYPES = arrayOf(
             CatalogType.NAME, CatalogType.STAR,
@@ -142,14 +154,14 @@ class SimbadService(url: String = "https://simbad.u-strasbg.fr/") : RetrofitServ
             val mType = parts[MTYPE].replace("\"", "").trim()
             val majorAxis = parts[MAJ_AXIS].toDoubleOrNull() ?: 0.0
             val minorAxis = parts[MIN_AXIS].toDoubleOrNull() ?: 0.0
-            val u = parts[FLUX_U].toDoubleOrNull() ?: Double.NaN
-            val b = parts[FLUX_B].toDoubleOrNull() ?: Double.NaN
-            val v = parts[FLUX_V].toDoubleOrNull() ?: Double.NaN
-            val r = parts[FLUX_R].toDoubleOrNull() ?: Double.NaN
-            val i = parts[FLUX_I].toDoubleOrNull() ?: Double.NaN
-            val j = parts[FLUX_J].toDoubleOrNull() ?: Double.NaN
-            val h = parts[FLUX_H].toDoubleOrNull() ?: Double.NaN
-            val k = parts[FLUX_K].toDoubleOrNull() ?: Double.NaN
+            val u = parts[FLUX_U].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val b = parts[FLUX_B].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val v = parts[FLUX_V].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val r = parts[FLUX_R].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val i = parts[FLUX_I].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val j = parts[FLUX_J].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val h = parts[FLUX_H].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+            val k = parts[FLUX_K].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
             val redshift = parts[REDSHIFT].toDoubleOrNull() ?: 0.0
             val rv = parts[RADVEL].toDoubleOrNull() ?: 0.0
 

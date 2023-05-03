@@ -1,9 +1,11 @@
 package nebulosa.math
 
 import nebulosa.constants.*
-import nebulosa.constants.PI
 import java.util.*
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.tan
 
 /**
  * Represents an Angle [value] in radians.
@@ -65,6 +67,9 @@ value class Angle(val value: Double) {
      */
     inline val tan
         get() = tan(value)
+
+    inline val valid
+        get() = value.isFinite()
 
     fun hms(): DoubleArray {
         val hours = normalized.hours
@@ -128,6 +133,7 @@ value class Angle(val value: Double) {
         @JvmStatic val SEMICIRCLE = Angle(PI)
         @JvmStatic val CIRCLE = Angle(TAU)
         @JvmStatic val QUARTER = Angle(PIOVERTWO)
+        @JvmStatic val NaN = Angle(Double.NaN)
 
         @JvmStatic private val PARSE_COORDINATES_NOT_NUMBER_REGEX = Regex("[^\\-\\d.]+")
 

@@ -10,6 +10,7 @@ import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.SwitchSegmentedButton
 import nebulosa.desktop.gui.control.TwoStateButton
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.focuser.FocuserManager
 import nebulosa.desktop.logic.isNull
 import nebulosa.desktop.logic.on
@@ -109,15 +110,15 @@ class FocuserWindow : AbstractWindow("Focuser", "focus"), FocuserView {
     override val absoluteMax
         get() = (absoluteSpinner.valueFactory as DoubleSpinnerValueFactory).max.toInt()
 
-    override fun updateStatus(status: String) {
+    override suspend fun updateStatus(status: String) = withMain {
         statusLabel.text = status
     }
 
-    override fun updateMaxIncrement(value: Int) {
+    override suspend fun updateMaxIncrement(value: Int) = withMain {
         (incrementSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
     }
 
-    override fun updateAbsoluteMax(value: Int) {
+    override suspend fun updateAbsoluteMax(value: Int) = withMain {
         (absoluteSpinner.valueFactory as DoubleSpinnerValueFactory).max = value.toDouble()
     }
 

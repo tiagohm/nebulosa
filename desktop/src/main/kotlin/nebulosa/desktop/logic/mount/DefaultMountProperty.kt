@@ -98,7 +98,7 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
         constellationProperty.set(Constellation.PSC)
     }
 
-    override fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {
+    override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: Mount) {
         when (event) {
             is MountSlewingChanged -> slewingProperty.set(device.slewing)
             is MountSlewRateChanged -> slewRateProperty.set(device.slewRate)

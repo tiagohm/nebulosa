@@ -7,6 +7,7 @@ dependencies {
     api(project(":nebulosa-math"))
     api(project(":nebulosa-retrofit"))
     api(project(":nebulosa-skycatalog"))
+    implementation(libs.logback)
     testImplementation(project(":nebulosa-test"))
 }
 

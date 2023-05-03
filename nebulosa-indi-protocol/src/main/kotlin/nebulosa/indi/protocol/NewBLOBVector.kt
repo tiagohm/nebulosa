@@ -1,15 +1,14 @@
 package nebulosa.indi.protocol
 
-import nebulosa.indi.protocol.xml.XmlBuilder
+import java.io.PrintStream
 
 @Suppress("CanSealedSubClassBeObject")
 class NewBLOBVector : NewVector<OneBLOB>(), BLOBVector<OneBLOB> {
 
-    override fun toXML() = XmlBuilder()
-        .name("newBLOBVector")
-        .attr("device", device)
-        .attr("name", name)
-        .attr("timestamp", timestamp)
-        .value(elements.toXML())
-        .build()
+    override fun writeTo(stream: PrintStream) = stream.writeXML(
+        "newBLOBVector", elements,
+        "device", device,
+        "name", name,
+        "timestamp", timestamp,
+    )
 }

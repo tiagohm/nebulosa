@@ -3,8 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.control.HistogramView?>
 <?import nebulosa.desktop.gui.control.MaterialIconButton?>
+<?import nebulosa.desktop.gui.image.HistogramView?>
 <?import org.controlsfx.control.RangeSlider?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
@@ -71,11 +71,11 @@
                                text="Shadow &amp; Highlight"/>
                         <RangeSlider fx:id="shadowAndHighlightRangeSlider"
                                      blockIncrement="1.0"
+                                     max="255.0"
+                                     min="0.0"
                                      highValue="255.0"
                                      lowValue="0.0"
                                      majorTickUnit="32.0"
-                                     max="255.0"
-                                     min="0.0"
                                      minorTickCount="3"
                                      showTickLabels="true"
                                      showTickMarks="true"/>

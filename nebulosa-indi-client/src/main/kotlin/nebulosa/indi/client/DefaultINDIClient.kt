@@ -3,10 +3,10 @@ package nebulosa.indi.client
 import nebulosa.indi.client.connection.INDIProccessConnection
 import nebulosa.indi.client.connection.INDISocketConnection
 import nebulosa.indi.client.device.DeviceProtocolHandler
-import nebulosa.indi.connection.INDIConnection
-import nebulosa.indi.parser.INDIProtocolReader
 import nebulosa.indi.protocol.GetProperties
 import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.io.INDIConnection
+import nebulosa.indi.protocol.parser.INDIProtocolReader
 import org.slf4j.LoggerFactory
 import java.io.Closeable
 

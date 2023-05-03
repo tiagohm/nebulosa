@@ -3,6 +3,7 @@ package nebulosa.desktop.gui.image
 import javafx.fxml.FXML
 import javafx.scene.control.TextArea
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.image.FitsHeaderManager
 import nebulosa.desktop.view.image.FitsHeaderView
 import nom.tam.fits.Header
@@ -17,11 +18,11 @@ class FitsHeaderWindow : AbstractWindow("FitsHeader", "text-box"), FitsHeaderVie
         title = "FITS Header"
     }
 
-    override fun updateText(text: String) {
+    override suspend fun updateText(text: String) = withMain {
         cardsTextArea.text = text
     }
 
-    override fun load(header: Header) {
+    override suspend fun load(header: Header) = withMain {
         fitsHeaderManager.load(header)
     }
 }

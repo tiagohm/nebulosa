@@ -1,8 +1,11 @@
 package nebulosa.desktop.logic.indi
 
+import javafx.animation.PauseTransition
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
+import javafx.util.Duration
 import nebulosa.desktop.gui.indi.INDIPanelControlWindow
+import nebulosa.desktop.helper.runBlockingMain
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.indi.device.*
@@ -23,16 +26,19 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : Closeabl
     private val cacheProperties = HashMap<Device, HashMap<String, INDIPanelControlWindow.GroupPropertyVector>>()
     private val groups = ArrayList<INDIPanelControlWindow.Group>()
     private val logText = StringBuilder(1000 * 150)
+    private val logTextDelay = PauseTransition(Duration.seconds(5.0))
 
     val devices = SimpleListProperty(FXCollections.observableArrayList<Device>())
 
     fun initialize() {
         eventBus.register(this)
+
+        logTextDelay.setOnFinished { makeLog() }
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onEvent(event: DeviceEvent<*>) {
-        if (event.device !== view.device) return
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    fun onEvent(event: DeviceEvent<*>): Unit = runBlockingMain {
+        if (event.device !== view.device) return@runBlockingMain
 
         when (event) {
             is DevicePropertyChanged -> {
@@ -57,6 +63,9 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : Closeabl
                     cacheProperties[event.device]!!.remove(event.property.name)
                 }
             }
+            is DeviceMessageReceived -> {
+                logTextDelay.playFromStart()
+            }
         }
     }
 
@@ -78,8 +87,7 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : Closeabl
         attachedDevices.forEach { if (it !in cacheProperties) cacheProperties[it] = HashMap(256) }
         devices.setAll(attachedDevices)
 
-        if (device in attachedDevices) view.device = device
-        else view.device = attachedDevices.firstOrNull()
+        view.show((if (device in attachedDevices) device else attachedDevices.firstOrNull()) ?: return)
     }
 
     private fun makeLog() {

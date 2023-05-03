@@ -22,6 +22,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](focuser.png)
 
+## Guiding
+
+![](guider.png)
+
 ## Atlas
 
 ![](atlas.png)

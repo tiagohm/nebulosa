@@ -1,12 +1,10 @@
 package nebulosa.desktop.gui.framing
 
 import javafx.fxml.FXML
-import javafx.scene.control.Button
-import javafx.scene.control.ChoiceBox
-import javafx.scene.control.Spinner
-import javafx.scene.control.TextField
+import javafx.scene.control.*
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
+import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.framing.FramingManager
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.framing.FramingView
@@ -34,6 +32,8 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
     @FXML private lateinit var rotationSpinner: Spinner<Double>
     @FXML private lateinit var hipsSurveyChoiceBox: ChoiceBox<HipsSurvey>
     @FXML private lateinit var loadButton: Button
+    @FXML private lateinit var loadMenuButton: Button
+    @FXML private lateinit var alwaysOpenInNewWindowMenuItem: CheckMenuItem
 
     init {
         title = "Framing"
@@ -65,6 +65,8 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
 
         loadButton.disableProperty().bind(isLoading or canNotLoad)
 
+        loadMenuButton.disableProperty().bind(loadButton.disableProperty())
+
         framingManager.populateHipsSurveys()
     }
 
@@ -73,6 +75,7 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
     }
 
     override fun onStop() {
+        framingManager.closeOpenWindows()
         framingManager.savePreferences()
     }
 
@@ -97,14 +100,17 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
     override val frameRotation
         get() = rotationSpinner.value.deg
 
+    override val alwaysOpenInNewWindow
+        get() = alwaysOpenInNewWindowMenuItem.isSelected
+
     @FXML
     private fun load() {
-        framingManager.load(frameRA, frameDEC)
+        launch { framingManager.load(frameRA, frameDEC) }
     }
 
     @FXML
     private fun sync() {
-        framingManager.sync()
+        launch { framingManager.sync() }
     }
 
     override fun populateHipsSurveys(data: List<HipsSurvey>, selected: HipsSurvey?) {
@@ -112,7 +118,7 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
         hipsSurveyChoiceBox.value = selected
     }
 
-    override fun updateCoordinate(ra: Angle, dec: Angle) {
+    override suspend fun updateCoordinate(ra: Angle, dec: Angle) = withMain {
         raTextField.text = ra.format(AngleFormatter.HMS)
         decTextField.text = dec.format(AngleFormatter.SIGNED_DMS)
     }
@@ -121,12 +127,12 @@ class FramingWindow : AbstractWindow("Framing", "framing"), FramingView {
         fovSpinner.valueFactory.value = fov.degrees
     }
 
-    override fun load(
+    override suspend fun load(
         ra: Angle, dec: Angle,
         hips: HipsSurvey?,
         width: Int, height: Int,
         rotation: Angle, fov: Angle,
-    ) {
+    ): Unit = withMain {
         updateCoordinate(ra, dec)
 
         if (hips != null) hipsSurveyChoiceBox.value = hips

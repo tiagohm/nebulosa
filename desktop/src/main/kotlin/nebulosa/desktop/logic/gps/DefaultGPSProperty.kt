@@ -29,7 +29,7 @@ class DefaultGPSProperty : AbstractDeviceProperty<GPS>(), GPSProperty {
         timeProperty.set(OffsetDateTime.now())
     }
 
-    override fun onDeviceEvent(event: DeviceEvent<*>, device: GPS) {
+    override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: GPS) {
         when (event) {
             is GPSEvent<*> -> onChanged(device, device)
         }

@@ -146,7 +146,7 @@ open class DefaultCameraProperty : AbstractDeviceProperty<Camera>(), CameraPrope
         pixelSizeYProperty.set(0.0)
     }
 
-    override fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
+    override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: Camera) {
         when (event) {
             is CameraExposuringChanged -> exposuringProperty.set(device.exposuring)
             is CameraCoolerControlChanged -> hasCoolerControlProperty.set(device.hasCoolerControl)

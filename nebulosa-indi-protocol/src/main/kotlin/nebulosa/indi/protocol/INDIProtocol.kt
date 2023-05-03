@@ -1,5 +1,6 @@
 package nebulosa.indi.protocol
 
+import java.io.PrintStream
 import java.io.Serializable
 
 /**
@@ -19,9 +20,7 @@ sealed class INDIProtocol : HasName, Serializable {
 
     var timestamp = ""
 
-    abstract fun toXML(): String
-
-    override fun toString() = toXML()
+    abstract fun writeTo(stream: PrintStream)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -30,9 +29,7 @@ sealed class INDIProtocol : HasName, Serializable {
         if (device != other.device) return false
         if (name != other.name) return false
         if (message != other.message) return false
-        if (timestamp != other.timestamp) return false
-
-        return true
+        return timestamp == other.timestamp
     }
 
     override fun hashCode(): Int {
@@ -47,7 +44,50 @@ sealed class INDIProtocol : HasName, Serializable {
 
         const val DEFAULT_PORT = 7624
 
-        @Suppress("NOTHING_TO_INLINE")
-        internal inline fun <E : INDIProtocol> List<E>.toXML() = joinToString("") { it.toXML() }
+        private const val QUOTE = "\""
+
+        @JvmStatic
+        internal fun PrintStream.writeXML(
+            name: String,
+            value: Any?,
+            vararg attributes: Any?,
+        ) {
+            print("<")
+            print(name)
+
+            for (i in attributes.indices step 2) {
+                val attrName = attributes[i]?.toString() ?: continue
+                val attrValue = attributes[i + 1]?.toString() ?: continue
+
+                if (attrName.isNotEmpty() && attrValue.isNotEmpty()) {
+                    print(" ")
+                    print(attrName)
+                    print("=$QUOTE")
+                    print(attrValue)
+                    print(QUOTE)
+                }
+            }
+
+            if (value != null) {
+                print(">")
+
+                when (value) {
+                    is Iterable<*> -> {
+                        for (message in value) {
+                            if (message is INDIProtocol) message.writeTo(this)
+                            else if (message != null) print(message)
+                        }
+                    }
+                    is HasText -> print(value.text)
+                    else -> print(value)
+                }
+
+                print("</")
+                print(name)
+                print(">")
+            } else {
+                print("/>")
+            }
+        }
     }
 }

@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 class Nebulosa : Application() {
 
     override fun start(primaryStage: Stage) {
-        val context = runApplication<App>()
+        val context = runApplication<App>(*parameters.raw.toTypedArray())
 
         AbstractWindow.CLOSE
             .filter { it }

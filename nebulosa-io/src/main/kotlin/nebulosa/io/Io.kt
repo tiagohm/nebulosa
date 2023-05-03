@@ -5,6 +5,7 @@ package nebulosa.io
 import okio.*
 import java.io.File
 import java.io.InputStream
+import java.io.OutputStream
 import java.io.RandomAccessFile
 import java.net.URL
 import java.nio.ByteBuffer
@@ -128,3 +129,12 @@ fun RandomAccessFile.sink(
 fun File.seekableSink(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSink = RandomAccessFile(this, "rw").sink(timeout)
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun InputStream.transferAndCloseInput(output: OutputStream) = use { transferTo(output) }
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun InputStream.transferAndCloseOutput(output: OutputStream) = output.use { transferTo(it) }
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun InputStream.transferAndClose(output: OutputStream) = use { output.use { transferTo(it) } }

@@ -1,15 +1,14 @@
 package nebulosa.indi.protocol
 
-import nebulosa.indi.protocol.xml.XmlBuilder
+import java.io.PrintStream
 
 class EnableBLOB : INDIProtocol() {
 
     var value = BLOBEnable.ALSO
 
-    override fun toXML() = XmlBuilder()
-        .name("enableBLOB")
-        .attr("device", device)
-        .attr("name", name)
-        .value(value)
-        .build()
+    override fun writeTo(stream: PrintStream) = stream.writeXML(
+        "enableBLOB", value,
+        "device", device,
+        "name", name,
+    )
 }

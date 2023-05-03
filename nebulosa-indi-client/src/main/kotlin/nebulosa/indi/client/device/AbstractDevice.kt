@@ -43,6 +43,8 @@ internal abstract class AbstractDevice(
 
                                 handler.fireOnEventReceived(DeviceDisconnected(this))
                             }
+                        } else if (!connected && message.state == PropertyState.ALERT) {
+                            handler.fireOnEventReceived(DeviceConnectionFailed(this))
                         }
                     }
                 }

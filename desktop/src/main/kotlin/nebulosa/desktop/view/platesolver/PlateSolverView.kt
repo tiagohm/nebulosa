@@ -4,7 +4,6 @@ import nebulosa.desktop.view.View
 import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import java.io.File
-import java.util.concurrent.CompletableFuture
 
 interface PlateSolverView : View {
 
@@ -31,10 +30,10 @@ interface PlateSolverView : View {
         centerRA: Angle, centerDEC: Angle,
     )
 
-    fun solve(
+    suspend fun solve(
         file: File,
         blind: Boolean = true,
         centerRA: Angle = Angle.ZERO, centerDEC: Angle = Angle.ZERO,
         radius: Angle = this.radius,
-    ): CompletableFuture<Calibration>
+    ): Calibration?
 }

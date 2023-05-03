@@ -1,20 +1,26 @@
 package nebulosa.desktop.view.image
 
+import javafx.scene.Node
+import nebulosa.desktop.gui.control.ImageViewer
 import nebulosa.desktop.view.View
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
+import nebulosa.platesolving.Calibration
+import nebulosa.skycatalog.SkyObject
 import java.io.File
 
-interface ImageView : View, Iterable<Drawable> {
+interface ImageView : View {
 
     interface Opener {
 
-        fun open(
+        suspend fun open(
             image: Image?, file: File?,
             token: Any? = null,
             resetTransformation: Boolean = false,
+            calibration: Calibration? = null,
+            title: String? = null,
         ): ImageView
     }
 
@@ -55,37 +61,48 @@ interface ImageView : View, Iterable<Drawable> {
     val image
         get() = transformedImage ?: originalImage
 
-    fun stf(shadow: Float, highlight: Float, midtone: Float)
+    suspend fun stf(shadow: Float, highlight: Float, midtone: Float)
 
-    fun scnr(
+    suspend fun scnr(
         enabled: Boolean, channel: ImageChannel,
         protectionMethod: ProtectionMethod, amount: Float,
     )
 
-    fun adjustSceneToImage()
+    suspend fun adjustSceneToImage()
 
-    fun draw(image: Image)
+    suspend fun draw(image: Image)
 
-    fun open(file: File, resetTransformation: Boolean = false)
+    suspend fun open(
+        file: File,
+        resetTransformation: Boolean = false,
+        calibration: Calibration? = null,
+        title: String? = null,
+    )
 
-    fun open(
+    suspend fun open(
         fits: Image, file: File? = null,
         resetTransformation: Boolean = false,
+        calibration: Calibration? = null,
+        title: String? = null,
     )
+
+    fun transformAndDraw()
 
     fun redraw()
 
-    fun addFirst(element: Drawable)
+    fun addFirst(shape: Node)
 
-    fun addLast(element: Drawable)
+    fun addLast(shape: Node)
 
-    fun remove(element: Drawable): Boolean
+    fun remove(shape: Node)
 
-    fun removeFirst(): Drawable
+    fun removeFirst(): Node?
 
-    fun removeLast(): Drawable
+    fun removeLast(): Node?
 
-    fun removeAll(elements: Collection<Drawable>): Boolean
+    fun registerMouseListener(listener: ImageViewer.MouseListener)
 
-    fun removeAll()
+    fun unregisterMouseListener(listener: ImageViewer.MouseListener)
+
+    fun showStarInfo(star: SkyObject)
 }

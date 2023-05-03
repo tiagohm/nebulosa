@@ -11,12 +11,14 @@ import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.nova.Parity
 import nebulosa.astrometrynet.nova.Upload
 import nebulosa.io.resource
+import nebulosa.io.transferAndClose
 import java.io.File
 
 class AstrometryNetServiceTest : StringSpec() {
 
     init {
-        val file = File.createTempFile("nova", ".jpg").also { resource("ldn673s_block1123.jpg")!!.transferTo(it.outputStream()) }
+        val file = File.createTempFile("nova", ".jpg")
+            .also { resource("ldn673s_block1123.jpg")!!.transferAndClose(it.outputStream()) }
 
         val service = NovaAstrometryNetService()
 

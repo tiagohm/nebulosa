@@ -2,7 +2,6 @@ package nebulosa.desktop.gui.camera
 
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
-import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
 import javafx.scene.input.MouseButton
@@ -39,7 +38,7 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
     @FXML private lateinit var cameraChoiceBox: ChoiceBox<Camera>
     @FXML private lateinit var connectButton: TwoStateButton
     @FXML private lateinit var openINDIButton: Button
-    @FXML private lateinit var menu: ContextMenu
+    @FXML private lateinit var cameraMenuButton: Button
     @FXML private lateinit var autoSaveAllExposuresMenuItem: CheckMenuItem
     @FXML private lateinit var autoSubFolderMenuItem: CheckMenuItem
     @FXML private lateinit var newSubFolderAtNoonMenuItem: CheckMenuItem
@@ -97,9 +96,7 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
 
         openINDIButton.disableProperty().bind(connectButton.disableProperty())
 
-        menu.items
-            .filter { it.userData == "BIND_TO_SELECTED_CAMERA" }
-            .forEach { it.disableProperty().bind(isNotConnectedOrCapturing) }
+        cameraMenuButton.disableProperty().bind(isNotConnectedOrCapturing)
 
         coolerPowerLabel.textProperty.bind(cameraManager.coolerPowerProperty.asString(Locale.ENGLISH, "Cooler (%.1f %%)"))
         coolerSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.hasCoolerProperty)
@@ -392,11 +389,9 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
         }
     }
 
-    override var status
-        get() = statusIcon.text
-        set(value) {
-            statusIcon.text = value
-        }
+    override fun updateStatus(text: String) {
+        statusIcon.text = text
+    }
 
     override var autoSubFolderMode
         get() = if (newSubFolderAtMidnightMenuItem.isSelected) AutoSubFolderMode.MIDNIGHT else AutoSubFolderMode.NOON
@@ -430,14 +425,6 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
     @FXML
     private fun connect() {
         cameraManager.connect()
-    }
-
-    @FXML
-    private fun openMenu(event: MouseEvent) {
-        if (event.button == MouseButton.PRIMARY) {
-            menu.show(event.source as Node, event.screenX, event.screenY)
-            event.consume()
-        }
     }
 
     @FXML

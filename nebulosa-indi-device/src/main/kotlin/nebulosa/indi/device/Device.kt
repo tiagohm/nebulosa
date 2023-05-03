@@ -1,7 +1,7 @@
 package nebulosa.indi.device
 
-import nebulosa.indi.parser.INDIProtocolHandler
 import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.parser.INDIProtocolHandler
 import java.io.Closeable
 
 interface Device : INDIProtocolHandler, Closeable {
@@ -30,6 +30,10 @@ interface Device : INDIProtocolHandler, Closeable {
 
     fun enableBlob() {
         sendMessageToServer(EnableBLOB().also { it.device = name })
+    }
+
+    fun disableBlob() {
+        sendMessageToServer(EnableBLOB().also { it.value = BLOBEnable.NEVER; it.device = name })
     }
 
     fun snoop(devices: Iterable<Device?>)

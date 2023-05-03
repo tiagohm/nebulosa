@@ -15,7 +15,6 @@ import nebulosa.math.Velocity.Companion.kms
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.ITRS
-import nebulosa.nova.position.*
 import nebulosa.time.InstantOfTime
 import nebulosa.time.TimeJD
 import nebulosa.time.UTC
@@ -274,7 +273,7 @@ open class ICRF protected constructor(
                 val refracted = position.center.refract(coordinate.latitude, temperature, pressure)
                 coordinate.copy(phi = refracted)
             } else {
-                return coordinate
+                coordinate
             }
         }
 

@@ -4,12 +4,16 @@ import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import nebulosa.indi.device.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 @Suppress("UNCHECKED_CAST")
-abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), DeviceProperty<D> {
+abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), DeviceProperty<D>, CoroutineScope {
 
     override val connectedProperty = SimpleBooleanProperty(false)
     override val connectingProperty = SimpleBooleanProperty(false)
@@ -18,6 +22,10 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
     private val listeners = linkedSetOf<DevicePropertyListener<D>>()
 
     @Volatile private var closed = false
+
+    private val job = SupervisorJob()
+
+    override val coroutineContext = job + Dispatchers.IO
 
     final override fun getName() = value?.name ?: ""
 
@@ -36,7 +44,7 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
 
     override fun onChanged(prev: D?, device: D) = Unit
 
-    override fun onDeviceEvent(event: DeviceEvent<*>, device: D) = Unit
+    override suspend fun onDeviceEvent(event: DeviceEvent<*>, device: D) = Unit
 
     protected fun onChanged(
         observable: ObservableValue<out D>,
@@ -56,9 +64,9 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onDeviceEvent(event: DeviceEvent<*>) {
-        if (closed || event.device !== value) return
+    @Subscribe
+    fun onDeviceEvent(event: DeviceEvent<*>) = launch(Dispatchers.Main) {
+        if (closed || event.device !== value) return@launch
 
         when (event) {
             is DeviceConnected -> {
@@ -67,7 +75,8 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
 
                 listeners.forEach { it.onDeviceConnected() }
             }
-            is DeviceDisconnected -> {
+            is DeviceDisconnected,
+            is DeviceConnectionFailed -> {
                 connectedProperty.set(false)
                 connectingProperty.set(false)
 
@@ -87,6 +96,8 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
         if (closed) return
 
         closed = true
+
+        job.cancel()
 
         subscribers.forEach { it?.dispose() }
         subscribers.fill(null)

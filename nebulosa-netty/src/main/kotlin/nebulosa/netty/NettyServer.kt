@@ -25,7 +25,7 @@ abstract class NettyServer : Runnable, Closeable {
         get() = channel.get() != null
 
     final override fun run() {
-        require(channel.get() == null) { "the server has already been started" }
+        require(!running) { "the server has already been started" }
 
         val masterGroup = NioEventLoopGroup()
         val workerGroup = NioEventLoopGroup()

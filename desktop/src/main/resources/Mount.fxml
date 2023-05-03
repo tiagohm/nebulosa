@@ -44,91 +44,95 @@
             <GridPane hgap="4.0"
                       vgap="4.0">
                 <columnConstraints>
-                    <ColumnConstraints hgrow="ALWAYS"/>
-                    <ColumnConstraints hgrow="ALWAYS"/>
-                    <ColumnConstraints hgrow="ALWAYS"/>
-                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints hgrow="ALWAYS"
+                                       percentWidth="25.0"/>
+                    <ColumnConstraints hgrow="ALWAYS"
+                                       percentWidth="25.0"/>
+                    <ColumnConstraints hgrow="ALWAYS"
+                                       percentWidth="25.0"/>
+                    <ColumnConstraints hgrow="ALWAYS"
+                                       percentWidth="25.0"/>
                 </columnConstraints>
                 <LabeledPane text="RA"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="0">
-                    <Label fx:id="rightAscensionLabel"
-                           styleClass="text-sm"
-                           text="00h 00m 00.00s"/>
+                    <CopyableLabel fx:id="rightAscensionLabel"
+                                   styleClass="text-sm"
+                                   text="00h 00m 00.00s"/>
                 </LabeledPane>
                 <LabeledPane text="DEC"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="1">
-                    <Label fx:id="declinationLabel"
-                           styleClass="text-sm"
-                           text="+00° 00' 00.00&quot;"/>
+                    <CopyableLabel fx:id="declinationLabel"
+                                   styleClass="text-sm"
+                                   text="+00° 00' 00.00&quot;"/>
                 </LabeledPane>
                 <LabeledPane text="RA (J2000)"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="2">
-                    <Label fx:id="rightAscensionJ2000Label"
-                           styleClass="text-sm"
-                           text="00h 00m 00.00s"/>
+                    <CopyableLabel fx:id="rightAscensionJ2000Label"
+                                   styleClass="text-sm"
+                                   text="00h 00m 00.00s"/>
                 </LabeledPane>
                 <LabeledPane text="DEC (J2000)"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="0"
                              GridPane.columnIndex="3">
-                    <Label fx:id="declinationJ2000Label"
-                           styleClass="text-sm"
-                           text="+00° 00' 00.00&quot;"/>
+                    <CopyableLabel fx:id="declinationJ2000Label"
+                                   styleClass="text-sm"
+                                   text="+00° 00' 00.00&quot;"/>
                 </LabeledPane>
                 <LabeledPane text="Azimuth"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="0">
-                    <Label fx:id="azimuthLabel"
-                           styleClass="text-sm"
-                           text="000° 00' 00.00&quot;"/>
+                    <CopyableLabel fx:id="azimuthLabel"
+                                   styleClass="text-sm"
+                                   text="000° 00' 00.00&quot;"/>
                 </LabeledPane>
                 <LabeledPane text="Altitude"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="1">
-                    <Label fx:id="altitudeLabel"
-                           styleClass="text-sm"
-                           text="+00° 00' 00.00&quot;"/>
+                    <CopyableLabel fx:id="altitudeLabel"
+                                   styleClass="text-sm"
+                                   text="+00° 00' 00.00&quot;"/>
                 </LabeledPane>
                 <LabeledPane text="LST"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="2">
-                    <Label fx:id="lstLabel"
-                           styleClass="text-sm"
-                           text="00:00:00"/>
+                    <CopyableLabel fx:id="lstLabel"
+                                   styleClass="text-sm"
+                                   text="00:00:00"/>
                 </LabeledPane>
                 <LabeledPane text="Constellation"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="1"
                              GridPane.columnIndex="3">
-                    <Label fx:id="constellationLabel"
-                           styleClass="text-sm"
-                           text="-"/>
+                    <CopyableLabel fx:id="constellationLabel"
+                                   styleClass="text-sm"
+                                   text="-"/>
                 </LabeledPane>
                 <LabeledPane text="Meridian at"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="2"
                              GridPane.columnIndex="0"
                              GridPane.columnSpan="2">
-                    <Label fx:id="meridianAtLabel"
-                           styleClass="text-sm"
-                           text="00:00:00 (-00:00:00)"/>
+                    <CopyableLabel fx:id="meridianAtLabel"
+                                   styleClass="text-sm"
+                                   text="00:00:00 (-00:00:00)"/>
                 </LabeledPane>
                 <LabeledPane text="Pier"
                              textStyleClass="text-bold"
                              GridPane.rowIndex="2"
                              GridPane.columnIndex="2">
-                    <Label fx:id="pierSideLabel"
-                           styleClass="text-sm"
-                           text="NEITHER"/>
+                    <CopyableLabel fx:id="pierSideLabel"
+                                   styleClass="text-sm"
+                                   text="NEITHER"/>
                 </LabeledPane>
                 <LabeledPane text="Status"
                              textStyleClass="text-bold"
@@ -138,8 +142,9 @@
                         <MaterialIcon icon="information"
                                       size="xs"/>
                     </graphic>
-                    <Label fx:id="statusLabel"
-                           text="idle"/>
+                    <CopyableLabel fx:id="statusLabel"
+                                   text="idle"
+                                   styleClass="text-sm"/>
                 </LabeledPane>
             </GridPane>
         </VBox>
@@ -163,12 +168,10 @@
                 <MaterialIconButton fx:id="siteAndTimeButton"
                                     onAction="#openSiteAndTime"
                                     icon="map-marker"
-                                    color="warning">
-                </MaterialIconButton>
+                                    color="warning"/>
                 <MaterialIconButton fx:id="telescopeControlServerButton"
                                     onAction="#openTelescopeControlServer"
-                                    icon="remote">
-                </MaterialIconButton>
+                                    icon="remote"/>
             </HBox>
         </HBox>
         <VBox alignment="CENTER_LEFT"
@@ -176,9 +179,10 @@
             <VBox.margin>
                 <Insets top="8.0"/>
             </VBox.margin>
-            <StackPane>
+            <VBox alignment="TOP_CENTER"
+                  spacing="1.0">
                 <HBox spacing="4.0"
-                      StackPane.alignment="CENTER_LEFT">
+                      alignment="CENTER">
                     <LabeledPane text="RA (hours)"
                                  textStyleClass="text-bold">
                         <TextField fx:id="targetRightAscensionTextField"
@@ -189,39 +193,84 @@
                         <TextField fx:id="targetDeclinationTextField"
                                    text="00 00 00.0"/>
                     </LabeledPane>
+                    <MaterialIconButton fx:id="targetCoordinatesContextMenuButton"
+                                        styleClass="cursor-hand"
+                                        style="-fx-background-color: transparent; -fx-border-style: none; -fx-border-width: 0; -fx-border-insets: 0;"
+                                        color="grey-500"
+                                        icon="dots-vertical">
+                        <contextMenu>
+                            <ContextMenu>
+                                <items>
+                                    <MenuItem onAction="#loadLocation"
+                                              text="Load current location"
+                                              userData="JNOW"/>
+                                    <MenuItem onAction="#loadLocation"
+                                              text="Load current location (J2000)"
+                                              userData="J2000"/>
+                                    <MenuItem onAction="#loadLocation"
+                                              text="Load zenith location"
+                                              userData="ZENITH"/>
+                                    <MenuItem onAction="#loadLocation"
+                                              text="Load north celestial pole location"
+                                              userData="NORTH_POLE"/>
+                                    <MenuItem onAction="#loadLocation"
+                                              text="Load south celestial pole location"
+                                              userData="SOUTH_POLE"/>
+                                    <MenuItem onAction="#loadLocation"
+                                              text="Load galactic center location"
+                                              userData="GALACTIC_CENTER"/>
+                                </items>
+                            </ContextMenu>
+                        </contextMenu>
+                    </MaterialIconButton>
                 </HBox>
-                <MaterialIconButton StackPane.alignment="BOTTOM_RIGHT"
-                                    onMouseClicked="#openTargetCoordinatesMenu"
-                                    styleClass="cursor-hand"
-                                    style="-fx-background-color: transparent; -fx-border-style: none; -fx-border-width: 0; -fx-border-insets: 0;"
-                                    color="grey-500"
-                                    icon="dots-vertical">
-                    <fx:define>
-                        <ContextMenu fx:id="targetCoordinatesContextMenu">
-                            <items>
-                                <MenuItem onAction="#loadLocation"
-                                          text="Load current location"
-                                          userData="BIND_TO_SELECTED_MOUNT,JNOW"/>
-                                <MenuItem onAction="#loadLocation"
-                                          text="Load current location (J2000)"
-                                          userData="BIND_TO_SELECTED_MOUNT,J2000"/>
-                                <MenuItem onAction="#loadLocation"
-                                          text="Load zenith location"
-                                          userData="BIND_TO_SELECTED_MOUNT,ZENITH"/>
-                                <MenuItem onAction="#loadLocation"
-                                          text="Load north celestial pole location"
-                                          userData="BIND_TO_SELECTED_MOUNT,NORTH_POLE"/>
-                                <MenuItem onAction="#loadLocation"
-                                          text="Load south celestial pole location"
-                                          userData="BIND_TO_SELECTED_MOUNT,SOUTH_POLE"/>
-                                <MenuItem onAction="#loadLocation"
-                                          text="Load galactic center location"
-                                          userData="BIND_TO_SELECTED_MOUNT,GALACTIC_CENTER"/>
-                            </items>
-                        </ContextMenu>
-                    </fx:define>
-                </MaterialIconButton>
-            </StackPane>
+                <GridPane hgap="4.0"
+                          vgap="4.0"
+                          alignment="CENTER">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="25.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="20.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"
+                                           percentWidth="30.0"/>
+                    </columnConstraints>
+                    <LabeledPane text="Azimuth"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="0">
+                        <CopyableLabel fx:id="targetAzimuthLabel"
+                                       styleClass="text-sm"
+                                       text="000h 00m 00.00s"/>
+                    </LabeledPane>
+                    <LabeledPane text="Altitude"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="1">
+                        <CopyableLabel fx:id="targetAltitudeLabel"
+                                       styleClass="text-sm"
+                                       text="+00° 00' 00.00&quot;"/>
+                    </LabeledPane>
+                    <LabeledPane text="Constellation"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="2">
+                        <CopyableLabel fx:id="targetConstellationLabel"
+                                       styleClass="text-sm"
+                                       text="And"/>
+                    </LabeledPane>
+                    <LabeledPane text="Meridian at"
+                                 textStyleClass="text-bold"
+                                 GridPane.rowIndex="0"
+                                 GridPane.columnIndex="3">
+                        <CopyableLabel fx:id="targetMeridianAtLabel"
+                                       styleClass="text-sm"
+                                       text="00:00:00 (-00:00:00)"/>
+                    </LabeledPane>
+                </GridPane>
+            </VBox>
             <HBox alignment="TOP_CENTER"
                   spacing="4.0">
                 <MaterialIconButton fx:id="goToButton"

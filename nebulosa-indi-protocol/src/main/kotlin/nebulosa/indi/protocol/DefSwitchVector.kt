@@ -1,34 +1,31 @@
 package nebulosa.indi.protocol
 
-import nebulosa.indi.protocol.xml.XmlBuilder
+import java.io.PrintStream
 
 class DefSwitchVector : DefVector<DefSwitch>(), SwitchVector<DefSwitch> {
 
     var rule = SwitchRule.ANY_OF_MANY
 
-    override fun toXML() = XmlBuilder()
-        .name("defSwitchVector")
-        .attr("device", device)
-        .attr("name", name)
-        .attr("label", label)
-        .attr("group", group)
-        .attr("state", state)
-        .attr("perm", perm)
-        .attr("rule", rule)
-        .attr("timeout", timeout)
-        .attr("timestamp", timestamp)
-        .attr("message", message)
-        .value(elements.toXML())
-        .build()
+    override fun writeTo(stream: PrintStream) = stream.writeXML(
+        "defSwitchVector", elements,
+        "device", device,
+        "name", name,
+        "label", label,
+        "group", group,
+        "state", state,
+        "perm", perm,
+        "rule", rule,
+        "timeout", timeout,
+        "timestamp", timestamp,
+        "message", message,
+    )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is DefSwitchVector) return false
         if (!super.equals(other)) return false
 
-        if (rule != other.rule) return false
-
-        return true
+        return rule == other.rule
     }
 
     override fun hashCode(): Int {

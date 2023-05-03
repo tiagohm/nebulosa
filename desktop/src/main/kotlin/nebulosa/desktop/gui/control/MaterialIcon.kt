@@ -64,26 +64,14 @@ class MaterialIcon : AnchorPane() {
         @JvmStatic private val ICONS: Map<String, String>
 
         init {
-            with(HashMap<String, String>(7196)) {
+            with(HashMap<String, String>(7296)) {
                 for (line in resource("data/MaterialDesignIcon.csv")!!.bufferedReader().lines()) {
+                    if (line.isEmpty()) continue
                     val nameAndCode = line.split(";")
-                    this[nameAndCode[0]] = convert(nameAndCode[1])
+                    this[nameAndCode[0]] = nameAndCode[1]
                 }
 
                 ICONS = this
-            }
-        }
-
-        @JvmStatic
-        private fun convert(text: String): String {
-            val s = text.toInt(16)
-
-            return if (s in 0x10000..0x10FFFF) {
-                val hi = (s - 0x10000) / 0x400 + 0xD800
-                val lo = (s - 0x10000) % 0x400 + 0xDC00
-                String(charArrayOf(hi.toChar(), lo.toChar()))
-            } else {
-                s.toChar().toString()
             }
         }
     }

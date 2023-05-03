@@ -5,6 +5,7 @@ import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.math.Angle
 import nebulosa.math.Distance
 import nebulosa.nova.astrometry.Constellation
+import nebulosa.time.UTC
 import java.time.OffsetDateTime
 
 interface Mount : GuideOutput, GPS {
@@ -90,6 +91,8 @@ interface Mount : GuideOutput, GPS {
     fun coordinates(longitude: Angle, latitude: Angle, elevation: Distance)
 
     fun time(time: OffsetDateTime)
+
+    fun computeCoordinates(j2000: Boolean = true, horizontal: Boolean = true, epoch: UTC = UTC.now())
 
     companion object {
 

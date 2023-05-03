@@ -11,8 +11,9 @@ import java.time.ZoneOffset
 class TimeTest : StringSpec() {
 
     init {
-        IERSA.load(resource("finals2000A.all")!!)
-        IERS.attach(IERSA)
+        val iersa = IERSA()
+        iersa.load(resource("finals2000A.all")!!)
+        IERS.attach(iersa)
 
         "convert jd to datetime" {
             TimeJD(2459902.1234).asDateTime().toString() shouldBe "2022-11-18T14:57:41.759993433"

@@ -48,7 +48,8 @@ class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeV
         portTextField.disableProperty().bind(homeManager.connectedProperty)
         cameraButton.disableProperty().bind(!homeManager.connectedProperty or equipmentManager.attachedCameras.emptyProperty())
         mountButton.disableProperty().bind(!homeManager.connectedProperty or equipmentManager.attachedMounts.emptyProperty())
-        guiderButton.disableProperty().bind(!homeManager.connectedProperty)
+        guiderButton.disableProperty()
+            .bind(!homeManager.connectedProperty or equipmentManager.attachedCameras.emptyProperty() or equipmentManager.attachedMounts.emptyProperty())
         filterWheelButton.disableProperty().bind(!homeManager.connectedProperty or equipmentManager.attachedFilterWheels.emptyProperty())
         focuserButton.disableProperty().bind(!homeManager.connectedProperty or equipmentManager.attachedFocusers.emptyProperty())
         domeButton.disableProperty().bind(!homeManager.connectedProperty)
@@ -86,6 +87,6 @@ class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeV
     @FXML
     @Synchronized
     private fun open(event: ActionEvent) {
-        homeManager.open((event.source as Node).userData as String)
+        launch { homeManager.open((event.source as Node).userData as String) }
     }
 }

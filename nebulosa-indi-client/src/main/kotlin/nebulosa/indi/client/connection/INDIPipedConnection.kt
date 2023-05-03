@@ -1,7 +1,7 @@
 package nebulosa.indi.client.connection
 
-import nebulosa.indi.connection.INDIConnection
 import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.io.INDIConnection
 import java.util.concurrent.BlockingQueue
 
 class INDIPipedConnection(

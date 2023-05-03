@@ -30,7 +30,8 @@
                     </accelerator>
                 </MenuItem>
                 <SeparatorMenuItem/>
-                <MenuItem text="Solve"
+                <MenuItem fx:id="solveMenuItem"
+                          text="Solve"
                           onAction="#solve">
                     <graphic>
                         <MaterialIcon icon="sigma"/>
@@ -44,7 +45,8 @@
                                             shortcut="UP"/>
                     </accelerator>
                 </MenuItem>
-                <MenuItem text="Blind solve"
+                <MenuItem fx:id="blindSolveMenuItem"
+                          text="Blind solve"
                           onAction="#blindSolve">
                     <graphic>
                         <MaterialIcon icon="sigma"/>
@@ -129,7 +131,7 @@
                     </accelerator>
                 </CheckMenuItem>
                 <SeparatorMenuItem/>
-                <Menu text="Tools">
+                <Menu text="Overlay">
                     <CheckMenuItem fx:id="crosshairCheckMenuItem"
                                    text="Crosshair"
                                    onAction="#toggleCrosshair">
@@ -146,12 +148,20 @@
                         </accelerator>
                     </CheckMenuItem>
                     <CheckMenuItem fx:id="annotateCheckMenuItem"
-                                   text="Annotate"
+                                   text="Annotation"
                                    onAction="#toggleAnnotation">
                         <graphic>
                             <MaterialIcon icon="alpha-a"
                                           size="md"/>
                         </graphic>
+                        <accelerator>
+                            <KeyCodeCombination alt="UP"
+                                                code="T"
+                                                control="DOWN"
+                                                meta="UP"
+                                                shift="UP"
+                                                shortcut="UP"/>
+                        </accelerator>
                     </CheckMenuItem>
                 </Menu>
                 <SeparatorMenuItem/>
@@ -174,7 +184,7 @@
             </items>
         </ContextMenu>
     </fx:define>
-    <ImageViewer fx:id="fitsImageViewer"
+    <ImageViewer fx:id="imageViewer"
                  fitHeight="false"
                  fitWidth="false"
                  minScale="0.1"
@@ -186,4 +196,11 @@
                  AnchorPane.leftAnchor="0.0"
                  AnchorPane.rightAnchor="0.0"
                  AnchorPane.topAnchor="0.0"/>
+    <Label fx:id="zoomFactorLabel"
+           styleClass="text-white"
+           style="-fx-background-color: rgba(0, 0, 0, 0.5); -fx-background-radius: 4px; -fx-padding: 8 12 8 12"
+           text="1.00x"
+           visible="false"
+           AnchorPane.leftAnchor="5.0"
+           AnchorPane.topAnchor="5.0"/>
 </AnchorPane>

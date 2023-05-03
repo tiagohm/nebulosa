@@ -1,24 +1,42 @@
 package nebulosa.guiding
 
-import java.io.Closeable
+import nebulosa.imaging.Image
 
-interface Guider : Closeable {
+interface Guider : Iterable<GuidePoint> {
 
-    val canClearCalibration: Boolean
+    val primaryStar: StarPoint
 
-    var shiftRate: SiderealShiftTrackingRate
+    val lockPosition: GuidePoint
 
-    fun autoSelectGuideStar()
+    val searchRegion: Double
 
-    fun start(forceCalibration: Boolean)
+    val image: Image?
 
-    fun dither()
+    val stats: List<GuideStats>
 
-    fun stop()
+    fun autoSelect(): Boolean
+
+    fun selectGuideStar(x: Double, y: Double): Boolean
+
+    fun deselectGuideStar()
+
+    fun startLooping()
+
+    fun stopLooping()
+
+    fun startGuiding()
+
+    fun stopGuiding()
+
+    fun reset(fullReset: Boolean)
 
     fun clearCalibration()
 
-    fun stopShifting()
+    fun loadCalibration(calibration: Calibration)
 
-    fun connect()
+    fun dither()
+
+    fun registerListener(listener: GuiderListener)
+
+    fun unregisterListener(listener: GuiderListener)
 }

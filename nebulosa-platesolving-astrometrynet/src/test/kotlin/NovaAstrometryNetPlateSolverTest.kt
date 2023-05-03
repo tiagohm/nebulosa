@@ -3,6 +3,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.shouldBeExactly
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.io.resource
+import nebulosa.io.transferAndClose
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
 import java.io.File
@@ -12,7 +13,7 @@ class NovaAstrometryNetPlateSolverTest : StringSpec() {
 
     init {
         val file = File.createTempFile("nova", ".jpg")
-            .also { resource("ldn673s_block1123.jpg")!!.transferTo(it.outputStream()) }
+            .also { resource("ldn673s_block1123.jpg")!!.transferAndClose(it.outputStream()) }
 
         "solve" {
             val service = NovaAstrometryNetService()

@@ -14,8 +14,9 @@ import nebulosa.time.UT1
 class GeographicPositionTest : StringSpec() {
 
     init {
-        IERSA.load(resource("finals2000A.all")!!)
-        IERS.attach(IERSA)
+        val iersa = IERSA()
+        iersa.load(resource("finals2000A.all")!!)
+        IERS.attach(iersa)
 
         "lst" {
             val latitude = Angle.from("-23 32 51.00")!!
@@ -33,8 +34,8 @@ class GeographicPositionTest : StringSpec() {
             val longitude = Angle.from("-46 38 10.00")!!
             val position = Geoid.IERS2010.latLon(longitude, latitude, 853.0.m)
 
-            position.x.value shouldBe (2.685480929038628E-5 plusOrMinus 1e-13)
-            position.y.value shouldBe (-2.8434040742871705E-5 plusOrMinus 1e-13)
+            position.x.value shouldBe (-2.8434040742871705E-5 plusOrMinus 1e-13)
+            position.y.value shouldBe (2.685480929038628E-5 plusOrMinus 1e-13)
             position.z.value shouldBe (-1.693045603541487E-5 plusOrMinus 1e-13)
         }
     }

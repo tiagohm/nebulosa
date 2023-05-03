@@ -2,9 +2,8 @@ name: Deploy
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    tags:
+      - '*'
 
 jobs:
   deploy:
@@ -31,11 +30,11 @@ jobs:
 
       - name: Rename Build
         if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: mv desktop/build/libs/desktop.jar nebulosa-v0.1.0-linux.jar
+        run: mv desktop/build/libs/desktop.jar nebulosa-${{ github.ref_name }}-linux.jar
 
       - name: Rename Build
         if: ${{ matrix.os == 'windows-latest' }}
-        run: mv desktop/build/libs/desktop.jar nebulosa-v0.1.0-windows.jar
+        run: mv desktop/build/libs/desktop.jar nebulosa-${{ github.ref_name }}-windows.jar
 
       - name: Deploy
         uses: xresloader/upload-to-github-release@v1
@@ -43,5 +42,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           overwrite: true
-          release_id: 94432691
-          file: 'nebulosa-v*.jar'
+          update_latest_release: true
+          default_release_name: ${{ github.ref_name }}
+          file: 'nebulosa-*.jar'

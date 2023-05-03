@@ -2,30 +2,28 @@ package nebulosa.skycatalog
 
 import nebulosa.math.Angle
 import nebulosa.math.Velocity
-import nebulosa.nova.astrometry.FixedStar
+import nebulosa.nova.astrometry.Constellation
 import java.io.Serializable
 
 interface SkyObject : Serializable {
 
     val id: Int
 
-    val names: List<String>
+    val names: String
 
-    val mB: Double  // B magnitude
+    val magnitude: Double
 
-    val mV: Double  // V magnitude
+    val rightAscension: Angle
 
-    val rightAscension: Angle // RA
-
-    val declination: Angle // DEC
+    val declination: Angle
 
     val type: SkyObjectType
 
-    val redshift: Double  // Redshift
+    val redshift: Double
 
-    val parallax: Angle // Parallax
+    val parallax: Angle
 
-    val radialVelocity: Velocity // Radial velocity
+    val radialVelocity: Velocity
 
     // TODO: Use Distance type.
     // TODO: Compute from parallax or redshift if distance is not provided.
@@ -35,5 +33,11 @@ interface SkyObject : Serializable {
 
     val pmDEC: Angle
 
-    val position: FixedStar
+    val constellation: Constellation
+
+    companion object {
+
+        const val UNKNOWN_MAGNITUDE = 99.0
+        const val NAME_SEPARATOR = " · "
+    }
 }

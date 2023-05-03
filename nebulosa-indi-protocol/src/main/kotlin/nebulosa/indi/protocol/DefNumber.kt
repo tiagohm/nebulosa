@@ -1,6 +1,6 @@
 package nebulosa.indi.protocol
 
-import nebulosa.indi.protocol.xml.XmlBuilder
+import java.io.PrintStream
 
 class DefNumber : DefElement<Double>(), NumberElement {
 
@@ -15,16 +15,15 @@ class DefNumber : DefElement<Double>(), NumberElement {
 
     var step = 0.0
 
-    override fun toXML() = XmlBuilder()
-        .name("defNumber")
-        .attr("name", name)
-        .attr("label", label)
-        .attr("format", format)
-        .attr("min", min)
-        .attr("max", max)
-        .attr("step", step)
-        .value(value)
-        .build()
+    override fun writeTo(stream: PrintStream) = stream.writeXML(
+        "defNumber", value,
+        "name", name,
+        "label", label,
+        "format", format,
+        "min", min,
+        "max", max,
+        "step", step,
+    )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -35,9 +34,7 @@ class DefNumber : DefElement<Double>(), NumberElement {
         if (format != other.format) return false
         if (max != other.max) return false
         if (min != other.min) return false
-        if (step != other.step) return false
-
-        return true
+        return step == other.step
     }
 
     override fun hashCode(): Int {

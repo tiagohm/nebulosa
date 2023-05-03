@@ -14,8 +14,8 @@ class HistogramTest : StringSpec() {
             val histogram = Histogram()
             histogram.compute(image)
             histogram.median shouldBe (0.059f plusOrMinus 1e-3f)
-            histogram.peakCount shouldBeExactly 86292
-            histogram.peakValue shouldBe (1.0f plusOrMinus 1e-3f)
+            histogram.maxCount shouldBeExactly 86292
+            histogram.maxValue shouldBe (1.0f plusOrMinus 1e-3f)
             histogram.pixelSum shouldBe (62033.0f plusOrMinus 1e-0f)
             histogram.pixelAvg shouldBe (0.073f plusOrMinus 1e-3f)
             histogram.stdDev shouldBe (0.072f plusOrMinus 1e-3f)

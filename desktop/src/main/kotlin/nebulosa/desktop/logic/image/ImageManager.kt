@@ -1,18 +1,22 @@
 package nebulosa.desktop.logic.image
 
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.subjects.BehaviorSubject
 import javafx.beans.property.SimpleObjectProperty
-import javafx.geometry.Point2D
+import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import javafx.stage.Screen
+import nebulosa.desktop.gui.control.Annotation
+import nebulosa.desktop.gui.control.Crosshair
 import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow
-import nebulosa.desktop.logic.Preferences
+import nebulosa.desktop.helper.runBlockingMain
+import nebulosa.desktop.helper.withIO
+import nebulosa.desktop.helper.withMain
+import nebulosa.desktop.logic.AbstractManager
 import nebulosa.desktop.logic.equipment.EquipmentManager
 import nebulosa.desktop.logic.platesolver.PlateSolvingEvent
 import nebulosa.desktop.logic.platesolver.PlateSolvingSolved
+import nebulosa.desktop.service.SkyObjectService
 import nebulosa.desktop.view.image.FitsHeaderView
 import nebulosa.desktop.view.image.ImageStretcherView
 import nebulosa.desktop.view.image.ImageView
@@ -25,31 +29,26 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.indi.device.mount.Mount
 import nebulosa.platesolving.Calibration
-import nebulosa.stellarium.skycatalog.Nebula
+import nebulosa.skycatalog.SkyObject
 import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Header
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import java.io.Closeable
 import java.io.File
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 import kotlin.math.max
 
-class ImageManager(private val view: ImageView) : Closeable {
+class ImageManager(private val view: ImageView) : AbstractManager(), Annotation.EventListener {
 
-    @Autowired private lateinit var preferences: Preferences
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var plateSolverView: PlateSolverView
-    @Autowired private lateinit var systemExecutorService: ExecutorService
     @Autowired private lateinit var eventBus: EventBus
-    @Autowired private lateinit var nebula: Nebula
+    @Autowired private lateinit var skyObjectService: SkyObjectService
 
-    @Volatile var file: File? = null
-        private set
+    val file = SimpleObjectProperty<File>()
 
     @Volatile var image: Image? = null
         private set
@@ -58,13 +57,12 @@ class ImageManager(private val view: ImageView) : Closeable {
         private set
 
     private val screenBounds = Screen.getPrimary().bounds
-    private val transformPublisher = BehaviorSubject.create<Unit>()
+    private val crosshair = Crosshair()
+    private val annotation = Annotation()
 
-    @Volatile private var transformSubscriber: Disposable? = null
     @Volatile private var imageStretcherView: ImageStretcherView? = null
     @Volatile private var fitsHeaderView: FitsHeaderView? = null
     @Volatile private var scnrView: SCNRView? = null
-    @Volatile private var annotation: Annotation? = null
 
     val mountProperty
         get() = equipmentManager.selectedMount
@@ -95,65 +93,80 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     val calibration = SimpleObjectProperty<Calibration>()
 
-    init {
-        transformSubscriber = transformPublisher
-            .debounce(500L, TimeUnit.MILLISECONDS)
-            .subscribe {
-                transformImage()
-                draw()
-                drawHistogram()
-            }
-    }
-
     fun initialize() {
         eventBus.register(this)
+
+        crosshair.isVisible = false
+        annotation.isVisible = false
+
+        annotation.add(skyObjectService::searchStar, Color.YELLOW)
+        annotation.add(skyObjectService::searchDSO, Color.LIGHTGREEN)
+        annotation.registerEventListener(this)
+
+        view.addFirst(crosshair)
+        view.addFirst(annotation)
     }
 
-    @Subscribe
-    fun onPlateSolvingEvent(event: PlateSolvingEvent) {
-        if (event.file === file) {
-            calibration.set(if (event is PlateSolvingSolved) event.calibration else null)
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    fun onPlateSolvingEvent(event: PlateSolvingEvent) = runBlockingMain {
+        if (event.file === file.get()) {
+            with(if (event is PlateSolvingSolved) event.calibration else null) {
+                calibration.set(this)
 
-            annotation?.also(view::remove)
-            annotation = null
-
-            if (calibration.get() != null && view.annotationEnabled) {
-                annotation = Annotation(calibration.get(), nebula)
-                view.addFirst(annotation!!)
-                view.redraw()
+                if (this != null) {
+                    annotation.drawAround(this)
+                    annotation.isVisible = view.annotationEnabled
+                } else {
+                    annotation.isVisible = false
+                }
             }
         }
     }
 
-    private fun updateTitle() {
-        view.title = "Image"
+    override fun onStarClicked(star: SkyObject) {
+        view.showStarInfo(star)
+    }
+
+    private suspend fun updateTitle(text: String? = null) = withMain {
+        view.title = if (text.isNullOrEmpty()) "Image"
             .let { if (view.camera != null) "$it · ${view.camera!!.name}" else it }
-            .let { if (file != null) "$it · ${file!!.name}" else it }
+            .let { if (file.get() != null) "$it · ${file.get().name}" else it }
+        else "Image · $text"
     }
 
-    @Synchronized
-    fun open(file: File, resetTransformation: Boolean = false) {
+    suspend fun open(
+        file: File,
+        resetTransformation: Boolean = false,
+        calibration: Calibration? = null,
+        title: String? = null,
+    ) = withIO {
         val image = Image.open(file)
-        open(image, file, resetTransformation)
+        open(image, file, resetTransformation, calibration, title)
     }
 
-    @Synchronized
-    fun open(image: Image, file: File? = null, resetTransformation: Boolean = false) {
-        this.file = file
+    suspend fun open(
+        image: Image, file: File? = null,
+        resetTransformation: Boolean = false,
+        calibration: Calibration? = null,
+        title: String? = null,
+    ) {
+        this.file.set(file)
 
-        updateTitle()
+        updateTitle(title)
 
         val adjustSceneToImage = this.image == null
 
         this.image = image
         this.transformedImage = null
 
-        calibration.set(null)
+        this.calibration.set(calibration)
 
-        annotation?.also(view::remove)
-        annotation = null
+        if (calibration != null) annotation.drawAround(calibration)
 
-        view.hasScnr = !image.mono
+        withMain {
+            annotation.isVisible = calibration != null && view.annotationEnabled
+            view.hasScnr = !image.mono
+        }
 
         if (resetTransformation) {
             shadow = 0f
@@ -167,13 +180,8 @@ class ImageManager(private val view: ImageView) : Closeable {
             imageStretcherView?.resetStretch(true)
         }
 
-        if (view.autoStretchEnabled) {
-            autoStretch()
-        } else {
-            transformImage()
-            draw()
-            drawHistogram()
-        }
+        if (view.autoStretchEnabled) autoStretch()
+        else transformAndDraw()
 
         imageStretcherView?.updateTitle()
 
@@ -182,12 +190,12 @@ class ImageManager(private val view: ImageView) : Closeable {
         }
     }
 
-    fun draw() {
+    suspend fun draw() {
         val image = transformedImage ?: image ?: return
         view.draw(image)
     }
 
-    fun drawHistogram() {
+    suspend fun drawHistogram() {
         imageStretcherView?.drawHistogram()
     }
 
@@ -210,18 +218,20 @@ class ImageManager(private val view: ImageView) : Closeable {
         this.scnrProtectionMode = scnrProtectionMode
         this.scnrAmount = scnrAmount
 
-        transformPublisher.onNext(Unit)
+        view.transformAndDraw()
     }
 
     @Synchronized
     private fun transformImage() {
+        val image = image ?: return
+
         val shouldBeTransformed = shadow != 0f || highlight != 1f || midtone != 0.5f
                 || view.mirrorHorizontal || view.mirrorVertical || view.invert
                 || scnrEnabled
 
         // TODO: How to handle rotation transformation if data is copy but width/height is not?
         // TODO: Reason: Image will be rotated for each draw.
-        transformedImage = if (shouldBeTransformed) image!!.clone() else null
+        transformedImage = if (shouldBeTransformed) image.clone() else null
 
         if (transformedImage != null) {
             val algorithms = ArrayList<TransformAlgorithm>(5)
@@ -236,6 +246,12 @@ class ImageManager(private val view: ImageView) : Closeable {
         }
     }
 
+    suspend fun transformAndDraw() = withIO {
+        transformImage()
+        draw()
+        drawHistogram()
+    }
+
     fun mirrorHorizontal() {
         transformImage(mirrorHorizontal = view.mirrorHorizontal)
     }
@@ -248,67 +264,49 @@ class ImageManager(private val view: ImageView) : Closeable {
         transformImage(invert = view.invert)
     }
 
-    fun toggleCrosshair() {
-        if (view.crosshairEnabled) view.addLast(Crosshair)
-        else view.remove(Crosshair)
-
-        view.redraw()
+    suspend fun toggleCrosshair() = withMain {
+        crosshair.isVisible = !crosshair.isVisible
     }
 
-    fun toggleAnnotation() {
-        val calibration = calibration.get() ?: return
-
-        if (view.annotationEnabled) {
-            if (annotation == null) {
-                systemExecutorService.submit {
-                    try {
-                        annotation = Annotation(calibration, nebula)
-                        view.addFirst(annotation!!)
-                        view.redraw()
-                    } catch (e: Throwable) {
-                        LOG.error("annotation failed", e)
-                    }
-                }
-            } else {
-                view.addFirst(annotation!!)
-                view.redraw()
-            }
-        } else if (annotation != null) {
-            view.remove(annotation!!)
-            view.redraw()
-        }
+    suspend fun toggleAnnotation() = withMain {
+        annotation.isVisible = view.annotationEnabled
     }
 
     fun toggleAnnotationOptions() {}
 
-    fun pointMountHere(targetPoint: Point2D) {
+    fun pointMountHere(x: Double, y: Double) {
         val mount = mount ?: return
-        val wcs = WCSTransform(calibration.get() ?: return)
-        val (rightAscension, declination) = wcs.pixelToWorld(targetPoint.x, targetPoint.y)
-        mount.goToJ2000(rightAscension, declination)
+        val calibration = calibration.get() ?: return
+        val wcs = WCSTransform(calibration)
+        val (rightAscension, declination) = wcs.pixelToWorld(x, y)
+        val raOffset = calibration.rightAscension - mount.rightAscensionJ2000
+        val decOffset = calibration.declination - mount.declinationJ2000
+        mount.goToJ2000(rightAscension + raOffset, declination + decOffset)
     }
 
-    fun adjustSceneSizeToFitImage(defaultSize: Boolean = image == null) {
+    suspend fun adjustSceneSizeToFitImage(defaultSize: Boolean = image == null) {
         val image = image ?: return
 
         val factor = image.width.toDouble() / image.height.toDouble()
 
         val defaultWidth = if (defaultSize) view.camera
-            ?.let { preferences.double("image.${it.name}.screen.width") }
+            ?.let { preferenceService.double("image.${it.name}.screen.width") }
             ?: (screenBounds.width / 2)
         else view.width - view.borderSize
 
         val defaultHeight = if (defaultSize) view.camera
-            ?.let { preferences.double("image.${it.name}.screen.height") }
+            ?.let { preferenceService.double("image.${it.name}.screen.height") }
             ?: (screenBounds.height / 2)
         else view.height - view.titleHeight
 
-        if (factor >= 1.0) {
-            view.width = defaultWidth + view.borderSize
-            view.height = defaultWidth / factor + view.titleHeight
-        } else {
-            view.height = defaultHeight + view.titleHeight
-            view.width = defaultHeight * factor + view.borderSize
+        withMain {
+            if (factor >= 1.0) {
+                view.width = defaultWidth + view.borderSize
+                view.height = defaultWidth / factor + view.titleHeight
+            } else {
+                view.height = defaultHeight + view.titleHeight
+                view.width = defaultHeight * factor + view.borderSize
+            }
         }
     }
 
@@ -329,7 +327,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         with(FileChooser()) {
             title = "Save Image"
 
-            val imageSavePath = preferences.string("image.savePath")
+            val imageSavePath = preferenceService.string("image.savePath")
             if (!imageSavePath.isNullOrBlank()) initialDirectory = File(imageSavePath)
 
             extensionFilters.add(FileChooser.ExtensionFilter("FITS", "*.fits", "*.fit"))
@@ -342,12 +340,12 @@ class ImageManager(private val view: ImageView) : Closeable {
                 return view.showAlert("Unsupported format: ${file.extension}", "Save Error")
             }
 
-            preferences.string("image.savePath", file.parent)
+            preferenceService.string("image.savePath", file.parent)
         }
     }
 
-    fun solve(blind: Boolean = false): Boolean {
-        val file = file ?: return false
+    suspend fun solve(blind: Boolean = false): Boolean {
+        val file = file.get() ?: return false
         val image = image ?: return false
 
         plateSolverView.show(bringToFront = true)
@@ -355,7 +353,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         val ra = image.header.ra
         val dec = image.header.dec
 
-        val task = if (!blind && ra != null && dec != null) {
+        val calibration = if (!blind && ra != null && dec != null) {
             LOG.info("plate solving. path={}, ra={}, dec={}", file, ra.hours, dec.degrees)
             plateSolverView.solve(file, false, ra, dec)
         } else {
@@ -363,16 +361,12 @@ class ImageManager(private val view: ImageView) : Closeable {
             plateSolverView.solve(file)
         }
 
-        task.whenComplete { calibration, e ->
-            if (calibration != null) {
-                image.header.populateWithCalibration(calibration)
-                LOG.info("plate solving finished. calibration={}", calibration)
-            } else if (e != null) {
-                LOG.error("plate solving failed.", e)
-            }
-
-            this.calibration.set(calibration)
+        if (calibration != null) {
+            image.header.populateWithCalibration(calibration)
+            LOG.info("plate solving finished. calibration={}", calibration)
         }
+
+        this.calibration.set(calibration)
 
         return true
     }
@@ -382,7 +376,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         imageStretcherView!!.show(bringToFront = true)
     }
 
-    fun autoStretch() {
+    suspend fun autoStretch() {
         if (view.autoStretchEnabled) {
             val params = AutoScreenTransformFunction.compute(image ?: return)
             imageStretcherView?.updateStretchParameters(params.shadow, params.highlight, params.midtone)
@@ -395,7 +389,7 @@ class ImageManager(private val view: ImageView) : Closeable {
         scnrView!!.show(bringToFront = true)
     }
 
-    fun openFitsHeader() {
+    suspend fun openFitsHeader() {
         val header = image?.header ?: return
         fitsHeaderView = fitsHeaderView ?: FitsHeaderWindow()
         fitsHeaderView!!.show(bringToFront = true)
@@ -404,11 +398,11 @@ class ImageManager(private val view: ImageView) : Closeable {
 
     fun loadPreferences() {
         if (view.camera != null) {
-            preferences.double("image.${view.camera!!.name}.screen.x")?.let { view.x = it }
-            preferences.double("image.${view.camera!!.name}.screen.y")?.let { view.y = it }
+            preferenceService.double("image.${view.camera!!.name}.screen.x")?.let { view.x = it }
+            preferenceService.double("image.${view.camera!!.name}.screen.y")?.let { view.y = it }
         } else {
-            preferences.double("image.screen.x")?.let { view.x = it }
-            preferences.double("image.screen.y")?.let { view.y = it }
+            preferenceService.double("image.screen.x")?.let { view.x = it }
+            preferenceService.double("image.screen.y")?.let { view.y = it }
         }
     }
 
@@ -416,15 +410,19 @@ class ImageManager(private val view: ImageView) : Closeable {
         if (!view.initialized) return
 
         if (view.camera != null) {
-            preferences.double("image.${view.camera!!.name}.screen.x", view.x)
-            preferences.double("image.${view.camera!!.name}.screen.y", view.y)
+            preferenceService.double("image.${view.camera!!.name}.screen.x", view.x)
+            preferenceService.double("image.${view.camera!!.name}.screen.y", view.y)
         } else {
-            preferences.double("image.screen.x", max(0.0, view.x))
-            preferences.double("image.screen.y", max(0.0, view.y))
+            preferenceService.double("image.screen.x", max(0.0, view.x))
+            preferenceService.double("image.screen.y", max(0.0, view.y))
         }
     }
 
     override fun close() {
+        if (image == null) return
+
+        super.close()
+
         image = null
         transformedImage = null
 

@@ -3,9 +3,12 @@ package nebulosa.desktop.view.atlas
 import eu.hansolo.fx.charts.data.XYItem
 import nebulosa.desktop.view.View
 import nebulosa.math.Angle
+import nebulosa.math.Distance
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
-import kotlin.math.min
+import java.awt.image.BufferedImage
+import java.time.LocalDate
+import java.time.LocalTime
 
 interface AtlasView : View {
 
@@ -30,54 +33,49 @@ interface AtlasView : View {
         val value: String,
     )
 
-    data class Star(
-        val skyObject: SkyObject,
-        val name: String = skyObject.names.firstOrNull() ?: "?",
-        val magnitude: Double = min(skyObject.mV, skyObject.mB),
-        val type: String = skyObject.type.description,
-    ) {
+    val latitude: Angle
 
-        inline val star
-            get() = skyObject.position
-    }
+    val longitude: Angle
 
-    data class DSO(
-        val skyObject: SkyObject,
-        val name: String = skyObject.names.firstOrNull() ?: "?",
-        val magnitude: Double = min(skyObject.mV, skyObject.mB),
-        val type: String = skyObject.type.description,
-    ) {
+    val elevation: Distance
 
-        inline val star
-            get() = skyObject.position
-    }
+    val date: LocalDate
 
-    fun drawAltitude(
-        points: List<XYItem>, now: Double,
+    val time: LocalTime
+
+    val manualMode: Boolean
+
+    suspend fun drawPoints(points: List<XYItem>)
+
+    suspend fun drawNow()
+
+    suspend fun drawTwilight(
         civilDawn: DoubleArray, nauticalDawn: DoubleArray, astronomicalDawn: DoubleArray,
         civilDusk: DoubleArray, nauticalDusk: DoubleArray, astronomicalDusk: DoubleArray,
         night: DoubleArray,
     )
 
-    fun updateSunImage()
+    suspend fun updateSunImage(image: BufferedImage)
 
-    fun updateMoonImage(phase: Double, age: Double, angle: Angle)
+    suspend fun updateMoonImage(phase: Double, age: Double, angle: Angle)
 
-    fun updateEquatorialCoordinates(ra: Angle, dec: Angle, raJ2000: Angle, decJ2000: Angle, constellation: Constellation?)
+    suspend fun updateEquatorialCoordinates(ra: Angle, dec: Angle, raJ2000: Angle, decJ2000: Angle, constellation: Constellation?)
 
-    fun updateHorizontalCoordinates(az: Angle, alt: Angle)
+    suspend fun updateHorizontalCoordinates(az: Angle, alt: Angle)
 
-    fun clearAltitudeAndCoordinates()
+    suspend fun clearAltitudeAndCoordinates()
 
-    fun populatePlanet(planets: List<Planet>)
+    suspend fun populatePlanet(planets: List<Planet>)
 
-    fun populateMinorPlanet(minorPlanets: List<MinorPlanet>)
+    suspend fun populateMinorPlanet(minorPlanets: List<MinorPlanet>)
 
-    fun populateStar(stars: List<Star>)
+    suspend fun populateStar(stars: List<SkyObject>)
 
-    fun populateDSO(dso: List<DSO>)
+    suspend fun populateDSOs(dsos: List<SkyObject>)
 
-    fun updateInfo(bodyName: String)
+    suspend fun updateInfo(bodyName: String, extra: List<Pair<String, String>> = emptyList())
 
-    fun updateRTS(rts: Triple<String, String, String>)
+    suspend fun updateRTS(rts: Triple<String, String, String>)
+
+    fun loadCoordinates(useCoordinatesFromMount: Boolean, latitude: Angle, longitude: Angle, elevation: Distance)
 }

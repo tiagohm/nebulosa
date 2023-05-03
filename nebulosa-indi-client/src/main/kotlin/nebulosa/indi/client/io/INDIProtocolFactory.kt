@@ -1,14 +1,11 @@
 package nebulosa.indi.client.io
 
-import nebulosa.indi.connection.io.INDIInputStream
-import nebulosa.indi.connection.io.INDIOutputStream
-import nebulosa.indi.parser.INDIXmlInputStream
 import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.io.INDIInputStream
+import nebulosa.indi.protocol.io.INDIOutputStream
+import nebulosa.indi.protocol.parser.INDIXmlInputStream
 import nebulosa.io.MinimalBlockingInputStream
-import java.io.ByteArrayInputStream
-import java.io.InputStream
-import java.io.OutputStream
-import java.io.SequenceInputStream
+import java.io.*
 import java.util.*
 
 internal object INDIProtocolFactory {
@@ -31,14 +28,16 @@ internal object INDIProtocolFactory {
 
     fun createOutputStream(output: OutputStream): INDIOutputStream = object : INDIOutputStream {
 
+        private val stream = PrintStream(output)
+
         @Synchronized
         override fun writeINDIProtocol(message: INDIProtocol) {
-            output.write(message.toXML().encodeToByteArray())
+            message.writeTo(stream)
             flush()
         }
 
-        override fun flush() = output.flush()
+        override fun flush() = stream.flush()
 
-        override fun close() = output.close()
+        override fun close() = stream.close()
     }
 }
