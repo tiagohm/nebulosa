@@ -59,7 +59,7 @@
                 </TwoStateButton>
                 <ImageButton fx:id="openINDIForGuideCameraButton"
                              onAction="#openINDIForGuideCamera"
-                             url="@icons/indi.png"/>
+                             url="@../icons/indi.png"/>
             </HBox>
             <HBox alignment="CENTER"
                   spacing="4.0"
@@ -81,7 +81,7 @@
                 </TwoStateButton>
                 <ImageButton fx:id="openINDIForGuideMountButton"
                              onAction="#openINDIForGuideMount"
-                             url="@icons/indi.png"/>
+                             url="@../icons/indi.png"/>
             </HBox>
             <HBox alignment="CENTER"
                   spacing="4.0"
@@ -103,7 +103,7 @@
                 </TwoStateButton>
                 <ImageButton fx:id="openINDIForGuideOutputButton"
                              onAction="#openINDIForGuideOutput"
-                             url="@icons/indi.png"/>
+                             url="@../icons/indi.png"/>
             </HBox>
         </GridPane>
         <TabPane tabClosingPolicy="UNAVAILABLE">

@@ -27,7 +27,7 @@
         <ImageView preserveRatio="true"
                    fitHeight="128.0"
                    fitWidth="128.0">
-            <Image url="@icons/nebulosa-512.png"/>
+            <Image url="@../icons/nebulosa-512.png"/>
         </ImageView>
         <Label text="Nebulosa"
                styleClass="text-lg,text-bold,monospaced"/>

@@ -41,7 +41,7 @@
                 </TwoStateButton>
                 <ImageButton fx:id="openINDIButton"
                              onAction="#openINDIPanelControl"
-                             url="@icons/indi.png"/>
+                             url="@../icons/indi.png"/>
                 <MaterialIconButton fx:id="cameraMenuButton"
                                     styleClass="cursor-hand"
                                     style="-fx-background-color: transparent; -fx-border-style: none; -fx-border-width: 0; -fx-border-insets: 0;"

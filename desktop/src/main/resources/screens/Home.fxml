@@ -99,7 +99,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/camera.png"/>
+                             url="@../icons/camera.png"/>
                 <ImageButton fx:id="mountButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -112,7 +112,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/telescope.png"/>
+                             url="@../icons/telescope.png"/>
                 <ImageButton fx:id="guiderButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -125,7 +125,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/target.png"/>
+                             url="@../icons/target.png"/>
                 <ImageButton fx:id="filterWheelButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -138,7 +138,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/filter-wheel.png"/>
+                             url="@../icons/filter-wheel.png"/>
                 <ImageButton fx:id="focuserButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -151,7 +151,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/focus.png"/>
+                             url="@../icons/focus.png"/>
                 <ImageButton fx:id="domeButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -164,7 +164,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/observatory.png"/>
+                             url="@../icons/observatory.png"/>
                 <ImageButton fx:id="rotatorButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -177,7 +177,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/rotate.png"/>
+                             url="@../icons/rotate.png"/>
                 <ImageButton fx:id="switchButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -190,7 +190,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/switch.png"/>
+                             url="@../icons/switch.png"/>
                 <ImageButton fx:id="atlasButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -203,7 +203,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/sky.png"/>
+                             url="@../icons/sky.png"/>
                 <ImageButton fx:id="plateSolverButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -216,7 +216,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/big-dipper.png"/>
+                             url="@../icons/big-dipper.png"/>
                 <ImageButton fx:id="alignmentButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -229,7 +229,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/star.png"/>
+                             url="@../icons/star.png"/>
                 <ImageButton fx:id="sequencerButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -242,7 +242,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/schedule.png"/>
+                             url="@../icons/schedule.png"/>
                 <ImageButton fx:id="imageViewerButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -255,7 +255,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/image.png"/>
+                             url="@../icons/image.png"/>
                 <ImageButton fx:id="framingButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -268,7 +268,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/framing.png"/>
+                             url="@../icons/framing.png"/>
                 <ImageButton fx:id="indiButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -281,7 +281,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/indi.png"/>
+                             url="@../icons/indi.png"/>
                 <ImageButton fx:id="aboutButton"
                              contentDisplay="TOP"
                              onAction="#open"
@@ -294,7 +294,7 @@
                              maxWidth="Infinity"
                              maxHeight="Infinity"
                              size="24.0"
-                             url="@icons/information.png"/>
+                             url="@../icons/information.png"/>
             </GridPane>
         </ScrollPane>
     </VBox>

@@ -36,7 +36,7 @@
             </TwoStateButton>
             <ImageButton fx:id="openINDIButton"
                          onAction="#openINDIPanelControl"
-                         url="@icons/indi.png"/>
+                         url="@../icons/indi.png"/>
         </HBox>
         <VBox alignment="CENTER"
               spacing="4.0">
