@@ -1,3 +1,4 @@
+import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.doubles.plusOrMinus
@@ -6,6 +7,7 @@ import nebulosa.io.resource
 import nebulosa.math.Angle
 import nebulosa.skycatalog.sao.SaoCatalog
 
+@EnabledIf(NonGitHubOnlyCondition::class)
 class SaoCatalogTest : StringSpec() {
 
     init {
