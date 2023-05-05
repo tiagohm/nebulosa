@@ -122,9 +122,9 @@ class CameraWindow : AbstractWindow("Camera", "camera"), CameraView {
         val loop = exposureModeSegmentedButton.buttons.first { it.userData == "LOOP" } as ToggleButton
 
         exposureDelaySpinner.disableProperty()
-            .bind((fixed.disableProperty() and loop.disableProperty()) or (!fixed.selectedProperty() and !loop.selectedProperty()))
+            .bind(isNotConnectedOrCapturing or (fixed.disableProperty() and loop.disableProperty()) or (!fixed.selectedProperty() and !loop.selectedProperty()))
 
-        exposureCountSpinner.disableProperty().bind(fixed.disableProperty() or !fixed.selectedProperty())
+        exposureCountSpinner.disableProperty().bind(isNotConnectedOrCapturing or fixed.disableProperty() or !fixed.selectedProperty())
 
         subFrameSwitch.disableProperty().bind(isNotConnectedOrCapturing or !cameraManager.canSubFrameProperty)
         fullsizeButton.disableProperty().bind(subFrameSwitch.disableProperty() or !subFrameSwitch.stateProperty)
