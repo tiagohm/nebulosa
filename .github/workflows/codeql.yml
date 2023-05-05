@@ -1,10 +1,8 @@
 name: CodeQL
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  repository_dispatch:
+    types: [ codeql ]
 
 jobs:
   analyze:
@@ -29,6 +27,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'zulu'
+          cache: gradle
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
