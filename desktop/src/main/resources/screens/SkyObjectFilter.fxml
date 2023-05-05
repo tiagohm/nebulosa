@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import nebulosa.desktop.gui.control.*?>
+<?import nebulosa.nova.astrometry.*?>
+<?import nebulosa.skycatalog.*?>
 <?import org.controlsfx.control.RangeSlider?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
@@ -72,7 +75,100 @@
                              GridPane.columnSpan="2"
                              textStyleClass="text-bold">
                     <ChoiceBox fx:id="constellationChoiceBox"
-                               maxWidth="Infinity"/>
+                               maxWidth="Infinity">
+                        <items>
+                            <FXCollections fx:factory="observableArrayList">
+                                <Constellation fx:value="AND"/>
+                                <Constellation fx:value="ANT"/>
+                                <Constellation fx:value="APS"/>
+                                <Constellation fx:value="AQL"/>
+                                <Constellation fx:value="AQR"/>
+                                <Constellation fx:value="ARA"/>
+                                <Constellation fx:value="ARI"/>
+                                <Constellation fx:value="AUR"/>
+                                <Constellation fx:value="BOO"/>
+                                <Constellation fx:value="CMA"/>
+                                <Constellation fx:value="CMI"/>
+                                <Constellation fx:value="CVN"/>
+                                <Constellation fx:value="CAE"/>
+                                <Constellation fx:value="CAM"/>
+                                <Constellation fx:value="CAP"/>
+                                <Constellation fx:value="CAR"/>
+                                <Constellation fx:value="CAS"/>
+                                <Constellation fx:value="CEN"/>
+                                <Constellation fx:value="CEP"/>
+                                <Constellation fx:value="CET"/>
+                                <Constellation fx:value="CHA"/>
+                                <Constellation fx:value="CIR"/>
+                                <Constellation fx:value="CNC"/>
+                                <Constellation fx:value="COL"/>
+                                <Constellation fx:value="COM"/>
+                                <Constellation fx:value="CRA"/>
+                                <Constellation fx:value="CRB"/>
+                                <Constellation fx:value="CRT"/>
+                                <Constellation fx:value="CRU"/>
+                                <Constellation fx:value="CRV"/>
+                                <Constellation fx:value="CYG"/>
+                                <Constellation fx:value="DEL"/>
+                                <Constellation fx:value="DOR"/>
+                                <Constellation fx:value="DRA"/>
+                                <Constellation fx:value="EQU"/>
+                                <Constellation fx:value="ERI"/>
+                                <Constellation fx:value="FOR"/>
+                                <Constellation fx:value="GEM"/>
+                                <Constellation fx:value="GRU"/>
+                                <Constellation fx:value="HER"/>
+                                <Constellation fx:value="HOR"/>
+                                <Constellation fx:value="HYA"/>
+                                <Constellation fx:value="HYI"/>
+                                <Constellation fx:value="IND"/>
+                                <Constellation fx:value="LMI"/>
+                                <Constellation fx:value="LAC"/>
+                                <Constellation fx:value="LEO"/>
+                                <Constellation fx:value="LEP"/>
+                                <Constellation fx:value="LIB"/>
+                                <Constellation fx:value="LUP"/>
+                                <Constellation fx:value="LYN"/>
+                                <Constellation fx:value="LYR"/>
+                                <Constellation fx:value="MEN"/>
+                                <Constellation fx:value="MIC"/>
+                                <Constellation fx:value="MON"/>
+                                <Constellation fx:value="MUS"/>
+                                <Constellation fx:value="NOR"/>
+                                <Constellation fx:value="OCT"/>
+                                <Constellation fx:value="OPH"/>
+                                <Constellation fx:value="ORI"/>
+                                <Constellation fx:value="PAV"/>
+                                <Constellation fx:value="PEG"/>
+                                <Constellation fx:value="PER"/>
+                                <Constellation fx:value="PHE"/>
+                                <Constellation fx:value="PIC"/>
+                                <Constellation fx:value="PSA"/>
+                                <Constellation fx:value="PSC"/>
+                                <Constellation fx:value="PUP"/>
+                                <Constellation fx:value="PYX"/>
+                                <Constellation fx:value="RET"/>
+                                <Constellation fx:value="SCL"/>
+                                <Constellation fx:value="SCO"/>
+                                <Constellation fx:value="SCT"/>
+                                <Constellation fx:value="SER"/>
+                                <Constellation fx:value="SEX"/>
+                                <Constellation fx:value="SGE"/>
+                                <Constellation fx:value="SGR"/>
+                                <Constellation fx:value="TAU"/>
+                                <Constellation fx:value="TEL"/>
+                                <Constellation fx:value="TRA"/>
+                                <Constellation fx:value="TRI"/>
+                                <Constellation fx:value="TUC"/>
+                                <Constellation fx:value="UMA"/>
+                                <Constellation fx:value="UMI"/>
+                                <Constellation fx:value="VEL"/>
+                                <Constellation fx:value="VIR"/>
+                                <Constellation fx:value="VOL"/>
+                                <Constellation fx:value="VUL"/>
+                            </FXCollections>
+                        </items>
+                    </ChoiceBox>
                 </LabeledPane>
                 <LabeledPane text="Type"
                              GridPane.rowIndex="1"
@@ -80,7 +176,117 @@
                              GridPane.columnSpan="2"
                              textStyleClass="text-bold">
                     <ChoiceBox fx:id="typeChoiceBox"
-                               maxWidth="Infinity"/>
+                               maxWidth="Infinity">
+                        <items>
+                            <FXCollections fx:factory="observableArrayList">
+                                <SkyObjectType fx:value="ACTIVE_GALAXY_NUCLEUS"/>
+                                <SkyObjectType fx:value="ALPHA2_CVN_VARIABLE"/>
+                                <SkyObjectType fx:value="ASSOCIATION_OF_STARS"/>
+                                <SkyObjectType fx:value="ASYMPTOTIC_GIANT_BRANCH_STAR"/>
+                                <SkyObjectType fx:value="BETA_CEP_VARIABLE"/>
+                                <SkyObjectType fx:value="BE_STAR"/>
+                                <SkyObjectType fx:value="BLAZAR"/>
+                                <SkyObjectType fx:value="BLUE_COMPACT_GALAXY"/>
+                                <SkyObjectType fx:value="BLUE_STRAGGLER"/>
+                                <SkyObjectType fx:value="BLUE_SUPERGIANT"/>
+                                <SkyObjectType fx:value="BL_LAC"/>
+                                <SkyObjectType fx:value="BRIGHTEST_GALAXY_IN_A_CLUSTER_BCG"/>
+                                <SkyObjectType fx:value="BY_DRA_VARIABLE"/>
+                                <SkyObjectType fx:value="CARBON_STAR"/>
+                                <SkyObjectType fx:value="CATACLYSMIC_BINARY"/>
+                                <SkyObjectType fx:value="CEPHEID_VARIABLE"/>
+                                <SkyObjectType fx:value="CHEMICALLY_PECULIAR_STAR"/>
+                                <SkyObjectType fx:value="CLASSICAL_CEPHEID_VARIABLE"/>
+                                <SkyObjectType fx:value="CLASSICAL_NOVA"/>
+                                <SkyObjectType fx:value="CLUSTER_OF_GALAXIES"/>
+                                <SkyObjectType fx:value="CLUSTER_OF_STARS"/>
+                                <SkyObjectType fx:value="COMPACT_GROUP_OF_GALAXIES"/>
+                                <SkyObjectType fx:value="COMPOSITE_OBJECT_BLEND"/>
+                                <SkyObjectType fx:value="DARK_CLOUD_NEBULA"/>
+                                <SkyObjectType fx:value="DELTA_SCT_VARIABLE"/>
+                                <SkyObjectType fx:value="DOUBLE_OR_MULTIPLE_STAR"/>
+                                <SkyObjectType fx:value="ECLIPSING_BINARY"/>
+                                <SkyObjectType fx:value="ELLIPSOIDAL_VARIABLE"/>
+                                <SkyObjectType fx:value="EMISSION_LINE_GALAXY"/>
+                                <SkyObjectType fx:value="EMISSION_LINE_STAR"/>
+                                <SkyObjectType fx:value="EMISSION_OBJECT"/>
+                                <SkyObjectType fx:value="ERUPTIVE_VARIABLE"/>
+                                <SkyObjectType fx:value="EVOLVED_SUPERGIANT"/>
+                                <SkyObjectType fx:value="GALAXY"/>
+                                <SkyObjectType fx:value="GALAXY_IN_PAIR_OF_GALAXIES"/>
+                                <SkyObjectType fx:value="GALAXY_TOWARDS_A_CLUSTER_OF_GALAXIES"/>
+                                <SkyObjectType fx:value="GALAXY_TOWARDS_A_GROUP_OF_GALAXIES"/>
+                                <SkyObjectType fx:value="GAMMA_DOR_VARIABLE"/>
+                                <SkyObjectType fx:value="GLOBULAR_CLUSTER"/>
+                                <SkyObjectType fx:value="GROUP_OF_GALAXIES"/>
+                                <SkyObjectType fx:value="HERBIG_AE_BE_STAR"/>
+                                <SkyObjectType fx:value="HERBIG_HARO_OBJECT"/>
+                                <SkyObjectType fx:value="HIGH_MASS_X_RAY_BINARY"/>
+                                <SkyObjectType fx:value="HIGH_PROPER_MOTION_STAR"/>
+                                <SkyObjectType fx:value="HIGH_VELOCITY_STAR"/>
+                                <SkyObjectType fx:value="HII_GALAXY"/>
+                                <SkyObjectType fx:value="HII_REGION"/>
+                                <SkyObjectType fx:value="HI_21CM_SOURCE"/>
+                                <SkyObjectType fx:value="HORIZONTAL_BRANCH_STAR"/>
+                                <SkyObjectType fx:value="HOT_SUBDWARF"/>
+                                <SkyObjectType fx:value="INFRA_RED_SOURCE"/>
+                                <SkyObjectType fx:value="INTERACTING_GALAXIES"/>
+                                <SkyObjectType fx:value="INTERSTELLAR_MEDIUM_OBJECT"/>
+                                <SkyObjectType fx:value="INTERSTELLAR_SHELL"/>
+                                <SkyObjectType fx:value="IRREGULAR_VARIABLE"/>
+                                <SkyObjectType fx:value="LINER_TYPE_ACTIVE_GALAXY_NUCLEUS"/>
+                                <SkyObjectType fx:value="LONG_PERIOD_VARIABLE"/>
+                                <SkyObjectType fx:value="LOW_MASS_STAR"/>
+                                <SkyObjectType fx:value="LOW_MASS_X_RAY_BINARY"/>
+                                <SkyObjectType fx:value="LOW_SURFACE_BRIGHTNESS_GALAXY"/>
+                                <SkyObjectType fx:value="MAIN_SEQUENCE_STAR"/>
+                                <SkyObjectType fx:value="MIRA_VARIABLE"/>
+                                <SkyObjectType fx:value="MOLECULAR_CLOUD"/>
+                                <SkyObjectType fx:value="NEBULA"/>
+                                <SkyObjectType fx:value="NOT_AN_OBJECT_ERROR_ARTEFACT"/>
+                                <SkyObjectType fx:value="OBJECT_OF_UNKNOWN_NATURE"/>
+                                <SkyObjectType fx:value="OH_IR_STAR"/>
+                                <SkyObjectType fx:value="OPEN_CLUSTER"/>
+                                <SkyObjectType fx:value="ORION_VARIABLE"/>
+                                <SkyObjectType fx:value="PAIR_OF_GALAXIES"/>
+                                <SkyObjectType fx:value="PART_OF_A_GALAXY"/>
+                                <SkyObjectType fx:value="PLANETARY_NEBULA"/>
+                                <SkyObjectType fx:value="POST_AGB_STAR"/>
+                                <SkyObjectType fx:value="PULSATING_VARIABLE"/>
+                                <SkyObjectType fx:value="QUASAR"/>
+                                <SkyObjectType fx:value="RADIO_GALAXY"/>
+                                <SkyObjectType fx:value="RADIO_SOURCE"/>
+                                <SkyObjectType fx:value="RED_GIANT_BRANCH_STAR"/>
+                                <SkyObjectType fx:value="RED_SUPERGIANT"/>
+                                <SkyObjectType fx:value="REFLECTION_NEBULA"/>
+                                <SkyObjectType fx:value="REGION_DEFINED_IN_THE_SKY"/>
+                                <SkyObjectType fx:value="ROTATING_VARIABLE"/>
+                                <SkyObjectType fx:value="RR_LYRAE_VARIABLE"/>
+                                <SkyObjectType fx:value="RS_CVN_VARIABLE"/>
+                                <SkyObjectType fx:value="RV_TAURI_VARIABLE"/>
+                                <SkyObjectType fx:value="R_CRB_VARIABLE"/>
+                                <SkyObjectType fx:value="SEYFERT_1_GALAXY"/>
+                                <SkyObjectType fx:value="SEYFERT_2_GALAXY"/>
+                                <SkyObjectType fx:value="SEYFERT_GALAXY"/>
+                                <SkyObjectType fx:value="SPECTROSCOPIC_BINARY"/>
+                                <SkyObjectType fx:value="STAR"/>
+                                <SkyObjectType fx:value="STARBURST_GALAXY"/>
+                                <SkyObjectType fx:value="SUPERNOVA"/>
+                                <SkyObjectType fx:value="SUPERNOVA_REMNANT"/>
+                                <SkyObjectType fx:value="SX_PHE_VARIABLE"/>
+                                <SkyObjectType fx:value="SYMBIOTIC_STAR"/>
+                                <SkyObjectType fx:value="S_STAR"/>
+                                <SkyObjectType fx:value="TYPE_II_CEPHEID_VARIABLE"/>
+                                <SkyObjectType fx:value="T_TAURI_STAR"/>
+                                <SkyObjectType fx:value="VARIABLE_STAR"/>
+                                <SkyObjectType fx:value="WHITE_DWARF"/>
+                                <SkyObjectType fx:value="WOLF_RAYET"/>
+                                <SkyObjectType fx:value="X_RAY_BINARY"/>
+                                <SkyObjectType fx:value="YELLOW_SUPERGIANT"/>
+                                <SkyObjectType fx:value="YOUNG_STELLAR_OBJECT"/>
+                            </FXCollections>
+                        </items>
+                    </ChoiceBox>
                 </LabeledPane>
                 <LabeledPane text="Magnitude (min: -30.0, max: 30.0)"
                              GridPane.rowIndex="2"
