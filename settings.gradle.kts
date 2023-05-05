@@ -28,7 +28,7 @@ dependencyResolutionManagement {
             library("gesturefx", "net.kurobako:gesturefx:0.7.1")
             library("netty-transport", "io.netty:netty-transport:4.1.92.Final")
             library("netty-codec", "io.netty:netty-codec:4.1.92.Final")
-            library("aalto", "com.fasterxml:aalto-xml:1.3.1")
+            library("aalto", "com.fasterxml:aalto-xml:1.3.2")
             library("csv", "org.apache.commons:commons-csv:1.10.0")
             library("coroutines", "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0-Beta")
             library("coroutines-javafx", "org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.7.0-Beta")
