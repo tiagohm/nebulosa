@@ -8,7 +8,7 @@ buildscript {
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.21")
         classpath("io.objectbox:objectbox-gradle-plugin:3.5.1")
-        classpath("org.openjfx:javafx-plugin:0.0.13")
+        classpath("org.openjfx:javafx-plugin:0.0.14")
         classpath("gradle.plugin.com.github.johnrengelman:shadow:8.0.0")
         classpath("com.adarshr:gradle-test-logger-plugin:3.2.0")
         classpath("org.jetbrains.kotlin:kotlin-allopen:1.8.21")
