@@ -54,8 +54,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import retrofit2.await
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import javax.imageio.ImageIO
 import kotlin.math.max
@@ -347,7 +345,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
             val risingIndex = b.indexOf(1)
             val settingIndex = b.indexOf(0)
-            val offset = OffsetDateTime.now().offset.totalSeconds.toLong()
+            val offset = view.timeOffset.totalSeconds.toLong()
             val settingTime = if (settingIndex >= 0) times[a[settingIndex].toInt()].plusSeconds(offset).format(RTS_FORMAT) else "-"
             val risingTime = if (risingIndex >= 0) times[a[risingIndex].toInt()].plusSeconds(offset).format(RTS_FORMAT) else "-"
 
@@ -405,10 +403,10 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
             val prevEphemeris = ephemerisCache[target]
 
             val ephemeris = when (target) {
-                is SmallBody -> horizonsEphemerisProvider.compute(target, observer, view.date, force)
-                MOON_TARGET -> horizonsEphemerisProvider.compute(MOON_TARGET, observer, view.date, force)
-                is String -> horizonsEphemerisProvider.compute(target, observer, view.date, force)
-                is Body -> bodyEphemerisProvider.compute(target, observer, view.date, force)
+                is SmallBody -> horizonsEphemerisProvider.compute(target, observer, view, force)
+                MOON_TARGET -> horizonsEphemerisProvider.compute(MOON_TARGET, observer, view, force)
+                is String -> horizonsEphemerisProvider.compute(target, observer, view, force)
+                is Body -> bodyEphemerisProvider.compute(target, observer, view, force)
                 else -> null
             }
 
@@ -447,7 +445,9 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     }
 
     private suspend fun HorizonsEphemeris.computeCoordinates(target: Any, body: SkyObject?) {
-        val now = LocalDateTime.of(view.date, view.time)
+        val timeInSeconds = view.time.toSecondOfDay() + view.timeOffset.totalSeconds
+        val date = if (timeInSeconds < AtlasView.SECONDS_AT_NOON) view.date.plusDays(1L) else view.date
+        val now = LocalDateTime.of(date, view.time)
         val element = this[now] ?: return LOG.warn("ephemeris not found. now={}", now)
 
         LOG.info("computing coordinates. now={}, target={}, element={}", now, target, element)
@@ -482,6 +482,10 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         }
 
         view.updateInfo(bodyName, extra)
+
+        if (target == MOON_TARGET) {
+            element.updateMoonImage()
+        }
 
         computeEquatorialCoordinates(element)
         computeHorizontalCoordinates(element)
@@ -522,26 +526,18 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         updateSunImage()
     }
 
-    suspend fun updateMoonImage() {
-        if (!view.showing) return
+    suspend fun HorizonsElement.updateMoonImage() = withIO {
+        if (!view.showing) return@withIO
 
-        val ephemeris = computeMoon(false)
-
-        val now = LocalDateTime.now(ZoneOffset.UTC)
-        val element = ephemeris?.get(now) ?: return
-        val sot = element[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE]!!.split(",")
+        val sot = this@updateMoonImage[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE]!!.split(",")
         val angle = sot[0].toDouble()
         val leading = sot[1] == "/L"
         val phase = if (leading) 360.0 - angle else angle
         val age = 29.53058868 * (phase / 360.0)
+
         LOG.info("computed Moon phase. angle={}, age={}", phase, age)
 
         view.updateMoonImage(phase, age, Angle.ZERO)
-    }
-
-    @Scheduled(cron = "0 0 * * * *")
-    private fun updateMoonImageAtSheduledTime() = runBlockingIO {
-        updateMoonImage()
     }
 
     suspend fun searchMinorPlanet(text: String) = withIO {

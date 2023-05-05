@@ -12,10 +12,9 @@ import javafx.scene.layout.AnchorPane
 import javafx.scene.paint.Color
 import javafx.util.StringConverter
 import nebulosa.desktop.helper.anchor
+import nebulosa.desktop.view.atlas.DateTimeProvider
 import nebulosa.math.pmod
 import java.time.LocalTime
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 class AltitudeChart : AnchorPane() {
 
@@ -157,8 +156,7 @@ class AltitudeChart : AnchorPane() {
     var manualMode = false
         private set
 
-    var now: LocalTime = LocalTime.now(ZoneOffset.UTC).withSecond(0).withNano(0)
-        private set
+    var dateTimeProvider: DateTimeProvider = DateTimeProvider.Utc
 
     init {
         xAxis.anchor(null, 16.0, 0.0, 24.0)
@@ -171,6 +169,7 @@ class AltitudeChart : AnchorPane() {
 
         chart.addEventHandler(ScrollEvent.SCROLL) {
             val delta = if (it.deltaY == 0.0 && it.deltaX != 0.0) it.deltaX else it.deltaY
+            if (delta == 0.0) return@addEventHandler
             val stepSize = if (it.isShiftDown) 60L else if (it.isControlDown) 30L else 1L
             val amount = if (delta < 0.0) -stepSize else stepSize
             drawNow(amount)
@@ -200,18 +199,22 @@ class AltitudeChart : AnchorPane() {
     }
 
     fun drawNow(amount: Long = 0L, reset: Boolean = false) {
+        val now: LocalTime
+
         if (amount != 0L) {
             manualMode = true
-            now = now.plusMinutes(amount)
+            now = dateTimeProvider.time.plusMinutes(amount)
             nowListeners.forEach { it.onNowChanged(now, true) }
         } else if (reset || !manualMode) {
-            now = LocalTime.now(ZoneOffset.UTC).withSecond(0).withNano(0)
+            dateTimeProvider.resetTime()
+            now = dateTimeProvider.time
             nowListeners.forEach { it.onNowChanged(now, manualMode) }
             if (reset) manualMode = false
+        } else {
+            now = dateTimeProvider.time
         }
 
-        val offset = OffsetDateTime.now().offset.totalSeconds
-        val x = ((now.toSecondOfDay() + offset) / 3600.0 - 12.0) pmod 24.0
+        val x = ((now.toSecondOfDay() + dateTimeProvider.offsetInSeconds) / 3600.0 - 12.0) pmod 24.0
         nowSerie.items.setAll(XYChartItem(x - 4.0 / 60.0, 90.0), XYChartItem(x + 4.0 / 60.0, 90.0))
     }
 

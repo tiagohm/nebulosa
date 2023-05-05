@@ -32,7 +32,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import java.awt.image.BufferedImage
-import java.time.*
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @Component
@@ -135,6 +138,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
         dateDatePicker.value = LocalDate.now()
 
         altitudeChart.registerNowListener(this)
+        altitudeChart.dateTimeProvider = this
 
         launch { atlasManager.populatePlanets() }
     }
@@ -145,7 +149,6 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
         atlasManager.loadPreferences()
 
         launch { atlasManager.updateSunImage() }
-        launch { atlasManager.updateMoonImage() }
         launch { atlasManager.computeTab(AtlasView.TabType.SUN) }
     }
 
@@ -165,11 +168,18 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
     override val date: LocalDate
         get() = dateDatePicker.value ?: LocalDate.now()
 
-    override val time
-        get() = altitudeChart.now
+    override var time: LocalTime = LocalTime.now(ZoneOffset.UTC).withSecond(0).withNano(0)
+        protected set
+
+    // TODO: Add ChoiceBox for select time zone
+    override val timeOffset = OffsetDateTime.now().offset!!
 
     override val manualMode
         get() = altitudeChart.manualMode
+
+    override fun resetTime() {
+        time = LocalTime.now(ZoneOffset.UTC).withSecond(0).withNano(0)
+    }
 
     @FXML
     private fun tabSelectionChanged(event: Event) {
@@ -376,7 +386,11 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
     }
 
     override fun onNowChanged(time: LocalTime, manual: Boolean) {
-        val dateTime = OffsetDateTime.of(date, time, ZoneOffset.UTC).atZoneSameInstant(ZoneId.systemDefault())
+        this.time = time
+
+        val timeInSeconds = time.toSecondOfDay() + timeOffset.totalSeconds
+        val date = if (timeInSeconds < AtlasView.SECONDS_AT_NOON) date.plusDays(1L) else date
+        val dateTime = OffsetDateTime.of(date, time, ZoneOffset.UTC).atZoneSameInstant(timeOffset)
         title = "Atlas · %s %s".format(dateTime.format(DateTimeFormatter.ISO_LOCAL_DATE), dateTime.format(DateTimeFormatter.ISO_LOCAL_TIME))
 
         if (manual) {

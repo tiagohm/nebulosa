@@ -1,13 +1,12 @@
 package nebulosa.desktop.logic.atlas.provider.ephemeris
 
+import nebulosa.desktop.view.atlas.DateTimeProvider
 import nebulosa.horizons.HorizonsEphemeris
 import nebulosa.horizons.HorizonsQuantity
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.time.UTC
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 
 abstract class AbstractEphemerisProvider<T> : EphemerisProvider<T> {
 
@@ -25,12 +24,14 @@ abstract class AbstractEphemerisProvider<T> : EphemerisProvider<T> {
     final override fun compute(
         target: T,
         position: GeographicPosition,
-        date: LocalDate,
+        dateTimeProvider: DateTimeProvider,
         force: Boolean,
         vararg quantities: HorizonsQuantity,
     ): HorizonsEphemeris? {
-        val now = OffsetDateTime.now()
-        val offset = now.offset.totalSeconds.toLong()
+        val now = LocalDateTime.now()
+        val date = dateTimeProvider.date
+        val offset = dateTimeProvider.offsetInSeconds.toLong()
+
         val isToday = date.dayOfMonth == now.dayOfMonth && date.month == now.month && date.year == now.year
         val startTime = if (!isToday || now.hour >= 12) LocalDateTime.of(date.year, date.month, date.dayOfMonth, 12, 0, 0, 0).minusSeconds(offset)
         else LocalDateTime.of(date.year, date.month, date.dayOfMonth, 12, 0, 0, 0).minusDays(1L).minusSeconds(offset)

@@ -7,10 +7,8 @@ import nebulosa.math.Distance
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
 import java.awt.image.BufferedImage
-import java.time.LocalDate
-import java.time.LocalTime
 
-interface AtlasView : View {
+interface AtlasView : View, DateTimeProvider {
 
     enum class TabType {
         SUN,
@@ -38,10 +36,6 @@ interface AtlasView : View {
     val longitude: Angle
 
     val elevation: Distance
-
-    val date: LocalDate
-
-    val time: LocalTime
 
     val manualMode: Boolean
 
@@ -78,4 +72,9 @@ interface AtlasView : View {
     suspend fun updateRTS(rts: Triple<String, String, String>)
 
     fun loadCoordinates(useCoordinatesFromMount: Boolean, latitude: Angle, longitude: Angle, elevation: Distance)
+
+    companion object {
+
+        const val SECONDS_AT_NOON = 12 * 3600
+    }
 }
