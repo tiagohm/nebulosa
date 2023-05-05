@@ -36,7 +36,7 @@ dependencyResolutionManagement {
             library("apache-lang3", "org.apache.commons:commons-lang3:3.12.0")
             library("oshi", "com.github.oshi:oshi-core:6.4.1")
             library("exposed-core", "org.jetbrains.exposed:exposed-core:0.40.1")
-            library("exposed-jdbc", "org.jetbrains.exposed:exposed-jdbc:0.40.1")
+            library("exposed-jdbc", "org.jetbrains.exposed:exposed-jdbc:0.41.1")
             library("sqlite", "org.xerial:sqlite-jdbc:3.41.2.1")
             library("hibernate-core", "org.hibernate.orm:hibernate-core:6.2.1.Final")
             library("hibernate-dialects", "org.hibernate.orm:hibernate-community-dialects:6.2.2.Final")
