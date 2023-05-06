@@ -1,4 +1,8 @@
 import org.springframework.boot.gradle.tasks.bundling.BootJar
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 plugins {
     kotlin("jvm")
@@ -86,4 +90,6 @@ buildConfig {
     useKotlinOutput()
     buildConfigField("String", "VERSION_CODE", "\"${project.properties["version.code"]}\"")
     buildConfigField("String", "VERSION_NAME", "\"${project.properties["version.name"]}\"")
+    buildConfigField("String", "BUILD_DATE", "\"${LocalDate.now(ZoneOffset.UTC).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}\"")
+    buildConfigField("String", "BUILD_TIME", "\"${LocalTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ofPattern("HH:mm"))}\"")
 }

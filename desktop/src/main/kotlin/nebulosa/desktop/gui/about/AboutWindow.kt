@@ -16,6 +16,7 @@ class AboutWindow : AbstractWindow("About", "information"), AboutView {
     @Lazy @Autowired private lateinit var aboutManager: AboutManager
 
     @FXML private lateinit var versionLabel: Label
+    @FXML private lateinit var builtOnLabel: Label
 
     init {
         title = "About"
@@ -23,6 +24,7 @@ class AboutWindow : AbstractWindow("About", "information"), AboutView {
     }
 
     override fun onCreate() {
-        versionLabel.text = "v${BuildConfig.VERSION_CODE} - ${BuildConfig.VERSION_NAME}"
+        versionLabel.text = "v${BuildConfig.VERSION_CODE} · ${BuildConfig.VERSION_NAME}"
+        builtOnLabel.text = "Built on ${BuildConfig.BUILD_DATE}"
     }
 }

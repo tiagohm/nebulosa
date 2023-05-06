@@ -13,6 +13,9 @@ class SplashScreen : JFrame(), Closeable {
         setSize(640, 480)
         isUndecorated = true
 
+        val icon = resourceUrl("icons/nebulosa.png")
+        iconImage = ImageIO.read(icon)
+
         contentPane = object : JPanel(false) {
 
             override fun getPreferredSize() = Dimension(640, 480)

@@ -15,19 +15,23 @@
 }
 
 .text-xs {
-    -fx-font-size: 10px;
+    -fx-font-size: 0.83333em;
 }
 
 .text-sm {
-    -fx-font-size: 11px;
+    -fx-font-size: 0.91666em;
 }
 
 .text-md {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em;
 }
 
 .text-lg {
-    -fx-font-size: 15px;
+    -fx-font-size: 1.5em;
+}
+
+.text-xlg {
+    -fx-font-size: 2em;
 }
 
 .text-monospaced {
