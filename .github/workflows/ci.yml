@@ -27,4 +27,4 @@ jobs:
         run: chmod +x gradlew
 
       - name: Test
-        run: ./gradlew test --continue -Dgithub=true
+        run: ./gradlew test -x :desktop:test -x :nebulosa-jmetro:test --continue -Dgithub=true

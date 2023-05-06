@@ -72,6 +72,8 @@ subprojects {
         useJUnitPlatform()
 
         maxParallelForks = Runtime.getRuntime().availableProcessors()
+        reports.html.required.set(false)
+        reports.junitXml.required.set(false)
 
         testLogging {
             exceptionFormat = TestExceptionFormat.FULL
@@ -82,6 +84,7 @@ subprojects {
     }
 
     tasks.withType<JavaCompile> {
+        options.isFork = true
         options.encoding = Charsets.UTF_8.toString()
         sourceCompatibility = JavaVersion.VERSION_17.toString()
         targetCompatibility = JavaVersion.VERSION_17.toString()
