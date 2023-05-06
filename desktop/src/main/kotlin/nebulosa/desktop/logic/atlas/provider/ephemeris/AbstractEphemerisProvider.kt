@@ -6,7 +6,10 @@ import nebulosa.horizons.HorizonsQuantity
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.time.UTC
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
 
 abstract class AbstractEphemerisProvider<T> : EphemerisProvider<T> {
 
@@ -28,13 +31,14 @@ abstract class AbstractEphemerisProvider<T> : EphemerisProvider<T> {
         force: Boolean,
         vararg quantities: HorizonsQuantity,
     ): HorizonsEphemeris? {
-        val now = LocalDateTime.now()
         val date = dateTimeProvider.date
-        val offset = dateTimeProvider.offsetInSeconds.toLong()
+        val timeOffset = dateTimeProvider.timeOffset
+        val offsetInSeconds = timeOffset.totalSeconds.toLong()
+        val now = OffsetDateTime.of(date, LocalTime.now(timeOffset), timeOffset)
 
-        val isToday = date.dayOfMonth == now.dayOfMonth && date.month == now.month && date.year == now.year
-        val startTime = if (!isToday || now.hour >= 12) LocalDateTime.of(date.year, date.month, date.dayOfMonth, 12, 0, 0, 0).minusSeconds(offset)
-        else LocalDateTime.of(date.year, date.month, date.dayOfMonth, 12, 0, 0, 0).minusDays(1L).minusSeconds(offset)
+        val isToday = LocalDate.now(timeOffset).compareTo(date) == 0
+        val startTime = if (!isToday || now.hour >= 12) LocalDateTime.of(date, NOON).minusSeconds(offsetInSeconds)
+        else LocalDateTime.of(date, NOON).minusDays(1L).minusSeconds(offsetInSeconds)
 
         if (position !in ephemerisCache) ephemerisCache[position] = hashMapOf()
 
@@ -56,5 +60,6 @@ abstract class AbstractEphemerisProvider<T> : EphemerisProvider<T> {
     companion object {
 
         @JvmStatic private val LOG = LoggerFactory.getLogger(AbstractEphemerisProvider::class.java)
+        @JvmStatic private val NOON = LocalTime.of(0, 0, 0, 0)
     }
 }

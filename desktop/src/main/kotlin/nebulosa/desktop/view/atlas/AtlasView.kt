@@ -7,6 +7,7 @@ import nebulosa.math.Distance
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
 import java.awt.image.BufferedImage
+import java.time.LocalDate
 
 interface AtlasView : View, DateTimeProvider {
 
@@ -67,14 +68,9 @@ interface AtlasView : View, DateTimeProvider {
 
     suspend fun populateDSOs(dsos: List<SkyObject>)
 
-    suspend fun updateInfo(bodyName: String, extra: List<Pair<String, String>> = emptyList())
+    suspend fun updateInfo(bodyName: String, date: LocalDate, extra: List<Pair<String, String>> = emptyList())
 
     suspend fun updateRTS(rts: Triple<String, String, String>)
 
     fun loadCoordinates(useCoordinatesFromMount: Boolean, latitude: Angle, longitude: Angle, elevation: Distance)
-
-    companion object {
-
-        const val SECONDS_AT_NOON = 12 * 3600
-    }
 }

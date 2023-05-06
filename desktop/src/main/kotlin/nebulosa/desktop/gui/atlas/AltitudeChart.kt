@@ -214,7 +214,7 @@ class AltitudeChart : AnchorPane() {
             now = dateTimeProvider.time
         }
 
-        val x = ((now.toSecondOfDay() + dateTimeProvider.offsetInSeconds) / 3600.0 - 12.0) pmod 24.0
+        val x = (now.toSecondOfDay() / 3600.0 - 12.0) pmod 24.0
         nowSerie.items.setAll(XYChartItem(x - 4.0 / 60.0, 90.0), XYChartItem(x + 4.0 / 60.0, 90.0))
     }
 

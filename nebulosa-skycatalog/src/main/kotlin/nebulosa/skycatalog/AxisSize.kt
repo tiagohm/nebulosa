@@ -2,7 +2,7 @@ package nebulosa.skycatalog
 
 import nebulosa.math.Angle
 
-interface HasAxisSize {
+interface AxisSize {
 
     val minorAxis: Angle
 

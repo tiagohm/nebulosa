@@ -23,10 +23,4 @@ data class Star(
     override val pmDEC: Angle = Angle.ZERO,
     override val type: SkyObjectType = SkyObjectType.STAR,
     override val constellation: Constellation = Constellation.AND,
-) : SkyObject {
-
-    companion object {
-
-        @JvmStatic private val serialVersionUID = 2L
-    }
-}
+) : SkyObject

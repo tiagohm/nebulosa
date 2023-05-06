@@ -10,11 +10,8 @@ import org.springframework.stereotype.Service
 @Service
 class PreferenceService {
 
-    @Autowired
-    private lateinit var preferenceRepository: PreferenceRepository
-
-    @Autowired
-    private lateinit var objectMapper: ObjectMapper
+    @Autowired private lateinit var preferenceRepository: PreferenceRepository
+    @Autowired private lateinit var objectMapper: ObjectMapper
 
     operator fun contains(key: String): Boolean {
         return preferenceRepository.existsById(key)

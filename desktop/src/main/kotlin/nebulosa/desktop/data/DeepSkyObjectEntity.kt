@@ -4,14 +4,13 @@ import jakarta.persistence.*
 import nebulosa.math.Angle
 import nebulosa.math.Velocity
 import nebulosa.nova.astrometry.Constellation
-import nebulosa.skycatalog.HasAxisSize
+import nebulosa.skycatalog.AxisSize
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
-import java.io.Serializable
 
 @Entity
 @Table(name = "dsos")
-class DeepSkyObjectEntity : SkyObject, HasAxisSize, Serializable {
+class DeepSkyObjectEntity : SkyObject, AxisSize {
 
     @Id
     @Column(name = "id", columnDefinition = "INTEGER")

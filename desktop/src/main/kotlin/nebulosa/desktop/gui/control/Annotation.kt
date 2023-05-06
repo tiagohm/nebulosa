@@ -12,7 +12,7 @@ import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.service.SkyObjectService
 import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
-import nebulosa.skycatalog.HasAxisSize
+import nebulosa.skycatalog.AxisSize
 import nebulosa.skycatalog.SkyObject
 import nebulosa.wcs.WCSTransform
 import org.slf4j.LoggerFactory
@@ -95,7 +95,7 @@ class Annotation : ShapePane() {
 
         @JvmStatic
         private fun DoubleArray.makeShapes(annotation: Annotation, star: SkyObject, calibration: Calibration, color: Color): Pair<Circle, Text> {
-            val majorAxis = if (star is HasAxisSize) star.majorAxis else Angle.ZERO
+            val majorAxis = if (star is AxisSize) star.majorAxis else Angle.ZERO
             val majorAxisSize = max(14.0, min(majorAxis / calibration.scale, 380.0))
 
             val circle = Circle(this[0], this[1], 64.0)

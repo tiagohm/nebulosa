@@ -39,7 +39,7 @@ import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.sbd.SmallBody
 import nebulosa.sbd.SmallBodyDatabaseLookupService
-import nebulosa.skycatalog.HasAxisSize
+import nebulosa.skycatalog.AxisSize
 import nebulosa.skycatalog.SkyObject
 import nebulosa.time.UTC
 import okhttp3.OkHttpClient
@@ -54,6 +54,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import retrofit2.await
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.imageio.ImageIO
 import kotlin.math.max
@@ -445,9 +446,12 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     }
 
     private suspend fun HorizonsEphemeris.computeCoordinates(target: Any, body: SkyObject?) {
-        val timeInSeconds = view.time.toSecondOfDay() + view.timeOffset.totalSeconds
-        val date = if (timeInSeconds < AtlasView.SECONDS_AT_NOON) view.date.plusDays(1L) else view.date
-        val now = LocalDateTime.of(date, view.time)
+        val timeOffset = view.timeOffset
+        val date = if (LocalTime.now(timeOffset).hour < 12) if (view.time.hour >= 12) view.date.minusDays(1L) else view.date
+        else if (view.time.hour < 12) view.date.plusDays(1L)
+        else view.date
+
+        val now = LocalDateTime.of(date, view.time).minusSeconds(timeOffset.totalSeconds.toLong())
         val element = this[now] ?: return LOG.warn("ephemeris not found. now={}", now)
 
         LOG.info("computing coordinates. now={}, target={}, element={}", now, target, element)
@@ -475,13 +479,13 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         val elongation = element[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE]?.split(",")?.first()
         if (elongation != null) extra.add("Elongation (deg)" to elongation)
 
-        if (body is HasAxisSize) {
+        if (body is AxisSize) {
             if (body.majorAxis.value > 0.0 || body.minorAxis.value > 0.0) {
                 extra.add("Size (arcmin)" to "%.2f x %.2f".format(body.minorAxis.arcmin, body.majorAxis.arcmin))
             }
         }
 
-        view.updateInfo(bodyName, extra)
+        view.updateInfo(bodyName, date, extra)
 
         if (target == MOON_TARGET) {
             element.updateMoonImage()
