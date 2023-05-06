@@ -71,7 +71,7 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
 
-        maxParallelForks = 1
+        maxParallelForks = Runtime.getRuntime().availableProcessors()
 
         testLogging {
             exceptionFormat = TestExceptionFormat.FULL
