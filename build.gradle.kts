@@ -1,20 +1,15 @@
 import com.adarshr.gradle.testlogger.TestLoggerExtension
 import com.adarshr.gradle.testlogger.theme.ThemeType
-import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.21")
-        classpath("io.objectbox:objectbox-gradle-plugin:3.5.1")
         classpath("org.openjfx:javafx-plugin:0.0.14")
-        classpath("gradle.plugin.com.github.johnrengelman:shadow:8.0.0")
         classpath("com.adarshr:gradle-test-logger-plugin:3.2.0")
         classpath("org.jetbrains.kotlin:kotlin-allopen:1.8.21")
         classpath("com.github.gmazzo:gradle-buildconfig-plugin:3.1.0")
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.8.10")
-        classpath("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.0-RC3")
     }
 
     repositories {
@@ -23,8 +18,6 @@ buildscript {
         google()
     }
 }
-
-apply(plugin = "org.jetbrains.dokka")
 
 allprojects {
     group = "com.github.tiagohm"
@@ -53,10 +46,6 @@ subprojects {
 
     apply {
         plugin("com.adarshr.test-logger")
-        plugin("io.gitlab.arturbosch.detekt")
-        if (project.name != "desktop" && project.name != "nebulosa-jmetro") {
-            plugin("org.jetbrains.dokka")
-        }
     }
 
     configure<TestLoggerExtension> {
@@ -71,10 +60,6 @@ subprojects {
         logLevel = LogLevel.QUIET
     }
 
-    configure<DetektExtension> {
-        config.from("$rootDir/detekt.yml")
-    }
-
     tasks.withType<KotlinCompile> {
         kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
         kotlinOptions.freeCompilerArgs = listOf(
@@ -86,7 +71,9 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
 
-        maxParallelForks = 1
+        maxParallelForks = Runtime.getRuntime().availableProcessors()
+        reports.html.required.set(false)
+        reports.junitXml.required.set(false)
 
         testLogging {
             exceptionFormat = TestExceptionFormat.FULL
@@ -97,6 +84,7 @@ subprojects {
     }
 
     tasks.withType<JavaCompile> {
+        options.isFork = true
         options.encoding = Charsets.UTF_8.toString()
         sourceCompatibility = JavaVersion.VERSION_17.toString()
         targetCompatibility = JavaVersion.VERSION_17.toString()
