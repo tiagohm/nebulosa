@@ -7,6 +7,7 @@ import nebulosa.indi.protocol.GetProperties
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.io.INDIConnection
 import nebulosa.indi.protocol.parser.INDIProtocolReader
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import java.io.Closeable
 
@@ -44,10 +45,7 @@ class DefaultINDIClient(override val connection: INDIConnection) : INDIClient {
     }
 
     override fun sendMessageToServer(message: INDIProtocol) {
-        if (LOG.isDebugEnabled) {
-            LOG.debug("sending message: {}", message)
-        }
-
+        LOG.debug { "sending message: $message" }
         connection.writeINDIProtocol(message)
     }
 

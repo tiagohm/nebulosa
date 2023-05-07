@@ -27,6 +27,7 @@ import nebulosa.indi.protocol.Message
 import nebulosa.indi.protocol.io.INDIInputStream
 import nebulosa.indi.protocol.parser.INDIProtocolParser
 import nebulosa.indi.protocol.parser.INDIProtocolReader
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -225,9 +226,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
                     device.handleMessage(message)
                 }
 
-                if (LOG.isDebugEnabled) {
-                    LOG.debug("message received: {}", message)
-                }
+                LOG.debug { "message received: $message" }
 
                 return
             }
@@ -283,9 +282,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
 
             messageReorderingQueue.remove(message)
 
-            if (LOG.isDebugEnabled) {
-                LOG.debug("message received: {}", message)
-            }
+            LOG.debug { "message received: $message" }
         } else {
             if (message in messageQueueCounter) {
                 val counter = messageQueueCounter[message]!!

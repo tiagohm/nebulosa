@@ -11,21 +11,21 @@ inline fun loggerFor(type: Class<*>): Logger = LoggerFactory.getLogger(type) as 
 @Suppress("NOTHING_TO_INLINE")
 inline fun loggerFor(name: String): Logger = LoggerFactory.getLogger(name) as Logger
 
-inline fun Logger.info(vararg args: Any?, lazy: () -> String) {
+inline fun Logger.info(lazy: () -> String) {
     if (isInfoEnabled) {
-        info(lazy(), *args)
+        info(lazy())
     }
 }
 
-inline fun Logger.warn(vararg args: Any?, lazy: () -> String) {
+inline fun Logger.warn(lazy: () -> String) {
     if (isWarnEnabled) {
-        warn(lazy(), *args)
+        warn(lazy())
     }
 }
 
-inline fun Logger.error(vararg args: Any?, lazy: () -> String) {
+inline fun Logger.error(lazy: () -> String) {
     if (isErrorEnabled) {
-        error(lazy(), *args)
+        error(lazy())
     }
 }
 
@@ -36,14 +36,20 @@ inline fun Logger.error(e: Throwable) {
     }
 }
 
-inline fun Logger.debug(vararg args: Any?, lazy: () -> String) {
-    if (isDebugEnabled) {
-        debug(lazy(), *args)
+inline fun Logger.error(e: Throwable, lazy: () -> String) {
+    if (isErrorEnabled) {
+        error(lazy(), e)
     }
 }
 
-inline fun Logger.trace(vararg args: Any?, lazy: () -> String) {
+inline fun Logger.debug(lazy: () -> String) {
+    if (isDebugEnabled) {
+        debug(lazy())
+    }
+}
+
+inline fun Logger.trace(lazy: () -> String) {
     if (isTraceEnabled) {
-        trace(lazy(), *args)
+        trace(lazy())
     }
 }

@@ -5,6 +5,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToByteEncoder
 import nebulosa.constants.PI
 import nebulosa.erfa.eraAnpm
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 
 class StellariumProtocolEncoder : MessageToByteEncoder<StellariumProtocolMessage>() {
@@ -30,9 +31,7 @@ class StellariumProtocolEncoder : MessageToByteEncoder<StellariumProtocolMessage
             writeIntLE((message.declination.value / PI * 0x80000000).toInt()) // DEC
             writeIntLE(0) // STATUS=OK
 
-            if (LOG.isDebugEnabled) {
-                LOG.debug("MessageCurrentPosition: ra={}, dec={}", message.rightAscension.hours, message.declination.degrees)
-            }
+            LOG.debug { "MessageCurrentPosition: ra=%f, dec=%f".format(message.rightAscension.hours, message.declination.degrees) }
         }
     }
 }

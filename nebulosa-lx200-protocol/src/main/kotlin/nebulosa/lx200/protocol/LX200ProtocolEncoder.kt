@@ -3,6 +3,7 @@ package nebulosa.lx200.protocol
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToByteEncoder
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.netty.writeAscii
 import java.time.format.DateTimeFormatter
@@ -16,9 +17,7 @@ class LX200ProtocolEncoder : MessageToByteEncoder<LX200ProtocolMessage>() {
         msg: LX200ProtocolMessage,
         output: ByteBuf,
     ) {
-        if (LOG.isDebugEnabled) {
-            LOG.debug("sending message. message={}", msg)
-        }
+        LOG.debug { "sending message. message=$msg" }
 
         when (msg) {
             LX200ProtocolMessage.Ack -> output.writeByte(71)

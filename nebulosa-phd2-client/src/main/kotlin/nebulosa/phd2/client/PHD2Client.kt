@@ -2,6 +2,7 @@ package nebulosa.phd2.client
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.phd2.client.event.*
 import okio.buffer
@@ -63,9 +64,7 @@ class PHD2Client(
                 val eventText = buffer.readUtf8Line() ?: break
                 val eventName = EVENT_NAME_REGEX.matchEntire(eventText)?.groupValues?.get(1) ?: continue
 
-                if (LOG.isDebugEnabled) {
-                    LOG.info("event received. event={}", eventText)
-                }
+                LOG.debug { "event received. event=$eventText" }
 
                 val type = EVENT_TYPES[eventName] ?: continue
                 val event = type.second ?: OBJECT_MAPPER.readValue(eventText, type.first)
