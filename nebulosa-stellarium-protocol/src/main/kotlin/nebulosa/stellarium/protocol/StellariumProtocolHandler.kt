@@ -2,8 +2,8 @@ package nebulosa.stellarium.protocol
 
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
-import org.slf4j.LoggerFactory
 
 internal class StellariumProtocolHandler(private val server: StellariumProtocolServer) : ChannelInboundHandlerAdapter(), CurrentPositionHandler {
 
@@ -41,6 +41,6 @@ internal class StellariumProtocolHandler(private val server: StellariumProtocolS
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(StellariumProtocolHandler::class.java)
+        @JvmStatic private val LOG = loggerFor<StellariumProtocolHandler>()
     }
 }

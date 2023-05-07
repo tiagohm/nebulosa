@@ -3,9 +3,8 @@ package nebulosa.skycatalog
 import nebulosa.math.Angle
 import nebulosa.math.Velocity
 import nebulosa.nova.astrometry.Constellation
-import java.io.Serializable
 
-interface SkyObject : Serializable {
+interface SkyObject {
 
     val id: Int
 

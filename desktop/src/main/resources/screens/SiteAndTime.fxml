@@ -36,7 +36,7 @@
                                minWidth="128.0"/>
                     <ImageButton fx:id="openINDIButton"
                                  onAction="#openINDIPanelControl"
-                                 url="@icons/indi.png"/>
+                                 url="@../icons/indi.png"/>
                     <MaterialIconButton fx:id="useCoordinateFromGpsButton"
                                         onAction="#useCoordinateFromGps"
                                         icon="target"/>

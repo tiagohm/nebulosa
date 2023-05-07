@@ -20,9 +20,9 @@ import nebulosa.indi.device.camera.CameraFrameCaptured
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.PierSide
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nom.tam.fits.Fits
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.concurrent.ExecutorService
@@ -491,6 +491,6 @@ class GuiderManager(
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(GuiderManager::class.java)
+        @JvmStatic private val LOG = loggerFor<GuiderManager>()
     }
 }

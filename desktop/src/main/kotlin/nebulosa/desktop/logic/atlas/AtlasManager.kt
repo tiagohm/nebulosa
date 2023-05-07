@@ -24,6 +24,7 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountEvent
 import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
 import nebulosa.indi.device.mount.TrackMode
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.rad
@@ -39,7 +40,7 @@ import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.sbd.SmallBody
 import nebulosa.sbd.SmallBodyDatabaseLookupService
-import nebulosa.skycatalog.HasAxisSize
+import nebulosa.skycatalog.AxisSize
 import nebulosa.skycatalog.SkyObject
 import nebulosa.time.UTC
 import okhttp3.OkHttpClient
@@ -47,15 +48,13 @@ import okhttp3.Request
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import retrofit2.await
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.imageio.ImageIO
 import kotlin.math.max
@@ -347,7 +346,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
             val risingIndex = b.indexOf(1)
             val settingIndex = b.indexOf(0)
-            val offset = OffsetDateTime.now().offset.totalSeconds.toLong()
+            val offset = view.timeOffset.totalSeconds.toLong()
             val settingTime = if (settingIndex >= 0) times[a[settingIndex].toInt()].plusSeconds(offset).format(RTS_FORMAT) else "-"
             val risingTime = if (risingIndex >= 0) times[a[risingIndex].toInt()].plusSeconds(offset).format(RTS_FORMAT) else "-"
 
@@ -405,10 +404,10 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
             val prevEphemeris = ephemerisCache[target]
 
             val ephemeris = when (target) {
-                is SmallBody -> horizonsEphemerisProvider.compute(target, observer, view.date, force)
-                MOON_TARGET -> horizonsEphemerisProvider.compute(MOON_TARGET, observer, view.date, force)
-                is String -> horizonsEphemerisProvider.compute(target, observer, view.date, force)
-                is Body -> bodyEphemerisProvider.compute(target, observer, view.date, force)
+                is SmallBody -> horizonsEphemerisProvider.compute(target, observer, view, force)
+                MOON_TARGET -> horizonsEphemerisProvider.compute(MOON_TARGET, observer, view, force)
+                is String -> horizonsEphemerisProvider.compute(target, observer, view, force)
+                is Body -> bodyEphemerisProvider.compute(target, observer, view, force)
                 else -> null
             }
 
@@ -447,7 +446,12 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     }
 
     private suspend fun HorizonsEphemeris.computeCoordinates(target: Any, body: SkyObject?) {
-        val now = LocalDateTime.of(view.date, view.time)
+        val timeOffset = view.timeOffset
+        val date = if (LocalTime.now(timeOffset).hour < 12) if (view.time.hour >= 12) view.date.minusDays(1L) else view.date
+        else if (view.time.hour < 12) view.date.plusDays(1L)
+        else view.date
+
+        val now = LocalDateTime.of(date, view.time).minusSeconds(timeOffset.totalSeconds.toLong())
         val element = this[now] ?: return LOG.warn("ephemeris not found. now={}", now)
 
         LOG.info("computing coordinates. now={}, target={}, element={}", now, target, element)
@@ -475,13 +479,17 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         val elongation = element[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE]?.split(",")?.first()
         if (elongation != null) extra.add("Elongation (deg)" to elongation)
 
-        if (body is HasAxisSize) {
+        if (body is AxisSize) {
             if (body.majorAxis.value > 0.0 || body.minorAxis.value > 0.0) {
                 extra.add("Size (arcmin)" to "%.2f x %.2f".format(body.minorAxis.arcmin, body.majorAxis.arcmin))
             }
         }
 
-        view.updateInfo(bodyName, extra)
+        view.updateInfo(bodyName, date, extra)
+
+        if (target == MOON_TARGET) {
+            element.updateMoonImage()
+        }
 
         computeEquatorialCoordinates(element)
         computeHorizontalCoordinates(element)
@@ -522,26 +530,18 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         updateSunImage()
     }
 
-    suspend fun updateMoonImage() {
-        if (!view.showing) return
+    suspend fun HorizonsElement.updateMoonImage() = withIO {
+        if (!view.showing) return@withIO
 
-        val ephemeris = computeMoon(false)
-
-        val now = LocalDateTime.now(ZoneOffset.UTC)
-        val element = ephemeris?.get(now) ?: return
-        val sot = element[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE]!!.split(",")
+        val sot = this@updateMoonImage[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE]!!.split(",")
         val angle = sot[0].toDouble()
         val leading = sot[1] == "/L"
         val phase = if (leading) 360.0 - angle else angle
         val age = 29.53058868 * (phase / 360.0)
+
         LOG.info("computed Moon phase. angle={}, age={}", phase, age)
 
         view.updateMoonImage(phase, age, Angle.ZERO)
-    }
-
-    @Scheduled(cron = "0 0 * * * *")
-    private fun updateMoonImageAtSheduledTime() = runBlockingIO {
-        updateMoonImage()
     }
 
     suspend fun searchMinorPlanet(text: String) = withIO {
@@ -704,7 +704,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(AtlasManager::class.java)
+        @JvmStatic private val LOG = loggerFor<AtlasManager>()
         @JvmStatic private val RTS_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
 
         private const val SUN_TARGET = "10"

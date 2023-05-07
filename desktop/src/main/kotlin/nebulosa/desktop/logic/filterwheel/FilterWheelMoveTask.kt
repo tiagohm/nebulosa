@@ -4,10 +4,10 @@ import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.task.TaskFinished
 import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.indi.device.filterwheel.*
+import nebulosa.log.loggerFor
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 data class FilterWheelMoveTask(
@@ -60,6 +60,6 @@ data class FilterWheelMoveTask(
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(FilterWheelMoveTask::class.java)
+        @JvmStatic private val LOG = loggerFor<FilterWheelMoveTask>()
     }
 }

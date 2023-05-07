@@ -1,7 +1,5 @@
 package nebulosa.desktop.service
 
-import nebulosa.desktop.data.DeepSkyObjectEntity
-import nebulosa.desktop.data.StarEntity
 import nebulosa.desktop.repository.sky.DeepSkyObjectRepository
 import nebulosa.desktop.repository.sky.StarRepository
 import nebulosa.math.Angle
@@ -32,26 +30,21 @@ class SkyObjectService {
     }
 
     @Autowired private lateinit var deepSkyObjectRepository: DeepSkyObjectRepository
-
     @Autowired private lateinit var starRepository: StarRepository
 
-    fun searchDSO(text: String, filter: Filter): List<DeepSkyObjectEntity> {
-        return deepSkyObjectRepository.search(
-            text.ifBlank { null }?.let { "%$it%" },
-            filter.rightAscension, filter.declination, filter.radius,
-            filter.constellation, filter.magnitudeMin.clampInRange(), filter.magnitudeMax.clampInRange(), filter.type,
-            Pageable.ofSize(1000),
-        )
-    }
+    fun searchDSO(text: String, filter: Filter = Filter.EMPTY) = deepSkyObjectRepository.search(
+        text.ifBlank { null }?.let { "%$it%" },
+        filter.rightAscension, filter.declination, filter.radius,
+        filter.constellation, filter.magnitudeMin.clampInRange(), filter.magnitudeMax.clampInRange(), filter.type,
+        Pageable.ofSize(1000),
+    )
 
-    fun searchStar(text: String, filter: Filter): List<StarEntity> {
-        return starRepository.search(
-            text.ifBlank { null }?.let { "%$it%" },
-            filter.rightAscension, filter.declination, filter.radius,
-            filter.constellation, filter.magnitudeMin.clampInRange(), filter.magnitudeMax.clampInRange(), filter.type,
-            Pageable.ofSize(1000),
-        )
-    }
+    fun searchStar(text: String, filter: Filter = Filter.EMPTY) = starRepository.search(
+        text.ifBlank { null }?.let { "%$it%" },
+        filter.rightAscension, filter.declination, filter.radius,
+        filter.constellation, filter.magnitudeMin.clampInRange(), filter.magnitudeMax.clampInRange(), filter.type,
+        Pageable.ofSize(1000),
+    )
 
     companion object {
 

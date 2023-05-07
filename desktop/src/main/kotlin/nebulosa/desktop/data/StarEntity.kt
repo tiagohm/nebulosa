@@ -6,11 +6,10 @@ import nebulosa.math.Velocity
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
-import java.io.Serializable
 
 @Entity
 @Table(name = "stars")
-class StarEntity : SkyObject, Serializable {
+class StarEntity : SkyObject {
 
     @Id
     @Column(name = "id", columnDefinition = "INTEGER")

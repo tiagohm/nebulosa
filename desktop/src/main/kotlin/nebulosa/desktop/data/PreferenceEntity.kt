@@ -4,7 +4,6 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import java.io.Serializable
 
 @Entity
 @Table(name = "preferences")
@@ -15,4 +14,4 @@ data class PreferenceEntity(
 
     @Column(name = "value", nullable = false, columnDefinition = "TEXT")
     var value: String = "",
-) : Serializable
+)

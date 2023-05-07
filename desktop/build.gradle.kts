@@ -1,4 +1,8 @@
 import org.springframework.boot.gradle.tasks.bundling.BootJar
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 plugins {
     kotlin("jvm")
@@ -29,6 +33,7 @@ dependencies {
     implementation(project(":nebulosa-simbad"))
     implementation(project(":nebulosa-stellarium-protocol"))
     implementation(project(":nebulosa-wcs"))
+    implementation(project(":nebulosa-log"))
     implementation(libs.jackson)
     implementation(libs.bundles.rx)
     implementation(libs.controlsfx)
@@ -46,7 +51,6 @@ dependencies {
     implementation(libs.sqlite)
     implementation(libs.flyway)
     implementation(libs.bundles.hibernate)
-    implementation(libs.logback)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     kapt("org.springframework:spring-context-indexer:6.0.8")
@@ -85,4 +89,6 @@ buildConfig {
     useKotlinOutput()
     buildConfigField("String", "VERSION_CODE", "\"${project.properties["version.code"]}\"")
     buildConfigField("String", "VERSION_NAME", "\"${project.properties["version.name"]}\"")
+    buildConfigField("String", "BUILD_DATE", "\"${LocalDate.now(ZoneOffset.UTC).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}\"")
+    buildConfigField("String", "BUILD_TIME", "\"${LocalTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ofPattern("HH:mm"))}\"")
 }

@@ -7,7 +7,7 @@ import io.netty.channel.ChannelOption
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
-import org.slf4j.LoggerFactory
+import nebulosa.log.loggerFor
 import java.io.Closeable
 import java.util.concurrent.atomic.AtomicReference
 
@@ -58,6 +58,6 @@ abstract class NettyClient : Runnable, Closeable {
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(NettyClient::class.java)
+        @JvmStatic private val LOG = loggerFor<NettyClient>()
     }
 }

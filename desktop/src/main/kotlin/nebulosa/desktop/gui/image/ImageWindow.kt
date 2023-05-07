@@ -30,12 +30,12 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
+import nebulosa.log.loggerFor
 import nebulosa.math.AngleFormatter
 import nebulosa.platesolving.Calibration
-import nebulosa.skycatalog.HasAxisSize
+import nebulosa.skycatalog.AxisSize
 import nebulosa.skycatalog.SkyObject
 import net.kurobako.gesturefx.AffineEvent
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.stereotype.Service
@@ -339,7 +339,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             if (star.magnitude < SkyObject.UNKNOWN_MAGNITUDE) box.children.add(CopyableLabel("MAGNITUDE: %.2f".format(star.magnitude)))
             box.children.add(CopyableLabel("TYPE: ${star.type.description}"))
             if (star.distance > 0.0) box.children.add(CopyableLabel("DISTANCE: %.1f ly".format(star.distance)))
-            if (star is HasAxisSize && (star.majorAxis.value > 0.0 || star.minorAxis.value > 0.0)) {
+            if (star is AxisSize && (star.majorAxis.value > 0.0 || star.minorAxis.value > 0.0)) {
                 val label = CopyableLabel("SIZE (arcmin): %.2f x %.2f".format(star.minorAxis.arcmin, star.majorAxis.arcmin))
                 box.children.add(label)
             }
@@ -422,7 +422,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
         companion object {
 
-            @JvmStatic private val LOG = LoggerFactory.getLogger(Opener::class.java)
+            @JvmStatic private val LOG = loggerFor<Opener>()
         }
     }
 }

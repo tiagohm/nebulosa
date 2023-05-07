@@ -4,7 +4,7 @@ import nebulosa.constants.PIOVERTWO
 import nebulosa.guiding.*
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.star.hfd.FindMode
-import org.slf4j.LoggerFactory
+import nebulosa.log.loggerFor
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
@@ -1149,7 +1149,7 @@ class MultiStarGuider(
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(MultiStarGuider::class.java)
+        @JvmStatic private val LOG = loggerFor<MultiStarGuider>()
         @JvmStatic internal val ZERO_OFFSET = GuiderOffset(Point(), Point())
         @JvmStatic internal val GUIDE_STEP = listOf(MountMoveOption.ALGORITHM_RESULT, MountMoveOption.USE_BACKSLASH_COMPENSATION)
         @JvmStatic internal val DEDUCED_MOVE = listOf(MountMoveOption.ALGORITHM_DEDUCE, MountMoveOption.USE_BACKSLASH_COMPENSATION)

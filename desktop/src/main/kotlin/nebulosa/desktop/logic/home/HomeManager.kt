@@ -16,7 +16,7 @@ import nebulosa.desktop.view.image.ImageView
 import nebulosa.desktop.view.indi.INDIPanelControlView
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.desktop.view.platesolver.PlateSolverView
-import org.slf4j.LoggerFactory
+import nebulosa.log.loggerFor
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.Closeable
 import java.nio.file.Path
@@ -131,6 +131,6 @@ class HomeManager(private val view: HomeView) : AbstractManager(), Closeable {
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(HomeManager::class.java)
+        @JvmStatic private val LOG = loggerFor<HomeManager>()
     }
 }

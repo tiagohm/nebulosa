@@ -51,7 +51,7 @@ data class DeepSkyObject(
     override val pmRA: Angle = Angle.ZERO,
     override val pmDEC: Angle = Angle.ZERO,
     override val constellation: Constellation = Constellation.AND,
-) : SkyObject, HasAxisSize {
+) : SkyObject, AxisSize {
 
     // Dunlop Catalogue.
     val dunlop
@@ -66,8 +66,6 @@ data class DeepSkyObject(
         get() = ngc > 0 && ngc in H400
 
     companion object {
-
-        @JvmStatic private val serialVersionUID = 2L
 
         @JvmStatic private val H400 = intArrayOf(
             40, 129, 136, 157, 185, 205, 225, 246, 247, 253, 278, 288,

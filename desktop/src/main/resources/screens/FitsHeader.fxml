@@ -13,7 +13,7 @@
     <TextArea fx:id="cardsTextArea"
               editable="false"
               styleClass="text-monospaced,text-sm"
-              stylesheets="@css/TextAreaWithoutFocus.css"
+              stylesheets="@../css/TextAreaWithoutFocus.css"
               AnchorPane.bottomAnchor="0.0"
               AnchorPane.leftAnchor="0.0"
               AnchorPane.rightAnchor="0.0"

@@ -1,4 +1,5 @@
 import nebulosa.io.transferAndClose
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle.Companion.arcmin
 import nebulosa.math.Angle.Companion.mas
 import nebulosa.math.Velocity.Companion.kms
@@ -27,6 +28,7 @@ import org.sqlite.JDBC
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.inputStream
@@ -124,17 +126,31 @@ object SkyDatabaseGenerator {
 
         val simbadService = SimbadService(okHttpClient = okHttpClient)
 
-        val messierCatalog = simbadService.simbadCatalog(CatalogType.M)
-        val ngcCatalog = simbadService.simbadCatalog(CatalogType.NGC)
-        val icCatalog = simbadService.simbadCatalog(CatalogType.IC)
+        val messierCatalog = simbadService.simbadCatalog(CatalogType.M, SkyObject.UNKNOWN_MAGNITUDE)
+        val ngcCatalog = simbadService.simbadCatalog(CatalogType.NGC, SkyObject.UNKNOWN_MAGNITUDE)
+        val icCatalog = simbadService.simbadCatalog(CatalogType.IC, SkyObject.UNKNOWN_MAGNITUDE)
         val ledaCatalog = simbadService.simbadCatalog(CatalogType.LEDA)
         val hipCatalog = simbadService.simbadCatalog(CatalogType.HIP)
         val hdCatalog = simbadService.simbadCatalog(CatalogType.HD)
 
+        EXECUTORS.shutdown()
+        EXECUTORS.awaitTermination(1, TimeUnit.HOURS)
+
+        LOG.info("Messier. size={}", messierCatalog.size)
+        LOG.info("NGC. size={}", ngcCatalog.size)
+        LOG.info("IC. size={}", icCatalog.size)
+        LOG.info("LEDA. size={}", ledaCatalog.size)
+        LOG.info("HIP. size={}", hipCatalog.size)
+        LOG.info("HD. size={}", hdCatalog.size)
+
         Database.connect("jdbc:sqlite:$DATABASE_PATH", driver = JDBC::class.java.name)
+
+        val availableTypes = sortedSetOf<SkyObjectType>()
 
         transaction {
             SchemaUtils.create(DsoEntity, StarEntity)
+
+            LOG.info("Downloading Nebula catalog")
 
             val catalogSource = okHttpClient.download(
                 "https://github.com/Stellarium/stellarium/raw/master/nebulae/default/catalog.dat",
@@ -145,6 +161,8 @@ object SkyDatabaseGenerator {
                 "https://github.com/Stellarium/stellarium/raw/master/nebulae/default/names.dat",
                 Paths.get(".cache/names.dat"),
             )
+
+            LOG.info("Loading Nebula catalog")
 
             with(Nebula()) {
                 load(catalogSource, namesSource)
@@ -190,7 +208,7 @@ object SkyDatabaseGenerator {
                         it[magnitude] = min(item.magnitude, simbadObject?.magnitude ?: SkyObject.UNKNOWN_MAGNITUDE)
                         it[rightAscension] = item.rightAscension.value
                         it[declination] = item.declination.value
-                        it[type] = simbadObject?.type ?: item.type
+                        it[type] = (simbadObject?.type ?: item.type).also(availableTypes::add)
                         it[mType] = item.mType?.ifEmpty { null }
                         it[majorAxis] = simbadObject?.majorAxis?.arcmin?.value ?: item.majorAxis.value
                         it[minorAxis] = simbadObject?.minorAxis?.arcmin?.value ?: item.minorAxis.value
@@ -206,10 +224,14 @@ object SkyDatabaseGenerator {
                 }
             }
 
+            LOG.info("Downloading Hyg catalog")
+
             val hyg = okHttpClient.download(
-                "https://github.com/astronexus/HYG-Database/raw/master/hyg/v3/hyg.csv",
-                Paths.get(".cache/hyg.csv")
+                "https://github.com/astronexus/HYG-Database/raw/master/hyg/v3/hyg_v33.csv",
+                Paths.get(".cache/hyg_v33.csv")
             )
+
+            LOG.info("Loading Hyg catalog")
 
             with(HygDatabase()) {
                 load(hyg.buffer().inputStream())
@@ -234,15 +256,23 @@ object SkyDatabaseGenerator {
                         it[distance] = if (item.distance == 0.0 && plx.value != 0.0) 3.2615637769 / plx.arcsec else item.distance
                         it[pmRA] = simbadObject?.pmRA?.mas?.value ?: item.pmRA.value
                         it[pmDEC] = simbadObject?.pmDEC?.mas?.value ?: item.pmDEC.value
-                        it[type] = simbadObject?.type ?: item.type
+                        it[type] = (simbadObject?.type ?: item.type).also(availableTypes::add)
                         it[constellation] = item.constellation
                     }
                 }
             }
         }
 
+        LOG.info("Finishing")
+
         Runtime.getRuntime().exec("sqlite3 $DATABASE_PATH 'VACUUM'").waitFor()
         Runtime.getRuntime().exec("gzip -f -6 $DATABASE_PATH").waitFor()
+
+        LOG.info("Finished")
+
+        for (type in availableTypes) {
+            println("""<SkyObjectType fx:value="$type"/>""")
+        }
     }
 
     @JvmStatic
@@ -254,28 +284,45 @@ object SkyDatabaseGenerator {
         }
     }
 
+    @JvmStatic private val LOG = loggerFor<SkyDatabaseGenerator>()
+    @JvmStatic private val EXECUTORS = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
+
     @JvmStatic
-    private fun SimbadService.simbadCatalog(type: CatalogType): Map<String, SimbadObject> {
-        val res = LinkedHashMap<String, SimbadObject>()
-        val query = SimbadQuery()
+    private fun SimbadService.simbadCatalog(type: CatalogType, magnitude: Double = 20.0): Map<String, SimbadObject> {
+        val output = LinkedHashMap<String, SimbadObject>()
+        EXECUTORS.submit(SimbadQueryWorker(this, output, type, magnitude))
+        return output
+    }
 
-        query.catalog(type)
-        query.id(0)
-        query.limit(20000)
-        query.magnitude(max = 20.0)
+    private class SimbadQueryWorker(
+        private val service: SimbadService,
+        private val output: MutableMap<String, SimbadObject>,
+        private val type: CatalogType,
+        private val magnitude: Double = SkyObject.UNKNOWN_MAGNITUDE,
+    ) : Runnable {
 
-        while (true) {
-            val data = query(query).execute().body() ?: break
-            if (data.isEmpty()) break
+        override fun run() {
+            val query = SimbadQuery()
+            query.catalog(type)
+            query.id(0)
+            query.limit(20000)
 
-            for (item in data) {
-                val key = item.names.firstOrNull { it.type == type }?.name ?: continue
-                res[key] = item
+            if (magnitude != SkyObject.UNKNOWN_MAGNITUDE) query.magnitude(max = magnitude)
+
+            while (true) {
+                val data = service.query(query).execute().body() ?: break
+
+                if (data.isEmpty()) break
+
+                synchronized(output) {
+                    for (item in data) {
+                        val key = item.names.firstOrNull { it.type == type }?.name ?: continue
+                        output[key] = item
+                    }
+                }
+
+                query.id(data.last().id.toInt() + 1)
             }
-
-            query.id(data.last().id.toInt() + 1)
         }
-
-        return res
     }
 }

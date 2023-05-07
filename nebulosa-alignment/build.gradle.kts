@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     api(project(":nebulosa-platesolving"))
-    implementation(libs.logback)
+    implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }
 

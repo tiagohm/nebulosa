@@ -1,6 +1,6 @@
 package nebulosa.guiding.internal
 
-import org.slf4j.LoggerFactory
+import nebulosa.log.loggerFor
 
 internal class DistanceChecker(private val guider: MultiStarGuider) {
 
@@ -92,6 +92,6 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
 
         private const val WAIT_INTERVAL = 5000L
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(DistanceChecker::class.java)
+        @JvmStatic private val LOG = loggerFor<DistanceChecker>()
     }
 }

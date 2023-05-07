@@ -41,12 +41,12 @@ abstract class AbstractWindow(
         private set
 
     protected val hostServices by lazy { beanFactory.getBean(HostServices::class.java) }
-    protected val preferenceService by lazy { beanFactory.getBean("preferenceService") as PreferenceService }
+    protected val preferenceService by lazy { beanFactory.getBean(PreferenceService::class.java) }
 
     init {
         window.setOnShowing {
             if (showingAtFirstTime.compareAndSet(true, false)) {
-                val loader = FXMLLoader(resourceUrl("$resourceName.fxml")!!)
+                val loader = FXMLLoader(resourceUrl("screens/$resourceName.fxml")!!)
                 loader.setController(this)
                 val root = loader.load<Parent>()
 

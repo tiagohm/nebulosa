@@ -1,7 +1,7 @@
 package nebulosa.imaging.algorithms
 
 import nebulosa.imaging.Image
-import org.slf4j.LoggerFactory
+import nebulosa.log.loggerFor
 import kotlin.math.max
 import kotlin.math.min
 
@@ -42,5 +42,5 @@ object AutoScreenTransformFunction : ComputationAlgorithm<ScreenTransformFunctio
         return ScreenTransformFunction(compute(source)).transform(source)
     }
 
-    @JvmStatic private val LOG = LoggerFactory.getLogger(AutoScreenTransformFunction::class.java)
+    @JvmStatic private val LOG = loggerFor<AutoScreenTransformFunction>()
 }

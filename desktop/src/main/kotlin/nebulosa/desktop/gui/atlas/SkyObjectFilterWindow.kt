@@ -37,12 +37,10 @@ class SkyObjectFilterWindow : AbstractWindow("SkyObjectFilter", "filter"), SkyOb
         radiusSpinner.disableProperty().bind(!regionEnabledCheckbox.selectedProperty())
 
         constellationChoiceBox.converter = ConstellationStringConverter
-        constellationChoiceBox.items.add(null)
-        constellationChoiceBox.items.addAll(Constellation.values().toList())
+        constellationChoiceBox.items.add(0, null)
 
         typeChoiceBox.converter = SkyObjectTypeStringConverter
-        typeChoiceBox.items.add(null)
-        typeChoiceBox.items.addAll(SkyObjectType.values().sortedBy { it.description })
+        typeChoiceBox.items.add(0, null)
 
         val magnitudeRangeLabel = magnitudeRangeSlider.parent as LabeledPane
         magnitudeRangeSlider.lowValueProperty().on { magnitudeRangeLabel.text = MAGNITUDE_LABEL_TEXT.format(it, magnitudeRangeSlider.highValue) }

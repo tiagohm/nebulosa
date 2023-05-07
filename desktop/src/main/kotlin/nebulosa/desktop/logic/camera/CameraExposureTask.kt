@@ -17,6 +17,7 @@ import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.mount.Mount
+import nebulosa.log.loggerFor
 import nom.tam.fits.Fits
 import nom.tam.fits.ImageHDU
 import nom.tam.fits.header.ObservationDescription
@@ -25,7 +26,6 @@ import nom.tam.util.FitsOutputStream
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.InputStream
 import java.nio.file.Path
@@ -247,7 +247,7 @@ data class CameraExposureTask(
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(CameraExposureTask::class.java)
+        @JvmStatic private val LOG = loggerFor<CameraExposureTask>()
         @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")
     }
 }

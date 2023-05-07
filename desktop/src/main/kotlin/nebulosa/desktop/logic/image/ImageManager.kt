@@ -28,6 +28,7 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.indi.device.mount.Mount
+import nebulosa.log.loggerFor
 import nebulosa.platesolving.Calibration
 import nebulosa.skycatalog.SkyObject
 import nebulosa.wcs.WCSTransform
@@ -35,7 +36,6 @@ import nom.tam.fits.Header
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.File
 import javax.imageio.ImageIO
@@ -441,7 +441,7 @@ class ImageManager(private val view: ImageView) : AbstractManager(), Annotation.
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(ImageManager::class.java)
+        @JvmStatic private val LOG = loggerFor<ImageManager>()
 
         @JvmStatic
         fun Header.populateWithCalibration(calibration: Calibration) {

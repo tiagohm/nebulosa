@@ -14,10 +14,10 @@ import nebulosa.desktop.logic.or
 import nebulosa.desktop.logic.platesolver.PlateSolverManager
 import nebulosa.desktop.view.platesolver.PlateSolverType
 import nebulosa.desktop.view.platesolver.PlateSolverView
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.AngleFormatter
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
@@ -238,6 +238,6 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(PlateSolverWindow::class.java)
+        @JvmStatic private val LOG = loggerFor<PlateSolverWindow>()
     }
 }

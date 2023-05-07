@@ -6,7 +6,7 @@ plugins {
 dependencies {
     api(project(":nebulosa-erfa"))
     api(project(":nebulosa-netty"))
-    implementation(libs.logback)
+    implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }
 

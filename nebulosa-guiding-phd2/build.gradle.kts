@@ -8,7 +8,7 @@ dependencies {
     api(project(":nebulosa-guiding"))
     api(project(":nebulosa-phd2-client"))
     implementation(libs.jackson)
-    implementation(libs.logback)
+    implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }
 

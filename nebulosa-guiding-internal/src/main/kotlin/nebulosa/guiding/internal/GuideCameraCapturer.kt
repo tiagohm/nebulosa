@@ -3,7 +3,7 @@ package nebulosa.guiding.internal
 import nebulosa.common.concurrency.Worker
 import nebulosa.guiding.NoiseReductionMethod
 import nebulosa.imaging.algorithms.Mean
-import org.slf4j.LoggerFactory
+import nebulosa.log.loggerFor
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.max
 
@@ -42,6 +42,6 @@ internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : W
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(GuideCameraCapturer::class.java)
+        @JvmStatic private val LOG = loggerFor<GuideCameraCapturer>()
     }
 }

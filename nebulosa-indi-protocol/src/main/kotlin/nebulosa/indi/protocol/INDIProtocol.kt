@@ -1,7 +1,6 @@
 package nebulosa.indi.protocol
 
 import java.io.PrintStream
-import java.io.Serializable
 
 /**
  * A simple XML-like communications protocol is described for
@@ -10,7 +9,7 @@ import java.io.Serializable
  *
  * @see <a href="http://www.clearskyinstitute.com/INDI/INDI.pdf">Protocol</a>
  */
-sealed class INDIProtocol : HasName, Serializable {
+sealed class INDIProtocol : HasName {
 
     var device = ""
 

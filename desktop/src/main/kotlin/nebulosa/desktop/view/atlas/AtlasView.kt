@@ -8,9 +8,8 @@ import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
 import java.awt.image.BufferedImage
 import java.time.LocalDate
-import java.time.LocalTime
 
-interface AtlasView : View {
+interface AtlasView : View, DateTimeProvider {
 
     enum class TabType {
         SUN,
@@ -38,10 +37,6 @@ interface AtlasView : View {
     val longitude: Angle
 
     val elevation: Distance
-
-    val date: LocalDate
-
-    val time: LocalTime
 
     val manualMode: Boolean
 
@@ -73,7 +68,7 @@ interface AtlasView : View {
 
     suspend fun populateDSOs(dsos: List<SkyObject>)
 
-    suspend fun updateInfo(bodyName: String, extra: List<Pair<String, String>> = emptyList())
+    suspend fun updateInfo(bodyName: String, date: LocalDate, extra: List<Pair<String, String>> = emptyList())
 
     suspend fun updateRTS(rts: Triple<String, String, String>)
 

@@ -6,7 +6,7 @@ plugins {
 
 dependencies {
     implementation(libs.controlsfx)
-    implementation(libs.logback)
+    implementation(project(":nebulosa-log"))
 }
 
 publishing {

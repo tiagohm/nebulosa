@@ -13,7 +13,7 @@
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1">
     <VBox alignment="CENTER"
-          spacing="4.0"
+          spacing="1.0"
           AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0"
           AnchorPane.rightAnchor="0.0"
@@ -27,14 +27,17 @@
         <ImageView preserveRatio="true"
                    fitHeight="128.0"
                    fitWidth="128.0">
-            <Image url="@icons/nebulosa-512.png"/>
+            <Image url="@../icons/nebulosa-512.png"/>
         </ImageView>
         <Label text="Nebulosa"
-               styleClass="text-lg,text-bold,monospaced"/>
+               styleClass="text-xlg,text-bold,monospaced"/>
         <Label fx:id="versionLabel"
-               text="v0.1.0"
-               styleClass="monospaced"/>
-        <Label text="Copyright © 2022-2023 - Tiago Melo"
+               text="v0.1.0 · Ceres"
+               styleClass="text-md,monospaced"/>
+        <Label fx:id="builtOnLabel"
+               text="Built on 2023-01-01"
                styleClass="text-sm,monospaced"/>
+        <Label text="Copyright © 2022-2023 - Tiago Melo"
+               styleClass="text-xs,monospaced"/>
     </VBox>
 </AnchorPane>
