@@ -10,12 +10,12 @@ import javafx.scene.text.TextAlignment
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.service.SkyObjectService
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import nebulosa.skycatalog.AxisSize
 import nebulosa.skycatalog.SkyObject
 import nebulosa.wcs.WCSTransform
-import org.slf4j.LoggerFactory
 import kotlin.math.max
 import kotlin.math.min
 
@@ -91,7 +91,7 @@ class Annotation : ShapePane() {
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(Annotation::class.java)
+        @JvmStatic private val LOG = loggerFor<Annotation>()
 
         @JvmStatic
         private fun DoubleArray.makeShapes(annotation: Annotation, star: SkyObject, calibration: Calibration, color: Color): Pair<Circle, Text> {

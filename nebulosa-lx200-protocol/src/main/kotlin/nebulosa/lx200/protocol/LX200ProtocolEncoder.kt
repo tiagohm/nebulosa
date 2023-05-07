@@ -3,8 +3,9 @@ package nebulosa.lx200.protocol
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToByteEncoder
+import nebulosa.log.debug
+import nebulosa.log.loggerFor
 import nebulosa.netty.writeAscii
-import org.slf4j.LoggerFactory
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.math.abs
@@ -16,9 +17,7 @@ class LX200ProtocolEncoder : MessageToByteEncoder<LX200ProtocolMessage>() {
         msg: LX200ProtocolMessage,
         output: ByteBuf,
     ) {
-        if (LOG.isDebugEnabled) {
-            LOG.debug("sending message. message={}", msg)
-        }
+        LOG.debug { "sending message. message=$msg" }
 
         when (msg) {
             LX200ProtocolMessage.Ack -> output.writeByte(71)
@@ -70,7 +69,7 @@ class LX200ProtocolEncoder : MessageToByteEncoder<LX200ProtocolMessage>() {
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(LX200ProtocolEncoder::class.java)
+        @JvmStatic private val LOG = loggerFor<LX200ProtocolEncoder>()
 
         @JvmStatic internal val CALENDAR_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yy")
         @JvmStatic internal val CALENDAR_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")

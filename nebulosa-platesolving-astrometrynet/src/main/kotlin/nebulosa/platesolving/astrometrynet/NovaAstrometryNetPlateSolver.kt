@@ -3,11 +3,11 @@ package nebulosa.platesolving.astrometrynet
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.nova.Session
 import nebulosa.astrometrynet.nova.Upload
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.Duration
 import kotlin.math.max
@@ -109,6 +109,6 @@ class NovaAstrometryNetPlateSolver(
 
         private const val SESSION_EXPIRATION_TIME = 1000L * 60L * 15L
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(NovaAstrometryNetService::class.java)
+        @JvmStatic private val LOG = loggerFor<NovaAstrometryNetService>()
     }
 }

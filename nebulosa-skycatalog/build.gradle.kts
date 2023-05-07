@@ -6,7 +6,7 @@ plugins {
 dependencies {
     api(project(":nebulosa-io"))
     api(project(":nebulosa-nova"))
-    implementation(libs.logback)
+    implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }
 

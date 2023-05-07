@@ -3,8 +3,9 @@ package nebulosa.lx200.protocol
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
+import nebulosa.log.debug
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
-import org.slf4j.LoggerFactory
 import java.time.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -43,9 +44,7 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
 
         val command = input.toString(Charsets.US_ASCII)
 
-        if (LOG.isDebugEnabled) {
-            LOG.debug("command received. command={}", command)
-        }
+        LOG.debug { "command received. command=$command" }
 
         if (started.get()) {
             when (command) {
@@ -138,6 +137,6 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(LX200ProtocolHandler::class.java)
+        @JvmStatic private val LOG = loggerFor<LX200ProtocolHandler>()
     }
 }

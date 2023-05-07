@@ -1,10 +1,10 @@
 package nebulosa.platesolving.watney
 
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files
 import java.time.Duration
@@ -26,7 +26,7 @@ class WatneyPlateSolver(private val path: String) : PlateSolver {
         centerDEC: Angle,
         radius: Angle,
         downsampleFactor: Int,
-        timeout: Duration?
+        timeout: Duration?,
     ): Calibration {
         val args = arrayListOf<String>()
 
@@ -135,6 +135,6 @@ class WatneyPlateSolver(private val path: String) : PlateSolver {
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(WatneyPlateSolver::class.java)
+        @JvmStatic private val LOG = loggerFor<WatneyPlateSolver>()
     }
 }

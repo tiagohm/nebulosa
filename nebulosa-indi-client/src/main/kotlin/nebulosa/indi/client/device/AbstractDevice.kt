@@ -10,7 +10,7 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.Vector
-import org.slf4j.LoggerFactory
+import nebulosa.log.loggerFor
 import java.util.*
 
 internal abstract class AbstractDevice(
@@ -203,7 +203,7 @@ internal abstract class AbstractDevice(
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(AbstractDevice::class.java)
+        @JvmStatic private val LOG = loggerFor<AbstractDevice>()
 
         @JvmStatic
         fun <T : Device> Class<out T>.create(sender: MessageSender, handler: DeviceProtocolHandler, name: String): T {

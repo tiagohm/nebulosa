@@ -1,4 +1,5 @@
 import nebulosa.io.transferAndClose
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle.Companion.arcmin
 import nebulosa.math.Angle.Companion.mas
 import nebulosa.math.Velocity.Companion.kms
@@ -23,7 +24,6 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.slf4j.LoggerFactory
 import org.sqlite.JDBC
 import java.io.File
 import java.nio.file.Path
@@ -284,7 +284,7 @@ object SkyDatabaseGenerator {
         }
     }
 
-    @JvmStatic private val LOG = LoggerFactory.getLogger(SkyDatabaseGenerator::class.java)
+    @JvmStatic private val LOG = loggerFor<SkyDatabaseGenerator>()
     @JvmStatic private val EXECUTORS = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
 
     @JvmStatic

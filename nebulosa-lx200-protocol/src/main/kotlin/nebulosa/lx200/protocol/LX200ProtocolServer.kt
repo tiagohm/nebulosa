@@ -2,9 +2,9 @@ package nebulosa.lx200.protocol
 
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.netty.NettyServer
-import org.slf4j.LoggerFactory
 import java.time.OffsetDateTime
 import java.util.concurrent.atomic.AtomicReference
 
@@ -121,6 +121,6 @@ class LX200ProtocolServer(
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(LX200ProtocolServer::class.java)
+        @JvmStatic private val LOG = loggerFor<LX200ProtocolServer>()
     }
 }

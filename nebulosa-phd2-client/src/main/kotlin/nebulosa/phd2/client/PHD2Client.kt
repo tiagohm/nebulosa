@@ -2,10 +2,11 @@ package nebulosa.phd2.client
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import nebulosa.log.debug
+import nebulosa.log.loggerFor
 import nebulosa.phd2.client.event.*
 import okio.buffer
 import okio.source
-import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.InputStream
 import java.net.InetSocketAddress
@@ -63,9 +64,7 @@ class PHD2Client(
                 val eventText = buffer.readUtf8Line() ?: break
                 val eventName = EVENT_NAME_REGEX.matchEntire(eventText)?.groupValues?.get(1) ?: continue
 
-                if (LOG.isDebugEnabled) {
-                    LOG.info("event received. event={}", eventText)
-                }
+                LOG.debug { "event received. event=$eventText" }
 
                 val type = EVENT_TYPES[eventName] ?: continue
                 val event = type.second ?: OBJECT_MAPPER.readValue(eventText, type.first)
@@ -79,7 +78,7 @@ class PHD2Client(
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(PHD2Client::class.java)
+        @JvmStatic private val LOG = loggerFor<PHD2Client>()
 
         @JvmStatic private val OBJECT_MAPPER = ObjectMapper()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)

@@ -14,6 +14,7 @@ import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
 import nebulosa.io.resource
 import nebulosa.io.transferAndClose
+import nebulosa.log.loggerFor
 import nebulosa.sbd.SmallBodyDatabaseLookupService
 import nebulosa.simbad.SimbadService
 import okhttp3.Cache
@@ -24,7 +25,6 @@ import org.flywaydb.core.Flyway
 import org.greenrobot.eventbus.EventBus
 import org.hibernate.community.dialect.SQLiteDialect
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -49,7 +49,6 @@ import javax.sql.DataSource
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.outputStream
-import ch.qos.logback.classic.Logger as LogbackLogger
 
 @EnableAsync
 @SpringBootApplication
@@ -200,10 +199,10 @@ class App : CommandLineRunner {
 
     override fun run(vararg args: String) {
         with(if ("-v" in args) Level.DEBUG else Level.INFO) {
-            logger(Logger.ROOT_LOGGER_NAME).level = this
-            logger("javafx").level = Level.WARN
-            logger("org.hibernate").level = Level.WARN
-            logger("org.hibernate.SQL").level = this
+            loggerFor(Logger.ROOT_LOGGER_NAME).level = this
+            loggerFor("javafx").level = Level.WARN
+            loggerFor("org.hibernate").level = Level.WARN
+            loggerFor("org.hibernate.SQL").level = this
         }
     }
 
@@ -212,10 +211,7 @@ class App : CommandLineRunner {
         const val MAX_CACHE_SIZE = 1024L * 1024L * 32L // 32MB
         const val SKY_DATABASE_VERSION = 1
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(App::class.java)
-
-        @Suppress("NOTHING_TO_INLINE")
-        private inline fun logger(name: String) = LoggerFactory.getLogger(name) as LogbackLogger
+        @JvmStatic private val LOG = loggerFor<App>()
 
         @JvmStatic
         private fun DriverManagerDataSource.initialize(path: Path) {

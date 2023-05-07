@@ -1,6 +1,6 @@
 package nebulosa.indi.protocol.parser
 
-import org.slf4j.LoggerFactory
+import nebulosa.log.loggerFor
 import java.io.Closeable
 
 class INDIProtocolReader(
@@ -42,6 +42,6 @@ class INDIProtocolReader(
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(INDIProtocolReader::class.java)
+        @JvmStatic private val LOG = loggerFor<INDIProtocolReader>()
     }
 }

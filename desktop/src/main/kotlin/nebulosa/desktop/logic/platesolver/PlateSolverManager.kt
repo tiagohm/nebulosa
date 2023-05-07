@@ -14,6 +14,7 @@ import nebulosa.desktop.view.platesolver.PlateSolverView
 import nebulosa.fits.dec
 import nebulosa.fits.imageHDU
 import nebulosa.fits.ra
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.platesolving.Calibration
@@ -23,7 +24,6 @@ import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
 import nebulosa.platesolving.watney.WatneyPlateSolver
 import nom.tam.fits.Fits
 import org.greenrobot.eventbus.EventBus
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import oshi.PlatformEnum
@@ -241,7 +241,7 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Abstra
 
         const val FOCAL_LENGTH_RATIO = 206.26480624709635
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(PlateSolverManager::class.java)
+        @JvmStatic private val LOG = loggerFor<PlateSolverManager>()
         @JvmStatic private val PLATE_SOLVE_TIMEOUT = Duration.ofMinutes(5L)
     }
 }

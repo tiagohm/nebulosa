@@ -9,7 +9,7 @@ dependencies {
     api(libs.jackson)
     api(libs.okhttp)
     api(libs.okhttp.logging)
-    implementation(libs.logback)
+    implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }
 

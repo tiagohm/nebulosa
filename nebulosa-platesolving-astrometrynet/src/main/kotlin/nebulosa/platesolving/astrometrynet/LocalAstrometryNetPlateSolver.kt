@@ -1,12 +1,12 @@
 package nebulosa.platesolving.astrometrynet
 
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.arcmin
 import nebulosa.math.Angle.Companion.arcsec
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files
 import java.time.Duration
@@ -116,7 +116,7 @@ class LocalAstrometryNetPlateSolver(private val path: String) : PlateSolver {
 
         private const val NUMBER_REGEX = "([\\d.+-]+)"
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(LocalAstrometryNetPlateSolver::class.java)
+        @JvmStatic private val LOG = loggerFor<LocalAstrometryNetPlateSolver>()
         @JvmStatic private val FIELD_CENTER_REGEX = Regex(".*Field center: \\(RA,Dec\\) = \\($NUMBER_REGEX, $NUMBER_REGEX\\).*")
         @JvmStatic private val FIELD_SIZE_REGEX = Regex(".*Field size: $NUMBER_REGEX x $NUMBER_REGEX arcminutes.*")
         @JvmStatic private val FIELD_ROTATION_REGEX = Regex(".*Field rotation angle: up is $NUMBER_REGEX degrees.*")

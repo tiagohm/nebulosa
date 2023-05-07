@@ -4,11 +4,11 @@ import kotlinx.coroutines.runBlocking
 import nebulosa.desktop.helper.await
 import nebulosa.desktop.service.PreferenceService
 import nebulosa.io.transferAndClose
+import nebulosa.log.loggerFor
 import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
@@ -98,6 +98,6 @@ class IERSLoader : Runnable {
 
         private const val LAST_MODIFIED_KEY = "iersLoader.lastModified"
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(IERSLoader::class.java)
+        @JvmStatic private val LOG = loggerFor<IERSLoader>()
     }
 }

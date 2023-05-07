@@ -3,9 +3,9 @@ package nebulosa.desktop.logic.atlas.provider.ephemeris
 import nebulosa.desktop.view.atlas.DateTimeProvider
 import nebulosa.horizons.HorizonsEphemeris
 import nebulosa.horizons.HorizonsQuantity
+import nebulosa.log.loggerFor
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.time.UTC
-import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -59,7 +59,7 @@ abstract class AbstractEphemerisProvider<T> : EphemerisProvider<T> {
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(AbstractEphemerisProvider::class.java)
+        @JvmStatic private val LOG = loggerFor<AbstractEphemerisProvider<*>>()
         @JvmStatic private val NOON = LocalTime.of(0, 0, 0, 0)
     }
 }

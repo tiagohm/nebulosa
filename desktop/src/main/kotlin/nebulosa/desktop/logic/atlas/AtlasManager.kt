@@ -24,6 +24,7 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountEvent
 import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
 import nebulosa.indi.device.mount.TrackMode
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.rad
@@ -47,7 +48,6 @@ import okhttp3.Request
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
@@ -704,7 +704,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(AtlasManager::class.java)
+        @JvmStatic private val LOG = loggerFor<AtlasManager>()
         @JvmStatic private val RTS_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
 
         private const val SUN_TARGET = "10"

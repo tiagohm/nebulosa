@@ -7,7 +7,8 @@ import nebulosa.indi.protocol.GetProperties
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.io.INDIConnection
 import nebulosa.indi.protocol.parser.INDIProtocolReader
-import org.slf4j.LoggerFactory
+import nebulosa.log.debug
+import nebulosa.log.loggerFor
 import java.io.Closeable
 
 class DefaultINDIClient(override val connection: INDIConnection) : INDIClient {
@@ -44,10 +45,7 @@ class DefaultINDIClient(override val connection: INDIConnection) : INDIClient {
     }
 
     override fun sendMessageToServer(message: INDIProtocol) {
-        if (LOG.isDebugEnabled) {
-            LOG.debug("sending message: {}", message)
-        }
-
+        LOG.debug { "sending message: $message" }
         connection.writeINDIProtocol(message)
     }
 
@@ -86,6 +84,6 @@ class DefaultINDIClient(override val connection: INDIConnection) : INDIClient {
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(DefaultINDIClient::class.java)
+        @JvmStatic private val LOG = loggerFor<DefaultINDIClient>()
     }
 }
