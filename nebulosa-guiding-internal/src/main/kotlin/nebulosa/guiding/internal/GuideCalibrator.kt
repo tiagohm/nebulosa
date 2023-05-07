@@ -6,9 +6,9 @@ import nebulosa.guiding.Calibration
 import nebulosa.guiding.CalibrationState
 import nebulosa.guiding.GuideDirection
 import nebulosa.guiding.GuideParity
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
-import org.slf4j.LoggerFactory
 import kotlin.math.*
 
 internal class GuideCalibrator(private val guider: MultiStarGuider) {
@@ -681,7 +681,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
         private const val MAX_NUDGES = 3
         private const val NUDGE_TOLERANCE = 2.0
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(GuideCalibrator::class.java)
+        @JvmStatic private val LOG = loggerFor<GuideCalibrator>()
 
         @JvmStatic
         private fun mountCoords(camera: Point, x: Angle, y: Angle): Point {

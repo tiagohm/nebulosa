@@ -27,7 +27,7 @@ import nebulosa.indi.protocol.Message
 import nebulosa.indi.protocol.io.INDIInputStream
 import nebulosa.indi.protocol.parser.INDIProtocolParser
 import nebulosa.indi.protocol.parser.INDIProtocolReader
-import org.slf4j.LoggerFactory
+import nebulosa.log.loggerFor
 import java.util.concurrent.LinkedBlockingQueue
 
 class DeviceProtocolHandler : INDIProtocolParser {
@@ -306,7 +306,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(DeviceProtocolHandler::class.java)
+        @JvmStatic private val LOG = loggerFor<DeviceProtocolHandler>()
 
         @JvmStatic private val CAMERAS = mapOf(
             "indi_asi_ccd" to AsiCamera::class.java,

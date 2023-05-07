@@ -4,9 +4,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":nebulosa-math"))
-    implementation(project(":nebulosa-log"))
-    testImplementation(project(":nebulosa-test"))
+    api(libs.logback)
 }
 
 publishing {

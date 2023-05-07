@@ -1,10 +1,10 @@
 package nebulosa.platesolving.astap
 
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -121,6 +121,6 @@ class AstapPlateSolver(private val path: String) : PlateSolver {
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(AstapPlateSolver::class.java)
+        @JvmStatic private val LOG = loggerFor<AstapPlateSolver>()
     }
 }

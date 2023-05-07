@@ -2,10 +2,10 @@ package nebulosa.phd2.client
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import nebulosa.log.loggerFor
 import nebulosa.phd2.client.event.*
 import okio.buffer
 import okio.source
-import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.InputStream
 import java.net.InetSocketAddress
@@ -79,7 +79,7 @@ class PHD2Client(
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(PHD2Client::class.java)
+        @JvmStatic private val LOG = loggerFor<PHD2Client>()
 
         @JvmStatic private val OBJECT_MAPPER = ObjectMapper()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)

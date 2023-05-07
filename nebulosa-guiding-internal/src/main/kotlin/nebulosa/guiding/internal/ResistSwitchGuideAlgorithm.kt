@@ -1,7 +1,7 @@
 package nebulosa.guiding.internal
 
 import nebulosa.guiding.GuideAxis
-import org.slf4j.LoggerFactory
+import nebulosa.log.loggerFor
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -91,6 +91,6 @@ data class ResistSwitchGuideAlgorithm(
         const val DEFAULT_MIN_MOVE = 0.2
         const val DEFAULT_AGGRESSION = 1.0
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(ResistSwitchGuideAlgorithm::class.java)
+        @JvmStatic private val LOG = loggerFor<ResistSwitchGuideAlgorithm>()
     }
 }

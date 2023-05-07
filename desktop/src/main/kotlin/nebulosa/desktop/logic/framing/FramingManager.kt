@@ -15,6 +15,7 @@ import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.hips2fits.HipsSurvey
 import nebulosa.imaging.Image
 import nebulosa.indi.device.mount.Mount
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.AngleFormatter
@@ -23,7 +24,6 @@ import nebulosa.platesolving.Calibration
 import nom.tam.fits.header.ObservationDescription
 import nom.tam.fits.header.Standard
 import nom.tam.fits.header.extra.MaxImDLExt
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.io.ByteArrayInputStream
@@ -196,7 +196,7 @@ class FramingManager(@Autowired internal val view: FramingView) : AbstractManage
 
         const val DEFAULT_HIPS_SURVEY = "CDS/P/DSS2/color"
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(FramingManager::class.java)
+        @JvmStatic private val LOG = loggerFor<FramingManager>()
 
         @JvmStatic private val HIPS_SURVEY_SOURCES = listOf(
             HipsSurvey("CDS/P/DSS2/NIR", "Image/Optical/DSS", "equatorial", "Optical", 16, 2.236E-4, 0.9955),

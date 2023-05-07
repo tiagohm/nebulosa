@@ -1,6 +1,6 @@
 package nebulosa.alpaca.discovery
 
-import org.slf4j.LoggerFactory
+import nebulosa.log.loggerFor
 import java.io.Closeable
 import java.io.IOException
 import java.net.*
@@ -101,6 +101,6 @@ class AlpacaDiscoveryProtocol : Runnable, Closeable {
         private const val ALPACA_DISCOVERY_MESSAGE = "alpacadiscovery1"
 
         @JvmStatic private val ALPACA_PORT_REGEX = Regex("\\{\"AlpacaPort\":(\\d+)\\}")
-        @JvmStatic private val LOG = LoggerFactory.getLogger(AlpacaDiscoveryProtocol::class.java)
+        @JvmStatic private val LOG = loggerFor<AlpacaDiscoveryProtocol>()
     }
 }

@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToByteEncoder
 import nebulosa.constants.PI
 import nebulosa.erfa.eraAnpm
-import org.slf4j.LoggerFactory
+import nebulosa.log.loggerFor
 
 class StellariumProtocolEncoder : MessageToByteEncoder<StellariumProtocolMessage>() {
 
@@ -19,7 +19,7 @@ class StellariumProtocolEncoder : MessageToByteEncoder<StellariumProtocolMessage
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(StellariumProtocolEncoder::class.java)
+        @JvmStatic private val LOG = loggerFor<StellariumProtocolEncoder>()
 
         @JvmStatic
         private fun ByteBuf.sendCurrentPosition(message: StellariumProtocolMessage.CurrentPosition) {

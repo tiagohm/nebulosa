@@ -4,11 +4,11 @@ import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.desktop.logic.task.TaskFinished
 import nebulosa.desktop.logic.task.TaskStarted
 import nebulosa.indi.device.mount.*
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 data class MountSlewTask(
@@ -63,6 +63,6 @@ data class MountSlewTask(
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(MountSlewTask::class.java)
+        @JvmStatic private val LOG = loggerFor<MountSlewTask>()
     }
 }

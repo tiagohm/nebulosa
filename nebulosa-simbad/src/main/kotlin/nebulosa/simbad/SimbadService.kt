@@ -1,12 +1,12 @@
 package nebulosa.simbad
 
+import nebulosa.log.loggerFor
 import nebulosa.retrofit.RetrofitService
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
-import org.slf4j.LoggerFactory
 import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Retrofit
@@ -112,7 +112,7 @@ class SimbadService(
         private const val IDS = 22
 
         @JvmStatic private val CATALOG_TYPES = CatalogType.values()
-        @JvmStatic private val LOG = LoggerFactory.getLogger(SimbadService::class.java)
+        @JvmStatic private val LOG = loggerFor<SimbadService>()
 
         @JvmStatic private val MAIN_CATALOG_TYPES = arrayOf(
             CatalogType.NAME, CatalogType.STAR,

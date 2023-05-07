@@ -1,9 +1,9 @@
 package nebulosa.desktop.logic.atlas.provider.ephemeris
 
 import nebulosa.constants.DAYSEC
+import nebulosa.log.loggerFor
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
-import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
 class TimeBucket private constructor(private val bucket: MutableList<Pair<UTC, LocalDateTime>>) : List<Pair<UTC, LocalDateTime>> by bucket {
@@ -36,6 +36,6 @@ class TimeBucket private constructor(private val bucket: MutableList<Pair<UTC, L
 
         private const val STEP_SIZE = 24 * 60
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(TimeBucket::class.java)
+        @JvmStatic private val LOG = loggerFor<TimeBucket>()
     }
 }

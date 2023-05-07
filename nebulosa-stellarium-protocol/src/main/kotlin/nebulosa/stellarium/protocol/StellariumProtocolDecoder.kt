@@ -4,8 +4,8 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
 import nebulosa.constants.PI
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle.Companion.rad
-import org.slf4j.LoggerFactory
 
 internal class StellariumProtocolDecoder : ByteToMessageDecoder() {
 
@@ -32,6 +32,6 @@ internal class StellariumProtocolDecoder : ByteToMessageDecoder() {
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(StellariumProtocolDecoder::class.java)
+        @JvmStatic private val LOG = loggerFor<StellariumProtocolDecoder>()
     }
 }

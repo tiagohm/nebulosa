@@ -10,7 +10,7 @@ import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.telescopecontrol.TelescopeControlManager
 import nebulosa.desktop.view.telescopecontrol.TelescopeControlType
 import nebulosa.desktop.view.telescopecontrol.TelescopeControlView
-import org.slf4j.LoggerFactory
+import nebulosa.log.loggerFor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
@@ -82,6 +82,6 @@ class TelescopeControlWindow : AbstractWindow("TelescopeControl", "remote-contro
 
     companion object {
 
-        @JvmStatic private val LOG = LoggerFactory.getLogger(TelescopeControlWindow::class.java)
+        @JvmStatic private val LOG = loggerFor<TelescopeControlWindow>()
     }
 }
