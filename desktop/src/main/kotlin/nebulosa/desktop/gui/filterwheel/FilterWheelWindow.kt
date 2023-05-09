@@ -7,7 +7,7 @@ import javafx.scene.control.*
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.control.ButtonValueFactory
+import nebulosa.desktop.gui.control.CellValueFactory
 import nebulosa.desktop.gui.control.PropertyValueFactory
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.filterwheel.FilterWheelManager
@@ -79,7 +79,7 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
             filterWheelManager.updateFilterName(position, label)
         }
 
-        (filterSlotTableView.columns[2] as TableColumn<Int, String>).cellFactory = object : ButtonValueFactory<Int, String> {
+        (filterSlotTableView.columns[2] as TableColumn<Int, String>).cellFactory = object : CellValueFactory<Int, String> {
 
             override fun cell(item: Int, node: Node?): Node {
                 val button = node as? Button

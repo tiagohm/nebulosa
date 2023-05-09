@@ -1,4 +1,4 @@
-package nebulosa.desktop.gui.control
+package nebulosa.desktop.gui.control.overlay
 
 import javafx.event.EventHandler
 import javafx.scene.input.MouseButton
@@ -21,7 +21,7 @@ import kotlin.math.min
 
 typealias AnnotationFilter = (String, SkyObjectService.Filter) -> List<SkyObject>
 
-class Annotation : ShapePane() {
+class Annotation : Overlay() {
 
     interface EventListener {
 

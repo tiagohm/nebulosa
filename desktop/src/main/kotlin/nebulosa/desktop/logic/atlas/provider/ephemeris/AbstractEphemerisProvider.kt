@@ -60,6 +60,6 @@ abstract class AbstractEphemerisProvider<T> : EphemerisProvider<T> {
     companion object {
 
         @JvmStatic private val LOG = loggerFor<AbstractEphemerisProvider<*>>()
-        @JvmStatic private val NOON = LocalTime.of(0, 0, 0, 0)
+        @JvmStatic private val NOON = LocalTime.of(12, 0, 0, 0)
     }
 }

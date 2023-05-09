@@ -3,9 +3,7 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import nebulosa.desktop.gui.atlas.AltitudeChart?>
-<?import nebulosa.desktop.gui.atlas.MoonView?>
-<?import nebulosa.desktop.gui.atlas.SunView?>
+<?import nebulosa.desktop.gui.control.chart.AltitudeChart?>
 <?import nebulosa.desktop.gui.control.*?>
 <AnchorPane maxHeight="-Infinity"
             maxWidth="-Infinity"
@@ -26,9 +24,9 @@
                  text="Sun"
                  userData="SUN">
                 <VBox alignment="CENTER">
-                    <SunView fx:id="sunView"
-                             height="206.0"
-                             width="206.0"/>
+                    <SunImageView fx:id="sunImageView"
+                                  height="206.0"
+                                  width="206.0"/>
                     <Label text="SDO/HMI"
                            styleClass="text-xs,text-grey-600"/>
                 </VBox>
@@ -37,9 +35,9 @@
                  text="Moon"
                  userData="MOON">
                 <VBox alignment="CENTER">
-                    <MoonView fx:id="moonView"
-                              height="206.0"
-                              width="206.0"/>
+                    <MoonImageView fx:id="moonImageView"
+                                   height="206.0"
+                                   width="206.0"/>
                 </VBox>
             </Tab>
             <Tab onSelectionChanged="#tabSelectionChanged"

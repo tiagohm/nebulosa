@@ -1,4 +1,4 @@
-package nebulosa.desktop.gui.atlas
+package nebulosa.desktop.gui.control
 
 import javafx.scene.canvas.Canvas
 import javafx.scene.image.PixelBuffer
@@ -11,11 +11,11 @@ import java.nio.IntBuffer
 import kotlin.math.hypot
 import kotlin.math.min
 
-class SunView : Canvas() {
+class SunImageView : Canvas() {
 
     @Volatile private var image: WritableImage? = null
 
-    suspend fun updateImage(sunImage: BufferedImage) = withIO {
+    suspend fun draw(sunImage: BufferedImage) = withIO {
         val data = IntArray(sunImage.width * sunImage.height)
         val centerX = sunImage.width / 2.0
         val centerY = sunImage.height / 2.0

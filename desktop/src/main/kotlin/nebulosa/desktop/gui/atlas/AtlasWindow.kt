@@ -10,10 +10,8 @@ import javafx.scene.control.*
 import javafx.util.Callback
 import javafx.util.converter.LocalDateStringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.control.CopyableLabel
-import nebulosa.desktop.gui.control.LabeledPane
-import nebulosa.desktop.gui.control.PropertyValueFactory
-import nebulosa.desktop.gui.control.SwitchSegmentedButton
+import nebulosa.desktop.gui.control.*
+import nebulosa.desktop.gui.control.chart.AltitudeChart
 import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.atlas.AtlasManager
 import nebulosa.desktop.logic.on
@@ -56,8 +54,8 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
     @FXML private lateinit var extra4Label: CopyableLabel
     @FXML private lateinit var constellationLabel: CopyableLabel
     @FXML private lateinit var rtsLabel: CopyableLabel
-    @FXML private lateinit var sunView: SunView
-    @FXML private lateinit var moonView: MoonView
+    @FXML private lateinit var sunImageView: SunImageView
+    @FXML private lateinit var moonImageView: MoonImageView
     @FXML private lateinit var planetTableView: TableView<AtlasView.Planet>
     @FXML private lateinit var searchMinorPlanetTextField: TextField
     @FXML private lateinit var minorPlanetTableView: TableView<AtlasView.MinorPlanet>
@@ -304,11 +302,11 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
     }
 
     override suspend fun updateSunImage(image: BufferedImage) {
-        sunView.updateImage(image)
+        sunImageView.draw(image)
     }
 
     override suspend fun updateMoonImage(phase: Double, age: Double, angle: Angle) = withMain {
-        moonView.draw(age, angle)
+        moonImageView.draw(age, angle)
     }
 
     override suspend fun populatePlanet(planets: List<AtlasView.Planet>): Unit = withMain {

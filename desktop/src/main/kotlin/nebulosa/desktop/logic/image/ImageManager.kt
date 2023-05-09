@@ -4,8 +4,8 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import javafx.stage.Screen
-import nebulosa.desktop.gui.control.Annotation
-import nebulosa.desktop.gui.control.Crosshair
+import nebulosa.desktop.gui.control.overlay.Annotation
+import nebulosa.desktop.gui.control.overlay.Crosshair
 import nebulosa.desktop.gui.image.FitsHeaderWindow
 import nebulosa.desktop.gui.image.ImageStretcherWindow
 import nebulosa.desktop.gui.image.SCNRWindow

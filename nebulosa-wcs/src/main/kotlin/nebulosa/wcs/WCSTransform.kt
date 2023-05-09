@@ -24,9 +24,9 @@ class WCSTransform(@JvmField internal val header: Map<String, Any>) {
         ?: header.getDoubleValue("PV1_4")
         ?: Double.NaN
 
-    val hasCd = header.containsKey("CD1_1") ||
-            header.containsKey("CDELT1") && header.containsKey("CROTA2") ||
-            header.containsKey("CDELT1") && header.containsKey("PC1_1")
+    val hasCd = "CD1_1" in header ||
+            "CDELT1" in header && "CROTA2" in header ||
+            "CDELT1" in header && "PC1_1" in header
 
     val crpix1 = header.getDoubleValue("CRPIX1")!!
 
@@ -41,11 +41,11 @@ class WCSTransform(@JvmField internal val header: Map<String, Any>) {
 
         if (projectionType != ProjectionType.TPV) {
             // Native longitude of the fiducial point.
-            if (header.containsKey("PV1_1")) {
+            if ("PV1_1" in header) {
                 projection.phi0 = header.getDoubleValue("PV1_1")!!.deg
             }
             // Native latitude of the fiducial pole.
-            if (header.containsKey("PV1_2")) {
+            if ("PV1_2" in header) {
                 projection.theta0 = header.getDoubleValue("PV1_2")!!.deg
             }
         }
@@ -72,15 +72,15 @@ class WCSTransform(@JvmField internal val header: Map<String, Any>) {
     }
 
     private fun cd(i: Int, j: Int): Double {
-        return if (header.containsKey("CD1_1")) {
+        return if ("CD1_1" in header) {
             header.getDoubleValue("CD${i}_$j")!!
-        } else if (header.containsKey("CROTA2")) {
+        } else if ("CROTA2" in header) {
             val a = header.getDoubleValue("CDELT1")!!
             val b = header.getDoubleValue("CDELT2")!!
             val c = header.getDoubleValue("CROTA2")!!.deg
             val cd = computeCdFromCdelt(a, b, c)
             cd[2 * i + j - 3]
-        } else if (header.containsKey("PC1_1")) {
+        } else if ("PC1_1" in header) {
             val pc11 = header.getDoubleValue("PC1_1")!!
             val pc12 = header.getDoubleValue("PC1_2")!!
             val pc21 = header.getDoubleValue("PC2_1")!!
@@ -179,14 +179,14 @@ class WCSTransform(@JvmField internal val header: Map<String, Any>) {
             projectionType: ProjectionType,
             cx: Double, cy: Double,
         ): Projection? {
-            if (!wcs.header.containsKey("PV2_1")) {
+            if ("PV2_1" !in wcs.header) {
                 return null
             }
 
             val pv21 = wcs.header.getDoubleValue("PV2_1")
 
             return try {
-                if (wcs.header.containsKey("PV2_2")) {
+                if ("PV2_2" in wcs.header) {
                     val pv22 = wcs.header.getDoubleValue("PV2_2")
 
                     projectionType.type
@@ -218,9 +218,7 @@ class WCSTransform(@JvmField internal val header: Map<String, Any>) {
         }
 
         @JvmStatic
-        private fun Map<String, Any>.getStringValue(key: String): String? {
-            return this[key]?.toString()
-        }
+        private fun Map<String, Any>.getStringValue(key: String) = this[key]?.toString()
 
         @JvmStatic
         private fun Map<String, Any>.getDoubleValue(key: String): Double? {

@@ -1,22 +1,22 @@
-package nebulosa.desktop.gui.control
+package nebulosa.desktop.gui.control.overlay
 
 import javafx.beans.property.DoubleProperty
 import javafx.beans.property.DoublePropertyBase
 import javafx.scene.Node
 import javafx.scene.layout.Pane
 
-abstract class ShapePane : Pane() {
+abstract class Overlay : Pane() {
 
     val widthProperty: DoubleProperty = object : DoublePropertyBase() {
 
-        override fun getBean() = this@ShapePane
+        override fun getBean() = this@Overlay
 
         override fun getName() = "width"
     }
 
     val heightProperty: DoubleProperty = object : DoublePropertyBase() {
 
-        override fun getBean() = this@ShapePane
+        override fun getBean() = this@Overlay
 
         override fun getName() = "height"
     }
