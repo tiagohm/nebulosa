@@ -31,7 +31,7 @@ dependencyResolutionManagement {
             library("aalto", "com.fasterxml:aalto-xml:1.3.2")
             library("csv", "org.apache.commons:commons-csv:1.10.0")
             library("coroutines", "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0")
-            library("coroutines-javafx", "org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.7.0-RC")
+            library("coroutines-javafx", "org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.7.0")
             library("coroutines-rx3", "org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.7.0")
             library("apache-lang3", "org.apache.commons:commons-lang3:3.12.0")
             library("oshi", "com.github.oshi:oshi-core:6.4.2")
