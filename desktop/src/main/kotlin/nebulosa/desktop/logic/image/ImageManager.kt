@@ -353,22 +353,21 @@ class ImageManager(private val view: ImageView) : AbstractManager(), Annotation.
         val ra = image.header.ra
         val dec = image.header.dec
 
-        val calibration = if (!blind && ra != null && dec != null) {
+        if (!blind && ra != null && dec != null) {
             LOG.info("plate solving. path={}, ra={}, dec={}", file, ra.hours, dec.degrees)
-            plateSolverView.solve(file, false, ra, dec)
+            plateSolverView.solve(file, false, ra, dec) { handleCalibration(it, image) }
         } else {
             LOG.info("blind plate solving. path={}", file)
-            plateSolverView.solve(file)
+            plateSolverView.solve(file) { handleCalibration(it, image) }
         }
-
-        if (calibration != null) {
-            image.header.populateWithCalibration(calibration)
-            LOG.info("plate solving finished. calibration={}", calibration)
-        }
-
-        this.calibration.set(calibration)
 
         return true
+    }
+
+    private fun handleCalibration(calibration: Calibration?, image: Image) {
+        this.calibration.set(calibration)
+        LOG.info("plate solving finished. calibration={}", calibration)
+        calibration?.also { image.header.populateWithCalibration(it) }
     }
 
     fun openImageStretcher() {

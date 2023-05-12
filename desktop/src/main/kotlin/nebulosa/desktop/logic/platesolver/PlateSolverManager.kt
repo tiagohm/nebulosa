@@ -3,6 +3,7 @@ package nebulosa.desktop.logic.platesolver
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.stage.FileChooser
+import kotlinx.coroutines.Job
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
@@ -38,6 +39,8 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Abstra
     @Autowired private lateinit var equipmentManager: EquipmentManager
     @Autowired private lateinit var framingView: FramingView
     @Autowired private lateinit var eventBus: EventBus
+
+    @Volatile private var solverJob: Job? = null
 
     val file = SimpleObjectProperty<File>()
     val solving = SimpleBooleanProperty()
@@ -108,69 +111,78 @@ class PlateSolverManager(@Autowired internal val view: PlateSolverView) : Abstra
         PlateSolverType.WATNEY -> ""
     }
 
-    suspend fun solve(
+    fun solve(
         file: File = this.file.get(),
         blind: Boolean = view.blind,
         centerRA: Angle = view.centerRA, centerDEC: Angle = view.centerDEC,
         radius: Angle = view.radius,
-    ): Calibration? {
-        require(!solving.get()) { "plate solving in progress" }
+        block: (Calibration?) -> Unit = {},
+    ) {
+        if (solving.get()) return block(null)
 
-        withMain { solving.set(true) }
+        solverJob = launch {
+            withMain { solving.set(true) }
 
-        fileWasLoaded(file)
+            fileWasLoaded(file)
 
-        return withIO {
-            val pathOrUrl = when (view.type) {
-                PlateSolverType.ASTROMETRY_NET_LOCAL -> view.pathOrUrl
-                PlateSolverType.ASTROMETRY_NET_ONLINE -> view.pathOrUrl
-                else -> view.pathOrUrl
-            }.ifBlank { pathOrUrl(view.type) }
+            withIO {
+                val pathOrUrl = when (view.type) {
+                    PlateSolverType.ASTROMETRY_NET_LOCAL -> view.pathOrUrl
+                    PlateSolverType.ASTROMETRY_NET_ONLINE -> view.pathOrUrl
+                    else -> view.pathOrUrl
+                }.ifBlank { pathOrUrl(view.type) }
 
-            val apiKey = view.apiKey.ifBlank { NovaAstrometryNetPlateSolver.ANONYMOUS_API_KEY }
+                val apiKey = view.apiKey.ifBlank { NovaAstrometryNetPlateSolver.ANONYMOUS_API_KEY }
 
-            val solver = when (view.type) {
-                PlateSolverType.ASTROMETRY_NET_LOCAL -> LocalAstrometryNetPlateSolver(pathOrUrl)
-                PlateSolverType.ASTROMETRY_NET_ONLINE -> NovaAstrometryNetPlateSolver(NovaAstrometryNetService(pathOrUrl), apiKey)
-                PlateSolverType.WATNEY -> WatneyPlateSolver(pathOrUrl)
-                PlateSolverType.ASTAP -> AstapPlateSolver(pathOrUrl)
-            }
-
-            try {
-                val calibration = solver.solve(
-                    file, blind,
-                    centerRA, centerDEC, radius,
-                    view.downsampleFactor, PLATE_SOLVE_TIMEOUT,
-                )
-
-                savePreferences()
-
-                eventBus.post(PlateSolvingSolved(file, calibration))
-
-                withMain {
-                    solving.set(false)
-                    solved.set(true)
-                    this@PlateSolverManager.calibration.set(calibration)
+                val solver = when (view.type) {
+                    PlateSolverType.ASTROMETRY_NET_LOCAL -> LocalAstrometryNetPlateSolver(pathOrUrl)
+                    PlateSolverType.ASTROMETRY_NET_ONLINE -> NovaAstrometryNetPlateSolver(NovaAstrometryNetService(pathOrUrl), apiKey)
+                    PlateSolverType.WATNEY -> WatneyPlateSolver(pathOrUrl)
+                    PlateSolverType.ASTAP -> AstapPlateSolver(pathOrUrl)
                 }
 
-                calibration
-            } catch (e: Throwable) {
-                LOG.error("plate solver failed", e)
+                try {
+                    val calibration = solver.solve(
+                        file, blind,
+                        centerRA, centerDEC, radius,
+                        view.downsampleFactor, PLATE_SOLVE_TIMEOUT,
+                    )
 
-                eventBus.post(PlateSolvingFailed(file))
+                    savePreferences()
 
-                withMain {
-                    solving.set(false)
-                    solved.set(false)
+                    eventBus.post(PlateSolvingSolved(file, calibration))
 
-                    if (e !is InterruptedException) {
-                        view.showAlert(e.message!!)
+                    withMain {
+                        solving.set(false)
+                        solved.set(true)
+                        this@PlateSolverManager.calibration.set(calibration)
                     }
-                }
 
-                null
+                    block(calibration)
+                } catch (e: Throwable) {
+                    LOG.error("plate solver failed", e)
+
+                    eventBus.post(PlateSolvingFailed(file))
+
+                    withMain {
+                        solving.set(false)
+                        solved.set(false)
+
+                        if (e !is InterruptedException) {
+                            view.showAlert(e.message!!)
+                        }
+                    }
+
+                    block(null)
+                }
             }
         }
+    }
+
+    fun cancel() {
+        solverJob?.cancel()
+        solving.set(false)
+        solved.set(false)
     }
 
     fun sync() {
