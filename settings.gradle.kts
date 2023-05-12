@@ -42,7 +42,7 @@ dependencyResolutionManagement {
             library("hibernate-dialects", "org.hibernate.orm:hibernate-community-dialects:6.2.2.Final")
             library("flyway", "org.flywaydb:flyway-core:9.17.0")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.6.1")
-            library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.6.1")
+            library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.6.2")
             bundle("kotest", listOf("kotest-assertions-core", "kotest-runner-junit5"))
             bundle("rx", listOf("rx-java"))
             bundle("netty", listOf("netty-transport", "netty-codec"))
