@@ -30,7 +30,7 @@ dependencyResolutionManagement {
             library("netty-codec", "io.netty:netty-codec:4.1.92.Final")
             library("aalto", "com.fasterxml:aalto-xml:1.3.2")
             library("csv", "org.apache.commons:commons-csv:1.10.0")
-            library("coroutines", "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0-RC")
+            library("coroutines", "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0")
             library("coroutines-javafx", "org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.7.0-RC")
             library("coroutines-rx3", "org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.7.0-RC")
             library("apache-lang3", "org.apache.commons:commons-lang3:3.12.0")
