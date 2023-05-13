@@ -17,13 +17,13 @@ class VizierServiceTest : StringSpec() {
             val data = vizier.query(query).execute().body().shouldNotBeNull()
             data.size shouldBeExactly 100
 
-            data[0].get("SAO") shouldBe "1"
-            data[0].get("HD") shouldBe "225019"
-            data[0].get("RA2000") shouldBe "0.6735416666666666"
+            data[0].getField("SAO") shouldBe "1"
+            data[0].getField("HD") shouldBe "225019"
+            data[0].getField("RA2000") shouldBe "0.6735416666666666"
 
-            data[99].get("SAO") shouldBe "100"
-            data[99].get("HD") shouldBe ""
-            data[99].get("RA2000") shouldBe "9.303554166666665"
+            data[99].getField("SAO") shouldBe "100"
+            data[99].getField("HD").trim() shouldBe ""
+            data[99].getField("RA2000") shouldBe "9.303554166666665"
         }
     }
 }

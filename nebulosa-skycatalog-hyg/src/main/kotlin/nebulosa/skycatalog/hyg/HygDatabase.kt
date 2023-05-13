@@ -1,5 +1,6 @@
 package nebulosa.skycatalog.hyg
 
+import de.siegmar.fastcsv.reader.NamedCsvReader
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
@@ -10,9 +11,8 @@ import nebulosa.nova.position.ICRF
 import nebulosa.skycatalog.SkyCatalog
 import nebulosa.skycatalog.SkyObject.Companion.NAME_SEPARATOR
 import nebulosa.skycatalog.Star
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVParser
 import java.io.InputStream
+import java.io.InputStreamReader
 
 /**
  * HYG star database archive.
@@ -21,34 +21,33 @@ import java.io.InputStream
  */
 class HygDatabase : SkyCatalog<Star>(118005) {
 
-    fun load(inputStream: InputStream) {
+    fun load(stream: InputStream) {
         clear()
 
-        val parser = CSVParser
-            .parse(inputStream, Charsets.UTF_8, CSV_FORMAT)
+        val reader = CSV_READER.build(InputStreamReader(stream, Charsets.UTF_8))
 
-        val names = LinkedHashSet<String>(8)
+        val names = ArrayList<String>(7)
 
-        for (record in parser) {
-            val id = record.get("id").toInt()
+        for (record in reader) {
+            val id = record.getField("id").toInt()
             if (id == 0) continue
-            val hip = record.get("hip").takeIf { it.isNotEmpty() }?.toInt() ?: 0
-            val hd = record.get("hd").takeIf { it.isNotEmpty() }?.toInt() ?: 0
-            val hr = record.get("hr").takeIf { it.isNotEmpty() }?.toInt() ?: 0
-            val rightAscension = record.get("ra").toDouble().hours
-            val declination = record.get("dec").toDouble().deg
-            // val name = record.get("proper")
+            val hip = record.getField("hip").takeIf { it.isNotEmpty() }?.toInt() ?: 0
+            val hd = record.getField("hd").takeIf { it.isNotEmpty() }?.toInt() ?: 0
+            val hr = record.getField("hr").takeIf { it.isNotEmpty() }?.toInt() ?: 0
+            val rightAscension = record.getField("ra").toDouble().hours
+            val declination = record.getField("dec").toDouble().deg
+            // val name = record.getField("proper")
             val name = IAU_STAR_NAMES["$hip"] ?: ""
             // TODO: Distance, Parallax.
-            // val distance = record.get("dist").toDouble()
-            val pmRA = record.get("pmra").toDouble().mas
-            val pmDEC = record.get("pmdec").toDouble().mas
-            val radialVelocity = record.get("rv").toDouble().kms
-            val magnitude = record.get("mag").toDouble()
-            val spType = record.get("spect")
-            val bayer = record.get("bayer")
-            val flamsteed = record.get("flam").toIntOrNull() ?: 0
-            val constellation = record.get("con")
+            // val distance = record.getField("dist").toDouble()
+            val pmRA = record.getField("pmra").toDouble().mas
+            val pmDEC = record.getField("pmdec").toDouble().mas
+            val radialVelocity = record.getField("rv").toDouble().kms
+            val magnitude = record.getField("mag").toDouble()
+            val spType = record.getField("spect")
+            val bayer = record.getField("bayer")
+            val flamsteed = record.getField("flam").toIntOrNull() ?: 0
+            val constellation = record.getField("con")
                 .takeIf { it.isNotEmpty() }
                 ?.uppercase()
                 ?.let(Constellation::valueOf)
@@ -89,12 +88,11 @@ class HygDatabase : SkyCatalog<Star>(118005) {
 
     companion object {
 
-        @JvmStatic private val CSV_FORMAT = CSVFormat.Builder
-            .create(CSVFormat.DEFAULT)
-            .setHeader()
-            .setSkipHeaderRecord(true)
-            .setTrim(true)
-            .build()
+        @JvmStatic private val CSV_READER = NamedCsvReader.builder()
+            .fieldSeparator(',')
+            .quoteCharacter('"')
+            .commentCharacter('#')
+            .skipComments(true)
 
         @JvmStatic
         private fun computeConstellation(rightAscension: Angle, declination: Angle): Constellation {

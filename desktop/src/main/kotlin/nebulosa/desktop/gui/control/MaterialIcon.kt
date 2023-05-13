@@ -1,10 +1,13 @@
 package nebulosa.desktop.gui.control
 
+import de.siegmar.fastcsv.reader.CommentStrategy
+import de.siegmar.fastcsv.reader.CsvReader
 import javafx.geometry.Pos
 import javafx.scene.control.ContentDisplay
 import javafx.scene.control.Label
 import javafx.scene.layout.AnchorPane
 import nebulosa.io.resource
+import java.io.InputStreamReader
 
 class MaterialIcon : AnchorPane() {
 
@@ -63,12 +66,19 @@ class MaterialIcon : AnchorPane() {
 
         @JvmStatic private val ICONS: Map<String, String>
 
+        @JvmStatic private val CSV_READER = CsvReader.builder()
+            .fieldSeparator(';')
+            .quoteCharacter('"')
+            .commentStrategy(CommentStrategy.SKIP)
+            .commentCharacter('#')
+            .skipEmptyRows(true)
+
         init {
             with(HashMap<String, String>(7296)) {
-                for (line in resource("data/MaterialDesignIcon.csv")!!.bufferedReader().lines()) {
-                    if (line.isEmpty()) continue
-                    val nameAndCode = line.split(";")
-                    this[nameAndCode[0]] = nameAndCode[1]
+                resource("data/MaterialDesignIcon.csv")!!.use { stream ->
+                    for (row in CSV_READER.build(InputStreamReader(stream))) {
+                        this[row.getField(0)] = row.getField(1)
+                    }
                 }
 
                 ICONS = this

@@ -34,6 +34,7 @@ dependencies {
     implementation(project(":nebulosa-stellarium-protocol"))
     implementation(project(":nebulosa-wcs"))
     implementation(project(":nebulosa-log"))
+    implementation(libs.csv)
     implementation(libs.jackson)
     implementation(libs.bundles.rx)
     implementation(libs.controlsfx)

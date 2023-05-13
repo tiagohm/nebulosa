@@ -11,7 +11,7 @@ class HygDatabaseTest : StringSpec() {
     init {
         "load" {
             val database = HygDatabase()
-            resource("hyg.csv")!!.use(database::load)
+            resource("hygdata_v3.csv")!!.use(database::load)
             database.size shouldBe 118005
             database.searchBy("Alp Psc") shouldHaveSize 1
         }
