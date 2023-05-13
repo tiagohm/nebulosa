@@ -16,10 +16,11 @@ import nebulosa.platesolving.Calibration
 import nebulosa.skycatalog.AxisSize
 import nebulosa.skycatalog.SkyObject
 import nebulosa.wcs.WCSTransform
+import java.util.function.BiFunction
 import kotlin.math.max
 import kotlin.math.min
 
-typealias AnnotationFilter = (String, SkyObjectService.Filter) -> List<SkyObject>
+typealias AnnotationFilter = BiFunction<String, SkyObjectService.Filter, List<SkyObject>>
 
 class Annotation : Overlay() {
 
@@ -73,7 +74,7 @@ class Annotation : Overlay() {
 
             stars.addAll(
                 catalog
-                    .invoke("", filter)
+                    .apply("", filter)
                     .map { wcs.worldToPixel(it.rightAscension, it.declination).makeShapes(this@Annotation, it, calibration, color) }
                     .filter { it.first.intersects(0.0, 0.0, width, height) })
         }

@@ -32,9 +32,7 @@ import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.au
 import nebulosa.nova.almanac.DiscreteFunction
 import nebulosa.nova.almanac.findDiscrete
-import nebulosa.nova.astrometry.Body
-import nebulosa.nova.astrometry.Constellation
-import nebulosa.nova.astrometry.FixedStar
+import nebulosa.nova.astrometry.*
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
@@ -53,6 +51,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import retrofit2.await
+import java.net.SocketException
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -393,20 +392,23 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         force: Boolean = false,
         show: Boolean = true,
         body: SkyObject? = null,
-    ) = withIO {
+        fallback: Boolean = false,
+    ): HorizonsEphemeris? = withIO {
         val observer = observer.get() ?: return@withIO null
 
         withMain { computing.set(true) }
 
-        LOG.info("computing altitude. target={}, force={}, show={}", target, force, show)
+        LOG.info("computing altitude. target={}, force={}, show={}, fallback={}", target, force, show, fallback)
 
         try {
             val prevEphemeris = ephemerisCache[target]
 
             val ephemeris = when (target) {
                 is SmallBody -> horizonsEphemerisProvider.compute(target, observer, view, force)
-                MOON_TARGET -> horizonsEphemerisProvider.compute(MOON_TARGET, observer, view, force)
-                is String -> horizonsEphemerisProvider.compute(target, observer, view, force)
+                MOON_TARGET -> if (fallback) bodyEphemerisProvider.compute(MOON_BODY, observer, view, force)
+                else horizonsEphemerisProvider.compute(MOON_TARGET, observer, view, force)
+                is String -> if (fallback) PLANET_BODIES[target]?.let { bodyEphemerisProvider.compute(it, observer, view, force) }
+                else horizonsEphemerisProvider.compute(target, observer, view, force)
                 is Body -> bodyEphemerisProvider.compute(target, observer, view, force)
                 else -> null
             }
@@ -429,6 +431,13 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
                 LOG.info("ephemeris was retrieved. target={}, start={}, end={}", target, ephemeris.start, ephemeris.endInclusive)
                 if (show) ephemeris.showBodyCoordinatesAndInfos(target, body)
                 ephemeris
+            }
+        } catch (e: SocketException) {
+            if (!fallback) {
+                computeAltitude(target, force, show, body, true)
+            } else {
+                LOG.error("failed to retrieve ephemeris.", e)
+                null
             }
         } catch (e: Throwable) {
             LOG.error("failed to retrieve ephemeris.", e)
@@ -533,7 +542,8 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
     suspend fun HorizonsElement.updateMoonImage() = withIO {
         if (!view.showing) return@withIO
 
-        val sot = this@updateMoonImage[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE]!!.split(",")
+        // TODO: Compute angle and age offline.
+        val sot = this@updateMoonImage[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE]?.split(",") ?: return@withIO
         val angle = sot[0].toDouble()
         val leading = sot[1] == "/L"
         val phase = if (leading) 360.0 - angle else angle
@@ -704,15 +714,49 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<AtlasManager>()
-        @JvmStatic private val RTS_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
-
         private const val SUN_TARGET = "10"
         private const val MOON_TARGET = "301"
 
         private const val ASTRONOMICAL_TWILIGHT = -18.0
         private const val NAUTICAL_TWILIGHT = -12.0
         private const val CIVIL_TWILIGHT = -6.0
+
+        @JvmStatic private val LOG = loggerFor<AtlasManager>()
+        @JvmStatic private val RTS_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
+        @JvmStatic private val MOON_BODY = VSOP87E.EARTH + ELPMPP02
+
+        @JvmStatic private val PLANET_BODIES = mapOf<String, Body?>(
+            SUN_TARGET to VSOP87E.SUN,
+            "199" to VSOP87E.MERCURY,
+            "299" to VSOP87E.VENUS,
+            "499" to VSOP87E.MARS,
+            "599" to VSOP87E.JUPITER,
+            "699" to VSOP87E.SATURN,
+            "799" to VSOP87E.URANUS,
+            "899" to VSOP87E.NEPTUNE,
+            "999" to null,
+            "401" to null,
+            "402" to null,
+            "501" to null,
+            "402" to null,
+            "403" to null,
+            "504" to null,
+            "601" to null,
+            "602" to null,
+            "603" to null,
+            "604" to null,
+            "605" to null,
+            "606" to null,
+            "607" to null,
+            "608" to null,
+            "701" to GUST86.ARIEL,
+            "702" to GUST86.UMBRIEL,
+            "703" to GUST86.TITANIA,
+            "704" to GUST86.OBERON,
+            "705" to GUST86.MIRANDA,
+            "801" to null,
+            "901" to null,
+        )
 
         @JvmStatic
         private fun MutableMap<Int, Body>.computeFixedStar(body: SkyObject): Body {

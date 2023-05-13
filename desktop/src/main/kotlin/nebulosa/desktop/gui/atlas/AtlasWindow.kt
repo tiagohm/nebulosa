@@ -7,7 +7,6 @@ import javafx.collections.transformation.SortedList
 import javafx.event.Event
 import javafx.fxml.FXML
 import javafx.scene.control.*
-import javafx.util.Callback
 import javafx.util.converter.LocalDateStringConverter
 import nebulosa.desktop.gui.AbstractWindow
 import nebulosa.desktop.gui.control.*
@@ -119,14 +118,14 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
 
         (starTableView.columns[0] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.names.firstName() }
         (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
-        (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = Callback { _ -> MagnitudeTableCell() }
+        (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = MagnitudeCellFactory
         (starTableView.columns[2] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.type.description }
         (starTableView.columns[3] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
         starTableView.selectionModel.selectedItemProperty().on { if (it != null) launch { atlasManager.computeBody(AtlasView.TabType.STAR, it) } }
 
         (dsosTableView.columns[0] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.names.firstName() }
         (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
-        (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = Callback { _ -> MagnitudeTableCell() }
+        (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = MagnitudeCellFactory
         (dsosTableView.columns[2] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.type.description }
         (dsosTableView.columns[3] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
         dsosTableView.selectionModel.selectedItemProperty().on { if (it != null) launch { atlasManager.computeBody(AtlasView.TabType.DSO, it) } }
@@ -394,13 +393,10 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
         }
     }
 
-    private class MagnitudeTableCell : TableCell<SkyObject, Double>() {
+    private object MagnitudeCellFactory : CellTextFactory<SkyObject, Double> {
 
-        override fun updateItem(item: Double?, empty: Boolean) {
-            super.updateItem(item, empty)
-
-            text = if (empty || item == null) null
-            else if (item.isFinite() && item < SkyObject.UNKNOWN_MAGNITUDE) "%.1f".format(item)
+        override fun cell(item: SkyObject, value: Double): String {
+            return if (value.isFinite() && value < SkyObject.UNKNOWN_MAGNITUDE) "%.1f".format(value)
             else "-"
         }
     }
