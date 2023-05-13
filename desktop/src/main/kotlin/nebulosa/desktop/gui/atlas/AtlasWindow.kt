@@ -7,13 +7,10 @@ import javafx.collections.transformation.SortedList
 import javafx.event.Event
 import javafx.fxml.FXML
 import javafx.scene.control.*
-import javafx.util.Callback
 import javafx.util.converter.LocalDateStringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.control.CopyableLabel
-import nebulosa.desktop.gui.control.LabeledPane
-import nebulosa.desktop.gui.control.PropertyValueFactory
-import nebulosa.desktop.gui.control.SwitchSegmentedButton
+import nebulosa.desktop.gui.control.*
+import nebulosa.desktop.gui.control.chart.AltitudeChart
 import nebulosa.desktop.helper.withMain
 import nebulosa.desktop.logic.atlas.AtlasManager
 import nebulosa.desktop.logic.on
@@ -56,8 +53,8 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
     @FXML private lateinit var extra4Label: CopyableLabel
     @FXML private lateinit var constellationLabel: CopyableLabel
     @FXML private lateinit var rtsLabel: CopyableLabel
-    @FXML private lateinit var sunView: SunView
-    @FXML private lateinit var moonView: MoonView
+    @FXML private lateinit var sunImageView: SunImageView
+    @FXML private lateinit var moonImageView: MoonImageView
     @FXML private lateinit var planetTableView: TableView<AtlasView.Planet>
     @FXML private lateinit var searchMinorPlanetTextField: TextField
     @FXML private lateinit var minorPlanetTableView: TableView<AtlasView.MinorPlanet>
@@ -121,14 +118,14 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
 
         (starTableView.columns[0] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.names.firstName() }
         (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
-        (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = Callback { _ -> MagnitudeTableCell() }
+        (starTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = MagnitudeCellFactory
         (starTableView.columns[2] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.type.description }
         (starTableView.columns[3] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
         starTableView.selectionModel.selectedItemProperty().on { if (it != null) launch { atlasManager.computeBody(AtlasView.TabType.STAR, it) } }
 
         (dsosTableView.columns[0] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.names.firstName() }
         (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellValueFactory = PropertyValueFactory { it.magnitude }
-        (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = Callback { _ -> MagnitudeTableCell() }
+        (dsosTableView.columns[1] as TableColumn<SkyObject, Double>).cellFactory = MagnitudeCellFactory
         (dsosTableView.columns[2] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.type.description }
         (dsosTableView.columns[3] as TableColumn<SkyObject, String>).cellValueFactory = PropertyValueFactory { it.constellation.iau }
         dsosTableView.selectionModel.selectedItemProperty().on { if (it != null) launch { atlasManager.computeBody(AtlasView.TabType.DSO, it) } }
@@ -304,11 +301,11 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
     }
 
     override suspend fun updateSunImage(image: BufferedImage) {
-        sunView.updateImage(image)
+        sunImageView.draw(image)
     }
 
     override suspend fun updateMoonImage(phase: Double, age: Double, angle: Angle) = withMain {
-        moonView.draw(age, angle)
+        moonImageView.draw(age, angle)
     }
 
     override suspend fun populatePlanet(planets: List<AtlasView.Planet>): Unit = withMain {
@@ -396,13 +393,10 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
         }
     }
 
-    private class MagnitudeTableCell : TableCell<SkyObject, Double>() {
+    private object MagnitudeCellFactory : CellTextFactory<SkyObject, Double> {
 
-        override fun updateItem(item: Double?, empty: Boolean) {
-            super.updateItem(item, empty)
-
-            text = if (empty || item == null) null
-            else if (item.isFinite() && item < SkyObject.UNKNOWN_MAGNITUDE) "%.1f".format(item)
+        override fun cell(item: SkyObject, value: Double): String {
+            return if (value.isFinite() && value < SkyObject.UNKNOWN_MAGNITUDE) "%.1f".format(value)
             else "-"
         }
     }

@@ -1,4 +1,4 @@
-package nebulosa.desktop.gui.atlas
+package nebulosa.desktop.gui.control.chart
 
 import eu.hansolo.fx.charts.*
 import eu.hansolo.fx.charts.data.XYChartItem

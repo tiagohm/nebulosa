@@ -195,7 +195,7 @@ class App : CommandLineRunner {
         .build()!!
 
     @Bean
-    fun timeBucket() = TimeBucket()
+    fun timeBucket() = TimeBucket(24 * 60)
 
     override fun run(vararg args: String) {
         with(if ("-v" in args) Level.DEBUG else Level.INFO) {

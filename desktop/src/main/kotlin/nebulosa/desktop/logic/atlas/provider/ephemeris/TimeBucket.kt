@@ -6,21 +6,24 @@ import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 import java.time.LocalDateTime
 
-class TimeBucket private constructor(private val bucket: MutableList<Pair<UTC, LocalDateTime>>) : List<Pair<UTC, LocalDateTime>> by bucket {
+class TimeBucket private constructor(
+    private val bucket: MutableList<Pair<UTC, LocalDateTime>>,
+    private val stepCount: Int,
+) : List<Pair<UTC, LocalDateTime>> by bucket {
 
-    constructor() : this(ArrayList(1441))
+    constructor(stepCount: Int) : this(ArrayList(stepCount + 1), stepCount)
 
     @Synchronized
     fun compute(force: Boolean, startTime: LocalDateTime): Boolean {
         return if (force || bucket.isEmpty() || startTime != bucket[0].second) {
             bucket.clear()
 
-            val step = 1.0 / STEP_SIZE
+            val step = 1.0 / stepCount
             val whole = TimeYMDHMS(startTime).value
 
             LOG.info("computing time. startTime={}, step={}", startTime, step)
 
-            for (i in 0..STEP_SIZE) {
+            for (i in 0..stepCount) {
                 val fraction = i * step
                 val utc = UTC(whole, fraction)
                 bucket.add(utc to startTime.plusSeconds((fraction * DAYSEC).toLong()))
@@ -33,8 +36,6 @@ class TimeBucket private constructor(private val bucket: MutableList<Pair<UTC, L
     }
 
     companion object {
-
-        private const val STEP_SIZE = 24 * 60
 
         @JvmStatic private val LOG = loggerFor<TimeBucket>()
     }

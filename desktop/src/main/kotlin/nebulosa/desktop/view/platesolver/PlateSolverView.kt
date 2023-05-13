@@ -35,5 +35,6 @@ interface PlateSolverView : View {
         blind: Boolean = true,
         centerRA: Angle = Angle.ZERO, centerDEC: Angle = Angle.ZERO,
         radius: Angle = this.radius,
-    ): Calibration?
+        block: (Calibration?) -> Unit,
+    )
 }

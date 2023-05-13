@@ -1,11 +1,11 @@
-package nebulosa.desktop.gui.control
+package nebulosa.desktop.gui.control.overlay
 
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Line
 import kotlin.math.min
 
-class Crosshair : ShapePane() {
+class Crosshair : Overlay() {
 
     private val lineHor = Line()
     private val lineVer = Line()

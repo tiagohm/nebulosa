@@ -18,6 +18,7 @@ import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.AngleFormatter
+import nebulosa.platesolving.Calibration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
@@ -173,19 +174,12 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
 
     @FXML
     private fun solve() {
-        launch {
-            try {
-                plateSolverManager.solve()
-            } catch (e: NullPointerException) {
-                LOG.error("plate solve failed.", e)
-                showAlert("Center coordinate or radius value is invalid")
-            }
-        }
+        plateSolverManager.solve()
     }
 
     @FXML
     private fun cancel() {
-        // TODO: plateSolverManager.cancel()
+        plateSolverManager.cancel()
     }
 
     @FXML
@@ -213,6 +207,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
         blind: Boolean,
         centerRA: Angle, centerDEC: Angle,
         radius: Angle,
+        block: (Calibration?) -> Unit,
     ) = withMain {
         blindSwitch.state = blind
         centerRATextField.text = centerRA.format(AngleFormatter.HMS)
@@ -220,7 +215,7 @@ class PlateSolverWindow : AbstractWindow("PlateSolver", "big-dipper"), PlateSolv
         this@PlateSolverWindow.radius = radius
 
         plateSolverManager.clearAstrometrySolution()
-        plateSolverManager.solve(file)
+        plateSolverManager.solve(file, block = block)
     }
 
     override fun fileWasLoaded(file: File) {

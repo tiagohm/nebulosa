@@ -1,4 +1,4 @@
-package nebulosa.desktop.gui.control
+package nebulosa.desktop.gui.control.overlay
 
 import javafx.event.EventHandler
 import javafx.scene.input.MouseButton
@@ -16,12 +16,13 @@ import nebulosa.platesolving.Calibration
 import nebulosa.skycatalog.AxisSize
 import nebulosa.skycatalog.SkyObject
 import nebulosa.wcs.WCSTransform
+import java.util.function.BiFunction
 import kotlin.math.max
 import kotlin.math.min
 
-typealias AnnotationFilter = (String, SkyObjectService.Filter) -> List<SkyObject>
+typealias AnnotationFilter = BiFunction<String, SkyObjectService.Filter, List<SkyObject>>
 
-class Annotation : ShapePane() {
+class Annotation : Overlay() {
 
     interface EventListener {
 
@@ -73,7 +74,7 @@ class Annotation : ShapePane() {
 
             stars.addAll(
                 catalog
-                    .invoke("", filter)
+                    .apply("", filter)
                     .map { wcs.worldToPixel(it.rightAscension, it.declination).makeShapes(this@Annotation, it, calibration, color) }
                     .filter { it.first.intersects(0.0, 0.0, width, height) })
         }

@@ -2,12 +2,11 @@ package nebulosa.desktop.gui.filterwheel
 
 import javafx.fxml.FXML
 import javafx.scene.Cursor
-import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.util.StringConverter
 import nebulosa.desktop.gui.AbstractWindow
-import nebulosa.desktop.gui.control.ButtonValueFactory
+import nebulosa.desktop.gui.control.CellNodeFactory
 import nebulosa.desktop.gui.control.PropertyValueFactory
 import nebulosa.desktop.gui.control.TwoStateButton
 import nebulosa.desktop.logic.filterwheel.FilterWheelManager
@@ -79,22 +78,19 @@ class FilterWheelWindow : AbstractWindow("FilterWheel", "filter-wheel"), FilterW
             filterWheelManager.updateFilterName(position, label)
         }
 
-        (filterSlotTableView.columns[2] as TableColumn<Int, String>).cellFactory = object : ButtonValueFactory<Int, String> {
+        (filterSlotTableView.columns[2] as TableColumn<Int, String>).cellFactory = object : CellNodeFactory<Int, String, Button> {
 
-            override fun cell(item: Int, node: Node?): Node {
-                val button = node as? Button
-
+            override fun cell(item: Int, value: String?, node: Button?): Button {
                 node?.also(::dispose)
 
-                return (button ?: Button("Move To")).apply {
+                return (node ?: Button("Move To")).apply {
                     cursor = Cursor.HAND
                     disableProperty().bind(filterWheelManager.positionProperty.isEqualTo(item))
                     setOnAction { filterWheelManager.moveTo(item) }
                 }
             }
 
-            override fun dispose(node: Node) {
-                node as Button
+            override fun dispose(node: Button) {
                 node.disableProperty().unbind()
                 node.onAction = null
             }
