@@ -317,8 +317,10 @@ class CameraManager(
                 preferenceService.string("camera.${device.name}.imageSavePath") ?: Paths.get("$appDirectory", "captures", device.name).toString()
         }
 
-        preferenceService.double("camera.screen.x")?.let { view.x = it }
-        preferenceService.double("camera.screen.y")?.let { view.y = it }
+        if (device == null || !capturingProperty.get()) {
+            preferenceService.double("camera.screen.x")?.let { view.x = it }
+            preferenceService.double("camera.screen.y")?.let { view.y = it }
+        }
     }
 
     override fun close() {

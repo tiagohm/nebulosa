@@ -72,7 +72,7 @@ interface GuideDevice {
 
     val noiseReductionMethod: NoiseReductionMethod
 
-    fun capture(duration: Long): Image
+    fun capture(duration: Long): Image?
 
     fun guideNorth(duration: Int): Boolean
 

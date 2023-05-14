@@ -86,7 +86,7 @@ internal open class CameraDevice(
                         handler.fireOnEventReceived(CameraCoolerChanged(this))
                     }
                     "CCD_CAPTURE_FORMAT" -> {
-                        if (message.isNotEmpty()) {
+                        if (message is DefSwitchVector && message.isNotEmpty()) {
                             frameFormats = message.map { it.name }
                             handler.fireOnEventReceived(CameraFrameFormatsChanged(this))
                         }
@@ -191,13 +191,28 @@ internal open class CameraDevice(
                         val maxWidth = message["WIDTH"]!!.max.toInt()
                         val minHeight = message["HEIGHT"]!!.min.toInt()
                         val maxHeight = message["HEIGHT"]!!.max.toInt()
+                        val x = message["X"]!!.value.toInt()
+                        val y = message["Y"]!!.value.toInt()
+                        val width = message["WIDTH"]!!.value.toInt()
+                        val height = message["HEIGHT"]!!.value.toInt()
 
-                        x = message["X"]!!.value.toInt()
-                        y = message["Y"]!!.value.toInt()
-                        width = message["WIDTH"]!!.value.toInt()
-                        height = message["HEIGHT"]!!.value.toInt()
+                        val changed = maxX != 0 && maxY != 0 &&
+                                maxWidth != 0 && maxHeight != 0 &&
+                                minWidth != 0 && minHeight != 0 &&
+                                (minX != this.minX ||
+                                        maxX != this.maxX ||
+                                        minY != this.minY ||
+                                        maxY != this.maxY ||
+                                        minWidth != this.minWidth ||
+                                        maxWidth != this.maxWidth ||
+                                        minHeight != this.minHeight ||
+                                        maxHeight != this.maxHeight ||
+                                        x != this.x ||
+                                        y != this.y ||
+                                        width != this.width ||
+                                        height != this.height)
 
-                        if (maxX != 0 && maxY != 0 && maxWidth != 0 && maxHeight != 0) {
+                        if (changed) {
                             this.minX = minX
                             this.maxX = maxX
                             this.minY = minY
@@ -206,14 +221,14 @@ internal open class CameraDevice(
                             this.maxWidth = maxWidth
                             this.minHeight = minHeight
                             this.maxHeight = maxHeight
-                        } else if (this.maxX == 0 || this.maxY == 0 || this.maxWidth == 0 || this.maxHeight == 0) {
-                            this.maxX = width - 1
-                            this.maxY = height - 1
-                            this.maxWidth = width
-                            this.maxHeight = height
-                        }
 
-                        handler.fireOnEventReceived(CameraFrameChanged(this))
+                            this.x = x
+                            this.y = y
+                            this.width = width
+                            this.height = height
+
+                            handler.fireOnEventReceived(CameraFrameChanged(this))
+                        }
                     }
                     "CCD_BINNING" -> {
                         if (message is DefNumberVector) {

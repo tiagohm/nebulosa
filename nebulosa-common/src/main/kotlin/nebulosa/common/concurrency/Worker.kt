@@ -2,13 +2,13 @@ package nebulosa.common.concurrency
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class Worker : Executable, Pauseable {
+abstract class Worker : Runnable, Executable, Pauseable {
 
     private val running = AtomicBoolean()
     private val pauser = CountUpDownLatch()
 
     override val paused
-        get() = pauser.get()
+        get() = !pauser.get()
 
     override val stopped
         get() = !running.get()

@@ -17,8 +17,9 @@ internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : W
 
         if (guider.pauseType != PauseType.FULL) {
             while (guider.device.mountIsBusy) Thread.sleep(10L)
+
             LOG.info("starting frame capture. exposure={} ms", duration)
-            var frame = guider.device.capture(duration)
+            var frame = guider.device.capture(duration) ?: return
             LOG.info("frame capture finished")
 
             if (guider.device.noiseReductionMethod == NoiseReductionMethod.MEAN) {
