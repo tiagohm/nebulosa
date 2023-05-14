@@ -1,11 +1,11 @@
 package nebulosa.desktop.logic.mount
 
-import javafx.beans.property.*
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleDoubleProperty
+import javafx.beans.property.SimpleListProperty
+import javafx.beans.property.SimpleObjectProperty
 import nebulosa.desktop.logic.DeviceProperty
-import nebulosa.indi.device.mount.Mount
-import nebulosa.indi.device.mount.MountType
-import nebulosa.indi.device.mount.PierSide
-import nebulosa.indi.device.mount.TrackMode
+import nebulosa.indi.device.mount.*
 import nebulosa.nova.astrometry.Constellation
 import java.time.OffsetDateTime
 
@@ -19,9 +19,9 @@ interface MountProperty : DeviceProperty<Mount> {
 
     val parkedProperty: SimpleBooleanProperty
 
-    val slewRatesProperty: SimpleListProperty<String>
+    val slewRatesProperty: SimpleListProperty<SlewRate>
 
-    val slewRateProperty: SimpleStringProperty
+    val slewRateProperty: SimpleObjectProperty<SlewRate>
 
     val mountTypeProperty: SimpleObjectProperty<MountType>
 
@@ -38,6 +38,8 @@ interface MountProperty : DeviceProperty<Mount> {
     val canGoToProperty: SimpleBooleanProperty
 
     val canParkProperty: SimpleBooleanProperty
+
+    val canHomeProperty: SimpleBooleanProperty
 
     val guideRateWEProperty: SimpleDoubleProperty
 
@@ -77,10 +79,10 @@ interface MountProperty : DeviceProperty<Mount> {
     val parked
         get() = parkedProperty.get()
 
-    val slewRates: List<String>
+    val slewRates: List<SlewRate>
         get() = slewRatesProperty.get()
 
-    val slewRate: String?
+    val slewRate: SlewRate?
         get() = slewRateProperty.get()
 
     val mountType: MountType?

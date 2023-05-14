@@ -1,5 +1,6 @@
 package nebulosa.indi.device.mount
 
+import nebulosa.indi.device.Parkable
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.math.Angle
@@ -8,15 +9,11 @@ import nebulosa.nova.astrometry.Constellation
 import nebulosa.time.UTC
 import java.time.OffsetDateTime
 
-interface Mount : GuideOutput, GPS {
+interface Mount : GuideOutput, GPS, Parkable {
 
     val slewing: Boolean
 
     val tracking: Boolean
-
-    val parking: Boolean
-
-    val parked: Boolean
 
     val canAbort: Boolean
 
@@ -24,11 +21,11 @@ interface Mount : GuideOutput, GPS {
 
     val canGoTo: Boolean
 
-    val canPark: Boolean
+    val canHome: Boolean
 
-    val slewRates: List<String>
+    val slewRates: List<SlewRate>
 
-    val slewRate: String?
+    val slewRate: SlewRate?
 
     val mountType: MountType
 
@@ -70,15 +67,13 @@ interface Mount : GuideOutput, GPS {
 
     fun goToJ2000(ra: Angle, dec: Angle)
 
-    fun park()
-
-    fun unpark()
+    fun home()
 
     fun abortMotion()
 
     fun trackingMode(mode: TrackMode)
 
-    fun slewRate(rate: String)
+    fun slewRate(rate: SlewRate)
 
     fun moveNorth(enable: Boolean)
 

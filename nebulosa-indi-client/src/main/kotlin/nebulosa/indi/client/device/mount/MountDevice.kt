@@ -1,5 +1,7 @@
-package nebulosa.indi.client.device
+package nebulosa.indi.client.device.mount
 
+import nebulosa.indi.client.device.AbstractDevice
+import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.firstOnSwitchOrNull
@@ -37,8 +39,9 @@ internal open class MountDevice(
     override var canSync = false
     override var canGoTo = false
     override var canPark = false
-    override var slewRates = emptyList<String>()
-    override var slewRate: String? = null
+    override var canHome = false
+    override var slewRates = emptyList<SlewRate>()
+    override var slewRate: SlewRate? = null
     override var mountType = MountType.EQ_GEM // TODO: Ver os telescópios possui tipos.
     override var trackModes = emptyList<TrackMode>()
     override var trackMode = TrackMode.SIDEREAL
@@ -70,14 +73,17 @@ internal open class MountDevice(
                 when (message.name) {
                     "TELESCOPE_SLEW_RATE" -> {
                         if (message is DefSwitchVector) {
-                            slewRates = message.map { it.name }
+                            slewRates = message.map { SlewRate(it.name, it.label) }
 
                             handler.fireOnEventReceived(MountSlewRatesChanged(this))
                         }
 
-                        slewRate = message.firstOnSwitch().name
+                        val name = message.firstOnSwitch().name
 
-                        handler.fireOnEventReceived(MountSlewRateChanged(this))
+                        if (slewRate?.name != name) {
+                            slewRate = slewRates.firstOrNull { it.name == name }
+                            handler.fireOnEventReceived(MountSlewRateChanged(this))
+                        }
                     }
                     // "MOUNT_TYPE" -> {
                     //     mountType = MountType.valueOf(message.firstOnSwitch().name)
@@ -250,6 +256,8 @@ internal open class MountDevice(
         sendNewSwitch("TELESCOPE_PARK", "UNPARK" to true)
     }
 
+    override fun home() = Unit
+
     override fun abortMotion() {
         if (canAbort) {
             sendNewSwitch("TELESCOPE_ABORT_MOTION", "ABORT" to true)
@@ -260,9 +268,9 @@ internal open class MountDevice(
         sendNewSwitch("TELESCOPE_TRACK_MODE", "TRACK_$mode" to true)
     }
 
-    override fun slewRate(rate: String) {
+    override fun slewRate(rate: SlewRate) {
         if (rate in slewRates) {
-            sendNewSwitch("TELESCOPE_SLEW_RATE", rate to true)
+            sendNewSwitch("TELESCOPE_SLEW_RATE", rate.name to true)
         }
     }
 
