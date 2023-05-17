@@ -20,6 +20,7 @@ import nebulosa.desktop.logic.*
 import nebulosa.desktop.logic.mount.MountManager
 import nebulosa.desktop.view.mount.MountView
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.SlewRate
 import nebulosa.indi.device.mount.TrackMode
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
@@ -71,7 +72,7 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
     @FXML private lateinit var nudgeSWButton: Button
     @FXML private lateinit var trackingSwitch: SwitchSegmentedButton
     @FXML private lateinit var trackingModeChoiceBox: ChoiceBox<TrackMode>
-    @FXML private lateinit var slewSpeedChoiceBox: ChoiceBox<String>
+    @FXML private lateinit var slewSpeedChoiceBox: ChoiceBox<SlewRate>
     @FXML private lateinit var parkButton: TwoStateButton
     @FXML private lateinit var homeButton: Button
     @FXML private lateinit var statusLabel: CopyableLabel
@@ -154,11 +155,13 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
         mountManager.trackingProperty.on { trackingSwitch.state = it }
         trackingSwitch.stateProperty.on { mountManager.toggleTracking(it) }
 
+        trackingModeChoiceBox.converter = TrackModeStringConverter
         trackingModeChoiceBox.disableProperty().bind(isNotConnectedOrMoving)
         trackingModeChoiceBox.itemsProperty().bind(mountManager.trackModesProperty)
         mountManager.trackModeProperty.on { trackingModeChoiceBox.value = it }
         trackingModeChoiceBox.valueProperty().on { if (it != null) mountManager.toggleTrackingMode(it) }
 
+        slewSpeedChoiceBox.converter = SlewRateStringConverter
         slewSpeedChoiceBox.disableProperty().bind(isNotConnectedOrMoving)
         slewSpeedChoiceBox.itemsProperty().bind(mountManager.slewRatesProperty)
         mountManager.slewRateProperty.on { slewSpeedChoiceBox.value = it }
@@ -167,7 +170,7 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
         parkButton.disableProperty().bind(isNotConnectedOrMoving or !mountManager.canParkProperty)
         mountManager.parkedProperty.on { parkButton.state = it }
 
-        homeButton.disableProperty().set(true)
+        homeButton.disableProperty().bind(isNotConnectedOrMoving or !mountManager.canHomeProperty)
     }
 
     override fun onStart() {
@@ -271,6 +274,7 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
 
     @FXML
     private fun home() {
+        mountManager.home()
     }
 
     @FXML
@@ -302,6 +306,27 @@ class MountWindow : AbstractWindow("Mount", "telescope"), MountView {
     private object MountStringConverter : StringConverter<Mount>() {
 
         override fun toString(device: Mount?) = device?.name ?: "No mount selected"
+
+        override fun fromString(text: String?) = null
+    }
+
+    private object TrackModeStringConverter : StringConverter<TrackMode>() {
+
+        override fun toString(rate: TrackMode?) = when (rate) {
+            TrackMode.SIDEREAL -> "Sidereal"
+            TrackMode.LUNAR -> "Lunar"
+            TrackMode.SOLAR -> "Solar"
+            TrackMode.KING -> "King"
+            TrackMode.CUSTOM -> "Custom"
+            null -> "No track mode selected"
+        }
+
+        override fun fromString(text: String?) = null
+    }
+
+    private object SlewRateStringConverter : StringConverter<SlewRate>() {
+
+        override fun toString(rate: SlewRate?) = rate?.label ?: "No slew rate selected"
 
         override fun fromString(text: String?) = null
     }

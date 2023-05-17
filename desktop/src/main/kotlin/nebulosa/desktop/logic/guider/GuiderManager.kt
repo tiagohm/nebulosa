@@ -42,7 +42,7 @@ class GuiderManager(
     private val guideCameraPropertyListener = GuideCameraPropertyListener()
     private val guideMountPropertyListener = GuideMountPropertyListener()
     private val guideOutputPropertyListener = GuideOutputPropertyListener()
-    private val imageQueue = LinkedBlockingQueue<Image>()
+    private val imageQueue = LinkedBlockingQueue<Any>()
 
     private lateinit var guider: Guider
     private lateinit var guiderIndicator: GuiderIndicator
@@ -144,7 +144,10 @@ class GuiderManager(
     fun stopLooping() {
         loopingProperty.set(false)
         camera?.disableBlob()
+        camera?.abortCapture()
         guider.stopLooping()
+        // Poison Pill Shutdown.
+        imageQueue.add(EMPTY_IMAGE)
     }
 
     fun startGuiding(forceCalibration: Boolean = false) {
@@ -204,9 +207,9 @@ class GuiderManager(
     override val cameraExposureDelay
         get() = view.exposureDelay
 
-    override fun capture(duration: Long): Image {
+    override fun capture(duration: Long): Image? {
         camera?.startCapture(duration * 1000L)
-        return imageQueue.take()
+        return imageQueue.take() as? Image
     }
 
     // Mount.
@@ -492,5 +495,6 @@ class GuiderManager(
     companion object {
 
         @JvmStatic private val LOG = loggerFor<GuiderManager>()
+        @JvmStatic private val EMPTY_IMAGE = Any()
     }
 }

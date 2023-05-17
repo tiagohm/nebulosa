@@ -2,7 +2,7 @@ package nebulosa.common.concurrency
 
 import java.io.Closeable
 
-interface Executable : Runnable, Closeable {
+interface Executable : Closeable {
 
     val stopped: Boolean
 

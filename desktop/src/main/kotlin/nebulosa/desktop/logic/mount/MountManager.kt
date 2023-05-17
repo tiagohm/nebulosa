@@ -184,6 +184,10 @@ class MountManager(
         value?.abortMotion()
     }
 
+    fun home() {
+        value?.home()
+    }
+
     fun toggleTracking(enable: Boolean) {
         value?.tracking(enable)
     }
@@ -192,7 +196,7 @@ class MountManager(
         value?.trackingMode(mode)
     }
 
-    fun toggleSlewRate(rate: String) {
+    fun toggleSlewRate(rate: SlewRate) {
         value?.slewRate(rate)
     }
 

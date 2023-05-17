@@ -1,6 +1,9 @@
 package nebulosa.desktop.logic.mount
 
-import javafx.beans.property.*
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleDoubleProperty
+import javafx.beans.property.SimpleListProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import nebulosa.desktop.logic.AbstractDeviceProperty
 import nebulosa.indi.device.DeviceEvent
@@ -14,8 +17,8 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
     override val trackingProperty = SimpleBooleanProperty()
     override val parkingProperty = SimpleBooleanProperty()
     override val parkedProperty = SimpleBooleanProperty()
-    override val slewRatesProperty = SimpleListProperty(FXCollections.observableArrayList<String>())
-    override val slewRateProperty = SimpleStringProperty()
+    override val slewRatesProperty = SimpleListProperty(FXCollections.observableArrayList<SlewRate>())
+    override val slewRateProperty = SimpleObjectProperty<SlewRate>()
     override val mountTypeProperty = SimpleObjectProperty(MountType.EQ_GEM)
     override val trackModesProperty = SimpleListProperty(FXCollections.observableArrayList<TrackMode>())
     override val trackModeProperty = SimpleObjectProperty<TrackMode>()
@@ -24,6 +27,7 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
     override val canSyncProperty = SimpleBooleanProperty()
     override val canGoToProperty = SimpleBooleanProperty()
     override val canParkProperty = SimpleBooleanProperty()
+    override val canHomeProperty = SimpleBooleanProperty()
     override val guideRateWEProperty = SimpleDoubleProperty()
     override val guideRateNSProperty = SimpleDoubleProperty()
     override val rightAscensionProperty = SimpleDoubleProperty()
@@ -53,6 +57,7 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
         canSyncProperty.set(device.canSync)
         canGoToProperty.set(device.canGoTo)
         canParkProperty.set(device.canPark)
+        canHomeProperty.set(device.canHome)
         guideRateWEProperty.set(device.guideRateWE)
         guideRateNSProperty.set(device.guideRateNS)
         rightAscensionProperty.set(device.rightAscension.hours)
@@ -83,6 +88,7 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
         canSyncProperty.set(false)
         canGoToProperty.set(false)
         canParkProperty.set(false)
+        canHomeProperty.set(false)
         guideRateWEProperty.set(0.0)
         guideRateNSProperty.set(0.0)
         rightAscensionProperty.set(0.0)
@@ -110,6 +116,7 @@ open class DefaultMountProperty : AbstractDeviceProperty<Mount>(), MountProperty
             is MountCanSyncChanged -> canSyncProperty.set(device.canSync)
             is MountCanGoToChanged -> canGoToProperty.set(device.canGoTo)
             is MountCanParkChanged -> canParkProperty.set(device.canPark)
+            is MountCanHomeChanged -> canHomeProperty.set(device.canHome)
             is MountTimeChanged -> timeProperty.set(device.time)
             is MountSlewRatesChanged -> {
                 slewRateProperty.set(null)

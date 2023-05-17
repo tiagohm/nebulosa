@@ -2,60 +2,68 @@ package nebulosa.common.concurrency
 
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
-import kotlin.math.min
+import java.util.concurrent.locks.AbstractQueuedSynchronizer
+import kotlin.math.max
 
 class CountUpDownLatch : AtomicBoolean(true) {
 
-    private val lock = ReentrantLock()
-    private val condition = lock.newCondition()
-    private val counter = AtomicInteger(0)
+    private val sync = Sync(this)
 
-    fun countUp(n: Int = 1) = lock.withLock {
-        require(n >= 1) { "n < 1: $n" }
-        val value = counter.addAndGet(n)
-        set(false)
-        condition.signalAll()
-        value
-    }
+    val count
+        get() = sync.count
 
-    fun countDown(n: Int = 1) = lock.withLock {
-        require(n >= 1) { "n < 1: $n" }
-        val maxToSubtract = min(n, counter.get())
-        val value = counter.addAndGet(-maxToSubtract)
-        set(value == 0)
-        condition.signalAll()
-        value
-    }
-
-    fun reset(n: Int = 0) = lock.withLock {
-        require(n >= 0) { "n < 0: $n" }
-        counter.set(n)
-        set(n == 0)
-        condition.signalAll()
-    }
-
-    fun await(n: Int = 0) = lock.withLock {
-        require(n >= 0) { "n < 0: $n" }
-
-        while (counter.get() > n) {
-            condition.await()
+    @Synchronized
+    fun countUp(n: Int = 1): Int {
+        if (n >= 1) {
+            sync.count += n
+            set(false)
         }
+
+        return count
     }
 
-    fun await(time: Long, unit: TimeUnit, n: Int = 0) = lock.withLock {
-        require(n >= 0) { "n < 0: $n" }
-        require(time > 0L) { "time <= 0: $time" }
+    @Synchronized
+    fun countDown(n: Int = 1): Int {
+        if (n >= 1) sync.releaseShared(n)
+        return count
+    }
 
-        var remainingTime = unit.toNanos(time)
+    @Synchronized
+    fun reset(n: Int = 0): Int {
+        return countDown(count - n)
+    }
 
-        while (counter.get() > n) {
-            val startTime = System.nanoTime()
-            condition.await(remainingTime, TimeUnit.NANOSECONDS)
-            val delta = System.nanoTime() - startTime
-            remainingTime -= delta
+    fun await(n: Int = 0) {
+        if (n >= 0) sync.acquireSharedInterruptibly(n)
+    }
+
+    fun await(timeout: Long, unit: TimeUnit, n: Int = 0): Boolean {
+        return n >= 0 && sync.tryAcquireSharedNanos(n, unit.toNanos(timeout))
+    }
+
+    private class Sync(private val latch: AtomicBoolean) : AbstractQueuedSynchronizer() {
+
+        var count
+            get() = state
+            set(value) {
+                state = value
+            }
+
+        override fun tryAcquireShared(acquires: Int) = if (state == acquires) 1 else -1
+
+        override fun tryReleaseShared(releases: Int): Boolean {
+            while (true) {
+                with(state) {
+                    if (this == 0) return false
+
+                    val next = max(0, this - releases)
+
+                    if (compareAndSetState(this, next)) {
+                        latch.set(next <= state)
+                        return latch.get()
+                    }
+                }
+            }
         }
     }
 }

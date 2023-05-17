@@ -4,6 +4,8 @@ import nebulosa.indi.client.device.AbstractDevice.Companion.create
 import nebulosa.indi.client.device.camera.AsiCamera
 import nebulosa.indi.client.device.camera.CameraDevice
 import nebulosa.indi.client.device.camera.SimCamera
+import nebulosa.indi.client.device.mount.IoptronV3Mount
+import nebulosa.indi.client.device.mount.MountDevice
 import nebulosa.indi.device.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
@@ -152,7 +154,8 @@ class DeviceProtocolHandler : INDIProtocolParser {
                         registered = true
 
                         if (message.device !in mounts) {
-                            val device = MountDevice(sender, this, message.device)
+                            val device = MOUNTS[executable]?.create(sender, this, message.device)
+                                ?: MountDevice(sender, this, message.device)
                             mounts[message.device] = device
                             LOG.info("mount attached: {}", device.name)
                             fireOnEventReceived(MountAttached(device))
@@ -310,6 +313,10 @@ class DeviceProtocolHandler : INDIProtocolParser {
             "indi_asi_single_ccd" to AsiCamera::class.java,
             "indi_simulator_ccd" to SimCamera::class.java,
             "indi_simulator_guide" to SimCamera::class.java,
+        )
+
+        @JvmStatic private val MOUNTS = mapOf(
+            "indi_ioptronv3_telescope" to IoptronV3Mount::class.java,
         )
     }
 }
