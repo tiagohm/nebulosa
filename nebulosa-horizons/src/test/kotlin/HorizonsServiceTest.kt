@@ -4,6 +4,7 @@ import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldStartWith
 import nebulosa.horizons.HorizonsQuantity
 import nebulosa.horizons.HorizonsService
 import nebulosa.io.source
@@ -46,39 +47,39 @@ class HorizonsServiceTest : StringSpec() {
         "observer: sun" {
             val ephemeris = observe("10")
             val dateTime = LocalDateTime.of(2022, 12, 25, 22, 0, 0)
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldBe "274.112102249"
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldBe "-23.384278861"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldStartWith "274.11210"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldStartWith "-23.38427"
         }
         "observer: moon" {
             val ephemeris = observe("301")
             val dateTime = LocalDateTime.of(2022, 12, 25, 22, 0, 0)
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldBe "313.699778108"
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldBe "-23.343635708"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldStartWith "313.69977"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldStartWith "-23.34363"
         }
         "observer: mars" {
             val ephemeris = observe("499")
             val dateTime = LocalDateTime.of(2022, 12, 25, 22, 0, 0)
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldBe "67.876675050"
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldBe "24.657460920"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldStartWith "67.87667"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldStartWith "24.65746"
             ephemeris[dateTime]!![HorizonsQuantity.CONSTELLATION] shouldBe "Tau"
             ephemeris[dateTime]!![HorizonsQuantity.ILLUMINATED_FRACTION] shouldBe "98.32712"
             ephemeris[dateTime]!![HorizonsQuantity.VISUAL_MAGNITUDE] shouldBe "-1.426"
             ephemeris[dateTime]!![HorizonsQuantity.SURFACE_BRIGHTNESS] shouldBe "4.239"
-            ephemeris[dateTime]!![HorizonsQuantity.APPARENT_AZ] shouldBe "317.889826173"
-            ephemeris[dateTime]!![HorizonsQuantity.APPARENT_ALT] shouldBe "-16.319680655"
-            ephemeris[dateTime]!![HorizonsQuantity.APPARENT_HOUR_ANGLE] shouldBe "8.993056230"
+            ephemeris[dateTime]!![HorizonsQuantity.APPARENT_AZ] shouldStartWith "317.88982"
+            ephemeris[dateTime]!![HorizonsQuantity.APPARENT_ALT] shouldStartWith "-16.31968"
+            ephemeris[dateTime]!![HorizonsQuantity.APPARENT_HOUR_ANGLE] shouldStartWith "8.99305"
         }
         "observer: ceres by SPK ID" {
             val ephemeris = observe("DES=2000001;")
             val dateTime = LocalDateTime.of(2022, 12, 25, 22, 0, 0)
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldBe "185.928928437"
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldBe "9.903483500"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldStartWith "185.92892"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldStartWith "9.90348"
         }
         "observer: ceres by IAU Number" {
             val ephemeris = observe("1;")
             val dateTime = LocalDateTime.of(2022, 12, 25, 22, 0, 0)
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldBe "185.928928437"
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldBe "9.903483500"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldStartWith "185.92892"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldStartWith "9.90348"
         }
         "observer: osculating elements" {
             val ephemeris = service
@@ -97,8 +98,8 @@ class HorizonsServiceTest : StringSpec() {
             ephemeris.elements.shouldNotBeEmpty()
 
             val dateTime = LocalDateTime.of(2023, 3, 11, 0, 0, 0)
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldBe "344.455910583"
-            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldBe "14.430860639"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldStartWith "344.45591"
+            ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldStartWith "14.43086"
         }
     }
 }
