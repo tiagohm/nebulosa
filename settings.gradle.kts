@@ -17,7 +17,7 @@ dependencyResolutionManagement {
             library("okhttp-logging", "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
             library("fits", "gov.nasa.gsfc.heasarc:nom-tam-fits:1.17.1")
             library("jackson", "com.fasterxml.jackson.core:jackson-databind:2.15.1")
-            library("jackson-jsr310", "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.0")
+            library("jackson-jsr310", "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.1")
             library("retrofit", "com.squareup.retrofit2:retrofit:2.9.0")
             library("retrofit-jackson", "com.squareup.retrofit2:converter-jackson:2.9.0")
             library("rx-java", "io.reactivex.rxjava3:rxjava:3.1.6")
