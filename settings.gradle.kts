@@ -36,7 +36,7 @@ dependencyResolutionManagement {
             library("oshi", "com.github.oshi:oshi-core:6.4.2")
             library("exposed-core", "org.jetbrains.exposed:exposed-core:0.41.1")
             library("exposed-jdbc", "org.jetbrains.exposed:exposed-jdbc:0.41.1")
-            library("sqlite", "org.xerial:sqlite-jdbc:3.41.2.1")
+            library("sqlite", "org.xerial:sqlite-jdbc:3.42.0.0")
             library("hibernate-core", "org.hibernate.orm:hibernate-core:6.2.3.Final")
             library("hibernate-dialects", "org.hibernate.orm:hibernate-community-dialects:6.2.3.Final")
             library("flyway", "org.flywaydb:flyway-core:9.18.0")
