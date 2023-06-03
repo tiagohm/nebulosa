@@ -244,7 +244,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
                     searchStarFilterWindow.type,
                 )
 
-                launch { atlasManager.searchStar(text, filter) }
+                atlasManager.searchStar(text, filter)
             }
         }
     }
@@ -270,7 +270,7 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
                     searchDSOFilterWindow.type,
                 )
 
-                launch { atlasManager.searchDSO(text, filter) }
+                atlasManager.searchDSO(text, filter)
             }
         }
     }

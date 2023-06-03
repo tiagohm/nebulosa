@@ -1,6 +1,6 @@
 package nebulosa.desktop.gui
 
-import io.reactivex.rxjava3.subjects.PublishSubject
+import jakarta.annotation.PostConstruct
 import javafx.application.HostServices
 import javafx.application.Platform
 import javafx.event.Event
@@ -18,6 +18,7 @@ import kotlinx.coroutines.*
 import nebulosa.desktop.gui.home.HomeWindow
 import nebulosa.desktop.service.PreferenceService
 import nebulosa.desktop.view.View
+import nebulosa.desktop.view.WindowedView
 import nebulosa.io.resource
 import nebulosa.io.resourceUrl
 import nebulosa.jmetro.FlatAlert
@@ -26,24 +27,33 @@ import nebulosa.jmetro.JMetroStyleClass
 import nebulosa.jmetro.Style
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+import org.springframework.context.ConfigurableApplicationContext
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.system.exitProcess
 
 abstract class AbstractWindow(
     private val resourceName: String,
     private val icon: String = "nebulosa",
-    private val window: Stage = Stage(),
-) : View {
+) : WindowedView {
 
     private val showingAtFirstTime = AtomicBoolean(true)
     private val mainScope = MainScope()
 
+    override val window by lazy { Stage() }
+
     @Autowired protected lateinit var beanFactory: AutowireCapableBeanFactory
         private set
 
-    protected val hostServices by lazy { beanFactory.getBean(HostServices::class.java) }
-    protected val preferenceService by lazy { beanFactory.getBean(PreferenceService::class.java) }
+    @Autowired protected lateinit var hostServices: HostServices
+        private set
 
-    init {
+    @Autowired protected lateinit var preferenceService: PreferenceService
+        private set
+
+    @Autowired private lateinit var configurableApplicationContext: ConfigurableApplicationContext
+
+    @PostConstruct
+    protected fun initialize() {
         window.setOnShowing {
             if (showingAtFirstTime.compareAndSet(true, false)) {
                 val loader = FXMLLoader(resourceUrl("screens/$resourceName.fxml")!!)
@@ -60,15 +70,7 @@ abstract class AbstractWindow(
 
                 onCreate()
 
-                CLOSE
-                    .filter { !it }
-                    .subscribe {
-                        if (this !is HomeWindow && initialized) {
-                            use { onClose() }
-                        }
-
-                        CLOSE.onNext(true)
-                    }
+                synchronized(windowBucket) { windowBucket.add(this) }
             }
         }
 
@@ -77,12 +79,24 @@ abstract class AbstractWindow(
         window.setOnHiding {
             onStop()
 
-            if (this@AbstractWindow is HomeWindow) {
+            if (this is HomeWindow) {
                 mainScope.cancel()
 
                 onClose()
 
-                CLOSE.onNext(false)
+                with(windowBucket.filter { it !== this }) {
+                    forEach(AbstractWindow::close)
+                    forEach(AbstractWindow::onClose)
+                }
+            }
+
+            synchronized(windowBucket) {
+                windowBucket.remove(this)
+
+                if (windowBucket.isEmpty()) {
+                    configurableApplicationContext.close()
+                    exitProcess(0)
+                }
             }
         }
     }
@@ -165,21 +179,21 @@ abstract class AbstractWindow(
         if (bringToFront) window.toFront()
     }
 
-    final override fun showAndWait(owner: View?, closed: () -> Unit) {
+    final override fun showAndWait(owner: View?, onClose: suspend CoroutineScope.() -> Unit) {
         launch {
             if (window.owner == null) {
                 window.initModality(Modality.WINDOW_MODAL)
-                if (owner is AbstractWindow && owner !== this) window.initOwner(owner.window)
+                if (owner is WindowedView && owner !== this) window.initOwner(owner.window)
             }
 
             window.showAndWait()
 
-            closed()
+            onClose()
         }
     }
 
     final override fun close() {
-        if (Platform.isFxApplicationThread()) {
+        if (initialized && showing && Platform.isFxApplicationThread()) {
             window.close()
         }
     }
@@ -223,6 +237,6 @@ abstract class AbstractWindow(
 
     companion object {
 
-        @JvmStatic internal val CLOSE = PublishSubject.create<Boolean>()
+        @JvmStatic private val windowBucket = HashSet<AbstractWindow>()
     }
 }

@@ -4,6 +4,7 @@ import javafx.event.Event
 import javafx.event.EventHandler
 import javafx.event.EventType
 import javafx.scene.control.DialogPane
+import kotlinx.coroutines.CoroutineScope
 import java.io.Closeable
 
 interface View : Closeable {
@@ -39,7 +40,7 @@ interface View : Closeable {
         bringToFront: Boolean = false,
     )
 
-    fun showAndWait(owner: View? = null, closed: () -> Unit = {})
+    fun showAndWait(owner: View? = null, onClose: suspend CoroutineScope.() -> Unit = {})
 
     fun showAlert(message: String, title: String = "Information")
 

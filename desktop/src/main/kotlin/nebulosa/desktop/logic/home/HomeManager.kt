@@ -18,12 +18,14 @@ import nebulosa.desktop.view.mount.MountView
 import nebulosa.desktop.view.platesolver.PlateSolverView
 import nebulosa.log.loggerFor
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.io.Closeable
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.math.max
 
+@Component
 class HomeManager(private val view: HomeView) : AbstractManager(), Closeable {
 
     @Autowired private lateinit var equipmentManager: EquipmentManager

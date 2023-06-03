@@ -14,8 +14,12 @@ import nebulosa.desktop.logic.on
 import nebulosa.desktop.logic.or
 import nebulosa.desktop.view.home.HomeView
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.context.annotation.Lazy
+import org.springframework.stereotype.Component
 
-class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeView {
+@Component
+class HomeWindow(@Autowired @Qualifier("primaryStage") override val window: Stage) : AbstractWindow("Home"), HomeView {
 
     @FXML private lateinit var hostTextField: TextField
     @FXML private lateinit var portTextField: TextField
@@ -36,7 +40,7 @@ class HomeWindow(window: Stage) : AbstractWindow("Home", window = window), HomeV
     @FXML private lateinit var indiButton: Button
 
     @Autowired private lateinit var equipmentManager: EquipmentManager
-    @Autowired private lateinit var homeManager: HomeManager
+    @Autowired @Lazy private lateinit var homeManager: HomeManager
 
     init {
         title = "Nebulosa"
