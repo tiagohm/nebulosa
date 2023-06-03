@@ -82,8 +82,8 @@ class AtlasWindow : AbstractWindow("Atlas", "sky"), AtlasView, AltitudeChart.Now
     private val searchDSOFilterWindow by lazy { beanFactory.createBean(SkyObjectFilterWindow::class.java) }
 
     init {
-        resizable = false
         title = "Atlas"
+        resizable = false
     }
 
     @Suppress("UNCHECKED_CAST")
