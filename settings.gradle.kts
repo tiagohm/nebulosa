@@ -39,7 +39,7 @@ dependencyResolutionManagement {
             library("sqlite", "org.xerial:sqlite-jdbc:3.42.0.0")
             library("hibernate-core", "org.hibernate.orm:hibernate-core:6.2.4.Final")
             library("hibernate-dialects", "org.hibernate.orm:hibernate-community-dialects:6.2.4.Final")
-            library("flyway", "org.flywaydb:flyway-core:9.19.1")
+            library("flyway", "org.flywaydb:flyway-core:9.19.3")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.6.2")
             library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.6.2")
             bundle("kotest", listOf("kotest-assertions-core", "kotest-runner-junit5"))
