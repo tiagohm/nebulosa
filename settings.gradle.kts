@@ -37,7 +37,7 @@ dependencyResolutionManagement {
             library("exposed-core", "org.jetbrains.exposed:exposed-core:0.41.1")
             library("exposed-jdbc", "org.jetbrains.exposed:exposed-jdbc:0.41.1")
             library("sqlite", "org.xerial:sqlite-jdbc:3.42.0.0")
-            library("hibernate-core", "org.hibernate.orm:hibernate-core:6.2.4.Final")
+            library("hibernate-core", "org.hibernate.orm:hibernate-core:6.2.5.Final")
             library("hibernate-dialects", "org.hibernate.orm:hibernate-community-dialects:6.2.4.Final")
             library("flyway", "org.flywaydb:flyway-core:9.19.3")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.6.2")
