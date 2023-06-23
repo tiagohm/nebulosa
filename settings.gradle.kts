@@ -27,7 +27,7 @@ dependencyResolutionManagement {
             library("charts", "eu.hansolo.fx:charts:17.1.35")
             library("gesturefx", "net.kurobako:gesturefx:0.7.1")
             library("netty-transport", "io.netty:netty-transport:4.1.94.Final")
-            library("netty-codec", "io.netty:netty-codec:4.1.93.Final")
+            library("netty-codec", "io.netty:netty-codec:4.1.94.Final")
             library("aalto", "com.fasterxml:aalto-xml:1.3.2")
             library("csv", "de.siegmar:fastcsv:2.2.2")
             library("coroutines", "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
