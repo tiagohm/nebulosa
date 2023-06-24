@@ -1,19 +1,16 @@
 package nebulosa.desktop.gui.control
 
 import javafx.scene.canvas.Canvas
-import javafx.scene.image.PixelBuffer
-import javafx.scene.image.PixelFormat
-import javafx.scene.image.WritableImage
+import javafx.scene.image.RenderedImage
 import nebulosa.desktop.helper.withIO
 import nebulosa.desktop.helper.withMain
 import java.awt.image.BufferedImage
-import java.nio.IntBuffer
 import kotlin.math.hypot
 import kotlin.math.min
 
 class SunImageView : Canvas() {
 
-    @Volatile private var image: WritableImage? = null
+    @Volatile private var image: RenderedImage? = null
 
     suspend fun draw(sunImage: BufferedImage) = withIO {
         val data = IntArray(sunImage.width * sunImage.height)
@@ -55,9 +52,8 @@ class SunImageView : Canvas() {
             }
         }
 
-        val buffer = IntBuffer.wrap(data)
-        val pixelBuffer = PixelBuffer(sunImage.width, sunImage.height, buffer, PixelFormat.getIntArgbPreInstance())
-        image = WritableImage(pixelBuffer)
+        image = RenderedImage(data, sunImage.width, sunImage.height)
+        image!!.render()
 
         withMain { draw() }
     }

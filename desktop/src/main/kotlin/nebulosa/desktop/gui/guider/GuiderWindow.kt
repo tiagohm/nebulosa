@@ -5,9 +5,7 @@ import javafx.scene.control.Button
 import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Label
 import javafx.scene.control.Spinner
-import javafx.scene.image.PixelBuffer
-import javafx.scene.image.PixelFormat
-import javafx.scene.image.WritableImage
+import javafx.scene.image.RenderedImage
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
@@ -38,7 +36,6 @@ import nebulosa.indi.device.mount.Mount
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
-import java.nio.IntBuffer
 import kotlin.math.min
 
 @Component
@@ -107,6 +104,7 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
     @FXML private lateinit var starMassDetectionToleranceSpinner: Spinner<Double>
 
     private val starProfileImageData = IntArray(64 * 64)
+    private val starProfileRenderedImage = RenderedImage(starProfileImageData, 64, 64)
     private val starProfileIndicator = StarProfileIndicator()
 
     init {
@@ -341,13 +339,10 @@ class GuiderWindow : AbstractWindow("Guider", "target"), GuiderView {
                 val profileImage = image.transform(SubFrame(centerX, centerY, size.toInt(), size.toInt()), AutoScreenTransformFunction)
 
                 profileImage.writeTo(starProfileImageData)
-
-                val buffer = IntBuffer.wrap(starProfileImageData)
-                val pixelBuffer = PixelBuffer(profileImage.width, profileImage.height, buffer, PixelFormat.getIntArgbPreInstance())
-                val writableImage = WritableImage(pixelBuffer)
+                starProfileRenderedImage.render()
 
                 withMain {
-                    starProfileImage.load(writableImage)
+                    starProfileImage.load(starProfileRenderedImage)
                     starProfileIndicator.draw(guider.lockPosition, guider.primaryStar, trackBoxSize)
                     val fwhm = starProfileGraph.draw(image, guider.primaryStar)
                     peakLabel.text = "%.0f".format(guider.primaryStar.peak)
