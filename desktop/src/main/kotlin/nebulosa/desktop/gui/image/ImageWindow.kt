@@ -10,9 +10,7 @@ import javafx.scene.control.CheckMenuItem
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
-import javafx.scene.image.PixelBuffer
-import javafx.scene.image.PixelFormat
-import javafx.scene.image.WritableImage
+import javafx.scene.image.RenderedImage
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.VBox
@@ -40,7 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.stereotype.Service
 import java.io.File
-import java.nio.IntBuffer
 import kotlin.jvm.optionals.getOrNull
 
 class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image", "image"), ImageView {
@@ -61,6 +58,7 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
     @FXML private lateinit var zoomFactorLabel: Label
 
     @Volatile private var imageData = IntArray(0)
+    @Volatile private var renderedImage = RenderedImage.EMPTY
 
     private val imageSecondaryClickLocation = SimpleObjectProperty<Point2D>()
     private val transformer = PauseTransition(Duration.seconds(0.5))
@@ -298,15 +296,13 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
 
         if (area > imageData.size) {
             imageData = IntArray(area)
+            renderedImage = RenderedImage(imageData, image.width, image.height)
         }
 
         image.writeTo(imageData)
+        renderedImage.render()
 
-        val buffer = IntBuffer.wrap(imageData, 0, area)
-        val pixelBuffer = PixelBuffer(image.width, image.height, buffer, PixelFormat.getIntArgbPreInstance())
-        val writableImage = WritableImage(pixelBuffer)
-
-        withMain { imageViewer.load(writableImage) }
+        withMain { imageViewer.load(renderedImage) }
     }
 
     override suspend fun scnr(
@@ -404,7 +400,10 @@ class ImageWindow(override val camera: Camera? = null) : AbstractWindow("Image",
             }
 
             beanFactory.autowireBean(window)
+            beanFactory.initializeBean(window, "imageWindow")
+
             beanFactory.autowireBean(window.imageManager)
+            beanFactory.initializeBean(window.imageManager, "imageManager")
 
             if (token != null) windowsMap[token] = window
             else windows.add(window)
