@@ -20,7 +20,7 @@ data class FocuserRelativeMoveTask(
 
     private val latch = CountUpDownLatch()
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onEvent(event: FocuserEvent) {
         if (event.device !== focuser) return
 

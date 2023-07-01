@@ -1,13 +1,12 @@
 package nebulosa.desktop.logic
 
-import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import nebulosa.desktop.helper.runBlockingMain
 import nebulosa.indi.device.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -18,7 +17,6 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
     override val connectedProperty = SimpleBooleanProperty(false)
     override val connectingProperty = SimpleBooleanProperty(false)
 
-    private val subscribers = arrayOfNulls<Disposable>(1)
     private val listeners = linkedSetOf<DevicePropertyListener<D>>()
 
     @Volatile private var closed = false
@@ -64,32 +62,34 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
         }
     }
 
-    @Subscribe
-    fun onDeviceEvent(event: DeviceEvent<*>) = launch(Dispatchers.Main) {
-        if (closed || event.device !== value) return@launch
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onDeviceEvent(event: DeviceEvent<*>) {
+        if (closed || event.device !== value) return
 
-        when (event) {
-            is DeviceConnected -> {
-                connectedProperty.set(true)
-                connectingProperty.set(false)
+        runBlockingMain {
+            when (event) {
+                is DeviceConnected -> {
+                    connectedProperty.set(true)
+                    connectingProperty.set(false)
 
-                listeners.forEach { it.onDeviceConnected() }
-            }
-            is DeviceDisconnected,
-            is DeviceConnectionFailed -> {
-                connectedProperty.set(false)
-                connectingProperty.set(false)
+                    listeners.forEach { it.onDeviceConnected() }
+                }
+                is DeviceDisconnected,
+                is DeviceConnectionFailed -> {
+                    connectedProperty.set(false)
+                    connectingProperty.set(false)
 
-                listeners.forEach { it.onDeviceDisconnected() }
+                    listeners.forEach { it.onDeviceDisconnected() }
+                }
+                is DeviceIsConnecting -> {
+                    connectingProperty.set(true)
+                }
             }
-            is DeviceIsConnecting -> {
-                connectingProperty.set(true)
-            }
+
+            val device = event.device as D
+
+            listeners.forEach { it.onDeviceEvent(event, device) }
         }
-
-        val device = event.device as D
-
-        listeners.forEach { it.onDeviceEvent(event, device) }
     }
 
     override fun close() {
@@ -98,9 +98,6 @@ abstract class AbstractDeviceProperty<D : Device> : SimpleObjectProperty<D>(), D
         closed = true
 
         job.cancel()
-
-        subscribers.forEach { it?.dispose() }
-        subscribers.fill(null)
 
         listeners.clear()
     }

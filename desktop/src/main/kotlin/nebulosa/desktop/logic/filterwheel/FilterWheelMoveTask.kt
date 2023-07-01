@@ -19,7 +19,7 @@ data class FilterWheelMoveTask(
 
     private val latch = CountUpDownLatch()
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onEvent(event: FilterWheelEvent) {
         if (event.device !== filterWheel) return
 

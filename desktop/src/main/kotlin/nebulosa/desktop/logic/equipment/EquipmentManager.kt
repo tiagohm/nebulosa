@@ -1,6 +1,5 @@
 package nebulosa.desktop.logic.equipment
 
-import io.reactivex.rxjava3.disposables.Disposable
 import jakarta.annotation.PostConstruct
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
@@ -49,8 +48,6 @@ class EquipmentManager : Closeable {
 
     @Autowired private lateinit var eventBus: EventBus
 
-    private val subscribers = arrayOfNulls<Disposable>(2)
-
     val connectedProperty = SimpleBooleanProperty(false)
 
     val attachedCameras = SimpleListProperty(FXCollections.observableArrayList<Camera>())
@@ -93,7 +90,7 @@ class EquipmentManager : Closeable {
         eventBus.register(this)
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     final fun onDeviceEvent(event: DeviceEvent<*>): Unit = runBlockingMain {
         when (event) {
             is CameraAttached -> attachedCameras.add(event.device)
@@ -113,7 +110,7 @@ class EquipmentManager : Closeable {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     final fun onConnectionEvent(event: ConnectionEvent) = runBlockingMain {
         when (event) {
             is Connected -> connectedProperty.set(true)
@@ -122,9 +119,6 @@ class EquipmentManager : Closeable {
     }
 
     override fun close() {
-        subscribers.forEach { it?.dispose() }
-        subscribers.fill(null)
-
         selectedCamera.close()
         selectedGuideCamera.close()
         selectedMount.close()

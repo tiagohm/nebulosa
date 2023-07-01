@@ -38,7 +38,7 @@ class TelescopeControlManager(@Autowired internal val view: TelescopeControlView
         eventBus.register(this)
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onEvent(event: MountEvent): Unit = runBlockingIO {
         if (event.device !== mount) return@runBlockingIO
 

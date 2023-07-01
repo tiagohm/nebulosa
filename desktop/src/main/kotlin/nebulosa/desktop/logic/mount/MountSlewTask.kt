@@ -23,7 +23,7 @@ data class MountSlewTask(
 
     private val latch = CountUpDownLatch()
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onEvent(event: MountEvent) {
         if (event.device !== mount) return
 

@@ -107,7 +107,7 @@ class ImageManager(private val view: ImageView) : AbstractManager(), Annotation.
         view.addFirst(annotation)
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onPlateSolvingEvent(event: PlateSolvingEvent) = runBlockingMain {
         if (event.file === file.get()) {
             with(if (event is PlateSolvingSolved) event.calibration else null) {

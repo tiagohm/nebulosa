@@ -36,7 +36,7 @@ class INDIPanelControlManager(private val view: INDIPanelControlView) : Closeabl
         logTextDelay.setOnFinished { makeLog() }
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onEvent(event: DeviceEvent<*>): Unit = runBlockingMain {
         if (event.device !== view.device) return@runBlockingMain
 

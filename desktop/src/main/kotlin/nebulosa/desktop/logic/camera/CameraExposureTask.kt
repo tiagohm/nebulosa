@@ -90,7 +90,7 @@ data class CameraExposureTask(
     val filterName
         get() = filterWheel?.let { preferenceService.filterName(it) }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onEvent(event: CameraEvent) {
         if (event.device !== camera) return
 

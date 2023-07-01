@@ -57,7 +57,7 @@ class CameraManager(
         eventBus.register(this)
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onTaskEvent(event: TaskEvent): Unit = runBlockingMain {
         when (event) {
             is TaskStarted -> {

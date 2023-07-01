@@ -130,7 +130,7 @@ class AtlasManager(@Autowired internal val view: AtlasView) : AbstractManager() 
         pointsCache.clear()
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onMountEvent(event: MountEvent) {
         if (event.device !== mount) return
 
