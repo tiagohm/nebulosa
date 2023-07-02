@@ -2,9 +2,18 @@ html,
 body {
     height: 100%;
     overflow: hidden;
+    font-size: 13px;
 }
 
 body {
     margin: 0;
     font-family: var(--font-family);
+}
+
+p-inputnumber .p-inputnumber-buttons-stacked input {
+    width: 100%;
+}
+
+.p-inputnumber-button-group .p-button.p-button-icon-only {
+    width: 2rem;
 }

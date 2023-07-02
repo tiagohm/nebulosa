@@ -1,112 +1,112 @@
 <div class="container p-4">
-    <div class="grid">
+    <div class="grid flex justify-content-center align-items-center">
         <div class="col-6 px-0">
             <input type="text" pInputText class="p-inputtext-sm max-w-full" placeholder="Host" [(ngModel)]="host" />
         </div>
         <div class="col-4 pr-0">
-            <input type="text" pInputText class="p-inputtext-sm max-w-full" placeholder="Port" [(ngModel)]="port" />
+            <input type="number" pInputText class="p-inputtext-sm max-w-full" placeholder="Port" [(ngModel)]="port" />
         </div>
-        <div class="col-2 pr-0 flex justify-content-center align-items-center">
+        <div class="col-2 pr-0">
             <p-button icon="pi" styleClass="p-button-info p-button">
                 <span class="mdi mdi-connection"></span>
-                </p-button>
+            </p-button>
         </div>
     </div>
     <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 94px);">
         <div class="col-4 p-1">
-            <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button (onClick)="open('CAMERA')" styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/camera.png" />
-                <div class="mt-1 text-xs">Camera</div>
+                <div class="mt-1 text-sm">Camera</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/telescope.png" />
-                <div class="mt-1 text-xs">Mount</div>
+                <div class="mt-1 text-sm">Mount</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/target.png" />
-                <div class="mt-1 text-xs">Guider</div>
+                <div class="mt-1 text-sm">Guider</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/filter-wheel.png" />
-                <div class="mt-1 text-xs">Filter Wheel</div>
+                <div class="mt-1 text-sm">Filter Wheel</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/focus.png" />
-                <div class="mt-1 text-xs">Focuser</div>
+                <div class="mt-1 text-sm">Focuser</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/observatory.png" />
-                <div class="mt-1 text-xs">Dome</div>
+                <div class="mt-1 text-sm">Dome</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/rotate.png" />
-                <div class="mt-1 text-xs">Rotator</div>
+                <div class="mt-1 text-sm">Rotator</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/switch.png" />
-                <div class="mt-1 text-xs">Switch</div>
+                <div class="mt-1 text-sm">Switch</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/sky.png" />
-                <div class="mt-1 text-xs">Atlas</div>
+                <div class="mt-1 text-sm">Atlas</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/big-dipper.png" />
-                <div class="mt-1 text-xs">Plate Solver</div>
+                <div class="mt-1 text-sm">Plate Solver</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/star.png" />
-                <div class="mt-1 text-xs">Alignment</div>
+                <div class="mt-1 text-sm">Alignment</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/schedule.png" />
-                <div class="mt-1 text-xs">Sequencer</div>
+                <div class="mt-1 text-sm">Sequencer</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/image.png" />
-                <div class="mt-1 text-xs">Image Viewer</div>
+                <div class="mt-1 text-sm">Image Viewer</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/framing.png" />
-                <div class="mt-1 text-xs">Framing</div>
+                <div class="mt-1 text-sm">Framing</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/indi.png" />
-                <div class="mt-1 text-xs">INDI</div>
+                <div class="mt-1 text-sm">INDI</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
             <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/information.png" />
-                <div class="mt-1 text-xs">About</div>
+                <div class="mt-1 text-sm">About</div>
             </p-button>
         </div>
     </div>

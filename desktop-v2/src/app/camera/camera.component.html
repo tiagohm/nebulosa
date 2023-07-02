@@ -1,0 +1,132 @@
+<div class="container p-4">
+    <div class="grid flex align-items-center">
+        <div class="col-8">
+            <p-dropdown [options]="cameras" [(ngModel)]="camera" optionLabel="name" styleClass="min-w-full"></p-dropdown>
+        </div>
+        <div class="col-4">
+            <p-button [disabled]="!camera" icon="pi" styleClass="p-button-info p-button">
+                <span class="mdi mdi-connection"></span>
+            </p-button>
+        </div>
+    </div>
+    <div class="grid flex align-items-center">
+        <div class="col-3 flex flex-column">
+            <span class="text-sm">Cooler (0.0%)</span>
+            <p-inputSwitch styleClass="mt-2" [(ngModel)]="cooler"></p-inputSwitch>
+        </div>
+        <div class="col-3 flex flex-column">
+            <span class="text-sm">Dew heater</span>
+            <p-inputSwitch styleClass="mt-2" [(ngModel)]="dewHeater"></p-inputSwitch>
+        </div>
+        <div class="col-6 flex flex-column">
+            <span class="text-sm">Temperature (0.0°C)</span>
+            <div class="flex justify-content-center align-items-center">
+                <p-inputNumber [(ngModel)]="setpointTemperature" mode="decimal" [showButtons]="true"
+                    [step]="0.1" suffix="℃" [min]="-50" [max]="50" />
+                <p-button [disabled]="!camera" icon="pi" styleClass="ml-1 p-button-success p-button">
+                    <span class="mdi mdi-check"></span>
+                </p-button>
+            </div>
+        </div>
+    </div>
+    <div class="grid flex align-items-center">
+        <div class="col-7">
+            <span class="text-sm">Exposure Time</span>
+            <div class="flex justify-content-center align-items-center">
+                <p-inputNumber [(ngModel)]="exposureTime" mode="decimal" [showButtons]="true"
+                    [step]="1.0" [min]="1" [max]="1000000000" />
+                <p-menu #exposureTimeMenu [model]="exposureTimeUnitOptions" [popup]="true" />
+                <button pButton type="button" (click)="exposureTimeMenu.toggle($event)" class="ml-1" [label]="exposureUnitSymbol()"></button>
+            </div>
+        </div>
+        <div class="col-5">
+            <span class="text-sm">Frame Type</span>
+            <p-dropdown [options]="frameTypeOptions" [(ngModel)]="frameType" styleClass="min-w-full"></p-dropdown>
+        </div>
+    </div>
+    <div class="grid flex align-items-center">
+        <div class="col-6">
+            <span class="text-sm">Exposure Mode</span>
+            <p-selectButton [options]="exposureModeOptions" [(ngModel)]="exposureMode"></p-selectButton>
+        </div>
+        <div class="col-3">
+            <span class="text-sm">Delay</span>
+            <p-inputNumber [(ngModel)]="exposureDelay" mode="decimal" [showButtons]="true"
+                [step]="0" [min]="1" [max]="600" />
+        </div>
+        <div class="col-3">
+            <span class="text-sm">Count</span>
+            <p-inputNumber [(ngModel)]="exposureCount" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="1" [max]="10000" />
+        </div>
+    </div>
+    <div class="grid flex align-items-center">
+        <div class="col-3">
+            <span class="text-sm">X</span>
+            <p-inputNumber [(ngModel)]="x" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="1" [max]="10000" />
+        </div>
+        <div class="col-3">
+            <span class="text-sm">Y</span>
+            <p-inputNumber [(ngModel)]="y" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="1" [max]="10000" />
+        </div>
+        <div class="col-3">
+            <span class="text-sm">Width</span>
+            <p-inputNumber [(ngModel)]="width" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="1" [max]="10000" />
+        </div>
+        <div class="col-3">
+            <span class="text-sm">Height</span>
+            <p-inputNumber [(ngModel)]="height" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="1" [max]="10000" />
+        </div>
+    </div>
+    <div class="grid flex align-items-center">
+        <div class="col-2 flex flex-column">
+            <span class="text-sm">Subframe</span>
+            <p-inputSwitch styleClass="mt-2" [(ngModel)]="subframe"></p-inputSwitch>
+        </div>
+        <div class="col-4 flex pt-3 flex-row align-items-center justify-content-center">
+            <p-button [disabled]="!camera" icon="pi" styleClass="p-button-info p-button">
+                <span class="mdi mdi-fullscreen"></span>
+            </p-button>
+        </div>
+        <div class="col-3">
+            <span class="text-sm">Bin X</span>
+            <p-inputNumber [(ngModel)]="binX" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="1" [max]="4" />
+        </div>
+        <div class="col-3">
+            <span class="text-sm">Bin Y</span>
+            <p-inputNumber [(ngModel)]="binY" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="1" [max]="4" />
+        </div>
+    </div>
+    <div class="grid flex align-items-center">
+        <div class="col-6">
+            <span class="text-sm">Frame Format</span>
+            <p-dropdown [options]="frameFormatOptions" [(ngModel)]="frameFormat" styleClass="min-w-full"></p-dropdown>
+        </div>
+        <div class="col-3">
+            <span class="text-sm">Gain</span>
+            <p-inputNumber [(ngModel)]="gain" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="0" [max]="100" />
+        </div>
+        <div class="col-3">
+            <span class="text-sm">Offset</span>
+            <p-inputNumber [(ngModel)]="offset" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="0" [max]="100" />
+        </div>
+    </div>
+    <div class="grid mt-4">
+        <div class="col-12 flex align-items-center justify-content-center">
+            <p-button [disabled]="!camera" label="Start" icon="pi" styleClass="p-button-success p-button">
+                <span class="mdi mdi-play"></span>
+            </p-button>
+            <p-button [disabled]="!camera" label="Abort" icon="pi" styleClass="ml-1 p-button-danger p-button">
+                <span class="mdi mdi-stop"></span>
+            </p-button>
+        </div>
+    </div>
+</div>
