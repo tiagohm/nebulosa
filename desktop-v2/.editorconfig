@@ -1,0 +1,5 @@
+[*.ts]
+quote_type = single
+
+[package*.json]
+insert_final_newline = false

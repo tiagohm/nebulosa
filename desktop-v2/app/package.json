@@ -1,0 +1,6 @@
+{
+  "name": "nebulosa",
+  "main": "main.js",
+  "private": true,
+  "dependencies": {}
+}
