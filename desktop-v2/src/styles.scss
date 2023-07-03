@@ -10,10 +10,23 @@ body {
     font-family: var(--font-family);
 }
 
+.mdi:before {
+    font-size: 1.23rem;
+}
+
 p-inputnumber .p-inputnumber-buttons-stacked input {
     width: 100%;
 }
 
 .p-inputnumber-button-group .p-button.p-button-icon-only {
     width: 2rem;
+}
+
+.p-selectbutton {
+    display: flex;
+    flex-direction: row;
+
+    .p-button {
+        flex: 1 1 auto;
+    }
 }

@@ -22,7 +22,7 @@
             <span class="text-sm">Temperature (0.0°C)</span>
             <div class="flex justify-content-center align-items-center">
                 <p-inputNumber [(ngModel)]="setpointTemperature" mode="decimal" [showButtons]="true"
-                    [step]="0.1" suffix="℃" [min]="-50" [max]="50" />
+                    [step]="0.1" suffix="℃" [min]="-50" [max]="50" [allowEmpty]="false" />
                 <p-button [disabled]="!camera" icon="pi" styleClass="ml-1 p-button-success p-button">
                     <span class="mdi mdi-check"></span>
                 </p-button>
@@ -30,16 +30,16 @@
         </div>
     </div>
     <div class="grid flex align-items-center">
-        <div class="col-7">
+        <div class="col-6">
             <span class="text-sm">Exposure Time</span>
             <div class="flex justify-content-center align-items-center">
                 <p-inputNumber [(ngModel)]="exposureTime" mode="decimal" [showButtons]="true"
-                    [step]="1.0" [min]="1" [max]="1000000000" />
+                    [step]="1.0" [min]="1" [max]="1000000000" [allowEmpty]="false" />
                 <p-menu #exposureTimeMenu [model]="exposureTimeUnitOptions" [popup]="true" />
-                <button pButton type="button" (click)="exposureTimeMenu.toggle($event)" class="ml-1" [label]="exposureUnitSymbol()"></button>
+                <button pButton type="button" (click)="exposureTimeMenu.toggle($event)" class="ml-1" [label]="exposureTimeUnit"></button>
             </div>
         </div>
-        <div class="col-5">
+        <div class="col-6">
             <span class="text-sm">Frame Type</span>
             <p-dropdown [options]="frameTypeOptions" [(ngModel)]="frameType" styleClass="min-w-full"></p-dropdown>
         </div>
@@ -52,34 +52,34 @@
         <div class="col-3">
             <span class="text-sm">Delay</span>
             <p-inputNumber [(ngModel)]="exposureDelay" mode="decimal" [showButtons]="true"
-                [step]="0" [min]="1" [max]="600" />
+                [step]="0" [min]="1" [max]="600" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Count</span>
             <p-inputNumber [(ngModel)]="exposureCount" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="1" [max]="10000" />
+                [step]="1.0" [min]="1" [max]="10000" [allowEmpty]="false" />
         </div>
     </div>
     <div class="grid flex align-items-center">
         <div class="col-3">
             <span class="text-sm">X</span>
             <p-inputNumber [(ngModel)]="x" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="1" [max]="10000" />
+                [step]="1.0" [min]="1" [max]="10000" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Y</span>
             <p-inputNumber [(ngModel)]="y" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="1" [max]="10000" />
+                [step]="1.0" [min]="1" [max]="10000" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Width</span>
             <p-inputNumber [(ngModel)]="width" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="1" [max]="10000" />
+                [step]="1.0" [min]="1" [max]="10000" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Height</span>
             <p-inputNumber [(ngModel)]="height" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="1" [max]="10000" />
+                [step]="1.0" [min]="1" [max]="10000" [allowEmpty]="false" />
         </div>
     </div>
     <div class="grid flex align-items-center">
@@ -95,12 +95,12 @@
         <div class="col-3">
             <span class="text-sm">Bin X</span>
             <p-inputNumber [(ngModel)]="binX" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="1" [max]="4" />
+                [step]="1.0" [min]="1" [max]="4" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Bin Y</span>
             <p-inputNumber [(ngModel)]="binY" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="1" [max]="4" />
+                [step]="1.0" [min]="1" [max]="4" [allowEmpty]="false" />
         </div>
     </div>
     <div class="grid flex align-items-center">
@@ -111,12 +111,12 @@
         <div class="col-3">
             <span class="text-sm">Gain</span>
             <p-inputNumber [(ngModel)]="gain" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="0" [max]="100" />
+                [step]="1.0" [min]="0" [max]="100" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Offset</span>
             <p-inputNumber [(ngModel)]="offset" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="0" [max]="100" />
+                [step]="1.0" [min]="0" [max]="100" [allowEmpty]="false" />
         </div>
     </div>
     <div class="grid mt-4">

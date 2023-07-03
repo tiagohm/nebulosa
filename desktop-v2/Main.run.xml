@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Main" type="JetRunConfigurationType">
-    <option name="MAIN_CLASS_NAME" value="nebulosa.desktop.MainKt" />
-    <module name="nebulosa.desktop.main" />
+    <option name="MAIN_CLASS_NAME" value="nebulosa.api.MainKt" />
+    <module name="nebulosa.api.main" />
     <shortenClasspath name="NONE" />
     <method v="2">
       <option name="Make" enabled="true" />

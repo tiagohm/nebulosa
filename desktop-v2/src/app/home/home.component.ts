@@ -19,8 +19,6 @@ export class HomeComponent implements OnInit {
     ngOnInit() { }
 
     open(type: string) {
-        const title = type === 'CAMERA' ? 'Camera' : 'Nebulosa'
-
-        this.electronService.ipcRenderer.send('open-window', { type, width: 430, height: 488, title })
+        this.electronService.ipcRenderer.send('open-window', { type, width: 430, height: 488 })
     }
 }

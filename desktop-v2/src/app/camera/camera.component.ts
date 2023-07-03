@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core'
+import { Title } from '@angular/platform-browser'
 import { Router } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { Camera } from '../../shared/models/Camera.model'
 import { ApiService } from '../../shared/services/api.service'
 import { ExposureMode } from '../../shared/types/ExposureMode.type'
-import { ExposureTimeUnit } from '../../shared/types/ExposureTimeUnit.type'
+import { ExposureTimeUnit } from '../../shared/enums/ExposureTimeUnit.enum'
 import { FrameType } from '../../shared/types/FrameType.type'
 
 @Component({
@@ -21,7 +22,7 @@ export class CameraComponent implements OnInit {
     dewHeater = false
     setpointTemperature = 0.0
     exposureTime = 1
-    exposureTimeUnit: ExposureTimeUnit = 'MICROSECOND'
+    exposureTimeUnit = ExposureTimeUnit.MICROSECOND
     exposureMode: ExposureMode = 'SINGLE'
     exposureDelay = 0
     exposureCount = 1
@@ -44,34 +45,31 @@ export class CameraComponent implements OnInit {
     readonly exposureTimeUnitOptions: MenuItem[] = [
         {
             label: 'Minute (m)',
-            command: () => this.exposureTimeUnit = 'MINUTE'
+            command: () => this.exposureTimeUnit = ExposureTimeUnit.MINUTE
         },
         {
             label: 'Second (s)',
-            command: () => this.exposureTimeUnit = 'SECOND'
+            command: () => this.exposureTimeUnit = ExposureTimeUnit.SECOND
         },
         {
             label: 'Millisecond (ms)',
-            command: () => this.exposureTimeUnit = 'MILLISECOND'
+            command: () => this.exposureTimeUnit = ExposureTimeUnit.MILLISECOND
         },
         {
             label: 'Microsecond (µs)',
-            command: () => this.exposureTimeUnit = 'MICROSECOND'
+            command: () => this.exposureTimeUnit = ExposureTimeUnit.MICROSECOND
         }
     ]
 
     constructor(
         private router: Router,
         private api: ApiService,
-    ) { }
+        title: Title,
+    ) {
+        title.setTitle('Camera')
+    }
 
     async ngOnInit() {
         this.cameras = await this.api.cameras()
-    }
-
-    exposureUnitSymbol() {
-        return this.exposureTimeUnit === 'MINUTE' ? 'm' :
-            this.exposureTimeUnit === 'SECOND' ? 's' :
-                this.exposureTimeUnit === 'MILLISECOND' ? 'ms' : 'µs'
     }
 }

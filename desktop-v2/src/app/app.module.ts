@@ -11,6 +11,7 @@ import { InputSwitchModule } from 'primeng/inputswitch'
 import { InputTextModule } from 'primeng/inputtext'
 import { MenuModule } from 'primeng/menu'
 import { SelectButtonModule } from 'primeng/selectbutton'
+import { SplitButtonModule } from 'primeng/splitbutton'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { CameraComponent } from './camera/camera.component'
@@ -36,6 +37,7 @@ import { HomeComponent } from './home/home.component'
         InputSwitchModule,
         MenuModule,
         SelectButtonModule,
+        SplitButtonModule,
     ],
     providers: [],
     bootstrap: [AppComponent]

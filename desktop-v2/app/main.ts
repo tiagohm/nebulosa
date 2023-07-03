@@ -39,6 +39,8 @@ function createWindow(token: string,
         },
     })
 
+    window.removeMenu()
+
     const [type, uuid = ''] = token.split('.')
 
     if (serve) {
