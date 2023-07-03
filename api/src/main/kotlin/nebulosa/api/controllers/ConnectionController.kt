@@ -1,26 +1,27 @@
 package nebulosa.api.controllers
 
 import jakarta.validation.Valid
-import nebulosa.api.data.dtos.ConnectionRequest
+import nebulosa.api.data.requests.ConnectionRequest
 import nebulosa.api.services.ConnectionService
 import org.springframework.web.bind.annotation.*
 
 @RestController
+@RequestMapping("connection")
 class ConnectionController(
     private val connectionService: ConnectionService,
 ) {
 
-    @PostMapping("connect")
+    @PutMapping
     fun connect(@RequestBody @Valid body: ConnectionRequest) {
         connectionService.connect(body)
     }
 
-    @PostMapping("disconnect")
+    @DeleteMapping
     fun disconnect() {
         connectionService.disconnect()
     }
 
-    @GetMapping("isConnected")
+    @GetMapping
     fun isConnected(): Boolean {
         return connectionService.isConnected()
     }

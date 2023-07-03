@@ -1,4 +1,4 @@
-package nebulosa.api.data.dtos
+package nebulosa.api.data.requests
 
 import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.Range

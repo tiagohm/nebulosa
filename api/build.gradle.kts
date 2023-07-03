@@ -1,8 +1,4 @@
 import org.springframework.boot.gradle.tasks.bundling.BootJar
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 plugins {
     kotlin("jvm")
@@ -37,7 +33,10 @@ dependencies {
     implementation(libs.eventbus)
     implementation(libs.oshi)
     implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-undertow")
+    implementation("org.springframework.boot:spring-boot-starter-web") {
+        exclude(module = "spring-boot-starter-tomcat")
+    }
     implementation("org.springframework.boot:spring-boot-starter-validation")
     kapt("org.springframework:spring-context-indexer:6.0.10")
     implementation("org.jetbrains.kotlin:kotlin-reflect")

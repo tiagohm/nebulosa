@@ -1,13 +1,10 @@
 package nebulosa.api.services
 
-import nebulosa.api.data.dtos.ConnectionRequest
+import nebulosa.api.data.requests.ConnectionRequest
 import nebulosa.api.exceptions.ConnectionFailedException
 import nebulosa.indi.client.DefaultINDIClient
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.DeviceProtocolHandler
-import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.DeviceEventHandler
-import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.log.error
 import nebulosa.log.loggerFor
 import org.springframework.stereotype.Service
@@ -15,17 +12,11 @@ import java.io.Closeable
 
 @Service
 class ConnectionService(
-    private val cameraService: CameraService,
-) : DeviceEventHandler, Closeable {
+    private val equipmentManager: EquipmentManager,
+) : Closeable {
 
     @Volatile private var client: INDIClient? = null
     @Volatile private var deviceProtocolHandler: DeviceProtocolHandler? = null
-
-    override fun onEventReceived(event: DeviceEvent<*>) {
-        when (event) {
-            is CameraEvent -> cameraService.onCameraEventReceived(event)
-        }
-    }
 
     fun isConnected(): Boolean {
         return client != null
@@ -38,7 +29,7 @@ class ConnectionService(
 
             val client = DefaultINDIClient(connection.host, connection.port)
             val deviceProtocolHandler = DeviceProtocolHandler()
-            deviceProtocolHandler.registerDeviceEventHandler(this)
+            deviceProtocolHandler.registerDeviceEventHandler(equipmentManager)
             client.registerDeviceProtocolHandler(deviceProtocolHandler)
             deviceProtocolHandler.start()
             client.start()
