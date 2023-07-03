@@ -1,7 +1,7 @@
 package nebulosa.api.services
 
+import nebulosa.api.components.CameraManager
 import nebulosa.api.data.responses.CameraResponse
-import nebulosa.api.exceptions.DeviceNotFound
 import org.springframework.stereotype.Service
 
 @Service
@@ -12,7 +12,17 @@ class CameraService(private val cameraManager: CameraManager) {
     }
 
     operator fun get(name: String): CameraResponse {
-        val camera = cameraManager.firstOrNull { it.name == name }
-        return camera?.let(::CameraResponse) ?: throw DeviceNotFound
+        val camera = cameraManager.first { it.name == name }
+        return CameraResponse(camera)
+    }
+
+    fun connect(name: String) {
+        val camera = cameraManager.first { it.name == name }
+        camera.connect()
+    }
+
+    fun disconnect(name: String) {
+        val camera = cameraManager.first { it.name == name }
+        camera.disconnect()
     }
 }

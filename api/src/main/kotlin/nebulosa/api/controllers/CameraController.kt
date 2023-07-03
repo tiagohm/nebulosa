@@ -2,10 +2,7 @@ package nebulosa.api.controllers
 
 import nebulosa.api.data.responses.CameraResponse
 import nebulosa.api.services.CameraService
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("cameras")
@@ -18,8 +15,18 @@ class CameraController(
         return cameraService.list()
     }
 
-    @GetMapping("{deviceName}")
-    fun camera(@PathVariable deviceName: String): CameraResponse {
-        return cameraService[deviceName]
+    @GetMapping("{name}")
+    fun camera(@PathVariable name: String): CameraResponse {
+        return cameraService[name]
+    }
+
+    @PostMapping("{name}/connect")
+    fun connect(@PathVariable name: String) {
+        cameraService.connect(name)
+    }
+
+    @PostMapping("{name}/disconnect")
+    fun disconnect(@PathVariable name: String) {
+        cameraService.disconnect(name)
     }
 }

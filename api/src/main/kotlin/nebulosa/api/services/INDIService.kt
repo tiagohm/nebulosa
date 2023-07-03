@@ -1,13 +1,14 @@
 package nebulosa.api.services
 
+import nebulosa.api.components.EquipmentManager
 import nebulosa.api.data.enums.DevicePropertyVectorType
 import nebulosa.api.data.requests.DevicePropertyVectorRequest
 import nebulosa.api.data.responses.DevicePropertyVectorResponse
 import nebulosa.api.exceptions.DeviceNotFound
 import org.springframework.stereotype.Service
 
-@Service
-class IndiService(
+@Service("indiService")
+class INDIService(
     private val equipmentManager: EquipmentManager,
 ) {
 

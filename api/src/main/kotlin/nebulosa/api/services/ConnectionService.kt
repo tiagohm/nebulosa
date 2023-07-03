@@ -1,5 +1,6 @@
 package nebulosa.api.services
 
+import nebulosa.api.components.EquipmentManager
 import nebulosa.api.data.requests.ConnectionRequest
 import nebulosa.api.exceptions.ConnectionFailedException
 import nebulosa.indi.client.DefaultINDIClient

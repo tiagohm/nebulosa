@@ -3,13 +3,13 @@ package nebulosa.api.controllers
 import jakarta.validation.Valid
 import nebulosa.api.data.requests.DevicePropertyVectorRequest
 import nebulosa.api.data.responses.DevicePropertyVectorResponse
-import nebulosa.api.services.IndiService
+import nebulosa.api.services.INDIService
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("indi/{deviceName}")
-class IndiController(
-    private val indiService: IndiService,
+class INDIController(
+    private val indiService: INDIService,
 ) {
 
     @GetMapping("properties")

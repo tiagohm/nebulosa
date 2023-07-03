@@ -1,3 +1,4 @@
 export interface Camera {
-    name: string,
+    name: string
+    connected: boolean
 }

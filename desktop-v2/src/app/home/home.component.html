@@ -1,20 +1,23 @@
 <div class="container p-4">
     <div class="grid flex justify-content-center align-items-center">
         <div class="col-6 px-0">
-            <input type="text" pInputText class="p-inputtext-sm max-w-full" placeholder="Host" [(ngModel)]="host" />
+            <input [disabled]="connected" type="text" pInputText class="p-inputtext-sm max-w-full" placeholder="Host" [(ngModel)]="host" />
         </div>
         <div class="col-4 pr-0">
-            <input type="number" pInputText class="p-inputtext-sm max-w-full" placeholder="Port" [(ngModel)]="port" />
+            <input [disabled]="connected" type="number" pInputText class="p-inputtext-sm max-w-full" placeholder="Port" [(ngModel)]="port" />
         </div>
         <div class="col-2 pr-0">
-            <p-button icon="pi" styleClass="p-button-info p-button">
+            <p-button *ngIf="connected" (onClick)="connect()" icon="pi" styleClass="p-button-danger p-button">
+                <span class="mdi mdi-close"></span>
+            </p-button>
+            <p-button *ngIf="!connected" (onClick)="connect()" icon="pi" styleClass="p-button-info p-button">
                 <span class="mdi mdi-connection"></span>
             </p-button>
         </div>
     </div>
     <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 94px);">
         <div class="col-4 p-1">
-            <p-button (onClick)="open('CAMERA')" styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [disabled]="!connected" (onClick)="open('CAMERA')" styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/camera.png" />
                 <div class="mt-1 text-sm">Camera</div>
             </p-button>

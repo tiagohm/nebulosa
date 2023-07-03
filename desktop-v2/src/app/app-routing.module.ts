@@ -5,7 +5,7 @@ import { HomeComponent } from './home/home.component'
 
 function canMatch(type: string) {
     const params = inject(Router).getCurrentNavigation()!.initialUrl.queryParams
-    return type === params['type']
+    return type === params['type'] || (type === 'HOME' && !params['type'])
 }
 
 const routes: Routes = [

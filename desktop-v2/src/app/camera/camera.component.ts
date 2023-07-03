@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnDestroy, OnInit } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { Router } from '@angular/router'
 import { MenuItem } from 'primeng/api'
+import { ExposureTimeUnit } from '../../shared/enums/ExposureTimeUnit.enum'
 import { Camera } from '../../shared/models/Camera.model'
 import { ApiService } from '../../shared/services/api.service'
 import { ExposureMode } from '../../shared/types/ExposureMode.type'
-import { ExposureTimeUnit } from '../../shared/enums/ExposureTimeUnit.enum'
 import { FrameType } from '../../shared/types/FrameType.type'
 
 @Component({
@@ -13,10 +13,11 @@ import { FrameType } from '../../shared/types/FrameType.type'
     templateUrl: './camera.component.html',
     styleUrls: ['./camera.component.scss']
 })
-export class CameraComponent implements OnInit {
+export class CameraComponent implements OnInit, OnDestroy {
 
     cameras: Camera[] = []
     camera?: Camera = undefined
+    connected = false
 
     cooler = false
     dewHeater = false
@@ -61,6 +62,8 @@ export class CameraComponent implements OnInit {
         }
     ]
 
+    private timer?: any = undefined
+
     constructor(
         private router: Router,
         private api: ApiService,
@@ -71,5 +74,35 @@ export class CameraComponent implements OnInit {
 
     async ngOnInit() {
         this.cameras = await this.api.cameras()
+
+        if (this.cameras.length > 0) {
+            this.camera = this.cameras[0]
+            this.update()
+        }
+
+        this.timer = setInterval(() => {
+            this.update()
+        }, 5000)
+    }
+
+    ngOnDestroy() {
+        clearInterval(this.timer)
+    }
+
+    async connect() {
+        if (this.connected) {
+            await this.api.cameraDisconnect(this.camera!)
+        } else {
+            await this.api.cameraConnect(this.camera!)
+        }
+
+        this.update()
+    }
+
+    async update() {
+        const camera = await this.api.camera(this.camera!.name)
+
+        this.connected = camera.connected ?? false
+        this.camera = camera
     }
 }

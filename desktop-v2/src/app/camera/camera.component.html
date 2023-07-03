@@ -4,7 +4,10 @@
             <p-dropdown [options]="cameras" [(ngModel)]="camera" optionLabel="name" styleClass="min-w-full"></p-dropdown>
         </div>
         <div class="col-4">
-            <p-button [disabled]="!camera" icon="pi" styleClass="p-button-info p-button">
+            <p-button *ngIf="connected" [disabled]="!camera" (onClick)="connect()" icon="pi" styleClass="p-button-danger p-button">
+                <span class="mdi mdi-close"></span>
+            </p-button>
+            <p-button *ngIf="!connected" [disabled]="!camera" (onClick)="connect()" icon="pi" styleClass="p-button-info p-button">
                 <span class="mdi mdi-connection"></span>
             </p-button>
         </div>

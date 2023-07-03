@@ -1,4 +1,4 @@
-package nebulosa.api.services
+package nebulosa.api.components
 
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
