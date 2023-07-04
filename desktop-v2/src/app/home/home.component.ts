@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core'
 import { Router } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
-import { WindowService } from '../../shared/services/window.service'
+import { BrowserWindowService } from '../../shared/services/browser-window.service'
 
 @Component({
     selector: 'app-home',
@@ -15,7 +15,7 @@ export class HomeComponent implements OnInit {
     connected = false
 
     constructor(private router: Router,
-        private window: WindowService,
+        private browserWindow: BrowserWindowService,
         private api: ApiService,
     ) { }
 
@@ -39,7 +39,7 @@ export class HomeComponent implements OnInit {
 
     open(type: string) {
         switch (type) {
-            case 'CAMERA': this.window.openCamera()
+            case 'CAMERA': this.browserWindow.openCamera()
         }
     }
 }

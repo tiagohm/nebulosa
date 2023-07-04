@@ -1,8 +1,8 @@
 package nebulosa.api.configs
 
 import io.objectbox.BoxStore
+import nebulosa.api.data.entities.CameraPreference
 import nebulosa.api.data.entities.MyObjectBox
-import nebulosa.api.data.entities.Preference
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.CorsRegistry
@@ -20,16 +20,18 @@ class BeanConfig {
     fun dataDiretory(appDirectory: Path): Path = Path.of("$appDirectory", "data").createDirectories()
 
     @Bean
-    fun logsDiretory(appDirectory: Path): Path = Path.of("$appDirectory", "logs")
+    fun logsDiretory(appDirectory: Path): Path = Path.of("$appDirectory", "logs").createDirectories()
+
+    @Bean
+    fun capturesDiretory(appDirectory: Path): Path = Path.of("$appDirectory", "captures").createDirectories()
 
     @Bean
     fun boxStore(dataDiretory: Path) = MyObjectBox.builder()
-        .baseDirectory(dataDiretory.toFile())
-        .name("nebulosa")
+        .directory(dataDiretory.toFile())
         .build()!!
 
     @Bean
-    fun preferenceBox(boxStore: BoxStore) = boxStore.boxFor(Preference::class.java)!!
+    fun cameraPreferenceBox(boxStore: BoxStore) = boxStore.boxFor(CameraPreference::class.java)!!
 
     @Bean
     fun corsConfigurer() = object : WebMvcConfigurer {

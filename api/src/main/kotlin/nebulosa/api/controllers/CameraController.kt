@@ -1,5 +1,8 @@
 package nebulosa.api.controllers
 
+import jakarta.validation.Valid
+import nebulosa.api.data.entities.CameraPreference
+import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.api.data.responses.CameraResponse
 import nebulosa.api.services.CameraService
 import org.springframework.web.bind.annotation.*
@@ -38,5 +41,25 @@ class CameraController(
     @PostMapping("{name}/cooler/{value}")
     fun cooler(@PathVariable name: String, @PathVariable value: Boolean) {
         cameraService.cooler(name, value)
+    }
+
+    @PostMapping("{name}/capture/start")
+    fun startCapture(@PathVariable name: String, @RequestBody @Valid body: CameraStartCaptureRequest) {
+        cameraService.startCapture(name, body)
+    }
+
+    @PostMapping("{name}/capture/abort")
+    fun abortCapture(@PathVariable name: String) {
+        cameraService.abortCapture(name)
+    }
+
+    @PutMapping("{name}/preferences")
+    fun savePreferences(@PathVariable name: String, @RequestBody body: CameraPreference) {
+        cameraService.savePreferences(name, body)
+    }
+
+    @GetMapping("{name}/preferences")
+    fun loadPreferences(@PathVariable name: String): CameraPreference {
+        return cameraService.loadPreferences(name)
     }
 }

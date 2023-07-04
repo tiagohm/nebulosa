@@ -6,7 +6,7 @@ let mainWindow: BrowserWindow | null = null
 const windows = new Map<string, BrowserWindow>()
 
 const args = process.argv.slice(1)
-const serve = args.some(val => val === '--serve')
+const serve = args.some(e => e === '--serve')
 
 function createMainWindow() {
     createWindow('home', 360, 444)

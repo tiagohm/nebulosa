@@ -1,3 +1,5 @@
 package nebulosa.indi.device.mount
 
-data class MountAttached(override val device: Mount) : MountEvent
+import nebulosa.indi.device.DeviceAttached
+
+data class MountAttached(override val device: Mount) : MountEvent, DeviceAttached<Mount>

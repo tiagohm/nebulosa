@@ -1,7 +1,6 @@
 package nebulosa.api.services
 
 import nebulosa.api.components.EquipmentManager
-import nebulosa.api.data.requests.ConnectionRequest
 import nebulosa.api.exceptions.ConnectionFailedException
 import nebulosa.indi.client.DefaultINDIClient
 import nebulosa.indi.client.INDIClient
@@ -24,11 +23,11 @@ class ConnectionService(
     }
 
     @Synchronized
-    fun connect(connection: ConnectionRequest) {
+    fun connect(host: String, port: Int) {
         try {
             disconnect()
 
-            val client = DefaultINDIClient(connection.host, connection.port)
+            val client = DefaultINDIClient(host, port)
             val deviceProtocolHandler = DeviceProtocolHandler()
             deviceProtocolHandler.registerDeviceEventHandler(equipmentManager)
             client.registerDeviceProtocolHandler(deviceProtocolHandler)

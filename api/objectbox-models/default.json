@@ -4,34 +4,44 @@
   "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
   "entities": [
     {
-      "id": "1:3447350094677116153",
-      "lastPropertyId": "3:7393507122247111549",
-      "name": "Preference",
+      "id": "1:6335824321923960635",
+      "lastPropertyId": "5:3936629565940739949",
+      "name": "CameraPreference",
       "properties": [
         {
-          "id": "1:1041375279010845773",
+          "id": "1:8891121353911698292",
           "name": "id",
           "type": 6,
           "flags": 1
         },
         {
-          "id": "2:2791983168772767776",
-          "name": "key",
-          "indexId": "1:2334399416281557286",
+          "id": "2:3301002117912440431",
+          "name": "name",
+          "indexId": "1:1885086333955367027",
           "type": 9,
           "flags": 2048
         },
         {
-          "id": "3:7393507122247111549",
-          "name": "value",
+          "id": "3:1998849190077751066",
+          "name": "autoSave",
+          "type": 1
+        },
+        {
+          "id": "4:3719054225653786966",
+          "name": "savePath",
+          "type": 9
+        },
+        {
+          "id": "5:3936629565940739949",
+          "name": "autoSubFolderMode",
           "type": 9
         }
       ],
       "relations": []
     }
   ],
-  "lastEntityId": "1:3447350094677116153",
-  "lastIndexId": "1:2334399416281557286",
+  "lastEntityId": "1:6335824321923960635",
+  "lastIndexId": "1:1885086333955367027",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

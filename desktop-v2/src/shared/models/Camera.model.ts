@@ -1,5 +1,4 @@
-import { CfaPattern } from '../types/CfaPattern.type'
-import { PropertyState } from '../types/PropertyState.type'
+import { CfaPattern, PropertyState } from '../types'
 
 export interface Camera {
     name: string
