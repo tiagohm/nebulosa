@@ -29,4 +29,14 @@ class CameraController(
     fun disconnect(@PathVariable name: String) {
         cameraService.disconnect(name)
     }
+
+    @PostMapping("{name}/setpointTemperature/{value}")
+    fun setpointTemperature(@PathVariable name: String, @PathVariable value: Double) {
+        cameraService.setpointTemperature(name, value)
+    }
+
+    @PostMapping("{name}/cooler/{value}")
+    fun cooler(@PathVariable name: String, @PathVariable value: Boolean) {
+        cameraService.cooler(name, value)
+    }
 }

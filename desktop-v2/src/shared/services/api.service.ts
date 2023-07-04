@@ -56,4 +56,12 @@ export class ApiService {
     async cameraDisconnect(camera: Camera) {
         return this.post<void>(`cameras/${camera.name}/disconnect`)
     }
+
+    async setpointTemperature(camera: Camera, value: number) {
+        return this.post<void>(`cameras/${camera.name}/setpointTemperature/${value}`)
+    }
+
+    async cooler(camera: Camera, value: boolean) {
+        return this.post<void>(`cameras/${camera.name}/cooler/${value}`)
+    }
 }

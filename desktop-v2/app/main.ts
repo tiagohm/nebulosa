@@ -9,12 +9,11 @@ const args = process.argv.slice(1)
 const serve = args.some(val => val === '--serve')
 
 function createMainWindow() {
-    createWindow('HOME', 360, 448)
+    createWindow('home', 360, 448)
 }
 
 function createWindow(token: string,
     width: number, height: number,
-    title: string = 'Nebulosa',
     resizable: boolean = false,
 ) {
     if (windows.has(token)) {
@@ -30,7 +29,7 @@ function createWindow(token: string,
         height,
         resizable,
         autoHideMenuBar: true,
-        title,
+        title: 'Nebulosa',
         webPreferences: {
             nodeIntegration: true,
             allowRunningInsecureContent: serve,
@@ -48,12 +47,12 @@ function createWindow(token: string,
         debug()
 
         require('electron-reloader')(module)
-        window.loadURL(`http://localhost:4200?type=${type}`)
+        window.loadURL(`http://localhost:4200/${type}`)
     } else {
-        let pathIndex = `./index.html?type=${type}`
+        let pathIndex = `./index.html/#/${type}`
 
         if (fs.existsSync(path.join(__dirname, '../dist/index.html'))) {
-            pathIndex = `../dist/index.html?type=${type}`
+            pathIndex = `../dist/index.html/#/${type}`
         }
 
         const url = new URL(path.join('file:', __dirname, pathIndex))
@@ -74,7 +73,7 @@ function createWindow(token: string,
         }
     })
 
-    if (token === 'HOME') {
+    if (token === 'home') {
         mainWindow = window
     } else {
         windows.set(token, window)
@@ -99,11 +98,10 @@ try {
     })
 
     ipcMain.on('open-window', async (event, data) => {
-        const type = data.type as string
+        const token = data.token as string
         const width = data.width as number || 360
         const height = data.height as number || 448
-        const title = data.title as string || 'Nebulosa'
-        createWindow(type, width, height, title)
+        createWindow(token, width, height)
     })
 
     ipcMain.on('load-fits', async (event) => {

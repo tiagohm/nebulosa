@@ -25,4 +25,14 @@ class CameraService(private val cameraManager: CameraManager) {
         val camera = cameraManager.first { it.name == name }
         camera.disconnect()
     }
+
+    fun setpointTemperature(name: String, value: Double) {
+        val camera = cameraManager.first { it.name == name }
+        camera.temperature(value)
+    }
+
+    fun cooler(name: String, value: Boolean) {
+        val camera = cameraManager.first { it.name == name }
+        camera.cooler(value)
+    }
 }

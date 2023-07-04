@@ -14,19 +14,19 @@
     </div>
     <div class="grid flex align-items-center">
         <div class="col-3 flex flex-column">
-            <span class="text-sm">Cooler (0.0%)</span>
-            <p-inputSwitch styleClass="mt-2" [(ngModel)]="cooler"></p-inputSwitch>
+            <span class="text-sm">Cooler ({{ coolerPower | number: '1.1-1' }}%)</span>
+            <p-inputSwitch [disabled]="!connected || !hasCooler" (onChange)="switchCooler()" styleClass="mt-2" [(ngModel)]="cooler"></p-inputSwitch>
         </div>
         <div class="col-3 flex flex-column">
             <span class="text-sm">Dew heater</span>
-            <p-inputSwitch styleClass="mt-2" [(ngModel)]="dewHeater"></p-inputSwitch>
+            <p-inputSwitch [disabled]="!connected || !hasDewHeater" styleClass="mt-2" [(ngModel)]="dewHeater"></p-inputSwitch>
         </div>
         <div class="col-6 flex flex-column">
-            <span class="text-sm">Temperature (0.0°C)</span>
+            <span class="text-sm">Temperature ({{ temperature | number: '1.1-1' }}°C)</span>
             <div class="flex justify-content-center align-items-center">
-                <p-inputNumber [(ngModel)]="setpointTemperature" mode="decimal" [showButtons]="true"
+                <p-inputNumber [disabled]="!connected || !canSetTemperature" [(ngModel)]="setpointTemperature" mode="decimal" [showButtons]="true"
                     [step]="0.1" suffix="℃" [min]="-50" [max]="50" [allowEmpty]="false" />
-                <p-button [disabled]="!camera" icon="pi" styleClass="ml-1 p-button-success p-button">
+                <p-button [disabled]="!connected || !canSetTemperature" (onClick)="applySetpointTemperature()" icon="pi" styleClass="ml-1 p-button-success p-button">
                     <span class="mdi mdi-check"></span>
                 </p-button>
             </div>
@@ -36,98 +36,98 @@
         <div class="col-6">
             <span class="text-sm">Exposure Time</span>
             <div class="flex justify-content-center align-items-center">
-                <p-inputNumber [(ngModel)]="exposureTime" mode="decimal" [showButtons]="true"
-                    [step]="1.0" [min]="1" [max]="1000000000" [allowEmpty]="false" />
+                <p-inputNumber [disabled]="!connected" [(ngModel)]="exposureTime" mode="decimal" [showButtons]="true"
+                    [step]="1.0" [min]="exposureTimeMin" [max]="exposureTimeMax" [allowEmpty]="false" />
                 <p-menu #exposureTimeMenu [model]="exposureTimeUnitOptions" [popup]="true" />
-                <button pButton type="button" (click)="exposureTimeMenu.toggle($event)" class="ml-1" [label]="exposureTimeUnit"></button>
+                <button [disabled]="!connected" pButton type="button" (click)="exposureTimeMenu.toggle($event)" class="ml-1" [label]="exposureTimeUnit"></button>
             </div>
         </div>
         <div class="col-6">
             <span class="text-sm">Frame Type</span>
-            <p-dropdown [options]="frameTypeOptions" [(ngModel)]="frameType" styleClass="min-w-full"></p-dropdown>
+            <p-dropdown [disabled]="!connected" [options]="frameTypeOptions" [(ngModel)]="frameType" styleClass="min-w-full"></p-dropdown>
         </div>
     </div>
     <div class="grid flex align-items-center">
         <div class="col-6">
             <span class="text-sm">Exposure Mode</span>
-            <p-selectButton [options]="exposureModeOptions" [(ngModel)]="exposureMode"></p-selectButton>
+            <p-selectButton [disabled]="!connected" [options]="exposureModeOptions" [(ngModel)]="exposureMode"></p-selectButton>
         </div>
         <div class="col-3">
-            <span class="text-sm">Delay</span>
-            <p-inputNumber [(ngModel)]="exposureDelay" mode="decimal" [showButtons]="true"
+            <span class="text-sm">Delay (ms)</span>
+            <p-inputNumber [disabled]="!connected || exposureMode === 'SINGLE'" [(ngModel)]="exposureDelay" mode="decimal" [showButtons]="true"
                 [step]="0" [min]="1" [max]="600" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Count</span>
-            <p-inputNumber [(ngModel)]="exposureCount" mode="decimal" [showButtons]="true"
+            <p-inputNumber [disabled]="!connected || exposureMode !== 'FIXED'" [(ngModel)]="exposureCount" mode="decimal" [showButtons]="true"
                 [step]="1.0" [min]="1" [max]="10000" [allowEmpty]="false" />
         </div>
     </div>
     <div class="grid flex align-items-center">
         <div class="col-3">
             <span class="text-sm">X</span>
-            <p-inputNumber [(ngModel)]="x" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="1" [max]="10000" [allowEmpty]="false" />
+            <p-inputNumber [disabled]="!connected || !subframe" [(ngModel)]="x" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="minX" [max]="maxX" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Y</span>
-            <p-inputNumber [(ngModel)]="y" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="1" [max]="10000" [allowEmpty]="false" />
+            <p-inputNumber [disabled]="!connected || !subframe" [(ngModel)]="y" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="minY" [max]="maxY" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Width</span>
-            <p-inputNumber [(ngModel)]="width" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="1" [max]="10000" [allowEmpty]="false" />
+            <p-inputNumber [disabled]="!connected || !subframe" [(ngModel)]="width" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="minWidth" [max]="maxWidth" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Height</span>
-            <p-inputNumber [(ngModel)]="height" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="1" [max]="10000" [allowEmpty]="false" />
+            <p-inputNumber [disabled]="!connected || !subframe" [(ngModel)]="height" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="minHeight" [max]="maxHeight" [allowEmpty]="false" />
         </div>
     </div>
     <div class="grid flex align-items-center">
         <div class="col-2 flex flex-column">
             <span class="text-sm">Subframe</span>
-            <p-inputSwitch styleClass="mt-2" [(ngModel)]="subframe"></p-inputSwitch>
+            <p-inputSwitch [disabled]="!connected" styleClass="mt-2" [(ngModel)]="subframe"></p-inputSwitch>
         </div>
         <div class="col-4 flex pt-3 flex-row align-items-center justify-content-center">
-            <p-button [disabled]="!camera" icon="pi" styleClass="p-button-info p-button">
+            <p-button [disabled]="!connected || !subframe" icon="pi" styleClass="p-button-info p-button">
                 <span class="mdi mdi-fullscreen"></span>
             </p-button>
         </div>
         <div class="col-3">
             <span class="text-sm">Bin X</span>
-            <p-inputNumber [(ngModel)]="binX" mode="decimal" [showButtons]="true"
+            <p-inputNumber [disabled]="!connected" [(ngModel)]="binX" mode="decimal" [showButtons]="true"
                 [step]="1.0" [min]="1" [max]="4" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Bin Y</span>
-            <p-inputNumber [(ngModel)]="binY" mode="decimal" [showButtons]="true"
+            <p-inputNumber [disabled]="!connected" [(ngModel)]="binY" mode="decimal" [showButtons]="true"
                 [step]="1.0" [min]="1" [max]="4" [allowEmpty]="false" />
         </div>
     </div>
     <div class="grid flex align-items-center">
         <div class="col-6">
             <span class="text-sm">Frame Format</span>
-            <p-dropdown [options]="frameFormatOptions" [(ngModel)]="frameFormat" styleClass="min-w-full"></p-dropdown>
+            <p-dropdown [disabled]="!connected" [options]="frameFormats" [(ngModel)]="frameFormat" styleClass="min-w-full"></p-dropdown>
         </div>
         <div class="col-3">
             <span class="text-sm">Gain</span>
-            <p-inputNumber [(ngModel)]="gain" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="0" [max]="100" [allowEmpty]="false" />
+            <p-inputNumber [disabled]="!connected" [(ngModel)]="gain" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="gainMin" [max]="gainMax" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Offset</span>
-            <p-inputNumber [(ngModel)]="offset" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="0" [max]="100" [allowEmpty]="false" />
+            <p-inputNumber [disabled]="!connected" [(ngModel)]="offset" mode="decimal" [showButtons]="true"
+                [step]="1.0" [min]="offsetMin" [max]="offsetMax" [allowEmpty]="false" />
         </div>
     </div>
     <div class="grid mt-4">
         <div class="col-12 flex align-items-center justify-content-center">
-            <p-button [disabled]="!camera" label="Start" icon="pi" styleClass="p-button-success p-button">
+            <p-button [disabled]="!connected" label="Start" icon="pi" styleClass="p-button-success p-button">
                 <span class="mdi mdi-play"></span>
             </p-button>
-            <p-button [disabled]="!camera" label="Abort" icon="pi" styleClass="ml-1 p-button-danger p-button">
+            <p-button [disabled]="!connected" label="Abort" icon="pi" styleClass="ml-1 p-button-danger p-button">
                 <span class="mdi mdi-stop"></span>
             </p-button>
         </div>

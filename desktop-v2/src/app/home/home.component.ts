@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core'
 import { Router } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
-import { ElectronService } from '../core/services'
+import { WindowService } from '../../shared/services/window.service'
 
 @Component({
     selector: 'app-home',
@@ -15,7 +15,7 @@ export class HomeComponent implements OnInit {
     connected = false
 
     constructor(private router: Router,
-        private electron: ElectronService,
+        private window: WindowService,
         private api: ApiService,
     ) { }
 
@@ -38,6 +38,8 @@ export class HomeComponent implements OnInit {
     }
 
     open(type: string) {
-        this.electron.ipcRenderer.send('open-window', { type, width: 430, height: 488 })
+        switch (type) {
+            case 'CAMERA': this.window.openCamera()
+        }
     }
 }
