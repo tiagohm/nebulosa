@@ -2,7 +2,7 @@ html,
 body {
     height: 100%;
     overflow: hidden;
-    font-size: 13px;
+    font-size: 11.5px;
 }
 
 body {
@@ -28,5 +28,17 @@ p-inputnumber .p-inputnumber-buttons-stacked input {
 
     .p-button {
         flex: 1 1 auto;
+    }
+}
+
+.p-button .mdi:before {
+    margin-top: 1px;
+}
+
+.p-inputtext[type="number"] {
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
     }
 }

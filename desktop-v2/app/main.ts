@@ -9,7 +9,7 @@ const args = process.argv.slice(1)
 const serve = args.some(val => val === '--serve')
 
 function createMainWindow() {
-    createWindow('home', 360, 448)
+    createWindow('home', 360, 444)
 }
 
 function createWindow(token: string,
@@ -21,6 +21,7 @@ function createWindow(token: string,
     }
 
     const size = screen.getPrimaryDisplay().workAreaSize
+    const [type, uuid = ''] = token.split('.')
 
     let window = new BrowserWindow({
         x: size.width / 2 - width / 2,
@@ -30,6 +31,7 @@ function createWindow(token: string,
         resizable,
         autoHideMenuBar: true,
         title: 'Nebulosa',
+        icon: path.join(__dirname, `../src/assets/icons/${type}.png`),
         webPreferences: {
             nodeIntegration: true,
             allowRunningInsecureContent: serve,
@@ -39,8 +41,6 @@ function createWindow(token: string,
     })
 
     window.removeMenu()
-
-    const [type, uuid = ''] = token.split('.')
 
     if (serve) {
         const debug = require('electron-debug')
@@ -100,7 +100,7 @@ try {
     ipcMain.on('open-window', async (event, data) => {
         const token = data.token as string
         const width = data.width as number || 360
-        const height = data.height as number || 448
+        const height = data.height as number || 444
         createWindow(token, width, height)
     })
 

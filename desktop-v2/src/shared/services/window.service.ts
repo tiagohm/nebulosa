@@ -7,7 +7,7 @@ export class WindowService {
     constructor(private electron: ElectronService) { }
 
     openCamera() {
-        const data = { token: 'camera', width: 430, height: 488 }
+        const data = { token: 'camera', width: 390, height: 440 }
         this.electron.ipcRenderer.send('open-window', data)
     }
 }
