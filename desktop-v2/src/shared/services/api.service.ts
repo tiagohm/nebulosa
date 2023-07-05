@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
 import { Camera } from '../models/Camera.model'
+import { CameraStartCapture } from '../models/CameraStartCapture.model'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -29,8 +30,7 @@ export class ApiService {
     }
 
     async connect(host: string, port: number) {
-        const body = { host, port }
-        return this.put<void>(`connection`, body)
+        return this.post<void>(`connection?host=${host}&port=${port}`)
     }
 
     async disconnect() {
@@ -63,5 +63,13 @@ export class ApiService {
 
     async cooler(camera: Camera, value: boolean) {
         return this.post<void>(`cameras/${camera.name}/cooler/${value}`)
+    }
+
+    async startCapture(camera: Camera, value: CameraStartCapture) {
+        return this.post<void>(`cameras/${camera.name}/capture/start`, value)
+    }
+
+    async abortCapture(camera: Camera) {
+        return this.post<void>(`cameras/${camera.name}/capture/abort`)
     }
 }

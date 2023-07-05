@@ -50,6 +50,6 @@ tasks.withType<BootJar> {
     archiveFileName.set("api.jar")
 
     manifest {
-        attributes["Start-Class"] = "nebulosa.desktop.MainKt"
+        attributes["Start-Class"] = "nebulosa.api.MainKt"
     }
 }

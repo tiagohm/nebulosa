@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core'
 import { Router } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
+import { ElectronService } from '../core/services'
 
 @Component({
     selector: 'app-home',
@@ -15,6 +16,7 @@ export class HomeComponent implements OnInit {
     connected = false
 
     constructor(private router: Router,
+        private electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private api: ApiService,
     ) { }
@@ -37,9 +39,15 @@ export class HomeComponent implements OnInit {
         }
     }
 
-    open(type: string) {
+    async open(type: string) {
         switch (type) {
-            case 'CAMERA': this.browserWindow.openCamera()
+            case 'CAMERA':
+                this.browserWindow.openCamera()
+                break
+            case 'IMAGE':
+                const path = await this.electron.ipcRenderer.sendSync('open-fits')
+                if (path) this.browserWindow.openImage(path)
+                break
         }
     }
 }

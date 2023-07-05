@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, screen } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
+import { OpenWindow } from '../src/shared/models/OpenWindow.model'
 
 let mainWindow: BrowserWindow | null = null
 const windows = new Map<string, BrowserWindow>()
@@ -9,19 +10,43 @@ const args = process.argv.slice(1)
 const serve = args.some(e => e === '--serve')
 
 function createMainWindow() {
-    createWindow('home', 360, 444)
+    createWindow({ id: 'home', path: 'home' })
 }
 
-function createWindow(token: string,
-    width: number, height: number,
-    resizable: boolean = false,
-) {
-    if (windows.has(token)) {
-        return windows.get(token)
+function createWindow(data: OpenWindow) {
+    if (windows.has(data.id)) {
+        return windows.get(data.id)!
+    } else if (data.id === 'home' && mainWindow) {
+        return mainWindow
     }
 
     const size = screen.getPrimaryDisplay().workAreaSize
-    const [type, uuid = ''] = token.split('.')
+
+    function computeWidth(value: number | string) {
+        if (typeof value === 'number') {
+            return value
+        } else if (value.endsWith('%')) {
+            return parseFloat(value.substring(0, value.length - 1)) * size.width / 100
+        } else {
+            return parseFloat(value)
+        }
+    }
+
+    function computeHeight(value: number | string) {
+        if (typeof value === 'number') {
+            return value
+        } else if (value.endsWith('%')) {
+            return parseFloat(value.substring(0, value.length - 1)) * size.height / 100
+        } else {
+            return parseFloat(value)
+        }
+    }
+
+    const width = data.width ? computeWidth(data.width) : 360
+    const height = data.height ? computeHeight(data.height) : 424
+    const resizable = data.resizable ?? false
+    const icon = data.icon ?? 'nebulosa'
+    const args = data.args ? btoa(JSON.stringify(data.args)) : ''
 
     let window = new BrowserWindow({
         x: size.width / 2 - width / 2,
@@ -31,7 +56,7 @@ function createWindow(token: string,
         resizable,
         autoHideMenuBar: true,
         title: 'Nebulosa',
-        icon: path.join(__dirname, `../src/assets/icons/${type}.png`),
+        icon: path.join(__dirname, `../src/assets/icons/${icon}.png`),
         webPreferences: {
             nodeIntegration: true,
             allowRunningInsecureContent: serve,
@@ -47,12 +72,12 @@ function createWindow(token: string,
         debug()
 
         require('electron-reloader')(module)
-        window.loadURL(`http://localhost:4200/${type}`)
+        window.loadURL(`http://localhost:4200/${data.path}?args=${args}`)
     } else {
-        let pathIndex = `./index.html/#/${type}`
+        let pathIndex = `./index.html/#/${data.path}?args=${args}`
 
         if (fs.existsSync(path.join(__dirname, '../dist/index.html'))) {
-            pathIndex = `../dist/index.html/#/${type}`
+            pathIndex = `../dist/index.html/#/${data.path}?args=${args}`
         }
 
         const url = new URL(path.join('file:', __dirname, pathIndex))
@@ -61,7 +86,10 @@ function createWindow(token: string,
 
     window.on('close', () => {
         if (window === mainWindow) {
-            windows.clear()
+            for (const [_, value] of windows) {
+                value.close()
+            }
+
             mainWindow = null
         } else {
             for (const [key, value] of windows) {
@@ -73,10 +101,10 @@ function createWindow(token: string,
         }
     })
 
-    if (token === 'home') {
+    if (data.id === 'home') {
         mainWindow = window
     } else {
-        windows.set(token, window)
+        windows.set(data.id, window)
     }
 
     return window
@@ -97,21 +125,38 @@ try {
         }
     })
 
-    ipcMain.on('open-window', async (event, data) => {
-        const token = data.token as string
-        const width = data.width as number || 360
-        const height = data.height as number || 444
-        createWindow(token, width, height)
+    ipcMain.on('open-window', async (_, data: OpenWindow) => {
+        const window = createWindow(data)
+
+        if (data.bringToFront) {
+            window.show()
+        } else if (data.requestFocus) {
+            window.focus()
+        }
     })
 
-    ipcMain.on('load-fits', async (event) => {
-        const data = await dialog.showOpenDialog(mainWindow!, {
+    ipcMain.on('open-fits', async (event) => {
+        const value = await dialog.showOpenDialog(mainWindow!, {
             filters: [{ name: 'FITS files', extensions: ['fits', 'fit'] }],
             properties: ['openFile'],
         })
 
-        if (!data.canceled) {
-            event.sender.send('fits-loaded', { path: data.filePaths[0] })
+        if (!value.canceled) {
+            event.returnValue = value.filePaths[0]
+        } else {
+            event.returnValue = false
+        }
+    })
+
+    ipcMain.on('open-directory', async (event) => {
+        const value = await dialog.showOpenDialog(mainWindow!, {
+            properties: ['openDirectory'],
+        })
+
+        if (!value.canceled) {
+            event.returnValue = value.filePaths[0]
+        } else {
+            event.returnValue = false
         }
     })
 } catch (e) {

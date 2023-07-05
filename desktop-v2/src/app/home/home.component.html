@@ -1,4 +1,4 @@
-<div class="container p-4">
+<div class="container px-4 pt-4">
     <div class="grid flex justify-content-center align-items-center">
         <div class="col-6 px-0">
             <input [disabled]="connected" type="text" pInputText class="p-inputtext-sm min-w-full" placeholder="Host" [(ngModel)]="host" />
@@ -15,7 +15,7 @@
             </p-button>
         </div>
     </div>
-    <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 94px);">
+    <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 75px);">
         <div class="col-4 p-1">
             <p-button [disabled]="!connected" (onClick)="open('CAMERA')" styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/camera.png" />
@@ -89,7 +89,7 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button (onClick)="open('IMAGE')" styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/image.png" />
                 <div class="mt-1 text-sm">Image Viewer</div>
             </p-button>

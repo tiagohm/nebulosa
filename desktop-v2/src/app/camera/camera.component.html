@@ -26,7 +26,7 @@
             <span class="text-sm">Temperature ({{ temperature | number: '1.1-1' }}°C)</span>
             <div class="flex justify-content-center align-items-center">
                 <p-inputNumber [disabled]="!connected || !canSetTemperature" [(ngModel)]="setpointTemperature" mode="decimal" [showButtons]="true"
-                    [step]="0.1" suffix="℃" [min]="-50" [max]="50" [allowEmpty]="false" />
+                    [step]="0.1" suffix="℃" [min]="-50" [max]="50" locale="en" [allowEmpty]="false" />
                 <p-button [disabled]="!connected || !canSetTemperature" (onClick)="applySetpointTemperature()" icon="pi" styleClass="ml-1 p-button-success p-button">
                     <span class="mdi mdi-check"></span>
                 </p-button>
@@ -38,7 +38,7 @@
             <span class="text-sm">Exposure Time</span>
             <div class="flex justify-content-center align-items-center">
                 <p-inputNumber [disabled]="!connected" [(ngModel)]="exposureTime" mode="decimal" [showButtons]="true"
-                    [step]="1.0" [min]="exposureTimeMin" [max]="exposureTimeMax" [allowEmpty]="false" />
+                    [step]="1.0" [min]="exposureTimeMin" [max]="exposureTimeMax" locale="en" [allowEmpty]="false" />
                 <p-menu #exposureTimeMenu [model]="exposureTimeUnitOptions" [popup]="true" />
                 <button [disabled]="!connected" pButton type="button" (click)="exposureTimeMenu.toggle($event)" class="ml-1" [label]="exposureTimeUnit"></button>
             </div>
@@ -68,22 +68,22 @@
         <div class="col-3">
             <span class="text-sm">X</span>
             <p-inputNumber [disabled]="!connected || !subframe" [(ngModel)]="x" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="minX" [max]="maxX" [allowEmpty]="false" />
+                [step]="1.0" [min]="minX" [max]="maxX" locale="en" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Y</span>
             <p-inputNumber [disabled]="!connected || !subframe" [(ngModel)]="y" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="minY" [max]="maxY" [allowEmpty]="false" />
+                [step]="1.0" [min]="minY" [max]="maxY" locale="en" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Width</span>
             <p-inputNumber [disabled]="!connected || !subframe" [(ngModel)]="width" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="minWidth" [max]="maxWidth" [allowEmpty]="false" />
+                [step]="1.0" [min]="minWidth" [max]="maxWidth" locale="en" [allowEmpty]="false" />
         </div>
         <div class="col-3">
             <span class="text-sm">Height</span>
             <p-inputNumber [disabled]="!connected || !subframe" [(ngModel)]="height" mode="decimal" [showButtons]="true"
-                [step]="1.0" [min]="minHeight" [max]="maxHeight" [allowEmpty]="false" />
+                [step]="1.0" [min]="minHeight" [max]="maxHeight" locale="en" [allowEmpty]="false" />
         </div>
     </div>
     <div class="grid flex align-items-center">
@@ -123,12 +123,12 @@
                 [step]="1.0" [min]="offsetMin" [max]="offsetMax" [allowEmpty]="false" />
         </div>
     </div>
-    <div class="grid mt-4">
+    <div class="grid mt-3">
         <div class="col-12 flex align-items-center justify-content-center">
-            <p-button [disabled]="!connected" label="Start" icon="pi" styleClass="p-button-success p-button">
+            <p-button [disabled]="!connected || capturing" label="Start" (onClick)="startCapture()" icon="pi" styleClass="p-button-success p-button">
                 <span class="mdi mdi-play"></span>
             </p-button>
-            <p-button [disabled]="!connected" label="Abort" icon="pi" styleClass="ml-1 p-button-danger p-button">
+            <p-button [disabled]="!connected || !capturing" label="Abort" (onClick)="abortCapture()" icon="pi" styleClass="ml-1 p-button-danger p-button">
                 <span class="mdi mdi-stop"></span>
             </p-button>
         </div>

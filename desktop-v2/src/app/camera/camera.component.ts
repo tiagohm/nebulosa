@@ -5,6 +5,7 @@ import { MenuItem } from 'primeng/api'
 import { ExposureTimeUnit } from '../../shared/enums'
 import { Camera } from '../../shared/models/Camera.model'
 import { ApiService } from '../../shared/services/api.service'
+import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ExposureMode, FrameType } from '../../shared/types'
 
 @Component({
@@ -57,25 +58,26 @@ export class CameraComponent implements OnInit, OnDestroy {
     offset = 0
     offsetMin = 0
     offsetMax = 0
+    capturing = false
 
     readonly exposureModeOptions: ExposureMode[] = ['SINGLE', 'FIXED', 'LOOP']
     readonly frameTypeOptions: FrameType[] = ['LIGHT', 'DARK', 'FLAT', 'BIAS']
     readonly exposureTimeUnitOptions: MenuItem[] = [
         {
             label: 'Minute (m)',
-            command: () => this.exposureTimeUnit = ExposureTimeUnit.MINUTE
+            command: () => this.changeExposureUnit(ExposureTimeUnit.MINUTE)
         },
         {
             label: 'Second (s)',
-            command: () => this.exposureTimeUnit = ExposureTimeUnit.SECOND
+            command: () => this.changeExposureUnit(ExposureTimeUnit.SECOND)
         },
         {
             label: 'Millisecond (ms)',
-            command: () => this.exposureTimeUnit = ExposureTimeUnit.MILLISECOND
+            command: () => this.changeExposureUnit(ExposureTimeUnit.MILLISECOND)
         },
         {
             label: 'Microsecond (µs)',
-            command: () => this.exposureTimeUnit = ExposureTimeUnit.MICROSECOND
+            command: () => this.changeExposureUnit(ExposureTimeUnit.MICROSECOND)
         }
     ]
 
@@ -83,9 +85,10 @@ export class CameraComponent implements OnInit, OnDestroy {
     private refreshing = false
 
     constructor(
+        title: Title,
         private router: Router,
         private api: ApiService,
-        title: Title,
+        private browserWindow: BrowserWindowService,
     ) {
         title.setTitle('Camera')
     }
@@ -123,6 +126,55 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     switchCooler() {
         this.api.cooler(this.camera!, this.cooler)
+    }
+
+    startCapture() {
+        const x = this.subframe ? this.x : this.camera!.x
+        const y = this.subframe ? this.y : this.camera!.y
+        const width = this.subframe ? this.width : this.camera!.width
+        const height = this.subframe ? this.height : this.camera!.height
+
+        const data = {
+            exposure: this.exposureTime,
+            amount: this.exposureCount,
+            delay: this.exposureDelay,
+            x, y, width, height,
+            frameFormat: this.frameFormat,
+            frameType: this.frameType,
+            binX: this.binX,
+            binY: this.binY,
+            gain: this.gain,
+            offset: this.offset,
+        }
+
+        this.api.startCapture(this.camera!, data)
+
+        this.browserWindow.openCameraImage(this.camera!)
+    }
+
+    abortCapture() {
+        this.api.abortCapture(this.camera!)
+    }
+
+    private static exposureUnitFactor(unit: ExposureTimeUnit) {
+        switch (unit) {
+            case ExposureTimeUnit.MINUTE: return 1
+            case ExposureTimeUnit.SECOND: return 60
+            case ExposureTimeUnit.MILLISECOND: return 60000
+            case ExposureTimeUnit.MICROSECOND: return 60000000
+        }
+    }
+
+    private changeExposureUnit(unit: ExposureTimeUnit) {
+        const a = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
+        const b = CameraComponent.exposureUnitFactor(unit)
+        const exposureTime = Math.trunc(this.exposureTime * b / a)
+        const exposureTimeMin = Math.trunc(this.camera!.exposureMin * b / 60000000)
+        const exposureTimeMax = Math.trunc(this.camera!.exposureMax * b / 60000000)
+        this.exposureTimeMax = Math.max(1, exposureTimeMax)
+        this.exposureTimeMin = Math.max(1, exposureTimeMin)
+        this.exposureTime = Math.max(this.exposureTimeMin, Math.min(exposureTime, this.exposureTimeMax))
+        this.exposureTimeUnit = unit
     }
 
     private async update() {
@@ -168,11 +220,6 @@ export class CameraComponent implements OnInit, OnDestroy {
 
         this.camera = camera
 
-        this.updateExposureTime()
-    }
-
-    private updateExposureTime() {
-        this.exposureTimeMin = this.camera!.exposureMin
-        this.exposureTimeMax = this.camera!.exposureMax
+        this.changeExposureUnit(this.exposureTimeUnit)
     }
 }
