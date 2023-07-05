@@ -3,6 +3,7 @@ package nebulosa.api.configs
 import io.objectbox.BoxStore
 import nebulosa.api.data.entities.CameraPreference
 import nebulosa.api.data.entities.MyObjectBox
+import nebulosa.api.data.entities.SavedCameraImage
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.CorsRegistry
@@ -32,6 +33,9 @@ class BeanConfig {
 
     @Bean
     fun cameraPreferenceBox(boxStore: BoxStore) = boxStore.boxFor(CameraPreference::class.java)!!
+
+    @Bean
+    fun savedCameraImageBox(boxStore: BoxStore) = boxStore.boxFor(SavedCameraImage::class.java)!!
 
     @Bean
     fun corsConfigurer() = object : WebMvcConfigurer {

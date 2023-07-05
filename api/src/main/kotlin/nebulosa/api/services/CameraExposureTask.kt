@@ -1,11 +1,14 @@
 package nebulosa.api.services
 
+import nebulosa.api.data.entities.SavedCameraImage
 import nebulosa.api.data.enums.AutoSubFolderMode
 import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.common.concurrency.ThreadedJob
 import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
 import nebulosa.fits.FITS_RA_ANGLE_FORMATTER
+import nebulosa.fits.naxis
+import nebulosa.imaging.Image
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.camera.*
@@ -50,6 +53,11 @@ data class CameraExposureTask(
     val filterWheel: FilterWheel? = null,
 ) : ThreadedJob<Path>(), DeviceEventHandler {
 
+    fun interface SaveListener {
+
+        fun onImageSaved(frame: SavedCameraImage)
+    }
+
     @Volatile var remainingAmount = amount
         private set
 
@@ -60,6 +68,7 @@ data class CameraExposureTask(
 
     private val latch = CountUpDownLatch()
     private val forceAbort = AtomicBoolean()
+    private val listeners = HashSet<SaveListener>(1)
 
     constructor(
         camera: Camera,
@@ -96,11 +105,19 @@ data class CameraExposureTask(
         )
     }
 
+    fun registerSaveListener(listener: SaveListener) {
+        listeners.add(listener)
+    }
+
+    fun unregisterSaveListener(listener: SaveListener) {
+        listeners.remove(listener)
+    }
+
     override fun onEventReceived(event: DeviceEvent<*>) {
         if (running && event.device === camera) {
             when (event) {
                 is CameraFrameCaptured -> {
-                    add(save(event.fits, event.compressed))
+                    save(event.fits, event.compressed)
                     latch.countDown()
                 }
                 is CameraExposureAborted,
@@ -161,7 +178,7 @@ data class CameraExposureTask(
         forceAbort.set(true)
     }
 
-    private fun save(inputStream: InputStream, compressed: Boolean): Path {
+    private fun save(inputStream: InputStream, compressed: Boolean) {
         val path = if (autoSave) {
             val now = LocalDateTime.now()
             val folderName = autoSubFolderMode.nameAt(now)
@@ -180,7 +197,7 @@ data class CameraExposureTask(
                 val hdu = fits.read().firstOrNull { it is ImageHDU }
 
                 if (hdu != null) {
-                    hdu.header.also {
+                    val header = hdu.header.also {
                         val mount = mount ?: return@also
 
                         val raStr = mount.rightAscensionJ2000.format(FITS_RA_ANGLE_FORMATTER)
@@ -195,7 +212,14 @@ data class CameraExposureTask(
                     path.parent.createDirectories()
                     path.outputStream().use { fits.write(FitsOutputStream(it)) }
 
-                    // TODO: eventBus.post(CameraFrameSaved(this, image, path, autoSave))
+                    add(path)
+
+                    val width = header.naxis(1)
+                    val height = header.naxis(2)
+                    val mono = Image.isMono(header)
+                    val frame = SavedCameraImage(0, camera.name, "$path", width, height, mono, System.currentTimeMillis())
+
+                    listeners.forEach { it.onImageSaved(frame) }
                 } else {
                     LOG.warn("FITS does not contains an image")
                 }
@@ -204,8 +228,6 @@ data class CameraExposureTask(
             LOG.error("failed to read FITS", e)
             forceAbort.set(true)
         }
-
-        return path
     }
 
     companion object {

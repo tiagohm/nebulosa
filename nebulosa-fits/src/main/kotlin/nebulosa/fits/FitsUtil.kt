@@ -15,6 +15,9 @@ import nom.tam.fits.header.extra.SBFitsExt
 inline fun Fits.imageHDU(n: Int) = read().filterIsInstance<ImageHDU>().getOrNull(n)
 
 @Suppress("NOTHING_TO_INLINE")
+inline fun Header.naxis() = getIntValue(Standard.NAXIS, -1)
+
+@Suppress("NOTHING_TO_INLINE")
 inline fun Header.naxis(n: Int) = getIntValue(Standard.NAXISn.n(n))
 
 @Suppress("NOTHING_TO_INLINE")

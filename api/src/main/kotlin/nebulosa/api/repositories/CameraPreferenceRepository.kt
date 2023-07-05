@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 @Component
 class CameraPreferenceRepository(private val cameraPreferenceBox: Box<CameraPreference>) {
 
-    operator fun get(name: String): CameraPreference? {
+    fun findName(name: String): CameraPreference? {
         return cameraPreferenceBox.query()
             .equal(CameraPreference_.name, name, QueryBuilder.StringOrder.CASE_SENSITIVE)
             .build().use { it.findFirst() }

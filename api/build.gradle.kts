@@ -30,7 +30,6 @@ dependencies {
     implementation(libs.csv)
     implementation(libs.jackson)
     implementation(libs.okhttp)
-    implementation(libs.eventbus)
     implementation(libs.oshi)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-undertow")

@@ -38,10 +38,58 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "2:2104948134385418035",
+      "lastPropertyId": "7:2430172830261103906",
+      "name": "SavedCameraImage",
+      "properties": [
+        {
+          "id": "1:5629252320756379656",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:511426775109613964",
+          "name": "name",
+          "indexId": "2:2276237431500872935",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:6676126276686681958",
+          "name": "path",
+          "indexId": "3:8320952872054090384",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "4:3691286626382733519",
+          "name": "width",
+          "type": 5
+        },
+        {
+          "id": "5:6928774628888469703",
+          "name": "height",
+          "type": 5
+        },
+        {
+          "id": "6:6779345939290552267",
+          "name": "mono",
+          "type": 1
+        },
+        {
+          "id": "7:2430172830261103906",
+          "name": "savedAt",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "1:6335824321923960635",
-  "lastIndexId": "1:1885086333955367027",
+  "lastEntityId": "2:2104948134385418035",
+  "lastIndexId": "3:8320952872054090384",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
