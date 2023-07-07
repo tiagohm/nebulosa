@@ -33,7 +33,7 @@ dependencyResolutionManagement {
             library("coroutines", "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
             library("coroutines-javafx", "org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.7.1")
             library("apache-lang3", "org.apache.commons:commons-lang3:3.12.0")
-            library("oshi", "com.github.oshi:oshi-core:6.4.3")
+            library("oshi", "com.github.oshi:oshi-core:6.4.4")
             library("exposed-core", "org.jetbrains.exposed:exposed-core:0.41.1")
             library("exposed-jdbc", "org.jetbrains.exposed:exposed-jdbc:0.41.1")
             library("sqlite", "org.xerial:sqlite-jdbc:3.42.0.0")
