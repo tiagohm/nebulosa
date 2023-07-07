@@ -2,10 +2,7 @@ import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
 import { APP_CONFIG } from '../../environments/environment'
-import { Camera } from '../models/Camera.model'
-import { CameraPreference } from '../models/CameraPreference.model'
-import { CameraStartCapture } from '../models/CameraStartCapture.model'
-import { SavedCameraImage } from '../models/SavedCameraImage.model'
+import { Camera, CameraPreference, CameraStartCapture, SavedCameraImage } from '../types'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {

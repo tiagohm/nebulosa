@@ -1,12 +1,11 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
+import Hex from 'hex-encoding'
 import createPanZoom, { PanZoom } from 'panzoom'
 import * as path from 'path'
-import { Camera } from '../../shared/models/Camera.model'
-import { SavedCameraImage } from '../../shared/models/SavedCameraImage.model'
 import { ApiService } from '../../shared/services/api.service'
-import { decodeHex, encodeHex } from '../../shared/utils'
+import { Camera, SavedCameraImage } from '../../shared/types'
 
 export interface ImageParams {
     camera?: Camera
@@ -42,7 +41,7 @@ export class ImageComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
-            const params = JSON.parse(decodeHex(e.params)) as ImageParams
+            const params = JSON.parse(Hex.decodeStr(e.params)) as ImageParams
             setTimeout(() => this.loadImage(params), 1000)
         })
     }
@@ -77,7 +76,7 @@ export class ImageComponent implements OnInit, AfterViewInit {
 
     private async loadImageFromPath(path: string) {
         const image = this.image.nativeElement
-        const hash = encodeHex(path)
+        const hash = Hex.encodeStr(path)
         const { info, blob } = await this.api.image(hash)
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
         this.imageURL = window.URL.createObjectURL(blob)

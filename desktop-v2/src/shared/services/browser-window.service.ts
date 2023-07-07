@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core'
 import { v4 as uuidv4 } from 'uuid'
 import { ElectronService } from '../../app/core/services'
 import { ImageParams } from '../../app/image/image.component'
-import { Camera } from '../models/Camera.model'
-import { OpenWindow } from '../models/OpenWindow.model'
+import { Camera, OpenWindow } from '../types'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {

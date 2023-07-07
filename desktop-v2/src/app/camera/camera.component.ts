@@ -2,11 +2,9 @@ import { Component, OnDestroy, OnInit } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { Router } from '@angular/router'
 import { MenuItem } from 'primeng/api'
-import { ExposureTimeUnit } from '../../shared/enums'
-import { Camera } from '../../shared/models/Camera.model'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
-import { ExposureMode, FrameType } from '../../shared/types'
+import { Camera, ExposureMode, ExposureTimeUnit, FrameType } from '../../shared/types'
 
 @Component({
     selector: 'app-camera',
