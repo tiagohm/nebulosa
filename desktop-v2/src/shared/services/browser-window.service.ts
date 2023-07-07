@@ -18,8 +18,8 @@ export class BrowserWindowService {
         this.openWindow(data)
     }
 
-    openCameraImage(camera: Camera, exposure: number) {
-        const hash = camera ? `.${camera.name}` : ''
+    openCameraImage(camera: Camera) {
+        const hash = camera ? camera.name : ''
         const params: ImageParams = { camera }
         const data: OpenWindow = { id: `image.${hash}`, path: 'image', icon: 'image', width: '70%', height: `70%`, resizable: true, params }
         this.openWindow(data)

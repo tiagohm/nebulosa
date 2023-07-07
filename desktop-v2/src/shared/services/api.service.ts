@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
-import { APP_CONFIG } from '../../environments/environment'
 import { Camera, CameraPreference, CameraStartCapture, SavedCameraImage } from '../types'
 
 @Injectable({ providedIn: 'root' })
@@ -9,24 +8,28 @@ export class ApiService {
 
     constructor(private http: HttpClient) { }
 
+    get baseUri() {
+        return `http://localhost:${window.apiPort}`
+    }
+
     private get<T>(url: string) {
-        return firstValueFrom(this.http.get<T>(`${APP_CONFIG.apiUrl}/${url}`))
+        return firstValueFrom(this.http.get<T>(`${this.baseUri}/${url}`))
     }
 
     private post<T>(url: string, body: any = null) {
-        return firstValueFrom(this.http.post<T>(`${APP_CONFIG.apiUrl}/${url}`, body))
+        return firstValueFrom(this.http.post<T>(`${this.baseUri}/${url}`, body))
     }
 
     private patch<T>(url: string, body: any = null) {
-        return firstValueFrom(this.http.patch<T>(`${APP_CONFIG.apiUrl}/${url}`, body))
+        return firstValueFrom(this.http.patch<T>(`${this.baseUri}/${url}`, body))
     }
 
     private put<T>(url: string, body: any = null) {
-        return firstValueFrom(this.http.put<T>(`${APP_CONFIG.apiUrl}/${url}`, body))
+        return firstValueFrom(this.http.put<T>(`${this.baseUri}/${url}`, body))
     }
 
     private delete<T>(url: string) {
-        return firstValueFrom(this.http.delete<T>(`${APP_CONFIG.apiUrl}/${url}`))
+        return firstValueFrom(this.http.delete<T>(`${this.baseUri}/${url}`))
     }
 
     async connect(host: string, port: number) {
@@ -97,7 +100,7 @@ export class ApiService {
         autoStretch: boolean = true,
     ) {
         const query = `autoStretch=${autoStretch}`
-        const response = await firstValueFrom(this.http.get(`${APP_CONFIG.apiUrl}/image?hash=${hash}&${query}`, {
+        const response = await firstValueFrom(this.http.get(`${this.baseUri}/image?hash=${hash}&${query}`, {
             observe: 'response',
             responseType: 'blob'
         }))

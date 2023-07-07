@@ -16,6 +16,9 @@
       ]
     }
   ],
+  "extraResources": [
+    "api.jar"
+  ],
   "win": {
     "icon": "dist/assets/icons",
     "target": [

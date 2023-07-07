@@ -1,10 +1,13 @@
 import { app, BrowserWindow, dialog, ipcMain, screen } from 'electron'
 import Hex from 'hex-encoding'
+import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
 import { OpenWindow } from '../src/shared/types'
 
 let mainWindow: BrowserWindow | null = null
-const windows = new Map<string, BrowserWindow>()
+const secondaryWindows = new Map<string, BrowserWindow>()
+let api: ChildProcessWithoutNullStreams | null = null
+let apiPort = 7000
 
 const args = process.argv.slice(1)
 const serve = args.some(e => e === '--serve')
@@ -14,8 +17,8 @@ function createMainWindow() {
 }
 
 function createWindow(data: OpenWindow) {
-    if (windows.has(data.id)) {
-        return windows.get(data.id)!
+    if (secondaryWindows.has(data.id)) {
+        return secondaryWindows.get(data.id)!
     } else if (data.id === 'home' && mainWindow) {
         return mainWindow
     }
@@ -48,6 +51,8 @@ function createWindow(data: OpenWindow) {
     const icon = data.icon ?? 'nebulosa'
     const params = Hex.encodeStr(JSON.stringify(data.params || {}))
 
+    console.log(`opening new window. id=${data.id}, width=${width}, height=${height}`)
+
     const window = new BrowserWindow({
         x: size.width / 2 - width / 2,
         y: size.height / 2 - height / 2,
@@ -61,9 +66,13 @@ function createWindow(data: OpenWindow) {
             nodeIntegration: true,
             allowRunningInsecureContent: serve,
             contextIsolation: false,
+            additionalArguments: [`--port=${apiPort}`],
+            preload: path.join(__dirname, 'preload.js'),
             devTools: !serve,
         },
     })
+
+    window.webContents.executeJavaScript(`sessionStorage.setItem('apiPort', '${apiPort}')`)
 
     if (serve) {
         const debug = require('electron-debug')
@@ -80,15 +89,17 @@ function createWindow(data: OpenWindow) {
 
     window.on('close', () => {
         if (window === mainWindow) {
-            for (const [_, value] of windows) {
+            for (const [_, value] of secondaryWindows) {
                 value.close()
             }
 
             mainWindow = null
+
+            api?.kill('SIGHUP')
         } else {
-            for (const [key, value] of windows) {
+            for (const [key, value] of secondaryWindows) {
                 if (value === window) {
-                    windows.delete(key)
+                    secondaryWindows.delete(key)
                     break
                 }
             }
@@ -98,14 +109,47 @@ function createWindow(data: OpenWindow) {
     if (data.id === 'home') {
         mainWindow = window
     } else {
-        windows.set(data.id, window)
+        secondaryWindows.set(data.id, window)
     }
 
     return window
 }
 
+function startApp() {
+    if (api === null) {
+        if (serve) {
+            createMainWindow()
+        } else {
+            const apiJar = path.join(process.resourcesPath, "api.jar")
+
+            api = spawn('java', ['-jar', apiJar])
+
+            api.stdout.on('data', (data) => {
+                const text = `${data}`
+
+                if (text) {
+                    const regex = /server is started at port: (\d+)/i
+                    const match = text.match(regex)
+
+                    if (match) {
+                        apiPort = parseInt(match[1])
+                        api!.stdout.removeAllListeners('data')
+                        console.log(`server is started at port: ${apiPort}`)
+                        createMainWindow()
+                    }
+                }
+            })
+
+            api.on('close', (code) => {
+                console.log(`server process exited with code ${code}`)
+                process.exit(code || 0)
+            })
+        }
+    }
+}
+
 try {
-    app.on('ready', () => setTimeout(createMainWindow, 400))
+    app.on('ready', () => setTimeout(startApp, 400))
 
     app.on('window-all-closed', () => {
         if (process.platform !== 'darwin') {
@@ -115,7 +159,7 @@ try {
 
     app.on('activate', () => {
         if (mainWindow === null) {
-            createMainWindow()
+            startApp()
         }
     })
 

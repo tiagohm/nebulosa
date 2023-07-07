@@ -152,7 +152,7 @@ export class CameraComponent implements OnInit, OnDestroy {
 
         this.capturing = true
 
-        this.browserWindow.openCameraImage(this.camera!, data.exposure)
+        this.browserWindow.openCameraImage(this.camera!)
     }
 
     abortCapture() {

@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core'
-import { Router } from '@angular/router'
+import { Component, OnDestroy, OnInit } from '@angular/core'
+import { ActivatedRoute } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../core/services'
@@ -9,20 +9,31 @@ import { ElectronService } from '../core/services'
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
 
     host = ''
     port = 7624
     connected = false
 
-    constructor(private router: Router,
+    private timer!: any
+
+    constructor(
+        route: ActivatedRoute,
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private api: ApiService,
     ) { }
 
     async ngOnInit() {
-        this.connected = await this.api.connectionStatus()
+        this.timer = setInterval(async () => {
+            this.updateConnectionStatus()
+        }, 5000)
+
+        this.updateConnectionStatus()
+    }
+
+    ngOnDestroy() {
+        clearInterval(this.timer)
     }
 
     async connect() {
@@ -34,8 +45,6 @@ export class HomeComponent implements OnInit {
             }
         } catch (e) {
             console.error(e)
-        } finally {
-            this.connected = await this.api.connectionStatus()
         }
     }
 
@@ -49,5 +58,9 @@ export class HomeComponent implements OnInit {
                 if (path) this.browserWindow.openImage(path)
                 break
         }
+    }
+
+    private async updateConnectionStatus() {
+        this.connected = await this.api.connectionStatus()
     }
 }
