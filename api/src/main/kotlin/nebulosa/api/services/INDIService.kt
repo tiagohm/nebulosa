@@ -1,35 +1,33 @@
 package nebulosa.api.services
 
-import nebulosa.api.components.EquipmentManager
-import nebulosa.api.data.enums.DevicePropertyVectorType
-import nebulosa.api.data.requests.DevicePropertyVectorRequest
-import nebulosa.api.data.responses.DevicePropertyVectorResponse
-import nebulosa.api.exceptions.DeviceNotFound
+import nebulosa.api.data.enums.INDIPropertyType
+import nebulosa.api.data.requests.INDISendPropertyRequest
+import nebulosa.api.data.responses.INDIPropertyResponse
 import org.springframework.stereotype.Service
 
 @Service("indiService")
 class INDIService(
-    private val equipmentManager: EquipmentManager,
+    private val equipmentService: EquipmentService,
 ) {
 
-    fun properties(name: String): List<DevicePropertyVectorResponse> {
-        val device = equipmentManager[name] ?: throw DeviceNotFound
-        return device.properties.values.map(::DevicePropertyVectorResponse)
+    fun properties(name: String): List<INDIPropertyResponse> {
+        val device = equipmentService[name]!!
+        return device.properties.values.map(::INDIPropertyResponse)
     }
 
-    fun sendProperty(name: String, vector: DevicePropertyVectorRequest) {
-        val device = equipmentManager[name] ?: throw DeviceNotFound
+    fun sendProperty(name: String, vector: INDISendPropertyRequest) {
+        val device = equipmentService[name]!!
 
         when (vector.type) {
-            DevicePropertyVectorType.NUMBER -> {
+            INDIPropertyType.NUMBER -> {
                 val elements = vector.properties.map { it.name to "${it.value}".toDouble() }
                 device.sendNewNumber(vector.name, elements)
             }
-            DevicePropertyVectorType.SWITCH -> {
+            INDIPropertyType.SWITCH -> {
                 val elements = vector.properties.map { it.name to "${it.value}".toBooleanStrict() }
                 device.sendNewSwitch(vector.name, elements)
             }
-            DevicePropertyVectorType.TEXT -> {
+            INDIPropertyType.TEXT -> {
                 val elements = vector.properties.map { it.name to "${it.value}" }
                 device.sendNewText(vector.name, elements)
             }

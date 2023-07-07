@@ -7,12 +7,11 @@ import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("connection")
 class ConnectionController(
     private val connectionService: ConnectionService,
 ) {
 
-    @PostMapping
+    @PostMapping("connect")
     fun connect(
         @RequestParam @Valid @NotBlank host: String,
         @RequestParam @Valid @Range(min = 1, max = 65535) port: Int,
@@ -20,13 +19,13 @@ class ConnectionController(
         connectionService.connect(host, port)
     }
 
-    @DeleteMapping
+    @PostMapping("disconnect")
     fun disconnect() {
         connectionService.disconnect()
     }
 
-    @GetMapping
-    fun isConnected(): Boolean {
-        return connectionService.isConnected()
+    @GetMapping("connectionStatus")
+    fun connectionStatus(): Boolean {
+        return connectionService.connectionStatus()
     }
 }

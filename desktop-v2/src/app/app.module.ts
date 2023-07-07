@@ -16,12 +16,14 @@ import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { CameraComponent } from './camera/camera.component'
 import { HomeComponent } from './home/home.component'
+import { ImageComponent } from './image/image.component'
 
 @NgModule({
     declarations: [
         AppComponent,
         HomeComponent,
         CameraComponent,
+        ImageComponent,
     ],
     imports: [
         BrowserModule,

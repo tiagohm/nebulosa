@@ -2,7 +2,7 @@ package nebulosa.api.data.responses
 
 import nebulosa.indi.device.Property
 
-data class DevicePropertyResponse(
+data class INDIPropertyItemResponse(
     val name: String,
     val label: String,
     val value: Any?,

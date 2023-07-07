@@ -16,7 +16,7 @@
     <div class="grid flex align-items-center">
         <div class="col-3 flex flex-column">
             <span class="text-sm">Cooler ({{ coolerPower | number: '1.1-1' }}%)</span>
-            <p-inputSwitch [disabled]="!connected || !hasCooler" (onChange)="switchCooler()" styleClass="mt-2" [(ngModel)]="cooler"></p-inputSwitch>
+            <p-inputSwitch [disabled]="!connected || !hasCooler" (onChange)="toggleCooler()" styleClass="mt-2" [(ngModel)]="cooler"></p-inputSwitch>
         </div>
         <div class="col-3 flex flex-column">
             <span class="text-sm">Dew heater</span>

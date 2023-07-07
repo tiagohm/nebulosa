@@ -65,19 +65,19 @@ export class CameraComponent implements OnInit, OnDestroy {
     readonly exposureTimeUnitOptions: MenuItem[] = [
         {
             label: 'Minute (m)',
-            command: () => this.changeExposureUnit(ExposureTimeUnit.MINUTE)
+            command: () => this.updateExposureUnit(ExposureTimeUnit.MINUTE)
         },
         {
             label: 'Second (s)',
-            command: () => this.changeExposureUnit(ExposureTimeUnit.SECOND)
+            command: () => this.updateExposureUnit(ExposureTimeUnit.SECOND)
         },
         {
             label: 'Millisecond (ms)',
-            command: () => this.changeExposureUnit(ExposureTimeUnit.MILLISECOND)
+            command: () => this.updateExposureUnit(ExposureTimeUnit.MILLISECOND)
         },
         {
             label: 'Microsecond (µs)',
-            command: () => this.changeExposureUnit(ExposureTimeUnit.MICROSECOND)
+            command: () => this.updateExposureUnit(ExposureTimeUnit.MICROSECOND)
         }
     ]
 
@@ -94,7 +94,7 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     async ngOnInit() {
-        this.cameras = await this.api.cameras()
+        this.cameras = await this.api.attachedCameras()
 
         if (this.cameras.length > 0) {
             this.camera = this.cameras[0]
@@ -121,11 +121,11 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     applySetpointTemperature() {
-        this.api.setpointTemperature(this.camera!, this.setpointTemperature)
+        this.api.cameraSetpointTemperature(this.camera!, this.setpointTemperature)
     }
 
-    switchCooler() {
-        this.api.cooler(this.camera!, this.cooler)
+    toggleCooler() {
+        this.api.cameraCooler(this.camera!, this.cooler)
     }
 
     startCapture() {
@@ -133,10 +133,13 @@ export class CameraComponent implements OnInit, OnDestroy {
         const y = this.subframe ? this.y : this.camera!.y
         const width = this.subframe ? this.width : this.camera!.width
         const height = this.subframe ? this.height : this.camera!.height
+        const exposureFactor = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
+        const exposure = Math.trunc(this.exposureTime * 60000000 / exposureFactor)
+        const amount = this.exposureMode === 'LOOP' ? 2147483647 :
+            (this.exposureMode === 'FIXED' ? this.exposureCount : 1)
 
         const data = {
-            exposure: this.exposureTime,
-            amount: this.exposureCount,
+            exposure, amount,
             delay: this.exposureDelay,
             x, y, width, height,
             frameFormat: this.frameFormat,
@@ -147,13 +150,15 @@ export class CameraComponent implements OnInit, OnDestroy {
             offset: this.offset,
         }
 
-        this.api.startCapture(this.camera!, data)
+        this.api.cameraStartCapture(this.camera!, data)
 
-        this.browserWindow.openCameraImage(this.camera!)
+        this.capturing = true
+
+        this.browserWindow.openCameraImage(this.camera!, data.exposure)
     }
 
     abortCapture() {
-        this.api.abortCapture(this.camera!)
+        this.api.cameraAbortCapture(this.camera!)
     }
 
     private static exposureUnitFactor(unit: ExposureTimeUnit) {
@@ -165,7 +170,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         }
     }
 
-    private changeExposureUnit(unit: ExposureTimeUnit) {
+    private updateExposureUnit(unit: ExposureTimeUnit) {
         const a = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
         const b = CameraComponent.exposureUnitFactor(unit)
         const exposureTime = Math.trunc(this.exposureTime * b / a)
@@ -188,9 +193,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         }
 
         this.refreshing = true
-
         const camera = await this.api.camera(this.camera!.name)
-
         this.refreshing = false
 
         this.connected = camera.connected
@@ -218,8 +221,10 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.offsetMin = camera.offsetMin
         this.offsetMax = camera.offsetMax
 
+        this.capturing = await this.api.cameraIsCapturing(camera)
+
         this.camera = camera
 
-        this.changeExposureUnit(this.exposureTimeUnit)
+        this.updateExposureUnit(this.exposureTimeUnit)
     }
 }

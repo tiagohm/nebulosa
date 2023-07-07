@@ -28,6 +28,7 @@ dependencyResolutionManagement {
             library("aalto", "com.fasterxml:aalto-xml:1.3.2")
             library("csv", "de.siegmar:fastcsv:2.2.2")
             library("apache-lang3", "org.apache.commons:commons-lang3:3.12.0")
+            library("apache-codec", "commons-codec:commons-codec:1.16.0")
             library("oshi", "com.github.oshi:oshi-core:6.4.3")
             library("hibernate-core", "org.hibernate.orm:hibernate-core:6.2.5.Final")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.6.2")

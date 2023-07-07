@@ -5,7 +5,7 @@ import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.indi.device.camera.FrameType
 
 data class CameraStartCaptureRequest(
-    @field:Positive val exposure: Long,
+    @field:Positive val exposure: Long = 0L,
     @field:Positive val amount: Int = 1,
     @field:PositiveOrZero val delay: Long = 0,
     @field:PositiveOrZero val x: Int = 0,

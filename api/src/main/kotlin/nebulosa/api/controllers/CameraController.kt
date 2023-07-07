@@ -8,58 +8,62 @@ import nebulosa.api.services.CameraService
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("cameras")
 class CameraController(
     private val cameraService: CameraService,
 ) {
 
-    @GetMapping
-    fun cameras(): List<CameraResponse> {
-        return cameraService.list()
+    @GetMapping("attachedCameras")
+    fun sttachedCameras(): List<CameraResponse> {
+        return cameraService.attachedCameras()
     }
 
-    @GetMapping("{name}")
-    fun camera(@PathVariable name: String): CameraResponse {
+    @GetMapping("camera")
+    fun camera(@RequestParam name: String): CameraResponse {
         return cameraService[name]
     }
 
-    @PostMapping("{name}/connect")
-    fun connect(@PathVariable name: String) {
+    @PostMapping("cameraConnect")
+    fun connect(@RequestParam name: String) {
         cameraService.connect(name)
     }
 
-    @PostMapping("{name}/disconnect")
-    fun disconnect(@PathVariable name: String) {
+    @PostMapping("cameraDisconnect")
+    fun disconnect(@RequestParam name: String) {
         cameraService.disconnect(name)
     }
 
-    @PostMapping("{name}/setpointTemperature/{value}")
-    fun setpointTemperature(@PathVariable name: String, @PathVariable value: Double) {
-        cameraService.setpointTemperature(name, value)
+    @GetMapping("cameraIsCapturing")
+    fun isCapturing(@RequestParam name: String): Boolean {
+        return cameraService.isCapturing(name)
     }
 
-    @PostMapping("{name}/cooler/{value}")
-    fun cooler(@PathVariable name: String, @PathVariable value: Boolean) {
+    @PostMapping("cameraSetpointTemperature")
+    fun setpointTemperature(@RequestParam name: String, @RequestParam temperature: Double) {
+        cameraService.setpointTemperature(name, temperature)
+    }
+
+    @PostMapping("cameraCooler")
+    fun cooler(@RequestParam name: String, @RequestParam value: Boolean) {
         cameraService.cooler(name, value)
     }
 
-    @PostMapping("{name}/capture/start")
-    fun startCapture(@PathVariable name: String, @RequestBody @Valid body: CameraStartCaptureRequest) {
+    @PostMapping("cameraStartCapture")
+    fun startCapture(@RequestParam name: String, @RequestBody @Valid body: CameraStartCaptureRequest) {
         cameraService.startCapture(name, body)
     }
 
-    @PostMapping("{name}/capture/abort")
-    fun abortCapture(@PathVariable name: String) {
+    @PostMapping("cameraAbortCapture")
+    fun abortCapture(@RequestParam name: String) {
         cameraService.abortCapture(name)
     }
 
-    @PutMapping("{name}/preferences")
-    fun savePreferences(@PathVariable name: String, @RequestBody body: CameraPreference) {
-        cameraService.savePreferences(name, body)
+    @PutMapping("cameraPreferences")
+    fun savePreferences(@RequestParam name: String, @RequestBody @Valid body: CameraPreference) {
+        cameraService.savePreferences(body.also { it.name = name })
     }
 
-    @GetMapping("{name}/preferences")
-    fun loadPreferences(@PathVariable name: String): CameraPreference {
+    @GetMapping("cameraPreferences")
+    fun loadPreferences(@RequestParam name: String): CameraPreference {
         return cameraService.loadPreferences(name)
     }
 }

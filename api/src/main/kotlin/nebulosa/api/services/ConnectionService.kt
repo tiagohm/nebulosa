@@ -1,24 +1,23 @@
 package nebulosa.api.services
 
-import nebulosa.api.components.EquipmentManager
-import nebulosa.api.exceptions.ConnectionFailedException
 import nebulosa.indi.client.DefaultINDIClient
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.log.error
 import nebulosa.log.loggerFor
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ServerErrorException
 import java.io.Closeable
 
 @Service
 class ConnectionService(
-    private val equipmentManager: EquipmentManager,
+    private val equipmentService: EquipmentService,
 ) : Closeable {
 
     @Volatile private var client: INDIClient? = null
     @Volatile private var deviceProtocolHandler: DeviceProtocolHandler? = null
 
-    fun isConnected(): Boolean {
+    fun connectionStatus(): Boolean {
         return client != null
     }
 
@@ -29,7 +28,7 @@ class ConnectionService(
 
             val client = DefaultINDIClient(host, port)
             val deviceProtocolHandler = DeviceProtocolHandler()
-            deviceProtocolHandler.registerDeviceEventHandler(equipmentManager)
+            deviceProtocolHandler.registerDeviceEventHandler(equipmentService)
             client.registerDeviceProtocolHandler(deviceProtocolHandler)
             deviceProtocolHandler.start()
             client.start()
@@ -39,7 +38,7 @@ class ConnectionService(
         } catch (e: Throwable) {
             LOG.error(e)
 
-            throw ConnectionFailedException
+            throw ServerErrorException("Connection Failed", e)
         }
     }
 

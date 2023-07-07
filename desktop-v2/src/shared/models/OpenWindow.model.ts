@@ -7,5 +7,5 @@ export interface OpenWindow {
     height?: number | string
     bringToFront?: boolean
     requestFocus?: boolean
-    args?: any
+    params?: Record<string, any>
 }

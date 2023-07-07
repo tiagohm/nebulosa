@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.jackson)
     implementation(libs.okhttp)
     implementation(libs.oshi)
+    implementation(libs.apache.codec)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("org.springframework.boot:spring-boot-starter-web") {

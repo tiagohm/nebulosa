@@ -1,5 +1,6 @@
 package nebulosa.api.configs
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.objectbox.BoxStore
 import nebulosa.api.data.entities.CameraPreference
 import nebulosa.api.data.entities.MyObjectBox
@@ -27,6 +28,9 @@ class BeanConfig {
     fun capturesDiretory(appDirectory: Path): Path = Path.of("$appDirectory", "captures").createDirectories()
 
     @Bean
+    fun objectMapper() = ObjectMapper()
+
+    @Bean
     fun boxStore(dataDiretory: Path) = MyObjectBox.builder()
         .directory(dataDiretory.toFile())
         .build()!!
@@ -43,7 +47,9 @@ class BeanConfig {
             registry
                 .addMapping("/**")
                 .allowedOrigins("*")
-                .allowedMethods("HEAD", "OPTIONS", "GET", "POST", "PUT", "DELETE", "PATCH")
+                .allowedMethods("*")
+                .allowedHeaders("*")
+                .exposedHeaders("X-Image-Info")
         }
     }
 }

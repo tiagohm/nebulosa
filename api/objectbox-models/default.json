@@ -41,7 +41,7 @@
     },
     {
       "id": "2:2104948134385418035",
-      "lastPropertyId": "7:2430172830261103906",
+      "lastPropertyId": "8:6556234952342693265",
       "name": "SavedCameraImage",
       "properties": [
         {
@@ -82,6 +82,11 @@
         {
           "id": "7:2430172830261103906",
           "name": "savedAt",
+          "type": 6
+        },
+        {
+          "id": "8:6556234952342693265",
+          "name": "exposure",
           "type": 6
         }
       ],

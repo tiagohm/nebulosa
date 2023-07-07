@@ -1,27 +1,26 @@
 package nebulosa.api.controllers
 
 import jakarta.validation.Valid
-import nebulosa.api.data.requests.DevicePropertyVectorRequest
-import nebulosa.api.data.responses.DevicePropertyVectorResponse
+import nebulosa.api.data.requests.INDISendPropertyRequest
+import nebulosa.api.data.responses.INDIPropertyResponse
 import nebulosa.api.services.INDIService
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("indi/{deviceName}")
 class INDIController(
     private val indiService: INDIService,
 ) {
 
-    @GetMapping("properties")
-    fun properties(@PathVariable deviceName: String): List<DevicePropertyVectorResponse> {
-        return indiService.properties(deviceName)
+    @GetMapping("indiProperties")
+    fun properties(@RequestParam name: String): List<INDIPropertyResponse> {
+        return indiService.properties(name)
     }
 
-    @PostMapping("properties")
+    @PostMapping("indiProperty")
     fun sendProperty(
-        @PathVariable deviceName: String,
-        @RequestBody @Valid body: DevicePropertyVectorRequest,
+        @RequestParam name: String,
+        @RequestBody @Valid body: INDISendPropertyRequest,
     ) {
-        return indiService.sendProperty(deviceName, body)
+        return indiService.sendProperty(name, body)
     }
 }

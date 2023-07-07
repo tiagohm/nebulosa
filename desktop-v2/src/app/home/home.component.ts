@@ -22,7 +22,7 @@ export class HomeComponent implements OnInit {
     ) { }
 
     async ngOnInit() {
-        this.connected = await this.api.connected()
+        this.connected = await this.api.connectionStatus()
     }
 
     async connect() {
@@ -35,7 +35,7 @@ export class HomeComponent implements OnInit {
         } catch (e) {
             console.error(e)
         } finally {
-            this.connected = await this.api.connected()
+            this.connected = await this.api.connectionStatus()
         }
     }
 

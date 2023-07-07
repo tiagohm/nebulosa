@@ -25,6 +25,7 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.function.Consumer
 import kotlin.io.path.createDirectories
 import kotlin.io.path.outputStream
 import kotlin.time.Duration
@@ -51,12 +52,8 @@ data class CameraExposureTask(
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
     val mount: Mount? = null,
     val filterWheel: FilterWheel? = null,
+    private val onSaveImage: Consumer<SavedCameraImage>? = null,
 ) : ThreadedJob<Path>(), DeviceEventHandler {
-
-    fun interface SaveListener {
-
-        fun onImageSaved(frame: SavedCameraImage)
-    }
 
     @Volatile var remainingAmount = amount
         private set
@@ -68,7 +65,6 @@ data class CameraExposureTask(
 
     private val latch = CountUpDownLatch()
     private val forceAbort = AtomicBoolean()
-    private val listeners = HashSet<SaveListener>(1)
 
     constructor(
         camera: Camera,
@@ -78,6 +74,7 @@ data class CameraExposureTask(
         autoSubFolderMode: AutoSubFolderMode,
         mount: Mount? = null,
         filterWheel: FilterWheel? = null,
+        onSaveImage: Consumer<SavedCameraImage>? = null,
     ) : this(
         camera,
         data.exposure.toDuration(DurationUnit.MICROSECONDS),
@@ -89,6 +86,7 @@ data class CameraExposureTask(
         data.gain, data.offset,
         autoSave, savePath, autoSubFolderMode,
         mount, filterWheel,
+        onSaveImage,
     )
 
     init {
@@ -103,14 +101,6 @@ data class CameraExposureTask(
             width, height, frameFormat, frameType, binX, binY, gain, offset,
             autoSave, savePath, autoSubFolderMode, mount, filterWheel
         )
-    }
-
-    fun registerSaveListener(listener: SaveListener) {
-        listeners.add(listener)
-    }
-
-    fun unregisterSaveListener(listener: SaveListener) {
-        listeners.remove(listener)
     }
 
     override fun onEventReceived(event: DeviceEvent<*>) {
@@ -214,12 +204,18 @@ data class CameraExposureTask(
 
                     add(path)
 
-                    val width = header.naxis(1)
-                    val height = header.naxis(2)
-                    val mono = Image.isMono(header)
-                    val frame = SavedCameraImage(0, camera.name, "$path", width, height, mono, System.currentTimeMillis())
+                    if (onSaveImage != null) {
+                        val width = header.naxis(1)
+                        val height = header.naxis(2)
+                        val mono = Image.isMono(header)
 
-                    listeners.forEach { it.onImageSaved(frame) }
+                        SavedCameraImage(
+                            0, camera.name, "$path",
+                            width, height, mono,
+                            exposure.inWholeMicroseconds,
+                            System.currentTimeMillis(),
+                        ).also(onSaveImage::accept)
+                    }
                 } else {
                     LOG.warn("FITS does not contains an image")
                 }

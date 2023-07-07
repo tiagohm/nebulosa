@@ -13,17 +13,24 @@ import kotlin.io.path.isDirectory
 @Component
 class SavedCameraImageRepository(private val savedCameraImageBox: Box<SavedCameraImage>) {
 
-    fun findId(id: Long): SavedCameraImage? {
+    fun withId(id: Long): SavedCameraImage? {
         return savedCameraImageBox.get(id)
     }
 
-    fun findName(name: String): List<SavedCameraImage> {
+    fun withName(name: String): List<SavedCameraImage> {
         return savedCameraImageBox.query()
             .equal(SavedCameraImage_.name, name, QueryBuilder.StringOrder.CASE_SENSITIVE)
             .build().use { it.find() }
     }
 
-    fun findNameAndPath(name: String, path: String): SavedCameraImage? {
+    fun withNameLatest(name: String): SavedCameraImage? {
+        return savedCameraImageBox.query()
+            .equal(SavedCameraImage_.name, name, QueryBuilder.StringOrder.CASE_SENSITIVE)
+            .orderDesc(SavedCameraImage_.savedAt)
+            .build().use { it.findFirst() }
+    }
+
+    fun withNameAndPath(name: String, path: String): SavedCameraImage? {
         return savedCameraImageBox.query()
             .equal(SavedCameraImage_.name, name, QueryBuilder.StringOrder.CASE_SENSITIVE)
             .and()
@@ -31,7 +38,7 @@ class SavedCameraImageRepository(private val savedCameraImageBox: Box<SavedCamer
             .build().use { it.findFirst() }
     }
 
-    fun findPath(path: String): SavedCameraImage? {
+    fun withPath(path: String): SavedCameraImage? {
         return savedCameraImageBox.query()
             .equal(SavedCameraImage_.path, path, QueryBuilder.StringOrder.CASE_SENSITIVE)
             .build().use { it.findFirst() }
@@ -42,7 +49,7 @@ class SavedCameraImageRepository(private val savedCameraImageBox: Box<SavedCamer
     }
 
     @PostConstruct
-    fun clearUp() {
+    fun removeIfNotExists() {
         for (savedImage in savedCameraImageBox.all) {
             val path = Path.of(savedImage.path)
 

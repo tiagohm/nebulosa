@@ -314,13 +314,21 @@ class Image(
         }
 
         @JvmStatic
-        fun open(file: File): Image {
-            return ImageIO.read(file)?.let(::open) ?: Fits(file).use { open(it) }
+        fun open(
+            file: File,
+            debayer: Boolean = true,
+        ): Image {
+            return ImageIO.read(file)?.let(::open)
+                ?: Fits(file).use { open(it, debayer) }
         }
 
         @JvmStatic
-        fun open(inputStream: InputStream): Image {
-            return ImageIO.read(inputStream)?.let(::open) ?: Fits(inputStream).use { open(it) }
+        fun open(
+            inputStream: InputStream,
+            debayer: Boolean = true,
+        ): Image {
+            return ImageIO.read(inputStream)?.let(::open)
+                ?: Fits(inputStream).use { open(it, debayer) }
         }
 
         @Suppress("UNCHECKED_CAST")

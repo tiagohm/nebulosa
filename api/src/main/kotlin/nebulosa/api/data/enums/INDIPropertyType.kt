@@ -5,7 +5,7 @@ import nebulosa.indi.device.PropertyVector
 import nebulosa.indi.device.SwitchPropertyVector
 import nebulosa.indi.device.TextPropertyVector
 
-enum class DevicePropertyVectorType {
+enum class INDIPropertyType {
     NUMBER,
     SWITCH,
     TEXT;

@@ -12,5 +12,6 @@ data class SavedCameraImage(
     var width: Int = 0,
     var height: Int = 0,
     var mono: Boolean = false,
+    var exposure: Long = 0L,
     var savedAt: Long = 0,
 )

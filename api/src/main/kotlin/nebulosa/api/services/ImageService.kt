@@ -1,5 +1,6 @@
 package nebulosa.api.services
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.data.entities.SavedCameraImage
 import nebulosa.api.repositories.SavedCameraImageRepository
@@ -9,72 +10,64 @@ import nebulosa.imaging.algorithms.*
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 import javax.imageio.ImageIO
-import kotlin.io.path.getLastModifiedTime
 
 @Service
-class ImageService(private val savedCameraImageRepository: SavedCameraImageRepository) {
-
-    private val savedImages = ArrayList<SavedCameraImage>(1024)
+class ImageService(
+    private val savedCameraImageRepository: SavedCameraImageRepository,
+    private val objectMapper: ObjectMapper,
+) {
 
     fun load(
         path: Path,
+        debayer: Boolean,
         autoStretch: Boolean, shadow: Float, highlight: Float, midtone: Float,
         mirrorHorizontal: Boolean, mirrorVertical: Boolean, invert: Boolean,
         scnrEnabled: Boolean, scnrChannel: ImageChannel, scnrAmount: Float, scnrProtectionMode: ProtectionMethod,
         output: HttpServletResponse,
     ) {
-        val image = Image.open(path.toFile())
+        val image = Image.open(path.toFile(), debayer)
 
-        val shouldBeTransformed = autoStretch || shadow != 0f || highlight != 1f || midtone != 0.5f
+        val manualStretch = shadow != 0f || highlight != 1f || midtone != 0.5f
+        val shouldBeTransformed = autoStretch || manualStretch
                 || mirrorHorizontal || mirrorVertical || invert
                 || scnrEnabled
 
-        val algorithms = ArrayList<TransformAlgorithm>(5)
-
-        if (shouldBeTransformed) {
+        val transformedImage = if (shouldBeTransformed) {
+            val algorithms = ArrayList<TransformAlgorithm>(5)
             if (mirrorHorizontal) algorithms.add(HorizontalFlip)
             if (mirrorVertical) algorithms.add(VerticalFlip)
             if (scnrEnabled) algorithms.add(SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode))
-            if (autoStretch) algorithms.add(AutoScreenTransformFunction)
-            else algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
+            if (manualStretch) algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
+            else if (autoStretch) algorithms.add(AutoScreenTransformFunction)
             if (invert) algorithms.add(Invert)
+            TransformAlgorithm.of(algorithms).transform(image)
+        } else {
+            image
         }
 
-        val transformedImage = TransformAlgorithm.of(algorithms).transform(image)
+        val info = savedCameraImageRepository.withPath("$path") ?: SavedCameraImage()
 
-        savedImages.add(
-            SavedCameraImage(
-                path = "$path",
-                width = image.width, height = image.height, mono = image.mono,
-                savedAt = path.getLastModifiedTime().toMillis(),
-            )
-        )
+        with(info) {
+            width = transformedImage.width
+            height = transformedImage.height
+            mono = transformedImage.mono
+            output.addHeader("X-Image-Info", objectMapper.writeValueAsString(this))
+        }
 
         output.contentType = "image/png"
 
         ImageIO.write(transformedImage, "PNG", output.outputStream)
     }
 
-    fun savedImagesOfCamera(name: String): List<SavedCameraImage> {
-        return savedCameraImageRepository.findName(name)
+    fun imagesOfCamera(name: String): List<SavedCameraImage> {
+        return savedCameraImageRepository.withName(name)
     }
 
-    fun latestSavedImageOfCamera(name: String): SavedCameraImage {
-        return savedImagesOfCamera(name).last()
+    fun latestImageOfCamera(name: String): SavedCameraImage {
+        return savedCameraImageRepository.withNameLatest(name)!!
     }
 
     fun savedImageOfPath(path: Path): SavedCameraImage {
-        return with("$path") {
-            savedCameraImageRepository.findPath(this)
-                ?: savedImages.first { it.path == this }
-        }
-    }
-
-    fun savedImage(id: Long): SavedCameraImage {
-        return savedCameraImageRepository.findId(id)!!
-    }
-
-    fun savedImage(name: String, path: Path): SavedCameraImage {
-        return savedCameraImageRepository.findNameAndPath(name, "$path")!!
+        return savedCameraImageRepository.withPath("$path")!!
     }
 }

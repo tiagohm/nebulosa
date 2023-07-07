@@ -2,6 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain, screen } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
 import { OpenWindow } from '../src/shared/models/OpenWindow.model'
+import { encodeHex } from '../src/shared/utils'
 
 let mainWindow: BrowserWindow | null = null
 const windows = new Map<string, BrowserWindow>()
@@ -46,9 +47,9 @@ function createWindow(data: OpenWindow) {
     const height = data.height ? computeHeight(data.height) : 424
     const resizable = data.resizable ?? false
     const icon = data.icon ?? 'nebulosa'
-    const args = data.args ? btoa(JSON.stringify(data.args)) : ''
+    const params = encodeHex(JSON.stringify(data.params || {}))
 
-    let window = new BrowserWindow({
+    const window = new BrowserWindow({
         x: size.width / 2 - width / 2,
         y: size.height / 2 - height / 2,
         width,
@@ -61,23 +62,23 @@ function createWindow(data: OpenWindow) {
             nodeIntegration: true,
             allowRunningInsecureContent: serve,
             contextIsolation: false,
-            devTools: false,
+            // devTools: false,
         },
     })
 
-    window.removeMenu()
+    // window.removeMenu()
 
     if (serve) {
         const debug = require('electron-debug')
         debug()
 
         require('electron-reloader')(module)
-        window.loadURL(`http://localhost:4200/${data.path}?args=${args}`)
+        window.loadURL(`http://localhost:4200/${data.path}?params=${params}`)
     } else {
-        let pathIndex = `./index.html/#/${data.path}?args=${args}`
+        let pathIndex = `./index.html/#/${data.path}?params=${params}`
 
         if (fs.existsSync(path.join(__dirname, '../dist/index.html'))) {
-            pathIndex = `../dist/index.html/#/${data.path}?args=${args}`
+            pathIndex = `../dist/index.html/#/${data.path}?params=${params}`
         }
 
         const url = new URL(path.join('file:', __dirname, pathIndex))
