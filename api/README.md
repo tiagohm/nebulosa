@@ -207,7 +207,7 @@ Response Body: `200 None`
 
 ---
 
-**POST** `/cameraIsCapturing`
+**GET** `/cameraIsCapturing`
 
 Query Params:
 
@@ -427,7 +427,7 @@ Response Body: `200 application/json`
 
 ---
 
-**POST** `/indiProperty`
+**POST** `/sendIndiProperty`
 
 Query Params:
 

@@ -1,8 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
-import { ElectronService } from '../core/services'
+import { ElectronService } from '../../shared/services/electron.service'
 
 @Component({
     selector: 'app-home',
@@ -18,7 +17,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     private timer!: any
 
     constructor(
-        route: ActivatedRoute,
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private api: ApiService,
@@ -52,6 +50,9 @@ export class HomeComponent implements OnInit, OnDestroy {
         switch (type) {
             case 'CAMERA':
                 this.browserWindow.openCamera()
+                break
+            case 'INDI':
+                this.browserWindow.openINDI()
                 break
             case 'IMAGE':
                 const path = await this.electron.ipcRenderer.sendSync('open-fits')

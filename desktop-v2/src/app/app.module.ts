@@ -17,6 +17,8 @@ import { AppComponent } from './app.component'
 import { CameraComponent } from './camera/camera.component'
 import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
+import { INDIComponent } from './indi/indi.component'
+import { INDIPropertyComponent } from './indi/property/indi-property.component'
 
 @NgModule({
     declarations: [
@@ -24,6 +26,8 @@ import { ImageComponent } from './image/image.component'
         HomeComponent,
         CameraComponent,
         ImageComponent,
+        INDIComponent,
+        INDIPropertyComponent,
     ],
     imports: [
         BrowserModule,

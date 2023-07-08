@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull
 import nebulosa.api.data.enums.INDIPropertyType
 
 data class INDISendPropertyRequest(
-    @field:NotBlank val name: String,
-    @field:NotNull val type: INDIPropertyType,
-    @field:NotEmpty @field:Valid val properties: List<INDIPropertyRequest>,
+    @field:NotBlank val name: String = "",
+    @field:NotNull val type: INDIPropertyType = INDIPropertyType.SWITCH,
+    @field:NotEmpty @field:Valid val items: List<INDISendPropertyItemRequest> = emptyList(),
 )

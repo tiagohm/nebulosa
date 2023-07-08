@@ -1,6 +1,9 @@
-export interface Camera {
+export interface Device {
     name: string
     connected: boolean
+}
+
+export interface Camera extends Device {
     exposuring: boolean
     hasCoolerControl: boolean
     coolerPower: number
@@ -95,6 +98,35 @@ export interface SavedCameraImage {
     savedAt: number
 }
 
+export interface INDIProperty<T> {
+    name: string
+    label: string
+    type: INDIPropertyType
+    group: string
+    perm: PropertyPermission
+    state: PropertyState
+    rule?: SwitchRule
+    items: INDIPropertyItem<T>[]
+}
+
+export interface INDIPropertyItem<T> {
+    name: string
+    label: string
+    value: T
+    valueToSend?: string
+}
+
+export interface INDISendProperty {
+    name: string
+    type: INDIPropertyType
+    items: INDISendPropertyItem[]
+}
+
+export interface INDISendPropertyItem {
+    name: string
+    value: any
+}
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',
@@ -128,3 +160,15 @@ export type PropertyState = 'IDLE' |
     'OK' |
     'BUSY' |
     'ALERT'
+
+export type PropertyPermission = 'RO' |
+    'RW' |
+    'WO'
+
+export type INDIPropertyType = 'NUMBER' |
+    'SWITCH' |
+    'TEXT'
+
+export type SwitchRule = 'ONE_OF_MANY' |
+    'AT_MOST_ONE' |
+    'ANY_OF_MANY'

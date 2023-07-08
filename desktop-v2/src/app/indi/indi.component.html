@@ -1,0 +1,23 @@
+<div class="container p-4">
+    <div class="grid flex align-items-center">
+        <div class="col-4">
+            <p-dropdown [options]="devices" [(ngModel)]="device" (ngModelChange)="updateProperties()" optionLabel="name" styleClass="min-w-full"
+                emptyMessage="No device found"></p-dropdown>
+        </div>
+    </div>
+    <div class="grid mt-2">
+        <div class="col-12">
+            <p-button *ngFor="let groupName of groups" (onClick)="changeGroup(groupName)" [label]="groupName" icon="pi"
+                styleClass="mr-1 mt-1 p-button p-button-{{ groupName === group ? '' : 'text' }}">
+                <span class="mdi mdi-sitemap"></span>
+            </p-button>
+        </div>
+    </div>
+    <div class="grid properties mt-2">
+        <div class="col-12">
+            <div *ngFor="let property of properties">
+                <app-indi-property *ngIf="property.group === group" [property]="property" (onSend)="send($event)" />
+            </div>
+        </div>
+    </div>
+</div>

@@ -11,24 +11,24 @@ class INDIService(
 ) {
 
     fun properties(name: String): List<INDIPropertyResponse> {
-        val device = equipmentService[name]!!
+        val device = equipmentService[name] ?: return emptyList()
         return device.properties.values.map(::INDIPropertyResponse)
     }
 
     fun sendProperty(name: String, vector: INDISendPropertyRequest) {
-        val device = equipmentService[name]!!
+        val device = equipmentService[name] ?: return
 
         when (vector.type) {
             INDIPropertyType.NUMBER -> {
-                val elements = vector.properties.map { it.name to "${it.value}".toDouble() }
+                val elements = vector.items.map { it.name to "${it.value}".toDouble() }
                 device.sendNewNumber(vector.name, elements)
             }
             INDIPropertyType.SWITCH -> {
-                val elements = vector.properties.map { it.name to "${it.value}".toBooleanStrict() }
+                val elements = vector.items.map { it.name to "${it.value}".toBooleanStrict() }
                 device.sendNewSwitch(vector.name, elements)
             }
             INDIPropertyType.TEXT -> {
-                val elements = vector.properties.map { it.name to "${it.value}" }
+                val elements = vector.items.map { it.name to "${it.value}" }
                 device.sendNewText(vector.name, elements)
             }
         }

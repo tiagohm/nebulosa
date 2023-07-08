@@ -16,7 +16,7 @@ class INDIController(
         return indiService.properties(name)
     }
 
-    @PostMapping("indiProperty")
+    @PostMapping("sendIndiProperty")
     fun sendProperty(
         @RequestParam name: String,
         @RequestBody @Valid body: INDISendPropertyRequest,

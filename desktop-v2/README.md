@@ -9,3 +9,7 @@ The complete integrated solution for all of your astronomical imaging needs.
 ## Camera
 
 ![](camera.png)
+
+## INDI
+
+![](indi.png)

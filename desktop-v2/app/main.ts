@@ -45,8 +45,8 @@ function createWindow(data: OpenWindow) {
         }
     }
 
-    const width = data.width ? computeWidth(data.width) : 360
-    const height = data.height ? computeHeight(data.height) : 424
+    const width = data.width ? Math.trunc(computeWidth(data.width)) : 360
+    const height = data.height ? Math.trunc(computeHeight(data.height)) : 424
     const resizable = data.resizable ?? false
     const icon = data.icon ?? 'nebulosa'
     const params = Hex.encodeStr(JSON.stringify(data.params || {}))
@@ -56,9 +56,7 @@ function createWindow(data: OpenWindow) {
     const window = new BrowserWindow({
         x: size.width / 2 - width / 2,
         y: size.height / 2 - height / 2,
-        width,
-        height,
-        resizable,
+        width, height, resizable,
         autoHideMenuBar: true,
         title: 'Nebulosa',
         icon: path.join(__dirname, serve ? `../src/assets/icons/${icon}.png` : `assets/icons/${icon}.png`),
@@ -120,7 +118,7 @@ function startApp() {
         if (serve) {
             createMainWindow()
         } else {
-            const apiJar = path.join(process.resourcesPath, "api.jar")
+            const apiJar = path.join(process.resourcesPath, 'api.jar')
 
             api = spawn('java', ['-jar', apiJar])
 

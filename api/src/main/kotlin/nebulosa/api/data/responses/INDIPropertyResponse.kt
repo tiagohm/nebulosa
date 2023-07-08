@@ -15,7 +15,7 @@ data class INDIPropertyResponse(
     val perm: PropertyPermission,
     val state: PropertyState,
     val rule: SwitchRule?,
-    val properties: List<INDIPropertyItemResponse>,
+    val items: List<INDIPropertyItemResponse>,
 ) {
 
     constructor(vector: PropertyVector<*, *>) : this(

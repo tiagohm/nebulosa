@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
-import { Camera, CameraPreference, CameraStartCapture, SavedCameraImage } from '../types'
+import { Camera, CameraPreference, CameraStartCapture, Device, INDIProperty, INDISendProperty, SavedCameraImage } from '../types'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -108,5 +108,13 @@ export class ApiService {
         const info = JSON.parse(response.headers.get('X-Image-Info')!) as SavedCameraImage
 
         return { info, blob: response.body! }
+    }
+
+    async indiProperties(device: Device) {
+        return this.get<INDIProperty<any>[]>(`indiProperties?name=${device.name}`)
+    }
+
+    async sendIndiProperty(device: Device, property: INDISendProperty) {
+        return this.post<void>(`sendIndiProperty?name=${device.name}`, property)
     }
 }

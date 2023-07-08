@@ -101,7 +101,7 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [disabled]="!connected" (onClick)="open('INDI')" styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/indi.png" />
                 <div class="mt-1 text-sm">INDI</div>
             </p-button>

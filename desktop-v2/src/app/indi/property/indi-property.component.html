@@ -1,0 +1,66 @@
+<div class="grid flex align-items-center m-0 p-4">
+    <div class="col-3 flex align-items-center font-bold">
+        <i class="mdi mdi-circle {{ property.state }}"></i>
+        <span class="ml-2">{{ property.label }}</span>
+    </div>
+    <div class="col-9">
+        <div *ngIf="property.type === 'SWITCH' && property.rule === 'ONE_OF_MANY'">
+            <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO'" [label]="item.label" (onClick)="sendSwitch(item)" icon="pi"
+                styleClass="mr-1 p-button p-button-{{ item.value ? 'success' : 'danger' }}">
+                <span [class.mdi-check]="item.value" [class.mdi-close]="!item.value" class="mdi"></span>
+            </p-button>
+        </div>
+        <div *ngIf="property.type === 'SWITCH' && property.rule === 'AT_MOST_ONE'">
+            <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO'" [label]="item.label" (onClick)="sendSwitch(item)" icon="pi"
+                styleClass="mr-1 p-button">
+                <span class="mdi mdi-check"></span>
+            </p-button>
+        </div>
+        <div *ngIf="property.type === 'SWITCH' && property.rule === 'ANY_OF_MANY'">
+            <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO'" [label]="item.label" (onClick)="sendSwitch(item)" icon="pi"
+                styleClass="mr-1 p-button p-button-{{ item.value ? 'success' : 'danger' }}">
+                <span [class.mdi-check]="item.value" [class.mdi-close]="!item.value" class="mdi"></span>
+            </p-button>
+        </div>
+        <div *ngIf="property.type === 'NUMBER'">
+            <div class="grid flex align-items-center">
+                <div class="col-9">
+                    <div *ngFor="let item of property.items" class="grid my-0 flex align-items-center">
+                        <div class="col-3">{{ item.label }}</div>
+                        <div class="col-4">
+                            <input *ngIf="property.perm !== 'WO'" readonly type="text" pInputText class="p-inputtext border-0 min-w-full max-w-0" [value]="item.value" />
+                        </div>
+                        <div class="col-5">
+                            <input *ngIf="property.perm !== 'RO'" type="text" pInputText class="p-inputtext border-0 min-w-full max-w-0" [(ngModel)]="item.valueToSend" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3 text-center">
+                    <p-button *ngIf="property.perm !== 'RO'" label="Send" (onClick)="sendNumber()" icon="pi" styleClass="mr-1 p-button">
+                        <span class="mdi mdi-send"></span>
+                    </p-button>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="property.type === 'TEXT'">
+            <div class="grid flex align-items-center">
+                <div class="col-9">
+                    <div *ngFor="let item of property.items" class="grid my-0 flex align-items-center">
+                        <div class="col-3">{{ item.label }}</div>
+                        <div class="col-4">
+                            <input *ngIf="property.perm !== 'WO'" readonly type="text" pInputText class="p-inputtext border-0 min-w-full max-w-0" [value]="item.value" />
+                        </div>
+                        <div class="col-5">
+                            <input *ngIf="property.perm !== 'RO'" type="text" pInputText class="p-inputtext border-0 min-w-full max-w-0" [(ngModel)]="item.valueToSend" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3 text-center">
+                    <p-button *ngIf="property.perm !== 'RO'" label="Send" (onClick)="sendText()" icon="pi" styleClass="mr-1 p-button">
+                        <span class="mdi mdi-send"></span>
+                    </p-button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

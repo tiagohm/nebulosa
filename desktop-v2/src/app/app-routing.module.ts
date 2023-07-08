@@ -4,6 +4,7 @@ import { APP_CONFIG } from '../environments/environment'
 import { CameraComponent } from './camera/camera.component'
 import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
+import { INDIComponent } from './indi/indi.component'
 
 const routes: Routes = [
     {
@@ -22,6 +23,10 @@ const routes: Routes = [
     {
         path: 'image',
         component: ImageComponent,
+    },
+    {
+        path: 'indi',
+        component: INDIComponent,
     },
 ]
 

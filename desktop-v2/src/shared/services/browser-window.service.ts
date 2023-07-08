@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core'
 import { v4 as uuidv4 } from 'uuid'
-import { ElectronService } from '../../app/core/services'
 import { ImageParams } from '../../app/image/image.component'
-import { Camera, OpenWindow } from '../types'
+import { Camera, Device, OpenWindow } from '../types'
+import { ElectronService } from './electron.service'
+import { INDIParams } from '../../app/indi/indi.component'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
@@ -29,6 +30,12 @@ export class BrowserWindowService {
         const hash = uuidv4()
         const params: ImageParams = { path }
         const data: OpenWindow = { id: `image.${hash}`, path: 'image', icon: 'image', width: '70%', height: `70%`, resizable: true, params }
+        this.openWindow(data)
+    }
+
+    openINDI(device?: Device) {
+        const params: INDIParams = { device }
+        const data: OpenWindow = { id: 'indi', path: 'indi', icon: 'indi', width: '75%', height: `65%`, resizable: true, params }
         this.openWindow(data)
     }
 }
