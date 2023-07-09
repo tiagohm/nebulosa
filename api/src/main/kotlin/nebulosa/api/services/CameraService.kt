@@ -1,12 +1,15 @@
 package nebulosa.api.services
 
 import nebulosa.api.data.entities.CameraPreference
+import nebulosa.api.data.entities.SavedCameraImage
 import nebulosa.api.data.enums.AutoSubFolderMode
 import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.api.data.responses.CameraResponse
 import nebulosa.api.repositories.CameraPreferenceRepository
 import nebulosa.api.repositories.SavedCameraImageRepository
 import nebulosa.common.concurrency.DaemonThreadFactory
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 import java.util.*
@@ -25,6 +28,12 @@ class CameraService(
 ) {
 
     private val runningTasks = Collections.synchronizedMap(HashMap<String, CameraExposureTask>(2))
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    fun onSavedCameraImageEvent(event: SavedCameraImage) {
+        event.id = savedCameraImageRepository.withPath(event.path)?.id ?: event.id
+        savedCameraImageRepository.save(event)
+    }
 
     fun attachedCameras(): List<CameraResponse> {
         return equipmentService.cameras().map(::CameraResponse)
@@ -64,17 +73,14 @@ class CameraService(
         if (isCapturing(name)) return
 
         val camera = equipmentService.camera(name)!!
-        val preference = cameraPreferenceRepository.findName(name)
+        val preference = cameraPreferenceRepository.withName(name)
         val autoSave = preference?.autoSave ?: false
         val savePath = preference?.savePath?.ifBlank { null }?.let(Path::of)
             ?.takeIf { it.exists() && it.isDirectory() }
             ?: Path.of("$capturesDiretory", name).createDirectories()
         val autoSubFolderMode = preference?.autoSubFolderMode ?: AutoSubFolderMode.NOON
 
-        val task = CameraExposureTask(camera, data, autoSave, savePath, autoSubFolderMode) {
-            it.id = savedCameraImageRepository.withPath(it.path)?.id ?: it.id
-            savedCameraImageRepository.save(it)
-        }
+        val task = CameraExposureTask(camera, data, autoSave, savePath, autoSubFolderMode)
 
         equipmentService.registerDeviceEventHandler(task)
         val future = CompletableFuture.runAsync(task, CAMERA_EXECUTOR)
@@ -91,12 +97,12 @@ class CameraService(
     }
 
     fun savePreferences(entity: CameraPreference) {
-        val preference = cameraPreferenceRepository.findName(entity.name)
+        val preference = cameraPreferenceRepository.withName(entity.name)
         cameraPreferenceRepository.save(entity.copy(id = preference?.id ?: 0L))
     }
 
     fun loadPreferences(name: String): CameraPreference {
-        return cameraPreferenceRepository.findName(name) ?: CameraPreference(name = name)
+        return cameraPreferenceRepository.withName(name) ?: CameraPreference(name = name)
     }
 
     companion object {

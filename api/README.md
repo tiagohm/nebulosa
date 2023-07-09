@@ -449,3 +449,154 @@ Request Body: `application/json`
 ```
 
 Response Body: `200 None`
+
+---
+
+## Atlas
+
+**GET** `/locations`
+
+Query Params: `None`
+
+Request Body: `None`
+
+Response Body: `200 application/json`
+
+```json
+[
+  {
+    "id": 1,
+    "name": "City Name",
+    "latitude": -1.0,
+    "longitude": 4.0,
+    "elevation": 8.0,
+    "offsetInMinutes": -180
+  }
+]
+```
+
+---
+
+**PUT** `/location`
+
+Query Params:
+
+* `id`: Id of the saved location or zero for be added. `int`
+
+Request Body: `application/json`
+
+```json
+{
+  "name": "City Name",
+  "latitude": -1.0,
+  "longitude": 4.0,
+  "elevation": 8.0,
+  "offsetInMinutes": -180
+}
+```
+
+Request Body: `200 None`
+
+---
+
+**GET** `/imageOfSun`
+
+Query Params: `None`
+
+Request Body: `None`
+
+Response Body: `200 image/png`
+
+---
+
+**GET** `/positionOfSun`
+
+Query Params:
+
+* `location`: Id of the location. `int` `required`
+* `date`: Local Date. `string` `format: yyyy-MM-dd` `default: NOW`
+* `time`: Local Time. `string` `format: HH:mm` `default: NOW`
+
+Request Body: `None`
+
+Response Body: `None application/json`
+
+```json
+{
+  "rightAscensionJ2000": "07h10m10.0s",
+  "declinationJ2000": "+022°27'26.1\"",
+  "rightAscension": "07h11m32.7s",
+  "declination": "+022°25'13.4\"",
+  "azimuth": "286°00'20.4\"",
+  "altitude": "-022°24'03.6\""
+}
+```
+
+---
+
+**GET** `/positionOfMoon`
+
+Query Params:
+
+* `location`: Id of the location. `int` `required`
+* `date`: Local Date. `string` `format: yyyy-MM-dd` `default: NOW`
+* `time`: Local Time. `string` `format: HH:mm` `default: NOW`
+
+Request Body: `None`
+
+Response Body: `None application/json`
+
+```json
+{
+  "rightAscensionJ2000": "07h10m10.0s",
+  "declinationJ2000": "+022°27'26.1\"",
+  "rightAscension": "07h11m32.7s",
+  "declination": "+022°25'13.4\"",
+  "azimuth": "286°00'20.4\"",
+  "altitude": "-022°24'03.6\""
+}
+```
+
+---
+
+**GET** `/altitudePointsOfSun`
+
+Query Params:
+
+* `location`: Id of the location. `int` `required`
+* `date`: Local Date. `string` `format: yyyy-MM-dd` `default: NOW`
+
+Request Body: `None`
+
+Response Body: `None application/json`
+
+```json
+[
+  [
+    0.0,
+    45.001459162
+  ]
+]
+```
+
+---
+
+**GET** `/altitudePointsOfMoon`
+
+Query Params:
+
+* `location`: Id of the location. `int` `required`
+* `date`: Local Date. `string` `format: yyyy-MM-dd` `default: NOW`
+
+Request Body: `None`
+
+Response Body: `None application/json`
+
+```json
+[
+  [
+    0.0,
+    -15.223360555
+  ]
+]
+```

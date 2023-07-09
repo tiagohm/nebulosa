@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, screen } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu, screen } from 'electron'
 import Hex from 'hex-encoding'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
@@ -56,7 +56,8 @@ function createWindow(data: OpenWindow) {
     const window = new BrowserWindow({
         x: size.width / 2 - width / 2,
         y: size.height / 2 - height / 2,
-        width, height, resizable,
+        width, height,
+        resizable: serve || resizable,
         autoHideMenuBar: true,
         title: 'Nebulosa',
         icon: path.join(__dirname, serve ? `../src/assets/icons/${icon}.png` : `assets/icons/${icon}.png`),
@@ -66,11 +67,16 @@ function createWindow(data: OpenWindow) {
             contextIsolation: false,
             additionalArguments: [`--port=${apiPort}`],
             preload: path.join(__dirname, 'preload.js'),
-            devTools: !serve,
+            devTools: serve,
         },
     })
 
-    window.webContents.executeJavaScript(`sessionStorage.setItem('apiPort', '${apiPort}')`)
+    if (serve) {
+        window.on('resize', () => {
+            const [width, height] = window.getSize()
+            console.log(`window resized. id=${data.id}, width=${width}, height=${height}`)
+        })
+    }
 
     if (serve) {
         const debug = require('electron-debug')
@@ -79,8 +85,6 @@ function createWindow(data: OpenWindow) {
         require('electron-reloader')(module)
         window.loadURL(`http://localhost:4200/${data.path}?params=${params}`)
     } else {
-        window.removeMenu()
-
         const url = new URL(path.join('file:', __dirname, `index.html#/${data.path}?params=${params}`))
         window.loadURL(url.href)
     }
@@ -147,6 +151,10 @@ function startApp() {
 }
 
 try {
+    if (!serve) {
+        Menu.setApplicationMenu(null)
+    }
+
     app.on('ready', () => setTimeout(startApp, 400))
 
     app.on('window-all-closed', () => {

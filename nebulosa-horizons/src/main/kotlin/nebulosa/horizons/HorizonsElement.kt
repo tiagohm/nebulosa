@@ -3,18 +3,21 @@ package nebulosa.horizons
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class HorizonsElement(val time: LocalDateTime) : HashMap<HorizonsQuantity, String>(7) {
+data class HorizonsElement(val time: LocalDateTime) : HashMap<HorizonsQuantity, String>(7), Comparable<HorizonsElement> {
 
-    val utcMinutes = time.toEpochSecond(ZoneOffset.UTC) / 60L
+    fun asDouble(quantity: HorizonsQuantity, defaultValue: Double = 0.0): Double {
+        return this[quantity]?.toDoubleOrNull() ?: defaultValue
+    }
+
+    override fun compareTo(other: HorizonsElement): Int {
+        return time.compareTo(other.time)
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is HorizonsElement) return false
         if (!super.equals(other)) return false
-
-        if (time != other.time) return false
-
-        return true
+        return time == other.time
     }
 
     override fun hashCode(): Int {
@@ -23,7 +26,14 @@ class HorizonsElement(val time: LocalDateTime) : HashMap<HorizonsQuantity, Strin
         return result
     }
 
-    override fun toString(): String {
-        return "HorizonsElement(time=$time, quantities=${super.toString()})"
+    override fun toString() = "HorizonsElement(time=$time, quantities=${super.toString()})"
+
+    companion object {
+
+        @JvmStatic
+        fun of(ephemeris: List<HorizonsElement>, dateTime: LocalDateTime): HorizonsElement? {
+            val seconds = dateTime.toEpochSecond(ZoneOffset.UTC)
+            return ephemeris.find { it.time.toEpochSecond(ZoneOffset.UTC) >= seconds }
+        }
     }
 }

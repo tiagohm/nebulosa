@@ -32,7 +32,7 @@ class HorizonsServiceTest : StringSpec() {
             ).execute()
             .body()
             .shouldNotBeNull()
-            .also { it.elements.shouldNotBeEmpty() }
+            .also { it.shouldNotBeEmpty() }
 
         "spk" {
             val start = LocalDateTime.of(2023, 1, 1, 0, 0)
@@ -95,7 +95,7 @@ class HorizonsServiceTest : StringSpec() {
                 ).execute()
                 .body().shouldNotBeNull()
 
-            ephemeris.elements.shouldNotBeEmpty()
+            ephemeris.shouldNotBeEmpty()
 
             val dateTime = LocalDateTime.of(2023, 3, 11, 0, 0, 0)
             ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldStartWith "344.45591"

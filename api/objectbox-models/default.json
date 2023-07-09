@@ -91,10 +91,51 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "3:3068187501558617993",
+      "lastPropertyId": "6:3287624944798615801",
+      "name": "Location",
+      "properties": [
+        {
+          "id": "1:9204271547030431771",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:2243589759520020138",
+          "name": "name",
+          "indexId": "4:339837244555582097",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:1808363203477861272",
+          "name": "latitude",
+          "type": 8
+        },
+        {
+          "id": "4:7691360462825416757",
+          "name": "longitude",
+          "type": 8
+        },
+        {
+          "id": "5:1008939842836750066",
+          "name": "elevation",
+          "type": 8
+        },
+        {
+          "id": "6:3287624944798615801",
+          "name": "offsetInMinutes",
+          "type": 5
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "2:2104948134385418035",
-  "lastIndexId": "3:8320952872054090384",
+  "lastEntityId": "3:3068187501558617993",
+  "lastIndexId": "4:339837244555582097",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.jackson)
     implementation(libs.okhttp)
     implementation(libs.oshi)
+    implementation(libs.eventbus)
     implementation(libs.apache.codec)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-undertow")
@@ -48,6 +49,7 @@ dependencies {
 
 tasks.withType<BootJar> {
     archiveFileName.set("api.jar")
+    destinationDirectory.set(file("$rootDir/desktop-v2"))
 
     manifest {
         attributes["Start-Class"] = "nebulosa.api.MainKt"
