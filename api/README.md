@@ -55,7 +55,77 @@ Response Body: `200 application/json`
 
 ```json
 [
-  {
+    {
+        "name": "CCD Simulator",
+        "connected": true,
+        "exposuring": false,
+        "hasCoolerControl": true,
+        "coolerPower": 0.0,
+        "cooler": false,
+        "hasDewHeater": false,
+        "dewHeater": false,
+        "frameFormats": [
+            "INDI_MONO"
+        ],
+        "canAbort": true,
+        "cfaOffsetX": 0,
+        "cfaOffsetY": 0,
+        "cfaType": "RGGB",
+        "exposureMin": 10000,
+        "exposureMax": 3600000000,
+        "exposureState": "IDLE",
+        "exposure": 0,
+        "hasCooler": true,
+        "canSetTemperature": true,
+        "canSubFrame": true,
+        "x": 0,
+        "minX": 0,
+        "maxX": 0,
+        "y": 0,
+        "minY": 0,
+        "maxY": 0,
+        "width": 0,
+        "minWidth": 0,
+        "maxWidth": 0,
+        "height": 0,
+        "minHeight": 0,
+        "maxHeight": 0,
+        "canBin": true,
+        "maxBinX": 4,
+        "maxBinY": 4,
+        "binX": 1,
+        "binY": 1,
+        "gain": 90,
+        "gainMin": 0,
+        "gainMax": 100,
+        "offset": 0,
+        "offsetMin": 0,
+        "offsetMax": 6000,
+        "hasGuiderHead": false,
+        "pixelSizeX": 5.199999809265137,
+        "pixelSizeY": 5.199999809265137,
+        "canPulseGuide": true,
+        "pulseGuiding": false,
+        "hasThermometer": true,
+        "temperature": 0.0
+    }
+]
+```
+
+---
+
+**GET** `/camera`
+
+Query Params:
+
+* `name`: Name of the camera. `string` `required`
+
+Request Body: `None`
+
+Response Body: `200 application/json`
+
+```json
+{
     "name": "CCD Simulator",
     "connected": true,
     "exposuring": false,
@@ -65,7 +135,7 @@ Response Body: `200 application/json`
     "hasDewHeater": false,
     "dewHeater": false,
     "frameFormats": [
-      "INDI_MONO"
+        "INDI_MONO"
     ],
     "canAbort": true,
     "cfaOffsetX": 0,
@@ -108,76 +178,6 @@ Response Body: `200 application/json`
     "pulseGuiding": false,
     "hasThermometer": true,
     "temperature": 0.0
-  }
-]
-```
-
----
-
-**GET** `/camera`
-
-Query Params:
-
-* `name`: Name of the camera. `string` `required`
-
-Request Body: `None`
-
-Response Body: `200 application/json`
-
-```json
-{
-  "name": "CCD Simulator",
-  "connected": true,
-  "exposuring": false,
-  "hasCoolerControl": true,
-  "coolerPower": 0.0,
-  "cooler": false,
-  "hasDewHeater": false,
-  "dewHeater": false,
-  "frameFormats": [
-    "INDI_MONO"
-  ],
-  "canAbort": true,
-  "cfaOffsetX": 0,
-  "cfaOffsetY": 0,
-  "cfaType": "RGGB",
-  "exposureMin": 10000,
-  "exposureMax": 3600000000,
-  "exposureState": "IDLE",
-  "exposure": 0,
-  "hasCooler": true,
-  "canSetTemperature": true,
-  "canSubFrame": true,
-  "x": 0,
-  "minX": 0,
-  "maxX": 0,
-  "y": 0,
-  "minY": 0,
-  "maxY": 0,
-  "width": 0,
-  "minWidth": 0,
-  "maxWidth": 0,
-  "height": 0,
-  "minHeight": 0,
-  "maxHeight": 0,
-  "canBin": true,
-  "maxBinX": 4,
-  "maxBinY": 4,
-  "binX": 1,
-  "binY": 1,
-  "gain": 90,
-  "gainMin": 0,
-  "gainMax": 100,
-  "offset": 0,
-  "offsetMin": 0,
-  "offsetMax": 6000,
-  "hasGuiderHead": false,
-  "pixelSizeX": 5.199999809265137,
-  "pixelSizeY": 5.199999809265137,
-  "canPulseGuide": true,
-  "pulseGuiding": false,
-  "hasThermometer": true,
-  "temperature": 0.0
 }
 ```
 
@@ -401,27 +401,27 @@ Response Body: `200 application/json`
 
 ```json
 [
-  {
-    "name": "CONNECTION",
-    "label": "Connection",
-    "type": "SWITCH",
-    "group": "Main Control",
-    "perm": "RW",
-    "state": "OK",
-    "rule": "ONE_OF_MANY",
-    "properties": [
-      {
-        "name": "CONNECT",
-        "label": "Connect",
-        "value": true
-      },
-      {
-        "name": "DISCONNECT",
-        "label": "Disconnect",
-        "value": false
-      }
-    ]
-  }
+    {
+        "name": "CONNECTION",
+        "label": "Connection",
+        "type": "SWITCH",
+        "group": "Main Control",
+        "perm": "RW",
+        "state": "OK",
+        "rule": "ONE_OF_MANY",
+        "properties": [
+            {
+                "name": "CONNECT",
+                "label": "Connect",
+                "value": true
+            },
+            {
+                "name": "DISCONNECT",
+                "label": "Disconnect",
+                "value": false
+            }
+        ]
+    }
 ]
 ```
 
@@ -437,14 +437,14 @@ Request Body: `application/json`
 
 ```json
 {
-  "name": "CONNECTION",
-  "type": "SWITCH",
-  "properties": [
-    {
-      "name": "DISCONNECT",
-      "value": true
-    }
-  ]
+    "name": "CONNECTION",
+    "type": "SWITCH",
+    "properties": [
+        {
+            "name": "DISCONNECT",
+            "value": true
+        }
+    ]
 }
 ```
 
@@ -464,20 +464,20 @@ Response Body: `200 application/json`
 
 ```json
 [
-  {
-    "id": 1,
-    "name": "City Name",
-    "latitude": -1.0,
-    "longitude": 4.0,
-    "elevation": 8.0,
-    "offsetInMinutes": -180
-  }
+    {
+        "id": 1,
+        "name": "City Name",
+        "latitude": -1.0,
+        "longitude": 4.0,
+        "elevation": 8.0,
+        "offsetInMinutes": -180
+    }
 ]
 ```
 
 ---
 
-**PUT** `/location`
+**PUT** `/saveLocation`
 
 Query Params:
 
@@ -487,21 +487,47 @@ Request Body: `application/json`
 
 ```json
 {
-  "name": "City Name",
-  "latitude": -1.0,
-  "longitude": 4.0,
-  "elevation": 8.0,
-  "offsetInMinutes": -180
+    "name": "City Name",
+    "latitude": -1.0,
+    "longitude": 4.0,
+    "elevation": 8.0,
+    "offsetInMinutes": -180
 }
 ```
 
-Request Body: `200 None`
+Response Body: `200 None`
+
+---
+
+**DELETE** `/deleteLocation`
+
+Query Params:
+
+* `id`: Id of the saved location. `int`
+
+Request Body: `None`
+
+Response Body: `200 None`
 
 ---
 
 **GET** `/imageOfSun`
 
 Query Params: `None`
+
+Request Body: `None`
+
+Response Body: `200 image/png`
+
+---
+
+**GET** `/imageOfMoon`
+
+Query Params:
+
+* `location`: Id of the location. `int` `required`
+* `date`: Local Date. `string` `format: yyyy-MM-dd` `default: NOW`
+* `time`: Local Time. `string` `format: HH:mm` `default: NOW`
 
 Request Body: `None`
 
@@ -519,16 +545,16 @@ Query Params:
 
 Request Body: `None`
 
-Response Body: `None application/json`
+Response Body: `200 application/json`
 
 ```json
 {
-  "rightAscensionJ2000": "07h10m10.0s",
-  "declinationJ2000": "+022°27'26.1\"",
-  "rightAscension": "07h11m32.7s",
-  "declination": "+022°25'13.4\"",
-  "azimuth": "286°00'20.4\"",
-  "altitude": "-022°24'03.6\""
+    "rightAscensionJ2000": "07h10m10.0s",
+    "declinationJ2000": "+022°27'26.1\"",
+    "rightAscension": "07h11m32.7s",
+    "declination": "+022°25'13.4\"",
+    "azimuth": "286°00'20.4\"",
+    "altitude": "-022°24'03.6\""
 }
 ```
 
@@ -544,16 +570,139 @@ Query Params:
 
 Request Body: `None`
 
-Response Body: `None application/json`
+Response Body: `200 application/json`
 
 ```json
 {
-  "rightAscensionJ2000": "07h10m10.0s",
-  "declinationJ2000": "+022°27'26.1\"",
-  "rightAscension": "07h11m32.7s",
-  "declination": "+022°25'13.4\"",
-  "azimuth": "286°00'20.4\"",
-  "altitude": "-022°24'03.6\""
+    "rightAscensionJ2000": "07h10m10.0s",
+    "declinationJ2000": "+022°27'26.1\"",
+    "rightAscension": "07h11m32.7s",
+    "declination": "+022°25'13.4\"",
+    "azimuth": "286°00'20.4\"",
+    "altitude": "-022°24'03.6\""
+}
+```
+
+---
+
+**GET** `/positionOfPlanet`
+
+Query Params:
+
+* `location`: Id of the location. `int` `required`
+* `code`: JPL unique ID code. `string` `required`
+* `date`: Local Date. `string` `format: yyyy-MM-dd` `default: NOW`
+* `time`: Local Time. `string` `format: HH:mm` `default: NOW`
+
+Request Body: `None`
+
+Response Body: `200 application/json`
+
+```json
+{
+    "rightAscensionJ2000": "07h10m10.0s",
+    "declinationJ2000": "+022°27'26.1\"",
+    "rightAscension": "07h11m32.7s",
+    "declination": "+022°25'13.4\"",
+    "azimuth": "286°00'20.4\"",
+    "altitude": "-022°24'03.6\""
+}
+```
+
+---
+
+**GET** `/positionOfStar`
+
+Query Params:
+
+* `location`: Id of the location. `int` `required`
+* `star`: Id of the star. `int` `required`
+* `date`: Local Date. `string` `format: yyyy-MM-dd` `default: NOW`
+* `time`: Local Time. `string` `format: HH:mm` `default: NOW`
+
+Request Body: `None`
+
+Response Body: `200 application/json`
+
+```json
+{
+    "rightAscensionJ2000": "07h10m10.0s",
+    "declinationJ2000": "+022°27'26.1\"",
+    "rightAscension": "07h11m32.7s",
+    "declination": "+022°25'13.4\"",
+    "azimuth": "286°00'20.4\"",
+    "altitude": "-022°24'03.6\""
+}
+```
+
+---
+**GET** `/positionOfDSO`
+
+Query Params:
+
+* `location`: Id of the location. `int` `required`
+* `dso`: Id of the DSO. `int` `required`
+* `date`: Local Date. `string` `format: yyyy-MM-dd` `default: NOW`
+* `time`: Local Time. `string` `format: HH:mm` `default: NOW`
+
+Request Body: `None`
+
+Response Body: `200 application/json`
+
+```json
+{
+    "rightAscensionJ2000": "07h10m10.0s",
+    "declinationJ2000": "+022°27'26.1\"",
+    "rightAscension": "07h11m32.7s",
+    "declination": "+022°25'13.4\"",
+    "azimuth": "286°00'20.4\"",
+    "altitude": "-022°24'03.6\""
+}
+```
+
+---
+
+**GET** `/twilight`
+
+Query Params:
+
+* `location`: Id of the location. `int` `required`
+* `date`: Local Date. `string` `format: yyyy-MM-dd` `default: NOW`
+
+Request Body: `None`
+
+Response Body: `200 application/json`
+
+```json
+{
+    "civilDusk": [
+        5.479528105482296,
+        5.945870922970142
+    ],
+    "nauticalDusk": [
+        5.945870922970142,
+        6.412213740457989
+    ],
+    "astronomicalDusk": [
+        6.412213740457989,
+        6.878556557945836
+    ],
+    "night": [
+        6.878556557945836,
+        17.404580152671556
+    ],
+    "astronomicalDawn": [
+        17.404580152671556,
+        17.85426786953489
+    ],
+    "nauticalDawn": [
+        17.85426786953489,
+        18.32061068702279
+    ],
+    "civilDawn": [
+        18.32061068702279,
+        18.786953504510688
+    ]
 }
 ```
 
@@ -568,14 +717,14 @@ Query Params:
 
 Request Body: `None`
 
-Response Body: `None application/json`
+Response Body: `200 application/json`
 
 ```json
 [
-  [
-    0.0,
-    45.001459162
-  ]
+    [
+        0.0,
+        45.001459162
+    ]
 ]
 ```
 
@@ -590,13 +739,198 @@ Query Params:
 
 Request Body: `None`
 
-Response Body: `None application/json`
+Response Body: `200 application/json`
 
 ```json
 [
-  [
-    0.0,
-    -15.223360555
-  ]
+    [
+        0.0,
+        -15.223360555
+    ]
 ]
 ```
+
+---
+
+**GET** `/altitudePointsOfPlanet`
+
+Query Params:
+
+* `location`: Id of the location. `int` `required`
+* `code`: JPL unique ID code. `string` `required`
+* `date`: Local Date. `string` `format: yyyy-MM-dd` `default: NOW`
+
+Request Body: `None`
+
+Response Body: `200 application/json`
+
+```json
+[
+    [
+        0.0,
+        -15.223360555
+    ]
+]
+```
+
+---
+
+**GET** `/searchMinorPlanet`
+
+Query Params:
+
+* `text`: Text to search. `string` `required`
+
+Request Body: `None`
+
+Response Body: `200 application/json`
+
+```json
+{
+    "orbit": {
+        "equinox": "J2000",
+        "epoch": 2460000.5,
+        "elements": [
+            {
+                "sigma": "1.3655E-5",
+                "title": "eccentricity",
+                "name": "e",
+                "units": null,
+                "value": ".4319581224809352",
+                "label": "e"
+            }
+        ]
+    },
+    "body": {
+        "type": {
+            "code": "TNO",
+            "name": "TransNeptunian Object"
+        },
+        "fullname": "136199 Eris (2003 UB313)",
+        "des": "136199",
+        "pha": false,
+        "neo": false,
+        "kind": "an",
+        "orbitId": 83,
+        "prefix": null,
+        "spkId": 20136199,
+        "shortname": "136199 Eris"
+    },
+    "physical": [
+        {
+            "title": "rotation period",
+            "sigma": null,
+            "units": "h",
+            "name": "rot_per",
+            "value": "25.9",
+            "desc": "body rotation period (synodic)",
+            "notes": "[Result based on less than full coverage, so that the period may be wrong by 30 percent or so.]  REFERENCE LIST:[Roe, H. G.; Pike, R.E.; Brown, M.E. (2008) Icarus 198, 459-464.]"
+        }
+    ],
+    "list": null,
+    "message": null
+}
+```
+
+---
+
+**GET** `/searchStar`
+
+Query Params:
+
+* `text`: Text to search. `string` `required`
+
+Request Body: `None`
+
+Response Body: `200 application/json`
+
+```json
+[
+    {
+        "id": 32263,
+        "hd": 48915,
+        "hr": 2491,
+        "hip": 32349,
+        "names": "Sirius · Alp CMa · 9 CMa · HIP 32349 · HD 48915 · HR 2491",
+        "magnitude": -1.46,
+        "rightAscension": 1.7677953919253884,
+        "declination": -0.2917512623453044,
+        "type": "SPECTROSCOPIC_BINARY",
+        "spType": "A0mA1Va",
+        "redshift": -1.834585695059676E-5,
+        "parallax": 1.8384619601354714E-6,
+        "radialVelocity": -0.0031765158005019655,
+        "distance": 8.600943479602332,
+        "pmRA": -2.6471311802261778E-6,
+        "pmDEC": -5.9296106895464015E-6,
+        "constellation": "CMA"
+    }
+]
+```
+
+---
+
+**GET** `/searchDSO`
+
+Query Params:
+
+* `text`: Text to search. `string` `required`
+
+Request Body: `None`
+
+Response Body: `200 application/json`
+
+```json
+[
+    {
+        "id": 255,
+        "names": "Andromeda Galaxy · Andromeda Nebula · Great Nebula in Andromeda · Great Spiral · Andromeda A · NGC 224 · M 31 · PGC 2557 · UGC 454",
+        "m": 31,
+        "ngc": 224,
+        "ic": 0,
+        "c": 0,
+        "b": 0,
+        "sh2": 0,
+        "vdb": 0,
+        "rcw": 0,
+        "ldn": 0,
+        "lbn": 0,
+        "cr": 0,
+        "mel": 0,
+        "pgc": 2557,
+        "ugc": 454,
+        "arp": 0,
+        "vv": 0,
+        "dwb": 0,
+        "tr": 0,
+        "st": 0,
+        "ru": 0,
+        "vdbha": 0,
+        "ced": null,
+        "pk": null,
+        "png": null,
+        "snrg": null,
+        "aco": null,
+        "hcg": null,
+        "eso": null,
+        "vdbh": null,
+        "magnitude": 3.4000000953674316,
+        "rightAscension": 0.18648332357406616,
+        "declination": 0.7202755212783813,
+        "type": "GALAXY",
+        "redshift": -0.0010001920937326991,
+        "parallax": 2.9088820866572163E-8,
+        "radialVelocity": -0.17326449820919812,
+        "distance": 2537496.6184282,
+        "majorAxis": 0.058040924275071425,
+        "minorAxis": 0.02059197629144643,
+        "orientation": 0.7853981633974483,
+        "pmRA": 0.0,
+        "pmDEC": 0.0,
+        "constellation": "AND",
+        "mtype": "SA(s)b"
+    }
+]
+```
+
+---

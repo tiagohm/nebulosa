@@ -1,6 +1,6 @@
 package nebulosa.api.services
 
-import nebulosa.api.data.entities.SavedCameraImage
+import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.enums.AutoSubFolderMode
 import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.common.concurrency.CountUpDownLatch
@@ -205,7 +205,7 @@ data class CameraExposureTask(
                     val height = header.naxis(2)
                     val mono = Image.isMono(header)
 
-                    val event = SavedCameraImage(
+                    val event = SavedCameraImageEntity(
                         0, camera.name, "$path",
                         width, height, mono,
                         exposure.inWholeMicroseconds,

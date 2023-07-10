@@ -5,23 +5,47 @@ import nebulosa.constants.DAYSEC
 /**
  * Returns evenly spaced numbers over a specified interval.
  */
-private fun evenlySpacedNumbers(
-    a: Double, b: Double, n: Int,
+fun evenlySpacedNumbers(
+    start: Double, end: Double, n: Int,
     endpoint: Boolean = true,
 ): DoubleArray {
     val div = if (endpoint) n - 1 else n
     val res = DoubleArray(n)
-    val step = (b - a) / div
-    var c = a
+    val step = (end - start) / div
+    var c = start
 
     repeat(res.size) {
         res[it] = c
         c += step
     }
 
-    if (endpoint) res[res.size - 1] = b
+    if (endpoint) {
+        res[res.size - 1] = end
+    }
 
     return res
+}
+
+/**
+ * Iterate evenly spaced numbers over a specified interval.
+ */
+inline fun evenlySpacedNumbers(
+    start: Double, end: Double, n: Int,
+    endpoint: Boolean = true,
+    action: (Double) -> Unit,
+) {
+    val div = if (endpoint) n - 1 else n
+    val step = (end - start) / div
+    var c = start
+
+    repeat(n) {
+        action(c)
+        c += step
+    }
+
+    if (endpoint) {
+        action(end)
+    }
 }
 
 /**
@@ -48,7 +72,7 @@ private fun IntArray.computeDiffAndReduceToIndices(): IntArray {
 fun findDiscrete(
     start: Double, end: Double,
     action: DiscreteFunction,
-    epsilon: Double = 0.001 / DAYSEC, // 1 ms.
+    epsilon: Double = 0.001 / DAYSEC,
 ): Pair<DoubleArray, IntArray> {
     val num = 8
 

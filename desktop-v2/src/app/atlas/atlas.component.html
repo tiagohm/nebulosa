@@ -1,0 +1,213 @@
+<div class="grid flex-1">
+    <div class="col-12">
+        <p-tabView [(activeIndex)]="selectedTab" (activeIndexChange)="tabChanged()">
+            <p-tabPanel header="Sun" [disabled]="refreshing">
+                <div class="grid flex align-items-center justify-content-center">
+                    <img #imageOfSun style="width: 216px">
+                </div>
+            </p-tabPanel>
+            <p-tabPanel header="Moon" [disabled]="refreshing">
+                <div class="grid flex align-items-center justify-content-center">
+                    <img #imageOfMoon style="width: 216px">
+                </div>
+            </p-tabPanel>
+            <p-tabPanel header="Planets" [disabled]="refreshing">
+                <div class="grid flex align-items-center justify-content-center">
+                    <p-table [value]="planets" class="planet" [(selection)]="planet" (selectionChange)="planetChanged()" selectionMode="single" dataKey="code"
+                        styleClass="p-datatable-striped">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr [pSelectableRow]="item">
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.type }}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </p-tabPanel>
+            <p-tabPanel header="Minor Planets" [disabled]="refreshing">
+                <div class="grid flex align-items-center justify-content-center">
+                    <div class="col-9">
+                        <input type="text" pInputText class="p-inputtext-sm min-w-full" [(ngModel)]="minorPlanetText" />
+                    </div>
+                    <div class="col-3">
+                        <p-button [disabled]="minorPlanetText.length < 3" (onClick)="searchMinorPlanet()" icon="pi" styleClass="p-button-success p-button">
+                            <span class="mdi mdi-magnify"></span>
+                        </p-button>
+                    </div>
+                </div>
+                <div class="grid flex align-items-center justify-content-center mt-2">
+                    <p-table [value]="minorPlanetItems" class="minorPlanet" styleClass="p-datatable-striped">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Value</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.value }}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </p-tabPanel>
+            <p-tabPanel header="Stars" [disabled]="refreshing">
+                <div class="grid flex align-items-center justify-content-center">
+                    <div class="col-9">
+                        <input type="text" pInputText class="p-inputtext-sm min-w-full" [(ngModel)]="starText" />
+                    </div>
+                    <div class="col-3">
+                        <p-button [disabled]="starText.length < 3" (onClick)="searchStar()" icon="pi" styleClass="p-button-success p-button">
+                            <span class="mdi mdi-magnify"></span>
+                        </p-button>
+                    </div>
+                </div>
+                <div class="grid flex align-items-center justify-content-center mt-2">
+                    <p-table [value]="starItems" class="star" sortField="magnitude" [(selection)]="star" (selectionChange)="starChanged()" selectionMode="single" dataKey="id"
+                        styleClass="p-datatable-striped">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th pSortableColumn="names">Name <p-sortIcon field="names" /></th>
+                                <th pSortableColumn="type">Type <p-sortIcon field="type" /></th>
+                                <th pSortableColumn="magnitude">Mag. <p-sortIcon field="magnitude" /></th>
+                                <th pSortableColumn="constellation">Const. <p-sortIcon field="constellation" /></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr [pSelectableRow]="item">
+                                <td>{{ item.names }}</td>
+                                <td class="max-w-9rem text-overflow-clip overflow-hidden">{{ item.type }}</td>
+                                <td class="text-center">{{ item.magnitude < 99 ? item.magnitude.toFixed(1) : '-' }}</td>
+                                <td class="text-center">{{ item.constellation }}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </p-tabPanel>
+            <p-tabPanel header="DSOs" [disabled]="refreshing">
+                <div class="grid flex align-items-center justify-content-center">
+                    <div class="col-9">
+                        <input type="text" pInputText class="p-inputtext-sm min-w-full" [(ngModel)]="dsoText" />
+                    </div>
+                    <div class="col-3">
+                        <p-button [disabled]="dsoText.length < 3" (onClick)="searchDSO()" icon="pi" styleClass="p-button-success p-button">
+                            <span class="mdi mdi-magnify"></span>
+                        </p-button>
+                    </div>
+                </div>
+                <div class="grid flex align-items-center justify-content-center mt-2">
+                    <p-table [value]="dsoItems" class="dso" sortField="magnitude" [(selection)]="dso" (selectionChange)="dsoChanged()" selectionMode="single" dataKey="id"
+                        styleClass="p-datatable-striped">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th pSortableColumn="names">Name <p-sortIcon field="names" /></th>
+                                <th pSortableColumn="type">Type <p-sortIcon field="type" /></th>
+                                <th pSortableColumn="magnitude">Mag. <p-sortIcon field="magnitude" /></th>
+                                <th pSortableColumn="constellation">Const. <p-sortIcon field="constellation" /></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr [pSelectableRow]="item">
+                                <td>{{ item.names }}</td>
+                                <td class="max-w-9rem text-overflow-clip overflow-hidden">{{ item.type }}</td>
+                                <td class="text-center">{{ item.magnitude < 99 ? item.magnitude.toFixed(1) : '-' }}</td>
+                                <td class="text-center">{{ item.constellation }}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </p-tabPanel>
+            <p-tabPanel header="Settings">
+                <div class="grid flex align-items-center">
+                    <div class="col-8">
+                        <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()" optionLabel="name" styleClass="min-w-full"
+                            emptyMessage="No location found"></p-dropdown>
+                    </div>
+                </div>
+            </p-tabPanel>
+        </p-tabView>
+    </div>
+</div>
+<div class="grid px-2">
+    <div class="col-12 text-center">
+        {{ name }}
+    </div>
+    <div class="col-3">
+        <span class="p-float-label">
+            <input readonly pInputText id="rightAscensionJ2000" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.rightAscensionJ2000" />
+            <label htmlFor="rightAscensionJ2000">RA (J2000)</label>
+        </span>
+    </div>
+    <div class="col-3">
+        <span class="p-float-label">
+            <input readonly pInputText id="declinationJ2000" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.declinationJ2000" />
+            <label htmlFor="declinationJ2000">DEC (J2000)</label>
+        </span>
+    </div>
+    <div class="col-3">
+        <span class="p-float-label">
+            <input readonly pInputText id="rightAscension" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.rightAscension" />
+            <label htmlFor="rightAscension">RA</label>
+        </span>
+    </div>
+    <div class="col-3">
+        <span class="p-float-label">
+            <input readonly pInputText id="declination" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.declination" />
+            <label htmlFor="declination">DEC</label>
+        </span>
+    </div>
+    <div class="col-3">
+        <span class="p-float-label">
+            <input readonly pInputText id="azimuth" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.azimuth" />
+            <label htmlFor="azimuth">Azimuth</label>
+        </span>
+    </div>
+    <div class="col-3">
+        <span class="p-float-label">
+            <input readonly pInputText id="altitude" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.altitude" />
+            <label htmlFor="altitude">Altitude</label>
+        </span>
+    </div>
+    <div class="col-3">
+        <span class="p-float-label">
+            <input readonly pInputText id="altitude" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.altitude" />
+            <label htmlFor="altitude">Magnitude</label>
+        </span>
+    </div>
+    <div class="col-3">
+        <span class="p-float-label">
+            <input readonly pInputText id="altitude" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.altitude" />
+            <label htmlFor="altitude">Constellation</label>
+        </span>
+    </div>
+    <div class="col-3">
+        <span class="p-float-label">
+            <input readonly pInputText id="altitude" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.altitude" />
+            <label htmlFor="altitude">Distance</label>
+        </span>
+    </div>
+    <div class="col-3">
+        <span class="p-float-label">
+            <input readonly pInputText id="altitude" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.altitude" />
+            <label htmlFor="altitude">Illuminated (%)</label>
+        </span>
+    </div>
+    <div class="col-3">
+        <span class="p-float-label">
+            <input readonly pInputText id="altitude" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.altitude" />
+            <label htmlFor="altitude">Elongation (°)</label>
+        </span>
+    </div>
+    <div class="col-12">
+        <p-chart #chart [data]="altitudeData" [responsive]="true" [options]="altitudeOptions"></p-chart>
+    </div>
+</div>

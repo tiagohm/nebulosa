@@ -25,4 +25,8 @@ sealed class BoxRepository<T : Any> {
     fun delete(entity: T) {
         box.remove(entity)
     }
+
+    fun deleteAll() {
+        box.removeAll()
+    }
 }

@@ -13,7 +13,7 @@ data class TwilightDiscreteFunction(private val ephemeris: List<HorizonsElement>
     override fun compute(x: Double): Int {
         val index = x.toInt()
 
-        val altitude = if (cached[index].isNaN()) ephemeris[index][HorizonsQuantity.APPARENT_ALT]!!.toDouble()
+        val altitude = if (cached[index].isNaN()) ephemeris[index].asDouble(HorizonsQuantity.APPARENT_ALT)
         else cached[index]
 
         cached[index] = altitude

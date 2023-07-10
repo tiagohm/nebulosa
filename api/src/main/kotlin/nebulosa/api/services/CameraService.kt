@@ -1,7 +1,6 @@
 package nebulosa.api.services
 
-import nebulosa.api.data.entities.CameraPreference
-import nebulosa.api.data.entities.SavedCameraImage
+import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.enums.AutoSubFolderMode
 import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.api.data.responses.CameraResponse
@@ -24,13 +23,13 @@ class CameraService(
     private val equipmentService: EquipmentService,
     private val cameraPreferenceRepository: CameraPreferenceRepository,
     private val savedCameraImageRepository: SavedCameraImageRepository,
-    private val capturesDiretory: Path,
+    private val capturesDirectory: Path,
 ) {
 
     private val runningTasks = Collections.synchronizedMap(HashMap<String, CameraExposureTask>(2))
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    fun onSavedCameraImageEvent(event: SavedCameraImage) {
+    fun onSavedCameraImageEvent(event: SavedCameraImageEntity) {
         event.id = savedCameraImageRepository.withPath(event.path)?.id ?: event.id
         savedCameraImageRepository.save(event)
     }
@@ -77,7 +76,7 @@ class CameraService(
         val autoSave = preference?.autoSave ?: false
         val savePath = preference?.savePath?.ifBlank { null }?.let(Path::of)
             ?.takeIf { it.exists() && it.isDirectory() }
-            ?: Path.of("$capturesDiretory", name).createDirectories()
+            ?: Path.of("$capturesDirectory", name).createDirectories()
         val autoSubFolderMode = preference?.autoSubFolderMode ?: AutoSubFolderMode.NOON
 
         val task = CameraExposureTask(camera, data, autoSave, savePath, autoSubFolderMode)
@@ -94,15 +93,6 @@ class CameraService(
 
     fun abortCapture(name: String) {
         runningTasks[name]?.abort()
-    }
-
-    fun savePreferences(entity: CameraPreference) {
-        val preference = cameraPreferenceRepository.withName(entity.name)
-        cameraPreferenceRepository.save(entity.copy(id = preference?.id ?: 0L))
-    }
-
-    fun loadPreferences(name: String): CameraPreference {
-        return cameraPreferenceRepository.withName(name) ?: CameraPreference(name = name)
     }
 
     companion object {

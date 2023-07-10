@@ -38,11 +38,11 @@ class BodyEphemerisProvider : CachedEphemerisProvider<Body>() {
             val (raJ2000, decJ2000) = astrometric.equatorialJ2000()
 
             val element = HorizonsElement(time)
-            element[HorizonsQuantity.ASTROMETRIC_RA] = "${raJ2000.degrees}"
+            element[HorizonsQuantity.ASTROMETRIC_RA] = "${raJ2000.normalized.degrees}"
             element[HorizonsQuantity.ASTROMETRIC_DEC] = "${decJ2000.degrees}"
-            element[HorizonsQuantity.APPARENT_RA] = "${ra.degrees}"
+            element[HorizonsQuantity.APPARENT_RA] = "${ra.normalized.degrees}"
             element[HorizonsQuantity.APPARENT_DEC] = "${dec.degrees}"
-            element[HorizonsQuantity.APPARENT_AZ] = "${az.degrees}"
+            element[HorizonsQuantity.APPARENT_AZ] = "${az.normalized.degrees}"
             element[HorizonsQuantity.APPARENT_ALT] = "${alt.degrees}"
             res.add(element)
 

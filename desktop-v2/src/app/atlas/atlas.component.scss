@@ -1,0 +1,33 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.p-float-label label {
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 9px;
+    line-height: 10px;
+}
+
+p-table ::ng-deep .p-datatable-wrapper {
+    max-height: 220px;
+    min-width: 100vw;
+}
+
+p-table.planet ::ng-deep .p-datatable-wrapper {
+    max-height: 216px;
+}
+
+p-table.minorPlanet ::ng-deep .p-datatable-wrapper {
+    max-height: 168px;
+}
+
+p-table.star ::ng-deep .p-datatable-wrapper {
+    max-height: 168px;
+}
+
+p-table.dso ::ng-deep .p-datatable-wrapper {
+    max-height: 154px;
+}

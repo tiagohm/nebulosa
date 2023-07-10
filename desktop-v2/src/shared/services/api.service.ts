@@ -1,7 +1,10 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
-import { Camera, CameraPreference, CameraStartCapture, Device, INDIProperty, INDISendProperty, SavedCameraImage } from '../types'
+import {
+    BodyPosition, Camera, CameraPreference, CameraStartCapture, DeepSkyObject, Device,
+    INDIProperty, INDISendProperty, Location, MinorPlanet, SavedCameraImage, Star, Twilight
+} from '../types'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -116,5 +119,73 @@ export class ApiService {
 
     async sendIndiProperty(device: Device, property: INDISendProperty) {
         return this.post<void>(`sendIndiProperty?name=${device.name}`, property)
+    }
+
+    async locations() {
+        return this.get<Location[]>(`locations`)
+    }
+
+    async saveLocation(location: Location) {
+        return this.put<void>(`saveLocation`, location)
+    }
+
+    async deleteLocation(location: Location) {
+        return this.delete<void>(`deleteLocation?id=${location.id}`)
+    }
+
+    async positionOfSun(location: Location) {
+        return this.get<BodyPosition>(`positionOfSun?location=${location.id}`)
+    }
+
+    async positionOfMoon(location: Location) {
+        return this.get<BodyPosition>(`positionOfMoon?location=${location.id}`)
+    }
+
+    async positionOfPlanet(location: Location, code: string) {
+        return this.get<BodyPosition>(`positionOfPlanet?location=${location.id}&code=${code}`)
+    }
+
+    async positionOfStar(location: Location, star: Star) {
+        return this.get<BodyPosition>(`positionOfStar?location=${location.id}&star=${star.id}`)
+    }
+
+    async positionOfDSO(location: Location, dso: DeepSkyObject) {
+        return this.get<BodyPosition>(`positionOfDSO?location=${location.id}&dso=${dso.id}`)
+    }
+
+    async twilight(location: Location) {
+        return this.get<Twilight>(`twilight?location=${location.id}`)
+    }
+
+    async altitudePointsOfSun(location: Location) {
+        return this.get<[number, number][]>(`altitudePointsOfSun?location=${location.id}&stepSize=5`)
+    }
+
+    async altitudePointsOfMoon(location: Location) {
+        return this.get<[number, number][]>(`altitudePointsOfMoon?location=${location.id}&stepSize=5`)
+    }
+
+    async altitudePointsOfPlanet(location: Location, code: string) {
+        return this.get<[number, number][]>(`altitudePointsOfPlanet?location=${location.id}&code=${code}&stepSize=5`)
+    }
+
+    async altitudePointsOfStar(location: Location, star: Star) {
+        return this.get<[number, number][]>(`altitudePointsOfStar?location=${location.id}&star=${star.id}&stepSize=5`)
+    }
+
+    async altitudePointsOfDSO(location: Location, dso: DeepSkyObject) {
+        return this.get<[number, number][]>(`altitudePointsOfDSO?location=${location.id}&dso=${dso.id}&stepSize=5`)
+    }
+
+    async searchMinorPlanet(text: string) {
+        return this.get<MinorPlanet>(`searchMinorPlanet?text=${text}`)
+    }
+
+    async searchStar(text: string) {
+        return this.get<Star[]>(`searchStar?text=${text}`)
+    }
+
+    async searchDSO(text: string) {
+        return this.get<DeepSkyObject[]>(`searchDSO?text=${text}`)
     }
 }

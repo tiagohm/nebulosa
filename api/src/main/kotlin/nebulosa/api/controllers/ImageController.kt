@@ -1,7 +1,7 @@
 package nebulosa.api.controllers
 
 import jakarta.servlet.http.HttpServletResponse
-import nebulosa.api.data.entities.SavedCameraImage
+import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.services.ImageService
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
@@ -42,12 +42,12 @@ class ImageController(
     }
 
     @GetMapping("imagesOfCamera")
-    fun imagesOfCamera(@RequestParam name: String): List<SavedCameraImage> {
+    fun imagesOfCamera(@RequestParam name: String): List<SavedCameraImageEntity> {
         return imageService.imagesOfCamera(name)
     }
 
     @GetMapping("latestImageOfCamera")
-    fun latestImageOfCamera(@RequestParam name: String): SavedCameraImage {
+    fun latestImageOfCamera(@RequestParam name: String): SavedCameraImageEntity {
         return imageService.latestImageOfCamera(name)
     }
 }

@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { HomeWindowType } from '../../shared/types'
 
 @Component({
     selector: 'app-home',
@@ -46,10 +47,13 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
     }
 
-    async open(type: string) {
+    async open(type: HomeWindowType) {
         switch (type) {
             case 'CAMERA':
                 this.browserWindow.openCamera()
+                break
+            case 'ATLAS':
+                this.browserWindow.openAtlas()
                 break
             case 'INDI':
                 this.browserWindow.openINDI()

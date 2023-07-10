@@ -2,7 +2,7 @@ package nebulosa.api.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
-import nebulosa.api.data.entities.SavedCameraImage
+import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.repositories.SavedCameraImageRepository
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
@@ -45,7 +45,7 @@ class ImageService(
             image
         }
 
-        val info = savedCameraImageRepository.withPath("$path") ?: SavedCameraImage()
+        val info = savedCameraImageRepository.withPath("$path") ?: SavedCameraImageEntity()
 
         with(info) {
             width = transformedImage.width
@@ -59,15 +59,15 @@ class ImageService(
         ImageIO.write(transformedImage, "PNG", output.outputStream)
     }
 
-    fun imagesOfCamera(name: String): List<SavedCameraImage> {
+    fun imagesOfCamera(name: String): List<SavedCameraImageEntity> {
         return savedCameraImageRepository.withName(name)
     }
 
-    fun latestImageOfCamera(name: String): SavedCameraImage {
+    fun latestImageOfCamera(name: String): SavedCameraImageEntity {
         return savedCameraImageRepository.withNameLatest(name)!!
     }
 
-    fun savedImageOfPath(path: Path): SavedCameraImage {
+    fun savedImageOfPath(path: Path): SavedCameraImageEntity {
         return savedCameraImageRepository.withPath("$path")!!
     }
 }

@@ -42,3 +42,18 @@ p-inputnumber .p-inputnumber-buttons-stacked input {
         margin: 0;
     }
 }
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: hsla(0deg,0%,39.2%,.5);
+    border-radius: 10px;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-track {
+    border-radius: 10px;
+    background-color: transparent;
+}

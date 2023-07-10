@@ -28,16 +28,16 @@ class BeanConfig {
     fun appDirectory(): Path = Path.of(System.getProperty("app.dir"))
 
     @Bean
-    fun dataDiretory(appDirectory: Path): Path = Path.of("$appDirectory", "data").createDirectories()
+    fun dataDirectory(appDirectory: Path): Path = Path.of("$appDirectory", "data").createDirectories()
 
     @Bean
-    fun logsDiretory(appDirectory: Path): Path = Path.of("$appDirectory", "logs").createDirectories()
+    fun logsDirectory(appDirectory: Path): Path = Path.of("$appDirectory", "logs").createDirectories()
 
     @Bean
-    fun capturesDiretory(appDirectory: Path): Path = Path.of("$appDirectory", "captures").createDirectories()
+    fun capturesDirectory(appDirectory: Path): Path = Path.of("$appDirectory", "captures").createDirectories()
 
     @Bean
-    fun cacheDiretory(appDirectory: Path): Path = Path.of("$appDirectory", "cache").createDirectories()
+    fun cacheDirectory(appDirectory: Path): Path = Path.of("$appDirectory", "cache").createDirectories()
 
     @Bean
     @Primary
@@ -49,7 +49,7 @@ class BeanConfig {
     fun connectionPool() = ConnectionPool(32, 5L, TimeUnit.MINUTES)
 
     @Bean
-    fun cache(cacheDiretory: Path) = Cache(cacheDiretory.toFile(), MAX_CACHE_SIZE)
+    fun cache(cacheDirectory: Path) = Cache(cacheDirectory.toFile(), MAX_CACHE_SIZE)
 
     @Bean
     fun okHttpClient(connectionPool: ConnectionPool, cache: Cache) = OkHttpClient.Builder()
@@ -63,8 +63,8 @@ class BeanConfig {
         .build()
 
     @Bean
-    fun boxStore(dataDiretory: Path) = MyObjectBox.builder()
-        .directory(dataDiretory.toFile())
+    fun boxStore(dataDirectory: Path) = MyObjectBox.builder()
+        .directory(dataDirectory.toFile())
         .build()!!
 
     @Bean

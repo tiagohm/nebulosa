@@ -1,19 +1,21 @@
 package nebulosa.api.controllers
 
 import jakarta.validation.Valid
-import nebulosa.api.data.entities.CameraPreference
+import nebulosa.api.data.entities.CameraPreferenceEntity
 import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.api.data.responses.CameraResponse
+import nebulosa.api.repositories.CameraPreferenceRepository
 import nebulosa.api.services.CameraService
 import org.springframework.web.bind.annotation.*
 
 @RestController
 class CameraController(
     private val cameraService: CameraService,
+    private val cameraPreferenceRepository: CameraPreferenceRepository,
 ) {
 
     @GetMapping("attachedCameras")
-    fun sttachedCameras(): List<CameraResponse> {
+    fun attachedCameras(): List<CameraResponse> {
         return cameraService.attachedCameras()
     }
 
@@ -58,12 +60,13 @@ class CameraController(
     }
 
     @PutMapping("cameraPreferences")
-    fun savePreferences(@RequestParam name: String, @RequestBody @Valid body: CameraPreference) {
-        cameraService.savePreferences(body.also { it.name = name })
+    fun savePreferences(@RequestParam name: String, @RequestBody @Valid body: CameraPreferenceEntity) {
+        val preference = cameraPreferenceRepository.withName(body.name)
+        cameraPreferenceRepository.save(body.copy(id = preference?.id ?: 0L, name = name))
     }
 
     @GetMapping("cameraPreferences")
-    fun loadPreferences(@RequestParam name: String): CameraPreference {
-        return cameraService.loadPreferences(name)
+    fun loadPreferences(@RequestParam name: String): CameraPreferenceEntity {
+        return cameraPreferenceRepository.withName(name) ?: CameraPreferenceEntity(name = name)
     }
 }
