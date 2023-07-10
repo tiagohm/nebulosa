@@ -72,6 +72,7 @@ class GeographicPosition(
 
     override fun toByte() = center.toByte()
 
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun toChar() = center.toChar()
 
     override fun toDouble() = center.toDouble()

@@ -143,6 +143,12 @@ export interface BodyPosition {
     declination: string
     azimuth: string
     altitude: string
+    magnitude: number
+    constellation: Constellation
+    distance: number
+    distanceUnit: string
+    illuminated: number
+    elongation: number
 }
 
 export interface Twilight {
@@ -156,59 +162,23 @@ export interface Twilight {
 }
 
 export interface MinorPlanet {
-    orbit?: MinorPlanetOrbit
-    body?: MinorPlanetBody
-    physical?: MinorPlanetPhysicalParameter[]
-    list?: MinorPlanetSearchItem[]
-    message?: string
-}
-
-export interface MinorPlanetOrbit {
-    equinox: string
-    epoch: number
-    elements: MinorPlanetOrbitElement[]
-}
-
-export interface MinorPlanetOrbitElement {
-    sigma?: string
-    title: string
+    found: boolean
     name: string
-    units?: string
-    value?: string
-    label: string
-}
-
-export interface MinorPlanetBody {
-    type: MinorPlanetType
-    fullname: string
-    des: string
+    spkId: number
+    kind: string
     pha: boolean
     neo: boolean
-    kind: string
-    orbitId: number
-    prefix?: string
-    spkId: number
-    shortname: string
+    orbitType: string
+    items: OrbitalPhysicalItem[]
+    searchItems: { name: string, pdes: string }[]
 }
 
-export interface MinorPlanetType {
-    code: string
+export interface OrbitalPhysicalItem {
+    orbital: boolean
     name: string
-}
-
-export interface MinorPlanetPhysicalParameter {
-    title: string
-    sigma?: string
-    units?: string
-    name: string
-    value?: string
     description: string
-    notes?: string
-}
-
-export interface MinorPlanetSearchItem {
-    name: string
-    pdes: string
+    value: string
+    unit: string
 }
 
 export interface Star {

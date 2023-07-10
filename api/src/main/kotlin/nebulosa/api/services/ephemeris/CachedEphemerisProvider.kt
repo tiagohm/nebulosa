@@ -35,24 +35,26 @@ abstract class CachedEphemerisProvider<T : Any> : EphemerisProvider<T> {
 
         val key = target to position
 
-        if (key in ephemeris) {
-            val elements = ephemeris[key]!!
-            val res = ArrayList<HorizonsElement>(1441)
+        return synchronized(this) {
+            if (key in ephemeris) {
+                val elements = ephemeris[key]!!
+                val res = ArrayList<HorizonsElement>(1441)
 
-            for (minute in 0L..1440L) {
-                val time = startTime.plusMinutes(minute)
+                for (minute in 0L..1440L) {
+                    val time = startTime.plusMinutes(minute)
 
-                if (time !in elements) {
-                    res.addAll(computeAndSave(key, time, endTime))
-                    break
-                } else {
-                    res.add(elements[time]!!)
+                    if (time !in elements) {
+                        res.addAll(computeAndSave(key, time, endTime))
+                        break
+                    } else {
+                        res.add(elements[time]!!)
+                    }
                 }
-            }
 
-            return res
-        } else {
-            return computeAndSave(key, startTime, endTime)
+                res
+            } else {
+                computeAndSave(key, startTime, endTime)
+            }
         }
     }
 

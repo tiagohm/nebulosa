@@ -281,6 +281,9 @@ Request Body: `application/json`
 
 ```json
 {
+    "autoSave": false,
+    "savePath": "",
+    "autoSubFolderMode": "OFF"
 }
 ```
 
@@ -300,6 +303,9 @@ Response Body: `200 application/json`
 
 ```json
 {
+    "autoSave": false,
+    "savePath": "",
+    "autoSubFolderMode": "OFF"
 }
 ```
 
@@ -787,48 +793,30 @@ Response Body: `200 application/json`
 
 ```json
 {
-    "orbit": {
-        "equinox": "J2000",
-        "epoch": 2460000.5,
-        "elements": [
-            {
-                "sigma": "1.3655E-5",
-                "title": "eccentricity",
-                "name": "e",
-                "units": null,
-                "value": ".4319581224809352",
-                "label": "e"
-            }
-        ]
-    },
-    "body": {
-        "type": {
-            "code": "TNO",
-            "name": "TransNeptunian Object"
-        },
-        "fullname": "136199 Eris (2003 UB313)",
-        "des": "136199",
-        "pha": false,
-        "neo": false,
-        "kind": "an",
-        "orbitId": 83,
-        "prefix": null,
-        "spkId": 20136199,
-        "shortname": "136199 Eris"
-    },
-    "physical": [
+    "found": true,
+    "name": "253P/PANSTARRS",
+    "spkId": 1003147,
+    "kind": "cn",
+    "pha": false,
+    "neo": false,
+    "orbitType": "JFc",
+    "items": [
         {
-            "title": "rotation period",
-            "sigma": null,
-            "units": "h",
-            "name": "rot_per",
-            "value": "25.9",
-            "desc": "body rotation period (synodic)",
-            "notes": "[Result based on less than full coverage, so that the period may be wrong by 30 percent or so.]  REFERENCE LIST:[Roe, H. G.; Pike, R.E.; Brown, M.E. (2008) Icarus 198, 459-464.]"
+            "orbital": true,
+            "name": "e",
+            "description": "eccentricity",
+            "value": ".412586722616473",
+            "unit": ""
+        },
+        {
+            "orbital": false,
+            "name": "M1",
+            "description": "comet total magnitude",
+            "value": "13.5",
+            "unit": ""
         }
     ],
-    "list": null,
-    "message": null
+    "searchItems": []
 }
 ```
 

@@ -1,0 +1,986 @@
+{
+	"info": {
+		"_postman_id": "5c43f17f-40b4-496c-a825-a70b7086ebbc",
+		"name": "Nebulosa",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "10347066"
+	},
+	"item": [
+		{
+			"name": "Connection",
+			"item": [
+				{
+					"name": "Connect",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/connect?host=localhost&port=7624",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"connect"
+							],
+							"query": [
+								{
+									"key": "host",
+									"value": "localhost"
+								},
+								{
+									"key": "port",
+									"value": "7624"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Disconnect",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/disconnect",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"disconnect"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Connection Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/connectionStatus",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"connectionStatus"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "INDI",
+			"item": [
+				{
+					"name": "List Device INDI Properties",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/indi/{{cameraId}}/properties",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"indi",
+								"{{cameraId}}",
+								"properties"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send Device INDI Property",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"CONNECTION\",\n    \"type\": \"SWITCH\",\n    \"properties\": [\n        {\n            \"name\": \"DISCONNECT\",\n            \"value\": true\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/indi/{{cameraId}}/properties",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"indi",
+								"{{cameraId}}",
+								"properties"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Camera",
+			"item": [
+				{
+					"name": "Retrieve All Attached Cameras",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/attachedCameras",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"attachedCameras"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve Camera By Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/camera?name={{cameraId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"camera"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{cameraId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Connect",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/cameraConnect?name={{cameraId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cameraConnect"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{cameraId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Disconnect",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/cameraDisconnect?name={{cameraId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cameraDisconnect"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{cameraId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set Cooler Temperature",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/cameraSetpointTemperature?name={{cameraId}}&value=-5.0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cameraSetpointTemperature"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{cameraId}}"
+								},
+								{
+									"key": "value",
+									"value": "-5.0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Turn Cooler On/Off",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/cameraCooler?name=?name={{cameraId}}&value=false",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cameraCooler"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "?name={{cameraId}}"
+								},
+								{
+									"key": "value",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Save Preferences",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"autoSave\": true,\n    \"savePath\": \"/home/tiagohm/Imagens\",\n    \"autoSubFolderMode\": \"NOON\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/cameraPreferences?name={{cameraId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cameraPreferences"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{cameraId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Load Preferences",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/cameraPreferences?name={{cameraId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cameraPreferences"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{cameraId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Start Capture",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"exposure\": 1000000,\n    \"amount\": 8,\n    \"delay\": 0,\n    \"x\": 0,\n    \"y\": 0,\n    \"width\": 1280,\n    \"height\": 1024,\n    \"frameFormat\": \"INDI_MONO\",\n    \"frameType\": \"LIGHT\",\n    \"binX\": 1,\n    \"binY\": 1,\n    \"gain\": 0,\n    \"offset\": 0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/cameraStartCapture?name={{cameraId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cameraStartCapture"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{cameraId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Abort Capture",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/cameraAbortCapture?name={{cameraId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cameraAbortCapture"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{cameraId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Image",
+			"item": [
+				{
+					"name": "Image",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/image?hash={{imageHash}}&debayer=true&autoStretch=true&shadow=0.0&highlight=1.0&midtone=0.5&mirrorHorizontal=false&mirrorVertical=false&invert=false&scnrEnabled=false&scnrChannel=GREEN&scnrAmount=0.5&scnrProtectionMode=AVERAGE_NEUTRAL",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"image"
+							],
+							"query": [
+								{
+									"key": "hash",
+									"value": "{{imageHash}}"
+								},
+								{
+									"key": "debayer",
+									"value": "true"
+								},
+								{
+									"key": "autoStretch",
+									"value": "true"
+								},
+								{
+									"key": "shadow",
+									"value": "0.0"
+								},
+								{
+									"key": "highlight",
+									"value": "1.0"
+								},
+								{
+									"key": "midtone",
+									"value": "0.5"
+								},
+								{
+									"key": "mirrorHorizontal",
+									"value": "false"
+								},
+								{
+									"key": "mirrorVertical",
+									"value": "false"
+								},
+								{
+									"key": "invert",
+									"value": "false"
+								},
+								{
+									"key": "scnrEnabled",
+									"value": "false"
+								},
+								{
+									"key": "scnrChannel",
+									"value": "GREEN"
+								},
+								{
+									"key": "scnrAmount",
+									"value": "0.5"
+								},
+								{
+									"key": "scnrProtectionMode",
+									"value": "AVERAGE_NEUTRAL"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Images of Camera",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/imagesOfCamera?name={{cameraId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"imagesOfCamera"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{cameraId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Latest Image of Camera",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/latestImageOfCamera?name={{cameraId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"latestImageOfCamera"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{cameraId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Atlas",
+			"item": [
+				{
+					"name": "Location",
+					"item": [
+						{
+							"name": "Retrieve Locations",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/locations",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"locations"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Save Location",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Piranguçú\",\n    \"latitude\": -22.509768192974605,\n    \"longitude\": -45.487790889887236,\n    \"elevation\": 890.0,\n    \"offsetInMinutes\": -180.0\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/saveLocation",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"saveLocation"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "0",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Location",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/deleteLocation?id=0",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"deleteLocation"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "0"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Sun",
+					"item": [
+						{
+							"name": "Image of Sun",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/imageOfSun",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"imageOfSun"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Position of Sun",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/positionOfSun?location=1",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"positionOfSun"
+									],
+									"query": [
+										{
+											"key": "location",
+											"value": "1"
+										},
+										{
+											"key": "date",
+											"value": "2023-06-22",
+											"disabled": true
+										},
+										{
+											"key": "time",
+											"value": "11:59",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Twilight",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/twilight?location=1",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"twilight"
+									],
+									"query": [
+										{
+											"key": "location",
+											"value": "1"
+										},
+										{
+											"key": "date",
+											"value": "2023-06-22",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Altitude Points of Sun",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/altitudePointsOfSun?location=1&stepSize=5",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"altitudePointsOfSun"
+									],
+									"query": [
+										{
+											"key": "location",
+											"value": "1"
+										},
+										{
+											"key": "date",
+											"value": "2023-06-22",
+											"disabled": true
+										},
+										{
+											"key": "stepSize",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Moon",
+					"item": [
+						{
+							"name": "Image of Moon",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/imageOfMoon?location=1&date=2023-07-10",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"imageOfMoon"
+									],
+									"query": [
+										{
+											"key": "location",
+											"value": "1"
+										},
+										{
+											"key": "date",
+											"value": "2023-07-10"
+										},
+										{
+											"key": "time",
+											"value": "20:00",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Position of Moon",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/positionOfMoon?location=1",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"positionOfMoon"
+									],
+									"query": [
+										{
+											"key": "location",
+											"value": "1"
+										},
+										{
+											"key": "date",
+											"value": "2023-06-22",
+											"disabled": true
+										},
+										{
+											"key": "time",
+											"value": "11:59",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Altitude Points of Moon",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/altitudePointsOfMoon?location=1",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"altitudePointsOfMoon"
+									],
+									"query": [
+										{
+											"key": "location",
+											"value": "1"
+										},
+										{
+											"key": "date",
+											"value": "2023-06-22",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Minor Planet",
+					"item": [
+						{
+							"name": "Search Minor Planet",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/searchMinorPlanet?text=253P",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"searchMinorPlanet"
+									],
+									"query": [
+										{
+											"key": "text",
+											"value": "253P"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Position of Planet",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/positionOfPlanet?location=1&code=499",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"positionOfPlanet"
+									],
+									"query": [
+										{
+											"key": "location",
+											"value": "1"
+										},
+										{
+											"key": "code",
+											"value": "499"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Star",
+					"item": [
+						{
+							"name": "Search Star",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/searchStar?text=Sirius",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"searchStar"
+									],
+									"query": [
+										{
+											"key": "text",
+											"value": "Sirius"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Position of Star",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/positionOfStar?location=1&star=32263",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"positionOfStar"
+									],
+									"query": [
+										{
+											"key": "location",
+											"value": "1"
+										},
+										{
+											"key": "star",
+											"value": "32263"
+										},
+										{
+											"key": "date",
+											"value": "2023-06-22",
+											"disabled": true
+										},
+										{
+											"key": "time",
+											"value": "11:59",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "DSO",
+					"item": [
+						{
+							"name": "Search DSO",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/searchDSO?text=andromeda",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"searchDSO"
+									],
+									"query": [
+										{
+											"key": "text",
+											"value": "andromeda"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Position of DSO",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/positionOfDSO?location=1&dso=255",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"positionOfDSO"
+									],
+									"query": [
+										{
+											"key": "location",
+											"value": "1"
+										},
+										{
+											"key": "dso",
+											"value": "255"
+										},
+										{
+											"key": "date",
+											"value": "2023-06-22",
+											"disabled": true
+										},
+										{
+											"key": "time",
+											"value": "11:59",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}

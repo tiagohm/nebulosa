@@ -68,6 +68,7 @@ class HorizonsEphemerisProvider(private val horizonsService: HorizonsService) : 
             HorizonsQuantity.APPARENT_AZ, HorizonsQuantity.APPARENT_ALT,
             HorizonsQuantity.VISUAL_MAGNITUDE, HorizonsQuantity.ONE_WAY_LIGHT_TIME,
             HorizonsQuantity.ILLUMINATED_FRACTION, HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE,
+            HorizonsQuantity.CONSTELLATION,
         )
     }
 }

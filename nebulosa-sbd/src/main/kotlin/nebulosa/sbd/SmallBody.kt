@@ -27,7 +27,7 @@ data class SmallBody(
     )
 
     data class Body(
-        @field:JsonProperty("type") @field:JsonAlias("orbit_class") val type: BodyType = BodyType.EMPTY,
+        @field:JsonProperty("type") @field:JsonAlias("orbit_class") val type: OrbitType? = null,
         @field:JsonProperty("fullname") val fullname: String = "",
         @field:JsonProperty("des") val des: String = "",
         @field:JsonProperty("pha") val pha: Boolean = false,
@@ -39,16 +39,10 @@ data class SmallBody(
         @field:JsonProperty("shortname") val shortname: String = "",
     )
 
-    data class BodyType(
+    data class OrbitType(
         @field:JsonProperty("code") val code: String = "",
         @field:JsonProperty("name") val name: String = "",
-    ) {
-
-        companion object {
-
-            @JvmStatic val EMPTY = BodyType()
-        }
-    }
+    )
 
     data class PhysicalParameter(
         @field:JsonProperty("title") val title: String = "",

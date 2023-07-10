@@ -9,6 +9,7 @@ import nebulosa.api.data.entities.DeepSkyObjectEntity
 import nebulosa.api.data.entities.LocationEntity
 import nebulosa.api.data.entities.StarEntity
 import nebulosa.api.data.responses.BodyPositionResponse
+import nebulosa.api.data.responses.MinorPlanetResponse
 import nebulosa.api.data.responses.TwilightResponse
 import nebulosa.api.repositories.DeepSkyObjectRepository
 import nebulosa.api.repositories.LocationRepository
@@ -17,7 +18,6 @@ import nebulosa.api.services.AtlasService
 import nebulosa.api.utils.noSeconds
 import nebulosa.api.utils.orNow
 import nebulosa.api.utils.plus
-import nebulosa.sbd.SmallBody
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
@@ -172,8 +172,8 @@ class AtlasController(
     }
 
     @GetMapping("searchMinorPlanet")
-    fun searchMinorPlanet(@RequestParam @Valid @NotBlank text: String): SmallBody {
-        return atlasService.searchMinorPlanet(text)!!
+    fun searchMinorPlanet(@RequestParam @Valid @NotBlank text: String): MinorPlanetResponse {
+        return atlasService.searchMinorPlanet(text)
     }
 
     @GetMapping("searchStar")

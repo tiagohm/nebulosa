@@ -7,6 +7,7 @@ import nebulosa.api.data.entities.DeepSkyObjectEntity
 import nebulosa.api.data.entities.LocationEntity
 import nebulosa.api.data.entities.StarEntity
 import nebulosa.api.data.responses.BodyPositionResponse
+import nebulosa.api.data.responses.MinorPlanetResponse
 import nebulosa.api.data.responses.TwilightResponse
 import nebulosa.api.repositories.AppPreferenceRepository
 import nebulosa.api.repositories.DeepSkyObjectRepository
@@ -26,7 +27,6 @@ import nebulosa.nova.almanac.findDiscrete
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.FixedStar
 import nebulosa.nova.position.GeographicPosition
-import nebulosa.sbd.SmallBody
 import nebulosa.sbd.SmallBodyDatabaseLookupService
 import nebulosa.skycatalog.SkyObject
 import okhttp3.OkHttpClient
@@ -124,10 +124,12 @@ class AtlasService(
 
     fun positionOfStar(location: LocationEntity, star: StarEntity, dateTime: LocalDateTime): BodyPositionResponse {
         return positionOfBody(fixedStarOf(star), location, dateTime)!!
+            .copy(magnitude = star.magnitude, constellation = star.constellation, distance = star.distance, distanceUnit = "ly")
     }
 
     fun positionOfDSO(location: LocationEntity, dso: DeepSkyObjectEntity, dateTime: LocalDateTime): BodyPositionResponse {
         return positionOfBody(fixedStarOf(dso), location, dateTime)!!
+            .copy(magnitude = dso.magnitude, constellation = dso.constellation, distance = dso.distance, distanceUnit = "ly")
     }
 
     private fun positionOfBody(target: Any, location: LocationEntity, dateTime: LocalDateTime): BodyPositionResponse? {
@@ -137,13 +139,11 @@ class AtlasService(
     }
 
     private fun bodyEphemeris(target: Any, location: LocationEntity, dateTime: LocalDateTime): List<HorizonsElement> {
-        return synchronized(target) {
-            val position = positions.getOrPut(location, location::geographicPosition)
-            val offsetInSeconds = location.offsetInMinutes * 60
-            val zoneId = ZoneOffset.ofTotalSeconds(offsetInSeconds)
-            if (target is Body) bodyEphemerisProvider.compute(target, position, dateTime, zoneId)
-            else horizonsEphemerisProvider.compute(target, position, dateTime, zoneId)
-        }
+        val position = positions.getOrPut(location, location::geographicPosition)
+        val offsetInSeconds = location.offsetInMinutes * 60
+        val zoneId = ZoneOffset.ofTotalSeconds(offsetInSeconds)
+        return if (target is Body) bodyEphemerisProvider.compute(target, position, dateTime, zoneId)
+        else horizonsEphemerisProvider.compute(target, position, dateTime, zoneId)
     }
 
     fun twilight(location: LocationEntity, date: LocalDate): TwilightResponse {
@@ -214,7 +214,7 @@ class AtlasService(
     }
 
     private fun fixedStarOf(dso: DeepSkyObjectEntity): FixedStar {
-        return stars.getOrPut(dso.id) {
+        return dsos.getOrPut(dso.id) {
             FixedStar(
                 dso.rightAscension.rad, dso.declination.rad,
                 dso.pmRA.rad, dso.pmDEC.rad, dso.parallax.mas, dso.radialVelocity.kms
@@ -234,8 +234,11 @@ class AtlasService(
         return points
     }
 
-    fun searchMinorPlanet(text: String): SmallBody? {
-        return smallBodyDatabaseLookupService.search(text).execute().body()
+    fun searchMinorPlanet(text: String): MinorPlanetResponse {
+        return smallBodyDatabaseLookupService
+            .search(text).execute().body()
+            ?.let(MinorPlanetResponse::of)
+            ?: MinorPlanetResponse.EMPTY
     }
 
     fun searchStar(text: String): List<StarEntity> {

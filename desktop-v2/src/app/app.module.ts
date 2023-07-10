@@ -6,15 +6,18 @@ import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { ButtonModule } from 'primeng/button'
 import { ChartModule } from 'primeng/chart'
+import { DialogModule } from 'primeng/dialog'
 import { DropdownModule } from 'primeng/dropdown'
 import { InputNumberModule } from 'primeng/inputnumber'
 import { InputSwitchModule } from 'primeng/inputswitch'
 import { InputTextModule } from 'primeng/inputtext'
+import { ListboxModule } from 'primeng/listbox'
 import { MenuModule } from 'primeng/menu'
 import { SelectButtonModule } from 'primeng/selectbutton'
 import { SplitButtonModule } from 'primeng/splitbutton'
 import { TableModule } from 'primeng/table'
 import { TabViewModule } from 'primeng/tabview'
+import { TagModule } from 'primeng/tag'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { AtlasComponent } from './atlas/atlas.component'
@@ -52,6 +55,9 @@ import { INDIPropertyComponent } from './indi/property/indi-property.component'
         TabViewModule,
         ChartModule,
         TableModule,
+        TagModule,
+        DialogModule,
+        ListboxModule,
     ],
     providers: [],
     bootstrap: [AppComponent]
