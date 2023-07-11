@@ -20,7 +20,7 @@ export interface ImageParams {
 export class ImageComponent implements OnInit, AfterViewInit {
 
     @ViewChild('image')
-    readonly image!: ElementRef<HTMLImageElement>
+    private readonly image!: ElementRef<HTMLImageElement>
 
     autoStretch = true
 

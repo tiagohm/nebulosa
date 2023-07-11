@@ -2,9 +2,20 @@ package nebulosa.api.repositories
 
 import io.objectbox.Box
 
-sealed class BoxRepository<T : Any> {
+sealed class BoxRepository<T : Any> : Iterable<T> {
 
     protected abstract val box: Box<T>
+
+    val size
+        get() = box.count().toInt()
+
+    fun isEmpty(): Boolean {
+        return box.isEmpty
+    }
+
+    override fun iterator(): Iterator<T> {
+        return box.all.iterator()
+    }
 
     fun all(): List<T> {
         return box.all

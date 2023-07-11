@@ -126,7 +126,7 @@ export class ApiService {
     }
 
     async saveLocation(location: Location) {
-        return this.put<void>(`saveLocation`, location)
+        return this.put<void>(`saveLocation?id=${location.id}`, location)
     }
 
     async deleteLocation(location: Location) {

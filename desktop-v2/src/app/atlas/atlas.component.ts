@@ -12,12 +12,6 @@ export interface PlanetItem {
     code: string
 }
 
-export interface MinorPlanetItem {
-    name: string
-    description: string
-    value: string
-}
-
 @Component({
     selector: 'app-atlas',
     templateUrl: './atlas.component.html',
@@ -25,7 +19,7 @@ export interface MinorPlanetItem {
 })
 export class AtlasComponent implements OnInit, OnDestroy {
 
-    selectedTab = 0
+    tab = 0
     refreshing = false
 
     bodyPosition: BodyPosition = {
@@ -44,8 +38,12 @@ export class AtlasComponent implements OnInit, OnDestroy {
     }
 
     locations: Location[] = []
-    location?: Location
+    private readonly emptyLocation: Location = { id: 0, name: '', latitude: 0, longitude: 0, elevation: 0, offsetInMinutes: 0 }
+    location: Location = { ...this.emptyLocation }
+    editedLocation: Location = { ...this.emptyLocation }
+    showLocationDialog = false
 
+    planet?: PlanetItem
     readonly planets: PlanetItem[] = [
         { name: 'Mercury', type: `Planet`, code: '199' },
         { name: 'Venus', type: `Planet`, code: '299' },
@@ -84,33 +82,30 @@ export class AtlasComponent implements OnInit, OnDestroy {
         { name: '4 Vesta', type: `Asteroid`, code: '4;' },
     ]
 
-    planet?: PlanetItem
-
     minorPlanet?: MinorPlanet
-    minorPlanetItems: MinorPlanetItem[] = []
-    minorPlanetText = ''
+    minorPlanetSearchText = ''
     minorPlanetChoiceItems: { name: string, pdes: string }[] = []
     showMinorPlanetChoiceDialog = false
 
     star?: Star
     starItems: Star[] = []
-    starText = ''
+    starSearchText = ''
 
     dso?: DeepSkyObject
     dsoItems: DeepSkyObject[] = []
-    dsoText = ''
+    dsoSearchText = ''
 
     name = 'Sun'
     tags: { title: string, severity: string }[] = []
 
     @ViewChild('imageOfSun')
-    readonly imageOfSun!: ElementRef<HTMLImageElement>
+    private readonly imageOfSun!: ElementRef<HTMLImageElement>
 
     @ViewChild('imageOfMoon')
-    readonly imageOfMoon!: ElementRef<HTMLImageElement>
+    private readonly imageOfMoon!: ElementRef<HTMLImageElement>
 
     @ViewChild('chart')
-    readonly chart!: UIChart
+    private readonly chart!: UIChart
 
     readonly altitudeData: ChartData = {
         labels: [
@@ -332,25 +327,10 @@ export class AtlasComponent implements OnInit, OnDestroy {
     }
 
     async searchMinorPlanet() {
-        const minorPlanet = await this.api.searchMinorPlanet(this.minorPlanetText)
+        const minorPlanet = await this.api.searchMinorPlanet(this.minorPlanetSearchText)
 
         if (minorPlanet.found) {
             this.minorPlanet = minorPlanet
-
-            const items: MinorPlanetItem[] = []
-
-            for (const item of minorPlanet.items) {
-                const tags: string[] = []
-
-                items.push({
-                    name: item.name,
-                    description: item.description,
-                    value: `${item.value} ${item.unit}`.trim(),
-                })
-            }
-
-            this.minorPlanetItems = items
-
             this.refreshTab(false, true)
         } else {
             this.minorPlanetChoiceItems = minorPlanet.searchItems
@@ -359,7 +339,7 @@ export class AtlasComponent implements OnInit, OnDestroy {
     }
 
     minorPlanetChoosen(event: ListboxChangeEvent) {
-        this.minorPlanetText = event.value.pdes
+        this.minorPlanetSearchText = event.value.pdes
         this.searchMinorPlanet()
         this.showMinorPlanetChoiceDialog = false
     }
@@ -377,11 +357,33 @@ export class AtlasComponent implements OnInit, OnDestroy {
     }
 
     async searchStar() {
-        this.starItems = await this.api.searchStar(this.starText)
+        this.starItems = await this.api.searchStar(this.starSearchText)
     }
 
     async searchDSO() {
-        this.dsoItems = await this.api.searchDSO(this.dsoText)
+        this.dsoItems = await this.api.searchDSO(this.dsoSearchText)
+    }
+
+    addLocation() {
+        this.editedLocation = { ...this.emptyLocation }
+        this.showLocationDialog = true
+    }
+
+    editLocation() {
+        this.editedLocation = { ...this.location }
+        this.showLocationDialog = true
+    }
+
+    async deleteLocation() {
+        await this.api.deleteLocation(this.location)
+        this.locations = await this.api.locations()
+    }
+
+    async saveLocation() {
+        await this.api.saveLocation(this.editedLocation)
+        this.locations = await this.api.locations()
+        this.showLocationDialog = false
+        this.refreshTab(true, true)
     }
 
     async refreshTab(
@@ -392,27 +394,27 @@ export class AtlasComponent implements OnInit, OnDestroy {
 
         try {
             // Sun.
-            if (this.selectedTab === 0) {
+            if (this.tab === 0) {
                 this.name = 'Sun'
                 this.tags = []
                 this.imageOfSun.nativeElement.src = `${this.api.baseUri}/imageOfSun`
                 this.bodyPosition = await this.api.positionOfSun(this.location!)
             }
             // Moon.
-            else if (this.selectedTab === 1) {
+            else if (this.tab === 1) {
                 this.name = 'Moon'
                 this.tags = []
                 this.imageOfMoon.nativeElement.src = `${this.api.baseUri}/imageOfMoon?location=${this.location!.id}`
                 this.bodyPosition = await this.api.positionOfMoon(this.location!)
             }
             // Planet.
-            else if (this.selectedTab === 2 && this.planet) {
+            else if (this.tab === 2 && this.planet) {
                 this.name = this.planet.name
                 this.tags = []
                 this.bodyPosition = await this.api.positionOfPlanet(this.location!, this.planet.code)
             }
             // Minor Planet.
-            else if (this.selectedTab === 3 && this.minorPlanet) {
+            else if (this.tab === 3 && this.minorPlanet) {
                 this.name = this.minorPlanet.name
                 this.tags = []
                 if (this.minorPlanet.kind) this.tags.push({ title: this.minorPlanet.kind, severity: 'success' })
@@ -423,13 +425,13 @@ export class AtlasComponent implements OnInit, OnDestroy {
                 this.bodyPosition = await this.api.positionOfPlanet(this.location!, code)
             }
             // Star.
-            else if (this.selectedTab === 4 && this.star) {
+            else if (this.tab === 4 && this.star) {
                 this.name = this.star.names
                 this.tags = []
                 this.bodyPosition = await this.api.positionOfStar(this.location!, this.star)
             }
             // DSO.
-            else if (this.selectedTab === 5 && this.dso) {
+            else if (this.tab === 5 && this.dso) {
                 this.name = this.dso.names
                 this.tags = []
                 this.bodyPosition = await this.api.positionOfDSO(this.location!, this.dso)
@@ -446,7 +448,7 @@ export class AtlasComponent implements OnInit, OnDestroy {
                 this.altitudeData.datasets[6].data = [[twilight.nauticalDawn[0], 90], [twilight.nauticalDawn[1], 90]]
                 this.altitudeData.datasets[7].data = [[twilight.civilDawn[0], 90], [twilight.civilDawn[1], 90]]
                 this.altitudeData.datasets[8].data = [[twilight.civilDawn[1], 90], [24.0, 90]]
-                this.chart.refresh()
+                this.chart?.refresh()
             }
 
             if (refreshChart) {
@@ -459,38 +461,38 @@ export class AtlasComponent implements OnInit, OnDestroy {
 
     private async refreshChart() {
         // Sun.
-        if (this.selectedTab === 0) {
+        if (this.tab === 0) {
             const points = await this.api.altitudePointsOfSun(this.location!)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         }
         // Moon.
-        else if (this.selectedTab === 1) {
+        else if (this.tab === 1) {
             const points = await this.api.altitudePointsOfMoon(this.location!)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         }
         // Planet.
-        else if (this.selectedTab === 2 && this.planet) {
+        else if (this.tab === 2 && this.planet) {
             const points = await this.api.altitudePointsOfPlanet(this.location!, this.planet.code)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         }
         // Minor Planet.
-        else if (this.selectedTab === 3 && this.minorPlanet) {
+        else if (this.tab === 3 && this.minorPlanet) {
             const code = `DES=${this.minorPlanet.spkId};`
             const points = await this.api.altitudePointsOfPlanet(this.location!, code)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         }
         // Star.
-        else if (this.selectedTab === 4 && this.star) {
+        else if (this.tab === 4 && this.star) {
             const points = await this.api.altitudePointsOfStar(this.location!, this.star)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         }
         // DSO.
-        else if (this.selectedTab === 5 && this.dso) {
+        else if (this.tab === 5 && this.dso) {
             const points = await this.api.altitudePointsOfDSO(this.location!, this.dso)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
@@ -498,7 +500,7 @@ export class AtlasComponent implements OnInit, OnDestroy {
             return
         }
 
-        this.chart.refresh()
+        this.chart?.refresh()
     }
 
     private static belowZeroPoints(points: [number, number][]) {

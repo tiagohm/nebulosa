@@ -14,6 +14,10 @@ body {
     font-size: 1.23rem;
 }
 
+span.p-inputnumber {
+    width: 100%;
+}
+
 p-inputnumber .p-inputnumber-buttons-stacked input {
     width: 100%;
 }
@@ -48,7 +52,7 @@ p-inputnumber .p-inputnumber-buttons-stacked input {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: hsla(0deg,0%,39.2%,.5);
+    background: hsla(0deg, 0%, 39.2%, 0.5);
     border-radius: 10px;
     background-clip: content-box;
 }

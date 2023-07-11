@@ -18,6 +18,8 @@ import { SplitButtonModule } from 'primeng/splitbutton'
 import { TableModule } from 'primeng/table'
 import { TabViewModule } from 'primeng/tabview'
 import { TagModule } from 'primeng/tag'
+import { TooltipModule } from 'primeng/tooltip'
+import { OpenStreetMapComponent } from '../shared/components/openstreetmap/openstreetmap.component'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { AtlasComponent } from './atlas/atlas.component'
@@ -36,6 +38,7 @@ import { INDIPropertyComponent } from './indi/property/indi-property.component'
         INDIComponent,
         INDIPropertyComponent,
         AtlasComponent,
+        OpenStreetMapComponent,
     ],
     imports: [
         BrowserModule,
@@ -58,6 +61,7 @@ import { INDIPropertyComponent } from './indi/property/indi-property.component'
         TagModule,
         DialogModule,
         ListboxModule,
+        TooltipModule,
     ],
     providers: [],
     bootstrap: [AppComponent]

@@ -1,5 +1,6 @@
 package nebulosa.api.controllers
 
+import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
@@ -31,11 +32,19 @@ class AtlasController(
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
 ) {
 
+    @PostConstruct
+    private fun initialize() {
+        if (locationRepository.isEmpty()) {
+            locationRepository.save(LocationEntity(0, "Saint Helena", -15.9655282, -5.7114846, 77.0))
+        }
+    }
+
     @GetMapping("locations")
     fun location(): List<LocationEntity> {
         return locationRepository.all()
     }
 
+    @Synchronized
     @PutMapping("saveLocation")
     fun saveLocation(
         @RequestParam(required = false, defaultValue = "0") id: Long,
@@ -45,9 +54,12 @@ class AtlasController(
         locationRepository.save(body.copy(id = location?.id ?: 0L))
     }
 
+    @Synchronized
     @DeleteMapping("deleteLocation")
     fun deleteLocation(@RequestParam id: Long) {
-        locationRepository.delete(id)
+        if (locationRepository.size > 1) {
+            locationRepository.delete(id)
+        }
     }
 
     @GetMapping("imageOfSun")
