@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import Hex from 'hex-encoding'
@@ -17,17 +17,19 @@ export interface ImageParams {
     templateUrl: './image.component.html',
     styleUrls: ['./image.component.scss'],
 })
-export class ImageComponent implements OnInit, AfterViewInit {
+export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
 
     @ViewChild('image')
     private readonly image!: ElementRef<HTMLImageElement>
 
     autoStretch = true
 
+    private eventSource!: EventSource
     private panZoom?: PanZoom
     private imageURL!: string
     private latestImage?: SavedCameraImage
-    private timer: any
+    private camera?: Camera
+    private path?: string
 
     constructor(
         private title: Title,
@@ -42,18 +44,44 @@ export class ImageComponent implements OnInit, AfterViewInit {
     ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
             const params = JSON.parse(Hex.decodeStr(e.params)) as ImageParams
-            setTimeout(() => this.loadImage(params), 1000)
+            this.camera = params.camera
+            this.path = params.path
+
+            if (this.path) {
+                this.loadImage()
+            } else {
+                this.listenToCameraEvent()
+            }
         })
     }
 
-    private async loadImage(params: ImageParams) {
-        clearTimeout(this.timer)
+    ngOnDestroy() {
+        this.eventSource?.close()
+    }
 
-        if (params.camera) {
+    private listenToCameraEvent() {
+        const eventSource = new EventSource(`http://localhost:${window.apiPort}/cameraEvents`)
+
+        eventSource.addEventListener('CAMERA_IMAGE_SAVED', (event: MessageEvent<string>) => {
+            const savedImage = JSON.parse(event.data) as SavedCameraImage
+
+            if (savedImage.name === this.camera?.name) {
+                this.path = savedImage.path
+                this.loadImage()
+            }
+        })
+
+        this.eventSource = eventSource
+    }
+
+    private async loadImage() {
+        if (this.path) {
+            await this.loadImageFromPath(this.path)
+        } else if (this.camera) {
             let info: SavedCameraImage | undefined
 
             try {
-                info = await this.api.latestImageOfCamera(params.camera)
+                info = await this.api.latestImageOfCamera(this.camera)
             } catch (e) {
                 // console.error(e)
             }
@@ -62,15 +90,13 @@ export class ImageComponent implements OnInit, AfterViewInit {
                 this.latestImage = info
 
                 await this.loadImageFromPath(info.path)
-
-                this.title.setTitle(`Image ・ ${params.camera.name}`)
             }
+        }
 
-            this.timer = setTimeout(() => this.loadImage(params), 1000)
-        } else if (params.path) {
-            await this.loadImageFromPath(params.path)
-
-            this.title.setTitle(`Image ・ ${path.basename(params.path)}`)
+        if (this.camera) {
+            this.title.setTitle(`Image ・ ${this.camera.name}`)
+        } else if (this.path) {
+            this.title.setTitle(`Image ・ ${path.basename(this.path)}`)
         }
     }
 
@@ -78,6 +104,7 @@ export class ImageComponent implements OnInit, AfterViewInit {
         const image = this.image.nativeElement
         const hash = Hex.encodeStr(path)
         const { info, blob } = await this.api.image(hash)
+        this.latestImage = info
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
         this.imageURL = window.URL.createObjectURL(blob)
         image.src = this.imageURL

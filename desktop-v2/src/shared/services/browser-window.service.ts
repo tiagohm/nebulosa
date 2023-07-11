@@ -10,8 +10,8 @@ export class BrowserWindowService {
 
     constructor(private electron: ElectronService) { }
 
-    openWindow(data: OpenWindow) {
-        this.electron.ipcRenderer.send('open-window', data)
+    async openWindow(data: OpenWindow) {
+        await this.electron.ipcRenderer.invoke('open-window', data)
     }
 
     openCamera() {
@@ -20,10 +20,11 @@ export class BrowserWindowService {
     }
 
     openCameraImage(camera: Camera) {
-        const hash = camera ? camera.name : ''
+        const hash = camera.name
+        const factor = camera.height / camera.width
         const params: ImageParams = { camera }
-        const data: OpenWindow = { id: `image.${hash}`, path: 'image', icon: 'image', width: '70%', height: `70%`, resizable: true, params }
-        this.openWindow(data)
+        const data: OpenWindow = { id: `image.${hash}`, path: 'image', icon: 'image', width: '50%', height: `${factor}w`, resizable: true, params }
+        return this.openWindow(data)
     }
 
     openImage(path: string) {

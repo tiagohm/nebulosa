@@ -2,6 +2,7 @@ package nebulosa.api.services
 
 import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.enums.AutoSubFolderMode
+import nebulosa.api.data.events.CameraCaptureFinished
 import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.common.concurrency.ThreadedJob
@@ -9,8 +10,6 @@ import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
 import nebulosa.fits.FITS_RA_ANGLE_FORMATTER
 import nebulosa.fits.naxis
 import nebulosa.imaging.Image
-import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.mount.Mount
@@ -21,6 +20,8 @@ import nom.tam.fits.header.ObservationDescription
 import nom.tam.fits.header.extra.SBFitsExt
 import nom.tam.util.FitsOutputStream
 import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import java.io.InputStream
 import java.nio.file.Path
 import java.time.LocalDateTime
@@ -52,7 +53,7 @@ data class CameraExposureTask(
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.NOON,
     val mount: Mount? = null,
     val filterWheel: FilterWheel? = null,
-) : ThreadedJob<Path>(), DeviceEventHandler {
+) : ThreadedJob<Path>() {
 
     @Volatile var remainingAmount = amount
         private set
@@ -100,7 +101,8 @@ data class CameraExposureTask(
         )
     }
 
-    override fun onEventReceived(event: DeviceEvent<*>) {
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onCameraEvent(event: CameraEvent) {
         if (running && event.device === camera) {
             when (event) {
                 is CameraFrameCaptured -> {
@@ -121,6 +123,7 @@ data class CameraExposureTask(
     }
 
     override fun onStart() {
+        EventBus.getDefault().register(this)
         camera.enableBlob()
     }
 
@@ -157,6 +160,8 @@ data class CameraExposureTask(
     }
 
     override fun onStop() {
+        EventBus.getDefault().post(CameraCaptureFinished(this))
+        EventBus.getDefault().unregister(this)
         camera.disableBlob()
     }
 

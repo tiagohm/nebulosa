@@ -35,18 +35,22 @@ function createWindow(data: OpenWindow) {
         }
     }
 
+    const width = data.width ? Math.trunc(computeWidth(data.width)) : 360
+
     function computeHeight(value: number | string) {
         if (typeof value === 'number') {
             return value
         } else if (value.endsWith('%')) {
             return parseFloat(value.substring(0, value.length - 1)) * size.height / 100
+        } else if (value.endsWith('w')) {
+            return parseFloat(value.substring(0, value.length - 1)) * width
         } else {
             return parseFloat(value)
         }
     }
 
-    const width = data.width ? Math.trunc(computeWidth(data.width)) : 360
     const height = data.height ? Math.trunc(computeHeight(data.height)) : 424
+
     const resizable = data.resizable ?? false
     const icon = data.icon ?? 'nebulosa'
     const params = Hex.encodeStr(JSON.stringify(data.params || {}))
@@ -169,7 +173,9 @@ try {
         }
     })
 
-    ipcMain.on('open-window', async (_, data: OpenWindow) => {
+    ipcMain.handle('open-window', async (_, data: OpenWindow) => {
+        const newWindow = !secondaryWindows.has(data.id)
+
         const window = createWindow(data)
 
         if (data.bringToFront) {
@@ -177,6 +183,16 @@ try {
         } else if (data.requestFocus) {
             window.focus()
         }
+
+        return new Promise<boolean>((resolve) => {
+            if (newWindow) {
+                window.webContents.once('did-finish-load', () => {
+                    resolve(true)
+                })
+            } else {
+                resolve(true)
+            }
+        })
     })
 
     ipcMain.on('open-fits', async (event) => {

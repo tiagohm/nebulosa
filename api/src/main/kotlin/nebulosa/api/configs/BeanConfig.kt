@@ -3,6 +3,7 @@ package nebulosa.api.configs
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import nebulosa.api.data.entities.MyObjectBox
+import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
 import nebulosa.sbd.SmallBodyDatabaseLookupService
@@ -18,6 +19,8 @@ import org.springframework.context.annotation.Primary
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.nio.file.Path
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
 
@@ -80,12 +83,19 @@ class BeanConfig {
     fun hips2FitsService(okHttpClient: OkHttpClient) = Hips2FitsService(okHttpClient = okHttpClient)
 
     @Bean
-    fun eventBus() = EventBus.builder()
+    fun cameraExecutorService(): ExecutorService = Executors.newSingleThreadExecutor(DaemonThreadFactory)
+
+    @Bean
+    fun eventBusExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory)
+
+    @Bean
+    fun eventBus(eventBusExecutorService: ExecutorService) = EventBus.builder()
         .sendNoSubscriberEvent(false)
         .sendSubscriberExceptionEvent(false)
         .throwSubscriberException(false)
         .logNoSubscriberMessages(false)
         .logSubscriberExceptions(false)
+        .executorService(eventBusExecutorService)
         .installDefaultEventBus()!!
 
     @Bean

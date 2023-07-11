@@ -1,7 +1,7 @@
 <div class="container p-4">
     <div class="grid flex align-items-center">
         <div class="col-8">
-            <p-dropdown [options]="cameras" [(ngModel)]="camera" optionLabel="name" styleClass="min-w-full"
+            <p-dropdown [options]="cameras" [(ngModel)]="camera" optionLabel="name" styleClass="min-w-full" (ngModelChange)="cameraSelected()"
                 emptyMessage="No camera found"></p-dropdown>
         </div>
         <div class="col-4">

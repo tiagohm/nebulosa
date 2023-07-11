@@ -6,30 +6,23 @@ import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
 import nebulosa.indi.device.camera.CameraDetached
+import org.greenrobot.eventbus.EventBus
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class EquipmentService : DeviceEventHandler {
+class EquipmentService(private val eventBus: EventBus) : DeviceEventHandler {
 
-    private val handlers = Collections.synchronizedSet(HashSet<DeviceEventHandler>())
     private val cameras = ArrayList<Camera>(2)
-
-    fun registerDeviceEventHandler(handler: DeviceEventHandler) {
-        handlers.add(handler)
-    }
-
-    fun unregisterDeviceEventHandler(handler: DeviceEventHandler) {
-        handlers.remove(handler)
-    }
 
     @Synchronized
     override fun onEventReceived(event: DeviceEvent<*>) {
         when (event) {
             is CameraAttached -> cameras.add(event.device)
             is CameraDetached -> cameras.remove(event.device)
-            else -> handlers.forEach { it.onEventReceived(event) }
         }
+
+        eventBus.post(event)
     }
 
     fun cameras(): List<Camera> {

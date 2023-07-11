@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core'
 import { Title } from '@angular/platform-browser'
-import { Router } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -79,12 +78,10 @@ export class CameraComponent implements OnInit, OnDestroy {
         }
     ]
 
-    private timer?: any = undefined
-    private refreshing = false
+    private eventSource?: EventSource
 
     constructor(
-        title: Title,
-        private router: Router,
+        private title: Title,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
     ) {
@@ -99,13 +96,42 @@ export class CameraComponent implements OnInit, OnDestroy {
             this.update()
         }
 
-        this.timer = setInterval(() => {
-            this.update()
-        }, 2500)
+        this.listenToCameraEvent()
     }
 
     ngOnDestroy() {
-        clearInterval(this.timer)
+        this.eventSource?.close()
+    }
+
+    private listenToCameraEvent() {
+        const eventSource = new EventSource(`http://localhost:${window.apiPort}/cameraEvents`)
+
+        eventSource.addEventListener('CAMERA_UPDATED', (event: MessageEvent<string>) => {
+            const camera = JSON.parse(event.data) as Camera
+
+            if (camera.name === this.camera?.name) {
+                this.camera = { ...camera }
+                this.update()
+            }
+        })
+
+        eventSource.addEventListener('CAMERA_CAPTURE_FINISHED', (event: MessageEvent<string>) => {
+            const camera = JSON.parse(event.data) as Camera
+
+            if (camera.name === this.camera?.name) {
+                this.capturing = false
+            }
+        })
+
+        this.eventSource = eventSource
+    }
+
+    cameraSelected() {
+        if (this.camera) {
+            this.title.setTitle(`Camera ・ ${this.camera.name}`)
+        } else {
+            this.title.setTitle(`Camera`)
+        }
     }
 
     async connect() {
@@ -126,7 +152,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.api.cameraCooler(this.camera!, this.cooler)
     }
 
-    startCapture() {
+    async startCapture() {
         const x = this.subframe ? this.x : this.camera!.x
         const y = this.subframe ? this.y : this.camera!.y
         const width = this.subframe ? this.width : this.camera!.width
@@ -148,11 +174,11 @@ export class CameraComponent implements OnInit, OnDestroy {
             offset: this.offset,
         }
 
-        this.api.cameraStartCapture(this.camera!, data)
-
         this.capturing = true
 
-        this.browserWindow.openCameraImage(this.camera!)
+        await this.browserWindow.openCameraImage(this.camera!)
+
+        this.api.cameraStartCapture(this.camera!, data)
     }
 
     abortCapture() {
@@ -182,46 +208,33 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     private async update() {
         if (!this.camera) {
-            this.connected = false
             return
         }
 
-        if (this.refreshing) {
-            return
-        }
-
-        this.refreshing = true
-        const camera = await this.api.camera(this.camera!.name)
-        this.refreshing = false
-
-        this.connected = camera.connected
-        this.cooler = camera.cooler
-        this.hasCooler = camera.hasCooler
-        this.coolerPower = camera.coolerPower
-        this.dewHeater = camera.dewHeater
-        this.temperature = camera.temperature
-        this.canSetTemperature = camera.canSetTemperature
-        this.minX = camera.minX
-        this.maxX = camera.maxX
+        this.connected = this.camera.connected
+        this.cooler = this.camera.cooler
+        this.hasCooler = this.camera.hasCooler
+        this.coolerPower = this.camera.coolerPower
+        this.dewHeater = this.camera.dewHeater
+        this.temperature = this.camera.temperature
+        this.canSetTemperature = this.camera.canSetTemperature
+        this.minX = this.camera.minX
+        this.maxX = this.camera.maxX
         this.x = Math.max(this.minX, Math.min(this.x, this.maxX))
-        this.minY = camera.minY
-        this.maxY = camera.maxY
+        this.minY = this.camera.minY
+        this.maxY = this.camera.maxY
         this.y = Math.max(this.minY, Math.min(this.y, this.maxY))
-        this.minWidth = camera.minWidth
-        this.maxWidth = camera.maxWidth
+        this.minWidth = this.camera.minWidth
+        this.maxWidth = this.camera.maxWidth
         this.width = Math.max(this.minWidth, Math.min(this.width, this.maxWidth))
-        this.minHeight = camera.minHeight
-        this.maxHeight = camera.maxHeight
+        this.minHeight = this.camera.minHeight
+        this.maxHeight = this.camera.maxHeight
         this.height = Math.max(this.minHeight, Math.min(this.height, this.maxHeight))
-        this.frameFormats = camera.frameFormats
-        this.gainMin = camera.gainMin
-        this.gainMax = camera.gainMax
-        this.offsetMin = camera.offsetMin
-        this.offsetMax = camera.offsetMax
-
-        this.capturing = await this.api.cameraIsCapturing(camera)
-
-        this.camera = camera
+        this.frameFormats = this.camera.frameFormats
+        this.gainMin = this.camera.gainMin
+        this.gainMax = this.camera.gainMax
+        this.offsetMin = this.camera.offsetMin
+        this.offsetMax = this.camera.offsetMax
 
         this.updateExposureUnit(this.exposureTimeUnit)
     }

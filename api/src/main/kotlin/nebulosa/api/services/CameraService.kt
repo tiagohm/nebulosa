@@ -6,14 +6,13 @@ import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.api.data.responses.CameraResponse
 import nebulosa.api.repositories.CameraPreferenceRepository
 import nebulosa.api.repositories.SavedCameraImageRepository
-import nebulosa.common.concurrency.DaemonThreadFactory
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executors
+import java.util.concurrent.ExecutorService
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
@@ -24,11 +23,12 @@ class CameraService(
     private val cameraPreferenceRepository: CameraPreferenceRepository,
     private val savedCameraImageRepository: SavedCameraImageRepository,
     private val capturesDirectory: Path,
+    private val cameraExecutorService: ExecutorService,
 ) {
 
     private val runningTasks = Collections.synchronizedMap(HashMap<String, CameraExposureTask>(2))
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onSavedCameraImageEvent(event: SavedCameraImageEntity) {
         event.id = savedCameraImageRepository.withPath(event.path)?.id ?: event.id
         savedCameraImageRepository.save(event)
@@ -81,22 +81,15 @@ class CameraService(
 
         val task = CameraExposureTask(camera, data, autoSave, savePath, autoSubFolderMode)
 
-        equipmentService.registerDeviceEventHandler(task)
-        val future = CompletableFuture.runAsync(task, CAMERA_EXECUTOR)
+        val future = CompletableFuture.runAsync(task, cameraExecutorService)
         runningTasks[name] = task
 
         future.whenComplete { _, _ ->
-            equipmentService.unregisterDeviceEventHandler(task)
             runningTasks.remove(name)
         }
     }
 
     fun abortCapture(name: String) {
         runningTasks[name]?.abort()
-    }
-
-    companion object {
-
-        @JvmStatic private val CAMERA_EXECUTOR = Executors.newSingleThreadExecutor(DaemonThreadFactory)
     }
 }
