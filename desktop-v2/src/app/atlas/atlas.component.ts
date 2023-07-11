@@ -305,7 +305,7 @@ export class AtlasComponent implements OnInit, OnDestroy {
         title: Title,
         private api: ApiService,
     ) {
-        title.setTitle('Atlas')
+        title.setTitle('Sky Atlas')
 
         // TODO: Refresh graph and twilight if hours past 12 (noon)
 

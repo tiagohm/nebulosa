@@ -11,6 +11,9 @@ export class INDIPropertyComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input()
     property!: INDIProperty<any>
 
+    @Input()
+    disabled = false
+
     @Output()
     readonly onSend = new EventEmitter<INDISendProperty>()
 

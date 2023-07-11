@@ -1,6 +1,6 @@
 package nebulosa.api.services
 
-import nebulosa.api.data.enums.INDIPropertyType
+import nebulosa.api.data.enums.INDISendPropertyType
 import nebulosa.api.data.requests.INDISendPropertyRequest
 import nebulosa.api.data.responses.INDIPropertyResponse
 import org.springframework.stereotype.Service
@@ -19,15 +19,15 @@ class INDIService(
         val device = equipmentService[name] ?: return
 
         when (vector.type) {
-            INDIPropertyType.NUMBER -> {
+            INDISendPropertyType.NUMBER -> {
                 val elements = vector.items.map { it.name to "${it.value}".toDouble() }
                 device.sendNewNumber(vector.name, elements)
             }
-            INDIPropertyType.SWITCH -> {
+            INDISendPropertyType.SWITCH -> {
                 val elements = vector.items.map { it.name to "${it.value}".toBooleanStrict() }
                 device.sendNewSwitch(vector.name, elements)
             }
-            INDIPropertyType.TEXT -> {
+            INDISendPropertyType.TEXT -> {
                 val elements = vector.items.map { it.name to "${it.value}" }
                 device.sendNewText(vector.name, elements)
             }

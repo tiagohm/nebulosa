@@ -24,7 +24,8 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
     group = ""
 
     private devicesTimer: any
-    private propertiesTimer: any
+    private eventSource?: EventSource
+    eventSourceConnected = false
 
     constructor(
         title: Title,
@@ -33,8 +34,7 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
     ) {
         title.setTitle('INDI')
 
-        this.devicesTimer = setInterval(async () => this.updateDevices(), 60000)
-        this.propertiesTimer = setInterval(async () => this.updateProperties(), 5000)
+        this.devicesTimer = setInterval(() => this.updateDevices(), 60000)
     }
 
     ngOnInit() { }
@@ -49,8 +49,41 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     ngOnDestroy() {
+        this.eventSource?.close()
         clearInterval(this.devicesTimer)
-        clearInterval(this.propertiesTimer)
+    }
+
+    deviceChanged() {
+        this.eventSource?.close()
+        this.eventSource = undefined
+
+        if (this.device) {
+            const eventSource = new EventSource(`http://localhost:${window.apiPort}/indiEvents?name=${this.device.name}`)
+
+            eventSource.addEventListener('open', () => {
+                this.eventSourceConnected = true
+            })
+
+            eventSource.addEventListener('DEVICE_PROPERTY_CHANGED', (event: MessageEvent<string>) => {
+                const property = JSON.parse(event.data) as INDIProperty<any>
+                this.addOrUpdateProperty(property)
+                this.updateGroups()
+            })
+
+            eventSource.addEventListener('DEVICE_PROPERTY_DELETED', (event: MessageEvent<string>) => {
+                const property = JSON.parse(event.data) as INDIProperty<any>
+                const index = this.properties.findIndex((e) => e.name === property.name)
+
+                if (index >= 0) {
+                    this.properties.splice(index, 1)
+                    this.updateGroups()
+                }
+            })
+
+            this.eventSource = eventSource
+        }
+
+        this.updateProperties()
     }
 
     changeGroup(group: string) {
@@ -61,34 +94,27 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
         this.api.sendIndiProperty(this.device!, property)
     }
 
+    private updateGroups() {
+        const groups = new Set<string>()
+
+        for (const property of this.properties) {
+            groups.add(property.group)
+        }
+
+        this.groups = Array.from(groups)
+            .sort((a, b) => a.localeCompare(b))
+
+        if (!this.group || !this.groups.includes(this.group)) {
+            this.group = this.groups[0]
+        }
+    }
+
     async updateProperties() {
         if (this.device) {
             const properties = await this.api.indiProperties(this.device)
-            const groups = new Set<string>()
 
             for (const property of properties) {
-                groups.add(property.group)
-            }
-
-            this.groups = Array.from(groups)
-                .sort((a, b) => a.localeCompare(b))
-
-            if (!this.group && this.groups.length > 0) {
-                this.group = this.groups[0]
-            }
-
-            let position = 0
-
-            for (const property of properties) {
-                const index = this.properties.findIndex(e => e.name === property.name)
-
-                if (index >= 0) {
-                    this.updateProperty(this.properties[index], property)
-                } else {
-                    this.properties.splice(position, 0, property)
-                }
-
-                position++
+                this.addOrUpdateProperty(property)
             }
 
             for (let i = 0; i < this.properties.length; i++) {
@@ -96,6 +122,18 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
                     this.properties.splice(i--, 1)
                 }
             }
+
+            this.updateGroups()
+        }
+    }
+
+    private addOrUpdateProperty<T>(property: INDIProperty<T>) {
+        const index = this.properties.findIndex(e => e.name === property.name)
+
+        if (index >= 0) {
+            this.updateProperty(this.properties[index], property)
+        } else {
+            this.properties.push(property)
         }
     }
 
@@ -125,12 +163,6 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     private async updateDevices() {
-        const cameras = await this.api.attachedCameras()
-
-        this.devices = [...cameras]
-
-        if (this.devices.findIndex(e => e.name === this.device?.name) < 0) {
-            this.device = this.devices[0]
-        }
+        this.devices = await this.api.attachedCameras()
     }
 }

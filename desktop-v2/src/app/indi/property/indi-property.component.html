@@ -5,19 +5,19 @@
     </div>
     <div class="col-9">
         <div *ngIf="property.type === 'SWITCH' && property.rule === 'ONE_OF_MANY'">
-            <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO'" [label]="item.label" (onClick)="sendSwitch(item)" icon="pi"
+            <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO' || disabled" [label]="item.label" (onClick)="sendSwitch(item)" icon="pi"
                 styleClass="mr-1 p-button p-button-{{ item.value ? 'success' : 'danger' }}">
                 <span [class.mdi-check]="item.value" [class.mdi-close]="!item.value" class="mdi"></span>
             </p-button>
         </div>
         <div *ngIf="property.type === 'SWITCH' && property.rule === 'AT_MOST_ONE'">
-            <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO'" [label]="item.label" (onClick)="sendSwitch(item)" icon="pi"
+            <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO' || disabled" [label]="item.label" (onClick)="sendSwitch(item)" icon="pi"
                 styleClass="mr-1 p-button">
                 <span class="mdi mdi-check"></span>
             </p-button>
         </div>
         <div *ngIf="property.type === 'SWITCH' && property.rule === 'ANY_OF_MANY'">
-            <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO'" [label]="item.label" (onClick)="sendSwitch(item)" icon="pi"
+            <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO' || disabled" [label]="item.label" (onClick)="sendSwitch(item)" icon="pi"
                 styleClass="mr-1 p-button p-button-{{ item.value ? 'success' : 'danger' }}">
                 <span [class.mdi-check]="item.value" [class.mdi-close]="!item.value" class="mdi"></span>
             </p-button>
@@ -36,7 +36,7 @@
                     </div>
                 </div>
                 <div class="col-3 text-center">
-                    <p-button *ngIf="property.perm !== 'RO'" label="Send" (onClick)="sendNumber()" icon="pi" styleClass="mr-1 p-button">
+                    <p-button [disabled]="disabled" *ngIf="property.perm !== 'RO'" label="Send" (onClick)="sendNumber()" icon="pi" styleClass="mr-1 p-button">
                         <span class="mdi mdi-send"></span>
                     </p-button>
                 </div>
@@ -56,7 +56,7 @@
                     </div>
                 </div>
                 <div class="col-3 text-center">
-                    <p-button *ngIf="property.perm !== 'RO'" label="Send" (onClick)="sendText()" icon="pi" styleClass="mr-1 p-button">
+                    <p-button [disabled]="disabled" *ngIf="property.perm !== 'RO'" label="Send" (onClick)="sendText()" icon="pi" styleClass="mr-1 p-button">
                         <span class="mdi mdi-send"></span>
                     </p-button>
                 </div>

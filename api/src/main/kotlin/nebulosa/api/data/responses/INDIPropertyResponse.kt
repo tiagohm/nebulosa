@@ -1,6 +1,6 @@
 package nebulosa.api.data.responses
 
-import nebulosa.api.data.enums.INDIPropertyType
+import nebulosa.api.data.enums.INDISendPropertyType
 import nebulosa.indi.device.PropertyVector
 import nebulosa.indi.device.SwitchPropertyVector
 import nebulosa.indi.protocol.PropertyPermission
@@ -10,7 +10,7 @@ import nebulosa.indi.protocol.SwitchRule
 data class INDIPropertyResponse(
     val name: String,
     val label: String,
-    val type: INDIPropertyType,
+    val type: INDISendPropertyType,
     val group: String,
     val perm: PropertyPermission,
     val state: PropertyState,
@@ -21,7 +21,7 @@ data class INDIPropertyResponse(
     constructor(vector: PropertyVector<*, *>) : this(
         vector.name,
         vector.label,
-        INDIPropertyType.of(vector),
+        INDISendPropertyType.of(vector),
         vector.group,
         vector.perm,
         vector.state,

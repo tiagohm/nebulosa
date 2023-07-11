@@ -13,7 +13,7 @@ import { Camera, ExposureMode, ExposureTimeUnit, FrameType } from '../../shared/
 export class CameraComponent implements OnInit, OnDestroy {
 
     cameras: Camera[] = []
-    camera?: Camera = undefined
+    camera?: Camera
     connected = false
 
     cooler = false
@@ -126,9 +126,11 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.eventSource = eventSource
     }
 
-    cameraSelected() {
+    async cameraSelected() {
         if (this.camera) {
             this.title.setTitle(`Camera ・ ${this.camera.name}`)
+            this.camera = { ...await this.api.camera(this.camera.name) }
+            this.update()
         } else {
             this.title.setTitle(`Camera`)
         }
