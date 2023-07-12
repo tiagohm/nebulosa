@@ -1,10 +1,11 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import Hex from 'hex-encoding'
 import createPanZoom, { PanZoom } from 'panzoom'
 import * as path from 'path'
 import { ApiService } from '../../shared/services/api.service'
+import { ElectronService } from '../../shared/services/electron.service'
 import { Camera, SavedCameraImage } from '../../shared/types'
 
 export interface ImageParams {
@@ -17,14 +18,13 @@ export interface ImageParams {
     templateUrl: './image.component.html',
     styleUrls: ['./image.component.scss'],
 })
-export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ImageComponent implements OnInit, AfterViewInit {
 
     @ViewChild('image')
     private readonly image!: ElementRef<HTMLImageElement>
 
     autoStretch = true
 
-    private eventSource!: EventSource
     private panZoom?: PanZoom
     private imageURL!: string
     private latestImage?: SavedCameraImage
@@ -35,8 +35,16 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         private title: Title,
         private route: ActivatedRoute,
         private api: ApiService,
+        electron: ElectronService,
     ) {
         title.setTitle('Image')
+
+        electron.ipcRenderer.on('CAMERA_IMAGE_SAVED', (_, data: SavedCameraImage) => {
+            if (data.name === this.camera?.name) {
+                this.path = data.path
+                this.loadImage()
+            }
+        })
     }
 
     ngOnInit() { }
@@ -49,29 +57,8 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
 
             if (this.path) {
                 this.loadImage()
-            } else {
-                this.listenToCameraEvent()
             }
         })
-    }
-
-    ngOnDestroy() {
-        this.eventSource?.close()
-    }
-
-    private listenToCameraEvent() {
-        const eventSource = new EventSource(`http://localhost:${window.apiPort}/cameraEvents`)
-
-        eventSource.addEventListener('CAMERA_IMAGE_SAVED', (event: MessageEvent<string>) => {
-            const savedImage = JSON.parse(event.data) as SavedCameraImage
-
-            if (savedImage.name === this.camera?.name) {
-                this.path = savedImage.path
-                this.loadImage()
-            }
-        })
-
-        this.eventSource = eventSource
     }
 
     private async loadImage() {

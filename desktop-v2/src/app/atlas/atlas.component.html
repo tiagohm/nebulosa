@@ -147,6 +147,17 @@
                             <span class="mdi mdi-delete"></span>
                         </p-button>
                     </div>
+                    <div class="col-12 font-bold pb-0">
+                        Date & Time
+                    </div>
+                    <div class="col-12 flex align-items-center">
+                        <span class="p-input-icon-left p-input-icon-right">
+                            <span class="pi pi-calendar"></span>
+                            <p-calendar [disabled]="!useManualDateTime" [(ngModel)]="dateTime" [showTime]="true"
+                                [showSeconds]="false" dateFormat="yy/mm/dd" inputStyleClass="pl-6"></p-calendar>
+                            <p-checkbox class="p-icon-wrapper" [binary]="true" [(ngModel)]="useManualDateTime" />
+                        </span>
+                    </div>
                 </div>
             </p-tabPanel>
         </p-tabView>

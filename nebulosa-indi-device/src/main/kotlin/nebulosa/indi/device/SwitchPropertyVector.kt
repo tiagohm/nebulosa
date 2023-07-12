@@ -5,7 +5,7 @@ import nebulosa.indi.protocol.PropertyState
 import nebulosa.indi.protocol.SwitchRule
 
 data class SwitchPropertyVector(
-    // override val device: Device,
+    override val device: Device,
     override val name: String,
     override val label: String,
     override val group: String,

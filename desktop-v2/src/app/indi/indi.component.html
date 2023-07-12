@@ -16,7 +16,7 @@
     <div class="grid properties mt-2">
         <div class="col-12">
             <div *ngFor="let property of properties">
-                <app-indi-property [disabled]="!eventSourceConnected" *ngIf="property.group === group" [property]="property" (onSend)="send($event)" />
+                <app-indi-property *ngIf="property.group === group" [property]="property" (onSend)="send($event)" />
             </div>
         </div>
     </div>

@@ -34,11 +34,9 @@ dependencies {
     implementation(libs.eventbus)
     implementation(libs.apache.codec)
     implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.springframework.boot:spring-boot-starter-undertow")
-    implementation("org.springframework.boot:spring-boot-starter-web") {
-        exclude(module = "spring-boot-starter-tomcat")
-    }
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
     kapt("org.springframework:spring-context-indexer:6.0.10")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")

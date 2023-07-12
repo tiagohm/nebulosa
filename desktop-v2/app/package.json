@@ -9,6 +9,8 @@
   "main": "main.js",
   "private": true,
   "dependencies": {
-    "hex-encoding": "1.0.0"
+    "@stomp/stompjs": "7.0.0",
+    "hex-encoding": "1.0.0",
+    "ws": "8.13.0"
   }
 }

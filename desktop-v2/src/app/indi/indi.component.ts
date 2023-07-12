@@ -1,8 +1,9 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core'
+import { AfterViewInit, Component, OnInit } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import Hex from 'hex-encoding'
 import { ApiService } from '../../shared/services/api.service'
+import { ElectronService } from '../../shared/services/electron.service'
 import { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types'
 
 export interface INDIParams {
@@ -14,7 +15,7 @@ export interface INDIParams {
     templateUrl: './indi.component.html',
     styleUrls: ['./indi.component.scss'],
 })
-export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
+export class INDIComponent implements OnInit, AfterViewInit {
 
     devices: Device[] = []
     properties: INDIProperty<any>[] = []
@@ -23,18 +24,27 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
     device?: Device
     group = ""
 
-    private devicesTimer: any
-    private eventSource?: EventSource
-    eventSourceConnected = false
-
     constructor(
         title: Title,
         private route: ActivatedRoute,
         private api: ApiService,
+        electron: ElectronService,
     ) {
         title.setTitle('INDI')
 
-        this.devicesTimer = setInterval(() => this.updateDevices(), 60000)
+        electron.ipcRenderer.on('DEVICE_PROPERTY_CHANGED', (_, data: INDIProperty<any>) => {
+            this.addOrUpdateProperty(data)
+            this.updateGroups()
+        })
+
+        electron.ipcRenderer.on('DEVICE_PROPERTY_DELETED', (_, data: INDIProperty<any>) => {
+            const index = this.properties.findIndex((e) => e.name === data.name)
+
+            if (index >= 0) {
+                this.properties.splice(index, 1)
+                this.updateGroups()
+            }
+        })
     }
 
     ngOnInit() { }
@@ -45,44 +55,10 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
             this.device = params.device
         })
 
-        await this.updateDevices()
-    }
-
-    ngOnDestroy() {
-        this.eventSource?.close()
-        clearInterval(this.devicesTimer)
+        this.devices = await this.api.attachedCameras()
     }
 
     deviceChanged() {
-        this.eventSource?.close()
-        this.eventSource = undefined
-
-        if (this.device) {
-            const eventSource = new EventSource(`http://localhost:${window.apiPort}/indiEvents?name=${this.device.name}`)
-
-            eventSource.addEventListener('open', () => {
-                this.eventSourceConnected = true
-            })
-
-            eventSource.addEventListener('DEVICE_PROPERTY_CHANGED', (event: MessageEvent<string>) => {
-                const property = JSON.parse(event.data) as INDIProperty<any>
-                this.addOrUpdateProperty(property)
-                this.updateGroups()
-            })
-
-            eventSource.addEventListener('DEVICE_PROPERTY_DELETED', (event: MessageEvent<string>) => {
-                const property = JSON.parse(event.data) as INDIProperty<any>
-                const index = this.properties.findIndex((e) => e.name === property.name)
-
-                if (index >= 0) {
-                    this.properties.splice(index, 1)
-                    this.updateGroups()
-                }
-            })
-
-            this.eventSource = eventSource
-        }
-
         this.updateProperties()
     }
 
@@ -160,9 +136,5 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
 
     private updatePropertyItem<T>(current: INDIPropertyItem<T>, update: INDIPropertyItem<T>) {
         current.value = update.value
-    }
-
-    private async updateDevices() {
-        this.devices = await this.api.attachedCameras()
     }
 }

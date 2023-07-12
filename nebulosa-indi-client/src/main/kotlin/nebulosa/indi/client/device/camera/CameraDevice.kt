@@ -181,38 +181,16 @@ internal open class CameraDevice(
                         if (message is DefNumberVector) {
                             canSubFrame = message.isNotReadOnly
                             handler.fireOnEventReceived(CameraCanSubFrameChanged(this))
-                        }
 
-                        val minX = message["X"]!!.min.toInt()
-                        val maxX = message["X"]!!.max.toInt()
-                        val minY = message["Y"]!!.min.toInt()
-                        val maxY = message["Y"]!!.max.toInt()
-                        val minWidth = message["WIDTH"]!!.min.toInt()
-                        val maxWidth = message["WIDTH"]!!.max.toInt()
-                        val minHeight = message["HEIGHT"]!!.min.toInt()
-                        val maxHeight = message["HEIGHT"]!!.max.toInt()
-                        val x = message["X"]!!.value.toInt()
-                        val y = message["Y"]!!.value.toInt()
-                        val width = message["WIDTH"]!!.value.toInt()
-                        val height = message["HEIGHT"]!!.value.toInt()
+                            val minX = message["X"]!!.min.toInt()
+                            val maxX = message["X"]!!.max.toInt()
+                            val minY = message["Y"]!!.min.toInt()
+                            val maxY = message["Y"]!!.max.toInt()
+                            val minWidth = message["WIDTH"]!!.min.toInt()
+                            val maxWidth = message["WIDTH"]!!.max.toInt()
+                            val minHeight = message["HEIGHT"]!!.min.toInt()
+                            val maxHeight = message["HEIGHT"]!!.max.toInt()
 
-                        val changed = maxX != 0 && maxY != 0 &&
-                                maxWidth != 0 && maxHeight != 0 &&
-                                minWidth != 0 && minHeight != 0 &&
-                                (minX != this.minX ||
-                                        maxX != this.maxX ||
-                                        minY != this.minY ||
-                                        maxY != this.maxY ||
-                                        minWidth != this.minWidth ||
-                                        maxWidth != this.maxWidth ||
-                                        minHeight != this.minHeight ||
-                                        maxHeight != this.maxHeight ||
-                                        x != this.x ||
-                                        y != this.y ||
-                                        width != this.width ||
-                                        height != this.height)
-
-                        if (changed) {
                             this.minX = minX
                             this.maxX = maxX
                             this.minY = minY
@@ -221,14 +199,19 @@ internal open class CameraDevice(
                             this.maxWidth = maxWidth
                             this.minHeight = minHeight
                             this.maxHeight = maxHeight
-
-                            this.x = x
-                            this.y = y
-                            this.width = width
-                            this.height = height
-
-                            handler.fireOnEventReceived(CameraFrameChanged(this))
                         }
+
+                        val x = message["X"]!!.value.toInt()
+                        val y = message["Y"]!!.value.toInt()
+                        val width = message["WIDTH"]!!.value.toInt()
+                        val height = message["HEIGHT"]!!.value.toInt()
+
+                        this.x = x
+                        this.y = y
+                        this.width = width
+                        this.height = height
+
+                        handler.fireOnEventReceived(CameraFrameChanged(this))
                     }
                     "CCD_BINNING" -> {
                         if (message is DefNumberVector) {

@@ -4,6 +4,7 @@ import { ChartData, ChartOptions } from 'chart.js'
 import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { ApiService } from '../../shared/services/api.service'
+import * as moment from 'moment'
 import { BodyPosition, DeepSkyObject, Location, MinorPlanet, Star } from '../../shared/types'
 
 export interface PlanetItem {
@@ -42,6 +43,8 @@ export class AtlasComponent implements OnInit, OnDestroy {
     location: Location = { ...this.emptyLocation }
     editedLocation: Location = { ...this.emptyLocation }
     showLocationDialog = false
+    useManualDateTime = false
+    dateTime = new Date()
 
     planet?: PlanetItem
     readonly planets: PlanetItem[] = [
@@ -301,8 +304,10 @@ export class AtlasComponent implements OnInit, OnDestroy {
         }
     }
 
+    private twilightDate = ''
+
     constructor(
-        title: Title,
+        private title: Title,
         private api: ApiService,
     ) {
         title.setTitle('Sky Atlas')
@@ -392,26 +397,34 @@ export class AtlasComponent implements OnInit, OnDestroy {
     ) {
         this.refreshing = true
 
+        if (!this.useManualDateTime) {
+            this.dateTime = new Date()
+        }
+
+        const date = moment(this.dateTime).format('YYYY-MM-DD')
+        const time = moment(this.dateTime).format('HH:mm')
+        this.title.setTitle(`Sky Atlas ・ ${date} ${time}`)
+
         try {
             // Sun.
             if (this.tab === 0) {
                 this.name = 'Sun'
                 this.tags = []
                 this.imageOfSun.nativeElement.src = `${this.api.baseUri}/imageOfSun`
-                this.bodyPosition = await this.api.positionOfSun(this.location!)
+                this.bodyPosition = await this.api.positionOfSun(this.location!, this.dateTime)
             }
             // Moon.
             else if (this.tab === 1) {
                 this.name = 'Moon'
                 this.tags = []
-                this.imageOfMoon.nativeElement.src = `${this.api.baseUri}/imageOfMoon?location=${this.location!.id}`
-                this.bodyPosition = await this.api.positionOfMoon(this.location!)
+                this.imageOfMoon.nativeElement.src = `${this.api.baseUri}/imageOfMoon?location=${this.location!.id}&date=${date}&time=${time}`
+                this.bodyPosition = await this.api.positionOfMoon(this.location!, this.dateTime)
             }
             // Planet.
             else if (this.tab === 2 && this.planet) {
                 this.name = this.planet.name
                 this.tags = []
-                this.bodyPosition = await this.api.positionOfPlanet(this.location!, this.planet.code)
+                this.bodyPosition = await this.api.positionOfPlanet(this.location!, this.planet.code, this.dateTime)
             }
             // Minor Planet.
             else if (this.tab === 3 && this.minorPlanet) {
@@ -422,23 +435,24 @@ export class AtlasComponent implements OnInit, OnDestroy {
                 if (this.minorPlanet.neo) this.tags.push({ title: 'NEO', severity: 'danger' })
                 if (this.minorPlanet.orbitType) this.tags.push({ title: this.minorPlanet.orbitType, severity: 'info' })
                 const code = `DES=${this.minorPlanet.spkId};`
-                this.bodyPosition = await this.api.positionOfPlanet(this.location!, code)
+                this.bodyPosition = await this.api.positionOfPlanet(this.location!, code, this.dateTime)
             }
             // Star.
             else if (this.tab === 4 && this.star) {
                 this.name = this.star.names
                 this.tags = []
-                this.bodyPosition = await this.api.positionOfStar(this.location!, this.star)
+                this.bodyPosition = await this.api.positionOfStar(this.location!, this.star, this.dateTime)
             }
             // DSO.
             else if (this.tab === 5 && this.dso) {
                 this.name = this.dso.names
                 this.tags = []
-                this.bodyPosition = await this.api.positionOfDSO(this.location!, this.dso)
+                this.bodyPosition = await this.api.positionOfDSO(this.location!, this.dso, this.dateTime)
             }
 
-            if (refreshTwilight) {
-                const twilight = await this.api.twilight(this.location!)
+            if (refreshTwilight || date !== this.twilightDate) {
+                this.twilightDate = date
+                const twilight = await this.api.twilight(this.location!, this.dateTime)
                 this.altitudeData.datasets[0].data = [[0.0, 90], [twilight.civilDusk[0], 90]]
                 this.altitudeData.datasets[1].data = [[twilight.civilDusk[0], 90], [twilight.civilDusk[1], 90]]
                 this.altitudeData.datasets[2].data = [[twilight.nauticalDusk[0], 90], [twilight.nauticalDusk[1], 90]]
@@ -462,38 +476,38 @@ export class AtlasComponent implements OnInit, OnDestroy {
     private async refreshChart() {
         // Sun.
         if (this.tab === 0) {
-            const points = await this.api.altitudePointsOfSun(this.location!)
+            const points = await this.api.altitudePointsOfSun(this.location!, this.dateTime)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         }
         // Moon.
         else if (this.tab === 1) {
-            const points = await this.api.altitudePointsOfMoon(this.location!)
+            const points = await this.api.altitudePointsOfMoon(this.location!, this.dateTime)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         }
         // Planet.
         else if (this.tab === 2 && this.planet) {
-            const points = await this.api.altitudePointsOfPlanet(this.location!, this.planet.code)
+            const points = await this.api.altitudePointsOfPlanet(this.location!, this.planet.code, this.dateTime)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         }
         // Minor Planet.
         else if (this.tab === 3 && this.minorPlanet) {
             const code = `DES=${this.minorPlanet.spkId};`
-            const points = await this.api.altitudePointsOfPlanet(this.location!, code)
+            const points = await this.api.altitudePointsOfPlanet(this.location!, code, this.dateTime)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         }
         // Star.
         else if (this.tab === 4 && this.star) {
-            const points = await this.api.altitudePointsOfStar(this.location!, this.star)
+            const points = await this.api.altitudePointsOfStar(this.location!, this.star, this.dateTime)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         }
         // DSO.
         else if (this.tab === 5 && this.dso) {
-            const points = await this.api.altitudePointsOfDSO(this.location!, this.dso)
+            const points = await this.api.altitudePointsOfDSO(this.location!, this.dso, this.dateTime)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         } else {

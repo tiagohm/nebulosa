@@ -4,7 +4,7 @@ import nebulosa.indi.protocol.PropertyPermission
 import nebulosa.indi.protocol.PropertyState
 
 data class NumberPropertyVector(
-    // override val device: Device,
+    override val device: Device,
     override val name: String,
     override val label: String,
     override val group: String,

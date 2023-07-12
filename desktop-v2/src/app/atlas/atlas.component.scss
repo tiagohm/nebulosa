@@ -31,3 +31,15 @@ p-table.star ::ng-deep .p-datatable-wrapper {
 p-table.dso ::ng-deep .p-datatable-wrapper {
     max-height: 154px;
 }
+
+.p-input-icon-left span.pi:first-of-type {
+    position: absolute;
+    top: 50%;
+    margin-top: -0.5rem;
+    left: 0.75rem;
+    z-index: 1;
+}
+
+.p-input-icon-right p-checkbox {
+    margin-top: -0.745rem;
+}

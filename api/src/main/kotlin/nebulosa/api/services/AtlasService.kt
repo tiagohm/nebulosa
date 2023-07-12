@@ -12,6 +12,7 @@ import nebulosa.api.data.responses.TwilightResponse
 import nebulosa.api.repositories.AppPreferenceRepository
 import nebulosa.api.repositories.DeepSkyObjectRepository
 import nebulosa.api.repositories.StarRepository
+import nebulosa.api.services.algorithms.TwilightDiscreteFunction
 import nebulosa.api.services.ephemeris.BodyEphemerisProvider
 import nebulosa.api.services.ephemeris.HorizonsEphemerisProvider
 import nebulosa.horizons.HorizonsElement

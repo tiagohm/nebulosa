@@ -1,8 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
+import { ElectronService } from '../../shared/services/electron.service'
 import { Camera, ExposureMode, ExposureTimeUnit, FrameType } from '../../shared/types'
 
 @Component({
@@ -10,7 +11,7 @@ import { Camera, ExposureMode, ExposureTimeUnit, FrameType } from '../../shared/
     templateUrl: './camera.component.html',
     styleUrls: ['./camera.component.scss']
 })
-export class CameraComponent implements OnInit, OnDestroy {
+export class CameraComponent implements OnInit {
 
     cameras: Camera[] = []
     camera?: Camera
@@ -78,14 +79,26 @@ export class CameraComponent implements OnInit, OnDestroy {
         }
     ]
 
-    private eventSource?: EventSource
-
     constructor(
         private title: Title,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
+        electron: ElectronService,
     ) {
         title.setTitle('Camera')
+
+        electron.ipcRenderer.on('CAMERA_UPDATED', (_, data: Camera) => {
+            if (data.name === this.camera?.name) {
+                this.camera = { ...data }
+                this.update()
+            }
+        })
+
+        electron.ipcRenderer.on('CAMERA_CAPTURE_FINISHED', (_, data: Camera) => {
+            if (data.name === this.camera?.name) {
+                this.capturing = false
+            }
+        })
     }
 
     async ngOnInit() {
@@ -95,35 +108,6 @@ export class CameraComponent implements OnInit, OnDestroy {
             this.camera = this.cameras[0]
             this.update()
         }
-
-        this.listenToCameraEvent()
-    }
-
-    ngOnDestroy() {
-        this.eventSource?.close()
-    }
-
-    private listenToCameraEvent() {
-        const eventSource = new EventSource(`http://localhost:${window.apiPort}/cameraEvents`)
-
-        eventSource.addEventListener('CAMERA_UPDATED', (event: MessageEvent<string>) => {
-            const camera = JSON.parse(event.data) as Camera
-
-            if (camera.name === this.camera?.name) {
-                this.camera = { ...camera }
-                this.update()
-            }
-        })
-
-        eventSource.addEventListener('CAMERA_CAPTURE_FINISHED', (event: MessageEvent<string>) => {
-            const camera = JSON.parse(event.data) as Camera
-
-            if (camera.name === this.camera?.name) {
-                this.capturing = false
-            }
-        })
-
-        this.eventSource = eventSource
     }
 
     async cameraSelected() {

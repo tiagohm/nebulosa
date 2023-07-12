@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
+import * as moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
     BodyPosition, Camera, CameraPreference, CameraStartCapture, DeepSkyObject, Device,
@@ -133,48 +134,64 @@ export class ApiService {
         return this.delete<void>(`deleteLocation?id=${location.id}`)
     }
 
-    async positionOfSun(location: Location) {
-        return this.get<BodyPosition>(`positionOfSun?location=${location.id}`)
+    async positionOfSun(location: Location, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        const time = moment(dateTime).format('HH:mm')
+        return this.get<BodyPosition>(`positionOfSun?location=${location.id}&date=${date}&time=${time}`)
     }
 
-    async positionOfMoon(location: Location) {
-        return this.get<BodyPosition>(`positionOfMoon?location=${location.id}`)
+    async positionOfMoon(location: Location, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        const time = moment(dateTime).format('HH:mm')
+        return this.get<BodyPosition>(`positionOfMoon?location=${location.id}&date=${date}&time=${time}`)
     }
 
-    async positionOfPlanet(location: Location, code: string) {
-        return this.get<BodyPosition>(`positionOfPlanet?location=${location.id}&code=${code}`)
+    async positionOfPlanet(location: Location, code: string, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        const time = moment(dateTime).format('HH:mm')
+        return this.get<BodyPosition>(`positionOfPlanet?location=${location.id}&code=${code}&date=${date}&time=${time}`)
     }
 
-    async positionOfStar(location: Location, star: Star) {
-        return this.get<BodyPosition>(`positionOfStar?location=${location.id}&star=${star.id}`)
+    async positionOfStar(location: Location, star: Star, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        const time = moment(dateTime).format('HH:mm')
+        return this.get<BodyPosition>(`positionOfStar?location=${location.id}&star=${star.id}&date=${date}&time=${time}`)
     }
 
-    async positionOfDSO(location: Location, dso: DeepSkyObject) {
-        return this.get<BodyPosition>(`positionOfDSO?location=${location.id}&dso=${dso.id}`)
+    async positionOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        const time = moment(dateTime).format('HH:mm')
+        return this.get<BodyPosition>(`positionOfDSO?location=${location.id}&dso=${dso.id}&date=${date}&time=${time}`)
     }
 
-    async twilight(location: Location) {
-        return this.get<Twilight>(`twilight?location=${location.id}`)
+    async twilight(location: Location, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        return this.get<Twilight>(`twilight?location=${location.id}&date=${date}`)
     }
 
-    async altitudePointsOfSun(location: Location) {
-        return this.get<[number, number][]>(`altitudePointsOfSun?location=${location.id}&stepSize=5`)
+    async altitudePointsOfSun(location: Location, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        return this.get<[number, number][]>(`altitudePointsOfSun?location=${location.id}&date=${date}&stepSize=5`)
     }
 
-    async altitudePointsOfMoon(location: Location) {
-        return this.get<[number, number][]>(`altitudePointsOfMoon?location=${location.id}&stepSize=5`)
+    async altitudePointsOfMoon(location: Location, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        return this.get<[number, number][]>(`altitudePointsOfMoon?location=${location.id}&date=${date}&stepSize=5`)
     }
 
-    async altitudePointsOfPlanet(location: Location, code: string) {
-        return this.get<[number, number][]>(`altitudePointsOfPlanet?location=${location.id}&code=${code}&stepSize=5`)
+    async altitudePointsOfPlanet(location: Location, code: string, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        return this.get<[number, number][]>(`altitudePointsOfPlanet?location=${location.id}&code=${code}&date=${date}&stepSize=5`)
     }
 
-    async altitudePointsOfStar(location: Location, star: Star) {
-        return this.get<[number, number][]>(`altitudePointsOfStar?location=${location.id}&star=${star.id}&stepSize=5`)
+    async altitudePointsOfStar(location: Location, star: Star, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        return this.get<[number, number][]>(`altitudePointsOfStar?location=${location.id}&star=${star.id}&date=${date}&stepSize=5`)
     }
 
-    async altitudePointsOfDSO(location: Location, dso: DeepSkyObject) {
-        return this.get<[number, number][]>(`altitudePointsOfDSO?location=${location.id}&dso=${dso.id}&stepSize=5`)
+    async altitudePointsOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        return this.get<[number, number][]>(`altitudePointsOfDSO?location=${location.id}&dso=${dso.id}&date=${date}&stepSize=5`)
     }
 
     async searchMinorPlanet(text: string) {

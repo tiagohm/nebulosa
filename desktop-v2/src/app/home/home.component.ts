@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -9,13 +9,11 @@ import { HomeWindowType } from '../../shared/types'
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent implements OnInit {
 
     host = ''
     port = 7624
     connected = false
-
-    private timer!: any
 
     constructor(
         private electron: ElectronService,
@@ -24,15 +22,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     ) { }
 
     async ngOnInit() {
-        this.timer = setInterval(async () => {
-            this.updateConnectionStatus()
-        }, 5000)
-
         this.updateConnectionStatus()
-    }
-
-    ngOnDestroy() {
-        clearInterval(this.timer)
     }
 
     async connect() {
@@ -44,6 +34,8 @@ export class HomeComponent implements OnInit, OnDestroy {
             }
         } catch (e) {
             console.error(e)
+        } finally {
+            this.updateConnectionStatus()
         }
     }
 

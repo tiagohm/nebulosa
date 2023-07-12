@@ -8,6 +8,7 @@ import nebulosa.indi.protocol.PropertyState
 import nebulosa.indi.protocol.SwitchRule
 
 data class INDIPropertyResponse(
+    val device: String,
     val name: String,
     val label: String,
     val type: INDISendPropertyType,
@@ -19,6 +20,7 @@ data class INDIPropertyResponse(
 ) {
 
     constructor(vector: PropertyVector<*, *>) : this(
+        vector.device.name,
         vector.name,
         vector.label,
         INDISendPropertyType.of(vector),

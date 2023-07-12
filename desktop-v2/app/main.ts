@@ -1,19 +1,47 @@
+import { Client } from '@stomp/stompjs'
 import { app, BrowserWindow, dialog, ipcMain, Menu, screen } from 'electron'
 import Hex from 'hex-encoding'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
 import { OpenWindow } from '../src/shared/types'
 
+import { WebSocket } from 'ws'
+Object.assign(global, { WebSocket })
+
 let mainWindow: BrowserWindow | null = null
 const secondaryWindows = new Map<string, BrowserWindow>()
 let api: ChildProcessWithoutNullStreams | null = null
 let apiPort = 7000
+let wsClient: Client
 
 const args = process.argv.slice(1)
 const serve = args.some(e => e === '--serve')
 
 function createMainWindow() {
     createWindow({ id: 'home', path: 'home' })
+
+    const eventNames = [
+        'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
+        'CAMERA_IMAGE_SAVED', 'CAMERA_UPDATED', 'CAMERA_CAPTURE_FINISHED',
+        'CAMERA_ATTACHED', 'CAMERA_DETACHED'
+    ]
+
+    wsClient = new Client({
+        brokerURL: `ws://localhost:${apiPort}/ws`,
+        onConnect: () => {
+            for (const eventName of eventNames) {
+                wsClient.subscribe(eventName, (message) => {
+                    const data = JSON.parse(message.body)
+
+                    for (const [_, window] of secondaryWindows) {
+                        window.webContents.send(eventName, data)
+                    }
+                })
+            }
+        },
+    })
+
+    wsClient.activate()
 }
 
 function createWindow(data: OpenWindow) {
@@ -55,8 +83,6 @@ function createWindow(data: OpenWindow) {
     const icon = data.icon ?? 'nebulosa'
     const params = Hex.encodeStr(JSON.stringify(data.params || {}))
 
-    console.log(`opening new window. id=${data.id}, width=${width}, height=${height}`)
-
     const window = new BrowserWindow({
         x: size.width / 2 - width / 2,
         y: size.height / 2 - height / 2,
@@ -74,13 +100,6 @@ function createWindow(data: OpenWindow) {
             devTools: serve,
         },
     })
-
-    if (serve) {
-        window.on('resize', () => {
-            const [width, height] = window.getSize()
-            console.log(`window resized. id=${data.id}, width=${width}, height=${height}`)
-        })
-    }
 
     if (serve) {
         const debug = require('electron-debug')

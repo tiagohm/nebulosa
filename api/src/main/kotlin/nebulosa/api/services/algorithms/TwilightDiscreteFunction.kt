@@ -1,4 +1,4 @@
-package nebulosa.api.services
+package nebulosa.api.services.algorithms
 
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
