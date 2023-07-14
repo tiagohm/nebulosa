@@ -359,7 +359,7 @@ Response Body: `200 application/json`
 }
 ```
 
-**GET** `/image`
+**GET** `/openImage`
 
 Query Params:
 

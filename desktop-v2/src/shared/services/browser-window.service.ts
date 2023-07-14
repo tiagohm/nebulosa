@@ -30,7 +30,7 @@ export class BrowserWindowService {
     openImage(path: string) {
         const hash = uuidv4()
         const params: ImageParams = { path }
-        const data: OpenWindow = { id: `image.${hash}`, path: 'image', icon: 'image', width: '70%', height: `70%`, resizable: true, params }
+        const data: OpenWindow = { id: `image.${hash}`, path: 'image', icon: 'image', width: '50%', height: `0.9w`, resizable: true, params }
         this.openWindow(data)
     }
 

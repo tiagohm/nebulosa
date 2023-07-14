@@ -246,7 +246,7 @@
     </div>
 </p-dialog>
 
-<p-dialog header="Location" (onShow)="map.refresh()" [draggable]="false" [(visible)]="showLocationDialog" [modal]="true" [style]="{width: '80vw'}">
+<p-dialog header="Location" *ngIf="showLocationDialog" (onShow)="map.refresh()" [draggable]="false" [(visible)]="showLocationDialog" [modal]="true" [style]="{width: '80vw'}">
     <div class="grid">
         <div class="col-12 pt-3">
             <span class="p-float-label">

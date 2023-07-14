@@ -25,9 +25,9 @@ export class AtlasComponent implements OnInit, OnDestroy {
 
     bodyPosition: BodyPosition = {
         rightAscensionJ2000: '00h00m00s',
-        declinationJ2000: `00°00'00"`,
+        declinationJ2000: `+000°00'00"`,
         rightAscension: '00h00m00s',
-        declination: `+00°00'00"`,
+        declination: `+000°00'00"`,
         azimuth: `000°00'00"`,
         altitude: `+00°00'00"`,
         magnitude: 0,
@@ -48,14 +48,14 @@ export class AtlasComponent implements OnInit, OnDestroy {
 
     planet?: PlanetItem
     readonly planets: PlanetItem[] = [
-        { name: 'Mercury', type: `Planet`, code: '199' },
-        { name: 'Venus', type: `Planet`, code: '299' },
-        { name: 'Mars', type: `Planet`, code: '499' },
-        { name: 'Jupiter', type: `Planet`, code: '599' },
-        { name: 'Saturn', type: `Planet`, code: '699' },
-        { name: 'Uranus', type: `Planet`, code: '799' },
-        { name: 'Neptune', type: `Planet`, code: '899' },
-        { name: 'Pluto', type: `Dwarf Planet`, code: '999' },
+        { name: 'Mercury', type: 'Planet', code: '199' },
+        { name: 'Venus', type: 'Planet', code: '299' },
+        { name: 'Mars', type: 'Planet', code: '499' },
+        { name: 'Jupiter', type: 'Planet', code: '599' },
+        { name: 'Saturn', type: 'Planet', code: '699' },
+        { name: 'Uranus', type: 'Planet', code: '799' },
+        { name: 'Neptune', type: 'Planet', code: '899' },
+        { name: 'Pluto', type: 'Dwarf Planet', code: '999' },
         { name: 'Phobos', type: `Mars' Satellite`, code: '401' },
         { name: 'Deimos', type: `Mars' Satellite`, code: '402' },
         { name: 'Io', type: `Jupiter's Satellite`, code: '501' },
@@ -77,12 +77,12 @@ export class AtlasComponent implements OnInit, OnDestroy {
         { name: 'Miranda', type: `Uranus' Satellite`, code: '705' },
         { name: 'Triton', type: `Neptune's Satellite`, code: '801' },
         { name: 'Charon', type: `Pluto's Satellite`, code: '901' },
-        { name: '1 Ceres', type: `Dwarf Planet`, code: '1;' },
-        { name: '90377 Sedna', type: `Dwarf Planet`, code: '90377;' },
-        { name: '136199 Eris', type: `Dwarf Planet`, code: '136199;' },
-        { name: '2 Pallas', type: `Asteroid`, code: '2;' },
-        { name: '3 Juno', type: `Asteroid`, code: '3;' },
-        { name: '4 Vesta', type: `Asteroid`, code: '4;' },
+        { name: '1 Ceres', type: 'Dwarf Planet', code: '1;' },
+        { name: '90377 Sedna', type: 'Dwarf Planet', code: '90377;' },
+        { name: '136199 Eris', type: 'Dwarf Planet', code: '136199;' },
+        { name: '2 Pallas', type: 'Asteroid', code: '2;' },
+        { name: '3 Juno', type: 'Asteroid', code: '3;' },
+        { name: '4 Vesta', type: 'Asteroid', code: '4;' },
     ]
 
     minorPlanet?: MinorPlanet
@@ -401,8 +401,7 @@ export class AtlasComponent implements OnInit, OnDestroy {
             this.dateTime = new Date()
         }
 
-        const date = moment(this.dateTime).format('YYYY-MM-DD')
-        const time = moment(this.dateTime).format('HH:mm')
+        const [date, time] = moment(this.dateTime).format('YYYY-MM-DD HH:mm').split(' ')
         this.title.setTitle(`Sky Atlas ・ ${date} ${time}`)
 
         try {

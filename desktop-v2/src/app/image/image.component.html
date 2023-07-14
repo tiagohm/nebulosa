@@ -1,1 +1,26 @@
-<img #image (load)="imageLoaded()" />
+<div class="inline-block relative">
+    <img #image (load)="imageLoaded()" (contextmenu)="imageClicked($event)" />
+
+    <svg *ngIf="crossHair" class="absolute left-0 top-0 w-full h-full pointer-events-none">
+        <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#E53935" stroke-width="3"></line>
+        <line x1="50%" y1="0" x2="50%" y2="100%" stroke="#E53935" stroke-width="3"></line>
+        <circle cx="50%" cy="50%" r="4%" stroke="#E53935" stroke-width="3" fill="transparent"></circle>
+        <circle cx="50%" cy="50%" r="16%" stroke="#E53935" stroke-width="3" fill="transparent"></circle>
+        <circle cx="50%" cy="50%" r="32%" stroke="#E53935" stroke-width="3" fill="transparent"></circle>
+    </svg>
+</div>
+
+<p-contextMenu #menu [model]="menuItems" />
+
+<p-dialog header="Annotation" [draggable]="false" [(visible)]="showAnnotationDialog" [modal]="true" [style]="{width: '60vw'}">
+    <div class="grid">
+        <div class="col-12 flex flex-column">
+            <p-checkbox [(ngModel)]="annotateWithStar" class="py-1" [binary]="true" label="Annotate with stars" />
+            <p-checkbox [(ngModel)]="annotateWithDSO" class="py-1" [binary]="true" label="Annotate with DSOs" />
+            <p-checkbox [(ngModel)]="annotateWithMinorPlanet" class="py-1" [binary]="true" label="Annotate with minor planets" />
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button icon="pi pi-check" label="Annotate" (onClick)="annotateImage()" styleClass="p-button-text" />
+    </ng-template>
+</p-dialog>

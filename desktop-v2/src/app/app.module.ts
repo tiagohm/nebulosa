@@ -8,6 +8,7 @@ import { ButtonModule } from 'primeng/button'
 import { CalendarModule } from 'primeng/calendar'
 import { ChartModule } from 'primeng/chart'
 import { CheckboxModule } from 'primeng/checkbox'
+import { ContextMenuModule } from 'primeng/contextmenu'
 import { DialogModule } from 'primeng/dialog'
 import { DropdownModule } from 'primeng/dropdown'
 import { InputNumberModule } from 'primeng/inputnumber'
@@ -66,6 +67,7 @@ import { INDIPropertyComponent } from './indi/property/indi-property.component'
         TooltipModule,
         CalendarModule,
         CheckboxModule,
+        ContextMenuModule,
     ],
     providers: [],
     bootstrap: [AppComponent]

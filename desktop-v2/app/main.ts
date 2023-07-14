@@ -220,11 +220,7 @@ try {
             properties: ['openFile'],
         })
 
-        if (!value.canceled) {
-            event.returnValue = value.filePaths[0]
-        } else {
-            event.returnValue = false
-        }
+        event.returnValue = !value.canceled && value.filePaths[0]
     })
 
     ipcMain.on('open-directory', async (event) => {
@@ -232,11 +228,7 @@ try {
             properties: ['openDirectory'],
         })
 
-        if (!value.canceled) {
-            event.returnValue = value.filePaths[0]
-        } else {
-            event.returnValue = false
-        }
+        event.returnValue = !value.canceled && value.filePaths[0]
     })
 } catch (e) {
     console.error(e)

@@ -402,3 +402,14 @@ export type SkyObjectType =
     'VARIABLE_STAR' | 'WHITE_DWARF' | 'WOLF_RAYET' |
     'X_RAY_BINARY' | 'X_RAY_SOURCE' | 'YELLOW_SUPERGIANT' |
     'YOUNG_STELLAR_OBJECT'
+
+export type ImageChannel = 'RED' |
+    'GREEN' |
+    'BLUE' |
+    'GRAY'
+
+export type SCNRProtectionMethod = 'MAXIMUM_MASK' |
+    'ADDTIVIVE_MASK' |
+    'AVERAGE_NEUTRAL' |
+    'MAXIMUM_NEUTRAL' |
+    'MINIMUM_NEUTRAL'

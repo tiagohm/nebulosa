@@ -4,7 +4,7 @@ import * as moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
     BodyPosition, Camera, CameraPreference, CameraStartCapture, DeepSkyObject, Device,
-    INDIProperty, INDISendProperty, Location, MinorPlanet, SavedCameraImage, Star, Twilight
+    INDIProperty, INDISendProperty, ImageChannel, Location, MinorPlanet, SCNRProtectionMethod, SavedCameraImage, Star, Twilight
 } from '../types'
 
 @Injectable({ providedIn: 'root' })
@@ -36,75 +36,89 @@ export class ApiService {
         return firstValueFrom(this.http.delete<T>(`${this.baseUri}/${url}`))
     }
 
-    async connect(host: string, port: number) {
+    connect(host: string, port: number) {
         return this.post<void>(`connect?host=${host}&port=${port}`)
     }
 
-    async disconnect() {
+    disconnect() {
         return this.post<void>(`disconnect`)
     }
 
-    async connectionStatus() {
+    connectionStatus() {
         return this.get<boolean>(`connectionStatus`)
     }
 
-    async attachedCameras() {
+    attachedCameras() {
         return this.get<Camera[]>(`attachedCameras`)
     }
 
-    async camera(name: string) {
+    camera(name: string) {
         return this.get<Camera>(`camera?name=${name}`)
     }
 
-    async cameraConnect(camera: Camera) {
+    cameraConnect(camera: Camera) {
         return this.post<void>(`cameraConnect?name=${camera.name}`)
     }
 
-    async cameraDisconnect(camera: Camera) {
+    cameraDisconnect(camera: Camera) {
         return this.post<void>(`cameraDisconnect?name=${camera.name}`)
     }
 
-    async cameraIsCapturing(camera: Camera) {
+    cameraIsCapturing(camera: Camera) {
         return this.get<boolean>(`cameraIsCapturing?name=${camera.name}`)
     }
 
-    async cameraCooler(camera: Camera, enable: boolean) {
+    cameraCooler(camera: Camera, enable: boolean) {
         return this.post<void>(`cameraCooler?name=${camera.name}&enable=${enable}`)
     }
 
-    async cameraSetpointTemperature(camera: Camera, temperature: number) {
+    cameraSetpointTemperature(camera: Camera, temperature: number) {
         return this.post<void>(`cameraSetpointTemperature?name=${camera.name}&temperature=${temperature}`)
     }
 
-    async cameraStartCapture(camera: Camera, value: CameraStartCapture) {
+    cameraStartCapture(camera: Camera, value: CameraStartCapture) {
         return this.post<void>(`cameraStartCapture?name=${camera.name}`, value)
     }
 
-    async cameraAbortCapture(camera: Camera) {
+    cameraAbortCapture(camera: Camera) {
         return this.post<void>(`cameraAbortCapture?name=${camera.name}`)
     }
 
-    async saveCameraPreferences(camera: Camera, preference: CameraPreference) {
+    saveCameraPreferences(camera: Camera, preference: CameraPreference) {
         return this.put<void>(`cameraPreferencess?name=${camera.name}`, preference)
     }
 
-    async loadCameraPreferences(camera: Camera) {
+    loadCameraPreferences(camera: Camera) {
         return this.get<CameraPreference>(`cameraPreferences?name=${camera.name}`)
     }
 
-    async imagesOfCamera(camera: Camera) {
+    imagesOfCamera(camera: Camera) {
         return this.get<SavedCameraImage[]>(`imagesOfCamera?name=${camera.name}`)
     }
 
-    async latestImageOfCamera(camera: Camera) {
+    latestImageOfCamera(camera: Camera) {
         return this.get<SavedCameraImage>(`latestImageOfCamera?name=${camera.name}`)
     }
 
-    async image(hash: string,
+    async openImage(
+        hash: string,
+        debayer: boolean = false,
         autoStretch: boolean = true,
+        shadow: number = 0,
+        highlight: number = 1,
+        midtone: number = 0.5,
+        mirrorHorizontal: boolean = false,
+        mirrorVertical: boolean = false,
+        invert: boolean = false,
+        scnrEnabled: boolean = false,
+        scnrChannel: ImageChannel = 'GREEN',
+        scnrAmount: number = 0.5,
+        scnrProtectionMode: SCNRProtectionMethod = 'AVERAGE_NEUTRAL',
     ) {
-        const query = `autoStretch=${autoStretch}`
-        const response = await firstValueFrom(this.http.get(`${this.baseUri}/image?hash=${hash}&${query}`, {
+        const query = `debayer=${debayer}&autoStretch=${autoStretch}&shadow=${shadow}&highlight=${highlight}&midtone=${midtone}` +
+            `&mirrorHorizontal=${mirrorHorizontal}&mirrorVertical=${mirrorVertical}&invert=${invert}` +
+            `&scnrEnabled=${scnrEnabled}&scnrChannel=${scnrChannel}&scnrAmount=${scnrAmount}&scnrProtectionMode=${scnrProtectionMode}`
+        const response = await firstValueFrom(this.http.get(`${this.baseUri}/openImage?hash=${hash}&${query}`, {
             observe: 'response',
             responseType: 'blob'
         }))
@@ -114,95 +128,94 @@ export class ApiService {
         return { info, blob: response.body! }
     }
 
-    async indiProperties(device: Device) {
+    closeImage(hash: string) {
+        return this.post<void>(`closeImage?hash=${hash}`)
+    }
+
+    indiProperties(device: Device) {
         return this.get<INDIProperty<any>[]>(`indiProperties?name=${device.name}`)
     }
 
-    async sendIndiProperty(device: Device, property: INDISendProperty) {
+    sendIndiProperty(device: Device, property: INDISendProperty) {
         return this.post<void>(`sendIndiProperty?name=${device.name}`, property)
     }
 
-    async locations() {
+    locations() {
         return this.get<Location[]>(`locations`)
     }
 
-    async saveLocation(location: Location) {
+    saveLocation(location: Location) {
         return this.put<void>(`saveLocation?id=${location.id}`, location)
     }
 
-    async deleteLocation(location: Location) {
+    deleteLocation(location: Location) {
         return this.delete<void>(`deleteLocation?id=${location.id}`)
     }
 
-    async positionOfSun(location: Location, dateTime: Date) {
-        const date = moment(dateTime).format('YYYY-MM-DD')
-        const time = moment(dateTime).format('HH:mm')
+    positionOfSun(location: Location, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
         return this.get<BodyPosition>(`positionOfSun?location=${location.id}&date=${date}&time=${time}`)
     }
 
-    async positionOfMoon(location: Location, dateTime: Date) {
-        const date = moment(dateTime).format('YYYY-MM-DD')
-        const time = moment(dateTime).format('HH:mm')
+    positionOfMoon(location: Location, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
         return this.get<BodyPosition>(`positionOfMoon?location=${location.id}&date=${date}&time=${time}`)
     }
 
-    async positionOfPlanet(location: Location, code: string, dateTime: Date) {
-        const date = moment(dateTime).format('YYYY-MM-DD')
-        const time = moment(dateTime).format('HH:mm')
+    positionOfPlanet(location: Location, code: string, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
         return this.get<BodyPosition>(`positionOfPlanet?location=${location.id}&code=${code}&date=${date}&time=${time}`)
     }
 
-    async positionOfStar(location: Location, star: Star, dateTime: Date) {
-        const date = moment(dateTime).format('YYYY-MM-DD')
-        const time = moment(dateTime).format('HH:mm')
+    positionOfStar(location: Location, star: Star, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
         return this.get<BodyPosition>(`positionOfStar?location=${location.id}&star=${star.id}&date=${date}&time=${time}`)
     }
 
-    async positionOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
-        const date = moment(dateTime).format('YYYY-MM-DD')
-        const time = moment(dateTime).format('HH:mm')
+    positionOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
         return this.get<BodyPosition>(`positionOfDSO?location=${location.id}&dso=${dso.id}&date=${date}&time=${time}`)
     }
 
-    async twilight(location: Location, dateTime: Date) {
+    twilight(location: Location, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
         return this.get<Twilight>(`twilight?location=${location.id}&date=${date}`)
     }
 
-    async altitudePointsOfSun(location: Location, dateTime: Date) {
+    altitudePointsOfSun(location: Location, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
         return this.get<[number, number][]>(`altitudePointsOfSun?location=${location.id}&date=${date}&stepSize=5`)
     }
 
-    async altitudePointsOfMoon(location: Location, dateTime: Date) {
+    altitudePointsOfMoon(location: Location, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
         return this.get<[number, number][]>(`altitudePointsOfMoon?location=${location.id}&date=${date}&stepSize=5`)
     }
 
-    async altitudePointsOfPlanet(location: Location, code: string, dateTime: Date) {
+    altitudePointsOfPlanet(location: Location, code: string, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
         return this.get<[number, number][]>(`altitudePointsOfPlanet?location=${location.id}&code=${code}&date=${date}&stepSize=5`)
     }
 
-    async altitudePointsOfStar(location: Location, star: Star, dateTime: Date) {
+    altitudePointsOfStar(location: Location, star: Star, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
         return this.get<[number, number][]>(`altitudePointsOfStar?location=${location.id}&star=${star.id}&date=${date}&stepSize=5`)
     }
 
-    async altitudePointsOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
+    altitudePointsOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
         return this.get<[number, number][]>(`altitudePointsOfDSO?location=${location.id}&dso=${dso.id}&date=${date}&stepSize=5`)
     }
 
-    async searchMinorPlanet(text: string) {
+    searchMinorPlanet(text: string) {
         return this.get<MinorPlanet>(`searchMinorPlanet?text=${text}`)
     }
 
-    async searchStar(text: string) {
+    searchStar(text: string) {
         return this.get<Star[]>(`searchStar?text=${text}`)
     }
 
-    async searchDSO(text: string) {
+    searchDSO(text: string) {
         return this.get<DeepSkyObject[]>(`searchDSO?text=${text}`)
     }
 }

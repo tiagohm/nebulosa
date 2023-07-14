@@ -17,15 +17,24 @@ class ImageService(
     private val objectMapper: ObjectMapper,
 ) {
 
-    fun load(
+    private val cachedImages = HashMap<Path, Image>()
+
+    @Synchronized
+    fun openImage(
         path: Path,
-        debayer: Boolean,
+        cache: Boolean, debayer: Boolean,
         autoStretch: Boolean, shadow: Float, highlight: Float, midtone: Float,
         mirrorHorizontal: Boolean, mirrorVertical: Boolean, invert: Boolean,
         scnrEnabled: Boolean, scnrChannel: ImageChannel, scnrAmount: Float, scnrProtectionMode: ProtectionMethod,
         output: HttpServletResponse,
     ) {
-        val image = Image.open(path.toFile(), debayer)
+        val image = cachedImages[path] ?: run {
+            Image.open(path.toFile(), debayer).also {
+                if (cache) {
+                    cachedImages[path] = it
+                }
+            }
+        }
 
         val manualStretch = shadow != 0f || highlight != 1f || midtone != 0.5f
         val shouldBeTransformed = autoStretch || manualStretch
@@ -57,6 +66,12 @@ class ImageService(
         output.contentType = "image/png"
 
         ImageIO.write(transformedImage, "PNG", output.outputStream)
+    }
+
+    @Synchronized
+    fun closeImage(path: Path) {
+        cachedImages.remove(path)
+        System.gc()
     }
 
     fun imagesOfCamera(name: String): List<SavedCameraImageEntity> {
