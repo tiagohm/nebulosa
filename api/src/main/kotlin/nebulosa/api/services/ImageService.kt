@@ -3,21 +3,42 @@ package nebulosa.api.services
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.data.entities.SavedCameraImageEntity
+import nebulosa.api.data.enums.PlateSolverType
+import nebulosa.api.data.responses.CalibrationResponse
+import nebulosa.api.data.responses.ImageAnnotationResponse
+import nebulosa.api.repositories.DeepSkyObjectRepository
 import nebulosa.api.repositories.SavedCameraImageRepository
+import nebulosa.api.repositories.StarRepository
+import nebulosa.astrometrynet.nova.NovaAstrometryNetService
+import nebulosa.fits.dec
+import nebulosa.fits.ra
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
+import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.AngleFormatter
+import nebulosa.platesolving.Calibration
+import nebulosa.platesolving.astap.AstapPlateSolver
+import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
+import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
+import nebulosa.platesolving.watney.WatneyPlateSolver
+import nebulosa.wcs.WCSTransform
 import org.springframework.stereotype.Service
 import java.nio.file.Path
+import java.time.Duration
 import javax.imageio.ImageIO
 
 @Service
 class ImageService(
     private val savedCameraImageRepository: SavedCameraImageRepository,
     private val objectMapper: ObjectMapper,
+    private val starRepository: StarRepository,
+    private val deepSkyObjectRepository: DeepSkyObjectRepository,
 ) {
 
     private val cachedImages = HashMap<Path, Image>()
+    private val calibrations = HashMap<Path, Calibration>()
 
     @Synchronized
     fun openImage(
@@ -37,31 +58,50 @@ class ImageService(
         }
 
         val manualStretch = shadow != 0f || highlight != 1f || midtone != 0.5f
+        var stretchParams = ScreenTransformFunction.Parameters.EMPTY
+
         val shouldBeTransformed = autoStretch || manualStretch
                 || mirrorHorizontal || mirrorVertical || invert
                 || scnrEnabled
 
-        val transformedImage = if (shouldBeTransformed) {
-            val algorithms = ArrayList<TransformAlgorithm>(5)
-            if (mirrorHorizontal) algorithms.add(HorizontalFlip)
-            if (mirrorVertical) algorithms.add(VerticalFlip)
-            if (scnrEnabled) algorithms.add(SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode))
-            if (manualStretch) algorithms.add(ScreenTransformFunction(midtone, shadow, highlight))
-            else if (autoStretch) algorithms.add(AutoScreenTransformFunction)
-            if (invert) algorithms.add(Invert)
-            TransformAlgorithm.of(algorithms).transform(image)
-        } else {
-            image
+        var transformedImage = if (shouldBeTransformed) image.clone() else image
+
+        if (mirrorHorizontal) transformedImage = HorizontalFlip.transform(transformedImage)
+        if (mirrorVertical) transformedImage = VerticalFlip.transform(transformedImage)
+
+        if (scnrEnabled) {
+            transformedImage = SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode).transform(transformedImage)
         }
 
-        val info = savedCameraImageRepository.withPath("$path") ?: SavedCameraImageEntity()
-
-        with(info) {
-            width = transformedImage.width
-            height = transformedImage.height
-            mono = transformedImage.mono
-            output.addHeader("X-Image-Info", objectMapper.writeValueAsString(this))
+        if (manualStretch) {
+            transformedImage = ScreenTransformFunction(midtone, shadow, highlight).transform(transformedImage)
+        } else if (autoStretch) {
+            stretchParams = AutoScreenTransformFunction.compute(transformedImage)
+            transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
         }
+
+        if (invert) transformedImage = Invert.transform(transformedImage)
+
+        val info = savedCameraImageRepository.withPath("$path")
+
+        output.addHeader(
+            "X-Image-Info", objectMapper.writeValueAsString(
+                mapOf(
+                    "id" to (info?.id ?: 0L),
+                    "name" to (info?.name ?: ""),
+                    "path" to (info?.path ?: ""),
+                    "savedAt" to (info?.savedAt ?: 0L),
+                    "width" to transformedImage.width,
+                    "height" to transformedImage.height,
+                    "mono" to transformedImage.mono,
+                    "stretchShadow" to stretchParams.shadow,
+                    "stretchHighlight" to stretchParams.highlight,
+                    "stretchMidtone" to stretchParams.midtone,
+                    "rightAscension" to transformedImage.header.ra?.format(AngleFormatter.HMS),
+                    "declination" to transformedImage.header.dec?.format(AngleFormatter.SIGNED_DMS),
+                )
+            )
+        )
 
         output.contentType = "image/png"
 
@@ -71,6 +111,7 @@ class ImageService(
     @Synchronized
     fun closeImage(path: Path) {
         cachedImages.remove(path)
+        calibrations.remove(path)
         System.gc()
     }
 
@@ -84,5 +125,72 @@ class ImageService(
 
     fun savedImageOfPath(path: Path): SavedCameraImageEntity {
         return savedCameraImageRepository.withPath("$path")!!
+    }
+
+    fun annotations(
+        path: Path,
+        stars: Boolean, dsos: Boolean, minorPlanets: Boolean,
+    ): List<ImageAnnotationResponse> {
+        val calibration = calibrations[path]
+
+        if (calibration == null || !calibration.hasWCS || calibration.radius.value <= 0.0) {
+            return emptyList()
+        }
+
+        val wcs = WCSTransform(calibration)
+        val annotations = arrayListOf<ImageAnnotationResponse>()
+
+        if (stars) {
+            starRepository
+                .search(rightAscension = calibration.rightAscension, declination = calibration.declination, radius = calibration.radius)
+                .forEach {
+                    val (x, y) = wcs.worldToPixel(it.rightAscension.rad, it.declination.rad)
+                    val annotation = ImageAnnotationResponse(x, y, star = it)
+                    annotations.add(annotation)
+                }
+        }
+
+        if (dsos) {
+            deepSkyObjectRepository
+                .search(rightAscension = calibration.rightAscension, declination = calibration.declination, radius = calibration.radius)
+                .forEach {
+                    val (x, y) = wcs.worldToPixel(it.rightAscension.rad, it.declination.rad)
+                    val annotation = ImageAnnotationResponse(x, y, dso = it)
+                    annotations.add(annotation)
+                }
+        }
+
+        return annotations
+    }
+
+    fun solveImage(
+        path: Path, type: PlateSolverType,
+        blind: Boolean,
+        centerRA: Angle, centerDEC: Angle, radius: Angle,
+        downsampleFactor: Int,
+        pathOrUrl: String, apiKey: String,
+    ): CalibrationResponse {
+        val solver = when (type) {
+            PlateSolverType.ASTROMETRY_NET_LOCAL -> LocalAstrometryNetPlateSolver(pathOrUrl)
+            PlateSolverType.ASTROMETRY_NET_ONLINE -> NovaAstrometryNetPlateSolver(NovaAstrometryNetService(pathOrUrl), apiKey)
+            PlateSolverType.WATNEY -> WatneyPlateSolver(pathOrUrl)
+            PlateSolverType.ASTAP -> AstapPlateSolver(pathOrUrl)
+        }
+
+        val calibration = solver.solve(
+            path, blind,
+            centerRA, centerDEC, radius,
+            downsampleFactor, Duration.ofMinutes(2L),
+        )
+
+        calibrations[path] = calibration
+
+        return CalibrationResponse(calibration)
+    }
+
+    fun pointMountHere(path: Path, x: Double, y: Double) {
+        val calibration = calibrations[path] ?: return
+        val wcs = WCSTransform(calibration)
+        val (rightAscension, declination) = wcs.pixelToWorld(x, y)
     }
 }

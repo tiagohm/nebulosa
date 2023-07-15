@@ -271,6 +271,7 @@ class Image(
      * Creates a new [Image] and returns a RGB version of this image.
      */
     fun color(): Image {
+        // TODO: Clone header and set RGB info.
         val image = Image(width, height, header, false)
 
         if (mono) {
@@ -317,18 +318,20 @@ class Image(
         fun open(
             file: File,
             debayer: Boolean = true,
+            onlyHeaders: Boolean = false,
         ): Image {
             return ImageIO.read(file)?.let(::open)
-                ?: Fits(file).use { open(it, debayer) }
+                ?: Fits(file).use { open(it, debayer, onlyHeaders) }
         }
 
         @JvmStatic
         fun open(
             inputStream: InputStream,
             debayer: Boolean = true,
+            onlyHeaders: Boolean = false,
         ): Image {
             return ImageIO.read(inputStream)?.let(::open)
-                ?: Fits(inputStream).use { open(it, debayer) }
+                ?: Fits(inputStream).use { open(it, debayer, onlyHeaders) }
         }
 
         @Suppress("UNCHECKED_CAST")
@@ -336,6 +339,7 @@ class Image(
         fun open(
             fits: Fits,
             debayer: Boolean = true,
+            onlyHeaders: Boolean = false,
         ): Image {
             val hdu = requireNotNull(fits.imageHDU(0)) { "The FITS file not contains an image" }
 
@@ -344,7 +348,6 @@ class Image(
             val height = header.naxis(2)
             val mono = isMono(header)
             val axes = hdu.axes
-            val pixels = hdu.kernel as Array<*>
             val bitpix = hdu.bitpix
 
             // TODO: DATA[i] = BZERO + BSCALE * DATA[i]
@@ -352,6 +355,10 @@ class Image(
             header.setBitpix(Bitpix.FLOAT)
 
             val image = Image(width, height, header, mono)
+
+            if (onlyHeaders) return image
+
+            val pixels = hdu.kernel as Array<*>
 
             fun rescaling() {
                 for (p in 0 until image.numberOfChannels) {

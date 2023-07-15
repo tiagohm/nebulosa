@@ -5,8 +5,8 @@ import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
-import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.*
@@ -18,10 +18,10 @@ import kotlin.math.ceil
 /**
  * @see <a href="https://www.hnsky.org/astap.htm#astap_command_line">README</a>
  */
-class AstapPlateSolver(private val path: String) : PlateSolver {
+class AstapPlateSolver(private val solverPath: String) : PlateSolver {
 
     override fun solve(
-        file: File,
+        path: Path,
         blind: Boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int,
@@ -29,7 +29,7 @@ class AstapPlateSolver(private val path: String) : PlateSolver {
     ): Calibration {
         val args = arrayListOf<String>()
 
-        args.add(path)
+        args.add(solverPath)
 
         val basePath = Files.createTempDirectory("astap")
         val baseName = UUID.randomUUID().toString()
@@ -55,7 +55,7 @@ class AstapPlateSolver(private val path: String) : PlateSolver {
         }
 
         args.add("-f")
-        args.add("$file")
+        args.add("$path")
 
         LOG.info("local solving. command={}", args)
 
@@ -78,12 +78,12 @@ class AstapPlateSolver(private val path: String) : PlateSolver {
                 val ctype2 = ini.getProperty("CTYPE2", "DEC--TAN")
                 val crpix1 = ini.getProperty("CRPIX1").toDouble()
                 val crpix2 = ini.getProperty("CRPIX2").toDouble()
-                val crval1 = Angle.from(ini.getProperty("CRVAL1"))!!
-                val crval2 = Angle.from(ini.getProperty("CRVAL2"))!!
-                val cdelt1 = Angle.from(ini.getProperty("CDELT1"))!!
-                val cdelt2 = Angle.from(ini.getProperty("CDELT2"))!!
-                val crota1 = Angle.from(ini.getProperty("CROTA1"))!!
-                val crota2 = Angle.from(ini.getProperty("CROTA2"))!!
+                val crval1 = Angle.from(ini.getProperty("CRVAL1"))
+                val crval2 = Angle.from(ini.getProperty("CRVAL2"))
+                val cdelt1 = Angle.from(ini.getProperty("CDELT1"))
+                val cdelt2 = Angle.from(ini.getProperty("CDELT2"))
+                val crota1 = Angle.from(ini.getProperty("CROTA1"))
+                val crota2 = Angle.from(ini.getProperty("CROTA2"))
                 val cd11 = ini.getProperty("CD1_1").toDouble()
                 val cd12 = ini.getProperty("CD1_2").toDouble()
                 val cd21 = ini.getProperty("CD2_1").toDouble()

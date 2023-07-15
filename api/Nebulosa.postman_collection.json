@@ -329,7 +329,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"exposure\": 1000000,\n    \"amount\": 8,\n    \"delay\": 0,\n    \"x\": 0,\n    \"y\": 0,\n    \"width\": 1280,\n    \"height\": 1024,\n    \"frameFormat\": \"INDI_MONO\",\n    \"frameType\": \"LIGHT\",\n    \"binX\": 1,\n    \"binY\": 1,\n    \"gain\": 0,\n    \"offset\": 0\n}",
+							"raw": "{\n    \"exposure\": 1000000,\n    \"amount\": 1,\n    \"delay\": 0,\n    \"x\": 0,\n    \"y\": 0,\n    \"width\": 1280,\n    \"height\": 1024,\n    \"frameFormat\": \"INDI_MONO\",\n    \"frameType\": \"LIGHT\",\n    \"binX\": 1,\n    \"binY\": 1,\n    \"gain\": 0,\n    \"offset\": 0\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -376,6 +376,23 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Events",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/cameraEvents",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"cameraEvents"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -388,17 +405,17 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/image?hash={{imageHash}}&debayer=true&autoStretch=true&shadow=0.0&highlight=1.0&midtone=0.5&mirrorHorizontal=false&mirrorVertical=false&invert=false&scnrEnabled=false&scnrChannel=GREEN&scnrAmount=0.5&scnrProtectionMode=AVERAGE_NEUTRAL",
+							"raw": "{{baseUrl}}/openImage?path={{imagePath}}&debayer=true&autoStretch=true&shadow=0.0&highlight=1.0&midtone=0.5&mirrorHorizontal=false&mirrorVertical=false&invert=false&scnrEnabled=false&scnrChannel=GREEN&scnrAmount=0.5&scnrProtectionMode=AVERAGE_NEUTRAL",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"image"
+								"openImage"
 							],
 							"query": [
 								{
-									"key": "hash",
-									"value": "{{imageHash}}"
+									"key": "path",
+									"value": "{{imagePath}}"
 								},
 								{
 									"key": "debayer",
@@ -493,6 +510,96 @@
 								{
 									"key": "name",
 									"value": "{{cameraId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Annotations of Image",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/annotationsOfImage?path={{imagePath}}&stars=true&dsos=true&minorPlanets=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"annotationsOfImage"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{imagePath}}"
+								},
+								{
+									"key": "stars",
+									"value": "true"
+								},
+								{
+									"key": "dsos",
+									"value": "true"
+								},
+								{
+									"key": "minorPlanets",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Solve Image",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/solveImage?path={{imagePath}}&type=ASTAP&pathOrUrl=astap&blind=true&centerRA=0&centerDEC=0&radius=0&downsampleFactor=1&apiKey",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"solveImage"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{imagePath}}"
+								},
+								{
+									"key": "type",
+									"value": "ASTAP"
+								},
+								{
+									"key": "pathOrUrl",
+									"value": "astap"
+								},
+								{
+									"key": "blind",
+									"value": "true"
+								},
+								{
+									"key": "centerRA",
+									"value": "0"
+								},
+								{
+									"key": "centerDEC",
+									"value": "0"
+								},
+								{
+									"key": "radius",
+									"value": "0"
+								},
+								{
+									"key": "downsampleFactor",
+									"value": "1"
+								},
+								{
+									"key": "apiKey",
+									"value": null
 								}
 							]
 						}

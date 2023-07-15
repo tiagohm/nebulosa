@@ -86,16 +86,16 @@ class BeanConfig {
     fun cameraExecutorService(): ExecutorService = Executors.newSingleThreadExecutor(DaemonThreadFactory)
 
     @Bean
-    fun eventBusExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory)
+    fun systemExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory)
 
     @Bean
-    fun eventBus(eventBusExecutorService: ExecutorService) = EventBus.builder()
+    fun eventBus(systemExecutorService: ExecutorService) = EventBus.builder()
         .sendNoSubscriberEvent(false)
         .sendSubscriberExceptionEvent(false)
         .throwSubscriberException(false)
         .logNoSubscriberMessages(false)
         .logSubscriberExceptions(false)
-        .executorService(eventBusExecutorService)
+        .executorService(systemExecutorService)
         .installDefaultEventBus()!!
 
     @Bean

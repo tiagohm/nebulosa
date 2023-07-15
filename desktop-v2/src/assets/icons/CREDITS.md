@@ -8,7 +8,6 @@
 * https://www.flaticon.com/free-icon/remote-control_3567313
 * https://www.flaticon.com/free-icon/sky_3982229
 * https://www.flaticon.com/free-icon/text-box_3815460
-* https://www.flaticon.com/free-icon/big-dipper_9672540
 * https://www.flaticon.com/free-icon/histogram_2709742
 * https://www.flaticon.com/free-icon/target_3207593
 * https://www.flaticon.com/free-icon/camera-lens_5708327

@@ -96,6 +96,11 @@ export interface SavedCameraImage {
     height: number
     mono: boolean
     savedAt: number
+    stretchShadow: number
+    stretchHighlight: number
+    stretchMidtone: number
+    rightAscension?: string
+    declination?: string
 }
 
 export interface INDIProperty<T> {
@@ -165,20 +170,18 @@ export interface MinorPlanet {
     found: boolean
     name: string
     spkId: number
-    kind: string
+    kind?: 'ASTEROID' | 'COMET'
     pha: boolean
     neo: boolean
     orbitType: string
-    items: OrbitalPhysicalItem[]
+    parameters: OrbitalPhysicalParameter[]
     searchItems: { name: string, pdes: string }[]
 }
 
-export interface OrbitalPhysicalItem {
-    orbital: boolean
+export interface OrbitalPhysicalParameter {
     name: string
     description: string
     value: string
-    unit: string
 }
 
 export interface Star {
@@ -250,6 +253,23 @@ export interface DeepSkyObject {
     mtype: string
 }
 
+export interface ImageAnnotation {
+    x: number
+    y: number
+    star?: Star
+    dso?: DeepSkyObject
+}
+
+export interface Calibration {
+    orientation: number
+    scale: number
+    rightAscension: string
+    declination: string
+    width: number
+    height: number
+    radius: number
+}
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',
@@ -305,7 +325,6 @@ export type HomeWindowType = 'CAMERA' |
     'ROTATOR' |
     'SWITCH' |
     'ATLAS' |
-    'PLATE_SOLVER' |
     'ALIGNMENT' |
     'SEQUENCER' |
     'IMAGE' |
@@ -413,3 +432,8 @@ export type SCNRProtectionMethod = 'MAXIMUM_MASK' |
     'AVERAGE_NEUTRAL' |
     'MAXIMUM_NEUTRAL' |
     'MINIMUM_NEUTRAL'
+
+export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
+    'ASTROMETRY_NET_ONLINE' |
+    'ASTAP' |
+    'WATNEY'

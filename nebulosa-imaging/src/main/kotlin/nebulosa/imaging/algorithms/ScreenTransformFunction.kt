@@ -16,7 +16,13 @@ class ScreenTransformFunction(
         val midtone: Float = 0.5f,
         val shadow: Float = 0f,
         val highlight: Float = 1f,
-    )
+    ) {
+
+        companion object {
+
+            @JvmStatic val EMPTY = Parameters()
+        }
+    }
 
     private val canTransform = midtone != 0.5f || shadow != 0f || highlight != 1f
     private val rangeFactor = if (shadow == highlight) 1f else (1f / (highlight - shadow))

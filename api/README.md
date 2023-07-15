@@ -363,7 +363,7 @@ Response Body: `200 application/json`
 
 Query Params:
 
-* `hash`: Hex-encoded path of an image. `string` `required`
+* `path`: Image path. `string` `required`
 * `debayer`: Enable auto STF. `boolean` `default: true`
 * `autoStretch`: Enable auto STF. `boolean` `default: false`
 * `shadow`: STF shadow value. `float` `min: 0.0` `max: 1.0` `default: 0.0`
@@ -380,6 +380,18 @@ Query Params:
 Request Body: `None`
 
 Response Body: `200 image/png`
+
+---
+
+**POST** `/closeImage`
+
+Query Params:
+
+* `path`: Image path. `string` `required`
+
+Request Body: `None`
+
+Response Body: `200 None`
 
 ---
 

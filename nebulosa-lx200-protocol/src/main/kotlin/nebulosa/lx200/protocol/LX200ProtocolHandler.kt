@@ -28,12 +28,12 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
     }
 
     private fun ChannelHandlerContext.updateRA(text: String) {
-        rightAscension = Angle.from(text, true)!!
+        rightAscension = Angle.from(text, true)
         writeAndFlush(LX200ProtocolMessage.Ok)
     }
 
     private fun ChannelHandlerContext.updateDEC(text: String) {
-        declination = Angle.from(text)!!
+        declination = Angle.from(text)
         writeAndFlush(LX200ProtocolMessage.Ok)
     }
 
@@ -88,12 +88,12 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
                     when {
                         command.startsWith("#:Sg") -> {
                             ctx.writeAndFlush(LX200ProtocolMessage.Ok)
-                            val longitude = -Angle.from(command.substring(4))!!
+                            val longitude = -Angle.from(command.substring(4))
                             server.coordinates(longitude, server.latitude)
                         }
                         command.startsWith("#:St") -> {
                             ctx.writeAndFlush(LX200ProtocolMessage.Ok)
-                            val latitude = Angle.from(command.substring(4))!!
+                            val latitude = Angle.from(command.substring(4))
                             server.coordinates(server.longitude, latitude)
                         }
                         command.startsWith("#:SL") -> {

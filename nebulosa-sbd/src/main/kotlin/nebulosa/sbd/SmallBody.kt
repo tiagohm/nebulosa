@@ -32,12 +32,20 @@ data class SmallBody(
         @field:JsonProperty("des") val des: String = "",
         @field:JsonProperty("pha") val pha: Boolean = false,
         @field:JsonProperty("neo") val neo: Boolean = false,
-        @field:JsonProperty("kind") val kind: String = "",
+        @field:JsonProperty("kind") val kind: BodyKind = BodyKind.ASTEROID,
         @field:JsonProperty("orbitId") @field:JsonAlias("orbit_id") val orbitId: Int = 0,
         @field:JsonProperty("prefix") val prefix: String? = null,
         @field:JsonProperty("spkId") @field:JsonAlias("spkid") val spkId: Int = 0,
         @field:JsonProperty("shortname") val shortname: String = "",
     )
+
+    enum class BodyKind {
+        @JsonAlias("an", "au")
+        ASTEROID,
+
+        @JsonAlias("cn", "cu")
+        COMET
+    }
 
     data class OrbitType(
         @field:JsonProperty("code") val code: String = "",

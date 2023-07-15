@@ -43,7 +43,8 @@ class DeepSkyObjectRepository(
             .between(DeepSkyObjectEntity_.magnitude, magnitudeMin, magnitudeMax)
             .let { if (radius.value <= 0.0) it else it.filter(RightAscensionDeclinationQueryFilter(rightAscension, declination, radius)) }
             .order(DeepSkyObjectEntity_.magnitude)
-            .build().use { it.find(0, 1000) }
+            .build()
+            .use { if (radius.value <= 0.0) it.find(0, 1000) else it.find() }
     }
 
     fun load(resource: Resource) {

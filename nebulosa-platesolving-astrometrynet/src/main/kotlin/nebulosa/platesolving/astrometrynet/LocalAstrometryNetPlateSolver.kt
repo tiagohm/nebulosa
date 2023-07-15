@@ -7,8 +7,8 @@ import nebulosa.math.Angle.Companion.arcsec
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
-import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Duration
 import java.util.*
 import kotlin.concurrent.thread
@@ -17,10 +17,10 @@ import kotlin.io.path.deleteRecursively
 /**
  * @see <a href="http://astrometry.net/doc/readme.html">README</a>
  */
-class LocalAstrometryNetPlateSolver(private val path: String) : PlateSolver {
+class LocalAstrometryNetPlateSolver(private val solverPath: String) : PlateSolver {
 
     override fun solve(
-        file: File,
+        path: Path,
         blind: Boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int,
@@ -28,7 +28,7 @@ class LocalAstrometryNetPlateSolver(private val path: String) : PlateSolver {
     ): Calibration {
         val args = arrayListOf<String>()
 
-        args.add(path)
+        args.add(solverPath)
 
         // args.add("-v")
         // args.add("--timestamp")
@@ -71,7 +71,7 @@ class LocalAstrometryNetPlateSolver(private val path: String) : PlateSolver {
             args.add("${radius.degrees}")
         }
 
-        args.add("$file")
+        args.add("$path")
 
         LOG.info("local solving. command={}", args)
 

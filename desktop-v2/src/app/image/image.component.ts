@@ -8,7 +8,7 @@ import { MenuItem, MenuItemCommandEvent } from 'primeng/api'
 import { ContextMenu } from 'primeng/contextmenu'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Camera, ImageChannel, SCNRProtectionMethod, SavedCameraImage } from '../../shared/types'
+import { Calibration, Camera, ImageAnnotation, ImageChannel, PlateSolverType, SCNRProtectionMethod, SavedCameraImage } from '../../shared/types'
 
 export interface ImageParams {
     camera?: Camera
@@ -28,29 +28,42 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild('menu')
     private readonly menu!: ContextMenu
 
-    debayer: boolean = false
-    autoStretch: boolean = true
-    shadow: number = 0
-    highlight: number = 1
-    midtone: number = 0.5
-    mirrorHorizontal: boolean = false
-    mirrorVertical: boolean = false
-    invert: boolean = false
-    scnrEnabled: boolean = false
+    debayer = false
+    mirrorHorizontal = false
+    mirrorVertical = false
+    invert = false
+    scnrEnabled = false
     scnrChannel: ImageChannel = 'GREEN'
-    scnrAmount: number = 0.5
+    scnrAmount = 0.5
     scnrProtectionMode: SCNRProtectionMethod = 'AVERAGE_NEUTRAL'
 
     showAnnotationDialog = false
-    annotateWithStar = true
-    annotateWithDSO = true
-    annotateWithMinorPlanet = false
+    annotateWithStars = true
+    annotateWithDSOs = true
+    annotateWithMinorPlanets = false
 
-    canSolve = true
-    canBlindSolve = true
-    canSCNR = true
+    autoStretch = true
+    stretchShadow = 0
+    stretchHighlight = 65536
+    stretchMidtone = 32768
+
+    readonly solverTypeOptions: PlateSolverType[] = ['ASTAP']
+
+    showSolverDialog = false
+    solving = false
+    solved = false
+    solverType: PlateSolverType = 'ASTAP'
+    solverBlind = true
+    solverCenterRA = ''
+    solverCenterDEC = ''
+    solverRadius = 4
+    solverDownsampleFactor = 1
+    solverPathOrUrl = ''
+    solverApiKey = ''
+    solverCalibration?: Calibration
 
     crossHair = false
+    annotations: ImageAnnotation[] = []
 
     private panZoom?: PanZoom
     private imageURL!: string
@@ -61,6 +74,22 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     private path?: string
     private cacheImage = true
 
+    private readonly scnrMenuItem: MenuItem = {
+        label: 'SCNR',
+        icon: 'mdi mdi-palette',
+        disabled: true,
+    }
+
+    private readonly pointMountHereMenuItem: MenuItem = {
+        id: 'menu-point-mount-here',
+        label: 'Point mount here',
+        icon: 'mdi mdi-target',
+        disabled: true,
+        command: (e) => {
+
+        },
+    }
+
     readonly menuItems: MenuItem[] = [
         {
             label: 'Save',
@@ -70,12 +99,11 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
             separator: true,
         },
         {
-            label: 'Solve',
+            label: 'Plate Solve',
             icon: 'mdi mdi-sigma',
-        },
-        {
-            label: 'Blind solve',
-            icon: 'mdi mdi-sigma',
+            command: () => {
+                this.showSolverDialog = true
+            },
         },
         {
             separator: true,
@@ -94,10 +122,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.loadImage()
             },
         },
-        {
-            label: 'SCNR',
-            icon: 'mdi mdi-palette',
-        },
+        this.scnrMenuItem,
         {
             label: 'Horizontal mirror',
             icon: 'mdi mdi-flip-horizontal',
@@ -149,13 +174,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
                 },
             ]
         },
-        {
-            label: 'Point mount here',
-            icon: 'mdi mdi-target',
-            command: (e) => {
-
-            },
-        },
+        this.pointMountHereMenuItem,
     ]
 
     constructor(
@@ -166,15 +185,23 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     ) {
         title.setTitle('Image')
 
-        electron.ipcRenderer.on('CAMERA_IMAGE_SAVED', (_, data: SavedCameraImage) => {
+        electron.ipcRenderer.on('CAMERA_IMAGE_SAVED', async (_, data: SavedCameraImage) => {
             if (data.name === this.camera?.name) {
+                if (this.path) {
+                    await this.api.closeImage(this.path)
+                }
+
                 this.path = data.path
                 this.loadImage()
             }
         })
     }
 
-    ngOnInit() { }
+    ngOnInit() {
+        this.solverPathOrUrl = localStorage.getItem('SOLVER_PATH_URL') ?? ''
+        this.solverRadius = parseFloat(localStorage.getItem('SOLVER_RADIUS') || '4')
+        this.solverDownsampleFactor = parseInt(localStorage.getItem('SOLVER_DOWNSAMPLE_FACTOR') || '1')
+    }
 
     ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
@@ -192,7 +219,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     @HostListener('window:unload')
     ngOnDestroy() {
         if (this.path) {
-            this.api.closeImage(Hex.encodeStr(this.path))
+            this.api.closeImage(this.path)
         }
     }
 
@@ -208,6 +235,8 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
             }
         }
 
+        this.annotations = []
+
         if (this.camera) {
             this.title.setTitle(`Image ・ ${this.camera.name}`)
         } else if (this.path) {
@@ -217,14 +246,21 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
 
     private async loadImageFromPath(path: string) {
         const image = this.image.nativeElement
-        const hash = Hex.encodeStr(path)
-        const { info, blob } = await this.api.openImage(hash, this.debayer, this.autoStretch, this.shadow,
-            this.highlight, this.midtone, this.mirrorHorizontal, this.mirrorVertical,
+        const { info, blob } = await this.api.openImage(path, this.cacheImage, this.debayer, this.autoStretch,
+            this.stretchShadow / 65536, this.stretchHighlight / 65536, this.stretchMidtone / 65536,
+            this.mirrorHorizontal, this.mirrorVertical,
             this.invert, this.scnrEnabled, this.scnrChannel, this.scnrAmount, this.scnrProtectionMode)
 
         this.imageInfo = info
-        this.canSCNR = !info.mono
-        this.menuItems[7].disabled = !this.canSCNR
+        this.scnrMenuItem.disabled = info.mono
+        if (info.rightAscension) this.solverCenterRA = info.rightAscension
+        if (info.declination) this.solverCenterDEC = info.declination
+
+        if (this.autoStretch) {
+            this.stretchShadow = info.stretchShadow * 65536
+            this.stretchHighlight = info.stretchHighlight * 65536
+            this.stretchMidtone = info.stretchMidtone * 65536
+        }
 
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
         this.imageURL = window.URL.createObjectURL(blob)
@@ -239,7 +275,28 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     async annotateImage() {
+        this.annotations = await this.api.annotationsOfImage(this.path!, this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets)
+        this.showAnnotationDialog = false
+    }
 
+    async solveImage() {
+        this.solving = true
+
+        try {
+            this.solverCalibration = await this.api.solveImage(this.path!, this.solverType, this.solverBlind,
+                this.solverCenterRA, this.solverCenterDEC, this.solverRadius, this.solverDownsampleFactor,
+                this.solverPathOrUrl, this.solverApiKey)
+
+            localStorage.setItem('SOLVER_PATH_URL', this.solverPathOrUrl)
+            localStorage.setItem('SOLVER_RADIUS', `${this.solverRadius}`)
+            localStorage.setItem('SOLVER_DOWNSAMPLE_FACTOR', `${this.solverDownsampleFactor}`)
+        } catch {
+            this.solved = false
+            this.solverCalibration = undefined
+        } finally {
+            this.solved = true
+            this.solving = false
+        }
     }
 
     imageLoaded() {
@@ -248,6 +305,12 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
                 minZoom: 0.1,
                 maxZoom: 500.0,
                 autocenter: true,
+                beforeWheel: (e) => {
+                    return e.target !== this.image.nativeElement
+                },
+                beforeMouseDown: (e) => {
+                    return e.target !== this.image.nativeElement
+                },
             })
         }
     }

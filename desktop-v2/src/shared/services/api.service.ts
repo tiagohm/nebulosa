@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core'
 import * as moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
-    BodyPosition, Camera, CameraPreference, CameraStartCapture, DeepSkyObject, Device,
-    INDIProperty, INDISendProperty, ImageChannel, Location, MinorPlanet, SCNRProtectionMethod, SavedCameraImage, Star, Twilight
+    BodyPosition, Calibration, Camera, CameraPreference, CameraStartCapture, DeepSkyObject, Device,
+    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet, PlateSolverType, SCNRProtectionMethod, SavedCameraImage, Star, Twilight
 } from '../types'
 
 @Injectable({ providedIn: 'root' })
@@ -101,7 +101,8 @@ export class ApiService {
     }
 
     async openImage(
-        hash: string,
+        path: string,
+        cache: boolean = true,
         debayer: boolean = false,
         autoStretch: boolean = true,
         shadow: number = 0,
@@ -115,10 +116,10 @@ export class ApiService {
         scnrAmount: number = 0.5,
         scnrProtectionMode: SCNRProtectionMethod = 'AVERAGE_NEUTRAL',
     ) {
-        const query = `debayer=${debayer}&autoStretch=${autoStretch}&shadow=${shadow}&highlight=${highlight}&midtone=${midtone}` +
+        const query = `cache=${cache}&debayer=${debayer}&autoStretch=${autoStretch}&shadow=${shadow}&highlight=${highlight}&midtone=${midtone}` +
             `&mirrorHorizontal=${mirrorHorizontal}&mirrorVertical=${mirrorVertical}&invert=${invert}` +
             `&scnrEnabled=${scnrEnabled}&scnrChannel=${scnrChannel}&scnrAmount=${scnrAmount}&scnrProtectionMode=${scnrProtectionMode}`
-        const response = await firstValueFrom(this.http.get(`${this.baseUri}/openImage?hash=${hash}&${query}`, {
+        const response = await firstValueFrom(this.http.get(`${this.baseUri}/openImage?path=${path}&${query}`, {
             observe: 'response',
             responseType: 'blob'
         }))
@@ -128,8 +129,8 @@ export class ApiService {
         return { info, blob: response.body! }
     }
 
-    closeImage(hash: string) {
-        return this.post<void>(`closeImage?hash=${hash}`)
+    closeImage(path: string) {
+        return this.post<void>(`closeImage?path=${path}`)
     }
 
     indiProperties(device: Device) {
@@ -217,5 +218,23 @@ export class ApiService {
 
     searchDSO(text: string) {
         return this.get<DeepSkyObject[]>(`searchDSO?text=${text}`)
+    }
+
+    annotationsOfImage(
+        path: string,
+        stars: boolean = true, dsos: boolean = true, minorPlanets: boolean = false,
+    ) {
+        return this.get<ImageAnnotation[]>(`annotationsOfImage?path=${path}&stars=${stars}&dsos=${dsos}&minorPlanets=${minorPlanets}`)
+    }
+
+    solveImage(
+        path: string, type: PlateSolverType,
+        blind: Boolean,
+        centerRA: string | number, centerDEC: string | number, radius: string | number,
+        downsampleFactor: number,
+        pathOrUrl: string, apiKey: string,
+    ) {
+        return this.post<Calibration>(`solveImage?path=${path}&type=${type}&pathOrUrl=${pathOrUrl}&blind=${blind}` +
+            `&centerRA=${centerRA}&centerDEC=${centerDEC}&radius=${radius}&downsampleFactor=${downsampleFactor}&apiKey=${apiKey}`)
     }
 }

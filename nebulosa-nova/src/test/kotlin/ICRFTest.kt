@@ -35,8 +35,8 @@ class ICRFTest : StringSpec() {
         }
         "horizontal" {
             // Sirius.
-            val ra = Angle.from("06 45 08.91728", isHours = true)!!
-            val dec = Angle.from("-16 42 58.0171")!!
+            val ra = Angle.from("06 45 08.91728", isHours = true)
+            val dec = Angle.from("-16 42 58.0171")
 
             val latitude = (-23.547500000000003).deg
             val longitude = (-46.63610833333333).deg

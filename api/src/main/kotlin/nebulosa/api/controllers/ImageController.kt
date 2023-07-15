@@ -3,11 +3,15 @@ package nebulosa.api.controllers
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.api.data.entities.SavedCameraImageEntity
+import nebulosa.api.data.enums.PlateSolverType
+import nebulosa.api.data.responses.CalibrationResponse
+import nebulosa.api.data.responses.ImageAnnotationResponse
 import nebulosa.api.services.ImageService
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
-import org.apache.commons.codec.binary.Hex
+import nebulosa.math.Angle
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
 import java.util.*
@@ -19,7 +23,7 @@ class ImageController(
 
     @GetMapping("openImage")
     fun openImage(
-        @RequestParam @Valid @NotBlank hash: String,
+        @RequestParam @Valid @NotBlank path: String,
         @RequestParam(required = false, defaultValue = "false") cache: Boolean,
         @RequestParam(required = false, defaultValue = "true") debayer: Boolean,
         @RequestParam(required = false, defaultValue = "false") autoStretch: Boolean,
@@ -36,7 +40,7 @@ class ImageController(
         output: HttpServletResponse,
     ) {
         imageService.openImage(
-            Path.of(Hex.decodeHex(hash).decodeToString()),
+            Path.of(path),
             cache, debayer, autoStretch, shadow, highlight, midtone,
             mirrorHorizontal, mirrorVertical, invert,
             scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode,
@@ -45,8 +49,8 @@ class ImageController(
     }
 
     @PostMapping("closeImage")
-    fun closeImage(@RequestParam @Valid @NotBlank hash: String) {
-        return imageService.closeImage(Path.of(Hex.decodeHex(hash).decodeToString()))
+    fun closeImage(@RequestParam @Valid @NotBlank path: String) {
+        return imageService.closeImage(Path.of(path))
     }
 
     @GetMapping("imagesOfCamera")
@@ -57,5 +61,51 @@ class ImageController(
     @GetMapping("latestImageOfCamera")
     fun latestImageOfCamera(@RequestParam @Valid @NotBlank name: String): SavedCameraImageEntity {
         return imageService.latestImageOfCamera(name)
+    }
+
+    @PostMapping("saveImageAs")
+    fun saveImageAs(
+        @RequestParam @Valid @NotBlank inputPath: String,
+        @RequestParam @Valid @NotBlank outputPath: String,
+    ) {
+
+    }
+
+    @GetMapping("annotationsOfImage")
+    fun annotationsOfImage(
+        @RequestParam @Valid @NotBlank path: String,
+        @RequestParam(required = false, defaultValue = "true") stars: Boolean,
+        @RequestParam(required = false, defaultValue = "true") dsos: Boolean,
+        @RequestParam(required = false, defaultValue = "false") minorPlanets: Boolean,
+    ): List<ImageAnnotationResponse> {
+        return imageService.annotations(Path.of(path), stars, dsos, minorPlanets)
+    }
+
+    @PostMapping("solveImage")
+    fun solveImage(
+        @RequestParam @Valid @NotBlank path: String,
+        @RequestParam(required = false, defaultValue = "ASTROMETRY_NET_ONLINE") type: PlateSolverType,
+        @RequestParam(required = false, defaultValue = "true") blind: Boolean,
+        @RequestParam(required = false, defaultValue = "0.0") centerRA: String,
+        @RequestParam(required = false, defaultValue = "0.0") centerDEC: String,
+        @RequestParam(required = false, defaultValue = "8.0") radius: String,
+        @RequestParam(required = false, defaultValue = "1") downsampleFactor: Int,
+        @RequestParam(required = false, defaultValue = "") pathOrUrl: String,
+        @RequestParam(required = false, defaultValue = "") apiKey: String,
+    ): CalibrationResponse {
+        return imageService.solveImage(
+            Path.of(path), type, blind,
+            Angle.from(centerRA, true), Angle.from(centerDEC), Angle.from(radius),
+            downsampleFactor, pathOrUrl, apiKey,
+        )
+    }
+
+    @PostMapping("pointMountHere")
+    fun pointMountHere(
+        @RequestParam @Valid @NotBlank path: String,
+        @RequestParam @Valid @PositiveOrZero x: Double,
+        @RequestParam @Valid @PositiveOrZero y: Double,
+    ) {
+        imageService.pointMountHere(Path.of(path), x, y)
     }
 }

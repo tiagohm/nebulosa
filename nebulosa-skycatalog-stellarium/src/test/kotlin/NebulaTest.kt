@@ -22,12 +22,12 @@ class NebulaTest : StringSpec() {
         }
         "search around" {
             nebula
-                .searchAround(Angle.from("05 35 16.8", true)!!, Angle.from("-05 23 24")!!, 1.0.deg)
+                .searchAround(Angle.from("05 35 16.8", true), Angle.from("-05 23 24"), 1.0.deg)
                 .onEach { println(it) }
                 .size shouldBeExactly 11
 
             nebula
-                .searchAround(Angle.from("18 02 42.0", true)!!, Angle.from("-22 58 18")!!, 1.0.deg)
+                .searchAround(Angle.from("18 02 42.0", true), Angle.from("-22 58 18"), 1.0.deg)
                 .onEach { println(it) }
                 .size shouldBeExactly 19
         }
