@@ -24,7 +24,6 @@ class ImageController(
     @GetMapping("openImage")
     fun openImage(
         @RequestParam @Valid @NotBlank path: String,
-        @RequestParam(required = false, defaultValue = "false") cache: Boolean,
         @RequestParam(required = false, defaultValue = "true") debayer: Boolean,
         @RequestParam(required = false, defaultValue = "false") autoStretch: Boolean,
         @RequestParam(required = false, defaultValue = "0.0") shadow: Float,
@@ -41,7 +40,7 @@ class ImageController(
     ) {
         imageService.openImage(
             Path.of(path),
-            cache, debayer, autoStretch, shadow, highlight, midtone,
+            debayer, autoStretch, shadow, highlight, midtone,
             mirrorHorizontal, mirrorVertical, invert,
             scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode,
             output,
@@ -68,7 +67,7 @@ class ImageController(
         @RequestParam @Valid @NotBlank inputPath: String,
         @RequestParam @Valid @NotBlank outputPath: String,
     ) {
-
+        imageService.saveImageAs(Path.of(inputPath), Path.of(outputPath))
     }
 
     @GetMapping("annotationsOfImage")

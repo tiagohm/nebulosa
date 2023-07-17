@@ -425,7 +425,8 @@ export type SkyObjectType =
 export type ImageChannel = 'RED' |
     'GREEN' |
     'BLUE' |
-    'GRAY'
+    'GRAY' |
+    'NONE'
 
 export type SCNRProtectionMethod = 'MAXIMUM_MASK' |
     'ADDTIVIVE_MASK' |

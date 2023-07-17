@@ -15,6 +15,7 @@ import nebulosa.fits.ra
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
+import nebulosa.io.transferAndClose
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.AngleFormatter
@@ -24,10 +25,15 @@ import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
 import nebulosa.platesolving.watney.WatneyPlateSolver
 import nebulosa.wcs.WCSTransform
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import java.nio.file.Path
 import java.time.Duration
 import javax.imageio.ImageIO
+import kotlin.io.path.extension
+import kotlin.io.path.inputStream
+import kotlin.io.path.outputStream
 
 @Service
 class ImageService(
@@ -42,23 +48,17 @@ class ImageService(
 
     @Synchronized
     fun openImage(
-        path: Path,
-        cache: Boolean, debayer: Boolean,
+        path: Path, debayer: Boolean,
         autoStretch: Boolean, shadow: Float, highlight: Float, midtone: Float,
         mirrorHorizontal: Boolean, mirrorVertical: Boolean, invert: Boolean,
         scnrEnabled: Boolean, scnrChannel: ImageChannel, scnrAmount: Float, scnrProtectionMode: ProtectionMethod,
         output: HttpServletResponse,
     ) {
-        val image = cachedImages[path] ?: run {
-            Image.open(path.toFile(), debayer).also {
-                if (cache) {
-                    cachedImages[path] = it
-                }
-            }
-        }
+        val image = cachedImages[path] ?: Image.open(path.toFile(), debayer)
+            .also { cachedImages[path] = it }
 
         val manualStretch = shadow != 0f || highlight != 1f || midtone != 0.5f
-        var stretchParams = ScreenTransformFunction.Parameters.EMPTY
+        var stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
 
         val shouldBeTransformed = autoStretch || manualStretch
                 || mirrorHorizontal || mirrorVertical || invert
@@ -73,10 +73,10 @@ class ImageService(
             transformedImage = SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode).transform(transformedImage)
         }
 
-        if (manualStretch) {
-            transformedImage = ScreenTransformFunction(midtone, shadow, highlight).transform(transformedImage)
-        } else if (autoStretch) {
+        if (autoStretch) {
             stretchParams = AutoScreenTransformFunction.compute(transformedImage)
+            transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
+        } else if (manualStretch) {
             transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
         }
 
@@ -186,6 +186,22 @@ class ImageService(
         calibrations[path] = calibration
 
         return CalibrationResponse(calibration)
+    }
+
+    fun saveImageAs(inputPath: Path, outputPath: Path) {
+        if (inputPath != outputPath) {
+            if (inputPath.extension == outputPath.extension) {
+                inputPath.inputStream().transferAndClose(outputPath.outputStream())
+            } else {
+                val image = cachedImages[inputPath]!!
+
+                when (outputPath.extension.uppercase()) {
+                    "PNG" -> outputPath.outputStream().use { ImageIO.write(image, "PNG", it) }
+                    "JPG", "JPEG" -> outputPath.outputStream().use { ImageIO.write(image, "JPEG", it) }
+                    else -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid format")
+                }
+            }
+        }
     }
 
     fun pointMountHere(path: Path, x: Double, y: Double) {

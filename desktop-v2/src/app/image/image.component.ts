@@ -32,7 +32,16 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     mirrorHorizontal = false
     mirrorVertical = false
     invert = false
-    scnrEnabled = false
+
+    readonly scnrChannelOptions: ImageChannel[] = ['NONE', 'RED', 'GREEN', 'BLUE']
+    readonly scnrProtectionModeOptions: SCNRProtectionMethod[] = ['MAXIMUM_MASK',
+        'ADDTIVIVE_MASK',
+        'AVERAGE_NEUTRAL',
+        'MAXIMUM_NEUTRAL',
+        'MINIMUM_NEUTRAL'
+    ]
+
+    showSCNRDialog = false
     scnrChannel: ImageChannel = 'GREEN'
     scnrAmount = 0.5
     scnrProtectionMode: SCNRProtectionMethod = 'AVERAGE_NEUTRAL'
@@ -43,8 +52,8 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     annotateWithMinorPlanets = false
 
     autoStretch = true
-    stretchShadow = 0
-    stretchHighlight = 65536
+    showStretchingDialog = false
+    stretchShadowhHighlight = [0, 65536]
     stretchMidtone = 32768
 
     readonly solverTypeOptions: PlateSolverType[] = ['ASTAP']
@@ -72,16 +81,17 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     private imageMouseY = 0
     private camera?: Camera
     private path?: string
-    private cacheImage = true
 
     private readonly scnrMenuItem: MenuItem = {
         label: 'SCNR',
         icon: 'mdi mdi-palette',
         disabled: true,
+        command: () => {
+            this.showSCNRDialog = true
+        },
     }
 
     private readonly pointMountHereMenuItem: MenuItem = {
-        id: 'menu-point-mount-here',
         label: 'Point mount here',
         icon: 'mdi mdi-target',
         disabled: true,
@@ -90,10 +100,23 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         },
     }
 
+    private readonly annotationMenuItem: MenuItem = {
+        label: 'Annotation',
+        icon: 'mdi mdi-format-color-text',
+        disabled: true,
+        command: () => {
+            this.showAnnotationDialog = true
+        },
+    }
+
     readonly menuItems: MenuItem[] = [
         {
-            label: 'Save',
+            label: 'Save as...',
             icon: 'mdi mdi-content-save',
+            command: async () => {
+                const path = await this.electron.ipcRenderer.sendSync('save-fits-as')
+                if (path) this.api.saveImageAs(this.path!, path)
+            },
         },
         {
             separator: true,
@@ -111,8 +134,12 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         {
             label: 'Stretch',
             icon: 'mdi mdi-chart-histogram',
+            command: () => {
+                this.showStretchingDialog = true
+            },
         },
         {
+            id: 'auto-stretch-menuitem',
             label: 'Auto stretch',
             icon: 'mdi mdi-chart-histogram',
             styleClass: 'p-menuitem-checked',
@@ -165,13 +192,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
                         this.toggleMenuItemChecked(e)
                     },
                 },
-                {
-                    label: 'Annotation',
-                    icon: 'mdi mdi-format-color-text',
-                    command: () => {
-                        this.showAnnotationDialog = true
-                    },
-                },
+                this.annotationMenuItem,
             ]
         },
         this.pointMountHereMenuItem,
@@ -181,7 +202,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         private title: Title,
         private route: ActivatedRoute,
         private api: ApiService,
-        electron: ElectronService,
+        private electron: ElectronService,
     ) {
         title.setTitle('Image')
 
@@ -190,6 +211,8 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
                 if (this.path) {
                     await this.api.closeImage(this.path)
                 }
+
+                this.annotations = []
 
                 this.path = data.path
                 this.loadImage()
@@ -208,7 +231,6 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
             const params = JSON.parse(Hex.decodeStr(e.params)) as ImageParams
             this.camera = params.camera
             this.path = params.path
-            this.cacheImage = !this.camera
 
             if (this.path) {
                 this.loadImage()
@@ -235,8 +257,6 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
             }
         }
 
-        this.annotations = []
-
         if (this.camera) {
             this.title.setTitle(`Image ・ ${this.camera.name}`)
         } else if (this.path) {
@@ -246,10 +266,11 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
 
     private async loadImageFromPath(path: string) {
         const image = this.image.nativeElement
-        const { info, blob } = await this.api.openImage(path, this.cacheImage, this.debayer, this.autoStretch,
-            this.stretchShadow / 65536, this.stretchHighlight / 65536, this.stretchMidtone / 65536,
+        const scnrEnabled = this.scnrChannel !== 'NONE'
+        const { info, blob } = await this.api.openImage(path, this.debayer, this.autoStretch,
+            this.stretchShadowhHighlight[0] / 65536, this.stretchShadowhHighlight[1] / 65536, this.stretchMidtone / 65536,
             this.mirrorHorizontal, this.mirrorVertical,
-            this.invert, this.scnrEnabled, this.scnrChannel, this.scnrAmount, this.scnrProtectionMode)
+            this.invert, scnrEnabled, scnrEnabled ? this.scnrChannel : 'GREEN', this.scnrAmount, this.scnrProtectionMode)
 
         this.imageInfo = info
         this.scnrMenuItem.disabled = info.mono
@@ -257,9 +278,9 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         if (info.declination) this.solverCenterDEC = info.declination
 
         if (this.autoStretch) {
-            this.stretchShadow = info.stretchShadow * 65536
-            this.stretchHighlight = info.stretchHighlight * 65536
-            this.stretchMidtone = info.stretchMidtone * 65536
+            this.stretchShadowhHighlight[0] = Math.trunc(info.stretchShadow * 65536)
+            this.stretchShadowhHighlight[1] = Math.trunc(info.stretchHighlight * 65536)
+            this.stretchMidtone = Math.trunc(info.stretchMidtone * 65536)
         }
 
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
@@ -279,6 +300,16 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         this.showAnnotationDialog = false
     }
 
+    stretchImage() {
+        this.autoStretch = false
+        document.getElementById('auto-stretch-menuitem')!.parentElement!.classList.remove('p-menuitem-checked')
+        this.loadImage()
+    }
+
+    scnrImage() {
+        this.loadImage()
+    }
+
     async solveImage() {
         this.solving = true
 
@@ -290,9 +321,12 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
             localStorage.setItem('SOLVER_PATH_URL', this.solverPathOrUrl)
             localStorage.setItem('SOLVER_RADIUS', `${this.solverRadius}`)
             localStorage.setItem('SOLVER_DOWNSAMPLE_FACTOR', `${this.solverDownsampleFactor}`)
+
+            this.annotationMenuItem.disabled = false
         } catch {
             this.solved = false
             this.solverCalibration = undefined
+            this.annotationMenuItem.disabled = true
         } finally {
             this.solved = true
             this.solving = false
@@ -305,6 +339,10 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
                 minZoom: 0.1,
                 maxZoom: 500.0,
                 autocenter: true,
+                zoomDoubleClickSpeed: 1,
+                filterKey: () => {
+                    return true
+                },
                 beforeWheel: (e) => {
                     return e.target !== this.image.nativeElement
                 },

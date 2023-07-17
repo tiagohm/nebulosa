@@ -1,12 +1,18 @@
 <div class="container px-4 pt-4">
     <div class="grid flex justify-content-center align-items-center">
         <div class="col-6 px-0">
-            <input [disabled]="connected" type="text" pInputText class="p-inputtext-sm min-w-full" placeholder="Host" [(ngModel)]="host" />
+            <span class="p-float-label">
+                <input id="host" [disabled]="connected" type="text" pInputText class="p-inputtext-sm min-w-full" placeholder="localhost" [(ngModel)]="host" />
+                <label htmlFor="host">Host</label>
+            </span>
         </div>
         <div class="col-4 pr-0">
-            <input [disabled]="connected" type="number" pInputText class="p-inputtext-sm min-w-full max-w-0" placeholder="Port" [(ngModel)]="port" />
+            <span class="p-float-label">
+                <input id="port" [disabled]="connected" type="number" pInputText class="p-inputtext-sm min-w-full max-w-0" placeholder="7624" [(ngModel)]="port" />
+                <label htmlFor="port">Port</label>
+            </span>
         </div>
-        <div class="col-2 pr-0">
+        <div class="col-2 text-center pr-0">
             <p-button *ngIf="connected" (onClick)="connect()" icon="pi" styleClass="p-button-danger p-button">
                 <span class="mdi mdi-close"></span>
             </p-button>

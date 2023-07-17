@@ -9,7 +9,7 @@
         <circle cx="50%" cy="50%" r="32%" stroke="#E53935" stroke-width="3" fill="transparent"></circle>
     </svg>
 
-    <svg class="absolute left-0 top-0 w-full h-full pointer-events-none">
+    <svg *ngIf="!mirrorHorizontal && !mirrorVertical" class="absolute left-0 top-0 w-full h-full pointer-events-none">
         <g *ngFor="let a of annotations">
             <circle [attr.cx]="a.x" [attr.cy]="a.y" r="4" stroke="#FDD835" stroke-width="1" fill="#FDD835"></circle>
             <text [attr.x]="a.x" [attr.y]="a.y" fill="#00897B" style="font-size: 7px">{{ a.star?.names ?? a.dso?.names }}</text>
@@ -32,10 +32,10 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Plate Solving" [draggable]="false" [(visible)]="showSolverDialog" [modal]="true" [style]="{width: '360px'}" class="pointer-events-none">
+<p-dialog header="Plate Solving" [draggable]="true" [(visible)]="showSolverDialog" [modal]="false" [style]="{width: '360px'}" class="pointer-events-none">
     <div class="grid">
         <div class="col-8 flex align-items-center">
-            <p-dropdown styleClass="w-full" [(ngModel)]="solverType" [options]="solverTypeOptions" />
+            <p-dropdown [(ngModel)]="solverType" [options]="solverTypeOptions" styleClass="border-0" />
         </div>
         <div class="col-4 flex flex-column align-items-center">
             Blind <p-inputSwitch styleClass="mt-1" [(ngModel)]="solverBlind" />
@@ -127,5 +127,45 @@
         </div>
 
         <p-button [disabled]="solving" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" styleClass="p-button-text" />
+    </ng-template>
+</p-dialog>
+
+<p-dialog header="Stretching" [draggable]="true" [(visible)]="showStretchingDialog" [modal]="false" [style]="{width: '360px'}" class="pointer-events-none">
+    <div class="grid px-2">
+        <div class="col-12 flex flex-column">
+            <div class="flex flex-row justify-content-between">
+                <span>Shadow: {{ stretchShadowhHighlight[0] }}</span>
+                <span>Highlight: {{ stretchShadowhHighlight[1] }}</span>
+            </div>
+
+            <p-slider class="mt-3" [min]="0" [max]="65536" [(ngModel)]="stretchShadowhHighlight" [range]="true" />
+
+            <div class="mt-5 text-center w-full">Midtone: {{ stretchMidtone }}</div>
+            <p-slider class="mt-3" [min]="0" [max]="65536" [(ngModel)]="stretchMidtone" />
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button icon="pi pi-check" label="Stretch" (onClick)="stretchImage()" styleClass="p-button-text" />
+    </ng-template>
+</p-dialog>
+
+<p-dialog header="SCNR" [draggable]="true" [blockScroll]="true" [(visible)]="showSCNRDialog" [modal]="false" [style]="{width: '280px'}" class="pointer-events-none">
+    <div class="grid px-2">
+        <div class="col-12 flex align-items-center">
+            <p-selectButton styleClass="border-0" [options]="scnrChannelOptions" [(ngModel)]="scnrChannel" [multiple]="false" />
+        </div>
+        <div class="col-12 flex align-items-center">
+            <p-dropdown appendTo="body" [(ngModel)]="scnrProtectionMode" [options]="scnrProtectionModeOptions" styleClass="border-0" />
+        </div>
+        <div class="col-12">
+            <span class="p-float-label">
+                <p-inputNumber id="scnrAmount" [min]="0" [max]="1" [step]="0.1" [showButtons]="true" class="w-full" inputStyleClass="p-inputtext-sm border-0 w-full"
+                    [(ngModel)]="scnrAmount" locale="en" [allowEmpty]="false" />
+                <label htmlFor="scnrAmount">Amount</label>
+            </span>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button icon="pi pi-check" label="Apply" (onClick)="scnrImage()" styleClass="p-button-text" />
     </ng-template>
 </p-dialog>

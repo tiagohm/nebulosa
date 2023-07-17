@@ -47,8 +47,9 @@ p-inputnumber .p-inputnumber-buttons-stacked input {
     }
 }
 
-p-dropdown {
-    display: contents;
+p-dropdown,
+.p-dropdown {
+    width: 100%;
 }
 
 .p-float-label label {
@@ -56,6 +57,15 @@ p-dropdown {
     padding: 2px 8px !important;
     font-size: 9px !important;
     line-height: 10px;
+}
+
+.p-selectbutton.border-0 .p-button,
+.p-inputnumber.border-0 .p-inputtext {
+    border: 1px solid rgba(255, 255, 255, 0) !important;
+}
+
+.p-toast {
+    opacity: 1;
 }
 
 ::-webkit-scrollbar {

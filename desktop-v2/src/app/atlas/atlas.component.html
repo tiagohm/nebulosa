@@ -133,8 +133,8 @@
                         Location
                     </div>
                     <div class="col-8">
-                        <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()" optionLabel="name" styleClass="min-w-full"
-                            emptyMessage="No location found"></p-dropdown>
+                        <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()" optionLabel="name"
+                            emptyMessage="No location found" />
                     </div>
                     <div class="col-4">
                         <p-button [disabled]="refreshing" class="mr-1" (onClick)="addLocation()" icon="pi" styleClass="p-button-success">
@@ -154,7 +154,7 @@
                         <span class="p-input-icon-left p-input-icon-right">
                             <span class="pi pi-calendar"></span>
                             <p-calendar [disabled]="!useManualDateTime" [(ngModel)]="dateTime" [showTime]="true"
-                                [showSeconds]="false" dateFormat="yy/mm/dd" inputStyleClass="pl-6"></p-calendar>
+                                [showSeconds]="false" dateFormat="yy/mm/dd" inputStyleClass="pl-6" />
                             <p-checkbox class="p-icon-wrapper" [binary]="true" [(ngModel)]="useManualDateTime" />
                         </span>
                     </div>
@@ -235,7 +235,7 @@
         </span>
     </div>
     <div class="col-12">
-        <p-chart #chart [data]="altitudeData" [responsive]="true" [options]="altitudeOptions"></p-chart>
+        <p-chart #chart [data]="altitudeData" [responsive]="true" [options]="altitudeOptions" />
     </div>
 </div>
 

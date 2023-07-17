@@ -17,10 +17,12 @@ import { InputTextModule } from 'primeng/inputtext'
 import { ListboxModule } from 'primeng/listbox'
 import { MenuModule } from 'primeng/menu'
 import { SelectButtonModule } from 'primeng/selectbutton'
+import { SliderModule } from 'primeng/slider'
 import { SplitButtonModule } from 'primeng/splitbutton'
 import { TableModule } from 'primeng/table'
 import { TabViewModule } from 'primeng/tabview'
 import { TagModule } from 'primeng/tag'
+import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
 import { OpenStreetMapComponent } from '../shared/components/openstreetmap/openstreetmap.component'
 import { AppRoutingModule } from './app-routing.module'
@@ -31,6 +33,7 @@ import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
+import { MessageService } from 'primeng/api'
 
 @NgModule({
     declarations: [
@@ -68,8 +71,12 @@ import { INDIPropertyComponent } from './indi/property/indi-property.component'
         CalendarModule,
         CheckboxModule,
         ContextMenuModule,
+        SliderModule,
+        ToastModule,
     ],
-    providers: [],
+    providers: [
+        MessageService,
+    ],
     bootstrap: [AppComponent]
 })
 export class AppModule { }

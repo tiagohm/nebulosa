@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core'
+import { MessageService } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -19,10 +20,14 @@ export class HomeComponent implements OnInit {
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private api: ApiService,
+        private message: MessageService,
     ) { }
 
     async ngOnInit() {
         this.updateConnectionStatus()
+
+        this.host = localStorage.getItem('HOME_HOST') || 'localhost'
+        this.port = parseInt(localStorage.getItem('HOME_PORT') || '7624')
     }
 
     async connect() {
@@ -31,9 +36,14 @@ export class HomeComponent implements OnInit {
                 await this.api.disconnect()
             } else {
                 await this.api.connect(this.host || 'localhost', this.port)
+
+                localStorage.setItem('HOME_HOST', this.host)
+                localStorage.setItem('HOME_PORT', `${this.port}`)
             }
         } catch (e) {
             console.error(e)
+
+            this.message.add({ severity: 'error', detail: 'Connection failed' })
         } finally {
             this.updateConnectionStatus()
         }

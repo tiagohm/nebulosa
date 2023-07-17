@@ -102,7 +102,6 @@ export class ApiService {
 
     async openImage(
         path: string,
-        cache: boolean = true,
         debayer: boolean = false,
         autoStretch: boolean = true,
         shadow: number = 0,
@@ -116,7 +115,7 @@ export class ApiService {
         scnrAmount: number = 0.5,
         scnrProtectionMode: SCNRProtectionMethod = 'AVERAGE_NEUTRAL',
     ) {
-        const query = `cache=${cache}&debayer=${debayer}&autoStretch=${autoStretch}&shadow=${shadow}&highlight=${highlight}&midtone=${midtone}` +
+        const query = `debayer=${debayer}&autoStretch=${autoStretch}&shadow=${shadow}&highlight=${highlight}&midtone=${midtone}` +
             `&mirrorHorizontal=${mirrorHorizontal}&mirrorVertical=${mirrorVertical}&invert=${invert}` +
             `&scnrEnabled=${scnrEnabled}&scnrChannel=${scnrChannel}&scnrAmount=${scnrAmount}&scnrProtectionMode=${scnrProtectionMode}`
         const response = await firstValueFrom(this.http.get(`${this.baseUri}/openImage?path=${path}&${query}`, {
@@ -236,5 +235,9 @@ export class ApiService {
     ) {
         return this.post<Calibration>(`solveImage?path=${path}&type=${type}&pathOrUrl=${pathOrUrl}&blind=${blind}` +
             `&centerRA=${centerRA}&centerDEC=${centerDEC}&radius=${radius}&downsampleFactor=${downsampleFactor}&apiKey=${apiKey}`)
+    }
+
+    saveImageAs(inputPath: string, outputPath: string) {
+        return this.post<void>(`saveImageAs?inputPath=${inputPath}&outputPath=${outputPath}`)
     }
 }

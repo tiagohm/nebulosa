@@ -63,7 +63,7 @@ function createWindow(data: OpenWindow) {
         }
     }
 
-    const width = data.width ? Math.trunc(computeWidth(data.width)) : 360
+    const width = data.width ? Math.trunc(computeWidth(data.width)) : 320
 
     function computeHeight(value: number | string) {
         if (typeof value === 'number') {
@@ -77,7 +77,7 @@ function createWindow(data: OpenWindow) {
         }
     }
 
-    const height = data.height ? Math.trunc(computeHeight(data.height)) : 424
+    const height = data.height ? Math.trunc(computeHeight(data.height)) : 384
 
     const resizable = data.resizable ?? false
     const icon = data.icon ?? 'nebulosa'
@@ -221,6 +221,18 @@ try {
         })
 
         event.returnValue = !value.canceled && value.filePaths[0]
+    })
+
+    ipcMain.on('save-fits-as', async (event) => {
+        const value = await dialog.showSaveDialog(mainWindow!, {
+            filters: [
+                { name: 'FITS files', extensions: ['fits', 'fit'] },
+                { name: 'Image files', extensions: ['png', 'jpe?g'] },
+            ],
+            properties: ['createDirectory', 'showOverwriteConfirmation'],
+        })
+
+        event.returnValue = !value.canceled && value.filePath
     })
 
     ipcMain.on('open-directory', async (event) => {
