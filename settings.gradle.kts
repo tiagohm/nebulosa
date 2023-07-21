@@ -24,7 +24,7 @@ dependencyResolutionManagement {
             library("controlsfx", "org.controlsfx:controlsfx:11.1.2")
             library("logback", "ch.qos.logback:logback-classic:1.4.8")
             library("eventbus", "org.greenrobot:eventbus-java:3.3.1")
-            library("charts", "eu.hansolo.fx:charts:17.1.35")
+            library("charts", "eu.hansolo.fx:charts:17.1.43")
             library("gesturefx", "net.kurobako:gesturefx:0.7.1")
             library("netty-transport", "io.netty:netty-transport:4.1.94.Final")
             library("netty-codec", "io.netty:netty-codec:4.1.94.Final")
