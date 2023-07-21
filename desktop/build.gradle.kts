@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter
 plugins {
     kotlin("jvm")
     id("maven-publish")
-    id("org.springframework.boot") version "3.1.1"
+    id("org.springframework.boot") version "3.1.2"
     id("io.spring.dependency-management") version "1.1.1"
     kotlin("plugin.spring")
     kotlin("kapt")
