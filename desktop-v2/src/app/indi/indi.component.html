@@ -7,10 +7,8 @@
     </div>
     <div class="grid mt-2">
         <div class="col-12">
-            <p-button *ngFor="let groupName of groups" (onClick)="changeGroup(groupName)" [label]="groupName" icon="pi"
-                styleClass="mr-1 mt-1 p-button p-button-{{ groupName === group ? '' : 'text' }}">
-                <span class="mdi mdi-sitemap"></span>
-            </p-button>
+            <p-button *ngFor="let groupName of groups" (onClick)="changeGroup(groupName)" [label]="groupName" icon="mdi mdi-sitemap"
+                styleClass="mr-1 mt-1 p-button p-button-{{ groupName === group ? '' : 'text' }}" />
         </div>
     </div>
     <div class="grid properties mt-2">

@@ -33,12 +33,12 @@
             <p-tabPanel header="Minor Planets" [disabled]="refreshing">
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
-                        <input type="text" pInputText class="p-inputtext-sm min-w-full" [(ngModel)]="minorPlanetSearchText"
+                        <input type="text" pInputText class="min-w-full" [(ngModel)]="minorPlanetSearchText"
                             pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest." tooltipPosition="bottom" />
                     </div>
                     <div class="col-3">
-                        <p-button [disabled]="minorPlanetSearchText.length < 3 || refreshing" (onClick)="searchMinorPlanet()" icon="pi" styleClass="p-button-success">
-                            <span class="mdi mdi-magnify"></span>
+                        <p-button [disabled]="minorPlanetSearchText.length < 3 || refreshing" (onClick)="searchMinorPlanet()" icon="mdi mdi-magnify" styleClass="p-button-success">
+                            <span class=""></span>
                         </p-button>
                     </div>
                 </div>
@@ -64,12 +64,11 @@
             <p-tabPanel header="Stars" [disabled]="refreshing">
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
-                        <input type="text" pInputText class="p-inputtext-sm min-w-full" [(ngModel)]="starSearchText" />
+                        <input type="text" pInputText class="min-w-full" [(ngModel)]="starSearchText" />
                     </div>
                     <div class="col-3">
-                        <p-button [disabled]="starSearchText.length < 3 || refreshing" (onClick)="searchStar()" icon="pi" styleClass="p-button-success">
-                            <span class="mdi mdi-magnify"></span>
-                        </p-button>
+                        <p-button [disabled]="refreshing" (onClick)="searchStar()" icon="mdi mdi-magnify" styleClass="p-button-info" />
+                        <p-button [disabled]="refreshing" (onClick)="showStarFilterDialog = true" icon="mdi mdi-filter" styleClass="ml-1 p-button" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -97,11 +96,11 @@
             <p-tabPanel header="DSOs" [disabled]="refreshing">
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
-                        <input type="text" pInputText class="p-inputtext-sm min-w-full" [(ngModel)]="dsoSearchText" />
+                        <input type="text" pInputText class="min-w-full" [(ngModel)]="dsoSearchText" />
                     </div>
                     <div class="col-3">
-                        <p-button [disabled]="dsoSearchText.length < 3 || refreshing" (onClick)="searchDSO()" icon="pi" styleClass="p-button-success">
-                            <span class="mdi mdi-magnify"></span>
+                        <p-button [disabled]="dsoSearchText.length < 3 || refreshing" (onClick)="searchDSO()" icon="mdi mdi-magnify" styleClass="p-button-success">
+                            <span class=""></span>
                         </p-button>
                     </div>
                 </div>
@@ -137,15 +136,9 @@
                             emptyMessage="No location found" />
                     </div>
                     <div class="col-4">
-                        <p-button [disabled]="refreshing" class="mr-1" (onClick)="addLocation()" icon="pi" styleClass="p-button-success">
-                            <span class="mdi mdi-plus"></span>
-                        </p-button>
-                        <p-button [disabled]="refreshing" class="mr-1" (onClick)="editLocation()" icon="pi" styleClass="p-button-info">
-                            <span class="mdi mdi-pencil"></span>
-                        </p-button>
-                        <p-button [disabled]="refreshing || locations.length <= 1" (onClick)="deleteLocation()" icon="pi" styleClass="p-button-danger">
-                            <span class="mdi mdi-delete"></span>
-                        </p-button>
+                        <p-button [disabled]="refreshing" class="mr-1" (onClick)="addLocation()" icon="mdi mdi-plus" styleClass="p-button-success" />
+                        <p-button [disabled]="refreshing" class="mr-1" (onClick)="editLocation()" icon="mdi mdi-pencil" styleClass="p-button-info" />
+                        <p-button [disabled]="refreshing || locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete" styleClass="p-button-danger" />
                     </div>
                     <div class="col-12 font-bold pb-0">
                         Date & Time
@@ -170,67 +163,67 @@
     </div>
     <div class="col-3">
         <span class="p-float-label">
-            <input readonly pInputText id="rightAscensionJ2000" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.rightAscensionJ2000" />
+            <input readonly pInputText id="rightAscensionJ2000" class="border-0 max-w-full" [value]="bodyPosition.rightAscensionJ2000" />
             <label htmlFor="rightAscensionJ2000">RA (J2000)</label>
         </span>
     </div>
     <div class="col-3">
         <span class="p-float-label">
-            <input readonly pInputText id="declinationJ2000" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.declinationJ2000" />
+            <input readonly pInputText id="declinationJ2000" class="border-0 max-w-full" [value]="bodyPosition.declinationJ2000" />
             <label htmlFor="declinationJ2000">DEC (J2000)</label>
         </span>
     </div>
     <div class="col-3">
         <span class="p-float-label">
-            <input readonly pInputText id="rightAscension" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.rightAscension" />
+            <input readonly pInputText id="rightAscension" class="border-0 max-w-full" [value]="bodyPosition.rightAscension" />
             <label htmlFor="rightAscension">RA</label>
         </span>
     </div>
     <div class="col-3">
         <span class="p-float-label">
-            <input readonly pInputText id="declination" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.declination" />
+            <input readonly pInputText id="declination" class="border-0 max-w-full" [value]="bodyPosition.declination" />
             <label htmlFor="declination">DEC</label>
         </span>
     </div>
     <div class="col-3">
         <span class="p-float-label">
-            <input readonly pInputText id="azimuth" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.azimuth" />
+            <input readonly pInputText id="azimuth" class="border-0 max-w-full" [value]="bodyPosition.azimuth" />
             <label htmlFor="azimuth">Azimuth</label>
         </span>
     </div>
     <div class="col-3">
         <span class="p-float-label">
-            <input readonly pInputText id="altitude" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.altitude" />
+            <input readonly pInputText id="altitude" class="border-0 max-w-full" [value]="bodyPosition.altitude" />
             <label htmlFor="altitude">Altitude</label>
         </span>
     </div>
     <div class="col-3">
         <span class="p-float-label">
-            <input readonly pInputText id="magnitude" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.magnitude < 99 ? bodyPosition.magnitude : '-'" />
+            <input readonly pInputText id="magnitude" class="border-0 max-w-full" [value]="bodyPosition.magnitude < 99 ? bodyPosition.magnitude : '-'" />
             <label htmlFor="magnitude">Magnitude</label>
         </span>
     </div>
     <div class="col-3">
         <span class="p-float-label">
-            <input readonly pInputText id="constellation" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.constellation" />
+            <input readonly pInputText id="constellation" class="border-0 max-w-full" [value]="bodyPosition.constellation" />
             <label htmlFor="constellation">Constellation</label>
         </span>
     </div>
     <div class="col-3">
         <span class="p-float-label">
-            <input readonly pInputText id="distance" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.distance" />
+            <input readonly pInputText id="distance" class="border-0 max-w-full" [value]="bodyPosition.distance" />
             <label htmlFor="distance">Distance ({{ bodyPosition.distanceUnit }})</label>
         </span>
     </div>
     <div class="col-3">
         <span class="p-float-label">
-            <input readonly pInputText id="illuminated" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.illuminated" />
+            <input readonly pInputText id="illuminated" class="border-0 max-w-full" [value]="bodyPosition.illuminated" />
             <label htmlFor="illuminated">Illuminated (%)</label>
         </span>
     </div>
     <div class="col-3">
         <span class="p-float-label">
-            <input readonly pInputText id="elongation" class="p-inputtext-sm border-0 max-w-full" [value]="bodyPosition.elongation" />
+            <input readonly pInputText id="elongation" class="border-0 max-w-full" [value]="bodyPosition.elongation" />
             <label htmlFor="elongation">Elongation (°)</label>
         </span>
     </div>
@@ -246,38 +239,65 @@
     </div>
 </p-dialog>
 
+<p-dialog header="Star Filter" [draggable]="false" [(visible)]="showStarFilterDialog" [modal]="true" [style]="{width: '80vw'}">
+    <div class="grid mt-2">
+        <div class="col-4">
+            <span class="p-float-label">
+                <input pInputText id="starFilterRA" class="border-0 max-w-full" [value]="starFilterRA" />
+                <label htmlFor="starFilterRA">RA (h)</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <input pInputText id="starFilterDEC" class="border-0 max-w-full" [value]="starFilterDEC" />
+                <label htmlFor="starFilterDEC">DEC (deg)</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <p-inputNumber id="starFilterRadius" [min]="0" [max]="90" class="w-full" [showButtons]="true" inputStyleClass="border-0 w-full"
+                    [(ngModel)]="starFilterRadius" />
+                <label htmlFor="starFilterRadius">Radius (deg)</label>
+            </span>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button icon="mdi mdi-filter" label="Filter" (onClick)="filterStar()" styleClass="p-button-text" />
+    </ng-template>
+</p-dialog>
+
 <p-dialog header="Location" *ngIf="showLocationDialog" (onShow)="map.refresh()" [draggable]="false" [(visible)]="showLocationDialog" [modal]="true" [style]="{width: '80vw'}">
     <div class="grid">
         <div class="col-12 pt-3">
             <span class="p-float-label">
-                <input pInputText id="name" class="p-inputtext-sm border-0 w-full" [(ngModel)]="editedLocation.name" />
+                <input pInputText id="name" class="border-0 w-full" [(ngModel)]="editedLocation.name" />
                 <label htmlFor="name">Name</label>
             </span>
         </div>
         <div class="col-6 pt-3">
             <span class="p-float-label">
-                <p-inputNumber locale="en" id="latitude" class="p-inputtext-sm border-0 w-full" [min]="-90" [max]="90" [maxFractionDigits]="5"
+                <p-inputNumber locale="en" id="latitude" styleClass="border-0 w-full" [min]="-90" [max]="90" [maxFractionDigits]="5"
                     [(ngModel)]="editedLocation.latitude" [allowEmpty]="false" />
                 <label htmlFor="latitude">Latitude</label>
             </span>
         </div>
         <div class="col-6 pt-3">
             <span class="p-float-label">
-                <p-inputNumber locale="en" id="longitude" class="p-inputtext-sm border-0 w-full" [min]="-180" [max]="180" [maxFractionDigits]="5"
+                <p-inputNumber locale="en" id="longitude" styleClass="border-0 w-full" [min]="-180" [max]="180" [maxFractionDigits]="5"
                     [(ngModel)]="editedLocation.longitude" [allowEmpty]="false" />
                 <label htmlFor="longitude">Longitude</label>
             </span>
         </div>
         <div class="col-6 pt-3">
             <span class="p-float-label">
-                <p-inputNumber locale="en" id="elevation" type="number" class="p-inputtext-sm border-0 w-full" [min]="-1000" [max]="10000"
+                <p-inputNumber locale="en" id="elevation" type="number" styleClass="border-0 w-full" [min]="-1000" [max]="10000"
                     [(ngModel)]="editedLocation.elevation" [allowEmpty]="false" />
                 <label htmlFor="elevation">Elevation (m)</label>
             </span>
         </div>
         <div class="col-6 pt-3">
             <span class="p-float-label">
-                <p-inputNumber locale="en" id="offsetInMinutes" type="number" class="p-inputtext-sm border-0 w-full" [min]="-720" [max]="720"
+                <p-inputNumber locale="en" id="offsetInMinutes" type="number" styleClass="border-0 w-full" [min]="-720" [max]="720"
                     [(ngModel)]="editedLocation.offsetInMinutes" [allowEmpty]="false" />
                 <label htmlFor="offsetInMinutes">UTC Offset (min)</label>
             </span>
@@ -287,6 +307,6 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="!editedLocation.name" icon="pi pi-check" label="OK" (onClick)="saveLocation()" styleClass="p-button-text" />
+        <p-button [disabled]="!editedLocation.name" icon="mdi mdi-check" label="OK" (onClick)="saveLocation()" styleClass="p-button-text" />
     </ng-template>
 </p-dialog>

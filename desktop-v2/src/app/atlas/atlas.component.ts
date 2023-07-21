@@ -1,10 +1,10 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ChartData, ChartOptions } from 'chart.js'
+import * as moment from 'moment'
 import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { ApiService } from '../../shared/services/api.service'
-import * as moment from 'moment'
 import { BodyPosition, DeepSkyObject, Location, MinorPlanet, Star } from '../../shared/types'
 
 export interface PlanetItem {
@@ -93,10 +93,15 @@ export class AtlasComponent implements OnInit, OnDestroy {
     star?: Star
     starItems: Star[] = []
     starSearchText = ''
+    showStarFilterDialog = false
+    starFilterRA = '00h00m00.0s'
+    starFilterDEC = `+000°00'00"`
+    starFilterRadius = 0
 
     dso?: DeepSkyObject
     dsoItems: DeepSkyObject[] = []
     dsoSearchText = ''
+    showDSOFilterDialog = false
 
     name = 'Sun'
     tags: { title: string, severity: string }[] = []
@@ -363,6 +368,11 @@ export class AtlasComponent implements OnInit, OnDestroy {
 
     async searchStar() {
         this.starItems = await this.api.searchStar(this.starSearchText)
+    }
+
+    filterStar() {
+        this.searchStar()
+        this.showStarFilterDialog = false
     }
 
     async searchDSO() {

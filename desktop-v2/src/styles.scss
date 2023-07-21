@@ -59,9 +59,18 @@ p-dropdown,
     line-height: 10px;
 }
 
+.p-inputwrapper,
+.p-inputtext {
+    width: 100%;
+}
+
 .p-selectbutton.border-0 .p-button,
 .p-inputnumber.border-0 .p-inputtext {
     border: 1px solid rgba(255, 255, 255, 0) !important;
+}
+
+.p-inputnumber.border-0 .p-inputtext {
+    border-color: var(--surface-0) !important;
 }
 
 .p-toast {

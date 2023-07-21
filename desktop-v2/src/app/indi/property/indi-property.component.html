@@ -11,10 +11,8 @@
             </p-button>
         </div>
         <div *ngIf="property.type === 'SWITCH' && property.rule === 'AT_MOST_ONE'">
-            <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO' || disabled" [label]="item.label" (onClick)="sendSwitch(item)" icon="pi"
-                styleClass="mr-1 p-button">
-                <span class="mdi mdi-check"></span>
-            </p-button>
+            <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO' || disabled" [label]="item.label" (onClick)="sendSwitch(item)" icon="mdi mdi-check"
+                styleClass="mr-1 p-button" />
         </div>
         <div *ngIf="property.type === 'SWITCH' && property.rule === 'ANY_OF_MANY'">
             <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO' || disabled" [label]="item.label" (onClick)="sendSwitch(item)" icon="pi"
@@ -36,9 +34,7 @@
                     </div>
                 </div>
                 <div class="col-3 text-center">
-                    <p-button [disabled]="disabled" *ngIf="property.perm !== 'RO'" label="Send" (onClick)="sendNumber()" icon="pi" styleClass="mr-1 p-button">
-                        <span class="mdi mdi-send"></span>
-                    </p-button>
+                    <p-button [disabled]="disabled" *ngIf="property.perm !== 'RO'" label="Send" (onClick)="sendNumber()" icon="mdi mdi-send" styleClass="mr-1 p-button" />
                 </div>
             </div>
         </div>
@@ -56,9 +52,7 @@
                     </div>
                 </div>
                 <div class="col-3 text-center">
-                    <p-button [disabled]="disabled" *ngIf="property.perm !== 'RO'" label="Send" (onClick)="sendText()" icon="pi" styleClass="mr-1 p-button">
-                        <span class="mdi mdi-send"></span>
-                    </p-button>
+                    <p-button [disabled]="disabled" *ngIf="property.perm !== 'RO'" label="Send" (onClick)="sendText()" icon="mdi mdi-send" styleClass="mr-1 p-button" />
                 </div>
             </div>
         </div>

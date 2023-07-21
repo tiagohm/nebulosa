@@ -5,12 +5,8 @@
                 styleClass="border-0" emptyMessage="No camera found" />
         </div>
         <div class="col-4">
-            <p-button *ngIf="connected" [disabled]="!camera || capturing" (onClick)="connect()" icon="pi" styleClass="p-button-danger p-button">
-                <span class="mdi mdi-close"></span>
-            </p-button>
-            <p-button *ngIf="!connected" [disabled]="!camera || capturing" (onClick)="connect()" icon="pi" styleClass="p-button-info p-button">
-                <span class="mdi mdi-connection"></span>
-            </p-button>
+            <p-button *ngIf="connected" [disabled]="!camera || capturing" (onClick)="connect()" icon="mdi mdi-close" styleClass="p-button-danger p-button" />
+            <p-button *ngIf="!connected" [disabled]="!camera || capturing" (onClick)="connect()" icon="mdi mdi-connection" styleClass="p-button-info p-button" />
         </div>
     </div>
     <div class="grid flex align-items-center">
@@ -27,9 +23,8 @@
             <div class="flex justify-content-center align-items-center">
                 <p-inputNumber [disabled]="!connected || !canSetTemperature || capturing" [(ngModel)]="setpointTemperature" mode="decimal" [showButtons]="true"
                     [step]="0.1" suffix="℃" [min]="-50" [max]="50" locale="en" styleClass="border-0" [allowEmpty]="false" />
-                <p-button [disabled]="!connected || !canSetTemperature || capturing" (onClick)="applySetpointTemperature()" icon="pi" styleClass="ml-1 p-button-success p-button">
-                    <span class="mdi mdi-check"></span>
-                </p-button>
+                <p-button [disabled]="!connected || !canSetTemperature || capturing" (onClick)="applySetpointTemperature()" icon="mdi mdi-check"
+                    styleClass="ml-1 p-button-success p-button" />
             </div>
         </div>
     </div>
@@ -92,9 +87,7 @@
             <p-inputSwitch [disabled]="!connected || capturing" styleClass="mt-2" [(ngModel)]="subframe" />
         </div>
         <div class="col-4 flex pt-3 flex-row align-items-center justify-content-center">
-            <p-button [disabled]="!connected || !subframe || capturing" icon="pi" styleClass="p-button-info p-button">
-                <span class="mdi mdi-fullscreen"></span>
-            </p-button>
+            <p-button [disabled]="!connected || !subframe || capturing" icon="mdi mdi-fullscreen" styleClass="p-button-info p-button" />
         </div>
         <div class="col-3">
             <span class="text-sm">Bin X</span>
@@ -125,12 +118,8 @@
     </div>
     <div class="grid mt-3">
         <div class="col-12 flex align-items-center justify-content-center">
-            <p-button [disabled]="!connected || capturing" label="Start" (onClick)="startCapture()" icon="pi" styleClass="p-button-success p-button">
-                <span class="mdi mdi-play"></span>
-            </p-button>
-            <p-button [disabled]="!connected || !capturing" label="Abort" (onClick)="abortCapture()" icon="pi" styleClass="ml-1 p-button-danger p-button">
-                <span class="mdi mdi-stop"></span>
-            </p-button>
+            <p-button [disabled]="!connected || capturing" label="Start" (onClick)="startCapture()" icon="mdi mdi-play" styleClass="p-button-success p-button" />
+            <p-button [disabled]="!connected || !capturing" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop" styleClass="ml-1 p-button-danger p-button" />
         </div>
     </div>
 </div>
