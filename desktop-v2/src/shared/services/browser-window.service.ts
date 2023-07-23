@@ -15,7 +15,7 @@ export class BrowserWindowService {
     }
 
     openCamera() {
-        const data = { id: 'camera', path: 'camera', icon: 'camera', width: 390, height: 430 }
+        const data = { id: 'camera', path: 'camera', icon: 'camera', width: 390, height: 410 }
         this.openWindow(data)
     }
 
@@ -36,7 +36,7 @@ export class BrowserWindowService {
 
     openINDI(device?: Device) {
         const params: INDIParams = { device }
-        const data: OpenWindow = { id: 'indi', path: 'indi', icon: 'indi', width: '75%', height: `65%`, resizable: true, params }
+        const data: OpenWindow = { id: 'indi', path: 'indi', icon: 'indi', width: '65%', height: 420, resizable: true, params }
         this.openWindow(data)
     }
 

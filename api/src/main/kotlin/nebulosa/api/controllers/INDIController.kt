@@ -3,10 +3,12 @@ package nebulosa.api.controllers
 import jakarta.annotation.PostConstruct
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotEmpty
 import nebulosa.api.data.requests.INDISendPropertyRequest
 import nebulosa.api.data.responses.INDIPropertyResponse
 import nebulosa.api.services.INDIService
 import nebulosa.api.services.WebSocketService
+import nebulosa.indi.device.DeviceMessageReceived
 import nebulosa.indi.device.DevicePropertyChanged
 import nebulosa.indi.device.DevicePropertyDeleted
 import nebulosa.indi.device.DevicePropertyEvent
@@ -35,6 +37,15 @@ class INDIController(
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onDeviceMessageReceived(event: DeviceMessageReceived) {
+        if (event.device == null) {
+            indiService.onMessageReceived(event.message)
+        }
+
+        webSocketService.sendINDIMessageReceived(event)
+    }
+
     @GetMapping("indiProperties")
     fun properties(@RequestParam @Valid @NotBlank name: String): List<INDIPropertyResponse> {
         return indiService.properties(name)
@@ -46,5 +57,20 @@ class INDIController(
         @RequestBody @Valid body: INDISendPropertyRequest,
     ) {
         return indiService.sendProperty(name, body)
+    }
+
+    @GetMapping("indiLog")
+    fun indiLog(@RequestParam(required = false) name: String?): List<String> {
+        return indiService.indiLog(name)
+    }
+
+    @PostMapping("indiStartListening")
+    fun indiStartListening(@RequestParam("eventName") @Valid @NotEmpty eventNames: List<String>) {
+        return eventNames.forEach(webSocketService::registerEventName)
+    }
+
+    @PostMapping("indiStopListening")
+    fun indiStopListening(@RequestParam("eventName") @Valid @NotEmpty eventNames: List<String>) {
+        return eventNames.forEach(webSocketService::unregisterEventName)
     }
 }

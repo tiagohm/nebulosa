@@ -69,6 +69,10 @@ p-dropdown,
     width: 100%;
 }
 
+.p-inputtext:read-only {
+    color: rgba(200, 200, 200, 0.87);
+}
+
 .p-selectbutton.border-0 .p-button,
 .p-inputnumber.border-0 .p-inputtext {
     border: 1px solid rgba(255, 255, 255, 0) !important;

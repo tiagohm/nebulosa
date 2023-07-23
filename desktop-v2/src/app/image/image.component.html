@@ -32,48 +32,53 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Plate Solving" [draggable]="true" [(visible)]="showSolverDialog" [modal]="false" [style]="{width: '360px'}" class="pointer-events-none">
+<p-dialog header="Plate Solving" [draggable]="true" [(visible)]="showSolverDialog" [modal]="false" [style]="{width: '360px'}"
+          class="pointer-events-none">
     <div class="grid">
         <div class="col-8 flex align-items-center">
-            <p-dropdown [(ngModel)]="solverType" [options]="solverTypeOptions" styleClass="border-0" />
+            <span class="p-float-label">
+                <p-dropdown [(ngModel)]="solverType" [options]="solverTypeOptions" styleClass="border-0" />
+                <label>Solver</label>
+            </span>
         </div>
         <div class="col-4 flex flex-column align-items-center">
             Blind <p-inputSwitch styleClass="mt-1" [(ngModel)]="solverBlind" />
         </div>
         <div class="col-8">
             <span class="p-float-label">
-                <input pInputText id="pathOrUrl" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverPathOrUrl" />
-                <label htmlFor="pathOrUrl">Path/URL</label>
+                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverPathOrUrl" />
+                <label>Path/URL</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label" *ngIf="false">
-                <input pInputText id="apiKey" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverApiKey" />
-                <label htmlFor="apiKey">API Key</label>
+                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverApiKey" />
+                <label>API Key</label>
             </span>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <input pInputText id="centerRA" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterRA" />
-                <label htmlFor="centerRA">Center RA (h)</label>
+                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterRA" />
+                <label>Center RA (h)</label>
             </span>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <input pInputText id="centerDEC" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterDEC" />
-                <label htmlFor="centerDEC">Center DEC (deg)</label>
+                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterDEC" />
+                <label>Center DEC (deg)</label>
             </span>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <input pInputText id="radius" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverRadius" />
-                <label htmlFor="radius">Radius (deg)</label>
+                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverRadius" />
+                <label>Radius (deg)</label>
             </span>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-inputNumber id="downsampleFactor" [min]="1" [max]="8" class="w-full" inputStyleClass="p-inputtext-sm border-0 w-full" [(ngModel)]="solverDownsampleFactor" />
-                <label htmlFor="downsampleFactor">Downsample Factor</label>
+                <p-inputNumber [min]="1" [max]="8" class="w-full" inputStyleClass="p-inputtext-sm border-0 w-full"
+                               [(ngModel)]="solverDownsampleFactor" />
+                <label>Downsample Factor</label>
             </span>
         </div>
     </div>
@@ -81,39 +86,40 @@
         <div class="grid pt-2">
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText id="solvedRA" class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.rightAscension ?? '00h00m00.0s'" />
-                    <label htmlFor="solvedRA">RA (J2000)</label>
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.rightAscension ?? '00h00m00.0s'" />
+                    <label>RA (J2000)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText id="solvedDEC" class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.declination ?? '+000°00\'00&quot;'" />
-                    <label htmlFor="solvedDEC">DEC (J2000)</label>
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                           [value]="solverCalibration?.declination ?? '+000°00\'00&quot;'" />
+                    <label>DEC (J2000)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText id="solvedOrientation" class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.orientation?.toFixed(4) ?? '0.0'" />
-                    <label htmlFor="solvedOrientation">Orientation (deg)</label>
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.orientation?.toFixed(4) ?? '0.0'" />
+                    <label>Orientation (deg)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText id="solvedScale" class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.scale?.toFixed(4) ?? '0.0'" />
-                    <label htmlFor="solvedScale">Scale ("/px)</label>
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.scale?.toFixed(4) ?? '0.0'" />
+                    <label>Scale ("/px)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText id="solvedFieldSize" class="p-inputtext-sm border-0 w-full"
-                        [value]="(solverCalibration?.width?.toFixed(2) ?? '0.0') + ' x ' + (solverCalibration?.height?.toFixed(2) ?? '0.0')" />
-                    <label htmlFor="solvedFieldSize">Field size (arcmin)</label>
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                           [value]="(solverCalibration?.width?.toFixed(2) ?? '0.0') + ' x ' + (solverCalibration?.height?.toFixed(2) ?? '0.0')" />
+                    <label>Field size (arcmin)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText id="solvedRadius" class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.radius?.toFixed(4) ?? '0.0'" />
-                    <label htmlFor="solvedRadius">Radius (deg)</label>
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.radius?.toFixed(4) ?? '0.0'" />
+                    <label>Radius (deg)</label>
                 </span>
             </div>
         </div>
@@ -130,7 +136,8 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Stretching" [draggable]="true" [(visible)]="showStretchingDialog" [modal]="false" [style]="{width: '360px'}" class="pointer-events-none">
+<p-dialog header="Stretching" [draggable]="true" [(visible)]="showStretchingDialog" [modal]="false" [style]="{width: '360px'}"
+          class="pointer-events-none">
     <div class="grid px-2">
         <div class="col-12 flex flex-column">
             <div class="flex flex-row justify-content-between">
@@ -149,7 +156,8 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="SCNR" [draggable]="true" [blockScroll]="true" [(visible)]="showSCNRDialog" [modal]="false" [style]="{width: '280px'}" class="pointer-events-none">
+<p-dialog header="SCNR" [draggable]="true" [blockScroll]="true" [(visible)]="showSCNRDialog" [modal]="false" [style]="{width: '280px'}"
+          class="pointer-events-none">
     <div class="grid px-2">
         <div class="col-12 flex align-items-center">
             <p-selectButton styleClass="border-0" [options]="scnrChannelOptions" [(ngModel)]="scnrChannel" [multiple]="false" />
@@ -159,9 +167,9 @@
         </div>
         <div class="col-12">
             <span class="p-float-label">
-                <p-inputNumber id="scnrAmount" [min]="0" [max]="1" [step]="0.1" [showButtons]="true" class="w-full" inputStyleClass="p-inputtext-sm border-0 w-full"
-                    [(ngModel)]="scnrAmount" locale="en" [allowEmpty]="false" />
-                <label htmlFor="scnrAmount">Amount</label>
+                <p-inputNumber [min]="0" [max]="1" [step]="0.1" [showButtons]="true" class="w-full" inputStyleClass="p-inputtext-sm border-0 w-full"
+                               [(ngModel)]="scnrAmount" locale="en" [allowEmpty]="false" />
+                <label>Amount</label>
             </span>
         </div>
     </div>

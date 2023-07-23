@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
@@ -11,7 +11,7 @@ import { Camera, ExposureMode, ExposureTimeUnit, FrameType } from '../../shared/
     templateUrl: './camera.component.html',
     styleUrls: ['./camera.component.scss']
 })
-export class CameraComponent implements OnInit {
+export class CameraComponent implements OnInit, OnDestroy {
 
     cameras: Camera[] = []
     camera?: Camera
@@ -84,19 +84,26 @@ export class CameraComponent implements OnInit {
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         electron: ElectronService,
+        ngZone: NgZone,
     ) {
         title.setTitle('Camera')
 
+        this.api.indiStartListening('CAMERA')
+
         electron.ipcRenderer.on('CAMERA_UPDATED', (_, data: Camera) => {
             if (data.name === this.camera?.name) {
-                this.camera = { ...data }
-                this.update()
+                ngZone.run(() => {
+                    this.camera = { ...data }
+                    this.update()
+                })
             }
         })
 
         electron.ipcRenderer.on('CAMERA_CAPTURE_FINISHED', (_, data: Camera) => {
             if (data.name === this.camera?.name) {
-                this.capturing = false
+                ngZone.run(() => {
+                    this.capturing = false
+                })
             }
         })
     }
@@ -108,6 +115,11 @@ export class CameraComponent implements OnInit {
             this.camera = this.cameras[0]
             this.update()
         }
+    }
+
+    @HostListener('window:unload')
+    ngOnDestroy() {
+        this.api.indiStopListening('CAMERA')
     }
 
     async cameraSelected() {

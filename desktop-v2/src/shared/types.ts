@@ -132,6 +132,11 @@ export interface INDISendPropertyItem {
     value: any
 }
 
+export interface INDIDeviceMessage {
+    device?: string
+    message: string
+}
+
 export interface Location {
     id: number
     name: string
@@ -455,3 +460,13 @@ export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
     'ASTROMETRY_NET_ONLINE' |
     'ASTAP' |
     'WATNEY'
+
+export type INDIEventName = 'ALL' | 'DEVICE' | 'CAMERA' |
+    'DEVICE_PROPERTY_CHANGED' |
+    'DEVICE_PROPERTY_DELETED' |
+    'DEVICE_MESSAGE_RECEIVED' |
+    'CAMERA_IMAGE_SAVED' |
+    'CAMERA_UPDATED' |
+    'CAMERA_CAPTURE_FINISHED' |
+    'CAMERA_ATTACHED' |
+    'CAMERA_DETACHED'

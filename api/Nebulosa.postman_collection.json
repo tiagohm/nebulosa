@@ -54,7 +54,7 @@
 					"response": []
 				},
 				{
-					"name": "Check Connection Status",
+					"name": "Connection Status",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -76,7 +76,7 @@
 			"name": "INDI",
 			"item": [
 				{
-					"name": "List Device INDI Properties",
+					"name": "Properties",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -95,7 +95,7 @@
 					"response": []
 				},
 				{
-					"name": "Send Device INDI Property",
+					"name": "Send Property",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -109,14 +109,115 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/indi/{{cameraId}}/properties",
+							"raw": "{{baseUrl}}/sendIndiProperty?name={{cameraId}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"indi",
-								"{{cameraId}}",
-								"properties"
+								"sendIndiProperty"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{cameraId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/indiLog?name",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"indiLog"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Start Listening",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/indiStartListening?eventName=DEVICE_PROPERTY_CHANGED&eventName=DEVICE_PROPERTY_DELETED&eventName=DEVICE_MESSAGE_RECEIVED&eventName=CAMERA_IMAGE_SAVED&eventName=CAMERA_UPDATED&eventName=CAMERA_CAPTURE_FINISHED&eventName=CAMERA_ATTACHED&eventName=CAMERA_DETACHED",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"indiStartListening"
+							],
+							"query": [
+								{
+									"key": "eventName",
+									"value": "DEVICE_PROPERTY_CHANGED"
+								},
+								{
+									"key": "eventName",
+									"value": "DEVICE_PROPERTY_DELETED"
+								},
+								{
+									"key": "eventName",
+									"value": "DEVICE_MESSAGE_RECEIVED"
+								},
+								{
+									"key": "eventName",
+									"value": "CAMERA_IMAGE_SAVED"
+								},
+								{
+									"key": "eventName",
+									"value": "CAMERA_UPDATED"
+								},
+								{
+									"key": "eventName",
+									"value": "CAMERA_CAPTURE_FINISHED"
+								},
+								{
+									"key": "eventName",
+									"value": "CAMERA_ATTACHED"
+								},
+								{
+									"key": "eventName",
+									"value": "CAMERA_DETACHED"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Stop Listening",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/indiStopListening?eventName=ALL",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"indiStopListening"
+							],
+							"query": [
+								{
+									"key": "eventName",
+									"value": "ALL"
+								}
 							]
 						}
 					},

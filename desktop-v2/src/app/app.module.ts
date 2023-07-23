@@ -4,6 +4,7 @@ import { NgModule } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { MessageService } from 'primeng/api'
 import { ButtonModule } from 'primeng/button'
 import { CalendarModule } from 'primeng/calendar'
 import { ChartModule } from 'primeng/chart'
@@ -33,7 +34,6 @@ import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
-import { MessageService } from 'primeng/api'
 
 @NgModule({
     declarations: [

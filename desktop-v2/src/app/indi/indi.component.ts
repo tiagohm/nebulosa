@@ -1,10 +1,10 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import Hex from 'hex-encoding'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types'
+import { Device, INDIDeviceMessage, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types'
 
 export interface INDIParams {
     device?: Device
@@ -15,7 +15,7 @@ export interface INDIParams {
     templateUrl: './indi.component.html',
     styleUrls: ['./indi.component.scss'],
 })
-export class INDIComponent implements OnInit, AfterViewInit {
+export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
 
     devices: Device[] = []
     properties: INDIProperty<any>[] = []
@@ -23,26 +23,42 @@ export class INDIComponent implements OnInit, AfterViewInit {
 
     device?: Device
     group = ""
+    messages: string[] = []
 
     constructor(
         title: Title,
         private route: ActivatedRoute,
         private api: ApiService,
         electron: ElectronService,
+        ngZone: NgZone,
     ) {
         title.setTitle('INDI')
 
+        this.api.indiStartListening('DEVICE')
+
         electron.ipcRenderer.on('DEVICE_PROPERTY_CHANGED', (_, data: INDIProperty<any>) => {
-            this.addOrUpdateProperty(data)
-            this.updateGroups()
+            ngZone.run(() => {
+                this.addOrUpdateProperty(data)
+                this.updateGroups()
+            })
         })
 
         electron.ipcRenderer.on('DEVICE_PROPERTY_DELETED', (_, data: INDIProperty<any>) => {
             const index = this.properties.findIndex((e) => e.name === data.name)
 
             if (index >= 0) {
-                this.properties.splice(index, 1)
-                this.updateGroups()
+                ngZone.run(() => {
+                    this.properties.splice(index, 1)
+                    this.updateGroups()
+                })
+            }
+        })
+
+        electron.ipcRenderer.on('DEVICE_MESSAGE_RECEIVED', (_, data: INDIDeviceMessage) => {
+            if (this.device && data.device === this.device.name) {
+                ngZone.run(() => {
+                    this.messages.splice(0, 0, data.message)
+                })
             }
         })
     }
@@ -58,8 +74,14 @@ export class INDIComponent implements OnInit, AfterViewInit {
         this.devices = await this.api.attachedCameras()
     }
 
-    deviceChanged() {
+    @HostListener('window:unload')
+    ngOnDestroy() {
+        this.api.indiStopListening('DEVICE')
+    }
+
+    async deviceChanged() {
         this.updateProperties()
+        this.messages = await this.api.indiLog(this.device!)
     }
 
     changeGroup(group: string) {

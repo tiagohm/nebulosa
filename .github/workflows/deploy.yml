@@ -2,17 +2,12 @@ name: Deploy
 
 on:
   push:
-    tags:
-      - '*'
+  workflow_dispatch:
 
 jobs:
-  deploy:
-    name: Deploy
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ ubuntu-latest, windows-latest ]
+  api:
+    name: Build API
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -29,22 +24,48 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build
-        run: ./gradlew --no-daemon :desktop:bootJar
+        run: ./gradlew --no-daemon :api:bootJar
 
-      - name: Rename Build
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: mv desktop/build/libs/desktop.jar nebulosa-${{ github.ref_name }}-linux.jar
-
-      - name: Rename Build
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: mv desktop/build/libs/desktop.jar nebulosa-${{ github.ref_name }}-windows.jar
-
-      - name: Deploy
-        uses: xresloader/upload-to-github-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
         with:
-          overwrite: true
-          update_latest_release: true
-          default_release_name: ${{ github.ref_name }}
-          file: 'nebulosa-*.jar'
+          name: api-${{ GITHUB_SHA }}
+          path: desktop-v2/api.jar
+
+  electron:
+    needs: api
+    name: Build Electron
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Download API
+        uses: actions/download-artifact@v3
+        with:
+          name: api-${{ GITHUB_SHA }}
+          path: desktop-v2
+
+      - name: Install Dependencies
+        working-directory: desktop-v2
+        run: npm i
+
+      - name: Build Electron
+        working-directory: desktop-v2
+        run: npm run electron:build
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: nebulosa-${{ matrix.os }}-${{ GITHUB_SHA }}
+          path: desktop-v2/release/nebulosa-*.AppImage

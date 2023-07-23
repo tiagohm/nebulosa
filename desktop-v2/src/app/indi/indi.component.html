@@ -1,20 +1,28 @@
 <div class="container p-4">
     <div class="grid flex align-items-center">
         <div class="col-4">
-            <p-dropdown [options]="devices" [(ngModel)]="device" (ngModelChange)="deviceChanged()" optionLabel="name"
-                styleClass="border-0" emptyMessage="No device found" />
+            <span class="p-float-label">
+                <p-dropdown [options]="devices" [(ngModel)]="device" (ngModelChange)="deviceChanged()" optionLabel="name"
+                            styleClass="border-0" emptyMessage="No device found" />
+                <label>Device</label>
+            </span>
         </div>
     </div>
     <div class="grid mt-2">
         <div class="col-12">
             <p-button *ngFor="let groupName of groups" (onClick)="changeGroup(groupName)" [label]="groupName" icon="mdi mdi-sitemap"
-                styleClass="mr-1 mt-1 p-button p-button-{{ groupName === group ? '' : 'text' }}" />
+                      styleClass="mr-1 mt-1 p-button p-button-{{ groupName === group ? '' : 'text' }}" />
+            <p-button label="Log" icon="mdi mdi-post" (onClick)="changeGroup('#LOG')"
+                      styleClass="mr-1 mt-1 p-button p-button-{{ group === '#LOG' ? '' : 'text' }} p-button-success" />
         </div>
     </div>
     <div class="grid properties mt-2">
         <div class="col-12">
             <div *ngFor="let property of properties">
                 <app-indi-property *ngIf="property.group === group" [property]="property" (onSend)="send($event)" />
+            </div>
+            <div class="col-12 flex flex-column text-gray-200" *ngIf="group === '#LOG'">
+                <span class="py-1" *ngFor="let message of messages">{{ message }}</span>
             </div>
         </div>
     </div>

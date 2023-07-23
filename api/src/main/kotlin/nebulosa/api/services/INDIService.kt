@@ -4,11 +4,14 @@ import nebulosa.api.data.enums.INDISendPropertyType
 import nebulosa.api.data.requests.INDISendPropertyRequest
 import nebulosa.api.data.responses.INDIPropertyResponse
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service("indiService")
 class INDIService(
     private val equipmentService: EquipmentService,
 ) {
+
+    private val messageReceived = LinkedList<String>()
 
     fun properties(name: String): List<INDIPropertyResponse> {
         val device = equipmentService[name] ?: return emptyList()
@@ -32,5 +35,15 @@ class INDIService(
                 device.sendNewText(vector.name, elements)
             }
         }
+    }
+
+    fun indiLog(name: String?): List<String> {
+        if (name.isNullOrBlank()) return messageReceived
+        val device = equipmentService[name] ?: return emptyList()
+        return device.messages
+    }
+
+    internal fun onMessageReceived(message: String) {
+        messageReceived.addFirst(message)
     }
 }

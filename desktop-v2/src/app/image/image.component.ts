@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import Hex from 'hex-encoding'
@@ -203,6 +203,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         private route: ActivatedRoute,
         private api: ApiService,
         private electron: ElectronService,
+        ngZone: NgZone,
     ) {
         title.setTitle('Image')
 
@@ -212,10 +213,12 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
                     await this.api.closeImage(this.path)
                 }
 
-                this.annotations = []
+                ngZone.run(() => {
+                    this.annotations = []
 
-                this.path = data.path
-                this.loadImage()
+                    this.path = data.path
+                    this.loadImage()
+                })
             }
         })
     }

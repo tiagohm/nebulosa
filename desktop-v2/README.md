@@ -14,7 +14,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](atlas.1.png)
 ![](atlas.2.png)
+![](atlas.3.png)
 ![](atlas.4.png)
+![](atlas.5.png)
+![](atlas.6.png)
 ![](atlas.7.png)
 
 ## Image

@@ -3,7 +3,7 @@ import { app, BrowserWindow, dialog, ipcMain, Menu, screen } from 'electron'
 import Hex from 'hex-encoding'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { OpenWindow } from '../src/shared/types'
+import { INDIEventName, OpenWindow } from '../src/shared/types'
 
 import { WebSocket } from 'ws'
 Object.assign(global, { WebSocket })
@@ -20,8 +20,8 @@ const serve = args.some(e => e === '--serve')
 function createMainWindow() {
     createWindow({ id: 'home', path: 'home' })
 
-    const eventNames = [
-        'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
+    const eventNames: INDIEventName[] = [
+        'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED', 'DEVICE_MESSAGE_RECEIVED',
         'CAMERA_IMAGE_SAVED', 'CAMERA_UPDATED', 'CAMERA_CAPTURE_FINISHED',
         'CAMERA_ATTACHED', 'CAMERA_DETACHED'
     ]
@@ -32,6 +32,10 @@ function createMainWindow() {
             for (const eventName of eventNames) {
                 wsClient.subscribe(eventName, (message) => {
                     const data = JSON.parse(message.body)
+
+                    if (serve) {
+                        console.log(eventName, message.body)
+                    }
 
                     for (const [_, window] of secondaryWindows) {
                         window.webContents.send(eventName, data)

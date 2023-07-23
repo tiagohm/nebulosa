@@ -4,6 +4,7 @@ import * as moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
     BodyPosition, Calibration, Camera, CameraPreference, CameraStartCapture, Constellation, DeepSkyObject, Device,
+    INDIEventName,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet, PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, Star, Twilight
 } from '../types'
 
@@ -138,6 +139,18 @@ export class ApiService {
 
     sendIndiProperty(device: Device, property: INDISendProperty) {
         return this.post<void>(`sendIndiProperty?name=${device.name}`, property)
+    }
+
+    indiStartListening(eventName: INDIEventName) {
+        return this.post<void>(`indiStartListening?eventName=${eventName}`)
+    }
+
+    indiStopListening(eventName: INDIEventName) {
+        return this.post<void>(`indiStopListening?eventName=${eventName}`)
+    }
+
+    indiLog(device: Device) {
+        return this.get<string[]>(`indiLog?name=${device.name}`)
     }
 
     locations() {
