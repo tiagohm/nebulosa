@@ -3,18 +3,19 @@
         <p-tabView [(activeIndex)]="tab" (activeIndexChange)="tabChanged()">
             <p-tabPanel header="Sun" [disabled]="refreshing">
                 <div class="grid flex align-items-center justify-content-center">
-                    <img #imageOfSun style="width: 215px">
+                    <img #imageOfSun style="width: 198px">
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Moon" [disabled]="refreshing">
                 <div class="grid flex align-items-center justify-content-center">
-                    <img #imageOfMoon style="width: 215px">
+                    <img #imageOfMoon style="width: 198px">
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Planets" [disabled]="refreshing">
                 <div class="grid flex align-items-center justify-content-center">
-                    <p-table [value]="planets" class="planet" [(selection)]="planet" (selectionChange)="planetChanged()" selectionMode="single" dataKey="code"
-                        styleClass="p-datatable-striped">
+                    <p-table [value]="planets" class="planet" [(selection)]="planet" (selectionChange)="planetChanged()" selectionMode="single"
+                             dataKey="code"
+                             styleClass="p-datatable-striped">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th>Name</th>
@@ -34,10 +35,11 @@
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
                         <input type="text" pInputText class="min-w-full" [(ngModel)]="minorPlanetSearchText"
-                            pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest." tooltipPosition="bottom" />
+                               pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest." tooltipPosition="bottom" />
                     </div>
                     <div class="col-3">
-                        <p-button [disabled]="minorPlanetSearchText.length < 3 || refreshing" (onClick)="searchMinorPlanet()" icon="mdi mdi-magnify" styleClass="p-button-success">
+                        <p-button [disabled]="minorPlanetSearchText.length < 3 || refreshing" (onClick)="searchMinorPlanet()" icon="mdi mdi-magnify"
+                                  styleClass="p-button-success">
                             <span class=""></span>
                         </p-button>
                     </div>
@@ -72,8 +74,9 @@
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
-                    <p-table [value]="starItems" class="star" sortField="magnitude" [(selection)]="star" (selectionChange)="starChanged()" selectionMode="single" dataKey="id"
-                        styleClass="p-datatable-striped">
+                    <p-table [value]="starItems" class="star" sortField="magnitude" [(selection)]="star" (selectionChange)="starChanged()"
+                             selectionMode="single" dataKey="id"
+                             styleClass="p-datatable-striped">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th pSortableColumn="names">Name <p-sortIcon field="names" /></th>
@@ -99,14 +102,14 @@
                         <input type="text" pInputText class="min-w-full" [(ngModel)]="dsoSearchText" />
                     </div>
                     <div class="col-3">
-                        <p-button [disabled]="dsoSearchText.length < 3 || refreshing" (onClick)="searchDSO()" icon="mdi mdi-magnify" styleClass="p-button-success">
-                            <span class=""></span>
-                        </p-button>
+                        <p-button [disabled]="refreshing" (onClick)="searchDSO()" icon="mdi mdi-magnify" styleClass="p-button-info" />
+                        <p-button [disabled]="refreshing" (onClick)="showDSOFilterDialog = true" icon="mdi mdi-filter" styleClass="ml-1 p-button" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
-                    <p-table [value]="dsoItems" class="dso" sortField="magnitude" [(selection)]="dso" (selectionChange)="dsoChanged()" selectionMode="single" dataKey="id"
-                        styleClass="p-datatable-striped">
+                    <p-table [value]="dsoItems" class="dso" sortField="magnitude" [(selection)]="dso" (selectionChange)="dsoChanged()"
+                             selectionMode="single" dataKey="id"
+                             styleClass="p-datatable-striped">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th pSortableColumn="names">Name <p-sortIcon field="names" /></th>
@@ -133,12 +136,13 @@
                     </div>
                     <div class="col-8">
                         <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()" optionLabel="name"
-                            emptyMessage="No location found" />
+                                    emptyMessage="No location found" />
                     </div>
                     <div class="col-4">
                         <p-button [disabled]="refreshing" class="mr-1" (onClick)="addLocation()" icon="mdi mdi-plus" styleClass="p-button-success" />
                         <p-button [disabled]="refreshing" class="mr-1" (onClick)="editLocation()" icon="mdi mdi-pencil" styleClass="p-button-info" />
-                        <p-button [disabled]="refreshing || locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete" styleClass="p-button-danger" />
+                        <p-button [disabled]="refreshing || locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete"
+                                  styleClass="p-button-danger" />
                     </div>
                     <div class="col-12 font-bold pb-0">
                         Date & Time
@@ -147,8 +151,9 @@
                         <span class="p-input-icon-left p-input-icon-right">
                             <span class="pi pi-calendar"></span>
                             <p-calendar [disabled]="!useManualDateTime" [(ngModel)]="dateTime" [showTime]="true"
-                                [showSeconds]="false" dateFormat="yy/mm/dd" inputStyleClass="pl-6" />
-                            <p-checkbox class="p-icon-wrapper" [binary]="true" [(ngModel)]="useManualDateTime" />
+                                        [showSeconds]="false" dateFormat="yy/mm/dd" inputStyleClass="pl-6" (ngModelChange)="dateTimeChanged()" />
+                            <p-checkbox class="p-icon-wrapper" [binary]="true" [(ngModel)]="useManualDateTime"
+                                        (ngModelChange)="useManualDateTimeChanged()" />
                         </span>
                     </div>
                 </div>
@@ -156,9 +161,9 @@
         </p-tabView>
     </div>
 </div>
-<div class="grid px-2" *ngIf="tab != 6">
-    <div class="col-12 text-center">
-        <span>{{ name }}</span>
+<div class="grid px-2">
+    <div class="col-12 flex align-items-center justify-content-center" style="height: 32px; max-height: 32px;">
+        <span class="text-overflow-scroll">{{ name }}</span>
         <p-tag class="ml-1" *ngFor="let tag of tags" [severity]="tag.severity" [value]="tag.title" />
     </div>
     <div class="col-3">
@@ -199,7 +204,8 @@
     </div>
     <div class="col-3">
         <span class="p-float-label">
-            <input readonly pInputText id="magnitude" class="border-0 max-w-full" [value]="bodyPosition.magnitude < 99 ? bodyPosition.magnitude : '-'" />
+            <input readonly pInputText id="magnitude" class="border-0 max-w-full"
+                   [value]="bodyPosition.magnitude < 99 ? bodyPosition.magnitude.toFixed(2) : '-'" />
             <label htmlFor="magnitude">Magnitude</label>
         </span>
     </div>
@@ -227,6 +233,10 @@
             <label htmlFor="elongation">Elongation (°)</label>
         </span>
     </div>
+    <div class="col-3 flex justify-content-center">
+        <p-menu #positionMenu [model]="bodyPositionMenuItems" [popup]="true"></p-menu>
+        <p-button icon="mdi mdi-lg mdi-dots-vertical" (click)="positionMenu.toggle($event)" styleClass="p-button-rounded p-button-text" />
+    </div>
     <div class="col-12">
         <p-chart #chart [data]="altitudeData" [responsive]="true" [options]="altitudeOptions" />
     </div>
@@ -234,8 +244,9 @@
 
 <p-dialog header="Minor Planets" [modal]="true" [(visible)]="showMinorPlanetChoiceDialog" [style]="{width: '80vw'}">
     <div class="grid p-2">
-        <p-listbox [options]="minorPlanetChoiceItems" (onChange)="minorPlanetChoosen($event)" [filter]="true" optionLabel="name" [listStyle]="{ 'max-height': '250px' }"
-            class="w-full" />
+        <p-listbox [options]="minorPlanetChoiceItems" (onChange)="minorPlanetChoosen($event)" [filter]="true" optionLabel="name"
+                   [listStyle]="{ 'max-height': '250px' }"
+                   class="w-full" />
     </div>
 </p-dialog>
 
@@ -256,9 +267,27 @@
         <div class="col-4">
             <span class="p-float-label">
                 <p-inputNumber id="starFilterRadius" [min]="0" [max]="90" class="w-full" [showButtons]="true" inputStyleClass="border-0 w-full"
-                    [(ngModel)]="starFilterRadius" />
+                               [(ngModel)]="starFilterRadius" />
                 <label htmlFor="starFilterRadius">Radius (deg)</label>
             </span>
+        </div>
+        <div class="col-6">
+            <span class="p-float-label">
+                <p-dropdown id="starFilterConstellation" [options]="constellationOptions" [(ngModel)]="starFilterConstellation" optionLabel="name"
+                            optionValue="value" appendTo="body" styleClass="border-0" />
+                <label htmlFor="starFilterConstellation">Constellation</label>
+            </span>
+        </div>
+        <div class="col-6">
+            <span class="p-float-label">
+                <p-dropdown id="starFilterType" [options]="starFilterTypeOptions" [(ngModel)]="starFilterType" optionLabel="name" optionValue="value"
+                            appendTo="body" styleClass="border-0" />
+                <label htmlFor="starFilterType">Type</label>
+            </span>
+        </div>
+        <div class="col-12">
+            <p>Magnitude min: {{ starFilterMagnitude[0] }} max: {{ starFilterMagnitude[1] }}</p>
+            <p-slider class="mt-3" [min]="-30" [max]="30" styleClass="mx-2" [(ngModel)]="starFilterMagnitude" [range]="true" />
         </div>
     </div>
     <ng-template pTemplate="footer">
@@ -266,7 +295,53 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Location" *ngIf="showLocationDialog" (onShow)="map.refresh()" [draggable]="false" [(visible)]="showLocationDialog" [modal]="true" [style]="{width: '80vw'}">
+<p-dialog header="DSO Filter" [draggable]="false" [(visible)]="showDSOFilterDialog" [modal]="true" [style]="{width: '80vw'}">
+    <div class="grid mt-2">
+        <div class="col-4">
+            <span class="p-float-label">
+                <input pInputText id="dsoFilterRA" class="border-0 max-w-full" [value]="dsoFilterRA" />
+                <label htmlFor="dsoFilterRA">RA (h)</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <input pInputText id="dsoFilterDEC" class="border-0 max-w-full" [value]="dsoFilterDEC" />
+                <label htmlFor="dsoFilterDEC">DEC (deg)</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <p-inputNumber id="dsoFilterRadius" [min]="0" [max]="90" class="w-full" [showButtons]="true" inputStyleClass="border-0 w-full"
+                               [(ngModel)]="dsoFilterRadius" />
+                <label htmlFor="dsoFilterRadius">Radius (deg)</label>
+            </span>
+        </div>
+        <div class="col-6">
+            <span class="p-float-label">
+                <p-dropdown id="dsoFilterConstellation" [options]="constellationOptions" [(ngModel)]="dsoFilterConstellation" optionLabel="name"
+                            optionValue="value" appendTo="body" styleClass="border-0" />
+                <label htmlFor="dsoFilterConstellation">Constellation</label>
+            </span>
+        </div>
+        <div class="col-6">
+            <span class="p-float-label">
+                <p-dropdown id="dsoFilterType" [options]="dsoFilterTypeOptions" [(ngModel)]="dsoFilterType" optionLabel="name" optionValue="value"
+                            appendTo="body" styleClass="border-0" />
+                <label htmlFor="dsoFilterType">Type</label>
+            </span>
+        </div>
+        <div class="col-12">
+            <p>Magnitude min: {{ dsoFilterMagnitude[0] }} max: {{ dsoFilterMagnitude[1] }}</p>
+            <p-slider class="mt-3" [min]="-30" [max]="30" styleClass="mx-2" [(ngModel)]="dsoFilterMagnitude" [range]="true" />
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button icon="mdi mdi-filter" label="Filter" (onClick)="filterDSO()" styleClass="p-button-text" />
+    </ng-template>
+</p-dialog>
+
+<p-dialog header="Location" *ngIf="showLocationDialog" (onShow)="map.refresh()" [draggable]="false" [(visible)]="showLocationDialog" [modal]="true"
+          [style]="{width: '80vw'}">
     <div class="grid">
         <div class="col-12 pt-3">
             <span class="p-float-label">
@@ -277,28 +352,28 @@
         <div class="col-6 pt-3">
             <span class="p-float-label">
                 <p-inputNumber locale="en" id="latitude" styleClass="border-0 w-full" [min]="-90" [max]="90" [maxFractionDigits]="5"
-                    [(ngModel)]="editedLocation.latitude" [allowEmpty]="false" />
+                               [(ngModel)]="editedLocation.latitude" [allowEmpty]="false" />
                 <label htmlFor="latitude">Latitude</label>
             </span>
         </div>
         <div class="col-6 pt-3">
             <span class="p-float-label">
                 <p-inputNumber locale="en" id="longitude" styleClass="border-0 w-full" [min]="-180" [max]="180" [maxFractionDigits]="5"
-                    [(ngModel)]="editedLocation.longitude" [allowEmpty]="false" />
+                               [(ngModel)]="editedLocation.longitude" [allowEmpty]="false" />
                 <label htmlFor="longitude">Longitude</label>
             </span>
         </div>
         <div class="col-6 pt-3">
             <span class="p-float-label">
                 <p-inputNumber locale="en" id="elevation" type="number" styleClass="border-0 w-full" [min]="-1000" [max]="10000"
-                    [(ngModel)]="editedLocation.elevation" [allowEmpty]="false" />
+                               [(ngModel)]="editedLocation.elevation" [allowEmpty]="false" />
                 <label htmlFor="elevation">Elevation (m)</label>
             </span>
         </div>
         <div class="col-6 pt-3">
             <span class="p-float-label">
                 <p-inputNumber locale="en" id="offsetInMinutes" type="number" styleClass="border-0 w-full" [min]="-720" [max]="720"
-                    [(ngModel)]="editedLocation.offsetInMinutes" [allowEmpty]="false" />
+                               [(ngModel)]="editedLocation.offsetInMinutes" [allowEmpty]="false" />
                 <label htmlFor="offsetInMinutes">UTC Offset (min)</label>
             </span>
         </div>

@@ -19,6 +19,10 @@ import nebulosa.api.services.AtlasService
 import nebulosa.api.utils.noSeconds
 import nebulosa.api.utils.orNow
 import nebulosa.api.utils.plus
+import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.deg
+import nebulosa.nova.astrometry.Constellation
+import nebulosa.skycatalog.SkyObjectType
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
@@ -191,14 +195,36 @@ class AtlasController(
     @GetMapping("searchStar")
     fun searchStar(
         @RequestParam @Valid @NotBlank text: String,
+        @RequestParam(required = false, defaultValue = "") rightAscension: String,
+        @RequestParam(required = false, defaultValue = "") declination: String,
+        @RequestParam(required = false, defaultValue = "0.0") radius: Double,
+        @RequestParam(required = false) constellation: Constellation?,
+        @RequestParam(required = false, defaultValue = "-99.0") magnitudeMin: Double,
+        @RequestParam(required = false, defaultValue = "99.0") magnitudeMax: Double,
+        @RequestParam(required = false) type: SkyObjectType?,
     ): List<StarEntity> {
-        return atlasService.searchStar(text)
+        return atlasService.searchStar(
+            text,
+            Angle.from(rightAscension, true), Angle.from(declination), radius.deg,
+            constellation, magnitudeMin, magnitudeMax, type,
+        )
     }
 
     @GetMapping("searchDSO")
     fun searchDSO(
         @RequestParam @Valid @NotBlank text: String,
+        @RequestParam(required = false, defaultValue = "") rightAscension: String,
+        @RequestParam(required = false, defaultValue = "") declination: String,
+        @RequestParam(required = false, defaultValue = "0.0") radius: Double,
+        @RequestParam(required = false) constellation: Constellation?,
+        @RequestParam(required = false, defaultValue = "-99.0") magnitudeMin: Double,
+        @RequestParam(required = false, defaultValue = "99.0") magnitudeMax: Double,
+        @RequestParam(required = false) type: SkyObjectType?,
     ): List<DeepSkyObjectEntity> {
-        return atlasService.searchDSO(text)
+        return atlasService.searchDSO(
+            text,
+            Angle.from(rightAscension, true), Angle.from(declination), radius.deg,
+            constellation, magnitudeMin, magnitudeMax, type,
+        )
     }
 }

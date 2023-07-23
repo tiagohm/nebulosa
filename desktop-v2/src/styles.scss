@@ -11,7 +11,11 @@ body {
 }
 
 .mdi:before {
-    font-size: 1.23rem;
+    font-size: 1.25rem;
+}
+
+.mdi.mdi-lg:before {
+    font-size: 2rem;
 }
 
 span.p-inputnumber {
@@ -40,6 +44,7 @@ p-inputnumber .p-inputnumber-buttons-stacked input {
 }
 
 .p-inputtext[type="number"] {
+
     &::-webkit-outer-spin-button,
     &::-webkit-inner-spin-button {
         -webkit-appearance: none;
@@ -75,6 +80,18 @@ p-dropdown,
 
 .p-toast {
     opacity: 1;
+}
+
+.text-overflow-scroll {
+    display: inline-block;
+    white-space: nowrap;
+    width: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 ::-webkit-scrollbar {

@@ -33,7 +33,6 @@ fun initAppDirectory(): Path? {
     return appDirectory
 }
 
-
 private fun Path.clearLogIfPastDays(days: Long = 7L) {
     if (exists()) {
         val pastDays = LocalDate.now().minusDays(days)

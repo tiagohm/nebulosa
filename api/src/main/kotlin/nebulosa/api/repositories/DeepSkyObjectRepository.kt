@@ -36,15 +36,17 @@ class DeepSkyObjectRepository(
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
     ): List<DeepSkyObjectEntity> {
+        val useCoordinate = rightAscension.valid && declination.valid && radius.value > 0.0
+
         return box.query()
             .let { if (text.isNullOrBlank()) it else it.contains(DeepSkyObjectEntity_.names, text, CASE_INSENSITIVE) }
             .let { if (constellation == null) it else it.equal(DeepSkyObjectEntity_.constellation, constellation.name, CASE_SENSITIVE) }
             .let { if (type == null) it else it.equal(DeepSkyObjectEntity_.type, type.name, CASE_SENSITIVE) }
             .between(DeepSkyObjectEntity_.magnitude, magnitudeMin, magnitudeMax)
-            .let { if (radius.value <= 0.0) it else it.filter(RightAscensionDeclinationQueryFilter(rightAscension, declination, radius)) }
+            .let { if (useCoordinate) it.filter(RightAscensionDeclinationQueryFilter(rightAscension, declination, radius)) else it }
             .order(DeepSkyObjectEntity_.magnitude)
             .build()
-            .use { if (radius.value <= 0.0) it.find(0, 1000) else it.find() }
+            .use { if (useCoordinate) it.find() else it.find(0, 1000) }
     }
 
     fun load(resource: Resource) {

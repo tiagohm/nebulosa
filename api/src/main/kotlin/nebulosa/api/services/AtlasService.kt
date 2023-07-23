@@ -20,16 +20,19 @@ import nebulosa.horizons.HorizonsQuantity
 import nebulosa.io.resource
 import nebulosa.io.transferAndCloseInput
 import nebulosa.log.loggerFor
+import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.mas
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Velocity.Companion.kms
 import nebulosa.nova.almanac.evenlySpacedNumbers
 import nebulosa.nova.almanac.findDiscrete
 import nebulosa.nova.astrometry.Body
+import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.astrometry.FixedStar
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.sbd.SmallBodyDatabaseLookupService
 import nebulosa.skycatalog.SkyObject
+import nebulosa.skycatalog.SkyObjectType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.beans.factory.annotation.Value
@@ -93,8 +96,7 @@ class AtlasService(
         output: HttpServletResponse,
     ) {
         val sot = bodyEphemeris(MOON, location, dateTime)
-            .withLocationAndDateTime(location, dateTime)!!
-            .get(HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE)
+            .withLocationAndDateTime(location, dateTime)!![HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE]
             ?.split(",") ?: return
 
         val angle = sot[0].toDouble()
@@ -242,12 +244,34 @@ class AtlasService(
             ?: MinorPlanetResponse.EMPTY
     }
 
-    fun searchStar(text: String): List<StarEntity> {
-        return starRepository.search(text)
+    fun searchStar(
+        text: String,
+        rightAscension: Angle = Angle.ZERO, declination: Angle = Angle.ZERO, radius: Angle = Angle.ZERO,
+        constellation: Constellation? = null,
+        magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
+        type: SkyObjectType? = null,
+    ): List<StarEntity> {
+        return starRepository.search(
+            text,
+            rightAscension, declination, radius,
+            constellation,
+            magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type
+        )
     }
 
-    fun searchDSO(text: String): List<DeepSkyObjectEntity> {
-        return deepSkyObjectRepository.search(text)
+    fun searchDSO(
+        text: String,
+        rightAscension: Angle = Angle.ZERO, declination: Angle = Angle.ZERO, radius: Angle = Angle.ZERO,
+        constellation: Constellation? = null,
+        magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
+        type: SkyObjectType? = null,
+    ): List<DeepSkyObjectEntity> {
+        return deepSkyObjectRepository.search(
+            text,
+            rightAscension, declination, radius,
+            constellation,
+            magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type
+        )
     }
 
     @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)

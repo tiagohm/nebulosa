@@ -156,6 +156,21 @@ export interface BodyPosition {
     elongation: number
 }
 
+export const EMPTY_BODY_POSITION: BodyPosition = {
+    rightAscensionJ2000: '00h00m00s',
+    declinationJ2000: `+000°00'00"`,
+    rightAscension: '00h00m00s',
+    declination: `+000°00'00"`,
+    azimuth: `000°00'00"`,
+    altitude: `+00°00'00"`,
+    magnitude: 0,
+    constellation: 'AND',
+    distance: 0,
+    distanceUnit: 'ly',
+    illuminated: 0,
+    elongation: 0,
+}
+
 export interface Twilight {
     civilDusk: number[]
     nauticalDusk: number[]
@@ -276,6 +291,8 @@ export enum ExposureTimeUnit {
     MILLISECOND = 'ms',
     MICROSECOND = 'µs',
 }
+
+export type TypeWithAll<T> = T | 'ALL'
 
 export type AutoSubFolderMode = 'OFF' |
     'NOON' |

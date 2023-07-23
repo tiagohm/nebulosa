@@ -7,4 +7,7 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports": true
   },
+  "html.format.wrapAttributes": "preserve-aligned",
+  "html.format.wrapLineLength": 150,
+  "explorer.excludeGitIgnore": true,
 }

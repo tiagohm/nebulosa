@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core'
 import * as moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
-    BodyPosition, Calibration, Camera, CameraPreference, CameraStartCapture, DeepSkyObject, Device,
-    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet, PlateSolverType, SCNRProtectionMethod, SavedCameraImage, Star, Twilight
+    BodyPosition, Calibration, Camera, CameraPreference, CameraStartCapture, Constellation, DeepSkyObject, Device,
+    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet, PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, Star, Twilight
 } from '../types'
 
 @Injectable({ providedIn: 'root' })
@@ -211,12 +211,30 @@ export class ApiService {
         return this.get<MinorPlanet>(`searchMinorPlanet?text=${text}`)
     }
 
-    searchStar(text: string) {
-        return this.get<Star[]>(`searchStar?text=${text}`)
+    searchStar(text: string,
+        rightAscension: string, declination: string, radius: number,
+        constellation?: Constellation,
+        magnitudeMin: number = -99, magnitudeMax: number = 99,
+        type?: SkyObjectType,
+    ) {
+        let q = ''
+        if (constellation) q += `&constellation=${constellation}`
+        if (type) q += `&type=${type}`
+        return this.get<Star[]>(`searchStar?text=${text}&rightAscension=${rightAscension}&declination=${declination}&radius=${radius}` +
+            `&magnitudeMin=${magnitudeMin}&magnitudeMax=${magnitudeMax}${q}`)
     }
 
-    searchDSO(text: string) {
-        return this.get<DeepSkyObject[]>(`searchDSO?text=${text}`)
+    searchDSO(text: string,
+        rightAscension: string, declination: string, radius: number,
+        constellation?: Constellation,
+        magnitudeMin: number = -99, magnitudeMax: number = 99,
+        type?: SkyObjectType,
+    ) {
+        let q = ''
+        if (constellation) q += `&constellation=${constellation}`
+        if (type) q += `&type=${type}`
+        return this.get<DeepSkyObject[]>(`searchDSO?text=${text}&rightAscension=${rightAscension}&declination=${declination}&radius=${radius}` +
+            `&magnitudeMin=${magnitudeMin}&magnitudeMax=${magnitudeMax}${q}`)
     }
 
     annotationsOfImage(
