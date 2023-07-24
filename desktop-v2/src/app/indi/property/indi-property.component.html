@@ -4,22 +4,22 @@
         <span class="ml-2">{{ property.label }}</span>
     </div>
     <div class="col-9">
-        <div *ngIf="property.type === 'SWITCH' && property.rule === 'ONE_OF_MANY'">
+        <div class="flex align-items-center gap-1" *ngIf="property.type === 'SWITCH' && property.rule === 'ONE_OF_MANY'">
             <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO' || disabled" [label]="item.label"
                       (onClick)="sendSwitch(item)" icon="pi"
-                      styleClass="mr-1 p-button p-button-{{ item.value ? 'success' : 'danger' }}">
+                      styleClass="p-button p-button-{{ item.value ? 'success' : 'danger' }}">
                 <span [class.mdi-check]="item.value" [class.mdi-close]="!item.value" class="mdi"></span>
             </p-button>
         </div>
-        <div *ngIf="property.type === 'SWITCH' && property.rule === 'AT_MOST_ONE'">
+        <div class="flex align-items-center gap-1" *ngIf="property.type === 'SWITCH' && property.rule === 'AT_MOST_ONE'">
             <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO' || disabled" [label]="item.label"
                       (onClick)="sendSwitch(item)" icon="mdi mdi-check"
-                      styleClass="mr-1 p-button" />
+                      styleClass="p-button" />
         </div>
-        <div *ngIf="property.type === 'SWITCH' && property.rule === 'ANY_OF_MANY'">
+        <div class="flex align-items-center gap-1" *ngIf="property.type === 'SWITCH' && property.rule === 'ANY_OF_MANY'">
             <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO' || disabled" [label]="item.label"
                       (onClick)="sendSwitch(item)" icon="pi"
-                      styleClass="mr-1 p-button p-button-{{ item.value ? 'success' : 'danger' }}">
+                      styleClass="p-button p-button-{{ item.value ? 'success' : 'danger' }}">
                 <span [class.mdi-check]="item.value" [class.mdi-close]="!item.value" class="mdi"></span>
             </p-button>
         </div>
@@ -44,7 +44,7 @@
                 </div>
                 <div class="col-3 text-center">
                     <p-button [disabled]="disabled" *ngIf="property.perm !== 'RO'" label="Send" (onClick)="sendNumber()" icon="mdi mdi-send"
-                              styleClass="mr-1 p-button" />
+                              styleClass="p-button" />
                 </div>
             </div>
         </div>
@@ -70,7 +70,7 @@
                 </div>
                 <div class="col-3 text-center">
                     <p-button [disabled]="disabled" *ngIf="property.perm !== 'RO'" label="Send" (onClick)="sendText()" icon="mdi mdi-send"
-                              styleClass="mr-1 p-button" />
+                              styleClass="p-button" />
                 </div>
             </div>
         </div>

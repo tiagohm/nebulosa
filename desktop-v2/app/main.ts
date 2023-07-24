@@ -1,5 +1,5 @@
 import { Client } from '@stomp/stompjs'
-import { app, BrowserWindow, dialog, ipcMain, Menu, screen } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from 'electron'
 import Hex from 'hex-encoding'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
@@ -50,7 +50,13 @@ function createMainWindow() {
 
 function createWindow(data: OpenWindow) {
     if (secondaryWindows.has(data.id)) {
-        return secondaryWindows.get(data.id)!
+        const window = secondaryWindows.get(data.id)!
+
+        if (data.params) {
+            window.webContents.send('PARAMS_CHANGED', data.params)
+        }
+
+        return window
     } else if (data.id === 'home' && mainWindow) {
         return mainWindow
     }
@@ -115,6 +121,11 @@ function createWindow(data: OpenWindow) {
         const url = new URL(path.join('file:', __dirname, `index.html#/${data.path}?params=${params}`))
         window.loadURL(url.href)
     }
+
+    window.webContents.setWindowOpenHandler(({ url }) => {
+        shell.openExternal(url)
+        return { action: 'deny' }
+    })
 
     window.on('close', () => {
         if (window === mainWindow) {
@@ -245,6 +256,18 @@ try {
         })
 
         event.returnValue = !value.canceled && value.filePaths[0]
+    })
+
+    ipcMain.on('close-window', (event, id: string) => {
+        for (const [key, value] of secondaryWindows) {
+            if (key === id) {
+                value.close()
+                event.returnValue = true
+                return
+            }
+        }
+
+        event.returnValue = false
     })
 } catch (e) {
     console.error(e)

@@ -24,6 +24,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](image.png)
 
+## Framing
+
+![](framing.png)
+
 ## INDI
 
 ![](indi.png)

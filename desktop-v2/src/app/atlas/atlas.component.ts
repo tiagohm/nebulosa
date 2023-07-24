@@ -6,6 +6,7 @@ import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { ApiService } from '../../shared/services/api.service'
+import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { BodyPosition, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, Location, MinorPlanet, SkyObjectType, Star, TypeWithAll } from '../../shared/types'
 
 export interface PlanetItem {
@@ -54,6 +55,9 @@ export class AtlasComponent implements OnInit, OnDestroy {
         {
             icon: 'mdi mdi-image',
             label: 'Framing',
+            command: () => {
+                this.browserWindow.openFraming({ rightAscension: this.bodyPosition.rightAscensionJ2000, declination: this.bodyPosition.declinationJ2000 })
+            },
         },
     ]
 
@@ -566,6 +570,7 @@ export class AtlasComponent implements OnInit, OnDestroy {
     constructor(
         private title: Title,
         private api: ApiService,
+        private browserWindow: BrowserWindowService,
     ) {
         title.setTitle('Sky Atlas')
 

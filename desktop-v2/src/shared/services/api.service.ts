@@ -4,8 +4,8 @@ import * as moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
     BodyPosition, Calibration, Camera, CameraPreference, CameraStartCapture, Constellation, DeepSkyObject, Device,
-    INDIEventName,
-    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet, PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, Star, Twilight
+    HipsSurvey, INDIEventName, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet,
+    PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, Star, Twilight
 } from '../types'
 
 @Injectable({ providedIn: 'root' })
@@ -270,5 +270,16 @@ export class ApiService {
 
     saveImageAs(inputPath: string, outputPath: string) {
         return this.post<void>(`saveImageAs?inputPath=${inputPath}&outputPath=${outputPath}`)
+    }
+
+    hipsSurveys() {
+        return this.get<HipsSurvey[]>(`hipsSurveys`)
+    }
+
+    frame(rightAscension: string, declination: string,
+        width: number, height: number,
+        fov: number, rotation: number, hipsSurvey: HipsSurvey,
+    ) {
+        return this.post<string>(`frame?rightAscension=${rightAscension}&declination=${declination}&rotation=${rotation}&fov=${fov}&width=${width}&height=${height}&hipsSurvey=${hipsSurvey.id}`)
     }
 }

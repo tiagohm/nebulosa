@@ -4,8 +4,8 @@ import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
-import nebulosa.api.data.converters.ConstellationBoxConverter
-import nebulosa.api.data.converters.SkyObjectTypeBoxConverter
+import nebulosa.api.data.converters.ConstellationConverter
+import nebulosa.api.data.converters.SkyObjectTypeConverter
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObjectType
 
@@ -46,7 +46,7 @@ data class DeepSkyObjectEntity(
     var magnitude: Double = Double.MAX_VALUE,
     var rightAscension: Double = 0.0,
     var declination: Double = 0.0,
-    @Index @Convert(converter = SkyObjectTypeBoxConverter::class, dbType = String::class)
+    @Index @Convert(converter = SkyObjectTypeConverter::class, dbType = String::class)
     var type: SkyObjectType = SkyObjectType.OBJECT_OF_UNKNOWN_NATURE,
     var redshift: Double = 0.0,
     var parallax: Double = 0.0,
@@ -57,6 +57,6 @@ data class DeepSkyObjectEntity(
     var orientation: Double = 0.0,
     var pmRA: Double = 0.0,
     var pmDEC: Double = 0.0,
-    @Index @Convert(converter = ConstellationBoxConverter::class, dbType = String::class)
+    @Index @Convert(converter = ConstellationConverter::class, dbType = String::class)
     var constellation: Constellation = Constellation.AND,
 )

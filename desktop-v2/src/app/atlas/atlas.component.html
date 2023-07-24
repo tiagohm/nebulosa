@@ -39,9 +39,7 @@
                     </div>
                     <div class="col-3">
                         <p-button [disabled]="minorPlanetSearchText.length < 3 || refreshing" (onClick)="searchMinorPlanet()" icon="mdi mdi-magnify"
-                                  styleClass="p-button-success">
-                            <span class=""></span>
-                        </p-button>
+                                  styleClass="p-button-success" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -68,9 +66,9 @@
                     <div class="col-9">
                         <input type="text" pInputText class="min-w-full" [(ngModel)]="starSearchText" />
                     </div>
-                    <div class="col-3">
+                    <div class="col-3 flex align-items-center gap-1">
                         <p-button [disabled]="refreshing" (onClick)="searchStar()" icon="mdi mdi-magnify" styleClass="p-button-info" />
-                        <p-button [disabled]="refreshing" (onClick)="showStarFilterDialog = true" icon="mdi mdi-filter" styleClass="ml-1 p-button" />
+                        <p-button [disabled]="refreshing" (onClick)="showStarFilterDialog = true" icon="mdi mdi-filter" styleClass="p-button" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -101,9 +99,9 @@
                     <div class="col-9">
                         <input type="text" pInputText class="min-w-full" [(ngModel)]="dsoSearchText" />
                     </div>
-                    <div class="col-3">
+                    <div class="col-3 flex align-items-center gap-1">
                         <p-button [disabled]="refreshing" (onClick)="searchDSO()" icon="mdi mdi-magnify" styleClass="p-button-info" />
-                        <p-button [disabled]="refreshing" (onClick)="showDSOFilterDialog = true" icon="mdi mdi-filter" styleClass="ml-1 p-button" />
+                        <p-button [disabled]="refreshing" (onClick)="showDSOFilterDialog = true" icon="mdi mdi-filter" styleClass="p-button" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -138,9 +136,9 @@
                             <label>Location</label>
                         </span>
                     </div>
-                    <div class="col-4">
-                        <p-button [disabled]="refreshing" class="mr-1" (onClick)="addLocation()" icon="mdi mdi-plus" styleClass="p-button-success" />
-                        <p-button [disabled]="refreshing" class="mr-1" (onClick)="editLocation()" icon="mdi mdi-pencil" styleClass="p-button-info" />
+                    <div class="col-4 flex align-items-center gap-1">
+                        <p-button [disabled]="refreshing" (onClick)="addLocation()" icon="mdi mdi-plus" styleClass="p-button-success" />
+                        <p-button [disabled]="refreshing" (onClick)="editLocation()" icon="mdi mdi-pencil" styleClass="p-button-info" />
                         <p-button [disabled]="refreshing || locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete"
                                   styleClass="p-button-danger" />
                     </div>
@@ -162,9 +160,9 @@
     </div>
 </div>
 <div class="grid px-2">
-    <div class="col-12 flex align-items-center justify-content-center" style="height: 32px; max-height: 32px;">
+    <div class="col-12 flex align-items-center justify-content-center gap-1" style="height: 32px; max-height: 32px;">
         <span class="text-overflow-scroll">{{ name }}</span>
-        <p-tag class="ml-1" *ngFor="let tag of tags" [severity]="tag.severity" [value]="tag.title" />
+        <p-tag *ngFor="let tag of tags" [severity]="tag.severity" [value]="tag.title" />
     </div>
     <div class="col-3">
         <span class="p-float-label">

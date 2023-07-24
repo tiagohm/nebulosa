@@ -16,6 +16,8 @@ import org.greenrobot.eventbus.EventBus
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
+import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.nio.file.Path
@@ -99,7 +101,12 @@ class BeanConfig {
         .installDefaultEventBus()!!
 
     @Bean
-    fun corsConfigurer() = object : WebMvcConfigurer {
+    fun webMvcConfigurer() = object : WebMvcConfigurer {
+
+        override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
+            converters.removeIf { it is StringHttpMessageConverter }
+        }
+
         override fun addCorsMappings(registry: CorsRegistry) {
             registry
                 .addMapping("/**")

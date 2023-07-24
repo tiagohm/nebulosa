@@ -20,7 +20,9 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.FloatBuffer
+import java.nio.file.Path
 import javax.imageio.ImageIO
+import kotlin.io.path.outputStream
 import kotlin.math.max
 import kotlin.math.min
 
@@ -242,7 +244,11 @@ class Image(
     }
 
     fun writeAsFits(file: File) {
-        file.outputStream().use { writeAsFits(it) }
+        file.outputStream().use(::writeAsFits)
+    }
+
+    fun writeAsFits(path: Path) {
+        path.outputStream().use(::writeAsFits)
     }
 
     fun writeAsFits(outputStream: OutputStream) {

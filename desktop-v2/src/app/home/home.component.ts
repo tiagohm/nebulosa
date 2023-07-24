@@ -57,12 +57,15 @@ export class HomeComponent implements OnInit {
             case 'ATLAS':
                 this.browserWindow.openAtlas()
                 break
+            case 'FRAMING':
+                this.browserWindow.openFraming()
+                break
             case 'INDI':
                 this.browserWindow.openINDI()
                 break
             case 'IMAGE':
                 const path = await this.electron.ipcRenderer.sendSync('open-fits')
-                if (path) this.browserWindow.openImage(path)
+                if (path) this.browserWindow.openImage(path, undefined, 'PATH')
                 break
         }
     }

@@ -3,6 +3,7 @@ package nebulosa.api.services
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.data.entities.SavedCameraImageEntity
+import nebulosa.api.data.enums.HipsSurveyType
 import nebulosa.api.data.enums.PlateSolverType
 import nebulosa.api.data.responses.CalibrationResponse
 import nebulosa.api.data.responses.ImageAnnotationResponse
@@ -16,6 +17,7 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.io.transferAndClose
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.AngleFormatter
@@ -28,6 +30,7 @@ import nebulosa.wcs.WCSTransform
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
 import javax.imageio.ImageIO
@@ -41,6 +44,7 @@ class ImageService(
     private val objectMapper: ObjectMapper,
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
+    private val framingService: FramingService,
 ) {
 
     private val cachedImages = HashMap<Path, Image>()
@@ -49,9 +53,10 @@ class ImageService(
     @Synchronized
     fun openImage(
         path: Path, debayer: Boolean,
-        autoStretch: Boolean, shadow: Float, highlight: Float, midtone: Float,
-        mirrorHorizontal: Boolean, mirrorVertical: Boolean, invert: Boolean,
-        scnrEnabled: Boolean, scnrChannel: ImageChannel, scnrAmount: Float, scnrProtectionMode: ProtectionMethod,
+        autoStretch: Boolean = false, shadow: Float = 0f, highlight: Float = 1f, midtone: Float = 0.5f,
+        mirrorHorizontal: Boolean = false, mirrorVertical: Boolean = false, invert: Boolean = false,
+        scnrEnabled: Boolean = false, scnrChannel: ImageChannel = ImageChannel.GREEN, scnrAmount: Float = 0.5f,
+        scnrProtectionMode: ProtectionMethod = ProtectionMethod.AVERAGE_NEUTRAL,
         output: HttpServletResponse,
     ) {
         val image = cachedImages[path] ?: Image.open(path.toFile(), debayer)
@@ -99,6 +104,7 @@ class ImageService(
                     "stretchMidtone" to stretchParams.midtone,
                     "rightAscension" to transformedImage.header.ra?.format(AngleFormatter.HMS),
                     "declination" to transformedImage.header.dec?.format(AngleFormatter.SIGNED_DMS),
+                    "calibrated" to (path in calibrations),
                 )
             )
         )
@@ -112,6 +118,7 @@ class ImageService(
     fun closeImage(path: Path) {
         cachedImages.remove(path)
         calibrations.remove(path)
+        LOG.info("image closed. path={}", path)
         System.gc()
     }
 
@@ -208,5 +215,26 @@ class ImageService(
         val calibration = calibrations[path] ?: return
         val wcs = WCSTransform(calibration)
         val (rightAscension, declination) = wcs.pixelToWorld(x, y)
+    }
+
+    fun frame(
+        rightAscension: Angle, declination: Angle,
+        width: Int, height: Int, fov: Angle,
+        rotation: Angle = Angle.ZERO, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
+    ): Path {
+        val (image, calibration) = framingService.frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!
+
+        val path = Files.createTempFile("framing", ".fits")
+        image.writeAsFits(path)
+        cachedImages[path] = image
+
+        calibrations[path] = calibration
+
+        return path
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<ImageService>()
     }
 }

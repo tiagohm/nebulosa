@@ -30,6 +30,7 @@ import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { AtlasComponent } from './atlas/atlas.component'
 import { CameraComponent } from './camera/camera.component'
+import { FramingComponent } from './framing/framing.component'
 import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
@@ -45,6 +46,7 @@ import { INDIPropertyComponent } from './indi/property/indi-property.component'
         INDIPropertyComponent,
         AtlasComponent,
         OpenStreetMapComponent,
+        FramingComponent,
     ],
     imports: [
         BrowserModule,

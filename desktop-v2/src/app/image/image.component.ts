@@ -7,12 +7,15 @@ import * as path from 'path'
 import { MenuItem, MenuItemCommandEvent } from 'primeng/api'
 import { ContextMenu } from 'primeng/contextmenu'
 import { ApiService } from '../../shared/services/api.service'
+import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Calibration, Camera, ImageAnnotation, ImageChannel, PlateSolverType, SCNRProtectionMethod, SavedCameraImage } from '../../shared/types'
+import { Calibration, Camera, ImageAnnotation, ImageChannel, ImageSource, PlateSolverType, SCNRProtectionMethod, SavedCameraImage } from '../../shared/types'
 
 export interface ImageParams {
     camera?: Camera
     path?: string
+    source?: ImageSource
+    title?: string
 }
 
 @Component({
@@ -79,8 +82,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     private imageInfo?: SavedCameraImage
     private imageMouseX = 0
     private imageMouseY = 0
-    private camera?: Camera
-    private path?: string
+    private imageParams: ImageParams = {}
 
     private readonly scnrMenuItem: MenuItem = {
         label: 'SCNR',
@@ -115,7 +117,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
             icon: 'mdi mdi-content-save',
             command: async () => {
                 const path = await this.electron.ipcRenderer.sendSync('save-fits-as')
-                if (path) this.api.saveImageAs(this.path!, path)
+                if (path) this.api.saveImageAs(this.imageParams.path!, path)
             },
         },
         {
@@ -146,7 +148,12 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
             command: (e) => {
                 this.autoStretch = !this.autoStretch
                 this.toggleMenuItemChecked(e)
-                this.loadImage()
+
+                if (!this.autoStretch) {
+                    this.resetStretch()
+                } else {
+                    this.loadImage()
+                }
             },
         },
         this.scnrMenuItem,
@@ -203,23 +210,27 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         private route: ActivatedRoute,
         private api: ApiService,
         private electron: ElectronService,
+        private browserWindow: BrowserWindowService,
         ngZone: NgZone,
     ) {
         title.setTitle('Image')
 
         electron.ipcRenderer.on('CAMERA_IMAGE_SAVED', async (_, data: SavedCameraImage) => {
-            if (data.name === this.camera?.name) {
-                if (this.path) {
-                    await this.api.closeImage(this.path)
+            if (data.name === this.imageParams.camera?.name) {
+                if (this.imageParams.path) {
+                    await this.api.closeImage(this.imageParams.path)
                 }
 
                 ngZone.run(() => {
                     this.annotations = []
-
-                    this.path = data.path
+                    this.imageParams.path = data.path
                     this.loadImage()
                 })
             }
+        })
+
+        electron.ipcRenderer.on('PARAMS_CHANGED', (_, data: ImageParams) => {
+            this.loadImageFromParams(data)
         })
     }
 
@@ -232,38 +243,48 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
             const params = JSON.parse(Hex.decodeStr(e.params)) as ImageParams
-            this.camera = params.camera
-            this.path = params.path
-
-            if (this.path) {
-                this.loadImage()
-            }
+            this.loadImageFromParams(params)
         })
     }
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        if (this.path) {
-            this.api.closeImage(this.path)
+        if (this.imageParams.path) {
+            this.api.closeImage(this.imageParams.path)
+        }
+    }
+
+    private loadImageFromParams(params: ImageParams) {
+        this.imageParams = params
+
+        if (params.source === 'FRAMING') {
+            this.disableAutoStretch()
+        }
+
+        if (this.imageParams.path) {
+            this.annotations = []
+            this.loadImage()
         }
     }
 
     private async loadImage() {
-        if (this.path) {
-            await this.loadImageFromPath(this.path)
-        } else if (this.camera) {
+        if (this.imageParams.path) {
+            await this.loadImageFromPath(this.imageParams.path)
+        } else if (this.imageParams.camera) {
             try {
-                this.imageInfo = await this.api.latestImageOfCamera(this.camera)
+                this.imageInfo = await this.api.latestImageOfCamera(this.imageParams.camera)
                 await this.loadImageFromPath(this.imageInfo.path)
             } catch (e) {
                 console.error(e)
             }
         }
 
-        if (this.camera) {
-            this.title.setTitle(`Image ・ ${this.camera.name}`)
-        } else if (this.path) {
-            this.title.setTitle(`Image ・ ${path.basename(this.path)}`)
+        if (this.imageParams.title) {
+            this.title.setTitle(`Image ・ ${this.imageParams.title}`)
+        } else if (this.imageParams.camera) {
+            this.title.setTitle(`Image ・ ${this.imageParams.camera.name}`)
+        } else if (this.imageParams.path) {
+            this.title.setTitle(`Image ・ ${path.basename(this.imageParams.path)}`)
         }
     }
 
@@ -286,6 +307,8 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
             this.stretchMidtone = Math.trunc(info.stretchMidtone * 65536)
         }
 
+        this.annotationMenuItem.disabled = !info.calibrated
+
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
         this.imageURL = window.URL.createObjectURL(blob)
         image.src = this.imageURL
@@ -299,13 +322,25 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     async annotateImage() {
-        this.annotations = await this.api.annotationsOfImage(this.path!, this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets)
+        this.annotations = await this.api.annotationsOfImage(this.imageParams.path!, this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets)
         this.showAnnotationDialog = false
     }
 
-    stretchImage() {
+    private disableAutoStretch() {
         this.autoStretch = false
         document.getElementById('auto-stretch-menuitem')!.parentElement!.classList.remove('p-menuitem-checked')
+    }
+
+    resetStretch() {
+        this.stretchShadowhHighlight[0] = 0
+        this.stretchShadowhHighlight[1] = 65536
+        this.stretchMidtone = 32768
+
+        this.stretchImage()
+    }
+
+    stretchImage() {
+        this.disableAutoStretch()
         this.loadImage()
     }
 
@@ -317,7 +352,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         this.solving = true
 
         try {
-            this.solverCalibration = await this.api.solveImage(this.path!, this.solverType, this.solverBlind,
+            this.solverCalibration = await this.api.solveImage(this.imageParams.path!, this.solverType, this.solverBlind,
                 this.solverCenterRA, this.solverCenterDEC, this.solverRadius, this.solverDownsampleFactor,
                 this.solverPathOrUrl, this.solverApiKey)
 
@@ -325,15 +360,19 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
             localStorage.setItem('SOLVER_RADIUS', `${this.solverRadius}`)
             localStorage.setItem('SOLVER_DOWNSAMPLE_FACTOR', `${this.solverDownsampleFactor}`)
 
+            this.solved = true
             this.annotationMenuItem.disabled = false
         } catch {
             this.solved = false
             this.solverCalibration = undefined
             this.annotationMenuItem.disabled = true
         } finally {
-            this.solved = true
             this.solving = false
         }
+    }
+
+    frameSolvedPosition() {
+        this.browserWindow.openFraming({ rightAscension: this.solverCalibration!.rightAscension, declination: this.solverCalibration!.declination })
     }
 
     imageLoaded() {

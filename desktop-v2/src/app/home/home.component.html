@@ -8,7 +8,8 @@
         </div>
         <div class="col-4 pr-0">
             <span class="p-float-label">
-                <input [disabled]="connected" type="number" pInputText class="p-inputtext-sm min-w-full max-w-0" placeholder="7624" [(ngModel)]="port" />
+                <input [disabled]="connected" type="number" pInputText class="p-inputtext-sm min-w-full max-w-0" placeholder="7624"
+                       [(ngModel)]="port" />
                 <label>Port</label>
             </span>
         </div>
@@ -91,7 +92,7 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button (onClick)="open('FRAMING')" styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/framing.png" />
                 <div class="mt-1 text-sm">Framing</div>
             </p-button>

@@ -3,7 +3,7 @@ package nebulosa.api.data.converters
 import io.objectbox.converter.PropertyConverter
 import nebulosa.nova.astrometry.Constellation
 
-class ConstellationBoxConverter : PropertyConverter<Constellation?, String?> {
+class ConstellationConverter : PropertyConverter<Constellation?, String?> {
 
     override fun convertToEntityProperty(databaseValue: String?): Constellation {
         return databaseValue?.let(Constellation::valueOf) ?: Constellation.AND

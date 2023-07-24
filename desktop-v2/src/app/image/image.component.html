@@ -128,7 +128,8 @@
                 <p-button [disabled]="solving || !solved" icon="mdi mdi-sync" label="Sync" styleClass="p-button-text" />
                 <p-button [disabled]="solving || !solved" icon="mdi mdi-check" label="Go To" styleClass="p-button-text" />
                 <p-button [disabled]="solving || !solved" icon="mdi mdi-check" label="Slew To" styleClass="p-button-text" />
-                <p-button [disabled]="solving || !solved" icon="mdi mdi-image" label="Frame" styleClass="p-button-text" />
+                <p-button [disabled]="solving || !solved" (onClick)="frameSolvedPosition()" icon="mdi mdi-image" label="Framing"
+                          styleClass="p-button-text" />
             </div>
         </div>
 
@@ -152,6 +153,7 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
+        <p-button icon="mdi mdi-close" label="Reset" (onClick)="resetStretch()" styleClass="p-button-text p-button-danger" />
         <p-button icon="mdi mdi-check" label="Stretch" (onClick)="stretchImage()" styleClass="p-button-text" />
     </ng-template>
 </p-dialog>

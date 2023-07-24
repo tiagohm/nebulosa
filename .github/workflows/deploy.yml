@@ -29,13 +29,17 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: api-${{ GITHUB_SHA }}
+          name: api-${{ github.sha }}
           path: desktop-v2/api.jar
 
-  electron:
+  desktop:
     needs: api
-    name: Build Electron
+    name: Build Desktop App
     runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        working-directory: desktop-v2
 
     strategy:
       matrix:
@@ -53,19 +57,17 @@ jobs:
       - name: Download API
         uses: actions/download-artifact@v3
         with:
-          name: api-${{ GITHUB_SHA }}
+          name: api-${{ github.sha }}
           path: desktop-v2
 
       - name: Install Dependencies
-        working-directory: desktop-v2
         run: npm i
 
       - name: Build Electron
-        working-directory: desktop-v2
         run: npm run electron:build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: nebulosa-${{ matrix.os }}-${{ GITHUB_SHA }}
+          name: nebulosa-${{ matrix.os }}-${{ github.sha }}
           path: desktop-v2/release/nebulosa-*.AppImage

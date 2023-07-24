@@ -24,7 +24,7 @@
             <p-inputSwitch [disabled]="!connected || !hasDewHeater || capturing" styleClass="mt-2" [(ngModel)]="dewHeater" />
         </div>
         <div class="col-6 flex flex-column">
-            <div class="flex justify-content-center align-items-center">
+            <div class="flex justify-content-center align-items-center gap-1">
                 <span class="p-float-label">
                     <p-inputNumber [disabled]="!connected || !canSetTemperature || capturing" [(ngModel)]="setpointTemperature" mode="decimal"
                                    [showButtons]="true"
@@ -32,13 +32,13 @@
                     <label>Temperature ({{ temperature | number: '1.1-1' }}°C)</label>
                 </span>
                 <p-button [disabled]="!connected || !canSetTemperature || capturing" (onClick)="applySetpointTemperature()" icon="mdi mdi-check"
-                          styleClass="ml-1 p-button-success p-button" />
+                          styleClass="p-button-success p-button" />
             </div>
         </div>
     </div>
     <div class="grid py-1 flex align-items-center">
         <div class="col-6">
-            <div class="flex justify-content-center align-items-center">
+            <div class="flex justify-content-center align-items-center gap-1">
                 <span class="p-float-label">
                     <p-inputNumber [disabled]="!connected || capturing" [(ngModel)]="exposureTime" mode="decimal" [showButtons]="true"
                                    [step]="1.0" [min]="exposureTimeMin" [max]="exposureTimeMax" locale="en" styleClass="border-0"
@@ -46,7 +46,7 @@
                     <label>Exposure Time</label>
                 </span>
                 <p-menu #exposureTimeMenu [model]="exposureTimeUnitOptions" [popup]="true" />
-                <button [disabled]="!connected || capturing" pButton type="button" (click)="exposureTimeMenu.toggle($event)" class="ml-1"
+                <button [disabled]="!connected || capturing" pButton type="button" (click)="exposureTimeMenu.toggle($event)"
                         [label]="exposureTimeUnit"></button>
             </div>
         </div>
@@ -153,11 +153,11 @@
         </div>
     </div>
     <div class="grid mt-3">
-        <div class="col-12 flex align-items-center justify-content-center">
+        <div class="col-12 flex align-items-center justify-content-center gap-1">
             <p-button [disabled]="!connected || capturing" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
                       styleClass="p-button-success p-button" />
             <p-button [disabled]="!connected || !capturing" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
-                      styleClass="ml-1 p-button-danger p-button" />
+                      styleClass="p-button-danger p-button" />
         </div>
     </div>
 </div>

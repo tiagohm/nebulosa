@@ -101,6 +101,7 @@ export interface SavedCameraImage {
     stretchMidtone: number
     rightAscension?: string
     declination?: string
+    calibrated: boolean
 }
 
 export interface INDIProperty<T> {
@@ -159,6 +160,18 @@ export interface BodyPosition {
     distanceUnit: string
     illuminated: number
     elongation: number
+}
+
+export interface HipsSurvey {
+    id: string
+    title: string
+    category: string
+    copyright: string
+    frame: string
+    regime: string
+    bitPix: number
+    pixelScale: number
+    skyFraction: number
 }
 
 export const EMPTY_BODY_POSITION: BodyPosition = {
@@ -470,3 +483,5 @@ export type INDIEventName = 'ALL' | 'DEVICE' | 'CAMERA' |
     'CAMERA_CAPTURE_FINISHED' |
     'CAMERA_ATTACHED' |
     'CAMERA_DETACHED'
+
+export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA'
