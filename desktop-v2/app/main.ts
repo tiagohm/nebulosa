@@ -48,7 +48,7 @@ function createMainWindow() {
     wsClient.activate()
 }
 
-function createWindow(data: OpenWindow) {
+function createWindow(data: OpenWindow<any>) {
     if (secondaryWindows.has(data.id)) {
         const window = secondaryWindows.get(data.id)!
 
@@ -207,7 +207,7 @@ try {
         }
     })
 
-    ipcMain.handle('open-window', async (_, data: OpenWindow) => {
+    ipcMain.handle('open-window', async (_, data: OpenWindow<any>) => {
         const newWindow = !secondaryWindows.has(data.id)
 
         const window = createWindow(data)

@@ -76,16 +76,19 @@ export interface CameraStartCapture {
     offset: number
 }
 
-export interface OpenWindow {
-    id: string
-    path: string
+export interface OpenWindowOptions {
     icon?: string
     resizable?: boolean
     width?: number | string
     height?: number | string
     bringToFront?: boolean
     requestFocus?: boolean
-    params?: Record<string, any>
+}
+
+export interface OpenWindow<T> extends OpenWindowOptions {
+    id: string
+    path: string
+    params?: T
 }
 
 export interface SavedCameraImage {

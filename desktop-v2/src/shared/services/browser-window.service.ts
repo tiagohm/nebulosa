@@ -1,30 +1,33 @@
 import { Injectable } from '@angular/core'
 import { v4 as uuidv4 } from 'uuid'
+import { FramingParams } from '../../app/framing/framing.component'
 import { ImageParams } from '../../app/image/image.component'
 import { INDIParams } from '../../app/indi/indi.component'
-import { Camera, Device, ImageSource, OpenWindow } from '../types'
+import { Camera, Device, ImageSource, OpenWindow, OpenWindowOptions } from '../types'
 import { ElectronService } from './electron.service'
-import { FramingParams } from '../../app/framing/framing.component'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
 
     constructor(private electron: ElectronService) { }
 
-    async openWindow(data: OpenWindow) {
+    async openWindow<T>(data: OpenWindow<T>) {
         await this.electron.ipcRenderer.invoke('open-window', data)
     }
 
-    openCamera() {
-        const data = { id: 'camera', path: 'camera', icon: 'camera', width: 390, height: 410 }
-        this.openWindow(data)
+    openCamera(options: OpenWindowOptions = {}) {
+        this.openWindow({
+            ...options,
+            id: 'camera', path: 'camera', icon: options.icon || 'camera',
+            width: options.width || 390, height: options.height || 410,
+        })
     }
 
     async openCameraImage(camera: Camera) {
         const hash = camera.name
         const factor = camera.height / camera.width
         const params: ImageParams = { camera, source: 'CAMERA' }
-        const data: OpenWindow = { id: `image.${hash}`, path: 'image', icon: 'image', width: '50%', height: `${factor}w`, resizable: true, params }
+        const data: OpenWindow<ImageParams> = { id: `image.${hash}`, path: 'image', icon: 'image', width: '50%', height: `${factor}w`, resizable: true, params }
         await this.openWindow(data)
         return data.id
     }
@@ -32,24 +35,33 @@ export class BrowserWindowService {
     async openImage(path: string, id?: string, source?: ImageSource, title?: string) {
         const hash = id || uuidv4()
         const params: ImageParams = { path, source, title }
-        const data: OpenWindow = { id: `image.${hash}`, path: 'image', icon: 'image', width: '50%', height: `0.9w`, resizable: true, params }
+        const data: OpenWindow<ImageParams> = { id: `image.${hash}`, path: 'image', icon: 'image', width: '50%', height: `0.9w`, resizable: true, params }
         await this.openWindow(data)
         return data.id
     }
 
-    openINDI(device?: Device) {
-        const params: INDIParams = { device }
-        const data: OpenWindow = { id: 'indi', path: 'indi', icon: 'indi', width: '65%', height: 420, resizable: true, params }
-        this.openWindow(data)
+    openINDI(device?: Device, options: OpenWindowOptions = {}) {
+        this.openWindow<INDIParams>({
+            ...options,
+            id: 'indi', path: 'indi', icon: options.icon || 'indi',
+            width: options.width || '65%', height: options.height || 420,
+            resizable: true, params: { device },
+        })
     }
 
-    openAtlas() {
-        const data: OpenWindow = { id: 'atlas', path: 'atlas', icon: 'atlas', width: 460, height: 580 }
-        this.openWindow(data)
+    openSkyAtlas(options: OpenWindowOptions = {}) {
+        this.openWindow({
+            ...options,
+            id: 'atlas', path: 'atlas', icon: options.icon || 'atlas',
+            width: options.width || 460, height: options.height || 580,
+        })
     }
 
-    openFraming(params?: FramingParams) {
-        const data: OpenWindow = { id: 'framing', path: 'framing', icon: 'framing', width: 496, height: 228, params }
-        this.openWindow(data)
+    openFraming(params?: FramingParams, options: OpenWindowOptions = {}) {
+        this.openWindow({
+            ...options,
+            id: 'framing', path: 'framing', icon: options.icon || 'framing',
+            width: options.width || 458, height: options.height || 228, params,
+        })
     }
 }

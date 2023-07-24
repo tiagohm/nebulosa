@@ -34,8 +34,12 @@
             <p-tabPanel header="Minor Planets" [disabled]="refreshing">
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
-                        <input type="text" pInputText class="min-w-full" [(ngModel)]="minorPlanetSearchText"
-                               pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest." tooltipPosition="bottom" />
+                        <span class="p-float-label">
+                            <input type="text" pInputText class="border-0 w-full" [(ngModel)]="minorPlanetSearchText"
+                                   pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest."
+                                   tooltipPosition="bottom" />
+                            <label>Search</label>
+                        </span>
                     </div>
                     <div class="col-3">
                         <p-button [disabled]="minorPlanetSearchText.length < 3 || refreshing" (onClick)="searchMinorPlanet()" icon="mdi mdi-magnify"
@@ -64,7 +68,10 @@
             <p-tabPanel header="Stars" [disabled]="refreshing">
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
-                        <input type="text" pInputText class="min-w-full" [(ngModel)]="starSearchText" />
+                        <span class="p-float-label">
+                            <input type="text" pInputText class="border-0 w-full" [(ngModel)]="starSearchText" />
+                            <label>Search</label>
+                        </span>
                     </div>
                     <div class="col-3 flex align-items-center gap-1">
                         <p-button [disabled]="refreshing" (onClick)="searchStar()" icon="mdi mdi-magnify" styleClass="p-button-info" />
@@ -97,7 +104,10 @@
             <p-tabPanel header="DSOs" [disabled]="refreshing">
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
-                        <input type="text" pInputText class="min-w-full" [(ngModel)]="dsoSearchText" />
+                        <span class="p-float-label">
+                            <input type="text" pInputText class="border-0 w-full" [(ngModel)]="dsoSearchText" />
+                            <label>Search</label>
+                        </span>
                     </div>
                     <div class="col-3 flex align-items-center gap-1">
                         <p-button [disabled]="refreshing" (onClick)="searchDSO()" icon="mdi mdi-magnify" styleClass="p-button-info" />
@@ -132,7 +142,7 @@
                     <div class="col-8">
                         <span class="p-float-label">
                             <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()" optionLabel="name"
-                                        emptyMessage="No location found" />
+                                        styleClass="border-0" emptyMessage="No location found" />
                             <label>Location</label>
                         </span>
                     </div>
@@ -149,7 +159,8 @@
                         <span class="p-input-icon-left p-input-icon-right">
                             <span class="pi pi-calendar"></span>
                             <p-calendar [disabled]="!useManualDateTime" [(ngModel)]="dateTime" [showTime]="true"
-                                        [showSeconds]="false" dateFormat="yy/mm/dd" inputStyleClass="pl-6" (ngModelChange)="dateTimeChanged()" />
+                                        [showSeconds]="false" dateFormat="yy/mm/dd" inputStyleClass="border-0 pl-6"
+                                        (ngModelChange)="dateTimeChanged()" />
                             <p-checkbox class="p-icon-wrapper" [binary]="true" [(ngModel)]="useManualDateTime"
                                         (ngModelChange)="useManualDateTimeChanged()" />
                         </span>
@@ -259,14 +270,14 @@
         <div class="col-4">
             <span class="p-float-label">
                 <input pInputText class="border-0 max-w-full" [value]="starFilterDEC" />
-                <label>DEC (deg)</label>
+                <label>DEC (°)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
                 <p-inputNumber [min]="0" [max]="90" class="w-full" [showButtons]="true" inputStyleClass="border-0 w-full"
                                [(ngModel)]="starFilterRadius" />
-                <label>Radius (deg)</label>
+                <label>Radius (°)</label>
             </span>
         </div>
         <div class="col-6">
@@ -304,14 +315,14 @@
         <div class="col-4">
             <span class="p-float-label">
                 <input pInputText class="border-0 max-w-full" [value]="dsoFilterDEC" />
-                <label>DEC (deg)</label>
+                <label>DEC (°)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
                 <p-inputNumber [min]="0" [max]="90" class="w-full" [showButtons]="true" inputStyleClass="border-0 w-full"
                                [(ngModel)]="dsoFilterRadius" />
-                <label>Radius (deg)</label>
+                <label>Radius (°)</label>
             </span>
         </div>
         <div class="col-6">

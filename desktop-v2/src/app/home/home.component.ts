@@ -52,16 +52,16 @@ export class HomeComponent implements OnInit {
     async open(type: HomeWindowType) {
         switch (type) {
             case 'CAMERA':
-                this.browserWindow.openCamera()
+                this.browserWindow.openCamera({ bringToFront: true })
                 break
             case 'ATLAS':
-                this.browserWindow.openAtlas()
+                this.browserWindow.openSkyAtlas({ bringToFront: true })
                 break
             case 'FRAMING':
-                this.browserWindow.openFraming()
+                this.browserWindow.openFraming(undefined, { bringToFront: true })
                 break
             case 'INDI':
-                this.browserWindow.openINDI()
+                this.browserWindow.openINDI(undefined, { bringToFront: true })
                 break
             case 'IMAGE':
                 const path = await this.electron.ipcRenderer.sendSync('open-fits')

@@ -45,7 +45,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     ]
 
     showSCNRDialog = false
-    scnrChannel: ImageChannel = 'GREEN'
+    scnrChannel: ImageChannel = 'NONE'
     scnrAmount = 0.5
     scnrProtectionMode: SCNRProtectionMethod = 'AVERAGE_NEUTRAL'
 
