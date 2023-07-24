@@ -36,8 +36,11 @@
   },
   "linux": {
     "icon": "dist/assets/icons",
+    "category": "Science",
     "target": [
-      "AppImage"
+      "AppImage",
+      "deb",
+      "rpm"
     ]
   }
 }

@@ -31,6 +31,7 @@ jobs:
         with:
           name: api-${{ github.sha }}
           path: desktop-v2/api.jar
+          retention-days: 1
 
   desktop:
     needs: api
@@ -63,6 +64,10 @@ jobs:
       - name: Install Dependencies
         run: npm i
 
+      - name: Install Linux Build Dependencies
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: sudo apt-get install -y rpm
+
       - name: Build Electron
         run: npm run electron:build
 
@@ -70,4 +75,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: nebulosa-${{ matrix.os }}-${{ github.sha }}
-          path: desktop-v2/release/nebulosa-*.AppImage
+          path: desktop-v2/release/nebulosa*.{AppImage,deb,rpm,flatpak,snap,exe,dmg}
+          retention-days: 3

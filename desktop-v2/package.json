@@ -1,6 +1,8 @@
 {
   "name": "nebulosa",
   "version": "0.1.0",
+  "homepage": "https://tiagohm.github.io/nebulosa",
+  "license": "MIT",
   "main": "app/main.js",
   "private": true,
   "scripts": {
