@@ -7,10 +7,10 @@ class StellariumProtocolServerTest {
 
     companion object : StellariumMountHandler {
 
-        override var rightAscension = Angle.from("05 15 07", true)!!
-        override var declination = Angle.from("25 26 03")!!
-        override var rightAscensionJ2000 = Angle.from("05 15 07", true)!!
-        override var declinationJ2000 = Angle.from("25 26 03")!!
+        override var rightAscension = Angle.from("05 15 07", true)
+        override var declination = Angle.from("25 26 03")
+        override var rightAscensionJ2000 = Angle.from("05 15 07", true)
+        override var declinationJ2000 = Angle.from("25 26 03")
 
         @JvmStatic
         fun main(args: Array<String>) {

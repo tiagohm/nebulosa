@@ -1,13 +1,13 @@
 package nebulosa.platesolving
 
 import nebulosa.math.Angle
-import java.io.File
+import java.nio.file.Path
 import java.time.Duration
 
 interface PlateSolver {
 
     fun solve(
-        file: File,
+        path: Path,
         blind: Boolean = true,
         centerRA: Angle = Angle.ZERO, centerDEC: Angle = Angle.ZERO,
         radius: Angle = Angle.ZERO,

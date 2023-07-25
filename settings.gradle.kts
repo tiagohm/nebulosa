@@ -5,14 +5,14 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 buildCache {
     local {
         directory = File(rootDir, ".cache")
-        removeUnusedEntriesAfterDays = 1
+        removeUnusedEntriesAfterDays = 30
     }
 }
 
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("okio", "com.squareup.okio:okio:3.3.0")
+            library("okio", "com.squareup.okio:okio:3.4.0")
             library("okhttp", "com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
             library("okhttp-logging", "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
             library("fits", "gov.nasa.gsfc.heasarc:nom-tam-fits:1.17.1")
@@ -20,37 +20,27 @@ dependencyResolutionManagement {
             library("jackson-jsr310", "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
             library("retrofit", "com.squareup.retrofit2:retrofit:2.9.0")
             library("retrofit-jackson", "com.squareup.retrofit2:converter-jackson:2.9.0")
-            library("rx-java", "io.reactivex.rxjava3:rxjava:3.1.6")
-            library("controlsfx", "org.controlsfx:controlsfx:11.1.2")
+            library("rx", "io.reactivex.rxjava3:rxjava:3.1.6")
             library("logback", "ch.qos.logback:logback-classic:1.4.8")
             library("eventbus", "org.greenrobot:eventbus-java:3.3.1")
-            library("charts", "eu.hansolo.fx:charts:17.1.35")
-            library("gesturefx", "net.kurobako:gesturefx:0.7.1")
-            library("netty-transport", "io.netty:netty-transport:4.1.94.Final")
-            library("netty-codec", "io.netty:netty-codec:4.1.94.Final")
-            library("aalto", "com.fasterxml:aalto-xml:1.3.2")
+            library("netty-transport", "io.netty:netty-transport:4.1.95.Final")
+            library("netty-codec", "io.netty:netty-codec:4.1.95.Final")
+            library("xml", "com.fasterxml:aalto-xml:1.3.2")
             library("csv", "de.siegmar:fastcsv:2.2.2")
-            library("coroutines", "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
-            library("coroutines-javafx", "org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.7.1")
             library("apache-lang3", "org.apache.commons:commons-lang3:3.12.0")
-            library("oshi", "com.github.oshi:oshi-core:6.4.3")
-            library("exposed-core", "org.jetbrains.exposed:exposed-core:0.41.1")
-            library("exposed-jdbc", "org.jetbrains.exposed:exposed-jdbc:0.41.1")
-            library("sqlite", "org.xerial:sqlite-jdbc:3.42.0.0")
-            library("hibernate-core", "org.hibernate.orm:hibernate-core:6.2.5.Final")
-            library("hibernate-dialects", "org.hibernate.orm:hibernate-community-dialects:6.2.5.Final")
-            library("flyway", "org.flywaydb:flyway-core:9.19.4")
+            library("apache-codec", "commons-codec:commons-codec:1.16.0")
+            library("oshi", "com.github.oshi:oshi-core:6.4.4")
+            library("timeshape", "net.iakovlev:timeshape:2022g.17")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.6.2")
             library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.6.2")
             bundle("kotest", listOf("kotest-assertions-core", "kotest-runner-junit5"))
-            bundle("rx", listOf("rx-java"))
             bundle("netty", listOf("netty-transport", "netty-codec"))
-            bundle("hibernate", listOf("hibernate-core", "hibernate-dialects"))
+            bundle("apache", listOf("apache-lang3", "apache-codec"))
         }
     }
 }
 
-include(":desktop")
+include(":api")
 include(":nebulosa-adql")
 include(":nebulosa-alignment")
 include(":nebulosa-alpaca-api")
@@ -71,7 +61,6 @@ include(":nebulosa-indi-device")
 include(":nebulosa-indi-protocol")
 include(":nebulosa-io")
 include(":nebulosa-log")
-include(":nebulosa-jmetro")
 include(":nebulosa-lx200-protocol")
 include(":nebulosa-math")
 include(":nebulosa-nasa")

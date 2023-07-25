@@ -15,19 +15,22 @@ import nom.tam.fits.header.extra.SBFitsExt
 inline fun Fits.imageHDU(n: Int) = read().filterIsInstance<ImageHDU>().getOrNull(n)
 
 @Suppress("NOTHING_TO_INLINE")
+inline fun Header.naxis() = getIntValue(Standard.NAXIS, -1)
+
+@Suppress("NOTHING_TO_INLINE")
 inline fun Header.naxis(n: Int) = getIntValue(Standard.NAXISn.n(n))
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun Header.clone() = Header(makeData())
 
-inline val Header.ra: Angle?
-    get() = Angle.from(getStringValue(ObservationDescription.RA), true, false)
-        ?: Angle.from(getStringValue(SBFitsExt.OBJCTRA), true)
+val Header.ra: Angle?
+    get() = Angle.from(getStringValue(ObservationDescription.RA), true, false).takeIf { it.valid }
+        ?: Angle.from(getStringValue(SBFitsExt.OBJCTRA), true).takeIf { it.valid }
         ?: getDoubleValue(NOAOExt.CRVAL1, Double.NaN).let { if (it.isFinite()) it.deg else null }
 
-inline val Header.dec: Angle?
-    get() = Angle.from(getStringValue(ObservationDescription.DEC))
-        ?: Angle.from(getStringValue(SBFitsExt.OBJCTDEC))
+val Header.dec: Angle?
+    get() = Angle.from(getStringValue(ObservationDescription.DEC)).takeIf { it.valid }
+        ?: Angle.from(getStringValue(SBFitsExt.OBJCTDEC)).takeIf { it.valid }
         ?: getDoubleValue(NOAOExt.CRVAL2, Double.NaN).let { if (it.isFinite()) it.deg else null }
 
 val FITS_RA_ANGLE_FORMATTER = AngleFormatter.HMS.newBuilder()

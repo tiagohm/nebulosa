@@ -1,0 +1,13 @@
+{
+  "javascript.format.semicolons": "remove",
+  "javascript.preferences.quoteStyle": "single",
+  "typescript.format.semicolons": "remove",
+  "typescript.preferences.quoteStyle": "single",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true
+  },
+  "html.format.wrapAttributes": "preserve-aligned",
+  "html.format.wrapLineLength": 150,
+  "explorer.excludeGitIgnore": true,
+}

@@ -12,29 +12,24 @@ import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.PlanetaryFrame
 import nebulosa.time.InstantOfTime
 
-class PlanetograhicPosition(
+data class PlanetograhicPosition(
     val frame: PlanetaryFrame,
     val position: Vector3D,
     val latitude: Angle,
     val longitude: Angle,
 ) : Body, Frame, Number() {
 
-    override val center
-        get() = frame.center
+    override val center = frame.center
 
-    override val target
-        get() = this
+    override val target = this
 
     constructor(
         frame: PlanetaryFrame,
-        latitude: Angle,
-        longitude: Angle,
-        distance: Distance,
+        latitude: Angle, longitude: Angle, distance: Distance,
     ) : this(
         frame,
-        Matrix3D.rotateZ(longitude).rotateY(-latitude) * Vector3D(distance.value, 0.0, 0.0),
-        latitude,
-        longitude,
+        Matrix3D.rotateZ(longitude).rotateY(-latitude) * Vector3D(distance.value),
+        latitude, longitude,
     )
 
     override fun compute(time: InstantOfTime): PositionAndVelocity {
@@ -67,7 +62,8 @@ class PlanetograhicPosition(
 
     override fun toByte() = center.toByte()
 
-    override fun toChar() = center.toChar()
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun toChar() = center.toInt().toChar()
 
     override fun toDouble() = center.toDouble()
 

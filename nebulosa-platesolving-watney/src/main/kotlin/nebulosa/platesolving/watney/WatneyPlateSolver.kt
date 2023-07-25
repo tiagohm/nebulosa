@@ -5,8 +5,8 @@ import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
-import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.bufferedReader
@@ -17,10 +17,10 @@ import kotlin.math.ceil
 /**
  * @see <a href="https://github.com/Jusas/WatneyAstrometry">GitHub</a>
  */
-class WatneyPlateSolver(private val path: String) : PlateSolver {
+class WatneyPlateSolver(private val solverPath: String) : PlateSolver {
 
     override fun solve(
-        file: File,
+        path: Path,
         blind: Boolean,
         centerRA: Angle,
         centerDEC: Angle,
@@ -30,7 +30,7 @@ class WatneyPlateSolver(private val path: String) : PlateSolver {
     ): Calibration {
         val args = arrayListOf<String>()
 
-        args.add(path)
+        args.add(solverPath)
 
         args.add(if (blind) "blind" else "nearby")
 
@@ -58,7 +58,7 @@ class WatneyPlateSolver(private val path: String) : PlateSolver {
         }
 
         args.add("--image")
-        args.add("$file")
+        args.add("$path")
 
         args.add("--out-format")
         args.add("tsv")
@@ -96,19 +96,19 @@ class WatneyPlateSolver(private val path: String) : PlateSolver {
                 val ctype2 = "DEC--TAN"
                 val crpix1 = parameters["fits_crpix1"]!!.toDouble()
                 val crpix2 = parameters["fits_crpix2"]!!.toDouble()
-                val crval1 = Angle.from(parameters["fits_crval1"])!!
-                val crval2 = Angle.from(parameters["fits_crval2"])!!
-                val cdelt1 = Angle.from(parameters["fits_cdelt1"])!!
-                val cdelt2 = Angle.from(parameters["fits_cdelt2"])!!
-                val crota1 = Angle.from(parameters["fits_crota1"])!!
-                val crota2 = Angle.from(parameters["fits_crota2"])!!
+                val crval1 = Angle.from(parameters["fits_crval1"])
+                val crval2 = Angle.from(parameters["fits_crval2"])
+                val cdelt1 = Angle.from(parameters["fits_cdelt1"])
+                val cdelt2 = Angle.from(parameters["fits_cdelt2"])
+                val crota1 = Angle.from(parameters["fits_crota1"])
+                val crota2 = Angle.from(parameters["fits_crota2"])
                 val cd11 = parameters["fits_cd1_1"]!!.toDouble()
                 val cd12 = parameters["fits_cd1_2"]!!.toDouble()
                 val cd21 = parameters["fits_cd2_1"]!!.toDouble()
                 val cd22 = parameters["fits_cd2_2"]!!.toDouble()
 
-                val width = Angle.from(parameters["fieldWidth"])!!
-                val height = Angle.from(parameters["fieldHeight"])!!
+                val width = Angle.from(parameters["fieldWidth"])
+                val height = Angle.from(parameters["fieldHeight"])
 
                 val calibration = Calibration(
                     true,

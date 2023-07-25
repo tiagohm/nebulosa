@@ -1126,10 +1126,10 @@ class MultiStarGuider(
     }
 
     override fun startLooping() {
-        if (capturer.stopped) {
-            executor.submit(capturer)
-        } else {
+        if (capturer.running) {
             capturer.unpause()
+        } else {
+            executor.submit(capturer)
         }
     }
 

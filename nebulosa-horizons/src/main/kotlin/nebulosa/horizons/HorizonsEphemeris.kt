@@ -4,14 +4,12 @@ import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.stream.Stream
 
-class HorizonsEphemeris(val elements: Array<HorizonsElement>) : ClosedRange<LocalDateTime> {
-
-    val times = Array(elements.size) { elements[it].time }
+data class HorizonsEphemeris(private val elements: MutableList<HorizonsElement>) :
+    ClosedRange<LocalDateTime>, List<HorizonsElement> by elements {
 
     override val start
         get() = elements.first().time
@@ -22,22 +20,8 @@ class HorizonsEphemeris(val elements: Array<HorizonsElement>) : ClosedRange<Loca
     override fun isEmpty() = elements.isEmpty()
 
     operator fun get(key: LocalDateTime): HorizonsElement? {
-        val minutes = key.utcMinutes
-        return elements.find { it.utcMinutes >= minutes }
+        return HorizonsElement.of(this, key)
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is HorizonsEphemeris) return false
-
-        if (!elements.contentEquals(other.elements)) return false
-
-        return true
-    }
-
-    override fun hashCode() = elements.contentHashCode()
-
-    override fun toString() = "HorizonsEphemeris(${elements.contentToString()})"
 
     companion object {
 
@@ -45,14 +29,10 @@ class HorizonsEphemeris(val elements: Array<HorizonsElement>) : ClosedRange<Loca
         @JvmStatic private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MMM-dd", Locale.ENGLISH)
         @JvmStatic private val TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
 
-        private inline val LocalDateTime.utcSeconds
-            get() = toEpochSecond(ZoneOffset.UTC)
-
-        private inline val LocalDateTime.utcMinutes
-            get() = utcSeconds / 60L
-
         @JvmStatic
-        internal fun parse(stream: InputStream) = parse(stream.bufferedReader().lines())
+        internal fun parse(stream: InputStream): HorizonsEphemeris {
+            return parse(stream.bufferedReader().lines())
+        }
 
         @JvmStatic
         internal fun parse(lines: Stream<String?>): HorizonsEphemeris {
@@ -104,16 +84,19 @@ class HorizonsEphemeris(val elements: Array<HorizonsElement>) : ClosedRange<Loca
 
                 while (i < parts.size) {
                     val quantity = quantities[i]
-                    if (quantity != null)
+
+                    if (quantity != null) {
                         element[quantity] = if (quantity.numberOfColumns == 1) parts[i]
                         else (0 until quantity.numberOfColumns).joinToString(",") { parts[i + it] }
+                    }
+
                     i += quantity?.numberOfColumns ?: 1
                 }
 
                 elements.add(element)
             }
 
-            return HorizonsEphemeris(elements.toTypedArray())
+            return HorizonsEphemeris(elements)
         }
     }
 }

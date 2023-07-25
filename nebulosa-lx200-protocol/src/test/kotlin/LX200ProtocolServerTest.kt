@@ -18,9 +18,9 @@ class LX200ProtocolServerTest {
             Thread.currentThread().join()
         }
 
-        override var rightAscensionJ2000 = Angle.from("05 15 07", true)!!
+        override var rightAscensionJ2000 = Angle.from("05 15 07", true)
 
-        override var declinationJ2000 = Angle.from("25 26 03")!!
+        override var declinationJ2000 = Angle.from("25 26 03")
 
         override val latitude = Angle.ZERO
 

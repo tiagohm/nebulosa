@@ -1,4 +1,4 @@
-package nebulosa.imaging.algorithms;
+package nebulosa.imaging.algorithms
 
 import kotlin.math.max
 import kotlin.math.min

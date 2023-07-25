@@ -74,33 +74,33 @@ class AngleTest : StringSpec() {
             (5.0.rad % 5.0.rad).value shouldBeExactly 0.0
         }
         "parse decimal coordinates" {
-            Angle.from("23.5634453")!!.degrees shouldBe 23.5634453
-            Angle.from("23.5634453", isHours = true)!!.degrees shouldBe 353.4516795
+            Angle.from("23.5634453").degrees shouldBe 23.5634453
+            Angle.from("23.5634453", isHours = true).degrees shouldBe 353.4516795
         }
         "parse sexagesimal coordinates" {
-            Angle.from("23 33 48.40308")!!.degrees shouldBe 23.5634453
-            Angle.from("23h 33 48.40308", isHours = true)!!.degrees shouldBe 353.4516795
-            Angle.from("23 33m 48.40308")!!.degrees shouldBe 23.5634453
-            Angle.from("23 33 48.40308s")!!.degrees shouldBe 23.5634453
-            Angle.from("23h 33m 48.40308", isHours = true)!!.degrees shouldBe 353.4516795
-            Angle.from("23 33m 48.40308s")!!.degrees shouldBe 23.5634453
-            Angle.from("23h 33m 48.40308s", isHours = true)!!.degrees shouldBe 353.4516795
-            Angle.from("-23° 33m 48.40308s")!!.degrees shouldBe -23.5634453
-            Angle.from("  -23   33m   48.40308s  ")!!.degrees shouldBe -23.5634453
-            Angle.from("-23 33.806718m")!!.degrees shouldBe -23.5634453
-            Angle.from("+23")!!.degrees shouldBe 23.0
-            Angle.from("-23")!!.degrees shouldBe -23.0
-            Angle.from("23h33m48.40308s", isHours = true)!!.degrees shouldBe 353.4516795
-            Angle.from("23h33m 48.40308\"", isHours = true)!!.degrees shouldBe 353.4516795
-            Angle.from("23h33'48.40308\"", isHours = true)!!.degrees shouldBe 353.4516795
-            Angle.from("-23°33'48.40308\"", isHours = true)!!.degrees shouldBe -353.4516795
-            Angle.from("-23°33'48.40308s 67.99")!!.degrees shouldBe -23.5634453
-            Angle.from("- 23°33'48.40308s 67.99")!!.degrees shouldBe -23.5634453
+            Angle.from("23 33 48.40308").degrees shouldBe 23.5634453
+            Angle.from("23h 33 48.40308", isHours = true).degrees shouldBe 353.4516795
+            Angle.from("23 33m 48.40308").degrees shouldBe 23.5634453
+            Angle.from("23 33 48.40308s").degrees shouldBe 23.5634453
+            Angle.from("23h 33m 48.40308", isHours = true).degrees shouldBe 353.4516795
+            Angle.from("23 33m 48.40308s").degrees shouldBe 23.5634453
+            Angle.from("23h 33m 48.40308s", isHours = true).degrees shouldBe 353.4516795
+            Angle.from("-23° 33m 48.40308s").degrees shouldBe -23.5634453
+            Angle.from("  -23   33m   48.40308s  ").degrees shouldBe -23.5634453
+            Angle.from("-23 33.806718m").degrees shouldBe -23.5634453
+            Angle.from("+23").degrees shouldBe 23.0
+            Angle.from("-23").degrees shouldBe -23.0
+            Angle.from("23h33m48.40308s", isHours = true).degrees shouldBe 353.4516795
+            Angle.from("23h33m 48.40308\"", isHours = true).degrees shouldBe 353.4516795
+            Angle.from("23h33'48.40308\"", isHours = true).degrees shouldBe 353.4516795
+            Angle.from("-23°33'48.40308\"", isHours = true).degrees shouldBe -353.4516795
+            Angle.from("-23°33'48.40308s 67.99").degrees shouldBe -23.5634453
+            Angle.from("- 23°33'48.40308s 67.99").degrees shouldBe -23.5634453
             Angle.from("").shouldBeNull()
             Angle.from("kkk").shouldBeNull()
         }
         "format" {
-            val angle = Angle.from("12h 30 1", true)!!
+            val angle = Angle.from("12h 30 1", true)
 
             angle.hours shouldBe (12.5003 plusOrMinus 1e-4)
 
@@ -143,7 +143,7 @@ class AngleTest : StringSpec() {
                 .build()
                 .format(angle) shouldBe "12h30m"
 
-            val negativeAngle = Angle.from("-43 00 45")!!
+            val negativeAngle = Angle.from("-43 00 45")
 
             AngleFormatter.Builder()
                 .degreesFormat("%02d")
@@ -178,7 +178,7 @@ class AngleTest : StringSpec() {
                 .format(Angle.CIRCLE) shouldBe "00h00m00.0s"
         }
         "bug on round seconds" {
-            Angle.from("23h59m60.0s", true)!!
+            Angle.from("23h59m60.0s", true)
                 .format(AngleFormatter.HMS) shouldBe "00h00m00.0s"
 
             AngleFormatter.HMS

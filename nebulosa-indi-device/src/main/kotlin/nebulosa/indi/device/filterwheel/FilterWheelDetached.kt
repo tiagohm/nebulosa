@@ -1,3 +1,5 @@
 package nebulosa.indi.device.filterwheel
 
-data class FilterWheelDetached(override val device: FilterWheel) : FilterWheelEvent
+import nebulosa.indi.device.DeviceDetached
+
+data class FilterWheelDetached(override val device: FilterWheel) : FilterWheelEvent, DeviceDetached<FilterWheel>

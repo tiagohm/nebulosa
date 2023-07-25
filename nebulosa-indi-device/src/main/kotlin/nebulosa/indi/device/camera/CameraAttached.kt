@@ -1,3 +1,5 @@
 package nebulosa.indi.device.camera
 
-data class CameraAttached(override val device: Camera) : CameraEvent
+import nebulosa.indi.device.DeviceAttached
+
+data class CameraAttached(override val device: Camera) : CameraEvent, DeviceAttached<Camera>

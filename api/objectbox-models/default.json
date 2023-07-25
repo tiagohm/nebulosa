@@ -1,0 +1,483 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:6181435429496929274",
+      "lastPropertyId": "3:2049888129534034209",
+      "name": "AppPreferenceEntity",
+      "properties": [
+        {
+          "id": "1:9082423197436790865",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4215084375954292184",
+          "name": "key",
+          "indexId": "1:7113897099230922797",
+          "type": 9,
+          "flags": 2080
+        },
+        {
+          "id": "3:2049888129534034209",
+          "name": "value",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:3529169340335800270",
+      "lastPropertyId": "46:5232874833281750836",
+      "name": "DeepSkyObjectEntity",
+      "properties": [
+        {
+          "id": "1:1377932098503485955",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1446097180539935074",
+          "name": "names",
+          "indexId": "2:242894646262700455",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:3053736478989140092",
+          "name": "m",
+          "type": 5
+        },
+        {
+          "id": "4:1548821562589357302",
+          "name": "ngc",
+          "type": 5
+        },
+        {
+          "id": "5:719076718265527216",
+          "name": "ic",
+          "type": 5
+        },
+        {
+          "id": "6:7638106542208916219",
+          "name": "c",
+          "type": 5
+        },
+        {
+          "id": "7:2365221518425800996",
+          "name": "b",
+          "type": 5
+        },
+        {
+          "id": "8:3594538813363643906",
+          "name": "sh2",
+          "type": 5
+        },
+        {
+          "id": "9:8727472982290215506",
+          "name": "vdb",
+          "type": 5
+        },
+        {
+          "id": "10:7177111477641113606",
+          "name": "rcw",
+          "type": 5
+        },
+        {
+          "id": "11:7750990697794784930",
+          "name": "ldn",
+          "type": 5
+        },
+        {
+          "id": "12:2240636949352847970",
+          "name": "lbn",
+          "type": 5
+        },
+        {
+          "id": "13:3311853968242468079",
+          "name": "cr",
+          "type": 5
+        },
+        {
+          "id": "14:3064799059795629685",
+          "name": "mel",
+          "type": 5
+        },
+        {
+          "id": "15:6521394662377878035",
+          "name": "pgc",
+          "type": 5
+        },
+        {
+          "id": "16:3374393653206518051",
+          "name": "ugc",
+          "type": 5
+        },
+        {
+          "id": "17:1103055697476331323",
+          "name": "arp",
+          "type": 5
+        },
+        {
+          "id": "18:6037304017788880350",
+          "name": "vv",
+          "type": 5
+        },
+        {
+          "id": "19:6842439638525042505",
+          "name": "dwb",
+          "type": 5
+        },
+        {
+          "id": "20:8692595731890012533",
+          "name": "tr",
+          "type": 5
+        },
+        {
+          "id": "21:498271057417144293",
+          "name": "st",
+          "type": 5
+        },
+        {
+          "id": "22:5767663301524445085",
+          "name": "ru",
+          "type": 5
+        },
+        {
+          "id": "23:6101438325885106272",
+          "name": "vdbha",
+          "type": 5
+        },
+        {
+          "id": "24:7592722542751515798",
+          "name": "ced",
+          "type": 9
+        },
+        {
+          "id": "25:7395418421723446673",
+          "name": "pk",
+          "type": 9
+        },
+        {
+          "id": "26:7160271996394415028",
+          "name": "png",
+          "type": 9
+        },
+        {
+          "id": "27:1458083588970681448",
+          "name": "snrg",
+          "type": 9
+        },
+        {
+          "id": "28:207326814581126847",
+          "name": "aco",
+          "type": 9
+        },
+        {
+          "id": "29:7981856666798707457",
+          "name": "hcg",
+          "type": 9
+        },
+        {
+          "id": "30:2708588211679486333",
+          "name": "eso",
+          "type": 9
+        },
+        {
+          "id": "31:2193234144447602224",
+          "name": "vdbh",
+          "type": 9
+        },
+        {
+          "id": "32:1201022568876930348",
+          "name": "mType",
+          "type": 9
+        },
+        {
+          "id": "33:6351624634212117789",
+          "name": "magnitude",
+          "type": 8
+        },
+        {
+          "id": "34:6199691868803693989",
+          "name": "rightAscension",
+          "type": 8
+        },
+        {
+          "id": "35:4099664894377311928",
+          "name": "declination",
+          "type": 8
+        },
+        {
+          "id": "36:7265668369063542470",
+          "name": "type",
+          "indexId": "3:3825443249382383696",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "37:4155224603465527448",
+          "name": "redshift",
+          "type": 8
+        },
+        {
+          "id": "38:4710504809211347125",
+          "name": "parallax",
+          "type": 8
+        },
+        {
+          "id": "39:8402338778664249864",
+          "name": "radialVelocity",
+          "type": 8
+        },
+        {
+          "id": "40:6425506964773028327",
+          "name": "distance",
+          "type": 8
+        },
+        {
+          "id": "41:7446062089288424732",
+          "name": "majorAxis",
+          "type": 8
+        },
+        {
+          "id": "42:7447395708529256292",
+          "name": "minorAxis",
+          "type": 8
+        },
+        {
+          "id": "43:2460491531195153196",
+          "name": "orientation",
+          "type": 8
+        },
+        {
+          "id": "44:3359147573850599584",
+          "name": "pmRA",
+          "type": 8
+        },
+        {
+          "id": "45:475909710878501137",
+          "name": "pmDEC",
+          "type": 8
+        },
+        {
+          "id": "46:5232874833281750836",
+          "name": "constellation",
+          "indexId": "4:2085894475146538115",
+          "type": 9,
+          "flags": 2048
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:3687818935518123181",
+      "lastPropertyId": "6:1378251454367415926",
+      "name": "LocationEntity",
+      "properties": [
+        {
+          "id": "1:8900169280048248059",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:638248452666932387",
+          "name": "name",
+          "indexId": "5:4644305272188441135",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:7015124920765295920",
+          "name": "latitude",
+          "type": 8
+        },
+        {
+          "id": "4:8034103937966611549",
+          "name": "longitude",
+          "type": 8
+        },
+        {
+          "id": "5:4790845182865895556",
+          "name": "elevation",
+          "type": 8
+        },
+        {
+          "id": "6:1378251454367415926",
+          "name": "offsetInMinutes",
+          "type": 5
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "4:1312076498930645704",
+      "lastPropertyId": "8:4062514020634142444",
+      "name": "SavedCameraImageEntity",
+      "properties": [
+        {
+          "id": "1:1470698634581912117",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:2309677218504319612",
+          "name": "name",
+          "indexId": "6:109477348146597818",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:9212877232261517779",
+          "name": "path",
+          "indexId": "7:2061226652511406733",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "4:8693844248671937366",
+          "name": "width",
+          "type": 5
+        },
+        {
+          "id": "5:2751523451270529294",
+          "name": "height",
+          "type": 5
+        },
+        {
+          "id": "6:4199542614559446180",
+          "name": "mono",
+          "type": 1
+        },
+        {
+          "id": "7:1117756668830926513",
+          "name": "exposure",
+          "type": 6
+        },
+        {
+          "id": "8:4062514020634142444",
+          "name": "savedAt",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "5:6334310940653380800",
+      "lastPropertyId": "17:7416203170732233434",
+      "name": "StarEntity",
+      "properties": [
+        {
+          "id": "1:4925725063049436712",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7763524045392374965",
+          "name": "hd",
+          "type": 5
+        },
+        {
+          "id": "3:7137885472007646789",
+          "name": "hr",
+          "type": 5
+        },
+        {
+          "id": "4:2423401273281489010",
+          "name": "hip",
+          "type": 5
+        },
+        {
+          "id": "5:8635530276982094868",
+          "name": "names",
+          "indexId": "8:928559090882709704",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "6:6413941903919652136",
+          "name": "magnitude",
+          "type": 8
+        },
+        {
+          "id": "7:1595994345599261701",
+          "name": "rightAscension",
+          "type": 8
+        },
+        {
+          "id": "8:6229451337927168818",
+          "name": "declination",
+          "type": 8
+        },
+        {
+          "id": "9:1116787059923714414",
+          "name": "type",
+          "indexId": "9:3461547145283148694",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "10:8682805032169680688",
+          "name": "spType",
+          "type": 9
+        },
+        {
+          "id": "11:3922786936477708641",
+          "name": "redshift",
+          "type": 8
+        },
+        {
+          "id": "12:7993572756810235854",
+          "name": "parallax",
+          "type": 8
+        },
+        {
+          "id": "13:4668432657909700755",
+          "name": "radialVelocity",
+          "type": 8
+        },
+        {
+          "id": "14:2769065628519268215",
+          "name": "distance",
+          "type": 8
+        },
+        {
+          "id": "15:4712811064526553850",
+          "name": "pmRA",
+          "type": 8
+        },
+        {
+          "id": "16:2755500362122136726",
+          "name": "pmDEC",
+          "type": 8
+        },
+        {
+          "id": "17:7416203170732233434",
+          "name": "constellation",
+          "indexId": "10:5209202730553871543",
+          "type": 9,
+          "flags": 2048
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "5:6334310940653380800",
+  "lastIndexId": "10:5209202730553871543",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

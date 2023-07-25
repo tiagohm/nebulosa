@@ -8,10 +8,11 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.create
-import java.io.File
+import java.nio.file.Path
 import java.util.*
+import kotlin.io.path.extension
 
-class NovaAstrometryNetService(url: String = URL) : RetrofitService(url) {
+class NovaAstrometryNetService(url: String = "") : RetrofitService(url.ifBlank { URL }) {
 
     private val service by lazy { retrofit.create<NovaAstrometryNet>() }
 
@@ -29,11 +30,11 @@ class NovaAstrometryNetService(url: String = URL) : RetrofitService(url) {
             .let(service::uploadFromUrl)
     }
 
-    fun uploadFromFile(file: File, upload: Upload): Call<Submission> {
+    fun uploadFromFile(path: Path, upload: Upload): Call<Submission> {
         val requestJsonBody = mapper.writeValueAsBytes(upload).toRequestBody(TEXT_PLAIN_MEDIA_TYPE)
 
-        val fileName = "%s.%s".format(UUID.randomUUID(), file.extension)
-        val fileBody = file.asRequestBody(OCTET_STREAM_MEDIA_TYPE)
+        val fileName = "%s.%s".format(UUID.randomUUID(), path.extension)
+        val fileBody = path.toFile().asRequestBody(OCTET_STREAM_MEDIA_TYPE)
 
         val body = MultipartBody.Builder()
             .setType(MultipartBody.FORM)

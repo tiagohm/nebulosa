@@ -1,18 +1,12 @@
 name: Deploy
 
 on:
-  push:
-    tags:
-      - '*'
+  workflow_dispatch:
 
 jobs:
-  deploy:
-    name: Deploy
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ ubuntu-latest, windows-latest ]
+  api:
+    name: Build API
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -29,22 +23,61 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build
-        run: ./gradlew --no-daemon :desktop:bootJar
+        run: ./gradlew --no-daemon :api:bootJar
 
-      - name: Rename Build
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: mv desktop/build/libs/desktop.jar nebulosa-${{ github.ref_name }}-linux.jar
-
-      - name: Rename Build
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: mv desktop/build/libs/desktop.jar nebulosa-${{ github.ref_name }}-windows.jar
-
-      - name: Deploy
-        uses: xresloader/upload-to-github-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
         with:
-          overwrite: true
-          update_latest_release: true
-          default_release_name: ${{ github.ref_name }}
-          file: 'nebulosa-*.jar'
+          name: api-${{ github.sha }}
+          path: desktop/api.jar
+          retention-days: 1
+
+  desktop:
+    needs: api
+    name: Build Desktop App
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        working-directory: desktop
+
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Download API
+        uses: actions/download-artifact@v3
+        with:
+          name: api-${{ github.sha }}
+          path: desktop
+
+      - name: Install Dependencies
+        run: npm i
+
+      - name: Install Linux Build Dependencies
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: sudo apt-get install -y rpm
+
+      - name: Build
+        run: npm run electron:build
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: nebulosa-${{ matrix.os }}-${{ github.sha }}
+          path: |
+            desktop/release/nebulosa*.AppImage
+            desktop/release/nebulosa*.deb
+            desktop/release/nebulosa*.rpm
+            desktop/release/nebulosa*.exe
+            desktop/release/nebulosa*.dmg
+          retention-days: 3

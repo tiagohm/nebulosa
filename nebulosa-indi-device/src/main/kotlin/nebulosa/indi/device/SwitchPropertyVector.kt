@@ -5,7 +5,7 @@ import nebulosa.indi.protocol.PropertyState
 import nebulosa.indi.protocol.SwitchRule
 
 data class SwitchPropertyVector(
-    // override val device: Device,
+    override val device: Device,
     override val name: String,
     override val label: String,
     override val group: String,
@@ -18,10 +18,7 @@ data class SwitchPropertyVector(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is SwitchPropertyVector) return false
-
-        if (name != other.name) return false
-
-        return true
+        return name == other.name
     }
 
     override fun hashCode() = name.hashCode()

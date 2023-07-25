@@ -26,8 +26,7 @@ class GeographicPosition(
 
     override val center = 399
 
-    override val target
-        get() = this
+    override val target = this
 
     /**
      * Returns this position’s Local Sidereal Time at the [time].
@@ -73,6 +72,7 @@ class GeographicPosition(
 
     override fun toByte() = center.toByte()
 
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun toChar() = center.toChar()
 
     override fun toDouble() = center.toDouble()
@@ -105,12 +105,11 @@ class GeographicPosition(
         return result
     }
 
-    override fun toString(): String {
-        return "GeographicPosition(longitude=${longitude.degrees}, latitude=${latitude.degrees}, elevation=${elevation.meters}, model=$model)"
-    }
+    override fun toString() = "GeographicPosition(longitude=${longitude.degrees}, " +
+            "latitude=${latitude.degrees}, elevation=${elevation.meters}, model=$model)"
 
     companion object {
 
-        @JvmStatic val EARTH_ANGULAR_VELOCITY_VECTOR = Vector3D(0.0, 0.0, DAYSEC * ANGULAR_VELOCITY)
+        @JvmStatic val EARTH_ANGULAR_VELOCITY_VECTOR = Vector3D(z = DAYSEC * ANGULAR_VELOCITY)
     }
 }
