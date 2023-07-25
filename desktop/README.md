@@ -10,39 +10,24 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](camera.png)
 
-## Mount
-
-![](mount.png)
-
-## Filter Wheel
-
-![](filter-wheel.png)
-
-## Focuser
-
-![](focuser.png)
-
-## Guiding
-
-![](guider.png)
-
 ## Atlas
 
-![](atlas.png)
+![](atlas.1.png)
+![](atlas.2.png)
+![](atlas.3.png)
+![](atlas.4.png)
+![](atlas.5.png)
+![](atlas.6.png)
+![](atlas.7.png)
 
-## Image Preview
+## Image
 
 ![](image.png)
-![](scnr.png)
-
-## Plate Solver
-
-![](plate-solver.png)
 
 ## Framing
 
 ![](framing.png)
 
-## INDI Panel Control
+## INDI
 
-![](indi-panel-control.png)
+![](indi.png)

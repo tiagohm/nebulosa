@@ -27,8 +27,8 @@ data class Calibration(
     val pc12: Double = 0.0,
     val pc21: Double = 0.0,
     val pc22: Double = 0.0,
-    val pv11: Angle? = null,
-    val pv12: Angle? = null,
+    val pv11: Angle = Angle.NaN,
+    val pv12: Angle = Angle.NaN,
     // Calibration.
     val orientation: Angle = crota2,
     val scale: Angle = cdelt2,
@@ -65,8 +65,8 @@ data class Calibration(
                 this["PC2_2"] = pc22
             }
 
-            if (pv11 != null) this["PV1_1"] = pv11.degrees
-            if (pv12 != null) this["PV1_2"] = pv12.degrees
+            if (pv11.valid) this["PV1_1"] = pv11.degrees
+            if (pv12.valid) this["PV1_2"] = pv12.degrees
         }
     }
 

@@ -12,25 +12,21 @@ import nebulosa.time.InstantOfTime
 /**
  * An |xyz| position in the Earth-centered Earth-fixed (ECEF) ITRS frame.
  */
-@Suppress("NOTHING_TO_INLINE")
-abstract class ITRSPosition(val itrs: Vector3D) : Body, Number() {
+abstract class ITRSPosition(private val itrs: Vector3D) : Body, Number() {
 
-    val velocity by lazy { Vector3D(-itrs[1] * ANGULAR_VELOCITY_PER_DAY, itrs[0] * ANGULAR_VELOCITY_PER_DAY, 0.0) }
+    val velocity = Vector3D(-itrs[1] * ANGULAR_VELOCITY_PER_DAY, itrs[0] * ANGULAR_VELOCITY_PER_DAY)
 
-    inline val x
-        get() = itrs.x.au
+    val x = itrs.x.au
 
-    inline val y
-        get() = itrs.y.au
+    val y = itrs.y.au
 
-    inline val z
-        get() = itrs.z.au
+    val z = itrs.z.au
 
-    inline operator fun component1() = x
+    operator fun component1() = x
 
-    inline operator fun component2() = y
+    operator fun component2() = y
 
-    inline operator fun component3() = z
+    operator fun component3() = z
 
     /**
      * Computes GCRS position and velocity at the [time].

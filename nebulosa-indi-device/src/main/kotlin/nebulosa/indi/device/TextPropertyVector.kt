@@ -4,7 +4,7 @@ import nebulosa.indi.protocol.PropertyPermission
 import nebulosa.indi.protocol.PropertyState
 
 data class TextPropertyVector(
-    // override val device: Device,
+    override val device: Device,
     override val name: String,
     override val label: String,
     override val group: String,
@@ -16,10 +16,7 @@ data class TextPropertyVector(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is TextPropertyVector) return false
-
-        if (name != other.name) return false
-
-        return true
+        return name == other.name
     }
 
     override fun hashCode() = name.hashCode()

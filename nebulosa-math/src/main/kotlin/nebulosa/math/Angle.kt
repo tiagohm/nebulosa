@@ -142,8 +142,9 @@ value class Angle(val value: Double) {
             input: String?,
             isHours: Boolean = false,
             decimalIsHours: Boolean = isHours,
-        ): Angle? {
-            val trimmedInput = input?.trim() ?: return null
+            defaultValue: Angle = NaN,
+        ): Angle {
+            val trimmedInput = input?.trim() ?: return defaultValue
 
             val decimalInput = trimmedInput.toDoubleOrNull()
             if (decimalInput != null) return if (decimalIsHours) decimalInput.hours
@@ -173,7 +174,7 @@ value class Angle(val value: Double) {
                 res[idx++] = abs(value)
             }
 
-            if (idx == 0) return null
+            if (idx == 0) return defaultValue
 
             if (res[2] >= 60.0) {
                 res[2] %= 60.0

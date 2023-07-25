@@ -2,7 +2,7 @@ package nebulosa.imaging
 
 import nebulosa.fits.imageHDU
 import nebulosa.fits.naxis
-import nebulosa.imaging.algorithms.CfaPattern.Companion.cfaPattern
+import nebulosa.imaging.algorithms.CfaPattern
 import nebulosa.imaging.algorithms.ComputationAlgorithm
 import nebulosa.imaging.algorithms.Debayer
 import nebulosa.imaging.algorithms.TransformAlgorithm
@@ -20,7 +20,9 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.FloatBuffer
+import java.nio.file.Path
 import javax.imageio.ImageIO
+import kotlin.io.path.outputStream
 import kotlin.math.max
 import kotlin.math.min
 
@@ -242,7 +244,11 @@ class Image(
     }
 
     fun writeAsFits(file: File) {
-        file.outputStream().use { writeAsFits(it) }
+        file.outputStream().use(::writeAsFits)
+    }
+
+    fun writeAsFits(path: Path) {
+        path.outputStream().use(::writeAsFits)
     }
 
     fun writeAsFits(outputStream: OutputStream) {
@@ -271,6 +277,7 @@ class Image(
      * Creates a new [Image] and returns a RGB version of this image.
      */
     fun color(): Image {
+        // TODO: Clone header and set RGB info.
         val image = Image(width, height, header, false)
 
         if (mono) {
@@ -314,13 +321,23 @@ class Image(
         }
 
         @JvmStatic
-        fun open(file: File): Image {
-            return ImageIO.read(file)?.let(::open) ?: Fits(file).use { open(it) }
+        fun open(
+            file: File,
+            debayer: Boolean = true,
+            onlyHeaders: Boolean = false,
+        ): Image {
+            return ImageIO.read(file)?.let(::open)
+                ?: Fits(file).use { open(it, debayer, onlyHeaders) }
         }
 
         @JvmStatic
-        fun open(inputStream: InputStream): Image {
-            return ImageIO.read(inputStream)?.let(::open) ?: Fits(inputStream).use { open(it) }
+        fun open(
+            inputStream: InputStream,
+            debayer: Boolean = true,
+            onlyHeaders: Boolean = false,
+        ): Image {
+            return ImageIO.read(inputStream)?.let(::open)
+                ?: Fits(inputStream).use { open(it, debayer, onlyHeaders) }
         }
 
         @Suppress("UNCHECKED_CAST")
@@ -328,15 +345,15 @@ class Image(
         fun open(
             fits: Fits,
             debayer: Boolean = true,
+            onlyHeaders: Boolean = false,
         ): Image {
             val hdu = requireNotNull(fits.imageHDU(0)) { "The FITS file not contains an image" }
 
             val header = hdu.header
             val width = header.naxis(1)
             val height = header.naxis(2)
-            val mono = hdu.let { it.axes.size != 3 && !(debayer && it.axes.size == 2 && it.cfaPattern != null) }
+            val mono = isMono(header)
             val axes = hdu.axes
-            val pixels = hdu.kernel as Array<*>
             val bitpix = hdu.bitpix
 
             // TODO: DATA[i] = BZERO + BSCALE * DATA[i]
@@ -344,6 +361,10 @@ class Image(
             header.setBitpix(Bitpix.FLOAT)
 
             val image = Image(width, height, header, mono)
+
+            if (onlyHeaders) return image
+
+            val pixels = hdu.kernel as Array<*>
 
             fun rescaling() {
                 for (p in 0 until image.numberOfChannels) {
@@ -366,8 +387,9 @@ class Image(
                 }
             }
 
+            // Mono.
             if (axes.size == 2) {
-                val bayer = hdu.cfaPattern
+                val bayer = CfaPattern.of(hdu)
 
                 when (val numberType = bitpix.numberType) {
                     Byte::class.java -> image.writeByteArray(ImageChannel.RED, pixels as Array<ByteArray>)
@@ -380,7 +402,7 @@ class Image(
 
                 rescaling()
 
-                if (bayer != null) {
+                if (debayer && bayer != null) {
                     Debayer(bayer).transform(image)
                 }
             } else {
@@ -444,6 +466,11 @@ class Image(
             }
 
             return image
+        }
+
+        @JvmStatic
+        fun isMono(header: Header): Boolean {
+            return header.naxis() != 3 && !(header.naxis() == 2 && CfaPattern.of(header) != null)
         }
     }
 }

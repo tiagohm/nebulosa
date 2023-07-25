@@ -31,8 +31,7 @@ data class Geoid(
      * number for west.
      */
     fun latLon(
-        longitude: Angle,
-        latitude: Angle,
+        longitude: Angle, latitude: Angle,
         elevation: Distance = Distance.ZERO,
     ): GeographicPosition {
         val sinphi = latitude.sin

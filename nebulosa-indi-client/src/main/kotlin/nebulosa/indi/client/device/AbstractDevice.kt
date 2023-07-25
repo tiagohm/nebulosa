@@ -80,6 +80,7 @@ internal abstract class AbstractDevice(
                         }
 
                         NumberPropertyVector(
+                            this,
                             message.name, message.label, message.group,
                             message.perm, message.state,
                             properties,
@@ -94,6 +95,7 @@ internal abstract class AbstractDevice(
                         }
 
                         SwitchPropertyVector(
+                            this,
                             message.name, message.label, message.group,
                             message.perm, message.rule, message.state,
                             properties,
@@ -108,6 +110,7 @@ internal abstract class AbstractDevice(
                         }
 
                         TextPropertyVector(
+                            this,
                             message.name, message.label, message.group,
                             message.perm, message.state,
                             properties,

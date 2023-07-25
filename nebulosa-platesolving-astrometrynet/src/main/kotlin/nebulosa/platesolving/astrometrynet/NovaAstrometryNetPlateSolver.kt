@@ -8,13 +8,13 @@ import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
-import java.io.File
+import java.nio.file.Path
 import java.time.Duration
 import kotlin.math.max
 
 class NovaAstrometryNetPlateSolver(
     private val service: NovaAstrometryNetService,
-    private val apiKey: String = ANONYMOUS_API_KEY,
+    private val apiKey: String = "",
 ) : PlateSolver {
 
     @Volatile private var session: Session? = null
@@ -25,7 +25,7 @@ class NovaAstrometryNetPlateSolver(
         val currentTime = System.currentTimeMillis()
 
         if (session == null || lastSessionTime == 0L || currentTime - lastSessionTime >= SESSION_EXPIRATION_TIME) {
-            val session = service.login(apiKey).execute().body()
+            val session = service.login(apiKey.ifBlank { ANONYMOUS_API_KEY }).execute().body()
                 ?: throw PlateSolvingException("failed to renew session key")
 
             if (session.status != "success") {
@@ -38,7 +38,7 @@ class NovaAstrometryNetPlateSolver(
     }
 
     override fun solve(
-        file: File,
+        path: Path,
         blind: Boolean,
         centerRA: Angle, centerDEC: Angle,
         radius: Angle,
@@ -55,7 +55,7 @@ class NovaAstrometryNetPlateSolver(
             downsampleFactor = downsampleFactor,
         )
 
-        val submission = service.uploadFromFile(file, upload).execute().body()
+        val submission = service.uploadFromFile(path, upload).execute().body()
             ?: throw PlateSolvingException("failed to submit the file")
 
         if (submission.status != "success") {

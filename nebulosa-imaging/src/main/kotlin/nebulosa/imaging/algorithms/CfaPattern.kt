@@ -2,6 +2,7 @@ package nebulosa.imaging.algorithms
 
 import nebulosa.imaging.ImageChannel
 import nom.tam.fits.BasicHDU
+import nom.tam.fits.Header
 import nom.tam.fits.header.extra.MaxImDLExt
 
 enum class CfaPattern(private val pattern: Array<Array<ImageChannel>>) {
@@ -18,7 +19,14 @@ enum class CfaPattern(private val pattern: Array<Array<ImageChannel>>) {
 
     companion object {
 
-        val BasicHDU<*>.cfaPattern
-            get() = header.getStringValue(MaxImDLExt.BAYERPAT)?.trim()?.let(CfaPattern::valueOf)
+        @JvmStatic
+        fun of(hdu: BasicHDU<*>): CfaPattern? {
+            return of(hdu.header)
+        }
+
+        @JvmStatic
+        fun of(header: Header): CfaPattern? {
+            return header.getStringValue(MaxImDLExt.BAYERPAT)?.trim()?.let(CfaPattern::valueOf)
+        }
     }
 }

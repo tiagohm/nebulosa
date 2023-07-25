@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.aalto)
+    implementation(libs.xml)
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }

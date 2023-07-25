@@ -1,13 +1,13 @@
 package nebulosa.guiding.internal
 
-import nebulosa.common.concurrency.Worker
+import nebulosa.common.concurrency.ThreadedJob
 import nebulosa.guiding.NoiseReductionMethod
 import nebulosa.imaging.algorithms.Mean
 import nebulosa.log.loggerFor
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.max
 
-internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : Worker() {
+internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : ThreadedJob<Unit>() {
 
     private val frameNumber = AtomicInteger(1)
 
