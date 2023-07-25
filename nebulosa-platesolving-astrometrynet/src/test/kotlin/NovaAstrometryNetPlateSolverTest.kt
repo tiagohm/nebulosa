@@ -6,13 +6,14 @@ import nebulosa.io.resource
 import nebulosa.io.transferAndClose
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
-import java.io.File
+import java.nio.file.Files
+import kotlin.io.path.outputStream
 
 @Ignored
 class NovaAstrometryNetPlateSolverTest : StringSpec() {
 
     init {
-        val file = File.createTempFile("nova", ".jpg")
+        val file = Files.createTempFile("nova", ".jpg")
             .also { resource("ldn673s_block1123.jpg")!!.transferAndClose(it.outputStream()) }
 
         "solve" {

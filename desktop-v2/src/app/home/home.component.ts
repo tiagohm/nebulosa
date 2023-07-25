@@ -3,6 +3,7 @@ import { MessageService } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { HomeWindowType } from '../../shared/types'
 
 @Component({
@@ -21,13 +22,14 @@ export class HomeComponent implements OnInit {
         private browserWindow: BrowserWindowService,
         private api: ApiService,
         private message: MessageService,
+        private preference: PreferenceService,
     ) { }
 
     async ngOnInit() {
         this.updateConnectionStatus()
 
-        this.host = localStorage.getItem('HOME_HOST') || 'localhost'
-        this.port = parseInt(localStorage.getItem('HOME_PORT') || '7624')
+        this.host = this.preference.get('home.host', 'localhost')
+        this.port = this.preference.get('home.port', 7624)
     }
 
     async connect() {
@@ -37,8 +39,8 @@ export class HomeComponent implements OnInit {
             } else {
                 await this.api.connect(this.host || 'localhost', this.port)
 
-                localStorage.setItem('HOME_HOST', this.host)
-                localStorage.setItem('HOME_PORT', `${this.port}`)
+                this.preference.set('home.host', this.host)
+                this.preference.set('home.port', this.port)
             }
         } catch (e) {
             console.error(e)

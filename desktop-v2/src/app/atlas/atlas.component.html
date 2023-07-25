@@ -263,40 +263,40 @@
     <div class="grid mt-2">
         <div class="col-4">
             <span class="p-float-label">
-                <input pInputText class="border-0 max-w-full" [value]="starFilterRA" />
+                <input pInputText class="border-0 max-w-full" [value]="starFilter.rightAscension" />
                 <label>RA (h)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input pInputText class="border-0 max-w-full" [value]="starFilterDEC" />
+                <input pInputText class="border-0 max-w-full" [value]="starFilter.declination" />
                 <label>DEC (°)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
                 <p-inputNumber [min]="0" [max]="90" class="w-full" [showButtons]="true" inputStyleClass="border-0 w-full"
-                               [(ngModel)]="starFilterRadius" />
+                               [(ngModel)]="starFilter.radius" />
                 <label>Radius (°)</label>
             </span>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="constellationOptions" [(ngModel)]="starFilterConstellation" optionLabel="name"
+                <p-dropdown [options]="constellationOptions" [(ngModel)]="starFilter.constellation" optionLabel="name"
                             optionValue="value" appendTo="body" styleClass="border-0" />
                 <label>Constellation</label>
             </span>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="starFilterTypeOptions" [(ngModel)]="starFilterType" optionLabel="name" optionValue="value"
+                <p-dropdown [options]="starFilterTypeOptions" [(ngModel)]="starFilter.type" optionLabel="name" optionValue="value"
                             appendTo="body" styleClass="border-0" />
                 <label>Type</label>
             </span>
         </div>
         <div class="col-12">
-            <p>Magnitude min: {{ starFilterMagnitude[0] }} max: {{ starFilterMagnitude[1] }}</p>
-            <p-slider class="mt-3" [min]="-30" [max]="30" styleClass="mx-2" [(ngModel)]="starFilterMagnitude" [range]="true" />
+            <p>Magnitude min: {{ starFilter.magnitude[0] }} max: {{ starFilter.magnitude[1] }}</p>
+            <p-slider class="mt-3" [min]="-30" [max]="30" styleClass="mx-2" [(ngModel)]="starFilter.magnitude" [range]="true" />
         </div>
     </div>
     <ng-template pTemplate="footer">
@@ -308,40 +308,40 @@
     <div class="grid mt-2">
         <div class="col-4">
             <span class="p-float-label">
-                <input pInputText class="border-0 max-w-full" [value]="dsoFilterRA" />
+                <input pInputText class="border-0 max-w-full" [value]="dsoFilter.rightAscension" />
                 <label>RA (h)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input pInputText class="border-0 max-w-full" [value]="dsoFilterDEC" />
+                <input pInputText class="border-0 max-w-full" [value]="dsoFilter.declination" />
                 <label>DEC (°)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
                 <p-inputNumber [min]="0" [max]="90" class="w-full" [showButtons]="true" inputStyleClass="border-0 w-full"
-                               [(ngModel)]="dsoFilterRadius" />
+                               [(ngModel)]="dsoFilter.radius" />
                 <label>Radius (°)</label>
             </span>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="constellationOptions" [(ngModel)]="dsoFilterConstellation" optionLabel="name"
+                <p-dropdown [options]="constellationOptions" [(ngModel)]="dsoFilter.constellation" optionLabel="name"
                             optionValue="value" appendTo="body" styleClass="border-0" />
                 <label>Constellation</label>
             </span>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="dsoFilterTypeOptions" [(ngModel)]="dsoFilterType" optionLabel="name" optionValue="value"
+                <p-dropdown [options]="dsoFilterTypeOptions" [(ngModel)]="dsoFilter.type" optionLabel="name" optionValue="value"
                             appendTo="body" styleClass="border-0" />
                 <label>Type</label>
             </span>
         </div>
         <div class="col-12">
-            <p>Magnitude min: {{ dsoFilterMagnitude[0] }} max: {{ dsoFilterMagnitude[1] }}</p>
-            <p-slider class="mt-3" [min]="-30" [max]="30" styleClass="mx-2" [(ngModel)]="dsoFilterMagnitude" [range]="true" />
+            <p>Magnitude min: {{ dsoFilter.magnitude[0] }} max: {{ dsoFilter.magnitude[1] }}</p>
+            <p-slider class="mt-3" [min]="-30" [max]="30" styleClass="mx-2" [(ngModel)]="dsoFilter.magnitude" [range]="true" />
         </div>
     </div>
     <ng-template pTemplate="footer">

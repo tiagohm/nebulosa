@@ -15,6 +15,16 @@ export interface PlanetItem {
     code: string
 }
 
+export interface SearchFilter {
+    text: string
+    rightAscension: string
+    declination: string
+    radius: number
+    constellation: TypeWithAll<Constellation>
+    magnitude: [number, number]
+    type: TypeWithAll<SkyObjectType>
+}
+
 @Component({
     selector: 'app-atlas',
     templateUrl: './atlas.component.html',
@@ -117,12 +127,16 @@ export class AtlasComponent implements OnInit, OnDestroy {
     starItems: Star[] = []
     starSearchText = ''
     showStarFilterDialog = false
-    starFilterRA = '00h00m00.0s'
-    starFilterDEC = `+000°00'00"`
-    starFilterRadius = 0
-    starFilterConstellation: TypeWithAll<Constellation> = 'ALL'
-    starFilterMagnitude = [-30, 30]
-    starFilterType: TypeWithAll<SkyObjectType> = 'ALL'
+
+    readonly starFilter: SearchFilter = {
+        text: '',
+        rightAscension: '00h00m00s',
+        declination: `+000°00'00"`,
+        radius: 0,
+        constellation: 'ALL',
+        magnitude: [-30, 30],
+        type: 'ALL',
+    }
 
     readonly starFilterTypeOptions: { name: string, value: TypeWithAll<SkyObjectType> }[] = [
         { name: 'All', value: 'ALL' },
@@ -192,12 +206,16 @@ export class AtlasComponent implements OnInit, OnDestroy {
     dsoItems: DeepSkyObject[] = []
     dsoSearchText = ''
     showDSOFilterDialog = false
-    dsoFilterRA = '00h00m00.0s'
-    dsoFilterDEC = `+000°00'00"`
-    dsoFilterRadius = 0
-    dsoFilterConstellation: TypeWithAll<Constellation> = 'ALL'
-    dsoFilterMagnitude = [-30, 30]
-    dsoFilterType: TypeWithAll<SkyObjectType> = 'ALL'
+
+    readonly dsoFilter: SearchFilter = {
+        text: '',
+        rightAscension: '00h00m00s',
+        declination: `+000°00'00"`,
+        radius: 0,
+        constellation: 'ALL',
+        magnitude: [-30, 30],
+        type: 'ALL',
+    }
 
     readonly dsoFilterTypeOptions: { name: string, value: TypeWithAll<SkyObjectType> }[] = [
         { name: 'All', value: 'ALL' },
@@ -626,15 +644,15 @@ export class AtlasComponent implements OnInit, OnDestroy {
     }
 
     async searchStar() {
-        const constellation = this.starFilterConstellation === 'ALL' ? undefined : this.starFilterConstellation
-        const type = this.starFilterType === 'ALL' ? undefined : this.starFilterType
+        const constellation = this.starFilter.constellation === 'ALL' ? undefined : this.starFilter.constellation
+        const type = this.starFilter.type === 'ALL' ? undefined : this.starFilter.type
 
         this.refreshing = true
 
         try {
             this.starItems = await this.api.searchStar(this.starSearchText,
-                this.starFilterRA, this.starFilterDEC, this.starFilterRadius,
-                constellation, this.starFilterMagnitude[0], this.starFilterMagnitude[1], type,
+                this.starFilter.rightAscension, this.starFilter.declination, this.starFilter.radius,
+                constellation, this.starFilter.magnitude[0], this.starFilter.magnitude[1], type,
             )
         } finally {
             this.refreshing = false
@@ -647,15 +665,15 @@ export class AtlasComponent implements OnInit, OnDestroy {
     }
 
     async searchDSO() {
-        const constellation = this.dsoFilterConstellation === 'ALL' ? undefined : this.dsoFilterConstellation
-        const type = this.dsoFilterType === 'ALL' ? undefined : this.dsoFilterType
+        const constellation = this.dsoFilter.constellation === 'ALL' ? undefined : this.dsoFilter.constellation
+        const type = this.dsoFilter.type === 'ALL' ? undefined : this.dsoFilter.type
 
         this.refreshing = true
 
         try {
             this.dsoItems = await this.api.searchDSO(this.dsoSearchText,
-                this.dsoFilterRA, this.dsoFilterDEC, this.dsoFilterRadius,
-                constellation, this.dsoFilterMagnitude[0], this.dsoFilterMagnitude[1], type,
+                this.dsoFilter.rightAscension, this.dsoFilter.declination, this.dsoFilter.radius,
+                constellation, this.dsoFilter.magnitude[0], this.dsoFilter.magnitude[1], type,
             )
         } finally {
             this.refreshing = false

@@ -9,6 +9,7 @@ import { ContextMenu } from 'primeng/contextmenu'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { Calibration, Camera, ImageAnnotation, ImageChannel, ImageSource, PlateSolverType, SCNRProtectionMethod, SavedCameraImage } from '../../shared/types'
 
 export interface ImageParams {
@@ -211,6 +212,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         private api: ApiService,
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
+        private preference: PreferenceService,
         ngZone: NgZone,
     ) {
         title.setTitle('Image')
@@ -235,9 +237,9 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.solverPathOrUrl = localStorage.getItem('SOLVER_PATH_URL') ?? ''
-        this.solverRadius = parseFloat(localStorage.getItem('SOLVER_RADIUS') || '4')
-        this.solverDownsampleFactor = parseInt(localStorage.getItem('SOLVER_DOWNSAMPLE_FACTOR') || '1')
+        this.solverPathOrUrl = this.preference.get('image.solver.pathOrUrl', '')
+        this.solverRadius = this.preference.get('image.solver.radius', 4)
+        this.solverDownsampleFactor = this.preference.get('image.solver.downsampleFactor', 1)
     }
 
     ngAfterViewInit() {
@@ -356,9 +358,9 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.solverCenterRA, this.solverCenterDEC, this.solverRadius, this.solverDownsampleFactor,
                 this.solverPathOrUrl, this.solverApiKey)
 
-            localStorage.setItem('SOLVER_PATH_URL', this.solverPathOrUrl)
-            localStorage.setItem('SOLVER_RADIUS', `${this.solverRadius}`)
-            localStorage.setItem('SOLVER_DOWNSAMPLE_FACTOR', `${this.solverDownsampleFactor}`)
+            this.preference.set('image.solver.pathOrUrl', this.solverPathOrUrl)
+            this.preference.set('image.solver.radius', this.solverRadius)
+            this.preference.set('image.solver.downsampleFactor', this.solverDownsampleFactor)
 
             this.solved = true
             this.annotationMenuItem.disabled = false

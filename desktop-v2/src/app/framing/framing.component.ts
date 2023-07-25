@@ -3,6 +3,7 @@ import { Title } from '@angular/platform-browser'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { HipsSurvey } from '../../shared/types'
 
 export interface FramingParams {
@@ -40,30 +41,36 @@ export class FramingComponent implements OnInit, OnDestroy {
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
+        private preference: PreferenceService,
         ngZone: NgZone,
     ) {
         title.setTitle('Framing')
 
         electron.ipcRenderer.on('PARAMS_CHANGED', (_, data: FramingParams) => {
-            this.rightAscension = data.rightAscension
-            this.declination = data.declination
-            this.width = data.width ?? this.width
-            this.height = data.height ?? this.height
-            this.fov = data.fov ?? this.fov
-            if (data.rotation === 0 || data.rotation) this.rotation = data.rotation
+            ngZone.run(() => {
+                this.rightAscension = data.rightAscension
+                this.declination = data.declination
+                this.width = data.width ?? this.width
+                this.height = data.height ?? this.height
+                this.fov = data.fov ?? this.fov
+                if (data.rotation === 0 || data.rotation) this.rotation = data.rotation
 
-            ngZone.run(() => this.frame())
+                this.frame()
+            })
         })
     }
 
     async ngOnInit() {
         this.hipsSurveys = await this.api.hipsSurveys()
 
-        this.width = parseInt(localStorage.getItem('FRAMING_WIDTH') || '1280')
-        this.height = parseInt(localStorage.getItem('FRAMING_HEIGHT') || '720')
-        this.fov = parseFloat(localStorage.getItem('FRAMING_FOV') || '1.0')
-        this.rotation = parseFloat(localStorage.getItem('FRAMING_ROTATION') || '0.0')
-        const id = localStorage.getItem('FRAMING_HIPS_SURVEY') || 'CDS/P/DSS2/color'
+        this.rightAscension = this.preference.get('framing.rightAscension', '00h00m00s')
+        this.declination = this.preference.get('framing.declination', `+000°00'00"`)
+        this.width = this.preference.get('framing.width', 1280)
+        this.height = this.preference.get('framing.height', 720)
+        this.fov = this.preference.get('framing.fov', 1)
+        this.rotation = this.preference.get('framing.rotation', 0)
+        const id = this.preference.get('framing.hipsSurvey', 'CDS/P/DSS2/color')
+
         const hipsSurvey = this.hipsSurveys.find(e => e.id === id) ?? this.hipsSurveys[0]
         setTimeout(() => this.hipsSurvey = hipsSurvey, 600)
     }
@@ -85,11 +92,13 @@ export class FramingComponent implements OnInit, OnDestroy {
             this.frameId = await this.browserWindow.openImage(path, 'framing', 'FRAMING', title)
             this.framePath = path
 
-            localStorage.setItem('FRAMING_WIDTH', `${this.width}`)
-            localStorage.setItem('FRAMING_HEIGHT', `${this.height}`)
-            localStorage.setItem('FRAMING_FOV', `${this.fov}`)
-            localStorage.setItem('FRAMING_ROTATION', `${this.rotation}`)
-            localStorage.setItem('FRAMING_HIPS_SURVEY', this.hipsSurvey!.id)
+            this.preference.set('framing.rightAscension', this.rightAscension)
+            this.preference.set('framing.declination', this.declination)
+            this.preference.set('framing.width', this.width)
+            this.preference.set('framing.height', this.height)
+            this.preference.set('framing.fov', this.fov)
+            this.preference.set('framing.rotation', this.rotation)
+            this.preference.set('framing.hipsSurvey', this.hipsSurvey!.id)
         } finally {
             this.loading = false
         }

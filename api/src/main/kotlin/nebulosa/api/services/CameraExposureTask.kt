@@ -69,9 +69,7 @@ data class CameraExposureTask(
     constructor(
         camera: Camera,
         data: CameraStartCaptureRequest,
-        autoSave: Boolean,
         savePath: Path,
-        autoSubFolderMode: AutoSubFolderMode,
         mount: Mount? = null,
         filterWheel: FilterWheel? = null,
     ) : this(
@@ -83,7 +81,7 @@ data class CameraExposureTask(
         data.frameFormat, data.frameType,
         data.binX, data.binY,
         data.gain, data.offset,
-        autoSave, savePath, autoSubFolderMode,
+        data.autoSave, savePath, data.autoSubFolderMode,
         mount, filterWheel,
     )
 

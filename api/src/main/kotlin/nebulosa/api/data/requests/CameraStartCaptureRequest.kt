@@ -2,6 +2,7 @@ package nebulosa.api.data.requests
 
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
+import nebulosa.api.data.enums.AutoSubFolderMode
 import nebulosa.indi.device.camera.FrameType
 
 data class CameraStartCaptureRequest(
@@ -18,4 +19,7 @@ data class CameraStartCaptureRequest(
     @field:Positive val binY: Int = 1,
     @field:PositiveOrZero val gain: Int = 0,
     @field:PositiveOrZero val offset: Int = 0,
+    val autoSave: Boolean = false,
+    val savePath: String? = null,
+    val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.OFF,
 )

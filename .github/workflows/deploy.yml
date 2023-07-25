@@ -75,5 +75,10 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: nebulosa-${{ matrix.os }}-${{ github.sha }}
-          path: desktop-v2/release/nebulosa*.{AppImage,deb,rpm,flatpak,snap,exe,dmg}
+          path: |
+            desktop-v2/release/nebulosa*.AppImage
+            desktop-v2/release/nebulosa*.deb
+            desktop-v2/release/nebulosa*.rpm
+            desktop-v2/release/nebulosa*.exe
+            desktop-v2/release/nebulosa*.dmg
           retention-days: 3

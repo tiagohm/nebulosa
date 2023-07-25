@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core'
 import * as moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
-    BodyPosition, Calibration, Camera, CameraPreference, CameraStartCapture, Constellation, DeepSkyObject, Device,
+    BodyPosition, Calibration, Camera, CameraStartCapture, Constellation, DeepSkyObject, Device,
     HipsSurvey, INDIEventName, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet,
     PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, Star, Twilight
 } from '../types'
@@ -83,14 +83,6 @@ export class ApiService {
 
     cameraAbortCapture(camera: Camera) {
         return this.post<void>(`cameraAbortCapture?name=${camera.name}`)
-    }
-
-    saveCameraPreferences(camera: Camera, preference: CameraPreference) {
-        return this.put<void>(`cameraPreferencess?name=${camera.name}`, preference)
-    }
-
-    loadCameraPreferences(camera: Camera) {
-        return this.get<CameraPreference>(`cameraPreferences?name=${camera.name}`)
     }
 
     imagesOfCamera(camera: Camera) {

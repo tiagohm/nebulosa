@@ -54,12 +54,6 @@ export interface Camera extends Device {
     temperature: number
 }
 
-export interface CameraPreference {
-    autoSave: boolean
-    savePath: string
-    autoSubFolderMode: AutoSubFolderMode
-}
-
 export interface CameraStartCapture {
     exposure: number
     amount: number
@@ -74,6 +68,9 @@ export interface CameraStartCapture {
     binY: number
     gain: number
     offset: number
+    autoSave: boolean
+    savePath?: string
+    autoSubFolderMode: AutoSubFolderMode
 }
 
 export interface OpenWindowOptions {

@@ -4,7 +4,8 @@ import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Camera, ExposureMode, ExposureTimeUnit, FrameType } from '../../shared/types'
+import { PreferenceService } from '../../shared/services/preference.service'
+import { AutoSubFolderMode, Camera, CameraStartCapture, ExposureMode, ExposureTimeUnit, FrameType } from '../../shared/types'
 
 @Component({
     selector: 'app-camera',
@@ -84,6 +85,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         electron: ElectronService,
+        private preference: PreferenceService,
         ngZone: NgZone,
     ) {
         title.setTitle('Camera')
@@ -160,7 +162,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         const amount = this.exposureMode === 'LOOP' ? 2147483647 :
             (this.exposureMode === 'FIXED' ? this.exposureCount : 1)
 
-        const data = {
+        const data: CameraStartCapture = {
             exposure, amount,
             delay: this.exposureDelay,
             x, y, width, height,
@@ -170,6 +172,9 @@ export class CameraComponent implements OnInit, OnDestroy {
             binY: this.binY,
             gain: this.gain,
             offset: this.offset,
+            autoSave: this.preference.get(`camera.${this.camera!.name}.autoSave`, false),
+            savePath: this.preference.get(`camera.${this.camera!.name}.savePath`, ''),
+            autoSubFolderMode: this.preference.get<AutoSubFolderMode>(`camera.${this.camera!.name}.autoSave`, 'OFF')
         }
 
         this.capturing = true

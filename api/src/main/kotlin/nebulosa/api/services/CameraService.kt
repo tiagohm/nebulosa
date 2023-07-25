@@ -2,11 +2,9 @@ package nebulosa.api.services
 
 import jakarta.annotation.PostConstruct
 import nebulosa.api.data.entities.SavedCameraImageEntity
-import nebulosa.api.data.enums.AutoSubFolderMode
 import nebulosa.api.data.events.CameraCaptureFinished
 import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.api.data.responses.CameraResponse
-import nebulosa.api.repositories.CameraPreferenceRepository
 import nebulosa.api.repositories.SavedCameraImageRepository
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.camera.CameraAttached
@@ -27,7 +25,6 @@ import kotlin.io.path.isDirectory
 @Service
 class CameraService(
     private val equipmentService: EquipmentService,
-    private val cameraPreferenceRepository: CameraPreferenceRepository,
     private val savedCameraImageRepository: SavedCameraImageRepository,
     private val capturesDirectory: Path,
     private val cameraExecutorService: ExecutorService,
@@ -98,14 +95,11 @@ class CameraService(
         if (isCapturing(name)) return
 
         val camera = equipmentService.camera(name)!!
-        val preference = cameraPreferenceRepository.withName(name)
-        val autoSave = preference?.autoSave ?: false
-        val savePath = preference?.savePath?.ifBlank { null }?.let(Path::of)
+        val savePath = data.savePath?.ifBlank { null }?.let(Path::of)
             ?.takeIf { it.exists() && it.isDirectory() }
             ?: Path.of("$capturesDirectory", name).createDirectories()
-        val autoSubFolderMode = preference?.autoSubFolderMode ?: AutoSubFolderMode.NOON
 
-        val task = CameraExposureTask(camera, data, autoSave, savePath, autoSubFolderMode)
+        val task = CameraExposureTask(camera, data, savePath)
 
         val future = CompletableFuture.runAsync(task, cameraExecutorService)
         runningTasks[name] = task
