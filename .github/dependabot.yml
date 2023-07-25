@@ -10,5 +10,16 @@ updates:
     schedule:
       interval: "weekly"
       day: "friday"
-    open-pull-requests-limit: 32
     target-branch: "dependabot"
+
+  - package-ecosystem: "npm"
+    directory: "/desktop"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+    target-branch: "dependabot"
+
+  - package-ecosystem: "github-actions"
+    schedule:
+      interval: "monthly"
+    target-branch: "main"

@@ -47,7 +47,7 @@ dependencies {
 
 tasks.withType<BootJar> {
     archiveFileName.set("api.jar")
-    destinationDirectory.set(file("$rootDir/desktop-v2"))
+    destinationDirectory.set(file("$rootDir/desktop"))
 
     manifest {
         attributes["Start-Class"] = "nebulosa.api.MainKt"
