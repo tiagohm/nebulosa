@@ -15,7 +15,7 @@ dependencyResolutionManagement {
             library("okio", "com.squareup.okio:okio:3.4.0")
             library("okhttp", "com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
             library("okhttp-logging", "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
-            library("fits", "gov.nasa.gsfc.heasarc:nom-tam-fits:1.17.1")
+            library("fits", "gov.nasa.gsfc.heasarc:nom-tam-fits:1.18.0")
             library("jackson", "com.fasterxml.jackson.core:jackson-databind:2.15.2")
             library("jackson-jsr310", "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
             library("retrofit", "com.squareup.retrofit2:retrofit:2.9.0")
