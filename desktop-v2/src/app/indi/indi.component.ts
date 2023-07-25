@@ -2,6 +2,7 @@ import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit } fro
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import Hex from 'hex-encoding'
+import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { Device, INDIDeviceMessage, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types'
@@ -19,10 +20,11 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
 
     devices: Device[] = []
     properties: INDIProperty<any>[] = []
-    groups: string[] = []
+    groups: MenuItem[] = []
 
     device?: Device
-    group = ""
+    group = ''
+    showLog = false
     messages: string[] = []
 
     constructor(
@@ -85,6 +87,7 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     changeGroup(group: string) {
+        this.showLog = false
         this.group = group
     }
 
@@ -99,11 +102,33 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
             groups.add(property.group)
         }
 
-        this.groups = Array.from(groups)
-            .sort((a, b) => a.localeCompare(b))
+        let groupsChanged = false
 
-        if (!this.group || !this.groups.includes(this.group)) {
-            this.group = this.groups[0]
+        if (this.groups.length === groups.size) {
+            let index = 0
+
+            for (const item of groups) {
+                if (this.groups[index++].label !== item) {
+                    groupsChanged = true
+                    break
+                }
+            }
+        } else {
+            groupsChanged = true
+        }
+
+        if (this.groups.length === 0 || groupsChanged) {
+            this.groups = Array.from(groups)
+                .sort((a, b) => a.localeCompare(b))
+                .map(e => <MenuItem>{
+                    icon: 'mdi mdi-sitemap',
+                    label: e,
+                    command: () => this.changeGroup(e),
+                })
+        }
+
+        if (!this.group || !this.groups.find(e => e.label === this.group)) {
+            this.group = this.groups[0].label!
         }
     }
 

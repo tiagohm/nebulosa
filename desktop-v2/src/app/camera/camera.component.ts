@@ -18,6 +18,63 @@ export class CameraComponent implements OnInit, OnDestroy {
     camera?: Camera
     connected = false
 
+    autoSave = false
+    savePath = ''
+    autoSubFolderMode: AutoSubFolderMode = 'OFF'
+
+    readonly cameraMenuItems: MenuItem[] = [
+        {
+            icon: 'mdi mdi-content-save',
+            label: 'Auto save all exposures',
+            command: () => {
+                this.autoSave = !this.autoSave
+                this.savePreference()
+            },
+        },
+        {
+            icon: 'mdi mdi-folder',
+            label: 'Save path...',
+            command: async () => {
+                const path = await this.electron.ipcRenderer.sendSync('open-directory')
+
+                if (path) {
+                    this.savePath = path
+                    this.savePreference()
+                }
+            },
+        },
+        {
+            icon: 'mdi mdi-folder-plus',
+            label: 'New sub folder at',
+            items: [
+                {
+                    icon: 'mdi mdi-folder-off',
+                    label: 'Off',
+                    command: () => {
+                        this.autoSubFolderMode = 'OFF'
+                        this.savePreference()
+                    },
+                },
+                {
+                    icon: 'mdi mdi-weather-sunny',
+                    label: 'Noon',
+                    command: () => {
+                        this.autoSubFolderMode = 'NOON'
+                        this.savePreference()
+                    },
+                },
+                {
+                    icon: 'mdi mdi-weather-night',
+                    label: 'Midnight',
+                    command: () => {
+                        this.autoSubFolderMode = 'MIDNIGHT'
+                        this.savePreference()
+                    },
+                },
+            ],
+        },
+    ]
+
     cooler = false
     hasCooler = false
     coolerPower = 0.0
@@ -84,7 +141,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         private title: Title,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
-        electron: ElectronService,
+        private electron: ElectronService,
         private preference: PreferenceService,
         ngZone: NgZone,
     ) {
@@ -127,6 +184,9 @@ export class CameraComponent implements OnInit, OnDestroy {
     async cameraSelected() {
         if (this.camera) {
             this.title.setTitle(`Camera ・ ${this.camera.name}`)
+
+            this.loadPreference()
+
             this.camera = { ...await this.api.camera(this.camera.name) }
             this.update()
         } else {
@@ -152,6 +212,15 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.api.cameraCooler(this.camera!, this.cooler)
     }
 
+    fullsize() {
+        if (this.camera) {
+            this.x = this.camera.minX
+            this.y = this.camera.minY
+            this.width = this.camera.maxWidth
+            this.height = this.camera.maxHeight
+        }
+    }
+
     async startCapture() {
         const x = this.subframe ? this.x : this.camera!.x
         const y = this.subframe ? this.y : this.camera!.y
@@ -172,9 +241,9 @@ export class CameraComponent implements OnInit, OnDestroy {
             binY: this.binY,
             gain: this.gain,
             offset: this.offset,
-            autoSave: this.preference.get(`camera.${this.camera!.name}.autoSave`, false),
-            savePath: this.preference.get(`camera.${this.camera!.name}.savePath`, ''),
-            autoSubFolderMode: this.preference.get<AutoSubFolderMode>(`camera.${this.camera!.name}.autoSave`, 'OFF')
+            autoSave: this.autoSave,
+            savePath: this.savePath,
+            autoSubFolderMode: this.autoSubFolderMode,
         }
 
         this.capturing = true
@@ -240,5 +309,21 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.offsetMax = this.camera.offsetMax
 
         this.updateExposureUnit(this.exposureTimeUnit)
+    }
+
+    private loadPreference() {
+        if (this.camera) {
+            this.autoSave = this.preference.get(`camera.${this.camera.name}.autoSave`, false)
+            this.savePath = this.preference.get(`camera.${this.camera.name}.savePath`, '')
+            this.autoSubFolderMode = this.preference.get<AutoSubFolderMode>(`camera.${this.camera.name}.autoSubFolderMode`, 'OFF')
+        }
+    }
+
+    private savePreference() {
+        if (this.camera) {
+            this.preference.set(`camera.${this.camera.name}.autoSave`, this.autoSave)
+            this.preference.set(`camera.${this.camera.name}.savePath`, this.savePath)
+            this.preference.set(`camera.${this.camera.name}.autoSubFolderMode`, this.autoSubFolderMode)
+        }
     }
 }

@@ -69,6 +69,9 @@ export class HomeComponent implements OnInit {
                 const path = await this.electron.ipcRenderer.sendSync('open-fits')
                 if (path) this.browserWindow.openImage(path, undefined, 'PATH')
                 break
+            case 'ABOUT':
+                this.browserWindow.openAbout()
+                break
         }
     }
 

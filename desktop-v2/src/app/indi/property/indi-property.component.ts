@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core'
+import { AfterContentInit, AfterViewInit, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core'
 import { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendPropertyItem } from '../../../shared/types'
 
 @Component({
@@ -6,7 +6,7 @@ import { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendPropertyItem 
     templateUrl: './indi-property.component.html',
     styleUrls: ['./indi-property.component.scss'],
 })
-export class INDIPropertyComponent implements OnInit, AfterViewInit, OnDestroy {
+export class INDIPropertyComponent implements OnInit, AfterContentInit, OnDestroy {
 
     @Input()
     property!: INDIProperty<any>
@@ -19,7 +19,7 @@ export class INDIPropertyComponent implements OnInit, AfterViewInit, OnDestroy {
 
     ngOnInit() { }
 
-    ngAfterViewInit() {
+    ngAfterContentInit() {
         for (const item of this.property.items) {
             if (!item.valueToSend) {
                 item.valueToSend = item.value

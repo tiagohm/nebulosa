@@ -7,11 +7,24 @@
                 <label>Camera</label>
             </span>
         </div>
-        <div class="col-4">
+        <div class="col-2">
             <p-button *ngIf="connected" [disabled]="!camera || capturing" (onClick)="connect()" icon="mdi mdi-close"
                       styleClass="p-button-danger p-button" />
             <p-button *ngIf="!connected" [disabled]="!camera || capturing" (onClick)="connect()" icon="mdi mdi-connection"
                       styleClass="p-button-info p-button" />
+        </div>
+        <div class="col-2 flex justify-content-center">
+            <p-tieredMenu #cameraMenu [model]="cameraMenuItems" [popup]="true" [style]="{width: 'auto'}" />
+            <p-button [disabled]="!camera" icon="mdi mdi-lg mdi-dots-vertical" (click)="cameraMenu.toggle($event)"
+                      styleClass="p-button-rounded p-button-text" />
+        </div>
+        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center gap-1">
+            <i *ngIf="autoSave" class="mdi mdi-content-save"></i>
+            <i *ngIf="!autoSave" class="mdi mdi-content-save-off"></i>
+            <i *ngIf="autoSubFolderMode === 'OFF'" class="mdi mdi-folder-off"></i>
+            <i *ngIf="autoSubFolderMode === 'NOON'" class="mdi mdi-weather-sunny text-yellow-600"></i>
+            <i *ngIf="autoSubFolderMode === 'MIDNIGHT'" class="mdi mdi-weather-night text-blue-600"></i>
+            <span style="display: contents">{{ savePath }}</span>
         </div>
     </div>
     <div class="grid py-1 flex align-items-center">
@@ -113,7 +126,8 @@
             <p-inputSwitch [disabled]="!connected || capturing" styleClass="mt-2" [(ngModel)]="subframe" />
         </div>
         <div class="col-4 flex pt-3 flex-row align-items-center justify-content-center">
-            <p-button [disabled]="!connected || !subframe || capturing" icon="mdi mdi-fullscreen" styleClass="p-button-info p-button" />
+            <p-button [disabled]="!connected || !subframe || capturing" icon="mdi mdi-fullscreen" (onClick)="fullsize()"
+                      styleClass="p-button-info p-button" />
         </div>
         <div class="col-3">
             <span class="p-float-label">
@@ -152,7 +166,7 @@
             </span>
         </div>
     </div>
-    <div class="grid mt-3">
+    <div class="grid mt-1">
         <div class="col-12 flex align-items-center justify-content-center gap-1">
             <p-button [disabled]="!connected || capturing" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
                       styleClass="p-button-success p-button" />

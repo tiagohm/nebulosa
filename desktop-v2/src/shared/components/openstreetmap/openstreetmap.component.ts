@@ -14,27 +14,36 @@ export class OpenStreetMapComponent implements AfterViewInit {
     private readonly coordinate: L.LatLngLiteral = { lat: 0, lng: 0 }
 
     @Input()
-    private set latitude(value: number) {
+    set latitude(value: number) {
         this.coordinate.lat = value
         this.map?.setView(this.coordinate)
         this.updateMarker()
     }
 
     @Output()
-    private latitudeChange = new EventEmitter<number>()
+    readonly latitudeChange = new EventEmitter<number>()
 
     @Input()
-    private set longitude(value: number) {
+    set longitude(value: number) {
         this.coordinate.lng = value
         this.map?.setView(this.coordinate)
         this.updateMarker()
     }
 
     @Output()
-    private longitudeChange = new EventEmitter<number>()
+    readonly longitudeChange = new EventEmitter<number>()
 
     private map!: L.Map
     private marker?: L.Marker
+
+    private readonly markerIcon = L.icon({
+        iconUrl: 'assets/icons/map-marker.png',
+        iconSize: [32, 32],
+        shadowSize: [0, 0],
+        iconAnchor: [16, 16],
+        shadowAnchor: [0, 0],
+        popupAnchor: [0, 0],
+    })
 
     ngAfterViewInit() {
         this.map = L.map(this.mapRef.nativeElement, {
@@ -51,7 +60,7 @@ export class OpenStreetMapComponent implements AfterViewInit {
             this.updateMarker()
         })
 
-        this.marker = new L.Marker(this.map.getCenter()).addTo(this.map)
+        this.marker = new L.Marker(this.map.getCenter(), { icon: this.markerIcon }).addTo(this.map)
 
         const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 18,
@@ -69,7 +78,7 @@ export class OpenStreetMapComponent implements AfterViewInit {
     private updateMarker() {
         if (this.map) {
             this.marker?.remove()
-            this.marker = new L.Marker(this.coordinate).addTo(this.map)
+            this.marker = new L.Marker(this.coordinate, { icon: this.markerIcon }).addTo(this.map)
         }
     }
 }

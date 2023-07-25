@@ -19,7 +19,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'camera', path: 'camera', icon: options.icon || 'camera',
-            width: options.width || 390, height: options.height || 410,
+            width: options.width || 390, height: options.height || 420,
         })
     }
 
@@ -63,5 +63,9 @@ export class BrowserWindowService {
             id: 'framing', path: 'framing', icon: options.icon || 'framing',
             width: options.width || 458, height: options.height || 228, params,
         })
+    }
+
+    openAbout() {
+        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 348, height: 290, bringToFront: true })
     }
 }

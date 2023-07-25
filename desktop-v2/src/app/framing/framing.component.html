@@ -14,14 +14,14 @@
     <div class="col-3">
         <span class="p-float-label">
             <p-inputNumber [min]="1" [max]="7680" class="w-full" [showButtons]="true" inputStyleClass="border-0 w-full"
-                           [(ngModel)]="width" />
+                           [(ngModel)]="width" locale="en" />
             <label>Width</label>
         </span>
     </div>
     <div class="col-3">
         <span class="p-float-label">
             <p-inputNumber [min]="1" [max]="4320" class="w-full" [showButtons]="true" inputStyleClass="border-0 w-full"
-                           [(ngModel)]="height" />
+                           [(ngModel)]="height" locale="en" />
             <label>Height</label>
         </span>
     </div>
@@ -49,7 +49,8 @@
         <p-button [disabled]="loading" icon="mdi mdi-download" label="Load" (onClick)="frame()" styleClass="p-button-text" />
     </div>
     <div class="col-12 text-center">
-        <span class="text-sm text-gray-700">Made use of <a target="_blank" href="https://alasky.cds.unistra.fr/hips-image-services/hips2fits">hips2fits</a>, a
+        <span class="text-sm text-gray-700">Made use of <a target="_blank"
+               href="https://alasky.cds.unistra.fr/hips-image-services/hips2fits">hips2fits</a>, a
             service provided by CDS.</span>
     </div>
 </div>

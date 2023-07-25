@@ -164,9 +164,7 @@ export interface BodyPosition {
 
 export interface HipsSurvey {
     id: string
-    title: string
     category: string
-    copyright: string
     frame: string
     regime: string
     bitPix: number

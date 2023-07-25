@@ -243,8 +243,8 @@
         </span>
     </div>
     <div class="col-3 flex justify-content-center">
-        <p-menu #positionMenu [model]="bodyPositionMenuItems" [popup]="true"></p-menu>
-        <p-button icon="mdi mdi-lg mdi-dots-vertical" (click)="positionMenu.toggle($event)" styleClass="p-button-rounded p-button-text" />
+        <p-menu #bodyPositionMenu [model]="bodyPositionMenuItems" [popup]="true" />
+        <p-button icon="mdi mdi-lg mdi-dots-vertical" (click)="bodyPositionMenu.toggle($event)" styleClass="p-button-rounded p-button-text" />
     </div>
     <div class="col-12">
         <p-chart #chart [data]="altitudeData" [responsive]="true" [options]="altitudeOptions" />

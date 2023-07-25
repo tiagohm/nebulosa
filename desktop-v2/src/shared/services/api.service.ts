@@ -264,10 +264,6 @@ export class ApiService {
         return this.post<void>(`saveImageAs?inputPath=${inputPath}&outputPath=${outputPath}`)
     }
 
-    hipsSurveys() {
-        return this.get<HipsSurvey[]>(`hipsSurveys`)
-    }
-
     frame(rightAscension: string, declination: string,
         width: number, height: number,
         fov: number, rotation: number, hipsSurvey: HipsSurvey,

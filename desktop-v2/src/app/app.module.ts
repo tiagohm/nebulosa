@@ -23,6 +23,7 @@ import { SplitButtonModule } from 'primeng/splitbutton'
 import { TableModule } from 'primeng/table'
 import { TabViewModule } from 'primeng/tabview'
 import { TagModule } from 'primeng/tag'
+import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
 import { OpenStreetMapComponent } from '../shared/components/openstreetmap/openstreetmap.component'
@@ -35,6 +36,7 @@ import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
+import { AboutComponent } from './about/about.component'
 
 @NgModule({
     declarations: [
@@ -47,6 +49,7 @@ import { INDIPropertyComponent } from './indi/property/indi-property.component'
         AtlasComponent,
         OpenStreetMapComponent,
         FramingComponent,
+        AboutComponent,
     ],
     imports: [
         BrowserModule,
@@ -75,6 +78,7 @@ import { INDIPropertyComponent } from './indi/property/indi-property.component'
         ContextMenuModule,
         SliderModule,
         ToastModule,
+        TieredMenuModule,
     ],
     providers: [
         MessageService,
