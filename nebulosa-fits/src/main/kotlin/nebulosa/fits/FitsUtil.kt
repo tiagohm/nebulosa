@@ -7,8 +7,19 @@ import nom.tam.fits.Fits
 import nom.tam.fits.Header
 import nom.tam.fits.ImageHDU
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun Fits.imageHDU(n: Int) = read().filterIsInstance<ImageHDU>().getOrNull(n)
+fun Fits.imageHDU(n: Int): ImageHDU? {
+    var index = 0
+
+    for (i in 0..255) {
+        val hdu = getHDU(i) ?: break
+
+        if (hdu is ImageHDU && index++ == n) {
+            return hdu
+        }
+    }
+
+    return null
+}
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun Header.naxis() = getIntValue(FitsKeywords.NAXIS, -1)

@@ -1,6 +1,5 @@
 import { Client } from '@stomp/stompjs'
 import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from 'electron'
-import Hex from 'hex-encoding'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
 import { INDIEventName, OpenWindow } from '../src/shared/types'
@@ -91,7 +90,7 @@ function createWindow(data: OpenWindow<any>) {
 
     const resizable = data.resizable ?? false
     const icon = data.icon ?? 'nebulosa'
-    const params = Hex.encodeStr(JSON.stringify(data.params || {}))
+    const params = encodeURIComponent(JSON.stringify(data.params || {}))
 
     const window = new BrowserWindow({
         x: size.width / 2 - width / 2,
