@@ -44,7 +44,7 @@ export class BrowserWindowService {
         this.openWindow<INDIParams>({
             ...options,
             id: 'indi', path: 'indi', icon: options.icon || 'indi',
-            width: options.width || '65%', height: options.height || 420,
+            width: options.width || 760, height: options.height || 420,
             resizable: true, params: { device },
         })
     }
