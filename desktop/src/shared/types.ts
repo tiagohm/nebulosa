@@ -89,8 +89,7 @@ export interface OpenWindow<T> extends OpenWindowOptions {
 }
 
 export interface SavedCameraImage {
-    id: number
-    name: string
+    camera: string
     path: string
     width: number
     height: number
@@ -102,6 +101,12 @@ export interface SavedCameraImage {
     rightAscension?: string
     declination?: string
     calibrated: boolean
+    headers: FITSHeaderItem[]
+}
+
+export interface FITSHeaderItem {
+    name: string
+    value: string
 }
 
 export interface INDIProperty<T> {

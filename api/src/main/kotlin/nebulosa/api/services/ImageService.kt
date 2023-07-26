@@ -6,7 +6,9 @@ import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.enums.HipsSurveyType
 import nebulosa.api.data.enums.PlateSolverType
 import nebulosa.api.data.responses.CalibrationResponse
+import nebulosa.api.data.responses.FITSHeaderItemResponse
 import nebulosa.api.data.responses.ImageAnnotationResponse
+import nebulosa.api.data.responses.ImageInfoResponse
 import nebulosa.api.repositories.DeepSkyObjectRepository
 import nebulosa.api.repositories.SavedCameraImageRepository
 import nebulosa.api.repositories.StarRepository
@@ -87,28 +89,28 @@ class ImageService(
 
         if (invert) transformedImage = Invert.transform(transformedImage)
 
-        val info = savedCameraImageRepository.withPath("$path")
+        val savedImage = savedCameraImageRepository.withPath("$path")
 
-        output.addHeader(
-            "X-Image-Info", objectMapper.writeValueAsString(
-                mapOf(
-                    "id" to (info?.id ?: 0L),
-                    "name" to (info?.name ?: ""),
-                    "path" to (info?.path ?: ""),
-                    "savedAt" to (info?.savedAt ?: 0L),
-                    "width" to transformedImage.width,
-                    "height" to transformedImage.height,
-                    "mono" to transformedImage.mono,
-                    "stretchShadow" to stretchParams.shadow,
-                    "stretchHighlight" to stretchParams.highlight,
-                    "stretchMidtone" to stretchParams.midtone,
-                    "rightAscension" to transformedImage.header.ra?.format(AngleFormatter.HMS),
-                    "declination" to transformedImage.header.dec?.format(AngleFormatter.SIGNED_DMS),
-                    "calibrated" to (path in calibrations),
-                )
-            )
+        val info = ImageInfoResponse(
+            savedImage?.name ?: "",
+            savedImage?.path ?: "",
+            savedImage?.savedAt ?: 0L,
+            transformedImage.width,
+            transformedImage.height,
+            transformedImage.mono,
+            stretchParams.shadow,
+            stretchParams.highlight,
+            stretchParams.midtone,
+            transformedImage.header.ra?.format(AngleFormatter.HMS),
+            transformedImage.header.dec?.format(AngleFormatter.SIGNED_DMS),
+            path in calibrations,
+            transformedImage.header.iterator().asSequence()
+                .filter { it.key.isNotBlank() && !it.value.isNullOrBlank() }
+                .map { FITSHeaderItemResponse(it.key, it.value ?: "") }
+                .toList(),
         )
 
+        output.addHeader("X-Image-Info", objectMapper.writeValueAsString(info))
         output.contentType = "image/png"
 
         ImageIO.write(transformedImage, "PNG", output.outputStream)

@@ -158,7 +158,7 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="SCNR" [draggable]="true" [blockScroll]="true" [(visible)]="showSCNRDialog" [modal]="false" [style]="{width: '240px'}"
+<p-dialog header="SCNR" [draggable]="true" [(visible)]="showSCNRDialog" [modal]="false" [style]="{width: '240px'}"
           class="pointer-events-none">
     <div class="grid px-2">
         <div class="col-12 flex align-items-center">
@@ -178,4 +178,24 @@
     <ng-template pTemplate="footer">
         <p-button icon="mdi mdi-check" label="Apply" (onClick)="scnrImage()" styleClass="p-button-text" />
     </ng-template>
+</p-dialog>
+
+<p-dialog header="FITS Headers" [draggable]="true" [(visible)]="showFITSHeadersDialog" [modal]="false" [style]="{width: '320px'}"
+          class="pointer-events-none">
+    <div class="grid p-2">
+        <p-table [value]="fitsHeaders" class="max-h-22rem w-full" dataKey="name" styleClass="w-full pb-4 p-datatable-striped">
+            <ng-template pTemplate="header" [style]="{maxHeight: '100px'}">
+                <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr [pSelectableRow]="item">
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.value }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
 </p-dialog>

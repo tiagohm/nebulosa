@@ -254,8 +254,7 @@
 <p-dialog header="Minor Planets" [modal]="true" [(visible)]="showMinorPlanetChoiceDialog" [style]="{width: '80vw'}">
     <div class="grid p-2">
         <p-listbox [options]="minorPlanetChoiceItems" (onChange)="minorPlanetChoosen($event)" [filter]="true" optionLabel="name"
-                   [listStyle]="{ 'max-height': '250px' }"
-                   class="w-full" />
+                   [listStyle]="{ 'max-height': '250px' }" class="w-full" />
     </div>
 </p-dialog>
 
