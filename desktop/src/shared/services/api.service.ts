@@ -4,7 +4,7 @@ import * as moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
     BodyPosition, Calibration, Camera, CameraStartCapture, Constellation, DeepSkyObject, Device,
-    HipsSurvey, INDIEventName, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet,
+    HipsSurvey, INDIEventType, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet,
     PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, Star, Twilight
 } from '../types'
 
@@ -133,11 +133,11 @@ export class ApiService {
         return this.post<void>(`sendIndiProperty?name=${device.name}`, property)
     }
 
-    indiStartListening(eventName: INDIEventName) {
+    indiStartListening(eventName: INDIEventType) {
         return this.post<void>(`indiStartListening?eventName=${eventName}`)
     }
 
-    indiStopListening(eventName: INDIEventName) {
+    indiStopListening(eventName: INDIEventType) {
         return this.post<void>(`indiStopListening?eventName=${eventName}`)
     }
 
@@ -268,6 +268,6 @@ export class ApiService {
         width: number, height: number,
         fov: number, rotation: number, hipsSurvey: HipsSurvey,
     ) {
-        return this.post<string>(`frame?rightAscension=${rightAscension}&declination=${declination}&rotation=${rotation}&fov=${fov}&width=${width}&height=${height}&hipsSurvey=${hipsSurvey.id}`)
+        return this.post<string>(`frame?rightAscension=${rightAscension}&declination=${declination}&rotation=${rotation}&fov=${fov}&width=${width}&height=${height}&hipsSurvey=${hipsSurvey.type}`)
     }
 }

@@ -1,5 +1,6 @@
 [
     {
+        "type": "CDS_P_DSS2_NIR",
         "id": "CDS/P/DSS2/NIR",
         "category": "Image/Optical/DSS",
         "frame": "equatorial",
@@ -9,6 +10,7 @@
         "skyFraction": 0.9955
     },
     {
+        "type": "CDS_P_DSS2_BLUE",
         "id": "CDS/P/DSS2/blue",
         "category": "Image/Optical/DSS",
         "frame": "equatorial",
@@ -18,6 +20,7 @@
         "skyFraction": 0.9972
     },
     {
+        "type": "CDS_P_DSS2_COLOR",
         "id": "CDS/P/DSS2/color",
         "category": "Image/Optical/DSS",
         "frame": "equatorial",
@@ -27,6 +30,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_DSS2_RED",
         "id": "CDS/P/DSS2/red",
         "category": "Image/Optical/DSS",
         "frame": "equatorial",
@@ -36,6 +40,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "FZU_CZ_P_CTA_FRAM_SURVEY_B",
         "id": "fzu.cz/P/CTA-FRAM/survey/B",
         "category": "Image/Optical/CTA-FRAM",
         "frame": "equatorial",
@@ -45,6 +50,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "FZU_CZ_P_CTA_FRAM_SURVEY_R",
         "id": "fzu.cz/P/CTA-FRAM/survey/R",
         "category": "Image/Optical/CTA-FRAM",
         "frame": "equatorial",
@@ -54,6 +60,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "FZU_CZ_P_CTA_FRAM_SURVEY_V",
         "id": "fzu.cz/P/CTA-FRAM/survey/V",
         "category": "Image/Optical/CTA-FRAM",
         "frame": "equatorial",
@@ -63,6 +70,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "FZU_CZ_P_CTA_FRAM_SURVEY_COLOR",
         "id": "fzu.cz/P/CTA-FRAM/survey/color",
         "category": "Image/Optical/CTA-FRAM",
         "frame": "equatorial",
@@ -72,6 +80,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_2MASS_H",
         "id": "CDS/P/2MASS/H",
         "category": "Image/Infrared/2MASS",
         "frame": "equatorial",
@@ -81,6 +90,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_2MASS_J",
         "id": "CDS/P/2MASS/J",
         "category": "Image/Infrared/2MASS",
         "frame": "equatorial",
@@ -90,6 +100,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_2MASS_K",
         "id": "CDS/P/2MASS/K",
         "category": "Image/Infrared/2MASS",
         "frame": "equatorial",
@@ -99,6 +110,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_2MASS_COLOR",
         "id": "CDS/P/2MASS/color",
         "category": "Image/Infrared/2MASS",
         "frame": "equatorial",
@@ -108,6 +120,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_AKARI_FIS_COLOR",
         "id": "CDS/P/AKARI/FIS/Color",
         "category": "Image/Infrared/AKARI-FIS",
         "frame": "equatorial",
@@ -117,6 +130,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_AKARI_FIS_N160",
         "id": "CDS/P/AKARI/FIS/N160",
         "category": "Image/Infrared/AKARI-FIS",
         "frame": "equatorial",
@@ -126,6 +140,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_AKARI_FIS_N60",
         "id": "CDS/P/AKARI/FIS/N60",
         "category": "Image/Infrared/AKARI-FIS",
         "frame": "equatorial",
@@ -135,6 +150,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_AKARI_FIS_WIDEL",
         "id": "CDS/P/AKARI/FIS/WideL",
         "category": "Image/Infrared/AKARI-FIS",
         "frame": "equatorial",
@@ -144,6 +160,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_AKARI_FIS_WIDES",
         "id": "CDS/P/AKARI/FIS/WideS",
         "category": "Image/Infrared/AKARI-FIS",
         "frame": "equatorial",
@@ -153,6 +170,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_NEOWISER_COLOR",
         "id": "CDS/P/NEOWISER/Color",
         "category": "Image/Infrared/WISE/NEOWISER",
         "frame": "equatorial",
@@ -162,6 +180,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_NEOWISER_W1",
         "id": "CDS/P/NEOWISER/W1",
         "category": "Image/Infrared/WISE/NEOWISER",
         "frame": "equatorial",
@@ -171,6 +190,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_NEOWISER_W2",
         "id": "CDS/P/NEOWISER/W2",
         "category": "Image/Infrared/WISE/NEOWISER",
         "frame": "equatorial",
@@ -180,6 +200,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_WISE_WSSA_12UM",
         "id": "CDS/P/WISE/WSSA/12um",
         "category": "Image/Infrared/WISE/WSSA",
         "frame": "equatorial",
@@ -189,6 +210,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_ALLWISE_W1",
         "id": "CDS/P/allWISE/W1",
         "category": "Image/Infrared/WISE",
         "frame": "equatorial",
@@ -198,6 +220,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_ALLWISE_W2",
         "id": "CDS/P/allWISE/W2",
         "category": "Image/Infrared/WISE",
         "frame": "equatorial",
@@ -207,6 +230,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_ALLWISE_W3",
         "id": "CDS/P/allWISE/W3",
         "category": "Image/Infrared/WISE",
         "frame": "equatorial",
@@ -216,6 +240,7 @@
         "skyFraction": 0.9999
     },
     {
+        "type": "CDS_P_ALLWISE_W4",
         "id": "CDS/P/allWISE/W4",
         "category": "Image/Infrared/WISE",
         "frame": "equatorial",
@@ -225,6 +250,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_ALLWISE_COLOR",
         "id": "CDS/P/allWISE/color",
         "category": "Image/Infrared/WISE",
         "frame": "equatorial",
@@ -234,6 +260,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_UNWISE_W1",
         "id": "CDS/P/unWISE/W1",
         "category": "Image/Infrared/WISE/unWISE",
         "frame": "equatorial",
@@ -243,6 +270,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_UNWISE_W2",
         "id": "CDS/P/unWISE/W2",
         "category": "Image/Infrared/WISE/unWISE",
         "frame": "equatorial",
@@ -252,6 +280,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_UNWISE_COLOR_W2_W1W2_W1",
         "id": "CDS/P/unWISE/color-W2-W1W2-W1",
         "category": "Image/Infrared/WISE/unWISE",
         "frame": "equatorial",
@@ -261,6 +290,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_RASS",
         "id": "CDS/P/RASS",
         "category": "Image/X/ROSAT",
         "frame": "equatorial",
@@ -270,6 +300,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "JAXA_P_ASCA_GIS",
         "id": "JAXA/P/ASCA_GIS",
         "category": "Image/X/ASCA",
         "frame": "equatorial",
@@ -279,6 +310,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "JAXA_P_ASCA_SIS",
         "id": "JAXA/P/ASCA_SIS",
         "category": "Image/X/ASCA",
         "frame": "equatorial",
@@ -288,6 +320,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "JAXA_P_MAXI_GSC",
         "id": "JAXA/P/MAXI-GSC",
         "category": "Image/X/MAXI",
         "frame": "equatorial",
@@ -297,6 +330,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "JAXA_P_MAXI_SSC",
         "id": "JAXA/P/MAXI-SSC",
         "category": "Image/X/MAXI",
         "frame": "equatorial",
@@ -306,6 +340,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "JAXA_P_SUZAKU",
         "id": "JAXA/P/SUZAKU",
         "category": "Image/X",
         "frame": "equatorial",
@@ -315,6 +350,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "JAXA_P_SWIFT_BAT_FLUX",
         "id": "JAXA/P/SWIFT_BAT_FLUX",
         "category": "Image/X",
         "frame": "equatorial",
@@ -324,6 +360,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_EGRET_DIF_100_150",
         "id": "CDS/P/EGRET/Dif/100-150",
         "category": "Image/Gamma-ray/EGRET/Diffuse",
         "frame": "equatorial",
@@ -333,6 +370,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_EGRET_DIF_1000_2000",
         "id": "CDS/P/EGRET/Dif/1000-2000",
         "category": "Image/Gamma-ray/EGRET/Diffuse",
         "frame": "equatorial",
@@ -342,6 +380,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_EGRET_DIF_150_300",
         "id": "CDS/P/EGRET/Dif/150-300",
         "category": "Image/Gamma-ray/EGRET/Diffuse",
         "frame": "equatorial",
@@ -351,6 +390,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_EGRET_DIF_2000_4000",
         "id": "CDS/P/EGRET/Dif/2000-4000",
         "category": "Image/Gamma-ray/EGRET/Diffuse",
         "frame": "equatorial",
@@ -360,6 +400,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_EGRET_DIF_30_50",
         "id": "CDS/P/EGRET/Dif/30-50",
         "category": "Image/Gamma-ray/EGRET/Diffuse",
         "frame": "equatorial",
@@ -369,6 +410,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_EGRET_DIF_300_500",
         "id": "CDS/P/EGRET/Dif/300-500",
         "category": "Image/Gamma-ray/EGRET/Diffuse",
         "frame": "equatorial",
@@ -378,6 +420,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_EGRET_DIF_4000_10000",
         "id": "CDS/P/EGRET/Dif/4000-10000",
         "category": "Image/Gamma-ray/EGRET/Diffuse",
         "frame": "equatorial",
@@ -387,6 +430,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_EGRET_DIF_50_70",
         "id": "CDS/P/EGRET/Dif/50-70",
         "category": "Image/Gamma-ray/EGRET/Diffuse",
         "frame": "equatorial",
@@ -396,6 +440,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_EGRET_DIF_500_1000",
         "id": "CDS/P/EGRET/Dif/500-1000",
         "category": "Image/Gamma-ray/EGRET/Diffuse",
         "frame": "equatorial",
@@ -405,6 +450,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_EGRET_DIF_70_100",
         "id": "CDS/P/EGRET/Dif/70-100",
         "category": "Image/Gamma-ray/EGRET/Diffuse",
         "frame": "equatorial",
@@ -414,6 +460,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_EGRET_INF100",
         "id": "CDS/P/EGRET/inf100",
         "category": "Image/Gamma-ray/EGRET",
         "frame": "equatorial",
@@ -423,6 +470,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_EGRET_SUP100",
         "id": "CDS/P/EGRET/sup100",
         "category": "Image/Gamma-ray/EGRET",
         "frame": "equatorial",
@@ -432,6 +480,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_FERMI_3",
         "id": "CDS/P/Fermi/3",
         "category": "Image/Gamma-ray",
         "frame": "equatorial",
@@ -441,6 +490,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_FERMI_4",
         "id": "CDS/P/Fermi/4",
         "category": "Image/Gamma-ray",
         "frame": "equatorial",
@@ -450,6 +500,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_FERMI_5",
         "id": "CDS/P/Fermi/5",
         "category": "Image/Gamma-ray",
         "frame": "equatorial",
@@ -459,6 +510,7 @@
         "skyFraction": 1.0
     },
     {
+        "type": "CDS_P_FERMI_COLOR",
         "id": "CDS/P/Fermi/color",
         "category": "Image/Gamma-ray",
         "frame": "equatorial",

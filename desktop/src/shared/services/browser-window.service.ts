@@ -61,7 +61,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'framing', path: 'framing', icon: options.icon || 'framing',
-            width: options.width || 458, height: options.height || 228, params,
+            width: options.width || 458, height: options.height || 240, params,
         })
     }
 

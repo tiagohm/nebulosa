@@ -165,7 +165,18 @@
             <p-selectButton styleClass="border-0" [options]="scnrChannelOptions" [(ngModel)]="scnrChannel" [multiple]="false" />
         </div>
         <div class="col-12 flex align-items-center">
-            <p-dropdown appendTo="body" [(ngModel)]="scnrProtectionMode" [options]="scnrProtectionModeOptions" styleClass="border-0" />
+            <p-dropdown appendTo="body" [(ngModel)]="scnrProtectionMethod" [options]="scnrProtectionMethodOptions" styleClass="border-0">
+                <ng-template let-item pTemplate="selectedItem">
+                    <div class="flex align-items-center gap-2">
+                        <span>{{ item | enum }}</span>
+                    </div>
+                </ng-template>
+                <ng-template let-item pTemplate="item">
+                    <div class="flex align-items-center gap-2">
+                        <span>{{ item | enum }}</span>
+                    </div>
+                </ng-template>
+            </p-dropdown>
         </div>
         <div class="col-12">
             <span class="p-float-label">

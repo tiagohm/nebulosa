@@ -2,7 +2,7 @@ import { Client } from '@stomp/stompjs'
 import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { INDIEventName, OpenWindow } from '../src/shared/types'
+import { INDI_EVENT_TYPES, OpenWindow } from '../src/shared/types'
 
 import { WebSocket } from 'ws'
 Object.assign(global, { WebSocket })
@@ -19,25 +19,23 @@ const serve = args.some(e => e === '--serve')
 function createMainWindow() {
     createWindow({ id: 'home', path: 'home' })
 
-    const eventNames: INDIEventName[] = [
-        'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED', 'DEVICE_MESSAGE_RECEIVED',
-        'CAMERA_IMAGE_SAVED', 'CAMERA_UPDATED', 'CAMERA_CAPTURE_FINISHED',
-        'CAMERA_ATTACHED', 'CAMERA_DETACHED'
-    ]
-
     wsClient = new Client({
         brokerURL: `ws://localhost:${apiPort}/ws`,
         onConnect: () => {
-            for (const eventName of eventNames) {
-                wsClient.subscribe(eventName, (message) => {
+            for (const item of INDI_EVENT_TYPES) {
+                if (item === 'ALL' || item === 'DEVICE' || item === 'CAMERA') {
+                    continue
+                }
+
+                wsClient.subscribe(item, (message) => {
                     const data = JSON.parse(message.body)
 
                     if (serve) {
-                        console.log(eventName, message.body)
+                        console.log(item, message.body)
                     }
 
                     for (const [_, window] of secondaryWindows) {
-                        window.webContents.send(eventName, data)
+                        window.webContents.send(item, data)
                     }
                 })
             }

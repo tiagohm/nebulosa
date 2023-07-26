@@ -10,7 +10,7 @@ enum class ProtectionMethod {
             return g * (1f - amount) * (1f - m) + m * g
         }
     },
-    ADDTIVIVE_MASK {
+    ADDITIVE_MASK {
         override fun compute(p0: Float, p1: Float, g: Float, amount: Float): Float {
             val m = min(1f, p0 + p1)
             return g * (1f - amount) * (1f - m) + m * g

@@ -6,6 +6,8 @@
     "name": "Tiago Melo",
     "email": "tiago.henrique.cco@gmail.com"
   },
+  "homepage": "https://tiagohm.github.io/nebulosa",
+  "license": "MIT",
   "main": "main.js",
   "private": true,
   "dependencies": {
