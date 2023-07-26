@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
-import Hex from 'hex-encoding'
 import hipsSurveys from '../../assets/data/hipsSurveys.json'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -61,7 +60,7 @@ export class FramingComponent implements OnInit, AfterViewInit, OnDestroy {
 
     ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
-            const params = JSON.parse(Hex.decodeStr(e.params)) as FramingParams
+            const params = JSON.parse(decodeURIComponent(e.params)) as FramingParams
             this.frameFromParams(params)
         })
     }
