@@ -3,14 +3,12 @@ package nebulosa.api.services
 import nebulosa.api.data.enums.HipsSurveyType
 import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
 import nebulosa.fits.FITS_RA_ANGLE_FORMATTER
+import nebulosa.fits.FitsKeywords
 import nebulosa.hips2fits.FormatOutputType
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.imaging.Image
 import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
-import nom.tam.fits.header.ObservationDescription
-import nom.tam.fits.header.Standard
-import nom.tam.fits.header.extra.MaxImDLExt
 import org.springframework.stereotype.Service
 import java.io.ByteArrayInputStream
 import kotlin.math.max
@@ -33,10 +31,10 @@ class FramingService(private val hips2FitsService: Hips2FitsService) {
 
         val image = Image.open(ByteArrayInputStream(data))
 
-        image.header.addValue(Standard.INSTRUME, hipsSurveyType.hipsSurvey.id)
-        image.header.addValue(ObservationDescription.RA, rightAscension.format(FITS_RA_ANGLE_FORMATTER))
-        image.header.addValue(ObservationDescription.DEC, declination.format(FITS_DEC_ANGLE_FORMATTER))
-        image.header.addValue(MaxImDLExt.ROTATANG, rotation.degrees)
+        image.header.addValue(FitsKeywords.INSTRUME, hipsSurveyType.hipsSurvey.id)
+        image.header.addValue(FitsKeywords.RA, rightAscension.format(FITS_RA_ANGLE_FORMATTER))
+        image.header.addValue(FitsKeywords.DEC, declination.format(FITS_DEC_ANGLE_FORMATTER))
+        image.header.addValue(FitsKeywords.ROTATANG, rotation.degrees)
         image.header.addValue("COMMENT", null as String?, "Made use of hips2fits, a service provided by CDS.")
 
         val crot = -rotation + Angle.SEMICIRCLE
