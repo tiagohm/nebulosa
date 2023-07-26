@@ -5,6 +5,7 @@ import * as moment from 'moment'
 import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
+import { MoonComponent } from '../../shared/components/moon/moon.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { BodyPosition, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, Location, MinorPlanet, SkyObjectType, Star, TypeWithAll } from '../../shared/types'
@@ -48,6 +49,8 @@ export class AtlasComponent implements OnInit, OnDestroy {
     }
 
     bodyPosition: BodyPosition = { ...EMPTY_BODY_POSITION }
+    moonIlluminated = 1
+    moonWaning = false
 
     readonly bodyPositionMenuItems: MenuItem[] = [
         {
@@ -221,7 +224,7 @@ export class AtlasComponent implements OnInit, OnDestroy {
     private readonly imageOfSun!: ElementRef<HTMLImageElement>
 
     @ViewChild('imageOfMoon')
-    private readonly imageOfMoon!: ElementRef<HTMLImageElement>
+    private readonly imageOfMoon!: MoonComponent
 
     @ViewChild('chart')
     private readonly chart!: UIChart
@@ -584,8 +587,9 @@ export class AtlasComponent implements OnInit, OnDestroy {
             else if (this.activeTab === 1) {
                 this.name = 'Moon'
                 this.tags = []
-                this.imageOfMoon.nativeElement.src = `${this.api.baseUri}/imageOfMoon?location=${this.location!.id}&date=${date}&time=${time}`
                 this.bodyPosition = await this.api.positionOfMoon(this.location!, this.dateTime)
+                this.moonIlluminated = this.bodyPosition.illuminated / 100.0
+                this.moonWaning = this.bodyPosition.leading
             }
             // Planet.
             else if (this.activeTab === 2) {

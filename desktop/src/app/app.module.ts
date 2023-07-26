@@ -26,6 +26,7 @@ import { TagModule } from 'primeng/tag'
 import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
+import { MoonComponent } from '../shared/components/moon/moon.component'
 import { OpenStreetMapComponent } from '../shared/components/openstreetmap/openstreetmap.component'
 import { EnumPipe } from '../shared/pipes/enum.pipe'
 import { EnvPipe } from '../shared/pipes/env.pipe'
@@ -51,6 +52,7 @@ import { INDIPropertyComponent } from './indi/property/indi-property.component'
         INDIPropertyComponent,
         AtlasComponent,
         OpenStreetMapComponent,
+        MoonComponent,
         FramingComponent,
         AboutComponent,
         EnvPipe,

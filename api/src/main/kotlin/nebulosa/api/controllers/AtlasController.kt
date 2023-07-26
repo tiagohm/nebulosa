@@ -71,16 +71,6 @@ class AtlasController(
         atlasService.imageOfSun(response)
     }
 
-    @GetMapping("imageOfMoon")
-    fun imageOfMoon(
-        @RequestParam location: Long,
-        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @DateTimeFormat(pattern = "HH:mm") @RequestParam(required = false) time: LocalTime?,
-        response: HttpServletResponse,
-    ) {
-        atlasService.imageOfMoon(locationRepository.withId(location)!!, (date + time).noSeconds(), response)
-    }
-
     @GetMapping("positionOfSun")
     fun positionOfSun(
         @RequestParam location: Long,

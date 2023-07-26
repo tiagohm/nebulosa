@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core'
 import * as L from 'leaflet'
 
 @Component({
@@ -6,29 +6,19 @@ import * as L from 'leaflet'
     templateUrl: './openstreetmap.component.html',
     styleUrls: ['./openstreetmap.component.scss']
 })
-export class OpenStreetMapComponent implements AfterViewInit {
+export class OpenStreetMapComponent implements AfterViewInit, OnChanges {
 
     @ViewChild("map")
     private readonly mapRef!: ElementRef<HTMLDivElement>
 
-    private readonly coordinate: L.LatLngLiteral = { lat: 0, lng: 0 }
-
     @Input()
-    set latitude(value: number) {
-        this.coordinate.lat = value
-        this.map?.setView(this.coordinate)
-        this.updateMarker()
-    }
+    latitude = 0
 
     @Output()
     readonly latitudeChange = new EventEmitter<number>()
 
     @Input()
-    set longitude(value: number) {
-        this.coordinate.lng = value
-        this.map?.setView(this.coordinate)
-        this.updateMarker()
-    }
+    longitude = 0
 
     @Output()
     readonly longitudeChange = new EventEmitter<number>()
@@ -47,17 +37,15 @@ export class OpenStreetMapComponent implements AfterViewInit {
 
     ngAfterViewInit() {
         this.map = L.map(this.mapRef.nativeElement, {
-            center: this.coordinate,
+            center: { lat: this.latitude, lng: this.longitude },
             zoom: 5,
             doubleClickZoom: false,
         })
 
         this.map.on('dblclick', (event) => {
-            this.coordinate.lat = event.latlng.lat
-            this.coordinate.lng = event.latlng.lng
-            this.latitudeChange.emit(this.coordinate.lat)
-            this.longitudeChange.emit(this.coordinate.lng)
-            this.updateMarker()
+            this.latitudeChange.emit(event.latlng.lat)
+            this.longitudeChange.emit(event.latlng.lng)
+            this.updateMarker(event.latlng)
         })
 
         this.marker = new L.Marker(this.map.getCenter(), { icon: this.markerIcon }).addTo(this.map)
@@ -71,14 +59,20 @@ export class OpenStreetMapComponent implements AfterViewInit {
         tiles.addTo(this.map)
     }
 
+    ngOnChanges(changes: SimpleChanges) {
+        const coordinate: L.LatLngLiteral = { lat: this.latitude, lng: this.longitude }
+        this.map?.setView(coordinate)
+        this.updateMarker(coordinate)
+    }
+
     refresh() {
         this.map?.invalidateSize()
     }
 
-    private updateMarker() {
+    private updateMarker(coordinate: L.LatLngExpression) {
         if (this.map) {
             this.marker?.remove()
-            this.marker = new L.Marker(this.coordinate, { icon: this.markerIcon }).addTo(this.map)
+            this.marker = new L.Marker(coordinate, { icon: this.markerIcon }).addTo(this.map)
         }
     }
 }

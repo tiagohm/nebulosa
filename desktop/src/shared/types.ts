@@ -165,6 +165,7 @@ export interface BodyPosition {
     distanceUnit: string
     illuminated: number
     elongation: number
+    leading: boolean
 }
 
 export interface HipsSurvey {
@@ -191,6 +192,7 @@ export const EMPTY_BODY_POSITION: BodyPosition = {
     distanceUnit: 'ly',
     illuminated: 0,
     elongation: 0,
+    leading: false,
 }
 
 export interface Twilight {

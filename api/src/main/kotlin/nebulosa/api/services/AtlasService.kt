@@ -17,8 +17,6 @@ import nebulosa.api.services.ephemeris.BodyEphemerisProvider
 import nebulosa.api.services.ephemeris.HorizonsEphemerisProvider
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
-import nebulosa.io.resource
-import nebulosa.io.transferAndCloseInput
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.mas
@@ -89,28 +87,6 @@ class AtlasService(
     fun imageOfSun(output: HttpServletResponse) {
         output.contentType = "image/png"
         output.outputStream.write(sunImage)
-    }
-
-    fun imageOfMoon(
-        location: LocationEntity, dateTime: LocalDateTime,
-        output: HttpServletResponse,
-    ) {
-        val sot = bodyEphemeris(MOON, location, dateTime)
-            .withLocationAndDateTime(location, dateTime)!![HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE]
-            ?.split(",") ?: return
-
-        val angle = sot[0].toDouble()
-        val leading = sot[1] == "/L"
-        val phase = if (leading) 360.0 - angle else angle
-        val age = 29.53058868 * (phase / 360.0)
-
-        LOG.info("moon phase. phase={}, age={}, location={}, dateTime={}", phase, age, location, dateTime)
-
-        val phaseNum = ((age * 1.01589576574604) % 30.0).toInt() + 1
-
-        output.contentType = "image/png"
-        resource("images/moonPhases/%02d.png".format(phaseNum))!!
-            .transferAndCloseInput(output.outputStream)
     }
 
     fun positionOfSun(location: LocationEntity, dateTime: LocalDateTime): BodyPositionResponse {

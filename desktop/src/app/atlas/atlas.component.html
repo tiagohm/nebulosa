@@ -8,7 +8,7 @@
             </p-tabPanel>
             <p-tabPanel header="Moon" [disabled]="refreshing">
                 <div class="grid flex align-items-center justify-content-center">
-                    <img #imageOfMoon style="width: 194px">
+                    <moon [width]="190" [height]="190" [illuminationRatio]="moonIlluminated" [waning]="moonWaning" />
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Planets" [disabled]="refreshing">
