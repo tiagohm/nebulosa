@@ -1,7 +1,7 @@
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
-import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.arcmin
@@ -96,8 +96,8 @@ class AngleTest : StringSpec() {
             Angle.from("-23°33'48.40308\"", isHours = true).degrees shouldBe -353.4516795
             Angle.from("-23°33'48.40308s 67.99").degrees shouldBe -23.5634453
             Angle.from("- 23°33'48.40308s 67.99").degrees shouldBe -23.5634453
-            Angle.from("").shouldBeNull()
-            Angle.from("kkk").shouldBeNull()
+            Angle.from("").valid.shouldBeFalse()
+            Angle.from("kkk").valid.shouldBeFalse()
         }
         "format" {
             val angle = Angle.from("12h 30 1", true)
