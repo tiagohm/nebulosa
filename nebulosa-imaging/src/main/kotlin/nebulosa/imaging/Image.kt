@@ -354,7 +354,7 @@ class Image(
 
             // TODO: DATA[i] = BZERO + BSCALE * DATA[i]
 
-            header.setBitpix(Bitpix.FLOAT)
+            header.addValue(FitsKeywords.BITPIX, Bitpix.VALUE_FOR_FLOAT)
 
             val image = Image(width, height, header, mono)
 
@@ -434,10 +434,10 @@ class Image(
 
             header.addValue(FitsKeywords.SIMPLE, true)
             header.addValue(FitsKeywords.BITPIX, Bitpix.VALUE_FOR_FLOAT)
-            header.setNaxes(if (mono) 2 else 3)
-            header.setNaxis(1, width)
-            header.setNaxis(2, height)
-            if (!mono) header.setNaxis(3, 3)
+            header.addValue(FitsKeywords.NAXIS, if (mono) 2 else 3)
+            header.addValue(FitsKeywords.NAXISn.n(1), width)
+            header.addValue(FitsKeywords.NAXISn.n(2), height)
+            if (!mono) header.addValue(FitsKeywords.NAXISn.n(3), 3)
             header.addValue(FitsKeywords.BSCALE, 1.0)
             header.addValue(FitsKeywords.BZERO, 0.0)
             header.addValue(FitsKeywords.EXTEND, true)

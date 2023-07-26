@@ -1,7 +1,7 @@
 package nebulosa.imaging.algorithms
 
+import nebulosa.fits.clone
 import nebulosa.imaging.Image
-import nom.tam.fits.Header
 import kotlin.math.max
 import kotlin.math.min
 
@@ -14,7 +14,7 @@ class Grayscale(
     override fun transform(source: Image): Image {
         if (source.mono) return source
 
-        val header = Header(source.header.makeData())
+        val header = source.header.clone()
         header.deleteKey("NAXIS3")
         val result = Image(source.width, source.height, header, true)
 
