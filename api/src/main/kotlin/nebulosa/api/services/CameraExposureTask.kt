@@ -8,6 +8,7 @@ import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.common.concurrency.ThreadedJob
 import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
 import nebulosa.fits.FITS_RA_ANGLE_FORMATTER
+import nebulosa.fits.FitsKeywords
 import nebulosa.fits.naxis
 import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.*
@@ -16,8 +17,6 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.log.loggerFor
 import nom.tam.fits.Fits
 import nom.tam.fits.ImageHDU
-import nom.tam.fits.header.ObservationDescription
-import nom.tam.fits.header.extra.SBFitsExt
 import nom.tam.util.FitsOutputStream
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -193,10 +192,10 @@ data class CameraExposureTask(
                         val raStr = mount.rightAscensionJ2000.format(FITS_RA_ANGLE_FORMATTER)
                         val decStr = mount.declinationJ2000.format(FITS_DEC_ANGLE_FORMATTER)
 
-                        it.addValue(ObservationDescription.RA, raStr)
-                        it.addValue(SBFitsExt.OBJCTRA, raStr)
-                        it.addValue(ObservationDescription.DEC, decStr)
-                        it.addValue(SBFitsExt.OBJCTDEC, decStr)
+                        it.addValue(FitsKeywords.RA, raStr)
+                        it.addValue(FitsKeywords.OBJCTRA, raStr)
+                        it.addValue(FitsKeywords.DEC, decStr)
+                        it.addValue(FitsKeywords.OBJCTDEC, decStr)
                     }
 
                     path.parent.createDirectories()

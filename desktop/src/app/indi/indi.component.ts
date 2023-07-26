@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
-import Hex from 'hex-encoding'
 import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -69,7 +68,7 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
 
     async ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
-            const params = JSON.parse(Hex.decodeStr(e.params)) as INDIParams
+            const params = JSON.parse(decodeURIComponent(e.params)) as INDIParams
             this.device = params.device
         })
 

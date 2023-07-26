@@ -8,7 +8,7 @@ class GuideStar : Star {
     var zeroCount = 0
         internal set
 
-    var lostCount = 0
+    var wasLost = false
         internal set
 
     val offsetFromPrimary = Point()

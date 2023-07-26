@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
-import Hex from 'hex-encoding'
 import createPanZoom, { PanZoom } from 'panzoom'
 import * as path from 'path'
 import { MenuItem, MenuItemCommandEvent } from 'primeng/api'
@@ -244,7 +243,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
 
     ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
-            const params = JSON.parse(Hex.decodeStr(e.params)) as ImageParams
+            const params = JSON.parse(decodeURIComponent(e.params)) as ImageParams
             this.loadImageFromParams(params)
         })
     }

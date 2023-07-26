@@ -1,9 +1,9 @@
 package nebulosa.imaging.algorithms
 
+import nebulosa.fits.FitsKeywords
 import nebulosa.imaging.ImageChannel
 import nom.tam.fits.BasicHDU
 import nom.tam.fits.Header
-import nom.tam.fits.header.extra.MaxImDLExt
 
 enum class CfaPattern(private val pattern: Array<Array<ImageChannel>>) {
     RGGB(arrayOf(arrayOf(ImageChannel.RED, ImageChannel.GREEN), arrayOf(ImageChannel.GREEN, ImageChannel.BLUE))),
@@ -26,7 +26,7 @@ enum class CfaPattern(private val pattern: Array<Array<ImageChannel>>) {
 
         @JvmStatic
         fun of(header: Header): CfaPattern? {
-            return header.getStringValue(MaxImDLExt.BAYERPAT)?.trim()?.let(CfaPattern::valueOf)
+            return header.getStringValue(FitsKeywords.BAYERPAT)?.trim()?.let(CfaPattern::valueOf)
         }
     }
 }

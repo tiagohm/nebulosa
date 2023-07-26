@@ -10,10 +10,19 @@ updates:
     schedule:
       interval: "weekly"
       day: "friday"
+    open-pull-requests-limit: 16
     target-branch: "dev"
 
   - package-ecosystem: "npm"
     directory: "/desktop"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+    open-pull-requests-limit: 64
+    target-branch: "dev"
+
+  - package-ecosystem: "npm"
+    directory: "/desktop/app"
     schedule:
       interval: "weekly"
       day: "friday"

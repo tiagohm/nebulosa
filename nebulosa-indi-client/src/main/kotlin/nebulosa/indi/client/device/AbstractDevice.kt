@@ -38,6 +38,8 @@ internal abstract class AbstractDevice(
                                 this.connected = true
 
                                 handler.fireOnEventReceived(DeviceConnected(this))
+
+                                ask()
                             } else if (this.connected) {
                                 this.connected = false
 
@@ -194,8 +196,6 @@ internal abstract class AbstractDevice(
 
     override fun connect() {
         if (!connected) {
-            handler.fireOnEventReceived(DeviceIsConnecting(this))
-
             sendNewSwitch("CONNECTION", "CONNECT" to true)
         }
     }

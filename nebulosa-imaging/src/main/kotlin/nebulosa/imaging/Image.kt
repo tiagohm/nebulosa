@@ -1,18 +1,14 @@
 package nebulosa.imaging
 
+import nebulosa.fits.FitsKeywords
 import nebulosa.fits.imageHDU
 import nebulosa.fits.naxis
-import nebulosa.imaging.algorithms.CfaPattern
-import nebulosa.imaging.algorithms.ComputationAlgorithm
-import nebulosa.imaging.algorithms.Debayer
-import nebulosa.imaging.algorithms.TransformAlgorithm
-import nebulosa.imaging.algorithms.TransformAlgorithm.Companion.transform
+import nebulosa.imaging.algorithms.*
 import nom.tam.fits.Fits
 import nom.tam.fits.Header
 import nom.tam.fits.ImageData
 import nom.tam.fits.ImageHDU
 import nom.tam.fits.header.Bitpix
-import nom.tam.fits.header.Standard
 import nom.tam.util.FitsOutputStream
 import java.awt.color.ColorSpace
 import java.awt.image.*
@@ -358,7 +354,7 @@ class Image(
 
             // TODO: DATA[i] = BZERO + BSCALE * DATA[i]
 
-            header.setBitpix(Bitpix.FLOAT)
+            header.addValue(FitsKeywords.BITPIX, Bitpix.VALUE_FOR_FLOAT)
 
             val image = Image(width, height, header, mono)
 
@@ -436,15 +432,15 @@ class Image(
             val mono = bufferedImage.type == TYPE_BYTE_GRAY
                     || bufferedImage.type == TYPE_USHORT_GRAY
 
-            header.addValue(Standard.SIMPLE, true)
-            header.addValue(Standard.BITPIX, Bitpix.VALUE_FOR_FLOAT)
-            header.setNaxes(if (mono) 2 else 3)
-            header.setNaxis(1, width)
-            header.setNaxis(2, height)
-            if (!mono) header.setNaxis(3, 3)
-            header.addValue(Standard.BSCALE, 1.0)
-            header.addValue(Standard.BZERO, 0.0)
-            header.addValue(Standard.EXTEND, true)
+            header.addValue(FitsKeywords.SIMPLE, true)
+            header.addValue(FitsKeywords.BITPIX, Bitpix.VALUE_FOR_FLOAT)
+            header.addValue(FitsKeywords.NAXIS, if (mono) 2 else 3)
+            header.addValue(FitsKeywords.NAXISn.n(1), width)
+            header.addValue(FitsKeywords.NAXISn.n(2), height)
+            if (!mono) header.addValue(FitsKeywords.NAXISn.n(3), 3)
+            header.addValue(FitsKeywords.BSCALE, 1.0)
+            header.addValue(FitsKeywords.BZERO, 0.0)
+            header.addValue(FitsKeywords.EXTEND, true)
 
             val image = Image(width, height, header, mono)
 

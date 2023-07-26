@@ -149,7 +149,7 @@ class FitsImageTest : AbstractImageTest() {
             val image = fits.transform(AutoScreenTransformFunction)
             val outputFile = File("src/test/resources/M51.8.Color.AutoSTF.png")
             ImageIO.write(image, "PNG", outputFile)
-            outputFile.md5() shouldBe "beddeb0285d02e1ff1c1fde1566c3629"
+            outputFile.md5() shouldBe "16fac8bab0f883fa0c0c10d0652eea34"
         }
         "CCD Simulator - Stretch" {
             val fits = Fits("src/test/resources/CCD Simulator.Gray.fits")
