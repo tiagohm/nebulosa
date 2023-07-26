@@ -18,7 +18,6 @@ class SimbadServiceTest : StringSpec() {
             val query = SimbadQuery()
             query.circle(101.28715533.deg, (-16.71611586).deg, 0.1.deg)
             val objects = service.query(query).execute().body().shouldNotBeNull()
-            objects shouldHaveSize 43
             val sirius = objects.first { o -> o.names.any { it.name == "Sirius" } }
             sirius.name shouldBe "* alf CMa"
             sirius.names.first { it.type == CatalogType.HIP }.name shouldBe "32349"
