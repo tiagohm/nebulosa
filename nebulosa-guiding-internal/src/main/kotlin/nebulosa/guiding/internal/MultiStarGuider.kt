@@ -718,16 +718,12 @@ class MultiStarGuider(
 
                                 if (found) {
                                     star.referencePoint.set(star)
+                                    star.wasLost = false
                                 } else {
-                                    LOG.info("star removed after lock position change. x={}, y={}", star.x, star.y)
-                                    guideStarsIter.remove()
+                                    // Don't need to update reference point, lost star will continue to use
+                                    // the offsetFromPrimary location for possible recovery.
+                                    star.wasLost = true
                                 }
-                            }
-
-                            if (starCount > 1) {
-                                LOG.info("{} stars in list after lock position change", starCount)
-                            } else {
-                                LOG.info("no secondary stars found after lock position change")
                             }
 
                             return false
@@ -744,16 +740,23 @@ class MultiStarGuider(
                 while (guideStarsIter.hasNext()) {
                     if (starsUsed >= maxStars || starCount == 1) break
 
-                    // "used" means "considered" for purposes of UI.
-                    starsUsed++
-
                     val star = guideStarsIter.next()
 
-                    if (star.find(image, searchRegion, star.x, star.y, FindMode.CENTROID, minStarHFD)) {
+                    val found = if (star.wasLost) {
+                        // Look for it based on its original offset from the primary star.
+                        val expectedLoc = primaryStar + star.offsetFromPrimary
+                        star.find(image, searchRegion, expectedLoc.x, expectedLoc.y, FindMode.CENTROID, minStarHFD)
+                    } else {
+                        // Look for it where we last found it.
+                        star.find(image, searchRegion, star.x, star.y, FindMode.CENTROID, minStarHFD)
+                    }
+
+                    if (found) {
                         val dx = star.x - star.referencePoint.x
                         val dy = star.y - star.referencePoint.y
 
-                        if (star.lostCount > 0) star.lostCount--
+                        star.wasLost = false
+                        starsUsed++
 
                         if (dx != 0.0 || dy != 0.0) {
                             // Handle zero-counting - suspect results of exactly zero movement
@@ -791,10 +794,7 @@ class MultiStarGuider(
                             guideStarsIter.remove()
                         }
                     } else {
-                        // Star not found in its search region.
-                        if (++star.lostCount >= 3) {
-                            guideStarsIter.remove()
-                        }
+                        star.wasLost = true
                     }
                 }
 

@@ -13,13 +13,5 @@ fun interface TransformAlgorithm {
 
         @JvmStatic
         fun of(algorithms: Iterable<TransformAlgorithm>) = TransformAlgorithm { algorithms.transform(it) }
-
-        @JvmName("apply")
-        @Suppress("NOTHING_TO_INLINE")
-        inline fun Array<out TransformAlgorithm>.transform(source: Image) = fold(source) { s, a -> a.transform(s) }
-
-        @JvmName("apply")
-        @Suppress("NOTHING_TO_INLINE")
-        inline fun Iterable<TransformAlgorithm>.transform(source: Image) = fold(source) { s, a -> a.transform(s) }
     }
 }
