@@ -1,7 +1,8 @@
 package nebulosa.imaging.algorithms
 
+import nebulosa.fits.FitsKeywords
+import nebulosa.fits.clone
 import nebulosa.imaging.Image
-import nom.tam.fits.Header
 
 class SubFrame(
     private val x: Int, private val y: Int,
@@ -19,9 +20,9 @@ class SubFrame(
         require(x + width <= source.width) { "subframe.width < source.width: ${x + width} > ${source.width}" }
         require(y + height <= source.height) { "subframe.height < source.height: ${y + height} > ${source.height}" }
 
-        val header = Header(source.header.makeData())
-        header.setNaxis(1, width)
-        header.setNaxis(2, height)
+        val header = source.header.clone()
+        header.addValue(FitsKeywords.NAXISn.n(1), width)
+        header.addValue(FitsKeywords.NAXISn.n(2), height)
         val subframe = Image(width, height, header, source.mono)
 
         var index = 0
