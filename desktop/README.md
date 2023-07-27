@@ -10,6 +10,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](camera.png)
 
+## Focuser
+
+![](focuser.png)
+
 ## Atlas
 
 ![](atlas.1.png)

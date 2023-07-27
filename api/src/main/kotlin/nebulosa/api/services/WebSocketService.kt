@@ -2,11 +2,13 @@ package nebulosa.api.services
 
 import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.responses.CameraResponse
+import nebulosa.api.data.responses.FocuserResponse
 import nebulosa.api.data.responses.INDIPropertyResponse
 import nebulosa.indi.device.DeviceMessageReceived
 import nebulosa.indi.device.DevicePropertyEvent
 import nebulosa.indi.device.PropertyVector
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.focuser.Focuser
 import nebulosa.log.loggerFor
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Service
 class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate) {
 
     private val registeredEventNames = HashSet<String>()
+
+    // INDI
 
     fun sendINDIPropertyChanged(event: DevicePropertyEvent) {
         sendINDIPropertyEvent(DEVICE_PROPERTY_CHANGED, event.property)
@@ -28,9 +32,12 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         sendMessage(DEVICE_MESSAGE_RECEIVED, mapOf("device" to event.device?.name, "message" to event.message))
     }
 
-    private fun sendINDIPropertyEvent(eventName: String, property: PropertyVector<*, *>) {
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendINDIPropertyEvent(eventName: String, property: PropertyVector<*, *>) {
         sendMessage(eventName, INDIPropertyResponse(property))
     }
+
+    // CAMERA
 
     fun sendSavedCameraImageEvent(event: SavedCameraImageEntity) {
         sendMessage(CAMERA_IMAGE_SAVED, event)
@@ -52,8 +59,28 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         sendCameraEvent(CAMERA_DETACHED, camera)
     }
 
-    private fun sendCameraEvent(eventName: String, camera: Camera) {
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendCameraEvent(eventName: String, camera: Camera) {
         sendMessage(eventName, CameraResponse(camera))
+    }
+
+    // FOCUSER
+
+    fun sendFocuserUpdated(focuser: Focuser) {
+        sendFocuserEvent(FOCUSER_UPDATED, focuser)
+    }
+
+    fun sendFocuserAttached(focuser: Focuser) {
+        sendFocuserEvent(FOCUSER_ATTACHED, focuser)
+    }
+
+    fun sendFocuserDetached(focuser: Focuser) {
+        sendFocuserEvent(FOCUSER_DETACHED, focuser)
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendFocuserEvent(eventName: String, focuser: Focuser) {
+        sendMessage(eventName, FocuserResponse(focuser))
     }
 
     fun registerEventName(eventName: String) {
@@ -66,7 +93,8 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         LOG.info("unregistered event. name={}", eventName)
     }
 
-    private fun sendMessage(eventName: String, payload: Any) {
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendMessage(eventName: String, payload: Any) {
         if (eventName in registeredEventNames) {
             simpleMessageTemplate.convertAndSend(eventName, payload)
         }
@@ -82,6 +110,9 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         const val CAMERA_CAPTURE_FINISHED = "CAMERA_CAPTURE_FINISHED"
         const val CAMERA_ATTACHED = "CAMERA_ATTACHED"
         const val CAMERA_DETACHED = "CAMERA_DETACHED"
+        const val FOCUSER_UPDATED = "FOCUSER_UPDATED"
+        const val FOCUSER_ATTACHED = "FOCUSER_ATTACHED"
+        const val FOCUSER_DETACHED = "FOCUSER_DETACHED"
 
         @JvmStatic private val LOG = loggerFor<WebSocketService>()
 
@@ -99,17 +130,24 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
             CAMERA_DETACHED,
         )
 
-        @JvmStatic private val ALL_EVENT_NAMES = listOf(DEVICE_EVENT_NAMES, CAMERA_EVENT_NAMES)
-            .flatten().toSet()
+        @JvmStatic private val FOCUSER_EVENT_NAMES = setOf(
+            FOCUSER_UPDATED,
+            FOCUSER_ATTACHED,
+            FOCUSER_DETACHED,
+        )
+
+        @JvmStatic private val ALL_EVENT_NAMES = listOf(
+            DEVICE_EVENT_NAMES, CAMERA_EVENT_NAMES,
+            FOCUSER_EVENT_NAMES,
+        ).flatten().toSet()
 
         @JvmStatic
-        private fun String.mapEventName(): Set<String> {
-            return when (this) {
-                "ALL" -> ALL_EVENT_NAMES
-                "DEVICE" -> DEVICE_EVENT_NAMES
-                "CAMERA" -> CAMERA_EVENT_NAMES
-                else -> setOf(this)
-            }
+        private fun String.mapEventName() = when (this) {
+            "ALL" -> ALL_EVENT_NAMES
+            "DEVICE" -> DEVICE_EVENT_NAMES
+            "CAMERA" -> CAMERA_EVENT_NAMES
+            "FOCUSER" -> FOCUSER_EVENT_NAMES
+            else -> setOf(this)
         }
     }
 }

@@ -23,7 +23,8 @@ function createMainWindow() {
         brokerURL: `ws://localhost:${apiPort}/ws`,
         onConnect: () => {
             for (const item of INDI_EVENT_TYPES) {
-                if (item === 'ALL' || item === 'DEVICE' || item === 'CAMERA') {
+                if (item === 'ALL' || item === 'DEVICE' || item === 'CAMERA' ||
+                    item === 'FOCUSER') {
                     continue
                 }
 

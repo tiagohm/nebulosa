@@ -8,7 +8,7 @@ import { ListboxChangeEvent } from 'primeng/listbox'
 import { MoonComponent } from '../../shared/components/moon/moon.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
-import { BodyPosition, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, Location, MinorPlanet, SkyObjectType, Star, TypeWithAll } from '../../shared/types'
+import { CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location, MinorPlanet, SkyObjectType, Star, TypeWithAll } from '../../shared/types'
 
 export interface PlanetItem {
     name: string
@@ -48,7 +48,7 @@ export class AtlasComponent implements OnInit, OnDestroy {
         else this.activeTab = value
     }
 
-    bodyPosition: BodyPosition = { ...EMPTY_BODY_POSITION }
+    readonly bodyPosition = Object.assign({}, EMPTY_BODY_POSITION)
     moonIlluminated = 1
     moonWaning = false
 
@@ -75,9 +75,8 @@ export class AtlasComponent implements OnInit, OnDestroy {
     ]
 
     locations: Location[] = []
-    private readonly emptyLocation: Location = { id: 0, name: '', latitude: 0, longitude: 0, elevation: 0, offsetInMinutes: 0 }
-    location: Location = { ...this.emptyLocation }
-    editedLocation: Location = { ...this.emptyLocation }
+    readonly location = Object.assign({}, EMPTY_LOCATION)
+    readonly editedLocation = Object.assign({}, EMPTY_LOCATION)
     showLocationDialog = false
     useManualDateTime = false
     dateTime = new Date()
@@ -526,12 +525,12 @@ export class AtlasComponent implements OnInit, OnDestroy {
     }
 
     addLocation() {
-        this.editedLocation = { ...this.emptyLocation }
+        Object.assign(this.editedLocation, EMPTY_LOCATION)
         this.showLocationDialog = true
     }
 
     editLocation() {
-        this.editedLocation = { ...this.location }
+        Object.assign(this.editedLocation, this.location)
         this.showLocationDialog = true
     }
 
@@ -581,13 +580,15 @@ export class AtlasComponent implements OnInit, OnDestroy {
                 this.name = 'Sun'
                 this.tags = []
                 this.imageOfSun.nativeElement.src = `${this.api.baseUri}/imageOfSun`
-                this.bodyPosition = await this.api.positionOfSun(this.location!, this.dateTime)
+                const bodyPosition = await this.api.positionOfSun(this.location!, this.dateTime)
+                Object.assign(this.bodyPosition, bodyPosition)
             }
             // Moon.
             else if (this.activeTab === 1) {
                 this.name = 'Moon'
                 this.tags = []
-                this.bodyPosition = await this.api.positionOfMoon(this.location!, this.dateTime)
+                const bodyPosition = await this.api.positionOfMoon(this.location!, this.dateTime)
+                Object.assign(this.bodyPosition, bodyPosition)
                 this.moonIlluminated = this.bodyPosition.illuminated / 100.0
                 this.moonWaning = this.bodyPosition.leading
             }
@@ -597,10 +598,11 @@ export class AtlasComponent implements OnInit, OnDestroy {
 
                 if (this.planet) {
                     this.name = this.planet.name
-                    this.bodyPosition = await this.api.positionOfPlanet(this.location!, this.planet.code, this.dateTime)
+                    const bodyPosition = await this.api.positionOfPlanet(this.location!, this.planet.code, this.dateTime)
+                    Object.assign(this.bodyPosition, bodyPosition)
                 } else {
                     this.name = '-'
-                    this.bodyPosition = { ...EMPTY_BODY_POSITION }
+                    Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
             // Minor Planet.
@@ -614,10 +616,11 @@ export class AtlasComponent implements OnInit, OnDestroy {
                     if (this.minorPlanet.neo) this.tags.push({ title: 'NEO', severity: 'danger' })
                     if (this.minorPlanet.orbitType) this.tags.push({ title: this.minorPlanet.orbitType, severity: 'info' })
                     const code = `DES=${this.minorPlanet.spkId};`
-                    this.bodyPosition = await this.api.positionOfPlanet(this.location!, code, this.dateTime)
+                    const bodyPosition = await this.api.positionOfPlanet(this.location!, code, this.dateTime)
+                    Object.assign(this.bodyPosition, bodyPosition)
                 } else {
                     this.name = '-'
-                    this.bodyPosition = { ...EMPTY_BODY_POSITION }
+                    Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
             // Star.
@@ -626,10 +629,11 @@ export class AtlasComponent implements OnInit, OnDestroy {
 
                 if (this.star) {
                     this.name = this.star.names
-                    this.bodyPosition = await this.api.positionOfStar(this.location!, this.star, this.dateTime)
+                    const bodyPosition = await this.api.positionOfStar(this.location!, this.star, this.dateTime)
+                    Object.assign(this.bodyPosition, bodyPosition)
                 } else {
                     this.name = '-'
-                    this.bodyPosition = { ...EMPTY_BODY_POSITION }
+                    Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
             // DSO.
@@ -638,10 +642,11 @@ export class AtlasComponent implements OnInit, OnDestroy {
 
                 if (this.dso) {
                     this.name = this.dso.names
-                    this.bodyPosition = await this.api.positionOfDSO(this.location!, this.dso, this.dateTime)
+                    const bodyPosition = await this.api.positionOfDSO(this.location!, this.dso, this.dateTime)
+                    Object.assign(this.bodyPosition, bodyPosition)
                 } else {
                     this.name = '-'
-                    this.bodyPosition = { ...EMPTY_BODY_POSITION }
+                    Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
 

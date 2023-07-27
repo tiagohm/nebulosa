@@ -3,7 +3,12 @@ export interface Device {
     connected: boolean
 }
 
-export interface Camera extends Device {
+export interface Thermometer {
+    hasThermometer: boolean
+    temperature: number
+}
+
+export interface Camera extends Device, Thermometer {
     exposuring: boolean
     hasCoolerControl: boolean
     coolerPower: number
@@ -50,8 +55,19 @@ export interface Camera extends Device {
     pixelSizeY: number
     canPulseGuide: boolean
     pulseGuiding: boolean
-    hasThermometer: boolean
-    temperature: number
+}
+
+export interface Focuser extends Device, Thermometer {
+    moving: boolean
+    position: number
+    canAbsoluteMove: boolean
+    canRelativeMove: boolean
+    canAbort: boolean
+    canReverse: boolean
+    reverse: boolean
+    canSync: boolean
+    hasBackslash: boolean
+    maxPosition: number
 }
 
 export interface CameraStartCapture {
@@ -150,6 +166,15 @@ export interface Location {
     longitude: number
     elevation: number
     offsetInMinutes: number
+}
+
+export const EMPTY_LOCATION: Location = {
+    id: 0,
+    name: '',
+    latitude: 0,
+    longitude: 0,
+    elevation: 0,
+    offsetInMinutes: 0,
 }
 
 export interface BodyPosition {
@@ -488,11 +513,12 @@ export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
     'WATNEY'
 
 export const INDI_EVENT_TYPES = [
-    'ALL', 'DEVICE', 'CAMERA',
+    'ALL', 'DEVICE', 'CAMERA', 'FOCUSER',
     'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
     'DEVICE_MESSAGE_RECEIVED', 'CAMERA_IMAGE_SAVED',
     'CAMERA_UPDATED', 'CAMERA_CAPTURE_FINISHED',
-    'CAMERA_ATTACHED', 'CAMERA_DETACHED'
+    'CAMERA_ATTACHED', 'CAMERA_DETACHED',
+    'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
 ] as const
 
 export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]

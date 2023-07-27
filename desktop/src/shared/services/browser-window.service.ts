@@ -23,6 +23,14 @@ export class BrowserWindowService {
         })
     }
 
+    openFocuser(options: OpenWindowOptions = {}) {
+        this.openWindow({
+            ...options,
+            id: 'focuser', path: 'focuser', icon: options.icon || 'focus',
+            width: options.width || 380, height: options.height || 265,
+        })
+    }
+
     async openCameraImage(camera: Camera) {
         const hash = camera.name
         const factor = camera.height / camera.width

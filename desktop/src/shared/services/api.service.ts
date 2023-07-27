@@ -4,6 +4,7 @@ import * as moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
     BodyPosition, Calibration, Camera, CameraStartCapture, Constellation, DeepSkyObject, Device,
+    Focuser,
     HipsSurvey, INDIEventType, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet,
     PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, Star, Twilight
 } from '../types'
@@ -91,6 +92,42 @@ export class ApiService {
 
     latestImageOfCamera(camera: Camera) {
         return this.get<SavedCameraImage>(`latestImageOfCamera?name=${camera.name}`)
+    }
+
+    attachedFocusers() {
+        return this.get<Focuser[]>(`attachedFocusers`)
+    }
+
+    focuser(name: string) {
+        return this.get<Focuser>(`focuser?name=${name}`)
+    }
+
+    focuserConnect(focuser: Focuser) {
+        return this.post<void>(`focuserConnect?name=${focuser.name}`)
+    }
+
+    focuserDisconnect(focuser: Focuser) {
+        return this.post<void>(`focuserDisconnect?name=${focuser.name}`)
+    }
+
+    focuserMoveIn(focuser: Focuser, steps: number) {
+        return this.post<void>(`focuserMoveIn?name=${focuser.name}&steps=${steps}`)
+    }
+
+    focuserMoveOut(focuser: Focuser, steps: number) {
+        return this.post<void>(`focuserMoveOut?name=${focuser.name}&steps=${steps}`)
+    }
+
+    focuserMoveTo(focuser: Focuser, steps: number) {
+        return this.post<void>(`focuserMoveTo?name=${focuser.name}&steps=${steps}`)
+    }
+
+    focuserAbort(focuser: Focuser) {
+        return this.post<void>(`focuserAbort?name=${focuser.name}`)
+    }
+
+    focuserSyncTo(focuser: Focuser, steps: number) {
+        return this.post<void>(`focuserSyncTo?name=${focuser.name}&steps=${steps}`)
     }
 
     async openImage(
