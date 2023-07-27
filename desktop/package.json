@@ -1,6 +1,11 @@
 {
   "name": "nebulosa",
   "version": "0.1.0",
+  "description": "The complete integrated solution for all of your astronomical imaging needs.",
+  "author": {
+    "name": "Tiago Melo",
+    "email": "tiago.henrique.cco@gmail.com"
+  },
   "homepage": "https://tiagohm.github.io/nebulosa",
   "license": "MIT",
   "main": "app/main.js",
@@ -34,7 +39,7 @@
     "@angular/platform-browser": "16.1.3",
     "@angular/platform-browser-dynamic": "16.1.3",
     "@angular/router": "16.1.3",
-    "chart.js": "4.3.0",
+    "chart.js": "4.3.1",
     "leaflet": "1.9.4",
     "moment": "2.29.4",
     "panzoom": "9.4.3",
@@ -42,9 +47,9 @@
     "primeicons": "6.0.1",
     "primeng": "16.0.2",
     "rxjs": "7.8.1",
-    "tslib": "^2.6.1",
+    "tslib": "2.6.1",
     "uuid": "9.0.0",
-    "zone.js": "~0.13.1"
+    "zone.js": "0.13.1"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "16.0.0",
@@ -61,9 +66,8 @@
     "node-polyfill-webpack-plugin": "2.0.1",
     "npm-run-all": "4.1.5",
     "ts-node": "10.9.1",
-    "typescript": "~5.1.6",
-    "wait-on": "7.0.1",
-    "webdriver-manager": "12.1.9"
+    "typescript": "5.1.6",
+    "wait-on": "7.0.1"
   },
   "engines": {
     "node": ">= 16.14.0 || >= 18.10.0"

@@ -3,7 +3,12 @@ export interface Device {
     connected: boolean
 }
 
-export interface Camera extends Device {
+export interface Thermometer {
+    hasThermometer: boolean
+    temperature: number
+}
+
+export interface Camera extends Device, Thermometer {
     exposuring: boolean
     hasCoolerControl: boolean
     coolerPower: number
@@ -50,8 +55,19 @@ export interface Camera extends Device {
     pixelSizeY: number
     canPulseGuide: boolean
     pulseGuiding: boolean
-    hasThermometer: boolean
-    temperature: number
+}
+
+export interface Focuser extends Device, Thermometer {
+    moving: boolean
+    position: number
+    canAbsoluteMove: boolean
+    canRelativeMove: boolean
+    canAbort: boolean
+    canReverse: boolean
+    reverse: boolean
+    canSync: boolean
+    hasBackslash: boolean
+    maxPosition: number
 }
 
 export interface CameraStartCapture {
@@ -89,8 +105,7 @@ export interface OpenWindow<T> extends OpenWindowOptions {
 }
 
 export interface SavedCameraImage {
-    id: number
-    name: string
+    camera: string
     path: string
     width: number
     height: number
@@ -102,6 +117,12 @@ export interface SavedCameraImage {
     rightAscension?: string
     declination?: string
     calibrated: boolean
+    headers: FITSHeaderItem[]
+}
+
+export interface FITSHeaderItem {
+    name: string
+    value: string
 }
 
 export interface INDIProperty<T> {
@@ -147,6 +168,15 @@ export interface Location {
     offsetInMinutes: number
 }
 
+export const EMPTY_LOCATION: Location = {
+    id: 0,
+    name: '',
+    latitude: 0,
+    longitude: 0,
+    elevation: 0,
+    offsetInMinutes: 0,
+}
+
 export interface BodyPosition {
     rightAscensionJ2000: string
     declinationJ2000: string
@@ -160,9 +190,11 @@ export interface BodyPosition {
     distanceUnit: string
     illuminated: number
     elongation: number
+    leading: boolean
 }
 
 export interface HipsSurvey {
+    type: HipsSurveyType | string
     id: string
     category: string
     frame: string
@@ -185,6 +217,7 @@ export const EMPTY_BODY_POSITION: BodyPosition = {
     distanceUnit: 'ly',
     illuminated: 0,
     elongation: 0,
+    leading: false,
 }
 
 export interface Twilight {
@@ -365,18 +398,21 @@ export type HomeWindowType = 'CAMERA' |
     'INDI' |
     'ABOUT'
 
-export type Constellation =
-    'AND' | 'ANT' | 'APS' | 'AQL' | 'AQR' | 'ARA' | 'ARI' | 'AUR' |
-    'BOO' | 'CMA' | 'CMI' | 'CVN' | 'CAE' | 'CAM' | 'CAP' | 'CAR' |
-    'CAS' | 'CEN' | 'CEP' | 'CET' | 'CHA' | 'CIR' | 'CNC' | 'COL' |
-    'COM' | 'CRA' | 'CRB' | 'CRT' | 'CRU' | 'CRV' | 'CYG' | 'DEL' |
-    'DOR' | 'DRA' | 'EQU' | 'ERI' | 'FOR' | 'GEM' | 'GRU' | 'HER' |
-    'HOR' | 'HYA' | 'HYI' | 'IND' | 'LMI' | 'LAC' | 'LEO' | 'LEP' |
-    'LIB' | 'LUP' | 'LYN' | 'LYR' | 'MEN' | 'MIC' | 'MON' | 'MUS' |
-    'NOR' | 'OCT' | 'OPH' | 'ORI' | 'PAV' | 'PEG' | 'PER' | 'PHE' |
-    'PIC' | 'PSA' | 'PSC' | 'PUP' | 'PYX' | 'RET' | 'SCL' | 'SCO' |
-    'SCT' | 'SER' | 'SEX' | 'SGE' | 'SGR' | 'TAU' | 'TEL' | 'TRA' |
-    'TRI' | 'TUC' | 'UMA' | 'UMI' | 'VEL' | 'VIR' | 'VOL' | 'VUL'
+export const CONSTELLATIONS = [
+    'AND', 'ANT', 'APS', 'AQL', 'AQR', 'ARA', 'ARI', 'AUR',
+    'BOO', 'CMA', 'CMI', 'CVN', 'CAE', 'CAM', 'CAP', 'CAR',
+    'CAS', 'CEN', 'CEP', 'CET', 'CHA', 'CIR', 'CNC', 'COL',
+    'COM', 'CRA', 'CRB', 'CRT', 'CRU', 'CRV', 'CYG', 'DEL',
+    'DOR', 'DRA', 'EQU', 'ERI', 'FOR', 'GEM', 'GRU', 'HER',
+    'HOR', 'HYA', 'HYI', 'IND', 'LMI', 'LAC', 'LEO', 'LEP',
+    'LIB', 'LUP', 'LYN', 'LYR', 'MEN', 'MIC', 'MON', 'MUS',
+    'NOR', 'OCT', 'OPH', 'ORI', 'PAV', 'PEG', 'PER', 'PHE',
+    'PIC', 'PSA', 'PSC', 'PUP', 'PYX', 'RET', 'SCL', 'SCO',
+    'SCT', 'SER', 'SEX', 'SGE', 'SGR', 'TAU', 'TEL', 'TRA',
+    'TRI', 'TUC', 'UMA', 'UMI', 'VEL', 'VIR', 'VOL', 'VUL',
+] as const
+
+export type Constellation = (typeof CONSTELLATIONS)[number]
 
 export type SkyObjectType =
     'ACTIVE_GALAXY_NUCLEUS' | 'ALPHA2_CVN_VARIABLE' |
@@ -461,25 +497,61 @@ export type ImageChannel = 'RED' |
     'GRAY' |
     'NONE'
 
-export type SCNRProtectionMethod = 'MAXIMUM_MASK' |
-    'ADDTIVIVE_MASK' |
-    'AVERAGE_NEUTRAL' |
-    'MAXIMUM_NEUTRAL' |
+export const SCNR_PROTECTION_METHODS = [
+    'MAXIMUM_MASK',
+    'ADDITIVE_MASK',
+    'AVERAGE_NEUTRAL',
+    'MAXIMUM_NEUTRAL',
     'MINIMUM_NEUTRAL'
+] as const
+
+export type SCNRProtectionMethod = (typeof SCNR_PROTECTION_METHODS)[number]
 
 export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
     'ASTROMETRY_NET_ONLINE' |
     'ASTAP' |
     'WATNEY'
 
-export type INDIEventName = 'ALL' | 'DEVICE' | 'CAMERA' |
-    'DEVICE_PROPERTY_CHANGED' |
-    'DEVICE_PROPERTY_DELETED' |
-    'DEVICE_MESSAGE_RECEIVED' |
-    'CAMERA_IMAGE_SAVED' |
-    'CAMERA_UPDATED' |
-    'CAMERA_CAPTURE_FINISHED' |
-    'CAMERA_ATTACHED' |
-    'CAMERA_DETACHED'
+export const INDI_EVENT_TYPES = [
+    'ALL', 'DEVICE', 'CAMERA', 'FOCUSER',
+    'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
+    'DEVICE_MESSAGE_RECEIVED', 'CAMERA_IMAGE_SAVED',
+    'CAMERA_UPDATED', 'CAMERA_CAPTURE_FINISHED',
+    'CAMERA_ATTACHED', 'CAMERA_DETACHED',
+    'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
+] as const
+
+export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]
 
 export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA'
+
+export const HIPS_SURVEY_TYPES = [
+    'CDS_P_DSS2_NIR',
+    'CDS_P_DSS2_BLUE', 'CDS_P_DSS2_COLOR',
+    'CDS_P_DSS2_RED', 'FZU_CZ_P_CTA_FRAM_SURVEY_B',
+    'FZU_CZ_P_CTA_FRAM_SURVEY_R', 'FZU_CZ_P_CTA_FRAM_SURVEY_V',
+    'FZU_CZ_P_CTA_FRAM_SURVEY_COLOR', 'CDS_P_2MASS_H',
+    'CDS_P_2MASS_J', 'CDS_P_2MASS_K',
+    'CDS_P_2MASS_COLOR', 'CDS_P_AKARI_FIS_COLOR',
+    'CDS_P_AKARI_FIS_N160', 'CDS_P_AKARI_FIS_N60',
+    'CDS_P_AKARI_FIS_WIDEL', 'CDS_P_AKARI_FIS_WIDES',
+    'CDS_P_NEOWISER_COLOR', 'CDS_P_NEOWISER_W1',
+    'CDS_P_NEOWISER_W2', 'CDS_P_WISE_WSSA_12UM',
+    'CDS_P_ALLWISE_W1', 'CDS_P_ALLWISE_W2',
+    'CDS_P_ALLWISE_W3', 'CDS_P_ALLWISE_W4',
+    'CDS_P_ALLWISE_COLOR', 'CDS_P_UNWISE_W1',
+    'CDS_P_UNWISE_W2', 'CDS_P_UNWISE_COLOR_W2_W1W2_W1',
+    'CDS_P_RASS', 'JAXA_P_ASCA_GIS',
+    'JAXA_P_ASCA_SIS', 'JAXA_P_MAXI_GSC',
+    'JAXA_P_MAXI_SSC', 'JAXA_P_SUZAKU',
+    'JAXA_P_SWIFT_BAT_FLUX', 'CDS_P_EGRET_DIF_100_150',
+    'CDS_P_EGRET_DIF_1000_2000', 'CDS_P_EGRET_DIF_150_300',
+    'CDS_P_EGRET_DIF_2000_4000', 'CDS_P_EGRET_DIF_30_50',
+    'CDS_P_EGRET_DIF_300_500', 'CDS_P_EGRET_DIF_4000_10000',
+    'CDS_P_EGRET_DIF_50_70', 'CDS_P_EGRET_DIF_500_1000',
+    'CDS_P_EGRET_DIF_70_100', 'CDS_P_EGRET_INF100',
+    'CDS_P_EGRET_SUP100', 'CDS_P_FERMI_3',
+    'CDS_P_FERMI_4', 'CDS_P_FERMI_5', 'CDS_P_FERMI_COLOR'
+] as const
+
+export type HipsSurveyType = (typeof HIPS_SURVEY_TYPES)[number]

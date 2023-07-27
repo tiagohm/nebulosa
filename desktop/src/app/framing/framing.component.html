@@ -41,7 +41,20 @@
     </div>
     <div class="col-6">
         <span class="p-float-label">
-            <p-dropdown [options]="hipsSurveys" [(ngModel)]="hipsSurvey" optionLabel="id" styleClass="border-0" emptyMessage="No HiPS survey found" />
+            <p-dropdown [options]="hipsSurveys" [(ngModel)]="hipsSurvey" styleClass="border-0" emptyMessage="No HiPS survey found">
+                <ng-template let-item pTemplate="selectedItem">
+                    <div class="flex flex-column">
+                        <span class="text-xs">{{ item.regime }}</span>
+                        <span>{{ item.id }}</span>
+                    </div>
+                </ng-template>
+                <ng-template let-item pTemplate="item">
+                    <div class="flex flex-column">
+                        <span class="text-xs">{{ item.regime }}</span>
+                        <span>{{ item.id }}</span>
+                    </div>
+                </ng-template>
+            </p-dropdown>
             <label>HiPS Survey</label>
         </span>
     </div>

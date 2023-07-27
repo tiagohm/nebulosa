@@ -9,7 +9,10 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Calibration, Camera, ImageAnnotation, ImageChannel, ImageSource, PlateSolverType, SCNRProtectionMethod, SavedCameraImage } from '../../shared/types'
+import {
+    Calibration, Camera, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageSource, PlateSolverType,
+    SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage
+} from '../../shared/types'
 
 export interface ImageParams {
     camera?: Camera
@@ -37,17 +40,12 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
     invert = false
 
     readonly scnrChannelOptions: ImageChannel[] = ['NONE', 'RED', 'GREEN', 'BLUE']
-    readonly scnrProtectionModeOptions: SCNRProtectionMethod[] = ['MAXIMUM_MASK',
-        'ADDTIVIVE_MASK',
-        'AVERAGE_NEUTRAL',
-        'MAXIMUM_NEUTRAL',
-        'MINIMUM_NEUTRAL'
-    ]
+    readonly scnrProtectionMethodOptions: SCNRProtectionMethod[] = [...SCNR_PROTECTION_METHODS]
 
     showSCNRDialog = false
     scnrChannel: ImageChannel = 'NONE'
     scnrAmount = 0.5
-    scnrProtectionMode: SCNRProtectionMethod = 'AVERAGE_NEUTRAL'
+    scnrProtectionMethod: SCNRProtectionMethod = 'AVERAGE_NEUTRAL'
 
     showAnnotationDialog = false
     annotateWithStars = true
@@ -76,6 +74,9 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
 
     crossHair = false
     annotations: ImageAnnotation[] = []
+
+    showFITSHeadersDialog = false
+    fitsHeaders: FITSHeaderItem[] = []
 
     private panZoom?: PanZoom
     private imageURL!: string
@@ -202,6 +203,16 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.annotationMenuItem,
             ]
         },
+        {
+            icon: 'mdi mdi-list-box',
+            label: 'FITS Header',
+            command: () => {
+                this.showFITSHeadersDialog = true
+            },
+        },
+        {
+            separator: true,
+        },
         this.pointMountHereMenuItem,
     ]
 
@@ -217,7 +228,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         title.setTitle('Image')
 
         electron.ipcRenderer.on('CAMERA_IMAGE_SAVED', async (_, data: SavedCameraImage) => {
-            if (data.name === this.imageParams.camera?.name) {
+            if (data.camera === this.imageParams.camera?.name) {
                 if (this.imageParams.path) {
                     await this.api.closeImage(this.imageParams.path)
                 }
@@ -295,7 +306,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         const { info, blob } = await this.api.openImage(path, this.debayer, this.autoStretch,
             this.stretchShadowhHighlight[0] / 65536, this.stretchShadowhHighlight[1] / 65536, this.stretchMidtone / 65536,
             this.mirrorHorizontal, this.mirrorVertical,
-            this.invert, scnrEnabled, scnrEnabled ? this.scnrChannel : 'GREEN', this.scnrAmount, this.scnrProtectionMode)
+            this.invert, scnrEnabled, scnrEnabled ? this.scnrChannel : 'GREEN', this.scnrAmount, this.scnrProtectionMethod)
 
         this.imageInfo = info
         this.scnrMenuItem.disabled = info.mono
@@ -309,6 +320,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         this.annotationMenuItem.disabled = !info.calibrated
+        this.fitsHeaders = info.headers
 
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
         this.imageURL = window.URL.createObjectURL(blob)

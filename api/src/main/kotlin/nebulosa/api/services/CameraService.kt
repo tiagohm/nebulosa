@@ -62,17 +62,17 @@ class CameraService(
     }
 
     operator fun get(name: String): CameraResponse {
-        val camera = equipmentService.camera(name)!!
+        val camera = requireNotNull(equipmentService.camera(name))
         return CameraResponse(camera)
     }
 
     fun connect(name: String) {
-        val camera = equipmentService.camera(name)!!
+        val camera = requireNotNull(equipmentService.camera(name))
         camera.connect()
     }
 
     fun disconnect(name: String) {
-        val camera = equipmentService.camera(name)!!
+        val camera = requireNotNull(equipmentService.camera(name))
         camera.disconnect()
     }
 
@@ -81,12 +81,12 @@ class CameraService(
     }
 
     fun setpointTemperature(name: String, temperature: Double) {
-        val camera = equipmentService.camera(name)!!
+        val camera = requireNotNull(equipmentService.camera(name))
         camera.temperature(temperature)
     }
 
     fun cooler(name: String, enable: Boolean) {
-        val camera = equipmentService.camera(name)!!
+        val camera = requireNotNull(equipmentService.camera(name))
         camera.cooler(enable)
     }
 
@@ -94,7 +94,7 @@ class CameraService(
     fun startCapture(name: String, data: CameraStartCaptureRequest) {
         if (isCapturing(name)) return
 
-        val camera = equipmentService.camera(name)!!
+        val camera = requireNotNull(equipmentService.camera(name))
         val savePath = data.savePath?.ifBlank { null }?.let(Path::of)
             ?.takeIf { it.exists() && it.isDirectory() }
             ?: Path.of("$capturesDirectory", name).createDirectories()

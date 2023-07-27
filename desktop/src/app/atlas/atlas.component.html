@@ -8,7 +8,7 @@
             </p-tabPanel>
             <p-tabPanel header="Moon" [disabled]="refreshing">
                 <div class="grid flex align-items-center justify-content-center">
-                    <img #imageOfMoon style="width: 194px">
+                    <moon [width]="190" [height]="190" [illuminationRatio]="moonIlluminated" [waning]="moonWaning" />
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Planets" [disabled]="refreshing">
@@ -93,7 +93,7 @@
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
                                 <td>{{ item.names }}</td>
-                                <td class="max-w-9rem text-overflow-clip overflow-hidden">{{ item.type }}</td>
+                                <td class="max-w-9rem text-overflow-clip overflow-hidden">{{ item.type | enum }}</td>
                                 <td class="text-center">{{ item.magnitude < 99 ? item.magnitude.toFixed(1) : '-' }}</td>
                                 <td class="text-center">{{ item.constellation }}</td>
                             </tr>
@@ -129,7 +129,7 @@
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
                                 <td>{{ item.names }}</td>
-                                <td class="max-w-9rem text-overflow-clip overflow-hidden">{{ item.type }}</td>
+                                <td class="max-w-9rem text-overflow-clip overflow-hidden">{{ item.type | enum }}</td>
                                 <td class="text-center">{{ item.magnitude < 99 ? item.magnitude.toFixed(1) : '-' }}</td>
                                 <td class="text-center">{{ item.constellation }}</td>
                             </tr>
@@ -254,8 +254,7 @@
 <p-dialog header="Minor Planets" [modal]="true" [(visible)]="showMinorPlanetChoiceDialog" [style]="{width: '80vw'}">
     <div class="grid p-2">
         <p-listbox [options]="minorPlanetChoiceItems" (onChange)="minorPlanetChoosen($event)" [filter]="true" optionLabel="name"
-                   [listStyle]="{ 'max-height': '250px' }"
-                   class="w-full" />
+                   [listStyle]="{ 'max-height': '250px' }" class="w-full" />
     </div>
 </p-dialog>
 
@@ -282,15 +281,35 @@
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="constellationOptions" [(ngModel)]="starFilter.constellation" optionLabel="name"
-                            optionValue="value" appendTo="body" styleClass="border-0" />
+                <p-dropdown [options]="constellationOptions" [(ngModel)]="starFilter.constellation" appendTo="body" styleClass="border-0">
+                    <ng-template let-item pTemplate="selectedItem">
+                        <div class="flex align-items-center gap-2">
+                            <span>{{ item | enum }}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template let-item pTemplate="item">
+                        <div class="flex align-items-center gap-2">
+                            <span>{{ item | enum }}</span>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
                 <label>Constellation</label>
             </span>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="starFilterTypeOptions" [(ngModel)]="starFilter.type" optionLabel="name" optionValue="value"
-                            appendTo="body" styleClass="border-0" />
+                <p-dropdown [options]="starTypeOptions" [(ngModel)]="starFilter.type" appendTo="body" styleClass="border-0">
+                    <ng-template let-item pTemplate="selectedItem">
+                        <div class="flex align-items-center gap-2">
+                            <span>{{ item | enum }}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template let-item pTemplate="item">
+                        <div class="flex align-items-center gap-2">
+                            <span>{{ item | enum }}</span>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
                 <label>Type</label>
             </span>
         </div>
@@ -327,15 +346,35 @@
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="constellationOptions" [(ngModel)]="dsoFilter.constellation" optionLabel="name"
-                            optionValue="value" appendTo="body" styleClass="border-0" />
+                <p-dropdown [options]="constellationOptions" [(ngModel)]="dsoFilter.constellation" appendTo="body" styleClass="border-0">
+                    <ng-template let-item pTemplate="selectedItem">
+                        <div class="flex align-items-center gap-2">
+                            <span>{{ item | enum }}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template let-item pTemplate="item">
+                        <div class="flex align-items-center gap-2">
+                            <span>{{ item | enum }}</span>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
                 <label>Constellation</label>
             </span>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="dsoFilterTypeOptions" [(ngModel)]="dsoFilter.type" optionLabel="name" optionValue="value"
-                            appendTo="body" styleClass="border-0" />
+                <p-dropdown [options]="dsoTypeOptions" [(ngModel)]="dsoFilter.type" appendTo="body" styleClass="border-0">
+                    <ng-template let-item pTemplate="selectedItem">
+                        <div class="flex align-items-center gap-2">
+                            <span>{{ item | enum }}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template let-item pTemplate="item">
+                        <div class="flex align-items-center gap-2">
+                            <span>{{ item | enum }}</span>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
                 <label>Type</label>
             </span>
         </div>

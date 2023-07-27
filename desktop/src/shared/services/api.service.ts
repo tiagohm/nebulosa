@@ -4,7 +4,8 @@ import * as moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
     BodyPosition, Calibration, Camera, CameraStartCapture, Constellation, DeepSkyObject, Device,
-    HipsSurvey, INDIEventName, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet,
+    Focuser,
+    HipsSurvey, INDIEventType, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet,
     PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, Star, Twilight
 } from '../types'
 
@@ -93,6 +94,42 @@ export class ApiService {
         return this.get<SavedCameraImage>(`latestImageOfCamera?name=${camera.name}`)
     }
 
+    attachedFocusers() {
+        return this.get<Focuser[]>(`attachedFocusers`)
+    }
+
+    focuser(name: string) {
+        return this.get<Focuser>(`focuser?name=${name}`)
+    }
+
+    focuserConnect(focuser: Focuser) {
+        return this.post<void>(`focuserConnect?name=${focuser.name}`)
+    }
+
+    focuserDisconnect(focuser: Focuser) {
+        return this.post<void>(`focuserDisconnect?name=${focuser.name}`)
+    }
+
+    focuserMoveIn(focuser: Focuser, steps: number) {
+        return this.post<void>(`focuserMoveIn?name=${focuser.name}&steps=${steps}`)
+    }
+
+    focuserMoveOut(focuser: Focuser, steps: number) {
+        return this.post<void>(`focuserMoveOut?name=${focuser.name}&steps=${steps}`)
+    }
+
+    focuserMoveTo(focuser: Focuser, steps: number) {
+        return this.post<void>(`focuserMoveTo?name=${focuser.name}&steps=${steps}`)
+    }
+
+    focuserAbort(focuser: Focuser) {
+        return this.post<void>(`focuserAbort?name=${focuser.name}`)
+    }
+
+    focuserSyncTo(focuser: Focuser, steps: number) {
+        return this.post<void>(`focuserSyncTo?name=${focuser.name}&steps=${steps}`)
+    }
+
     async openImage(
         path: string,
         debayer: boolean = false,
@@ -133,11 +170,11 @@ export class ApiService {
         return this.post<void>(`sendIndiProperty?name=${device.name}`, property)
     }
 
-    indiStartListening(eventName: INDIEventName) {
+    indiStartListening(eventName: INDIEventType) {
         return this.post<void>(`indiStartListening?eventName=${eventName}`)
     }
 
-    indiStopListening(eventName: INDIEventName) {
+    indiStopListening(eventName: INDIEventType) {
         return this.post<void>(`indiStopListening?eventName=${eventName}`)
     }
 
@@ -268,6 +305,6 @@ export class ApiService {
         width: number, height: number,
         fov: number, rotation: number, hipsSurvey: HipsSurvey,
     ) {
-        return this.post<string>(`frame?rightAscension=${rightAscension}&declination=${declination}&rotation=${rotation}&fov=${fov}&width=${width}&height=${height}&hipsSurvey=${hipsSurvey.id}`)
+        return this.post<string>(`frame?rightAscension=${rightAscension}&declination=${declination}&rotation=${rotation}&fov=${fov}&width=${width}&height=${height}&hipsSurvey=${hipsSurvey.type}`)
     }
 }

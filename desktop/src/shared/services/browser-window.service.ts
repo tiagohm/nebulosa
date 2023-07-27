@@ -23,6 +23,14 @@ export class BrowserWindowService {
         })
     }
 
+    openFocuser(options: OpenWindowOptions = {}) {
+        this.openWindow({
+            ...options,
+            id: 'focuser', path: 'focuser', icon: options.icon || 'focus',
+            width: options.width || 380, height: options.height || 265,
+        })
+    }
+
     async openCameraImage(camera: Camera) {
         const hash = camera.name
         const factor = camera.height / camera.width
@@ -44,7 +52,7 @@ export class BrowserWindowService {
         this.openWindow<INDIParams>({
             ...options,
             id: 'indi', path: 'indi', icon: options.icon || 'indi',
-            width: options.width || '65%', height: options.height || 420,
+            width: options.width || 760, height: options.height || 420,
             resizable: true, params: { device },
         })
     }
@@ -61,7 +69,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'framing', path: 'framing', icon: options.icon || 'framing',
-            width: options.width || 458, height: options.height || 228, params,
+            width: options.width || 458, height: options.height || 240, params,
         })
     }
 

@@ -56,6 +56,9 @@ export class HomeComponent implements OnInit {
             case 'CAMERA':
                 this.browserWindow.openCamera({ bringToFront: true })
                 break
+            case 'FOCUSER':
+                this.browserWindow.openFocuser({ bringToFront: true })
+                break
             case 'ATLAS':
                 this.browserWindow.openSkyAtlas({ bringToFront: true })
                 break

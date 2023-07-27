@@ -5,9 +5,10 @@ import * as moment from 'moment'
 import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
+import { MoonComponent } from '../../shared/components/moon/moon.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
-import { BodyPosition, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, Location, MinorPlanet, SkyObjectType, Star, TypeWithAll } from '../../shared/types'
+import { CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location, MinorPlanet, SkyObjectType, Star, TypeWithAll } from '../../shared/types'
 
 export interface PlanetItem {
     name: string
@@ -47,7 +48,9 @@ export class AtlasComponent implements OnInit, OnDestroy {
         else this.activeTab = value
     }
 
-    bodyPosition: BodyPosition = { ...EMPTY_BODY_POSITION }
+    readonly bodyPosition = Object.assign({}, EMPTY_BODY_POSITION)
+    moonIlluminated = 1
+    moonWaning = false
 
     readonly bodyPositionMenuItems: MenuItem[] = [
         {
@@ -72,9 +75,8 @@ export class AtlasComponent implements OnInit, OnDestroy {
     ]
 
     locations: Location[] = []
-    private readonly emptyLocation: Location = { id: 0, name: '', latitude: 0, longitude: 0, elevation: 0, offsetInMinutes: 0 }
-    location: Location = { ...this.emptyLocation }
-    editedLocation: Location = { ...this.emptyLocation }
+    readonly location = Object.assign({}, EMPTY_LOCATION)
+    readonly editedLocation = Object.assign({}, EMPTY_LOCATION)
     showLocationDialog = false
     useManualDateTime = false
     dateTime = new Date()
@@ -138,68 +140,33 @@ export class AtlasComponent implements OnInit, OnDestroy {
         type: 'ALL',
     }
 
-    readonly starFilterTypeOptions: { name: string, value: TypeWithAll<SkyObjectType> }[] = [
-        { name: 'All', value: 'ALL' },
-        { name: 'alpha2 CVn Variable', value: 'ALPHA2_CVN_VARIABLE' },
-        { name: 'Asymptotic Giant Branch Star', value: 'ASYMPTOTIC_GIANT_BRANCH_STAR' },
-        { name: 'beta Cep Variable', value: 'BETA_CEP_VARIABLE' },
-        { name: 'Be Star', value: 'BE_STAR' },
-        { name: 'Blue Straggler', value: 'BLUE_STRAGGLER' },
-        { name: 'Blue Supergiant', value: 'BLUE_SUPERGIANT' },
-        { name: 'BL Lac', value: 'BL_LAC' },
-        { name: 'BY Dra Variable', value: 'BY_DRA_VARIABLE' },
-        { name: 'Carbon Star', value: 'CARBON_STAR' },
-        { name: 'Cataclysmic Binary', value: 'CATACLYSMIC_BINARY' },
-        { name: 'Cepheid Variable', value: 'CEPHEID_VARIABLE' },
-        { name: 'Chemically Peculiar Star', value: 'CHEMICALLY_PECULIAR_STAR' },
-        { name: 'Classical Cepheid Variable', value: 'CLASSICAL_CEPHEID_VARIABLE' },
-        { name: 'Classical Nova', value: 'CLASSICAL_NOVA' },
-        { name: 'Composite Object, Blend', value: 'COMPOSITE_OBJECT_BLEND' },
-        { name: 'delta Sct Variable', value: 'DELTA_SCT_VARIABLE' },
-        { name: 'Double or Multiple Star', value: 'DOUBLE_OR_MULTIPLE_STAR' },
-        { name: 'Eclipsing Binary', value: 'ECLIPSING_BINARY' },
-        { name: 'Ellipsoidal Variable', value: 'ELLIPSOIDAL_VARIABLE' },
-        { name: 'Emission-line Star', value: 'EMISSION_LINE_STAR' },
-        { name: 'Eruptive Variable', value: 'ERUPTIVE_VARIABLE' },
-        { name: 'Evolved Supergiant', value: 'EVOLVED_SUPERGIANT' },
-        { name: 'gamma Dor Variable', value: 'GAMMA_DOR_VARIABLE' },
-        { name: 'Herbig Ae/Be Star', value: 'HERBIG_AE_BE_STAR' },
-        { name: 'High Mass X-ray Binary', value: 'HIGH_MASS_X_RAY_BINARY' },
-        { name: 'High Proper Motion Star', value: 'HIGH_PROPER_MOTION_STAR' },
-        { name: 'High Velocity Star', value: 'HIGH_VELOCITY_STAR' },
-        { name: 'Horizontal Branch Star', value: 'HORIZONTAL_BRANCH_STAR' },
-        { name: 'Hot Subdwarf', value: 'HOT_SUBDWARF' },
-        { name: 'Irregular Variable', value: 'IRREGULAR_VARIABLE' },
-        { name: 'Long-Period Variable', value: 'LONG_PERIOD_VARIABLE' },
-        { name: 'Low-mass Star', value: 'LOW_MASS_STAR' },
-        { name: 'Low Mass X-ray Binary', value: 'LOW_MASS_X_RAY_BINARY' },
-        { name: 'Main Sequence Star', value: 'MAIN_SEQUENCE_STAR' },
-        { name: 'Mira Variable', value: 'MIRA_VARIABLE' },
-        { name: 'OH/IR Star', value: 'OH_IR_STAR' },
-        { name: 'Orion Variable', value: 'ORION_VARIABLE' },
-        { name: 'Planetary Nebula', value: 'PLANETARY_NEBULA' },
-        { name: 'Post-AGB Star', value: 'POST_AGB_STAR' },
-        { name: 'Pulsating Variable', value: 'PULSATING_VARIABLE' },
-        { name: 'Red Giant Branch star', value: 'RED_GIANT_BRANCH_STAR' },
-        { name: 'Red Supergiant', value: 'RED_SUPERGIANT' },
-        { name: 'Rotating Variable', value: 'ROTATING_VARIABLE' },
-        { name: 'RR Lyrae Variable', value: 'RR_LYRAE_VARIABLE' },
-        { name: 'RS CVn Variable', value: 'RS_CVN_VARIABLE' },
-        { name: 'RV Tauri Variable', value: 'RV_TAURI_VARIABLE' },
-        { name: 'R CrB Variable', value: 'R_CRB_VARIABLE' },
-        { name: 'Spectroscopic Binary', value: 'SPECTROSCOPIC_BINARY' },
-        { name: 'Star', value: 'STAR' },
-        { name: 'SX Phe Variable', value: 'SX_PHE_VARIABLE' },
-        { name: 'Symbiotic Star', value: 'SYMBIOTIC_STAR' },
-        { name: 'S Star', value: 'S_STAR' },
-        { name: 'Type II Cepheid Variable', value: 'TYPE_II_CEPHEID_VARIABLE' },
-        { name: 'T Tauri Star', value: 'T_TAURI_STAR' },
-        { name: 'Variable Star', value: 'VARIABLE_STAR' },
-        { name: 'White Dwarf', value: 'WHITE_DWARF' },
-        { name: 'Wolf-Rayet', value: 'WOLF_RAYET' },
-        { name: 'X-ray Binary', value: 'X_RAY_BINARY' },
-        { name: 'Yellow Supergiant', value: 'YELLOW_SUPERGIANT' },
-        { name: 'Young Stellar Object', value: 'YOUNG_STELLAR_OBJECT' },
+    readonly starTypeOptions: TypeWithAll<SkyObjectType>[] = [
+        'ALL',
+        'ALPHA2_CVN_VARIABLE', 'ASYMPTOTIC_GIANT_BRANCH_STAR',
+        'BETA_CEP_VARIABLE', 'BE_STAR', 'BLUE_STRAGGLER',
+        'BLUE_SUPERGIANT', 'BL_LAC', 'BY_DRA_VARIABLE',
+        'CARBON_STAR', 'CATACLYSMIC_BINARY', 'CEPHEID_VARIABLE',
+        'CHEMICALLY_PECULIAR_STAR', 'CLASSICAL_CEPHEID_VARIABLE',
+        'CLASSICAL_NOVA', 'COMPOSITE_OBJECT_BLEND',
+        'DELTA_SCT_VARIABLE', 'DOUBLE_OR_MULTIPLE_STAR',
+        'ECLIPSING_BINARY', 'ELLIPSOIDAL_VARIABLE',
+        'EMISSION_LINE_STAR', 'ERUPTIVE_VARIABLE',
+        'EVOLVED_SUPERGIANT', 'GAMMA_DOR_VARIABLE',
+        'HERBIG_AE_BE_STAR', 'HIGH_MASS_X_RAY_BINARY',
+        'HIGH_PROPER_MOTION_STAR', 'HIGH_VELOCITY_STAR',
+        'HORIZONTAL_BRANCH_STAR', 'HOT_SUBDWARF',
+        'IRREGULAR_VARIABLE', 'LONG_PERIOD_VARIABLE',
+        'LOW_MASS_STAR', 'LOW_MASS_X_RAY_BINARY',
+        'MAIN_SEQUENCE_STAR', 'MIRA_VARIABLE',
+        'OH_IR_STAR', 'ORION_VARIABLE', 'PLANETARY_NEBULA',
+        'POST_AGB_STAR', 'PULSATING_VARIABLE', 'RED_GIANT_BRANCH_STAR',
+        'RED_SUPERGIANT', 'ROTATING_VARIABLE', 'RR_LYRAE_VARIABLE',
+        'RS_CVN_VARIABLE', 'RV_TAURI_VARIABLE', 'R_CRB_VARIABLE',
+        'SPECTROSCOPIC_BINARY', 'STAR', 'SX_PHE_VARIABLE',
+        'SYMBIOTIC_STAR', 'S_STAR', 'TYPE_II_CEPHEID_VARIABLE',
+        'T_TAURI_STAR', 'VARIABLE_STAR', 'WHITE_DWARF',
+        'WOLF_RAYET', 'X_RAY_BINARY', 'YELLOW_SUPERGIANT',
+        'YOUNG_STELLAR_OBJECT',
     ]
 
     dso?: DeepSkyObject
@@ -217,165 +184,37 @@ export class AtlasComponent implements OnInit, OnDestroy {
         type: 'ALL',
     }
 
-    readonly dsoFilterTypeOptions: { name: string, value: TypeWithAll<SkyObjectType> }[] = [
-        { name: 'All', value: 'ALL' },
-        { name: 'Active Galaxy Nucleus', value: 'ACTIVE_GALAXY_NUCLEUS' },
-        { name: 'Association of Stars', value: 'ASSOCIATION_OF_STARS' },
-        { name: 'Blazar', value: 'BLAZAR' },
-        { name: 'Blue Compact Galaxy', value: 'BLUE_COMPACT_GALAXY' },
-        { name: 'BL Lac', value: 'BL_LAC' },
-        { name: 'Brightest Galaxy in a Cluster (BCG)', value: 'BRIGHTEST_GALAXY_IN_A_CLUSTER_BCG' },
-        { name: 'Carbon Star', value: 'CARBON_STAR' },
-        { name: 'Chemically Peculiar Star', value: 'CHEMICALLY_PECULIAR_STAR' },
-        { name: 'Cluster of Galaxies', value: 'CLUSTER_OF_GALAXIES' },
-        { name: 'Cluster of Stars', value: 'CLUSTER_OF_STARS' },
-        { name: 'Compact Group of Galaxies', value: 'COMPACT_GROUP_OF_GALAXIES' },
-        { name: 'Composite Object, Blend', value: 'COMPOSITE_OBJECT_BLEND' },
-        { name: 'Dark Cloud (nebula)', value: 'DARK_CLOUD_NEBULA' },
-        { name: 'Double or Multiple Star', value: 'DOUBLE_OR_MULTIPLE_STAR' },
-        { name: 'Eclipsing Binary', value: 'ECLIPSING_BINARY' },
-        { name: 'Emission-line galaxy', value: 'EMISSION_LINE_GALAXY' },
-        { name: 'Emission-line Star', value: 'EMISSION_LINE_STAR' },
-        { name: 'Emission Object', value: 'EMISSION_OBJECT' },
-        { name: 'Eruptive Variable', value: 'ERUPTIVE_VARIABLE' },
-        { name: 'Galaxy', value: 'GALAXY' },
-        { name: 'Galaxy in Pair of Galaxies', value: 'GALAXY_IN_PAIR_OF_GALAXIES' },
-        { name: 'Galaxy towards a Cluster of Galaxies', value: 'GALAXY_TOWARDS_A_CLUSTER_OF_GALAXIES' },
-        { name: 'Galaxy towards a Group of Galaxies', value: 'GALAXY_TOWARDS_A_GROUP_OF_GALAXIES' },
-        { name: 'Globular Cluster', value: 'GLOBULAR_CLUSTER' },
-        { name: 'Group of Galaxies', value: 'GROUP_OF_GALAXIES' },
-        { name: 'Herbig Ae/Be Star', value: 'HERBIG_AE_BE_STAR' },
-        { name: 'Herbig-Haro Object', value: 'HERBIG_HARO_OBJECT' },
-        { name: 'High Proper Motion Star', value: 'HIGH_PROPER_MOTION_STAR' },
-        { name: 'HII Galaxy', value: 'HII_GALAXY' },
-        { name: 'HII Region', value: 'HII_REGION' },
-        { name: 'HI (21cm) Source', value: 'HI_21CM_SOURCE' },
-        { name: 'Infra-Red Source', value: 'INFRA_RED_SOURCE' },
-        { name: 'Interacting Galaxies', value: 'INTERACTING_GALAXIES' },
-        { name: 'Interstellar Medium Object', value: 'INTERSTELLAR_MEDIUM_OBJECT' },
-        { name: 'Interstellar Shell', value: 'INTERSTELLAR_SHELL' },
-        { name: 'LINER-type Active Galaxy Nucleus', value: 'LINER_TYPE_ACTIVE_GALAXY_NUCLEUS' },
-        { name: 'Long-Period Variable', value: 'LONG_PERIOD_VARIABLE' },
-        { name: 'Low Surface Brightness Galaxy', value: 'LOW_SURFACE_BRIGHTNESS_GALAXY' },
-        { name: 'Molecular Cloud', value: 'MOLECULAR_CLOUD' },
-        { name: 'Nebula', value: 'NEBULA' },
-        { name: 'Not an Object (Error, Artefact, ...)', value: 'NOT_AN_OBJECT_ERROR_ARTEFACT' },
-        { name: 'Object of Unknown Nature', value: 'OBJECT_OF_UNKNOWN_NATURE' },
-        { name: 'Open Cluster', value: 'OPEN_CLUSTER' },
-        { name: 'Orion Variable', value: 'ORION_VARIABLE' },
-        { name: 'Pair of Galaxies', value: 'PAIR_OF_GALAXIES' },
-        { name: 'Part of a Galaxy', value: 'PART_OF_A_GALAXY' },
-        { name: 'Planetary Nebula', value: 'PLANETARY_NEBULA' },
-        { name: 'Quasar', value: 'QUASAR' },
-        { name: 'Radio Galaxy', value: 'RADIO_GALAXY' },
-        { name: 'Radio Source', value: 'RADIO_SOURCE' },
-        { name: 'Reflection Nebula', value: 'REFLECTION_NEBULA' },
-        { name: 'Region defined in the Sky', value: 'REGION_DEFINED_IN_THE_SKY' },
-        { name: 'RR Lyrae Variable', value: 'RR_LYRAE_VARIABLE' },
-        { name: 'Seyfert 1 Galaxy', value: 'SEYFERT_1_GALAXY' },
-        { name: 'Seyfert 2 Galaxy', value: 'SEYFERT_2_GALAXY' },
-        { name: 'Seyfert Galaxy', value: 'SEYFERT_GALAXY' },
-        { name: 'Spectroscopic Binary', value: 'SPECTROSCOPIC_BINARY' },
-        { name: 'Star', value: 'STAR' },
-        { name: 'Starburst Galaxy', value: 'STARBURST_GALAXY' },
-        { name: 'SuperNova', value: 'SUPERNOVA' },
-        { name: 'SuperNova Remnant', value: 'SUPERNOVA_REMNANT' },
-        { name: 'Symbiotic Star', value: 'SYMBIOTIC_STAR' },
-        { name: 'Variable Star', value: 'VARIABLE_STAR' },
-        { name: 'Young Stellar Object', value: 'YOUNG_STELLAR_OBJECT' },
+    readonly dsoTypeOptions: TypeWithAll<SkyObjectType>[] = [
+        'ALL',
+        'ACTIVE_GALAXY_NUCLEUS', 'ASSOCIATION_OF_STARS',
+        'BLAZAR', 'BLUE_COMPACT_GALAXY', 'BL_LAC',
+        'BRIGHTEST_GALAXY_IN_A_CLUSTER_BCG', 'CARBON_STAR',
+        'CHEMICALLY_PECULIAR_STAR', 'CLUSTER_OF_GALAXIES',
+        'CLUSTER_OF_STARS', 'COMPACT_GROUP_OF_GALAXIES',
+        'COMPOSITE_OBJECT_BLEND', 'DARK_CLOUD_NEBULA',
+        'DOUBLE_OR_MULTIPLE_STAR', 'ECLIPSING_BINARY',
+        'EMISSION_LINE_GALAXY', 'EMISSION_LINE_STAR',
+        'EMISSION_OBJECT', 'ERUPTIVE_VARIABLE', 'GALAXY',
+        'GALAXY_IN_PAIR_OF_GALAXIES', 'GALAXY_TOWARDS_A_CLUSTER_OF_GALAXIES',
+        'GALAXY_TOWARDS_A_GROUP_OF_GALAXIES', 'GLOBULAR_CLUSTER',
+        'GROUP_OF_GALAXIES', 'HERBIG_AE_BE_STAR', 'HERBIG_HARO_OBJECT',
+        'HIGH_PROPER_MOTION_STAR', 'HII_GALAXY', 'HII_REGION',
+        'HI_21CM_SOURCE', 'INFRA_RED_SOURCE', 'INTERACTING_GALAXIES',
+        'INTERSTELLAR_MEDIUM_OBJECT', 'INTERSTELLAR_SHELL',
+        'LINER_TYPE_ACTIVE_GALAXY_NUCLEUS', 'LONG_PERIOD_VARIABLE',
+        'LOW_SURFACE_BRIGHTNESS_GALAXY', 'MOLECULAR_CLOUD',
+        'NEBULA', 'NOT_AN_OBJECT_ERROR_ARTEFACT',
+        'OBJECT_OF_UNKNOWN_NATURE', 'OPEN_CLUSTER',
+        'ORION_VARIABLE', 'PAIR_OF_GALAXIES', 'PART_OF_A_GALAXY',
+        'PLANETARY_NEBULA', 'QUASAR', 'RADIO_GALAXY',
+        'RADIO_SOURCE', 'REFLECTION_NEBULA', 'REGION_DEFINED_IN_THE_SKY',
+        'RR_LYRAE_VARIABLE', 'SEYFERT_1_GALAXY', 'SEYFERT_2_GALAXY',
+        'SEYFERT_GALAXY', 'SPECTROSCOPIC_BINARY', 'STAR',
+        'STARBURST_GALAXY', 'SUPERNOVA', 'SUPERNOVA_REMNANT',
+        'SYMBIOTIC_STAR', 'VARIABLE_STAR', 'YOUNG_STELLAR_OBJECT',
     ]
 
-    readonly constellationOptions: { name: string, value: TypeWithAll<Constellation> }[] = [
-        { name: 'All', value: 'ALL' },
-        { name: 'Andromeda', value: 'AND' },
-        { name: 'Antlia', value: 'ANT' },
-        { name: 'Apus', value: 'APS' },
-        { name: 'Aquila', value: 'AQL' },
-        { name: 'Aquarius', value: 'AQR' },
-        { name: 'Ara', value: 'ARA' },
-        { name: 'Aries', value: 'ARI' },
-        { name: 'Auriga', value: 'AUR' },
-        { name: 'Boötes', value: 'BOO' },
-        { name: 'Canis Major', value: 'CMA' },
-        { name: 'Canis Minor', value: 'CMI' },
-        { name: 'Canes Venatici', value: 'CVN' },
-        { name: 'Caelum', value: 'CAE' },
-        { name: 'Camelopardalis', value: 'CAM' },
-        { name: 'Capricornus', value: 'CAP' },
-        { name: 'Carina', value: 'CAR' },
-        { name: 'Cassiopeia', value: 'CAS' },
-        { name: 'Centaurus', value: 'CEN' },
-        { name: 'Cepheus', value: 'CEP' },
-        { name: 'Cetus', value: 'CET' },
-        { name: 'Chamaeleon', value: 'CHA' },
-        { name: 'Circinus', value: 'CIR' },
-        { name: 'Cancer', value: 'CNC' },
-        { name: 'Columba', value: 'COL' },
-        { name: 'Coma Berenices', value: 'COM' },
-        { name: 'Corona Australis', value: 'CRA' },
-        { name: 'Corona Borealis', value: 'CRB' },
-        { name: 'Crater', value: 'CRT' },
-        { name: 'Crux', value: 'CRU' },
-        { name: 'Corvus', value: 'CRV' },
-        { name: 'Cygnus', value: 'CYG' },
-        { name: 'Delphinus', value: 'DEL' },
-        { name: 'Dorado', value: 'DOR' },
-        { name: 'Draco', value: 'DRA' },
-        { name: 'Equuleus', value: 'EQU' },
-        { name: 'Eridanus', value: 'ERI' },
-        { name: 'Fornax', value: 'FOR' },
-        { name: 'Gemini', value: 'GEM' },
-        { name: 'Grus', value: 'GRU' },
-        { name: 'Hercules', value: 'HER' },
-        { name: 'Horologium', value: 'HOR' },
-        { name: 'Hydra', value: 'HYA' },
-        { name: 'Hydrus', value: 'HYI' },
-        { name: 'Indus', value: 'IND' },
-        { name: 'Leo Minor', value: 'LMI' },
-        { name: 'Lacerta', value: 'LAC' },
-        { name: 'Leo', value: 'LEO' },
-        { name: 'Lepus', value: 'LEP' },
-        { name: 'Libra', value: 'LIB' },
-        { name: 'Lupus', value: 'LUP' },
-        { name: 'Lynx', value: 'LYN' },
-        { name: 'Lyra', value: 'LYR' },
-        { name: 'Mensa', value: 'MEN' },
-        { name: 'Microscopium', value: 'MIC' },
-        { name: 'Monoceros', value: 'MON' },
-        { name: 'Musca', value: 'MUS' },
-        { name: 'Norma', value: 'NOR' },
-        { name: 'Octans', value: 'OCT' },
-        { name: 'Ophiuchus', value: 'OPH' },
-        { name: 'Orion', value: 'ORI' },
-        { name: 'Pavo', value: 'PAV' },
-        { name: 'Pegasus', value: 'PEG' },
-        { name: 'Perseus', value: 'PER' },
-        { name: 'Phoenix', value: 'PHE' },
-        { name: 'Pictor', value: 'PIC' },
-        { name: 'Piscis Austrinus', value: 'PSA' },
-        { name: 'Pisces', value: 'PSC' },
-        { name: 'Puppis', value: 'PUP' },
-        { name: 'Pyxis', value: 'PYX' },
-        { name: 'Reticulum', value: 'RET' },
-        { name: 'Sculptor', value: 'SCL' },
-        { name: 'Scorpius', value: 'SCO' },
-        { name: 'Scutum', value: 'SCT' },
-        { name: 'Serpens', value: 'SER' },
-        { name: 'Sextans', value: 'SEX' },
-        { name: 'Sagitta', value: 'SGE' },
-        { name: 'Sagittarius', value: 'SGR' },
-        { name: 'Taurus', value: 'TAU' },
-        { name: 'Telescopium', value: 'TEL' },
-        { name: 'Triangulum Australe', value: 'TRA' },
-        { name: 'Triangulum', value: 'TRI' },
-        { name: 'Tucana', value: 'TUC' },
-        { name: 'Ursa Major', value: 'UMA' },
-        { name: 'Ursa Minor', value: 'UMI' },
-        { name: 'Vela', value: 'VEL' },
-        { name: 'Virgo', value: 'VIR' },
-        { name: 'Volans', value: 'VOL' },
-        { name: 'Vulpecula', value: 'VUL' },
-    ]
+    readonly constellationOptions: TypeWithAll<Constellation>[] = ['ALL', ...CONSTELLATIONS]
 
     name = 'Sun'
     tags: { title: string, severity: string }[] = []
@@ -384,7 +223,7 @@ export class AtlasComponent implements OnInit, OnDestroy {
     private readonly imageOfSun!: ElementRef<HTMLImageElement>
 
     @ViewChild('imageOfMoon')
-    private readonly imageOfMoon!: ElementRef<HTMLImageElement>
+    private readonly imageOfMoon!: MoonComponent
 
     @ViewChild('chart')
     private readonly chart!: UIChart
@@ -686,12 +525,12 @@ export class AtlasComponent implements OnInit, OnDestroy {
     }
 
     addLocation() {
-        this.editedLocation = { ...this.emptyLocation }
+        Object.assign(this.editedLocation, EMPTY_LOCATION)
         this.showLocationDialog = true
     }
 
     editLocation() {
-        this.editedLocation = { ...this.location }
+        Object.assign(this.editedLocation, this.location)
         this.showLocationDialog = true
     }
 
@@ -741,14 +580,17 @@ export class AtlasComponent implements OnInit, OnDestroy {
                 this.name = 'Sun'
                 this.tags = []
                 this.imageOfSun.nativeElement.src = `${this.api.baseUri}/imageOfSun`
-                this.bodyPosition = await this.api.positionOfSun(this.location!, this.dateTime)
+                const bodyPosition = await this.api.positionOfSun(this.location!, this.dateTime)
+                Object.assign(this.bodyPosition, bodyPosition)
             }
             // Moon.
             else if (this.activeTab === 1) {
                 this.name = 'Moon'
                 this.tags = []
-                this.imageOfMoon.nativeElement.src = `${this.api.baseUri}/imageOfMoon?location=${this.location!.id}&date=${date}&time=${time}`
-                this.bodyPosition = await this.api.positionOfMoon(this.location!, this.dateTime)
+                const bodyPosition = await this.api.positionOfMoon(this.location!, this.dateTime)
+                Object.assign(this.bodyPosition, bodyPosition)
+                this.moonIlluminated = this.bodyPosition.illuminated / 100.0
+                this.moonWaning = this.bodyPosition.leading
             }
             // Planet.
             else if (this.activeTab === 2) {
@@ -756,10 +598,11 @@ export class AtlasComponent implements OnInit, OnDestroy {
 
                 if (this.planet) {
                     this.name = this.planet.name
-                    this.bodyPosition = await this.api.positionOfPlanet(this.location!, this.planet.code, this.dateTime)
+                    const bodyPosition = await this.api.positionOfPlanet(this.location!, this.planet.code, this.dateTime)
+                    Object.assign(this.bodyPosition, bodyPosition)
                 } else {
                     this.name = '-'
-                    this.bodyPosition = { ...EMPTY_BODY_POSITION }
+                    Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
             // Minor Planet.
@@ -773,10 +616,11 @@ export class AtlasComponent implements OnInit, OnDestroy {
                     if (this.minorPlanet.neo) this.tags.push({ title: 'NEO', severity: 'danger' })
                     if (this.minorPlanet.orbitType) this.tags.push({ title: this.minorPlanet.orbitType, severity: 'info' })
                     const code = `DES=${this.minorPlanet.spkId};`
-                    this.bodyPosition = await this.api.positionOfPlanet(this.location!, code, this.dateTime)
+                    const bodyPosition = await this.api.positionOfPlanet(this.location!, code, this.dateTime)
+                    Object.assign(this.bodyPosition, bodyPosition)
                 } else {
                     this.name = '-'
-                    this.bodyPosition = { ...EMPTY_BODY_POSITION }
+                    Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
             // Star.
@@ -785,10 +629,11 @@ export class AtlasComponent implements OnInit, OnDestroy {
 
                 if (this.star) {
                     this.name = this.star.names
-                    this.bodyPosition = await this.api.positionOfStar(this.location!, this.star, this.dateTime)
+                    const bodyPosition = await this.api.positionOfStar(this.location!, this.star, this.dateTime)
+                    Object.assign(this.bodyPosition, bodyPosition)
                 } else {
                     this.name = '-'
-                    this.bodyPosition = { ...EMPTY_BODY_POSITION }
+                    Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
             // DSO.
@@ -797,10 +642,11 @@ export class AtlasComponent implements OnInit, OnDestroy {
 
                 if (this.dso) {
                     this.name = this.dso.names
-                    this.bodyPosition = await this.api.positionOfDSO(this.location!, this.dso, this.dateTime)
+                    const bodyPosition = await this.api.positionOfDSO(this.location!, this.dso, this.dateTime)
+                    Object.assign(this.bodyPosition, bodyPosition)
                 } else {
                     this.name = '-'
-                    this.bodyPosition = { ...EMPTY_BODY_POSITION }
+                    Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
 

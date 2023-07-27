@@ -149,17 +149,17 @@ export class CameraComponent implements OnInit, OnDestroy {
 
         this.api.indiStartListening('CAMERA')
 
-        electron.ipcRenderer.on('CAMERA_UPDATED', (_, data: Camera) => {
-            if (data.name === this.camera?.name) {
+        electron.ipcRenderer.on('CAMERA_UPDATED', (_, camera: Camera) => {
+            if (camera.name === this.camera?.name) {
                 ngZone.run(() => {
-                    this.camera = { ...data }
+                    Object.assign(this.camera!, camera)
                     this.update()
                 })
             }
         })
 
-        electron.ipcRenderer.on('CAMERA_CAPTURE_FINISHED', (_, data: Camera) => {
-            if (data.name === this.camera?.name) {
+        electron.ipcRenderer.on('CAMERA_CAPTURE_FINISHED', (_, camera: Camera) => {
+            if (camera.name === this.camera?.name) {
                 ngZone.run(() => {
                     this.capturing = false
                 })
@@ -187,7 +187,8 @@ export class CameraComponent implements OnInit, OnDestroy {
 
             this.loadPreference()
 
-            this.camera = { ...await this.api.camera(this.camera.name) }
+            const camera = await this.api.camera(this.camera.name)
+            Object.assign(this.camera, camera)
             this.update()
         } else {
             this.title.setTitle(`Camera`)

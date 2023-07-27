@@ -22,6 +22,7 @@ data class BodyPositionResponse(
     val distanceUnit: String,
     val illuminated: Double,
     val elongation: Double,
+    val leading: Boolean, // true = rises and sets BEFORE Sun.
 ) {
 
     companion object {
@@ -51,6 +52,7 @@ data class BodyPositionResponse(
                 distance, distanceUnit,
                 element.asDouble(HorizonsQuantity.ILLUMINATED_FRACTION),
                 element.asDouble(HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE),
+                element.asString(HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE, index = 1) == "/L",
             )
         }
     }

@@ -72,13 +72,10 @@ p-dropdown,
     color: rgba(200, 200, 200, 0.87);
 }
 
+.border-0,
 .p-selectbutton.border-0 .p-button,
 .p-inputnumber.border-0 .p-inputtext {
     border: 1px solid rgba(255, 255, 255, 0) !important;
-}
-
-.p-inputnumber.border-0 .p-inputtext {
-    border-color: var(--surface-0) !important;
 }
 
 .p-toast {
