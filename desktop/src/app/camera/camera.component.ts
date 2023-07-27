@@ -5,7 +5,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { AutoSubFolderMode, Camera, CameraStartCapture, ExposureMode, ExposureTimeUnit, FrameType } from '../../shared/types'
+import { AutoSubFolderMode, Camera, CameraStartCapture, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType } from '../../shared/types'
 
 @Component({
     selector: 'app-camera',
@@ -22,6 +22,8 @@ export class CameraComponent implements OnInit, OnDestroy {
     savePath = ''
     autoSubFolderMode: AutoSubFolderMode = 'OFF'
 
+    filterWheel?: FilterWheel
+
     readonly cameraMenuItems: MenuItem[] = [
         {
             icon: 'mdi mdi-content-save',
@@ -35,7 +37,7 @@ export class CameraComponent implements OnInit, OnDestroy {
             icon: 'mdi mdi-folder',
             label: 'Save path...',
             command: async () => {
-                const path = await this.electron.ipcRenderer.sendSync('open-directory')
+                const path = await this.electron.ipcRenderer.sendSync('OPEN_DIRECTORY')
 
                 if (path) {
                     this.savePath = path
@@ -165,6 +167,12 @@ export class CameraComponent implements OnInit, OnDestroy {
                 })
             }
         })
+
+        electron.ipcRenderer.on('FILTER_WHEEL_CHANGED', (_, filterWheel?: FilterWheel) => {
+            ngZone.run(() => {
+                this.filterWheel = filterWheel
+            })
+        })
     }
 
     async ngOnInit() {
@@ -181,7 +189,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.api.indiStopListening('CAMERA')
     }
 
-    async cameraSelected() {
+    async cameraChanged() {
         if (this.camera) {
             this.title.setTitle(`Camera ・ ${this.camera.name}`)
 
@@ -193,6 +201,8 @@ export class CameraComponent implements OnInit, OnDestroy {
         } else {
             this.title.setTitle(`Camera`)
         }
+
+        this.electron.ipcRenderer.send('CAMERA_CHANGED', this.camera)
     }
 
     async connect() {
@@ -201,8 +211,6 @@ export class CameraComponent implements OnInit, OnDestroy {
         } else {
             await this.api.cameraConnect(this.camera!)
         }
-
-        this.update()
     }
 
     applySetpointTemperature() {
@@ -223,10 +231,10 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     async startCapture() {
-        const x = this.subframe ? this.x : this.camera!.x
-        const y = this.subframe ? this.y : this.camera!.y
-        const width = this.subframe ? this.width : this.camera!.width
-        const height = this.subframe ? this.height : this.camera!.height
+        const x = this.subframe ? this.x : this.camera!.minX
+        const y = this.subframe ? this.y : this.camera!.minY
+        const width = this.subframe ? this.width : this.camera!.maxWidth
+        const height = this.subframe ? this.height : this.camera!.maxHeight
         const exposureFactor = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
         const exposure = Math.trunc(this.exposureTime * 60000000 / exposureFactor)
         const amount = this.exposureMode === 'LOOP' ? 2147483647 :

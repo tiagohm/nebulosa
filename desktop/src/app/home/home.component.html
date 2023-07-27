@@ -2,14 +2,15 @@
     <div class="grid flex justify-content-center align-items-center">
         <div class="col-6 px-0">
             <span class="p-float-label">
-                <input [disabled]="connected" type="text" pInputText class="p-inputtext-sm min-w-full" placeholder="localhost" [(ngModel)]="host" />
+                <input [disabled]="connected" type="text" pInputText class="border-0 p-inputtext-sm w-full" placeholder="localhost"
+                       [(ngModel)]="host" />
                 <label>Host</label>
             </span>
         </div>
         <div class="col-4 pr-0">
             <span class="p-float-label">
-                <input [disabled]="connected" type="number" pInputText class="p-inputtext-sm min-w-full max-w-0" placeholder="7624"
-                       [(ngModel)]="port" />
+                <p-inputNumber [disabled]="connected" [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" placeholder="7624"
+                               [(ngModel)]="port" [format]="false" />
                 <label>Port</label>
             </span>
         </div>
@@ -38,7 +39,7 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [disabled]="!connected" (onClick)="open('FILTER_WHEEL')" styleClass="open p-button min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/filter-wheel.png" />
                 <div class="mt-1 text-sm">Filter Wheel</div>
             </p-button>

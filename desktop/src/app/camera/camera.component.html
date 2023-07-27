@@ -2,7 +2,7 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-8">
             <span class="p-float-label">
-                <p-dropdown [options]="cameras" [(ngModel)]="camera" optionLabel="name" (ngModelChange)="cameraSelected()"
+                <p-dropdown [options]="cameras" [(ngModel)]="camera" optionLabel="name" (ngModelChange)="cameraChanged()"
                             styleClass="border-0" emptyMessage="No camera found" />
                 <label>Camera</label>
             </span>
@@ -28,13 +28,13 @@
         </div>
     </div>
     <div class="grid py-1 flex align-items-center">
-        <div class="col-3 flex flex-column">
-            <span class="text-sm">Cooler ({{ coolerPower | number: '1.1-1' }}%)</span>
-            <p-inputSwitch [disabled]="!connected || !hasCooler || capturing" (onChange)="toggleCooler()" styleClass="mt-2" [(ngModel)]="cooler" />
+        <div class="col-3 flex flex-column gap-2">
+            <span class="text-sm text-gray-100">Cooler ({{ coolerPower | number: '1.1-1' }}%)</span>
+            <p-inputSwitch [disabled]="!connected || !hasCooler || capturing" (onChange)="toggleCooler()" [(ngModel)]="cooler" />
         </div>
-        <div class="col-3 flex flex-column">
-            <span class="text-sm">Dew heater</span>
-            <p-inputSwitch [disabled]="!connected || !hasDewHeater || capturing" styleClass="mt-2" [(ngModel)]="dewHeater" />
+        <div class="col-3 flex flex-column gap-2">
+            <span class="text-sm text-gray-100">Dew heater</span>
+            <p-inputSwitch [disabled]="!connected || !hasDewHeater || capturing" [(ngModel)]="dewHeater" />
         </div>
         <div class="col-6 flex flex-column">
             <div class="flex justify-content-center align-items-center gap-1">
@@ -72,7 +72,7 @@
     </div>
     <div class="grid py-1 flex align-items-center">
         <div class="col-6">
-            <span class="text-sm">Exposure Mode</span>
+            <span class="text-sm text-gray-100">Exposure Mode</span>
             <p-selectButton [disabled]="!connected || capturing" [options]="exposureModeOptions" [(ngModel)]="exposureMode" styleClass="border-0" />
         </div>
         <div class="col-3">
@@ -121,9 +121,9 @@
         </div>
     </div>
     <div class="grid py-1 flex align-items-center">
-        <div class="col-2 flex flex-column">
-            <span class="text-sm">Subframe</span>
-            <p-inputSwitch [disabled]="!connected || capturing" styleClass="mt-2" [(ngModel)]="subframe" />
+        <div class="col-2 flex flex-column gap-2">
+            <span class="text-sm text-gray-100">Subframe</span>
+            <p-inputSwitch [disabled]="!connected || capturing" [(ngModel)]="subframe" />
         </div>
         <div class="col-4 flex pt-3 flex-row align-items-center justify-content-center">
             <p-button [disabled]="!connected || !subframe || capturing" icon="mdi mdi-fullscreen" (onClick)="fullsize()"

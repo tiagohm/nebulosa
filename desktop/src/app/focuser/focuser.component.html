@@ -2,7 +2,7 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-8">
             <span class="p-float-label">
-                <p-dropdown [options]="focusers" [(ngModel)]="focuser" optionLabel="name" (ngModelChange)="focuserSelected()"
+                <p-dropdown [options]="focusers" [(ngModel)]="focuser" optionLabel="name" (ngModelChange)="focuserChanged()"
                             styleClass="border-0" emptyMessage="No focuser found" />
                 <label>Focuser</label>
             </span>
@@ -13,7 +13,7 @@
             <p-button *ngIf="!connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-connection"
                       styleClass="p-button-info p-button" />
         </div>
-        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center gap-1">
+        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
             <i class="mdi mdi-information text-blue-600"></i>
             <span style="display: contents">{{ moving ? 'moving' : 'idle' }}</span>
         </div>
@@ -62,8 +62,7 @@
             <p-button [disabled]="!canSync || moving" (onClick)="syncTo()" icon="mdi mdi-sync" label="Sync" styleClass="p-button-text w-full" />
         </div>
         <div class="col-4">
-            <p-button [disabled]="!canRelativeMove || moving" icon="mdi mdi-stop" label="Abort" styleClass="p-button-text p-button-danger w-full" />
+            <p-button [disabled]="!canRelativeMove || !moving" icon="mdi mdi-stop" label="Abort" styleClass="p-button-text p-button-danger w-full" />
         </div>
-
     </div>
 </div>

@@ -12,7 +12,7 @@ interface FilterWheel : Device {
 
     fun moveTo(position: Int)
 
-    fun filterNames(names: Iterable<String>)
+    fun syncNames(names: Iterable<String>)
 
     companion object {
 

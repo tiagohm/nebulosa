@@ -61,7 +61,7 @@ internal open class FilterWheelDevice(
         }
     }
 
-    override fun filterNames(names: Iterable<String>) {
+    override fun syncNames(names: Iterable<String>) {
         sendNewText("FILTER_NAME", names.mapIndexed { i, name -> "FILTER_SLOT_NAME_${i + 1}" to name })
     }
 

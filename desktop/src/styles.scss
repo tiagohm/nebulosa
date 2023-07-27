@@ -94,6 +94,11 @@ p-dropdown,
     }
 }
 
+i.mdi {
+    aspect-ratio: 1/1;
+    display: contents;
+}
+
 ::-webkit-scrollbar {
     width: 6px;
 }

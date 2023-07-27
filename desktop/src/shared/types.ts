@@ -70,6 +70,12 @@ export interface Focuser extends Device, Thermometer {
     maxPosition: number
 }
 
+export interface FilterWheel extends Device {
+    count: number
+    position: number
+    moving: boolean
+}
+
 export interface CameraStartCapture {
     exposure: number
     amount: number
@@ -513,12 +519,13 @@ export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
     'WATNEY'
 
 export const INDI_EVENT_TYPES = [
-    'ALL', 'DEVICE', 'CAMERA', 'FOCUSER',
+    'ALL', 'DEVICE', 'CAMERA', 'FOCUSER', 'FILTER_WHEEL',
     'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
     'DEVICE_MESSAGE_RECEIVED', 'CAMERA_IMAGE_SAVED',
     'CAMERA_UPDATED', 'CAMERA_CAPTURE_FINISHED',
     'CAMERA_ATTACHED', 'CAMERA_DETACHED',
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
+    'FILTER_WHEEL_UPDATED', 'FILTER_WHEEL_ATTACHED', 'FILTER_WHEEL_DETACHED',
 ] as const
 
 export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]

@@ -12,14 +12,14 @@ export class BrowserWindowService {
     constructor(private electron: ElectronService) { }
 
     async openWindow<T>(data: OpenWindow<T>) {
-        await this.electron.ipcRenderer.invoke('open-window', data)
+        await this.electron.ipcRenderer.invoke('OPEN_WINDOW', data)
     }
 
     openCamera(options: OpenWindowOptions = {}) {
         this.openWindow({
             ...options,
             id: 'camera', path: 'camera', icon: options.icon || 'camera',
-            width: options.width || 390, height: options.height || 420,
+            width: options.width || 390, height: options.height || 430,
         })
     }
 
@@ -27,7 +27,15 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'focuser', path: 'focuser', icon: options.icon || 'focus',
-            width: options.width || 380, height: options.height || 265,
+            width: options.width || 380, height: options.height || 276,
+        })
+    }
+
+    openFilterWheel(options: OpenWindowOptions = {}) {
+        this.openWindow({
+            ...options,
+            id: 'filterWheel', path: 'filterWheel', icon: options.icon || 'filter-wheel',
+            width: options.width || 340, height: options.height || 204,
         })
     }
 

@@ -6,6 +6,9 @@ import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
 import nebulosa.indi.device.camera.CameraDetached
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.filterwheel.FilterWheelAttached
+import nebulosa.indi.device.filterwheel.FilterWheelDetached
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserAttached
 import nebulosa.indi.device.focuser.FocuserDetached
@@ -18,6 +21,7 @@ class EquipmentService(private val eventBus: EventBus) : DeviceEventHandler {
 
     private val cameras = ArrayList<Camera>(2)
     private val focusers = ArrayList<Focuser>(2)
+    private val filterWheels = ArrayList<FilterWheel>(2)
 
     @Synchronized
     override fun onEventReceived(event: DeviceEvent<*>) {
@@ -26,6 +30,8 @@ class EquipmentService(private val eventBus: EventBus) : DeviceEventHandler {
             is CameraDetached -> cameras.remove(event.device)
             is FocuserAttached -> focusers.add(event.device)
             is FocuserDetached -> focusers.remove(event.device)
+            is FilterWheelAttached -> filterWheels.add(event.device)
+            is FilterWheelDetached -> filterWheels.remove(event.device)
         }
 
         eventBus.post(event)
@@ -47,7 +53,17 @@ class EquipmentService(private val eventBus: EventBus) : DeviceEventHandler {
         return focusers.firstOrNull { it.name == name }
     }
 
+    fun filterWheels(): List<FilterWheel> {
+        return Collections.unmodifiableList(filterWheels)
+    }
+
+    fun filterWheel(name: String): FilterWheel? {
+        return filterWheels.firstOrNull { it.name == name }
+    }
+
     operator fun get(name: String): Device? {
-        return camera(name) ?: focuser(name)
+        return camera(name)
+            ?: focuser(name)
+            ?: filterWheel(name)
     }
 }

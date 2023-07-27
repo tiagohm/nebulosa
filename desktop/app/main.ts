@@ -2,7 +2,7 @@ import { Client } from '@stomp/stompjs'
 import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { INDI_EVENT_TYPES, OpenWindow } from '../src/shared/types'
+import { Camera, FilterWheel, Focuser, INDI_EVENT_TYPES, OpenWindow } from '../src/shared/types'
 
 import { WebSocket } from 'ws'
 Object.assign(global, { WebSocket })
@@ -205,7 +205,7 @@ try {
         }
     })
 
-    ipcMain.handle('open-window', async (_, data: OpenWindow<any>) => {
+    ipcMain.handle('OPEN_WINDOW', async (_, data: OpenWindow<any>) => {
         const newWindow = !secondaryWindows.has(data.id)
 
         const window = createWindow(data)
@@ -227,7 +227,7 @@ try {
         })
     })
 
-    ipcMain.on('open-fits', async (event) => {
+    ipcMain.on('OPEN_FITS', async (event) => {
         const value = await dialog.showOpenDialog(mainWindow!, {
             filters: [{ name: 'FITS files', extensions: ['fits', 'fit'] }],
             properties: ['openFile'],
@@ -236,7 +236,7 @@ try {
         event.returnValue = !value.canceled && value.filePaths[0]
     })
 
-    ipcMain.on('save-fits-as', async (event) => {
+    ipcMain.on('SAVE_FITS_AS', async (event) => {
         const value = await dialog.showSaveDialog(mainWindow!, {
             filters: [
                 { name: 'FITS files', extensions: ['fits', 'fit'] },
@@ -248,7 +248,7 @@ try {
         event.returnValue = !value.canceled && value.filePath
     })
 
-    ipcMain.on('open-directory', async (event) => {
+    ipcMain.on('OPEN_DIRECTORY', async (event) => {
         const value = await dialog.showOpenDialog(mainWindow!, {
             properties: ['openDirectory'],
         })
@@ -256,7 +256,7 @@ try {
         event.returnValue = !value.canceled && value.filePaths[0]
     })
 
-    ipcMain.on('close-window', (event, id: string) => {
+    ipcMain.on('CLOSE_WINDOW', (event, id: string) => {
         for (const [key, value] of secondaryWindows) {
             if (key === id) {
                 value.close()
@@ -266,6 +266,30 @@ try {
         }
 
         event.returnValue = false
+    })
+
+    ipcMain.on('CAMERA_CHANGED', (event, camera: Camera) => {
+        for (const [_, value] of secondaryWindows) {
+            if (value.webContents !== event.sender) {
+                value.webContents.send('CAMERA_CHANGED', camera)
+            }
+        }
+    })
+
+    ipcMain.on('FOCUSER_CHANGED', (event, focuser: Focuser) => {
+        for (const [_, value] of secondaryWindows) {
+            if (value.webContents !== event.sender) {
+                value.webContents.send('FOCUSER_CHANGED', focuser)
+            }
+        }
+    })
+
+    ipcMain.on('FILTER_WHEEL_CHANGED', (event, filterWheel: FilterWheel) => {
+        for (const [_, value] of secondaryWindows) {
+            if (value.webContents !== event.sender) {
+                value.webContents.send('FILTER_WHEEL_CHANGED', filterWheel)
+            }
+        }
     })
 } catch (e) {
     console.error(e)

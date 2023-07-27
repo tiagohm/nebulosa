@@ -59,6 +59,9 @@ export class HomeComponent implements OnInit {
             case 'FOCUSER':
                 this.browserWindow.openFocuser({ bringToFront: true })
                 break
+            case 'FILTER_WHEEL':
+                this.browserWindow.openFilterWheel({ bringToFront: true })
+                break
             case 'ATLAS':
                 this.browserWindow.openSkyAtlas({ bringToFront: true })
                 break
@@ -69,7 +72,7 @@ export class HomeComponent implements OnInit {
                 this.browserWindow.openINDI(undefined, { bringToFront: true })
                 break
             case 'IMAGE':
-                const path = await this.electron.ipcRenderer.sendSync('open-fits')
+                const path = await this.electron.ipcRenderer.sendSync('OPEN_FITS')
                 if (path) this.browserWindow.openImage(path, undefined, 'PATH')
                 break
             case 'ABOUT':
