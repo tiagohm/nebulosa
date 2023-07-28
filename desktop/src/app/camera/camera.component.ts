@@ -92,19 +92,19 @@ export class CameraComponent implements OnInit, OnDestroy {
     exposureMode: ExposureMode = 'SINGLE'
     exposureDelay = 0
     exposureCount = 1
-    x = 0.0
-    minX = 0.0
-    maxX = 0.0
-    y = 0.0
-    minY = 0.0
-    maxY = 0.0
+    x = 0
+    minX = 0
+    maxX = 0
+    y = 0
+    minY = 0
+    maxY = 0
     width = 1023
     minWidth = 1023
     maxWidth = 1023
     height = 1280
     minHeight = 1280
     maxHeight = 1280
-    subframe = false
+    subFrame = false
     binX = 1
     binY = 1
     frameType: FrameType = 'LIGHT'
@@ -120,22 +120,35 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     readonly exposureModeOptions: ExposureMode[] = ['SINGLE', 'FIXED', 'LOOP']
     readonly frameTypeOptions: FrameType[] = ['LIGHT', 'DARK', 'FLAT', 'BIAS']
+
     readonly exposureTimeUnitOptions: MenuItem[] = [
         {
             label: 'Minute (m)',
-            command: () => this.updateExposureUnit(ExposureTimeUnit.MINUTE)
+            command: () => {
+                this.updateExposureUnit(ExposureTimeUnit.MINUTE)
+                this.savePreference()
+            }
         },
         {
             label: 'Second (s)',
-            command: () => this.updateExposureUnit(ExposureTimeUnit.SECOND)
+            command: () => {
+                this.updateExposureUnit(ExposureTimeUnit.SECOND)
+                this.savePreference()
+            }
         },
         {
             label: 'Millisecond (ms)',
-            command: () => this.updateExposureUnit(ExposureTimeUnit.MILLISECOND)
+            command: () => {
+                this.updateExposureUnit(ExposureTimeUnit.MILLISECOND)
+                this.savePreference()
+            }
         },
         {
             label: 'Microsecond (µs)',
-            command: () => this.updateExposureUnit(ExposureTimeUnit.MICROSECOND)
+            command: () => {
+                this.updateExposureUnit(ExposureTimeUnit.MICROSECOND)
+                this.savePreference()
+            }
         }
     ]
 
@@ -177,11 +190,6 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     async ngOnInit() {
         this.cameras = await this.api.attachedCameras()
-
-        if (this.cameras.length > 0) {
-            this.camera = this.cameras[0]
-            this.update()
-        }
     }
 
     @HostListener('window:unload')
@@ -193,11 +201,12 @@ export class CameraComponent implements OnInit, OnDestroy {
         if (this.camera) {
             this.title.setTitle(`Camera ・ ${this.camera.name}`)
 
-            this.loadPreference()
-
             const camera = await this.api.camera(this.camera.name)
             Object.assign(this.camera, camera)
+
+            this.loadPreference()
             this.update()
+            this.savePreference()
         } else {
             this.title.setTitle(`Camera`)
         }
@@ -214,6 +223,7 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     applySetpointTemperature() {
+        this.savePreference()
         this.api.cameraSetpointTemperature(this.camera!, this.setpointTemperature)
     }
 
@@ -227,14 +237,15 @@ export class CameraComponent implements OnInit, OnDestroy {
             this.y = this.camera.minY
             this.width = this.camera.maxWidth
             this.height = this.camera.maxHeight
+            this.savePreference()
         }
     }
 
     async startCapture() {
-        const x = this.subframe ? this.x : this.camera!.minX
-        const y = this.subframe ? this.y : this.camera!.minY
-        const width = this.subframe ? this.width : this.camera!.maxWidth
-        const height = this.subframe ? this.height : this.camera!.maxHeight
+        const x = this.subFrame ? this.x : this.camera!.minX
+        const y = this.subFrame ? this.y : this.camera!.minY
+        const width = this.subFrame ? this.width : this.camera!.maxWidth
+        const height = this.subFrame ? this.height : this.camera!.maxHeight
         const exposureFactor = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
         const exposure = Math.trunc(this.exposureTime * 60000000 / exposureFactor)
         const amount = this.exposureMode === 'LOOP' ? 2147483647 :
@@ -288,36 +299,34 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     private async update() {
-        if (!this.camera) {
-            return
+        if (this.camera) {
+            this.connected = this.camera.connected
+            this.cooler = this.camera.cooler
+            this.hasCooler = this.camera.hasCooler
+            this.coolerPower = this.camera.coolerPower
+            this.dewHeater = this.camera.dewHeater
+            this.temperature = this.camera.temperature
+            this.canSetTemperature = this.camera.canSetTemperature
+            this.minX = this.camera.minX
+            this.maxX = this.camera.maxX
+            this.x = Math.max(this.minX, Math.min(this.x, this.maxX))
+            this.minY = this.camera.minY
+            this.maxY = this.camera.maxY
+            this.y = Math.max(this.minY, Math.min(this.y, this.maxY))
+            this.minWidth = this.camera.minWidth
+            this.maxWidth = this.camera.maxWidth
+            this.width = Math.max(this.minWidth, Math.min(this.width, this.maxWidth))
+            this.minHeight = this.camera.minHeight
+            this.maxHeight = this.camera.maxHeight
+            this.height = Math.max(this.minHeight, Math.min(this.height, this.maxHeight))
+            this.frameFormats = this.camera.frameFormats
+            this.gainMin = this.camera.gainMin
+            this.gainMax = this.camera.gainMax
+            this.offsetMin = this.camera.offsetMin
+            this.offsetMax = this.camera.offsetMax
+
+            this.updateExposureUnit(this.exposureTimeUnit)
         }
-
-        this.connected = this.camera.connected
-        this.cooler = this.camera.cooler
-        this.hasCooler = this.camera.hasCooler
-        this.coolerPower = this.camera.coolerPower
-        this.dewHeater = this.camera.dewHeater
-        this.temperature = this.camera.temperature
-        this.canSetTemperature = this.camera.canSetTemperature
-        this.minX = this.camera.minX
-        this.maxX = this.camera.maxX
-        this.x = Math.max(this.minX, Math.min(this.x, this.maxX))
-        this.minY = this.camera.minY
-        this.maxY = this.camera.maxY
-        this.y = Math.max(this.minY, Math.min(this.y, this.maxY))
-        this.minWidth = this.camera.minWidth
-        this.maxWidth = this.camera.maxWidth
-        this.width = Math.max(this.minWidth, Math.min(this.width, this.maxWidth))
-        this.minHeight = this.camera.minHeight
-        this.maxHeight = this.camera.maxHeight
-        this.height = Math.max(this.minHeight, Math.min(this.height, this.maxHeight))
-        this.frameFormats = this.camera.frameFormats
-        this.gainMin = this.camera.gainMin
-        this.gainMax = this.camera.gainMax
-        this.offsetMin = this.camera.offsetMin
-        this.offsetMax = this.camera.offsetMax
-
-        this.updateExposureUnit(this.exposureTimeUnit)
     }
 
     private loadPreference() {
@@ -325,14 +334,49 @@ export class CameraComponent implements OnInit, OnDestroy {
             this.autoSave = this.preference.get(`camera.${this.camera.name}.autoSave`, false)
             this.savePath = this.preference.get(`camera.${this.camera.name}.savePath`, '')
             this.autoSubFolderMode = this.preference.get<AutoSubFolderMode>(`camera.${this.camera.name}.autoSubFolderMode`, 'OFF')
+
+            this.setpointTemperature = this.preference.get(`camera.${this.camera.name}.setpointTemperature`, 0)
+            this.exposureTime = this.preference.get(`camera.${this.camera.name}.exposureTime`, this.camera.exposureMin)
+            this.exposureTimeUnit = this.preference.get(`camera.${this.camera.name}.exposureTimeUnit`, ExposureTimeUnit.MICROSECOND)
+            this.exposureMode = this.preference.get(`camera.${this.camera.name}.exposureMode`, 'SINGLE')
+            this.exposureDelay = this.preference.get(`camera.${this.camera.name}.exposureDelay`, 0)
+            this.exposureCount = this.preference.get(`camera.${this.camera.name}.exposureCount`, 1)
+            this.x = this.preference.get(`camera.${this.camera.name}.x`, this.camera.minX)
+            this.y = this.preference.get(`camera.${this.camera.name}.y`, this.camera.minY)
+            this.width = this.preference.get(`camera.${this.camera.name}.width`, this.camera.maxWidth)
+            this.height = this.preference.get(`camera.${this.camera.name}.height`, this.camera.maxHeight)
+            this.subFrame = this.preference.get(`camera.${this.camera.name}.subFrame`, false)
+            this.binX = this.preference.get(`camera.${this.camera.name}.binX`, 1)
+            this.binY = this.preference.get(`camera.${this.camera.name}.binY`, 1)
+            this.frameType = this.preference.get(`camera.${this.camera.name}.frameType`, 'LIGHT')
+            this.gain = this.preference.get(`camera.${this.camera.name}.gain`, 0)
+            this.offset = this.preference.get(`camera.${this.camera.name}.offset`, 0)
+            this.frameFormat = this.preference.get(`camera.${this.camera.name}.frameFormat`, '')
         }
     }
 
-    private savePreference() {
+    savePreference() {
         if (this.camera) {
             this.preference.set(`camera.${this.camera.name}.autoSave`, this.autoSave)
             this.preference.set(`camera.${this.camera.name}.savePath`, this.savePath)
             this.preference.set(`camera.${this.camera.name}.autoSubFolderMode`, this.autoSubFolderMode)
+            this.preference.set(`camera.${this.camera.name}.setpointTemperature`, this.setpointTemperature)
+            this.preference.set(`camera.${this.camera.name}.exposureTime`, this.exposureTime)
+            this.preference.set(`camera.${this.camera.name}.exposureTimeUnit`, this.exposureTimeUnit)
+            this.preference.set(`camera.${this.camera.name}.exposureMode`, this.exposureMode)
+            this.preference.set(`camera.${this.camera.name}.exposureDelay`, this.exposureDelay)
+            this.preference.set(`camera.${this.camera.name}.exposureCount`, this.exposureCount)
+            this.preference.set(`camera.${this.camera.name}.x`, this.x)
+            this.preference.set(`camera.${this.camera.name}.y`, this.y)
+            this.preference.set(`camera.${this.camera.name}.width`, this.width)
+            this.preference.set(`camera.${this.camera.name}.height`, this.height)
+            this.preference.set(`camera.${this.camera.name}.subFrame`, this.subFrame)
+            this.preference.set(`camera.${this.camera.name}.binX`, this.binX)
+            this.preference.set(`camera.${this.camera.name}.binY`, this.binY)
+            this.preference.set(`camera.${this.camera.name}.frameType`, this.frameType)
+            this.preference.set(`camera.${this.camera.name}.gain`, this.gain)
+            this.preference.set(`camera.${this.camera.name}.offset`, this.offset)
+            this.preference.set(`camera.${this.camera.name}.frameFormat`, this.frameFormat)
         }
     }
 }

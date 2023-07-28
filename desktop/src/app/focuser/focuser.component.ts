@@ -74,11 +74,12 @@ export class FocuserComponent implements OnInit, OnDestroy {
         if (this.focuser) {
             this.title.setTitle(`Focuser ・ ${this.focuser.name}`)
 
-            this.loadPreference()
-
             const focuser = await this.api.focuser(this.focuser.name)
             Object.assign(this.focuser, focuser)
+
+            this.loadPreference()
             this.update()
+            this.savePreference()
         } else {
             this.title.setTitle(`Focuser`)
         }

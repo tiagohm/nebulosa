@@ -65,7 +65,10 @@ export class FilterWheelComponent implements OnInit, OnDestroy {
 
             const filterWheel = await this.api.filterWheel(this.filterWheel.name)
             Object.assign(this.filterWheel, filterWheel)
+
+            this.loadPreference()
             this.update()
+            this.savePreference()
         } else {
             this.title.setTitle(`Filter Wheel`)
         }
