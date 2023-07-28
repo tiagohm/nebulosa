@@ -9,9 +9,9 @@
         </div>
         <div class="col-2 flex align-items-center gap-1">
             <p-button *ngIf="connected" [disabled]="!filterWheel || moving" (onClick)="connect()" icon="mdi mdi-close"
-                      styleClass="p-button-danger p-button" />
+                      styleClass="p-button-danger" />
             <p-button *ngIf="!connected" [disabled]="!filterWheel || moving" (onClick)="connect()" icon="mdi mdi-connection"
-                      styleClass="p-button-info p-button" />
+                      styleClass="p-button-info" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
             <i class="mdi mdi-information text-blue-600"></i>

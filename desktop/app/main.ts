@@ -38,6 +38,10 @@ function createMainWindow() {
                     for (const [_, window] of secondaryWindows) {
                         window.webContents.send(item, data)
                     }
+
+                    if (item.endsWith('ATTACHED') || item.endsWith('DETACHED')) {
+                        mainWindow?.webContents.send(item, data)
+                    }
                 })
             }
         },

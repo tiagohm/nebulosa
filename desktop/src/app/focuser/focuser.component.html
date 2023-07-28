@@ -9,9 +9,9 @@
         </div>
         <div class="col-2">
             <p-button *ngIf="connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-close"
-                      styleClass="p-button-danger p-button" />
+                      styleClass="p-button-danger" />
             <p-button *ngIf="!connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-connection"
-                      styleClass="p-button-info p-button" />
+                      styleClass="p-button-info" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
             <i class="mdi mdi-information text-blue-600"></i>
@@ -59,7 +59,7 @@
                       styleClass="p-button-text w-full" />
         </div>
         <div class="col-4">
-            <p-button [disabled]="!canSync || moving" (onClick)="syncTo()" icon="mdi mdi-sync" label="Sync" styleClass="p-button-text w-full" />
+            <p-button [disabled]="!canSync || moving" (onClick)="syncTo()" icon="mdi mdi-sync" label="Sync" styleClass="p-button-text p-button-info w-full" />
         </div>
         <div class="col-4">
             <p-button [disabled]="!canRelativeMove || !moving" icon="mdi mdi-stop" label="Abort" styleClass="p-button-text p-button-danger w-full" />
