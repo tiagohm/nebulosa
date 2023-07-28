@@ -5,6 +5,7 @@
 /release
 main.js
 src/**/*.js
+app/**/*.js
 *.js.map
 
 node_modules

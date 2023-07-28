@@ -2,7 +2,7 @@ import { Client } from '@stomp/stompjs'
 import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { Camera, FilterWheel, Focuser, INDI_EVENT_TYPES, OpenWindow } from '../src/shared/types'
+import { Camera, FilterWheel, Focuser, INDI_EVENT_TYPES, OpenWindow } from './types'
 
 import { WebSocket } from 'ws'
 Object.assign(global, { WebSocket })
