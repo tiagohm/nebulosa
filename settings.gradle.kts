@@ -27,7 +27,7 @@ dependencyResolutionManagement {
             library("netty-codec", "io.netty:netty-codec:4.1.95.Final")
             library("xml", "com.fasterxml:aalto-xml:1.3.2")
             library("csv", "de.siegmar:fastcsv:2.2.2")
-            library("apache-lang3", "org.apache.commons:commons-lang3:3.12.0")
+            library("apache-lang3", "org.apache.commons:commons-lang3:3.13.0")
             library("apache-codec", "commons-codec:commons-codec:1.16.0")
             library("oshi", "com.github.oshi:oshi-core:6.4.4")
             library("timeshape", "net.iakovlev:timeshape:2022g.17")
