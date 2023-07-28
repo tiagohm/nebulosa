@@ -2,12 +2,14 @@ package nebulosa.api.services
 
 import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.responses.CameraResponse
+import nebulosa.api.data.responses.FilterWheelResponse
 import nebulosa.api.data.responses.FocuserResponse
 import nebulosa.api.data.responses.INDIPropertyResponse
 import nebulosa.indi.device.DeviceMessageReceived
 import nebulosa.indi.device.DevicePropertyEvent
 import nebulosa.indi.device.PropertyVector
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.log.loggerFor
 import org.springframework.messaging.simp.SimpMessagingTemplate
@@ -83,6 +85,25 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         sendMessage(eventName, FocuserResponse(focuser))
     }
 
+    // FILTER WHEEL
+
+    fun sendFilterWheelUpdated(filterWheel: FilterWheel) {
+        sendFilterWheelEvent(FILTER_WHEEL_UPDATED, filterWheel)
+    }
+
+    fun sendFilterWheelAttached(filterWheel: FilterWheel) {
+        sendFilterWheelEvent(FILTER_WHEEL_ATTACHED, filterWheel)
+    }
+
+    fun sendFilterWheelDetached(filterWheel: FilterWheel) {
+        sendFilterWheelEvent(FILTER_WHEEL_DETACHED, filterWheel)
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendFilterWheelEvent(eventName: String, filterWheel: FilterWheel) {
+        sendMessage(eventName, FilterWheelResponse(filterWheel))
+    }
+
     fun registerEventName(eventName: String) {
         registeredEventNames.addAll(eventName.mapEventName())
         LOG.info("registered event. name={}", eventName)
@@ -113,16 +134,22 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         const val FOCUSER_UPDATED = "FOCUSER_UPDATED"
         const val FOCUSER_ATTACHED = "FOCUSER_ATTACHED"
         const val FOCUSER_DETACHED = "FOCUSER_DETACHED"
+        const val FILTER_WHEEL_UPDATED = "FILTER_WHEEL_UPDATED"
+        const val FILTER_WHEEL_ATTACHED = "FILTER_WHEEL_ATTACHED"
+        const val FILTER_WHEEL_DETACHED = "FILTER_WHEEL_DETACHED"
 
-        @JvmStatic private val LOG = loggerFor<WebSocketService>()
+        @JvmStatic
+        private val LOG = loggerFor<WebSocketService>()
 
-        @JvmStatic private val DEVICE_EVENT_NAMES = setOf(
+        @JvmStatic
+        private val DEVICE_EVENT_NAMES = setOf(
             DEVICE_PROPERTY_CHANGED,
             DEVICE_PROPERTY_DELETED,
             DEVICE_MESSAGE_RECEIVED,
         )
 
-        @JvmStatic private val CAMERA_EVENT_NAMES = setOf(
+        @JvmStatic
+        private val CAMERA_EVENT_NAMES = setOf(
             CAMERA_IMAGE_SAVED,
             CAMERA_UPDATED,
             CAMERA_CAPTURE_FINISHED,
@@ -130,15 +157,24 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
             CAMERA_DETACHED,
         )
 
-        @JvmStatic private val FOCUSER_EVENT_NAMES = setOf(
+        @JvmStatic
+        private val FOCUSER_EVENT_NAMES = setOf(
             FOCUSER_UPDATED,
             FOCUSER_ATTACHED,
             FOCUSER_DETACHED,
         )
 
-        @JvmStatic private val ALL_EVENT_NAMES = listOf(
+        @JvmStatic
+        private val FILTER_WHEEL_EVENT_NAMES = setOf(
+            FILTER_WHEEL_UPDATED,
+            FILTER_WHEEL_ATTACHED,
+            FILTER_WHEEL_DETACHED,
+        )
+
+        @JvmStatic
+        private val ALL_EVENT_NAMES = listOf(
             DEVICE_EVENT_NAMES, CAMERA_EVENT_NAMES,
-            FOCUSER_EVENT_NAMES,
+            FOCUSER_EVENT_NAMES, FILTER_WHEEL_EVENT_NAMES,
         ).flatten().toSet()
 
         @JvmStatic
@@ -147,6 +183,7 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
             "DEVICE" -> DEVICE_EVENT_NAMES
             "CAMERA" -> CAMERA_EVENT_NAMES
             "FOCUSER" -> FOCUSER_EVENT_NAMES
+            "FILTER_WHEEL" -> FILTER_WHEEL_EVENT_NAMES
             else -> setOf(this)
         }
     }

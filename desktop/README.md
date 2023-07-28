@@ -14,6 +14,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](focuser.png)
 
+## Filter Wheel
+
+![](filter-wheel.png)
+
 ## Atlas
 
 ![](atlas.1.png)

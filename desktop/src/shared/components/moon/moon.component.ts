@@ -45,6 +45,8 @@ export class MoonComponent implements AfterViewInit, OnChanges {
 
         const height = canvas.height - offset
         const width = canvas.width - offset
+
+        canvas.style.backgroundImage = `url('assets/images/moon.png')`
         canvas.style.backgroundSize = `${height + offset4 * 2 - 2}px`
 
         const cx = width / 2 + offset4

@@ -75,7 +75,7 @@
                     </div>
                     <div class="col-3 flex align-items-center gap-1">
                         <p-button [disabled]="refreshing" (onClick)="searchStar()" icon="mdi mdi-magnify" styleClass="p-button-info" />
-                        <p-button [disabled]="refreshing" (onClick)="showStarFilterDialog = true" icon="mdi mdi-filter" styleClass="p-button" />
+                        <p-button [disabled]="refreshing" (onClick)="showStarFilterDialog = true" icon="mdi mdi-filter" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -111,7 +111,7 @@
                     </div>
                     <div class="col-3 flex align-items-center gap-1">
                         <p-button [disabled]="refreshing" (onClick)="searchDSO()" icon="mdi mdi-magnify" styleClass="p-button-info" />
-                        <p-button [disabled]="refreshing" (onClick)="showDSOFilterDialog = true" icon="mdi mdi-filter" styleClass="p-button" />
+                        <p-button [disabled]="refreshing" (onClick)="showDSOFilterDialog = true" icon="mdi mdi-filter" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -389,7 +389,7 @@
 </p-dialog>
 
 <p-dialog header="Location" *ngIf="showLocationDialog" (onShow)="map.refresh()" [draggable]="false" [(visible)]="showLocationDialog" [modal]="true"
-          [style]="{width: '80vw'}">
+          [style]="{width: '80vw'}" contentStyleClass="overflow-hidden">
     <div class="grid">
         <div class="col-12 pt-3">
             <span class="p-float-label">

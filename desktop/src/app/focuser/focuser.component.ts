@@ -3,7 +3,7 @@ import { Title } from '@angular/platform-browser'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Focuser } from '../../shared/types'
+import { Camera, Focuser } from '../../shared/types'
 
 @Component({
     selector: 'app-focuser',
@@ -32,6 +32,8 @@ export class FocuserComponent implements OnInit, OnDestroy {
     stepsRelative = 0
     stepsAbsolute = 0
 
+    camera?: Camera
+
     constructor(
         private title: Title,
         private api: ApiService,
@@ -51,6 +53,12 @@ export class FocuserComponent implements OnInit, OnDestroy {
                 })
             }
         })
+
+        electron.ipcRenderer.on('CAMERA_CHANGED', (_, camera?: Camera) => {
+            ngZone.run(() => {
+                this.camera = camera
+            })
+        })
     }
 
     async ngOnInit() {
@@ -62,7 +70,7 @@ export class FocuserComponent implements OnInit, OnDestroy {
         this.api.indiStopListening('FOCUSER')
     }
 
-    async focuserSelected() {
+    async focuserChanged() {
         if (this.focuser) {
             this.title.setTitle(`Focuser ・ ${this.focuser.name}`)
 
@@ -74,6 +82,8 @@ export class FocuserComponent implements OnInit, OnDestroy {
         } else {
             this.title.setTitle(`Focuser`)
         }
+
+        this.electron.ipcRenderer.send('FOCUSER_CHANGED', this.focuser)
     }
 
     async connect() {
@@ -82,8 +92,6 @@ export class FocuserComponent implements OnInit, OnDestroy {
         } else {
             await this.api.focuserConnect(this.focuser!)
         }
-
-        this.update()
     }
 
     moveIn() {

@@ -1,0 +1,72 @@
+<div class="container p-4">
+    <div class="grid py-1 flex align-items-center">
+        <div class="col-8">
+            <span class="p-float-label">
+                <p-dropdown [options]="filterWheels" [(ngModel)]="filterWheel" optionLabel="name" (ngModelChange)="filterWheelChanged()"
+                            styleClass="border-0" emptyMessage="No filter wheel found" />
+                <label>Filter Wheel</label>
+            </span>
+        </div>
+        <div class="col-2 flex align-items-center gap-1">
+            <p-button *ngIf="connected" [disabled]="!filterWheel || moving" (onClick)="connect()" icon="mdi mdi-close"
+                      styleClass="p-button-danger" />
+            <p-button *ngIf="!connected" [disabled]="!filterWheel || moving" (onClick)="connect()" icon="mdi mdi-connection"
+                      styleClass="p-button-info" />
+        </div>
+        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
+            <i class="mdi mdi-information text-blue-600"></i>
+            <span style="display: contents">{{ moving ? 'moving' : 'idle' }}</span>
+        </div>
+    </div>
+    <div class="grid">
+        <div class="col-6">
+            <span class="p-float-label">
+                <p-inputNumber [readonly]="true" styleClass="border-0 w-full" [(ngModel)]="position" locale="en" />
+                <label>Position</label>
+            </span>
+        </div>
+        <div class="col-6">
+            <div class="p-inputgroup">
+                <span class="p-float-label">
+                    <input pInputText [readonly]="true" class="border-0 w-full" [value]="filterNames[position - 1] || '-'" />
+                    <label>Filter</label>
+                </span>
+                <span class="p-inputgroup-addon border-0 p-0">
+                    <i *ngIf="shutterPosition === this.position - 1" class="mdi mdi-camera-iris"></i>
+                </span>
+            </div>
+        </div>
+        <div class="col-6">
+            <span class="p-float-label">
+                <p-dropdown [disabled]="!connected || filterNames.length === 0" [options]="filterNames" [(ngModel)]="filterToMove"
+                            (ngModelChange)="filterToMoveChanged()" styleClass="border-0" emptyMessage="No filter found" />
+                <label>Move To</label>
+            </span>
+        </div>
+        <div class="col-6 flex align-items-center justify-content-between gap-1">
+            <p-button [disabled]="!filterWheel || !connected || filterNames.length === 0 || moving || filterToMove === filterNames[position - 1]"
+                      (onClick)="moveTo()" label="Move" icon="mdi mdi-arrow-right-bold" styleClass="p-button-text" />
+            <p-button [disabled]="!filterWheel || !connected || moving || filterNames.length === 0" (onClick)="openFilterOptions()"
+                      icon="mdi mdi-cog" styleClass="p-button p-button-info p-button-text"
+                      pTooltip="Options" tooltipPosition="bottom" />
+        </div>
+    </div>
+</div>
+
+<p-dialog header="Filter Options" [modal]="true" [(visible)]="showEditDialog" contentStyleClass="overflow-hidden" [style]="{width: '80vw'}">
+    <div class="grid p-2">
+        <div class="col-10">
+            <span class="p-float-label">
+                <input pInputText class="border-0 w-full" [maxlength]="32" [(ngModel)]="filterToEdit" />
+                <label>Name</label>
+            </span>
+        </div>
+        <div class="col-2">
+            <p-button [disabled]="!filterToEdit[1]" icon="mdi mdi-check" (onClick)="applyFilterName()" styleClass="p-button-text p-button-success" />
+        </div>
+        <div class="col-2 flex flex-column align-items-center justify-content-center gap-2">
+            <span class="text-sm text-gray-100">Shutter</span>
+            <p-inputSwitch [(ngModel)]="useFilterWheelAsShutter" (ngModelChange)="shutterToggled()" />
+        </div>
+    </div>
+</p-dialog>

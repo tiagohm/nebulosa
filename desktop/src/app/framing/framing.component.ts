@@ -68,7 +68,7 @@ export class FramingComponent implements OnInit, AfterViewInit, OnDestroy {
     @HostListener('window:unload')
     ngOnDestroy() {
         this.closeFrameImage()
-        this.electron.ipcRenderer.sendSync('close-window', this.frameId)
+        this.electron.ipcRenderer.sendSync('CLOSE_WINDOW', this.frameId)
     }
 
     private frameFromParams(params: FramingParams) {

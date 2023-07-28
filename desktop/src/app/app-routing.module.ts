@@ -4,6 +4,7 @@ import { APP_CONFIG } from '../environments/environment'
 import { AboutComponent } from './about/about.component'
 import { AtlasComponent } from './atlas/atlas.component'
 import { CameraComponent } from './camera/camera.component'
+import { FilterWheelComponent } from './filterwheel/filterwheel.component'
 import { FocuserComponent } from './focuser/focuser.component'
 import { FramingComponent } from './framing/framing.component'
 import { HomeComponent } from './home/home.component'
@@ -27,6 +28,10 @@ const routes: Routes = [
     {
         path: 'focuser',
         component: FocuserComponent,
+    },
+    {
+        path: 'filterWheel',
+        component: FilterWheelComponent,
     },
     {
         path: 'image',

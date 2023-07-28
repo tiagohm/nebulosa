@@ -4,7 +4,7 @@ import * as moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
     BodyPosition, Calibration, Camera, CameraStartCapture, Constellation, DeepSkyObject, Device,
-    Focuser,
+    FilterWheel, Focuser,
     HipsSurvey, INDIEventType, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet,
     PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, Star, Twilight
 } from '../types'
@@ -128,6 +128,30 @@ export class ApiService {
 
     focuserSyncTo(focuser: Focuser, steps: number) {
         return this.post<void>(`focuserSyncTo?name=${focuser.name}&steps=${steps}`)
+    }
+
+    attachedFilterWheels() {
+        return this.get<FilterWheel[]>(`attachedFilterWheels`)
+    }
+
+    filterWheel(name: string) {
+        return this.get<FilterWheel>(`filterWheel?name=${name}`)
+    }
+
+    filterWheelConnect(filterWheel: FilterWheel) {
+        return this.post<void>(`filterWheelConnect?name=${filterWheel.name}`)
+    }
+
+    filterWheelDisconnect(filterWheel: FilterWheel) {
+        return this.post<void>(`filterWheelDisconnect?name=${filterWheel.name}`)
+    }
+
+    filterWheelMoveTo(filterWheel: FilterWheel, position: number) {
+        return this.post<void>(`filterWheelMoveTo?name=${filterWheel.name}&position=${position}`)
+    }
+
+    filterWheelSyncNames(filterWheel: FilterWheel, filterNames: string[]) {
+        return this.post<void>(`filterWheelSyncNames?name=${filterWheel.name}&filterNames=${filterNames.join(',')}`)
     }
 
     async openImage(

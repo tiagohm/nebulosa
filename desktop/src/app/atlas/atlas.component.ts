@@ -75,7 +75,7 @@ export class AtlasComponent implements OnInit, OnDestroy {
     ]
 
     locations: Location[] = []
-    readonly location = Object.assign({}, EMPTY_LOCATION)
+    location = Object.assign({}, EMPTY_LOCATION)
     readonly editedLocation = Object.assign({}, EMPTY_LOCATION)
     showLocationDialog = false
     useManualDateTime = false

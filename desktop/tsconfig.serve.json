@@ -6,12 +6,13 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
-    "module": "commonjs",
+    "module": "CommonJS",
     "target": "ES2022",
     "types": [
       "node"
     ],
     "lib": [
+      "es2022",
       "es2018",
       "es2017",
       "es2016",
@@ -20,7 +21,8 @@
     ]
   },
   "files": [
-    "app/main.ts"
+    "app/main.ts",
+    "app/types.ts"
   ],
   "exclude": [
     "node_modules",

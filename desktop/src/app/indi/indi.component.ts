@@ -72,7 +72,11 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
             this.device = params.device
         })
 
-        this.devices = await this.api.attachedCameras()
+        this.devices = [
+            ...await this.api.attachedCameras(),
+            ...await this.api.attachedFocusers(),
+            ...await this.api.attachedFilterWheels(),
+        ]
     }
 
     @HostListener('window:unload')

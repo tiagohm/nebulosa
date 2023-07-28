@@ -36,6 +36,7 @@ import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { AtlasComponent } from './atlas/atlas.component'
 import { CameraComponent } from './camera/camera.component'
+import { FilterWheelComponent } from './filterwheel/filterwheel.component'
 import { FocuserComponent } from './focuser/focuser.component'
 import { FramingComponent } from './framing/framing.component'
 import { HomeComponent } from './home/home.component'
@@ -57,6 +58,7 @@ import { INDIPropertyComponent } from './indi/property/indi-property.component'
         FramingComponent,
         AboutComponent,
         FocuserComponent,
+        FilterWheelComponent,
         EnvPipe,
         WinPipe,
         EnumPipe,
