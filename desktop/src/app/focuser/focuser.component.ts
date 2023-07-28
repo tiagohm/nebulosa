@@ -84,7 +84,7 @@ export class FocuserComponent implements OnInit, OnDestroy {
             this.title.setTitle(`Focuser`)
         }
 
-        this.electron.ipcRenderer.send('FOCUSER_CHANGED', this.focuser)
+        this.electron.send('FOCUSER_CHANGED', this.focuser)
     }
 
     async connect() {

@@ -73,7 +73,7 @@ export class FilterWheelComponent implements OnInit, OnDestroy {
             this.title.setTitle(`Filter Wheel`)
         }
 
-        this.electron.ipcRenderer.send('FILTER_WHEEL_CHANGED', this.filterWheel)
+        this.electron.send('FILTER_WHEEL_CHANGED', this.filterWheel)
     }
 
     async connect() {
@@ -120,6 +120,8 @@ export class FilterWheelComponent implements OnInit, OnDestroy {
             this.filterToMove = this.filterToEdit
 
             this.api.filterWheelSyncNames(this.filterWheel!, this.filterNames)
+
+            this.electron.send('FILTER_WHEEL_RENAMED', this.filterWheel)
         }
     }
 

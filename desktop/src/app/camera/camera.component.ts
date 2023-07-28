@@ -37,7 +37,7 @@ export class CameraComponent implements OnInit, OnDestroy {
             icon: 'mdi mdi-folder',
             label: 'Save path...',
             command: async () => {
-                const path = await this.electron.ipcRenderer.sendSync('OPEN_DIRECTORY')
+                const path = await this.electron.sendSync('OPEN_DIRECTORY')
 
                 if (path) {
                     this.savePath = path
@@ -211,7 +211,7 @@ export class CameraComponent implements OnInit, OnDestroy {
             this.title.setTitle(`Camera`)
         }
 
-        this.electron.ipcRenderer.send('CAMERA_CHANGED', this.camera)
+        this.electron.send('CAMERA_CHANGED', this.camera)
     }
 
     async connect() {

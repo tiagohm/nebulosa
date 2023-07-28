@@ -2,16 +2,20 @@ import { Client } from '@stomp/stompjs'
 import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { Camera, FilterWheel, Focuser, INDI_EVENT_TYPES, OpenWindow } from './types'
+import { Camera, FilterWheel, Focuser, INDI_EVENT_TYPES, INTERNAL_EVENT_TYPES, OpenWindow } from './types'
 
 import { WebSocket } from 'ws'
 Object.assign(global, { WebSocket })
 
-let mainWindow: BrowserWindow | null = null
+let homeWindow: BrowserWindow | null = null
 const secondaryWindows = new Map<string, BrowserWindow>()
 let api: ChildProcessWithoutNullStreams | null = null
 let apiPort = 7000
 let wsClient: Client
+
+let activeCamera: Camera
+let activeFocuser: Focuser
+let activeFilterWheel: FilterWheel
 
 const args = process.argv.slice(1)
 const serve = args.some(e => e === '--serve')
@@ -35,13 +39,7 @@ function createMainWindow() {
                         console.log(item, message.body)
                     }
 
-                    for (const [_, window] of secondaryWindows) {
-                        window.webContents.send(item, data)
-                    }
-
-                    if (item.endsWith('ATTACHED') || item.endsWith('DETACHED')) {
-                        mainWindow?.webContents.send(item, data)
-                    }
+                    sendToAllWindows(item, data)
                 })
             }
         },
@@ -59,8 +57,8 @@ function createWindow(data: OpenWindow<any>) {
         }
 
         return window
-    } else if (data.id === 'home' && mainWindow) {
-        return mainWindow
+    } else if (data.id === 'home' && homeWindow) {
+        return homeWindow
     }
 
     const size = screen.getPrimaryDisplay().workAreaSize
@@ -130,12 +128,12 @@ function createWindow(data: OpenWindow<any>) {
     })
 
     window.on('close', () => {
-        if (window === mainWindow) {
+        if (window === homeWindow) {
             for (const [_, value] of secondaryWindows) {
                 value.close()
             }
 
-            mainWindow = null
+            homeWindow = null
 
             api?.kill('SIGHUP')
         } else {
@@ -149,7 +147,7 @@ function createWindow(data: OpenWindow<any>) {
     })
 
     if (data.id === 'home') {
-        mainWindow = window
+        homeWindow = window
     } else {
         secondaryWindows.set(data.id, window)
     }
@@ -204,7 +202,7 @@ try {
     })
 
     app.on('activate', () => {
-        if (mainWindow === null) {
+        if (homeWindow === null) {
             startApp()
         }
     })
@@ -232,7 +230,7 @@ try {
     })
 
     ipcMain.on('OPEN_FITS', async (event) => {
-        const value = await dialog.showOpenDialog(mainWindow!, {
+        const value = await dialog.showOpenDialog(homeWindow!, {
             filters: [{ name: 'FITS files', extensions: ['fits', 'fit'] }],
             properties: ['openFile'],
         })
@@ -241,7 +239,7 @@ try {
     })
 
     ipcMain.on('SAVE_FITS_AS', async (event) => {
-        const value = await dialog.showSaveDialog(mainWindow!, {
+        const value = await dialog.showSaveDialog(homeWindow!, {
             filters: [
                 { name: 'FITS files', extensions: ['fits', 'fit'] },
                 { name: 'Image files', extensions: ['png', 'jpe?g'] },
@@ -253,7 +251,7 @@ try {
     })
 
     ipcMain.on('OPEN_DIRECTORY', async (event) => {
-        const value = await dialog.showOpenDialog(mainWindow!, {
+        const value = await dialog.showOpenDialog(homeWindow!, {
             properties: ['openDirectory'],
         })
 
@@ -272,29 +270,50 @@ try {
         event.returnValue = false
     })
 
-    ipcMain.on('CAMERA_CHANGED', (event, camera: Camera) => {
-        for (const [_, value] of secondaryWindows) {
-            if (value.webContents !== event.sender) {
-                value.webContents.send('CAMERA_CHANGED', camera)
+    for (const item of INTERNAL_EVENT_TYPES) {
+        ipcMain.on(item, (event, data) => {
+            switch (item) {
+                case 'CAMERA_CHANGED':
+                    activeCamera = data
+                    break
+                case 'FOCUSER_CHANGED':
+                    activeFocuser = data
+                    break
+                case 'FILTER_WHEEL_CHANGED':
+                    activeFilterWheel = data
+                    break
             }
-        }
-    })
 
-    ipcMain.on('FOCUSER_CHANGED', (event, focuser: Focuser) => {
-        for (const [_, value] of secondaryWindows) {
-            if (value.webContents !== event.sender) {
-                value.webContents.send('FOCUSER_CHANGED', focuser)
+            switch (item) {
+                case 'SELECTED_CAMERA':
+                    event.returnValue = activeCamera
+                    break
+                case 'SELECTED_FOCUSER':
+                    event.returnValue = activeFocuser
+                    break
+                case 'SELECTED_FILTER_WHEEL':
+                    event.returnValue = activeFilterWheel
+                    break
+                default:
+                    sendToAllWindows(item, data)
+                    break
             }
-        }
-    })
-
-    ipcMain.on('FILTER_WHEEL_CHANGED', (event, filterWheel: FilterWheel) => {
-        for (const [_, value] of secondaryWindows) {
-            if (value.webContents !== event.sender) {
-                value.webContents.send('FILTER_WHEEL_CHANGED', filterWheel)
-            }
-        }
-    })
+        })
+    }
 } catch (e) {
     console.error(e)
+}
+
+function sendToAllWindows(channel: string, data: any, home: boolean = true) {
+    for (const [_, value] of secondaryWindows) {
+        value.webContents.send(channel, data)
+    }
+
+    if (home) {
+        homeWindow?.webContents?.send(channel, data)
+    }
+
+    if (serve) {
+        console.log(channel, data)
+    }
 }

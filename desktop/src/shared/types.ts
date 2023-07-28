@@ -530,6 +530,14 @@ export const INDI_EVENT_TYPES = [
 
 export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]
 
+export const INTERNAL_EVENT_TYPES = [
+    'SELECTED_CAMERA', 'SELECTED_FOCUSER', 'SELECTED_FILTER_WHEEL',
+    'CAMERA_CHANGED', 'FOCUSER_CHANGED',
+    'FILTER_WHEEL_CHANGED', 'FILTER_WHEEL_RENAMED',
+] as const
+
+export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
+
 export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA'
 
 export const HIPS_SURVEY_TYPES = [
