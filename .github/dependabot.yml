@@ -12,6 +12,8 @@ updates:
       day: "friday"
     open-pull-requests-limit: 16
     target-branch: "dev"
+    commit-message:
+      prefix: "[api]"
 
   - package-ecosystem: "npm"
     directory: "/desktop"
@@ -20,6 +22,8 @@ updates:
       day: "friday"
     open-pull-requests-limit: 64
     target-branch: "dev"
+    commit-message:
+      prefix: "[desktop]"
 
   - package-ecosystem: "npm"
     directory: "/desktop/app"
@@ -27,9 +31,13 @@ updates:
       interval: "weekly"
       day: "friday"
     target-branch: "dev"
+    commit-message:
+      prefix: "[desktop]"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
     target-branch: "main"
+    commit-message:
+      prefix: "[github-actions]"
