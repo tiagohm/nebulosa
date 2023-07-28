@@ -24,7 +24,7 @@ dependencyResolutionManagement {
             library("logback", "ch.qos.logback:logback-classic:1.4.8")
             library("eventbus", "org.greenrobot:eventbus-java:3.3.1")
             library("netty-transport", "io.netty:netty-transport:4.1.96.Final")
-            library("netty-codec", "io.netty:netty-codec:4.1.95.Final")
+            library("netty-codec", "io.netty:netty-codec:4.1.96.Final")
             library("xml", "com.fasterxml:aalto-xml:1.3.2")
             library("csv", "de.siegmar:fastcsv:2.2.2")
             library("apache-lang3", "org.apache.commons:commons-lang3:3.13.0")
