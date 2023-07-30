@@ -13,9 +13,9 @@
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
     "ng": "ng",
-    "start": "npm-run-all -p electron:serve ng:serve",
+    "start": "node copyFiles.js && npm-run-all -p electron:serve ng:serve",
     "ng:serve": "ng serve -c web --hmr",
-    "build": "npm run electron:serve-tsc && ng build --base-href ./",
+    "build": "node copyFiles.js && npm run electron:serve-tsc && ng build --base-href ./",
     "build:dev": "npm run build -- -c dev",
     "build:prod": "npm run build -- -c production",
     "web:build": "npm run build -- -c web-production",
@@ -74,5 +74,11 @@
   },
   "browserslist": [
     "chrome 114"
+  ],
+  "copyFiles": [
+    {
+      "from": "src/shared/types.ts",
+      "to": "app/types.ts"
+    }
   ]
 }
