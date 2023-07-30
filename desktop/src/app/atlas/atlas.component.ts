@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ChartData, ChartOptions } from 'chart.js'
 import * as moment from 'moment'
@@ -31,7 +31,7 @@ export interface SearchFilter {
     templateUrl: './atlas.component.html',
     styleUrls: ['./atlas.component.scss']
 })
-export class AtlasComponent implements OnInit, OnDestroy {
+export class AtlasComponent implements AfterViewInit, OnDestroy {
 
     refreshing = false
 
@@ -436,7 +436,7 @@ export class AtlasComponent implements OnInit, OnDestroy {
         setInterval(() => this.refreshTab(), 60000)
     }
 
-    async ngOnInit() {
+    async ngAfterViewInit() {
         this.locations = await this.api.locations()
     }
 

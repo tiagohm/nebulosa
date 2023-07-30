@@ -1,24 +1,24 @@
-import { Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { MessageService } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, Device, FilterWheel, Focuser, HomeWindowType } from '../../shared/types'
+import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
 
 @Component({
     selector: 'app-home',
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent implements AfterViewInit, OnDestroy {
 
     host = ''
     port = 7624
     connected = false
 
     cameras: Camera[] = []
-    mounts: Camera[] = []
+    mounts: Mount[] = []
     focusers: Focuser[] = []
     filterWheels: FilterWheel[] = []
     domes: Camera[] = []
@@ -71,27 +71,24 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     private startListening<T extends Device>(
-        type: 'CAMERA' | 'FOCUSER' | 'FILTER_WHEEL',
-        devices: T[],
+        type: 'CAMERA' | 'MOUNT' | 'FOCUSER' | 'FILTER_WHEEL',
+        onAdd: (device: T) => number,
+        onRemove: (device: T) => number,
     ) {
         this.api.indiStartListening(`${type}_ATTACHED`)
         this.api.indiStartListening(`${type}_DETACHED`)
 
         this.electron.ipcRenderer.on(`${type}_ATTACHED`, (_, device: T) => {
             this.ngZone.run(() => {
-                if (devices.length === 0) {
+                if (onAdd(device) === 1) {
                     this.electron.send(`${type}_CHANGED`, device)
                 }
-
-                devices.push(device)
             })
         })
 
         this.electron.ipcRenderer.on(`${type}_DETACHED`, (_, device: T) => {
             this.ngZone.run(() => {
-                devices.splice(devices.findIndex(e => e.name === device.name), 1)
-
-                if (devices.length === 0) {
+                if (onRemove(device) === 0) {
                     this.electron.send(`${type}_CHANGED`, undefined)
                 }
             })
@@ -106,23 +103,64 @@ export class HomeComponent implements OnInit, OnDestroy {
         private preference: PreferenceService,
         private ngZone: NgZone,
     ) {
-        this.startListening('CAMERA', this.cameras)
-        this.startListening('FOCUSER', this.focusers)
-        this.startListening('FILTER_WHEEL', this.filterWheels)
+        this.startListening<Camera>('CAMERA',
+            (device) => {
+                return this.cameras.push(device)
+            },
+            (device) => {
+                this.cameras.splice(this.cameras.findIndex(e => e.name === device.name), 1)
+                return this.cameras.length
+            },
+        )
+
+        this.startListening<Mount>('MOUNT',
+            (device) => {
+                return this.mounts.push(device)
+            },
+            (device) => {
+                this.mounts.splice(this.mounts.findIndex(e => e.name === device.name), 1)
+                return this.mounts.length
+            },
+        )
+
+        this.startListening<Focuser>('FOCUSER',
+            (device) => {
+                return this.focusers.push(device)
+            },
+            (device) => {
+                this.focusers.splice(this.focusers.findIndex(e => e.name === device.name), 1)
+                return this.focusers.length
+            },
+        )
+
+        this.startListening<FilterWheel>('FILTER_WHEEL',
+            (device) => {
+                return this.filterWheels.push(device)
+            },
+            (device) => {
+                this.filterWheels.splice(this.filterWheels.findIndex(e => e.name === device.name), 1)
+                return this.filterWheels.length
+            },
+        )
     }
 
-    async ngOnInit() {
+    async ngAfterViewInit() {
         this.updateConnection()
 
         this.host = this.preference.get('home.host', 'localhost')
         this.port = this.preference.get('home.port', 7624)
 
         this.cameras = await this.api.attachedCameras()
+        this.mounts = await this.api.attachedMounts()
         this.focusers = await this.api.attachedFocusers()
         this.filterWheels = await this.api.attachedFilterWheels()
 
         if (this.cameras.length > 0) {
             this.electron.send('CAMERA_CHANGED', this.cameras[0])
+        }
+
+        if (this.mounts.length > 0) {
+            this.electron.send('MOUNT_CHANGED', this.mounts[0])
         }
 
         if (this.focusers.length > 0) {
@@ -167,6 +205,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     async open(type: HomeWindowType) {
         switch (type) {
+            case 'MOUNT':
+                this.browserWindow.openMount({ bringToFront: true })
+                break
             case 'CAMERA':
                 this.browserWindow.openCamera({ bringToFront: true })
                 break

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 import nebulosa.api.data.requests.INDISendPropertyRequest
 import nebulosa.api.data.responses.INDIPropertyResponse
+import nebulosa.api.services.EquipmentService
 import nebulosa.api.services.INDIService
 import nebulosa.api.services.WebSocketService
 import nebulosa.indi.device.DeviceMessageReceived
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 class INDIController(
+    private val equipmentService: EquipmentService,
     private val indiService: INDIService,
     private val webSocketService: WebSocketService,
     private val eventBus: EventBus,
@@ -40,7 +42,7 @@ class INDIController(
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onDeviceMessageReceived(event: DeviceMessageReceived) {
         if (event.device == null) {
-            indiService.onMessageReceived(event.message)
+            indiService.addFirst(event.message)
         }
 
         webSocketService.sendINDIMessageReceived(event)
@@ -48,7 +50,8 @@ class INDIController(
 
     @GetMapping("indiProperties")
     fun properties(@RequestParam @Valid @NotBlank name: String): List<INDIPropertyResponse> {
-        return indiService.properties(name)
+        val device = requireNotNull(equipmentService[name])
+        return indiService.properties(device)
     }
 
     @PostMapping("sendIndiProperty")
@@ -56,12 +59,15 @@ class INDIController(
         @RequestParam @Valid @NotBlank name: String,
         @RequestBody @Valid body: INDISendPropertyRequest,
     ) {
-        return indiService.sendProperty(name, body)
+        val device = requireNotNull(equipmentService[name])
+        return indiService.sendProperty(device, body)
     }
 
     @GetMapping("indiLog")
     fun indiLog(@RequestParam(required = false) name: String?): List<String> {
-        return indiService.indiLog(name)
+        if (name.isNullOrBlank()) return indiService
+        val device = equipmentService[name] ?: return emptyList()
+        return device.messages
     }
 
     @PostMapping("indiStartListening")

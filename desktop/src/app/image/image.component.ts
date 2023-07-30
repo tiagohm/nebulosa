@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import createPanZoom, { PanZoom } from 'panzoom'
@@ -26,7 +26,7 @@ export interface ImageParams {
     templateUrl: './image.component.html',
     styleUrls: ['./image.component.scss'],
 })
-export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ImageComponent implements AfterViewInit, OnDestroy {
 
     @ViewChild('image')
     private readonly image!: ElementRef<HTMLImageElement>
@@ -244,9 +244,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         electron.ipcRenderer.on('PARAMS_CHANGED', (_, data: ImageParams) => {
             this.loadImageFromParams(data)
         })
-    }
 
-    ngOnInit() {
         this.solverPathOrUrl = this.preference.get('image.solver.pathOrUrl', '')
         this.solverRadius = this.preference.get('image.solver.radius', 4)
         this.solverDownsampleFactor = this.preference.get('image.solver.downsampleFactor', 1)

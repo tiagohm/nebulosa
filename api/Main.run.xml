@@ -9,7 +9,7 @@
                 value="--server.port=7000"/>
         <shortenClasspath name="NONE"/>
         <method v="2">
-            <option name="Make"
+            <option name="MakeProject"
                     enabled="true"/>
         </method>
     </configuration>

@@ -1,8 +1,8 @@
 package nebulosa.api.services
 
 import jakarta.annotation.PostConstruct
-import nebulosa.api.data.responses.FocuserResponse
 import nebulosa.indi.device.PropertyChangedEvent
+import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserAttached
 import nebulosa.indi.device.focuser.FocuserDetached
 import nebulosa.indi.device.focuser.FocuserEvent
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service
 
 @Service
 class FocuserService(
-    private val equipmentService: EquipmentService,
     private val webSocketService: WebSocketService,
     private val eventBus: EventBus,
 ) {
@@ -32,47 +31,31 @@ class FocuserService(
         }
     }
 
-    fun attachedFocusers(): List<FocuserResponse> {
-        return equipmentService.focusers().map(::FocuserResponse)
-    }
-
-    operator fun get(name: String): FocuserResponse {
-        val focuser = requireNotNull(equipmentService.focuser(name))
-        return FocuserResponse(focuser)
-    }
-
-    fun connect(name: String) {
-        val focuser = requireNotNull(equipmentService.focuser(name))
+    fun connect(focuser: Focuser) {
         focuser.connect()
     }
 
-    fun disconnect(name: String) {
-        val focuser = requireNotNull(equipmentService.focuser(name))
+    fun disconnect(focuser: Focuser) {
         focuser.disconnect()
     }
 
-    fun moveIn(name: String, steps: Int) {
-        val focuser = requireNotNull(equipmentService.focuser(name))
+    fun moveIn(focuser: Focuser, steps: Int) {
         focuser.moveFocusIn(steps)
     }
 
-    fun moveOut(name: String, steps: Int) {
-        val focuser = requireNotNull(equipmentService.focuser(name))
+    fun moveOut(focuser: Focuser, steps: Int) {
         focuser.moveFocusOut(steps)
     }
 
-    fun moveTo(name: String, steps: Int) {
-        val focuser = requireNotNull(equipmentService.focuser(name))
+    fun moveTo(focuser: Focuser, steps: Int) {
         focuser.moveFocusTo(steps)
     }
 
-    fun abort(name: String) {
-        val focuser = requireNotNull(equipmentService.focuser(name))
+    fun abort(focuser: Focuser) {
         focuser.abortFocus()
     }
 
-    fun syncTo(name: String, steps: Int) {
-        val focuser = requireNotNull(equipmentService.focuser(name))
+    fun syncTo(focuser: Focuser, steps: Int) {
         focuser.syncFocusTo(steps)
     }
 }

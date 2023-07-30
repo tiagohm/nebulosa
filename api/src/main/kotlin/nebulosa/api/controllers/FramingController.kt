@@ -10,7 +10,11 @@ import nebulosa.hips2fits.HipsSurvey
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import org.hibernate.validator.constraints.Range
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+import java.nio.file.Path
 
 @RestController
 class FramingController(
@@ -31,10 +35,10 @@ class FramingController(
         @RequestParam(required = false, defaultValue = "1.0") @Valid @Positive @Max(90) fov: Double,
         @RequestParam(required = false, defaultValue = "0.0") rotation: Double,
         @RequestParam(required = false, defaultValue = "CDS_P_DSS2_COLOR") hipsSurvey: HipsSurveyType,
-    ): String {
+    ): Path {
         return imageService.frame(
             Angle.from(rightAscension, true), Angle.from(declination),
             width, height, fov.deg, rotation.deg, hipsSurvey,
-        ).toString()
+        )
     }
 }

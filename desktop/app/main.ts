@@ -2,7 +2,7 @@ import { Client } from '@stomp/stompjs'
 import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { Camera, FilterWheel, Focuser, INDI_EVENT_TYPES, INTERNAL_EVENT_TYPES, OpenWindow } from './types'
+import { Camera, FilterWheel, Focuser, INDI_EVENT_TYPES, INTERNAL_EVENT_TYPES, Mount, OpenWindow } from './types'
 
 import { WebSocket } from 'ws'
 Object.assign(global, { WebSocket })
@@ -13,9 +13,10 @@ let api: ChildProcessWithoutNullStreams | null = null
 let apiPort = 7000
 let wsClient: Client
 
-let activeCamera: Camera
-let activeFocuser: Focuser
-let activeFilterWheel: FilterWheel
+let selectedCamera: Camera
+let selectedMount: Mount
+let selectedFocuser: Focuser
+let selectedFilterWheel: FilterWheel
 
 const args = process.argv.slice(1)
 const serve = args.some(e => e === '--serve')
@@ -28,7 +29,7 @@ function createMainWindow() {
         onConnect: () => {
             for (const item of INDI_EVENT_TYPES) {
                 if (item === 'ALL' || item === 'DEVICE' || item === 'CAMERA' ||
-                    item === 'FOCUSER') {
+                    item === 'FOCUSER' || item === 'MOUNT') {
                     continue
                 }
 
@@ -274,25 +275,31 @@ try {
         ipcMain.on(item, (event, data) => {
             switch (item) {
                 case 'CAMERA_CHANGED':
-                    activeCamera = data
+                    selectedCamera = data
+                    break
+                case 'MOUNT_CHANGED':
+                    selectedMount = data
                     break
                 case 'FOCUSER_CHANGED':
-                    activeFocuser = data
+                    selectedFocuser = data
                     break
                 case 'FILTER_WHEEL_CHANGED':
-                    activeFilterWheel = data
+                    selectedFilterWheel = data
                     break
             }
 
             switch (item) {
                 case 'SELECTED_CAMERA':
-                    event.returnValue = activeCamera
+                    event.returnValue = selectedCamera
+                    break
+                case 'SELECTED_MOUNT':
+                    event.returnValue = selectedMount
                     break
                 case 'SELECTED_FOCUSER':
-                    event.returnValue = activeFocuser
+                    event.returnValue = selectedFocuser
                     break
                 case 'SELECTED_FILTER_WHEEL':
-                    event.returnValue = activeFilterWheel
+                    event.returnValue = selectedFilterWheel
                     break
                 default:
                     sendToAllWindows(item, data)

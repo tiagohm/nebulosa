@@ -1,5 +1,6 @@
 package nebulosa.api.components.loaders
 
+import jakarta.annotation.PostConstruct
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.time.IERS
@@ -16,8 +17,13 @@ import kotlin.io.path.outputStream
 class IERSLoader(
     private val dataDirectory: Path,
     private val okHttpClient: OkHttpClient,
-    override val systemExecutorService: ExecutorService,
-) : Loader() {
+    private val systemExecutorService: ExecutorService,
+) : Runnable {
+
+    @PostConstruct
+    private fun initialize() {
+        systemExecutorService.submit(this)
+    }
 
     override fun run() {
         val finals2000A = Path.of("$dataDirectory", "finals2000A.all")

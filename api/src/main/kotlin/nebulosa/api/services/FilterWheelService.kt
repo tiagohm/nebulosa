@@ -1,8 +1,8 @@
 package nebulosa.api.services
 
 import jakarta.annotation.PostConstruct
-import nebulosa.api.data.responses.FilterWheelResponse
 import nebulosa.indi.device.PropertyChangedEvent
+import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelAttached
 import nebulosa.indi.device.filterwheel.FilterWheelDetached
 import nebulosa.indi.device.filterwheel.FilterWheelEvent
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service
 
 @Service
 class FilterWheelService(
-    private val equipmentService: EquipmentService,
     private val webSocketService: WebSocketService,
     private val eventBus: EventBus,
 ) {
@@ -32,32 +31,19 @@ class FilterWheelService(
         }
     }
 
-    fun attachedFilterWheels(): List<FilterWheelResponse> {
-        return equipmentService.filterWheels().map(::FilterWheelResponse)
-    }
-
-    operator fun get(name: String): FilterWheelResponse {
-        val filterWheel = requireNotNull(equipmentService.filterWheel(name))
-        return FilterWheelResponse(filterWheel)
-    }
-
-    fun connect(name: String) {
-        val filterWheel = requireNotNull(equipmentService.filterWheel(name))
+    fun connect(filterWheel: FilterWheel) {
         filterWheel.connect()
     }
 
-    fun disconnect(name: String) {
-        val filterWheel = requireNotNull(equipmentService.filterWheel(name))
+    fun disconnect(filterWheel: FilterWheel) {
         filterWheel.disconnect()
     }
 
-    fun moveTo(name: String, steps: Int) {
-        val filterWheel = requireNotNull(equipmentService.filterWheel(name))
+    fun moveTo(filterWheel: FilterWheel, steps: Int) {
         filterWheel.moveTo(steps)
     }
 
-    fun syncNames(name: String, filterNames: List<String>) {
-        val filterWheel = requireNotNull(equipmentService.filterWheel(name))
+    fun syncNames(filterWheel: FilterWheel, filterNames: List<String>) {
         filterWheel.syncNames(filterNames)
     }
 }

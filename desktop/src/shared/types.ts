@@ -57,6 +57,10 @@ export interface Camera extends Device, Thermometer {
     pulseGuiding: boolean
 }
 
+export interface Mount extends Device {
+
+}
+
 export interface Focuser extends Device, Thermometer {
     moving: boolean
     position: number
@@ -519,11 +523,12 @@ export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
     'WATNEY'
 
 export const INDI_EVENT_TYPES = [
-    'ALL', 'DEVICE', 'CAMERA', 'FOCUSER', 'FILTER_WHEEL',
+    'ALL', 'DEVICE', 'CAMERA', 'MOUNT', 'FOCUSER', 'FILTER_WHEEL',
     'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
     'DEVICE_MESSAGE_RECEIVED', 'CAMERA_IMAGE_SAVED',
     'CAMERA_UPDATED', 'CAMERA_CAPTURE_FINISHED',
     'CAMERA_ATTACHED', 'CAMERA_DETACHED',
+    'MOUNT_UPDATED', 'MOUNT_ATTACHED', 'MOUNT_DETACHED',
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
     'FILTER_WHEEL_UPDATED', 'FILTER_WHEEL_ATTACHED', 'FILTER_WHEEL_DETACHED',
 ] as const
@@ -532,7 +537,8 @@ export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]
 
 export const INTERNAL_EVENT_TYPES = [
     'SELECTED_CAMERA', 'SELECTED_FOCUSER', 'SELECTED_FILTER_WHEEL',
-    'CAMERA_CHANGED', 'FOCUSER_CHANGED',
+    'SELECTED_MOUNT',
+    'CAMERA_CHANGED', 'FOCUSER_CHANGED', 'MOUNT_CHANGED',
     'FILTER_WHEEL_CHANGED', 'FILTER_WHEEL_RENAMED',
 ] as const
 
@@ -570,3 +576,9 @@ export const HIPS_SURVEY_TYPES = [
 ] as const
 
 export type HipsSurveyType = (typeof HIPS_SURVEY_TYPES)[number]
+
+export type PierSide = 'EAST' | 'WEST' | 'NEITHER'
+
+export type TargetCoordinateType = 'J2000' | 'JNOW'
+
+export type TrackMode = 'SIDEREAL' |' LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'

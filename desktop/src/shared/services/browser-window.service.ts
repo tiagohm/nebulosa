@@ -15,6 +15,14 @@ export class BrowserWindowService {
         await this.electron.ipcRenderer.invoke('OPEN_WINDOW', data)
     }
 
+    openMount(options: OpenWindowOptions = {}) {
+        this.openWindow({
+            ...options,
+            id: 'mount', path: 'mount', icon: options.icon || 'mount',
+            width: options.width || 400, height: options.height || 440,
+        })
+    }
+
     openCamera(options: OpenWindowOptions = {}) {
         this.openWindow({
             ...options,

@@ -15,7 +15,7 @@ export interface INDIParams {
     templateUrl: './indi.component.html',
     styleUrls: ['./indi.component.scss'],
 })
-export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
+export class INDIComponent implements AfterViewInit, OnDestroy {
 
     devices: Device[] = []
     properties: INDIProperty<any>[] = []
@@ -64,8 +64,6 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
         })
     }
 
-    ngOnInit() { }
-
     async ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
             const params = JSON.parse(decodeURIComponent(e.params)) as INDIParams
@@ -74,6 +72,7 @@ export class INDIComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.devices = [
             ...await this.api.attachedCameras(),
+            ...await this.api.attachedMounts(),
             ...await this.api.attachedFocusers(),
             ...await this.api.attachedFilterWheels(),
         ]

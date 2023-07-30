@@ -1,4 +1,4 @@
-import { Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -10,7 +10,7 @@ import { Camera, Focuser } from '../../shared/types'
     templateUrl: './focuser.component.html',
     styleUrls: ['./focuser.component.scss']
 })
-export class FocuserComponent implements OnInit, OnDestroy {
+export class FocuserComponent implements AfterViewInit, OnDestroy {
 
     focusers: Focuser[] = []
     focuser?: Focuser
@@ -61,7 +61,7 @@ export class FocuserComponent implements OnInit, OnDestroy {
         })
     }
 
-    async ngOnInit() {
+    async ngAfterViewInit() {
         this.focusers = await this.api.attachedFocusers()
     }
 

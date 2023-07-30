@@ -5,8 +5,6 @@ import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.math.Angle
 import nebulosa.math.Distance
-import nebulosa.nova.astrometry.Constellation
-import nebulosa.time.UTC
 import java.time.OffsetDateTime
 
 interface Mount : GuideOutput, GPS, Parkable {
@@ -43,16 +41,6 @@ interface Mount : GuideOutput, GPS, Parkable {
 
     val declination: Angle
 
-    val rightAscensionJ2000: Angle
-
-    val declinationJ2000: Angle
-
-    val azimuth: Angle
-
-    val altitude: Angle
-
-    val constellation: Constellation
-
     fun tracking(enable: Boolean)
 
     fun sync(ra: Angle, dec: Angle)
@@ -85,9 +73,7 @@ interface Mount : GuideOutput, GPS, Parkable {
 
     fun coordinates(longitude: Angle, latitude: Angle, elevation: Distance)
 
-    fun time(time: OffsetDateTime)
-
-    fun computeCoordinates(j2000: Boolean = true, horizontal: Boolean = true, epoch: UTC = UTC.now())
+    fun dateTime(dateTime: OffsetDateTime)
 
     companion object {
 

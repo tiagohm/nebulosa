@@ -6,6 +6,7 @@ import {
     BodyPosition, Calibration, Camera, CameraStartCapture, Constellation, DeepSkyObject, Device,
     FilterWheel, Focuser,
     HipsSurvey, INDIEventType, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet,
+    Mount,
     PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, Star, Twilight
 } from '../types'
 
@@ -92,6 +93,22 @@ export class ApiService {
 
     latestImageOfCamera(camera: Camera) {
         return this.get<SavedCameraImage>(`latestImageOfCamera?name=${camera.name}`)
+    }
+
+    attachedMounts() {
+        return this.get<Mount[]>(`attachedMounts`)
+    }
+
+    mount(name: string) {
+        return this.get<Mount>(`mount?name=${name}`)
+    }
+
+    mountConnect(mount: Mount) {
+        return this.post<void>(`mountConnect?name=${mount.name}`)
+    }
+
+    mountDisconnect(mount: Mount) {
+        return this.post<void>(`mountDisconnect?name=${mount.name}`)
     }
 
     attachedFocusers() {

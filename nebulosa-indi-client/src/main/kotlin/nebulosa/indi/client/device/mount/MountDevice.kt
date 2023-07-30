@@ -17,11 +17,7 @@ import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Distance
 import nebulosa.math.Distance.Companion.m
-import nebulosa.nova.astrometry.Constellation
-import nebulosa.nova.position.GeographicPosition
-import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
-import nebulosa.time.UTC
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -50,11 +46,6 @@ internal open class MountDevice(
     override var guideRateNS = 0.0
     override var rightAscension = Angle.ZERO
     override var declination = Angle.ZERO
-    override var rightAscensionJ2000 = Angle.ZERO
-    override var declinationJ2000 = Angle.ZERO
-    override var azimuth = Angle.ZERO
-    override var altitude = Angle.ZERO
-    override var constellation = Constellation.PSC
 
     override var canPulseGuide = false
     override var pulseGuiding = false
@@ -64,8 +55,6 @@ internal open class MountDevice(
     override var latitude = Angle.ZERO
     override var elevation = Distance.ZERO
     override var time = OffsetDateTime.now()!!
-
-    @Volatile private var centerPosition: GeographicPosition? = null
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -187,8 +176,6 @@ internal open class MountDevice(
                         latitude = message["LAT"]!!.value.deg
                         longitude = message["LONG"]!!.value.deg
                         elevation = message["ELEV"]!!.value.m
-
-                        centerPosition = Geoid.IERS2010.latLon(longitude, latitude, elevation)
 
                         handler.fireOnEventReceived(MountGeographicCoordinateChanged(this))
                     }
@@ -322,35 +309,12 @@ internal open class MountDevice(
         sendNewNumber("GEOGRAPHIC_COORD", "LAT" to latitude.degrees, "LONG" to longitude.degrees, "ELEV" to elevation.meters)
     }
 
-    override fun time(time: OffsetDateTime) {
-        val offsetHours = time.offset.totalSeconds / 3600.0
+    override fun dateTime(dateTime: OffsetDateTime) {
+        val offsetHours = dateTime.offset.totalSeconds / 3600.0
         val offsetMinutes = (offsetHours - offsetHours.toInt()) * 60.0 % 60.0
         val offset = "%02d:%02d".format(offsetHours.toInt(), offsetMinutes.toInt())
 
-        sendNewText("TIME_UTC", "UTC" to GPS.formatTime(time.toLocalDateTime()), "OFFSET" to offset)
-    }
-
-    override fun computeCoordinates(j2000: Boolean, horizontal: Boolean, epoch: UTC) {
-        val center = centerPosition ?: return
-
-        val icrf = ICRF.equatorial(rightAscension, declination, time = epoch, epoch = epoch, center = center)
-        constellation = Constellation.find(icrf)
-
-        if (j2000) {
-            val raDec = icrf.equatorialJ2000()
-            rightAscensionJ2000 = raDec.longitude.normalized
-            declinationJ2000 = raDec.latitude
-
-            handler.fireOnEventReceived(MountEquatorialJ2000CoordinatesChanged(this))
-        }
-
-        if (horizontal) {
-            val altAz = icrf.horizontal()
-            azimuth = altAz.longitude.normalized
-            altitude = altAz.latitude
-
-            handler.fireOnEventReceived(MountHorizontalCoordinatesChanged(this))
-        }
+        sendNewText("TIME_UTC", "UTC" to GPS.formatTime(dateTime.toLocalDateTime()), "OFFSET" to offset)
     }
 
     override fun close() {

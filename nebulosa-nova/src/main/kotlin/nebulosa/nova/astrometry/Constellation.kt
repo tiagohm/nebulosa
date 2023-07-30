@@ -458,14 +458,14 @@ enum class Constellation(
         @JvmStatic private val RA: DoubleArray
         @JvmStatic private val DEC: DoubleArray
         @JvmStatic private val RA_TO_INDEX: ByteArray
-        @JvmStatic private val ENTRIES = values()
         @JvmStatic private val EPOCH = TT(TimeBesselianEpoch.B1875)
 
         init {
-            val s = bufferedResource("CONSTELLATIONS.dat")!!
-            RA = s.readDoubleArrayLe(235)
-            DEC = s.readDoubleArrayLe(199)
-            RA_TO_INDEX = s.readByteArray(202 * 236)
+            with(bufferedResource("CONSTELLATIONS.dat")!!) {
+                RA = readDoubleArrayLe(235)
+                DEC = readDoubleArrayLe(199)
+                RA_TO_INDEX = readByteArray(202 * 236)
+            }
         }
 
         @JvmStatic
@@ -474,7 +474,7 @@ enum class Constellation(
             val i = RA.binarySearch(ra.normalized.hours).let { if (it < 0) -it - 1 else it }
             val j = DEC.binarySearch(dec.degrees).let { if (it < 0) -it - 1 else it }
             val k = RA_TO_INDEX[i * 202 + j].toInt() and 0xFF
-            return ENTRIES[k]
+            return Constellation.entries[k]
         }
     }
 }

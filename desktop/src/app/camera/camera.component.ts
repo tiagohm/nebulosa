@@ -1,4 +1,4 @@
-import { Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
@@ -12,7 +12,7 @@ import { AutoSubFolderMode, Camera, CameraStartCapture, ExposureMode, ExposureTi
     templateUrl: './camera.component.html',
     styleUrls: ['./camera.component.scss']
 })
-export class CameraComponent implements OnInit, OnDestroy {
+export class CameraComponent implements AfterViewInit, OnDestroy {
 
     cameras: Camera[] = []
     camera?: Camera
@@ -188,7 +188,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         })
     }
 
-    async ngOnInit() {
+    async ngAfterViewInit() {
         this.cameras = await this.api.attachedCameras()
     }
 

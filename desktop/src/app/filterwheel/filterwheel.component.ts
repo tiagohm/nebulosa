@@ -1,4 +1,4 @@
-import { Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -10,7 +10,7 @@ import { FilterWheel } from '../../shared/types'
     templateUrl: './filterwheel.component.html',
     styleUrls: ['./filterwheel.component.scss']
 })
-export class FilterWheelComponent implements OnInit, OnDestroy {
+export class FilterWheelComponent implements AfterViewInit, OnDestroy {
 
     filterWheels: FilterWheel[] = []
     filterWheel?: FilterWheel
@@ -48,7 +48,7 @@ export class FilterWheelComponent implements OnInit, OnDestroy {
         })
     }
 
-    async ngOnInit() {
+    async ngAfterViewInit() {
         this.filterWheels = await this.api.attachedFilterWheels()
     }
 
