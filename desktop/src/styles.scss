@@ -10,8 +10,16 @@ body {
     font-family: var(--font-family);
 }
 
+.invisible {
+    visibility: hidden;
+}
+
 .mdi:before {
     font-size: 1.25rem;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    aspect-ratio: auto 1/1;
 }
 
 .mdi.mdi-lg:before {
@@ -37,10 +45,6 @@ p-inputnumber .p-inputnumber-buttons-stacked input {
     .p-button {
         flex: 1 1 auto;
     }
-}
-
-.p-button .mdi:before {
-    margin-top: 1px;
 }
 
 .p-inputtext[type="number"] {
