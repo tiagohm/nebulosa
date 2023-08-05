@@ -4,9 +4,9 @@ import jakarta.annotation.PostConstruct
 import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.events.CameraCaptureFinished
 import nebulosa.api.data.requests.CameraStartCaptureRequest
-import nebulosa.api.data.responses.CameraResponse
 import nebulosa.api.repositories.SavedCameraImageRepository
 import nebulosa.indi.device.PropertyChangedEvent
+import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
 import nebulosa.indi.device.camera.CameraDetached
 import nebulosa.indi.device.camera.CameraEvent
@@ -24,7 +24,6 @@ import kotlin.io.path.isDirectory
 
 @Service
 class CameraService(
-    private val equipmentService: EquipmentService,
     private val savedCameraImageRepository: SavedCameraImageRepository,
     private val capturesDirectory: Path,
     private val cameraExecutorService: ExecutorService,
@@ -32,7 +31,7 @@ class CameraService(
     private val eventBus: EventBus,
 ) {
 
-    private val runningTasks = Collections.synchronizedMap(HashMap<String, CameraExposureTask>(2))
+    private val runningTasks = Collections.synchronizedMap(HashMap<Camera, CameraExposureTask>(2))
 
     @PostConstruct
     private fun initialize() {
@@ -57,59 +56,45 @@ class CameraService(
         }
     }
 
-    fun attachedCameras(): List<CameraResponse> {
-        return equipmentService.cameras().map(::CameraResponse)
-    }
-
-    operator fun get(name: String): CameraResponse {
-        val camera = requireNotNull(equipmentService.camera(name))
-        return CameraResponse(camera)
-    }
-
-    fun connect(name: String) {
-        val camera = requireNotNull(equipmentService.camera(name))
+    fun connect(camera: Camera) {
         camera.connect()
     }
 
-    fun disconnect(name: String) {
-        val camera = requireNotNull(equipmentService.camera(name))
+    fun disconnect(camera: Camera) {
         camera.disconnect()
     }
 
-    fun isCapturing(name: String): Boolean {
-        return runningTasks.containsKey(name)
+    fun isCapturing(camera: Camera): Boolean {
+        return runningTasks.containsKey(camera)
     }
 
-    fun setpointTemperature(name: String, temperature: Double) {
-        val camera = requireNotNull(equipmentService.camera(name))
+    fun setpointTemperature(camera: Camera, temperature: Double) {
         camera.temperature(temperature)
     }
 
-    fun cooler(name: String, enable: Boolean) {
-        val camera = requireNotNull(equipmentService.camera(name))
+    fun cooler(camera: Camera, enable: Boolean) {
         camera.cooler(enable)
     }
 
     @Synchronized
-    fun startCapture(name: String, data: CameraStartCaptureRequest) {
-        if (isCapturing(name)) return
+    fun startCapture(camera: Camera, data: CameraStartCaptureRequest) {
+        if (isCapturing(camera)) return
 
-        val camera = requireNotNull(equipmentService.camera(name))
         val savePath = data.savePath?.ifBlank { null }?.let(Path::of)
             ?.takeIf { it.exists() && it.isDirectory() }
-            ?: Path.of("$capturesDirectory", name).createDirectories()
+            ?: Path.of("$capturesDirectory", camera.name).createDirectories()
 
         val task = CameraExposureTask(camera, data, savePath)
 
         val future = CompletableFuture.runAsync(task, cameraExecutorService)
-        runningTasks[name] = task
+        runningTasks[camera] = task
 
         future.whenComplete { _, _ ->
-            runningTasks.remove(name)
+            runningTasks.remove(camera)
         }
     }
 
-    fun abortCapture(name: String) {
-        runningTasks[name]?.abort()
+    fun abortCapture(camera: Camera) {
+        runningTasks[camera]?.abort()
     }
 }

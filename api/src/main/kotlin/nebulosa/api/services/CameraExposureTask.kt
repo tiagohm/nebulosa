@@ -6,9 +6,7 @@ import nebulosa.api.data.events.CameraCaptureFinished
 import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.common.concurrency.ThreadedJob
-import nebulosa.fits.FITS_DEC_ANGLE_FORMATTER
-import nebulosa.fits.FITS_RA_ANGLE_FORMATTER
-import nebulosa.fits.FitsKeywords
+import nebulosa.fits.imageHDU
 import nebulosa.fits.naxis
 import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.*
@@ -16,7 +14,6 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.mount.Mount
 import nebulosa.log.loggerFor
 import nom.tam.fits.Fits
-import nom.tam.fits.ImageHDU
 import nom.tam.util.FitsOutputStream
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -183,21 +180,10 @@ data class CameraExposureTask(
 
         try {
             Fits(inputStream).use { fits ->
-                val hdu = fits.read().firstOrNull { it is ImageHDU }
+                val hdu = fits.imageHDU(0)
 
                 if (hdu != null) {
-                    val header = hdu.header.also {
-                        val mount = mount ?: return@also
-
-                        val raStr = mount.rightAscensionJ2000.format(FITS_RA_ANGLE_FORMATTER)
-                        val decStr = mount.declinationJ2000.format(FITS_DEC_ANGLE_FORMATTER)
-
-                        it.addValue(FitsKeywords.RA, raStr)
-                        it.addValue(FitsKeywords.OBJCTRA, raStr)
-                        it.addValue(FitsKeywords.DEC, decStr)
-                        it.addValue(FitsKeywords.OBJCTDEC, decStr)
-                    }
-
+                    val header = hdu.header
                     path.parent.createDirectories()
                     path.outputStream().use { fits.write(FitsOutputStream(it)) }
 

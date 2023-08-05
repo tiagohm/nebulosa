@@ -12,14 +12,17 @@ import nebulosa.indi.device.filterwheel.FilterWheelDetached
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserAttached
 import nebulosa.indi.device.focuser.FocuserDetached
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.MountAttached
+import nebulosa.indi.device.mount.MountDetached
 import org.greenrobot.eventbus.EventBus
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class EquipmentService(private val eventBus: EventBus) : DeviceEventHandler {
 
     private val cameras = ArrayList<Camera>(2)
+    private val mounts = ArrayList<Mount>(2)
     private val focusers = ArrayList<Focuser>(2)
     private val filterWheels = ArrayList<FilterWheel>(2)
 
@@ -28,6 +31,8 @@ class EquipmentService(private val eventBus: EventBus) : DeviceEventHandler {
         when (event) {
             is CameraAttached -> cameras.add(event.device)
             is CameraDetached -> cameras.remove(event.device)
+            is MountAttached -> mounts.add(event.device)
+            is MountDetached -> mounts.remove(event.device)
             is FocuserAttached -> focusers.add(event.device)
             is FocuserDetached -> focusers.remove(event.device)
             is FilterWheelAttached -> filterWheels.add(event.device)
@@ -38,15 +43,23 @@ class EquipmentService(private val eventBus: EventBus) : DeviceEventHandler {
     }
 
     fun cameras(): List<Camera> {
-        return Collections.unmodifiableList(cameras)
+        return cameras
     }
 
     fun camera(name: String): Camera? {
         return cameras.firstOrNull { it.name == name }
     }
 
+    fun mounts(): List<Mount> {
+        return mounts
+    }
+
+    fun mount(name: String): Mount? {
+        return mounts.firstOrNull { it.name == name }
+    }
+
     fun focusers(): List<Focuser> {
-        return Collections.unmodifiableList(focusers)
+        return focusers
     }
 
     fun focuser(name: String): Focuser? {
@@ -54,7 +67,7 @@ class EquipmentService(private val eventBus: EventBus) : DeviceEventHandler {
     }
 
     fun filterWheels(): List<FilterWheel> {
-        return Collections.unmodifiableList(filterWheels)
+        return filterWheels
     }
 
     fun filterWheel(name: String): FilterWheel? {
@@ -62,8 +75,6 @@ class EquipmentService(private val eventBus: EventBus) : DeviceEventHandler {
     }
 
     operator fun get(name: String): Device? {
-        return camera(name)
-            ?: focuser(name)
-            ?: filterWheel(name)
+        return camera(name) ?: mount(name) ?: focuser(name) ?: filterWheel(name)
     }
 }

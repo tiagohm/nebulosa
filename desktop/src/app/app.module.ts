@@ -43,6 +43,7 @@ import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
+import { MountComponent } from './mount/mount.component'
 
 @NgModule({
     declarations: [
@@ -59,6 +60,7 @@ import { INDIPropertyComponent } from './indi/property/indi-property.component'
         AboutComponent,
         FocuserComponent,
         FilterWheelComponent,
+        MountComponent,
         EnvPipe,
         WinPipe,
         EnumPipe,

@@ -32,34 +32,27 @@
                 <label>Temperature (°C)</label>
             </span>
         </div>
-        <div class="col-4">
+        <div class="col-6 flex align-items-center gap-1">
+            <p-button [disabled]="!canRelativeMove || moving" (onClick)="moveIn()" icon="mdi mdi-arrow-left-bold"
+                      styleClass="p-button-text" pTooltip="Move In" tooltipPosition="bottom" />
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!canRelativeMove" [min]="0" [max]="maxPosition" [showButtons]="true" styleClass="border-0 max-w-full"
+                <p-inputNumber [disabled]="!canRelativeMove" [min]="0" [max]="maxPosition" [showButtons]="true" styleClass="border-0"
                                [(ngModel)]="stepsRelative" [allowEmpty]="false" locale="en" />
                 <label>Relative</label>
             </span>
+            <p-button [disabled]="!canRelativeMove || moving" (onClick)="moveOut()" icon="mdi mdi-arrow-right-bold"
+                      styleClass="p-button-text" pTooltip="Move Out" tooltipPosition="bottom" />
         </div>
-        <div class="col-4">
-            <p-button [disabled]="!canRelativeMove || moving" (onClick)="moveIn()" icon="mdi mdi-arrow-left-bold" label="Move In"
-                      styleClass="p-button-text w-full" />
-        </div>
-        <div class="col-4">
-            <p-button [disabled]="!canRelativeMove || moving" (onClick)="moveOut()" icon="mdi mdi-arrow-right-bold" label="Move Out"
-                      styleClass="p-button-text w-full" />
-        </div>
-        <div class="col-4">
+        <div class="col-6 flex align-items-center gap-1">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!canAbsoluteMove" [min]="0" [max]="maxPosition" [showButtons]="true" styleClass="border-0 max-w-full"
                                [(ngModel)]="stepsAbsolute" [allowEmpty]="false" locale="en" />
                 <label>Absolute</label>
             </span>
-        </div>
-        <div class="col-4">
-            <p-button [disabled]="!canAbsoluteMove || moving" (onClick)="moveTo()" icon="mdi mdi-arrow-left-right-bold" label="Move To"
-                      styleClass="p-button-text w-full" />
-        </div>
-        <div class="col-4">
-            <p-button [disabled]="!canSync || moving" (onClick)="syncTo()" icon="mdi mdi-sync" label="Sync" styleClass="p-button-text p-button-info w-full" />
+            <p-button [disabled]="!canAbsoluteMove || moving" (onClick)="moveTo()" icon="mdi mdi-check"
+                      styleClass="p-button-text p-button-success" pTooltip="Move To" tooltipPosition="bottom" />
+            <p-button [disabled]="!canSync || moving" (onClick)="syncTo()" icon="mdi mdi-sync"
+                      styleClass="p-button-text p-button-info" pTooltip="Sync" tooltipPosition="bottom" />
         </div>
         <div class="col-4">
             <p-button [disabled]="!canRelativeMove || !moving" icon="mdi mdi-stop" label="Abort" styleClass="p-button-text p-button-danger w-full" />

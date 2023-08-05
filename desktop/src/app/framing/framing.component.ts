@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import hipsSurveys from '../../assets/data/hipsSurveys.json'
@@ -22,7 +22,7 @@ export interface FramingParams {
     templateUrl: './framing.component.html',
     styleUrls: ['./framing.component.scss'],
 })
-export class FramingComponent implements OnInit, AfterViewInit, OnDestroy {
+export class FramingComponent implements AfterViewInit, OnDestroy {
 
     rightAscension = '00h00m00s'
     declination = `+000°00'00"`
@@ -56,8 +56,6 @@ export class FramingComponent implements OnInit, AfterViewInit, OnDestroy {
         })
     }
 
-    async ngOnInit() { }
-
     ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
             const params = JSON.parse(decodeURIComponent(e.params)) as FramingParams
@@ -68,7 +66,7 @@ export class FramingComponent implements OnInit, AfterViewInit, OnDestroy {
     @HostListener('window:unload')
     ngOnDestroy() {
         this.closeFrameImage()
-        this.electron.ipcRenderer.sendSync('CLOSE_WINDOW', this.frameId)
+        this.electron.sendSync('CLOSE_WINDOW', this.frameId)
     }
 
     private frameFromParams(params: FramingParams) {

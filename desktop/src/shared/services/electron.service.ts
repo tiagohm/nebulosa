@@ -52,4 +52,12 @@ export class ElectronService {
     get isElectron() {
         return !!(window && window.process && window.process.type)
     }
+
+    send(channel: string, ...data: any[]) {
+        this.ipcRenderer.send(channel, ...data)
+    }
+
+    sendSync(channel: string, ...data: any[]) {
+        return this.ipcRenderer.sendSync(channel, ...data)
+    }
 }

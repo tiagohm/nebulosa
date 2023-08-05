@@ -15,22 +15,22 @@ class SavedCameraImageRepository(boxStore: BoxStore) : BoxRepository<SavedCamera
 
     override val box = boxStore.boxFor(SavedCameraImageEntity::class.java)!!
 
-    fun withName(name: String): List<SavedCameraImageEntity> {
+    fun withCamera(camera: String): List<SavedCameraImageEntity> {
         return box.query()
-            .equal(SavedCameraImageEntity_.name, name, QueryBuilder.StringOrder.CASE_SENSITIVE)
+            .equal(SavedCameraImageEntity_.camera, camera, QueryBuilder.StringOrder.CASE_SENSITIVE)
             .build().use { it.find() }
     }
 
-    fun withNameLatest(name: String): SavedCameraImageEntity? {
+    fun withCameraLatest(camera: String): SavedCameraImageEntity? {
         return box.query()
-            .equal(SavedCameraImageEntity_.name, name, QueryBuilder.StringOrder.CASE_SENSITIVE)
+            .equal(SavedCameraImageEntity_.camera, camera, QueryBuilder.StringOrder.CASE_SENSITIVE)
             .orderDesc(SavedCameraImageEntity_.savedAt)
             .build().use { it.findFirst() }
     }
 
-    fun withNameAndPath(name: String, path: String): SavedCameraImageEntity? {
+    fun withCameraAndPath(camera: String, path: String): SavedCameraImageEntity? {
         return box.query()
-            .equal(SavedCameraImageEntity_.name, name, QueryBuilder.StringOrder.CASE_SENSITIVE)
+            .equal(SavedCameraImageEntity_.camera, camera, QueryBuilder.StringOrder.CASE_SENSITIVE)
             .and()
             .equal(SavedCameraImageEntity_.path, path, QueryBuilder.StringOrder.CASE_SENSITIVE)
             .build().use { it.findFirst() }

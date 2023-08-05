@@ -28,7 +28,7 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasMount" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [disabled]="!connected || !hasMount" (onClick)="open('MOUNT')" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/telescope.png" />
                 <div class="mt-1 text-sm">Mount</div>
             </p-button>

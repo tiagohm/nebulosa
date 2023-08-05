@@ -10,6 +10,7 @@ import { FramingComponent } from './framing/framing.component'
 import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
+import { MountComponent } from './mount/mount.component'
 
 const routes: Routes = [
     {
@@ -32,6 +33,10 @@ const routes: Routes = [
     {
         path: 'filterWheel',
         component: FilterWheelComponent,
+    },
+    {
+        path: 'mount',
+        component: MountComponent,
     },
     {
         path: 'image',

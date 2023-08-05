@@ -1,79 +1,124 @@
 export interface Device {
-    name: string
-    connected: boolean
+    readonly name: string
+    readonly connected: boolean
 }
 
-export interface Thermometer {
-    hasThermometer: boolean
-    temperature: number
+export interface Thermometer extends Device {
+    readonly hasThermometer: boolean
+    readonly temperature: number
 }
 
-export interface Camera extends Device, Thermometer {
-    exposuring: boolean
-    hasCoolerControl: boolean
-    coolerPower: number
-    cooler: boolean
-    hasDewHeater: boolean
-    dewHeater: boolean
-    frameFormats: string[]
-    canAbort: boolean
-    cfaOffsetX: number
-    cfaOffsetY: number
-    cfaType: CfaPattern
-    exposureMin: number
-    exposureMax: number
-    exposureState: PropertyState
-    exposure: number
-    hasCooler: boolean
-    canSetTemperature: boolean
-    canSubFrame: boolean
-    x: number
-    minX: number
-    maxX: number
-    y: number
-    minY: number
-    maxY: number
-    width: number
-    minWidth: number
-    maxWidth: number
-    height: number
-    minHeight: number
-    maxHeight: number
-    canBin: boolean
-    maxBinX: number
-    maxBinY: number
-    binX: number
-    binY: number
-    gain: number
-    gainMin: number
-    gainMax: number
-    offset: number
-    offsetMin: number
-    offsetMax: number
-    hasGuiderHead: boolean
-    pixelSizeX: number
-    pixelSizeY: number
-    canPulseGuide: boolean
-    pulseGuiding: boolean
+export interface GuideOutput extends Device {
+    readonly canPulseGuide: boolean
+    readonly pulseGuiding: boolean
+}
+
+export interface Camera extends GuideOutput, Thermometer {
+    readonly exposuring: boolean
+    readonly hasCoolerControl: boolean
+    readonly coolerPower: number
+    readonly cooler: boolean
+    readonly hasDewHeater: boolean
+    readonly dewHeater: boolean
+    readonly frameFormats: string[]
+    readonly canAbort: boolean
+    readonly cfaOffsetX: number
+    readonly cfaOffsetY: number
+    readonly cfaType: CfaPattern
+    readonly exposureMin: number
+    readonly exposureMax: number
+    readonly exposureState: PropertyState
+    readonly exposure: number
+    readonly hasCooler: boolean
+    readonly canSetTemperature: boolean
+    readonly canSubFrame: boolean
+    readonly x: number
+    readonly minX: number
+    readonly maxX: number
+    readonly y: number
+    readonly minY: number
+    readonly maxY: number
+    readonly width: number
+    readonly minWidth: number
+    readonly maxWidth: number
+    readonly height: number
+    readonly minHeight: number
+    readonly maxHeight: number
+    readonly canBin: boolean
+    readonly maxBinX: number
+    readonly maxBinY: number
+    readonly binX: number
+    readonly binY: number
+    readonly gain: number
+    readonly gainMin: number
+    readonly gainMax: number
+    readonly offset: number
+    readonly offsetMin: number
+    readonly offsetMax: number
+    readonly hasGuiderHead: boolean
+    readonly pixelSizeX: number
+    readonly pixelSizeY: number
+    readonly canPulseGuide: boolean
+    readonly pulseGuiding: boolean
+}
+
+export interface Parkable {
+    readonly canPark: boolean
+    readonly parking: boolean
+    readonly parked: boolean
+}
+
+export interface GPS extends Device {
+    readonly hasGPS: boolean
+    readonly longitude: number
+    readonly latitude: number
+    readonly elevation: number
+    readonly dateTime: number
+    readonly offsetInMinutes: number
+}
+
+export interface Mount extends GPS, GuideOutput, Parkable {
+    readonly name: string
+    readonly connected: boolean
+    readonly slewing: boolean
+    readonly tracking: boolean
+    readonly canAbort: boolean
+    readonly canSync: boolean
+    readonly canGoTo: boolean
+    readonly canHome: boolean
+    readonly slewRates: SlewRate[]
+    readonly slewRate?: SlewRate
+    readonly trackModes: TrackMode[]
+    readonly trackMode: TrackMode
+    readonly pierSide: PierSide
+    readonly guideRateWE: number
+    readonly guideRateNS: number
+    readonly rightAscension: string
+    readonly declination: string
+}
+
+export interface SlewRate {
+    readonly name: string
+    readonly label: string
 }
 
 export interface Focuser extends Device, Thermometer {
-    moving: boolean
-    position: number
-    canAbsoluteMove: boolean
-    canRelativeMove: boolean
-    canAbort: boolean
-    canReverse: boolean
-    reverse: boolean
-    canSync: boolean
-    hasBackslash: boolean
-    maxPosition: number
+    readonly moving: boolean
+    readonly position: number
+    readonly canAbsoluteMove: boolean
+    readonly canRelativeMove: boolean
+    readonly canAbort: boolean
+    readonly canReverse: boolean
+    readonly reverse: boolean
+    readonly canSync: boolean
+    readonly hasBacklash: boolean
+    readonly maxPosition: number
 }
 
 export interface FilterWheel extends Device {
-    count: number
-    position: number
-    moving: boolean
+    readonly count: number
+    readonly position: number
+    readonly moving: boolean
 }
 
 export interface CameraStartCapture {
@@ -117,6 +162,9 @@ export interface SavedCameraImage {
     height: number
     mono: boolean
     savedAt: number
+}
+
+export interface ImageInfo extends SavedCameraImage {
     stretchShadow: number
     stretchHighlight: number
     stretchMidtone: number
@@ -340,6 +388,17 @@ export interface Calibration {
     radius: number
 }
 
+export interface ComputedCoordinates {
+    rightAscension: string
+    declination: string
+    azimuth: string
+    altitude: string
+    constellation: Constellation
+    meridianAt: string
+    timeLeftToMeridianFlip: string
+    lst: string
+}
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',
@@ -519,16 +578,26 @@ export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
     'WATNEY'
 
 export const INDI_EVENT_TYPES = [
-    'ALL', 'DEVICE', 'CAMERA', 'FOCUSER', 'FILTER_WHEEL',
+    'ALL', 'DEVICE', 'CAMERA', 'MOUNT', 'FOCUSER', 'FILTER_WHEEL',
     'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
     'DEVICE_MESSAGE_RECEIVED', 'CAMERA_IMAGE_SAVED',
     'CAMERA_UPDATED', 'CAMERA_CAPTURE_FINISHED',
     'CAMERA_ATTACHED', 'CAMERA_DETACHED',
+    'MOUNT_UPDATED', 'MOUNT_ATTACHED', 'MOUNT_DETACHED',
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
     'FILTER_WHEEL_UPDATED', 'FILTER_WHEEL_ATTACHED', 'FILTER_WHEEL_DETACHED',
 ] as const
 
 export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]
+
+export const INTERNAL_EVENT_TYPES = [
+    'SELECTED_CAMERA', 'SELECTED_FOCUSER', 'SELECTED_FILTER_WHEEL',
+    'SELECTED_MOUNT',
+    'CAMERA_CHANGED', 'FOCUSER_CHANGED', 'MOUNT_CHANGED',
+    'FILTER_WHEEL_CHANGED', 'FILTER_WHEEL_RENAMED',
+] as const
+
+export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
 
 export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA'
 
@@ -562,3 +631,9 @@ export const HIPS_SURVEY_TYPES = [
 ] as const
 
 export type HipsSurveyType = (typeof HIPS_SURVEY_TYPES)[number]
+
+export type PierSide = 'EAST' | 'WEST' | 'NEITHER'
+
+export type TargetCoordinateType = 'J2000' | 'JNOW'
+
+export type TrackMode = 'SIDEREAL' | ' LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'

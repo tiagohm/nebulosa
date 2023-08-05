@@ -1,4 +1,4 @@
-import { Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -10,7 +10,7 @@ import { Camera, Focuser } from '../../shared/types'
     templateUrl: './focuser.component.html',
     styleUrls: ['./focuser.component.scss']
 })
-export class FocuserComponent implements OnInit, OnDestroy {
+export class FocuserComponent implements AfterViewInit, OnDestroy {
 
     focusers: Focuser[] = []
     focuser?: Focuser
@@ -26,7 +26,7 @@ export class FocuserComponent implements OnInit, OnDestroy {
     canReverse = false
     reverse = false
     canSync = false
-    hasBackslash = false
+    hasBacklash = false
     maxPosition = 0
 
     stepsRelative = 0
@@ -61,7 +61,7 @@ export class FocuserComponent implements OnInit, OnDestroy {
         })
     }
 
-    async ngOnInit() {
+    async ngAfterViewInit() {
         this.focusers = await this.api.attachedFocusers()
     }
 
@@ -74,16 +74,17 @@ export class FocuserComponent implements OnInit, OnDestroy {
         if (this.focuser) {
             this.title.setTitle(`Focuser ・ ${this.focuser.name}`)
 
-            this.loadPreference()
-
             const focuser = await this.api.focuser(this.focuser.name)
             Object.assign(this.focuser, focuser)
+
+            this.loadPreference()
             this.update()
+            this.savePreference()
         } else {
             this.title.setTitle(`Focuser`)
         }
 
-        this.electron.ipcRenderer.send('FOCUSER_CHANGED', this.focuser)
+        this.electron.send('FOCUSER_CHANGED', this.focuser)
     }
 
     async connect() {
@@ -137,7 +138,7 @@ export class FocuserComponent implements OnInit, OnDestroy {
         this.canReverse = this.focuser.canReverse
         this.reverse = this.focuser.reverse
         this.canSync = this.focuser.canSync
-        this.hasBackslash = this.focuser.hasBackslash
+        this.hasBacklash = this.focuser.hasBacklash
         this.maxPosition = this.focuser.maxPosition
     }
 

@@ -12,7 +12,7 @@ buildCache {
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("okio", "com.squareup.okio:okio:3.4.0")
+            library("okio", "com.squareup.okio:okio:3.5.0")
             library("okhttp", "com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
             library("okhttp-logging", "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
             library("fits", "gov.nasa.gsfc.heasarc:nom-tam-fits:1.18.0")

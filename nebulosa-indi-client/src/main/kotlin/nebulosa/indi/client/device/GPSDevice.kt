@@ -24,7 +24,7 @@ internal class GPSDevice(
     override var longitude = Angle.ZERO
     override var latitude = Angle.ZERO
     override var elevation = Distance.ZERO
-    override var time = OffsetDateTime.MIN!!
+    override var dateTime = OffsetDateTime.MIN!!
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -45,7 +45,7 @@ internal class GPSDevice(
                         val utcTime = GPS.extractTime(message["UTC"]!!.value) ?: return
                         val utcOffset = message["OFFSET"]!!.value.toDoubleOrNull() ?: 0.0
 
-                        time = OffsetDateTime.of(utcTime, ZoneOffset.ofTotalSeconds((utcOffset * 60.0).toInt()))
+                        dateTime = OffsetDateTime.of(utcTime, ZoneOffset.ofTotalSeconds((utcOffset * 60.0).toInt()))
 
                         handler.fireOnEventReceived(GPSTimeChanged(this))
                     }
@@ -61,6 +61,6 @@ internal class GPSDevice(
 
     override fun toString(): String {
         return "GPS(hasGPS=$hasGPS, longitude=$longitude, latitude=$latitude," +
-                " elevation=$elevation, time=$time)"
+                " elevation=$elevation, dateTime=$dateTime)"
     }
 }

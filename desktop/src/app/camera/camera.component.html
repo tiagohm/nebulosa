@@ -40,7 +40,7 @@
             <div class="flex justify-content-center align-items-center gap-1">
                 <span class="p-float-label">
                     <p-inputNumber [disabled]="!connected || !canSetTemperature || capturing" [(ngModel)]="setpointTemperature" mode="decimal"
-                                   [showButtons]="true"
+                                   [showButtons]="true" (ngModelChange)="savePreference()"
                                    [step]="0.1" suffix="℃" [min]="-50" [max]="50" locale="en" styleClass="border-0" [allowEmpty]="false" />
                     <label>Temperature ({{ temperature | number: '1.1-1' }}°C)</label>
                 </span>
@@ -55,7 +55,7 @@
                 <span class="p-float-label">
                     <p-inputNumber [disabled]="!connected || capturing" [(ngModel)]="exposureTime" mode="decimal" [showButtons]="true"
                                    [step]="1.0" [min]="exposureTimeMin" [max]="exposureTimeMax" locale="en" styleClass="border-0"
-                                   [allowEmpty]="false" />
+                                   [allowEmpty]="false" (ngModelChange)="savePreference()" />
                     <label>Exposure Time</label>
                 </span>
                 <p-menu #exposureTimeMenu [model]="exposureTimeUnitOptions" [popup]="true" />
@@ -65,7 +65,8 @@
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [disabled]="!connected || capturing" [options]="frameTypeOptions" [(ngModel)]="frameType" styleClass="border-0" />
+                <p-dropdown [disabled]="!connected || capturing" [options]="frameTypeOptions" [(ngModel)]="frameType" styleClass="border-0"
+                            (ngModelChange)="savePreference()" />
                 <label>Frame Type</label>
             </span>
         </div>
@@ -73,19 +74,22 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-6">
             <span class="text-sm text-gray-100">Exposure Mode</span>
-            <p-selectButton [disabled]="!connected || capturing" [options]="exposureModeOptions" [(ngModel)]="exposureMode" styleClass="border-0" />
+            <p-selectButton [disabled]="!connected || capturing" [options]="exposureModeOptions" [(ngModel)]="exposureMode" styleClass="border-0"
+                            (ngModelChange)="savePreference()" />
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || exposureMode === 'SINGLE' || capturing" [(ngModel)]="exposureDelay" mode="decimal"
-                               [showButtons]="true" [step]="0" [min]="0" [max]="600" locale="en" styleClass="border-0" [allowEmpty]="false" />
+                               [showButtons]="true" [step]="0" [min]="0" [max]="600" locale="en" styleClass="border-0" [allowEmpty]="false"
+                               (ngModelChange)="savePreference()" />
                 <label>Delay</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || exposureMode !== 'FIXED' || capturing" [(ngModel)]="exposureCount" mode="decimal"
-                               [showButtons]="true" [step]="1.0" [min]="1" [max]="10000" locale="en" styleClass="border-0" [allowEmpty]="false" />
+                               [showButtons]="true" [step]="1.0" [min]="1" [max]="10000" locale="en" styleClass="border-0" [allowEmpty]="false"
+                               (ngModelChange)="savePreference()" />
                 <label>Count</label>
             </span>
         </div>
@@ -93,29 +97,33 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!connected || !subframe || capturing" [(ngModel)]="x" mode="decimal" [showButtons]="true"
-                               [step]="1.0" [min]="minX" [max]="maxX" locale="en" styleClass="border-0" [allowEmpty]="false" />
+                <p-inputNumber [disabled]="!connected || !subFrame || capturing" [(ngModel)]="x" mode="decimal" [showButtons]="true"
+                               [step]="1.0" [min]="minX" [max]="maxX" locale="en" styleClass="border-0" [allowEmpty]="false"
+                               (ngModelChange)="savePreference()" />
                 <label>X</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!connected || !subframe || capturing" [(ngModel)]="y" mode="decimal" [showButtons]="true"
-                               [step]="1.0" [min]="minY" [max]="maxY" locale="en" styleClass="border-0" [allowEmpty]="false" />
+                <p-inputNumber [disabled]="!connected || !subFrame || capturing" [(ngModel)]="y" mode="decimal" [showButtons]="true"
+                               [step]="1.0" [min]="minY" [max]="maxY" locale="en" styleClass="border-0" [allowEmpty]="false"
+                               (ngModelChange)="savePreference()" />
                 <label>Y</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!connected || !subframe || capturing" [(ngModel)]="width" mode="decimal" [showButtons]="true"
-                               [step]="1.0" [min]="minWidth" [max]="maxWidth" locale="en" styleClass="border-0" [allowEmpty]="false" />
+                <p-inputNumber [disabled]="!connected || !subFrame || capturing" [(ngModel)]="width" mode="decimal" [showButtons]="true"
+                               [step]="1.0" [min]="minWidth" [max]="maxWidth" locale="en" styleClass="border-0" [allowEmpty]="false"
+                               (ngModelChange)="savePreference()" />
                 <label>Width</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!connected || !subframe || capturing" [(ngModel)]="height" mode="decimal" [showButtons]="true"
-                               [step]="1.0" [min]="minHeight" [max]="maxHeight" locale="en" styleClass="border-0" [allowEmpty]="false" />
+                <p-inputNumber [disabled]="!connected || !subFrame || capturing" [(ngModel)]="height" mode="decimal" [showButtons]="true"
+                               [step]="1.0" [min]="minHeight" [max]="maxHeight" locale="en" styleClass="border-0" [allowEmpty]="false"
+                               (ngModelChange)="savePreference()" />
                 <label>Height</label>
             </span>
         </div>
@@ -123,23 +131,23 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-2 flex flex-column gap-2">
             <span class="text-sm text-gray-100">Subframe</span>
-            <p-inputSwitch [disabled]="!connected || capturing" [(ngModel)]="subframe" />
+            <p-inputSwitch [disabled]="!connected || capturing" [(ngModel)]="subFrame" (ngModelChange)="savePreference()" />
         </div>
         <div class="col-4 flex pt-3 flex-row align-items-center justify-content-center">
-            <p-button [disabled]="!connected || !subframe || capturing" icon="mdi mdi-fullscreen" (onClick)="fullsize()"
+            <p-button [disabled]="!connected || !subFrame || capturing" icon="mdi mdi-fullscreen" (onClick)="fullsize()"
                       styleClass="p-button-info" />
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || capturing" [(ngModel)]="binX" mode="decimal" [showButtons]="true"
-                               [step]="1.0" [min]="1" [max]="4" styleClass="border-0" [allowEmpty]="false" />
+                               [step]="1.0" [min]="1" [max]="4" styleClass="border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Bin X</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || capturing" [(ngModel)]="binY" mode="decimal" [showButtons]="true"
-                               [step]="1.0" [min]="1" [max]="4" styleClass="border-0" [allowEmpty]="false" />
+                               [step]="1.0" [min]="1" [max]="4" styleClass="border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Bin Y</label>
             </span>
         </div>
@@ -147,21 +155,24 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [disabled]="!connected || capturing" [options]="frameFormats" [(ngModel)]="frameFormat" styleClass="border-0" />
+                <p-dropdown [disabled]="!connected || capturing" [options]="frameFormats" [(ngModel)]="frameFormat" styleClass="border-0"
+                            (ngModelChange)="savePreference()" />
                 <label>Frame Format</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || capturing" [(ngModel)]="gain" mode="decimal" [showButtons]="true"
-                               [step]="1.0" [min]="gainMin" [max]="gainMax" styleClass="border-0" [allowEmpty]="false" />
+                               [step]="1.0" [min]="gainMin" [max]="gainMax" styleClass="border-0" [allowEmpty]="false"
+                               (ngModelChange)="savePreference()" />
                 <label>Gain</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || capturing" [(ngModel)]="offset" mode="decimal" [showButtons]="true"
-                               [step]="1.0" [min]="offsetMin" [max]="offsetMax" styleClass="border-0" [allowEmpty]="false" />
+                               [step]="1.0" [min]="offsetMin" [max]="offsetMax" styleClass="border-0" [allowEmpty]="false"
+                               (ngModelChange)="savePreference()" />
                 <label>Offset</label>
             </span>
         </div>

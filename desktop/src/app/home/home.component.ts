@@ -1,24 +1,24 @@
-import { Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { MessageService } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, FilterWheel, Focuser, HomeWindowType } from '../../shared/types'
+import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
 
 @Component({
     selector: 'app-home',
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent implements AfterViewInit, OnDestroy {
 
     host = ''
     port = 7624
     connected = false
 
     cameras: Camera[] = []
-    mounts: Camera[] = []
+    mounts: Mount[] = []
     focusers: Focuser[] = []
     filterWheels: FilterWheel[] = []
     domes: Camera[] = []
@@ -70,57 +70,106 @@ export class HomeComponent implements OnInit, OnDestroy {
             || this.hasFilterWheel || this.hasDome || this.hasRotator || this.hasSwitch
     }
 
+    private startListening<T extends Device>(
+        type: 'CAMERA' | 'MOUNT' | 'FOCUSER' | 'FILTER_WHEEL',
+        onAdd: (device: T) => number,
+        onRemove: (device: T) => number,
+    ) {
+        this.api.indiStartListening(`${type}_ATTACHED`)
+        this.api.indiStartListening(`${type}_DETACHED`)
+
+        this.electron.ipcRenderer.on(`${type}_ATTACHED`, (_, device: T) => {
+            this.ngZone.run(() => {
+                if (onAdd(device) === 1) {
+                    this.electron.send(`${type}_CHANGED`, device)
+                }
+            })
+        })
+
+        this.electron.ipcRenderer.on(`${type}_DETACHED`, (_, device: T) => {
+            this.ngZone.run(() => {
+                if (onRemove(device) === 0) {
+                    this.electron.send(`${type}_CHANGED`, undefined)
+                }
+            })
+        })
+    }
+
     constructor(
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private api: ApiService,
         private message: MessageService,
         private preference: PreferenceService,
-        ngZone: NgZone,
+        private ngZone: NgZone,
     ) {
-        this.api.indiStartListening('CAMERA_ATTACHED')
-        this.api.indiStartListening('CAMERA_DETACHED')
+        this.startListening<Camera>('CAMERA',
+            (device) => {
+                return this.cameras.push(device)
+            },
+            (device) => {
+                this.cameras.splice(this.cameras.findIndex(e => e.name === device.name), 1)
+                return this.cameras.length
+            },
+        )
 
-        electron.ipcRenderer.on('CAMERA_ATTACHED', (_, camera: Camera) => {
-            ngZone.run(() => this.cameras.push(camera))
-        })
+        this.startListening<Mount>('MOUNT',
+            (device) => {
+                return this.mounts.push(device)
+            },
+            (device) => {
+                this.mounts.splice(this.mounts.findIndex(e => e.name === device.name), 1)
+                return this.mounts.length
+            },
+        )
 
-        electron.ipcRenderer.on('CAMERA_DETACHED', (_, camera: Camera) => {
-            ngZone.run(() => this.cameras.splice(this.cameras.findIndex(e => e.name === camera.name), 1))
-        })
+        this.startListening<Focuser>('FOCUSER',
+            (device) => {
+                return this.focusers.push(device)
+            },
+            (device) => {
+                this.focusers.splice(this.focusers.findIndex(e => e.name === device.name), 1)
+                return this.focusers.length
+            },
+        )
 
-        this.api.indiStartListening('FOCUSER_ATTACHED')
-        this.api.indiStartListening('FOCUSER_DETACHED')
-
-        electron.ipcRenderer.on('FOCUSER_ATTACHED', (_, focuser: Focuser) => {
-            ngZone.run(() => this.focusers.push(focuser))
-        })
-
-        electron.ipcRenderer.on('FOCUSER_DETACHED', (_, focuser: Focuser) => {
-            ngZone.run(() => this.focusers.splice(this.focusers.findIndex(e => e.name === focuser.name), 1))
-        })
-
-        this.api.indiStartListening('FILTER_WHEEL_ATTACHED')
-        this.api.indiStartListening('FILTER_WHEEL_DETACHED')
-
-        electron.ipcRenderer.on('FILTER_WHEEL_ATTACHED', (_, filterWheel: FilterWheel) => {
-            ngZone.run(() => this.filterWheels.push(filterWheel))
-        })
-
-        electron.ipcRenderer.on('FILTER_WHEEL_DETACHED', (_, filterWheel: FilterWheel) => {
-            ngZone.run(() => this.filterWheels.splice(this.filterWheels.findIndex(e => e.name === filterWheel.name), 1))
-        })
+        this.startListening<FilterWheel>('FILTER_WHEEL',
+            (device) => {
+                return this.filterWheels.push(device)
+            },
+            (device) => {
+                this.filterWheels.splice(this.filterWheels.findIndex(e => e.name === device.name), 1)
+                return this.filterWheels.length
+            },
+        )
     }
 
-    async ngOnInit() {
+    async ngAfterViewInit() {
         this.updateConnection()
 
         this.host = this.preference.get('home.host', 'localhost')
         this.port = this.preference.get('home.port', 7624)
 
         this.cameras = await this.api.attachedCameras()
+        this.mounts = await this.api.attachedMounts()
         this.focusers = await this.api.attachedFocusers()
         this.filterWheels = await this.api.attachedFilterWheels()
+
+        if (this.cameras.length > 0) {
+            this.electron.send('CAMERA_CHANGED', this.cameras[0])
+        }
+
+        if (this.mounts.length > 0) {
+            this.electron.send('MOUNT_CHANGED', this.mounts[0])
+        }
+
+        if (this.focusers.length > 0) {
+            this.electron.send('FOCUSER_CHANGED', this.focusers[0])
+        }
+
+        if (this.filterWheels.length > 0) {
+            this.electron.send('FILTER_WHEEL_CHANGED', this.filterWheels[0])
+        }
     }
 
     @HostListener('window:unload')
@@ -156,6 +205,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     async open(type: HomeWindowType) {
         switch (type) {
+            case 'MOUNT':
+                this.browserWindow.openMount({ bringToFront: true })
+                break
             case 'CAMERA':
                 this.browserWindow.openCamera({ bringToFront: true })
                 break
@@ -175,7 +227,7 @@ export class HomeComponent implements OnInit, OnDestroy {
                 this.browserWindow.openINDI(undefined, { bringToFront: true })
                 break
             case 'IMAGE':
-                const path = await this.electron.ipcRenderer.sendSync('OPEN_FITS')
+                const path = await this.electron.sendSync('OPEN_FITS')
                 if (path) this.browserWindow.openImage(path, undefined, 'PATH')
                 break
             case 'ABOUT':

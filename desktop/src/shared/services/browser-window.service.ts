@@ -15,6 +15,14 @@ export class BrowserWindowService {
         await this.electron.ipcRenderer.invoke('OPEN_WINDOW', data)
     }
 
+    openMount(options: OpenWindowOptions = {}) {
+        this.openWindow({
+            ...options,
+            id: 'mount', path: 'mount', icon: options.icon || 'mount',
+            width: options.width || 400, height: options.height || 440,
+        })
+    }
+
     openCamera(options: OpenWindowOptions = {}) {
         this.openWindow({
             ...options,
@@ -27,7 +35,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'focuser', path: 'focuser', icon: options.icon || 'focus',
-            width: options.width || 380, height: options.height || 276,
+            width: options.width || 360, height: options.height || 225,
         })
     }
 
@@ -35,7 +43,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'filterWheel', path: 'filterWheel', icon: options.icon || 'filter-wheel',
-            width: options.width || 340, height: options.height || 204,
+            width: options.width || 320, height: options.height || 182,
         })
     }
 

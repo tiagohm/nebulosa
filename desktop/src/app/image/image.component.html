@@ -32,7 +32,7 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Plate Solving" [draggable]="true" [(visible)]="showSolverDialog" [modal]="false" [style]="{width: '360px'}"
+<p-dialog header="Plate Solving" [draggable]="true" [(visible)]="showSolverDialog" [modal]="false" [style]="{width: '350px'}"
           class="pointer-events-none">
     <div class="grid pt-2">
         <div class="col-8 flex align-items-center">
@@ -137,18 +137,33 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Stretching" [draggable]="true" [(visible)]="showStretchingDialog" [modal]="false" [style]="{width: '360px'}"
+<p-dialog header="Stretching" [draggable]="true" [(visible)]="showStretchingDialog" [modal]="false" [style]="{width: '290px'}"
           class="pointer-events-none">
-    <div class="grid px-2">
+    <div class="grid px-2 pt-2">
         <div class="col-12 flex flex-column">
-            <div class="flex flex-row justify-content-between">
-                <span>Shadow: {{ stretchShadowhHighlight[0] }}</span>
-                <span>Highlight: {{ stretchShadowhHighlight[1] }}</span>
+            <div class="flex flex-row gap-2 align-items-center justify-content-between">
+                <span class="p-float-label">
+                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="border-0 w-full"
+                                   [(ngModel)]="stretchShadowhHighlight[0]" locale="en" />
+                    <label>Shadow</label>
+                </span>
+                <span class="p-float-label">
+                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="border-0 w-full"
+                                   [(ngModel)]="stretchShadowhHighlight[1]" locale="en" />
+                    <label>Highlight</label>
+                </span>
             </div>
 
             <p-slider class="mt-3" [min]="0" [max]="65536" [(ngModel)]="stretchShadowhHighlight" [range]="true" />
 
-            <div class="mt-5 text-center w-full">Midtone: {{ stretchMidtone }}</div>
+            <div class="mt-5 text-center w-full">
+                <span class="p-float-label">
+                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="border-0 w-full"
+                                   [(ngModel)]="stretchMidtone" locale="en" />
+                    <label>Midtone</label>
+                </span>
+            </div>
+
             <p-slider class="mt-3" [min]="0" [max]="65536" [(ngModel)]="stretchMidtone" />
         </div>
     </div>

@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ChartData, ChartOptions } from 'chart.js'
 import * as moment from 'moment'
@@ -9,6 +9,7 @@ import { MoonComponent } from '../../shared/components/moon/moon.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location, MinorPlanet, SkyObjectType, Star, TypeWithAll } from '../../shared/types'
+import { ElectronService } from '../../shared/services/electron.service'
 
 export interface PlanetItem {
     name: string
@@ -31,7 +32,7 @@ export interface SearchFilter {
     templateUrl: './atlas.component.html',
     styleUrls: ['./atlas.component.scss']
 })
-export class AtlasComponent implements OnInit, OnDestroy {
+export class AtlasComponent implements AfterViewInit, OnDestroy {
 
     refreshing = false
 
@@ -56,14 +57,26 @@ export class AtlasComponent implements OnInit, OnDestroy {
         {
             icon: 'mdi mdi-check',
             label: 'Go To',
+            command: async () => {
+                const mount = await this.electron.sendSync('SELECTED_MOUNT')
+                this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+            },
         },
         {
             icon: 'mdi mdi-check',
             label: 'Slew To',
+            command: async () => {
+                const mount = await this.electron.sendSync('SELECTED_MOUNT')
+                this.api.mountSlewTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+            },
         },
         {
             icon: 'mdi mdi-sync',
             label: 'Sync',
+            command: async () => {
+                const mount = await this.electron.sendSync('SELECTED_MOUNT')
+                this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+            },
         },
         {
             icon: 'mdi mdi-image',
@@ -428,6 +441,7 @@ export class AtlasComponent implements OnInit, OnDestroy {
         private title: Title,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
+        private electron: ElectronService,
     ) {
         title.setTitle('Sky Atlas')
 
@@ -436,7 +450,7 @@ export class AtlasComponent implements OnInit, OnDestroy {
         setInterval(() => this.refreshTab(), 60000)
     }
 
-    async ngOnInit() {
+    async ngAfterViewInit() {
         this.locations = await this.api.locations()
     }
 

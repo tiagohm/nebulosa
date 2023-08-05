@@ -21,7 +21,7 @@ internal open class FocuserDevice(
     override var canReverse = false
     override var reverse = false
     override var canSync = false
-    override var hasBackslash = false
+    override var hasBacklash = false
     override var maxPosition = 0
 
     override var hasThermometer = false
@@ -188,7 +188,7 @@ internal open class FocuserDevice(
         return "Focuser(name=$name, moving=$moving, position=$position," +
                 " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
                 " canAbort=$canAbort, canReverse=$canReverse, reverse=$reverse," +
-                " canSync=$canSync, hasBackslash=$hasBackslash," +
+                " canSync=$canSync, hasBacklash=$hasBacklash," +
                 " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
                 " temperature=$temperature)"
     }

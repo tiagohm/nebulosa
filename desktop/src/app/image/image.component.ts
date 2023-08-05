@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import createPanZoom, { PanZoom } from 'panzoom'
@@ -10,7 +10,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Calibration, Camera, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageSource, PlateSolverType,
+    Calibration, Camera, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource, PlateSolverType,
     SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage
 } from '../../shared/types'
 
@@ -26,7 +26,7 @@ export interface ImageParams {
     templateUrl: './image.component.html',
     styleUrls: ['./image.component.scss'],
 })
-export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ImageComponent implements AfterViewInit, OnDestroy {
 
     @ViewChild('image')
     private readonly image!: ElementRef<HTMLImageElement>
@@ -80,7 +80,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
 
     private panZoom?: PanZoom
     private imageURL!: string
-    private imageInfo?: SavedCameraImage
+    private imageInfo?: ImageInfo
     private imageMouseX = 0
     private imageMouseY = 0
     private imageParams: ImageParams = {}
@@ -117,7 +117,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
             label: 'Save as...',
             icon: 'mdi mdi-content-save',
             command: async () => {
-                const path = await this.electron.ipcRenderer.sendSync('SAVE_FITS_AS')
+                const path = await this.electron.sendSync('SAVE_FITS_AS')
                 if (path) this.api.saveImageAs(this.imageParams.path!, path)
             },
         },
@@ -244,9 +244,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
         electron.ipcRenderer.on('PARAMS_CHANGED', (_, data: ImageParams) => {
             this.loadImageFromParams(data)
         })
-    }
 
-    ngOnInit() {
         this.solverPathOrUrl = this.preference.get('image.solver.pathOrUrl', '')
         this.solverRadius = this.preference.get('image.solver.radius', 4)
         this.solverDownsampleFactor = this.preference.get('image.solver.downsampleFactor', 1)
@@ -284,8 +282,8 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
             await this.loadImageFromPath(this.imageParams.path)
         } else if (this.imageParams.camera) {
             try {
-                this.imageInfo = await this.api.latestImageOfCamera(this.imageParams.camera)
-                await this.loadImageFromPath(this.imageInfo.path)
+                const savedImage = await this.api.latestImageOfCamera(this.imageParams.camera)
+                await this.loadImageFromPath(savedImage.path)
             } catch (e) {
                 console.error(e)
             }
@@ -310,6 +308,7 @@ export class ImageComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.imageInfo = info
         this.scnrMenuItem.disabled = info.mono
+
         if (info.rightAscension) this.solverCenterRA = info.rightAscension
         if (info.declination) this.solverCenterDEC = info.declination
 

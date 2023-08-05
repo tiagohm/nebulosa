@@ -4,6 +4,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.api.data.responses.FocuserResponse
+import nebulosa.api.services.EquipmentService
 import nebulosa.api.services.FocuserService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -12,27 +13,30 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class FocuserController(
+    private val equipmentService: EquipmentService,
     private val focuserService: FocuserService,
 ) {
 
     @GetMapping("attachedFocusers")
     fun attachedFocusers(): List<FocuserResponse> {
-        return focuserService.attachedFocusers()
+        return equipmentService.focusers().map(::FocuserResponse)
     }
 
     @GetMapping("focuser")
     fun focuser(@RequestParam @Valid @NotBlank name: String): FocuserResponse {
-        return focuserService[name]
+        return FocuserResponse(requireNotNull(equipmentService.focuser(name)))
     }
 
     @PostMapping("focuserConnect")
     fun connect(@RequestParam @Valid @NotBlank name: String) {
-        focuserService.connect(name)
+        val focuser = requireNotNull(equipmentService.focuser(name))
+        focuserService.connect(focuser)
     }
 
     @PostMapping("focuserDisconnect")
     fun disconnect(@RequestParam @Valid @NotBlank name: String) {
-        focuserService.disconnect(name)
+        val focuser = requireNotNull(equipmentService.focuser(name))
+        focuserService.disconnect(focuser)
     }
 
     @PostMapping("focuserMoveIn")
@@ -40,7 +44,8 @@ class FocuserController(
         @RequestParam @Valid @NotBlank name: String,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        focuserService.moveIn(name, steps)
+        val focuser = requireNotNull(equipmentService.focuser(name))
+        focuserService.moveIn(focuser, steps)
     }
 
     @PostMapping("focuserMoveOut")
@@ -48,7 +53,8 @@ class FocuserController(
         @RequestParam @Valid @NotBlank name: String,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        focuserService.moveOut(name, steps)
+        val focuser = requireNotNull(equipmentService.focuser(name))
+        focuserService.moveOut(focuser, steps)
     }
 
     @PostMapping("focuserMoveTo")
@@ -56,12 +62,14 @@ class FocuserController(
         @RequestParam @Valid @NotBlank name: String,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        focuserService.moveTo(name, steps)
+        val focuser = requireNotNull(equipmentService.focuser(name))
+        focuserService.moveTo(focuser, steps)
     }
 
     @PostMapping("focuserAbort")
     fun abort(@RequestParam @Valid @NotBlank name: String) {
-        focuserService.abort(name)
+        val focuser = requireNotNull(equipmentService.focuser(name))
+        focuserService.abort(focuser)
     }
 
     @PostMapping("focuserSyncTo")
@@ -69,6 +77,7 @@ class FocuserController(
         @RequestParam @Valid @NotBlank name: String,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        focuserService.syncTo(name, steps)
+        val focuser = requireNotNull(equipmentService.focuser(name))
+        focuserService.syncTo(focuser, steps)
     }
 }

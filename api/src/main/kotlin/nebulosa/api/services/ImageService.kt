@@ -92,7 +92,7 @@ class ImageService(
         val savedImage = savedCameraImageRepository.withPath("$path")
 
         val info = ImageInfoResponse(
-            savedImage?.name ?: "",
+            savedImage?.camera ?: "",
             savedImage?.path ?: "",
             savedImage?.savedAt ?: 0L,
             transformedImage.width,
@@ -125,11 +125,11 @@ class ImageService(
     }
 
     fun imagesOfCamera(name: String): List<SavedCameraImageEntity> {
-        return savedCameraImageRepository.withName(name)
+        return savedCameraImageRepository.withCamera(name)
     }
 
     fun latestImageOfCamera(name: String): SavedCameraImageEntity {
-        return savedCameraImageRepository.withNameLatest(name)!!
+        return savedCameraImageRepository.withCameraLatest(name)!!
     }
 
     fun savedImageOfPath(path: Path): SavedCameraImageEntity {
