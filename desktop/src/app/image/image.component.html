@@ -173,29 +173,34 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="SCNR" [draggable]="true" [(visible)]="showSCNRDialog" [modal]="false" [style]="{width: '240px'}"
+<p-dialog header="SCNR" [draggable]="true" [(visible)]="showSCNRDialog" [modal]="false" [style]="{width: '280px'}"
           class="pointer-events-none">
     <div class="grid px-2">
         <div class="col-12 flex align-items-center">
             <p-selectButton styleClass="border-0" [options]="scnrChannelOptions" [(ngModel)]="scnrChannel" [multiple]="false" />
         </div>
-        <div class="col-12 flex align-items-center">
-            <p-dropdown appendTo="body" [(ngModel)]="scnrProtectionMethod" [options]="scnrProtectionMethodOptions" styleClass="border-0">
-                <ng-template let-item pTemplate="selectedItem">
-                    <div class="flex align-items-center gap-2">
-                        <span>{{ item | enum }}</span>
-                    </div>
-                </ng-template>
-                <ng-template let-item pTemplate="item">
-                    <div class="flex align-items-center gap-2">
-                        <span>{{ item | enum }}</span>
-                    </div>
-                </ng-template>
-            </p-dropdown>
+        <div class="col-7 flex align-items-center">
+            <span class="p-float-label w-full max-w-full">
+                <p-dropdown [disabled]="scnrChannel === 'NONE'" appendTo="body" [(ngModel)]="scnrProtectionMethod"
+                            [options]="scnrProtectionMethodOptions" styleClass="border-0">
+                    <ng-template let-item pTemplate="selectedItem">
+                        <div class="flex align-items-center gap-2">
+                            <span>{{ item | enum }}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template let-item pTemplate="item">
+                        <div class="flex align-items-center gap-2">
+                            <span>{{ item | enum }}</span>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
+                <label>Protection Method</label>
+            </span>
         </div>
-        <div class="col-12">
+        <div class="col-5 flex align-items-center">
             <span class="p-float-label">
-                <p-inputNumber [min]="0" [max]="1" [step]="0.1" [showButtons]="true" class="w-full" inputStyleClass="p-inputtext-sm border-0 w-full"
+                <p-inputNumber [disabled]="scnrChannel === 'NONE'" [min]="0" [max]="1" [step]="0.1" [showButtons]="true" class="w-full"
+                               inputStyleClass="border-0 w-full"
                                [(ngModel)]="scnrAmount" locale="en" [allowEmpty]="false" />
                 <label>Amount</label>
             </span>
