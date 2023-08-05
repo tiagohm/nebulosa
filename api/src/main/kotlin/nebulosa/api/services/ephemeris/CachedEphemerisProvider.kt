@@ -67,7 +67,7 @@ abstract class CachedEphemerisProvider<T : Any> : EphemerisProvider<T> {
 
         val elements = compute(key.first, key.second, startTime, endTime)
         val cachedElements = ephemeris.getOrPut(key) { HashMap(1441) }
-        elements.forEach { cachedElements[it.time] = it }
+        elements.forEach { cachedElements[it.dateTime] = it }
         return elements
     }
 

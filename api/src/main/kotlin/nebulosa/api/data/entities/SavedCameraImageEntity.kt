@@ -7,7 +7,7 @@ import io.objectbox.annotation.Index
 @Entity
 data class SavedCameraImageEntity(
     @Id var id: Long = 0,
-    @Index var name: String = "",
+    @Index var camera: String = "",
     @Index var path: String = "",
     var width: Int = 0,
     var height: Int = 0,

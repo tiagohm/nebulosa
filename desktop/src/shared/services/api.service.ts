@@ -1,13 +1,11 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import * as moment from 'moment'
+import moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
-    BodyPosition, Calibration, Camera, CameraStartCapture, Constellation, DeepSkyObject, Device,
-    FilterWheel, Focuser,
-    HipsSurvey, INDIEventType, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, Location, MinorPlanet,
-    Mount,
-    PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, Star, Twilight
+    BodyPosition, Calibration, Camera, CameraStartCapture, ComputedCoordinates, Constellation, DeepSkyObject, Device,
+    FilterWheel, Focuser, HipsSurvey, INDIEventType, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, Location, MinorPlanet,
+    Mount, PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 
 @Injectable({ providedIn: 'root' })
@@ -111,6 +109,69 @@ export class ApiService {
         return this.post<void>(`mountDisconnect?name=${mount.name}`)
     }
 
+    mountTracking(mount: Mount, enable: boolean) {
+        return this.post<void>(`mountTracking?name=${mount.name}&enable=${enable}`)
+    }
+
+    mountSync(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
+        return this.post<void>(`mountSync?name=${mount.name}&rightAscension=${rightAscension}&declination=${declination}&j2000=${j2000}`)
+    }
+
+    mountSlewTo(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
+        return this.post<void>(`mountSlewTo?name=${mount.name}&rightAscension=${rightAscension}&declination=${declination}&j2000=${j2000}`)
+    }
+
+    mountGoTo(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
+        return this.post<void>(`mountGoTo?name=${mount.name}&rightAscension=${rightAscension}&declination=${declination}&j2000=${j2000}`)
+    }
+
+    mountPark(mount: Mount) {
+        return this.post<void>(`mountPark?name=${mount.name}`)
+    }
+
+    mountUnpark(mount: Mount) {
+        return this.post<void>(`mountUnpark?name=${mount.name}`)
+    }
+
+    mountHome(mount: Mount) {
+        return this.post<void>(`mountHome?name=${mount.name}`)
+    }
+
+    mountAbort(mount: Mount) {
+        return this.post<void>(`mountAbort?name=${mount.name}`)
+    }
+
+    mountTrackMode(mount: Mount, mode: TrackMode) {
+        return this.post<void>(`mountTrackMode?name=${mount.name}&mode=${mode}`)
+    }
+
+    mountSlewRate(mount: Mount, rate: SlewRate) {
+        return this.post<void>(`mountSlewRate?name=${mount.name}&rate=${rate.name}`)
+    }
+
+    mountMoveNorth(mount: Mount, enable: boolean) {
+        return this.post<void>(`mountMoveNorth?name=${mount.name}&enable=${enable}`)
+    }
+
+    mountMoveSouth(mount: Mount, enable: boolean) {
+        return this.post<void>(`mountMoveSouth?name=${mount.name}&enable=${enable}`)
+    }
+
+    mountMoveEast(mount: Mount, enable: boolean) {
+        return this.post<void>(`mountMoveEast?name=${mount.name}&enable=${enable}`)
+    }
+
+    mountMoveWest(mount: Mount, enable: boolean) {
+        return this.post<void>(`mountMoveWest?name=${mount.name}&enable=${enable}`)
+    }
+
+    mountComputeCoordinates(mount: Mount, j2000: boolean, rightAscension?: string, declination?: string,
+        equatorial: boolean = true, horizontal: boolean = true, meridian: boolean = false,
+    ) {
+        return this.post<ComputedCoordinates>(`mountComputeCoordinates?name=${mount.name}&rightAscension=${rightAscension || ''}&declination=${declination || ''}` +
+            `&j2000=${j2000}&equatorial=${equatorial}&horizontal=${horizontal}&meridian=${meridian}`)
+    }
+
     attachedFocusers() {
         return this.get<Focuser[]>(`attachedFocusers`)
     }
@@ -194,7 +255,7 @@ export class ApiService {
             responseType: 'blob'
         }))
 
-        const info = JSON.parse(response.headers.get('X-Image-Info')!) as SavedCameraImage
+        const info = JSON.parse(response.headers.get('X-Image-Info')!) as ImageInfo
 
         return { info, blob: response.body! }
     }

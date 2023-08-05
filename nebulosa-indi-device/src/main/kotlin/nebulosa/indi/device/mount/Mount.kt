@@ -59,7 +59,7 @@ interface Mount : GuideOutput, GPS, Parkable {
 
     fun abortMotion()
 
-    fun trackingMode(mode: TrackMode)
+    fun trackMode(mode: TrackMode)
 
     fun slewRate(rate: SlewRate)
 

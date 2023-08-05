@@ -2,6 +2,7 @@ package nebulosa.api.data.responses
 
 import nebulosa.indi.device.mount.*
 import nebulosa.math.AngleFormatter
+import java.time.ZoneOffset
 
 data class MountResponse(
     val name: String,
@@ -22,9 +23,21 @@ data class MountResponse(
     val guideRateNS: Double,
     val rightAscension: String,
     val declination: String,
+    val canPulseGuide: Boolean,
+    val pulseGuiding: Boolean,
+    val canPark: Boolean,
+    val parking: Boolean,
+    val parked: Boolean,
+    val hasGPS: Boolean,
+    val longitude: Double,
+    val latitude: Double,
+    val elevation: Double,
+    val dateTime: Long,
+    val offsetInMinutes: Int,
+    val computedCoordinates: ComputedCoordinateResponse?,
 ) {
 
-    constructor(mount: Mount) : this(
+    constructor(mount: Mount, computedCoordinates: ComputedCoordinateResponse? = null) : this(
         mount.name,
         mount.connected,
         mount.slewing,
@@ -43,5 +56,17 @@ data class MountResponse(
         mount.guideRateNS,
         mount.rightAscension.format(AngleFormatter.HMS),
         mount.declination.format(AngleFormatter.SIGNED_DMS),
+        mount.canPulseGuide,
+        mount.pulseGuiding,
+        mount.canPark,
+        mount.parking,
+        mount.parked,
+        mount.hasGPS,
+        mount.longitude.degrees,
+        mount.latitude.degrees,
+        mount.elevation.meters,
+        mount.dateTime.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli(),
+        mount.dateTime.offset.totalSeconds / 60,
+        computedCoordinates,
     )
 }

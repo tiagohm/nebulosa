@@ -13,9 +13,10 @@
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
     "ng": "ng",
-    "start": "node copyFiles.js && npm-run-all -p electron:serve ng:serve",
+    "copy:files": "node copyFiles.js",
+    "start": "npm run copy:files && npm-run-all -p electron:serve ng:serve",
     "ng:serve": "ng serve -c web --hmr",
-    "build": "node copyFiles.js && npm run electron:serve-tsc && ng build --base-href ./",
+    "build": "npm run copy:files && npm run electron:serve-tsc && ng build --base-href ./",
     "build:dev": "npm run build -- -c dev",
     "build:prod": "npm run build -- -c production",
     "web:build": "npm run build -- -c web-production",

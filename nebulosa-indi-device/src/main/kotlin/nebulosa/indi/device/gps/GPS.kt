@@ -17,7 +17,7 @@ interface GPS : Device {
 
     val elevation: Distance
 
-    val time: OffsetDateTime
+    val dateTime: OffsetDateTime
 
     companion object {
 
@@ -33,8 +33,8 @@ interface GPS : Device {
         }
 
         @JvmStatic
-        fun formatTime(time: LocalDateTime): String {
-            return time.format(UTC_TIME_FORMAT_1)
+        fun formatTime(dateTime: LocalDateTime): String {
+            return dateTime.format(UTC_TIME_FORMAT_1)
         }
 
         @JvmStatic val DRIVERS = setOf(

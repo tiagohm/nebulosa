@@ -214,11 +214,11 @@ export class CameraComponent implements AfterViewInit, OnDestroy {
         this.electron.send('CAMERA_CHANGED', this.camera)
     }
 
-    async connect() {
+    connect() {
         if (this.connected) {
-            await this.api.cameraDisconnect(this.camera!)
+            this.api.cameraDisconnect(this.camera!)
         } else {
-            await this.api.cameraConnect(this.camera!)
+            this.api.cameraConnect(this.camera!)
         }
     }
 

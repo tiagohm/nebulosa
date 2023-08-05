@@ -54,7 +54,7 @@ internal open class MountDevice(
     override var longitude = Angle.ZERO
     override var latitude = Angle.ZERO
     override var elevation = Distance.ZERO
-    override var time = OffsetDateTime.now()!!
+    override var dateTime = OffsetDateTime.now()!!
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -187,7 +187,7 @@ internal open class MountDevice(
                         val utcTime = GPS.extractTime(message["UTC"]!!.value) ?: return
                         val utcOffset = message["OFFSET"]!!.value.toDoubleOrNull() ?: 0.0
 
-                        time = OffsetDateTime.of(utcTime, ZoneOffset.ofTotalSeconds((utcOffset * 3600.0).toInt()))
+                        dateTime = OffsetDateTime.of(utcTime, ZoneOffset.ofTotalSeconds((utcOffset * 3600.0).toInt()))
 
                         handler.fireOnEventReceived(MountTimeChanged(this))
                     }
@@ -251,7 +251,7 @@ internal open class MountDevice(
         }
     }
 
-    override fun trackingMode(mode: TrackMode) {
+    override fun trackMode(mode: TrackMode) {
         sendNewSwitch("TELESCOPE_TRACK_MODE", "TRACK_$mode" to true)
     }
 

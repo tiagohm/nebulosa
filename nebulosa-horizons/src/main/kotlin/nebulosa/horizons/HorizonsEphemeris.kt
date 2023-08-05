@@ -12,10 +12,10 @@ data class HorizonsEphemeris(private val elements: MutableList<HorizonsElement>)
     ClosedRange<LocalDateTime>, List<HorizonsElement> by elements {
 
     override val start
-        get() = elements.first().time
+        get() = elements.first().dateTime
 
     override val endInclusive
-        get() = elements.last().time
+        get() = elements.last().dateTime
 
     override fun isEmpty() = elements.isEmpty()
 

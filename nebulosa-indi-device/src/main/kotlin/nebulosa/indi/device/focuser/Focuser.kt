@@ -21,7 +21,7 @@ interface Focuser : Device, Thermometer {
 
     val canSync: Boolean
 
-    val hasBackslash: Boolean
+    val hasBacklash: Boolean
 
     val maxPosition: Int
 

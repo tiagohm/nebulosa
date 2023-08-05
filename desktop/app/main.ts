@@ -21,6 +21,8 @@ let selectedFilterWheel: FilterWheel
 const args = process.argv.slice(1)
 const serve = args.some(e => e === '--serve')
 
+app.commandLine.appendSwitch('disable-http-cache')
+
 function createMainWindow() {
     createWindow({ id: 'home', path: 'home' })
 

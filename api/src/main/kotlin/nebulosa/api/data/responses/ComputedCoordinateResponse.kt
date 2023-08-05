@@ -8,4 +8,7 @@ data class ComputedCoordinateResponse(
     val azimuth: String,
     val altitude: String,
     val constellation: Constellation,
+    val lst: String,
+    val meridianAt: String,
+    val timeLeftToMeridianFlip: String,
 )

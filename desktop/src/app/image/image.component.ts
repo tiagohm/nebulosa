@@ -10,7 +10,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Calibration, Camera, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageSource, PlateSolverType,
+    Calibration, Camera, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource, PlateSolverType,
     SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage
 } from '../../shared/types'
 
@@ -80,7 +80,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private panZoom?: PanZoom
     private imageURL!: string
-    private imageInfo?: SavedCameraImage
+    private imageInfo?: ImageInfo
     private imageMouseX = 0
     private imageMouseY = 0
     private imageParams: ImageParams = {}
@@ -282,8 +282,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             await this.loadImageFromPath(this.imageParams.path)
         } else if (this.imageParams.camera) {
             try {
-                this.imageInfo = await this.api.latestImageOfCamera(this.imageParams.camera)
-                await this.loadImageFromPath(this.imageInfo.path)
+                const savedImage = await this.api.latestImageOfCamera(this.imageParams.camera)
+                await this.loadImageFromPath(savedImage.path)
             } catch (e) {
                 console.error(e)
             }
@@ -308,6 +308,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         this.imageInfo = info
         this.scnrMenuItem.disabled = info.mono
+
         if (info.rightAscension) this.solverCenterRA = info.rightAscension
         if (info.declination) this.solverCenterDEC = info.declination
 

@@ -26,7 +26,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     canReverse = false
     reverse = false
     canSync = false
-    hasBackslash = false
+    hasBacklash = false
     maxPosition = 0
 
     stepsRelative = 0
@@ -138,7 +138,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         this.canReverse = this.focuser.canReverse
         this.reverse = this.focuser.reverse
         this.canSync = this.focuser.canSync
-        this.hasBackslash = this.focuser.hasBackslash
+        this.hasBacklash = this.focuser.hasBacklash
         this.maxPosition = this.focuser.maxPosition
     }
 

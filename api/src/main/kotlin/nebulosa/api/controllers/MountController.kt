@@ -102,13 +102,13 @@ class MountController(
         mountService.abort(mount)
     }
 
-    @PostMapping("mountTrackingMode")
-    fun trackingMode(
+    @PostMapping("mountTrackMode")
+    fun trackMode(
         @RequestParam @Valid @NotBlank name: String,
         @RequestParam mode: TrackMode,
     ) {
         val mount = requireNotNull(equipmentService.mount(name))
-        mountService.trackingMode(mount, mode)
+        mountService.trackMode(mount, mode)
     }
 
     @PostMapping("mountSlewRate")
@@ -156,6 +156,18 @@ class MountController(
         mountService.moveEast(mount, enable)
     }
 
+    @PostMapping("mountPark")
+    fun park(@RequestParam @Valid @NotBlank name: String) {
+        val mount = requireNotNull(equipmentService.mount(name))
+        mountService.park(mount)
+    }
+
+    @PostMapping("mountUnpark")
+    fun unpark(@RequestParam @Valid @NotBlank name: String) {
+        val mount = requireNotNull(equipmentService.mount(name))
+        mountService.unpark(mount)
+    }
+
     @PostMapping("mountCoordinates")
     fun coordinates(
         @RequestParam @Valid @NotBlank name: String,
@@ -187,13 +199,14 @@ class MountController(
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
         @RequestParam(required = false, defaultValue = "true") equatorial: Boolean,
         @RequestParam(required = false, defaultValue = "true") horizontal: Boolean,
+        @RequestParam(required = false, defaultValue = "true") meridian: Boolean,
     ): ComputedCoordinateResponse {
         val mount = requireNotNull(equipmentService.mount(name))
         return mountService.computeCoordinates(
             mount,
             Angle.from(rightAscension, true, defaultValue = mount.rightAscension),
             Angle.from(declination, defaultValue = mount.declination),
-            j2000, equatorial, horizontal,
+            j2000, equatorial, horizontal, meridian,
         )
     }
 }

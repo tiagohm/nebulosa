@@ -9,6 +9,7 @@ import { MoonComponent } from '../../shared/components/moon/moon.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location, MinorPlanet, SkyObjectType, Star, TypeWithAll } from '../../shared/types'
+import { ElectronService } from '../../shared/services/electron.service'
 
 export interface PlanetItem {
     name: string
@@ -56,14 +57,26 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
         {
             icon: 'mdi mdi-check',
             label: 'Go To',
+            command: async () => {
+                const mount = await this.electron.sendSync('SELECTED_MOUNT')
+                this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+            },
         },
         {
             icon: 'mdi mdi-check',
             label: 'Slew To',
+            command: async () => {
+                const mount = await this.electron.sendSync('SELECTED_MOUNT')
+                this.api.mountSlewTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+            },
         },
         {
             icon: 'mdi mdi-sync',
             label: 'Sync',
+            command: async () => {
+                const mount = await this.electron.sendSync('SELECTED_MOUNT')
+                this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+            },
         },
         {
             icon: 'mdi mdi-image',
@@ -428,6 +441,7 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
         private title: Title,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
+        private electron: ElectronService,
     ) {
         title.setTitle('Sky Atlas')
 
