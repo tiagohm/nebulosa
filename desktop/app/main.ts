@@ -114,6 +114,8 @@ function createWindow(data: OpenWindow<any>) {
         },
     })
 
+    window.setContentSize(width, height)
+
     if (serve) {
         const debug = require('electron-debug')
         debug()
