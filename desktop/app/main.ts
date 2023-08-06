@@ -39,7 +39,7 @@ function createMainWindow() {
                     const data = JSON.parse(message.body)
 
                     if (serve) {
-                        console.log(item, message.body)
+                        console.info(item, message.body)
                     }
 
                     sendToAllWindows(item, data)
@@ -172,6 +172,8 @@ function startApp() {
             api.stdout.on('data', (data) => {
                 const text = `${data}`
 
+                console.info(text)
+
                 if (text) {
                     const regex = /server is started at port: (\d+)/i
                     const match = text.match(regex)
@@ -179,14 +181,14 @@ function startApp() {
                     if (match) {
                         apiPort = parseInt(match[1])
                         api!.stdout.removeAllListeners('data')
-                        console.log(`server is started at port: ${apiPort}`)
+                        console.info(`server is started at port: ${apiPort}`)
                         createMainWindow()
                     }
                 }
             })
 
             api.on('close', (code) => {
-                console.log(`server process exited with code ${code}`)
+                console.warn(`server process exited with code ${code}`)
                 process.exit(code || 0)
             })
         }
@@ -325,6 +327,6 @@ function sendToAllWindows(channel: string, data: any, home: boolean = true) {
     }
 
     if (serve) {
-        console.log(channel, data)
+        console.info(channel, data)
     }
 }

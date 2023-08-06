@@ -12,15 +12,15 @@ export class AppComponent {
     constructor(
         electronService: ElectronService
     ) {
-        console.log('APP_CONFIG', APP_CONFIG)
+        console.info('APP_CONFIG', APP_CONFIG)
 
         if (electronService.isElectron) {
-            console.log(process.env)
-            console.log('Run in electron')
-            console.log('Electron ipcRenderer', electronService.ipcRenderer)
-            console.log('NodeJS childProcess', electronService.childProcess)
+            console.info(process.env)
+            console.info('Run in electron')
+            console.info('Electron ipcRenderer', electronService.ipcRenderer)
+            console.info('NodeJS childProcess', electronService.childProcess)
         } else {
-            console.log('Run in browser')
+            console.info('Run in browser')
         }
     }
 }
