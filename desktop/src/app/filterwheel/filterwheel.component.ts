@@ -1,16 +1,25 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
+import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { FilterWheel } from '../../shared/types'
+
+export interface FilterSlot {
+    position: number
+    name: string
+    editing: boolean
+    newName: string
+    dark: boolean
+}
 
 @Component({
     selector: 'app-filterwheel',
     templateUrl: './filterwheel.component.html',
     styleUrls: ['./filterwheel.component.scss']
 })
-export class FilterWheelComponent implements AfterViewInit, OnDestroy {
+export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     filterWheels: FilterWheel[] = []
     filterWheel?: FilterWheel
@@ -18,14 +27,16 @@ export class FilterWheelComponent implements AfterViewInit, OnDestroy {
 
     moving = false
     position = 0
-    useFilterWheelAsShutter = false
-    shutterPosition = -1
 
-    filterNames: string[] = []
-    showEditDialog = false
+    filters: FilterSlot[] = []
 
-    filterToMove = ''
-    filterToEdit = ''
+    get selectedFilter() {
+        return this.filters[this.position - 1]
+    }
+
+    set selectedFilter(value: FilterSlot) {
+        this.moveTo(value)
+    }
 
     constructor(
         private title: Title,
@@ -48,7 +59,7 @@ export class FilterWheelComponent implements AfterViewInit, OnDestroy {
         })
     }
 
-    async ngAfterViewInit() {
+    async ngAfterContentInit() {
         this.filterWheels = await this.api.attachedFilterWheels()
     }
 
@@ -60,8 +71,6 @@ export class FilterWheelComponent implements AfterViewInit, OnDestroy {
     async filterWheelChanged() {
         if (this.filterWheel) {
             this.title.setTitle(`Filter Wheel ・ ${this.filterWheel.name}`)
-
-            this.loadPreference()
 
             const filterWheel = await this.api.filterWheel(this.filterWheel.name)
             Object.assign(this.filterWheel, filterWheel)
@@ -84,45 +93,30 @@ export class FilterWheelComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    filterToMoveChanged() {
-        this.useFilterWheelAsShutter = this.shutterPosition === this.filterNames.indexOf(this.filterToMove)
+    showFilterEdit(filter: FilterSlot, event: Event) {
+        filter.editing = true
+        event.stopImmediatePropagation()
     }
 
-    shutterToggled() {
-        if (this.useFilterWheelAsShutter) {
-            this.shutterPosition = this.filterNames.indexOf(this.filterToMove)
-        } else {
-            this.shutterPosition = -1
-        }
-
+    shutterToggled(filter: FilterSlot, event: CheckboxChangeEvent) {
+        this.filters.forEach(e => e.dark = e === filter ? e.dark : false)
         this.savePreference()
+        event.originalEvent?.stopImmediatePropagation()
     }
 
-    moveTo() {
-        const index = this.filterNames.indexOf(this.filterToMove)
-
-        if (index >= 0) {
-            this.api.filterWheelMoveTo(this.filterWheel!, index + 1)
-        }
+    moveTo(filter: FilterSlot) {
+        this.api.filterWheelMoveTo(this.filterWheel!, filter.position)
     }
 
-    openFilterOptions() {
-        this.showEditDialog = true
-        this.filterToEdit = this.filterToMove
-    }
+    applyFilterName(filter: FilterSlot, event: Event) {
+        filter.name = filter.newName
 
-    applyFilterName() {
-        const index = this.filterNames.indexOf(this.filterToMove)
+        this.preference.set(`filterWheel.${this.filterWheel!.name}.filterName.${filter.position}`, filter.name)
+        this.api.filterWheelSyncNames(this.filterWheel!, this.filters.map(e => e.name))
+        this.electron.send('FILTER_WHEEL_RENAMED', this.filterWheel)
 
-        if (index >= 0) {
-            this.preference.set(`filterWheel.${this.filterWheel!.name}.filterName.${index}`, this.filterToEdit)
-            this.filterNames[index] = this.filterToEdit
-            this.filterToMove = this.filterToEdit
-
-            this.api.filterWheelSyncNames(this.filterWheel!, this.filterNames)
-
-            this.electron.send('FILTER_WHEEL_RENAMED', this.filterWheel)
-        }
+        filter.editing = false
+        event.stopImmediatePropagation()
     }
 
     private async update() {
@@ -134,26 +128,32 @@ export class FilterWheelComponent implements AfterViewInit, OnDestroy {
         this.moving = this.filterWheel.moving
         this.position = this.filterWheel.position
 
-        if (!this.filterWheel.count) {
-            this.filterNames = []
-        } else if (this.filterWheel.count !== this.filterNames.length) {
-            this.filterNames = new Array(this.filterWheel.count)
+        if (this.filterWheel.count <= 0) {
+            this.filters = []
+        } else if (this.filterWheel.count !== this.filters.length) {
+            this.filters = new Array(this.filterWheel.count)
         }
 
-        for (let i = 0; i < this.filterNames.length; i++) {
-            this.filterNames[i] = this.preference.get(`filterWheel.${this.filterWheel.name}.filterName.${i}`, `Filter #${i + 1}`)
+        const darkFilter = this.preference.get(`filterWheel.${this.filterWheel.name}.shutterPosition`, 0)
+
+        for (let i = 1; i <= this.filters.length; i++) {
+            const name = this.preference.get(`filterWheel.${this.filterWheel.name}.filterName.${i}`, `Filter #${i}`)
+            const filter = { position: i, name, editing: false, newName: name, dark: i === darkFilter }
+            this.filters[i - 1] = filter
         }
     }
 
     private loadPreference() {
         if (this.filterWheel) {
-            this.shutterPosition = this.preference.get(`filterWheel.${this.filterWheel.name}.shutterPosition`, -1)
+            const darkFilter = this.preference.get(`filterWheel.${this.filterWheel.name}.shutterPosition`, 0)
+            this.filters.forEach(e => e.dark = e.position === darkFilter)
         }
     }
 
     private savePreference() {
         if (this.filterWheel) {
-            this.preference.set(`filterWheel.${this.filterWheel.name}.shutterPosition`, this.shutterPosition)
+            const darkFilter = this.filters.find(e => e.dark)
+            this.preference.set(`filterWheel.${this.filterWheel.name}.shutterPosition`, darkFilter?.position || 0)
         }
     }
 }

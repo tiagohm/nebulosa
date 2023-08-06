@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { MessageService } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -11,7 +11,7 @@ import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent implements AfterViewInit, OnDestroy {
+export class HomeComponent implements AfterContentInit, OnDestroy {
 
     host = ''
     port = 7624
@@ -144,7 +144,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
         )
     }
 
-    async ngAfterViewInit() {
+    async ngAfterContentInit() {
         this.updateConnection()
 
         this.host = this.preference.get('home.host', 'localhost')
