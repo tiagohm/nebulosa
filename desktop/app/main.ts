@@ -140,7 +140,7 @@ function createWindow(data: OpenWindow<any>) {
 
             homeWindow = null
 
-            api?.kill('SIGHUP')
+            api?.kill(0)
         } else {
             for (const [key, value] of secondaryWindows) {
                 if (value === window) {
