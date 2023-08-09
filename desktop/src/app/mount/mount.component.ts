@@ -140,6 +140,7 @@ export class MountComponent implements AfterViewInit, OnDestroy {
         this.mounts = await this.api.attachedMounts()
     }
 
+    @HostListener('window:unload')
     ngOnDestroy() {
         this.api.indiStopListening('MOUNT')
 
