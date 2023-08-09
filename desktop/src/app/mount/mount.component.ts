@@ -1,7 +1,7 @@
-import { AfterViewInit, Component, NgZone, OnDestroy } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { MenuItem } from 'primeng/api'
-import { Subject, Subscription, debounceTime, interval } from 'rxjs'
+import { Subject, Subscription, interval, throttleTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -13,7 +13,7 @@ import { Constellation, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMo
     templateUrl: './mount.component.html',
     styleUrls: ['./mount.component.scss'],
 })
-export class MountComponent implements AfterViewInit, OnDestroy {
+export class MountComponent implements AfterContentInit, OnDestroy {
 
     mounts: Mount[] = []
     mount?: Mount
@@ -129,14 +129,14 @@ export class MountComponent implements AfterViewInit, OnDestroy {
         })
 
         this.computeCoordinateSubscription[0] = this.computeCoordinatePublisher
-            .pipe(debounceTime(1000))
+            .pipe(throttleTime(5000))
             .subscribe(() => this.computeCoordinates())
 
         this.computeCoordinateSubscription[1] = interval(5000)
             .subscribe(() => this.computeCoordinatePublisher.next())
     }
 
-    async ngAfterViewInit() {
+    async ngAfterContentInit() {
         this.mounts = await this.api.attachedMounts()
     }
 
@@ -173,16 +173,19 @@ export class MountComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    goTo() {
-        this.api.mountGoTo(this.mount!, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
+    async goTo() {
+        await this.api.mountGoTo(this.mount!, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
+        this.savePreference()
     }
 
-    slewTo() {
-        this.api.mountSlewTo(this.mount!, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
+    async slewTo() {
+        await this.api.mountSlewTo(this.mount!, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
+        this.savePreference()
     }
 
-    sync() {
-        this.api.mountSync(this.mount!, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
+    async sync() {
+        await this.api.mountSync(this.mount!, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
+        this.savePreference()
     }
 
     targetCoordinateOptionClicked() {
@@ -305,10 +308,18 @@ export class MountComponent implements AfterViewInit, OnDestroy {
     }
 
     private loadPreference() {
-
+        if (this.mount) {
+            this.targetCoordinateType = this.preference.get(`mount.${this.mount.name}.targetCoordinateType`, 'JNOW')
+            this.targetRightAscension = this.preference.get(`mount.${this.mount.name}.targetRightAscension`, '00h00m00s')
+            this.targetDeclination = this.preference.get(`mount.${this.mount.name}.targetDeclination`, `00°00'00"`)
+        }
     }
 
     private savePreference() {
-
+        if (this.mount) {
+            this.preference.set(`mount.${this.mount.name}.targetCoordinateType`, this.targetCoordinateType)
+            this.preference.set(`mount.${this.mount.name}.targetRightAscension`, this.targetRightAscension)
+            this.preference.set(`mount.${this.mount.name}.targetDeclination`, this.targetDeclination)
+        }
     }
 }
