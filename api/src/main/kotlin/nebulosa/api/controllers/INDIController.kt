@@ -1,6 +1,5 @@
 package nebulosa.api.controllers
 
-import jakarta.annotation.PostConstruct
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
@@ -8,10 +7,7 @@ import nebulosa.api.data.requests.INDISendPropertyRequest
 import nebulosa.api.services.EquipmentService
 import nebulosa.api.services.INDIService
 import nebulosa.api.services.WebSocketService
-import nebulosa.indi.device.*
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import nebulosa.indi.device.PropertyVector
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -19,30 +15,7 @@ class INDIController(
     private val equipmentService: EquipmentService,
     private val indiService: INDIService,
     private val webSocketService: WebSocketService,
-    private val eventBus: EventBus,
 ) {
-
-    @PostConstruct
-    private fun initialize() {
-        eventBus.register(this)
-    }
-
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onDevicePropertyEvent(event: DevicePropertyEvent) {
-        when (event) {
-            is DevicePropertyChanged -> webSocketService.sendINDIPropertyChanged(event)
-            is DevicePropertyDeleted -> webSocketService.sendINDIPropertyDeleted(event)
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onDeviceMessageReceived(event: DeviceMessageReceived) {
-        if (event.device == null) {
-            indiService.addFirst(event.message)
-        }
-
-        webSocketService.sendINDIMessageReceived(event)
-    }
 
     @GetMapping("indiProperties")
     fun properties(@RequestParam @Valid @NotBlank name: String): Collection<PropertyVector<*, *>> {
