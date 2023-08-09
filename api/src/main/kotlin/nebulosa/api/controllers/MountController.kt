@@ -3,9 +3,9 @@ package nebulosa.api.controllers
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import nebulosa.api.data.responses.ComputedCoordinateResponse
-import nebulosa.api.data.responses.MountResponse
 import nebulosa.api.services.EquipmentService
 import nebulosa.api.services.MountService
+import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.TrackMode
 import nebulosa.math.Angle
 import nebulosa.math.Distance.Companion.m
@@ -26,14 +26,13 @@ class MountController(
 ) {
 
     @GetMapping("attachedMounts")
-    fun attachedMounts(): List<MountResponse> {
-        return equipmentService.mounts().map(::MountResponse)
+    fun attachedMounts(): List<Mount> {
+        return equipmentService.mounts()
     }
 
     @GetMapping("mount")
-    fun mount(@RequestParam @Valid @NotBlank name: String): MountResponse {
-        val mount = requireNotNull(equipmentService.mount(name))
-        return MountResponse(mount)
+    fun mount(@RequestParam @Valid @NotBlank name: String): Mount {
+        return requireNotNull(equipmentService.mount(name))
     }
 
     @PostMapping("mountConnect")

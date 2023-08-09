@@ -26,8 +26,8 @@ class FilterWheelService(
     fun onFocuserEvent(event: FilterWheelEvent) {
         when (event) {
             is PropertyChangedEvent -> webSocketService.sendFilterWheelUpdated(event.device!!)
-            is FilterWheelAttached -> webSocketService.sendFilterWheelAttached(event.device)
-            is FilterWheelDetached -> webSocketService.sendFilterWheelDetached(event.device)
+            is FilterWheelAttached -> webSocketService.sendFilterWheelAttached(event)
+            is FilterWheelDetached -> webSocketService.sendFilterWheelDetached(event)
         }
     }
 

@@ -2,6 +2,8 @@ package nebulosa.api.configs
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.api.data.entities.MyObjectBox
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.hips2fits.Hips2FitsService
@@ -13,6 +15,7 @@ import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.greenrobot.eventbus.EventBus
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -46,9 +49,10 @@ class BeanConfig {
 
     @Bean
     @Primary
-    fun objectMapper() = ObjectMapper()
+    fun objectMapper(@Qualifier("serializer") serializers: List<StdSerializer<*>>) = ObjectMapper()
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)!!
+        .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+        .registerModule(SimpleModule().apply { serializers.forEach(::addSerializer) })!!
 
     @Bean
     fun connectionPool() = ConnectionPool(32, 5L, TimeUnit.MINUTES)

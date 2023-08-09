@@ -51,8 +51,8 @@ class MountService(
     fun onMountEvent(event: MountEvent) {
         when (event) {
             is PropertyChangedEvent -> webSocketService.sendMountUpdated(event.device!!)
-            is MountAttached -> webSocketService.sendMountAttached(event.device)
-            is MountDetached -> webSocketService.sendMountDetached(event.device)
+            is MountAttached -> webSocketService.sendMountAttached(event)
+            is MountDetached -> webSocketService.sendMountDetached(event)
         }
 
         if (event is MountGeographicCoordinateChanged) {

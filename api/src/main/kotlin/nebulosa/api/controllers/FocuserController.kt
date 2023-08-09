@@ -3,9 +3,9 @@ package nebulosa.api.controllers
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.PositiveOrZero
-import nebulosa.api.data.responses.FocuserResponse
 import nebulosa.api.services.EquipmentService
 import nebulosa.api.services.FocuserService
+import nebulosa.indi.device.focuser.Focuser
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -18,13 +18,13 @@ class FocuserController(
 ) {
 
     @GetMapping("attachedFocusers")
-    fun attachedFocusers(): List<FocuserResponse> {
-        return equipmentService.focusers().map(::FocuserResponse)
+    fun attachedFocusers(): List<Focuser> {
+        return equipmentService.focusers()
     }
 
     @GetMapping("focuser")
-    fun focuser(@RequestParam @Valid @NotBlank name: String): FocuserResponse {
-        return FocuserResponse(requireNotNull(equipmentService.focuser(name)))
+    fun focuser(@RequestParam @Valid @NotBlank name: String): Focuser {
+        return requireNotNull(equipmentService.focuser(name))
     }
 
     @PostMapping("focuserConnect")

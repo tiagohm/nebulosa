@@ -50,9 +50,9 @@ class CameraService(
     fun onCameraEvent(event: CameraEvent) {
         when (event) {
             is PropertyChangedEvent -> webSocketService.sendCameraUpdated(event.device!!)
-            is CameraCaptureFinished -> webSocketService.sendCameraCaptureFinished(event.device)
-            is CameraAttached -> webSocketService.sendCameraAttached(event.device)
-            is CameraDetached -> webSocketService.sendCameraDetached(event.device)
+            is CameraCaptureFinished -> webSocketService.sendCameraCaptureFinished(event)
+            is CameraAttached -> webSocketService.sendCameraAttached(event)
+            is CameraDetached -> webSocketService.sendCameraDetached(event)
         }
     }
 

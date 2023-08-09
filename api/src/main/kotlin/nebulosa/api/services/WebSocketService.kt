@@ -1,14 +1,23 @@
 package nebulosa.api.services
 
 import nebulosa.api.data.entities.SavedCameraImageEntity
-import nebulosa.api.data.responses.*
+import nebulosa.api.data.events.CameraCaptureFinished
+import nebulosa.api.data.responses.INDIPropertyResponse
 import nebulosa.indi.device.DeviceMessageReceived
 import nebulosa.indi.device.DevicePropertyEvent
 import nebulosa.indi.device.PropertyVector
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.camera.CameraAttached
+import nebulosa.indi.device.camera.CameraDetached
 import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.filterwheel.FilterWheelAttached
+import nebulosa.indi.device.filterwheel.FilterWheelDetached
 import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.focuser.FocuserAttached
+import nebulosa.indi.device.focuser.FocuserDetached
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.MountAttached
+import nebulosa.indi.device.mount.MountDetached
 import nebulosa.log.loggerFor
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
@@ -47,21 +56,21 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         sendCameraEvent(CAMERA_UPDATED, camera)
     }
 
-    fun sendCameraCaptureFinished(camera: Camera) {
-        sendCameraEvent(CAMERA_CAPTURE_FINISHED, camera)
+    fun sendCameraCaptureFinished(event: CameraCaptureFinished) {
+        sendCameraEvent(CAMERA_CAPTURE_FINISHED, event.device)
     }
 
-    fun sendCameraAttached(camera: Camera) {
-        sendCameraEvent(CAMERA_ATTACHED, camera)
+    fun sendCameraAttached(event: CameraAttached) {
+        sendCameraEvent(CAMERA_ATTACHED, event.device)
     }
 
-    fun sendCameraDetached(camera: Camera) {
-        sendCameraEvent(CAMERA_DETACHED, camera)
+    fun sendCameraDetached(event: CameraDetached) {
+        sendCameraEvent(CAMERA_DETACHED, event.device)
     }
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun sendCameraEvent(eventName: String, camera: Camera) {
-        sendMessage(eventName, CameraResponse(camera))
+        sendMessage(eventName, camera)
     }
 
     // MOUNT
@@ -70,17 +79,17 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         sendMountEvent(MOUNT_UPDATED, mount)
     }
 
-    fun sendMountAttached(mount: Mount) {
-        sendMountEvent(MOUNT_ATTACHED, mount)
+    fun sendMountAttached(event: MountAttached) {
+        sendMountEvent(MOUNT_ATTACHED, event.device)
     }
 
-    fun sendMountDetached(mount: Mount) {
-        sendMountEvent(MOUNT_DETACHED, mount)
+    fun sendMountDetached(event: MountDetached) {
+        sendMountEvent(MOUNT_DETACHED, event.device)
     }
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun sendMountEvent(eventName: String, mount: Mount) {
-        sendMessage(eventName, MountResponse(mount))
+        sendMessage(eventName, mount)
     }
 
     // FOCUSER
@@ -89,17 +98,17 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         sendFocuserEvent(FOCUSER_UPDATED, focuser)
     }
 
-    fun sendFocuserAttached(focuser: Focuser) {
-        sendFocuserEvent(FOCUSER_ATTACHED, focuser)
+    fun sendFocuserAttached(event: FocuserAttached) {
+        sendFocuserEvent(FOCUSER_ATTACHED, event.device)
     }
 
-    fun sendFocuserDetached(focuser: Focuser) {
-        sendFocuserEvent(FOCUSER_DETACHED, focuser)
+    fun sendFocuserDetached(event: FocuserDetached) {
+        sendFocuserEvent(FOCUSER_DETACHED, event.device)
     }
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun sendFocuserEvent(eventName: String, focuser: Focuser) {
-        sendMessage(eventName, FocuserResponse(focuser))
+        sendMessage(eventName, focuser)
     }
 
     // FILTER WHEEL
@@ -108,17 +117,17 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         sendFilterWheelEvent(FILTER_WHEEL_UPDATED, filterWheel)
     }
 
-    fun sendFilterWheelAttached(filterWheel: FilterWheel) {
-        sendFilterWheelEvent(FILTER_WHEEL_ATTACHED, filterWheel)
+    fun sendFilterWheelAttached(event: FilterWheelAttached) {
+        sendFilterWheelEvent(FILTER_WHEEL_ATTACHED, event.device)
     }
 
-    fun sendFilterWheelDetached(filterWheel: FilterWheel) {
-        sendFilterWheelEvent(FILTER_WHEEL_DETACHED, filterWheel)
+    fun sendFilterWheelDetached(event: FilterWheelDetached) {
+        sendFilterWheelEvent(FILTER_WHEEL_DETACHED, event.device)
     }
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun sendFilterWheelEvent(eventName: String, filterWheel: FilterWheel) {
-        sendMessage(eventName, FilterWheelResponse(filterWheel))
+        sendMessage(eventName, filterWheel)
     }
 
     fun registerEventName(eventName: String) {
