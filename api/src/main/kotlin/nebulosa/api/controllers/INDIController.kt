@@ -5,14 +5,10 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 import nebulosa.api.data.requests.INDISendPropertyRequest
-import nebulosa.api.data.responses.INDIPropertyResponse
 import nebulosa.api.services.EquipmentService
 import nebulosa.api.services.INDIService
 import nebulosa.api.services.WebSocketService
-import nebulosa.indi.device.DeviceMessageReceived
-import nebulosa.indi.device.DevicePropertyChanged
-import nebulosa.indi.device.DevicePropertyDeleted
-import nebulosa.indi.device.DevicePropertyEvent
+import nebulosa.indi.device.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -49,7 +45,7 @@ class INDIController(
     }
 
     @GetMapping("indiProperties")
-    fun properties(@RequestParam @Valid @NotBlank name: String): List<INDIPropertyResponse> {
+    fun properties(@RequestParam @Valid @NotBlank name: String): Collection<PropertyVector<*, *>> {
         val device = requireNotNull(equipmentService[name])
         return indiService.properties(device)
     }

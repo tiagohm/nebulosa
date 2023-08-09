@@ -2,16 +2,16 @@ package nebulosa.api.services
 
 import nebulosa.api.data.enums.INDISendPropertyType
 import nebulosa.api.data.requests.INDISendPropertyRequest
-import nebulosa.api.data.responses.INDIPropertyResponse
 import nebulosa.indi.device.Device
+import nebulosa.indi.device.PropertyVector
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service("indiService")
 class INDIService : LinkedList<String>() {
 
-    fun properties(device: Device): List<INDIPropertyResponse> {
-        return device.properties.values.map(::INDIPropertyResponse)
+    fun properties(device: Device): Collection<PropertyVector<*, *>> {
+        return device.properties.values
     }
 
     fun sendProperty(device: Device, vector: INDISendPropertyRequest) {

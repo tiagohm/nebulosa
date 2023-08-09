@@ -2,7 +2,6 @@ package nebulosa.api.services
 
 import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.events.CameraCaptureFinished
-import nebulosa.api.data.responses.INDIPropertyResponse
 import nebulosa.indi.device.DeviceMessageReceived
 import nebulosa.indi.device.DevicePropertyEvent
 import nebulosa.indi.device.PropertyVector
@@ -43,7 +42,7 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun sendINDIPropertyEvent(eventName: String, property: PropertyVector<*, *>) {
-        sendMessage(eventName, INDIPropertyResponse(property))
+        sendMessage(eventName, property)
     }
 
     // CAMERA
