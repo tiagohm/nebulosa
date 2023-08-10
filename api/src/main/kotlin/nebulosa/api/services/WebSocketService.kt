@@ -56,7 +56,7 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
     }
 
     fun sendCameraCaptureFinished(event: CameraCaptureFinished) {
-        sendCameraEvent(CAMERA_CAPTURE_FINISHED, event.device)
+        sendMessage(CAMERA_CAPTURE_FINISHED, event)
     }
 
     fun sendCameraAttached(event: CameraAttached) {
