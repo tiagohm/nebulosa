@@ -37,7 +37,7 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
     }
 
     fun sendINDIMessageReceived(event: DeviceMessageReceived) {
-        sendMessage(DEVICE_MESSAGE_RECEIVED, mapOf("device" to event.device?.name, "message" to event.message))
+        sendMessage(DEVICE_MESSAGE_RECEIVED, event)
     }
 
     @Suppress("NOTHING_TO_INLINE")
