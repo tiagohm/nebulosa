@@ -3,6 +3,7 @@ package nebulosa.api.services
 import jakarta.annotation.PostConstruct
 import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.events.CameraCaptureFinished
+import nebulosa.api.data.events.CameraCaptureProgressChanged
 import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.api.repositories.SavedCameraImageRepository
 import nebulosa.indi.device.PropertyChangedEvent
@@ -50,6 +51,7 @@ class CameraService(
     fun onCameraEvent(event: CameraEvent) {
         when (event) {
             is PropertyChangedEvent -> webSocketService.sendCameraUpdated(event.device!!)
+            is CameraCaptureProgressChanged -> webSocketService.sendCameraCaptureProgressChanged(event)
             is CameraCaptureFinished -> webSocketService.sendCameraCaptureFinished(event)
             is CameraAttached -> webSocketService.sendCameraAttached(event)
             is CameraDetached -> webSocketService.sendCameraDetached(event)

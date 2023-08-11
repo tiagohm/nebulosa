@@ -140,6 +140,23 @@ export interface CameraStartCapture {
     autoSubFolderMode: AutoSubFolderMode
 }
 
+export interface CameraCaptureProgressChanged {
+    camera: string
+    remainingAmount: number
+    frameRemainingTime: number
+    frameProgress: number
+    totalAmount: number
+    totalRemainingTime: number
+    totalProgress: number
+    totalExposureTime: number
+    indeterminate: boolean
+}
+
+
+export interface CameraCaptureFinished {
+    camera: string
+}
+
 export interface OpenWindowOptions {
     icon?: string
     resizable?: boolean
@@ -581,7 +598,7 @@ export const INDI_EVENT_TYPES = [
     'ALL', 'DEVICE', 'CAMERA', 'MOUNT', 'FOCUSER', 'FILTER_WHEEL',
     'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
     'DEVICE_MESSAGE_RECEIVED', 'CAMERA_IMAGE_SAVED',
-    'CAMERA_UPDATED', 'CAMERA_CAPTURE_FINISHED',
+    'CAMERA_UPDATED', 'CAMERA_CAPTURE_PROGRESS_CHANGED', 'CAMERA_CAPTURE_FINISHED',
     'CAMERA_ATTACHED', 'CAMERA_DETACHED',
     'MOUNT_UPDATED', 'MOUNT_ATTACHED', 'MOUNT_DETACHED',
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',

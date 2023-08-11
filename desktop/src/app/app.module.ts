@@ -46,6 +46,7 @@ import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
 import { MountComponent } from './mount/mount.component'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
+import { ExposureTimePipe } from '../shared/pipes/exposureTime.pipe'
 
 @NgModule({
     declarations: [
@@ -66,6 +67,7 @@ import { StopPropagationDirective } from '../shared/directives/stop-propagation.
         EnvPipe,
         WinPipe,
         EnumPipe,
+        ExposureTimePipe,
         StopPropagationDirective,
     ],
     imports: [

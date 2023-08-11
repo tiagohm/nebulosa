@@ -3,6 +3,7 @@ package nebulosa.api.services
 import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.enums.AutoSubFolderMode
 import nebulosa.api.data.events.CameraCaptureFinished
+import nebulosa.api.data.events.CameraCaptureProgressChanged
 import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.common.concurrency.ThreadedJob
@@ -25,6 +26,7 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.createDirectories
 import kotlin.io.path.outputStream
+import kotlin.math.max
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -54,13 +56,28 @@ data class CameraExposureTask(
     @Volatile var remainingAmount = amount
         private set
 
-    @Volatile var remainingTime = 0L
+    @Volatile var frameRemainingTime = 0L
         private set
 
-    val totalExposureTime = exposure.inWholeMilliseconds * amount + (amount - 1) * delay.inWholeMilliseconds
+    @Volatile var frameProgress = 0f
+        private set
+
+    @Volatile var totalRemainingTime = 0L
+        private set
+
+    @Volatile var totalProgress = 0f
+        private set
+
+    val exposureInMicroseconds = exposure.inWholeMicroseconds
+    val indeterminate = amount >= Int.MAX_VALUE
+
+    val totalExposureTime = if (indeterminate) -1L
+    else exposureInMicroseconds * amount + (amount - 1) * delay.inWholeMicroseconds
 
     private val latch = CountUpDownLatch()
     private val forceAbort = AtomicBoolean()
+
+    private var captureStartTime = 0L
 
     constructor(
         camera: Camera,
@@ -110,7 +127,10 @@ data class CameraExposureTask(
                     remainingAmount = 0
                 }
                 is CameraExposureProgressChanged -> {
-                    remainingTime = event.device.exposure
+                    frameRemainingTime = event.device.exposure
+                    frameProgress = (exposureInMicroseconds - frameRemainingTime).toFloat() / exposureInMicroseconds
+
+                    sendProgress()
                 }
             }
         }
@@ -119,6 +139,7 @@ data class CameraExposureTask(
     override fun onStart() {
         EventBus.getDefault().register(this)
         camera.enableBlob()
+        captureStartTime = System.currentTimeMillis()
     }
 
     override fun execute() {
@@ -127,6 +148,8 @@ data class CameraExposureTask(
                 latch.countUp()
 
                 remainingAmount--
+                frameRemainingTime = exposureInMicroseconds
+                frameProgress = 0f
 
                 camera.frame(x, y, width, height)
                 camera.frameType(frameType)
@@ -134,7 +157,7 @@ data class CameraExposureTask(
                 camera.bin(binX, binY)
                 camera.gain(gain)
                 camera.offset(offset)
-                camera.startCapture(exposure.inWholeMicroseconds)
+                camera.startCapture(exposureInMicroseconds)
 
                 LOG.info("exposuring camera ${camera.name} by $exposure")
 
@@ -145,7 +168,7 @@ data class CameraExposureTask(
                 if (forceAbort.get()) {
                     stop()
                 } else if (remainingAmount > 0) {
-                    sleep(delay, forceAbort)
+                    sleep(delay, forceAbort, ::sendProgress)
                 }
             }
         } else {
@@ -196,7 +219,7 @@ data class CameraExposureTask(
                     val event = SavedCameraImageEntity(
                         0, camera.name, "$path",
                         width, height, mono,
-                        exposure.inWholeMicroseconds,
+                        exposureInMicroseconds,
                         System.currentTimeMillis(),
                     )
 
@@ -209,6 +232,16 @@ data class CameraExposureTask(
             LOG.error("failed to read FITS", e)
             forceAbort.set(true)
         }
+    }
+
+    private fun sendProgress() {
+        if (!indeterminate) {
+            val elapsedTime = (System.currentTimeMillis() - captureStartTime) * 1000L
+            totalRemainingTime = max(0L, totalExposureTime - elapsedTime)
+            totalProgress = (totalExposureTime - totalRemainingTime).toFloat() / totalExposureTime
+        }
+
+        EventBus.getDefault().post(CameraCaptureProgressChanged(this))
     }
 
     companion object {

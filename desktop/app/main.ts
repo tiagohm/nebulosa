@@ -46,6 +46,9 @@ function createMainWindow() {
                 })
             }
         },
+        onDisconnect() {
+            console.warn('Web Socket disconnected')
+        },
     })
 
     wsClient.activate()

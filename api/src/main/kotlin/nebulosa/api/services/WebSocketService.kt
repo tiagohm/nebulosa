@@ -2,9 +2,9 @@ package nebulosa.api.services
 
 import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.events.CameraCaptureFinished
+import nebulosa.api.data.events.CameraCaptureProgressChanged
 import nebulosa.indi.device.DeviceMessageReceived
 import nebulosa.indi.device.DevicePropertyEvent
-import nebulosa.indi.device.PropertyVector
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
 import nebulosa.indi.device.camera.CameraDetached
@@ -29,20 +29,15 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
     // INDI
 
     fun sendINDIPropertyChanged(event: DevicePropertyEvent) {
-        sendINDIPropertyEvent(DEVICE_PROPERTY_CHANGED, event.property)
+        sendMessage(DEVICE_PROPERTY_CHANGED, event.property)
     }
 
     fun sendINDIPropertyDeleted(event: DevicePropertyEvent) {
-        sendINDIPropertyEvent(DEVICE_PROPERTY_DELETED, event.property)
+        sendMessage(DEVICE_PROPERTY_DELETED, event.property)
     }
 
     fun sendINDIMessageReceived(event: DeviceMessageReceived) {
         sendMessage(DEVICE_MESSAGE_RECEIVED, event)
-    }
-
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun sendINDIPropertyEvent(eventName: String, property: PropertyVector<*, *>) {
-        sendMessage(eventName, property)
     }
 
     // CAMERA
@@ -52,7 +47,11 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
     }
 
     fun sendCameraUpdated(camera: Camera) {
-        sendCameraEvent(CAMERA_UPDATED, camera)
+        sendMessage(CAMERA_UPDATED, camera)
+    }
+
+    fun sendCameraCaptureProgressChanged(event: CameraCaptureProgressChanged) {
+        sendMessage(CAMERA_CAPTURE_PROGRESS_CHANGED, event)
     }
 
     fun sendCameraCaptureFinished(event: CameraCaptureFinished) {
@@ -60,73 +59,53 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
     }
 
     fun sendCameraAttached(event: CameraAttached) {
-        sendCameraEvent(CAMERA_ATTACHED, event.device)
+        sendMessage(CAMERA_ATTACHED, event.device)
     }
 
     fun sendCameraDetached(event: CameraDetached) {
-        sendCameraEvent(CAMERA_DETACHED, event.device)
-    }
-
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun sendCameraEvent(eventName: String, camera: Camera) {
-        sendMessage(eventName, camera)
+        sendMessage(CAMERA_DETACHED, event.device)
     }
 
     // MOUNT
 
     fun sendMountUpdated(mount: Mount) {
-        sendMountEvent(MOUNT_UPDATED, mount)
+        sendMessage(MOUNT_UPDATED, mount)
     }
 
     fun sendMountAttached(event: MountAttached) {
-        sendMountEvent(MOUNT_ATTACHED, event.device)
+        sendMessage(MOUNT_ATTACHED, event.device)
     }
 
     fun sendMountDetached(event: MountDetached) {
-        sendMountEvent(MOUNT_DETACHED, event.device)
-    }
-
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun sendMountEvent(eventName: String, mount: Mount) {
-        sendMessage(eventName, mount)
+        sendMessage(MOUNT_DETACHED, event.device)
     }
 
     // FOCUSER
 
     fun sendFocuserUpdated(focuser: Focuser) {
-        sendFocuserEvent(FOCUSER_UPDATED, focuser)
+        sendMessage(FOCUSER_UPDATED, focuser)
     }
 
     fun sendFocuserAttached(event: FocuserAttached) {
-        sendFocuserEvent(FOCUSER_ATTACHED, event.device)
+        sendMessage(FOCUSER_ATTACHED, event.device)
     }
 
     fun sendFocuserDetached(event: FocuserDetached) {
-        sendFocuserEvent(FOCUSER_DETACHED, event.device)
-    }
-
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun sendFocuserEvent(eventName: String, focuser: Focuser) {
-        sendMessage(eventName, focuser)
+        sendMessage(FOCUSER_DETACHED, event.device)
     }
 
     // FILTER WHEEL
 
     fun sendFilterWheelUpdated(filterWheel: FilterWheel) {
-        sendFilterWheelEvent(FILTER_WHEEL_UPDATED, filterWheel)
+        sendMessage(FILTER_WHEEL_UPDATED, filterWheel)
     }
 
     fun sendFilterWheelAttached(event: FilterWheelAttached) {
-        sendFilterWheelEvent(FILTER_WHEEL_ATTACHED, event.device)
+        sendMessage(FILTER_WHEEL_ATTACHED, event.device)
     }
 
     fun sendFilterWheelDetached(event: FilterWheelDetached) {
-        sendFilterWheelEvent(FILTER_WHEEL_DETACHED, event.device)
-    }
-
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun sendFilterWheelEvent(eventName: String, filterWheel: FilterWheel) {
-        sendMessage(eventName, filterWheel)
+        sendMessage(FILTER_WHEEL_DETACHED, event.device)
     }
 
     fun registerEventName(eventName: String) {
@@ -153,6 +132,7 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         const val DEVICE_MESSAGE_RECEIVED = "DEVICE_MESSAGE_RECEIVED"
         const val CAMERA_IMAGE_SAVED = "CAMERA_IMAGE_SAVED"
         const val CAMERA_UPDATED = "CAMERA_UPDATED"
+        const val CAMERA_CAPTURE_PROGRESS_CHANGED = "CAMERA_CAPTURE_PROGRESS_CHANGED"
         const val CAMERA_CAPTURE_FINISHED = "CAMERA_CAPTURE_FINISHED"
         const val CAMERA_ATTACHED = "CAMERA_ATTACHED"
         const val CAMERA_DETACHED = "CAMERA_DETACHED"
@@ -166,48 +146,42 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         const val FILTER_WHEEL_ATTACHED = "FILTER_WHEEL_ATTACHED"
         const val FILTER_WHEEL_DETACHED = "FILTER_WHEEL_DETACHED"
 
-        @JvmStatic
-        private val LOG = loggerFor<WebSocketService>()
+        @JvmStatic private val LOG = loggerFor<WebSocketService>()
 
-        @JvmStatic
-        private val DEVICE_EVENT_NAMES = setOf(
+        @JvmStatic private val DEVICE_EVENT_NAMES = setOf(
             DEVICE_PROPERTY_CHANGED,
             DEVICE_PROPERTY_DELETED,
             DEVICE_MESSAGE_RECEIVED,
         )
 
-        @JvmStatic
-        private val CAMERA_EVENT_NAMES = setOf(
+        @JvmStatic private val CAMERA_EVENT_NAMES = setOf(
             CAMERA_IMAGE_SAVED,
             CAMERA_UPDATED,
+            CAMERA_CAPTURE_PROGRESS_CHANGED,
             CAMERA_CAPTURE_FINISHED,
             CAMERA_ATTACHED,
             CAMERA_DETACHED,
         )
 
-        @JvmStatic
-        private val MOUNT_EVENT_NAMES = setOf(
+        @JvmStatic private val MOUNT_EVENT_NAMES = setOf(
             MOUNT_UPDATED,
             MOUNT_ATTACHED,
             MOUNT_DETACHED,
         )
 
-        @JvmStatic
-        private val FOCUSER_EVENT_NAMES = setOf(
+        @JvmStatic private val FOCUSER_EVENT_NAMES = setOf(
             FOCUSER_UPDATED,
             FOCUSER_ATTACHED,
             FOCUSER_DETACHED,
         )
 
-        @JvmStatic
-        private val FILTER_WHEEL_EVENT_NAMES = setOf(
+        @JvmStatic private val FILTER_WHEEL_EVENT_NAMES = setOf(
             FILTER_WHEEL_UPDATED,
             FILTER_WHEEL_ATTACHED,
             FILTER_WHEEL_DETACHED,
         )
 
-        @JvmStatic
-        private val ALL_EVENT_NAMES = listOf(
+        @JvmStatic private val ALL_EVENT_NAMES = listOf(
             DEVICE_EVENT_NAMES, CAMERA_EVENT_NAMES, MOUNT_EVENT_NAMES,
             FOCUSER_EVENT_NAMES, FILTER_WHEEL_EVENT_NAMES,
         ).flatten().toSet()

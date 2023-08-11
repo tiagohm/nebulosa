@@ -4,6 +4,7 @@ import nebulosa.log.loggerFor
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
+import kotlin.system.measureTimeMillis
 import kotlin.time.Duration
 
 abstract class ThreadedJob<T> : LinkedList<T>(), Runnable {
@@ -65,15 +66,15 @@ abstract class ThreadedJob<T> : LinkedList<T>(), Runnable {
 
         @JvmStatic private val LOG = loggerFor<ThreadedJob<*>>()
 
-        private const val DELAY_INTERVAL = 100L
+        const val DELAY_INTERVAL = 500L
 
-        @JvmStatic
-        fun sleep(delay: Duration, abort: AtomicBoolean) {
+        inline fun sleep(delay: Duration, abort: AtomicBoolean, onTick: () -> Unit = {}) {
             var remainingTime = delay.inWholeMilliseconds
 
             while (!abort.get() && remainingTime > 0L) {
                 Thread.sleep(min(remainingTime, DELAY_INTERVAL))
                 remainingTime -= DELAY_INTERVAL
+                remainingTime -= measureTimeMillis(onTick)
             }
         }
     }
