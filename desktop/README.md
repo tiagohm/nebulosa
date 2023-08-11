@@ -8,7 +8,12 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ## Camera
 
-![](camera.png)
+![](camera.1.png)
+![](camera.2.png)
+
+## Mount
+
+![](mount.png)
 
 ## Focuser
 

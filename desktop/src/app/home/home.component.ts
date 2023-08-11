@@ -237,6 +237,18 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     }
 
     private async updateConnection() {
-        this.connected = await this.api.connectionStatus()
+        try {
+            this.connected = await this.api.connectionStatus()
+        } catch {
+            this.connected = false
+
+            this.cameras = []
+            this.mounts = []
+            this.focusers = []
+            this.filterWheels = []
+            this.domes = []
+            this.rotators = []
+            this.switches = []
+        }
     }
 }

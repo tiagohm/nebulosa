@@ -26,6 +26,17 @@
             <i *ngIf="autoSubFolderMode === 'MIDNIGHT'" class="mdi mdi-weather-night text-blue-600"></i>
             <span style="display: contents">{{ savePath }}</span>
         </div>
+        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm" style="min-height: 23px;">
+            <i class="mdi mdi-information text-blue-600"></i>
+            <span class="mr-2">{{ capturing ? 'capturing' : 'idle' }}</span>
+            <ng-container *ngIf="capturing && exposureProgress && !exposureProgress?.indeterminate">
+                <span class="bg-cyan-500 border-round-md p-1 text-gray-900">{{ exposureProgress.totalAmount - exposureProgress.remainingAmount }} of {{ exposureProgress.totalAmount }}</span>
+                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 52px">{{ exposureProgress.frameRemainingTime | exposureTime }}</span>
+                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 36px">{{ exposureProgress.frameProgress | percent }}</span>
+                <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 52px">{{ exposureProgress.totalRemainingTime | exposureTime }}</span>
+                <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 36px">{{ exposureProgress.totalProgress | percent }}</span>
+            </ng-container>
+        </div>
     </div>
     <div class="grid py-1 flex align-items-center">
         <div class="col-3 flex flex-column justify-content-center text-center gap-2">
@@ -80,7 +91,7 @@
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || exposureMode === 'SINGLE' || capturing" [(ngModel)]="exposureDelay" mode="decimal"
-                               [showButtons]="true" [step]="0" [min]="0" [max]="600" locale="en" styleClass="border-0" [allowEmpty]="false"
+                               [showButtons]="true" [step]="1" [min]="0" [max]="60000" locale="en" styleClass="border-0" [allowEmpty]="false"
                                (ngModelChange)="savePreference()" />
                 <label>Delay</label>
             </span>

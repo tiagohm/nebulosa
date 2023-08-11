@@ -53,7 +53,7 @@ internal abstract class AbstractDevice(
             }
             is DelProperty -> {
                 val property = properties.remove(message.name) ?: return
-                handler.fireOnEventReceived(DevicePropertyDeleted(this, property))
+                handler.fireOnEventReceived(DevicePropertyDeleted(property))
             }
             is Message -> {
                 val text = "[%s]: %s".format(message.timestamp, message.message)
@@ -123,7 +123,7 @@ internal abstract class AbstractDevice(
 
                 properties[property.name] = property
 
-                handler.fireOnEventReceived(DevicePropertyChanged(this, property))
+                handler.fireOnEventReceived(DevicePropertyChanged(property))
             }
             is SetVector<*> -> {
                 val property = when (message) {
@@ -167,7 +167,7 @@ internal abstract class AbstractDevice(
                     else -> return
                 }
 
-                handler.fireOnEventReceived(DevicePropertyChanged(this, property))
+                handler.fireOnEventReceived(DevicePropertyChanged(property))
             }
             else -> return
         }

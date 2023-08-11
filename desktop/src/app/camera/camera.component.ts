@@ -1,18 +1,21 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { AutoSubFolderMode, Camera, CameraStartCapture, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType } from '../../shared/types'
+import {
+    AutoSubFolderMode, Camera, CameraCaptureFinished, CameraCaptureProgressChanged, CameraStartCapture,
+    ExposureMode, ExposureTimeUnit, FilterWheel, FrameType
+} from '../../shared/types'
 
 @Component({
     selector: 'app-camera',
     templateUrl: './camera.component.html',
     styleUrls: ['./camera.component.scss']
 })
-export class CameraComponent implements AfterViewInit, OnDestroy {
+export class CameraComponent implements AfterContentInit, OnDestroy {
 
     cameras: Camera[] = []
     camera?: Camera
@@ -51,7 +54,7 @@ export class CameraComponent implements AfterViewInit, OnDestroy {
             items: [
                 {
                     icon: 'mdi mdi-folder-off',
-                    label: 'Off',
+                    label: 'None',
                     command: () => {
                         this.autoSubFolderMode = 'OFF'
                         this.savePreference()
@@ -117,6 +120,7 @@ export class CameraComponent implements AfterViewInit, OnDestroy {
     offsetMin = 0
     offsetMax = 0
     capturing = false
+    exposureProgress?: CameraCaptureProgressChanged
 
     readonly exposureModeOptions: ExposureMode[] = ['SINGLE', 'FIXED', 'LOOP']
     readonly frameTypeOptions: FrameType[] = ['LIGHT', 'DARK', 'FLAT', 'BIAS']
@@ -173,8 +177,17 @@ export class CameraComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.ipcRenderer.on('CAMERA_CAPTURE_FINISHED', (_, camera: Camera) => {
-            if (camera.name === this.camera?.name) {
+        electron.ipcRenderer.on('CAMERA_CAPTURE_PROGRESS_CHANGED', (_, event: CameraCaptureProgressChanged) => {
+            if (event.camera === this.camera?.name) {
+                ngZone.run(() => {
+                    this.capturing = true
+                    this.exposureProgress = event
+                })
+            }
+        })
+
+        electron.ipcRenderer.on('CAMERA_CAPTURE_FINISHED', (_, event: CameraCaptureFinished) => {
+            if (event.camera === this.camera?.name) {
                 ngZone.run(() => {
                     this.capturing = false
                 })
@@ -188,7 +201,7 @@ export class CameraComponent implements AfterViewInit, OnDestroy {
         })
     }
 
-    async ngAfterViewInit() {
+    async ngAfterContentInit() {
         this.cameras = await this.api.attachedCameras()
     }
 

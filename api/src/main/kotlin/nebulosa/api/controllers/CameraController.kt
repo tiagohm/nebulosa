@@ -3,9 +3,9 @@ package nebulosa.api.controllers
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import nebulosa.api.data.requests.CameraStartCaptureRequest
-import nebulosa.api.data.responses.CameraResponse
 import nebulosa.api.services.CameraService
 import nebulosa.api.services.EquipmentService
+import nebulosa.indi.device.camera.Camera
 import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.*
 
@@ -16,14 +16,13 @@ class CameraController(
 ) {
 
     @GetMapping("attachedCameras")
-    fun attachedCameras(): List<CameraResponse> {
-        return equipmentService.cameras().map(::CameraResponse)
+    fun attachedCameras(): List<Camera> {
+        return equipmentService.cameras()
     }
 
     @GetMapping("camera")
-    fun camera(@RequestParam @Valid @NotBlank name: String): CameraResponse {
-        val camera = requireNotNull(equipmentService.camera(name))
-        return CameraResponse(camera)
+    fun camera(@RequestParam @Valid @NotBlank name: String): Camera {
+        return requireNotNull(equipmentService.camera(name))
     }
 
     @PostMapping("cameraConnect")

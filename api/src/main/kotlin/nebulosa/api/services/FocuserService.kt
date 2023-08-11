@@ -26,8 +26,8 @@ class FocuserService(
     fun onFocuserEvent(event: FocuserEvent) {
         when (event) {
             is PropertyChangedEvent -> webSocketService.sendFocuserUpdated(event.device!!)
-            is FocuserAttached -> webSocketService.sendFocuserAttached(event.device)
-            is FocuserDetached -> webSocketService.sendFocuserDetached(event.device)
+            is FocuserAttached -> webSocketService.sendFocuserAttached(event)
+            is FocuserDetached -> webSocketService.sendFocuserDetached(event)
         }
     }
 
