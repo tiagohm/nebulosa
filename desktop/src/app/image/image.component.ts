@@ -10,8 +10,8 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Calibration, Camera, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
-    PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage
+    Calibration, Camera, DeepSkyObject, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
+    PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage, Star
 } from '../../shared/types'
 
 export interface ImageParams {
@@ -74,6 +74,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     crossHair = false
     annotations: ImageAnnotation[] = []
+    annotating = false
+    showAnnotationInfoDialog = false
+    annotationInfo?: Star | DeepSkyObject
 
     showFITSHeadersDialog = false
     fitsHeaders: FITSHeaderItem[] = []
@@ -334,8 +337,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     async annotateImage() {
-        this.annotations = await this.api.annotationsOfImage(this.imageParams.path!, this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets)
+        try {
+            this.annotating = true
+            this.annotations = await this.api.annotationsOfImage(this.imageParams.path!, this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets)
         this.showAnnotationDialog = false
+        } finally {
+            this.annotating = false
+        }
+    }
+
+    showAnnotationInfo(annotation: ImageAnnotation) {
+        this.annotationInfo = annotation.star ?? annotation.dso
+        this.showAnnotationInfoDialog = true
     }
 
     private disableAutoStretch() {

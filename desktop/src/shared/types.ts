@@ -319,17 +319,13 @@ export interface OrbitalPhysicalParameter {
     value: string
 }
 
-export interface Star {
+export interface AstronomicalObject {
     id: number
-    hd: number
-    hr: number
-    hip: number
     names: string
     magnitude: number
     rightAscension: number
     declination: number
     type: SkyObjectType
-    spType: string
     redshift: number
     parallax: number
     radialVelocity: number
@@ -339,9 +335,14 @@ export interface Star {
     constellation: Constellation
 }
 
-export interface DeepSkyObject {
-    id: number
-    names: string
+export interface Star extends AstronomicalObject {
+    hd: number
+    hr: number
+    hip: number
+    spType: string
+}
+
+export interface DeepSkyObject extends AstronomicalObject {
     m: number
     ngc: number
     ic: number
@@ -371,20 +372,9 @@ export interface DeepSkyObject {
     hcg: string
     eso: string
     vdbh: string
-    magnitude: number
-    rightAscension: number
-    declination: number
-    type: SkyObjectType
-    redshift: number
-    parallax: number
-    radialVelocity: number
-    distance: number
     majorAxis: number
     minorAxis: number
     orientation: number
-    pmRA: number
-    pmDEC: number
-    constellation: Constellation
     mtype: string
 }
 
