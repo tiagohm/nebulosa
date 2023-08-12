@@ -96,7 +96,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private readonly pointMountHereMenuItem: MenuItem = {
         label: 'Point mount here',
-        icon: 'mdi mdi-target',
+        icon: 'mdi mdi-telescope',
         disabled: true,
         command: (e) => {
 

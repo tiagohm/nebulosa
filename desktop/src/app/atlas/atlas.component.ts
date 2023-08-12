@@ -55,7 +55,7 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
 
     readonly bodyPositionMenuItems: MenuItem[] = [
         {
-            icon: 'mdi mdi-check',
+            icon: 'mdi mdi-telescope',
             label: 'Go To',
             command: async () => {
                 const mount = await this.electron.sendSync('SELECTED_MOUNT')
@@ -63,7 +63,7 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
             },
         },
         {
-            icon: 'mdi mdi-check',
+            icon: 'mdi mdi-telescope',
             label: 'Slew To',
             command: async () => {
                 const mount = await this.electron.sendSync('SELECTED_MOUNT')

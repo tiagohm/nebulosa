@@ -50,7 +50,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     readonly targetCoordinateOptions: MenuItem[] = [
         {
-            icon: 'mdi mdi-check',
+            icon: 'mdi mdi-telescope',
             label: 'Go To',
             command: () => {
                 this.targetCoordinateOption = this.targetCoordinateOptions[0]
@@ -58,7 +58,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             },
         },
         {
-            icon: 'mdi mdi-check',
+            icon: 'mdi mdi-telescope',
             label: 'Slew To',
             command: () => {
                 this.targetCoordinateOption = this.targetCoordinateOptions[1]
@@ -74,11 +74,11 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             },
         },
         {
-            icon: 'mdi mdi-target',
+            icon: 'mdi mdi-crosshairs-gps',
             label: 'Locations',
             items: [
                 {
-                    icon: 'mdi mdi-target',
+                    icon: 'mdi mdi-crosshairs-gps',
                     label: 'Current location',
                     command: () => {
                         this.targetRightAscension = this.rightAscension
@@ -87,7 +87,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                     },
                 },
                 {
-                    icon: 'mdi mdi-target',
+                    icon: 'mdi mdi-crosshairs-gps',
                     label: 'Current location (J2000)',
                     command: () => {
                         this.targetRightAscension = this.rightAscensionJ2000
@@ -96,19 +96,19 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                     },
                 },
                 {
-                    icon: 'mdi mdi-target',
+                    icon: 'mdi mdi-crosshairs-gps',
                     label: 'Zenith',
                 },
                 {
-                    icon: 'mdi mdi-target',
+                    icon: 'mdi mdi-crosshairs-gps',
                     label: 'North celestial pole',
                 },
                 {
-                    icon: 'mdi mdi-target',
+                    icon: 'mdi mdi-crosshairs-gps',
                     label: 'South celestial pole',
                 },
                 {
-                    icon: 'mdi mdi-target',
+                    icon: 'mdi mdi-crosshairs-gps',
                     label: 'Galactic center',
                 },
             ],
