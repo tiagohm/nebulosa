@@ -19,6 +19,7 @@ import { InputTextModule } from 'primeng/inputtext'
 import { ListboxModule } from 'primeng/listbox'
 import { MenuModule } from 'primeng/menu'
 import { SelectButtonModule } from 'primeng/selectbutton'
+import { SlideMenuModule } from 'primeng/slidemenu'
 import { SliderModule } from 'primeng/slider'
 import { SplitButtonModule } from 'primeng/splitbutton'
 import { TableModule } from 'primeng/table'
@@ -29,8 +30,10 @@ import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
 import { MoonComponent } from '../shared/components/moon/moon.component'
 import { OpenStreetMapComponent } from '../shared/components/openstreetmap/openstreetmap.component'
+import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
 import { EnumPipe } from '../shared/pipes/enum.pipe'
 import { EnvPipe } from '../shared/pipes/env.pipe'
+import { ExposureTimePipe } from '../shared/pipes/exposureTime.pipe'
 import { WinPipe } from '../shared/pipes/win.pipe'
 import { AboutComponent } from './about/about.component'
 import { AppRoutingModule } from './app-routing.module'
@@ -45,8 +48,7 @@ import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
 import { MountComponent } from './mount/mount.component'
-import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
-import { ExposureTimePipe } from '../shared/pipes/exposureTime.pipe'
+import { DialogMenuComponent } from '../shared/components/dialogmenu/dialogmenu.component'
 
 @NgModule({
     declarations: [
@@ -64,6 +66,7 @@ import { ExposureTimePipe } from '../shared/pipes/exposureTime.pipe'
         FocuserComponent,
         FilterWheelComponent,
         MountComponent,
+        DialogMenuComponent,
         EnvPipe,
         WinPipe,
         EnumPipe,
@@ -99,6 +102,7 @@ import { ExposureTimePipe } from '../shared/pipes/exposureTime.pipe'
         ToastModule,
         TieredMenuModule,
         InplaceModule,
+        SlideMenuModule,
     ],
     providers: [
         MessageService,

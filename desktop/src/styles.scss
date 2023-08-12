@@ -103,6 +103,22 @@ i.mdi {
     display: contents;
 }
 
+.p-dialog-content {
+    .p-slidemenu {
+        width: auto !important;
+    }
+
+    &:has(.p-slidemenu) {
+        padding: 0 !important;
+    }
+}
+
+.p-menuitem {
+    &.p-menuitem-checked {
+        background-color: var(--green-800);
+    }
+}
+
 ::-webkit-scrollbar {
     width: 6px;
 }
