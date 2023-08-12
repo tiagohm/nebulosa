@@ -243,8 +243,7 @@
         </span>
     </div>
     <div class="col-3 flex justify-content-center">
-        <p-menu #bodyPositionMenu [model]="bodyPositionMenuItems" [popup]="true" />
-        <p-button icon="mdi mdi-lg mdi-dots-vertical" (click)="bodyPositionMenu.toggle($event)" styleClass="p-button-rounded p-button-text" />
+        <p-button icon="mdi mdi-lg mdi-dots-vertical" (click)="bodyPositionDialogMenu.show()" styleClass="p-button-rounded p-button-text" />
     </div>
     <div class="col-12">
         <p-chart #chart [data]="altitudeData" [responsive]="true" [options]="altitudeOptions" />
@@ -433,3 +432,5 @@
         <p-button [disabled]="!editedLocation.name" icon="mdi mdi-check" label="OK" (onClick)="saveLocation()" styleClass="p-button-text" />
     </ng-template>
 </p-dialog>
+
+<dialogMenu #bodyPositionDialogMenu [model]="bodyPositionMenuItems" />
