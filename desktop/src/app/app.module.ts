@@ -28,8 +28,10 @@ import { TagModule } from 'primeng/tag'
 import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
+import { DialogMenuComponent } from '../shared/components/dialogmenu/dialogmenu.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
 import { OpenStreetMapComponent } from '../shared/components/openstreetmap/openstreetmap.component'
+import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
 import { EnumPipe } from '../shared/pipes/enum.pipe'
 import { EnvPipe } from '../shared/pipes/env.pipe'
@@ -48,7 +50,6 @@ import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
 import { MountComponent } from './mount/mount.component'
-import { DialogMenuComponent } from '../shared/components/dialogmenu/dialogmenu.component'
 
 @NgModule({
     declarations: [
@@ -72,6 +73,7 @@ import { DialogMenuComponent } from '../shared/components/dialogmenu/dialogmenu.
         EnumPipe,
         ExposureTimePipe,
         StopPropagationDirective,
+        NoDropdownDirective,
     ],
     imports: [
         BrowserModule,

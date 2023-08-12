@@ -24,7 +24,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     autoSave = false
     savePath = ''
     autoSubFolderMode: AutoSubFolderMode = 'OFF'
-    showCameraMenuDialog = false
 
     filterWheel?: FilterWheel
 
@@ -35,7 +34,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             command: (e) => {
                 this.autoSave = !this.autoSave
                 this.savePreference()
-                this.showCameraMenuDialog = false
 
                 this.checkMenuItem(e.item, this.autoSave)
             },
@@ -49,7 +47,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 if (path) {
                     this.savePath = path
                     this.savePreference()
-                    this.showCameraMenuDialog = false
                 }
             },
         },
@@ -63,7 +60,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                     command: (e) => {
                         this.autoSubFolderMode = 'OFF'
                         this.savePreference()
-                        this.showCameraMenuDialog = false
 
                         this.checkMenu(this.cameraMenuItems[2].items!, e.item)
                     },
@@ -74,7 +70,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                     command: (e) => {
                         this.autoSubFolderMode = 'NOON'
                         this.savePreference()
-                        this.showCameraMenuDialog = false
 
                         this.checkMenu(this.cameraMenuItems[2].items!, e.item)
                     },
@@ -85,7 +80,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                     command: (e) => {
                         this.autoSubFolderMode = 'MIDNIGHT'
                         this.savePreference()
-                        this.showCameraMenuDialog = false
 
                         this.checkMenu(this.cameraMenuItems[2].items!, e.item)
                     },

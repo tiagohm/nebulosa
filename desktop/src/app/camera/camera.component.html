@@ -14,7 +14,7 @@
                       styleClass="p-button-info" />
         </div>
         <div class="col-2 flex justify-content-center">
-            <p-button [disabled]="!camera" icon="mdi mdi-lg mdi-dots-vertical" (click)="showCameraMenuDialog = true"
+            <p-button [disabled]="!camera" icon="mdi mdi-lg mdi-dots-vertical" (click)="cameraDialogMenu.show()"
                       styleClass="p-button-rounded p-button-text" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center gap-1">
@@ -207,4 +207,4 @@
     </div>
 </div>
 
-<dialogMenu [(visible)]="showCameraMenuDialog" [model]="cameraMenuItems" />
+<dialogMenu #cameraDialogMenu [model]="cameraMenuItems" />

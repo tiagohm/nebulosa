@@ -10,7 +10,7 @@ import { SlideMenu } from 'primeng/slidemenu'
 export class DialogMenuComponent {
 
     @Input()
-    visible = true
+    visible = false
 
     @Output()
     readonly visibleChange = new EventEmitter<boolean>()
@@ -23,17 +23,24 @@ export class DialogMenuComponent {
 
     viewportHeight = 33.25
 
+    show() {
+        this.visible = true
+        this.visibleChange.emit(true)
+    }
+
+    hide() {
+        this.visible = false
+        this.visibleChange.emit(false)
+    }
+
     protected onShow() {
-        const prevItemClick = this.slideMenu.onItemClick
+        const onItemClick = this.slideMenu.onItemClick
 
         this.slideMenu.onItemClick = (e) => {
             const size = e.processedItem.items.length
             if (size) this.viewportHeight = 33.25 * (size + 1)
-            prevItemClick.call(this.slideMenu, e)
+            onItemClick.call(this.slideMenu, e)
+            if (size === 0) this.hide()
         }
-    }
-
-    protected onHide() {
-        this.visibleChange.emit(false)
     }
 }

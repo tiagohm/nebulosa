@@ -80,10 +80,20 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                 {
                     icon: 'mdi mdi-target',
                     label: 'Current location',
+                    command: () => {
+                        this.targetRightAscension = this.rightAscension
+                        this.targetDeclination = this.declination
+                        this.targetCoordinateType = 'JNOW'
+                    },
                 },
                 {
                     icon: 'mdi mdi-target',
                     label: 'Current location (J2000)',
+                    command: () => {
+                        this.targetRightAscension = this.rightAscensionJ2000
+                        this.targetDeclination = this.declinationJ2000
+                        this.targetCoordinateType = 'J2000'
+                    },
                 },
                 {
                     icon: 'mdi mdi-target',
