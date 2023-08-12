@@ -7,6 +7,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { HipsSurvey } from '../../shared/types'
+import { MessageService } from 'primeng/api'
 
 export interface FramingParams {
     rightAscension: string
@@ -45,6 +46,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private preference: PreferenceService,
+        private message: MessageService,
         ngZone: NgZone,
     ) {
         title.setTitle('Framing')
@@ -97,6 +99,10 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
             this.frameId = await this.browserWindow.openImage(path, 'framing', 'FRAMING', title)
 
             this.savePreference()
+        } catch (e: any) {
+            console.error(e)
+
+            this.message.add({ severity: 'error', detail: e.message || 'Failed to retrieve the image' })
         } finally {
             this.loading = false
         }
