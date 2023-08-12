@@ -32,7 +32,6 @@ import nebulosa.wcs.WCSTransform
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
-import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
 import javax.imageio.ImageIO
@@ -224,12 +223,10 @@ class ImageService(
         width: Int, height: Int, fov: Angle,
         rotation: Angle = Angle.ZERO, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
     ): Path {
-        val (image, calibration) = framingService.frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!
+        val (image, path, calibration) = framingService
+            .frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!
 
-        val path = Files.createTempFile("framing", ".fits")
-        image.writeAsFits(path)
         cachedImages[path] = image
-
         calibrations[path] = calibration
 
         return path

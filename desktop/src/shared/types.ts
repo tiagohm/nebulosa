@@ -416,6 +416,10 @@ export interface ComputedCoordinates {
     lst: string
 }
 
+export interface Path {
+    path: string
+}
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',
