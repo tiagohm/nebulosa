@@ -8,8 +8,8 @@ import { ListboxChangeEvent } from 'primeng/listbox'
 import { MoonComponent } from '../../shared/components/moon/moon.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
-import { CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location, MinorPlanet, SkyObjectType, Star, TypeWithAll } from '../../shared/types'
 import { ElectronService } from '../../shared/services/electron.service'
+import { CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location, MinorPlanet, SkyObjectType, Star, Union } from '../../shared/types'
 
 export interface PlanetItem {
     name: string
@@ -22,9 +22,9 @@ export interface SearchFilter {
     rightAscension: string
     declination: string
     radius: number
-    constellation: TypeWithAll<Constellation>
+    constellation: Union<Constellation, 'ALL'>
     magnitude: [number, number]
-    type: TypeWithAll<SkyObjectType>
+    type: Union<SkyObjectType, 'ALL'>
 }
 
 @Component({
@@ -153,7 +153,7 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
         type: 'ALL',
     }
 
-    readonly starTypeOptions: TypeWithAll<SkyObjectType>[] = [
+    readonly starTypeOptions: Union<SkyObjectType, 'ALL'>[] = [
         'ALL',
         'ALPHA2_CVN_VARIABLE', 'ASYMPTOTIC_GIANT_BRANCH_STAR',
         'BETA_CEP_VARIABLE', 'BE_STAR', 'BLUE_STRAGGLER',
@@ -197,7 +197,7 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
         type: 'ALL',
     }
 
-    readonly dsoTypeOptions: TypeWithAll<SkyObjectType>[] = [
+    readonly dsoTypeOptions: Union<SkyObjectType, 'ALL'>[] = [
         'ALL',
         'ACTIVE_GALAXY_NUCLEUS', 'ASSOCIATION_OF_STARS',
         'BLAZAR', 'BLUE_COMPACT_GALAXY', 'BL_LAC',
@@ -227,7 +227,7 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
         'SYMBIOTIC_STAR', 'VARIABLE_STAR', 'YOUNG_STELLAR_OBJECT',
     ]
 
-    readonly constellationOptions: TypeWithAll<Constellation>[] = ['ALL', ...CONSTELLATIONS]
+    readonly constellationOptions: Union<Constellation, 'ALL'>[] = ['ALL', ...CONSTELLATIONS]
 
     name = 'Sun'
     tags: { title: string, severity: string }[] = []

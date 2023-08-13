@@ -1,12 +1,12 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { MenuItem } from 'primeng/api'
-import { Subject, Subscription, interval, throttleTime } from 'rxjs'
+import { Subject, Subscription, debounceTime, interval, throttleTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Constellation, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode } from '../../shared/types'
+import { ComputedCoordinates, Constellation, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode, Union } from '../../shared/types'
 
 @Component({
     selector: 'app-mount',
@@ -35,17 +35,22 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     declination = `00°00'00"`
     azimuth = `000°00'00"`
     altitude = `+00°00'00"`
-    lst = '00:00:00'
-    constellation: Constellation = 'AND'
-    timeLeftToMeridianFlip = '00:00:00'
-    meridianAt = '00:00:00'
+    lst = '00:00'
+    constellation: Union<Constellation, '-'> = '-'
+    timeLeftToMeridianFlip = '00:00'
+    meridianAt = '00:00'
     pierSide: PierSide = 'NEITHER'
     targetCoordinateType: TargetCoordinateType = 'JNOW'
     targetRightAscension = '00h00m00s'
     targetDeclination = `00°00'00"`
+    targetAzimuth = `000°00'00"`
+    targetAltitude = `+00°00'00"`
+    targetConstellation: Union<Constellation, '-'> = '-'
+    targetMeridianAt = '00:00'
 
     private readonly computeCoordinatePublisher = new Subject<void>()
-    private computeCoordinateSubscription: Subscription[] = []
+    private readonly computeTargetCoordinatePublisher = new Subject<void>()
+    private computeCoordinateSubscriptions: Subscription[] = []
     private readonly moveToDirection = [false, false]
 
     readonly targetCoordinateOptions: MenuItem[] = [
@@ -98,18 +103,34 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                 {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'Zenith',
+                    command: async () => {
+                        const coordinates = await this.api.mountZenithLocation(this.mount!)
+                        this.updateTargetCoordinate(coordinates)
+                    },
                 },
                 {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'North celestial pole',
+                    command: async () => {
+                        const coordinates = await this.api.mountNorthCelestialPoleLocation(this.mount!)
+                        this.updateTargetCoordinate(coordinates)
+                    },
                 },
                 {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'South celestial pole',
+                    command: async () => {
+                        const coordinates = await this.api.mountSouthCelestialPoleLocation(this.mount!)
+                        this.updateTargetCoordinate(coordinates)
+                    },
                 },
                 {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'Galactic center',
+                    command: async () => {
+                        const coordinates = await this.api.mountGalacticCenterLocation(this.mount!)
+                        this.updateTargetCoordinate(coordinates)
+                    },
                 },
             ],
         },
@@ -138,12 +159,19 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        this.computeCoordinateSubscription[0] = this.computeCoordinatePublisher
+        this.computeCoordinateSubscriptions[0] = this.computeCoordinatePublisher
             .pipe(throttleTime(5000))
             .subscribe(() => this.computeCoordinates())
 
-        this.computeCoordinateSubscription[1] = interval(5000)
-            .subscribe(() => this.computeCoordinatePublisher.next())
+        this.computeCoordinateSubscriptions[1] = interval(5000)
+            .subscribe(() => {
+                this.computeCoordinatePublisher.next()
+                this.computeTargetCoordinatePublisher.next()
+            })
+
+        this.computeCoordinateSubscriptions[2] = this.computeTargetCoordinatePublisher
+            .pipe(debounceTime(1000))
+            .subscribe(() => this.computeTargetCoordinates())
     }
 
     async ngAfterContentInit() {
@@ -154,8 +182,8 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     ngOnDestroy() {
         this.api.indiStopListening('MOUNT')
 
-        this.computeCoordinateSubscription[0]?.unsubscribe()
-        this.computeCoordinateSubscription[1]?.unsubscribe()
+        this.computeCoordinateSubscriptions
+            .forEach(e => e.unsubscribe())
     }
 
     async mountChanged() {
@@ -317,11 +345,35 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    async computeTargetCoordinates() {
+        if (this.mount && this.mount.connected) {
+            const computedCoordinates = await this.api.mountComputeCoordinates(this.mount!, this.targetCoordinateType === 'J2000',
+                this.targetRightAscension, this.targetDeclination, true, true, true)
+            this.targetAzimuth = computedCoordinates.azimuth
+            this.targetAltitude = computedCoordinates.altitude
+            this.targetConstellation = computedCoordinates.constellation
+            this.targetMeridianAt = computedCoordinates.meridianAt
+        }
+    }
+
+    private updateTargetCoordinate(coordinates: ComputedCoordinates) {
+        if (this.targetCoordinateType === 'J2000') {
+            this.targetRightAscension = coordinates.rightAscensionJ2000
+            this.targetDeclination = coordinates.declinationJ2000
+        } else {
+            this.targetRightAscension = coordinates.rightAscension
+            this.targetDeclination = coordinates.declination
+        }
+
+        this.computeTargetCoordinatePublisher.next()
+    }
+
     private loadPreference() {
         if (this.mount) {
             this.targetCoordinateType = this.preference.get(`mount.${this.mount.name}.targetCoordinateType`, 'JNOW')
             this.targetRightAscension = this.preference.get(`mount.${this.mount.name}.targetRightAscension`, '00h00m00s')
             this.targetDeclination = this.preference.get(`mount.${this.mount.name}.targetDeclination`, `00°00'00"`)
+            this.computeTargetCoordinatePublisher.next()
         }
     }
 

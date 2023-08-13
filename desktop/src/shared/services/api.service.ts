@@ -168,8 +168,24 @@ export class ApiService {
     mountComputeCoordinates(mount: Mount, j2000: boolean, rightAscension?: string, declination?: string,
         equatorial: boolean = true, horizontal: boolean = true, meridian: boolean = false,
     ) {
-        return this.post<ComputedCoordinates>(`mountComputeCoordinates?name=${mount.name}&rightAscension=${rightAscension || ''}&declination=${declination || ''}` +
+        return this.get<ComputedCoordinates>(`mountComputeCoordinates?name=${mount.name}&rightAscension=${rightAscension || ''}&declination=${declination || ''}` +
             `&j2000=${j2000}&equatorial=${equatorial}&horizontal=${horizontal}&meridian=${meridian}`)
+    }
+
+    mountZenithLocation(mount: Mount) {
+        return this.get<ComputedCoordinates>(`mountZenithLocation?name=${mount.name}`)
+    }
+
+    mountNorthCelestialPoleLocation(mount: Mount) {
+        return this.get<ComputedCoordinates>(`mountNorthCelestialPoleLocation?name=${mount.name}`)
+    }
+
+    mountSouthCelestialPoleLocation(mount: Mount) {
+        return this.get<ComputedCoordinates>(`mountSouthCelestialPoleLocation?name=${mount.name}`)
+    }
+
+    mountGalacticCenterLocation(mount: Mount) {
+        return this.get<ComputedCoordinates>(`mountGalacticCenterLocation?name=${mount.name}`)
     }
 
     attachedFocusers() {

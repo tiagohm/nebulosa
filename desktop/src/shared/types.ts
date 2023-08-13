@@ -398,6 +398,8 @@ export interface Calibration {
 export interface ComputedCoordinates {
     rightAscension: string
     declination: string
+    rightAscensionJ2000: string
+    declinationJ2000: string
     azimuth: string
     altitude: string
     constellation: Constellation
@@ -417,7 +419,7 @@ export enum ExposureTimeUnit {
     MICROSECOND = 'µs',
 }
 
-export type TypeWithAll<T> = T | 'ALL'
+export type Union<T, Other> = T | Other
 
 export type AutoSubFolderMode = 'OFF' |
     'NOON' |
