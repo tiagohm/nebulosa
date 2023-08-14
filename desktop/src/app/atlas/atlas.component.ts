@@ -1,7 +1,6 @@
 import { AfterContentInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ChartData, ChartOptions } from 'chart.js'
-import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
 import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
@@ -55,47 +54,12 @@ export class AtlasComponent implements AfterContentInit, OnDestroy {
     moonIlluminated = 1
     moonWaning = false
 
-    readonly bodyPositionMenuItems: MenuItem[] = [
-        {
-            icon: 'mdi mdi-telescope',
-            label: 'Go To',
-            command: async () => {
-                const mount = this.electron.selectedMount()
-                if (!mount?.connected) return
-                this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
-            },
-        },
-        {
-            icon: 'mdi mdi-telescope',
-            label: 'Slew',
-            command: async () => {
-                const mount = this.electron.selectedMount()
-                if (!mount?.connected) return
-                this.api.mountSlewTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
-            },
-        },
-        {
-            icon: 'mdi mdi-sync',
-            label: 'Sync',
-            command: async () => {
-                const mount = this.electron.selectedMount()
-                if (!mount?.connected) return
-                this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
-            },
-        },
-        {
-            icon: 'mdi mdi-image',
-            label: 'Frame',
-            command: () => {
-                this.browserWindow.openFraming({ rightAscension: this.bodyPosition.rightAscensionJ2000, declination: this.bodyPosition.declinationJ2000 })
-            },
-        },
-    ]
-
     locations: Location[] = []
     location = Object.assign({}, EMPTY_LOCATION)
     useManualDateTime = false
     dateTime = new Date()
+    dateTimeHour = this.dateTime.getHours()
+    dateTimeMinute = this.dateTime.getMinutes()
 
     planet?: PlanetItem
     readonly planets: PlanetItem[] = [
@@ -597,6 +561,28 @@ export class AtlasComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    mountGoTo() {
+        const mount = this.electron.selectedMount()
+        if (!mount?.connected) return
+        this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+    }
+
+    mountSlew() {
+        const mount = this.electron.selectedMount()
+        if (!mount?.connected) return
+        this.api.mountSlewTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+    }
+
+    mountSync() {
+        const mount = this.electron.selectedMount()
+        if (!mount?.connected) return
+        this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+    }
+
+    frame() {
+        this.browserWindow.openFraming({ rightAscension: this.bodyPosition.rightAscensionJ2000, declination: this.bodyPosition.declinationJ2000 })
+    }
+
     async refreshTab(
         refreshTwilight: boolean = false,
         refreshChart: boolean = false,
@@ -605,6 +591,11 @@ export class AtlasComponent implements AfterContentInit, OnDestroy {
 
         if (!this.useManualDateTime) {
             this.dateTime = new Date()
+            this.dateTimeHour = this.dateTime.getHours()
+            this.dateTimeMinute = this.dateTime.getMinutes()
+        } else {
+            this.dateTime.setHours(this.dateTimeHour)
+            this.dateTime.setMinutes(this.dateTimeMinute)
         }
 
         try {

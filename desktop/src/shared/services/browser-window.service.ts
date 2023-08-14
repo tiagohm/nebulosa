@@ -77,7 +77,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'atlas', path: 'atlas', icon: options.icon || 'atlas',
-            width: options.width || 460, height: options.height || 580,
+            width: options.width || 512, height: options.height || 510,
         })
     }
 

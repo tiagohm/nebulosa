@@ -137,6 +137,8 @@
                     </p-table>
                 </div>
             </p-tabPanel>
+            <p-tabPanel header="TLEs" [disabled]="refreshing">
+            </p-tabPanel>
             <p-tabPanel header="Settings" [disabled]="refreshing">
                 <div class="grid flex align-items-center p-2">
                     <div class="col-8">
@@ -153,101 +155,117 @@
                         <p-button [disabled]="refreshing || locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete"
                                   styleClass="p-button-danger" />
                     </div>
-                    <div class="col-12 font-bold pb-0">
-                        Date & Time
-                    </div>
-                    <div class="col-12 flex align-items-center">
-                        <span class="p-input-icon-left p-input-icon-right">
-                            <span class="pi pi-calendar"></span>
-                            <p-calendar [disabled]="!useManualDateTime" [(ngModel)]="dateTime" [showTime]="true"
-                                        [showSeconds]="false" dateFormat="yy/mm/dd" inputStyleClass="border-0 pl-6"
-                                        (ngModelChange)="dateTimeChanged()" />
-                            <p-checkbox class="p-icon-wrapper" [binary]="true" [(ngModel)]="useManualDateTime"
-                                        (ngModelChange)="useManualDateTimeChanged()" />
-                        </span>
-                    </div>
                 </div>
             </p-tabPanel>
         </p-tabView>
     </div>
 </div>
-<div class="grid px-2">
-    <div class="col-12 flex align-items-center justify-content-center gap-1" style="height: 32px; max-height: 32px;">
+<div class="grid px-2 relative">
+    <div class="col-12 flex align-items-start justify-content-center gap-1" style="height: 48px;">
         <span class="text-overflow-scroll">{{ name }}</span>
         <p-tag *ngFor="let tag of tags" [severity]="tag.severity" [value]="tag.title" />
     </div>
-    <div class="col-3">
-        <span class="p-float-label">
-            <input readonly pInputText class="border-0 max-w-full" [value]="bodyPosition.rightAscensionJ2000" />
-            <label>RA (J2000)</label>
-        </span>
-    </div>
-    <div class="col-3">
-        <span class="p-float-label">
-            <input readonly pInputText class="border-0 max-w-full" [value]="bodyPosition.declinationJ2000" />
-            <label>DEC (J2000)</label>
-        </span>
-    </div>
-    <div class="col-3">
-        <span class="p-float-label">
-            <input readonly pInputText class="border-0 max-w-full" [value]="bodyPosition.rightAscension" />
-            <label>RA</label>
-        </span>
-    </div>
-    <div class="col-3">
-        <span class="p-float-label">
-            <input readonly pInputText class="border-0 max-w-full" [value]="bodyPosition.declination" />
-            <label>DEC</label>
-        </span>
-    </div>
-    <div class="col-3">
-        <span class="p-float-label">
-            <input readonly pInputText class="border-0 max-w-full" [value]="bodyPosition.azimuth" />
-            <label>Azimuth</label>
-        </span>
-    </div>
-    <div class="col-3">
-        <span class="p-float-label">
-            <input readonly pInputText class="border-0 max-w-full" [value]="bodyPosition.altitude" />
-            <label>Altitude</label>
-        </span>
-    </div>
-    <div class="col-3">
-        <span class="p-float-label">
-            <input readonly pInputText class="border-0 max-w-full"
-                   [value]="bodyPosition.magnitude < 99 ? bodyPosition.magnitude.toFixed(2) : '-'" />
-            <label>Magnitude</label>
-        </span>
-    </div>
-    <div class="col-3">
-        <span class="p-float-label">
-            <input readonly pInputText class="border-0 max-w-full" [value]="bodyPosition.constellation" />
-            <label>Constellation</label>
-        </span>
-    </div>
-    <div class="col-3">
-        <span class="p-float-label">
-            <input readonly pInputText class="border-0 max-w-full" [value]="bodyPosition.distance" />
-            <label>Distance ({{ bodyPosition.distanceUnit }})</label>
-        </span>
-    </div>
-    <div class="col-3">
-        <span class="p-float-label">
-            <input readonly pInputText class="border-0 max-w-full" [value]="bodyPosition.illuminated" />
-            <label>Illuminated (%)</label>
-        </span>
-    </div>
-    <div class="col-3">
-        <span class="p-float-label">
-            <input readonly pInputText class="border-0 max-w-full" [value]="bodyPosition.elongation" />
-            <label>Elongation (°)</label>
-        </span>
-    </div>
-    <div class="col-3 flex justify-content-center">
-        <p-button icon="mdi mdi-lg mdi-dots-vertical" (click)="bodyPositionDialogMenu.show()" styleClass="p-button-rounded p-button-text" />
-    </div>
-    <div class="col-12">
-        <p-chart #chart [data]="altitudeData" [responsive]="true" [options]="altitudeOptions" />
+    <p-tabView [style]="{height: '224px', width: '100vw'}">
+        <p-tabPanel header="Info">
+            <div class="grid pt-2">
+                <div class="col-3">
+                    <span class="p-float-label">
+                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.rightAscensionJ2000" />
+                        <label>RA (J2000)</label>
+                    </span>
+                </div>
+                <div class="col-3">
+                    <span class="p-float-label">
+                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.declinationJ2000" />
+                        <label>DEC (J2000)</label>
+                    </span>
+                </div>
+                <div class="col-3">
+                    <span class="p-float-label">
+                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.rightAscension" />
+                        <label>RA</label>
+                    </span>
+                </div>
+                <div class="col-3">
+                    <span class="p-float-label">
+                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.declination" />
+                        <label>DEC</label>
+                    </span>
+                </div>
+                <div class="col-3">
+                    <span class="p-float-label">
+                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.azimuth" />
+                        <label>Azimuth</label>
+                    </span>
+                </div>
+                <div class="col-3">
+                    <span class="p-float-label">
+                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.altitude" />
+                        <label>Altitude</label>
+                    </span>
+                </div>
+                <div class="col-3">
+                    <span class="p-float-label">
+                        <input readonly pInputText class="border-0 w-full"
+                               [value]="bodyPosition.magnitude < 99 ? bodyPosition.magnitude.toFixed(2) : '-'" />
+                        <label>Magnitude</label>
+                    </span>
+                </div>
+                <div class="col-3">
+                    <span class="p-float-label">
+                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.constellation" />
+                        <label>Constellation</label>
+                    </span>
+                </div>
+                <div class="col-3">
+                    <span class="p-float-label">
+                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.distance" />
+                        <label>Distance ({{ bodyPosition.distanceUnit }})</label>
+                    </span>
+                </div>
+                <div class="col-3">
+                    <span class="p-float-label">
+                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.illuminated" />
+                        <label>Illuminated (%)</label>
+                    </span>
+                </div>
+                <div class="col-3">
+                    <span class="p-float-label">
+                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.elongation" />
+                        <label>Elongation (°)</label>
+                    </span>
+                </div>
+                <div class="col-12 flex justify-content-center">
+                    <p-button [disabled]="refreshing" (onClick)="mountSync()" icon="mdi mdi-sync" label="Sync"
+                              styleClass="p-button-text p-button-info" />
+                    <p-button [disabled]="refreshing" (onClick)="mountGoTo()" icon="mdi mdi-telescope" label="Go To"
+                              styleClass="p-button-text p-button-success" />
+                    <p-button [disabled]="refreshing" (onClick)="mountSlew()" icon="mdi mdi-telescope" label="Slew"
+                              styleClass="p-button-text p-button-success" />
+                    <p-button [disabled]="refreshing" (onClick)="frame()" icon="mdi mdi-image" label="Frame" styleClass="p-button-text" />
+                </div>
+            </div>
+        </p-tabPanel>
+        <p-tabPanel header="Chart">
+            <p-chart #chart width="100%" height="170px" [data]="altitudeData" [responsive]="true" [options]="altitudeOptions" />
+        </p-tabPanel>
+    </p-tabView>
+    <div class="col-9 flex flex-row align-items-center justify-content-between gap-1 absolute" style="right: 8px; top: 36px;">
+        <div class="flex flex-row gap-1 align-items-center justify-content-center">
+            <i class="mdi mdi-map-marker text-red-500"></i>
+            <label class="w-full text-center text-gray-100 text-sm">{{ location.name }}</label>
+        </div>
+
+        <div class="flex flex-row gap-1 align-items-center justify-content-center">
+            <p-checkbox [binary]="true" [(ngModel)]="useManualDateTime" (ngModelChange)="useManualDateTimeChanged()" />
+            <p-calendar [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTime" [showIcon]="true" [showWeek]="true" [showButtonBar]="true"
+                        dateFormat="yy-mm-dd" inputStyleClass="p-inputtext-sm w-6rem" class="border-0" />
+            <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeHour" [showButtons]="true" [min]="0" [max]="23" class="w-fit" [format]="false"
+                           [allowEmpty]="false" (ngModelChange)="dateTimeChanged()" styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" />
+            <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeMinute" [showButtons]="true" [min]="0" [max]="59" class="w-fit"
+                           [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged()" styleClass="p-inputtext-sm border-0"
+                           [style]="{width: '54px'}" />
+        </div>
     </div>
 </div>
 
@@ -387,5 +405,3 @@
         <p-button icon="mdi mdi-filter" label="Filter" (onClick)="filterDSO()" styleClass="p-button-text" />
     </ng-template>
 </p-dialog>
-
-<dialogMenu #bodyPositionDialogMenu [model]="bodyPositionMenuItems" />
