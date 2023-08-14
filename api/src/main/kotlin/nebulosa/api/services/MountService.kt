@@ -150,8 +150,8 @@ class MountService(
     fun computeCoordinates(
         mount: Mount,
         rightAscension: Angle = mount.rightAscension, declination: Angle = mount.declination,
-        j2000: Boolean,
-        equatorial: Boolean, horizontal: Boolean, meridian: Boolean,
+        j2000: Boolean = false,
+        equatorial: Boolean = true, horizontal: Boolean = true, meridian: Boolean = true,
     ): ComputedCoordinateResponse {
         val center = site[mount]!!
         val time = currentTime

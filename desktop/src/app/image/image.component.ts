@@ -101,8 +101,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Point mount here',
         icon: 'mdi mdi-telescope',
         disabled: true,
-        command: (e) => {
-
+        command: () => {
+            const mount = this.electron.sendSync('SELECTED_MOUNT')
+            if (!mount?.connected) return
+            this.api.pointMountHere(mount, this.imageParams.path!, this.imageMouseX, this.imageMouseY, !this.solved)
         },
     }
 
@@ -322,6 +324,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
 
         this.annotationMenuItem.disabled = !info.calibrated
+        this.pointMountHereMenuItem.disabled = !info.calibrated
         this.fitsHeaders = info.headers
 
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
@@ -340,7 +343,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         try {
             this.annotating = true
             this.annotations = await this.api.annotationsOfImage(this.imageParams.path!, this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets)
-        this.showAnnotationDialog = false
+            this.showAnnotationDialog = false
         } finally {
             this.annotating = false
         }
@@ -387,10 +390,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
             this.solved = true
             this.annotationMenuItem.disabled = false
+            this.pointMountHereMenuItem.disabled = false
         } catch {
             this.solved = false
             this.solverCalibration = undefined
             this.annotationMenuItem.disabled = true
+            this.pointMountHereMenuItem.disabled = true
         } finally {
             this.solving = false
         }

@@ -334,8 +334,8 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     private async computeCoordinates() {
         if (this.mount && this.mount.connected) {
             const computedCoordinates = await this.api.mountComputeCoordinates(this.mount!, false, '', '', true, true, true)
-            this.rightAscensionJ2000 = computedCoordinates.rightAscension
-            this.declinationJ2000 = computedCoordinates.declination
+            this.rightAscensionJ2000 = computedCoordinates.rightAscensionJ2000
+            this.declinationJ2000 = computedCoordinates.declinationJ2000
             this.azimuth = computedCoordinates.azimuth
             this.altitude = computedCoordinates.altitude
             this.constellation = computedCoordinates.constellation

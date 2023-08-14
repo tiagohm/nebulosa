@@ -425,4 +425,8 @@ export class ApiService {
     ) {
         return this.post<Path>(`frame?rightAscension=${rightAscension}&declination=${declination}&rotation=${rotation}&fov=${fov}&width=${width}&height=${height}&hipsSurvey=${hipsSurvey.type}`)
     }
+
+    pointMountHere(mount: Mount, path: string, x: number, y: number, synchronized: boolean = true) {
+        return this.post<void>(`pointMountHere?name=${mount.name}&path=${path}&x=${x}&y=${y}&synchronized=${synchronized}`)
+    }
 }

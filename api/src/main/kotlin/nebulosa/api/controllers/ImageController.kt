@@ -8,17 +8,21 @@ import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.enums.PlateSolverType
 import nebulosa.api.data.responses.CalibrationResponse
 import nebulosa.api.data.responses.ImageAnnotationResponse
+import nebulosa.api.services.EquipmentService
 import nebulosa.api.services.ImageService
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.math.Angle
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import java.nio.file.Path
-import java.util.*
 
 @RestController
 class ImageController(
     private val imageService: ImageService,
+    private val equipmentService: EquipmentService,
 ) {
 
     @GetMapping("openImage")
@@ -101,10 +105,13 @@ class ImageController(
 
     @PostMapping("pointMountHere")
     fun pointMountHere(
+        @RequestParam @Valid @NotBlank name: String,
         @RequestParam @Valid @NotBlank path: String,
         @RequestParam @Valid @PositiveOrZero x: Double,
         @RequestParam @Valid @PositiveOrZero y: Double,
+        @RequestParam(required = false, defaultValue = "true") synchronized: Boolean,
     ) {
-        imageService.pointMountHere(Path.of(path), x, y)
+        val mount = requireNotNull(equipmentService.mount(name))
+        imageService.pointMountHere(mount, Path.of(path), x, y, synchronized)
     }
 }
