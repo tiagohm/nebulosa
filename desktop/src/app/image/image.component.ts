@@ -3,15 +3,15 @@ import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import createPanZoom, { PanZoom } from 'panzoom'
 import * as path from 'path'
-import { MenuItem, MenuItemCommandEvent } from 'primeng/api'
+import { MegaMenuItem, MenuItem } from 'primeng/api'
 import { ContextMenu } from 'primeng/contextmenu'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Calibration, Camera, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource, PlateSolverType,
-    SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage
+    Calibration, Camera, DeepSkyObject, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
+    PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage, Star
 } from '../../shared/types'
 
 export interface ImageParams {
@@ -74,6 +74,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     crossHair = false
     annotations: ImageAnnotation[] = []
+    annotating = false
+    showAnnotationInfoDialog = false
+    annotationInfo?: Star | DeepSkyObject
 
     showFITSHeadersDialog = false
     fitsHeaders: FITSHeaderItem[] = []
@@ -96,10 +99,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private readonly pointMountHereMenuItem: MenuItem = {
         label: 'Point mount here',
-        icon: 'mdi mdi-target',
+        icon: 'mdi mdi-telescope',
         disabled: true,
-        command: (e) => {
-
+        command: () => {
+            const mount = this.electron.sendSync('SELECTED_MOUNT')
+            if (!mount?.connected) return
+            this.api.pointMountHere(mount, this.imageParams.path!, this.imageMouseX, this.imageMouseY, !this.solved)
         },
     }
 
@@ -148,7 +153,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             styleClass: 'p-menuitem-checked',
             command: (e) => {
                 this.autoStretch = !this.autoStretch
-                this.toggleMenuItemChecked(e)
+                this.checkMenuItem(e.item, this.autoStretch)
 
                 if (!this.autoStretch) {
                     this.resetStretch()
@@ -163,7 +168,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             icon: 'mdi mdi-flip-horizontal',
             command: (e) => {
                 this.mirrorHorizontal = !this.mirrorHorizontal
-                this.toggleMenuItemChecked(e)
+                this.checkMenuItem(e.item, this.mirrorHorizontal)
                 this.loadImage()
             },
         },
@@ -172,7 +177,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             icon: 'mdi mdi-flip-vertical',
             command: (e) => {
                 this.mirrorVertical = !this.mirrorVertical
-                this.toggleMenuItemChecked(e)
+                this.checkMenuItem(e.item, this.mirrorVertical)
                 this.loadImage()
             },
         },
@@ -181,7 +186,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             icon: 'mdi mdi-invert-colors',
             command: (e) => {
                 this.invert = !this.invert
-                this.toggleMenuItemChecked(e)
+                this.checkMenuItem(e.item, this.invert)
                 this.loadImage()
             },
         },
@@ -197,7 +202,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                     icon: 'mdi mdi-bullseye',
                     command: (e) => {
                         this.crossHair = !this.crossHair
-                        this.toggleMenuItemChecked(e)
+                        this.checkMenuItem(e.item, this.crossHair)
                     },
                 },
                 this.annotationMenuItem,
@@ -319,6 +324,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
 
         this.annotationMenuItem.disabled = !info.calibrated
+        this.pointMountHereMenuItem.disabled = !info.calibrated
         this.fitsHeaders = info.headers
 
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
@@ -334,13 +340,23 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     async annotateImage() {
-        this.annotations = await this.api.annotationsOfImage(this.imageParams.path!, this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets)
-        this.showAnnotationDialog = false
+        try {
+            this.annotating = true
+            this.annotations = await this.api.annotationsOfImage(this.imageParams.path!, this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets)
+            this.showAnnotationDialog = false
+        } finally {
+            this.annotating = false
+        }
+    }
+
+    showAnnotationInfo(annotation: ImageAnnotation) {
+        this.annotationInfo = annotation.star ?? annotation.dso
+        this.showAnnotationInfoDialog = true
     }
 
     private disableAutoStretch() {
         this.autoStretch = false
-        document.getElementById('auto-stretch-menuitem')!.parentElement!.classList.remove('p-menuitem-checked')
+        this.checkMenuItem(this.menuItems[5], false)
     }
 
     resetStretch() {
@@ -374,10 +390,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
             this.solved = true
             this.annotationMenuItem.disabled = false
+            this.pointMountHereMenuItem.disabled = false
         } catch {
             this.solved = false
             this.solverCalibration = undefined
             this.annotationMenuItem.disabled = true
+            this.pointMountHereMenuItem.disabled = true
         } finally {
             this.solving = false
         }
@@ -407,8 +425,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    private toggleMenuItemChecked(event: MenuItemCommandEvent) {
-        const menuItem = (event.originalEvent!.target as HTMLElement).closest(".p-menuitem") as HTMLElement
-        menuItem.classList.toggle('p-menuitem-checked')
+    private checkMenuItem(item?: MenuItem | MegaMenuItem, checked: boolean = true) {
+        item && (item.styleClass = checked ? 'p-menuitem-checked' : '')
     }
 }

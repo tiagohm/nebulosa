@@ -35,7 +35,8 @@ class MountService(
         @Synchronized get() {
             val curTime = System.currentTimeMillis()
 
-            if (curTime - prevTime >= 60000L) {
+            if (curTime - prevTime >= 30000L) {
+                prevTime = curTime
                 field = UTC.now()
             }
 
@@ -131,7 +132,7 @@ class MountService(
     private fun computeTimeLeftToMeridianFlip(rightAscension: Angle, lst: Angle): Angle {
         val timeLeft = rightAscension - lst
         return if (timeLeft.value < 0.0) timeLeft - SIDEREAL_TIME_DIFF * (timeLeft.normalized.value / TAU)
-        else timeLeft + SIDEREAL_TIME_DIFF * (1.0 - timeLeft.value / TAU)
+        else timeLeft + SIDEREAL_TIME_DIFF * (timeLeft.value / TAU)
     }
 
     fun coordinates(mount: Mount, longitude: Angle, latitude: Angle, elevation: Distance) {
@@ -142,12 +143,15 @@ class MountService(
         mount.dateTime(dateTime)
     }
 
-    @Suppress("NAME_SHADOWING")
+    fun computeLST(mount: Mount): Angle {
+        return site[mount]!!.lstAt(currentTime)
+    }
+
     fun computeCoordinates(
         mount: Mount,
         rightAscension: Angle = mount.rightAscension, declination: Angle = mount.declination,
-        j2000: Boolean,
-        equatorial: Boolean, horizontal: Boolean, meridian: Boolean,
+        j2000: Boolean = false,
+        equatorial: Boolean = true, horizontal: Boolean = true, meridian: Boolean = true,
     ): ComputedCoordinateResponse {
         val center = site[mount]!!
         val time = currentTime
@@ -156,15 +160,31 @@ class MountService(
         val icrf = ICRF.equatorial(rightAscension, declination, time = time, epoch = epoch, center = center)
         val constellation = Constellation.find(icrf)
 
-        var rightAscension = ""
-        var declination = ""
+        var rightAscensionJNOW = ""
+        var declinationJNOW = ""
+        var rightAscensionJ2000 = ""
+        var declinationJ2000 = ""
         var azimuth = ""
         var altitude = ""
 
-        if (equatorial) {
-            val raDec = if (j2000) icrf.equatorialAtDate() else icrf.equatorialJ2000()
-            rightAscension = raDec.longitude.normalized.format(AngleFormatter.HMS)
-            declination = raDec.latitude.format(AngleFormatter.SIGNED_DMS)
+        if (j2000) {
+            if (equatorial) {
+                val raDec = icrf.equatorialAtDate()
+                rightAscensionJNOW = raDec.longitude.normalized.format(AngleFormatter.HMS)
+                declinationJNOW = raDec.latitude.format(AngleFormatter.SIGNED_DMS)
+            }
+
+            rightAscensionJ2000 = rightAscension.format(AngleFormatter.HMS)
+            declinationJ2000 = declination.format(AngleFormatter.SIGNED_DMS)
+        } else {
+            if (equatorial) {
+                val raDec = icrf.equatorialJ2000()
+                rightAscensionJ2000 = raDec.longitude.normalized.format(AngleFormatter.HMS)
+                declinationJ2000 = raDec.latitude.format(AngleFormatter.SIGNED_DMS)
+            }
+
+            rightAscensionJNOW = rightAscension.format(AngleFormatter.HMS)
+            declinationJNOW = declination.format(AngleFormatter.SIGNED_DMS)
         }
 
         if (horizontal) {
@@ -178,14 +198,14 @@ class MountService(
         var lst = ""
 
         if (meridian) {
-            val lst = site[mount]!!.lstAt(currentTime).also { lst = it.format(LST_FORMAT) }
-            val timeLeftToMeridianFlip = computeTimeLeftToMeridianFlip(mount.rightAscension, lst)
+            computeTimeLeftToMeridianFlip(rightAscension, computeLST(mount).also { lst = it.format(LST_FORMAT) })
                 .also { timeLeftToMeridianFlip = it.format(LST_FORMAT) }
-            meridianAt = LocalDateTime.now().plusSeconds((timeLeftToMeridianFlip.hours * 3600.0).toLong()).format(MERIDIAN_TIME_FORMAT)
+                .also { meridianAt = LocalDateTime.now().plusSeconds((it.hours * 3600.0).toLong()).format(MERIDIAN_TIME_FORMAT) }
         }
 
         return ComputedCoordinateResponse(
-            rightAscension, declination, azimuth, altitude,
+            rightAscensionJNOW, declinationJNOW, rightAscensionJ2000, declinationJ2000,
+            azimuth, altitude,
             constellation, lst, meridianAt, timeLeftToMeridianFlip,
         )
     }
@@ -194,11 +214,11 @@ class MountService(
 
         private const val SIDEREAL_TIME_DIFF = 0.06552777 * PI / 12.0
 
-        @JvmStatic private val MERIDIAN_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")
+        @JvmStatic private val MERIDIAN_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
         @JvmStatic private val LST_FORMAT = AngleFormatter.Builder()
             .hours()
             .noSign()
-            .secondsDecimalPlaces(0)
+            .noSeconds()
             .build()
     }
 }

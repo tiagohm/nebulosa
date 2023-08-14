@@ -319,17 +319,13 @@ export interface OrbitalPhysicalParameter {
     value: string
 }
 
-export interface Star {
+export interface AstronomicalObject {
     id: number
-    hd: number
-    hr: number
-    hip: number
     names: string
     magnitude: number
     rightAscension: number
     declination: number
     type: SkyObjectType
-    spType: string
     redshift: number
     parallax: number
     radialVelocity: number
@@ -339,9 +335,14 @@ export interface Star {
     constellation: Constellation
 }
 
-export interface DeepSkyObject {
-    id: number
-    names: string
+export interface Star extends AstronomicalObject {
+    hd: number
+    hr: number
+    hip: number
+    spType: string
+}
+
+export interface DeepSkyObject extends AstronomicalObject {
     m: number
     ngc: number
     ic: number
@@ -371,20 +372,9 @@ export interface DeepSkyObject {
     hcg: string
     eso: string
     vdbh: string
-    magnitude: number
-    rightAscension: number
-    declination: number
-    type: SkyObjectType
-    redshift: number
-    parallax: number
-    radialVelocity: number
-    distance: number
     majorAxis: number
     minorAxis: number
     orientation: number
-    pmRA: number
-    pmDEC: number
-    constellation: Constellation
     mtype: string
 }
 
@@ -408,12 +398,18 @@ export interface Calibration {
 export interface ComputedCoordinates {
     rightAscension: string
     declination: string
+    rightAscensionJ2000: string
+    declinationJ2000: string
     azimuth: string
     altitude: string
     constellation: Constellation
     meridianAt: string
     timeLeftToMeridianFlip: string
     lst: string
+}
+
+export interface Path {
+    path: string
 }
 
 export enum ExposureTimeUnit {
@@ -423,7 +419,7 @@ export enum ExposureTimeUnit {
     MICROSECOND = 'µs',
 }
 
-export type TypeWithAll<T> = T | 'ALL'
+export type Union<T, Other> = T | Other
 
 export type AutoSubFolderMode = 'OFF' |
     'NOON' |

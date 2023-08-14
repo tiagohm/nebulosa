@@ -190,7 +190,43 @@ class MountController(
         mountService.dateTime(mount, dateTime)
     }
 
-    @PostMapping("mountComputeCoordinates")
+    @GetMapping("mountZenithLocation")
+    fun zenithLocation(@RequestParam @Valid @NotBlank name: String): ComputedCoordinateResponse {
+        val mount = requireNotNull(equipmentService.mount(name))
+        return mountService.computeCoordinates(
+            mount, mountService.computeLST(mount), mount.latitude,
+            j2000 = false, equatorial = true, horizontal = true, meridian = false,
+        )
+    }
+
+    @GetMapping("mountNorthCelestialPoleLocation")
+    fun northCelestialPoleLocation(@RequestParam @Valid @NotBlank name: String): ComputedCoordinateResponse {
+        val mount = requireNotNull(equipmentService.mount(name))
+        return mountService.computeCoordinates(
+            mount, mountService.computeLST(mount), Angle.QUARTER,
+            j2000 = false, equatorial = true, horizontal = true, meridian = false,
+        )
+    }
+
+    @GetMapping("mountSouthCelestialPoleLocation")
+    fun southCelestialPoleLocation(@RequestParam @Valid @NotBlank name: String): ComputedCoordinateResponse {
+        val mount = requireNotNull(equipmentService.mount(name))
+        return mountService.computeCoordinates(
+            mount, mountService.computeLST(mount), -Angle.QUARTER,
+            j2000 = false, equatorial = true, horizontal = true, meridian = false,
+        )
+    }
+
+    @GetMapping("mountGalacticCenterLocation")
+    fun galacticCenterLocation(@RequestParam @Valid @NotBlank name: String): ComputedCoordinateResponse {
+        val mount = requireNotNull(equipmentService.mount(name))
+        return mountService.computeCoordinates(
+            mount, GALACTIC_CENTER_RA, GALACTIC_CENTER_DEC,
+            j2000 = true, equatorial = true, horizontal = true, meridian = false,
+        )
+    }
+
+    @GetMapping("mountComputeCoordinates")
     fun computeCoordinates(
         @RequestParam @Valid @NotBlank name: String,
         @RequestParam(required = false) rightAscension: String?,
@@ -207,5 +243,11 @@ class MountController(
             Angle.from(declination, defaultValue = mount.declination),
             j2000, equatorial, horizontal, meridian,
         )
+    }
+
+    companion object {
+
+        @JvmStatic private val GALACTIC_CENTER_RA = Angle.from("17 45 40.04", true)
+        @JvmStatic private val GALACTIC_CENTER_DEC = Angle.from("-29 00 28.1")
     }
 }

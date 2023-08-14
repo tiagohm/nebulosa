@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs'
 import {
     BodyPosition, Calibration, Camera, CameraStartCapture, ComputedCoordinates, Constellation, DeepSkyObject, Device,
     FilterWheel, Focuser, HipsSurvey, INDIEventType, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, Location, MinorPlanet,
-    Mount, PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
+    Mount, Path, PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 
 @Injectable({ providedIn: 'root' })
@@ -168,8 +168,24 @@ export class ApiService {
     mountComputeCoordinates(mount: Mount, j2000: boolean, rightAscension?: string, declination?: string,
         equatorial: boolean = true, horizontal: boolean = true, meridian: boolean = false,
     ) {
-        return this.post<ComputedCoordinates>(`mountComputeCoordinates?name=${mount.name}&rightAscension=${rightAscension || ''}&declination=${declination || ''}` +
+        return this.get<ComputedCoordinates>(`mountComputeCoordinates?name=${mount.name}&rightAscension=${rightAscension || ''}&declination=${declination || ''}` +
             `&j2000=${j2000}&equatorial=${equatorial}&horizontal=${horizontal}&meridian=${meridian}`)
+    }
+
+    mountZenithLocation(mount: Mount) {
+        return this.get<ComputedCoordinates>(`mountZenithLocation?name=${mount.name}`)
+    }
+
+    mountNorthCelestialPoleLocation(mount: Mount) {
+        return this.get<ComputedCoordinates>(`mountNorthCelestialPoleLocation?name=${mount.name}`)
+    }
+
+    mountSouthCelestialPoleLocation(mount: Mount) {
+        return this.get<ComputedCoordinates>(`mountSouthCelestialPoleLocation?name=${mount.name}`)
+    }
+
+    mountGalacticCenterLocation(mount: Mount) {
+        return this.get<ComputedCoordinates>(`mountGalacticCenterLocation?name=${mount.name}`)
     }
 
     attachedFocusers() {
@@ -407,6 +423,10 @@ export class ApiService {
         width: number, height: number,
         fov: number, rotation: number, hipsSurvey: HipsSurvey,
     ) {
-        return this.post<string>(`frame?rightAscension=${rightAscension}&declination=${declination}&rotation=${rotation}&fov=${fov}&width=${width}&height=${height}&hipsSurvey=${hipsSurvey.type}`)
+        return this.post<Path>(`frame?rightAscension=${rightAscension}&declination=${declination}&rotation=${rotation}&fov=${fov}&width=${width}&height=${height}&hipsSurvey=${hipsSurvey.type}`)
+    }
+
+    pointMountHere(mount: Mount, path: string, x: number, y: number, synchronized: boolean = true) {
+        return this.post<void>(`pointMountHere?name=${mount.name}&path=${path}&x=${x}&y=${y}&synchronized=${synchronized}`)
     }
 }

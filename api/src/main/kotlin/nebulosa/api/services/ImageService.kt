@@ -18,11 +18,13 @@ import nebulosa.fits.ra
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
+import nebulosa.indi.device.mount.Mount
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.AngleFormatter
+import nebulosa.nova.position.ICRF
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.astap.AstapPlateSolver
 import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
@@ -32,7 +34,6 @@ import nebulosa.wcs.WCSTransform
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
-import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
 import javax.imageio.ImageIO
@@ -213,10 +214,21 @@ class ImageService(
         }
     }
 
-    fun pointMountHere(path: Path, x: Double, y: Double) {
+    fun pointMountHere(mount: Mount, path: Path, x: Double, y: Double, synchronized: Boolean) {
         val calibration = calibrations[path] ?: return
         val wcs = WCSTransform(calibration)
         val (rightAscension, declination) = wcs.pixelToWorld(x, y)
+
+        if (synchronized) {
+            mount.goToJ2000(rightAscension, declination)
+        } else {
+            val icrf = ICRF.equatorial(calibration.rightAscension, calibration.declination)
+            val (calibratedRA, calibratedDEC) = icrf.equatorialAtDate()
+            val raOffset = calibratedRA - mount.rightAscension
+            val decOffset = calibratedDEC - mount.declination
+            LOG.info("pointing mount adjusted. ra={}, dec={}", raOffset.arcmin, decOffset.arcmin)
+            mount.goTo(rightAscension + raOffset, declination + decOffset)
+        }
     }
 
     fun frame(
@@ -224,12 +236,10 @@ class ImageService(
         width: Int, height: Int, fov: Angle,
         rotation: Angle = Angle.ZERO, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
     ): Path {
-        val (image, calibration) = framingService.frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!
+        val (image, path, calibration) = framingService
+            .frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!
 
-        val path = Files.createTempFile("framing", ".fits")
-        image.writeAsFits(path)
         cachedImages[path] = image
-
         calibrations[path] = calibration
 
         return path

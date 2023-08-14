@@ -184,5 +184,8 @@ class AngleTest : StringSpec() {
             AngleFormatter.HMS
                 .format(Angle(6.283182643402501)) shouldBe "23h59m59.9s"
         }
+        "bug on parse Unicode negative sign U+2212" {
+            Angle.from("−29 00 28.1").degrees shouldBe -29.007805555555557
+        }
     }
 }

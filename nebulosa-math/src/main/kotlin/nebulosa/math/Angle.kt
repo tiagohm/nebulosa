@@ -136,6 +136,7 @@ value class Angle(val value: Double) {
         @JvmStatic val NaN = Angle(Double.NaN)
 
         @JvmStatic private val PARSE_COORDINATES_NOT_NUMBER_REGEX = Regex("[^\\-\\d.]+")
+        @JvmStatic private val UNICODE_SIGN_MINUS_REGEX = Regex("[−]+")
 
         @JvmStatic
         fun from(
@@ -156,7 +157,9 @@ value class Angle(val value: Double) {
             var sign = 1.0
 
             while (idx < 3 && tokenizer.hasMoreElements()) {
-                val token = tokenizer.nextToken().replace(PARSE_COORDINATES_NOT_NUMBER_REGEX, "").trim()
+                val token = tokenizer.nextToken()
+                    .replace(UNICODE_SIGN_MINUS_REGEX, "-")
+                    .replace(PARSE_COORDINATES_NOT_NUMBER_REGEX, "").trim()
 
                 if (token.isEmpty()) continue
 

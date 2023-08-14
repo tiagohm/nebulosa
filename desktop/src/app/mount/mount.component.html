@@ -81,31 +81,37 @@
         </div>
     </div>
     <div class="grid mt-1">
-        <div class="col-4 flex align-items-center gap-1">
-            <i class="mdi mdi-target text-gray-100"></i>
-            <span class="text-gray-100 text-sm">Target coordinates:</span>
+        <div class="col-4 flex flex-column justify-content-center">
+            <p-selectButton [disabled]="!connected || slewing || parking" [options]="['J2000', 'JNOW']" [(ngModel)]="targetCoordinateType"
+                            styleClass="border-0 w-full" (ngModelChange)="computeTargetCoordinates()" />
         </div>
-        <div class=col-4>
-            <p-selectButton [disabled]="!connected || slewing || parking" [options]="['J2000', 'JNOW']" [(ngModel)]="targetCoordinateType" styleClass="w-full" />
+        <div class="col-4 flex flex-column justify-content-center align-items-end text-sm gap-1">
+            <div class="flex flex-row justify-content-between w-full"><span class="font-bold">AZ</span><span>{{ targetAzimuth }}</span></div>
+            <div class="flex flex-row justify-content-between w-full"><span class="font-bold">ALT</span><span>{{ targetAltitude }}</span></div>
         </div>
-        <div class=col-4>
-
+        <div class="col-4 flex flex-column justify-content-center align-items-end text-sm gap-1">
+            <div class="flex flex-row justify-content-between w-full"><span class="font-bold">CONST</span><span>{{ targetConstellation }}</span></div>
+            <div class="flex flex-row justify-content-between w-full"><span class="font-bold">MERIDIAN AT</span><span>{{ targetMeridianAt }}</span>
+            </div>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input pInputText class="border-0 w-full" [(ngModel)]="targetRightAscension" />
+                <input pInputText noDropdown [disabled]="!connected || slewing || parking" class="border-0 w-full"
+                       [(ngModel)]="targetRightAscension" (ngModelChange)="computeTargetCoordinates()" />
                 <label>RA (h)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input pInputText class="border-0 w-full" [(ngModel)]="targetDeclination" />
+                <input pInputText noDropdown [disabled]="!connected || slewing || parking" class="border-0 w-full" [(ngModel)]="targetDeclination"
+                       (ngModelChange)="computeTargetCoordinates()" />
                 <label>DEC (°)</label>
             </span>
         </div>
         <div class="col-4">
-            <p-splitButton [label]="targetCoordinateOption.label" [icon]="targetCoordinateOption.icon" [model]="targetCoordinateOptions"
-                           styleClass="w-full" (onClick)="targetCoordinateOptionClicked()" />
+            <p-splitButton noDropdown [disabled]="!connected || slewing || parking" [label]="targetCoordinateOption.label"
+                           [icon]="targetCoordinateOption.icon" styleClass="w-full" (onClick)="targetCoordinateOptionClicked()"
+                           (onDropdownClick)="targetDialogMenu.show()" />
         </div>
     </div>
     <div class="grid mt-1">
@@ -132,7 +138,8 @@
                             icon="mdi mdi-arrow-left-thick" class="p-button-text"></button>
                 </div>
                 <div class="col-4">
-                    <button pButton [disabled]="!connected || slewing || parking" icon="mdi mdi-close-circle" class="p-button-text p-button-danger"></button>
+                    <button pButton [disabled]="!connected" icon="mdi mdi-close-circle"
+                            class="p-button-text p-button-danger"></button>
                 </div>
                 <div class="col-4">
                     <button pButton [disabled]="!connected || slewing || parking" (mousedown)="moveTo('E', true, $event)"
@@ -163,9 +170,12 @@
                     <p-inputSwitch [disabled]="!connected || slewing || parking" [(ngModel)]="tracking" (ngModelChange)="trackingToggled()" />
                 </div>
                 <div class="col-6 flex flex-row gap-2 justify-content-center align-items-center">
-                    <p-button *ngIf="!parked" [disabled]="!connected || !canPark || slewing || parking" icon="mdi mdi-stop" (onClick)="park()" pTooltip="Park" tooltipPosition="top" styleClass="p-button-danger p-button-text" />
-                    <p-button *ngIf="parked" [disabled]="!connected || !canPark || slewing" icon="mdi mdi-play" (onClick)="unpark()" pTooltip="Unpark" tooltipPosition="top" styleClass="p-button-success p-button-text" />
-                    <p-button [disabled]="!connected || !canHome || slewing || parking" icon="mdi mdi-home" (onClick)="home()" pTooltip="Home" tooltipPosition="top" styleClass="p-button-info p-button-text" />
+                    <p-button *ngIf="!parked" [disabled]="!connected || !canPark || slewing || parking" icon="mdi mdi-stop" (onClick)="park()"
+                              pTooltip="Park" tooltipPosition="top" styleClass="p-button-danger p-button-text" />
+                    <p-button *ngIf="parked" [disabled]="!connected || !canPark || slewing" icon="mdi mdi-play" (onClick)="unpark()" pTooltip="Unpark"
+                              tooltipPosition="top" styleClass="p-button-success p-button-text" />
+                    <p-button [disabled]="!connected || !canHome || slewing || parking" icon="mdi mdi-home" (onClick)="home()" pTooltip="Home"
+                              tooltipPosition="top" styleClass="p-button-info p-button-text" />
                 </div>
                 <div class="col-6">
                     <span class="p-float-label">
@@ -187,3 +197,5 @@
         </div>
     </div>
 </div>
+
+<dialogMenu #targetDialogMenu [model]="targetCoordinateOptions" />

@@ -1,6 +1,6 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
-import { MenuItem } from 'primeng/api'
+import { MegaMenuItem, MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -31,9 +31,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         {
             icon: 'mdi mdi-content-save',
             label: 'Auto save all exposures',
-            command: () => {
+            command: (e) => {
                 this.autoSave = !this.autoSave
                 this.savePreference()
+
+                this.checkMenuItem(e.item, this.autoSave)
             },
         },
         {
@@ -55,25 +57,31 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 {
                     icon: 'mdi mdi-folder-off',
                     label: 'None',
-                    command: () => {
+                    command: (e) => {
                         this.autoSubFolderMode = 'OFF'
                         this.savePreference()
+
+                        this.checkMenu(this.cameraMenuItems[2].items!, e.item)
                     },
                 },
                 {
                     icon: 'mdi mdi-weather-sunny',
                     label: 'Noon',
-                    command: () => {
+                    command: (e) => {
                         this.autoSubFolderMode = 'NOON'
                         this.savePreference()
+
+                        this.checkMenu(this.cameraMenuItems[2].items!, e.item)
                     },
                 },
                 {
                     icon: 'mdi mdi-weather-night',
                     label: 'Midnight',
-                    command: () => {
+                    command: (e) => {
                         this.autoSubFolderMode = 'MIDNIGHT'
                         this.savePreference()
+
+                        this.checkMenu(this.cameraMenuItems[2].items!, e.item)
                     },
                 },
             ],
@@ -348,6 +356,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.savePath = this.preference.get(`camera.${this.camera.name}.savePath`, '')
             this.autoSubFolderMode = this.preference.get<AutoSubFolderMode>(`camera.${this.camera.name}.autoSubFolderMode`, 'OFF')
 
+            this.checkMenuItem(this.cameraMenuItems[0], this.autoSave)
+            const menuIndex = this.autoSubFolderMode === 'OFF' ? 0 : (this.autoSubFolderMode === 'NOON' ? 1 : 2)
+            this.checkMenu(this.cameraMenuItems[2].items!, this.cameraMenuItems[2].items![menuIndex], true)
+
             this.setpointTemperature = this.preference.get(`camera.${this.camera.name}.setpointTemperature`, 0)
             this.exposureTime = this.preference.get(`camera.${this.camera.name}.exposureTime`, this.camera.exposureMin)
             this.exposureTimeUnit = this.preference.get(`camera.${this.camera.name}.exposureTimeUnit`, ExposureTimeUnit.MICROSECOND)
@@ -391,5 +403,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.preference.set(`camera.${this.camera.name}.offset`, this.offset)
             this.preference.set(`camera.${this.camera.name}.frameFormat`, this.frameFormat)
         }
+    }
+
+    private checkMenuItem(item?: MenuItem | MegaMenuItem, checked: boolean = true) {
+        item && (item.styleClass = checked ? 'p-menuitem-checked' : '')
+    }
+
+    private checkMenu(menu: MenuItem[], item?: MenuItem | MegaMenuItem, checked: boolean = true) {
+        menu.forEach((e) => e !== item && this.checkMenuItem(e, false))
+        this.checkMenuItem(item, checked)
     }
 }

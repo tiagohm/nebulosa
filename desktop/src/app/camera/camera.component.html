@@ -14,8 +14,7 @@
                       styleClass="p-button-info" />
         </div>
         <div class="col-2 flex justify-content-center">
-            <p-tieredMenu #cameraMenu [model]="cameraMenuItems" [popup]="true" [style]="{width: 'auto'}" />
-            <p-button [disabled]="!camera" icon="mdi mdi-lg mdi-dots-vertical" (click)="cameraMenu.toggle($event)"
+            <p-button [disabled]="!camera" icon="mdi mdi-lg mdi-dots-vertical" (click)="cameraDialogMenu.show()"
                       styleClass="p-button-rounded p-button-text" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center gap-1">
@@ -30,11 +29,21 @@
             <i class="mdi mdi-information text-blue-600"></i>
             <span class="mr-2">{{ capturing ? 'capturing' : 'idle' }}</span>
             <ng-container *ngIf="capturing && exposureProgress && !exposureProgress?.indeterminate">
-                <span class="bg-cyan-500 border-round-md p-1 text-gray-900">{{ exposureProgress.totalAmount - exposureProgress.remainingAmount }} of {{ exposureProgress.totalAmount }}</span>
-                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 52px">{{ exposureProgress.frameRemainingTime | exposureTime }}</span>
-                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 36px">{{ exposureProgress.frameProgress | percent }}</span>
-                <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 52px">{{ exposureProgress.totalRemainingTime | exposureTime }}</span>
-                <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 36px">{{ exposureProgress.totalProgress | percent }}</span>
+                <span class="bg-cyan-500 border-round-md p-1 text-gray-900">
+                    {{ exposureProgress.totalAmount - exposureProgress.remainingAmount }} of {{ exposureProgress.totalAmount }}
+                </span>
+                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 52px">
+                    {{ exposureProgress.frameRemainingTime | exposureTime }}
+                </span>
+                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 36px">
+                    {{ exposureProgress.frameProgress | percent }}
+                </span>
+                <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 52px">
+                    {{ exposureProgress.totalRemainingTime | exposureTime }}
+                </span>
+                <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 36px">
+                    {{ exposureProgress.totalProgress | percent }}
+                </span>
             </ng-container>
         </div>
     </div>
@@ -197,3 +206,5 @@
         </div>
     </div>
 </div>
+
+<dialogMenu #cameraDialogMenu [model]="cameraMenuItems" />
