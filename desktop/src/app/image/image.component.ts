@@ -10,7 +10,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Calibration, Camera, DeepSkyObject, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
+    Calibration, Camera, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
     PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage, Star
 } from '../../shared/types'
 
@@ -401,26 +401,26 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    mountSync() {
+    mountSync(coordinate: EquatorialCoordinate) {
         const mount = this.electron.selectedMount()
         if (!mount?.connected) return
-        this.api.mountSync(mount, this.solverCalibration!.rightAscension, this.solverCalibration!.declination, true)
+        this.api.mountSync(mount, coordinate.rightAscension, coordinate.declination, true)
     }
 
-    mountGoTo() {
+    mountGoTo(coordinate: EquatorialCoordinate) {
         const mount = this.electron.selectedMount()
         if (!mount?.connected) return
-        this.api.mountGoTo(mount, this.solverCalibration!.rightAscension, this.solverCalibration!.declination, true)
+        this.api.mountGoTo(mount, coordinate.rightAscension, coordinate.declination, true)
     }
 
-    mountSlew() {
+    mountSlew(coordinate: EquatorialCoordinate) {
         const mount = this.electron.selectedMount()
         if (!mount?.connected) return
-        this.api.mountSlewTo(mount, this.solverCalibration!.rightAscension, this.solverCalibration!.declination, true)
+        this.api.mountSlewTo(mount, coordinate.rightAscension, coordinate.declination, true)
     }
 
-    frame() {
-        this.browserWindow.openFraming({ rightAscension: this.solverCalibration!.rightAscension, declination: this.solverCalibration!.declination })
+    frame(coordinate: EquatorialCoordinate) {
+        this.browserWindow.openFraming({ rightAscension: coordinate.rightAscension, declination: coordinate.declination })
     }
 
     imageLoaded() {

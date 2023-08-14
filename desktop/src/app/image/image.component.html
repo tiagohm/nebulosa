@@ -56,7 +56,8 @@
             </div>
             <div class="col-6">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" value="{{ annotationInfo.magnitude.toFixed(2) }}" class="border-0 p-inputtext-sm" />
+                    <input pInputText readonly type="text" value="{{ annotationInfo.magnitude < 99.0 ? annotationInfo.magnitude.toFixed(2) : '-' }}"
+                           class="border-0 p-inputtext-sm" />
                     <label>Magnitude</label>
                 </span>
             </div>
@@ -74,13 +75,19 @@
             </div>
             <div class="col-6">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" [value]="annotationInfo.distance" class="border-0 p-inputtext-sm" />
+                    <input pInputText readonly type="text" value="{{ annotationInfo.distance <= 0 ? '-' : annotationInfo.distance }}"
+                           class="border-0 p-inputtext-sm" />
                     <label>Distance (ly)</label>
                 </span>
             </div>
         </ng-container>
     </div>
     <ng-template pTemplate="footer">
+        <div class="col-12 flex justify-content-center">
+            <p-button (onClick)="mountSync(annotationInfo!)" icon="mdi mdi-sync" label="Sync" styleClass="p-button-text p-button-info" />
+            <p-button (onClick)="mountGoTo(annotationInfo!)" icon="mdi mdi-telescope" label="Go To" styleClass="p-button-text p-button-success" />
+            <p-button (onClick)="mountSlew(annotationInfo!)" icon="mdi mdi-telescope" label="Slew" styleClass="p-button-text p-button-success" />
+        </div>
     </ng-template>
 </p-dialog>
 
@@ -177,13 +184,14 @@
         </div>
         <div class="grid mb-2">
             <div class="col-12 flex justify-content-center">
-                <p-button [disabled]="solving || !solved" (onClick)="mountSync()" icon="mdi mdi-sync" label="Sync"
+                <p-button [disabled]="solving || !solved" (onClick)="mountSync(solverCalibration!)" icon="mdi mdi-sync" label="Sync"
                           styleClass="p-button-text p-button-info" />
-                <p-button [disabled]="solving || !solved" (onClick)="mountGoTo()" icon="mdi mdi-telescope" label="Go To"
+                <p-button [disabled]="solving || !solved" (onClick)="mountGoTo(solverCalibration!)" icon="mdi mdi-telescope" label="Go To"
                           styleClass="p-button-text p-button-success" />
-                <p-button [disabled]="solving || !solved" (onClick)="mountSlew()" icon="mdi mdi-telescope" label="Slew"
+                <p-button [disabled]="solving || !solved" (onClick)="mountSlew(solverCalibration!)" icon="mdi mdi-telescope" label="Slew"
                           styleClass="p-button-text p-button-success" />
-                <p-button [disabled]="solving || !solved" (onClick)="frame()" icon="mdi mdi-image" label="Frame" styleClass="p-button-text" />
+                <p-button [disabled]="solving || !solved" (onClick)="frame(solverCalibration!)" icon="mdi mdi-image" label="Frame"
+                          styleClass="p-button-text" />
             </div>
         </div>
 

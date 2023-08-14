@@ -1,124 +1,134 @@
 export interface Device {
     readonly name: string
-    readonly connected: boolean
+    connected: boolean
 }
 
 export interface Thermometer extends Device {
-    readonly hasThermometer: boolean
-    readonly temperature: number
+    hasThermometer: boolean
+    temperature: number
 }
 
 export interface GuideOutput extends Device {
-    readonly canPulseGuide: boolean
-    readonly pulseGuiding: boolean
+    canPulseGuide: boolean
+    pulseGuiding: boolean
 }
 
 export interface Camera extends GuideOutput, Thermometer {
-    readonly exposuring: boolean
-    readonly hasCoolerControl: boolean
-    readonly coolerPower: number
-    readonly cooler: boolean
-    readonly hasDewHeater: boolean
-    readonly dewHeater: boolean
-    readonly frameFormats: string[]
-    readonly canAbort: boolean
-    readonly cfaOffsetX: number
-    readonly cfaOffsetY: number
-    readonly cfaType: CfaPattern
-    readonly exposureMin: number
-    readonly exposureMax: number
-    readonly exposureState: PropertyState
-    readonly exposure: number
-    readonly hasCooler: boolean
-    readonly canSetTemperature: boolean
-    readonly canSubFrame: boolean
-    readonly x: number
-    readonly minX: number
-    readonly maxX: number
-    readonly y: number
-    readonly minY: number
-    readonly maxY: number
-    readonly width: number
-    readonly minWidth: number
-    readonly maxWidth: number
-    readonly height: number
-    readonly minHeight: number
-    readonly maxHeight: number
-    readonly canBin: boolean
-    readonly maxBinX: number
-    readonly maxBinY: number
-    readonly binX: number
-    readonly binY: number
-    readonly gain: number
-    readonly gainMin: number
-    readonly gainMax: number
-    readonly offset: number
-    readonly offsetMin: number
-    readonly offsetMax: number
-    readonly hasGuiderHead: boolean
-    readonly pixelSizeX: number
-    readonly pixelSizeY: number
-    readonly canPulseGuide: boolean
-    readonly pulseGuiding: boolean
+    exposuring: boolean
+    hasCoolerControl: boolean
+    coolerPower: number
+    cooler: boolean
+    hasDewHeater: boolean
+    dewHeater: boolean
+    frameFormats: string[]
+    canAbort: boolean
+    cfaOffsetX: number
+    cfaOffsetY: number
+    cfaType: CfaPattern
+    exposureMin: number
+    exposureMax: number
+    exposureState: PropertyState
+    exposure: number
+    hasCooler: boolean
+    canSetTemperature: boolean
+    canSubFrame: boolean
+    x: number
+    minX: number
+    maxX: number
+    y: number
+    minY: number
+    maxY: number
+    width: number
+    minWidth: number
+    maxWidth: number
+    height: number
+    minHeight: number
+    maxHeight: number
+    canBin: boolean
+    maxBinX: number
+    maxBinY: number
+    binX: number
+    binY: number
+    gain: number
+    gainMin: number
+    gainMax: number
+    offset: number
+    offsetMin: number
+    offsetMax: number
+    hasGuiderHead: boolean
+    pixelSizeX: number
+    pixelSizeY: number
 }
 
 export interface Parkable {
-    readonly canPark: boolean
-    readonly parking: boolean
-    readonly parked: boolean
+    canPark: boolean
+    parking: boolean
+    parked: boolean
 }
 
 export interface GPS extends Device {
-    readonly hasGPS: boolean
-    readonly longitude: number
-    readonly latitude: number
-    readonly elevation: number
-    readonly dateTime: number
-    readonly offsetInMinutes: number
+    hasGPS: boolean
+    longitude: number
+    latitude: number
+    elevation: number
+    dateTime: number
+    offsetInMinutes: number
 }
 
-export interface Mount extends GPS, GuideOutput, Parkable {
-    readonly name: string
-    readonly connected: boolean
-    readonly slewing: boolean
-    readonly tracking: boolean
-    readonly canAbort: boolean
-    readonly canSync: boolean
-    readonly canGoTo: boolean
-    readonly canHome: boolean
-    readonly slewRates: SlewRate[]
-    readonly slewRate?: SlewRate
-    readonly trackModes: TrackMode[]
-    readonly trackMode: TrackMode
-    readonly pierSide: PierSide
-    readonly guideRateWE: number
-    readonly guideRateNS: number
-    readonly rightAscension: string
-    readonly declination: string
+
+export interface EquatorialCoordinate {
+    rightAscension: string
+    declination: string
+}
+
+export interface EquatorialCoordinateJ2000 {
+    rightAscensionJ2000: string
+    declinationJ2000: string
+}
+
+export interface HorizontalCoordinate {
+    azimuth: string
+    altitude: string
+}
+
+export interface Mount extends EquatorialCoordinate, GPS, GuideOutput, Parkable {
+    slewing: boolean
+    tracking: boolean
+    canAbort: boolean
+    canSync: boolean
+    canGoTo: boolean
+    canHome: boolean
+    slewRates: SlewRate[]
+    slewRate?: SlewRate
+    trackModes: TrackMode[]
+    trackMode: TrackMode
+    pierSide: PierSide
+    guideRateWE: number
+    guideRateNS: number
 }
 
 export interface SlewRate {
-    readonly name: string
-    readonly label: string
+    name: string
+    label: string
 }
 
 export interface Focuser extends Device, Thermometer {
-    readonly moving: boolean
-    readonly position: number
-    readonly canAbsoluteMove: boolean
-    readonly canRelativeMove: boolean
-    readonly canAbort: boolean
-    readonly canReverse: boolean
-    readonly reverse: boolean
-    readonly canSync: boolean
-    readonly hasBacklash: boolean
-    readonly maxPosition: number
+    moving: boolean
+    position: number
+    canAbsoluteMove: boolean
+    canRelativeMove: boolean
+    canAbort: boolean
+    canReverse: boolean
+    reverse: boolean
+    canSync: boolean
+    hasBacklash: boolean
+    maxPosition: number
 }
 
 export interface FilterWheel extends Device {
-    readonly count: number
-    readonly position: number
-    readonly moving: boolean
+    count: number
+    position: number
+    moving: boolean
 }
 
 export interface CameraStartCapture {
@@ -248,13 +258,7 @@ export const EMPTY_LOCATION: Location = {
     offsetInMinutes: 0,
 }
 
-export interface BodyPosition {
-    rightAscensionJ2000: string
-    declinationJ2000: string
-    rightAscension: string
-    declination: string
-    azimuth: string
-    altitude: string
+export interface BodyPosition extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
     magnitude: number
     constellation: Constellation
     distance: number
@@ -319,12 +323,10 @@ export interface OrbitalPhysicalParameter {
     value: string
 }
 
-export interface AstronomicalObject {
+export interface AstronomicalObject extends EquatorialCoordinate {
     id: number
     names: string
     magnitude: number
-    rightAscension: number
-    declination: number
     type: SkyObjectType
     redshift: number
     parallax: number
@@ -384,24 +386,15 @@ export interface ImageAnnotation {
     star?: Star
     dso?: DeepSkyObject
 }
-
-export interface Calibration {
+export interface Calibration extends EquatorialCoordinate {
     orientation: number
     scale: number
-    rightAscension: string
-    declination: string
     width: number
     height: number
     radius: number
 }
 
-export interface ComputedCoordinates {
-    rightAscension: string
-    declination: string
-    rightAscensionJ2000: string
-    declinationJ2000: string
-    azimuth: string
-    altitude: string
+export interface ComputedCoordinates extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
     constellation: Constellation
     meridianAt: string
     timeLeftToMeridianFlip: string
