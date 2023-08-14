@@ -102,7 +102,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-telescope',
         disabled: true,
         command: () => {
-            const mount = this.electron.sendSync('SELECTED_MOUNT')
+            const mount = this.electron.selectedMount()
             if (!mount?.connected) return
             this.api.pointMountHere(mount, this.imageParams.path!, this.imageMouseX, this.imageMouseY, !this.solved)
         },
@@ -401,7 +401,25 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    frameSolvedPosition() {
+    mountSync() {
+        const mount = this.electron.selectedMount()
+        if (!mount?.connected) return
+        this.api.mountSync(mount, this.solverCalibration!.rightAscension, this.solverCalibration!.declination, true)
+    }
+
+    mountGoTo() {
+        const mount = this.electron.selectedMount()
+        if (!mount?.connected) return
+        this.api.mountGoTo(mount, this.solverCalibration!.rightAscension, this.solverCalibration!.declination, true)
+    }
+
+    mountSlew() {
+        const mount = this.electron.selectedMount()
+        if (!mount?.connected) return
+        this.api.mountSlewTo(mount, this.solverCalibration!.rightAscension, this.solverCalibration!.declination, true)
+    }
+
+    frame() {
         this.browserWindow.openFraming({ rightAscension: this.solverCalibration!.rightAscension, declination: this.solverCalibration!.declination })
     }
 

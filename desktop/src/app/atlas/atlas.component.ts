@@ -58,15 +58,17 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
             icon: 'mdi mdi-telescope',
             label: 'Go To',
             command: async () => {
-                const mount = await this.electron.sendSync('SELECTED_MOUNT')
+                const mount = this.electron.selectedMount()
+                if (!mount?.connected) return
                 this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
             },
         },
         {
             icon: 'mdi mdi-telescope',
-            label: 'Slew To',
+            label: 'Slew',
             command: async () => {
-                const mount = await this.electron.sendSync('SELECTED_MOUNT')
+                const mount = this.electron.selectedMount()
+                if (!mount?.connected) return
                 this.api.mountSlewTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
             },
         },
@@ -74,13 +76,14 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
             icon: 'mdi mdi-sync',
             label: 'Sync',
             command: async () => {
-                const mount = await this.electron.sendSync('SELECTED_MOUNT')
+                const mount = this.electron.selectedMount()
+                if (!mount?.connected) return
                 this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
             },
         },
         {
             icon: 'mdi mdi-image',
-            label: 'Framing',
+            label: 'Frame',
             command: () => {
                 this.browserWindow.openFraming({ rightAscension: this.bodyPosition.rightAscensionJ2000, declination: this.bodyPosition.declinationJ2000 })
             },

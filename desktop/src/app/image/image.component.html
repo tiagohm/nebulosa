@@ -177,11 +177,13 @@
         </div>
         <div class="grid mb-2">
             <div class="col-12 flex justify-content-center">
-                <p-button [disabled]="solving || !solved" icon="mdi mdi-sync" label="Sync" styleClass="p-button-text" />
-                <p-button [disabled]="solving || !solved" icon="mdi mdi-check" label="Go To" styleClass="p-button-text" />
-                <p-button [disabled]="solving || !solved" icon="mdi mdi-check" label="Slew To" styleClass="p-button-text" />
-                <p-button [disabled]="solving || !solved" (onClick)="frameSolvedPosition()" icon="mdi mdi-image" label="Framing"
-                          styleClass="p-button-text" />
+                <p-button [disabled]="solving || !solved" (onClick)="mountSync()" icon="mdi mdi-sync" label="Sync"
+                          styleClass="p-button-text p-button-info" />
+                <p-button [disabled]="solving || !solved" (onClick)="mountGoTo()" icon="mdi mdi-telescope" label="Go To"
+                          styleClass="p-button-text p-button-success" />
+                <p-button [disabled]="solving || !solved" (onClick)="mountSlew()" icon="mdi mdi-telescope" label="Slew"
+                          styleClass="p-button-text p-button-success" />
+                <p-button [disabled]="solving || !solved" (onClick)="frame()" icon="mdi mdi-image" label="Frame" styleClass="p-button-text" />
             </div>
         </div>
 

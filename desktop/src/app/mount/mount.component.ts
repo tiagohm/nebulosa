@@ -64,7 +64,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         },
         {
             icon: 'mdi mdi-telescope',
-            label: 'Slew To',
+            label: 'Slew',
             command: () => {
                 this.targetCoordinateOption = this.targetCoordinateOptions[1]
                 this.slewTo()
