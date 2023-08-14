@@ -53,9 +53,10 @@ class AtlasController(
     fun saveLocation(
         @RequestParam(required = false, defaultValue = "0") id: Long,
         @RequestBody @Valid body: LocationEntity,
-    ) {
+    ): LocationEntity {
         val location = if (id > 0) locationRepository.withId(id) else null
         locationRepository.save(body.copy(id = location?.id ?: 0L))
+        return body
     }
 
     @Synchronized

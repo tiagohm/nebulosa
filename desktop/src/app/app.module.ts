@@ -12,6 +12,7 @@ import { CheckboxModule } from 'primeng/checkbox'
 import { ContextMenuModule } from 'primeng/contextmenu'
 import { DialogModule } from 'primeng/dialog'
 import { DropdownModule } from 'primeng/dropdown'
+import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog'
 import { InplaceModule } from 'primeng/inplace'
 import { InputNumberModule } from 'primeng/inputnumber'
 import { InputSwitchModule } from 'primeng/inputswitch'
@@ -50,6 +51,7 @@ import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
 import { MountComponent } from './mount/mount.component'
+import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 
 @NgModule({
     declarations: [
@@ -68,6 +70,7 @@ import { MountComponent } from './mount/mount.component'
         FilterWheelComponent,
         MountComponent,
         DialogMenuComponent,
+        LocationDialog,
         EnvPipe,
         WinPipe,
         EnumPipe,
@@ -105,9 +108,11 @@ import { MountComponent } from './mount/mount.component'
         TieredMenuModule,
         InplaceModule,
         SlideMenuModule,
+        DynamicDialogModule,
     ],
     providers: [
         MessageService,
+        DialogService,
         EnvPipe,
         WinPipe,
         EnumPipe,

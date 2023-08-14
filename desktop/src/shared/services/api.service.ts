@@ -305,7 +305,7 @@ export class ApiService {
     }
 
     saveLocation(location: Location) {
-        return this.put<void>(`saveLocation?id=${location.id}`, location)
+        return this.put<Location>(`saveLocation?id=${location.id}`, location)
     }
 
     deleteLocation(location: Location) {

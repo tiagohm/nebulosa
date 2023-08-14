@@ -241,10 +241,10 @@ export interface Location {
 
 export const EMPTY_LOCATION: Location = {
     id: 0,
-    name: '',
-    latitude: 0,
-    longitude: 0,
-    elevation: 0,
+    name: 'Saint Helena',
+    latitude: -15.9655282,
+    longitude: -5.7114846,
+    elevation: 77,
     offsetInMinutes: 0,
 }
 

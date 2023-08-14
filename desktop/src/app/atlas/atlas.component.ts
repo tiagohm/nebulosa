@@ -1,14 +1,16 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core'
+import { AfterContentInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ChartData, ChartOptions } from 'chart.js'
-import * as moment from 'moment'
 import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
+import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { MoonComponent } from '../../shared/components/moon/moon.component'
+import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location, MinorPlanet, SkyObjectType, Star, Union } from '../../shared/types'
 
 export interface PlanetItem {
@@ -32,7 +34,7 @@ export interface SearchFilter {
     templateUrl: './atlas.component.html',
     styleUrls: ['./atlas.component.scss']
 })
-export class AtlasComponent implements AfterViewInit, OnDestroy {
+export class AtlasComponent implements AfterContentInit, OnDestroy {
 
     refreshing = false
 
@@ -92,8 +94,6 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
 
     locations: Location[] = []
     location = Object.assign({}, EMPTY_LOCATION)
-    readonly editedLocation = Object.assign({}, EMPTY_LOCATION)
-    showLocationDialog = false
     useManualDateTime = false
     dateTime = new Date()
 
@@ -438,13 +438,13 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    private twilightDate = ''
-
     constructor(
         private title: Title,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
+        private preference: PreferenceService,
+        private dialog: DialogService,
     ) {
         title.setTitle('Sky Atlas')
 
@@ -453,8 +453,18 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
         setInterval(() => this.refreshTab(), 60000)
     }
 
-    async ngAfterViewInit() {
-        this.locations = await this.api.locations()
+    async ngAfterContentInit() {
+        const locations = await this.api.locations()
+        const location = this.preference.get('atlas.location', EMPTY_LOCATION)
+        const index = locations.findIndex(e => e.id === location.id)
+
+        if (index >= 1) {
+            const temp = locations[0]
+            locations[0] = location
+            locations[index] = temp
+        }
+
+        this.locations = locations
     }
 
     ngOnDestroy() { }
@@ -542,28 +552,38 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
     }
 
     addLocation() {
-        Object.assign(this.editedLocation, EMPTY_LOCATION)
-        this.showLocationDialog = true
+        const location = Object.assign({}, EMPTY_LOCATION)
+        const dialog = LocationDialog.show(this.dialog, location)
+
+        dialog.onClose.subscribe((result?: Location) => {
+            result && this.saveLocation(result)
+        })
     }
 
     editLocation() {
-        Object.assign(this.editedLocation, this.location)
-        this.showLocationDialog = true
+        const location = Object.assign({}, this.location)
+        const dialog = LocationDialog.show(this.dialog, location)
+
+        dialog.onClose.subscribe((result?: Location) => {
+            result && this.saveLocation(result)
+        })
+    }
+
+    private async saveLocation(location: Location) {
+        this.location = await this.api.saveLocation(location)
+        this.locations = await this.api.locations()
+        this.refreshTab(true, true)
     }
 
     async deleteLocation() {
         await this.api.deleteLocation(this.location)
         this.locations = await this.api.locations()
-    }
-
-    async saveLocation() {
-        await this.api.saveLocation(this.editedLocation)
-        this.locations = await this.api.locations()
-        this.showLocationDialog = false
+        this.location = this.locations[0] ?? Object.assign({}, EMPTY_LOCATION)
         this.refreshTab(true, true)
     }
 
     locationChanged() {
+        this.preference.set(`atlas.location`, this.location)
         this.refreshTab(true, true)
     }
 
@@ -586,10 +606,6 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
         if (!this.useManualDateTime) {
             this.dateTime = new Date()
         }
-
-        const [date, time] = moment(this.dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        const locationName = this.location.name.substring(0, Math.min(20, this.location.name.length))
-        this.title.setTitle(`Sky Atlas ・ ${locationName} ・ ${date} ${time}`)
 
         try {
             // Sun.
@@ -667,8 +683,7 @@ export class AtlasComponent implements AfterViewInit, OnDestroy {
                 }
             }
 
-            if (refreshTwilight || date !== this.twilightDate) {
-                this.twilightDate = date
+            if (refreshTwilight) {
                 const twilight = await this.api.twilight(this.location!, this.dateTime)
                 this.altitudeData.datasets[0].data = [[0.0, 90], [twilight.civilDusk[0], 90]]
                 this.altitudeData.datasets[1].data = [[twilight.civilDusk[0], 90], [twilight.civilDusk[1], 90]]
