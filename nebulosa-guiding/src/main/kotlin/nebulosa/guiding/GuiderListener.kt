@@ -31,7 +31,7 @@ interface GuiderListener {
         distance: Double,
     )
 
-    fun onCalibrationCompleted(calibration: Calibration)
+    fun onCalibrationCompleted(calibration: GuideCalibration)
 
     fun onGuideStep(stats: GuideStats)
 }

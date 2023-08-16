@@ -1,5 +1,6 @@
 package nebulosa.guiding.internal
 
+import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.constants.PIOVERTWO
 import nebulosa.guiding.*
 import nebulosa.imaging.Image
@@ -7,7 +8,7 @@ import nebulosa.imaging.algorithms.star.hfd.FindMode
 import nebulosa.log.loggerFor
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
 import kotlin.math.hypot
@@ -19,10 +20,7 @@ import kotlin.math.roundToInt
  * making move requests to a mount by passing the difference
  * between [currentPosition] and [lockPosition].
  */
-class MultiStarGuider(
-    @JvmField internal val device: GuideDevice,
-    private val executor: ExecutorService,
-) : Guider {
+class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
 
     private data class MoveResult(
         val status: Boolean,
@@ -107,10 +105,7 @@ class MultiStarGuider(
     var forceFullFrame = false
     var ignoreLostStarLooping = false
 
-    val guiding
-        get() = state == GuiderState.GUIDING
-
-    val paused
+    val isPaused
         get() = pauseType != PauseType.NONE
 
     val lockPositionShiftEnabled
@@ -165,7 +160,7 @@ class MultiStarGuider(
         guideCalibrator.clear()
     }
 
-    override fun loadCalibration(calibration: Calibration) {
+    override fun loadCalibration(calibration: GuideCalibration) {
         guideCalibrator.load(calibration)
     }
 
@@ -193,7 +188,7 @@ class MultiStarGuider(
         ) {
             listeners.forEach { it.onLockPositionChanged(position) }
 
-            if (state == GuiderState.GUIDING) {
+            if (isGuiding) {
                 listeners.forEach { it.onGuidingDithered(position.x - lockPosition.x, position.y - lockPosition.y) }
             }
         }
@@ -355,7 +350,7 @@ class MultiStarGuider(
     private fun updateCurrentDistance(distance: Double, distanceRA: Double) {
         starFoundTimestamp = System.currentTimeMillis()
 
-        if (guiding) {
+        if (isGuiding) {
             avgDistance += 0.3 * (distance - avgDistance)
             avgDistanceRA += 0.3 * (distanceRA - avgDistanceRA)
 
@@ -389,6 +384,9 @@ class MultiStarGuider(
             avgDistanceNeedReset = false
         }
     }
+
+    override val isGuiding
+        get() = state == GuiderState.GUIDING
 
     override fun startGuiding() {
         // We set the state to calibrating. The state machine will
@@ -439,7 +437,7 @@ class MultiStarGuider(
 
         if (stopping) return stopGuiding()
 
-        if (lockPositionShiftEnabled && guiding) {
+        if (lockPositionShiftEnabled && isGuiding) {
             if (!shiftLockPosition()) {
                 listeners.forEach { it.onLockShiftLimitReached() }
                 enableLockPositionShift(false)
@@ -482,8 +480,8 @@ class MultiStarGuider(
             }
 
             // Skipping frame - guider is paused.
-            if (paused) {
-                if (state == GuiderState.GUIDING) {
+            if (isPaused) {
+                if (isGuiding) {
                     // Allow guide algorithms to attempt dead reckoning.
                     device.moveOffset(ZERO_OFFSET, DEDUCED_MOVE)
                 }
@@ -678,7 +676,7 @@ class MultiStarGuider(
         starsUsed = 1
 
         // Primary star is in position 0 of the list.
-        if (guiding && starCount > 1 && device.guidingEnabled && !settling) {
+        if (isGuiding && starCount > 1 && device.guidingEnabled && !settling) {
             var sumWeights = 1.0
             var sumX = origOffset.camera.x
             var sumY = origOffset.camera.y
@@ -1084,25 +1082,30 @@ class MultiStarGuider(
         if (newDuration > 0) {
             LOG.info("move axis. direction={}, duration={}", direction, newDuration)
 
-            executor.submit {
-                val status = when (direction) {
-                    GuideDirection.UP_NORTH -> device.guideNorth(newDuration)
-                    GuideDirection.DOWN_SOUTH -> device.guideSouth(newDuration)
-                    GuideDirection.LEFT_WEST -> device.guideWest(newDuration)
-                    GuideDirection.RIGHT_EAST -> device.guideEast(newDuration)
-                    GuideDirection.NONE -> false
-                }
-
-                Thread.sleep(newDuration - 10L)
-
-                task.complete(MoveResult(status, newDuration, limitReached))
-            }
-
+            val status = guideDirection(direction, newDuration)
+            task.complete(MoveResult(status, newDuration, limitReached))
         } else {
             task.complete(MoveResult.FAILED)
         }
 
         return task
+    }
+
+    internal fun guideDirection(direction: GuideDirection, duration: Int): Boolean {
+        val startedAt = System.currentTimeMillis()
+
+        val status = when (direction) {
+            GuideDirection.UP_NORTH -> device.guideNorth(duration)
+            GuideDirection.DOWN_SOUTH -> device.guideSouth(duration)
+            GuideDirection.LEFT_WEST -> device.guideWest(duration)
+            GuideDirection.RIGHT_EAST -> device.guideEast(duration)
+            GuideDirection.NONE -> false
+        }
+
+        val elapsedTime = System.currentTimeMillis() - startedAt
+        Thread.sleep(duration - elapsedTime + 1L)
+
+        return status
     }
 
     private fun transformMountCoordinatesToCameraCoordinates(mount: Point, camera: Point): Boolean {
@@ -1125,11 +1128,14 @@ class MultiStarGuider(
         return true
     }
 
+    override val isLooping
+        get() = capturer.running
+
     override fun startLooping() {
         if (capturer.running) {
             capturer.unpause()
         } else {
-            executor.submit(capturer)
+            CAPTURER_EXECUTOR_SERVICE.submit(capturer)
         }
     }
 
@@ -1150,6 +1156,7 @@ class MultiStarGuider(
     companion object {
 
         @JvmStatic private val LOG = loggerFor<MultiStarGuider>()
+        @JvmStatic private val CAPTURER_EXECUTOR_SERVICE = Executors.newSingleThreadExecutor(DaemonThreadFactory)
         @JvmStatic internal val ZERO_OFFSET = GuiderOffset(Point(), Point())
         @JvmStatic internal val GUIDE_STEP = listOf(MountMoveOption.ALGORITHM_RESULT, MountMoveOption.USE_BACKSLASH_COMPENSATION)
         @JvmStatic internal val DEDUCED_MOVE = listOf(MountMoveOption.ALGORITHM_DEDUCE, MountMoveOption.USE_BACKSLASH_COMPENSATION)

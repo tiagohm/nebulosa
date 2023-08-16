@@ -20,9 +20,13 @@ interface Guider : Iterable<GuidePoint> {
 
     fun deselectGuideStar()
 
+    val isLooping: Boolean
+
     fun startLooping()
 
     fun stopLooping()
+
+    val isGuiding: Boolean
 
     fun startGuiding()
 
@@ -32,7 +36,7 @@ interface Guider : Iterable<GuidePoint> {
 
     fun clearCalibration()
 
-    fun loadCalibration(calibration: Calibration)
+    fun loadCalibration(calibration: GuideCalibration)
 
     fun dither()
 

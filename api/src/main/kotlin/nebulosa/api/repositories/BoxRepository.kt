@@ -9,35 +9,19 @@ sealed class BoxRepository<T : Any> : Iterable<T> {
     val size
         get() = box.count().toInt()
 
-    fun isEmpty(): Boolean {
-        return box.isEmpty
-    }
+    fun isEmpty() = box.isEmpty
 
-    override fun iterator(): Iterator<T> {
-        return box.all.iterator()
-    }
+    override fun iterator() = all().iterator()
 
-    fun all(): List<T> {
-        return box.all
-    }
+    fun all(): List<T> = box.all
 
-    fun withId(id: Long): T? {
-        return box.get(id)
-    }
+    fun withId(id: Long): T? = box.get(id)
 
-    fun save(entity: T) {
-        box.put(entity)
-    }
+    fun save(entity: T) = box.put(entity)
 
-    fun delete(id: Long) {
-        box.remove(id)
-    }
+    fun delete(id: Long) = box.remove(id)
 
-    fun delete(entity: T) {
-        box.remove(entity)
-    }
+    fun delete(entity: T) = box.remove(entity)
 
-    fun deleteAll() {
-        box.removeAll()
-    }
+    fun deleteAll() = box.removeAll()
 }

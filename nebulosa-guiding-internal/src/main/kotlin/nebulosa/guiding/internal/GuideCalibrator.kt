@@ -2,8 +2,8 @@ package nebulosa.guiding.internal
 
 import nebulosa.constants.PI
 import nebulosa.constants.PIOVERTWO
-import nebulosa.guiding.Calibration
 import nebulosa.guiding.CalibrationState
+import nebulosa.guiding.GuideCalibration
 import nebulosa.guiding.GuideDirection
 import nebulosa.guiding.GuideParity
 import nebulosa.log.loggerFor
@@ -16,7 +16,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
     private inline val device
         get() = guider.device
 
-    private var calibration = Calibration.EMPTY
+    private var calibration = GuideCalibration.EMPTY
     private var calibrationSteps = 0
     private var recenterRemaining = 0
     private var recenterDuration = 0
@@ -88,7 +88,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
     val yAngle
         get() = (calibration.xAngle - yAngleError + PIOVERTWO).normalized - PI
 
-    internal fun load(newCalibration: Calibration) {
+    internal fun load(newCalibration: GuideCalibration) {
         calibration = calibration.copy(
             xRate = newCalibration.xRate,
             yRate = newCalibration.yRate,
@@ -157,7 +157,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
     fun clear() {
         calibrated = false
         calibrationState = CalibrationState.CLEARED
-        calibration = Calibration.EMPTY
+        calibration = GuideCalibration.EMPTY
     }
 
     @Synchronized
@@ -200,8 +200,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                         calibrationStatus(GuideDirection.LEFT_WEST)
 
-                        device.guideWest(device.calibrationStep)
-                        Thread.sleep(device.calibrationStep.toLong())
+                        guider.guideDirection(GuideDirection.LEFT_WEST, device.calibrationStep)
 
                         break
                     }
@@ -263,8 +262,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         calibrationSteps--
                         lastLocation.set(currentLocation)
 
-                        device.guideEast(duration)
-                        Thread.sleep(device.calibrationStep.toLong())
+                        guider.guideDirection(GuideDirection.RIGHT_EAST, device.calibrationStep)
 
                         break
                     }
@@ -319,8 +317,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     if (calibrationSteps == 0) {
                         // Get things moving with the first clearing pulse.
                         LOG.info("starting north clearing using pulse width of {}", device.calibrationStep)
-                        device.guideNorth(device.calibrationStep)
-                        Thread.sleep(device.calibrationStep.toLong())
+                        guider.guideDirection(GuideDirection.UP_NORTH, device.calibrationStep)
                         calibrationSteps = 1
                         calibrationStatus(GuideDirection.UP_NORTH)
                         break
@@ -347,8 +344,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     if (blAcceptedMoves < BL_MIN_COUNT) {
                         if (calibrationSteps < blMaxClearingPulses && blCumDelta < distCrit) {
                             // Still have attempts left, haven't moved the star by 25 px yet.
-                            device.guideNorth(device.calibrationStep)
-                            Thread.sleep(device.calibrationStep.toLong())
+                            guider.guideDirection(GuideDirection.UP_NORTH, device.calibrationStep)
 
                             calibrationSteps++
 
@@ -412,8 +408,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                         calibrationStatus(GuideDirection.UP_NORTH)
 
-                        device.guideNorth(device.calibrationStep)
-                        Thread.sleep(device.calibrationStep.toLong())
+                        guider.guideDirection(GuideDirection.UP_NORTH, device.calibrationStep)
 
                         break
                     }
@@ -492,8 +487,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         recenterRemaining -= duration
                         calibrationSteps--
 
-                        device.guideSouth(duration)
-                        Thread.sleep(duration.toLong())
+                        guider.guideDirection(GuideDirection.DOWN_SOUTH, device.calibrationStep)
 
                         break
                     }
@@ -550,8 +544,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                                 calibrationStatus(GuideDirection.DOWN_SOUTH)
 
-                                device.guideSouth(pulseAmt)
-                                Thread.sleep(pulseAmt.toLong())
+                                guider.guideDirection(GuideDirection.DOWN_SOUTH, pulseAmt)
 
                                 break
                             }

@@ -77,5 +77,9 @@ abstract class ThreadedJob<T> : LinkedList<T>(), Runnable {
                 remainingTime -= measureTimeMillis(onTick)
             }
         }
+
+        inline fun sleepWhile(action: () -> Boolean) {
+            while (action()) Thread.sleep(10L)
+        }
     }
 }

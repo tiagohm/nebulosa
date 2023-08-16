@@ -13,9 +13,9 @@ import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.mount.Mount
+import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nom.tam.fits.Fits
-import nom.tam.util.FitsOutputStream
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -202,35 +202,29 @@ data class CameraExposureTask(
         LOG.info("saving FITS at $path...")
 
         try {
-            Fits(inputStream).use { fits ->
-                val hdu = fits.imageHDU(0)
+            path.parent.createDirectories()
+            inputStream.transferAndClose(path.outputStream())
+            add(path)
 
-                if (hdu != null) {
-                    val header = hdu.header
-                    path.parent.createDirectories()
-                    path.outputStream().use { fits.write(FitsOutputStream(it)) }
+            Fits(path.toFile()).use {
+                val hdu = it.imageHDU(0)!!
 
-                    add(path)
+                val width = hdu.header.naxis(1)
+                val height = hdu.header.naxis(2)
+                val mono = Image.isMono(hdu.header)
 
-                    val width = header.naxis(1)
-                    val height = header.naxis(2)
-                    val mono = Image.isMono(header)
+                val event = SavedCameraImageEntity(
+                    0, camera.name, "$path",
+                    width, height, mono,
+                    exposureInMicroseconds,
+                    System.currentTimeMillis(),
+                )
 
-                    val event = SavedCameraImageEntity(
-                        0, camera.name, "$path",
-                        width, height, mono,
-                        exposureInMicroseconds,
-                        System.currentTimeMillis(),
-                    )
-
-                    EventBus.getDefault().post(event)
-                } else {
-                    LOG.warn("FITS does not contains an image")
-                }
+                EventBus.getDefault().post(event)
             }
         } catch (e: Throwable) {
-            LOG.error("failed to read FITS", e)
-            forceAbort.set(true)
+            LOG.error("failed to save FITS", e)
+            abort()
         }
     }
 
