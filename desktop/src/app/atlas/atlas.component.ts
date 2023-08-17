@@ -1,6 +1,7 @@
-import { AfterContentInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core'
+import { AfterContentInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ChartData, ChartOptions } from 'chart.js'
+import { CronJob } from 'cron'
 import { UIChart } from 'primeng/chart'
 import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
@@ -33,7 +34,7 @@ export interface SearchFilter {
     templateUrl: './atlas.component.html',
     styleUrls: ['./atlas.component.scss']
 })
-export class AtlasComponent implements AfterContentInit, OnDestroy {
+export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     refreshing = false
 
@@ -402,8 +403,12 @@ export class AtlasComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    private readonly cronJob = new CronJob('0 */1 * * * *', () => {
+        this.refreshTab()
+    }, null, false)
+
     constructor(
-        private title: Title,
+        title: Title,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
@@ -413,8 +418,10 @@ export class AtlasComponent implements AfterContentInit, OnDestroy {
         title.setTitle('Sky Atlas')
 
         // TODO: Refresh graph and twilight if hours past 12 (noon)
+    }
 
-        setInterval(() => this.refreshTab(), 60000)
+    ngOnInit() {
+        this.cronJob.start()
     }
 
     async ngAfterContentInit() {
@@ -431,7 +438,10 @@ export class AtlasComponent implements AfterContentInit, OnDestroy {
         this.locations = locations
     }
 
-    ngOnDestroy() { }
+    @HostListener('window:unload')
+    ngOnDestroy() {
+        this.cronJob.stop()
+    }
 
     tabChanged() {
         this.refreshTab(false, true)
