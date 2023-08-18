@@ -11,7 +11,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
     Calibration, Camera, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
-    PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage, Star
+    ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage, Star
 } from '../../shared/types'
 
 export interface ImageParams {
@@ -332,11 +332,16 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         image.src = this.imageURL
     }
 
-    imageClicked(event: MouseEvent) {
+    imageClicked(event: MouseEvent, menu: boolean) {
         this.imageMouseX = event.offsetX
         this.imageMouseY = event.offsetY
 
-        this.menu.show(event)
+        if (menu) {
+            this.menu.show(event)
+        } else if (this.imageParams.camera) {
+            const event: ImageStarSelected = { camera: this.imageParams.camera, x: this.imageMouseX, y: this.imageMouseY }
+            this.electron.send('IMAGE_STAR_SELECTED', event)
+        }
     }
 
     async annotateImage() {

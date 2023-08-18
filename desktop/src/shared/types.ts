@@ -405,6 +405,12 @@ export interface Path {
     path: string
 }
 
+export interface ImageStarSelected {
+    camera: Camera
+    x: number
+    y: number
+}
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',
@@ -601,6 +607,7 @@ export const INTERNAL_EVENT_TYPES = [
     'SELECTED_MOUNT',
     'CAMERA_CHANGED', 'FOCUSER_CHANGED', 'MOUNT_CHANGED',
     'FILTER_WHEEL_CHANGED', 'FILTER_WHEEL_RENAMED',
+    'IMAGE_STAR_SELECTED',
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
