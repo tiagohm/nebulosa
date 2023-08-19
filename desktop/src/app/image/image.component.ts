@@ -1,6 +1,8 @@
 import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
+import { Interactable } from '@interactjs/types/index'
+import interact from 'interactjs'
 import createPanZoom, { PanZoom } from 'panzoom'
 import * as path from 'path'
 import { MegaMenuItem, MenuItem } from 'primeng/api'
@@ -30,6 +32,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     @ViewChild('image')
     private readonly image!: ElementRef<HTMLImageElement>
+
+    @ViewChild('roi')
+    private readonly roi!: ElementRef<HTMLDivElement>
 
     @ViewChild('menu')
     private readonly menu!: ContextMenu
@@ -87,6 +92,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private imageMouseX = 0
     private imageMouseY = 0
     private imageParams: ImageParams = {}
+
+    roiX = 0
+    roiY = 0
+    roiWidth = 128
+    roiHeight = 128
+    roiInteractable?: Interactable
 
     private readonly scnrMenuItem: MenuItem = {
         label: 'SCNR',
@@ -206,6 +217,44 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                     },
                 },
                 this.annotationMenuItem,
+                {
+                    label: 'ROI',
+                    icon: 'mdi mdi-select',
+                    command: (e) => {
+                        if (this.roiInteractable) {
+                            this.roiInteractable.unset()
+                            this.roiInteractable = undefined
+                        } else {
+                            this.roiInteractable = interact(this.roi.nativeElement)
+                                .origin({ x: 0, y: 0 })
+                                .resizable({
+                                    edges: { left: true, right: true, bottom: true, top: true },
+                                    inertia: true,
+                                    listeners: { move: (event: any) => this.roiResizableMove(event) },
+                                    modifiers: [
+                                        interact.modifiers.restrictEdges({
+                                            outer: 'parent',
+                                        }),
+                                        interact.modifiers.restrictSize({
+                                            min: { width: 8, height: 8 },
+                                        })
+                                    ],
+                                })
+                                .draggable({
+                                    listeners: { move: (event: any) => this.roiDraggableMove(event) },
+                                    inertia: true,
+                                    modifiers: [
+                                        interact.modifiers.restrictRect({
+                                            restriction: 'parent',
+                                            endOnly: true,
+                                        }),
+                                    ]
+                                })
+                        }
+
+                        this.checkMenuItem(e.item, !!this.roiInteractable)
+                    },
+                },
             ]
         },
         {
@@ -228,7 +277,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private preference: PreferenceService,
-        ngZone: NgZone,
+        private ngZone: NgZone,
     ) {
         title.setTitle('Image')
 
@@ -267,6 +316,54 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         if (this.imageParams.path) {
             this.api.closeImage(this.imageParams.path)
         }
+
+        this.roiInteractable?.unset()
+    }
+
+    private roiResizableMove(event: any) {
+        const target = event.target
+
+        const { scale } = this.panZoom!.getTransform()
+
+        var x = parseFloat(target.getAttribute('data-x')) || 0
+        var y = parseFloat(target.getAttribute('data-y')) || 0
+
+        target.style.width = event.rect.width / scale + 'px'
+        target.style.height = event.rect.height / scale + 'px'
+
+        x += event.deltaRect.left / scale
+        y += event.deltaRect.top / scale
+
+        target.style.transform = 'translate(' + x + 'px,' + y + 'px)'
+
+        target.setAttribute('data-x', x)
+        target.setAttribute('data-y', y)
+
+        this.ngZone.run(() => {
+            this.roiX = Math.round(x)
+            this.roiY = Math.round(y)
+            this.roiWidth = Math.round(event.rect.width / scale)
+            this.roiHeight = Math.round(event.rect.height / scale)
+        })
+    }
+
+    private roiDraggableMove(event: any) {
+        const target = event.target
+
+        const { scale } = this.panZoom!.getTransform()
+
+        const x = (parseFloat(target.getAttribute('data-x')) || 0) + (event.dx / scale)
+        const y = (parseFloat(target.getAttribute('data-y')) || 0) + (event.dy / scale)
+
+        target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
+
+        target.setAttribute('data-x', x)
+        target.setAttribute('data-y', y)
+
+        this.ngZone.run(() => {
+            this.roiX = Math.round(x)
+            this.roiY = Math.round(y)
+        })
     }
 
     private loadImageFromParams(params: ImageParams) {
@@ -439,7 +536,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                     return true
                 },
                 beforeWheel: (e) => {
-                    return e.target !== this.image.nativeElement
+                    return e.target !== this.image.nativeElement && e.target !== this.roi.nativeElement
                 },
                 beforeMouseDown: (e) => {
                     return e.target !== this.image.nativeElement
