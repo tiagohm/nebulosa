@@ -47,6 +47,14 @@ export class BrowserWindowService {
         })
     }
 
+    openGuider(options: OpenWindowOptions = {}) {
+        this.openWindow({
+            ...options,
+            id: 'guider', path: 'guider', icon: options.icon || 'guider',
+            width: options.width || 720, height: options.height || 360,
+        })
+    }
+
     async openCameraImage(camera: Camera) {
         const hash = camera.name
         const factor = camera.height / camera.width

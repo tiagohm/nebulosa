@@ -43,6 +43,10 @@ dependencies {
     testImplementation(project(":nebulosa-skycatalog-hyg"))
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))
+
+    if (project.hasProperty("openapi")) {
+        implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+    }
 }
 
 tasks.withType<BootJar> {

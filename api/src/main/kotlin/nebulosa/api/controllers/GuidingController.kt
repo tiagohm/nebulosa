@@ -2,6 +2,7 @@ package nebulosa.api.controllers
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.api.data.responses.GuidingChartResponse
 import nebulosa.api.data.responses.GuidingStarResponse
 import nebulosa.api.services.EquipmentService
@@ -20,15 +21,27 @@ class GuidingController(
 
     @GetMapping("attachedGuideOutputs")
     fun guideOutputs(): List<GuideOutput> {
-        return equipmentService.mounts() + equipmentService.cameras()
+        return equipmentService.guideOutputs()
     }
 
-    @GetMapping("attachedGuideOutput")
+    @GetMapping("guideOutput")
     fun guideOutput(@RequestParam @Valid @NotBlank name: String): GuideOutput {
-        return requireNotNull(equipmentService.mount(name) ?: equipmentService.camera(name))
+        return requireNotNull(equipmentService.guideOutput(name))
     }
 
-    @PostMapping("startLooping")
+    @PostMapping("guideOutputConnect")
+    fun connect(@RequestParam @Valid @NotBlank name: String) {
+        val guideOutput = requireNotNull(equipmentService.guideOutput(name))
+        guidingService.connect(guideOutput)
+    }
+
+    @PostMapping("guideOutputDisconnect")
+    fun disconnect(@RequestParam @Valid @NotBlank name: String) {
+        val guideOutput = requireNotNull(equipmentService.guideOutput(name))
+        guidingService.disconnect(guideOutput)
+    }
+
+    @PostMapping("startGuideLooping")
     fun startLooping(
         @RequestParam @Valid @NotBlank camera: String,
         @RequestParam @Valid @NotBlank mount: String,
@@ -36,11 +49,11 @@ class GuidingController(
     ) {
         guidingService.startLooping(
             equipmentService.camera(camera)!!, equipmentService.mount(mount)!!,
-            equipmentService[guideOutput] as GuideOutput,
+            equipmentService.guideOutput(guideOutput)!!,
         )
     }
 
-    @PostMapping("stopLooping")
+    @PostMapping("stopGuideLooping")
     fun stopLooping() {
         guidingService.stopLooping()
     }
@@ -65,5 +78,18 @@ class GuidingController(
     @GetMapping("guidingStar")
     fun guidingStar(): GuidingStarResponse? {
         return guidingService.guidingStar()
+    }
+
+    @PostMapping("selectGuideStar")
+    fun selectGuideStar(
+        @RequestParam @Valid @PositiveOrZero x: Double,
+        @RequestParam @Valid @PositiveOrZero y: Double,
+    ) {
+        guidingService.selectGuideStar(x, y)
+    }
+
+    @PostMapping("deselectGuideStar")
+    fun deselectGuideStar() {
+        guidingService.deselectGuideStar()
     }
 }

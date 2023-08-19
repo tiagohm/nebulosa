@@ -411,6 +411,43 @@ export interface ImageStarSelected {
     y: number
 }
 
+export interface GuideStats {
+    timestamp: number
+    dx: number
+    dy: number
+    ra: number
+    dec: number
+    // starSNR: number
+    // starMass: number
+    raDuration: number
+    decDuration: number
+    raDirection: GuideDirection
+    decDirection: GuideDirection
+    rmsRA: number
+    rmsDEC: number
+    peakRA: number
+    peakDEC: number
+}
+
+export interface GuidingChart {
+    chart: GuideStats[]
+    rmsRA: number
+    rmsDEC: number
+    rmsTotal: number
+}
+
+export interface GuidingStar {
+    image: string
+    lockPositionX: number
+    lockPositionY: number
+    primaryStarX: number
+    primaryStarY: number
+    peak: number
+    fwhm: number
+    hfd: number
+    snr: number
+}
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',
@@ -590,7 +627,7 @@ export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
     'WATNEY'
 
 export const INDI_EVENT_TYPES = [
-    'ALL', 'DEVICE', 'CAMERA', 'MOUNT', 'FOCUSER', 'FILTER_WHEEL',
+    'ALL', 'DEVICE', 'CAMERA', 'MOUNT', 'FOCUSER', 'FILTER_WHEEL', 'GUIDE_OUTPUT',
     'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
     'DEVICE_MESSAGE_RECEIVED', 'CAMERA_IMAGE_SAVED',
     'CAMERA_UPDATED', 'CAMERA_CAPTURE_PROGRESS_CHANGED', 'CAMERA_CAPTURE_FINISHED',
@@ -598,6 +635,7 @@ export const INDI_EVENT_TYPES = [
     'MOUNT_UPDATED', 'MOUNT_ATTACHED', 'MOUNT_DETACHED',
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
     'FILTER_WHEEL_UPDATED', 'FILTER_WHEEL_ATTACHED', 'FILTER_WHEEL_DETACHED',
+    'GUIDE_OUTPUT_ATTACHED', 'GUIDE_OUTPUT_DETACHED', 'GUIDE_OUTPUT_UPDATED',
 ] as const
 
 export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]
@@ -607,7 +645,7 @@ export const INTERNAL_EVENT_TYPES = [
     'SELECTED_MOUNT',
     'CAMERA_CHANGED', 'FOCUSER_CHANGED', 'MOUNT_CHANGED',
     'FILTER_WHEEL_CHANGED', 'FILTER_WHEEL_RENAMED',
-    'IMAGE_STAR_SELECTED',
+    'IMAGE_STAR_SELECTED', 'GUIDE_OUTPUT_CHANGED',
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
@@ -650,3 +688,9 @@ export type PierSide = 'EAST' | 'WEST' | 'NEITHER'
 export type TargetCoordinateType = 'J2000' | 'JNOW'
 
 export type TrackMode = 'SIDEREAL' | ' LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'
+
+export type GuideDirection = 'NONE' |
+    'UP_NORTH' | // DEC+
+    'DOWN_SOUTH' | // DEC-
+    'LEFT_WEST' | // RA+
+    'RIGHT_EAST' // RA-

@@ -7,6 +7,7 @@ import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
 import { FocuserComponent } from './focuser/focuser.component'
 import { FramingComponent } from './framing/framing.component'
+import { GuiderComponent } from './guider/guider.component'
 import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
@@ -37,6 +38,10 @@ const routes: Routes = [
     {
         path: 'mount',
         component: MountComponent,
+    },
+    {
+        path: 'guider',
+        component: GuiderComponent,
     },
     {
         path: 'image',

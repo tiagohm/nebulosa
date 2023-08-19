@@ -34,8 +34,8 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasGuider" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
-                <img src="assets/icons/target.png" />
+            <p-button [disabled]="!connected || !hasGuider" (onClick)="open('GUIDER')" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+                <img src="assets/icons/guider.png" />
                 <div class="mt-1 text-sm">Guider</div>
             </p-button>
         </div>

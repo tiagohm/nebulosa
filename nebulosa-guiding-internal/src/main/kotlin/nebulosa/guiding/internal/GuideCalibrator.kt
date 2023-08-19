@@ -262,7 +262,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         calibrationSteps--
                         lastLocation.set(currentLocation)
 
-                        guider.guideDirection(GuideDirection.RIGHT_EAST, device.calibrationStep)
+                        guider.guideDirection(GuideDirection.RIGHT_EAST, duration)
 
                         break
                     }
@@ -487,7 +487,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         recenterRemaining -= duration
                         calibrationSteps--
 
-                        guider.guideDirection(GuideDirection.DOWN_SOUTH, device.calibrationStep)
+                        guider.guideDirection(GuideDirection.DOWN_SOUTH, duration)
 
                         break
                     }

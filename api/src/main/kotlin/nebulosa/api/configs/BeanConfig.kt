@@ -89,10 +89,10 @@ class BeanConfig {
     fun hips2FitsService(okHttpClient: OkHttpClient) = Hips2FitsService(okHttpClient = okHttpClient)
 
     @Bean
-    fun cameraExecutorService(): ExecutorService = Executors.newFixedThreadPool(3, DaemonThreadFactory)
+    fun cameraExecutorService(): ExecutorService = Executors.newFixedThreadPool(2, DaemonThreadFactory)
 
     @Bean
-    fun guiderExecutorService(): ExecutorService = Executors.newSingleThreadExecutor(DaemonThreadFactory)
+    fun guiderExecutorService(): ExecutorService = Executors.newFixedThreadPool(2, DaemonThreadFactory)
 
     @Bean
     fun systemExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory)

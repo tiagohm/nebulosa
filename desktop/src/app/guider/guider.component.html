@@ -1,0 +1,67 @@
+<div class="grid p-4">
+    <div class="col-4 flex flex-row align-items-center gap-2">
+        <span class="p-float-label w-full">
+            <p-dropdown [options]="cameras" [(ngModel)]="camera" optionLabel="name" (ngModelChange)="cameraChanged()"
+                        styleClass="border-0" emptyMessage="No camera found" class="w-full" />
+            <label>Camera</label>
+        </span>
+
+        <p-button *ngIf="cameraConnected" [disabled]="!camera" (onClick)="connectCamera()" icon="mdi mdi-close"
+                  styleClass="p-button-danger" />
+        <p-button *ngIf="!cameraConnected" [disabled]="!camera" (onClick)="connectCamera()" icon="mdi mdi-connection"
+                  styleClass="p-button-info" />
+    </div>
+    <div class="col-4 flex flex-row align-items-center gap-2">
+        <span class="p-float-label w-full">
+            <p-dropdown [options]="mounts" [(ngModel)]="mount" optionLabel="name" (ngModelChange)="mountChanged()"
+                        styleClass="border-0" emptyMessage="No mount found" />
+            <label>Mount</label>
+        </span>
+
+        <p-button *ngIf="mountConnected" [disabled]="!mount" (onClick)="connectMount()" icon="mdi mdi-close"
+                  styleClass="p-button-danger" />
+        <p-button *ngIf="!mountConnected" [disabled]="!mount" (onClick)="connectMount()" icon="mdi mdi-connection"
+                  styleClass="p-button-info" />
+    </div>
+    <div class="col-4 flex flex-row align-items-center gap-2">
+        <span class="p-float-label w-full">
+            <p-dropdown [options]="guideOutputs" [(ngModel)]="guideOutput" optionLabel="name" (ngModelChange)="guideOutputChanged()"
+                        styleClass="border-0" emptyMessage="No guide output found" />
+            <label>Guide Output</label>
+        </span>
+
+        <p-button *ngIf="guideOutputConnected" [disabled]="!guideOutput" (onClick)="connectGuideOutput()" icon="mdi mdi-close"
+                  styleClass="p-button-danger" />
+        <p-button *ngIf="!guideOutputConnected" [disabled]="!guideOutput" (onClick)="connectGuideOutput()" icon="mdi mdi-connection"
+                  styleClass="p-button-info" />
+    </div>
+    <div class="col-12">
+        <p-tabView>
+            <p-tabPanel header="Chart" leftIcon="mdi mdi-chart-line">
+
+            </p-tabPanel>
+            <p-tabPanel header="Guiding" leftIcon="mdi mdi-cog">
+
+            </p-tabPanel>
+            <p-tabPanel header="Right Ascension" leftIcon="mdi mdi-cog">
+
+            </p-tabPanel>
+            <p-tabPanel header="Declination" leftIcon="mdi mdi-cog">
+
+            </p-tabPanel>
+        </p-tabView>
+    </div>
+    <div class="col-12 flex flex-row align-items-center justify-content-center gap-2">
+        <div class="flex flex-column gap-1">
+            <span class="text-sm text-gray-200">Looping</span>
+            <p-button [disabled]="!cameraConnected || !mountConnected || !guideOutputConnected" label="Start" icon="mdi mdi-play"
+                      styleClass="p-button-success min-w-full" />
+            <p-button *ngIf="looping" label="Stop" icon="mdi mdi-stop" styleClass="p-button-danger min-w-full" />
+        </div>
+        <div class="flex flex-column gap-1">
+            <span class="text-sm text-gray-200">Guiding</span>
+            <p-button [disabled]="!looping" label="Start" icon="mdi mdi-play" styleClass="p-button-success min-w-full" />
+            <p-button *ngIf="guiding" label="Stop" icon="mdi mdi-stop" styleClass="p-button-danger min-w-full" />
+        </div>
+    </div>
+</div>

@@ -24,7 +24,7 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.io.path.createDirectories
+import kotlin.io.path.createParentDirectories
 import kotlin.io.path.outputStream
 import kotlin.math.max
 import kotlin.time.Duration
@@ -202,7 +202,7 @@ data class CameraExposureTask(
         LOG.info("saving FITS at $path...")
 
         try {
-            path.parent.createDirectories()
+            path.createParentDirectories()
             inputStream.transferAndClose(path.outputStream())
             add(path)
 

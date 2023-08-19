@@ -32,6 +32,7 @@ import { TooltipModule } from 'primeng/tooltip'
 import { DialogMenuComponent } from '../shared/components/dialogmenu/dialogmenu.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
 import { OpenStreetMapComponent } from '../shared/components/openstreetmap/openstreetmap.component'
+import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
 import { EnumPipe } from '../shared/pipes/enum.pipe'
@@ -46,12 +47,12 @@ import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
 import { FocuserComponent } from './focuser/focuser.component'
 import { FramingComponent } from './framing/framing.component'
+import { GuiderComponent } from './guider/guider.component'
 import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
 import { MountComponent } from './mount/mount.component'
-import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 
 @NgModule({
     declarations: [
@@ -69,6 +70,7 @@ import { LocationDialog } from '../shared/dialogs/location/location.dialog'
         FocuserComponent,
         FilterWheelComponent,
         MountComponent,
+        GuiderComponent,
         DialogMenuComponent,
         LocationDialog,
         EnvPipe,

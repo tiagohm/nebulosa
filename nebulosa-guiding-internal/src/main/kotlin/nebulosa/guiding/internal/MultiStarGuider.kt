@@ -8,6 +8,7 @@ import nebulosa.imaging.algorithms.star.hfd.FindMode
 import nebulosa.log.loggerFor
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
@@ -20,7 +21,10 @@ import kotlin.math.roundToInt
  * making move requests to a mount by passing the difference
  * between [currentPosition] and [lockPosition].
  */
-class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
+class MultiStarGuider(
+    @JvmField internal val device: GuideDevice,
+    private val executor: ExecutorService,
+) : Guider {
 
     private data class MoveResult(
         val status: Boolean,
@@ -30,7 +34,7 @@ class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
 
         companion object {
 
-            @JvmStatic val FAILED = MoveResult(false, 0, true)
+            @JvmStatic val NONE = MoveResult(false, 0, true)
         }
     }
 
@@ -1033,7 +1037,7 @@ class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
 
         if (!guidingEnabled && MountMoveOption.MANUAL !in moveOptions) {
             LOG.warn("guiding disabled")
-            task.complete(MoveResult.FAILED)
+            task.complete(MoveResult.NONE)
             return task
         }
 
@@ -1082,10 +1086,12 @@ class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
         if (newDuration > 0) {
             LOG.info("move axis. direction={}, duration={}", direction, newDuration)
 
-            val status = guideDirection(direction, newDuration)
-            task.complete(MoveResult(status, newDuration, limitReached))
+            executor.submit {
+                val status = guideDirection(direction, newDuration)
+                task.complete(MoveResult(status, newDuration, limitReached))
+            }
         } else {
-            task.complete(MoveResult.FAILED)
+            task.complete(MoveResult.NONE)
         }
 
         return task
@@ -1099,7 +1105,7 @@ class MultiStarGuider(@JvmField internal val device: GuideDevice) : Guider {
             GuideDirection.DOWN_SOUTH -> device.guideSouth(duration)
             GuideDirection.LEFT_WEST -> device.guideWest(duration)
             GuideDirection.RIGHT_EAST -> device.guideEast(duration)
-            GuideDirection.NONE -> false
+            else -> false
         }
 
         val elapsedTime = System.currentTimeMillis() - startedAt

@@ -1,6 +1,7 @@
 package nebulosa.api.services
 
 import jakarta.annotation.PostConstruct
+import nebulosa.api.data.entities.GuideCalibrationEntity
 import nebulosa.api.data.enums.DitherMode
 import nebulosa.api.data.enums.GuideAlgorithmType
 import nebulosa.api.data.responses.GuidingChartResponse
@@ -11,12 +12,19 @@ import nebulosa.guiding.internal.*
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.AutoScreenTransformFunction
 import nebulosa.imaging.algorithms.SubFrame
+import nebulosa.indi.device.DeviceEvent
+import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guide.GuideOutputAttached
+import nebulosa.indi.device.guide.GuideOutputDetached
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.PierSide
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import java.nio.file.Path
@@ -25,13 +33,16 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicReference
 import javax.imageio.ImageIO
 import kotlin.io.encoding.Base64
-import kotlin.io.path.createDirectories
+import kotlin.io.path.createParentDirectories
 import kotlin.math.hypot
 import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds
 
 @Service
 class GuidingService(
+    private val webSocketService: WebSocketService,
+    private val eventBus: EventBus,
+    private val cameraExecutorService: ExecutorService,
     private val guiderExecutorService: ExecutorService,
     private val guideCalibrationRepository: GuideCalibrationRepository,
     private val capturesDirectory: Path,
@@ -63,10 +74,33 @@ class GuidingService(
 
     @PostConstruct
     private fun initialize() {
-        with(MultiStarGuider(this)) {
+        eventBus.register(this)
+
+        with(MultiStarGuider(this, guiderExecutorService)) {
             registerListener(this@GuidingService)
             guider = this
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onMountEvent(event: DeviceEvent<*>) {
+        val device = event.device ?: return
+
+        if (device is GuideOutput && device.canPulseGuide) {
+            when (event) {
+                is PropertyChangedEvent -> webSocketService.sendGuideOutputUpdated(device)
+                is GuideOutputAttached -> webSocketService.sendGuideOutputAttached(event)
+                is GuideOutputDetached -> webSocketService.sendGuideOutputDetached(event)
+            }
+        }
+    }
+
+    fun connect(guideOutput: GuideOutput) {
+        guideOutput.connect()
+    }
+
+    fun disconnect(guideOutput: GuideOutput) {
+        guideOutput.disconnect()
     }
 
     @Synchronized
@@ -74,6 +108,7 @@ class GuidingService(
         camera: Camera, mount: Mount, guideOutput: GuideOutput,
     ) {
         if (guider.isLooping) return
+        if (!camera.connected) return
 
         this.camera = camera
         this.mount = mount
@@ -97,6 +132,7 @@ class GuidingService(
     @Synchronized
     fun startGuiding(forceCalibration: Boolean) {
         if (guider.isGuiding) return
+        if (!mount.connected || !guideOutput.connected) return
 
         if (forceCalibration) {
             LOG.info("starting guiding with force calibration")
@@ -127,10 +163,10 @@ class GuidingService(
     }
 
     fun guidingChart(): GuidingChartResponse {
-        val graph = guider.stats
-        val stats = graph.lastOrNull()
+        val chart = guider.stats
+        val stats = chart.lastOrNull()
         val rmsTotal = if (stats == null) 0.0 else hypot(stats.rmsRA, stats.rmsDEC)
-        return GuidingChartResponse(graph, stats?.rmsRA ?: 0.0, stats?.rmsDEC ?: 0.0, rmsTotal)
+        return GuidingChartResponse(chart, stats?.rmsRA ?: 0.0, stats?.rmsDEC ?: 0.0, rmsTotal)
     }
 
     fun guidingStar(): GuidingStarResponse? {
@@ -163,6 +199,14 @@ class GuidingService(
         } else {
             null
         }
+    }
+
+    fun selectGuideStar(x: Double, y: Double) {
+        guider.selectGuideStar(x, y)
+    }
+
+    fun deselectGuideStar() {
+        guider.deselectGuideStar()
     }
 
     override var cameraBinning = 1
@@ -252,11 +296,11 @@ class GuidingService(
 
     override fun capture(duration: Long): Image? {
         return synchronized(guideExposureTask) {
-            val savePath = Path.of("$capturesDirectory", camera.name).createDirectories()
+            val savePath = Path.of("$capturesDirectory", camera.name + ".fits").createParentDirectories()
             val task = GuideExposureTask(camera, duration.milliseconds, savePath)
 
             guideExposureTask.set(task)
-            guiderExecutorService.submit(task).get()
+            cameraExecutorService.submit(task).get()
             guideExposureTask.set(null)
 
             if (task.isNotEmpty()) Image.open(savePath.toFile()).also(guideImage::set)
@@ -340,7 +384,7 @@ class GuidingService(
     }
 
     override fun onCalibrationCompleted(calibration: GuideCalibration) {
-        // TODO
+        guideCalibrationRepository.save(GuideCalibrationEntity.from(camera, mount, guideOutput, calibration))
     }
 
     override fun onGuideStep(stats: GuideStats) {
