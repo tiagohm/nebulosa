@@ -1,5 +1,6 @@
 package nebulosa.api.services
 
+import nebulosa.indi.device.ConnectionEvent
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceEventHandler
@@ -22,7 +23,10 @@ import org.greenrobot.eventbus.EventBus
 import org.springframework.stereotype.Service
 
 @Service
-class EquipmentService(private val eventBus: EventBus) : DeviceEventHandler {
+class EquipmentService(
+    private val eventBus: EventBus,
+    private val webSocketService: WebSocketService,
+) : DeviceEventHandler {
 
     private val cameras = ArrayList<Camera>(2)
     private val mounts = ArrayList<Mount>(2)
@@ -43,6 +47,7 @@ class EquipmentService(private val eventBus: EventBus) : DeviceEventHandler {
             is FilterWheelDetached -> filterWheels.remove(event.device)
             is GuideOutputAttached -> guideOutputs.add(event.device)
             is GuideOutputDetached -> guideOutputs.remove(event.device)
+            is ConnectionEvent -> webSocketService.sendConnectionEvent(event)
         }
 
         eventBus.post(event)

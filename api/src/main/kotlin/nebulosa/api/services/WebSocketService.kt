@@ -3,6 +3,7 @@ package nebulosa.api.services
 import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.events.CameraCaptureFinished
 import nebulosa.api.data.events.CameraCaptureProgressChanged
+import nebulosa.indi.device.ConnectionEvent
 import nebulosa.indi.device.DeviceMessageReceived
 import nebulosa.indi.device.DevicePropertyEvent
 import nebulosa.indi.device.camera.Camera
@@ -123,6 +124,21 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
 
     fun sendGuideOutputDetached(event: GuideOutputDetached) {
         sendMessage(GUIDE_OUTPUT_DETACHED, event.device)
+    }
+
+    // DEVICE
+
+    fun sendConnectionEvent(event: ConnectionEvent) {
+        val device = event.device ?: return
+
+        when (device) {
+            is Camera -> sendMessage(CAMERA_UPDATED, device)
+            is Mount -> sendMessage(MOUNT_UPDATED, device)
+            is Focuser -> sendMessage(FOCUSER_UPDATED, device)
+            is FilterWheel -> sendMessage(FILTER_WHEEL_UPDATED, device)
+        }
+
+        if (device is GuideOutput) sendMessage(GUIDE_OUTPUT_UPDATED, device)
     }
 
     @Synchronized
