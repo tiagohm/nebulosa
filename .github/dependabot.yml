@@ -15,6 +15,22 @@ updates:
     target-branch: "dev"
     commit-message:
       prefix: "[api]"
+    groups:
+      kotest:
+        patterns:
+          - "io.kotest*"
+      netty:
+        patterns:
+          - "io.netty*"
+      retrofit:
+        patterns:
+          - "com.squareup.retrofit2*"
+      okhttp:
+        patterns:
+          - "com.squareup.okhttp3*"
+      jackson:
+        patterns:
+          - "com.fasterxml.jackson*"
 
   - package-ecosystem: "npm"
     directory: "/desktop"
@@ -25,6 +41,10 @@ updates:
     target-branch: "dev"
     commit-message:
       prefix: "[desktop]"
+    groups:
+      angular:
+        patterns:
+          - "@angular*"
 
   - package-ecosystem: "npm"
     directory: "/desktop/app"
@@ -42,23 +62,3 @@ updates:
     target-branch: "main"
     commit-message:
       prefix: "[github-actions]"
-
-groups:
-  angular:
-    patterns:
-      - "@angular*"
-  kotest:
-    patterns:
-      - "io.kotest*"
-  netty:
-    patterns:
-      - "io.netty*"
-  retrofit:
-    patterns:
-      - "com.squareup.retrofit2*"
-  okhttp:
-    patterns:
-      - "com.squareup.okhttp3*"
-  jackson:
-    patterns:
-      - "com.fasterxml.jackson*"
