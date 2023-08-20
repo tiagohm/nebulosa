@@ -12,6 +12,7 @@ import nebulosa.indi.device.thermometer.ThermometerAttached
 import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.protocol.*
 import nebulosa.io.Base64InputStream
+import nebulosa.log.loggerFor
 
 internal open class CameraDevice(
     sender: MessageSender,
@@ -233,6 +234,8 @@ internal open class CameraDevice(
                             canPulseGuide = true
 
                             handler.fireOnEventReceived(GuideOutputAttached(this))
+
+                            LOG.info("guide output attached: {}", name)
                         } else {
                             val prevIsPulseGuiding = pulseGuiding
                             pulseGuiding = message.isBusy
@@ -341,16 +344,18 @@ internal open class CameraDevice(
         if (hasThermometer) {
             hasThermometer = false
             handler.fireOnEventReceived(ThermometerDetached(this))
+            LOG.info("thermometer detached: {}", name)
         }
 
         if (canPulseGuide) {
             canPulseGuide = false
             handler.fireOnEventReceived(GuideOutputDetached(this))
+            LOG.info("guide output detached: {}", name)
         }
     }
 
     override fun toString(): String {
-        return "Camera(name=$name, exposuring=$exposuring," +
+        return "Camera(name=$name, connected=$connected, exposuring=$exposuring," +
                 " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
                 " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
                 " frameFormats=$frameFormats, canAbort=$canAbort," +
@@ -372,5 +377,6 @@ internal open class CameraDevice(
     companion object {
 
         @JvmStatic private val COMPRESSION_FORMATS = arrayOf(".fz", ".gz")
+        @JvmStatic private val LOG = loggerFor<CameraDevice>()
     }
 }

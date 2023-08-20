@@ -9,8 +9,12 @@
                 value="--server.port=7000"/>
         <shortenClasspath name="NONE"/>
         <method v="2">
-            <option name="MakeProject"
-                    enabled="true"/>
+            <option name="Gradle.BeforeRunTask"
+                    enabled="true"
+                    tasks="build"
+                    externalProjectPath="$PROJECT_DIR$/api"
+                    vmOptions=""
+                    scriptParameters="-Popenapi -x test"/>
         </method>
     </configuration>
 </component>

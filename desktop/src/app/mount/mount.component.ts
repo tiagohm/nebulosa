@@ -64,7 +64,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         },
         {
             icon: 'mdi mdi-telescope',
-            label: 'Slew To',
+            label: 'Slew',
             command: () => {
                 this.targetCoordinateOption = this.targetCoordinateOptions[1]
                 this.slewTo()
@@ -148,7 +148,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     ) {
         title.setTitle('Mount')
 
-        this.api.indiStartListening('MOUNT')
+        api.indiStartListening('MOUNT')
 
         electron.ipcRenderer.on('MOUNT_UPDATED', (_, mount: Mount) => {
             if (mount.name === this.mount?.name) {

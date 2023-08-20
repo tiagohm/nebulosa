@@ -63,7 +63,8 @@ subprojects {
         kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
         kotlinOptions.freeCompilerArgs = listOf(
             "-Xjvm-default=all", "-Xjsr305=strict",
-            "-opt-in=kotlin.io.path.ExperimentalPathApi"
+            "-opt-in=kotlin.io.path.ExperimentalPathApi",
+            "-opt-in=kotlin.io.encoding.ExperimentalEncodingApi",
         )
     }
 

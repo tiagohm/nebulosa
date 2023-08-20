@@ -44,7 +44,7 @@ class SavedCameraImageRepository(boxStore: BoxStore) : BoxRepository<SavedCamera
 
     @PostConstruct
     fun removeIfNotExists() {
-        for (savedImage in box.all) {
+        for (savedImage in this) {
             val path = Path.of(savedImage.path)
 
             if (!path.exists() || path.isDirectory()) {

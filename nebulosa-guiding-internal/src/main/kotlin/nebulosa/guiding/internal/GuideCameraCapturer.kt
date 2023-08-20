@@ -12,11 +12,11 @@ internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : T
     private val frameNumber = AtomicInteger(1)
 
     override fun execute() {
-        val startTime = System.currentTimeMillis()
+        val startedAt = System.currentTimeMillis()
         val duration = guider.device.cameraExposureTime
 
         if (guider.pauseType != PauseType.FULL) {
-            while (guider.device.mountIsBusy) Thread.sleep(10L)
+            sleepWhile { guider.device.mountIsBusy }
 
             LOG.info("starting frame capture. exposure={} ms", duration)
             var frame = guider.device.capture(duration) ?: return
@@ -35,10 +35,8 @@ internal data class GuideCameraCapturer(private val guider: MultiStarGuider) : T
             }
         }
 
-        val delta = System.currentTimeMillis() - startTime
-        val wait = max(0L, duration - delta)
-
-        Thread.sleep(wait)
+        val elapsedTime = System.currentTimeMillis() - startedAt
+        Thread.sleep(max(0L, duration - elapsedTime))
     }
 
     companion object {

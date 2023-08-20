@@ -6,6 +6,7 @@ import { Injectable } from '@angular/core'
 import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
+import { INDIEventType, InternalEventType, Mount } from '../types'
 
 @Injectable({ providedIn: 'root' })
 export class ElectronService {
@@ -49,5 +50,14 @@ export class ElectronService {
 
     sendSync(channel: string, ...data: any[]) {
         return this.ipcRenderer.sendSync(channel, ...data)
+    }
+
+    on(event: INDIEventType | InternalEventType,
+        listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) {
+        return this.ipcRenderer.on(event, listener)
+    }
+
+    selectedMount(): Mount | undefined {
+        return this.sendSync('SELECTED_MOUNT')
     }
 }

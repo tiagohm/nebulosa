@@ -217,6 +217,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'FILTER_WHEEL':
                 this.browserWindow.openFilterWheel({ bringToFront: true })
                 break
+            case 'GUIDER':
+                this.browserWindow.openGuider({ bringToFront: true })
+                break
             case 'ATLAS':
                 this.browserWindow.openSkyAtlas({ bringToFront: true })
                 break

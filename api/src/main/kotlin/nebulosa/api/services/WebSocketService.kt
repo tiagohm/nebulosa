@@ -3,6 +3,7 @@ package nebulosa.api.services
 import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.events.CameraCaptureFinished
 import nebulosa.api.data.events.CameraCaptureProgressChanged
+import nebulosa.indi.device.ConnectionEvent
 import nebulosa.indi.device.DeviceMessageReceived
 import nebulosa.indi.device.DevicePropertyEvent
 import nebulosa.indi.device.camera.Camera
@@ -14,6 +15,9 @@ import nebulosa.indi.device.filterwheel.FilterWheelDetached
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserAttached
 import nebulosa.indi.device.focuser.FocuserDetached
+import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guide.GuideOutputAttached
+import nebulosa.indi.device.guide.GuideOutputDetached
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
 import nebulosa.indi.device.mount.MountDetached
@@ -108,20 +112,52 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         sendMessage(FILTER_WHEEL_DETACHED, event.device)
     }
 
+    // GUIDE OUTPUT
+
+    fun sendGuideOutputUpdated(guideOutput: GuideOutput) {
+        sendMessage(GUIDE_OUTPUT_UPDATED, guideOutput)
+    }
+
+    fun sendGuideOutputAttached(event: GuideOutputAttached) {
+        sendMessage(GUIDE_OUTPUT_ATTACHED, event.device)
+    }
+
+    fun sendGuideOutputDetached(event: GuideOutputDetached) {
+        sendMessage(GUIDE_OUTPUT_DETACHED, event.device)
+    }
+
+    // DEVICE
+
+    fun sendConnectionEvent(event: ConnectionEvent) {
+        val device = event.device ?: return
+
+        when (device) {
+            is Camera -> sendMessage(CAMERA_UPDATED, device)
+            is Mount -> sendMessage(MOUNT_UPDATED, device)
+            is Focuser -> sendMessage(FOCUSER_UPDATED, device)
+            is FilterWheel -> sendMessage(FILTER_WHEEL_UPDATED, device)
+        }
+
+        if (device is GuideOutput) sendMessage(GUIDE_OUTPUT_UPDATED, device)
+    }
+
+    @Synchronized
     fun registerEventName(eventName: String) {
         registeredEventNames.addAll(eventName.mapEventName())
         LOG.info("registered event. name={}", eventName)
     }
 
+    @Synchronized
     fun unregisterEventName(eventName: String) {
         registeredEventNames.removeAll(eventName.mapEventName())
         LOG.info("unregistered event. name={}", eventName)
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun sendMessage(eventName: String, payload: Any) {
+    @Synchronized
+    private fun sendMessage(eventName: String, payload: Any) {
         if (eventName in registeredEventNames) {
             simpleMessageTemplate.convertAndSend(eventName, payload)
+            LOG.info("event sent. name={}, payload={}", eventName, payload)
         }
     }
 
@@ -145,6 +181,9 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         const val FILTER_WHEEL_UPDATED = "FILTER_WHEEL_UPDATED"
         const val FILTER_WHEEL_ATTACHED = "FILTER_WHEEL_ATTACHED"
         const val FILTER_WHEEL_DETACHED = "FILTER_WHEEL_DETACHED"
+        const val GUIDE_OUTPUT_UPDATED = "GUIDE_OUTPUT_UPDATED"
+        const val GUIDE_OUTPUT_ATTACHED = "GUIDE_OUTPUT_ATTACHED"
+        const val GUIDE_OUTPUT_DETACHED = "GUIDE_OUTPUT_DETACHED"
 
         @JvmStatic private val LOG = loggerFor<WebSocketService>()
 
@@ -181,9 +220,16 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
             FILTER_WHEEL_DETACHED,
         )
 
+        @JvmStatic private val GUIDE_OUTPUT_EVENT_NAMES = setOf(
+            GUIDE_OUTPUT_UPDATED,
+            GUIDE_OUTPUT_ATTACHED,
+            GUIDE_OUTPUT_DETACHED,
+        )
+
         @JvmStatic private val ALL_EVENT_NAMES = listOf(
             DEVICE_EVENT_NAMES, CAMERA_EVENT_NAMES, MOUNT_EVENT_NAMES,
             FOCUSER_EVENT_NAMES, FILTER_WHEEL_EVENT_NAMES,
+            GUIDE_OUTPUT_EVENT_NAMES,
         ).flatten().toSet()
 
         @JvmStatic
@@ -194,6 +240,7 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
             "MOUNT" -> MOUNT_EVENT_NAMES
             "FOCUSER" -> FOCUSER_EVENT_NAMES
             "FILTER_WHEEL" -> FILTER_WHEEL_EVENT_NAMES
+            "GUIDE_OUTPUT" -> GUIDE_OUTPUT_EVENT_NAMES
             else -> setOf(this)
         }
     }

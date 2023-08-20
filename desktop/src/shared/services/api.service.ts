@@ -4,7 +4,7 @@ import moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
     BodyPosition, Calibration, Camera, CameraStartCapture, ComputedCoordinates, Constellation, DeepSkyObject, Device,
-    FilterWheel, Focuser, HipsSurvey, INDIEventType, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, Location, MinorPlanet,
+    FilterWheel, Focuser, GuideOutput, GuidingChart, GuidingStar, HipsSurvey, INDIEventType, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, Location, MinorPlanet,
     Mount, Path, PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 
@@ -248,6 +248,54 @@ export class ApiService {
         return this.post<void>(`filterWheelSyncNames?name=${filterWheel.name}&filterNames=${filterNames.join(',')}`)
     }
 
+    attachedGuideOutputs() {
+        return this.get<GuideOutput[]>(`attachedGuideOutputs`)
+    }
+
+    guideOutput(name: string) {
+        return this.get<GuideOutput>(`guideOutput?name=${name}`)
+    }
+
+    guideOutputConnect(guideOutput: GuideOutput) {
+        return this.post<void>(`guideOutputConnect?name=${guideOutput.name}`)
+    }
+
+    guideOutputDisconnect(guideOutput: GuideOutput) {
+        return this.post<void>(`guideOutputDisconnect?name=${guideOutput.name}`)
+    }
+
+    startGuideLooping(camera: Camera, mount: Mount, guideOutput: GuideOutput) {
+        return this.post<void>(`startGuideLooping?camera=${camera.name}&mount=${mount.name}&guideOutput=${guideOutput.name}`)
+    }
+
+    stopGuideLooping() {
+        return this.post<void>(`stopGuideLooping`)
+    }
+
+    startGuiding(forceCalibration: boolean = false) {
+        return this.post<void>(`startGuiding?forceCalibration=${forceCalibration}`)
+    }
+
+    stopGuiding() {
+        return this.post<void>(`stopGuiding`)
+    }
+
+    guidingChart() {
+        return this.get<GuidingChart>(`guidingChart`)
+    }
+
+    guidingStar() {
+        return this.get<GuidingStar | null>(`guidingStar`)
+    }
+
+    selectGuideStar(x: number, y: number) {
+        return this.post<void>(`selectGuideStar?x=${x}&y=${y}`)
+    }
+
+    deselectGuideStar() {
+        return this.post<void>(`deselectGuideStar`)
+    }
+
     async openImage(
         path: string,
         debayer: boolean = false,
@@ -305,7 +353,7 @@ export class ApiService {
     }
 
     saveLocation(location: Location) {
-        return this.put<void>(`saveLocation?id=${location.id}`, location)
+        return this.put<Location>(`saveLocation?id=${location.id}`, location)
     }
 
     deleteLocation(location: Location) {

@@ -467,10 +467,100 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "6:2301362482019052453",
+      "lastPropertyId": "15:4684906703755163825",
+      "name": "GuideCalibrationEntity",
+      "properties": [
+        {
+          "id": "1:6728588619367606893",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4913384137646372267",
+          "name": "camera",
+          "indexId": "11:6391936718080301626",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:8051596148668625845",
+          "name": "mount",
+          "indexId": "12:7098610485552390205",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "4:138035267423647617",
+          "name": "guideOutput",
+          "indexId": "13:1450764334546729064",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "5:6799134939336445497",
+          "name": "savedAt",
+          "type": 6
+        },
+        {
+          "id": "6:2637424535737399110",
+          "name": "xRate",
+          "type": 8
+        },
+        {
+          "id": "7:6612188286154768202",
+          "name": "yRate",
+          "type": 8
+        },
+        {
+          "id": "8:1860054734862586861",
+          "name": "xAngle",
+          "type": 8
+        },
+        {
+          "id": "9:786455398306280418",
+          "name": "yAngle",
+          "type": 8
+        },
+        {
+          "id": "10:3110490281233083679",
+          "name": "declination",
+          "type": 8
+        },
+        {
+          "id": "11:8541707648467368632",
+          "name": "rotatorAngle",
+          "type": 8
+        },
+        {
+          "id": "12:194081998555554831",
+          "name": "binning",
+          "type": 5
+        },
+        {
+          "id": "13:7497902848811340787",
+          "name": "pierSideAtEast",
+          "type": 1
+        },
+        {
+          "id": "14:1907638853856933442",
+          "name": "raGuideParity",
+          "type": 9
+        },
+        {
+          "id": "15:4684906703755163825",
+          "name": "decGuideParity",
+          "type": 9
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "5:5995688963305056486",
-  "lastIndexId": "10:2763726675053391859",
+  "lastEntityId": "6:2301362482019052453",
+  "lastIndexId": "13:1450764334546729064",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

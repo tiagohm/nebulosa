@@ -174,7 +174,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     ) {
         title.setTitle('Camera')
 
-        this.api.indiStartListening('CAMERA')
+        api.indiStartListening('CAMERA')
 
         electron.ipcRenderer.on('CAMERA_UPDATED', (_, camera: Camera) => {
             if (camera.name === this.camera?.name) {

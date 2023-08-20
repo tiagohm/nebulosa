@@ -12,6 +12,7 @@ import { CheckboxModule } from 'primeng/checkbox'
 import { ContextMenuModule } from 'primeng/contextmenu'
 import { DialogModule } from 'primeng/dialog'
 import { DropdownModule } from 'primeng/dropdown'
+import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog'
 import { InplaceModule } from 'primeng/inplace'
 import { InputNumberModule } from 'primeng/inputnumber'
 import { InputSwitchModule } from 'primeng/inputswitch'
@@ -31,6 +32,7 @@ import { TooltipModule } from 'primeng/tooltip'
 import { DialogMenuComponent } from '../shared/components/dialogmenu/dialogmenu.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
 import { OpenStreetMapComponent } from '../shared/components/openstreetmap/openstreetmap.component'
+import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
 import { EnumPipe } from '../shared/pipes/enum.pipe'
@@ -45,6 +47,7 @@ import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
 import { FocuserComponent } from './focuser/focuser.component'
 import { FramingComponent } from './framing/framing.component'
+import { GuiderComponent } from './guider/guider.component'
 import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
@@ -67,7 +70,9 @@ import { MountComponent } from './mount/mount.component'
         FocuserComponent,
         FilterWheelComponent,
         MountComponent,
+        GuiderComponent,
         DialogMenuComponent,
+        LocationDialog,
         EnvPipe,
         WinPipe,
         EnumPipe,
@@ -105,9 +110,11 @@ import { MountComponent } from './mount/mount.component'
         TieredMenuModule,
         InplaceModule,
         SlideMenuModule,
+        DynamicDialogModule,
     ],
     providers: [
         MessageService,
+        DialogService,
         EnvPipe,
         WinPipe,
         EnumPipe,

@@ -47,6 +47,14 @@ export class BrowserWindowService {
         })
     }
 
+    openGuider(options: OpenWindowOptions = {}) {
+        this.openWindow({
+            ...options,
+            id: 'guider', path: 'guider', icon: options.icon || 'guider',
+            width: options.width || 720, height: options.height || 360,
+        })
+    }
+
     async openCameraImage(camera: Camera) {
         const hash = camera.name
         const factor = camera.height / camera.width
@@ -77,7 +85,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'atlas', path: 'atlas', icon: options.icon || 'atlas',
-            width: options.width || 460, height: options.height || 580,
+            width: options.width || 512, height: options.height || 510,
         })
     }
 
@@ -85,7 +93,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'framing', path: 'framing', icon: options.icon || 'framing',
-            width: options.width || 458, height: options.height || 240, params,
+            width: options.width || 280, height: options.height || 280, params,
         })
     }
 

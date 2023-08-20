@@ -4,6 +4,7 @@
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
+
 updates:
   - package-ecosystem: "gradle"
     directory: "/"
@@ -41,3 +42,23 @@ updates:
     target-branch: "main"
     commit-message:
       prefix: "[github-actions]"
+
+groups:
+  angular:
+    patterns:
+      - "@angular*"
+  kotest:
+    patterns:
+      - "io.kotest*"
+  netty:
+    patterns:
+      - "io.netty*"
+  retrofit:
+    patterns:
+      - "com.squareup.retrofit2*"
+  okhttp:
+    patterns:
+      - "com.squareup.okhttp3*"
+  jackson:
+    patterns:
+      - "com.fasterxml.jackson*"

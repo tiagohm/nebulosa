@@ -12,6 +12,7 @@ import nebulosa.indi.device.guide.GuideOutputDetached
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
 import nebulosa.indi.protocol.*
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
@@ -161,6 +162,8 @@ internal open class MountDevice(
                             canPulseGuide = true
 
                             handler.fireOnEventReceived(GuideOutputAttached(this))
+
+                            LOG.info("guide output attached: {}", name)
                         }
 
                         if (canPulseGuide) {
@@ -321,16 +324,18 @@ internal open class MountDevice(
         if (canPulseGuide) {
             canPulseGuide = false
             handler.fireOnEventReceived(GuideOutputDetached(this))
+            LOG.info("guide output detached: {}", name)
         }
 
         if (hasGPS) {
             hasGPS = false
             handler.fireOnEventReceived(GPSDetached(this))
+            LOG.info("GPS detached: {}", name)
         }
     }
 
     override fun toString(): String {
-        return "Mount(name=$name, slewing=$slewing, tracking=$tracking," +
+        return "Mount(name=$name, connected=$connected, slewing=$slewing, tracking=$tracking," +
                 " parking=$parking, parked=$parked, canAbort=$canAbort," +
                 " canSync=$canSync, canPark=$canPark, slewRates=$slewRates," +
                 " slewRate=$slewRate, mountType=$mountType, trackModes=$trackModes," +
@@ -338,5 +343,10 @@ internal open class MountDevice(
                 " guideRateNS=$guideRateNS, rightAscension=$rightAscension," +
                 " declination=$declination, canPulseGuide=$canPulseGuide," +
                 " pulseGuiding=$pulseGuiding)"
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<MountDevice>()
     }
 }

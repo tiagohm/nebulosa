@@ -24,7 +24,7 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
     }
 
     private fun checkIfSmallOffset(distance: Double, raOnly: Boolean, tolerance: Double): Boolean {
-        if (!guider.guiding || guider.paused || guider.settling || guider.currentErrorFrameCount < 10) {
+        if (!guider.isGuiding || guider.isPaused || guider.settling || guider.currentErrorFrameCount < 10) {
             return true
         }
 
@@ -57,6 +57,7 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
                     false
                 }
             }
+
             State.WAITING -> {
                 if (smallOffset) {
                     LOG.info("deactivated")
@@ -77,6 +78,7 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
                     }
                 }
             }
+
             State.RECOVERING -> {
                 if (smallOffset) {
                     LOG.info("deactivated")
@@ -92,6 +94,7 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
 
         private const val WAIT_INTERVAL = 5000L
 
-        @JvmStatic private val LOG = loggerFor<DistanceChecker>()
+        @JvmStatic
+        private val LOG = loggerFor<DistanceChecker>()
     }
 }
