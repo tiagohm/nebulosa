@@ -21,27 +21,32 @@ import nebulosa.indi.device.guide.GuideOutputDetached
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
 import nebulosa.indi.device.mount.MountDetached
-import nebulosa.log.loggerFor
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 
 @Service
 class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate) {
 
-    private val registeredEventNames = HashSet<String>()
-
     // INDI
 
+    @Volatile private var listenIndiEvents = false
+
     fun sendINDIPropertyChanged(event: DevicePropertyEvent) {
-        sendMessage(DEVICE_PROPERTY_CHANGED, event.property)
+        if (listenIndiEvents) {
+            sendMessage(DEVICE_PROPERTY_CHANGED, event.property)
+        }
     }
 
     fun sendINDIPropertyDeleted(event: DevicePropertyEvent) {
-        sendMessage(DEVICE_PROPERTY_DELETED, event.property)
+        if (listenIndiEvents) {
+            sendMessage(DEVICE_PROPERTY_DELETED, event.property)
+        }
     }
 
     fun sendINDIMessageReceived(event: DeviceMessageReceived) {
-        sendMessage(DEVICE_MESSAGE_RECEIVED, event)
+        if (listenIndiEvents) {
+            sendMessage(DEVICE_MESSAGE_RECEIVED, event)
+        }
     }
 
     // CAMERA
@@ -141,24 +146,17 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         if (device is GuideOutput) sendMessage(GUIDE_OUTPUT_UPDATED, device)
     }
 
-    @Synchronized
-    fun registerEventName(eventName: String) {
-        registeredEventNames.addAll(eventName.mapEventName())
-        LOG.info("registered event. name={}", eventName)
+    fun indiStartListening() {
+        listenIndiEvents = true
     }
 
-    @Synchronized
-    fun unregisterEventName(eventName: String) {
-        registeredEventNames.removeAll(eventName.mapEventName())
-        LOG.info("unregistered event. name={}", eventName)
+    fun indiStopListening() {
+        listenIndiEvents = false
     }
 
-    @Synchronized
-    private fun sendMessage(eventName: String, payload: Any) {
-        if (eventName in registeredEventNames) {
-            simpleMessageTemplate.convertAndSend(eventName, payload)
-            LOG.info("event sent. name={}, payload={}", eventName, payload)
-        }
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendMessage(eventName: String, payload: Any) {
+        simpleMessageTemplate.convertAndSend(eventName, payload)
     }
 
     companion object {
@@ -184,64 +182,5 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         const val GUIDE_OUTPUT_UPDATED = "GUIDE_OUTPUT_UPDATED"
         const val GUIDE_OUTPUT_ATTACHED = "GUIDE_OUTPUT_ATTACHED"
         const val GUIDE_OUTPUT_DETACHED = "GUIDE_OUTPUT_DETACHED"
-
-        @JvmStatic private val LOG = loggerFor<WebSocketService>()
-
-        @JvmStatic private val DEVICE_EVENT_NAMES = setOf(
-            DEVICE_PROPERTY_CHANGED,
-            DEVICE_PROPERTY_DELETED,
-            DEVICE_MESSAGE_RECEIVED,
-        )
-
-        @JvmStatic private val CAMERA_EVENT_NAMES = setOf(
-            CAMERA_IMAGE_SAVED,
-            CAMERA_UPDATED,
-            CAMERA_CAPTURE_PROGRESS_CHANGED,
-            CAMERA_CAPTURE_FINISHED,
-            CAMERA_ATTACHED,
-            CAMERA_DETACHED,
-        )
-
-        @JvmStatic private val MOUNT_EVENT_NAMES = setOf(
-            MOUNT_UPDATED,
-            MOUNT_ATTACHED,
-            MOUNT_DETACHED,
-        )
-
-        @JvmStatic private val FOCUSER_EVENT_NAMES = setOf(
-            FOCUSER_UPDATED,
-            FOCUSER_ATTACHED,
-            FOCUSER_DETACHED,
-        )
-
-        @JvmStatic private val FILTER_WHEEL_EVENT_NAMES = setOf(
-            FILTER_WHEEL_UPDATED,
-            FILTER_WHEEL_ATTACHED,
-            FILTER_WHEEL_DETACHED,
-        )
-
-        @JvmStatic private val GUIDE_OUTPUT_EVENT_NAMES = setOf(
-            GUIDE_OUTPUT_UPDATED,
-            GUIDE_OUTPUT_ATTACHED,
-            GUIDE_OUTPUT_DETACHED,
-        )
-
-        @JvmStatic private val ALL_EVENT_NAMES = listOf(
-            DEVICE_EVENT_NAMES, CAMERA_EVENT_NAMES, MOUNT_EVENT_NAMES,
-            FOCUSER_EVENT_NAMES, FILTER_WHEEL_EVENT_NAMES,
-            GUIDE_OUTPUT_EVENT_NAMES,
-        ).flatten().toSet()
-
-        @JvmStatic
-        private fun String.mapEventName() = when (this) {
-            "ALL" -> ALL_EVENT_NAMES
-            "DEVICE" -> DEVICE_EVENT_NAMES
-            "CAMERA" -> CAMERA_EVENT_NAMES
-            "MOUNT" -> MOUNT_EVENT_NAMES
-            "FOCUSER" -> FOCUSER_EVENT_NAMES
-            "FILTER_WHEEL" -> FILTER_WHEEL_EVENT_NAMES
-            "GUIDE_OUTPUT" -> GUIDE_OUTPUT_EVENT_NAMES
-            else -> setOf(this)
-        }
     }
 }

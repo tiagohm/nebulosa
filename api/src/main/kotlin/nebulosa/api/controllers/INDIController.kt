@@ -2,7 +2,6 @@ package nebulosa.api.controllers
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotEmpty
 import nebulosa.api.data.requests.INDISendPropertyRequest
 import nebulosa.api.services.EquipmentService
 import nebulosa.api.services.INDIService
@@ -40,12 +39,12 @@ class INDIController(
     }
 
     @PostMapping("indiStartListening")
-    fun indiStartListening(@RequestParam("eventName") @Valid @NotEmpty eventNames: List<String>) {
-        return eventNames.forEach(webSocketService::registerEventName)
+    fun indiStartListening() {
+        return webSocketService.indiStartListening()
     }
 
     @PostMapping("indiStopListening")
-    fun indiStopListening(@RequestParam("eventName") @Valid @NotEmpty eventNames: List<String>) {
-        return eventNames.forEach(webSocketService::unregisterEventName)
+    fun indiStopListening() {
+        return webSocketService.indiStopListening()
     }
 }

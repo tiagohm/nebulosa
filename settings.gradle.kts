@@ -29,13 +29,13 @@ dependencyResolutionManagement {
             library("csv", "de.siegmar:fastcsv:2.2.2")
             library("apache-lang3", "org.apache.commons:commons-lang3:3.13.0")
             library("apache-codec", "commons-codec:commons-codec:1.16.0")
+            library("apache-collections", "org.apache.commons:commons-collections4:4.4")
             library("oshi", "com.github.oshi:oshi-core:6.4.4")
             library("timeshape", "net.iakovlev:timeshape:2022g.17")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.6.2")
             library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.6.2")
             bundle("kotest", listOf("kotest-assertions-core", "kotest-runner-junit5"))
             bundle("netty", listOf("netty-transport", "netty-codec"))
-            bundle("apache", listOf("apache-lang3", "apache-codec"))
         }
     }
 }
