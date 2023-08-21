@@ -12,13 +12,13 @@ class ExtendedImageTest : AbstractImageTest() {
     init {
         beforeSpec {
             var fits = Fits("src/test/resources/M51.8.Mono.fits")
-            var image = Image.open(fits)
+            var image = Image.openFITS(fits)
             ImageIO.write(image, "JPEG", File("src/test/resources/M51.8.Mono.Extended.jpg"))
             ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Mono.Extended.png"))
             ImageIO.write(image, "BMP", File("src/test/resources/M51.8.Mono.Extended.bmp"))
 
             fits = Fits("src/test/resources/M51.8.Color.fits")
-            image = Image.open(fits)
+            image = Image.openFITS(fits)
             ImageIO.write(image, "JPEG", File("src/test/resources/M51.8.Color.Extended.jpg"))
             ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Color.Extended.png"))
             ImageIO.write(image, "BMP", File("src/test/resources/M51.8.Color.Extended.bmp"))

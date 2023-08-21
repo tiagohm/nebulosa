@@ -3,6 +3,7 @@ package nebulosa.api.services
 import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.events.CameraCaptureFinished
 import nebulosa.api.data.events.CameraCaptureProgressChanged
+import nebulosa.api.data.events.GuideExposureFinished
 import nebulosa.indi.device.ConnectionEvent
 import nebulosa.indi.device.DeviceMessageReceived
 import nebulosa.indi.device.DevicePropertyEvent
@@ -131,6 +132,10 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         sendMessage(GUIDE_OUTPUT_DETACHED, event.device)
     }
 
+    fun sendGuideExposureFinished(event: GuideExposureFinished) {
+        sendMessage(GUIDE_EXPOSURE_FINISHED, event)
+    }
+
     // DEVICE
 
     fun sendConnectionEvent(event: ConnectionEvent) {
@@ -182,5 +187,6 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         const val GUIDE_OUTPUT_UPDATED = "GUIDE_OUTPUT_UPDATED"
         const val GUIDE_OUTPUT_ATTACHED = "GUIDE_OUTPUT_ATTACHED"
         const val GUIDE_OUTPUT_DETACHED = "GUIDE_OUTPUT_DETACHED"
+        const val GUIDE_EXPOSURE_FINISHED = "GUIDE_EXPOSURE_FINISHED"
     }
 }

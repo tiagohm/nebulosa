@@ -322,23 +322,27 @@ class Image(
             debayer: Boolean = true,
             onlyHeaders: Boolean = false,
         ): Image {
-            return ImageIO.read(file)?.let(::open)
-                ?: Fits(file).use { open(it, debayer, onlyHeaders) }
+            return ImageIO.read(file)?.let(::openImage)
+                ?: Fits(file).use { openFITS(it, debayer, onlyHeaders) }
         }
 
         @JvmStatic
-        fun open(
+        fun openFITS(
             inputStream: InputStream,
             debayer: Boolean = true,
             onlyHeaders: Boolean = false,
         ): Image {
-            return ImageIO.read(inputStream)?.let(::open)
-                ?: Fits(inputStream).use { open(it, debayer, onlyHeaders) }
+            return Fits(inputStream).use { openFITS(it, debayer, onlyHeaders) }
+        }
+
+        @JvmStatic
+        fun openImage(inputStream: InputStream): Image? {
+            return ImageIO.read(inputStream)?.let(this::openImage)
         }
 
         @Suppress("UNCHECKED_CAST")
         @JvmStatic
-        fun open(
+        fun openFITS(
             fits: Fits,
             debayer: Boolean = true,
             onlyHeaders: Boolean = false,
@@ -425,7 +429,7 @@ class Image(
          * @see <a href="https://github.com/haraldk/TwelveMonkeys">TwelveMonkeys: Additional plug-ins</a>
          */
         @JvmStatic
-        fun open(bufferedImage: BufferedImage): Image {
+        fun openImage(bufferedImage: BufferedImage): Image {
             val header = Header()
             val width = bufferedImage.width
             val height = bufferedImage.height

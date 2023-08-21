@@ -11,8 +11,8 @@ import nom.tam.fits.Fits
 class HFDTest : StringSpec() {
 
     init {
-        val image1 = Image.open(Fits("src/test/resources/HFD.1.fits"))
-        val image2 = Image.open(Fits("src/test/resources/HFD.2.fits"))
+        val image1 = Image.openFITS(Fits("src/test/resources/HFD.1.fits"))
+        val image2 = Image.openFITS(Fits("src/test/resources/HFD.2.fits"))
 
         "ok" {
             val hfd = HalfFluxDiameter(542.0, 974.0)

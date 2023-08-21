@@ -145,6 +145,16 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         }
     }
 
+    async openCameraImage() {
+        await this.browserWindow.openCameraImage(this.camera!)
+    }
+
+    async startLooping() {
+        await this.openCameraImage()
+
+        this.api.startGuideLooping(this.camera!, this.mount!, this.guideOutput!)
+    }
+
     private update() {
         if (this.camera) {
             this.cameraConnected = this.camera.connected

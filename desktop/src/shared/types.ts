@@ -191,6 +191,11 @@ export interface SavedCameraImage {
     savedAt: number
 }
 
+export interface GuideExposureFinished {
+    camera: string
+    path: string
+}
+
 export interface ImageInfo extends SavedCameraImage {
     stretchShadow: number
     stretchHighlight: number
@@ -635,6 +640,7 @@ export const INDI_EVENT_TYPES = [
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
     'FILTER_WHEEL_UPDATED', 'FILTER_WHEEL_ATTACHED', 'FILTER_WHEEL_DETACHED',
     'GUIDE_OUTPUT_ATTACHED', 'GUIDE_OUTPUT_DETACHED', 'GUIDE_OUTPUT_UPDATED',
+    'GUIDE_EXPOSURE_FINISHED',
 ] as const
 
 export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]

@@ -3,23 +3,21 @@ package nebulosa.api.services
 import nebulosa.api.data.events.GuideExposureFinished
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.common.concurrency.ThreadedJob
+import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.*
-import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.io.InputStream
-import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.io.path.outputStream
 import kotlin.time.Duration
 
 data class GuideExposureTask(
     val camera: Camera,
     val exposure: Duration,
-    val savePath: Path,
-) : ThreadedJob<Path>() {
+    val token: ImageToken,
+) : ThreadedJob<Image>() {
 
     val exposureInMicroseconds = exposure.inWholeMicroseconds
 
@@ -35,7 +33,7 @@ data class GuideExposureTask(
         if (running && event.device === camera) {
             when (event) {
                 is CameraFrameCaptured -> {
-                    save(event.fits) && add(savePath)
+                    save(event.fits)
                     latch.countDown()
                 }
                 is CameraExposureAborted,
@@ -86,11 +84,9 @@ data class GuideExposureTask(
     }
 
     private fun save(inputStream: InputStream): Boolean {
-        LOG.info("saving FITS at $savePath...")
-
         return try {
-            inputStream.transferAndClose(savePath.outputStream())
-            EventBus.getDefault().post(GuideExposureFinished(this))
+            val image = Image.openFITS(inputStream).also(::add)
+            EventBus.getDefault().post(GuideExposureFinished(this, image))
             true
         } catch (e: Throwable) {
             LOG.error("failed to save FITS", e)

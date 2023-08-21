@@ -11,9 +11,7 @@ import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.platesolving.Calibration
 import org.springframework.stereotype.Service
-import java.nio.file.Files
-import java.nio.file.Path
-import kotlin.io.path.writeBytes
+import java.io.ByteArrayInputStream
 import kotlin.math.abs
 
 @Service
@@ -23,7 +21,7 @@ class FramingService(private val hips2FitsService: Hips2FitsService) {
         rightAscension: Angle, declination: Angle,
         width: Int, height: Int, fov: Angle,
         rotation: Angle = Angle.ZERO, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
-    ): Triple<Image, Path, Calibration>? {
+    ): Pair<Image, Calibration>? {
         val data = hips2FitsService.query(
             hipsSurveyType.hipsSurvey,
             rightAscension, declination,
@@ -32,11 +30,9 @@ class FramingService(private val hips2FitsService: Hips2FitsService) {
             format = FormatOutputType.FITS,
         ).execute().body() ?: return null
 
-        val fitsPath = Files.createTempFile("framing", ".fits")
-        fitsPath.writeBytes(data)
-        LOG.info("framing file saved. path={}", fitsPath)
+        LOG.info("framing file loaded")
 
-        val image = Image.open(fitsPath.toFile())
+        val image = Image.openFITS(ByteArrayInputStream(data))
 
         // val crot = -rotation + Angle.SEMICIRCLE
         val cdelt1 = image.header.getDoubleValue(FitsKeywords.CDELT1).deg
@@ -58,7 +54,7 @@ class FramingService(private val hips2FitsService: Hips2FitsService) {
             height = abs(cdelt2.value).rad * height,
         )
 
-        return Triple(image, fitsPath, calibration)
+        return image to calibration
     }
 
     companion object {

@@ -10,6 +10,7 @@ import nebulosa.api.data.responses.CalibrationResponse
 import nebulosa.api.data.responses.ImageAnnotationResponse
 import nebulosa.api.services.EquipmentService
 import nebulosa.api.services.ImageService
+import nebulosa.api.services.ImageToken
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.math.Angle
@@ -43,7 +44,7 @@ class ImageController(
         output: HttpServletResponse,
     ) {
         imageService.openImage(
-            Path.of(path),
+            ImageToken.of(path),
             debayer, autoStretch, shadow, highlight, midtone,
             mirrorHorizontal, mirrorVertical, invert,
             scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode,
@@ -53,7 +54,7 @@ class ImageController(
 
     @PostMapping("closeImage")
     fun closeImage(@RequestParam @Valid @NotBlank path: String) {
-        return imageService.closeImage(Path.of(path))
+        return imageService.closeImage(ImageToken.of(path))
     }
 
     @GetMapping("imagesOfCamera")
@@ -81,7 +82,7 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "true") dsos: Boolean,
         @RequestParam(required = false, defaultValue = "false") minorPlanets: Boolean,
     ): List<ImageAnnotationResponse> {
-        return imageService.annotations(Path.of(path), stars, dsos, minorPlanets)
+        return imageService.annotations(ImageToken.of(path), stars, dsos, minorPlanets)
     }
 
     @PostMapping("solveImage")
@@ -97,7 +98,7 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "") apiKey: String,
     ): CalibrationResponse {
         return imageService.solveImage(
-            Path.of(path), type, blind,
+            ImageToken.of(path), type, blind,
             Angle.from(centerRA, true), Angle.from(centerDEC), Angle.from(radius),
             downsampleFactor, pathOrUrl, apiKey,
         )
@@ -112,6 +113,6 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "true") synchronized: Boolean,
     ) {
         val mount = requireNotNull(equipmentService.mount(name))
-        imageService.pointMountHere(mount, Path.of(path), x, y, synchronized)
+        imageService.pointMountHere(mount, ImageToken.of(path), x, y, synchronized)
     }
 }

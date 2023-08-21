@@ -13,11 +13,11 @@ class AlgorithmTest : StringSpec() {
     init {
         "Median" {
             val fits = Fits("src/test/resources/CCD Simulator.Gray.fits")
-            Image.open(fits).compute(Median()) shouldBe (0.0000763f plusOrMinus 1e-8f)
+            Image.openFITS(fits).compute(Median()) shouldBe (0.0000763f plusOrMinus 1e-8f)
         }
         "Statistics" {
             val fits = Fits("src/test/resources/CCD Simulator.Gray.fits")
-            val statistics = Image.open(fits).compute(Statistics())
+            val statistics = Image.openFITS(fits).compute(Statistics())
 
             statistics.count shouldBeExactly 1310720
             statistics.maxCount shouldBeExactly 131696

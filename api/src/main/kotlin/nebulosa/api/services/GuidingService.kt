@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct
 import nebulosa.api.data.entities.GuideCalibrationEntity
 import nebulosa.api.data.enums.DitherMode
 import nebulosa.api.data.enums.GuideAlgorithmType
+import nebulosa.api.data.events.GuideExposureFinished
 import nebulosa.api.data.responses.GuidingChartResponse
 import nebulosa.api.data.responses.GuidingStarResponse
 import nebulosa.api.repositories.GuideCalibrationRepository
@@ -27,13 +28,11 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
-import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicReference
 import javax.imageio.ImageIO
 import kotlin.io.encoding.Base64
-import kotlin.io.path.createParentDirectories
 import kotlin.math.hypot
 import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds
@@ -45,7 +44,7 @@ class GuidingService(
     private val cameraExecutorService: ExecutorService,
     private val guiderExecutorService: ExecutorService,
     private val guideCalibrationRepository: GuideCalibrationRepository,
-    private val capturesDirectory: Path,
+    private val imageService: ImageService,
 ) : GuideDevice, GuiderListener {
 
     private val randomDither = RandomDither()
@@ -83,7 +82,7 @@ class GuidingService(
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onMountEvent(event: DeviceEvent<*>) {
+    fun onGuidingEvent(event: DeviceEvent<*>) {
         val device = event.device ?: return
 
         if (device is GuideOutput && device.canPulseGuide) {
@@ -93,6 +92,13 @@ class GuidingService(
                 is GuideOutputDetached -> webSocketService.sendGuideOutputDetached(event)
             }
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onGuideExposureFinished(event: GuideExposureFinished) {
+        imageService.load(event.task.token, event.image)
+        guideImage.set(event.image)
+        webSocketService.sendGuideExposureFinished(event)
     }
 
     fun connect(guideOutput: GuideOutput) {
@@ -296,15 +302,13 @@ class GuidingService(
 
     override fun capture(duration: Long): Image? {
         return synchronized(guideExposureTask) {
-            val savePath = Path.of("$capturesDirectory", camera.name + ".fits").createParentDirectories()
-            val task = GuideExposureTask(camera, duration.milliseconds, savePath)
+            val task = GuideExposureTask(camera, duration.milliseconds, ImageToken.Guiding)
 
             guideExposureTask.set(task)
             cameraExecutorService.submit(task).get()
             guideExposureTask.set(null)
 
-            if (task.isNotEmpty()) Image.open(savePath.toFile()).also(guideImage::set)
-            else null
+            task.firstOrNull()
         }
     }
 

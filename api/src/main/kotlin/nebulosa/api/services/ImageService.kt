@@ -50,20 +50,21 @@ class ImageService(
     private val framingService: FramingService,
 ) {
 
-    private val cachedImages = HashMap<Path, Image>()
-    private val calibrations = HashMap<Path, Calibration>()
+    private val cachedImages = HashMap<ImageToken, Image>()
+    private val calibrations = HashMap<ImageToken, Calibration>()
 
     @Synchronized
     fun openImage(
-        path: Path, debayer: Boolean,
+        token: ImageToken, debayer: Boolean,
         autoStretch: Boolean = false, shadow: Float = 0f, highlight: Float = 1f, midtone: Float = 0.5f,
         mirrorHorizontal: Boolean = false, mirrorVertical: Boolean = false, invert: Boolean = false,
         scnrEnabled: Boolean = false, scnrChannel: ImageChannel = ImageChannel.GREEN, scnrAmount: Float = 0.5f,
         scnrProtectionMode: ProtectionMethod = ProtectionMethod.AVERAGE_NEUTRAL,
         output: HttpServletResponse,
     ) {
-        val image = cachedImages[path] ?: Image.open(path.toFile(), debayer)
-            .also { cachedImages[path] = it }
+        val image = cachedImages[token]
+            ?: if (token is ImageToken.Saved) Image.open(token.path.toFile(), debayer).also { load(token, it) }
+            else throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
         val manualStretch = shadow != 0f || highlight != 1f || midtone != 0.5f
         var stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
@@ -90,7 +91,8 @@ class ImageService(
 
         if (invert) transformedImage = Invert.transform(transformedImage)
 
-        val savedImage = savedCameraImageRepository.withPath("$path")
+        val savedImage = if (token is ImageToken.Saved) savedCameraImageRepository.withPath("${token.path}")
+        else null
 
         val info = ImageInfoResponse(
             savedImage?.camera ?: "",
@@ -104,7 +106,7 @@ class ImageService(
             stretchParams.midtone,
             transformedImage.header.ra?.format(AngleFormatter.HMS),
             transformedImage.header.dec?.format(AngleFormatter.SIGNED_DMS),
-            path in calibrations,
+            token in calibrations,
             transformedImage.header.iterator().asSequence()
                 .filter { it.key.isNotBlank() && !it.value.isNullOrBlank() }
                 .map { FITSHeaderItemResponse(it.key, it.value ?: "") }
@@ -118,10 +120,10 @@ class ImageService(
     }
 
     @Synchronized
-    fun closeImage(path: Path) {
-        cachedImages.remove(path)
-        calibrations.remove(path)
-        LOG.info("image closed. path={}", path)
+    fun closeImage(token: ImageToken) {
+        cachedImages.remove(token)
+        calibrations.remove(token)
+        LOG.info("image closed. token={}", token)
         System.gc()
     }
 
@@ -138,10 +140,10 @@ class ImageService(
     }
 
     fun annotations(
-        path: Path,
+        token: ImageToken,
         stars: Boolean, dsos: Boolean, minorPlanets: Boolean,
     ): List<ImageAnnotationResponse> {
-        val calibration = calibrations[path]
+        val calibration = calibrations[token]
 
         if (calibration == null || !calibration.hasWCS || calibration.radius.value <= 0.0) {
             return emptyList()
@@ -174,7 +176,7 @@ class ImageService(
     }
 
     fun solveImage(
-        path: Path, type: PlateSolverType,
+        token: ImageToken, type: PlateSolverType,
         blind: Boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int,
@@ -187,13 +189,16 @@ class ImageService(
             PlateSolverType.ASTAP -> AstapPlateSolver(pathOrUrl)
         }
 
+        // TODO: Implement new solver using Image.
+        require(token is ImageToken.Saved)
+
         val calibration = solver.solve(
-            path, blind,
+            token.path, blind,
             centerRA, centerDEC, radius,
             downsampleFactor, Duration.ofMinutes(2L),
         )
 
-        calibrations[path] = calibration
+        calibrations[token] = calibration
 
         return CalibrationResponse(calibration)
     }
@@ -203,7 +208,11 @@ class ImageService(
             if (inputPath.extension == outputPath.extension) {
                 inputPath.inputStream().transferAndClose(outputPath.outputStream())
             } else {
-                val image = cachedImages[inputPath]!!
+                val image = cachedImages
+                    .keys
+                    .firstOrNull { it is ImageToken.Saved && it.path == inputPath }
+                    ?.let { cachedImages[it] }
+                    ?: return
 
                 when (outputPath.extension.uppercase()) {
                     "PNG" -> outputPath.outputStream().use { ImageIO.write(image, "PNG", it) }
@@ -214,8 +223,8 @@ class ImageService(
         }
     }
 
-    fun pointMountHere(mount: Mount, path: Path, x: Double, y: Double, synchronized: Boolean) {
-        val calibration = calibrations[path] ?: return
+    fun pointMountHere(mount: Mount, token: ImageToken, x: Double, y: Double, synchronized: Boolean) {
+        val calibration = calibrations[token] ?: return
         val wcs = WCSTransform(calibration)
         val (rightAscension, declination) = wcs.pixelToWorld(x, y)
 
@@ -236,13 +245,19 @@ class ImageService(
         width: Int, height: Int, fov: Angle,
         rotation: Angle = Angle.ZERO, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
     ): Path {
-        val (image, path, calibration) = framingService
+        val (image, calibration) = framingService
             .frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!
 
-        cachedImages[path] = image
-        calibrations[path] = calibration
+        val token = ImageToken.Framing
+        cachedImages[token] = image
+        calibrations[token] = calibration
 
-        return path
+        return Path.of("@framing")
+    }
+
+    internal fun load(token: ImageToken, image: Image) {
+        cachedImages[token] = image
+        calibrations.remove(token)
     }
 
     companion object {

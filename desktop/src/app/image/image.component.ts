@@ -12,7 +12,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Calibration, Camera, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
+    Calibration, Camera, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, GuideExposureFinished, ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
     ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage, Star
 } from '../../shared/types'
 
@@ -98,6 +98,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     roiWidth = 128
     roiHeight = 128
     roiInteractable?: Interactable
+
+    guiding = false
 
     private readonly scnrMenuItem: MenuItem = {
         label: 'SCNR',
@@ -286,6 +288,20 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 await this.closeImage()
 
                 ngZone.run(() => {
+                    this.guiding = false
+                    this.annotations = []
+                    this.imageParams.path = data.path
+                    this.loadImage()
+                })
+            }
+        })
+
+        electron.ipcRenderer.on('GUIDE_EXPOSURE_FINISHED', async (_, data: GuideExposureFinished) => {
+            if (data.camera === this.imageParams.camera?.name) {
+                await this.closeImage()
+
+                ngZone.run(() => {
+                    this.guiding = true
                     this.annotations = []
                     this.imageParams.path = data.path
                     this.loadImage()
@@ -313,14 +329,16 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        this.closeImage()
+        this.closeImage(true)
 
         this.roiInteractable?.unset()
     }
 
-    private async closeImage() {
+    private async closeImage(force: boolean = false) {
         if (this.imageParams.path) {
-            await this.api.closeImage(this.imageParams.path)
+            if (force || !this.imageParams.path.startsWith('@')) {
+                await this.api.closeImage(this.imageParams.path)
+            }
         }
     }
 
