@@ -283,9 +283,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         electron.ipcRenderer.on('CAMERA_IMAGE_SAVED', async (_, data: SavedCameraImage) => {
             if (data.camera === this.imageParams.camera?.name) {
-                if (this.imageParams.path) {
-                    await this.api.closeImage(this.imageParams.path)
-                }
+                await this.closeImage()
 
                 ngZone.run(() => {
                     this.annotations = []
@@ -295,7 +293,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.ipcRenderer.on('PARAMS_CHANGED', (_, data: ImageParams) => {
+        electron.ipcRenderer.on('PARAMS_CHANGED', async (_, data: ImageParams) => {
+            await this.closeImage()
+
             this.loadImageFromParams(data)
         })
 
@@ -313,11 +313,15 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        if (this.imageParams.path) {
-            this.api.closeImage(this.imageParams.path)
-        }
+        this.closeImage()
 
         this.roiInteractable?.unset()
+    }
+
+    private async closeImage() {
+        if (this.imageParams.path) {
+            await this.api.closeImage(this.imageParams.path)
+        }
     }
 
     private roiResizableMove(event: any) {
