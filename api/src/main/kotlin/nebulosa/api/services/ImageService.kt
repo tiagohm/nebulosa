@@ -13,6 +13,7 @@ import nebulosa.api.repositories.DeepSkyObjectRepository
 import nebulosa.api.repositories.SavedCameraImageRepository
 import nebulosa.api.repositories.StarRepository
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
+import nebulosa.fits.FitsKeywords
 import nebulosa.fits.dec
 import nebulosa.fits.ra
 import nebulosa.imaging.Image
@@ -24,18 +25,23 @@ import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.AngleFormatter
+import nebulosa.math.Distance
 import nebulosa.nova.position.ICRF
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.astap.AstapPlateSolver
 import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
 import nebulosa.platesolving.watney.WatneyPlateSolver
+import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.wcs.WCSTransform
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.nio.file.Path
 import java.time.Duration
+import java.time.LocalDateTime
+import java.util.*
+import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -48,6 +54,7 @@ class ImageService(
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val framingService: FramingService,
+    private val smallBodyDatabaseService: SmallBodyDatabaseService,
 ) {
 
     private val cachedImages = HashMap<ImageToken, Image>()
@@ -139,6 +146,7 @@ class ImageService(
         return savedCameraImageRepository.withPath("$path")!!
     }
 
+    @Synchronized
     fun annotations(
         token: ImageToken,
         stars: Boolean, dsos: Boolean, minorPlanets: Boolean,
@@ -150,27 +158,63 @@ class ImageService(
         }
 
         val wcs = WCSTransform(calibration)
-        val annotations = arrayListOf<ImageAnnotationResponse>()
+        val annotations = Vector<ImageAnnotationResponse>()
+        val tasks = ArrayList<CompletableFuture<*>>()
+
+        if (minorPlanets) {
+            CompletableFuture.runAsync {
+                val image = cachedImages[token] ?: return@runAsync
+                val dateTime = image.header.getStringValue(FitsKeywords.DATE_OBS)?.ifBlank { null } ?: return@runAsync
+                val latitude = Angle.from(image.header.getStringValue(FitsKeywords.SITELAT)).takeIf(Angle::valid) ?: return@runAsync
+                val longitude = Angle.from(image.header.getStringValue(FitsKeywords.SITELONG)).takeIf(Angle::valid) ?: return@runAsync
+
+                val data = smallBodyDatabaseService.identify(
+                    LocalDateTime.parse(dateTime), latitude, longitude, Distance.ZERO,
+                    calibration.rightAscension, calibration.declination, calibration.radius,
+                ).execute().body() ?: return@runAsync
+
+                val radiusInSeconds = calibration.radius.arcsec
+
+                data.data.forEach {
+                    val distance = it[5].toDouble()
+
+                    if (distance <= radiusInSeconds) {
+                        val rightAscension = Angle.from(it[1], true).takeIf(Angle::valid) ?: return@forEach
+                        val declination = Angle.from(it[2]).takeIf(Angle::valid) ?: return@forEach
+                        val (x, y) = wcs.worldToPixel(rightAscension, declination)
+                        val minorPlanet = ImageAnnotationResponse.MinorPlanet(it[0], it[1], it[2], it[6])
+                        val annotation = ImageAnnotationResponse(x, y, minorPlanet = minorPlanet)
+                        annotations.add(annotation)
+                    }
+                }
+            }.also(tasks::add)
+        }
 
         if (stars) {
-            starRepository
-                .search(rightAscension = calibration.rightAscension, declination = calibration.declination, radius = calibration.radius)
-                .forEach {
-                    val (x, y) = wcs.worldToPixel(it.rightAscension.rad, it.declination.rad)
-                    val annotation = ImageAnnotationResponse(x, y, star = it)
-                    annotations.add(annotation)
-                }
+            CompletableFuture.runAsync {
+                starRepository
+                    .search(rightAscension = calibration.rightAscension, declination = calibration.declination, radius = calibration.radius)
+                    .forEach {
+                        val (x, y) = wcs.worldToPixel(it.rightAscension.rad, it.declination.rad)
+                        val annotation = ImageAnnotationResponse(x, y, star = it)
+                        annotations.add(annotation)
+                    }
+            }.also(tasks::add)
         }
 
         if (dsos) {
-            deepSkyObjectRepository
-                .search(rightAscension = calibration.rightAscension, declination = calibration.declination, radius = calibration.radius)
-                .forEach {
-                    val (x, y) = wcs.worldToPixel(it.rightAscension.rad, it.declination.rad)
-                    val annotation = ImageAnnotationResponse(x, y, dso = it)
-                    annotations.add(annotation)
-                }
+            CompletableFuture.runAsync {
+                deepSkyObjectRepository
+                    .search(rightAscension = calibration.rightAscension, declination = calibration.declination, radius = calibration.radius)
+                    .forEach {
+                        val (x, y) = wcs.worldToPixel(it.rightAscension.rad, it.declination.rad)
+                        val annotation = ImageAnnotationResponse(x, y, dso = it)
+                        annotations.add(annotation)
+                    }
+            }.also(tasks::add)
         }
+
+        CompletableFuture.allOf(*tasks.toTypedArray()).join()
 
         return annotations
     }

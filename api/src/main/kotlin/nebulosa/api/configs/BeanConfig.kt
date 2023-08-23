@@ -8,7 +8,7 @@ import nebulosa.api.data.entities.MyObjectBox
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
-import nebulosa.sbd.SmallBodyDatabaseLookupService
+import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
 import okhttp3.Cache
 import okhttp3.ConnectionPool
@@ -83,7 +83,7 @@ class BeanConfig {
     fun simbadService(okHttpClient: OkHttpClient) = SimbadService(okHttpClient = okHttpClient)
 
     @Bean
-    fun smallBodyDatabaseLookupService(okHttpClient: OkHttpClient) = SmallBodyDatabaseLookupService(okHttpClient = okHttpClient)
+    fun smallBodyDatabaseService(okHttpClient: OkHttpClient) = SmallBodyDatabaseService(okHttpClient = okHttpClient)
 
     @Bean
     fun hips2FitsService(okHttpClient: OkHttpClient) = Hips2FitsService(okHttpClient = okHttpClient)

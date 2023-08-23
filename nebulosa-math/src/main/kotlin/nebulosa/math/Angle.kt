@@ -136,7 +136,7 @@ value class Angle(val value: Double) {
         @JvmStatic val NaN = Angle(Double.NaN)
 
         @JvmStatic private val PARSE_COORDINATES_NOT_NUMBER_REGEX = Regex("[^\\-\\d.]+")
-        @JvmStatic private val UNICODE_SIGN_MINUS_REGEX = Regex("[−]+")
+        @JvmStatic private val UNICODE_SIGN_MINUS_REGEX = Regex("−+")
 
         @JvmStatic
         fun from(

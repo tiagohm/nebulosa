@@ -28,7 +28,7 @@ import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.astrometry.FixedStar
 import nebulosa.nova.position.GeographicPosition
-import nebulosa.sbd.SmallBodyDatabaseLookupService
+import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import okhttp3.OkHttpClient
@@ -53,7 +53,7 @@ import kotlin.math.hypot
 class AtlasService(
     private val horizonsEphemerisProvider: HorizonsEphemerisProvider,
     private val bodyEphemerisProvider: BodyEphemerisProvider,
-    private val smallBodyDatabaseLookupService: SmallBodyDatabaseLookupService,
+    private val smallBodyDatabaseService: SmallBodyDatabaseService,
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val appPreferenceRepository: AppPreferenceRepository,
@@ -214,7 +214,7 @@ class AtlasService(
     }
 
     fun searchMinorPlanet(text: String): MinorPlanetResponse {
-        return smallBodyDatabaseLookupService
+        return smallBodyDatabaseService
             .search(text).execute().body()
             ?.let(MinorPlanetResponse::of)
             ?: MinorPlanetResponse.EMPTY
