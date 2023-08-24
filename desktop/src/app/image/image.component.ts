@@ -56,6 +56,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     annotateWithStars = true
     annotateWithDSOs = true
     annotateWithMinorPlanets = false
+    annotateWithMinorPlanetsMagLimit = 12.0
 
     autoStretch = true
     showStretchingDialog = false
@@ -466,7 +467,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     async annotateImage() {
         try {
             this.annotating = true
-            this.annotations = await this.api.annotationsOfImage(this.imageParams.path!, this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets)
+            this.annotations = await this.api.annotationsOfImage(this.imageParams.path!,
+                this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets, this.annotateWithMinorPlanetsMagLimit)
             this.showAnnotationDialog = false
         } finally {
             this.annotating = false

@@ -65,10 +65,10 @@ class BeanConfig {
         .connectionPool(connectionPool)
         .cache(cache)
         .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
-        .readTimeout(30L, TimeUnit.SECONDS)
-        .writeTimeout(30L, TimeUnit.SECONDS)
-        .connectTimeout(30L, TimeUnit.SECONDS)
-        .callTimeout(30L, TimeUnit.SECONDS)
+        .readTimeout(60L, TimeUnit.SECONDS)
+        .writeTimeout(60L, TimeUnit.SECONDS)
+        .connectTimeout(60L, TimeUnit.SECONDS)
+        .callTimeout(60L, TimeUnit.SECONDS)
         .build()
 
     @Bean

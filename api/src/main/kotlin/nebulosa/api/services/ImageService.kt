@@ -150,6 +150,7 @@ class ImageService(
     fun annotations(
         token: ImageToken,
         stars: Boolean, dsos: Boolean, minorPlanets: Boolean,
+        minorPlanetMagLimit: Double = 12.0,
     ): List<ImageAnnotationResponse> {
         val calibration = calibrations[token]
 
@@ -171,9 +172,11 @@ class ImageService(
                 val data = smallBodyDatabaseService.identify(
                     LocalDateTime.parse(dateTime), latitude, longitude, Distance.ZERO,
                     calibration.rightAscension, calibration.declination, calibration.radius,
+                    minorPlanetMagLimit,
                 ).execute().body() ?: return@runAsync
 
                 val radiusInSeconds = calibration.radius.arcsec
+                var count = 0
 
                 data.data.forEach {
                     val distance = it[5].toDouble()
@@ -185,8 +188,11 @@ class ImageService(
                         val minorPlanet = ImageAnnotationResponse.MinorPlanet(it[0], it[1], it[2], it[6])
                         val annotation = ImageAnnotationResponse(x, y, minorPlanet = minorPlanet)
                         annotations.add(annotation)
+                        count++
                     }
                 }
+
+                LOG.info("Found {} minor planets", count)
             }.also(tasks::add)
         }
 
@@ -194,6 +200,7 @@ class ImageService(
             CompletableFuture.runAsync {
                 starRepository
                     .search(rightAscension = calibration.rightAscension, declination = calibration.declination, radius = calibration.radius)
+                    .also { LOG.info("Found {} stars", it.size) }
                     .forEach {
                         val (x, y) = wcs.worldToPixel(it.rightAscension.rad, it.declination.rad)
                         val annotation = ImageAnnotationResponse(x, y, star = it)
@@ -206,6 +213,7 @@ class ImageService(
             CompletableFuture.runAsync {
                 deepSkyObjectRepository
                     .search(rightAscension = calibration.rightAscension, declination = calibration.declination, radius = calibration.radius)
+                    .also { LOG.info("Found {} DSOs", it.size) }
                     .forEach {
                         val (x, y) = wcs.worldToPixel(it.rightAscension.rad, it.declination.rad)
                         val annotation = ImageAnnotationResponse(x, y, dso = it)

@@ -41,7 +41,7 @@ class SmallBodyDatabaseService(
         centerRA: Angle, centerDEC: Angle, fov: Angle = 1.0.deg,
         magLimit: Double = 12.0,
     ): Call<SmallBodyIdentified> {
-        val fovDeg = fov.degrees / 2.0
+        val fovDeg = fov.degrees
 
         return service.identify(
             dateTime.format(DATE_TIME_FORMAT),

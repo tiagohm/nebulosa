@@ -449,8 +449,9 @@ export class ApiService {
     annotationsOfImage(
         path: string,
         stars: boolean = true, dsos: boolean = true, minorPlanets: boolean = false,
+        minorPlanetMagLimit: number = 12.0,
     ) {
-        return this.get<ImageAnnotation[]>(`annotationsOfImage?path=${path}&stars=${stars}&dsos=${dsos}&minorPlanets=${minorPlanets}`)
+        return this.get<ImageAnnotation[]>(`annotationsOfImage?path=${path}&stars=${stars}&dsos=${dsos}&minorPlanets=${minorPlanets}&minorPlanetMagLimit=${minorPlanetMagLimit}`)
     }
 
     solveImage(

@@ -14,17 +14,16 @@ import java.util.concurrent.TimeUnit
 abstract class RetrofitService(
     val url: String,
     private val okHttpClient: OkHttpClient? = null,
+    private val objectMapper: ObjectMapper? = null,
 ) {
 
     protected open val converterFactory = emptyList<Converter.Factory>()
 
     protected open val callAdaptorFactory: CallAdapter.Factory? = null
 
-    protected open val mapper = ObjectMapper()
-        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)!!
-
     protected open fun handleOkHttpClientBuilder(builder: OkHttpClient.Builder) = Unit
+
+    protected open fun handleObjectMapper(mapper: ObjectMapper) = Unit
 
     protected open val retrofit by lazy {
         val builder = Retrofit.Builder()
@@ -32,6 +31,8 @@ abstract class RetrofitService(
         builder.addConverterFactory(RawAsStringConverterFactory)
         builder.addConverterFactory(RawAsByteArrayConverterFactory)
         converterFactory.forEach { builder.addConverterFactory(it) }
+        val mapper = objectMapper ?: DEFAULT_MAPPER.copy()
+        handleObjectMapper(mapper)
         builder.addConverterFactory(JacksonConverterFactory.create(mapper))
         callAdaptorFactory?.also(builder::addCallAdapterFactory)
 
@@ -54,5 +55,9 @@ abstract class RetrofitService(
             .connectTimeout(60L, TimeUnit.SECONDS)
             .callTimeout(60L, TimeUnit.SECONDS)
             .build()
+
+        @JvmStatic private val DEFAULT_MAPPER = ObjectMapper()
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)!!
     }
 }

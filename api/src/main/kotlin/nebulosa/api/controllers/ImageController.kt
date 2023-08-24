@@ -81,8 +81,9 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "true") stars: Boolean,
         @RequestParam(required = false, defaultValue = "true") dsos: Boolean,
         @RequestParam(required = false, defaultValue = "false") minorPlanets: Boolean,
+        @RequestParam(required = false, defaultValue = "12.0") minorPlanetMagLimit: Double,
     ): List<ImageAnnotationResponse> {
-        return imageService.annotations(ImageToken.of(path), stars, dsos, minorPlanets)
+        return imageService.annotations(ImageToken.of(path), stars, dsos, minorPlanets, minorPlanetMagLimit)
     }
 
     @PostMapping("solveImage")
