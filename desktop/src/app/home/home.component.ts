@@ -75,7 +75,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         onAdd: (device: T) => number,
         onRemove: (device: T) => number,
     ) {
-        this.electron.ipcRenderer.on(`${type}_ATTACHED`, (_, device: T) => {
+        this.electron.on(`${type}_ATTACHED`, (_, device: T) => {
             this.ngZone.run(() => {
                 if (onAdd(device) === 1) {
                     this.electron.send(`${type}_CHANGED`, device)
@@ -83,7 +83,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             })
         })
 
-        this.electron.ipcRenderer.on(`${type}_DETACHED`, (_, device: T) => {
+        this.electron.on(`${type}_DETACHED`, (_, device: T) => {
             this.ngZone.run(() => {
                 if (onRemove(device) === 0) {
                     this.electron.send(`${type}_CHANGED`, undefined)

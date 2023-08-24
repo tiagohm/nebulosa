@@ -174,7 +174,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     ) {
         title.setTitle('Camera')
 
-        electron.ipcRenderer.on('CAMERA_UPDATED', (_, camera: Camera) => {
+        electron.on('CAMERA_UPDATED', (_, camera: Camera) => {
             if (camera.name === this.camera?.name) {
                 ngZone.run(() => {
                     Object.assign(this.camera!, camera)
@@ -183,7 +183,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.ipcRenderer.on('CAMERA_CAPTURE_PROGRESS_CHANGED', (_, event: CameraCaptureProgressChanged) => {
+        electron.on('CAMERA_CAPTURE_PROGRESS_CHANGED', (_, event: CameraCaptureProgressChanged) => {
             if (event.camera === this.camera?.name) {
                 ngZone.run(() => {
                     this.capturing = true
@@ -192,7 +192,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.ipcRenderer.on('CAMERA_CAPTURE_FINISHED', (_, event: CameraCaptureFinished) => {
+        electron.on('CAMERA_CAPTURE_FINISHED', (_, event: CameraCaptureFinished) => {
             if (event.camera === this.camera?.name) {
                 ngZone.run(() => {
                     this.capturing = false
@@ -200,7 +200,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.ipcRenderer.on('FILTER_WHEEL_CHANGED', (_, filterWheel?: FilterWheel) => {
+        electron.on('FILTER_WHEEL_CHANGED', (_, filterWheel?: FilterWheel) => {
             ngZone.run(() => {
                 this.filterWheel = filterWheel
             })

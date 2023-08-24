@@ -65,13 +65,13 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.ipcRenderer.on('GUIDE_OUTPUT_ATTACHED', (_, guideOutput: GuideOutput) => {
+        electron.on('GUIDE_OUTPUT_ATTACHED', (_, guideOutput: GuideOutput) => {
             ngZone.run(() => {
                 this.guideOutputs.push(guideOutput)
             })
         })
 
-        electron.ipcRenderer.on('GUIDE_OUTPUT_DETACHED', (_, guideOutput: GuideOutput) => {
+        electron.on('GUIDE_OUTPUT_DETACHED', (_, guideOutput: GuideOutput) => {
             ngZone.run(() => {
                 const index = this.guideOutputs.findIndex(e => e.name === guideOutput.name)
                 if (index) this.guideOutputs.splice(index, 1)

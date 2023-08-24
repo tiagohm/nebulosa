@@ -148,7 +148,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     ) {
         title.setTitle('Mount')
 
-        electron.ipcRenderer.on('MOUNT_UPDATED', (_, mount: Mount) => {
+        electron.on('MOUNT_UPDATED', (_, mount: Mount) => {
             if (mount.name === this.mount?.name) {
                 ngZone.run(() => {
                     Object.assign(this.mount!, mount)

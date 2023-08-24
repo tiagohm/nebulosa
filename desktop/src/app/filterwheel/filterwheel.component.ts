@@ -47,7 +47,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     ) {
         title.setTitle('Filter Wheel')
 
-        electron.ipcRenderer.on('FILTER_WHEEL_UPDATED', (_, filterWheel: FilterWheel) => {
+        electron.on('FILTER_WHEEL_UPDATED', (_, filterWheel: FilterWheel) => {
             if (filterWheel.name === this.filterWheel?.name) {
                 ngZone.run(() => {
                     Object.assign(this.filterWheel!, filterWheel)

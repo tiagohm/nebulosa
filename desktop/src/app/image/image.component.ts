@@ -284,7 +284,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         title.setTitle('Image')
 
-        electron.ipcRenderer.on('CAMERA_IMAGE_SAVED', async (_, data: SavedCameraImage) => {
+        electron.on('CAMERA_IMAGE_SAVED', async (_, data: SavedCameraImage) => {
             if (data.camera === this.imageParams.camera?.name) {
                 await this.closeImage()
 
@@ -297,7 +297,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.ipcRenderer.on('GUIDE_EXPOSURE_FINISHED', async (_, data: GuideExposureFinished) => {
+        electron.on('GUIDE_EXPOSURE_FINISHED', async (_, data: GuideExposureFinished) => {
             if (data.camera === this.imageParams.camera?.name) {
                 await this.closeImage()
 
@@ -310,7 +310,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.ipcRenderer.on('PARAMS_CHANGED', async (_, data: ImageParams) => {
+        electron.on('PARAMS_CHANGED', async (_, data: ImageParams) => {
             await this.closeImage()
 
             this.loadImageFromParams(data)
