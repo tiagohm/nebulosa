@@ -4,7 +4,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, GuideOutput, Mount } from '../../shared/types'
+import { Camera, GuideOutput, ImageStarSelected, Mount } from '../../shared/types'
 
 @Component({
     selector: 'app-guider',
@@ -76,6 +76,12 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
                 const index = this.guideOutputs.findIndex(e => e.name === guideOutput.name)
                 if (index) this.guideOutputs.splice(index, 1)
             })
+        })
+
+        electron.on('IMAGE_STAR_SELECTED', async (_, star: ImageStarSelected) => {
+            if (!this.guiding && star.camera.name === this.camera?.name) {
+                await this.api.selectGuideStar(star.x, star.y)
+            }
         })
     }
 
