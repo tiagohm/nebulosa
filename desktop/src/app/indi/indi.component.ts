@@ -35,7 +35,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
     ) {
         title.setTitle('INDI')
 
-        this.api.indiStartListening('DEVICE')
+        this.api.indiStartListening()
 
         electron.ipcRenderer.on('DEVICE_PROPERTY_CHANGED', (_, data: INDIProperty<any>) => {
             ngZone.run(() => {
@@ -80,7 +80,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        this.api.indiStopListening('DEVICE')
+        this.api.indiStopListening()
     }
 
     async deviceChanged() {

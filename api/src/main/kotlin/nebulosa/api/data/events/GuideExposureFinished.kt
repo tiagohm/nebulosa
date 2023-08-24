@@ -4,12 +4,14 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.api.services.GuideExposureTask
+import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.CameraEvent
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
 data class GuideExposureFinished(
     override val task: GuideExposureTask,
+    @JvmField internal val image: Image,
 ) : TaskEvent, CameraEvent {
 
     override val device
@@ -26,7 +28,7 @@ data class GuideExposureFinished(
         ) {
             gen.writeStartObject()
             gen.writeStringField("camera", event.device.name)
-            gen.writeStringField("path", "${event.task.savePath}")
+            gen.writeStringField("path", "${event.task.token.path}")
             gen.writeEndObject()
         }
     }

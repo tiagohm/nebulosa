@@ -16,6 +16,8 @@ class AngleFormatter private constructor(
     private val secondsDecimalPlaces: Int = 1,
     private val separators: List<String> = emptyList(),
     private val locale: Locale = Locale.ROOT,
+    private val minusSign: String = "-",
+    private val plusSign: String = "+",
 ) {
 
     constructor(builder: Builder) : this(
@@ -29,11 +31,13 @@ class AngleFormatter private constructor(
         builder.secondsDecimalPlaces,
         builder.separators.toList(),
         builder.locale,
+        builder.minusSign,
+        builder.plusSign,
     )
 
     fun format(angle: Angle): String {
         val (a, b, c) = if (isHours) angle.hms() else angle.dms()
-        val sign = if (hasSign) if (a < 0) "-" else "+" else ""
+        val sign = if (hasSign) if (a < 0) minusSign else plusSign else ""
         val s0 = if (separators.isNotEmpty()) separators[0] else if (isHours) ":" else ""
         val s1 = if (separators.size > 1) separators[1] else if (!hasSeconds && s0.trim() == ":") "" else s0
         val k = if (secondsDecimalPlaces == 0) 1 else 0
@@ -93,6 +97,8 @@ class AngleFormatter private constructor(
         internal var secondsDecimalPlaces = formatter?.secondsDecimalPlaces ?: 1
         internal val separators = formatter?.separators?.toMutableList() ?: arrayListOf()
         internal var locale = formatter?.locale ?: Locale.ROOT
+        internal var minusSign = "-"
+        internal var plusSign = "+"
 
         constructor() : this(null)
 
@@ -120,20 +126,30 @@ class AngleFormatter private constructor(
 
         fun locale(locale: Locale) = apply { this.locale = locale }
 
+        fun minusSign(sign: String) = apply { minusSign = sign }
+
+        fun plusSign(sign: String) = apply { plusSign = sign }
+
         fun build() = AngleFormatter(this)
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
-            if (other !is Builder) return false
+            if (javaClass != other?.javaClass) return false
+
+            other as Builder
 
             if (isHours != other.isHours) return false
             if (hoursFormat != other.hoursFormat) return false
             if (degreesFormat != other.degreesFormat) return false
+            if (minutesFormat != other.minutesFormat) return false
+            if (secondsFormat != other.secondsFormat) return false
             if (hasSign != other.hasSign) return false
             if (hasSeconds != other.hasSeconds) return false
             if (secondsDecimalPlaces != other.secondsDecimalPlaces) return false
             if (separators != other.separators) return false
             if (locale != other.locale) return false
+            if (minusSign != other.minusSign) return false
+            if (plusSign != other.plusSign) return false
 
             return true
         }
@@ -142,11 +158,15 @@ class AngleFormatter private constructor(
             var result = isHours.hashCode()
             result = 31 * result + hoursFormat.hashCode()
             result = 31 * result + degreesFormat.hashCode()
+            result = 31 * result + minutesFormat.hashCode()
+            result = 31 * result + secondsFormat.hashCode()
             result = 31 * result + hasSign.hashCode()
             result = 31 * result + hasSeconds.hashCode()
             result = 31 * result + secondsDecimalPlaces
             result = 31 * result + separators.hashCode()
             result = 31 * result + (locale?.hashCode() ?: 0)
+            result = 31 * result + minusSign.hashCode()
+            result = 31 * result + plusSign.hashCode()
             return result
         }
     }

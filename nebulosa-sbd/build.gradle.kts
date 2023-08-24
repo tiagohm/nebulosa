@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    api(project(":nebulosa-math"))
     api(project(":nebulosa-retrofit"))
     testImplementation(project(":nebulosa-test"))
 }

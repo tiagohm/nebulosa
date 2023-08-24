@@ -13,6 +13,7 @@ import nebulosa.api.repositories.DeepSkyObjectRepository
 import nebulosa.api.repositories.SavedCameraImageRepository
 import nebulosa.api.repositories.StarRepository
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
+import nebulosa.fits.FitsKeywords
 import nebulosa.fits.dec
 import nebulosa.fits.ra
 import nebulosa.imaging.Image
@@ -24,18 +25,23 @@ import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.AngleFormatter
+import nebulosa.math.Distance
 import nebulosa.nova.position.ICRF
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.astap.AstapPlateSolver
 import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
 import nebulosa.platesolving.watney.WatneyPlateSolver
+import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.wcs.WCSTransform
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.nio.file.Path
 import java.time.Duration
+import java.time.LocalDateTime
+import java.util.*
+import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -48,22 +54,24 @@ class ImageService(
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val framingService: FramingService,
+    private val smallBodyDatabaseService: SmallBodyDatabaseService,
 ) {
 
-    private val cachedImages = HashMap<Path, Image>()
-    private val calibrations = HashMap<Path, Calibration>()
+    private val cachedImages = HashMap<ImageToken, Image>()
+    private val calibrations = HashMap<ImageToken, Calibration>()
 
     @Synchronized
     fun openImage(
-        path: Path, debayer: Boolean,
+        token: ImageToken, debayer: Boolean,
         autoStretch: Boolean = false, shadow: Float = 0f, highlight: Float = 1f, midtone: Float = 0.5f,
         mirrorHorizontal: Boolean = false, mirrorVertical: Boolean = false, invert: Boolean = false,
         scnrEnabled: Boolean = false, scnrChannel: ImageChannel = ImageChannel.GREEN, scnrAmount: Float = 0.5f,
         scnrProtectionMode: ProtectionMethod = ProtectionMethod.AVERAGE_NEUTRAL,
         output: HttpServletResponse,
     ) {
-        val image = cachedImages[path] ?: Image.open(path.toFile(), debayer)
-            .also { cachedImages[path] = it }
+        val image = cachedImages[token]
+            ?: if (token is ImageToken.Saved) Image.open(token.path.toFile(), debayer).also { load(token, it) }
+            else throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
         val manualStretch = shadow != 0f || highlight != 1f || midtone != 0.5f
         var stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
@@ -90,7 +98,8 @@ class ImageService(
 
         if (invert) transformedImage = Invert.transform(transformedImage)
 
-        val savedImage = savedCameraImageRepository.withPath("$path")
+        val savedImage = if (token is ImageToken.Saved) savedCameraImageRepository.withPath("${token.path}")
+        else null
 
         val info = ImageInfoResponse(
             savedImage?.camera ?: "",
@@ -104,7 +113,7 @@ class ImageService(
             stretchParams.midtone,
             transformedImage.header.ra?.format(AngleFormatter.HMS),
             transformedImage.header.dec?.format(AngleFormatter.SIGNED_DMS),
-            path in calibrations,
+            token in calibrations,
             transformedImage.header.iterator().asSequence()
                 .filter { it.key.isNotBlank() && !it.value.isNullOrBlank() }
                 .map { FITSHeaderItemResponse(it.key, it.value ?: "") }
@@ -118,10 +127,10 @@ class ImageService(
     }
 
     @Synchronized
-    fun closeImage(path: Path) {
-        cachedImages.remove(path)
-        calibrations.remove(path)
-        LOG.info("image closed. path={}", path)
+    fun closeImage(token: ImageToken) {
+        cachedImages.remove(token)
+        calibrations.remove(token)
+        LOG.info("image closed. token={}", token)
         System.gc()
     }
 
@@ -137,44 +146,89 @@ class ImageService(
         return savedCameraImageRepository.withPath("$path")!!
     }
 
+    @Synchronized
     fun annotations(
-        path: Path,
+        token: ImageToken,
         stars: Boolean, dsos: Boolean, minorPlanets: Boolean,
+        minorPlanetMagLimit: Double = 12.0,
     ): List<ImageAnnotationResponse> {
-        val calibration = calibrations[path]
+        val calibration = calibrations[token]
 
         if (calibration == null || !calibration.hasWCS || calibration.radius.value <= 0.0) {
             return emptyList()
         }
 
         val wcs = WCSTransform(calibration)
-        val annotations = arrayListOf<ImageAnnotationResponse>()
+        val annotations = Vector<ImageAnnotationResponse>()
+        val tasks = ArrayList<CompletableFuture<*>>()
+
+        if (minorPlanets) {
+            CompletableFuture.runAsync {
+                val image = cachedImages[token] ?: return@runAsync
+                val dateTime = image.header.getStringValue(FitsKeywords.DATE_OBS)?.ifBlank { null } ?: return@runAsync
+                val latitude = Angle.from(image.header.getStringValue(FitsKeywords.SITELAT)).takeIf(Angle::valid) ?: return@runAsync
+                val longitude = Angle.from(image.header.getStringValue(FitsKeywords.SITELONG)).takeIf(Angle::valid) ?: return@runAsync
+
+                val data = smallBodyDatabaseService.identify(
+                    LocalDateTime.parse(dateTime), latitude, longitude, Distance.ZERO,
+                    calibration.rightAscension, calibration.declination, calibration.radius,
+                    minorPlanetMagLimit,
+                ).execute().body() ?: return@runAsync
+
+                val radiusInSeconds = calibration.radius.arcsec
+                var count = 0
+
+                data.data.forEach {
+                    val distance = it[5].toDouble()
+
+                    if (distance <= radiusInSeconds) {
+                        val rightAscension = Angle.from(it[1], true).takeIf(Angle::valid) ?: return@forEach
+                        val declination = Angle.from(it[2]).takeIf(Angle::valid) ?: return@forEach
+                        val (x, y) = wcs.worldToPixel(rightAscension, declination)
+                        val minorPlanet = ImageAnnotationResponse.MinorPlanet(it[0], it[1], it[2], it[6])
+                        val annotation = ImageAnnotationResponse(x, y, minorPlanet = minorPlanet)
+                        annotations.add(annotation)
+                        count++
+                    }
+                }
+
+                LOG.info("Found {} minor planets", count)
+            }.also(tasks::add)
+        }
 
         if (stars) {
-            starRepository
-                .search(rightAscension = calibration.rightAscension, declination = calibration.declination, radius = calibration.radius)
-                .forEach {
-                    val (x, y) = wcs.worldToPixel(it.rightAscension.rad, it.declination.rad)
-                    val annotation = ImageAnnotationResponse(x, y, star = it)
-                    annotations.add(annotation)
-                }
+            CompletableFuture.runAsync {
+                starRepository
+                    .search(rightAscension = calibration.rightAscension, declination = calibration.declination, radius = calibration.radius)
+                    .also { LOG.info("Found {} stars", it.size) }
+                    .forEach {
+                        val (x, y) = wcs.worldToPixel(it.rightAscension.rad, it.declination.rad)
+                        val annotation = ImageAnnotationResponse(x, y, star = it)
+                        annotations.add(annotation)
+                    }
+            }.also(tasks::add)
         }
 
         if (dsos) {
-            deepSkyObjectRepository
-                .search(rightAscension = calibration.rightAscension, declination = calibration.declination, radius = calibration.radius)
-                .forEach {
-                    val (x, y) = wcs.worldToPixel(it.rightAscension.rad, it.declination.rad)
-                    val annotation = ImageAnnotationResponse(x, y, dso = it)
-                    annotations.add(annotation)
-                }
+            CompletableFuture.runAsync {
+                deepSkyObjectRepository
+                    .search(rightAscension = calibration.rightAscension, declination = calibration.declination, radius = calibration.radius)
+                    .also { LOG.info("Found {} DSOs", it.size) }
+                    .forEach {
+                        val (x, y) = wcs.worldToPixel(it.rightAscension.rad, it.declination.rad)
+                        val annotation = ImageAnnotationResponse(x, y, dso = it)
+                        annotations.add(annotation)
+                    }
+            }.also(tasks::add)
         }
+
+        CompletableFuture.allOf(*tasks.toTypedArray()).join()
 
         return annotations
     }
 
     fun solveImage(
-        path: Path, type: PlateSolverType,
+        token: ImageToken, type: PlateSolverType,
         blind: Boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int,
@@ -187,13 +241,16 @@ class ImageService(
             PlateSolverType.ASTAP -> AstapPlateSolver(pathOrUrl)
         }
 
+        // TODO: Implement new solver using Image.
+        require(token is ImageToken.Saved)
+
         val calibration = solver.solve(
-            path, blind,
+            token.path, blind,
             centerRA, centerDEC, radius,
             downsampleFactor, Duration.ofMinutes(2L),
         )
 
-        calibrations[path] = calibration
+        calibrations[token] = calibration
 
         return CalibrationResponse(calibration)
     }
@@ -203,7 +260,11 @@ class ImageService(
             if (inputPath.extension == outputPath.extension) {
                 inputPath.inputStream().transferAndClose(outputPath.outputStream())
             } else {
-                val image = cachedImages[inputPath]!!
+                val image = cachedImages
+                    .keys
+                    .firstOrNull { it is ImageToken.Saved && it.path == inputPath }
+                    ?.let { cachedImages[it] }
+                    ?: return
 
                 when (outputPath.extension.uppercase()) {
                     "PNG" -> outputPath.outputStream().use { ImageIO.write(image, "PNG", it) }
@@ -214,8 +275,8 @@ class ImageService(
         }
     }
 
-    fun pointMountHere(mount: Mount, path: Path, x: Double, y: Double, synchronized: Boolean) {
-        val calibration = calibrations[path] ?: return
+    fun pointMountHere(mount: Mount, token: ImageToken, x: Double, y: Double, synchronized: Boolean) {
+        val calibration = calibrations[token] ?: return
         val wcs = WCSTransform(calibration)
         val (rightAscension, declination) = wcs.pixelToWorld(x, y)
 
@@ -236,13 +297,19 @@ class ImageService(
         width: Int, height: Int, fov: Angle,
         rotation: Angle = Angle.ZERO, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
     ): Path {
-        val (image, path, calibration) = framingService
+        val (image, calibration) = framingService
             .frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!
 
-        cachedImages[path] = image
-        calibrations[path] = calibration
+        val token = ImageToken.Framing
+        cachedImages[token] = image
+        calibrations[token] = calibration
 
-        return path
+        return Path.of("@framing")
+    }
+
+    internal fun load(token: ImageToken, image: Image) {
+        cachedImages[token] = image
+        calibrations.remove(token)
     }
 
     companion object {

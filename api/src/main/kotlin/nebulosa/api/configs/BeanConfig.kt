@@ -8,7 +8,7 @@ import nebulosa.api.data.entities.MyObjectBox
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
-import nebulosa.sbd.SmallBodyDatabaseLookupService
+import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
 import okhttp3.Cache
 import okhttp3.ConnectionPool
@@ -65,10 +65,10 @@ class BeanConfig {
         .connectionPool(connectionPool)
         .cache(cache)
         .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
-        .readTimeout(30L, TimeUnit.SECONDS)
-        .writeTimeout(30L, TimeUnit.SECONDS)
-        .connectTimeout(30L, TimeUnit.SECONDS)
-        .callTimeout(30L, TimeUnit.SECONDS)
+        .readTimeout(60L, TimeUnit.SECONDS)
+        .writeTimeout(60L, TimeUnit.SECONDS)
+        .connectTimeout(60L, TimeUnit.SECONDS)
+        .callTimeout(60L, TimeUnit.SECONDS)
         .build()
 
     @Bean
@@ -83,7 +83,7 @@ class BeanConfig {
     fun simbadService(okHttpClient: OkHttpClient) = SimbadService(okHttpClient = okHttpClient)
 
     @Bean
-    fun smallBodyDatabaseLookupService(okHttpClient: OkHttpClient) = SmallBodyDatabaseLookupService(okHttpClient = okHttpClient)
+    fun smallBodyDatabaseService(okHttpClient: OkHttpClient) = SmallBodyDatabaseService(okHttpClient = okHttpClient)
 
     @Bean
     fun hips2FitsService(okHttpClient: OkHttpClient) = Hips2FitsService(okHttpClient = okHttpClient)

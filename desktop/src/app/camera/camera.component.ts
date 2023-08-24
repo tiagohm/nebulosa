@@ -174,8 +174,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     ) {
         title.setTitle('Camera')
 
-        api.indiStartListening('CAMERA')
-
         electron.ipcRenderer.on('CAMERA_UPDATED', (_, camera: Camera) => {
             if (camera.name === this.camera?.name) {
                 ngZone.run(() => {
@@ -214,9 +212,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
-        this.api.indiStopListening('CAMERA')
-    }
+    ngOnDestroy() { }
 
     async cameraChanged() {
         if (this.camera) {

@@ -75,9 +75,6 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         onAdd: (device: T) => number,
         onRemove: (device: T) => number,
     ) {
-        this.api.indiStartListening(`${type}_ATTACHED`)
-        this.api.indiStartListening(`${type}_DETACHED`)
-
         this.electron.ipcRenderer.on(`${type}_ATTACHED`, (_, device: T) => {
             this.ngZone.run(() => {
                 if (onAdd(device) === 1) {
@@ -173,16 +170,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
-        this.api.indiStopListening('CAMERA_ATTACHED')
-        this.api.indiStopListening('CAMERA_DETACHED')
-
-        this.api.indiStopListening('FOCUSER_ATTACHED')
-        this.api.indiStopListening('FOCUSER_DETACHED')
-
-        this.api.indiStopListening('FILTER_WHEEL_ATTACHED')
-        this.api.indiStopListening('FILTER_WHEEL_DETACHED')
-    }
+    ngOnDestroy() { }
 
     async connect() {
         try {

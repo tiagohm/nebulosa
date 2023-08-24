@@ -12,7 +12,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Calibration, Camera, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
+    Calibration, Camera, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, GuideExposureFinished, ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
     ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage, Star
 } from '../../shared/types'
 
@@ -56,6 +56,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     annotateWithStars = true
     annotateWithDSOs = true
     annotateWithMinorPlanets = false
+    annotateWithMinorPlanetsMagLimit = 12.0
 
     autoStretch = true
     showStretchingDialog = false
@@ -98,6 +99,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     roiWidth = 128
     roiHeight = 128
     roiInteractable?: Interactable
+
+    guiding = false
 
     private readonly scnrMenuItem: MenuItem = {
         label: 'SCNR',
@@ -283,11 +286,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         electron.ipcRenderer.on('CAMERA_IMAGE_SAVED', async (_, data: SavedCameraImage) => {
             if (data.camera === this.imageParams.camera?.name) {
-                if (this.imageParams.path) {
-                    await this.api.closeImage(this.imageParams.path)
-                }
+                await this.closeImage()
 
                 ngZone.run(() => {
+                    this.guiding = false
                     this.annotations = []
                     this.imageParams.path = data.path
                     this.loadImage()
@@ -295,7 +297,22 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.ipcRenderer.on('PARAMS_CHANGED', (_, data: ImageParams) => {
+        electron.ipcRenderer.on('GUIDE_EXPOSURE_FINISHED', async (_, data: GuideExposureFinished) => {
+            if (data.camera === this.imageParams.camera?.name) {
+                await this.closeImage()
+
+                ngZone.run(() => {
+                    this.guiding = true
+                    this.annotations = []
+                    this.imageParams.path = data.path
+                    this.loadImage()
+                })
+            }
+        })
+
+        electron.ipcRenderer.on('PARAMS_CHANGED', async (_, data: ImageParams) => {
+            await this.closeImage()
+
             this.loadImageFromParams(data)
         })
 
@@ -313,11 +330,17 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        if (this.imageParams.path) {
-            this.api.closeImage(this.imageParams.path)
-        }
+        this.closeImage(true)
 
         this.roiInteractable?.unset()
+    }
+
+    private async closeImage(force: boolean = false) {
+        if (this.imageParams.path) {
+            if (force || !this.imageParams.path.startsWith('@')) {
+                await this.api.closeImage(this.imageParams.path)
+            }
+        }
     }
 
     private roiResizableMove(event: any) {
@@ -444,7 +467,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     async annotateImage() {
         try {
             this.annotating = true
-            this.annotations = await this.api.annotationsOfImage(this.imageParams.path!, this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets)
+            this.annotations = await this.api.annotationsOfImage(this.imageParams.path!,
+                this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets, this.annotateWithMinorPlanetsMagLimit)
             this.showAnnotationDialog = false
         } finally {
             this.annotating = false

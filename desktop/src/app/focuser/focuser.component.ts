@@ -43,8 +43,6 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     ) {
         title.setTitle('Focuser')
 
-        this.api.indiStartListening('FOCUSER')
-
         electron.ipcRenderer.on('FOCUSER_UPDATED', (_, focuser: Focuser) => {
             if (focuser.name === this.focuser?.name) {
                 ngZone.run(() => {
@@ -66,9 +64,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
-        this.api.indiStopListening('FOCUSER')
-    }
+    ngOnDestroy() { }
 
     async focuserChanged() {
         if (this.focuser) {

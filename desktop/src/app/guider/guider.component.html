@@ -51,17 +51,16 @@
             </p-tabPanel>
         </p-tabView>
     </div>
-    <div class="col-12 flex flex-row align-items-center justify-content-center gap-2">
-        <div class="flex flex-column gap-1">
-            <span class="text-sm text-gray-200">Looping</span>
-            <p-button [disabled]="!cameraConnected || !mountConnected || !guideOutputConnected" label="Start" icon="mdi mdi-play"
-                      styleClass="p-button-success min-w-full" />
-            <p-button *ngIf="looping" label="Stop" icon="mdi mdi-stop" styleClass="p-button-danger min-w-full" />
+    <div class="col-12 flex flex-row align-items-center justify-content-center gap-3">
+        <div class="flex flex-row align-items-center gap-1">
+            <p-button [disabled]="!cameraConnected || !mountConnected || !guideOutputConnected" label="Start looping" icon="mdi mdi-play"
+                      (onClick)="startLooping()" styleClass="p-button-success p-button-text min-w-full" />
+            <p-button *ngIf="looping" label="Stop looping" icon="mdi mdi-stop" styleClass="p-button-danger p-button-text min-w-full" />
+            <p-button icon="mdi mdi-image" styleClass="p-button-text" />
         </div>
-        <div class="flex flex-column gap-1">
-            <span class="text-sm text-gray-200">Guiding</span>
-            <p-button [disabled]="!looping" label="Start" icon="mdi mdi-play" styleClass="p-button-success min-w-full" />
-            <p-button *ngIf="guiding" label="Stop" icon="mdi mdi-stop" styleClass="p-button-danger min-w-full" />
+        <div class="flex flex-row align-items-center gap-1">
+            <p-button [disabled]="!looping" label="Start guiding" icon="mdi mdi-play" styleClass="p-button-success p-button-text min-w-full" />
+            <p-button *ngIf="guiding" label="Stop guiding" icon="mdi mdi-stop" styleClass="p-button-danger p-button-text min-w-full" />
         </div>
     </div>
 </div>

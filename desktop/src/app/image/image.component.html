@@ -24,12 +24,21 @@
 
 <p-contextMenu #menu [model]="menuItems" />
 
-<p-dialog header="Annotation" [draggable]="false" [(visible)]="showAnnotationDialog" [modal]="true" [style]="{width: '60vw', maxWidth: '260px'}">
+<p-dialog header="Annotation" [draggable]="false" [(visible)]="showAnnotationDialog" [modal]="true" [style]="{width: '280px'}">
     <div class="grid">
         <div class="col-12 flex flex-column">
             <p-checkbox [(ngModel)]="annotateWithStars" class="py-1" [binary]="true" label="Annotate with stars" />
             <p-checkbox [(ngModel)]="annotateWithDSOs" class="py-1" [binary]="true" label="Annotate with DSOs" />
-            <p-checkbox [(ngModel)]="annotateWithMinorPlanets" class="py-1" [binary]="true" label="Annotate with minor planets" />
+
+            <div class="flex flex-row align-items-center gap-2">
+                <p-checkbox [(ngModel)]="annotateWithMinorPlanets" class="py-1" [binary]="true" label="Annotate with minor planets" />
+
+                <span class="p-float-label">
+                    <p-inputNumber [disabled]="!annotateWithMinorPlanets" [min]="-10" [max]="20" class="max-w-10rem w-full" [showButtons]="true"
+                                   inputStyleClass="border-0 w-full" [step]="0.1" [(ngModel)]="annotateWithMinorPlanetsMagLimit" />
+                    <label>Mag. Limit</label>
+                </span>
+            </div>
         </div>
     </div>
     <ng-template pTemplate="footer">

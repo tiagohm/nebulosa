@@ -30,12 +30,6 @@ function createMainWindow() {
         brokerURL: `ws://localhost:${apiPort}/ws`,
         onConnect: () => {
             for (const item of INDI_EVENT_TYPES) {
-                if (item === 'ALL' || item === 'DEVICE' || item === 'CAMERA' ||
-                    item === 'FOCUSER' || item === 'MOUNT' || item === 'FILTER_WHEEL' ||
-                    item === 'GUIDE_OUTPUT') {
-                    continue
-                }
-
                 wsClient.subscribe(item, (message) => {
                     const data = JSON.parse(message.body)
 

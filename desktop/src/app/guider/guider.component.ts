@@ -38,10 +38,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     ) {
         title.setTitle('Guider')
 
-        api.indiStartListening('CAMERA')
-        api.indiStartListening('MOUNT')
-        api.indiStartListening('GUIDE_OUTPUT')
-
         electron.on('CAMERA_UPDATED', (_, camera: Camera) => {
             if (camera.name === this.camera?.name) {
                 ngZone.run(() => {
@@ -90,9 +86,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
-        this.api.indiStopListening('GUIDE_OUTPUT')
-    }
+    ngOnDestroy() { }
 
     async cameraChanged() {
         if (this.camera) {
@@ -149,6 +143,16 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         } else {
             this.api.guideOutputConnect(this.guideOutput!)
         }
+    }
+
+    async openCameraImage() {
+        await this.browserWindow.openCameraImage(this.camera!)
+    }
+
+    async startLooping() {
+        await this.openCameraImage()
+
+        this.api.startGuideLooping(this.camera!, this.mount!, this.guideOutput!)
     }
 
     private update() {

@@ -47,8 +47,6 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     ) {
         title.setTitle('Filter Wheel')
 
-        this.api.indiStartListening('FILTER_WHEEL')
-
         electron.ipcRenderer.on('FILTER_WHEEL_UPDATED', (_, filterWheel: FilterWheel) => {
             if (filterWheel.name === this.filterWheel?.name) {
                 ngZone.run(() => {
@@ -64,9 +62,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
-        this.api.indiStopListening('FILTER_WHEEL')
-    }
+    ngOnDestroy() { }
 
     async filterWheelChanged() {
         if (this.filterWheel) {

@@ -5,12 +5,12 @@ import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import nebulosa.sbd.SmallBodyDatabaseLookupService
+import nebulosa.sbd.SmallBodyDatabaseService
 
 class SmallBodyDatabaseLookupServiceTest : StringSpec() {
 
     init {
-        val service = SmallBodyDatabaseLookupService()
+        val service = SmallBodyDatabaseService()
 
         "search matches single record" {
             val body = service.search("C/2017 K2").execute().body().shouldNotBeNull()

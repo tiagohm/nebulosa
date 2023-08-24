@@ -191,6 +191,11 @@ export interface SavedCameraImage {
     savedAt: number
 }
 
+export interface GuideExposureFinished {
+    camera: string
+    path: string
+}
+
 export interface ImageInfo extends SavedCameraImage {
     stretchShadow: number
     stretchHighlight: number
@@ -627,7 +632,6 @@ export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
     'WATNEY'
 
 export const INDI_EVENT_TYPES = [
-    'ALL', 'DEVICE', 'CAMERA', 'MOUNT', 'FOCUSER', 'FILTER_WHEEL', 'GUIDE_OUTPUT',
     'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
     'DEVICE_MESSAGE_RECEIVED', 'CAMERA_IMAGE_SAVED',
     'CAMERA_UPDATED', 'CAMERA_CAPTURE_PROGRESS_CHANGED', 'CAMERA_CAPTURE_FINISHED',
@@ -636,6 +640,7 @@ export const INDI_EVENT_TYPES = [
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
     'FILTER_WHEEL_UPDATED', 'FILTER_WHEEL_ATTACHED', 'FILTER_WHEEL_DETACHED',
     'GUIDE_OUTPUT_ATTACHED', 'GUIDE_OUTPUT_DETACHED', 'GUIDE_OUTPUT_UPDATED',
+    'GUIDE_EXPOSURE_FINISHED',
 ] as const
 
 export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]

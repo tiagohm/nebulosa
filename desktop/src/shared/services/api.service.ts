@@ -4,7 +4,8 @@ import moment from 'moment'
 import { firstValueFrom } from 'rxjs'
 import {
     BodyPosition, Calibration, Camera, CameraStartCapture, ComputedCoordinates, Constellation, DeepSkyObject, Device,
-    FilterWheel, Focuser, GuideOutput, GuidingChart, GuidingStar, HipsSurvey, INDIEventType, INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, Location, MinorPlanet,
+    FilterWheel, Focuser, GuideOutput, GuidingChart, GuidingStar, HipsSurvey,
+    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, Location, MinorPlanet,
     Mount, Path, PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 
@@ -336,12 +337,12 @@ export class ApiService {
         return this.post<void>(`sendIndiProperty?name=${device.name}`, property)
     }
 
-    indiStartListening(eventName: INDIEventType) {
-        return this.post<void>(`indiStartListening?eventName=${eventName}`)
+    indiStartListening() {
+        return this.post<void>(`indiStartListening`)
     }
 
-    indiStopListening(eventName: INDIEventType) {
-        return this.post<void>(`indiStopListening?eventName=${eventName}`)
+    indiStopListening() {
+        return this.post<void>(`indiStopListening`)
     }
 
     indiLog(device: Device) {
@@ -448,8 +449,9 @@ export class ApiService {
     annotationsOfImage(
         path: string,
         stars: boolean = true, dsos: boolean = true, minorPlanets: boolean = false,
+        minorPlanetMagLimit: number = 12.0,
     ) {
-        return this.get<ImageAnnotation[]>(`annotationsOfImage?path=${path}&stars=${stars}&dsos=${dsos}&minorPlanets=${minorPlanets}`)
+        return this.get<ImageAnnotation[]>(`annotationsOfImage?path=${path}&stars=${stars}&dsos=${dsos}&minorPlanets=${minorPlanets}&minorPlanetMagLimit=${minorPlanetMagLimit}`)
     }
 
     solveImage(
