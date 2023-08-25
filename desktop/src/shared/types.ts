@@ -1,3 +1,5 @@
+import { Point } from 'electron'
+
 export interface Device {
     readonly name: string
     connected: boolean
@@ -161,7 +163,6 @@ export interface CameraCaptureProgressChanged {
     totalExposureTime: number
     indeterminate: boolean
 }
-
 
 export interface CameraCaptureFinished {
     camera: string
@@ -453,6 +454,24 @@ export interface GuidingStar {
     snr: number
 }
 
+export interface GuideStar extends Point {
+    valid: boolean
+}
+
+export interface Guider {
+    lockPosition: GuideStar
+    primaryStar: GuideStar
+    searchRegion: number
+    looping: boolean
+    calibrating: boolean
+    guiding: boolean
+}
+
+export interface GuideTrackingBox {
+    camera: Camera
+    guider: Guider
+}
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',
@@ -640,7 +659,8 @@ export const INDI_EVENT_TYPES = [
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
     'FILTER_WHEEL_UPDATED', 'FILTER_WHEEL_ATTACHED', 'FILTER_WHEEL_DETACHED',
     'GUIDE_OUTPUT_ATTACHED', 'GUIDE_OUTPUT_DETACHED', 'GUIDE_OUTPUT_UPDATED',
-    'GUIDE_EXPOSURE_FINISHED',
+    'GUIDE_EXPOSURE_FINISHED', 'GUIDE_LOCK_POSITION_CHANGED',
+    'GUIDE_STAR_LOST', 'GUIDE_LOCK_POSITION_LOST',
 ] as const
 
 export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]
@@ -656,6 +676,7 @@ export const INTERNAL_EVENT_TYPES = [
     'SELECTED_MOUNT',
     'CAMERA_CHANGED', 'FOCUSER_CHANGED', 'MOUNT_CHANGED', 'FILTER_WHEEL_CHANGED',
     'FILTER_WHEEL_RENAMED', 'IMAGE_STAR_SELECTED', 'GUIDE_OUTPUT_CHANGED',
+    'DRAW_GUIDE_TRACKING_BOX',
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]

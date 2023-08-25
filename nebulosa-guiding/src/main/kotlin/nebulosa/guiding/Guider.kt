@@ -34,6 +34,8 @@ interface Guider : Iterable<GuidePoint> {
 
     fun reset(fullReset: Boolean)
 
+    val isCalibrating: Boolean
+
     fun clearCalibration()
 
     fun loadCalibration(calibration: GuideCalibration)

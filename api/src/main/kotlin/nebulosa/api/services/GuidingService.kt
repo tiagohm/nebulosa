@@ -337,7 +337,7 @@ class GuidingService(
     }
 
     override fun onLockPositionChanged(position: GuidePoint) {
-        // TODO
+        webSocketService.sendGuideLockPositionChanged(guider)
     }
 
     override fun onStarSelected(star: StarPoint) {
@@ -365,11 +365,11 @@ class GuidingService(
     }
 
     override fun onStarLost() {
-        // TODO
+        webSocketService.sendGuideStarLost(guider)
     }
 
     override fun onLockPositionLost() {
-        // TODO
+        webSocketService.sendLockPositionLost(guider)
     }
 
     override fun onStartCalibration() {
@@ -395,6 +395,7 @@ class GuidingService(
         // TODO
     }
 
+    // TODO: Move to nebulosa-io and improve it encoding on write (as same Base64InputStream).
     private class Base64OutputStream(size: Int) : ByteArrayOutputStream(size) {
 
         fun base64() = Base64.encode(buf, 0, count)

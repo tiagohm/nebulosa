@@ -4,7 +4,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, GuideOutput, ImageStarSelected, Mount } from '../../shared/types'
+import { Camera, GuideOutput, GuideTrackingBox, Guider, ImageStarSelected, Mount } from '../../shared/types'
 
 @Component({
     selector: 'app-guider',
@@ -25,8 +25,10 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     guideOutput?: GuideOutput
     guideOutputConnected = false
 
+    private guider?: Guider
     looping = false
     guiding = false
+    calibrating = false
 
     constructor(
         title: Title,
@@ -82,6 +84,16 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             if (!this.guiding && star.camera.name === this.camera?.name) {
                 await this.api.selectGuideStar(star.x, star.y)
             }
+        })
+
+        electron.on('GUIDE_LOCK_POSITION_CHANGED', (_, guider: Guider) => {
+            this.guider = guider
+
+            ngZone.run(() => {
+                this.updateGuideState()
+            })
+
+            this.drawTrackingBox()
         })
     }
 
@@ -173,5 +185,18 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         if (this.guideOutput) {
             this.guideOutputConnected = this.guideOutput.connected
         }
+    }
+
+    private updateGuideState() {
+        if (this.guider) {
+            this.looping = this.guider.looping
+            this.calibrating = this.guider.calibrating
+            this.guiding = this.guider.guiding
+        }
+    }
+
+    private drawTrackingBox() {
+        const trackingBox = <GuideTrackingBox>{ camera: this.camera!, guider: this.guider! }
+        this.electron.send('DRAW_GUIDE_TRACKING_BOX', trackingBox)
     }
 }

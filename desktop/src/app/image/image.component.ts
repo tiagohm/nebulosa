@@ -12,7 +12,8 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Calibration, Camera, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, GuideExposureFinished, ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
+    Calibration, Camera, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, GuideExposureFinished, GuideTrackingBox,
+    ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
     ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage, Star
 } from '../../shared/types'
 
@@ -101,6 +102,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     roiInteractable?: Interactable
 
     guiding = false
+    guideTrackingBox?: GuideTrackingBox
 
     private readonly scnrMenuItem: MenuItem = {
         label: 'SCNR',
@@ -314,6 +316,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             await this.closeImage()
 
             this.loadImageFromParams(data)
+        })
+
+        electron.on('DRAW_GUIDE_TRACKING_BOX', (_, data: GuideTrackingBox) => {
+            if (data.camera.name === this.imageParams.camera?.name) {
+                ngZone.run(() => {
+                    this.guideTrackingBox = data
+                })
+            }
         })
 
         this.solverPathOrUrl = this.preference.get('image.solver.pathOrUrl', '')
