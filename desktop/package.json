@@ -40,7 +40,7 @@
     "@angular/platform-browser": "16.2.1",
     "@angular/platform-browser-dynamic": "16.2.1",
     "@angular/router": "16.2.1",
-    "chart.js": "4.3.3",
+    "chart.js": "4.4.0",
     "cron": "2.4.1",
     "interactjs": "1.10.18",
     "leaflet": "1.9.4",
