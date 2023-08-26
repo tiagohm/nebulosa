@@ -472,6 +472,20 @@ export interface GuideTrackingBox {
     guider: Guider
 }
 
+export interface Satellite {
+    id: number
+    name: string
+    tle: string
+}
+
+export interface SatelliteSource {
+    id: number
+    url: string
+    updatedAt: number
+    enabled: boolean
+    deletable: boolean
+}
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',

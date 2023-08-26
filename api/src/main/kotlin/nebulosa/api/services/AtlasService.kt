@@ -2,16 +2,11 @@ package nebulosa.api.services
 
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletResponse
-import nebulosa.api.data.entities.AppPreferenceEntity
-import nebulosa.api.data.entities.DeepSkyObjectEntity
-import nebulosa.api.data.entities.LocationEntity
-import nebulosa.api.data.entities.StarEntity
+import nebulosa.api.data.entities.*
 import nebulosa.api.data.responses.BodyPositionResponse
 import nebulosa.api.data.responses.MinorPlanetResponse
 import nebulosa.api.data.responses.TwilightResponse
-import nebulosa.api.repositories.AppPreferenceRepository
-import nebulosa.api.repositories.DeepSkyObjectRepository
-import nebulosa.api.repositories.StarRepository
+import nebulosa.api.repositories.*
 import nebulosa.api.services.algorithms.TwilightDiscreteFunction
 import nebulosa.api.services.ephemeris.BodyEphemerisProvider
 import nebulosa.api.services.ephemeris.HorizonsEphemerisProvider
@@ -57,6 +52,8 @@ class AtlasService(
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val appPreferenceRepository: AppPreferenceRepository,
+    private val tleRepository: TLERepository,
+    private val tleSourceRepository: TLESourceRepository,
     private val okHttpClient: OkHttpClient,
 ) {
 
@@ -111,6 +108,10 @@ class AtlasService(
             .copy(magnitude = dso.magnitude, constellation = dso.constellation, distance = dso.distance, distanceUnit = "ly")
     }
 
+    fun positionOfSatellite(location: LocationEntity, tle: String, dateTime: LocalDateTime): BodyPositionResponse {
+        return positionOfBody("TLE@$tle", location, dateTime)!!
+    }
+
     private fun positionOfBody(target: Any, location: LocationEntity, dateTime: LocalDateTime): BodyPositionResponse? {
         return bodyEphemeris(target, location, dateTime)
             .withLocationAndDateTime(location, dateTime)
@@ -123,6 +124,15 @@ class AtlasService(
         val zoneId = ZoneOffset.ofTotalSeconds(offsetInSeconds)
         return if (target is Body) bodyEphemerisProvider.compute(target, position, dateTime, zoneId)
         else horizonsEphemerisProvider.compute(target, position, dateTime, zoneId)
+    }
+
+    fun searchSatellites(text: String): List<TLEEntity> {
+        return if (text.isBlank()) tleRepository.all()
+        else tleRepository.withName(text)
+    }
+
+    fun satelliteSources(): List<TLESourceEntity> {
+        return tleRepository.sources()
     }
 
     fun twilight(location: LocationEntity, date: LocalDate): TwilightResponse {
@@ -181,6 +191,26 @@ class AtlasService(
     fun altitudePointsOfDSO(location: LocationEntity, dso: DeepSkyObjectEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
         val ephemeris = bodyEphemeris(fixedStarOf(dso), location, LocalDateTime.of(date, LocalTime.now()))
         return altitudePointsOfBody(ephemeris, stepSize)
+    }
+
+    fun altitudePointsOfSatellite(location: LocationEntity, tle: String, date: LocalDate, stepSize: Int): List<DoubleArray> {
+        val ephemeris = bodyEphemeris("TLE@$tle", location, LocalDateTime.of(date, LocalTime.now()))
+        return altitudePointsOfBody(ephemeris, stepSize)
+    }
+
+    fun enableSatelliteSource(source: TLESourceEntity, enabled: Boolean) {
+        source.enabled = enabled
+
+        tleSourceRepository.save(source)
+
+        if (!enabled) {
+            tleSourceRepository
+                .asSequence()
+                .onEach { it.updatedAt = 0 }
+                .onEach { tleSourceRepository.save(it) }
+        }
+
+        tleRepository.updateIfOld()
     }
 
     private fun fixedStarOf(star: StarEntity): FixedStar {

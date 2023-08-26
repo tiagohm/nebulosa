@@ -6,9 +6,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive
-import nebulosa.api.data.entities.DeepSkyObjectEntity
-import nebulosa.api.data.entities.LocationEntity
-import nebulosa.api.data.entities.StarEntity
+import nebulosa.api.data.entities.*
 import nebulosa.api.data.responses.BodyPositionResponse
 import nebulosa.api.data.responses.MinorPlanetResponse
 import nebulosa.api.data.responses.TwilightResponse
@@ -120,6 +118,28 @@ class AtlasController(
         return atlasService.positionOfDSO(locationRepository.withId(location)!!, deepSkyObjectRepository.withId(dso)!!, (date + time).noSeconds())
     }
 
+    @GetMapping("positionOfSatellite")
+    fun positionOfSatellite(
+        @RequestParam location: Long,
+        @RequestParam @Valid @NotBlank tle: String,
+        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
+        @DateTimeFormat(pattern = "HH:mm") @RequestParam(required = false) time: LocalTime?,
+    ): BodyPositionResponse {
+        return atlasService.positionOfSatellite(locationRepository.withId(location)!!, tle, (date + time).noSeconds())
+    }
+
+    @GetMapping("searchSatellites")
+    fun searchSatellites(
+        @RequestParam(required = false, defaultValue = "") text: String,
+    ): List<TLEEntity> {
+        return atlasService.searchSatellites(text)
+    }
+
+    @GetMapping("satelliteSources")
+    fun satelliteSources(): List<TLESourceEntity> {
+        return atlasService.satelliteSources()
+    }
+
     @GetMapping("twilight")
     fun twilight(
         @RequestParam location: Long,
@@ -176,6 +196,17 @@ class AtlasController(
     ): List<DoubleArray> {
         return atlasService
             .altitudePointsOfDSO(locationRepository.withId(location)!!, deepSkyObjectRepository.withId(dso)!!, date.orNow(), stepSize)
+    }
+
+    @GetMapping("altitudePointsOfSatellite")
+    fun altitudePointsOfSatellite(
+        @RequestParam location: Long,
+        @RequestParam @Valid @NotBlank tle: String,
+        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
+        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
+    ): List<DoubleArray> {
+        return atlasService
+            .altitudePointsOfSatellite(locationRepository.withId(location)!!, tle, date.orNow(), stepSize)
     }
 
     @GetMapping("searchMinorPlanet")

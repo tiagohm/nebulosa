@@ -47,14 +47,25 @@ class HorizonsEphemerisProvider(private val horizonsService: HorizonsService) : 
                     )
             }
             is String -> {
-                horizonsService
-                    .observer(
-                        target,
-                        position.longitude, position.latitude, position.elevation,
-                        startTime, endTime,
-                        extraPrecision = true,
-                        quantities = QUANTITIES,
-                    )
+                if (target.startsWith("TLE@")) {
+                    horizonsService
+                        .observerWithTLE(
+                            target.substring(4),
+                            position.longitude, position.latitude, position.elevation,
+                            startTime, endTime,
+                            extraPrecision = true,
+                            quantities = QUANTITIES,
+                        )
+                } else {
+                    horizonsService
+                        .observer(
+                            target,
+                            position.longitude, position.latitude, position.elevation,
+                            startTime, endTime,
+                            extraPrecision = true,
+                            quantities = QUANTITIES,
+                        )
+                }
             }
             else -> return emptyList()
         }.execute().body() ?: emptyList()

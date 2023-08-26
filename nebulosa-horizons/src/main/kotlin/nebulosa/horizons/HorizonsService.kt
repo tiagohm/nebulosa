@@ -15,9 +15,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class HorizonsService(
-    url: String = URL,
+    url: String = "",
     okHttpClient: OkHttpClient? = null,
-) : RetrofitService(url, okHttpClient) {
+) : RetrofitService(url.ifBlank { URL }, okHttpClient) {
 
     override val converterFactory: List<Converter.Factory> = listOf(HorizonsEphemerisConverterFactory)
 
@@ -31,14 +31,12 @@ class HorizonsService(
         apparent: ApparentRefractionCorrection = ApparentRefractionCorrection.AIRLESS,
         extraPrecision: Boolean = false,
         vararg quantities: HorizonsQuantity = HorizonsQuantity.ENTRIES,
-    ): Call<HorizonsEphemeris> {
-        return service.observer(
-            wrap(command), wrap("${longitude.degrees},${latitude.degrees},${elevation.kilometers}"),
-            wrap(startTime), wrap(endTime), wrap("${stepSize.toMinutes()}m"),
-            wrap(quantities.map { it.code }.toSortedSet().joinToString(",")),
-            wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),
-        )
-    }
+    ) = service.observer(
+        wrap(command), wrap("${longitude.degrees},${latitude.degrees},${elevation.kilometers}"),
+        wrap(startTime), wrap(endTime), wrap("${stepSize.toMinutes()}m"),
+        wrap(quantities.map { it.code }.toSortedSet().joinToString(",")),
+        wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),
+    )
 
     fun observerWithOsculationElements(
         name: String,
@@ -59,18 +57,31 @@ class HorizonsService(
         apparent: ApparentRefractionCorrection = ApparentRefractionCorrection.AIRLESS,
         extraPrecision: Boolean = false,
         vararg quantities: HorizonsQuantity = HorizonsQuantity.ENTRIES,
-    ): Call<HorizonsEphemeris> {
-        return service.observerWithOsculationElements(
-            wrap(name), wrap(epoch), wrap(eccentricity), wrapNull(perihelionDistance),
-            wrapNull(perihelionJulianDayNumber), wrap(longitudeOfAscendingNode),
-            wrap(argumentOfPerihelion), wrap(inclination), wrapNull(meanAnomaly),
-            wrapNull(semiMajorAxis), wrapNull(meanMotion), wrapNull(absoluteMagnitude),
-            wrap("${longitude.degrees},${latitude.degrees},${elevation.kilometers}"),
-            wrap(startTime), wrap(endTime), wrap("${stepSize.toMinutes()}m"),
-            wrap(quantities.map { it.code }.toSortedSet().joinToString(",")),
-            wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),
-        )
-    }
+    ) = service.observerWithOsculationElements(
+        wrap(name), wrap(epoch), wrap(eccentricity), wrapNull(perihelionDistance),
+        wrapNull(perihelionJulianDayNumber), wrap(longitudeOfAscendingNode),
+        wrap(argumentOfPerihelion), wrap(inclination), wrapNull(meanAnomaly),
+        wrapNull(semiMajorAxis), wrapNull(meanMotion), wrapNull(absoluteMagnitude),
+        wrap("${longitude.degrees},${latitude.degrees},${elevation.kilometers}"),
+        wrap(startTime), wrap(endTime), wrap("${stepSize.toMinutes()}m"),
+        wrap(quantities.map { it.code }.toSortedSet().joinToString(",")),
+        wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),
+    )
+
+    fun observerWithTLE(
+        tle: String,
+        longitude: Angle, latitude: Angle, elevation: Distance = Distance.ZERO,
+        startTime: LocalDateTime, endTime: LocalDateTime = startTime.plusDays(1L),
+        stepSize: Duration = DEFAULT_STEP_SIZE,
+        apparent: ApparentRefractionCorrection = ApparentRefractionCorrection.AIRLESS,
+        extraPrecision: Boolean = false,
+        vararg quantities: HorizonsQuantity = HorizonsQuantity.ENTRIES,
+    ) = service.observerWithTLE(
+        wrap(tle), wrap("${longitude.degrees},${latitude.degrees},${elevation.kilometers}"),
+        wrap(startTime), wrap(endTime), wrap("${stepSize.toMinutes()}m"),
+        wrap(quantities.map { it.code }.toSortedSet().joinToString(",")),
+        wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),
+    )
 
     fun spk(id: Int, startTime: LocalDateTime, endTime: LocalDateTime): Call<SpkFile> {
         return service.spk("'DES=$id;'", wrap(startTime), wrap(endTime))

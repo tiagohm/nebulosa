@@ -19,6 +19,8 @@ sealed class BoxRepository<T : Any> : Iterable<T> {
 
     fun save(entity: T) = box.put(entity)
 
+    fun saveAll(entities: Collection<T>) = box.put(entities)
+
     fun delete(id: Long) = box.remove(id)
 
     fun delete(entity: T) = box.remove(entity)

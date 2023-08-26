@@ -6,7 +6,7 @@ import {
     BodyPosition, Calibration, Camera, CameraStartCapture, ComputedCoordinates, Constellation, DeepSkyObject, Device,
     FilterWheel, Focuser, GuideOutput, GuidingChart, GuidingStar, HipsSurvey,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, Location, MinorPlanet,
-    Mount, Path, PlateSolverType, SCNRProtectionMethod, SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
+    Mount, Path, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteSource, SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 
 @Injectable({ providedIn: 'root' })
@@ -386,6 +386,11 @@ export class ApiService {
         return this.get<BodyPosition>(`positionOfDSO?location=${location.id}&dso=${dso.id}&date=${date}&time=${time}`)
     }
 
+    positionOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
+        return this.get<BodyPosition>(`positionOfSatellite?location=${location.id}&tle=${encodeURIComponent(satellite.tle)}&date=${date}&time=${time}`)
+    }
+
     twilight(location: Location, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
         return this.get<Twilight>(`twilight?location=${location.id}&date=${date}`)
@@ -414,6 +419,11 @@ export class ApiService {
     altitudePointsOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
         return this.get<[number, number][]>(`altitudePointsOfDSO?location=${location.id}&dso=${dso.id}&date=${date}&stepSize=5`)
+    }
+
+    altitudePointsOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        return this.get<[number, number][]>(`altitudePointsOfSatellite?location=${location.id}&tle=${encodeURIComponent(satellite.tle)}&date=${date}&stepSize=1`)
     }
 
     searchMinorPlanet(text: string) {
@@ -478,5 +488,13 @@ export class ApiService {
 
     pointMountHere(mount: Mount, path: string, x: number, y: number, synchronized: boolean = true) {
         return this.post<void>(`pointMountHere?name=${mount.name}&path=${path}&x=${x}&y=${y}&synchronized=${synchronized}`)
+    }
+
+    searchSatellites(text: string = '') {
+        return this.get<Satellite[]>(`searchSatellites?text=${text}`)
+    }
+
+    satelliteSources() {
+        return this.get<SatelliteSource[]>(`satelliteSources`)
     }
 }
