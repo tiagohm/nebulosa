@@ -26,3 +26,11 @@
 * https://www.flaticon.com/free-icon/setting_839374
 * https://www.flaticon.com/free-icon/filter_679991
 * https://www.flaticon.com/free-icon/target_10542035
+* https://www.flaticon.com/free-icon/contrast_439842
+* https://www.flaticon.com/free-icon/full-moon_9689786
+* https://www.flaticon.com/free-icon/jupiter_1086078
+* https://www.flaticon.com/free-icon/asteroid_1086068
+* https://www.flaticon.com/free-icon/stars_3266390
+* https://www.flaticon.com/free-icon/milky-way_1086076
+* https://www.flaticon.com/free-icon/satellite_1086093
+* https://www.flaticon.com/free-icon/gear_8753403

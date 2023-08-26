@@ -16,6 +16,15 @@
         </g>
     </svg>
 
+    <svg *ngIf="guideTrackingBox" class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+        <line x1="0" [attr.y1]="guideTrackingBox.guider.lockPosition.y" x2="100%" [attr.y2]="guideTrackingBox.guider.lockPosition.y" stroke="#E53935"
+              stroke-width="1"></line>
+        <line [attr.x1]="guideTrackingBox.guider.lockPosition.x" y1="0" [attr.x2]="guideTrackingBox.guider.lockPosition.x" y2="100%" stroke="#E53935"
+              stroke-width="1"></line>
+        <rect [attr.x]="guideTrackingBox.guider.primaryStar.x - 32" [attr.y]="guideTrackingBox.guider.primaryStar.y - 32" width="64" height="64"
+              [attr.stroke]="guideTrackingBox.guider.primaryStar.valid ? 'cyan' : 'red'" fill="transparent"></rect>
+    </svg>
+
     <div #roi [class.hidden]="!roiInteractable" class="roi absolute left-0 top-0" data-x="0" data-y="0" (contextmenu)="imageClicked($event, true)"
          (onmousewheel)="image.dispatchEvent($event)">
         <span class="absolute">X: {{ roiX }} Y: {{ roiY }} W: {{ roiWidth }} H: {{ roiHeight }}</span>

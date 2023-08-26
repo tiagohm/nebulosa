@@ -2,16 +2,25 @@
     <div class="col-12">
         <p-tabView [(activeIndex)]="tab" (activeIndexChange)="tabChanged()">
             <p-tabPanel header="Sun" [disabled]="refreshing">
+                <ng-template pTemplate="header">
+                    <img src="assets/icons/sun.png">
+                </ng-template>
                 <div class="grid flex align-items-center justify-content-center">
-                    <img #imageOfSun style="width: 194px">
+                    <img #imageOfSun style="width: 191px">
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Moon" [disabled]="refreshing">
+                <ng-template pTemplate="header">
+                    <img src="assets/icons/moon.png">
+                </ng-template>
                 <div class="grid flex align-items-center justify-content-center">
-                    <moon [width]="190" [height]="190" [illuminationRatio]="moonIlluminated" [waning]="moonWaning" />
+                    <moon [width]="187" [height]="187" [illuminationRatio]="moonIlluminated" [waning]="moonWaning" />
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Planets" [disabled]="refreshing">
+                <ng-template pTemplate="header">
+                    <img src="assets/icons/jupiter.png">
+                </ng-template>
                 <div class="grid flex align-items-center justify-content-center">
                     <p-table [value]="planets" class="planet" [(selection)]="planet" (selectionChange)="planetChanged()" selectionMode="single"
                              dataKey="code"
@@ -32,6 +41,9 @@
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Minor Planets" [disabled]="refreshing">
+                <ng-template pTemplate="header">
+                    <img src="assets/icons/asteroid.png">
+                </ng-template>
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
                         <span class="p-float-label">
@@ -66,6 +78,9 @@
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Stars" [disabled]="refreshing">
+                <ng-template pTemplate="header">
+                    <img src="assets/icons/stars.png">
+                </ng-template>
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
                         <span class="p-float-label">
@@ -80,8 +95,7 @@
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
                     <p-table [value]="starItems" class="star" sortField="magnitude" [(selection)]="star" (selectionChange)="starChanged()"
-                             selectionMode="single" dataKey="id"
-                             styleClass="p-datatable-striped">
+                             selectionMode="single" dataKey="id" styleClass="p-datatable-striped">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th pSortableColumn="names">Name <p-sortIcon field="names" /></th>
@@ -102,6 +116,9 @@
                 </div>
             </p-tabPanel>
             <p-tabPanel header="DSOs" [disabled]="refreshing">
+                <ng-template pTemplate="header">
+                    <img src="assets/icons/milky-way.png">
+                </ng-template>
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
                         <span class="p-float-label">
@@ -116,8 +133,7 @@
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
                     <p-table [value]="dsoItems" class="dso" sortField="magnitude" [(selection)]="dso" (selectionChange)="dsoChanged()"
-                             selectionMode="single" dataKey="id"
-                             styleClass="p-datatable-striped">
+                             selectionMode="single" dataKey="id" styleClass="p-datatable-striped">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th pSortableColumn="names">Name <p-sortIcon field="names" /></th>
@@ -138,8 +154,43 @@
                 </div>
             </p-tabPanel>
             <p-tabPanel header="TLEs" [disabled]="refreshing">
+                <ng-template pTemplate="header">
+                    <img src="assets/icons/satellite.png">
+                </ng-template>
+                <div class="grid flex align-items-center justify-content-center">
+                    <div class="col-9">
+                        <span class="p-float-label">
+                            <input type="text" pInputText class="border-0 w-full" [(ngModel)]="satelliteSearchText" />
+                            <label>Search</label>
+                        </span>
+                    </div>
+                    <div class="col-3 flex align-items-center gap-1">
+                        <p-button [disabled]="refreshing" (onClick)="searchSatellite()" icon="mdi mdi-magnify" styleClass="p-button-info" />
+                    </div>
+                </div>
+                <div class="grid flex align-items-center justify-content-center mt-2">
+                    <p-table [value]="satelliteItems" class="satellite" sortField="name" [(selection)]="satellite"
+                             (selectionChange)="satelliteChanged()"
+                             selectionMode="single" dataKey="id" styleClass="p-datatable-striped">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th pSortableColumn="id">NORAD ID<p-sortIcon field="id" /></th>
+                                <th pSortableColumn="name">Name <p-sortIcon field="name" /></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr [pSelectableRow]="item">
+                                <td>{{ item.id }}</td>
+                                <td>{{ item.name }}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
             </p-tabPanel>
             <p-tabPanel header="Settings" [disabled]="refreshing">
+                <ng-template pTemplate="header">
+                    <img src="assets/icons/gear.png">
+                </ng-template>
                 <div class="grid flex align-items-center p-2">
                     <div class="col-8">
                         <span class="p-float-label">
@@ -166,72 +217,72 @@
         <p-tag *ngFor="let tag of tags" [severity]="tag.severity" [value]="tag.title" />
     </div>
     <p-tabView [style]="{height: '224px', width: '100vw'}">
-        <p-tabPanel header="Info">
+        <p-tabPanel leftIcon="mdi mdi-information">
             <div class="grid pt-2">
                 <div class="col-3">
                     <span class="p-float-label">
-                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.rightAscensionJ2000" />
+                        <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.rightAscensionJ2000" />
                         <label>RA (J2000)</label>
                     </span>
                 </div>
                 <div class="col-3">
                     <span class="p-float-label">
-                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.declinationJ2000" />
+                        <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.declinationJ2000" />
                         <label>DEC (J2000)</label>
                     </span>
                 </div>
                 <div class="col-3">
                     <span class="p-float-label">
-                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.rightAscension" />
+                        <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.rightAscension" />
                         <label>RA</label>
                     </span>
                 </div>
                 <div class="col-3">
                     <span class="p-float-label">
-                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.declination" />
+                        <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.declination" />
                         <label>DEC</label>
                     </span>
                 </div>
                 <div class="col-3">
                     <span class="p-float-label">
-                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.azimuth" />
+                        <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.azimuth" />
                         <label>Azimuth</label>
                     </span>
                 </div>
                 <div class="col-3">
                     <span class="p-float-label">
-                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.altitude" />
+                        <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.altitude" />
                         <label>Altitude</label>
                     </span>
                 </div>
                 <div class="col-3">
                     <span class="p-float-label">
-                        <input readonly pInputText class="border-0 w-full"
+                        <input readonly pInputText class="p-inputtext-sm border-0 w-full"
                                [value]="bodyPosition.magnitude < 99 ? bodyPosition.magnitude.toFixed(2) : '-'" />
                         <label>Magnitude</label>
                     </span>
                 </div>
                 <div class="col-3">
                     <span class="p-float-label">
-                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.constellation" />
+                        <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.constellation" />
                         <label>Constellation</label>
                     </span>
                 </div>
                 <div class="col-3">
                     <span class="p-float-label">
-                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.distance" />
+                        <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.distance" />
                         <label>Distance ({{ bodyPosition.distanceUnit }})</label>
                     </span>
                 </div>
                 <div class="col-3">
                     <span class="p-float-label">
-                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.illuminated" />
+                        <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.illuminated" />
                         <label>Illuminated (%)</label>
                     </span>
                 </div>
                 <div class="col-3">
                     <span class="p-float-label">
-                        <input readonly pInputText class="border-0 w-full" [value]="bodyPosition.elongation" />
+                        <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.elongation" />
                         <label>Elongation (°)</label>
                     </span>
                 </div>
@@ -246,23 +297,21 @@
                 </div>
             </div>
         </p-tabPanel>
-        <p-tabPanel header="Chart">
+        <p-tabPanel leftIcon="mdi mdi-chart-bell-curve">
             <p-chart #chart width="100%" height="170px" [data]="altitudeData" [responsive]="true" [options]="altitudeOptions" />
         </p-tabPanel>
     </p-tabView>
-    <div class="col-9 flex flex-row align-items-center justify-content-between gap-1 absolute" style="right: 8px; top: 36px;">
-        <div class="flex flex-row gap-1 align-items-center justify-content-center">
-            <i class="mdi mdi-map-marker text-red-500"></i>
-            <label class="w-full text-center text-gray-100 text-sm">{{ location.name }}</label>
-        </div>
-
+    <div class="col-9 flex flex-column align-items-start justify-content-center gap-2 absolute" style="right: 8px; top: 42px;">
         <div class="flex flex-row gap-1 align-items-center justify-content-center">
             <p-checkbox [binary]="true" [(ngModel)]="useManualDateTime" (ngModelChange)="useManualDateTimeChanged()" />
-            <p-calendar [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTime" [showIcon]="true" [showWeek]="true" [showButtonBar]="true"
+            <p-calendar [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTime" [showIcon]="true" [showWeek]="true"
+                        [showButtonBar]="true"
                         dateFormat="yy-mm-dd" inputStyleClass="p-inputtext-sm w-6rem" class="border-0" />
-            <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeHour" [showButtons]="true" [min]="0" [max]="23" class="w-fit" [format]="false"
+            <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeHour" [showButtons]="true" [min]="0" [max]="23"
+                           class="w-fit" [format]="false"
                            [allowEmpty]="false" (ngModelChange)="dateTimeChanged()" styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" />
-            <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeMinute" [showButtons]="true" [min]="0" [max]="59" class="w-fit"
+            <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeMinute" [showButtons]="true" [min]="0" [max]="59"
+                           class="w-fit"
                            [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged()" styleClass="p-inputtext-sm border-0"
                            [style]="{width: '54px'}" />
         </div>

@@ -17,6 +17,8 @@ abstract class RetrofitService(
     private val objectMapper: ObjectMapper? = null,
 ) {
 
+    protected val mapper by lazy { objectMapper ?: DEFAULT_MAPPER.copy()!! }
+
     protected open val converterFactory = emptyList<Converter.Factory>()
 
     protected open val callAdaptorFactory: CallAdapter.Factory? = null
@@ -31,7 +33,6 @@ abstract class RetrofitService(
         builder.addConverterFactory(RawAsStringConverterFactory)
         builder.addConverterFactory(RawAsByteArrayConverterFactory)
         converterFactory.forEach { builder.addConverterFactory(it) }
-        val mapper = objectMapper ?: DEFAULT_MAPPER.copy()
         handleObjectMapper(mapper)
         builder.addConverterFactory(JacksonConverterFactory.create(mapper))
         callAdaptorFactory?.also(builder::addCallAdapterFactory)

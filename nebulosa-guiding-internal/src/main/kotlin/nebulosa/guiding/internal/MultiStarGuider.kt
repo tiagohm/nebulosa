@@ -392,6 +392,9 @@ class MultiStarGuider(
     override val isGuiding
         get() = state == GuiderState.GUIDING
 
+    override val isCalibrating
+        get() = state == GuiderState.CALIBRATING
+
     override fun startGuiding() {
         // We set the state to calibrating. The state machine will
         // automatically move from calibrating > calibrated > guiding

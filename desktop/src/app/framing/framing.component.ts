@@ -53,7 +53,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 
         this.loadPreference()
 
-        electron.ipcRenderer.on('PARAMS_CHANGED', (_, data: FramingParams) => {
+        electron.on('PARAMS_CHANGED', (_, data: FramingParams) => {
             ngZone.run(() => this.frameFromParams(data))
         })
     }

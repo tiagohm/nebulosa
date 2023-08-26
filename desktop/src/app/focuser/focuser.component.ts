@@ -43,7 +43,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     ) {
         title.setTitle('Focuser')
 
-        electron.ipcRenderer.on('FOCUSER_UPDATED', (_, focuser: Focuser) => {
+        electron.on('FOCUSER_UPDATED', (_, focuser: Focuser) => {
             if (focuser.name === this.focuser?.name) {
                 ngZone.run(() => {
                     Object.assign(this.focuser!, focuser)
@@ -52,7 +52,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.ipcRenderer.on('CAMERA_CHANGED', (_, camera?: Camera) => {
+        electron.on('CAMERA_CHANGED', (_, camera?: Camera) => {
             ngZone.run(() => {
                 this.camera = camera
             })

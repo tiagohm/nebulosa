@@ -4,6 +4,7 @@ import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.events.CameraCaptureFinished
 import nebulosa.api.data.events.CameraCaptureProgressChanged
 import nebulosa.api.data.events.GuideExposureFinished
+import nebulosa.guiding.Guider
 import nebulosa.indi.device.ConnectionEvent
 import nebulosa.indi.device.DeviceMessageReceived
 import nebulosa.indi.device.DevicePropertyEvent
@@ -136,6 +137,20 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         sendMessage(GUIDE_EXPOSURE_FINISHED, event)
     }
 
+    // GUIDING
+
+    fun sendGuideLockPositionChanged(guider: Guider) {
+        sendMessage(GUIDE_LOCK_POSITION_CHANGED, guider)
+    }
+
+    fun sendGuideStarLost(guider: Guider) {
+        sendMessage(GUIDE_STAR_LOST, guider)
+    }
+
+    fun sendLockPositionLost(guider: Guider) {
+        sendMessage(GUIDE_LOCK_POSITION_LOST, guider)
+    }
+
     // DEVICE
 
     fun sendConnectionEvent(event: ConnectionEvent) {
@@ -188,5 +203,8 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         const val GUIDE_OUTPUT_ATTACHED = "GUIDE_OUTPUT_ATTACHED"
         const val GUIDE_OUTPUT_DETACHED = "GUIDE_OUTPUT_DETACHED"
         const val GUIDE_EXPOSURE_FINISHED = "GUIDE_EXPOSURE_FINISHED"
+        const val GUIDE_LOCK_POSITION_CHANGED = "GUIDE_LOCK_POSITION_CHANGED"
+        const val GUIDE_STAR_LOST = "GUIDE_STAR_LOST"
+        const val GUIDE_LOCK_POSITION_LOST = "GUIDE_LOCK_POSITION_LOST"
     }
 }

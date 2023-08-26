@@ -37,14 +37,14 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
         this.api.indiStartListening()
 
-        electron.ipcRenderer.on('DEVICE_PROPERTY_CHANGED', (_, data: INDIProperty<any>) => {
+        electron.on('DEVICE_PROPERTY_CHANGED', (_, data: INDIProperty<any>) => {
             ngZone.run(() => {
                 this.addOrUpdateProperty(data)
                 this.updateGroups()
             })
         })
 
-        electron.ipcRenderer.on('DEVICE_PROPERTY_DELETED', (_, data: INDIProperty<any>) => {
+        electron.on('DEVICE_PROPERTY_DELETED', (_, data: INDIProperty<any>) => {
             const index = this.properties.findIndex((e) => e.name === data.name)
 
             if (index >= 0) {
@@ -55,7 +55,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.ipcRenderer.on('DEVICE_MESSAGE_RECEIVED', (_, data: INDIDeviceMessage) => {
+        electron.on('DEVICE_MESSAGE_RECEIVED', (_, data: INDIDeviceMessage) => {
             if (this.device && data.device === this.device.name) {
                 ngZone.run(() => {
                     this.messages.splice(0, 0, data.message)

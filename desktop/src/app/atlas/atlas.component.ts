@@ -11,7 +11,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location, MinorPlanet, SkyObjectType, Star, Union } from '../../shared/types'
+import { CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location, MinorPlanet, Satellite, SkyObjectType, Star, Union } from '../../shared/types'
 
 export interface PlanetItem {
     name: string
@@ -42,12 +42,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     private settingsTabActivated = false
 
     get tab() {
-        return this.settingsTabActivated ? 6 : this.activeTab
+        return this.settingsTabActivated ? 7 : this.activeTab
     }
 
     set tab(value: number) {
         this.settingsTabActivated = false
-        if (value === 6) this.settingsTabActivated = true
+        if (value === 7) this.settingsTabActivated = true
         else this.activeTab = value
     }
 
@@ -154,6 +154,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     dsoItems: DeepSkyObject[] = []
     dsoSearchText = ''
     showDSOFilterDialog = false
+
+    satellite?: Satellite
+    satelliteItems: Satellite[] = []
+    satelliteSearchText = ''
 
     readonly dsoFilter: SearchFilter = {
         text: '',
@@ -408,7 +412,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     }, null, false)
 
     constructor(
-        title: Title,
+        private title: Title,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
@@ -483,6 +487,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         this.refreshTab(false, true)
     }
 
+    satelliteChanged() {
+        this.refreshTab(false, true)
+    }
+
     async searchStar() {
         const constellation = this.starFilter.constellation === 'ALL' ? undefined : this.starFilter.constellation
         const type = this.starFilter.type === 'ALL' ? undefined : this.starFilter.type
@@ -520,9 +528,19 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         }
     }
 
-    filterDSO() {
-        this.searchDSO()
+    async filterDSO() {
+        await this.searchDSO()
         this.showDSOFilterDialog = false
+    }
+
+    async searchSatellite() {
+        this.refreshing = true
+
+        try {
+            this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText)
+        } finally {
+            this.refreshing = false
+        }
     }
 
     addLocation() {
@@ -608,6 +626,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
             this.dateTime.setMinutes(this.dateTimeMinute)
         }
 
+        this.title.setTitle(`Sky Atlas ・ ${this.location.name}`)
+
         try {
             // Sun.
             if (this.activeTab === 0) {
@@ -683,6 +703,19 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
+            // TLE.
+            else if (this.activeTab === 6) {
+                this.tags = []
+
+                if (this.satellite) {
+                    this.name = this.satellite.name
+                    const bodyPosition = await this.api.positionOfSatellite(this.location!, this.satellite, this.dateTime)
+                    Object.assign(this.bodyPosition, bodyPosition)
+                } else {
+                    this.name = '-'
+                    Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
+                }
+            }
 
             if (refreshTwilight) {
                 const twilight = await this.api.twilight(this.location!, this.dateTime)
@@ -741,6 +774,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         // DSO.
         else if (this.activeTab === 5 && this.dso) {
             const points = await this.api.altitudePointsOfDSO(this.location!, this.dso, this.dateTime)
+            AtlasComponent.belowZeroPoints(points)
+            this.altitudeData.datasets[9].data = points
+        }
+        // Satellite.
+        else if (this.activeTab === 6 && this.satellite) {
+            const points = await this.api.altitudePointsOfSatellite(this.location!, this.satellite, this.dateTime)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         } else {
