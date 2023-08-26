@@ -1,14 +1,14 @@
 <div class="grid">
-    <div class="col-8 pt-3">
+    <div class="col-7 pt-3">
         <span class="p-float-label">
             <input pInputText class="border-0 w-full" [(ngModel)]="location.name" />
             <label>Name</label>
         </span>
     </div>
-    <div class="col-4 pt-3">
+    <div class="col-5 pt-3">
         <span class="p-float-label">
             <p-inputNumber locale="en" type="number" styleClass="border-0 w-full" [min]="-720" [max]="720"
-                           [(ngModel)]="location.offsetInMinutes" [allowEmpty]="false" />
+                           [(ngModel)]="location.offsetInMinutes" [showButtons]="true" [allowEmpty]="false" />
             <label>UTC Offset (min)</label>
         </span>
     </div>
@@ -29,7 +29,7 @@
     <div class="col-4 pt-3">
         <span class="p-float-label">
             <p-inputNumber locale="en" type="number" styleClass="border-0 w-full" [min]="-1000" [max]="10000"
-                           [(ngModel)]="location.elevation" [allowEmpty]="false" />
+                           [(ngModel)]="location.elevation" [showButtons]="true" [allowEmpty]="false" />
             <label>Elevation (m)</label>
         </span>
     </div>

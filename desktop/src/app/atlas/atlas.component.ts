@@ -665,10 +665,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
                 if (this.minorPlanet) {
                     this.name = this.minorPlanet.name
-                    if (this.minorPlanet.kind) this.tags.push({ title: this.minorPlanet.kind, severity: 'success' })
+                    // if (this.minorPlanet.kind) this.tags.push({ title: this.minorPlanet.kind, severity: 'success' })
+                    if (this.minorPlanet.orbitType) this.tags.push({ title: this.minorPlanet.orbitType, severity: 'success' })
                     if (this.minorPlanet.pha) this.tags.push({ title: 'PHA', severity: 'danger' })
-                    if (this.minorPlanet.neo) this.tags.push({ title: 'NEO', severity: 'danger' })
-                    if (this.minorPlanet.orbitType) this.tags.push({ title: this.minorPlanet.orbitType, severity: 'info' })
+                    if (this.minorPlanet.neo) this.tags.push({ title: 'NEO', severity: 'warning' })
                     const code = `DES=${this.minorPlanet.spkId};`
                     const bodyPosition = await this.api.positionOfPlanet(this.location!, code, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)

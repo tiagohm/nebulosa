@@ -1,6 +1,5 @@
 package nebulosa.api.controllers
 
-import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
@@ -33,13 +32,6 @@ class AtlasController(
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
 ) {
-
-    @PostConstruct
-    private fun initialize() {
-        if (locationRepository.isEmpty()) {
-            locationRepository.save(LocationEntity(0, "Saint Helena", -15.9655282, -5.7114846, 77.0))
-        }
-    }
 
     @GetMapping("locations")
     fun location(): List<LocationEntity> {

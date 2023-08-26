@@ -37,6 +37,9 @@ export class LocationDialog implements AfterContentInit {
             draggable: false,
             resizable: false,
             width: '80vw',
+            contentStyle: {
+                'overflow-y': 'hidden',
+            },
         })
     }
 }
