@@ -359,11 +359,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
             },
             tooltip: {
                 displayColors: false,
+                intersect: false,
                 callbacks: {
-                    title: function () {
+                    title: () => {
                         return ''
                     },
-                    label: function (context) {
+                    label: (context) => {
                         const hours = (context.parsed.x + 12) % 24
                         const minutes = (hours - Math.trunc(hours)) * 60
                         const a = twoDigitsFormatter.format(hours)
@@ -407,7 +408,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 ticks: {
                     autoSkip: false,
                     count: 10,
-                    callback: function (value, index, ticks) {
+                    callback: (value, index, ticks) => {
                         return oneDecimalPlaceFormatter.format(value as number)
                     }
                 },
@@ -434,7 +435,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     stepSize: 1.0,
                     maxRotation: 0,
                     minRotation: 0,
-                    callback: function (value, index, ticks) {
+                    callback: (value, index, ticks) => {
                         const hours = (value as number + 12) % 24
                         const h = Math.trunc(hours)
                         const m = Math.trunc((hours - h) * 60)
@@ -500,6 +501,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         }
 
         this.locations = locations
+
+        // const canvas = this.chart.getCanvas() as HTMLCanvasElement
+        // const chart = this.chart.chart as Chart
+
+        // canvas.onmousemove = (event) => {
+        // const x = chart.scales['x'].getValueForPixel(event.offsetX)
+        // const y = chart.scales['y'].getValueForPixel(event.offsetY)
+        // }
     }
 
     @HostListener('window:unload')
