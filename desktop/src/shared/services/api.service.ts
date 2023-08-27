@@ -6,7 +6,8 @@ import {
     BodyPosition, Calibration, Camera, CameraStartCapture, ComputedCoordinates, Constellation, DeepSkyObject, Device,
     FilterWheel, Focuser, GuideOutput, GuidingChart, GuidingStar, HipsSurvey,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, Location, MinorPlanet,
-    Mount, Path, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteSource, SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
+    Mount, Path, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
+    SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 
 @Injectable({ providedIn: 'root' })
@@ -490,11 +491,8 @@ export class ApiService {
         return this.post<void>(`pointMountHere?name=${mount.name}&path=${path}&x=${x}&y=${y}&synchronized=${synchronized}`)
     }
 
-    searchSatellites(text: string = '') {
-        return this.get<Satellite[]>(`searchSatellites?text=${text}`)
-    }
-
-    satelliteSources() {
-        return this.get<SatelliteSource[]>(`satelliteSources`)
+    searchSatellites(text: string = '', groups: SatelliteGroupType[] = []) {
+        const q = groups.map(e => `&group=${e}`).join('')
+        return this.get<Satellite[]>(`searchSatellites?text=${text}${q}`)
     }
 }

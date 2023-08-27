@@ -557,77 +557,10 @@
         }
       ],
       "relations": []
-    },
-    {
-      "id": "7:8968304416388002032",
-      "lastPropertyId": "5:7830389679541367505",
-      "name": "TLEEntity",
-      "properties": [
-        {
-          "id": "1:1418769500440679099",
-          "name": "id",
-          "type": 6,
-          "flags": 129
-        },
-        {
-          "id": "2:7290811067773705137",
-          "name": "source",
-          "indexId": "14:9187059019963520245",
-          "type": 6,
-          "flags": 8
-        },
-        {
-          "id": "3:2719054692725905613",
-          "name": "name",
-          "type": 9
-        },
-        {
-          "id": "4:7447454692522974010",
-          "name": "tle",
-          "type": 9
-        }
-      ],
-      "relations": []
-    },
-    {
-      "id": "8:3715657608088091992",
-      "lastPropertyId": "5:6338712844528940250",
-      "name": "TLESourceEntity",
-      "properties": [
-        {
-          "id": "1:1484675797823198018",
-          "name": "id",
-          "type": 6,
-          "flags": 1
-        },
-        {
-          "id": "2:3112508440451107751",
-          "name": "url",
-          "indexId": "15:6936188058417201855",
-          "type": 9,
-          "flags": 2048
-        },
-        {
-          "id": "3:6679808789215869090",
-          "name": "updatedAt",
-          "type": 6
-        },
-        {
-          "id": "4:3330731028661288545",
-          "name": "enabled",
-          "type": 1
-        },
-        {
-          "id": "5:6338712844528940250",
-          "name": "deletable",
-          "type": 1
-        }
-      ],
-      "relations": []
     }
   ],
-  "lastEntityId": "8:3715657608088091992",
-  "lastIndexId": "15:6936188058417201855",
+  "lastEntityId": "6:2301362482019052453",
+  "lastIndexId": "13:1450764334546729064",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

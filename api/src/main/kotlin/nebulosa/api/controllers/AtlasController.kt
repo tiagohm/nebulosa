@@ -5,9 +5,13 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive
-import nebulosa.api.data.entities.*
+import nebulosa.api.data.entities.DeepSkyObjectEntity
+import nebulosa.api.data.entities.LocationEntity
+import nebulosa.api.data.entities.StarEntity
+import nebulosa.api.data.enums.SatelliteGroupType
 import nebulosa.api.data.responses.BodyPositionResponse
 import nebulosa.api.data.responses.MinorPlanetResponse
+import nebulosa.api.data.responses.SatelliteResponse
 import nebulosa.api.data.responses.TwilightResponse
 import nebulosa.api.repositories.DeepSkyObjectRepository
 import nebulosa.api.repositories.LocationRepository
@@ -123,13 +127,9 @@ class AtlasController(
     @GetMapping("searchSatellites")
     fun searchSatellites(
         @RequestParam(required = false, defaultValue = "") text: String,
-    ): List<TLEEntity> {
-        return atlasService.searchSatellites(text)
-    }
-
-    @GetMapping("satelliteSources")
-    fun satelliteSources(): List<TLESourceEntity> {
-        return atlasService.satelliteSources()
+        @RequestParam(name = "group", required = false) groups: List<SatelliteGroupType>,
+    ): List<SatelliteResponse> {
+        return atlasService.searchSatellites(text, groups)
     }
 
     @GetMapping("twilight")

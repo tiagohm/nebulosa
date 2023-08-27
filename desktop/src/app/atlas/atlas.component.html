@@ -166,6 +166,7 @@
                     </div>
                     <div class="col-3 flex align-items-center gap-1">
                         <p-button [disabled]="refreshing" (onClick)="searchSatellite()" icon="mdi mdi-magnify" styleClass="p-button-info" />
+                        <p-button [disabled]="refreshing" (onClick)="showSatelliteFilterDialog = true" icon="mdi mdi-filter" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -176,12 +177,16 @@
                             <tr>
                                 <th pSortableColumn="id">NORAD ID<p-sortIcon field="id" /></th>
                                 <th pSortableColumn="name">Name <p-sortIcon field="name" /></th>
+                                <th>Groups</th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td>{{ item.id }}</td>
+                                <td class="w-8rem">{{ item.id }}</td>
                                 <td>{{ item.name }}</td>
+                                <td class="flex flex-row flex-wrap gap-1 max-w-16rem">
+                                    <p-tag *ngFor="let item of item.groups" severity="success" [value]="item" />
+                                </td>
                             </tr>
                         </ng-template>
                     </p-table>
@@ -386,7 +391,7 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button icon="mdi mdi-filter" label="Filter" (onClick)="filterStar()" styleClass="p-button-text" />
+        <p-button [disabled]="refreshing" icon="mdi mdi-filter" label="Filter" (onClick)="filterStar()" styleClass="p-button-text" />
     </ng-template>
 </p-dialog>
 
@@ -451,6 +456,20 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button icon="mdi mdi-filter" label="Filter" (onClick)="filterDSO()" styleClass="p-button-text" />
+        <p-button [disabled]="refreshing" icon="mdi mdi-filter" label="Filter" (onClick)="filterDSO()" styleClass="p-button-text" />
+    </ng-template>
+</p-dialog>
+
+<p-dialog header="Satellite Filter" [draggable]="false" [(visible)]="showSatelliteFilterDialog" [modal]="true" [style]="{width: '80vw'}">
+    <div class="grid mt-2">
+        <div class="col-12 flex flex-column gap-1 align-items-start flex-wrap">
+            <ng-container *ngFor="let item of satelliteSearchGroup | keyvalue">
+                <p-checkbox [binary]="true" [ngModel]="satelliteSearchGroup.get(item.key)"
+                            (ngModelChange)="satelliteSearchGroup.set(item.key, $event)" [label]="item.key | enum" class="white-space-nowrap" />
+            </ng-container>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button [disabled]="refreshing" icon="mdi mdi-filter" label="Filter" (onClick)="filterSatellite()" styleClass="p-button-text" />
     </ng-template>
 </p-dialog>

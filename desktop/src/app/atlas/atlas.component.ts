@@ -11,7 +11,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location, MinorPlanet, Satellite, SkyObjectType, Star, Union } from '../../shared/types'
+import { CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location, MinorPlanet, SATELLITE_GROUP_TYPES, Satellite, SatelliteGroupType, SkyObjectType, Star, Union } from '../../shared/types'
 
 export interface PlanetItem {
     name: string
@@ -158,6 +158,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     satellite?: Satellite
     satelliteItems: Satellite[] = []
     satelliteSearchText = ''
+    showSatelliteFilterDialog = false
+    readonly satelliteSearchGroup = new Map<SatelliteGroupType, boolean>()
 
     readonly dsoFilter: SearchFilter = {
         text: '',
@@ -421,6 +423,23 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     ) {
         title.setTitle('Sky Atlas')
 
+        for (const item of SATELLITE_GROUP_TYPES) {
+            this.satelliteSearchGroup.set(item, false)
+        }
+
+        // Stellarium.
+        this.satelliteSearchGroup.set('AMATEUR', true)
+        this.satelliteSearchGroup.set('BEIDOU', true)
+        this.satelliteSearchGroup.set('GALILEO', true)
+        this.satelliteSearchGroup.set('GLO_OPS', true)
+        this.satelliteSearchGroup.set('GNSS', true)
+        this.satelliteSearchGroup.set('GPS_OPS', true)
+        this.satelliteSearchGroup.set('ONEWEB', true)
+        this.satelliteSearchGroup.set('SCIENCE', true)
+        this.satelliteSearchGroup.set('STARLINK', true)
+        this.satelliteSearchGroup.set('STATIONS', true)
+        this.satelliteSearchGroup.set('VISUAL', true)
+
         // TODO: Refresh graph and twilight if hours past 12 (noon)
     }
 
@@ -507,8 +526,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         }
     }
 
-    filterStar() {
-        this.searchStar()
+    async filterStar() {
+        await this.searchStar()
         this.showStarFilterDialog = false
     }
 
@@ -537,10 +556,16 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         this.refreshing = true
 
         try {
-            this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText)
+            const groups = SATELLITE_GROUP_TYPES.filter(e => this.satelliteSearchGroup.get(e))
+            this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText, groups)
         } finally {
             this.refreshing = false
         }
+    }
+
+    async filterSatellite() {
+        await this.searchSatellite()
+        this.showSatelliteFilterDialog = false
     }
 
     addLocation() {

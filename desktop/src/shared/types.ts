@@ -476,14 +476,7 @@ export interface Satellite {
     id: number
     name: string
     tle: string
-}
-
-export interface SatelliteSource {
-    id: number
-    url: string
-    updatedAt: number
-    enabled: boolean
-    deletable: boolean
+    groups: SatelliteGroupType[]
 }
 
 export enum ExposureTimeUnit {
@@ -739,3 +732,24 @@ export type GuideDirection = 'NONE' |
     'DOWN_SOUTH' | // DEC-
     'LEFT_WEST' | // RA+
     'RIGHT_EAST' // RA-
+
+export const SATELLITE_GROUP_TYPES = [
+    'LAST_30_DAYS', 'STATIONS', 'VISUAL',
+    'ACTIVE', 'ANALYST', 'COSMOS_1408_DEBRIS',
+    'FENGYUN_1C_DEBRIS', 'IRIDIUM_33_DEBRIS',
+    'COSMOS_2251_DEBRIS', 'WEATHER',
+    'NOAA', 'GOES', 'RESOURCE', 'SARSAT',
+    'DMC', 'TDRSS', 'ARGOS', 'PLANET',
+    'SPIRE', 'GEO', 'INTELSAT', 'SES',
+    'IRIDIUM', 'IRIDIUM_NEXT', 'STARLINK',
+    'ONEWEB', 'ORBCOMM', 'GLOBALSTAR', 'SWARM',
+    'AMATEUR', 'X_COMM', 'OTHER_COMM',
+    'SATNOGS', 'GORIZONT', 'RADUGA',
+    'MOLNIYA', 'GNSS', 'GPS_OPS', 'GLO_OPS',
+    'GALILEO', 'BEIDOU', 'SBAS', 'NNSS',
+    'MUSSON', 'SCIENCE', 'GEODETIC',
+    'ENGINEERING', 'EDUCATION', 'MILITARY',
+    'RADAR', 'CUBESAT', 'OTHER',
+] as const
+
+export type SatelliteGroupType = (typeof SATELLITE_GROUP_TYPES)[number]
