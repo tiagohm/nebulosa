@@ -8,6 +8,7 @@ import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { MoonComponent } from '../../shared/components/moon/moon.component'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
+import { oneDecimalPlaceFormatter, twoDigitsFormatter } from '../../shared/formatters'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -34,9 +35,6 @@ export interface SearchFilter {
     magnitude: [number, number]
     type: Union<SkyObjectType, 'ALL'>
 }
-
-const twoDigitsFormatter = new Intl.NumberFormat('en-US', { minimumIntegerDigits: 2, minimumFractionDigits: 0, maximumFractionDigits: 0 })
-const oneDecimalPlaceFormatter = new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
 @Component({
     selector: 'app-atlas',
@@ -408,7 +406,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 ticks: {
                     autoSkip: false,
                     count: 10,
-                    callback: (value, index, ticks) => {
+                    callback: (value) => {
                         return oneDecimalPlaceFormatter.format(value as number)
                     }
                 },
@@ -435,7 +433,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     stepSize: 1.0,
                     maxRotation: 0,
                     minRotation: 0,
-                    callback: (value, index, ticks) => {
+                    callback: (value) => {
                         const hours = (value as number + 12) % 24
                         const h = Math.trunc(hours)
                         const m = Math.trunc((hours - h) * 60)

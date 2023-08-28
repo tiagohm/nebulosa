@@ -162,6 +162,7 @@ export interface CameraCaptureProgressChanged {
     totalProgress: number
     totalExposureTime: number
     indeterminate: boolean
+    elapsedTime: number
 }
 
 export interface CameraCaptureFinished {
