@@ -309,9 +309,8 @@
     <div class="col-9 flex flex-column align-items-start justify-content-center gap-2 absolute" style="right: 8px; top: 42px;">
         <div class="flex flex-row gap-1 align-items-center justify-content-center">
             <p-checkbox [binary]="true" [(ngModel)]="useManualDateTime" (ngModelChange)="useManualDateTimeChanged()" />
-            <p-calendar [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTime" [showIcon]="true" [showWeek]="true"
-                        [showButtonBar]="true"
-                        dateFormat="yy-mm-dd" inputStyleClass="p-inputtext-sm w-6rem" class="border-0" />
+            <p-calendar [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTime" (ngModelChange)="dateTimeChanged()" [showIcon]="true"
+                        [showWeek]="true" [showButtonBar]="true" dateFormat="yy-mm-dd" inputStyleClass="p-inputtext-sm w-6rem" class="border-0" />
             <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeHour" [showButtons]="true" [min]="0" [max]="23"
                            class="w-fit" [format]="false"
                            [allowEmpty]="false" (ngModelChange)="dateTimeChanged()" styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" />
