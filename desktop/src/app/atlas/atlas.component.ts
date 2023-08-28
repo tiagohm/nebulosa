@@ -463,22 +463,15 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     ) {
         title.setTitle('Sky Atlas')
 
-        for (const item of SATELLITE_GROUP_TYPES) {
-            this.satelliteSearchGroup.set(item, false)
-        }
+        const DEFAULT_SATELLITE_FILTERS = [
+            'AMATEUR', 'BEIDOU', 'GALILEO', 'GLO_OPS', 'GNSS', 'GPS_OPS',
+            'ONEWEB', 'SCIENCE', 'STARLINK', 'STATIONS', 'VISUAL'
+        ]
 
-        // Stellarium.
-        this.satelliteSearchGroup.set('AMATEUR', true)
-        this.satelliteSearchGroup.set('BEIDOU', true)
-        this.satelliteSearchGroup.set('GALILEO', true)
-        this.satelliteSearchGroup.set('GLO_OPS', true)
-        this.satelliteSearchGroup.set('GNSS', true)
-        this.satelliteSearchGroup.set('GPS_OPS', true)
-        this.satelliteSearchGroup.set('ONEWEB', true)
-        this.satelliteSearchGroup.set('SCIENCE', true)
-        this.satelliteSearchGroup.set('STARLINK', true)
-        this.satelliteSearchGroup.set('STATIONS', true)
-        this.satelliteSearchGroup.set('VISUAL', true)
+        for (const item of SATELLITE_GROUP_TYPES) {
+            const enabled = preference.get(`atlas.satellite.filter.${item}`, DEFAULT_SATELLITE_FILTERS.includes(item))
+            this.satelliteSearchGroup.set(item, enabled)
+        }
 
         // TODO: Refresh graph and twilight if hours past 12 (noon)
     }
@@ -604,6 +597,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         this.refreshing = true
 
         try {
+            for (const item of SATELLITE_GROUP_TYPES) {
+                this.preference.set(`atlas.satellite.filter.${item}`, this.satelliteSearchGroup.get(item))
+            }
+
             const groups = SATELLITE_GROUP_TYPES.filter(e => this.satelliteSearchGroup.get(e))
             this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText, groups)
         } finally {
