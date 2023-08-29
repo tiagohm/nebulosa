@@ -38,13 +38,13 @@ class INDIController(
         return device.messages
     }
 
-    @PostMapping("indiStartListening")
-    fun indiStartListening() {
-        return webSocketService.indiStartListening()
+    @PostMapping("startListening")
+    fun startListening(@RequestParam @Valid @NotBlank eventName: String) {
+        return webSocketService.startListening(eventName)
     }
 
-    @PostMapping("indiStopListening")
-    fun indiStopListening() {
-        return webSocketService.indiStopListening()
+    @PostMapping("stopListening")
+    fun stopListening(@RequestParam @Valid @NotBlank eventName: String) {
+        return webSocketService.stopListening(eventName)
     }
 }

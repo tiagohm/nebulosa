@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs'
 import {
     BodyPosition, Calibration, Camera, CameraStartCapture, ComputedCoordinates, Constellation, DeepSkyObject, Device,
     FilterWheel, Focuser, GuideOutput, GuidingChart, GuidingStar, HipsSurvey,
-    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, Location, MinorPlanet,
+    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
     Mount, Path, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
     SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
@@ -338,12 +338,12 @@ export class ApiService {
         return this.post<void>(`sendIndiProperty?name=${device.name}`, property)
     }
 
-    indiStartListening() {
-        return this.post<void>(`indiStartListening`)
+    startListening(eventName: ListeningEventType) {
+        return this.post<void>(`startListening?eventName=${eventName}`)
     }
 
-    indiStopListening() {
-        return this.post<void>(`indiStopListening`)
+    stopListening(eventName: ListeningEventType) {
+        return this.post<void>(`stopListening?eventName=${eventName}`)
     }
 
     indiLog(device: Device) {

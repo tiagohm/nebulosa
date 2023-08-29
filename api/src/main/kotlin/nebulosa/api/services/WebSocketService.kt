@@ -32,6 +32,7 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
     // INDI
 
     @Volatile private var listenIndiEvents = false
+    @Volatile private var listenGuidingEvents = false
 
     fun sendINDIPropertyChanged(event: DevicePropertyEvent) {
         if (listenIndiEvents) {
@@ -122,33 +123,47 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
     // GUIDE OUTPUT
 
     fun sendGuideOutputUpdated(guideOutput: GuideOutput) {
-        sendMessage(GUIDE_OUTPUT_UPDATED, guideOutput)
+        if (listenGuidingEvents) {
+            sendMessage(GUIDE_OUTPUT_UPDATED, guideOutput)
+        }
     }
 
     fun sendGuideOutputAttached(event: GuideOutputAttached) {
-        sendMessage(GUIDE_OUTPUT_ATTACHED, event.device)
+        if (listenGuidingEvents) {
+            sendMessage(GUIDE_OUTPUT_ATTACHED, event.device)
+        }
     }
 
     fun sendGuideOutputDetached(event: GuideOutputDetached) {
-        sendMessage(GUIDE_OUTPUT_DETACHED, event.device)
+        if (listenGuidingEvents) {
+            sendMessage(GUIDE_OUTPUT_DETACHED, event.device)
+        }
     }
 
     fun sendGuideExposureFinished(event: GuideExposureFinished) {
-        sendMessage(GUIDE_EXPOSURE_FINISHED, event)
+        if (listenGuidingEvents) {
+            sendMessage(GUIDE_EXPOSURE_FINISHED, event)
+        }
     }
 
     // GUIDING
 
     fun sendGuideLockPositionChanged(guider: Guider) {
-        sendMessage(GUIDE_LOCK_POSITION_CHANGED, guider)
+        if (listenGuidingEvents) {
+            sendMessage(GUIDE_LOCK_POSITION_CHANGED, guider)
+        }
     }
 
     fun sendGuideStarLost(guider: Guider) {
-        sendMessage(GUIDE_STAR_LOST, guider)
+        if (listenGuidingEvents) {
+            sendMessage(GUIDE_STAR_LOST, guider)
+        }
     }
 
     fun sendLockPositionLost(guider: Guider) {
-        sendMessage(GUIDE_LOCK_POSITION_LOST, guider)
+        if (listenGuidingEvents) {
+            sendMessage(GUIDE_LOCK_POSITION_LOST, guider)
+        }
     }
 
     // DEVICE
@@ -166,12 +181,20 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
         if (device is GuideOutput) sendMessage(GUIDE_OUTPUT_UPDATED, device)
     }
 
-    fun indiStartListening() {
-        listenIndiEvents = true
+    @Synchronized
+    fun startListening(eventName: String) {
+        when (eventName) {
+            "INDI" -> listenIndiEvents = true
+            "GUIDING" -> listenGuidingEvents = true
+        }
     }
 
-    fun indiStopListening() {
-        listenIndiEvents = false
+    @Synchronized
+    fun stopListening(eventName: String) {
+        when (eventName) {
+            "INDI" -> listenIndiEvents = false
+            "GUIDING" -> listenGuidingEvents = false
+        }
     }
 
     @Suppress("NOTHING_TO_INLINE")
