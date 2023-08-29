@@ -453,6 +453,11 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         this.refreshTab()
     }, null, false)
 
+    private static readonly DEFAULT_SATELLITE_FILTERS: SatelliteGroupType[] = [
+        'AMATEUR', 'BEIDOU', 'GALILEO', 'GLO_OPS', 'GNSS', 'GPS_OPS',
+        'ONEWEB', 'SCIENCE', 'STARLINK', 'STATIONS', 'VISUAL'
+    ]
+
     constructor(
         private title: Title,
         private api: ApiService,
@@ -463,13 +468,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     ) {
         title.setTitle('Sky Atlas')
 
-        const DEFAULT_SATELLITE_FILTERS = [
-            'AMATEUR', 'BEIDOU', 'GALILEO', 'GLO_OPS', 'GNSS', 'GPS_OPS',
-            'ONEWEB', 'SCIENCE', 'STARLINK', 'STATIONS', 'VISUAL'
-        ]
-
         for (const item of SATELLITE_GROUP_TYPES) {
-            const enabled = preference.get(`atlas.satellite.filter.${item}`, DEFAULT_SATELLITE_FILTERS.includes(item))
+            const enabled = preference.get(`atlas.satellite.filter.${item}`, AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item))
             this.satelliteSearchGroup.set(item, enabled)
         }
 
@@ -605,6 +605,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
             this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText, groups)
         } finally {
             this.refreshing = false
+        }
+    }
+
+    resetSatelliteFilter() {
+        for (const item of SATELLITE_GROUP_TYPES) {
+            const enabled = AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item)
+            this.preference.set(`atlas.satellite.filter.${item}`, enabled)
+            this.satelliteSearchGroup.set(item, enabled)
         }
     }
 
@@ -773,7 +781,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
-            // TLE.
+            // Satellite.
             else if (this.activeTab === 6) {
                 this.tags = []
 
@@ -829,29 +837,45 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
             this.altitudeData.datasets[9].data = points
         }
         // Minor Planet.
-        else if (this.activeTab === 3 && this.minorPlanet) {
-            const code = `DES=${this.minorPlanet.spkId};`
-            const points = await this.api.altitudePointsOfPlanet(this.location!, code, this.dateTime)
-            AtlasComponent.belowZeroPoints(points)
-            this.altitudeData.datasets[9].data = points
+        else if (this.activeTab === 3) {
+            if (this.minorPlanet) {
+                const code = `DES=${this.minorPlanet.spkId};`
+                const points = await this.api.altitudePointsOfPlanet(this.location!, code, this.dateTime)
+                AtlasComponent.belowZeroPoints(points)
+                this.altitudeData.datasets[9].data = points
+            } else {
+                this.altitudeData.datasets[9].data = []
+            }
         }
         // Star.
-        else if (this.activeTab === 4 && this.star) {
-            const points = await this.api.altitudePointsOfStar(this.location!, this.star, this.dateTime)
-            AtlasComponent.belowZeroPoints(points)
-            this.altitudeData.datasets[9].data = points
+        else if (this.activeTab === 4) {
+            if (this.star) {
+                const points = await this.api.altitudePointsOfStar(this.location!, this.star, this.dateTime)
+                AtlasComponent.belowZeroPoints(points)
+                this.altitudeData.datasets[9].data = points
+            } else {
+                this.altitudeData.datasets[9].data = []
+            }
         }
         // DSO.
-        else if (this.activeTab === 5 && this.dso) {
-            const points = await this.api.altitudePointsOfDSO(this.location!, this.dso, this.dateTime)
-            AtlasComponent.belowZeroPoints(points)
-            this.altitudeData.datasets[9].data = points
+        else if (this.activeTab === 5) {
+            if (this.dso) {
+                const points = await this.api.altitudePointsOfDSO(this.location!, this.dso, this.dateTime)
+                AtlasComponent.belowZeroPoints(points)
+                this.altitudeData.datasets[9].data = points
+            } else {
+                this.altitudeData.datasets[9].data = []
+            }
         }
         // Satellite.
-        else if (this.activeTab === 6 && this.satellite) {
-            const points = await this.api.altitudePointsOfSatellite(this.location!, this.satellite, this.dateTime)
-            AtlasComponent.belowZeroPoints(points)
-            this.altitudeData.datasets[9].data = points
+        else if (this.activeTab === 6) {
+            if (this.satellite) {
+                const points = await this.api.altitudePointsOfSatellite(this.location!, this.satellite, this.dateTime)
+                AtlasComponent.belowZeroPoints(points)
+                this.altitudeData.datasets[9].data = points
+            } else {
+                this.altitudeData.datasets[9].data = []
+            }
         } else {
             return
         }
