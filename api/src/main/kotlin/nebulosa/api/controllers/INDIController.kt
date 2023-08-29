@@ -2,6 +2,7 @@ package nebulosa.api.controllers
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import nebulosa.api.data.enums.ListeningEventType
 import nebulosa.api.data.requests.INDISendPropertyRequest
 import nebulosa.api.services.EquipmentService
 import nebulosa.api.services.INDIService
@@ -39,12 +40,12 @@ class INDIController(
     }
 
     @PostMapping("startListening")
-    fun startListening(@RequestParam @Valid @NotBlank eventName: String) {
-        return webSocketService.startListening(eventName)
+    fun startListening(@RequestParam eventType: ListeningEventType) {
+        return webSocketService.startListening(eventType)
     }
 
     @PostMapping("stopListening")
-    fun stopListening(@RequestParam @Valid @NotBlank eventName: String) {
-        return webSocketService.stopListening(eventName)
+    fun stopListening(@RequestParam eventType: ListeningEventType) {
+        return webSocketService.stopListening(eventType)
     }
 }

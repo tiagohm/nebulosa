@@ -755,4 +755,4 @@ export const SATELLITE_GROUP_TYPES = [
 
 export type SatelliteGroupType = (typeof SATELLITE_GROUP_TYPES)[number]
 
-export type ListeningEventType = 'INDI' | 'GUIDING'
+export type ListeningEventType = 'INDI' | 'GUIDING' | 'CAMERA' | 'MOUNT'

@@ -1,6 +1,7 @@
 package nebulosa.api.services
 
 import nebulosa.api.data.entities.SavedCameraImageEntity
+import nebulosa.api.data.enums.ListeningEventType
 import nebulosa.api.data.events.CameraCaptureFinished
 import nebulosa.api.data.events.CameraCaptureProgressChanged
 import nebulosa.api.data.events.GuideExposureFinished
@@ -33,6 +34,8 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
 
     @Volatile private var listenIndiEvents = false
     @Volatile private var listenGuidingEvents = false
+    @Volatile private var listenCameraEvents = 0
+    @Volatile private var listenMountEvents = 0
 
     fun sendINDIPropertyChanged(event: DevicePropertyEvent) {
         if (listenIndiEvents) {
@@ -59,7 +62,9 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
     }
 
     fun sendCameraUpdated(camera: Camera) {
-        sendMessage(CAMERA_UPDATED, camera)
+        if (listenCameraEvents > 0) {
+            sendMessage(CAMERA_UPDATED, camera)
+        }
     }
 
     fun sendCameraCaptureProgressChanged(event: CameraCaptureProgressChanged) {
@@ -81,7 +86,9 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
     // MOUNT
 
     fun sendMountUpdated(mount: Mount) {
-        sendMessage(MOUNT_UPDATED, mount)
+        if (listenMountEvents > 0) {
+            sendMessage(MOUNT_UPDATED, mount)
+        }
     }
 
     fun sendMountAttached(event: MountAttached) {
@@ -182,18 +189,22 @@ class WebSocketService(private val simpleMessageTemplate: SimpMessagingTemplate)
     }
 
     @Synchronized
-    fun startListening(eventName: String) {
-        when (eventName) {
-            "INDI" -> listenIndiEvents = true
-            "GUIDING" -> listenGuidingEvents = true
+    fun startListening(eventTyoe: ListeningEventType) {
+        when (eventTyoe) {
+            ListeningEventType.INDI -> listenIndiEvents = true
+            ListeningEventType.GUIDING -> listenGuidingEvents = true
+            ListeningEventType.CAMERA -> listenCameraEvents++
+            ListeningEventType.MOUNT -> listenMountEvents++
         }
     }
 
     @Synchronized
-    fun stopListening(eventName: String) {
-        when (eventName) {
-            "INDI" -> listenIndiEvents = false
-            "GUIDING" -> listenGuidingEvents = false
+    fun stopListening(eventTyoe: ListeningEventType) {
+        when (eventTyoe) {
+            ListeningEventType.INDI -> listenIndiEvents = false
+            ListeningEventType.GUIDING -> listenGuidingEvents = false
+            ListeningEventType.CAMERA -> listenCameraEvents--
+            ListeningEventType.MOUNT -> listenMountEvents--
         }
     }
 

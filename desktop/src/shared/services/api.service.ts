@@ -338,12 +338,12 @@ export class ApiService {
         return this.post<void>(`sendIndiProperty?name=${device.name}`, property)
     }
 
-    startListening(eventName: ListeningEventType) {
-        return this.post<void>(`startListening?eventName=${eventName}`)
+    startListening(eventType: ListeningEventType) {
+        return this.post<void>(`startListening?eventType=${eventType}`)
     }
 
-    stopListening(eventName: ListeningEventType) {
-        return this.post<void>(`stopListening?eventName=${eventName}`)
+    stopListening(eventType: ListeningEventType) {
+        return this.post<void>(`stopListening?eventType=${eventType}`)
     }
 
     indiLog(device: Device) {
