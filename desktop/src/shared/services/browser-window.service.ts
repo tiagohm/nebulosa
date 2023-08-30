@@ -19,7 +19,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'mount', path: 'mount', icon: options.icon || 'mount',
-            width: options.width || 400, height: options.height || 440,
+            width: options.width || 400, height: options.height || 452,
         })
     }
 
@@ -27,7 +27,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'camera', path: 'camera', icon: options.icon || 'camera',
-            width: options.width || 400, height: options.height || 456,
+            width: options.width || 400, height: options.height || 467,
         })
     }
 
@@ -35,15 +35,15 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'focuser', path: 'focuser', icon: options.icon || 'focus',
-            width: options.width || 360, height: options.height || 225,
+            width: options.width || 360, height: options.height || 193,
         })
     }
 
-    openFilterWheel(options: OpenWindowOptions = {}) {
+    openWheel(options: OpenWindowOptions = {}) {
         this.openWindow({
             ...options,
-            id: 'filterWheel', path: 'filterWheel', icon: options.icon || 'filter-wheel',
-            width: options.width || 320, height: options.height || 140,
+            id: 'wheel', path: 'wheel', icon: options.icon || 'filter-wheel',
+            width: options.width || 320, height: options.height || 147,
         })
     }
 
@@ -93,7 +93,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'framing', path: 'framing', icon: options.icon || 'framing',
-            width: options.width || 280, height: options.height || 280, params,
+            width: options.width || 280, height: options.height || 297, params,
         })
     }
 

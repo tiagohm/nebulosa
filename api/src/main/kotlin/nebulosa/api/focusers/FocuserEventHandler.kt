@@ -10,13 +10,11 @@ import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserAttached
 import nebulosa.indi.device.focuser.FocuserDetached
 import nebulosa.indi.device.focuser.FocuserEvent
-import org.greenrobot.eventbus.EventBus
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
 @Component
 class FocuserEventHandler(
-    private val eventBus: EventBus,
     private val messageService: MessageService,
     private val service: FocuserService,
 ) : DeviceEventHandler {
@@ -25,8 +23,6 @@ class FocuserEventHandler(
 
     @PostConstruct
     private fun initialize() {
-        eventBus.register(this)
-
         throttler
             .throttleLast(1000, TimeUnit.MILLISECONDS)
             .subscribe { sendUpdate(it.device!!) }

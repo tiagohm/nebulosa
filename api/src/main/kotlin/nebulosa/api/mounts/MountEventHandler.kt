@@ -10,13 +10,11 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
 import nebulosa.indi.device.mount.MountDetached
 import nebulosa.indi.device.mount.MountEvent
-import org.greenrobot.eventbus.EventBus
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
 @Component
 class MountEventHandler(
-    private val eventBus: EventBus,
     private val messageService: MessageService,
     private val service: MountService,
 ) : DeviceEventHandler {
@@ -25,8 +23,6 @@ class MountEventHandler(
 
     @PostConstruct
     private fun initialize() {
-        eventBus.register(this)
-
         throttler
             .throttleLast(1000, TimeUnit.MILLISECONDS)
             .subscribe { sendUpdate(it.device!!) }

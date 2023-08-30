@@ -25,7 +25,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     savePath = ''
     autoSubFolderMode: AutoSubFolderMode = 'OFF'
 
-    filterWheel?: FilterWheel
+    wheel?: FilterWheel
 
     readonly cameraMenuItems: MenuItem[] = [
         {
@@ -202,9 +202,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.on('FILTER_WHEEL_CHANGED', (_, filterWheel?: FilterWheel) => {
+        electron.on('WHEEL_CHANGED', (_, wheel?: FilterWheel) => {
             ngZone.run(() => {
-                this.filterWheel = filterWheel
+                this.wheel = wheel
             })
         })
     }

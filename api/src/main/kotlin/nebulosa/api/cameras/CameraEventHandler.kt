@@ -10,13 +10,11 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
 import nebulosa.indi.device.camera.CameraDetached
 import nebulosa.indi.device.camera.CameraEvent
-import org.greenrobot.eventbus.EventBus
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
 @Component
 class CameraEventHandler(
-    private val eventBus: EventBus,
     private val messageService: MessageService,
     private val service: CameraService,
 ) : DeviceEventHandler {
@@ -25,8 +23,6 @@ class CameraEventHandler(
 
     @PostConstruct
     private fun initialize() {
-        eventBus.register(this)
-
         throttler
             .throttleLast(1000, TimeUnit.MILLISECONDS)
             .subscribe { sendUpdate(it.device!!) }

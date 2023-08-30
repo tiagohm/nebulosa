@@ -32,7 +32,7 @@ const routes: Routes = [
         component: FocuserComponent,
     },
     {
-        path: 'filterWheel',
+        path: 'wheel',
         component: FilterWheelComponent,
     },
     {

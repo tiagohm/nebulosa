@@ -10,12 +10,12 @@ sealed interface ImageToken {
 
     data object Guiding : ImageToken {
 
-        override val path = Path.of(GUIDING_TOKEN)
+        override val path: Path = Path.of(GUIDING_TOKEN)
     }
 
     data object Framing : ImageToken {
 
-        override val path = Path.of(FRAMING_TOKEN)
+        override val path: Path = Path.of(FRAMING_TOKEN)
     }
 
     companion object {

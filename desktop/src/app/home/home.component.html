@@ -40,7 +40,7 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasFilterWheel" (onClick)="open('FILTER_WHEEL')"
+            <p-button [disabled]="!connected || !hasWheel" (onClick)="open('WHEEL')"
                       styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/filter-wheel.png" />
                 <div class="mt-1 text-sm">Filter Wheel</div>

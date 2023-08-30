@@ -208,8 +208,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
         handleMessage(message)
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun findDeviceByName(name: String): Device? {
+    fun findDeviceByName(name: String): Device? {
         return cameras[name] ?: mounts[name] ?: filterWheels[name]
         ?: focusers[name] ?: gps[name]
     }

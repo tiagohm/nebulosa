@@ -226,28 +226,28 @@ export class ApiService {
         return this.post<void>(`focuserSyncTo?name=${focuser.name}&steps=${steps}`)
     }
 
-    attachedFilterWheels() {
-        return this.get<FilterWheel[]>(`attachedFilterWheels`)
+    attachedWheels() {
+        return this.get<FilterWheel[]>(`attachedWheels`)
     }
 
-    filterWheel(name: string) {
-        return this.get<FilterWheel>(`filterWheel?name=${name}`)
+    wheel(name: string) {
+        return this.get<FilterWheel>(`wheel?name=${name}`)
     }
 
-    filterWheelConnect(filterWheel: FilterWheel) {
-        return this.post<void>(`filterWheelConnect?name=${filterWheel.name}`)
+    wheelConnect(wheel: FilterWheel) {
+        return this.post<void>(`wheelConnect?name=${wheel.name}`)
     }
 
-    filterWheelDisconnect(filterWheel: FilterWheel) {
-        return this.post<void>(`filterWheelDisconnect?name=${filterWheel.name}`)
+    wheelDisconnect(wheel: FilterWheel) {
+        return this.post<void>(`wheelDisconnect?name=${wheel.name}`)
     }
 
-    filterWheelMoveTo(filterWheel: FilterWheel, position: number) {
-        return this.post<void>(`filterWheelMoveTo?name=${filterWheel.name}&position=${position}`)
+    wheelMoveTo(wheel: FilterWheel, position: number) {
+        return this.post<void>(`wheelMoveTo?name=${wheel.name}&position=${position}`)
     }
 
-    filterWheelSyncNames(filterWheel: FilterWheel, filterNames: string[]) {
-        return this.post<void>(`filterWheelSyncNames?name=${filterWheel.name}&filterNames=${filterNames.join(',')}`)
+    wheelSyncNames(wheel: FilterWheel, filterNames: string[]) {
+        return this.post<void>(`wheelSyncNames?name=${wheel.name}&filterNames=${filterNames.join(',')}`)
     }
 
     attachedGuideOutputs() {

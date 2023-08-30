@@ -10,13 +10,11 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelAttached
 import nebulosa.indi.device.filterwheel.FilterWheelDetached
 import nebulosa.indi.device.filterwheel.FilterWheelEvent
-import org.greenrobot.eventbus.EventBus
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
 @Component
 class WheelEventHandler(
-    private val eventBus: EventBus,
     private val messageService: MessageService,
     private val service: WheelService,
 ) : DeviceEventHandler {
@@ -25,8 +23,6 @@ class WheelEventHandler(
 
     @PostConstruct
     private fun initialize() {
-        eventBus.register(this)
-
         throttler
             .throttleLast(1000, TimeUnit.MILLISECONDS)
             .subscribe { sendUpdate(it.device!!) }

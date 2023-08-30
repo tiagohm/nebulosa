@@ -10,13 +10,11 @@ import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.guide.GuideOutputAttached
 import nebulosa.indi.device.guide.GuideOutputDetached
 import nebulosa.indi.device.guide.GuideOutputEvent
-import org.greenrobot.eventbus.EventBus
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
 @Component
 class GuideOutputEventHandler(
-    private val eventBus: EventBus,
     private val messageService: MessageService,
     private val service: GuidingService,
 ) : DeviceEventHandler {
@@ -25,8 +23,6 @@ class GuideOutputEventHandler(
 
     @PostConstruct
     private fun initialize() {
-        eventBus.register(this)
-
         throttler
             .throttleLast(1000, TimeUnit.MILLISECONDS)
             .subscribe { sendUpdate(it.device) }

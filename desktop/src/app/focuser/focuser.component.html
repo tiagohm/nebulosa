@@ -19,28 +19,32 @@
         </div>
     </div>
     <div class="grid">
-        <div class="col-6">
+        <div class="col-4">
             <span class="p-float-label">
                 <p-inputNumber [readonly]="true" styleClass="border-0 max-w-full" [(ngModel)]="position" locale="en" />
                 <label>Position</label>
             </span>
         </div>
-        <div class="col-6">
+        <div class="col-4">
             <span class="p-float-label">
                 <p-inputNumber [readonly]="true" [disabled]="!hasThermometer" styleClass="border-0 max-w-full" [(ngModel)]="temperature"
                                locale="en" />
                 <label>Temperature (°C)</label>
             </span>
         </div>
+        <div class="col-4 text-center">
+            <p-button [disabled]="!canRelativeMove || !moving" icon="mdi mdi-stop" styleClass="p-button-text p-button-danger" pTooltip="Abort"
+                      tooltipPosition="bottom" />
+        </div>
         <div class="col-6 flex align-items-center gap-1">
-            <p-button [disabled]="!canRelativeMove || moving" (onClick)="moveIn()" icon="mdi mdi-arrow-left-bold"
+            <p-button [disabled]="!canRelativeMove || moving || !stepsRelative" (onClick)="moveIn()" icon="mdi mdi-arrow-left-bold"
                       styleClass="p-button-text" pTooltip="Move In" tooltipPosition="bottom" />
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!canRelativeMove" [min]="0" [max]="maxPosition" [showButtons]="true" styleClass="border-0"
                                [(ngModel)]="stepsRelative" [allowEmpty]="false" locale="en" />
                 <label>Relative</label>
             </span>
-            <p-button [disabled]="!canRelativeMove || moving" (onClick)="moveOut()" icon="mdi mdi-arrow-right-bold"
+            <p-button [disabled]="!canRelativeMove || moving || !stepsRelative" (onClick)="moveOut()" icon="mdi mdi-arrow-right-bold"
                       styleClass="p-button-text" pTooltip="Move Out" tooltipPosition="bottom" />
         </div>
         <div class="col-6 flex align-items-center gap-1">
@@ -49,13 +53,10 @@
                                [(ngModel)]="stepsAbsolute" [allowEmpty]="false" locale="en" />
                 <label>Absolute</label>
             </span>
-            <p-button [disabled]="!canAbsoluteMove || moving" (onClick)="moveTo()" icon="mdi mdi-check"
+            <p-button [disabled]="!canAbsoluteMove || moving || stepsAbsolute === position" (onClick)="moveTo()" icon="mdi mdi-check"
                       styleClass="p-button-text p-button-success" pTooltip="Move To" tooltipPosition="bottom" />
             <p-button [disabled]="!canSync || moving" (onClick)="syncTo()" icon="mdi mdi-sync"
                       styleClass="p-button-text p-button-info" pTooltip="Sync" tooltipPosition="bottom" />
-        </div>
-        <div class="col-4">
-            <p-button [disabled]="!canRelativeMove || !moving" icon="mdi mdi-stop" label="Abort" styleClass="p-button-text p-button-danger w-full" />
         </div>
     </div>
 </div>

@@ -21,8 +21,8 @@ export interface FilterSlot {
 })
 export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
-    filterWheels: FilterWheel[] = []
-    filterWheel?: FilterWheel
+    wheels: FilterWheel[] = []
+    wheel?: FilterWheel
     connected = false
 
     moving = false
@@ -47,10 +47,10 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     ) {
         title.setTitle('Filter Wheel')
 
-        electron.on('FILTER_WHEEL_UPDATED', (_, filterWheel: FilterWheel) => {
-            if (filterWheel.name === this.filterWheel?.name) {
+        electron.on('WHEEL_UPDATED', (_, wheel: FilterWheel) => {
+            if (wheel.name === this.wheel?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.filterWheel!, filterWheel)
+                    Object.assign(this.wheel!, wheel)
                     this.update()
                 })
             }
@@ -58,18 +58,18 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     async ngAfterContentInit() {
-        this.filterWheels = await this.api.attachedFilterWheels()
+        this.wheels = await this.api.attachedWheels()
     }
 
     @HostListener('window:unload')
     ngOnDestroy() { }
 
-    async filterWheelChanged() {
-        if (this.filterWheel) {
-            this.title.setTitle(`Filter Wheel ・ ${this.filterWheel.name}`)
+    async wheelChanged() {
+        if (this.wheel) {
+            this.title.setTitle(`Filter Wheel ・ ${this.wheel.name}`)
 
-            const filterWheel = await this.api.filterWheel(this.filterWheel.name)
-            Object.assign(this.filterWheel, filterWheel)
+            const wheel = await this.api.wheel(this.wheel.name)
+            Object.assign(this.wheel, wheel)
 
             this.loadPreference()
             this.update()
@@ -78,14 +78,14 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             this.title.setTitle(`Filter Wheel`)
         }
 
-        this.electron.send('FILTER_WHEEL_CHANGED', this.filterWheel)
+        this.electron.send('WHEEL_CHANGED', this.wheel)
     }
 
     async connect() {
         if (this.connected) {
-            await this.api.filterWheelDisconnect(this.filterWheel!)
+            await this.api.wheelDisconnect(this.wheel!)
         } else {
-            await this.api.filterWheelConnect(this.filterWheel!)
+            await this.api.wheelConnect(this.wheel!)
         }
     }
 
@@ -101,55 +101,55 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     moveTo(filter: FilterSlot) {
-        this.api.filterWheelMoveTo(this.filterWheel!, filter.position)
+        this.api.wheelMoveTo(this.wheel!, filter.position)
     }
 
     applyFilterName(filter: FilterSlot, event: Event) {
         filter.name = filter.newName
 
-        this.preference.set(`filterWheel.${this.filterWheel!.name}.filterName.${filter.position}`, filter.name)
-        this.api.filterWheelSyncNames(this.filterWheel!, this.filters.map(e => e.name))
-        this.electron.send('FILTER_WHEEL_RENAMED', this.filterWheel)
+        this.preference.set(`wheel.${this.wheel!.name}.filterName.${filter.position}`, filter.name)
+        this.api.wheelSyncNames(this.wheel!, this.filters.map(e => e.name))
+        this.electron.send('WHEEL_RENAMED', this.wheel)
 
         filter.editing = false
         event.stopImmediatePropagation()
     }
 
     private async update() {
-        if (!this.filterWheel) {
+        if (!this.wheel) {
             return
         }
 
-        this.connected = this.filterWheel.connected
-        this.moving = this.filterWheel.moving
-        this.position = this.filterWheel.position
+        this.connected = this.wheel.connected
+        this.moving = this.wheel.moving
+        this.position = this.wheel.position
 
-        if (this.filterWheel.count <= 0) {
+        if (this.wheel.count <= 0) {
             this.filters = []
-        } else if (this.filterWheel.count !== this.filters.length) {
-            this.filters = new Array(this.filterWheel.count)
+        } else if (this.wheel.count !== this.filters.length) {
+            this.filters = new Array(this.wheel.count)
         }
 
-        const darkFilter = this.preference.get(`filterWheel.${this.filterWheel.name}.shutterPosition`, 0)
+        const darkFilter = this.preference.get(`wheel.${this.wheel.name}.shutterPosition`, 0)
 
         for (let i = 1; i <= this.filters.length; i++) {
-            const name = this.preference.get(`filterWheel.${this.filterWheel.name}.filterName.${i}`, `Filter #${i}`)
+            const name = this.preference.get(`wheel.${this.wheel.name}.filterName.${i}`, `Filter #${i}`)
             const filter = { position: i, name, editing: false, newName: name, dark: i === darkFilter }
             this.filters[i - 1] = filter
         }
     }
 
     private loadPreference() {
-        if (this.filterWheel) {
-            const darkFilter = this.preference.get(`filterWheel.${this.filterWheel.name}.shutterPosition`, 0)
+        if (this.wheel) {
+            const darkFilter = this.preference.get(`wheel.${this.wheel.name}.shutterPosition`, 0)
             this.filters.forEach(e => e.dark = e.position === darkFilter)
         }
     }
 
     private savePreference() {
-        if (this.filterWheel) {
+        if (this.wheel) {
             const darkFilter = this.filters.find(e => e.dark)
-            this.preference.set(`filterWheel.${this.filterWheel.name}.shutterPosition`, darkFilter?.position || 0)
+            this.preference.set(`wheel.${this.wheel.name}.shutterPosition`, darkFilter?.position || 0)
         }
     }
 }

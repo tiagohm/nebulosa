@@ -3,7 +3,7 @@ import { Title } from '@angular/platform-browser'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, Focuser } from '../../shared/types'
+import { Focuser } from '../../shared/types'
 
 @Component({
     selector: 'app-focuser',
@@ -32,8 +32,6 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     stepsRelative = 0
     stepsAbsolute = 0
 
-    camera?: Camera
-
     constructor(
         private title: Title,
         private api: ApiService,
@@ -50,12 +48,6 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
                     this.update()
                 })
             }
-        })
-
-        electron.on('CAMERA_CHANGED', (_, camera?: Camera) => {
-            ngZone.run(() => {
-                this.camera = camera
-            })
         })
     }
 

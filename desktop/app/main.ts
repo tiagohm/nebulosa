@@ -16,7 +16,7 @@ let wsClient: Client
 let selectedCamera: Camera
 let selectedMount: Mount
 let selectedFocuser: Focuser
-let selectedFilterWheel: FilterWheel
+let selectedWheel: FilterWheel
 
 const args = process.argv.slice(1)
 const serve = args.some(e => e === '--serve')
@@ -287,8 +287,8 @@ try {
                 case 'FOCUSER_CHANGED':
                     selectedFocuser = data
                     break
-                case 'FILTER_WHEEL_CHANGED':
-                    selectedFilterWheel = data
+                case 'WHEEL_CHANGED':
+                    selectedWheel = data
                     break
             }
 
@@ -302,8 +302,8 @@ try {
                 case 'SELECTED_FOCUSER':
                     event.returnValue = selectedFocuser
                     break
-                case 'SELECTED_FILTER_WHEEL':
-                    event.returnValue = selectedFilterWheel
+                case 'SELECTED_WHEEL':
+                    event.returnValue = selectedWheel
                     break
                 default:
                     sendToAllWindows(item, data)

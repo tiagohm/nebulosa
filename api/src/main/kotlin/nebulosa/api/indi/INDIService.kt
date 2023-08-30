@@ -22,7 +22,7 @@ class INDIService(
 ) : LinkedList<String>() {
 
     fun canSendEvents(): Boolean {
-        return true
+        return false
     }
 
     operator fun get(name: String): Device? {

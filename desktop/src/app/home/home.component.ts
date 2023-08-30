@@ -20,7 +20,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     cameras: Camera[] = []
     mounts: Mount[] = []
     focusers: Focuser[] = []
-    filterWheels: FilterWheel[] = []
+    wheels: FilterWheel[] = []
     domes: Camera[] = []
     rotators: Camera[] = []
     switches: Camera[] = []
@@ -37,8 +37,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         return this.focusers.length > 0
     }
 
-    get hasFilterWheel() {
-        return this.filterWheels.length > 0
+    get hasWheel() {
+        return this.wheels.length > 0
     }
 
     get hasDome() {
@@ -67,11 +67,11 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     get hasINDI() {
         return this.hasCamera || this.hasMount || this.hasFocuser
-            || this.hasFilterWheel || this.hasDome || this.hasRotator || this.hasSwitch
+            || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch
     }
 
     private startListening<T extends Device>(
-        type: 'CAMERA' | 'MOUNT' | 'FOCUSER' | 'FILTER_WHEEL',
+        type: 'CAMERA' | 'MOUNT' | 'FOCUSER' | 'WHEEL',
         onAdd: (device: T) => number,
         onRemove: (device: T) => number,
     ) {
@@ -130,13 +130,13 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             },
         )
 
-        this.startListening<FilterWheel>('FILTER_WHEEL',
+        this.startListening<FilterWheel>('WHEEL',
             (device) => {
-                return this.filterWheels.push(device)
+                return this.wheels.push(device)
             },
             (device) => {
-                this.filterWheels.splice(this.filterWheels.findIndex(e => e.name === device.name), 1)
-                return this.filterWheels.length
+                this.wheels.splice(this.wheels.findIndex(e => e.name === device.name), 1)
+                return this.wheels.length
             },
         )
     }
@@ -150,7 +150,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         this.cameras = await this.api.attachedCameras()
         this.mounts = await this.api.attachedMounts()
         this.focusers = await this.api.attachedFocusers()
-        this.filterWheels = await this.api.attachedFilterWheels()
+        this.wheels = await this.api.attachedWheels()
 
         if (this.cameras.length > 0) {
             this.electron.send('CAMERA_CHANGED', this.cameras[0])
@@ -164,8 +164,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             this.electron.send('FOCUSER_CHANGED', this.focusers[0])
         }
 
-        if (this.filterWheels.length > 0) {
-            this.electron.send('FILTER_WHEEL_CHANGED', this.filterWheels[0])
+        if (this.wheels.length > 0) {
+            this.electron.send('WHEEL_CHANGED', this.wheels[0])
         }
     }
 
@@ -202,8 +202,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'FOCUSER':
                 this.browserWindow.openFocuser({ bringToFront: true })
                 break
-            case 'FILTER_WHEEL':
-                this.browserWindow.openFilterWheel({ bringToFront: true })
+            case 'WHEEL':
+                this.browserWindow.openWheel({ bringToFront: true })
                 break
             case 'GUIDER':
                 this.browserWindow.openGuider({ bringToFront: true })
@@ -236,7 +236,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             this.cameras = []
             this.mounts = []
             this.focusers = []
-            this.filterWheels = []
+            this.wheels = []
             this.domes = []
             this.rotators = []
             this.switches = []
