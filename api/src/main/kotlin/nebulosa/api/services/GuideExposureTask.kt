@@ -1,6 +1,7 @@
 package nebulosa.api.services
 
 import nebulosa.api.data.events.GuideExposureFinished
+import nebulosa.api.image.ImageToken
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.common.concurrency.ThreadedJob
 import nebulosa.imaging.Image
