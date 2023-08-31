@@ -3,9 +3,16 @@ package nebulosa.api.connection
 import jakarta.annotation.PostConstruct
 import nebulosa.indi.client.DefaultINDIClient
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.DeviceProtocolHandler
+import nebulosa.indi.device.Device
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceEventHandler
+import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.gps.GPS
+import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.log.error
 import nebulosa.log.loggerFor
 import org.springframework.stereotype.Service
@@ -20,7 +27,6 @@ class ConnectionService(
 ) : Closeable {
 
     @Volatile private var client: INDIClient? = null
-    @Volatile private var deviceProtocolHandler: DeviceProtocolHandler? = null
     private val eventQueue = LinkedBlockingQueue<DeviceEvent<*>>()
     private val eventQueueHandler = EventQueueHandler(eventQueue, eventHandlers)
 
@@ -39,13 +45,9 @@ class ConnectionService(
             disconnect()
 
             val client = DefaultINDIClient(host, port)
-            val deviceProtocolHandler = DeviceProtocolHandler()
-            deviceProtocolHandler.registerDeviceEventHandler { eventQueue.offer(it) }
-            client.registerDeviceProtocolHandler(deviceProtocolHandler)
-            deviceProtocolHandler.start()
+            client.registerDeviceEventHandler(eventQueue::offer)
             client.start()
 
-            this.deviceProtocolHandler = deviceProtocolHandler
             this.client = client
         } catch (e: Throwable) {
             LOG.error(e)
@@ -59,14 +61,75 @@ class ConnectionService(
         client?.close()
         client = null
 
-        deviceProtocolHandler?.close()
-        deviceProtocolHandler = null
-
         eventQueue.clear()
     }
 
     override fun close() {
         disconnect()
+    }
+
+    fun cameras(): List<Camera> {
+        return client?.cameras() ?: emptyList()
+    }
+
+    fun mounts(): List<Mount> {
+        return client?.mounts() ?: emptyList()
+    }
+
+    fun focusers(): List<Focuser> {
+        return client?.focusers() ?: emptyList()
+    }
+
+    fun wheels(): List<FilterWheel> {
+        return client?.wheels() ?: emptyList()
+    }
+
+    fun gps(): List<GPS> {
+        return client?.gps() ?: emptyList()
+    }
+
+    fun guideOutputs(): List<GuideOutput> {
+        return client?.guideOutputs() ?: emptyList()
+    }
+
+    fun thermometers(): List<Thermometer> {
+        return client?.thermometers() ?: emptyList()
+    }
+
+    fun camera(name: String): Camera? {
+        return client?.camera(name)
+    }
+
+    fun mount(name: String): Mount? {
+        return client?.mount(name)
+    }
+
+    fun focuser(name: String): Focuser? {
+        return client?.focuser(name)
+    }
+
+    fun wheel(name: String): FilterWheel? {
+        return client?.wheel(name)
+    }
+
+    fun gps(name: String): GPS? {
+        return client?.gps(name)
+    }
+
+    fun guideOutput(name: String): GuideOutput? {
+        return client?.guideOutput(name)
+    }
+
+    fun thermometer(name: String): Thermometer? {
+        return client?.thermometer(name)
+    }
+
+    fun device(name: String): Device? {
+        return camera(name)
+            ?: mount(name)
+            ?: focuser(name)
+            ?: wheel(name)
+            ?: guideOutput(name)
     }
 
     private class EventQueueHandler(

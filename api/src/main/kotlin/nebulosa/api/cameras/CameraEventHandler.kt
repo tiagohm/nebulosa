@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit
 @Component
 class CameraEventHandler(
     private val messageService: MessageService,
-    private val service: CameraService,
 ) : DeviceEventHandler {
 
     private val throttler = PublishSubject.create<CameraEvent>()
@@ -35,11 +34,9 @@ class CameraEventHandler(
                     throttler.onNext(event)
                 }
                 is CameraAttached -> {
-                    service.add(event.device)
                     messageService.sendMessage(CAMERA_ATTACHED, event.device)
                 }
                 is CameraDetached -> {
-                    service.remove(event.device)
                     messageService.sendMessage(CAMERA_DETACHED, event.device)
                 }
             }

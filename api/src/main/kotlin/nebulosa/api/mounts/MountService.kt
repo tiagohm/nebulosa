@@ -21,10 +21,9 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 @Service
-class MountService : Vector<Mount>(2), DeviceEventHandler {
+class MountService : DeviceEventHandler {
 
     private val site = HashMap<Mount, GeographicPosition>(2)
 
@@ -47,10 +46,6 @@ class MountService : Vector<Mount>(2), DeviceEventHandler {
             val site = Geoid.IERS2010.latLon(event.device.longitude, event.device.latitude, event.device.elevation)
             this.site[event.device] = site
         }
-    }
-
-    operator fun get(name: String): Mount? {
-        return firstOrNull { it.name == name }
     }
 
     fun connect(mount: Mount) {

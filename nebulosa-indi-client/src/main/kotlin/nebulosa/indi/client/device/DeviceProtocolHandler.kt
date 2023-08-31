@@ -19,9 +19,15 @@ import nebulosa.indi.device.focuser.FocuserDetached
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.gps.GPSAttached
 import nebulosa.indi.device.gps.GPSDetached
+import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guide.GuideOutputAttached
+import nebulosa.indi.device.guide.GuideOutputDetached
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
 import nebulosa.indi.device.mount.MountDetached
+import nebulosa.indi.device.thermometer.Thermometer
+import nebulosa.indi.device.thermometer.ThermometerAttached
+import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.protocol.DefTextVector
 import nebulosa.indi.protocol.DelProperty
 import nebulosa.indi.protocol.INDIProtocol
@@ -33,20 +39,20 @@ import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import java.util.concurrent.LinkedBlockingQueue
 
-class DeviceProtocolHandler : INDIProtocolParser {
+abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
 
-    private val cameras = HashMap<String, Camera>(2)
-    private val mounts = HashMap<String, Mount>(1)
-    private val filterWheels = HashMap<String, FilterWheel>(1)
-    private val focusers = HashMap<String, Focuser>(2)
-    private val gps = HashMap<String, GPS>(2)
+    @JvmField protected val cameras = HashMap<String, Camera>(2)
+    @JvmField protected val mounts = HashMap<String, Mount>(1)
+    @JvmField protected val wheels = HashMap<String, FilterWheel>(1)
+    @JvmField protected val focusers = HashMap<String, Focuser>(2)
+    @JvmField protected val gps = HashMap<String, GPS>(2)
+    @JvmField protected val guideOutputs = HashMap<String, GuideOutput>(2)
+    @JvmField protected val thermometers = HashMap<String, Thermometer>(2)
     private val messageReorderingQueue = LinkedBlockingQueue<INDIProtocol>()
     private val notRegisteredDevices = HashSet<String>()
-    private val protocolReader by lazy { INDIProtocolReader(this, Thread.MIN_PRIORITY) }
+    @Volatile private var protocolReader: INDIProtocolReader? = null
     private val messageQueueCounter = HashMap<INDIProtocol, Int>(2048)
     private val handlers = ArrayList<DeviceEventHandler>()
-
-    @Volatile private var closed = false
 
     override val input = object : INDIInputStream {
 
@@ -57,6 +63,9 @@ class DeviceProtocolHandler : INDIProtocolParser {
 
         override fun close() = Unit
     }
+
+    val isRunning
+        get() = protocolReader != null
 
     fun registerDeviceEventHandler(handler: DeviceEventHandler) {
         handlers.add(handler)
@@ -70,18 +79,45 @@ class DeviceProtocolHandler : INDIProtocolParser {
         handlers.forEach { it.onEventReceived(event) }
     }
 
-    fun start() {
-        protocolReader.start()
+    internal fun registerGuideOutput(device: GuideOutput) {
+        guideOutputs[device.name] = device
+        fireOnEventReceived(GuideOutputAttached(device))
+    }
+
+    internal fun unregisterGuideOutput(device: GuideOutput) {
+        if (device.name in guideOutputs) {
+            guideOutputs.remove(device.name)
+            fireOnEventReceived(GuideOutputDetached(device))
+        }
+    }
+
+    internal fun registerThermometer(device: Thermometer) {
+        thermometers[device.name] = device
+        fireOnEventReceived(ThermometerAttached(device))
+    }
+
+    internal fun unregisterThermometer(device: Thermometer) {
+        if (device.name in thermometers) {
+            thermometers.remove(device.name)
+            fireOnEventReceived(ThermometerDetached(device))
+        }
+    }
+
+    open fun start() {
+        if (protocolReader == null) {
+            protocolReader = INDIProtocolReader(this, Thread.MIN_PRIORITY)
+            protocolReader!!.start()
+        }
     }
 
     override fun close() {
-        if (closed) return
-
-        closed = true
+        if (protocolReader == null) return
 
         try {
-            protocolReader.close()
+            protocolReader!!.close()
         } finally {
+            protocolReader = null
+
             for ((_, device) in cameras) {
                 device.close()
                 LOG.info("camera detached: {}", device.name)
@@ -94,7 +130,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
                 fireOnEventReceived(MountDetached(device))
             }
 
-            for ((_, device) in filterWheels) {
+            for ((_, device) in wheels) {
                 device.close()
                 LOG.info("filter wheel detached: {}", device.name)
                 fireOnEventReceived(FilterWheelDetached(device))
@@ -114,7 +150,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
 
             cameras.clear()
             mounts.clear()
-            filterWheels.clear()
+            wheels.clear()
             focusers.clear()
             gps.clear()
 
@@ -125,10 +161,13 @@ class DeviceProtocolHandler : INDIProtocolParser {
         }
     }
 
-    @Synchronized
-    fun handleMessage(sender: MessageSender, message: INDIProtocol) {
-        if (closed) return
+    fun findDeviceByName(name: String): Device? {
+        return cameras[name] ?: mounts[name] ?: wheels[name]
+        ?: focusers[name] ?: gps[name]
+    }
 
+    @Synchronized
+    override fun handleMessage(message: INDIProtocol) {
         if (message.device in notRegisteredDevices) return
 
         if (message is DefTextVector) {
@@ -142,8 +181,8 @@ class DeviceProtocolHandler : INDIProtocolParser {
                         registered = true
 
                         if (message.device !in cameras) {
-                            val device = CAMERAS[executable]?.create(sender, this, message.device)
-                                ?: CameraDevice(sender, this, message.device)
+                            val device = CAMERAS[executable]?.create(this, message.device)
+                                ?: CameraDevice(this, message.device)
                             cameras[message.device] = device
                             LOG.info("camera attached: {}", device.name)
                             fireOnEventReceived(CameraAttached(device))
@@ -154,8 +193,8 @@ class DeviceProtocolHandler : INDIProtocolParser {
                         registered = true
 
                         if (message.device !in mounts) {
-                            val device = MOUNTS[executable]?.create(sender, this, message.device)
-                                ?: MountDevice(sender, this, message.device)
+                            val device = MOUNTS[executable]?.create(this, message.device)
+                                ?: MountDevice(this, message.device)
                             mounts[message.device] = device
                             LOG.info("mount attached: {}", device.name)
                             fireOnEventReceived(MountAttached(device))
@@ -165,9 +204,9 @@ class DeviceProtocolHandler : INDIProtocolParser {
                     if (executable in FilterWheel.DRIVERS) {
                         registered = true
 
-                        if (message.device !in filterWheels) {
-                            val device = FilterWheelDevice(sender, this, message.device)
-                            filterWheels[message.device] = device
+                        if (message.device !in wheels) {
+                            val device = FilterWheelDevice(this, message.device)
+                            wheels[message.device] = device
                             LOG.info("filter wheel attached: {}", device.name)
                             fireOnEventReceived(FilterWheelAttached(device))
                         }
@@ -177,7 +216,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
                         registered = true
 
                         if (message.device !in focusers) {
-                            val device = FocuserDevice(sender, this, message.device)
+                            val device = FocuserDevice(this, message.device)
                             focusers[message.device] = device
                             LOG.info("focuser attached: {}", device.name)
                             fireOnEventReceived(FocuserAttached(device))
@@ -188,7 +227,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
                         registered = true
 
                         if (message.device !in gps) {
-                            val device = GPSDevice(sender, this, message.device)
+                            val device = GPSDevice(this, message.device)
                             gps[message.device] = device
                             LOG.info("gps attached: {}", device.name)
                             fireOnEventReceived(GPSAttached(device))
@@ -204,18 +243,6 @@ class DeviceProtocolHandler : INDIProtocolParser {
                 }
             }
         }
-
-        handleMessage(message)
-    }
-
-    fun findDeviceByName(name: String): Device? {
-        return cameras[name] ?: mounts[name] ?: filterWheels[name]
-        ?: focusers[name] ?: gps[name]
-    }
-
-    @Synchronized
-    override fun handleMessage(message: INDIProtocol) {
-        if (closed) return
 
         when (message) {
             is Message -> {
@@ -252,7 +279,7 @@ class DeviceProtocolHandler : INDIProtocolParser {
                         is FilterWheel -> {
                             handlers.forEach { it.onEventReceived(FilterWheelDetached(device)) }
                             LOG.info("filter wheel detached: {}", device.name)
-                            filterWheels.remove(device.name)
+                            wheels.remove(device.name)
                         }
                         is Focuser -> {
                             handlers.forEach { it.onEventReceived(FocuserDetached(device)) }

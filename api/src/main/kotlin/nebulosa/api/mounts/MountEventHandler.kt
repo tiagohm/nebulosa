@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit
 @Component
 class MountEventHandler(
     private val messageService: MessageService,
-    private val service: MountService,
 ) : DeviceEventHandler {
 
     private val throttler = PublishSubject.create<MountEvent>()
@@ -35,11 +34,9 @@ class MountEventHandler(
                     throttler.onNext(event)
                 }
                 is MountAttached -> {
-                    service.add(event.device)
                     messageService.sendMessage(MOUNT_ATTACHED, event.device)
                 }
                 is MountDetached -> {
-                    service.remove(event.device)
                     messageService.sendMessage(MOUNT_DETACHED, event.device)
                 }
             }

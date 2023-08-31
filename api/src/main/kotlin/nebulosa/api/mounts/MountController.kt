@@ -2,6 +2,7 @@ package nebulosa.api.mounts
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import nebulosa.api.connection.ConnectionService
 import nebulosa.api.data.responses.ComputedCoordinateResponse
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.TrackMode
@@ -19,28 +20,29 @@ import java.time.ZoneOffset
 
 @RestController
 class MountController(
+    private val connectionService: ConnectionService,
     private val mountService: MountService,
 ) {
 
     @GetMapping("attachedMounts")
     fun attachedMounts(): List<Mount> {
-        return mountService
+        return connectionService.mounts()
     }
 
     @GetMapping("mount")
     fun mount(@RequestParam @Valid @NotBlank name: String): Mount {
-        return requireNotNull(mountService[name])
+        return requireNotNull(connectionService.mount(name))
     }
 
     @PostMapping("mountConnect")
     fun connect(@RequestParam @Valid @NotBlank name: String) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.connect(mount)
     }
 
     @PostMapping("mountDisconnect")
     fun disconnect(@RequestParam @Valid @NotBlank name: String) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.disconnect(mount)
     }
 
@@ -49,7 +51,7 @@ class MountController(
         @RequestParam @Valid @NotBlank name: String,
         enable: Boolean,
     ) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.tracking(mount, enable)
     }
 
@@ -60,7 +62,7 @@ class MountController(
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
     ) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.sync(mount, Angle.from(rightAscension, true), Angle.from(declination), j2000)
     }
 
@@ -71,7 +73,7 @@ class MountController(
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
     ) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.slewTo(mount, Angle.from(rightAscension, true), Angle.from(declination), j2000)
     }
 
@@ -82,19 +84,19 @@ class MountController(
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
     ) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.goTo(mount, Angle.from(rightAscension, true), Angle.from(declination), j2000)
     }
 
     @PostMapping("mountHome")
     fun home(@RequestParam @Valid @NotBlank name: String) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.home(mount)
     }
 
     @PostMapping("mountAbort")
     fun abort(@RequestParam @Valid @NotBlank name: String) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.abort(mount)
     }
 
@@ -103,7 +105,7 @@ class MountController(
         @RequestParam @Valid @NotBlank name: String,
         @RequestParam mode: TrackMode,
     ) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.trackMode(mount, mode)
     }
 
@@ -112,7 +114,7 @@ class MountController(
         @RequestParam @Valid @NotBlank name: String,
         @RequestParam @Valid @NotBlank rate: String,
     ) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.slewRate(mount, mount.slewRates.first { it.name == rate })
     }
 
@@ -121,7 +123,7 @@ class MountController(
         @RequestParam @Valid @NotBlank name: String,
         @RequestParam enable: Boolean,
     ) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.moveNorth(mount, enable)
     }
 
@@ -130,7 +132,7 @@ class MountController(
         @RequestParam @Valid @NotBlank name: String,
         @RequestParam enable: Boolean,
     ) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.moveSouth(mount, enable)
     }
 
@@ -139,7 +141,7 @@ class MountController(
         @RequestParam @Valid @NotBlank name: String,
         @RequestParam enable: Boolean,
     ) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.moveWest(mount, enable)
     }
 
@@ -148,19 +150,19 @@ class MountController(
         @RequestParam @Valid @NotBlank name: String,
         @RequestParam enable: Boolean,
     ) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.moveEast(mount, enable)
     }
 
     @PostMapping("mountPark")
     fun park(@RequestParam @Valid @NotBlank name: String) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.park(mount)
     }
 
     @PostMapping("mountUnpark")
     fun unpark(@RequestParam @Valid @NotBlank name: String) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.unpark(mount)
     }
 
@@ -171,7 +173,7 @@ class MountController(
         @RequestParam @Valid @NotBlank latitude: String,
         @RequestParam(required = false, defaultValue = "0.0") elevation: Double,
     ) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         mountService.coordinates(mount, Angle.from(longitude), Angle.from(latitude), elevation.m)
     }
 
@@ -182,14 +184,14 @@ class MountController(
         @RequestParam time: LocalTime,
         @RequestParam @Valid @Range(min = -720, max = 720) offsetInMinutes: Int,
     ) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         val dateTime = OffsetDateTime.of(date, time, ZoneOffset.ofTotalSeconds(offsetInMinutes * 60))
         mountService.dateTime(mount, dateTime)
     }
 
     @GetMapping("mountZenithLocation")
     fun zenithLocation(@RequestParam @Valid @NotBlank name: String): ComputedCoordinateResponse {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         return mountService.computeCoordinates(
             mount, mountService.computeLST(mount), mount.latitude,
             j2000 = false, equatorial = true, horizontal = true, meridian = false,
@@ -198,7 +200,7 @@ class MountController(
 
     @GetMapping("mountNorthCelestialPoleLocation")
     fun northCelestialPoleLocation(@RequestParam @Valid @NotBlank name: String): ComputedCoordinateResponse {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         return mountService.computeCoordinates(
             mount, mountService.computeLST(mount), Angle.QUARTER,
             j2000 = false, equatorial = true, horizontal = true, meridian = false,
@@ -207,7 +209,7 @@ class MountController(
 
     @GetMapping("mountSouthCelestialPoleLocation")
     fun southCelestialPoleLocation(@RequestParam @Valid @NotBlank name: String): ComputedCoordinateResponse {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         return mountService.computeCoordinates(
             mount, mountService.computeLST(mount), -Angle.QUARTER,
             j2000 = false, equatorial = true, horizontal = true, meridian = false,
@@ -216,7 +218,7 @@ class MountController(
 
     @GetMapping("mountGalacticCenterLocation")
     fun galacticCenterLocation(@RequestParam @Valid @NotBlank name: String): ComputedCoordinateResponse {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         return mountService.computeCoordinates(
             mount, GALACTIC_CENTER_RA, GALACTIC_CENTER_DEC,
             j2000 = true, equatorial = true, horizontal = true, meridian = false,
@@ -233,7 +235,7 @@ class MountController(
         @RequestParam(required = false, defaultValue = "true") horizontal: Boolean,
         @RequestParam(required = false, defaultValue = "true") meridian: Boolean,
     ): ComputedCoordinateResponse {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         return mountService.computeCoordinates(
             mount,
             Angle.from(rightAscension, true, defaultValue = mount.rightAscension),

@@ -2,14 +2,9 @@ package nebulosa.api.focusers
 
 import nebulosa.indi.device.focuser.Focuser
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
-class FocuserService : Vector<Focuser>(2) {
-
-    operator fun get(name: String): Focuser? {
-        return firstOrNull { it.name == name }
-    }
+class FocuserService {
 
     fun connect(focuser: Focuser) {
         focuser.connect()

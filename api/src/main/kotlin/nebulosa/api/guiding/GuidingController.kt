@@ -3,10 +3,9 @@ package nebulosa.api.guiding
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.PositiveOrZero
-import nebulosa.api.cameras.CameraService
+import nebulosa.api.connection.ConnectionService
 import nebulosa.api.data.responses.GuidingChartResponse
 import nebulosa.api.data.responses.GuidingStarResponse
-import nebulosa.api.mounts.MountService
 import nebulosa.indi.device.guide.GuideOutput
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -15,41 +14,42 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class GuidingController(
+    private val connectionService: ConnectionService,
     private val guidingService: GuidingService,
-    private val cameraService: CameraService,
-    private val mountService: MountService,
 ) {
 
     @GetMapping("attachedGuideOutputs")
     fun guideOutputs(): List<GuideOutput> {
-        return guidingService
+        return connectionService.guideOutputs()
     }
 
     @GetMapping("guideOutput")
     fun guideOutput(@RequestParam @Valid @NotBlank name: String): GuideOutput {
-        return requireNotNull(guidingService[name])
+        return requireNotNull(connectionService.guideOutput(name))
     }
 
     @PostMapping("guideOutputConnect")
     fun connect(@RequestParam @Valid @NotBlank name: String) {
-        val guideOutput = requireNotNull(guidingService[name])
+        val guideOutput = requireNotNull(connectionService.guideOutput(name))
         guidingService.connect(guideOutput)
     }
 
     @PostMapping("guideOutputDisconnect")
     fun disconnect(@RequestParam @Valid @NotBlank name: String) {
-        val guideOutput = requireNotNull(guidingService[name])
+        val guideOutput = requireNotNull(connectionService.guideOutput(name))
         guidingService.disconnect(guideOutput)
     }
 
     @PostMapping("startGuideLooping")
     fun startLooping(
-        @RequestParam @Valid @NotBlank camera: String,
-        @RequestParam @Valid @NotBlank mount: String,
-        @RequestParam @Valid @NotBlank guideOutput: String,
+        @RequestParam("camera") @Valid @NotBlank cameraName: String,
+        @RequestParam("mount") @Valid @NotBlank mountName: String,
+        @RequestParam("guideOutput") @Valid @NotBlank guideOutputName: String,
     ) {
-        guidingService
-            .startLooping(cameraService[camera]!!, mountService[mount]!!, guidingService[guideOutput]!!)
+        val camera = requireNotNull(connectionService.camera(cameraName))
+        val mount = requireNotNull(connectionService.mount(mountName))
+        val guideOutput = requireNotNull(connectionService.guideOutput(guideOutputName))
+        guidingService.startLooping(camera, mount, guideOutput)
     }
 
     @PostMapping("stopGuideLooping")

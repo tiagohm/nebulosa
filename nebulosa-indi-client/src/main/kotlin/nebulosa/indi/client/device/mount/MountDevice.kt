@@ -2,7 +2,6 @@ package nebulosa.indi.client.device.mount
 
 import nebulosa.indi.client.device.AbstractDevice
 import nebulosa.indi.client.device.DeviceProtocolHandler
-import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.firstOnSwitchOrNull
 import nebulosa.indi.device.gps.GPS
@@ -23,10 +22,9 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 internal open class MountDevice(
-    sender: MessageSender,
     handler: DeviceProtocolHandler,
     name: String,
-) : AbstractDevice(sender, handler, name), Mount {
+) : AbstractDevice(handler, name), Mount {
 
     override var slewing = false
     override var tracking = false

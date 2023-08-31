@@ -4,11 +4,11 @@ import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.PositiveOrZero
+import nebulosa.api.connection.ConnectionService
 import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.enums.PlateSolverType
 import nebulosa.api.data.responses.CalibrationResponse
 import nebulosa.api.data.responses.ImageAnnotationResponse
-import nebulosa.api.mounts.MountService
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.math.Angle
@@ -20,8 +20,8 @@ import java.nio.file.Path
 
 @RestController
 class ImageController(
+    private val connectionService: ConnectionService,
     private val imageService: ImageService,
-    private val mountService: MountService,
 ) {
 
     @GetMapping("openImage")
@@ -111,7 +111,7 @@ class ImageController(
         @RequestParam @Valid @PositiveOrZero y: Double,
         @RequestParam(required = false, defaultValue = "true") synchronized: Boolean,
     ) {
-        val mount = requireNotNull(mountService[name])
+        val mount = requireNotNull(connectionService.mount(name))
         imageService.pointMountHere(mount, ImageToken.of(path), x, y, synchronized)
     }
 }

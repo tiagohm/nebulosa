@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit
 @Component
 class WheelEventHandler(
     private val messageService: MessageService,
-    private val service: WheelService,
 ) : DeviceEventHandler {
 
     private val throttler = PublishSubject.create<FilterWheelEvent>()
@@ -35,11 +34,9 @@ class WheelEventHandler(
                     throttler.onNext(event)
                 }
                 is FilterWheelAttached -> {
-                    service.add(event.device)
                     messageService.sendMessage(WHEEL_ATTACHED, event.device)
                 }
                 is FilterWheelDetached -> {
-                    service.remove(event.device)
                     messageService.sendMessage(WHEEL_DETACHED, event.device)
                 }
             }

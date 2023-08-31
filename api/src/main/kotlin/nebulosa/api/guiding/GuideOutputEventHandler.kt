@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit
 @Component
 class GuideOutputEventHandler(
     private val messageService: MessageService,
-    private val service: GuidingService,
 ) : DeviceEventHandler {
 
     private val throttler = PublishSubject.create<GuideOutputEvent<*>>()
@@ -37,11 +36,9 @@ class GuideOutputEventHandler(
                     throttler.onNext(event)
                 }
                 is GuideOutputAttached -> {
-                    service.add(event.device)
                     messageService.sendMessage(GUIDE_OUTPUT_ATTACHED, event.device)
                 }
                 is GuideOutputDetached -> {
-                    service.remove(event.device)
                     messageService.sendMessage(GUIDE_OUTPUT_DETACHED, event.device)
                 }
             }

@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit
 @Component
 class FocuserEventHandler(
     private val messageService: MessageService,
-    private val service: FocuserService,
 ) : DeviceEventHandler {
 
     private val throttler = PublishSubject.create<FocuserEvent>()
@@ -35,11 +34,9 @@ class FocuserEventHandler(
                     throttler.onNext(event)
                 }
                 is FocuserAttached -> {
-                    service.add(event.device)
                     messageService.sendMessage(FOCUSER_ATTACHED, event.device)
                 }
                 is FocuserDetached -> {
-                    service.remove(event.device)
                     messageService.sendMessage(FOCUSER_DETACHED, event.device)
                 }
             }

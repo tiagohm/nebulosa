@@ -1,16 +1,14 @@
 package nebulosa.indi.client.device.mount
 
 import nebulosa.indi.client.device.DeviceProtocolHandler
-import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.mount.MountCanHomeChanged
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.SwitchVector
 
 internal class IoptronV3Mount(
-    sender: MessageSender,
     handler: DeviceProtocolHandler,
     name: String,
-) : MountDevice(sender, handler, name) {
+) : MountDevice(handler, name) {
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {

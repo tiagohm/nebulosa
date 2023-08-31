@@ -3,12 +3,15 @@ package nebulosa.api.indi
 import nebulosa.api.services.MessageService
 import nebulosa.indi.device.*
 import org.springframework.stereotype.Component
+import java.util.*
 
 @Component
 class INDIEventHandler(
     private val messageService: MessageService,
-    private val indiService: INDIService,
-) : DeviceEventHandler {
+) : LinkedList<String>(), DeviceEventHandler {
+
+    var canSendEvents = false
+        internal set
 
     override fun onEventReceived(event: DeviceEvent<*>) {
         when (event) {
@@ -16,7 +19,7 @@ class INDIEventHandler(
             is DevicePropertyDeleted -> sendINDIPropertyDeleted(event)
             is DeviceMessageReceived -> {
                 if (event.device == null) {
-                    indiService.addFirst(event.message)
+                    addFirst(event.message)
                 }
 
                 sendINDIMessageReceived(event)
@@ -25,19 +28,19 @@ class INDIEventHandler(
     }
 
     fun sendINDIPropertyChanged(event: DevicePropertyEvent) {
-        if (indiService.canSendEvents()) {
+        if (canSendEvents) {
             messageService.sendMessage(DEVICE_PROPERTY_CHANGED, event.property)
         }
     }
 
     fun sendINDIPropertyDeleted(event: DevicePropertyEvent) {
-        if (indiService.canSendEvents()) {
+        if (canSendEvents) {
             messageService.sendMessage(DEVICE_PROPERTY_DELETED, event.property)
         }
     }
 
     fun sendINDIMessageReceived(event: DeviceMessageReceived) {
-        if (indiService.canSendEvents()) {
+        if (canSendEvents) {
             messageService.sendMessage(DEVICE_MESSAGE_RECEIVED, event)
         }
     }

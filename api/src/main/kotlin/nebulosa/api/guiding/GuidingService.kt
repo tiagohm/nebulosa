@@ -45,7 +45,7 @@ class GuidingService(
     private val guiderExecutorService: ExecutorService,
     private val guideCalibrationRepository: GuideCalibrationRepository,
     private val imageService: ImageService,
-) : Vector<GuideOutput>(2), GuideDevice, GuiderListener {
+) : GuideDevice, GuiderListener {
 
     private val randomDither = RandomDither()
     private val spiralDither = SpiralDither()
@@ -86,10 +86,6 @@ class GuidingService(
         imageService.load(event.task.token, event.image)
         guideImage.set(event.image)
         sendGuideExposureFinished(event)
-    }
-
-    operator fun get(name: String): GuideOutput? {
-        return firstOrNull { it.name == name }
     }
 
     fun connect(guideOutput: GuideOutput) {

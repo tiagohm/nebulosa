@@ -29,7 +29,7 @@ class CameraService(
     private val cameraExecutorService: ExecutorService,
     private val messageService: MessageService,
     private val eventBus: EventBus,
-) : Vector<Camera>(2) {
+) {
 
     private val runningTasks = Collections.synchronizedMap(HashMap<Camera, CameraExposureTask>(2))
 
@@ -51,10 +51,6 @@ class CameraService(
             is CameraCaptureProgressChanged -> sendCameraCaptureProgressChanged(event)
             is CameraCaptureFinished -> sendCameraCaptureFinished(event)
         }
-    }
-
-    operator fun get(name: String): Camera? {
-        return firstOrNull { it.name == name }
     }
 
     fun connect(camera: Camera) {

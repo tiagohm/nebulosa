@@ -2,28 +2,23 @@ package nebulosa.api.wheels
 
 import nebulosa.indi.device.filterwheel.FilterWheel
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
-class WheelService : Vector<FilterWheel>(2) {
+class WheelService {
 
-    operator fun get(name: String): FilterWheel? {
-        return firstOrNull { it.name == name }
+    fun connect(wheel: FilterWheel) {
+        wheel.connect()
     }
 
-    fun connect(filterWheel: FilterWheel) {
-        filterWheel.connect()
+    fun disconnect(wheel: FilterWheel) {
+        wheel.disconnect()
     }
 
-    fun disconnect(filterWheel: FilterWheel) {
-        filterWheel.disconnect()
+    fun moveTo(wheel: FilterWheel, steps: Int) {
+        wheel.moveTo(steps)
     }
 
-    fun moveTo(filterWheel: FilterWheel, steps: Int) {
-        filterWheel.moveTo(steps)
-    }
-
-    fun syncNames(filterWheel: FilterWheel, filterNames: List<String>) {
-        filterWheel.syncNames(filterNames)
+    fun syncNames(wheel: FilterWheel, filterNames: List<String>) {
+        wheel.syncNames(filterNames)
     }
 }

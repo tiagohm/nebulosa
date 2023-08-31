@@ -1,6 +1,5 @@
 package nebulosa.indi.client.device
 
-import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.filterwheel.*
 import nebulosa.indi.protocol.DefNumberVector
 import nebulosa.indi.protocol.INDIProtocol
@@ -8,10 +7,9 @@ import nebulosa.indi.protocol.NumberVector
 import nebulosa.indi.protocol.PropertyState
 
 internal open class FilterWheelDevice(
-    sender: MessageSender,
     handler: DeviceProtocolHandler,
     name: String,
-) : AbstractDevice(sender, handler, name), FilterWheel {
+) : AbstractDevice(handler, name), FilterWheel {
 
     override var count = 0
     override var position = -1

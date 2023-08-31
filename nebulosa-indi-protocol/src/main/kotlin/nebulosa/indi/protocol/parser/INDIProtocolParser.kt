@@ -6,4 +6,6 @@ import java.io.Closeable
 interface INDIProtocolParser : INDIProtocolHandler, Closeable {
 
     val input: INDIInputStream?
+
+    val isClosed: Boolean
 }
