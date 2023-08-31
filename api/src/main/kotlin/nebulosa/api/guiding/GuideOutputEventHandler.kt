@@ -4,33 +4,38 @@ import io.reactivex.rxjava3.subjects.PublishSubject
 import jakarta.annotation.PostConstruct
 import nebulosa.api.services.MessageService
 import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.guide.GuideOutputAttached
 import nebulosa.indi.device.guide.GuideOutputDetached
-import nebulosa.indi.device.guide.GuideOutputEvent
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
 @Component
 class GuideOutputEventHandler(
+    private val eventBus: EventBus,
     private val messageService: MessageService,
-) : DeviceEventHandler {
+) {
 
-    private val throttler = PublishSubject.create<GuideOutputEvent<*>>()
+    private val throttler = PublishSubject.create<DeviceEvent<GuideOutput>>()
 
     @PostConstruct
     private fun initialize() {
+        eventBus.register(this)
+
         throttler
             .throttleLast(1000, TimeUnit.MILLISECONDS)
-            .subscribe { sendUpdate(it.device) }
+            .subscribe { sendUpdate(it.device!!) }
     }
 
-    override fun onEventReceived(event: DeviceEvent<*>) {
-        if (event is GuideOutputEvent<*> &&
-            event.device.canPulseGuide
-        ) {
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onGuideOutputEvent(event: DeviceEvent<GuideOutput>) {
+        val device = event.device ?: return
+
+        if (device.canPulseGuide) {
             when (event) {
                 is PropertyChangedEvent -> {
                     throttler.onNext(event)

@@ -3,42 +3,45 @@ package nebulosa.api.mounts
 import io.reactivex.rxjava3.subjects.PublishSubject
 import jakarta.annotation.PostConstruct
 import nebulosa.api.services.MessageService
-import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
 import nebulosa.indi.device.mount.MountDetached
 import nebulosa.indi.device.mount.MountEvent
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
 @Component
 class MountEventHandler(
+    private val eventBus: EventBus,
     private val messageService: MessageService,
-) : DeviceEventHandler {
+) {
 
     private val throttler = PublishSubject.create<MountEvent>()
 
     @PostConstruct
     private fun initialize() {
+        eventBus.register(this)
+
         throttler
             .throttleLast(1000, TimeUnit.MILLISECONDS)
             .subscribe { sendUpdate(it.device!!) }
     }
 
-    override fun onEventReceived(event: DeviceEvent<*>) {
-        if (event is MountEvent) {
-            when (event) {
-                is PropertyChangedEvent -> {
-                    throttler.onNext(event)
-                }
-                is MountAttached -> {
-                    messageService.sendMessage(MOUNT_ATTACHED, event.device)
-                }
-                is MountDetached -> {
-                    messageService.sendMessage(MOUNT_DETACHED, event.device)
-                }
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onMountEvent(event: MountEvent) {
+        when (event) {
+            is PropertyChangedEvent -> {
+                throttler.onNext(event)
+            }
+            is MountAttached -> {
+                messageService.sendMessage(MOUNT_ATTACHED, event.device)
+            }
+            is MountDetached -> {
+                messageService.sendMessage(MOUNT_DETACHED, event.device)
             }
         }
     }

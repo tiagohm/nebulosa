@@ -1,11 +1,8 @@
 package nebulosa.api.connection
 
-import jakarta.annotation.PostConstruct
 import nebulosa.indi.client.DefaultINDIClient
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.device.Device
-import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
@@ -15,25 +12,18 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.log.error
 import nebulosa.log.loggerFor
+import org.greenrobot.eventbus.EventBus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ServerErrorException
 import java.io.Closeable
-import java.util.concurrent.BlockingQueue
-import java.util.concurrent.LinkedBlockingQueue
 
 @Service
 class ConnectionService(
-    eventHandlers: List<DeviceEventHandler>,
+    private val eventBus: EventBus,
+    private val connectionEventHandler: ConnectionEventHandler,
 ) : Closeable {
 
     @Volatile private var client: INDIClient? = null
-    private val eventQueue = LinkedBlockingQueue<DeviceEvent<*>>()
-    private val eventQueueHandler = EventQueueHandler(eventQueue, eventHandlers)
-
-    @PostConstruct
-    private fun initialize() {
-        eventQueueHandler.start()
-    }
 
     fun connectionStatus(): Boolean {
         return client != null
@@ -45,7 +35,8 @@ class ConnectionService(
             disconnect()
 
             val client = DefaultINDIClient(host, port)
-            client.registerDeviceEventHandler(eventQueue::offer)
+            client.registerDeviceEventHandler(eventBus::post)
+            client.registerDeviceEventHandler(connectionEventHandler)
             client.start()
 
             this.client = client
@@ -60,8 +51,6 @@ class ConnectionService(
     fun disconnect() {
         client?.close()
         client = null
-
-        eventQueue.clear()
     }
 
     override fun close() {
@@ -130,23 +119,6 @@ class ConnectionService(
             ?: focuser(name)
             ?: wheel(name)
             ?: guideOutput(name)
-    }
-
-    private class EventQueueHandler(
-        private val queue: BlockingQueue<DeviceEvent<*>>,
-        private val handlers: List<DeviceEventHandler>,
-    ) : Thread("Event Queue Handler") {
-
-        init {
-            isDaemon = true
-        }
-
-        override fun run() {
-            while (true) {
-                val event = queue.take()
-                handlers.forEach { it.onEventReceived(event) }
-            }
-        }
     }
 
     companion object {

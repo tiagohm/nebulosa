@@ -1,10 +1,9 @@
 package nebulosa.api.mounts
 
+import jakarta.annotation.PostConstruct
 import nebulosa.api.data.responses.ComputedCoordinateResponse
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
-import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
 import nebulosa.indi.device.mount.SlewRate
@@ -17,13 +16,16 @@ import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.time.UTC
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
-class MountService : DeviceEventHandler {
+class MountService(private val eventBus: EventBus) {
 
     private val site = HashMap<Mount, GeographicPosition>(2)
 
@@ -41,11 +43,15 @@ class MountService : DeviceEventHandler {
             return field
         }
 
-    override fun onEventReceived(event: DeviceEvent<*>) {
-        if (event is MountGeographicCoordinateChanged) {
-            val site = Geoid.IERS2010.latLon(event.device.longitude, event.device.latitude, event.device.elevation)
-            this.site[event.device] = site
-        }
+    @PostConstruct
+    private fun initialize() {
+        eventBus.register(this)
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onMountGeographicCoordinateChanged(event: MountGeographicCoordinateChanged) {
+        val site = Geoid.IERS2010.latLon(event.device.longitude, event.device.latitude, event.device.elevation)
+        this.site[event.device] = site
     }
 
     fun connect(mount: Mount) {
