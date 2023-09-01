@@ -42,7 +42,7 @@
     "@angular/router": "16.2.2",
     "chart.js": "4.4.0",
     "chartjs-plugin-zoom": "2.0.1",
-    "cron": "2.4.1",
+    "cron": "2.4.3",
     "interactjs": "1.10.18",
     "leaflet": "1.9.4",
     "moment": "2.29.4",
