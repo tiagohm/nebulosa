@@ -12,6 +12,7 @@ const secondaryWindows = new Map<string, BrowserWindow>()
 let api: ChildProcessWithoutNullStreams | null = null
 let apiPort = 7000
 let wsClient: Client
+let splash: BrowserWindow | null = null
 
 let selectedCamera: Camera
 let selectedMount: Mount
@@ -24,6 +25,9 @@ const serve = args.some(e => e === '--serve')
 app.commandLine.appendSwitch('disable-http-cache')
 
 function createMainWindow() {
+    splash?.close()
+    splash = null
+
     createWindow({ id: 'home', path: 'home' })
 
     wsClient = new Client({
@@ -158,8 +162,29 @@ function createWindow(data: OpenWindow<any>) {
     return window
 }
 
+function createSplashScreen() {
+    splash = new BrowserWindow({
+        width: 512,
+        height: 512,
+        transparent: true,
+        frame: false,
+        alwaysOnTop: true,
+    })
+
+    if (serve) {
+        splash.loadURL(`http://localhost:4200/splash`)
+    } else {
+        const url = new URL(path.join('file:', __dirname, `index.html#/splash`))
+        splash.loadURL(url.href)
+    }
+
+    splash.center()
+}
+
 function startApp() {
     if (api === null) {
+        createSplashScreen()
+
         if (serve) {
             createMainWindow()
         } else {

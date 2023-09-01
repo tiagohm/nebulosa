@@ -53,6 +53,7 @@ import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
 import { MountComponent } from './mount/mount.component'
+import { SplashComponent } from './splash/splash.component'
 
 @NgModule({
     declarations: [
@@ -72,6 +73,7 @@ import { MountComponent } from './mount/mount.component'
         MountComponent,
         GuiderComponent,
         DialogMenuComponent,
+        SplashComponent,
         LocationDialog,
         EnvPipe,
         WinPipe,

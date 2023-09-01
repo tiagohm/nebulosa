@@ -12,6 +12,7 @@ import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { MountComponent } from './mount/mount.component'
+import { SplashComponent } from './splash/splash.component'
 
 const routes: Routes = [
     {
@@ -62,6 +63,10 @@ const routes: Routes = [
     {
         path: 'about',
         component: AboutComponent,
+    },
+    {
+        path: 'splash',
+        component: SplashComponent,
     },
 ]
 
