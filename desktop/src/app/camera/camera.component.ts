@@ -13,7 +13,7 @@ import {
 @Component({
     selector: 'app-camera',
     templateUrl: './camera.component.html',
-    styleUrls: ['./camera.component.scss']
+    styleUrls: ['./camera.component.scss'],
 })
 export class CameraComponent implements AfterContentInit, OnDestroy {
 

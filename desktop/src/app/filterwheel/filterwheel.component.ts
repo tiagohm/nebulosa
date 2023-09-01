@@ -17,7 +17,7 @@ export interface FilterSlot {
 @Component({
     selector: 'app-filterwheel',
     templateUrl: './filterwheel.component.html',
-    styleUrls: ['./filterwheel.component.scss']
+    styleUrls: ['./filterwheel.component.scss'],
 })
 export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 

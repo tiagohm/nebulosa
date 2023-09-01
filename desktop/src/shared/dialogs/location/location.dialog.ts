@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ViewChild } from '@angular/core'
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import { OpenStreetMapComponent } from '../../components/openstreetmap/openstreetmap.component'
 import { Location } from '../../types'
@@ -6,9 +6,8 @@ import { Location } from '../../types'
 @Component({
     templateUrl: './location.dialog.html',
     styleUrls: ['./location.dialog.scss'],
-    providers: [DynamicDialogRef],
 })
-export class LocationDialog implements AfterContentInit {
+export class LocationDialog implements AfterViewInit {
 
     @ViewChild('map')
     private readonly map!: OpenStreetMapComponent
@@ -22,7 +21,7 @@ export class LocationDialog implements AfterContentInit {
         this.location = config.data!.location
     }
 
-    ngAfterContentInit() {
+    ngAfterViewInit() {
         this.map.refresh()
     }
 

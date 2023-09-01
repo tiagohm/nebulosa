@@ -4,7 +4,7 @@ import * as L from 'leaflet'
 @Component({
     selector: 'openstreetmap',
     templateUrl: './openstreetmap.component.html',
-    styleUrls: ['./openstreetmap.component.scss']
+    styleUrls: ['./openstreetmap.component.scss'],
 })
 export class OpenStreetMapComponent implements AfterViewInit, OnChanges {
 

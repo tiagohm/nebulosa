@@ -8,7 +8,7 @@ import { Focuser } from '../../shared/types'
 @Component({
     selector: 'app-focuser',
     templateUrl: './focuser.component.html',
-    styleUrls: ['./focuser.component.scss']
+    styleUrls: ['./focuser.component.scss'],
 })
 export class FocuserComponent implements AfterViewInit, OnDestroy {
 

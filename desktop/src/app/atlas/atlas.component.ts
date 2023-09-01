@@ -39,7 +39,7 @@ export interface SearchFilter {
 @Component({
     selector: 'app-atlas',
     templateUrl: './atlas.component.html',
-    styleUrls: ['./atlas.component.scss']
+    styleUrls: ['./atlas.component.scss'],
 })
 export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
@@ -622,16 +622,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     }
 
     addLocation() {
-        const location = Object.assign({}, EMPTY_LOCATION)
-        const dialog = LocationDialog.show(this.dialog, location)
-
-        dialog.onClose.subscribe((result?: Location) => {
-            result && this.saveLocation(result)
-        })
+        this.showLocation(Object.assign({}, EMPTY_LOCATION))
     }
 
     editLocation() {
-        const location = Object.assign({}, this.location)
+        this.showLocation(Object.assign({}, this.location))
+    }
+
+    private showLocation(location: Location) {
         const dialog = LocationDialog.show(this.dialog, location)
 
         dialog.onClose.subscribe((result?: Location) => {
