@@ -40,6 +40,10 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     ) {
         title.setTitle('Guider')
 
+        api.startListening('GUIDING')
+        api.startListening('CAMERA')
+        api.startListening('MOUNT')
+
         electron.on('CAMERA_UPDATED', (_, camera: Camera) => {
             if (camera.name === this.camera?.name) {
                 ngZone.run(() => {
@@ -104,7 +108,11 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() { }
+    ngOnDestroy() {
+        this.api.stopListening('GUIDING')
+        this.api.stopListening('CAMERA')
+        this.api.stopListening('MOUNT')
+    }
 
     async cameraChanged() {
         if (this.camera) {

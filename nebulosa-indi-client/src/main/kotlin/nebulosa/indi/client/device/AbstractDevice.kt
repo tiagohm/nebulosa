@@ -14,8 +14,7 @@ import nebulosa.log.loggerFor
 import java.util.*
 
 internal abstract class AbstractDevice(
-    override val sender: MessageSender,
-    internal val handler: DeviceProtocolHandler,
+    @JvmField internal val handler: DeviceProtocolHandler,
     override val name: String,
 ) : Device {
 
@@ -25,6 +24,10 @@ internal abstract class AbstractDevice(
 
     override var connected = false
         protected set
+
+    override fun sendMessageToServer(message: INDIProtocol) {
+        handler.sendMessageToServer(message)
+    }
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -209,9 +212,9 @@ internal abstract class AbstractDevice(
         @JvmStatic private val LOG = loggerFor<AbstractDevice>()
 
         @JvmStatic
-        fun <T : Device> Class<out T>.create(sender: MessageSender, handler: DeviceProtocolHandler, name: String): T {
-            return getConstructor(MessageSender::class.java, DeviceProtocolHandler::class.java, String::class.java)
-                .newInstance(sender, handler, name)
+        fun <T : Device> Class<out T>.create(handler: DeviceProtocolHandler, name: String): T {
+            return getConstructor(DeviceProtocolHandler::class.java, String::class.java)
+                .newInstance(handler, name)
         }
     }
 }

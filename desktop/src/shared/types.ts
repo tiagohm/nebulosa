@@ -162,6 +162,7 @@ export interface CameraCaptureProgressChanged {
     totalProgress: number
     totalExposureTime: number
     indeterminate: boolean
+    elapsedTime: number
 }
 
 export interface CameraCaptureFinished {
@@ -258,9 +259,9 @@ export interface Location {
 export const EMPTY_LOCATION: Location = {
     id: 0,
     name: 'Saint Helena',
-    latitude: -15.9655282,
-    longitude: -5.7114846,
-    elevation: 77,
+    latitude: -15.9755300,
+    longitude: -5.6987929,
+    elevation: 819,
     offsetInMinutes: 0,
 }
 
@@ -476,14 +477,7 @@ export interface Satellite {
     id: number
     name: string
     tle: string
-}
-
-export interface SatelliteSource {
-    id: number
-    url: string
-    updatedAt: number
-    enabled: boolean
-    deletable: boolean
+    groups: SatelliteGroupType[]
 }
 
 export enum ExposureTimeUnit {
@@ -537,7 +531,7 @@ export type SwitchRule = 'ONE_OF_MANY' |
 export type HomeWindowType = 'CAMERA' |
     'MOUNT' |
     'GUIDER' |
-    'FILTER_WHEEL' |
+    'WHEEL' |
     'FOCUSER' |
     'DOME' |
     'ROTATOR' |
@@ -671,7 +665,7 @@ export const INDI_EVENT_TYPES = [
     'CAMERA_ATTACHED', 'CAMERA_DETACHED',
     'MOUNT_UPDATED', 'MOUNT_ATTACHED', 'MOUNT_DETACHED',
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
-    'FILTER_WHEEL_UPDATED', 'FILTER_WHEEL_ATTACHED', 'FILTER_WHEEL_DETACHED',
+    'WHEEL_UPDATED', 'WHEEL_ATTACHED', 'WHEEL_DETACHED',
     'GUIDE_OUTPUT_ATTACHED', 'GUIDE_OUTPUT_DETACHED', 'GUIDE_OUTPUT_UPDATED',
     'GUIDE_EXPOSURE_FINISHED', 'GUIDE_LOCK_POSITION_CHANGED',
     'GUIDE_STAR_LOST', 'GUIDE_LOCK_POSITION_LOST',
@@ -686,10 +680,10 @@ export const MAIN_EVENT_TYPES = [
 export type MainEventType = (typeof MAIN_EVENT_TYPES)[number]
 
 export const INTERNAL_EVENT_TYPES = [
-    'SELECTED_CAMERA', 'SELECTED_FOCUSER', 'SELECTED_FILTER_WHEEL',
+    'SELECTED_CAMERA', 'SELECTED_FOCUSER', 'SELECTED_WHEEL',
     'SELECTED_MOUNT',
-    'CAMERA_CHANGED', 'FOCUSER_CHANGED', 'MOUNT_CHANGED', 'FILTER_WHEEL_CHANGED',
-    'FILTER_WHEEL_RENAMED', 'IMAGE_STAR_SELECTED', 'GUIDE_OUTPUT_CHANGED',
+    'CAMERA_CHANGED', 'FOCUSER_CHANGED', 'MOUNT_CHANGED', 'WHEEL_CHANGED',
+    'WHEEL_RENAMED', 'IMAGE_STAR_SELECTED', 'GUIDE_OUTPUT_CHANGED',
     'DRAW_GUIDE_TRACKING_BOX',
 ] as const
 
@@ -739,3 +733,26 @@ export type GuideDirection = 'NONE' |
     'DOWN_SOUTH' | // DEC-
     'LEFT_WEST' | // RA+
     'RIGHT_EAST' // RA-
+
+export const SATELLITE_GROUP_TYPES = [
+    'LAST_30_DAYS', 'STATIONS', 'VISUAL',
+    'ACTIVE', 'ANALYST', 'COSMOS_1408_DEBRIS',
+    'FENGYUN_1C_DEBRIS', 'IRIDIUM_33_DEBRIS',
+    'COSMOS_2251_DEBRIS', 'WEATHER',
+    'NOAA', 'GOES', 'RESOURCE', 'SARSAT',
+    'DMC', 'TDRSS', 'ARGOS', 'PLANET',
+    'SPIRE', 'GEO', 'INTELSAT', 'SES',
+    'IRIDIUM', 'IRIDIUM_NEXT', 'STARLINK',
+    'ONEWEB', 'ORBCOMM', 'GLOBALSTAR', 'SWARM',
+    'AMATEUR', 'X_COMM', 'OTHER_COMM',
+    'SATNOGS', 'GORIZONT', 'RADUGA',
+    'MOLNIYA', 'GNSS', 'GPS_OPS', 'GLO_OPS',
+    'GALILEO', 'BEIDOU', 'SBAS', 'NNSS',
+    'MUSSON', 'SCIENCE', 'GEODETIC',
+    'ENGINEERING', 'EDUCATION', 'MILITARY',
+    'RADAR', 'CUBESAT', 'OTHER',
+] as const
+
+export type SatelliteGroupType = (typeof SATELLITE_GROUP_TYPES)[number]
+
+export type ListeningEventType = 'INDI' | 'GUIDING' | 'CAMERA' | 'MOUNT'

@@ -5,8 +5,9 @@ import { firstValueFrom } from 'rxjs'
 import {
     BodyPosition, Calibration, Camera, CameraStartCapture, ComputedCoordinates, Constellation, DeepSkyObject, Device,
     FilterWheel, Focuser, GuideOutput, GuidingChart, GuidingStar, HipsSurvey,
-    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, Location, MinorPlanet,
-    Mount, Path, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteSource, SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
+    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
+    Mount, Path, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
+    SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 
 @Injectable({ providedIn: 'root' })
@@ -225,28 +226,28 @@ export class ApiService {
         return this.post<void>(`focuserSyncTo?name=${focuser.name}&steps=${steps}`)
     }
 
-    attachedFilterWheels() {
-        return this.get<FilterWheel[]>(`attachedFilterWheels`)
+    attachedWheels() {
+        return this.get<FilterWheel[]>(`attachedWheels`)
     }
 
-    filterWheel(name: string) {
-        return this.get<FilterWheel>(`filterWheel?name=${name}`)
+    wheel(name: string) {
+        return this.get<FilterWheel>(`wheel?name=${name}`)
     }
 
-    filterWheelConnect(filterWheel: FilterWheel) {
-        return this.post<void>(`filterWheelConnect?name=${filterWheel.name}`)
+    wheelConnect(wheel: FilterWheel) {
+        return this.post<void>(`wheelConnect?name=${wheel.name}`)
     }
 
-    filterWheelDisconnect(filterWheel: FilterWheel) {
-        return this.post<void>(`filterWheelDisconnect?name=${filterWheel.name}`)
+    wheelDisconnect(wheel: FilterWheel) {
+        return this.post<void>(`wheelDisconnect?name=${wheel.name}`)
     }
 
-    filterWheelMoveTo(filterWheel: FilterWheel, position: number) {
-        return this.post<void>(`filterWheelMoveTo?name=${filterWheel.name}&position=${position}`)
+    wheelMoveTo(wheel: FilterWheel, position: number) {
+        return this.post<void>(`wheelMoveTo?name=${wheel.name}&position=${position}`)
     }
 
-    filterWheelSyncNames(filterWheel: FilterWheel, filterNames: string[]) {
-        return this.post<void>(`filterWheelSyncNames?name=${filterWheel.name}&filterNames=${filterNames.join(',')}`)
+    wheelSyncNames(wheel: FilterWheel, filterNames: string[]) {
+        return this.post<void>(`wheelSyncNames?name=${wheel.name}&filterNames=${filterNames.join(',')}`)
     }
 
     attachedGuideOutputs() {
@@ -337,12 +338,12 @@ export class ApiService {
         return this.post<void>(`sendIndiProperty?name=${device.name}`, property)
     }
 
-    indiStartListening() {
-        return this.post<void>(`indiStartListening`)
+    startListening(eventType: ListeningEventType) {
+        return this.post<void>(`startListening?eventType=${eventType}`)
     }
 
-    indiStopListening() {
-        return this.post<void>(`indiStopListening`)
+    stopListening(eventType: ListeningEventType) {
+        return this.post<void>(`stopListening?eventType=${eventType}`)
     }
 
     indiLog(device: Device) {
@@ -490,11 +491,8 @@ export class ApiService {
         return this.post<void>(`pointMountHere?name=${mount.name}&path=${path}&x=${x}&y=${y}&synchronized=${synchronized}`)
     }
 
-    searchSatellites(text: string = '') {
-        return this.get<Satellite[]>(`searchSatellites?text=${text}`)
-    }
-
-    satelliteSources() {
-        return this.get<SatelliteSource[]>(`satelliteSources`)
+    searchSatellites(text: string = '', groups: SatelliteGroupType[] = []) {
+        const q = groups.map(e => `&group=${e}`).join('')
+        return this.get<Satellite[]>(`searchSatellites?text=${text}${q}`)
     }
 }

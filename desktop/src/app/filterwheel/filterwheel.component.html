@@ -2,16 +2,16 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-8">
             <span class="p-float-label">
-                <p-dropdown [disabled]="moving" [options]="filterWheels" [(ngModel)]="filterWheel" optionLabel="name"
-                            (ngModelChange)="filterWheelChanged()"
+                <p-dropdown [disabled]="moving" [options]="wheels" [(ngModel)]="wheel" optionLabel="name"
+                            (ngModelChange)="wheelChanged()"
                             styleClass="border-0" emptyMessage="No filter wheel found" />
                 <label>Filter Wheel</label>
             </span>
         </div>
         <div class="col-2 flex align-items-center gap-1">
-            <p-button *ngIf="connected" [disabled]="!filterWheel || moving" (onClick)="connect()" icon="mdi mdi-close"
+            <p-button *ngIf="connected" [disabled]="!wheel || moving" (onClick)="connect()" icon="mdi mdi-close"
                       styleClass="p-button-danger" />
-            <p-button *ngIf="!connected" [disabled]="!filterWheel || moving" (onClick)="connect()" icon="mdi mdi-connection"
+            <p-button *ngIf="!connected" [disabled]="!wheel || moving" (onClick)="connect()" icon="mdi mdi-connection"
                       styleClass="p-button-info" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">

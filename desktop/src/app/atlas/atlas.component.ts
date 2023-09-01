@@ -1,17 +1,24 @@
 import { AfterContentInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
-import { ChartData, ChartOptions } from 'chart.js'
+import { Chart, ChartData, ChartOptions } from 'chart.js'
+import zoomPlugin from 'chartjs-plugin-zoom'
 import { CronJob } from 'cron'
 import { UIChart } from 'primeng/chart'
 import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { MoonComponent } from '../../shared/components/moon/moon.component'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
+import { oneDecimalPlaceFormatter, twoDigitsFormatter } from '../../shared/formatters'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location, MinorPlanet, Satellite, SkyObjectType, Star, Union } from '../../shared/types'
+import {
+    CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location,
+    MinorPlanet, SATELLITE_GROUP_TYPES, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
+} from '../../shared/types'
+
+Chart.register(zoomPlugin)
 
 export interface PlanetItem {
     name: string
@@ -32,7 +39,7 @@ export interface SearchFilter {
 @Component({
     selector: 'app-atlas',
     templateUrl: './atlas.component.html',
-    styleUrls: ['./atlas.component.scss']
+    styleUrls: ['./atlas.component.scss'],
 })
 export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
@@ -158,6 +165,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     satellite?: Satellite
     satelliteItems: Satellite[] = []
     satelliteSearchText = ''
+    showSatelliteFilterDialog = false
+    readonly satelliteSearchGroup = new Map<SatelliteGroupType, boolean>()
 
     readonly dsoFilter: SearchFilter = {
         text: '',
@@ -348,19 +357,46 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
             },
             tooltip: {
                 displayColors: false,
+                intersect: false,
                 callbacks: {
-                    title: function () {
+                    title: () => {
                         return ''
                     },
-                    label: function (context) {
+                    label: (context) => {
                         const hours = (context.parsed.x + 12) % 24
                         const minutes = (hours - Math.trunc(hours)) * 60
-                        const a = `${Math.trunc(hours)}`.padStart(2, '0')
-                        const b = `${Math.trunc(minutes)}`.padStart(2, '0')
+                        const a = twoDigitsFormatter.format(hours)
+                        const b = twoDigitsFormatter.format(minutes)
                         return `${a}:${b} ・ ${context.parsed.y.toFixed(2)}°`
                     }
                 }
-            }
+            },
+            zoom: {
+                zoom: {
+                    wheel: {
+                        enabled: true,
+                    },
+                    pinch: {
+                        enabled: false,
+                    },
+                    mode: 'x',
+                    scaleMode: 'xy',
+                },
+                pan: {
+                    enabled: true,
+                    mode: 'xy',
+                },
+                limits: {
+                    x: {
+                        min: 0,
+                        max: 24,
+                    },
+                    y: {
+                        min: 0,
+                        max: 90,
+                    },
+                }
+            },
         },
         scales: {
             y: {
@@ -370,6 +406,9 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 ticks: {
                     autoSkip: false,
                     count: 10,
+                    callback: (value) => {
+                        return oneDecimalPlaceFormatter.format(value as number)
+                    }
                 },
                 border: {
                     display: true,
@@ -394,8 +433,11 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     stepSize: 1.0,
                     maxRotation: 0,
                     minRotation: 0,
-                    callback: function (value, index, ticks) {
-                        return `${(index + 12) % 24}h`
+                    callback: (value) => {
+                        const hours = (value as number + 12) % 24
+                        const h = Math.trunc(hours)
+                        const m = Math.trunc((hours - h) * 60)
+                        return m === 0 ? `${twoDigitsFormatter.format(h)}` : ''
                     }
                 },
                 grid: {
@@ -411,6 +453,11 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         this.refreshTab()
     }, null, false)
 
+    private static readonly DEFAULT_SATELLITE_FILTERS: SatelliteGroupType[] = [
+        'AMATEUR', 'BEIDOU', 'GALILEO', 'GLO_OPS', 'GNSS', 'GPS_OPS',
+        'ONEWEB', 'SCIENCE', 'STARLINK', 'STATIONS', 'VISUAL'
+    ]
+
     constructor(
         private title: Title,
         private api: ApiService,
@@ -420,6 +467,11 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         private dialog: DialogService,
     ) {
         title.setTitle('Sky Atlas')
+
+        for (const item of SATELLITE_GROUP_TYPES) {
+            const enabled = preference.get(`atlas.satellite.filter.${item}`, AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item))
+            this.satelliteSearchGroup.set(item, enabled)
+        }
 
         // TODO: Refresh graph and twilight if hours past 12 (noon)
     }
@@ -440,6 +492,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         }
 
         this.locations = locations
+
+        // const canvas = this.chart.getCanvas() as HTMLCanvasElement
+        // const chart = this.chart.chart as Chart
+
+        // canvas.onmousemove = (event) => {
+        // const x = chart.scales['x'].getValueForPixel(event.offsetX)
+        // const y = chart.scales['y'].getValueForPixel(event.offsetY)
+        // }
     }
 
     @HostListener('window:unload')
@@ -507,8 +567,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         }
     }
 
-    filterStar() {
-        this.searchStar()
+    async filterStar() {
+        await this.searchStar()
         this.showStarFilterDialog = false
     }
 
@@ -537,23 +597,39 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         this.refreshing = true
 
         try {
-            this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText)
+            for (const item of SATELLITE_GROUP_TYPES) {
+                this.preference.set(`atlas.satellite.filter.${item}`, this.satelliteSearchGroup.get(item))
+            }
+
+            const groups = SATELLITE_GROUP_TYPES.filter(e => this.satelliteSearchGroup.get(e))
+            this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText, groups)
         } finally {
             this.refreshing = false
         }
     }
 
-    addLocation() {
-        const location = Object.assign({}, EMPTY_LOCATION)
-        const dialog = LocationDialog.show(this.dialog, location)
+    resetSatelliteFilter() {
+        for (const item of SATELLITE_GROUP_TYPES) {
+            const enabled = AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item)
+            this.preference.set(`atlas.satellite.filter.${item}`, enabled)
+            this.satelliteSearchGroup.set(item, enabled)
+        }
+    }
 
-        dialog.onClose.subscribe((result?: Location) => {
-            result && this.saveLocation(result)
-        })
+    async filterSatellite() {
+        await this.searchSatellite()
+        this.showSatelliteFilterDialog = false
+    }
+
+    addLocation() {
+        this.showLocation(Object.assign({}, EMPTY_LOCATION))
     }
 
     editLocation() {
-        const location = Object.assign({}, this.location)
+        this.showLocation(Object.assign({}, this.location))
+    }
+
+    private showLocation(location: Location) {
         const dialog = LocationDialog.show(this.dialog, location)
 
         dialog.onClose.subscribe((result?: Location) => {
@@ -665,10 +741,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
                 if (this.minorPlanet) {
                     this.name = this.minorPlanet.name
-                    if (this.minorPlanet.kind) this.tags.push({ title: this.minorPlanet.kind, severity: 'success' })
+                    // if (this.minorPlanet.kind) this.tags.push({ title: this.minorPlanet.kind, severity: 'success' })
+                    if (this.minorPlanet.orbitType) this.tags.push({ title: this.minorPlanet.orbitType, severity: 'success' })
                     if (this.minorPlanet.pha) this.tags.push({ title: 'PHA', severity: 'danger' })
-                    if (this.minorPlanet.neo) this.tags.push({ title: 'NEO', severity: 'danger' })
-                    if (this.minorPlanet.orbitType) this.tags.push({ title: this.minorPlanet.orbitType, severity: 'info' })
+                    if (this.minorPlanet.neo) this.tags.push({ title: 'NEO', severity: 'warning' })
                     const code = `DES=${this.minorPlanet.spkId};`
                     const bodyPosition = await this.api.positionOfPlanet(this.location!, code, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
@@ -703,7 +779,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
-            // TLE.
+            // Satellite.
             else if (this.activeTab === 6) {
                 this.tags = []
 
@@ -759,29 +835,45 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
             this.altitudeData.datasets[9].data = points
         }
         // Minor Planet.
-        else if (this.activeTab === 3 && this.minorPlanet) {
-            const code = `DES=${this.minorPlanet.spkId};`
-            const points = await this.api.altitudePointsOfPlanet(this.location!, code, this.dateTime)
-            AtlasComponent.belowZeroPoints(points)
-            this.altitudeData.datasets[9].data = points
+        else if (this.activeTab === 3) {
+            if (this.minorPlanet) {
+                const code = `DES=${this.minorPlanet.spkId};`
+                const points = await this.api.altitudePointsOfPlanet(this.location!, code, this.dateTime)
+                AtlasComponent.belowZeroPoints(points)
+                this.altitudeData.datasets[9].data = points
+            } else {
+                this.altitudeData.datasets[9].data = []
+            }
         }
         // Star.
-        else if (this.activeTab === 4 && this.star) {
-            const points = await this.api.altitudePointsOfStar(this.location!, this.star, this.dateTime)
-            AtlasComponent.belowZeroPoints(points)
-            this.altitudeData.datasets[9].data = points
+        else if (this.activeTab === 4) {
+            if (this.star) {
+                const points = await this.api.altitudePointsOfStar(this.location!, this.star, this.dateTime)
+                AtlasComponent.belowZeroPoints(points)
+                this.altitudeData.datasets[9].data = points
+            } else {
+                this.altitudeData.datasets[9].data = []
+            }
         }
         // DSO.
-        else if (this.activeTab === 5 && this.dso) {
-            const points = await this.api.altitudePointsOfDSO(this.location!, this.dso, this.dateTime)
-            AtlasComponent.belowZeroPoints(points)
-            this.altitudeData.datasets[9].data = points
+        else if (this.activeTab === 5) {
+            if (this.dso) {
+                const points = await this.api.altitudePointsOfDSO(this.location!, this.dso, this.dateTime)
+                AtlasComponent.belowZeroPoints(points)
+                this.altitudeData.datasets[9].data = points
+            } else {
+                this.altitudeData.datasets[9].data = []
+            }
         }
         // Satellite.
-        else if (this.activeTab === 6 && this.satellite) {
-            const points = await this.api.altitudePointsOfSatellite(this.location!, this.satellite, this.dateTime)
-            AtlasComponent.belowZeroPoints(points)
-            this.altitudeData.datasets[9].data = points
+        else if (this.activeTab === 6) {
+            if (this.satellite) {
+                const points = await this.api.altitudePointsOfSatellite(this.location!, this.satellite, this.dateTime)
+                AtlasComponent.belowZeroPoints(points)
+                this.altitudeData.datasets[9].data = points
+            } else {
+                this.altitudeData.datasets[9].data = []
+            }
         } else {
             return
         }

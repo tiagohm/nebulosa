@@ -1,6 +1,5 @@
 package nebulosa.indi.client.device
 
-import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.gps.GPSCoordinateChanged
 import nebulosa.indi.device.gps.GPSTimeChanged
@@ -15,10 +14,9 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 internal class GPSDevice(
-    sender: MessageSender,
     handler: DeviceProtocolHandler,
     name: String,
-) : AbstractDevice(sender, handler, name), GPS {
+) : AbstractDevice(handler, name), GPS {
 
     override val hasGPS = true
     override var longitude = Angle.ZERO

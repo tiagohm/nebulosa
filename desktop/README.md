@@ -23,7 +23,7 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](filter-wheel.png)
 
-## Atlas
+## Sky Atlas
 
 ![](atlas.1.png)
 ![](atlas.2.png)

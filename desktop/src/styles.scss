@@ -90,6 +90,14 @@ p-calendar.border-0 .p-calendar-w-btn {
     opacity: 1;
 }
 
+.p-tag {
+    padding: 0.13rem 0.4rem;
+
+    .p-tag-value {
+        line-height: 1.2 !important;
+    }
+}
+
 .text-overflow-scroll {
     display: inline-block;
     white-space: nowrap;

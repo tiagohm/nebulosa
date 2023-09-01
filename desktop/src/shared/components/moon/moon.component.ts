@@ -3,7 +3,7 @@ import { AfterViewInit, Component, ElementRef, Input, OnChanges, SimpleChanges, 
 @Component({
     selector: 'moon',
     templateUrl: './moon.component.html',
-    styleUrls: ['./moon.component.scss']
+    styleUrls: ['./moon.component.scss'],
 })
 export class MoonComponent implements AfterViewInit, OnChanges {
 

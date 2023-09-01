@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.oshi)
     implementation(libs.eventbus)
     implementation(libs.apache.codec)
+    implementation(libs.rx)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")

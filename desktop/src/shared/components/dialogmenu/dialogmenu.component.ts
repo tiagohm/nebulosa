@@ -5,7 +5,7 @@ import { SlideMenu } from 'primeng/slidemenu'
 @Component({
     selector: 'dialogMenu',
     templateUrl: './dialogmenu.component.html',
-    styleUrls: ['./dialogmenu.component.scss']
+    styleUrls: ['./dialogmenu.component.scss'],
 })
 export class DialogMenuComponent {
 

@@ -1,6 +1,5 @@
 package nebulosa.indi.client.device
 
-import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.focuser.*
 import nebulosa.indi.device.thermometer.ThermometerAttached
@@ -8,10 +7,9 @@ import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.protocol.*
 
 internal open class FocuserDevice(
-    sender: MessageSender,
     handler: DeviceProtocolHandler,
     name: String,
-) : AbstractDevice(sender, handler, name), Focuser {
+) : AbstractDevice(handler, name), Focuser {
 
     override var moving = false
     override var position = 0

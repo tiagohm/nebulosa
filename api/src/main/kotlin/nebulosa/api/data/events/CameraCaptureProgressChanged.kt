@@ -34,6 +34,7 @@ data class CameraCaptureProgressChanged(
             gen.writeNumberField("totalProgress", event.task.totalProgress)
             gen.writeNumberField("totalExposureTime", event.task.totalExposureTime)
             gen.writeBooleanField("indeterminate", event.task.indeterminate)
+            gen.writeNumberField("elapsedTime", event.task.elapsedTime)
             gen.writeEndObject()
         }
     }

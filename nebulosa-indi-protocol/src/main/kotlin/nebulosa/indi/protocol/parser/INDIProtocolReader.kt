@@ -8,12 +8,14 @@ class INDIProtocolReader(
     priority: Int = NORM_PRIORITY,
 ) : Thread(), Closeable {
 
-    @Volatile
-    private var running = false
+    @Volatile private var running = false
 
     init {
         setPriority(priority)
     }
+
+    val isRunning
+        get() = running
 
     override fun run() {
         val input = parser.input ?: return parser.close()

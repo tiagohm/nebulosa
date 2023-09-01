@@ -13,7 +13,7 @@ import {
 @Component({
     selector: 'app-camera',
     templateUrl: './camera.component.html',
-    styleUrls: ['./camera.component.scss']
+    styleUrls: ['./camera.component.scss'],
 })
 export class CameraComponent implements AfterContentInit, OnDestroy {
 
@@ -25,7 +25,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     savePath = ''
     autoSubFolderMode: AutoSubFolderMode = 'OFF'
 
-    filterWheel?: FilterWheel
+    wheel?: FilterWheel
 
     readonly cameraMenuItems: MenuItem[] = [
         {
@@ -174,6 +174,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     ) {
         title.setTitle('Camera')
 
+        api.startListening('CAMERA')
+
         electron.on('CAMERA_UPDATED', (_, camera: Camera) => {
             if (camera.name === this.camera?.name) {
                 ngZone.run(() => {
@@ -200,9 +202,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.on('FILTER_WHEEL_CHANGED', (_, filterWheel?: FilterWheel) => {
+        electron.on('WHEEL_CHANGED', (_, wheel?: FilterWheel) => {
             ngZone.run(() => {
-                this.filterWheel = filterWheel
+                this.wheel = wheel
             })
         })
     }
@@ -212,7 +214,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() { }
+    ngOnDestroy() {
+        this.api.stopListening('CAMERA')
+    }
 
     async cameraChanged() {
         if (this.camera) {

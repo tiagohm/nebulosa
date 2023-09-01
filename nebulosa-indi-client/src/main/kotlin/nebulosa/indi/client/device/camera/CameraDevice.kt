@@ -3,22 +3,16 @@ package nebulosa.indi.client.device.camera
 import nebulosa.imaging.algorithms.CfaPattern
 import nebulosa.indi.client.device.AbstractDevice
 import nebulosa.indi.client.device.DeviceProtocolHandler
-import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.camera.*
-import nebulosa.indi.device.guide.GuideOutputAttached
-import nebulosa.indi.device.guide.GuideOutputDetached
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
-import nebulosa.indi.device.thermometer.ThermometerAttached
-import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.protocol.*
 import nebulosa.io.Base64InputStream
 import nebulosa.log.loggerFor
 
 internal open class CameraDevice(
-    sender: MessageSender,
     handler: DeviceProtocolHandler,
     name: String,
-) : AbstractDevice(sender, handler, name), Camera {
+) : AbstractDevice(handler, name), Camera {
 
     override var exposuring = false
     override var hasCoolerControl = false
@@ -171,7 +165,7 @@ internal open class CameraDevice(
 
                             if (!hasThermometer) {
                                 hasThermometer = true
-                                handler.fireOnEventReceived(ThermometerAttached(this))
+                                handler.registerThermometer(this)
                             }
                         }
 
@@ -233,7 +227,7 @@ internal open class CameraDevice(
                         if (!canPulseGuide && message is DefNumberVector) {
                             canPulseGuide = true
 
-                            handler.fireOnEventReceived(GuideOutputAttached(this))
+                            handler.registerGuideOutput(this)
 
                             LOG.info("guide output attached: {}", name)
                         } else {
@@ -343,13 +337,13 @@ internal open class CameraDevice(
     override fun close() {
         if (hasThermometer) {
             hasThermometer = false
-            handler.fireOnEventReceived(ThermometerDetached(this))
+            handler.unregisterThermometer(this)
             LOG.info("thermometer detached: {}", name)
         }
 
         if (canPulseGuide) {
             canPulseGuide = false
-            handler.fireOnEventReceived(GuideOutputDetached(this))
+            handler.unregisterGuideOutput(this)
             LOG.info("guide output detached: {}", name)
         }
     }

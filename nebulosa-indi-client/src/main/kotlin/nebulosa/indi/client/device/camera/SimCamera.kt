@@ -1,7 +1,6 @@
 package nebulosa.indi.client.device.camera
 
 import nebulosa.indi.client.device.DeviceProtocolHandler
-import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.camera.CameraGainChanged
 import nebulosa.indi.device.camera.CameraGainMinMaxChanged
 import nebulosa.indi.protocol.DefNumberVector
@@ -9,10 +8,9 @@ import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
 
 internal class SimCamera(
-    sender: MessageSender,
     handler: DeviceProtocolHandler,
     name: String,
-) : CameraDevice(sender, handler, name) {
+) : CameraDevice(handler, name) {
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {

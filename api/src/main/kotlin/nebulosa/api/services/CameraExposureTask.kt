@@ -68,6 +68,9 @@ data class CameraExposureTask(
     @Volatile var totalProgress = 0f
         private set
 
+    val elapsedTime
+        get() = (System.currentTimeMillis() - captureStartTime) * 1000L
+
     val exposureInMicroseconds = exposure.inWholeMicroseconds
     val indeterminate = amount >= Int.MAX_VALUE
 
@@ -230,7 +233,6 @@ data class CameraExposureTask(
 
     private fun sendProgress() {
         if (!indeterminate) {
-            val elapsedTime = (System.currentTimeMillis() - captureStartTime) * 1000L
             totalRemainingTime = max(0L, totalExposureTime - elapsedTime)
             totalProgress = (totalExposureTime - totalRemainingTime).toFloat() / totalExposureTime
         }

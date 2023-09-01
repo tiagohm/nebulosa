@@ -12,4 +12,5 @@
   "explorer.excludeGitIgnore": true,
   "typescript.tsdk": "node_modules/typescript/lib",
   "json.format.keepLines": true,
+  "html.format.indentInnerHtml": true
 }
