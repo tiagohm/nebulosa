@@ -125,7 +125,7 @@ function createWindow(data: OpenWindow<any>) {
         require('electron-reloader')(module)
         window.loadURL(`http://localhost:4200/${data.path}?params=${params}`)
     } else {
-        const url = new URL(path.join('file:', __dirname, `index.html#/${data.path}?params=${params}`))
+        const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${data.path}?params=${params}`)
         window.loadURL(url.href)
     }
 
@@ -174,7 +174,7 @@ function createSplashScreen() {
     if (serve) {
         splash.loadURL(`http://localhost:4200/splash`)
     } else {
-        const url = new URL(path.join('file:', __dirname, `index.html#/splash`))
+        const url = new URL(path.join('file:', __dirname, `index.html`) + '#/splash')
         splash.loadURL(url.href)
     }
 
