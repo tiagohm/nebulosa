@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
 data class GuideExposureFinished(
-    override val task: GuideExposureTask,
+    val task: GuideExposureTask,
     @JvmField internal val image: Image,
-) : TaskEvent, CameraEvent {
+) : CameraEvent {
 
     override val device
         get() = task.camera

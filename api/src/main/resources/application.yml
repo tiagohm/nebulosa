@@ -6,3 +6,17 @@ server:
 
   error:
     include-message: ALWAYS
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:nebulosa
+    username: sa
+    password:
+    driverClassName: org.h2.Driver
+
+  jpa:
+    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+
+  batch:
+    job:
+      enabled: false

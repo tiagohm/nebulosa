@@ -3,7 +3,6 @@ package nebulosa.api.cameras
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.indi.device.camera.Camera
 import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.*
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.*
 class CameraController(
     private val connectionService: ConnectionService,
     private val cameraService: CameraService,
+    private val cameraCaptureExecutor: CameraCaptureExecutor,
 ) {
 
     @GetMapping("attachedCameras")
@@ -43,7 +43,10 @@ class CameraController(
     }
 
     @PostMapping("cameraSetpointTemperature")
-    fun setpointTemperature(@RequestParam @Valid @NotBlank name: String, @RequestParam @Valid @Range(min = -50, max = 50) temperature: Double) {
+    fun setpointTemperature(
+        @RequestParam @Valid @NotBlank name: String,
+        @RequestParam @Valid @Range(min = -50, max = 50) temperature: Double
+    ) {
         val camera = requireNotNull(connectionService.camera(name))
         cameraService.setpointTemperature(camera, temperature)
     }

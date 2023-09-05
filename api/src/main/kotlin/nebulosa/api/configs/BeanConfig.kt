@@ -2,9 +2,11 @@ package nebulosa.api.configs
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.api.data.entities.MyObjectBox
+import nebulosa.api.sequencer.executor.ExecutorServiceTaskExecutor
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
@@ -15,6 +17,9 @@ import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.greenrobot.eventbus.EventBus
+import org.springframework.batch.core.launch.JobLauncher
+import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher
+import org.springframework.batch.core.repository.JobRepository
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -49,10 +54,17 @@ class BeanConfig {
 
     @Bean
     @Primary
-    fun objectMapper(@Qualifier("serializer") serializers: List<StdSerializer<*>>) = ObjectMapper()
+    @Suppress("UNCHECKED_CAST")
+    fun objectMapper(
+        @Qualifier("serializer") serializers: List<StdSerializer<*>>,
+        @Qualifier("deserializer") deserializers: List<StdDeserializer<*>>,
+    ) = ObjectMapper()
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-        .registerModule(SimpleModule().apply { serializers.forEach(::addSerializer) })!!
+        .registerModule(SimpleModule().apply {
+            serializers.forEach(::addSerializer)
+            deserializers.forEach { addDeserializer(it.handledType() as Class<Any>, it) }
+        })!!
 
     @Bean
     fun connectionPool() = ConnectionPool(32, 5L, TimeUnit.MINUTES)
@@ -95,7 +107,8 @@ class BeanConfig {
     fun guiderExecutorService(): ExecutorService = Executors.newFixedThreadPool(2, DaemonThreadFactory)
 
     @Bean
-    fun systemExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory)
+    fun systemExecutorService(): ExecutorService =
+        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory)
 
     @Bean
     fun eventBus(systemExecutorService: ExecutorService) = EventBus.builder()
@@ -106,6 +119,16 @@ class BeanConfig {
         .logSubscriberExceptions(false)
         .executorService(systemExecutorService)
         .installDefaultEventBus()!!
+
+    @Bean
+    fun cameraJobLauncher(jobRepository: JobRepository, cameraExecutorService: ExecutorService): JobLauncher {
+        val jobLauncher = TaskExecutorJobLauncher()
+        jobLauncher.setJobRepository(jobRepository)
+        val taskExecutor = ExecutorServiceTaskExecutor(cameraExecutorService)
+        jobLauncher.setTaskExecutor(taskExecutor)
+        jobLauncher.afterPropertiesSet()
+        return jobLauncher
+    }
 
     @Bean
     fun webMvcConfigurer() = object : WebMvcConfigurer {

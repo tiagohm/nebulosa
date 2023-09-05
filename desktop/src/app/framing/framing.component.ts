@@ -1,13 +1,13 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
+import { MessageService } from 'primeng/api'
 import hipsSurveys from '../../assets/data/hipsSurveys.json'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { HipsSurvey, Path } from '../../shared/types'
-import { MessageService } from 'primeng/api'
+import { HipsSurvey } from '../../shared/types'
 
 export interface FramingParams {
     rightAscension: string
@@ -36,7 +36,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 
     loading = false
 
-    private framePath?: Path
+    private framePath?: string
     private frameId = ''
 
     constructor(
@@ -96,7 +96,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
             const title = `Framing ・ ${this.rightAscension} ・ ${this.declination}`
 
             this.framePath = path
-            this.frameId = await this.browserWindow.openImage(path.path, 'framing', 'FRAMING', title)
+            this.frameId = await this.browserWindow.openImage(path, 'framing', 'FRAMING', title)
 
             this.savePreference()
         } catch (e: any) {
@@ -130,7 +130,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 
     private async closeFrameImage() {
         if (this.framePath) {
-            await this.api.closeImage(this.framePath.path)
+            await this.api.closeImage(this.framePath)
         }
     }
 }

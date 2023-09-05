@@ -11,13 +11,7 @@ import java.nio.file.Path
 @Qualifier("serializer")
 class PathSerializer : StdSerializer<Path>(Path::class.java) {
 
-    override fun serialize(
-        path: Path,
-        gen: JsonGenerator,
-        provider: SerializerProvider,
-    ) {
-        gen.writeStartObject()
-        gen.writeStringField("path", "$path")
-        gen.writeEndObject()
+    override fun serialize(path: Path, gen: JsonGenerator, provider: SerializerProvider) {
+        gen.writeString("$path")
     }
 }

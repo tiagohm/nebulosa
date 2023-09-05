@@ -6,7 +6,7 @@ import {
     BodyPosition, Calibration, Camera, CameraStartCapture, ComputedCoordinates, Constellation, DeepSkyObject, Device,
     FilterWheel, Focuser, GuideOutput, GuidingChart, GuidingStar, HipsSurvey,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
-    Mount, Path, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
+    Mount, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
     SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 
@@ -484,7 +484,7 @@ export class ApiService {
         width: number, height: number,
         fov: number, rotation: number, hipsSurvey: HipsSurvey,
     ) {
-        return this.post<Path>(`frame?rightAscension=${rightAscension}&declination=${declination}&rotation=${rotation}&fov=${fov}&width=${width}&height=${height}&hipsSurvey=${hipsSurvey.type}`)
+        return this.post<string>(`frame?rightAscension=${rightAscension}&declination=${declination}&rotation=${rotation}&fov=${fov}&width=${width}&height=${height}&hipsSurvey=${hipsSurvey.type}`)
     }
 
     pointMountHere(mount: Mount, path: string, x: number, y: number, synchronized: boolean = true) {

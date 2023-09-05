@@ -34,10 +34,12 @@ dependencies {
     implementation(libs.eventbus)
     implementation(libs.apache.codec)
     implementation(libs.rx)
+    implementation(libs.h2)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
+    implementation("org.springframework.boot:spring-boot-starter-batch")
     kapt("org.springframework:spring-context-indexer:6.0.11")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -51,8 +53,8 @@ dependencies {
 }
 
 tasks.withType<BootJar> {
-    archiveFileName.set("api.jar")
-    destinationDirectory.set(file("$rootDir/desktop"))
+    archiveFileName = "api.jar"
+    destinationDirectory = file("$rootDir/desktop")
 
     manifest {
         attributes["Start-Class"] = "nebulosa.api.MainKt"

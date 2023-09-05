@@ -1,14 +1,16 @@
-package nebulosa.api.data.requests
+package nebulosa.api.cameras
 
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.api.data.enums.AutoSubFolderMode
 import nebulosa.indi.device.camera.FrameType
+import org.hibernate.validator.constraints.Range
+import java.nio.file.Path
 
 data class CameraStartCaptureRequest(
-    @field:Positive val exposure: Long = 0L,
-    @field:Positive val amount: Int = 1,
-    @field:PositiveOrZero val delay: Long = 0,
+    @field:Positive val exposureInMicroseconds: Long = 0L,
+    @field:Range(min = 0L, max = 1000L) val exposureAmount: Int = 1, // 0 = looping
+    @field:PositiveOrZero val exposureDelay: Long = 0,
     @field:PositiveOrZero val x: Int = 0,
     @field:PositiveOrZero val y: Int = 0,
     @field:PositiveOrZero val width: Int = 0,
@@ -20,6 +22,6 @@ data class CameraStartCaptureRequest(
     @field:PositiveOrZero val gain: Int = 0,
     @field:PositiveOrZero val offset: Int = 0,
     val autoSave: Boolean = false,
-    val savePath: String? = null,
+    var savePath: Path? = null,
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.OFF,
 )

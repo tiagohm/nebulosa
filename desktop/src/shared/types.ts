@@ -134,9 +134,9 @@ export interface FilterWheel extends Device {
 }
 
 export interface CameraStartCapture {
-    exposure: number
-    amount: number
-    delay: number
+    exposureInMicroseconds: number
+    exposureAmount: number
+    exposureDelay: number
     x: number
     y: number
     width: number
@@ -152,21 +152,40 @@ export interface CameraStartCapture {
     autoSubFolderMode: AutoSubFolderMode
 }
 
-export interface CameraCaptureProgressChanged {
-    camera: string
-    remainingAmount: number
-    frameRemainingTime: number
-    frameProgress: number
-    totalAmount: number
-    totalRemainingTime: number
-    totalProgress: number
-    totalExposureTime: number
-    indeterminate: boolean
-    elapsedTime: number
+export interface CameraCaptureEvent {
+    camera: Camera
 }
 
-export interface CameraCaptureFinished {
-    camera: string
+export interface CameraCaptureStarted extends CameraCaptureEvent {
+    jobId: number
+    amount: number
+    exposureTime: number
+    captureTime: number
+    looping: boolean
+}
+
+export interface CameraCaptureFinished extends CameraCaptureEvent {
+    jobId: number
+}
+
+export interface CameraDelayUpdated extends CameraCaptureEvent {
+    jobId: number
+    waitProgress: number
+    waitRemainingTime: number
+}
+
+export interface CameraExposureUpdated extends CameraCaptureEvent {
+    jobId: number
+    amount: number
+    remainingAmount: number
+    exposureTime: number
+    exposureRemainingTime: number
+    exposureProgress: number
+    captureRemainingTime: number
+    captureProgress: number
+    captureTime: number
+    looping: boolean
+    elapsedTime: number
 }
 
 export interface OpenWindowOptions {
@@ -406,10 +425,6 @@ export interface ComputedCoordinates extends EquatorialCoordinate, EquatorialCoo
     meridianAt: string
     timeLeftToMeridianFlip: string
     lst: string
-}
-
-export interface Path {
-    path: string
 }
 
 export interface ImageStarSelected {
@@ -661,7 +676,8 @@ export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
 export const INDI_EVENT_TYPES = [
     'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
     'DEVICE_MESSAGE_RECEIVED', 'CAMERA_IMAGE_SAVED',
-    'CAMERA_UPDATED', 'CAMERA_CAPTURE_PROGRESS_CHANGED', 'CAMERA_CAPTURE_FINISHED',
+    'CAMERA_UPDATED', 'CAMERA_EXPOSURE_UPDATED', 'CAMERA_DELAY_UPDATED',
+    'CAMERA_CAPTURE_STARTED', 'CAMERA_CAPTURE_FINISHED',
     'CAMERA_ATTACHED', 'CAMERA_DETACHED',
     'MOUNT_UPDATED', 'MOUNT_ATTACHED', 'MOUNT_DETACHED',
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
@@ -756,3 +772,5 @@ export const SATELLITE_GROUP_TYPES = [
 export type SatelliteGroupType = (typeof SATELLITE_GROUP_TYPES)[number]
 
 export type ListeningEventType = 'INDI' | 'GUIDING' | 'CAMERA' | 'MOUNT'
+
+export type CameraCaptureState = 'IDLE' | 'CAPTURING' | 'WAITING'
