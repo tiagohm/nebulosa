@@ -5,8 +5,8 @@ import nebulosa.indi.device.camera.Camera
 data class CameraExposureUpdated(
     override val camera: Camera,
     val jobId: Long,
-    val amount: Int,
-    val remainingAmount: Int,
+    val exposureAmount: Int,
+    val exposureCount: Int,
     val exposureTime: Long,
     val exposureRemainingTime: Long,
     val exposureProgress: Double,
@@ -15,4 +15,7 @@ data class CameraExposureUpdated(
     val captureProgress: Double,
     val looping: Boolean,
     val elapsedTime: Long,
+    val waitProgress: Double,
+    val waitRemainingTime: Long,
+    override val status: CameraCaptureStatus,
 ) : CameraCaptureEvent

@@ -21,7 +21,8 @@ class CameraDelayTasklet(
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
         if (exposureDelay in 1..60000) {
             waitFor(exposureDelay, forceAbort) {
-                val event = CameraDelayUpdated(camera, contribution.stepExecution.jobExecutionId, exposureDelay.toDouble() / it, it)
+                val progress = if (it > 0) 1.0 - exposureDelay.toDouble() / it else 1.0
+                val event = CameraDelayUpdated(camera, contribution.stepExecution.jobExecutionId, progress, it * 1000L)
                 EventBus.getDefault().post(event)
             }
         }
@@ -36,7 +37,7 @@ class CameraDelayTasklet(
 
     companion object {
 
-        const val DELAY_INTERVAL = 250L
+        const val DELAY_INTERVAL = 500L
 
         @JvmStatic private val LOG = loggerFor<CameraDelayTasklet>()
 

@@ -40,6 +40,7 @@ data class CameraExposureTasklet(
     private val isLooping = startCapture.exposureAmount <= 0
     @Volatile private var captureStartTime = 0L
     @Volatile private var jobId = 0L
+    @Volatile private var exposureCount = 0
 
     private val captureTime = if (isLooping) -1L
     else exposureInMicroseconds * startCapture.exposureAmount +
@@ -62,22 +63,24 @@ data class CameraExposureTasklet(
                 is CameraExposureProgressChanged -> {
                     val exposureRemainingTime = event.device.exposure
                     val exposureProgress = (exposureInMicroseconds - exposureRemainingTime).toDouble() / exposureInMicroseconds
-
-                    sendProgress(exposureRemainingTime, exposureProgress)
+                    sendProgress(exposureRemainingTime, exposureProgress, 0.0, 0L, CameraCaptureStatus.CAPTURING)
                 }
             }
         }
     }
 
+    @Subscribe
+    fun onCameraDelayUpdated(event: CameraDelayUpdated) {
+        if (event.camera === camera) {
+            sendProgress(0L, 1.0, event.waitProgress, event.waitRemainingTime, CameraCaptureStatus.WAITING)
+        }
+    }
+
     override fun beforeJob(jobExecution: JobExecution) {
         EventBus.getDefault().register(this)
-        val event = CameraCaptureStarted(
-            camera, jobExecution.jobId,
-            startCapture.exposureAmount, startCapture.exposureInMicroseconds,
-            captureTime, isLooping,
-        )
-        EventBus.getDefault().post(event)
         camera.enableBlob()
+        jobId = jobExecution.jobId
+        sendProgress(startCapture.exposureInMicroseconds, 0.0, 0.0, 0L, CameraCaptureStatus.CAPTURING)
         captureStartTime = System.currentTimeMillis()
     }
 
@@ -88,7 +91,6 @@ data class CameraExposureTasklet(
     }
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
-        jobId = contribution.stepExecution.jobExecutionId
         executeCapture(contribution)
         return RepeatStatus.FINISHED
     }
@@ -104,6 +106,8 @@ data class CameraExposureTasklet(
         if (camera.connected && !forceAbort.get()) {
             synchronized(camera) {
                 latch.countUp()
+
+                exposureCount++
 
                 camera.frame(startCapture.x, startCapture.y, startCapture.width, startCapture.height)
                 camera.frameType(startCapture.frameType)
@@ -168,7 +172,11 @@ data class CameraExposureTasklet(
         }
     }
 
-    private fun sendProgress(exposureRemainingTime: Long, exposureProgress: Double) {
+    private fun sendProgress(
+        exposureRemainingTime: Long, exposureProgress: Double,
+        waitProgress: Double, waitRemainingTime: Long,
+        status: CameraCaptureStatus,
+    ) {
         val elapsedTime = (System.currentTimeMillis() - captureStartTime) * 1000L
         var captureRemainingTime = 0L
         var captureProgress = 0.0
@@ -178,15 +186,15 @@ data class CameraExposureTasklet(
             captureProgress = (captureTime - captureRemainingTime).toDouble() / captureTime
         }
 
-        EventBus.getDefault().post(
-            CameraExposureUpdated(
-                camera, jobId,
-                startCapture.exposureAmount, 0,
-                startCapture.exposureInMicroseconds, exposureRemainingTime, exposureProgress,
-                captureTime, captureRemainingTime, captureProgress,
-                isLooping, elapsedTime,
-            )
+        val event = CameraExposureUpdated(
+            camera, jobId,
+            startCapture.exposureAmount, exposureCount,
+            startCapture.exposureInMicroseconds, exposureRemainingTime, exposureProgress,
+            captureTime, captureRemainingTime, captureProgress,
+            isLooping, elapsedTime, waitProgress, waitRemainingTime, status,
         )
+
+        EventBus.getDefault().post(event)
     }
 
     companion object {

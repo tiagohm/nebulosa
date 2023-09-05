@@ -6,8 +6,8 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    AutoSubFolderMode, Camera, CameraCaptureFinished, CameraCaptureStarted, CameraCaptureState, CameraDelayUpdated, CameraExposureUpdated, CameraStartCapture,
-    ExposureMode, ExposureTimeUnit, FilterWheel, FrameType
+    AutoSubFolderMode, Camera, CameraCaptureFinished,
+    CameraExposureUpdated, CameraStartCapture, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType
 } from '../../shared/types'
 
 @Component({
@@ -127,7 +127,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     offset = 0
     offsetMin = 0
     offsetMax = 0
-    cameraCaptureState?: CameraExposureUpdated & CameraDelayUpdated & { state: CameraCaptureState }
+    cameraCaptureState?: CameraExposureUpdated
 
     readonly exposureModeOptions: ExposureMode[] = ['SINGLE', 'FIXED', 'LOOP']
     readonly frameTypeOptions: FrameType[] = ['LIGHT', 'DARK', 'FLAT', 'BIAS']
@@ -164,11 +164,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     ]
 
     get capturing() {
-        return this.cameraCaptureState?.state === 'CAPTURING'
+        return this.cameraCaptureState?.status === 'CAPTURING' || this.waiting
     }
 
     get waiting() {
-        return this.cameraCaptureState?.state === 'WAITING'
+        return this.cameraCaptureState?.status === 'WAITING'
     }
 
     constructor(
@@ -192,47 +192,13 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.on('CAMERA_DELAY_UPDATED', (_, event: CameraDelayUpdated) => {
-            if (event.camera.name === this.camera?.name) {
-                ngZone.run(() => {
-                    if (this.cameraCaptureState && this.cameraCaptureState.jobId === event.jobId) {
-                        Object.assign(this.cameraCaptureState, event)
-                        this.cameraCaptureState.state = 'WAITING'
-                    }
-                })
-            }
-        })
-
         electron.on('CAMERA_EXPOSURE_UPDATED', (_, event: CameraExposureUpdated) => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
-                    if (this.cameraCaptureState && this.cameraCaptureState.jobId === event.jobId) {
+                    if (!this.cameraCaptureState) {
+                        this.cameraCaptureState = event
+                    } else {
                         Object.assign(this.cameraCaptureState, event)
-                        this.cameraCaptureState.state = 'CAPTURING'
-                    }
-                })
-            }
-        })
-
-        electron.on('CAMERA_CAPTURE_STARTED', (_, event: CameraCaptureStarted) => {
-            if (event.camera.name === this.camera?.name) {
-                ngZone.run(() => {
-                    this.cameraCaptureState = {
-                        camera: event.camera,
-                        jobId: event.jobId,
-                        amount: event.amount,
-                        remainingAmount: event.amount,
-                        exposureTime: event.exposureTime,
-                        exposureRemainingTime: event.exposureTime,
-                        exposureProgress: 0,
-                        captureTime: event.captureTime,
-                        captureRemainingTime: event.captureTime,
-                        captureProgress: 0,
-                        looping: event.looping,
-                        elapsedTime: 0,
-                        waitProgress: 0,
-                        waitRemainingTime: 0,
-                        state: 'CAPTURING',
                     }
                 })
             }
@@ -242,7 +208,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
                     if (this.cameraCaptureState) {
-                        this.cameraCaptureState.state = 'IDLE'
+                        this.cameraCaptureState = undefined
                     }
                 })
             }
@@ -262,6 +228,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     @HostListener('window:unload')
     ngOnDestroy() {
         this.api.stopListening('CAMERA')
+        this.abortCapture()
     }
 
     async cameraChanged() {

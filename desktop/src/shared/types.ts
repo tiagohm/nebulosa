@@ -154,11 +154,12 @@ export interface CameraStartCapture {
 
 export interface CameraCaptureEvent {
     camera: Camera
+    status: CameraCaptureStatus
 }
 
 export interface CameraCaptureStarted extends CameraCaptureEvent {
     jobId: number
-    amount: number
+    exposureAmount: number
     exposureTime: number
     captureTime: number
     looping: boolean
@@ -168,16 +169,10 @@ export interface CameraCaptureFinished extends CameraCaptureEvent {
     jobId: number
 }
 
-export interface CameraDelayUpdated extends CameraCaptureEvent {
-    jobId: number
-    waitProgress: number
-    waitRemainingTime: number
-}
-
 export interface CameraExposureUpdated extends CameraCaptureEvent {
     jobId: number
-    amount: number
-    remainingAmount: number
+    exposureAmount: number
+    exposureCount: number
     exposureTime: number
     exposureRemainingTime: number
     exposureProgress: number
@@ -186,6 +181,8 @@ export interface CameraExposureUpdated extends CameraCaptureEvent {
     captureTime: number
     looping: boolean
     elapsedTime: number
+    waitProgress: number
+    waitRemainingTime: number
 }
 
 export interface OpenWindowOptions {
@@ -676,9 +673,8 @@ export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
 export const INDI_EVENT_TYPES = [
     'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
     'DEVICE_MESSAGE_RECEIVED', 'CAMERA_IMAGE_SAVED',
-    'CAMERA_UPDATED', 'CAMERA_EXPOSURE_UPDATED', 'CAMERA_DELAY_UPDATED',
-    'CAMERA_CAPTURE_STARTED', 'CAMERA_CAPTURE_FINISHED',
-    'CAMERA_ATTACHED', 'CAMERA_DETACHED',
+    'CAMERA_UPDATED', 'CAMERA_EXPOSURE_UPDATED',
+    'CAMERA_CAPTURE_FINISHED', 'CAMERA_ATTACHED', 'CAMERA_DETACHED',
     'MOUNT_UPDATED', 'MOUNT_ATTACHED', 'MOUNT_DETACHED',
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
     'WHEEL_UPDATED', 'WHEEL_ATTACHED', 'WHEEL_DETACHED',
@@ -773,4 +769,4 @@ export type SatelliteGroupType = (typeof SATELLITE_GROUP_TYPES)[number]
 
 export type ListeningEventType = 'INDI' | 'GUIDING' | 'CAMERA' | 'MOUNT'
 
-export type CameraCaptureState = 'IDLE' | 'CAPTURING' | 'WAITING'
+export type CameraCaptureStatus = 'IDLE' | 'CAPTURING' | 'WAITING'

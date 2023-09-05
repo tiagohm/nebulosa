@@ -39,7 +39,6 @@ class CameraService(
     fun onCameraCaptureUpdated(event: CameraCaptureEvent) {
         when (event) {
             is CameraExposureUpdated -> messageService.sendMessage(CAMERA_EXPOSURE_UPDATED, event)
-            is CameraDelayUpdated -> messageService.sendMessage(CAMERA_DELAY_UPDATED, event)
             is CameraCaptureFinished -> messageService.sendMessage(CAMERA_CAPTURE_FINISHED, event)
         }
     }
@@ -84,6 +83,5 @@ class CameraService(
         const val CAMERA_IMAGE_SAVED = "CAMERA_IMAGE_SAVED"
         const val CAMERA_EXPOSURE_UPDATED = "CAMERA_EXPOSURE_UPDATED"
         const val CAMERA_CAPTURE_FINISHED = "CAMERA_CAPTURE_FINISHED"
-        const val CAMERA_DELAY_UPDATED = "CAMERA_DELAY_UPDATED"
     }
 }

@@ -3,8 +3,8 @@ package nebulosa.api.cameras
 import nebulosa.indi.device.camera.Camera
 
 data class CameraDelayUpdated(
-    override val camera: Camera,
+    val camera: Camera,
     val jobId: Long,
     val waitProgress: Double,
     val waitRemainingTime: Long,
-) : CameraCaptureEvent
+)
