@@ -2,7 +2,9 @@ package nebulosa.api.cameras
 
 import nebulosa.indi.device.camera.Camera
 import nebulosa.log.loggerFor
-import org.springframework.batch.core.*
+import org.springframework.batch.core.Job
+import org.springframework.batch.core.JobExecution
+import org.springframework.batch.core.JobParameters
 import org.springframework.batch.core.configuration.JobRegistry
 import org.springframework.batch.core.configuration.support.ReferenceJobFactory
 import org.springframework.batch.core.job.builder.JobBuilder
@@ -23,7 +25,7 @@ class CameraCaptureExecutor(
     private val cameraJobLauncher: JobLauncher,
     private val platformTransactionManager: PlatformTransactionManager,
     private val jobRegistry: JobRegistry,
-) : JobExecutionListener, StepExecutionListener {
+) {
 
     private val runningJobs = ConcurrentHashMap<String, Pair<Job, JobExecution>>()
     private val jobExecutionCounter = AtomicInteger(1)
@@ -32,22 +34,23 @@ class CameraCaptureExecutor(
     @Synchronized
     fun execute(camera: Camera, startCapture: CameraStartCaptureRequest): JobExecution {
         if (isCapturing(camera)) {
-            throw IllegalStateException("the camera ${camera.name} capture job already is running")
+            throw IllegalStateException("A job for the camera ${camera.name} is already running")
         }
-
-        val cameraExposureTasklet = CameraExposureTasklet(camera, startCapture)
-        val cameraDelayTasklet = CameraDelayTasklet(camera, startCapture.exposureDelay)
-
-        val isLooping = startCapture.exposureAmount <= 0
 
         LOG.info("starting capture. request={}", startCapture)
 
-        val cameraCaptureJob = if (isLooping) {
+        val cameraCaptureJob = if (startCapture.isLoop) {
+            val cameraExposureTasklet = CameraLoopExposureTasklet(camera, startCapture)
+
             JobBuilder("CameraCaptureJob.${camera.name}.${jobExecutionCounter.getAndIncrement()}", jobRepository)
                 .start(cameraExposureStep(camera, cameraExposureTasklet))
-                .listener(this)
+                // .listener(this)
+                .listener(cameraExposureTasklet)
                 .build()
         } else {
+            val cameraExposureTasklet = CameraExposureTasklet(camera, startCapture)
+            val cameraDelayTasklet = CameraDelayTasklet(camera, startCapture.exposureDelayInSeconds)
+
             val jobBuilder = JobBuilder("CameraCaptureJob.${camera.name}.${jobExecutionCounter.getAndIncrement()}", jobRepository)
                 .start(cameraExposureStep(camera, cameraExposureTasklet))
 
@@ -61,7 +64,7 @@ class CameraCaptureExecutor(
             }
 
             jobBuilder
-                .listener(this)
+                // .listener(this)
                 .listener(cameraExposureTasklet)
                 .build()
         }
@@ -75,13 +78,13 @@ class CameraCaptureExecutor(
     private fun cameraDelayStep(camera: Camera, tasklet: Tasklet) =
         StepBuilder("CameraDelayStep.${camera.name}.${stepExecutionCounter.getAndIncrement()}", jobRepository)
             .tasklet(tasklet, platformTransactionManager)
-            .listener(this)
+            // .listener(this)
             .build()
 
     private fun cameraExposureStep(camera: Camera, tasklet: Tasklet) =
         StepBuilder("CameraExposureStep.${camera.name}.${stepExecutionCounter.getAndIncrement()}", jobRepository)
             .tasklet(tasklet, platformTransactionManager)
-            .listener(this)
+            // .listener(this)
             .build()
 
     fun stop(camera: Camera) {
@@ -96,14 +99,6 @@ class CameraCaptureExecutor(
     private fun jobExecutionFor(camera: Camera): JobExecution? {
         return runningJobs[camera.name]?.second
     }
-
-    override fun beforeJob(jobExecution: JobExecution) = Unit
-
-    override fun afterJob(jobExecution: JobExecution) = Unit
-
-    override fun beforeStep(stepExecution: StepExecution) = Unit
-
-    override fun afterStep(stepExecution: StepExecution): ExitStatus = ExitStatus.COMPLETED
 
     companion object {
 

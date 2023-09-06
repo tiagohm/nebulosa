@@ -136,7 +136,7 @@ export interface FilterWheel extends Device {
 export interface CameraStartCapture {
     exposureInMicroseconds: number
     exposureAmount: number
-    exposureDelay: number
+    exposureDelayInSeconds: number
     x: number
     y: number
     width: number
@@ -409,6 +409,7 @@ export interface ImageAnnotation {
     star?: Star
     dso?: DeepSkyObject
 }
+
 export interface Calibration extends EquatorialCoordinate {
     orientation: number
     scale: number

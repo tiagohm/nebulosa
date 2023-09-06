@@ -27,42 +27,40 @@
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm" style="min-height: 23px;">
             <i class="mdi mdi-information text-blue-600"></i>
-            <span style="min-width: 48px" class="text-left mr-2">{{ waiting ? 'waiting' : capturing ? 'capturing' : 'idle' }}</span>
+            <span style="min-width: 44px" class="text-left mr-2">{{ waiting ? 'waiting' : capturing ? 'capturing' : 'idle' }}</span>
             <ng-container *ngIf="capturing && cameraCaptureState">
-                <ng-container *ngIf="!waiting">
-                    <ng-container *ngIf="!cameraCaptureState.looping">
-                        <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 48px">
-                            {{ cameraCaptureState.exposureCount }} of {{ cameraCaptureState.exposureAmount }}
-                        </span>
-                    </ng-container>
-                    <ng-container *ngIf="cameraCaptureState.looping">
-                        <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 36px">
-                            {{ cameraCaptureState.exposureCount }}
-                        </span>
-                    </ng-container>
-                    <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 52px">
-                        {{ cameraCaptureState.exposureRemainingTime | exposureTime }}
-                    </span>
-                    <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 42px">
-                        {{ cameraCaptureState.exposureProgress | percent:'1.1-1' }}
+                <ng-container *ngIf="!cameraCaptureState.looping">
+                    <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 46px">
+                        {{ cameraCaptureState.exposureCount }} of {{ cameraCaptureState.exposureAmount }}
                     </span>
                 </ng-container>
+                <ng-container *ngIf="cameraCaptureState.looping">
+                    <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 34px">
+                        {{ cameraCaptureState.exposureCount }}
+                    </span>
+                </ng-container>
+                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
+                    {{ cameraCaptureState.exposureRemainingTime | exposureTime }}
+                </span>
+                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 40px">
+                    {{ cameraCaptureState.exposureProgress | percent:'1.1-1' }}
+                </span>
                 <ng-container *ngIf="!cameraCaptureState.looping">
-                    <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 52px">
+                    <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
                         {{ cameraCaptureState.captureRemainingTime | exposureTime }}
                     </span>
-                    <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 42px">
+                    <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 40px">
                         {{ cameraCaptureState.captureProgress | percent:'1.1-1' }}
                     </span>
                 </ng-container>
                 <ng-container *ngIf="cameraCaptureState.looping">
-                    <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 52px">
+                    <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
                         {{ cameraCaptureState.elapsedTime | exposureTime }}
                     </span>
                 </ng-container>
             </ng-container>
             <ng-container *ngIf="waiting && cameraCaptureState">
-                <span class="bg-purple-500 border-round-md p-1 text-gray-900" style="min-width: 52px">
+                <span class="bg-purple-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
                     {{ cameraCaptureState.waitRemainingTime | exposureTime }}
                 </span>
             </ng-container>
@@ -121,9 +119,9 @@
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || exposureMode === 'SINGLE' || capturing" [(ngModel)]="exposureDelay" mode="decimal"
-                               [showButtons]="true" [step]="1" [min]="0" [max]="60000" locale="en" styleClass="border-0" [allowEmpty]="false"
+                               [showButtons]="true" [step]="1" [min]="0" [max]="60" locale="en" styleClass="border-0" [allowEmpty]="false"
                                (ngModelChange)="savePreference()" />
-                <label>Delay</label>
+                <label>Delay (s)</label>
             </span>
         </div>
         <div class="col-3">

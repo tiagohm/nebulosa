@@ -286,7 +286,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
         const data: CameraStartCapture = {
             exposureInMicroseconds, exposureAmount,
-            exposureDelay: this.exposureDelay,
+            exposureDelayInSeconds: this.exposureDelay,
             x, y, width, height,
             frameFormat: this.frameFormat,
             frameType: this.frameType,

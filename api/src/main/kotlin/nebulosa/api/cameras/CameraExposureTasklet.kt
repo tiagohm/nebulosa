@@ -37,14 +37,13 @@ data class CameraExposureTasklet(
     private val forceAbort = AtomicBoolean()
 
     private val exposureInMicroseconds = startCapture.exposureInMicroseconds
-    private val isLooping = startCapture.exposureAmount <= 0
     @Volatile private var captureStartTime = 0L
     @Volatile private var jobId = 0L
     @Volatile private var exposureCount = 0
 
-    private val captureTime = if (isLooping) -1L
+    private val captureTime = if (startCapture.isLoop) -1L
     else exposureInMicroseconds * startCapture.exposureAmount +
-            (startCapture.exposureAmount - 1) * startCapture.exposureDelay * 1000L
+            (startCapture.exposureAmount - 1) * startCapture.exposureDelayInSeconds * 1000000L
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onCameraEvent(event: CameraEvent) {
@@ -81,13 +80,13 @@ data class CameraExposureTasklet(
         camera.enableBlob()
         jobId = jobExecution.jobId
         sendProgress(startCapture.exposureInMicroseconds, 0.0, 0.0, 0L, CameraCaptureStatus.CAPTURING)
-        captureStartTime = System.currentTimeMillis()
     }
 
     override fun afterJob(jobExecution: JobExecution) {
         camera.disableBlob()
         EventBus.getDefault().unregister(this)
         EventBus.getDefault().post(CameraCaptureFinished(camera))
+        captureStartTime = 0L
     }
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
@@ -116,6 +115,10 @@ data class CameraExposureTasklet(
                 camera.gain(startCapture.gain)
                 camera.offset(startCapture.offset)
                 camera.startCapture(startCapture.exposureInMicroseconds)
+
+                if (captureStartTime == 0L) {
+                    captureStartTime = System.currentTimeMillis()
+                }
 
                 LOG.info("exposuring camera ${camera.name} by ${startCapture.exposureInMicroseconds}")
 
@@ -181,7 +184,7 @@ data class CameraExposureTasklet(
         var captureRemainingTime = 0L
         var captureProgress = 0.0
 
-        if (!isLooping) {
+        if (!startCapture.isLoop) {
             captureRemainingTime = max(0L, captureTime - elapsedTime)
             captureProgress = (captureTime - captureRemainingTime).toDouble() / captureTime
         }
@@ -191,7 +194,7 @@ data class CameraExposureTasklet(
             startCapture.exposureAmount, exposureCount,
             startCapture.exposureInMicroseconds, exposureRemainingTime, exposureProgress,
             captureTime, captureRemainingTime, captureProgress,
-            isLooping, elapsedTime, waitProgress, waitRemainingTime, status,
+            startCapture.isLoop, elapsedTime, waitProgress, waitRemainingTime, status,
         )
 
         EventBus.getDefault().post(event)

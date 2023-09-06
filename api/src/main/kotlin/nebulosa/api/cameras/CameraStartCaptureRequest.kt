@@ -10,7 +10,7 @@ import java.nio.file.Path
 data class CameraStartCaptureRequest(
     @field:Positive val exposureInMicroseconds: Long = 0L,
     @field:Range(min = 0L, max = 1000L) val exposureAmount: Int = 1, // 0 = looping
-    @field:PositiveOrZero val exposureDelay: Long = 0,
+    @field:Range(min = 0L, max = 60L) val exposureDelayInSeconds: Long = 0L,
     @field:PositiveOrZero val x: Int = 0,
     @field:PositiveOrZero val y: Int = 0,
     @field:PositiveOrZero val width: Int = 0,
@@ -24,4 +24,8 @@ data class CameraStartCaptureRequest(
     val autoSave: Boolean = false,
     var savePath: Path? = null,
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.OFF,
-)
+) {
+
+    val isLoop
+        get() = exposureAmount <= 0
+}

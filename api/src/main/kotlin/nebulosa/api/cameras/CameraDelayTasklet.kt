@@ -13,15 +13,17 @@ import kotlin.system.measureTimeMillis
 
 class CameraDelayTasklet(
     private val camera: Camera,
-    private val exposureDelay: Long,
+    private val exposureDelayInSeconds: Long,
 ) : StoppableTasklet {
 
     private val forceAbort = AtomicBoolean()
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
-        if (exposureDelay in 1..60000) {
-            waitFor(exposureDelay, forceAbort) {
-                val progress = if (it > 0) 1.0 - exposureDelay.toDouble() / it else 1.0
+        if (exposureDelayInSeconds in 1..60) {
+            val delayInMilliseconds = exposureDelayInSeconds * 1000L
+
+            waitFor(delayInMilliseconds, forceAbort) {
+                val progress = if (it > 0) 1.0 - delayInMilliseconds.toDouble() / it else 1.0
                 val event = CameraDelayUpdated(camera, contribution.stepExecution.jobExecutionId, progress, it * 1000L)
                 EventBus.getDefault().post(event)
             }
@@ -45,10 +47,13 @@ class CameraDelayTasklet(
             var remainingTime = delay
 
             while (!abort.get() && remainingTime > 0L) {
-                val waitTime = min(remainingTime, DELAY_INTERVAL)
                 remainingTime -= measureTimeMillis { afterDelay(remainingTime) }
-                Thread.sleep(waitTime)
-                remainingTime -= waitTime
+                val waitTime = min(remainingTime, DELAY_INTERVAL)
+
+                if (waitTime > 0) {
+                    Thread.sleep(waitTime)
+                    remainingTime -= waitTime
+                }
             }
 
             afterDelay(0L)
