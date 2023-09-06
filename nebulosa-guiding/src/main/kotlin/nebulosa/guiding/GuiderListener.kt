@@ -34,4 +34,6 @@ interface GuiderListener {
     fun onCalibrationCompleted(calibration: GuideCalibration)
 
     fun onGuideStep(stats: GuideStats)
+
+    fun onNotifyDirectMove(mount: GuidePoint)
 }

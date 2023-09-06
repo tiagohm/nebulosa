@@ -8,9 +8,38 @@ interface Guider : Iterable<GuidePoint> {
 
     val lockPosition: GuidePoint
 
-    val searchRegion: Double
+    var searchRegion: Double
 
-    val image: Image?
+    var dither: Dither
+
+    var ditherAmount: Double
+
+    var ditherRAOnly: Boolean
+
+    var calibrationFlipRequiresDecFlip: Boolean
+
+    var assumeDECOrthogonalToRA: Boolean
+
+    var calibrationStep: Int
+
+    var calibrationDistance: Int
+
+    var useDECCompensation: Boolean
+
+    var declinationGuideMode: DeclinationGuideMode
+
+    var maxDECDuration: Int
+
+    var maxRADuration: Int
+
+    val isGuidingRAOnly
+        get() = declinationGuideMode == DeclinationGuideMode.NONE
+
+    var noiseReductionMethod: NoiseReductionMethod
+
+    var isGuidingEnabled: Boolean
+
+    fun processImage(image: Image)
 
     val stats: List<GuideStats>
 
@@ -19,12 +48,6 @@ interface Guider : Iterable<GuidePoint> {
     fun selectGuideStar(x: Double, y: Double): Boolean
 
     fun deselectGuideStar()
-
-    val isLooping: Boolean
-
-    fun startLooping()
-
-    fun stopLooping()
 
     val isGuiding: Boolean
 
@@ -45,4 +68,10 @@ interface Guider : Iterable<GuidePoint> {
     fun registerListener(listener: GuiderListener)
 
     fun unregisterListener(listener: GuiderListener)
+
+    var isMultiStar: Boolean
+
+    val isLockPositionShiftEnabled: Boolean
+
+    val isSettling: Boolean
 }

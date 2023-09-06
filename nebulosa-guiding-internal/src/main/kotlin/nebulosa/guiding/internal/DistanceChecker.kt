@@ -24,7 +24,7 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
     }
 
     private fun checkIfSmallOffset(distance: Double, raOnly: Boolean, tolerance: Double): Boolean {
-        if (!guider.isGuiding || guider.isPaused || guider.settling || guider.currentErrorFrameCount < 10) {
+        if (!guider.isGuiding || guider.isSettling || guider.currentErrorFrameCount < 10) {
             return true
         }
 

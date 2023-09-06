@@ -20,9 +20,7 @@ import nebulosa.imaging.algorithms.SubFrame
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
-import nebulosa.indi.device.mount.PierSide
 import nebulosa.log.loggerFor
-import nebulosa.math.Angle
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -45,7 +43,7 @@ class GuidingService(
     private val guiderExecutorService: ExecutorService,
     private val guideCalibrationRepository: GuideCalibrationRepository,
     private val imageService: ImageService,
-) : GuideDevice, GuiderListener {
+) : GuiderListener {
 
     private val randomDither = RandomDither()
     private val spiralDither = SpiralDither()
@@ -75,7 +73,7 @@ class GuidingService(
     private fun initialize() {
         eventBus.register(this)
 
-        with(MultiStarGuider(this, guiderExecutorService)) {
+        with(MultiStarGuider()) {
             registerListener(this@GuidingService)
             guider = this
         }
@@ -202,90 +200,18 @@ class GuidingService(
         guider.deselectGuideStar()
     }
 
-    override var cameraBinning = 1
-
-    override var cameraPixelScale = 0.0
-
-    // min: 1, max: 60000 (ms)
-    override var cameraExposureTime = 1000L // 1s
-
-    // min: 0, max: 10000 (ms)
-    override var cameraExposureDelay = 0L
-
-    override val mountIsBusy
-        get() = mount.slewing || guideOutput.pulseGuiding || mount.parking
-
-    override val mountRightAscension
-        get() = mount.rightAscension
-
-    override val mountDeclination
-        get() = mount.declination
-
     // TODO: Implement Guide Rate property on mount device.
-
-    override val mountRightAscensionGuideRate = 0.5
-
-    override val mountDeclinationGuideRate = 0.5
-
-    override val mountPierSideAtEast
-        get() = mount.pierSide == PierSide.EAST
-
     // TODO: Pass the rotator angle when implement it.
 
-    override val rotatorAngle = Angle.ZERO
-
     private var ditherMode = DitherMode.RANDOM
-
-    override val dither
-        get() = if (ditherMode == DitherMode.RANDOM) randomDither else spiralDither
-
-    // min: 1.0, max: 100.0 (px)
-    override var ditherAmount = 5.0
-
-    override var ditherRAOnly = false
-
-    override var calibrationFlipRequiresDecFlip = false
-
-    override var assumeDECOrthogonalToRA = false
-
-    // min: 1, max: 10000 (ms)
-    override var calibrationStep = 1000
-
-    // min: 10, max: 200 (px)
-    override var calibrationDistance = 25
-
-    override var useDECCompensation = true
-
-    override var guidingEnabled = true
-
-    override var declinationGuideMode = DeclinationGuideMode.AUTO
-
-    // min: 50, max: 8000 (ms)
-    override var maxDECDuration = 2500
-
-    // min: 50, max: 8000 (ms)
-    override var maxRADuration = 2500
-
     private var xGuideAlgorithmType = GuideAlgorithmType.HYSTERESIS
-
-    override val xGuideAlgorithm
-        get() = xGuideAlgorithms[xGuideAlgorithmType]!!
-
     private var yGuideAlgorithmType = GuideAlgorithmType.HYSTERESIS
-
-    override val yGuideAlgorithm
-        get() = yGuideAlgorithms[yGuideAlgorithmType]!!
-
-    // min: 7, max: 50 (px)
-    override var searchRegion = 15.0
 
     // min: 0.1, max: 10 (px)
     var minimumStarHFD = 1.5
 
     // min: 0.1, max: 10 (px)
     var maximumStarHFD = 1.5
-
-    override var noiseReductionMethod = NoiseReductionMethod.NONE
 
     override fun capture(duration: Long): Image? {
         return synchronized(guideExposureTask) {
