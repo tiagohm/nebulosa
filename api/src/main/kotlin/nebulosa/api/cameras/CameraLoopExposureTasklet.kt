@@ -7,14 +7,16 @@ import org.springframework.batch.core.StepContribution
 import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.core.step.tasklet.StoppableTasklet
 import org.springframework.batch.repeat.RepeatStatus
+import kotlin.time.Duration.Companion.seconds
 
 data class CameraLoopExposureTasklet(
     private val camera: Camera,
     private val startCapture: CameraStartCaptureRequest,
+    private val listener: CameraCaptureEventListener,
 ) : StoppableTasklet, JobExecutionListener {
 
-    private val exposureTasklet = CameraExposureTasklet(camera, startCapture)
-    private val delayTasklet = CameraDelayTasklet(camera, startCapture.exposureDelayInSeconds)
+    private val exposureTasklet = CameraExposureTasklet(camera, startCapture, listener)
+    private val delayTasklet = CameraDelayTasklet(camera, startCapture.exposureDelayInSeconds.seconds, exposureTasklet)
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
         exposureTasklet.execute(contribution, chunkContext)

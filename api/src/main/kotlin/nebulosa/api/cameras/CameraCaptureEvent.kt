@@ -5,6 +5,4 @@ import nebulosa.indi.device.camera.Camera
 interface CameraCaptureEvent {
 
     val camera: Camera
-
-    val status: CameraCaptureStatus
 }

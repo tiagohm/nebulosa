@@ -1,5 +1,8 @@
 package nebulosa.api.cameras
 
+import nebulosa.api.data.entities.SavedCameraImageEntity
+import nebulosa.api.repositories.SavedCameraImageRepository
+import nebulosa.api.services.MessageService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.log.loggerFor
 import org.springframework.batch.core.Job
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.PlatformTransactionManager
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration.Companion.seconds
 
 @Component
 class CameraCaptureExecutor(
@@ -25,7 +29,9 @@ class CameraCaptureExecutor(
     private val cameraJobLauncher: JobLauncher,
     private val platformTransactionManager: PlatformTransactionManager,
     private val jobRegistry: JobRegistry,
-) {
+    private val savedCameraImageRepository: SavedCameraImageRepository,
+    private val messageService: MessageService,
+) : CameraCaptureEventListener {
 
     private val runningJobs = ConcurrentHashMap<String, Pair<Job, JobExecution>>()
     private val jobExecutionCounter = AtomicInteger(1)
@@ -40,7 +46,7 @@ class CameraCaptureExecutor(
         LOG.info("starting capture. request={}", startCapture)
 
         val cameraCaptureJob = if (startCapture.isLoop) {
-            val cameraExposureTasklet = CameraLoopExposureTasklet(camera, startCapture)
+            val cameraExposureTasklet = CameraLoopExposureTasklet(camera, startCapture, this)
 
             JobBuilder("CameraCaptureJob.${camera.name}.${jobExecutionCounter.getAndIncrement()}", jobRepository)
                 .start(cameraExposureStep(camera, cameraExposureTasklet))
@@ -48,8 +54,8 @@ class CameraCaptureExecutor(
                 .listener(cameraExposureTasklet)
                 .build()
         } else {
-            val cameraExposureTasklet = CameraExposureTasklet(camera, startCapture)
-            val cameraDelayTasklet = CameraDelayTasklet(camera, startCapture.exposureDelayInSeconds)
+            val cameraExposureTasklet = CameraExposureTasklet(camera, startCapture, this)
+            val cameraDelayTasklet = CameraDelayTasklet(camera, startCapture.exposureDelayInSeconds.seconds, cameraExposureTasklet)
 
             val jobBuilder = JobBuilder("CameraCaptureJob.${camera.name}.${jobExecutionCounter.getAndIncrement()}", jobRepository)
                 .start(cameraExposureStep(camera, cameraExposureTasklet))
@@ -100,8 +106,29 @@ class CameraCaptureExecutor(
         return runningJobs[camera.name]?.second
     }
 
+    override fun onCameraCaptureEvent(event: CameraCaptureEvent) {
+        when (event) {
+            is CameraExposureUpdated -> messageService.sendMessage(CAMERA_EXPOSURE_UPDATED, event)
+            is CameraCaptureFinished -> messageService.sendMessage(CAMERA_CAPTURE_FINISHED, event)
+            is CameraExposureSaved -> {
+                val savedCameraImage = SavedCameraImageEntity.from(event)
+
+                if (event.image == null) {
+                    savedCameraImage.id = savedCameraImageRepository.withPath(savedCameraImage.path)?.id ?: savedCameraImage.id
+                    savedCameraImageRepository.save(savedCameraImage)
+                }
+
+                messageService.sendMessage(CAMERA_IMAGE_SAVED, savedCameraImage)
+            }
+        }
+    }
+
     companion object {
 
         @JvmStatic private val LOG = loggerFor<CameraCaptureExecutor>()
+
+        const val CAMERA_IMAGE_SAVED = "CAMERA_IMAGE_SAVED"
+        const val CAMERA_EXPOSURE_UPDATED = "CAMERA_EXPOSURE_UPDATED"
+        const val CAMERA_CAPTURE_FINISHED = "CAMERA_CAPTURE_FINISHED"
     }
 }

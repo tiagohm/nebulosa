@@ -2,7 +2,6 @@ package nebulosa.api.cameras
 
 import nebulosa.indi.device.camera.Camera
 import nebulosa.log.loggerFor
-import org.greenrobot.eventbus.EventBus
 import org.springframework.batch.core.StepContribution
 import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.core.step.tasklet.StoppableTasklet
@@ -10,22 +9,27 @@ import org.springframework.batch.repeat.RepeatStatus
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 import kotlin.system.measureTimeMillis
+import kotlin.time.Duration
 
-class CameraDelayTasklet(
+data class CameraDelayTasklet(
     private val camera: Camera,
-    private val exposureDelayInSeconds: Long,
+    private val exposureDelay: Duration,
+    private val listener: CameraCaptureEventListener? = null,
 ) : StoppableTasklet {
 
     private val forceAbort = AtomicBoolean()
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
-        if (exposureDelayInSeconds in 1..60) {
-            val delayInMilliseconds = exposureDelayInSeconds * 1000L
+        val exposureDelayInMilliseconds = contribution.stepExecution.executionContext
+            .getLong("exposureDelayInMilliseconds", exposureDelay.inWholeMilliseconds)
 
-            waitFor(delayInMilliseconds, forceAbort) {
-                val progress = if (it > 0) 1.0 - delayInMilliseconds.toDouble() / it else 1.0
-                val event = CameraDelayUpdated(camera, contribution.stepExecution.jobExecutionId, progress, it * 1000L)
-                EventBus.getDefault().post(event)
+        if (exposureDelayInMilliseconds in DELAY_INTERVAL..60000) {
+            waitFor(exposureDelayInMilliseconds, forceAbort) {
+                if (listener != null) {
+                    val progress = if (it > 0) 1.0 - exposureDelayInMilliseconds.toDouble() / it else 1.0
+                    val event = CameraDelayUpdated(camera, contribution.stepExecution.jobExecutionId, progress, it * 1000L)
+                    listener.onCameraCaptureEvent(event)
+                }
             }
         }
 

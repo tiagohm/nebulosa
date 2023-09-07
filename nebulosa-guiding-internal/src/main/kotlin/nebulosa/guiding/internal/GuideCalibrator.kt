@@ -194,7 +194,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                         calibrationStatus(GuideDirection.LEFT_WEST)
 
-                        guider.guideDirection(GuideDirection.LEFT_WEST, guider.calibrationStep)
+                        guideDirection(GuideDirection.LEFT_WEST, guider.calibrationStep)
 
                         break
                     }
@@ -256,7 +256,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         calibrationSteps--
                         lastLocation.set(currentLocation)
 
-                        guider.guideDirection(GuideDirection.RIGHT_EAST, duration)
+                        guideDirection(GuideDirection.RIGHT_EAST, duration)
 
                         break
                     }
@@ -311,7 +311,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     if (calibrationSteps == 0) {
                         // Get things moving with the first clearing pulse.
                         LOG.info("starting north clearing using pulse width of {}", guider.calibrationStep)
-                        guider.guideDirection(GuideDirection.UP_NORTH, guider.calibrationStep)
+                        guideDirection(GuideDirection.UP_NORTH, guider.calibrationStep)
                         calibrationSteps = 1
                         calibrationStatus(GuideDirection.UP_NORTH)
                         break
@@ -338,7 +338,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     if (blAcceptedMoves < BL_MIN_COUNT) {
                         if (calibrationSteps < blMaxClearingPulses && blCumDelta < distCrit) {
                             // Still have attempts left, haven't moved the star by 25 px yet.
-                            guider.guideDirection(GuideDirection.UP_NORTH, guider.calibrationStep)
+                            guideDirection(GuideDirection.UP_NORTH, guider.calibrationStep)
 
                             calibrationSteps++
 
@@ -402,7 +402,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                         calibrationStatus(GuideDirection.UP_NORTH)
 
-                        guider.guideDirection(GuideDirection.UP_NORTH, guider.calibrationStep)
+                        guideDirection(GuideDirection.UP_NORTH, guider.calibrationStep)
 
                         break
                     }
@@ -481,7 +481,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         recenterRemaining -= duration
                         calibrationSteps--
 
-                        guider.guideDirection(GuideDirection.DOWN_SOUTH, duration)
+                        guideDirection(GuideDirection.DOWN_SOUTH, duration)
 
                         break
                     }
@@ -538,7 +538,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                                 calibrationStatus(GuideDirection.DOWN_SOUTH)
 
-                                guider.guideDirection(GuideDirection.DOWN_SOUTH, pulseAmt)
+                                guideDirection(GuideDirection.DOWN_SOUTH, pulseAmt)
 
                                 break
                             }
@@ -653,6 +653,12 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
         if (!declinationCompensated) {
             xRate = calibration.xRate
+        }
+    }
+
+    private fun guideDirection(direction: GuideDirection, duration: Int) {
+        if (guider.guideDirection(direction, duration)) {
+            Thread.sleep(duration.toLong())
         }
     }
 

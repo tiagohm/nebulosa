@@ -1,6 +1,5 @@
 package nebulosa.guiding.internal
 
-import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.constants.PIOVERTWO
 import nebulosa.guiding.*
 import nebulosa.imaging.Image
@@ -8,14 +7,9 @@ import nebulosa.imaging.algorithms.Mean
 import nebulosa.imaging.algorithms.star.hfd.FindMode
 import nebulosa.log.loggerFor
 import java.util.*
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.math.abs
-import kotlin.math.hypot
-import kotlin.math.min
-import kotlin.math.roundToInt
+import kotlin.math.*
 
 /**
  * It is responsible for dealing with new images as they arrive,
@@ -25,14 +19,14 @@ import kotlin.math.roundToInt
 class MultiStarGuider : InternalGuider {
 
     private data class MoveResult(
-        val status: Boolean,
-        val amountMoved: Int,
-        val limitReached: Boolean,
+        @JvmField val status: Boolean,
+        @JvmField val amountMoved: Int,
+        @JvmField val limitReached: Boolean,
     ) {
 
         companion object {
 
-            @JvmStatic val NONE = MoveResult(false, 0, true)
+            @JvmStatic val NONE = MoveResult(false, 0, false)
         }
     }
 
@@ -1031,12 +1025,16 @@ class MultiStarGuider : InternalGuider {
             val xResult = moveAxis(xDirection, requestedXAmount, moveOptions)
             val yResult = moveAxis(yDirection, requestedYAmount, moveOptions)
 
-            CompletableFuture.allOf(xResult, yResult).join()
+            val waitTime = max(xResult.amountMoved, yResult.amountMoved)
+
+            if (waitTime > 0) {
+                Thread.sleep(waitTime.toLong())
+            }
 
             // TODO: if (m_backlashComp)
             //     m_backlashComp->ApplyBacklashComp(moveOptions, yDistance, &requestedYAmount);
 
-            val stats = guideGraph.add(offset, xResult.get().amountMoved, yResult.get().amountMoved, xDirection, yDirection)
+            val stats = guideGraph.add(offset, xResult.amountMoved, yResult.amountMoved, xDirection, yDirection)
 
             listeners.forEach { it.onGuideStep(stats) }
         }
@@ -1044,13 +1042,10 @@ class MultiStarGuider : InternalGuider {
         return true
     }
 
-    private fun moveAxis(direction: GuideDirection, duration: Int, moveOptions: List<MountMoveOption>): CompletableFuture<MoveResult> {
-        val task = CompletableFuture<MoveResult>()
-
+    private fun moveAxis(direction: GuideDirection, duration: Int, moveOptions: List<MountMoveOption>): MoveResult {
         if (!isGuidingEnabled && MountMoveOption.MANUAL !in moveOptions) {
             LOG.warn("guiding disabled")
-            task.complete(MoveResult.NONE)
-            return task
+            return MoveResult.NONE
         }
 
         var limitReached = false
@@ -1075,7 +1070,7 @@ class MultiStarGuider : InternalGuider {
                     if (newDuration > maxDECDuration) {
                         newDuration = maxDECDuration
                         limitReached = true
-                        LOG.info("duration set to maxDECDuration. duration={}", newDuration)
+                        LOG.info("duration set to maxDECDuration. duration={} ms", newDuration)
                     }
                 }
             }
@@ -1088,42 +1083,27 @@ class MultiStarGuider : InternalGuider {
                     if (newDuration > maxRADuration) {
                         newDuration = maxRADuration
                         limitReached = true
-                        LOG.info("duration set to maxRADuration. duration={}", newDuration)
+                        LOG.info("duration set to maxRADuration. duration={} ms", newDuration)
                     }
                 }
             }
             else -> Unit
         }
 
-        if (newDuration > 0) {
-            LOG.info("move axis. direction={}, duration={}", direction, newDuration)
-
-            GUIDER_EXECUTOR_SERVICE.submit {
-                val status = guideDirection(direction, newDuration)
-                task.complete(MoveResult(status, newDuration, limitReached))
-            }
+        return if (newDuration > 0 && guideDirection(direction, newDuration)) {
+            LOG.info("move axis. direction={}, duration={} ms", direction, newDuration)
+            MoveResult(true, newDuration, limitReached)
         } else {
-            task.complete(MoveResult.NONE)
+            MoveResult.NONE
         }
-
-        return task
     }
 
-    internal fun guideDirection(direction: GuideDirection, duration: Int): Boolean {
-        val startedAt = System.currentTimeMillis()
-
-        val status = when (direction) {
-            GuideDirection.UP_NORTH -> pulse.guideNorth(duration)
-            GuideDirection.DOWN_SOUTH -> pulse.guideSouth(duration)
-            GuideDirection.LEFT_WEST -> pulse.guideWest(duration)
-            GuideDirection.RIGHT_EAST -> pulse.guideEast(duration)
-            else -> false
-        }
-
-        val elapsedTime = System.currentTimeMillis() - startedAt
-        Thread.sleep(duration - elapsedTime + 1L)
-
-        return status
+    internal fun guideDirection(direction: GuideDirection, duration: Int) = when (direction) {
+        GuideDirection.UP_NORTH -> pulse.guideNorth(duration)
+        GuideDirection.DOWN_SOUTH -> pulse.guideSouth(duration)
+        GuideDirection.LEFT_WEST -> pulse.guideWest(duration)
+        GuideDirection.RIGHT_EAST -> pulse.guideEast(duration)
+        else -> false
     }
 
     private fun transformMountCoordinatesToCameraCoordinates(mount: Point, camera: Point): Boolean {
@@ -1159,7 +1139,6 @@ class MultiStarGuider : InternalGuider {
     companion object {
 
         @JvmStatic private val LOG = loggerFor<MultiStarGuider>()
-        @JvmStatic private val GUIDER_EXECUTOR_SERVICE = Executors.newFixedThreadPool(2, DaemonThreadFactory)
         @JvmStatic internal val ZERO_OFFSET = GuiderOffset(Point(), Point())
         @JvmStatic internal val GUIDE_STEP = listOf(MountMoveOption.ALGORITHM_RESULT, MountMoveOption.USE_BACKSLASH_COMPENSATION)
         @JvmStatic internal val DEDUCED_MOVE = listOf(MountMoveOption.ALGORITHM_DEDUCE, MountMoveOption.USE_BACKSLASH_COMPENSATION)

@@ -8,9 +8,7 @@ import nebulosa.api.data.events.GuideExposureFinished
 import nebulosa.api.data.responses.GuidingChartResponse
 import nebulosa.api.data.responses.GuidingStarResponse
 import nebulosa.api.image.ImageService
-import nebulosa.api.image.ImageToken
 import nebulosa.api.repositories.GuideCalibrationRepository
-import nebulosa.api.services.GuideExposureTask
 import nebulosa.api.services.MessageService
 import nebulosa.guiding.*
 import nebulosa.guiding.internal.*
@@ -27,33 +25,25 @@ import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import java.util.*
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicReference
 import javax.imageio.ImageIO
 import kotlin.io.encoding.Base64
 import kotlin.math.hypot
 import kotlin.math.min
-import kotlin.time.Duration.Companion.milliseconds
 
 @Service
 class GuidingService(
     private val messageService: MessageService,
     private val eventBus: EventBus,
-    private val cameraExecutorService: ExecutorService,
-    private val guiderExecutorService: ExecutorService,
     private val guideCalibrationRepository: GuideCalibrationRepository,
     private val imageService: ImageService,
 ) : GuiderListener {
-
-    private val randomDither = RandomDither()
-    private val spiralDither = SpiralDither()
 
     private lateinit var guider: Guider
     private lateinit var camera: Camera
     private lateinit var mount: Mount
     private lateinit var guideOutput: GuideOutput
 
-    private val guideExposureTask = AtomicReference<GuideExposureTask>()
     private val guideImage = AtomicReference<Image>()
 
     private val xGuideAlgorithms = EnumMap<GuideAlgorithmType, GuideAlgorithm>(GuideAlgorithmType::class.java)
@@ -212,42 +202,6 @@ class GuidingService(
 
     // min: 0.1, max: 10 (px)
     var maximumStarHFD = 1.5
-
-    override fun capture(duration: Long): Image? {
-        return synchronized(guideExposureTask) {
-            val task = GuideExposureTask(camera, duration.milliseconds, ImageToken.Guiding)
-
-            guideExposureTask.set(task)
-            cameraExecutorService.submit(task).get()
-            guideExposureTask.set(null)
-
-            task.firstOrNull()
-        }
-    }
-
-    override fun guideNorth(duration: Int): Boolean {
-        guideOutput.guideNorth(duration)
-        LOG.info("guiding north. device={}, duration={} ms", guideOutput.name, duration)
-        return true
-    }
-
-    override fun guideSouth(duration: Int): Boolean {
-        guideOutput.guideSouth(duration)
-        LOG.info("guiding south. device={}, duration={} ms", guideOutput.name, duration)
-        return true
-    }
-
-    override fun guideWest(duration: Int): Boolean {
-        guideOutput.guideWest(duration)
-        LOG.info("guiding west. device={}, duration={} ms", guideOutput.name, duration)
-        return true
-    }
-
-    override fun guideEast(duration: Int): Boolean {
-        guideOutput.guideEast(duration)
-        LOG.info("guiding east. device={}, duration={} ms", guideOutput.name, duration)
-        return true
-    }
 
     override fun onLockPositionChanged(position: GuidePoint) {
         sendGuideLockPositionChanged(guider)

@@ -10,8 +10,6 @@ interface GuiderListener {
 
     fun onGuidingDithered(dx: Double, dy: Double)
 
-    fun onCalibrationFailed()
-
     fun onGuidingStopped()
 
     fun onLockShiftLimitReached()
@@ -32,6 +30,8 @@ interface GuiderListener {
     )
 
     fun onCalibrationCompleted(calibration: GuideCalibration)
+
+    fun onCalibrationFailed()
 
     fun onGuideStep(stats: GuideStats)
 
