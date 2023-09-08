@@ -6,6 +6,7 @@ import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.Camera
 import nebulosa.log.loggerFor
 import nom.tam.fits.Header
+import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.StepContribution
 import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.core.step.tasklet.StoppableTasklet
@@ -17,9 +18,11 @@ import kotlin.system.measureTimeMillis
 data class GuidingTasklet(
     private val camera: Camera,
     private val guider: InternalGuider,
-    private val startCapture: CameraStartCaptureRequest,
+    private val startLooping: GuideStartLoopingRequest,
     private val listener: CameraCaptureEventListener,
-) : StoppableTasklet, CameraCaptureEventListener {
+) : StoppableTasklet, CameraCaptureEventListener, JobExecutionListener {
+
+    private val startCapture = CameraStartCaptureRequest()
 
     init {
         startCapture.savePath = Path.of("@guiding")

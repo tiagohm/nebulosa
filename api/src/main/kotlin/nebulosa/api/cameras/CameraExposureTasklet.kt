@@ -86,6 +86,7 @@ data class CameraExposureTasklet(
     override fun stop() {
         LOG.info("stopping exposure. camera=${camera.name}")
         camera.abortCapture()
+        camera.disableBlob()
         forceAbort.set(true)
         latch.reset()
     }

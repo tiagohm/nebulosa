@@ -101,10 +101,10 @@ class BeanConfig {
     fun hips2FitsService(okHttpClient: OkHttpClient) = Hips2FitsService(okHttpClient = okHttpClient)
 
     @Bean
-    fun cameraExecutorService(): ExecutorService = Executors.newFixedThreadPool(2, DaemonThreadFactory)
+    fun cameraExecutorService(): ExecutorService = Executors.newFixedThreadPool(1, DaemonThreadFactory)
 
     @Bean
-    fun guiderExecutorService(): ExecutorService = Executors.newFixedThreadPool(2, DaemonThreadFactory)
+    fun guiderExecutorService(): ExecutorService = Executors.newFixedThreadPool(1, DaemonThreadFactory)
 
     @Bean
     fun systemExecutorService(): ExecutorService =
@@ -125,6 +125,16 @@ class BeanConfig {
         val jobLauncher = TaskExecutorJobLauncher()
         jobLauncher.setJobRepository(jobRepository)
         val taskExecutor = ExecutorServiceTaskExecutor(cameraExecutorService)
+        jobLauncher.setTaskExecutor(taskExecutor)
+        jobLauncher.afterPropertiesSet()
+        return jobLauncher
+    }
+
+    @Bean
+    fun guiderJobLauncher(jobRepository: JobRepository, guiderExecutorService: ExecutorService): JobLauncher {
+        val jobLauncher = TaskExecutorJobLauncher()
+        jobLauncher.setJobRepository(jobRepository)
+        val taskExecutor = ExecutorServiceTaskExecutor(guiderExecutorService)
         jobLauncher.setTaskExecutor(taskExecutor)
         jobLauncher.afterPropertiesSet()
         return jobLauncher
