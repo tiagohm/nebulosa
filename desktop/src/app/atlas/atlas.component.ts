@@ -6,7 +6,6 @@ import { CronJob } from 'cron'
 import { UIChart } from 'primeng/chart'
 import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
-import { MoonComponent } from '../../shared/components/moon/moon.component'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
 import { oneDecimalPlaceFormatter, twoDigitsFormatter } from '../../shared/formatters'
 import { ApiService } from '../../shared/services/api.service'
@@ -215,9 +214,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     @ViewChild('imageOfSun')
     private readonly imageOfSun!: ElementRef<HTMLImageElement>
-
-    @ViewChild('imageOfMoon')
-    private readonly imageOfMoon!: MoonComponent
 
     @ViewChild('chart')
     private readonly chart!: UIChart
@@ -450,7 +446,9 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     }
 
     private readonly cronJob = new CronJob('0 */1 * * * *', () => {
-        this.refreshTab()
+        if (!this.useManualDateTime) {
+            this.refreshTab()
+        }
     }, null, false)
 
     private static readonly DEFAULT_SATELLITE_FILTERS: SatelliteGroupType[] = [
@@ -655,8 +653,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         this.refreshTab(true, true)
     }
 
-    dateTimeChanged() {
-        this.refreshTab(true, true)
+    dateTimeChanged(dateChanged: boolean) {
+        this.refreshTab(dateChanged, true)
     }
 
     useManualDateTimeChanged() {
