@@ -27,7 +27,7 @@ data class CameraDelayTasklet(
             waitFor(exposureDelayInMilliseconds, forceAbort) {
                 if (listener != null) {
                     val progress = if (it > 0) 1.0 - exposureDelayInMilliseconds.toDouble() / it else 1.0
-                    val event = CameraDelayUpdated(camera, contribution.stepExecution.jobExecutionId, progress, it * 1000L)
+                    val event = CameraDelayUpdated(camera, progress, it * 1000L, exposureDelayInMilliseconds * 1000L)
                     listener.onCameraCaptureEvent(event)
                 }
             }

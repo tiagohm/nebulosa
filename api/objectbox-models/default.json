@@ -316,59 +316,6 @@
       "relations": []
     },
     {
-      "id": "4:7673643265581253128",
-      "lastPropertyId": "8:1041584857719315728",
-      "name": "SavedCameraImageEntity",
-      "properties": [
-        {
-          "id": "1:7321601813720959856",
-          "name": "id",
-          "type": 6,
-          "flags": 1
-        },
-        {
-          "id": "2:5340429251763737174",
-          "name": "camera",
-          "indexId": "6:1385493830568322932",
-          "type": 9,
-          "flags": 2048
-        },
-        {
-          "id": "3:7102262212121260765",
-          "name": "path",
-          "indexId": "7:5690025095883604695",
-          "type": 9,
-          "flags": 2048
-        },
-        {
-          "id": "4:6521121451096569379",
-          "name": "width",
-          "type": 5
-        },
-        {
-          "id": "5:2012162393260240623",
-          "name": "height",
-          "type": 5
-        },
-        {
-          "id": "6:3961502057014220590",
-          "name": "mono",
-          "type": 1
-        },
-        {
-          "id": "7:7862701044975435904",
-          "name": "exposure",
-          "type": 6
-        },
-        {
-          "id": "8:1041584857719315728",
-          "name": "savedAt",
-          "type": 6
-        }
-      ],
-      "relations": []
-    },
-    {
       "id": "5:5995688963305056486",
       "lastPropertyId": "17:6908146377183714567",
       "name": "StarEntity",
@@ -565,9 +512,23 @@
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
-  "retiredEntityUids": [],
-  "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredEntityUids": [
+    7673643265581253128
+  ],
+  "retiredIndexUids": [
+    1385493830568322932,
+    5690025095883604695
+  ],
+  "retiredPropertyUids": [
+    7321601813720959856,
+    5340429251763737174,
+    7102262212121260765,
+    6521121451096569379,
+    2012162393260240623,
+    3961502057014220590,
+    7862701044975435904,
+    1041584857719315728
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

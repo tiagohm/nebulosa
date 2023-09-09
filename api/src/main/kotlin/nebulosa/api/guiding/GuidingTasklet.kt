@@ -58,7 +58,7 @@ data class GuidingTasklet(
     }
 
     override fun onCameraCaptureEvent(event: CameraCaptureEvent) {
-        if (event is CameraExposureSaved) {
+        if (event is CameraExposureFinished) {
             guideImage.offer(event.image!!)
             listener.onCameraCaptureEvent(event)
         }

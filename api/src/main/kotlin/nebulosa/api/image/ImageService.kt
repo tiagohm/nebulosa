@@ -2,7 +2,6 @@ package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
-import nebulosa.api.data.entities.SavedCameraImageEntity
 import nebulosa.api.data.enums.HipsSurveyType
 import nebulosa.api.data.enums.PlateSolverType
 import nebulosa.api.data.responses.CalibrationResponse
@@ -11,7 +10,6 @@ import nebulosa.api.data.responses.ImageAnnotationResponse
 import nebulosa.api.data.responses.ImageInfoResponse
 import nebulosa.api.framing.FramingService
 import nebulosa.api.repositories.DeepSkyObjectRepository
-import nebulosa.api.repositories.SavedCameraImageRepository
 import nebulosa.api.repositories.StarRepository
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.fits.FitsKeywords
@@ -50,7 +48,6 @@ import kotlin.io.path.outputStream
 
 @Service
 class ImageService(
-    private val savedCameraImageRepository: SavedCameraImageRepository,
     private val objectMapper: ObjectMapper,
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
@@ -99,13 +96,8 @@ class ImageService(
 
         if (invert) transformedImage = Invert.transform(transformedImage)
 
-        val savedImage = if (token is ImageToken.Saved) savedCameraImageRepository.withPath("${token.path}")
-        else null
-
         val info = ImageInfoResponse(
-            savedImage?.camera ?: "",
-            savedImage?.path ?: "",
-            savedImage?.savedAt ?: 0L,
+            token.path,
             transformedImage.width,
             transformedImage.height,
             transformedImage.mono,
@@ -133,18 +125,6 @@ class ImageService(
         calibrations.remove(token)
         LOG.info("image closed. token={}", token)
         System.gc()
-    }
-
-    fun imagesOfCamera(name: String): List<SavedCameraImageEntity> {
-        return savedCameraImageRepository.withCamera(name)
-    }
-
-    fun latestImageOfCamera(name: String): SavedCameraImageEntity {
-        return savedCameraImageRepository.withCameraLatest(name)!!
-    }
-
-    fun savedImageOfPath(path: Path): SavedCameraImageEntity {
-        return savedCameraImageRepository.withPath("$path")!!
     }
 
     @Synchronized

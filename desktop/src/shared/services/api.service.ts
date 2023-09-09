@@ -7,7 +7,7 @@ import {
     FilterWheel, Focuser, GuideOutput, GuidingChart, GuidingStar, HipsSurvey,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
     Mount, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
-    SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
+    SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 
 @Injectable({ providedIn: 'root' })
@@ -85,14 +85,6 @@ export class ApiService {
 
     cameraAbortCapture(camera: Camera) {
         return this.post<void>(`cameraAbortCapture?name=${camera.name}`)
-    }
-
-    imagesOfCamera(camera: Camera) {
-        return this.get<SavedCameraImage[]>(`imagesOfCamera?name=${camera.name}`)
-    }
-
-    latestImageOfCamera(camera: Camera) {
-        return this.get<SavedCameraImage>(`latestImageOfCamera?name=${camera.name}`)
     }
 
     attachedMounts() {

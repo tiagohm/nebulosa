@@ -1,7 +1,5 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.data.entities.SavedCameraImageEntity
-import nebulosa.api.repositories.SavedCameraImageRepository
 import nebulosa.api.services.MessageService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.log.loggerFor
@@ -29,7 +27,6 @@ class CameraCaptureExecutor(
     private val cameraJobLauncher: JobLauncher,
     private val platformTransactionManager: PlatformTransactionManager,
     private val jobRegistry: JobRegistry,
-    private val savedCameraImageRepository: SavedCameraImageRepository,
     private val messageService: MessageService,
 ) : CameraCaptureEventListener {
 
@@ -108,18 +105,11 @@ class CameraCaptureExecutor(
 
     override fun onCameraCaptureEvent(event: CameraCaptureEvent) {
         when (event) {
-            is CameraExposureUpdated -> messageService.sendMessage(CAMERA_EXPOSURE_UPDATED, event)
+            is CameraCaptureStarted -> messageService.sendMessage(CAMERA_CAPTURE_STARTED, event)
             is CameraCaptureFinished -> messageService.sendMessage(CAMERA_CAPTURE_FINISHED, event)
-            is CameraExposureSaved -> {
-                val savedCameraImage = SavedCameraImageEntity.from(event)
-
-                if (event.image == null) {
-                    savedCameraImage.id = savedCameraImageRepository.withPath(savedCameraImage.path)?.id ?: savedCameraImage.id
-                    savedCameraImageRepository.save(savedCameraImage)
-                }
-
-                messageService.sendMessage(CAMERA_IMAGE_SAVED, savedCameraImage)
-            }
+            is CameraExposureStarted -> messageService.sendMessage(CAMERA_EXPOSURE_STARTED, event)
+            is CameraExposureUpdated -> messageService.sendMessage(CAMERA_EXPOSURE_UPDATED, event)
+            is CameraExposureFinished -> messageService.sendMessage(CAMERA_EXPOSURE_FINISHED, event)
         }
     }
 
@@ -127,8 +117,10 @@ class CameraCaptureExecutor(
 
         @JvmStatic private val LOG = loggerFor<CameraCaptureExecutor>()
 
-        const val CAMERA_IMAGE_SAVED = "CAMERA_IMAGE_SAVED"
-        const val CAMERA_EXPOSURE_UPDATED = "CAMERA_EXPOSURE_UPDATED"
+        const val CAMERA_CAPTURE_STARTED = "CAMERA_CAPTURE_STARTED"
         const val CAMERA_CAPTURE_FINISHED = "CAMERA_CAPTURE_FINISHED"
+        const val CAMERA_EXPOSURE_STARTED = "CAMERA_EXPOSURE_STARTED"
+        const val CAMERA_EXPOSURE_UPDATED = "CAMERA_EXPOSURE_UPDATED"
+        const val CAMERA_EXPOSURE_FINISHED = "CAMERA_EXPOSURE_FINISHED"
     }
 }

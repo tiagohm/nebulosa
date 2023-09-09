@@ -66,9 +66,9 @@ data class CameraExposureTasklet(
     }
 
     override fun beforeJob(jobExecution: JobExecution) {
-        EventBus.getDefault().register(this)
         camera.enableBlob()
-        sendCameraUpdated(startCapture.exposureInMicroseconds, 0.0, 0.0, 0L, CameraCaptureStatus.CAPTURING)
+        EventBus.getDefault().register(this)
+        listener.onCameraCaptureEvent(CameraCaptureStarted(camera))
     }
 
     override fun afterJob(jobExecution: JobExecution) {
@@ -103,6 +103,8 @@ data class CameraExposureTasklet(
                 latch.countUp()
 
                 exposureCount++
+
+                listener.onCameraCaptureEvent(CameraExposureStarted(camera, exposureCount))
 
                 camera.frame(startCapture.x, startCapture.y, startCapture.width, startCapture.height)
                 camera.frameType(startCapture.frameType)
@@ -148,13 +150,13 @@ data class CameraExposureTasklet(
         try {
             if (saveInMemory) {
                 val image = Image.openFITS(inputStream)
-                listener.onCameraCaptureEvent(CameraExposureSaved(image, camera, savePath))
+                listener.onCameraCaptureEvent(CameraExposureFinished(camera, image, savePath))
             } else {
                 LOG.info("saving FITS at $savePath...")
 
                 savePath!!.createParentDirectories()
                 inputStream.transferAndClose(savePath.outputStream())
-                listener.onCameraCaptureEvent(CameraExposureSaved(null, camera, savePath))
+                listener.onCameraCaptureEvent(CameraExposureFinished(camera, null, savePath))
             }
         } catch (e: Throwable) {
             LOG.error("failed to save FITS", e)

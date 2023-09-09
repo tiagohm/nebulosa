@@ -1,9 +1,9 @@
 package nebulosa.api.data.responses
 
+import java.nio.file.Path
+
 data class ImageInfoResponse(
-    val camera: String,
-    val path: String,
-    val savedAt: Long,
+    val path: Path?,
     val width: Int,
     val height: Int,
     val mono: Boolean,

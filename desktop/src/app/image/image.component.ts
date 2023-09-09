@@ -12,9 +12,10 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Calibration, Camera, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, GuideExposureFinished, GuideTrackingBox,
+    Calibration, Camera, CameraExposureFinished, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, GuideExposureFinished, GuideTrackingBox,
     ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
-    ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage, Star
+    ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS,
+    Star
 } from '../../shared/types'
 
 export interface ImageParams {
@@ -286,8 +287,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         title.setTitle('Image')
 
-        electron.on('CAMERA_IMAGE_SAVED', async (_, data: SavedCameraImage) => {
-            if (data.camera === this.imageParams.camera?.name) {
+        electron.on('CAMERA_EXPOSURE_FINISHED', async (_, data: CameraExposureFinished) => {
+            if (data.camera.name === this.imageParams.camera?.name) {
                 await this.closeImage()
 
                 ngZone.run(() => {
@@ -300,7 +301,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('GUIDE_EXPOSURE_FINISHED', async (_, data: GuideExposureFinished) => {
-            if (data.camera === this.imageParams.camera?.name) {
+            if (data.camera.name === this.imageParams.camera?.name) {
                 await this.closeImage()
 
                 ngZone.run(() => {
@@ -415,13 +416,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private async loadImage() {
         if (this.imageParams.path) {
             await this.loadImageFromPath(this.imageParams.path)
-        } else if (this.imageParams.camera) {
-            try {
-                const savedImage = await this.api.latestImageOfCamera(this.imageParams.camera)
-                await this.loadImageFromPath(savedImage.path)
-            } catch (e) {
-                console.error(e)
-            }
         }
 
         if (this.imageParams.title) {

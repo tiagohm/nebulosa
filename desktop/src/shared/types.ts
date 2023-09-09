@@ -154,23 +154,15 @@ export interface CameraStartCapture {
 
 export interface CameraCaptureEvent {
     camera: Camera
-    status: CameraCaptureStatus
 }
 
 export interface CameraCaptureStarted extends CameraCaptureEvent {
-    jobId: number
-    exposureAmount: number
-    exposureTime: number
-    captureTime: number
-    looping: boolean
 }
 
 export interface CameraCaptureFinished extends CameraCaptureEvent {
-    jobId: number
 }
 
 export interface CameraExposureUpdated extends CameraCaptureEvent {
-    jobId: number
     exposureAmount: number
     exposureCount: number
     exposureTime: number
@@ -183,6 +175,16 @@ export interface CameraExposureUpdated extends CameraCaptureEvent {
     elapsedTime: number
     waitProgress: number
     waitRemainingTime: number
+    waitTime: number
+    status: CameraCaptureStatus
+}
+
+export interface CameraExposureStarted extends CameraCaptureEvent {
+    exposureCount: number
+}
+
+export interface CameraExposureFinished extends CameraCaptureEvent {
+    path: string
 }
 
 export interface OpenWindowOptions {
@@ -200,21 +202,20 @@ export interface OpenWindow<T> extends OpenWindowOptions {
     params?: T
 }
 
-export interface SavedCameraImage {
-    camera: string
+export interface GuideCaptureEvent {
+    camera: Camera
+}
+
+export interface GuideExposureFinished extends GuideCaptureEvent {
+    path: string
+}
+
+export interface ImageInfo {
+    camera: Camera
     path: string
     width: number
     height: number
     mono: boolean
-    savedAt: number
-}
-
-export interface GuideExposureFinished {
-    camera: string
-    path: string
-}
-
-export interface ImageInfo extends SavedCameraImage {
     stretchShadow: number
     stretchHighlight: number
     stretchMidtone: number
@@ -672,10 +673,12 @@ export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
     'WATNEY'
 
 export const INDI_EVENT_TYPES = [
-    'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
-    'DEVICE_MESSAGE_RECEIVED', 'CAMERA_IMAGE_SAVED',
-    'CAMERA_UPDATED', 'CAMERA_EXPOSURE_UPDATED',
-    'CAMERA_CAPTURE_FINISHED', 'CAMERA_ATTACHED', 'CAMERA_DETACHED',
+    // Device.
+    'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED', 'DEVICE_MESSAGE_RECEIVED',
+    // Camera.
+    'CAMERA_UPDATED', 'CAMERA_ATTACHED', 'CAMERA_DETACHED',
+    'CAMERA_CAPTURE_STARTED', 'CAMERA_CAPTURE_FINISHED',
+    'CAMERA_EXPOSURE_UPDATED', 'CAMERA_EXPOSURE_STARTED', 'CAMERA_EXPOSURE_FINISHED',
     'MOUNT_UPDATED', 'MOUNT_ATTACHED', 'MOUNT_DETACHED',
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
     'WHEEL_UPDATED', 'WHEEL_ATTACHED', 'WHEEL_DETACHED',
