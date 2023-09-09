@@ -23,7 +23,7 @@ class GuiderSerializer : StdSerializer<Guider>(Guider::class.java) {
         gen.writeFieldName("primaryStar")
         gen.writeGuidePoint(guider.primaryStar)
         gen.writeNumberField("searchRegion", guider.searchRegion)
-        gen.writeBooleanField("looping", guider.isLooping)
+        // TODO: gen.writeBooleanField("looping", guider.isLooping)
         gen.writeBooleanField("calibrating", guider.isCalibrating)
         gen.writeBooleanField("guiding", guider.isGuiding)
         gen.writeEndObject()

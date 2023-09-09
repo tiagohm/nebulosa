@@ -259,7 +259,7 @@ export interface INDISendPropertyItem {
 }
 
 export interface INDIDeviceMessage {
-    device?: string
+    device?: Device
     message: string
 }
 

@@ -1,13 +1,18 @@
 package nebulosa.indi.device.mount
 
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.SerializerProvider
 import nebulosa.indi.device.Parkable
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.json.HasJson
 import nebulosa.math.Angle
+import nebulosa.math.AngleFormatter
 import nebulosa.math.Distance
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
-interface Mount : GuideOutput, GPS, Parkable {
+interface Mount : GuideOutput, GPS, Parkable, HasJson {
 
     val slewing: Boolean
 
@@ -74,6 +79,40 @@ interface Mount : GuideOutput, GPS, Parkable {
     fun coordinates(longitude: Angle, latitude: Angle, elevation: Distance)
 
     fun dateTime(dateTime: OffsetDateTime)
+
+    override fun writeToJson(gen: JsonGenerator, provider: SerializerProvider) {
+        gen.writeStartObject()
+        gen.writeStringField("name", name)
+        gen.writeBooleanField("connected", connected)
+        gen.writeBooleanField("slewing", slewing)
+        gen.writeBooleanField("tracking", tracking)
+        gen.writeBooleanField("canAbort", canAbort)
+        gen.writeBooleanField("canSync", canSync)
+        gen.writeBooleanField("canGoTo", canGoTo)
+        gen.writeBooleanField("canHome", canHome)
+        gen.writeObjectField("slewRates", slewRates)
+        gen.writeObjectField("slewRate", slewRate)
+        gen.writeStringField("mountType", mountType.name)
+        gen.writeObjectField("trackModes", trackModes)
+        gen.writeStringField("trackMode", trackMode.name)
+        gen.writeStringField("pierSide", pierSide.name)
+        gen.writeNumberField("guideRateWE", guideRateWE)
+        gen.writeNumberField("guideRateNS", guideRateNS)
+        gen.writeStringField("rightAscension", rightAscension.format(AngleFormatter.HMS))
+        gen.writeStringField("declination", declination.format(AngleFormatter.SIGNED_DMS))
+        gen.writeBooleanField("canPulseGuide", canPulseGuide)
+        gen.writeBooleanField("pulseGuiding", pulseGuiding)
+        gen.writeBooleanField("canPark", canPark)
+        gen.writeBooleanField("parking", parking)
+        gen.writeBooleanField("parked", parked)
+        gen.writeBooleanField("hasGPS", hasGPS)
+        gen.writeNumberField("longitude", longitude.degrees)
+        gen.writeNumberField("latitude", latitude.degrees)
+        gen.writeNumberField("elevation", elevation.meters)
+        gen.writeNumberField("dateTime", dateTime.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli())
+        gen.writeNumberField("offsetInMinutes", dateTime.offset.totalSeconds / 60)
+        gen.writeEndObject()
+    }
 
     companion object {
 

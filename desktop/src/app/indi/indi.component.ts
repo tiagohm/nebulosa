@@ -56,7 +56,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('DEVICE_MESSAGE_RECEIVED', (_, data: INDIDeviceMessage) => {
-            if (this.device && data.device === this.device.name) {
+            if (this.device && data.device?.name === this.device.name) {
                 ngZone.run(() => {
                     this.messages.splice(0, 0, data.message)
                 })

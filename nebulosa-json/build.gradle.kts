@@ -4,11 +4,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":nebulosa-imaging"))
-    api(project(":nebulosa-nova"))
-    api(project(":nebulosa-indi-protocol"))
-    api(project(":nebulosa-json"))
-    implementation(project(":nebulosa-log"))
+    api(libs.jackson)
     testImplementation(project(":nebulosa-test"))
 }
 

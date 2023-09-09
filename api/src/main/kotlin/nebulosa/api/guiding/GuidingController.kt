@@ -9,6 +9,7 @@ import nebulosa.api.data.responses.GuidingStarResponse
 import nebulosa.indi.device.guide.GuideOutput
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
@@ -40,33 +41,29 @@ class GuidingController(
         guidingService.disconnect(guideOutput)
     }
 
-    @PostMapping("startGuideLooping")
+    @PostMapping("guideLoopingStart")
     fun startLooping(
         @RequestParam("camera") @Valid @NotBlank cameraName: String,
         @RequestParam("mount") @Valid @NotBlank mountName: String,
         @RequestParam("guideOutput") @Valid @NotBlank guideOutputName: String,
+        @RequestBody @Valid body: GuideStartLoopingRequest,
     ) {
         val camera = requireNotNull(connectionService.camera(cameraName))
         val mount = requireNotNull(connectionService.mount(mountName))
         val guideOutput = requireNotNull(connectionService.guideOutput(guideOutputName))
-        guidingService.startLooping(camera, mount, guideOutput)
+        guidingService.startLooping(camera, mount, guideOutput, body)
     }
 
-    @PostMapping("stopGuideLooping")
-    fun stopLooping() {
-        guidingService.stopLooping()
-    }
-
-    @PostMapping("startGuiding")
+    @PostMapping("guidingStart")
     fun startGuiding(
         @RequestParam(required = false, defaultValue = "false") forceCalibration: Boolean,
     ) {
         guidingService.startGuiding(forceCalibration)
     }
 
-    @PostMapping("stopGuiding")
+    @PostMapping("guidingStop")
     fun stopGuiding() {
-        guidingService.stopGuiding()
+        guidingService.stop()
     }
 
     @GetMapping("guidingChart")
