@@ -352,7 +352,7 @@ class Image(
             val header = hdu.header
             val width = header.naxis(1)
             val height = header.naxis(2)
-            val mono = isMono(header)
+            val mono = isMono(header) || !debayer
             val axes = hdu.axes
             val bitpix = hdu.bitpix
 

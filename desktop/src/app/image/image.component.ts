@@ -40,7 +40,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     @ViewChild('menu')
     private readonly menu!: ContextMenu
 
-    debayer = false
+    debayer = true
     mirrorHorizontal = false
     mirrorVertical = false
     invert = false

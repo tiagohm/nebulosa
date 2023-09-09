@@ -316,7 +316,7 @@ export class ApiService {
         const query = `debayer=${debayer}&autoStretch=${autoStretch}&shadow=${shadow}&highlight=${highlight}&midtone=${midtone}` +
             `&mirrorHorizontal=${mirrorHorizontal}&mirrorVertical=${mirrorVertical}&invert=${invert}` +
             `&scnrEnabled=${scnrEnabled}&scnrChannel=${scnrChannel}&scnrAmount=${scnrAmount}&scnrProtectionMode=${scnrProtectionMode}`
-        const response = await firstValueFrom(this.http.get(`${this.baseUri}/openImage?path=${path}&${query}`, {
+        const response = await firstValueFrom(this.http.get(`${this.baseUri}/openImage?path=${encodeURIComponent(path)}&${query}`, {
             observe: 'response',
             responseType: 'blob'
         }))
@@ -327,7 +327,7 @@ export class ApiService {
     }
 
     closeImage(path: string) {
-        return this.post<void>(`closeImage?path=${path}`)
+        return this.post<void>(`closeImage?path=${encodeURIComponent(path)}`)
     }
 
     indiProperties(device: Device) {
@@ -462,7 +462,7 @@ export class ApiService {
         stars: boolean = true, dsos: boolean = true, minorPlanets: boolean = false,
         minorPlanetMagLimit: number = 12.0,
     ) {
-        return this.get<ImageAnnotation[]>(`annotationsOfImage?path=${path}&stars=${stars}&dsos=${dsos}&minorPlanets=${minorPlanets}&minorPlanetMagLimit=${minorPlanetMagLimit}`)
+        return this.get<ImageAnnotation[]>(`annotationsOfImage?path=${encodeURIComponent(path)}&stars=${stars}&dsos=${dsos}&minorPlanets=${minorPlanets}&minorPlanetMagLimit=${minorPlanetMagLimit}`)
     }
 
     solveImage(
@@ -472,7 +472,7 @@ export class ApiService {
         downsampleFactor: number,
         pathOrUrl: string, apiKey: string,
     ) {
-        return this.post<Calibration>(`solveImage?path=${path}&type=${type}&pathOrUrl=${pathOrUrl}&blind=${blind}` +
+        return this.post<Calibration>(`solveImage?path=${encodeURIComponent(path)}&type=${type}&pathOrUrl=${pathOrUrl}&blind=${blind}` +
             `&centerRA=${centerRA}&centerDEC=${centerDEC}&radius=${radius}&downsampleFactor=${downsampleFactor}&apiKey=${apiKey}`)
     }
 
@@ -488,7 +488,7 @@ export class ApiService {
     }
 
     pointMountHere(mount: Mount, path: string, x: number, y: number, synchronized: boolean = true) {
-        return this.post<void>(`pointMountHere?name=${mount.name}&path=${path}&x=${x}&y=${y}&synchronized=${synchronized}`)
+        return this.post<void>(`pointMountHere?name=${mount.name}&path=${encodeURIComponent(path)}&x=${x}&y=${y}&synchronized=${synchronized}`)
     }
 
     searchSatellites(text: string = '', groups: SatelliteGroupType[] = []) {

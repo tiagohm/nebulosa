@@ -5,15 +5,16 @@
                 <ng-template pTemplate="header">
                     <img src="assets/icons/sun.png">
                 </ng-template>
-                <div class="grid flex align-items-center justify-content-center">
+                <div class="grid flex flex-column align-items-center justify-content-center" style="height: 217px;">
                     <img #imageOfSun style="width: 191px">
+                    <a class="text-sm" target="_blank" href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">SDO/HMI</a>
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Moon" [disabled]="refreshing">
                 <ng-template pTemplate="header">
                     <img src="assets/icons/moon.png">
                 </ng-template>
-                <div class="grid flex align-items-center justify-content-center">
+                <div class="grid flex align-items-center justify-content-center" style="height: 217px;">
                     <moon [width]="187" [height]="187" [illuminationRatio]="moonIlluminated" [waning]="moonWaning" />
                 </div>
             </p-tabPanel>
