@@ -28,10 +28,11 @@ abstract class CachedEphemerisProvider<T : Any> : EphemerisProvider<T> {
         val offsetInSeconds = timeOffset.totalSeconds.toLong()
         val date = dateTime.toLocalDate()
 
-        val isToday = LocalDate.now(timeOffset).compareTo(date) == 0
-        val startTime = if (!isToday || dateTime.hour >= 12) LocalDateTime.of(date, NOON).minusSeconds(offsetInSeconds).withSecond(0).withNano(0)
+        val startTime = if (dateTime.hour >= 12) LocalDateTime.of(date, NOON).minusSeconds(offsetInSeconds).withSecond(0).withNano(0)
         else LocalDateTime.of(date, NOON).minusDays(1L).minusSeconds(offsetInSeconds).withSecond(0).withNano(0)
         val endTime = startTime.plusDays(1L)
+
+        LOG.info("computing ephemeris for {} from {} UTC to {} UTC. dateTime={}", target, startTime, endTime, dateTime)
 
         val key = target to position
 
