@@ -359,11 +359,20 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                         return ''
                     },
                     label: (context) => {
+                        if (context.datasetIndex <= 7 && context.dataIndex === 1) {
+                            return ''
+                        }
+
                         const hours = (context.parsed.x + 12) % 24
                         const minutes = (hours - Math.trunc(hours)) * 60
                         const a = twoDigitsFormatter.format(Math.trunc(hours))
                         const b = twoDigitsFormatter.format(minutes)
-                        return `${a}:${b} ・ ${context.parsed.y.toFixed(2)}°`
+
+                        if (context.datasetIndex <= 8) {
+                            return `${a}:${b}`
+                        } else {
+                            return `${a}:${b} ・ ${context.parsed.y.toFixed(2)}°`
+                        }
                     }
                 }
             },
