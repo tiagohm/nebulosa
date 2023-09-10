@@ -46,7 +46,8 @@ data class CameraExposureTasklet(
     private val aborted = AtomicBoolean()
 
     @Volatile private var exposureCount = 0
-    @Volatile private var elapsedTime = 0L
+    @Volatile private var captureElapsedTime = 0L
+    @Volatile private var exposureElapsedTime = 0L
 
     private val isLoop = exposureAmount <= 0
     private val captureTime = if (isLoop) Duration.ZERO else exposureTime * exposureAmount + exposureDelay * (exposureAmount - 1)
@@ -66,9 +67,12 @@ data class CameraExposureTasklet(
                     aborted.set(true)
                 }
                 is CameraExposureProgressChanged -> {
+                    val exposureRemainingTime = event.device.exposureTime
+                    val exposureElapsedTime = exposureTime - exposureRemainingTime
+                    this.exposureElapsedTime = exposureElapsedTime.inWholeMicroseconds
+
                     if (listener != null) {
-                        val exposureRemainingTime = event.device.exposureTime
-                        val exposureProgress = (exposureTime - exposureRemainingTime) / exposureTime
+                        val exposureProgress = exposureElapsedTime / exposureTime
                         onCameraExposureUpdated(exposureRemainingTime, exposureProgress)
                     }
                 }
@@ -80,7 +84,7 @@ data class CameraExposureTasklet(
         camera.enableBlob()
         EventBus.getDefault().register(this)
         listener?.onCameraCaptureStarted(camera)
-        elapsedTime = 0L
+        captureElapsedTime = 0L
     }
 
     override fun afterJob(jobExecution: JobExecution) {
@@ -103,7 +107,7 @@ data class CameraExposureTasklet(
     }
 
     override fun onDelayElapsed(remainingTime: Duration, delayTime: Duration, waitTime: Duration) {
-        elapsedTime += waitTime.inWholeMicroseconds
+        captureElapsedTime += waitTime.inWholeMicroseconds
 
         if (listener != null) {
             val waitProgress = if (remainingTime > Duration.ZERO) 1.0 - delayTime / remainingTime else 1.0
@@ -129,6 +133,8 @@ data class CameraExposureTasklet(
                 camera.offset(offset)
                 camera.startCapture(exposureTime)
 
+                exposureElapsedTime = 0L
+
                 LOG.info(
                     "starting camera exposure. camera={}, exposureTime={}, exposureAmount={}, exposureDelay={}, x={}, y={}, width={}, height={}," +
                             " frameFormat={}, frameType={}, binX={}, binY={}, gain={}, offset={}, autoSave={}, savePath={}, saveInMemory={}",
@@ -137,9 +143,10 @@ data class CameraExposureTasklet(
                     gain, offset, autoSave, savePath, saveInMemory,
                 )
 
-                elapsedTime += exposureTime.inWholeMicroseconds
-
                 latch.await()
+
+                exposureElapsedTime = 0L
+                captureElapsedTime += exposureTime.inWholeMicroseconds
 
                 LOG.info("camera exposure finished")
             }
@@ -176,7 +183,7 @@ data class CameraExposureTasklet(
     }
 
     private fun onCameraExposureUpdated(exposureRemainingTime: Duration, exposureProgress: Double) {
-        val elapsedTime = elapsedTime.microseconds
+        val elapsedTime = (captureElapsedTime + exposureElapsedTime).microseconds
         var captureRemainingTime = Duration.ZERO
         var captureProgress = 0.0
 
