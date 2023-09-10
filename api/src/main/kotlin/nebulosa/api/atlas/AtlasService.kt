@@ -19,12 +19,10 @@ import nebulosa.api.repositories.SatelliteRepository
 import nebulosa.api.repositories.StarRepository
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
-import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.mas
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Velocity.Companion.kms
-import nebulosa.nova.almanac.evenlySpacedNumbers
 import nebulosa.nova.almanac.findDiscrete
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
@@ -83,8 +81,6 @@ class AtlasService(
             appPreferenceRepository
                 .save(AppPreferenceEntity(key = "database.version", value = DATABASE_VERSION))
         }
-
-        LOG.info("DSO/Star database version $DATABASE_VERSION")
     }
 
     fun imageOfSun(output: HttpServletResponse) {
@@ -199,42 +195,35 @@ class AtlasService(
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    private fun fixedStarOf(star: StarEntity): FixedStar {
-        return stars.getOrPut(star.id) {
-            FixedStar(
-                star.rightAscension.rad, star.declination.rad,
-                star.pmRA.rad, star.pmDEC.rad, star.parallax.mas, star.radialVelocity.kms
-            )
-        }
+    private fun fixedStarOf(star: StarEntity) = stars.getOrPut(star.id) {
+        FixedStar(
+            star.rightAscension.rad, star.declination.rad,
+            star.pmRA.rad, star.pmDEC.rad, star.parallax.mas, star.radialVelocity.kms
+        )
     }
 
-    private fun fixedStarOf(dso: DeepSkyObjectEntity): FixedStar {
-        return dsos.getOrPut(dso.id) {
-            FixedStar(
-                dso.rightAscension.rad, dso.declination.rad,
-                dso.pmRA.rad, dso.pmDEC.rad, dso.parallax.mas, dso.radialVelocity.kms
-            )
-        }
+    private fun fixedStarOf(dso: DeepSkyObjectEntity) = dsos.getOrPut(dso.id) {
+        FixedStar(
+            dso.rightAscension.rad, dso.declination.rad,
+            dso.pmRA.rad, dso.pmDEC.rad, dso.parallax.mas, dso.radialVelocity.kms
+        )
     }
 
     private fun altitudePointsOfBody(ephemeris: List<HorizonsElement>, stepSize: Int): List<DoubleArray> {
         val points = ArrayList<DoubleArray>(1441)
 
-        evenlySpacedNumbers(0.0, 1440.0, 1441 / stepSize) {
-            val minute = it.toInt()
-            val altitude = ephemeris[minute].asDouble(HorizonsQuantity.APPARENT_ALT)
-            points.add(doubleArrayOf(minute / 60.0, altitude))
+        for (i in 0..1440 step stepSize) {
+            val altitude = ephemeris[i].asDouble(HorizonsQuantity.APPARENT_ALT)
+            points.add(doubleArrayOf(i / 60.0, altitude))
         }
 
         return points
     }
 
-    fun searchMinorPlanet(text: String): MinorPlanetResponse {
-        return smallBodyDatabaseService
-            .search(text).execute().body()
-            ?.let(MinorPlanetResponse::of)
-            ?: MinorPlanetResponse.EMPTY
-    }
+    fun searchMinorPlanet(text: String) = smallBodyDatabaseService
+        .search(text).execute().body()
+        ?.let(MinorPlanetResponse::of)
+        ?: MinorPlanetResponse.EMPTY
 
     fun searchStar(
         text: String,
@@ -242,14 +231,12 @@ class AtlasService(
         constellation: Constellation? = null,
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
-    ): List<StarEntity> {
-        return starRepository.search(
-            text,
-            rightAscension, declination, radius,
-            constellation,
-            magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type
-        )
-    }
+    ) = starRepository.search(
+        text,
+        rightAscension, declination, radius,
+        constellation,
+        magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type
+    )
 
     fun searchDSO(
         text: String,
@@ -257,14 +244,12 @@ class AtlasService(
         constellation: Constellation? = null,
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
-    ): List<DeepSkyObjectEntity> {
-        return deepSkyObjectRepository.search(
-            text,
-            rightAscension, declination, radius,
-            constellation,
-            magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type
-        )
-    }
+    ) = deepSkyObjectRepository.search(
+        text,
+        rightAscension, declination, radius,
+        constellation,
+        magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type
+    )
 
     @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
     private fun refreshImageOfSun() {
@@ -291,8 +276,6 @@ class AtlasService(
 
         private const val SUN = "10"
         private const val MOON = "301"
-
-        @JvmStatic private val LOG = loggerFor<AtlasService>()
 
         @JvmStatic
         private fun Double.clampMagnitude(): Double {
