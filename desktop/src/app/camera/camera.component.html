@@ -195,7 +195,7 @@
         <div class="col-6">
             <span class="p-float-label">
                 <p-dropdown [disabled]="!connected || capturing" [options]="frameFormats" [(ngModel)]="frameFormat" styleClass="border-0"
-                            (ngModelChange)="savePreference()" />
+                            (ngModelChange)="savePreference()" [autoDisplayFirst]="false" />
                 <label>Frame Format</label>
             </span>
         </div>

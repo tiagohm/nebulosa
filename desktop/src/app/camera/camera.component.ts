@@ -399,7 +399,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.frameType = this.preference.get(`camera.${this.camera.name}.frameType`, 'LIGHT')
             this.gain = this.preference.get(`camera.${this.camera.name}.gain`, 0)
             this.offset = this.preference.get(`camera.${this.camera.name}.offset`, 0)
-            this.frameFormat = this.preference.get(`camera.${this.camera.name}.frameFormat`, '')
+            this.frameFormat = this.preference.get(`camera.${this.camera.name}.frameFormat`, this.camera.frameFormats[0] || '')
         }
     }
 
