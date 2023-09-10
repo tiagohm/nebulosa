@@ -138,7 +138,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     private savePreference() {
-        if (this.focuser) {
+        if (this.focuser && this.focuser.connected) {
             this.preference.set(`focuser.${this.focuser.name}.stepsRelative`, this.stepsRelative)
             this.preference.set(`focuser.${this.focuser.name}.stepsAbsolute`, this.stepsAbsolute)
         }

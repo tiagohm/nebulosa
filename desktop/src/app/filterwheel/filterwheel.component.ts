@@ -147,7 +147,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     private savePreference() {
-        if (this.wheel) {
+        if (this.wheel && this.wheel.connected) {
             const darkFilter = this.filters.find(e => e.dark)
             this.preference.set(`wheel.${this.wheel.name}.shutterPosition`, darkFilter?.position || 0)
         }

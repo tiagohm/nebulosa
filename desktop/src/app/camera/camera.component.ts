@@ -404,7 +404,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     savePreference() {
-        if (this.camera) {
+        if (this.camera && this.camera.connected) {
             this.preference.set(`camera.${this.camera.name}.autoSave`, this.autoSave)
             this.preference.set(`camera.${this.camera.name}.savePath`, this.savePath)
             this.preference.set(`camera.${this.camera.name}.autoSubFolderMode`, this.autoSubFolderMode)

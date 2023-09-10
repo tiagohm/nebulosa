@@ -378,7 +378,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     private savePreference() {
-        if (this.mount) {
+        if (this.mount && this.mount.connected) {
             this.preference.set(`mount.${this.mount.name}.targetCoordinateType`, this.targetCoordinateType)
             this.preference.set(`mount.${this.mount.name}.targetRightAscension`, this.targetRightAscension)
             this.preference.set(`mount.${this.mount.name}.targetDeclination`, this.targetDeclination)
