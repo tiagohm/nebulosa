@@ -7,6 +7,7 @@ import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.indi.protocol.PropertyState
 import nebulosa.json.HasJson
+import kotlin.time.Duration
 
 interface Camera : GuideOutput, Thermometer, HasJson {
 
@@ -32,13 +33,13 @@ interface Camera : GuideOutput, Thermometer, HasJson {
 
     val cfaType: CfaPattern
 
-    val exposureMin: Long
+    val exposureMin: Duration
 
-    val exposureMax: Long
+    val exposureMax: Duration
 
     val exposureState: PropertyState
 
-    val exposure: Long
+    val exposureTime: Duration
 
     val hasCooler: Boolean
 
@@ -116,7 +117,7 @@ interface Camera : GuideOutput, Thermometer, HasJson {
 
     fun offset(value: Int)
 
-    fun startCapture(exposureInMicros: Long)
+    fun startCapture(exposureTime: Duration)
 
     fun abortCapture()
 
@@ -135,10 +136,10 @@ interface Camera : GuideOutput, Thermometer, HasJson {
         gen.writeNumberField("cfaOffsetX", cfaOffsetX)
         gen.writeNumberField("cfaOffsetY", cfaOffsetY)
         gen.writeStringField("cfaType", cfaType.name)
-        gen.writeNumberField("exposureMin", exposureMin)
-        gen.writeNumberField("exposureMax", exposureMax)
+        gen.writeNumberField("exposureMin", exposureMin.inWholeMicroseconds)
+        gen.writeNumberField("exposureMax", exposureMax.inWholeMicroseconds)
         gen.writeStringField("exposureState", exposureState.name)
-        gen.writeNumberField("exposure", exposure)
+        gen.writeNumberField("exposureTime", exposureTime.inWholeMicroseconds)
         gen.writeBooleanField("hasCooler", hasCooler)
         gen.writeBooleanField("canSetTemperature", canSetTemperature)
         gen.writeBooleanField("canSubFrame", canSubFrame)

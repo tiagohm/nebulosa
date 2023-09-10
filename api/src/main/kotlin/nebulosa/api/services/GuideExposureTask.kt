@@ -13,6 +13,7 @@ import org.greenrobot.eventbus.ThreadMode
 import java.io.InputStream
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.microseconds
 
 data class GuideExposureTask(
     val camera: Camera,
@@ -61,7 +62,7 @@ data class GuideExposureTask(
                 camera.bin(1, 1)
                 // camera.gain(gain)
                 // camera.offset(offset)
-                camera.startCapture(exposureInMicroseconds)
+                camera.startCapture(exposureInMicroseconds.microseconds)
 
                 LOG.info("exposuring guiding camera ${camera.name} by $exposure")
 

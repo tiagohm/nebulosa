@@ -40,16 +40,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-batch")
-    kapt("org.springframework:spring-context-indexer:6.0.11")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    kapt("org.springframework:spring-context-indexer:6.0.11")
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation(project(":nebulosa-skycatalog-hyg"))
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))
-
-    if (project.hasProperty("openapi")) {
-        implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
-    }
 }
 
 tasks.withType<BootJar> {

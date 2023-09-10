@@ -20,3 +20,7 @@ spring:
   batch:
     job:
       enabled: false
+
+  devtools:
+    livereload:
+      enabled: false

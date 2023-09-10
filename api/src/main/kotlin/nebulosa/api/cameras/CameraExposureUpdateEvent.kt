@@ -2,8 +2,8 @@ package nebulosa.api.cameras
 
 import nebulosa.indi.device.camera.Camera
 
-data class CameraExposureUpdated(
-    override val camera: Camera,
+data class CameraExposureUpdateEvent(
+    val camera: Camera,
     val exposureAmount: Int,
     val exposureCount: Int,
     val exposureTime: Long,
@@ -14,7 +14,4 @@ data class CameraExposureUpdated(
     val captureProgress: Double,
     val looping: Boolean,
     val elapsedTime: Long,
-    val waitProgress: Double,
-    val waitRemainingTime: Long,
-    val status: CameraCaptureStatus,
-) : CameraCaptureEvent
+)

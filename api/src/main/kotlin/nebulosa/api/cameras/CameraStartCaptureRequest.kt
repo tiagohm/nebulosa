@@ -22,10 +22,6 @@ data class CameraStartCaptureRequest(
     @field:PositiveOrZero val gain: Int = 0,
     @field:PositiveOrZero val offset: Int = 0,
     val autoSave: Boolean = false,
-    var savePath: Path? = null,
+    val savePath: Path? = null,
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.OFF,
-) {
-
-    val isLoop
-        get() = exposureAmount <= 0
-}
+)

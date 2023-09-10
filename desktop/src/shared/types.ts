@@ -30,7 +30,7 @@ export interface Camera extends GuideOutput, Thermometer {
     exposureMin: number
     exposureMax: number
     exposureState: PropertyState
-    exposure: number
+    exposureTime: number
     hasCooler: boolean
     canSetTemperature: boolean
     canSubFrame: boolean
@@ -156,10 +156,10 @@ export interface CameraCaptureEvent {
     camera: Camera
 }
 
-export interface CameraCaptureStarted extends CameraCaptureEvent {
-}
-
-export interface CameraCaptureFinished extends CameraCaptureEvent {
+export interface CameraExposureDelayElapsed extends CameraCaptureEvent {
+    waitProgress: number
+    waitRemainingTime: number
+    waitTime: number
 }
 
 export interface CameraExposureUpdated extends CameraCaptureEvent {
@@ -173,10 +173,6 @@ export interface CameraExposureUpdated extends CameraCaptureEvent {
     captureTime: number
     looping: boolean
     elapsedTime: number
-    waitProgress: number
-    waitRemainingTime: number
-    waitTime: number
-    status: CameraCaptureStatus
 }
 
 export interface CameraExposureStarted extends CameraCaptureEvent {
@@ -678,7 +674,7 @@ export const INDI_EVENT_TYPES = [
     // Camera.
     'CAMERA_UPDATED', 'CAMERA_ATTACHED', 'CAMERA_DETACHED',
     'CAMERA_CAPTURE_STARTED', 'CAMERA_CAPTURE_FINISHED',
-    'CAMERA_EXPOSURE_UPDATED', 'CAMERA_EXPOSURE_STARTED', 'CAMERA_EXPOSURE_FINISHED',
+    'CAMERA_EXPOSURE_UPDATED', 'CAMERA_EXPOSURE_STARTED', 'CAMERA_EXPOSURE_FINISHED', 'CAMERA_EXPOSURE_DELAY_ELAPSED',
     'MOUNT_UPDATED', 'MOUNT_ATTACHED', 'MOUNT_DETACHED',
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
     'WHEEL_UPDATED', 'WHEEL_ATTACHED', 'WHEEL_DETACHED',

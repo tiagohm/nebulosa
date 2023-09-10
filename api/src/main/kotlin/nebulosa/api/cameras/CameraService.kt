@@ -6,6 +6,8 @@ import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
+import kotlin.time.Duration.Companion.microseconds
+import kotlin.time.Duration.Companion.seconds
 
 @Service
 class CameraService(
@@ -37,11 +39,17 @@ class CameraService(
     fun startCapture(camera: Camera, startCapture: CameraStartCaptureRequest) {
         if (isCapturing(camera)) return
 
-        startCapture.savePath = startCapture.savePath
-            ?.takeIf { it.exists() && it.isDirectory() }
-            ?: Path.of("$capturesDirectory", camera.name).createDirectories()
+        val savePath = startCapture.savePath
+            ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
+            ?: Path.of("$capturesDirectory", camera.name)
 
-        cameraCaptureExecutor.execute(camera, startCapture)
+        cameraCaptureExecutor.execute(
+            camera,
+            startCapture.exposureInMicroseconds.microseconds, startCapture.exposureAmount, startCapture.exposureDelayInSeconds.seconds,
+            startCapture.x, startCapture.y, startCapture.width, startCapture.height,
+            startCapture.frameFormat, startCapture.frameType, startCapture.binX, startCapture.binY,
+            startCapture.gain, startCapture.offset, startCapture.autoSave, startCapture.autoSubFolderMode.pathFor(savePath).createDirectories(),
+        )
     }
 
     fun abortCapture(camera: Camera) {

@@ -1,8 +1,7 @@
 package nebulosa.api.guiding
 
 import jakarta.annotation.PostConstruct
-import nebulosa.api.cameras.CameraCaptureEvent
-import nebulosa.api.cameras.CameraCaptureEventListener
+import nebulosa.api.cameras.CameraCaptureListener
 import nebulosa.api.data.entities.GuideCalibrationEntity
 import nebulosa.api.data.enums.DitherMode
 import nebulosa.api.data.enums.GuideAlgorithmType
@@ -44,7 +43,7 @@ class GuidingExecutor(
     private val jobRegistry: JobRegistry,
     private val guideCalibrationRepository: GuideCalibrationRepository,
     private val messageService: MessageService,
-) : GuidingCamera, GuidingMount, GuidingRotator, GuidingPulse, GuiderListener, CameraCaptureEventListener {
+) : GuidingCamera, GuidingMount, GuidingRotator, GuidingPulse, GuiderListener, CameraCaptureListener {
 
     private val guider = MultiStarGuider()
     private val guideCamera = AtomicReference<Camera>()
@@ -235,8 +234,6 @@ class GuidingExecutor(
         val jobExecution = runningJob.get()?.second ?: return
         jobOperator.stop(jobExecution.jobId)
     }
-
-    override fun onCameraCaptureEvent(event: CameraCaptureEvent) {}
 
     override fun onLockPositionChanged(position: GuidePoint) {
         messageService.sendMessage(GUIDE_LOCK_POSITION_CHANGED, guider)

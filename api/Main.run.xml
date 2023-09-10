@@ -14,7 +14,7 @@
                     tasks="build"
                     externalProjectPath="$PROJECT_DIR$/api"
                     vmOptions=""
-                    scriptParameters="-Popenapi -x test"/>
+                    scriptParameters="-x test"/>
         </method>
     </configuration>
 </component>

@@ -1,11 +1,14 @@
 package nebulosa.api.guiding
 
-import nebulosa.api.cameras.*
-import nebulosa.guiding.internal.InternalGuider
+import nebulosa.api.cameras.CameraCaptureListener
+import nebulosa.api.cameras.CameraExposureTasklet
+import nebulosa.api.cameras.CameraStartCaptureRequest
+import nebulosa.api.tasklets.delay.DelayTasklet
+import nebulosa.guiding.Guider
 import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.Camera
-import nebulosa.log.loggerFor
 import nom.tam.fits.Header
+import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.StepContribution
 import org.springframework.batch.core.scope.context.ChunkContext
@@ -14,21 +17,19 @@ import org.springframework.batch.repeat.RepeatStatus
 import java.nio.file.Path
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.system.measureTimeMillis
+import kotlin.time.Duration
 
 data class GuidingTasklet(
     private val camera: Camera,
-    private val guider: InternalGuider,
-    private val startLooping: GuideStartLoopingRequest,
-    private val listener: CameraCaptureEventListener,
-) : StoppableTasklet, CameraCaptureEventListener, JobExecutionListener {
+    private val guider: Guider,
+    private val startLooping: GuideStartLoopingRequest, // TODO: PASS ALL PARAMETERS HERE!
+    private val listener: CameraCaptureListener? = null,
+) : StoppableTasklet, CameraCaptureListener, JobExecutionListener {
 
     private val startCapture = CameraStartCaptureRequest()
 
-    init {
-        startCapture.savePath = Path.of("@guiding")
-    }
-
-    private val cameraExposureTasklet = CameraExposureTasklet(camera, startCapture, this, true)
+    private val cameraExposureTasklet = CameraExposureTasklet(camera, savePath = Path.of("@guiding"), listener = this, saveInMemory = true)
+    private val delayTasklet = DelayTasklet(Duration.ZERO)
     private val guideImage = LinkedBlockingQueue<Image>()
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
@@ -40,11 +41,11 @@ data class GuidingTasklet(
             RepeatStatus.FINISHED
         } else {
             val elapsedTime = measureTimeMillis { guider.processImage(image) }
-            val waitTime = startCapture.exposureDelayInSeconds * 1000L - elapsedTime
+            val waitTime = startCapture.exposureDelayInSeconds * 1000L - elapsedTime // TODO: FIX ME
 
             if (waitTime in 100L..60000L) {
-                LOG.info("waiting {} ms before starting next capture", waitTime)
-                Thread.sleep(waitTime)
+                contribution.stepExecution.executionContext.putLong(DelayTasklet.DELAY_TIME_NAME, waitTime)
+                delayTasklet.execute(contribution, chunkContext)
             }
 
             RepeatStatus.CONTINUABLE
@@ -57,16 +58,23 @@ data class GuidingTasklet(
         cameraExposureTasklet.stop()
     }
 
-    override fun onCameraCaptureEvent(event: CameraCaptureEvent) {
-        if (event is CameraExposureFinished) {
-            guideImage.offer(event.image!!)
-            listener.onCameraCaptureEvent(event)
+    override fun beforeJob(jobExecution: JobExecution) {
+        cameraExposureTasklet.beforeJob(jobExecution)
+    }
+
+    override fun afterJob(jobExecution: JobExecution) {
+        cameraExposureTasklet.afterJob(jobExecution)
+    }
+
+    override fun onCameraExposureFinished(camera: Camera, image: Image?, path: Path?) {
+        if (image != null) {
+            guideImage.offer(image)
+            listener?.onCameraExposureFinished(camera, image, path)
         }
     }
 
     companion object {
 
         @JvmStatic private val DUMMY_IMAGE = Image(1, 1, Header(), true)
-        @JvmStatic private val LOG = loggerFor<GuidingTasklet>()
     }
 }
