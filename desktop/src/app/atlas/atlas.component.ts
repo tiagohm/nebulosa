@@ -361,7 +361,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     label: (context) => {
                         const hours = (context.parsed.x + 12) % 24
                         const minutes = (hours - Math.trunc(hours)) * 60
-                        const a = twoDigitsFormatter.format(hours)
+                        const a = twoDigitsFormatter.format(Math.trunc(hours))
                         const b = twoDigitsFormatter.format(minutes)
                         return `${a}:${b} ・ ${context.parsed.y.toFixed(2)}°`
                     }
