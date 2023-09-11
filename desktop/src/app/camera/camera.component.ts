@@ -23,6 +23,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     autoSave = false
     savePath = ''
+    capturesPath = ''
     autoSubFolderMode: AutoSubFolderMode = 'OFF'
 
     wheel?: FilterWheel
@@ -369,6 +370,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.gainMax = this.camera.gainMax
             this.offsetMin = this.camera.offsetMin
             this.offsetMax = this.camera.offsetMax
+            this.capturesPath = this.camera.capturesPath
 
             this.updateExposureUnit(this.exposureTimeUnit)
         }

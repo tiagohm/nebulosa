@@ -23,7 +23,7 @@
             <i *ngIf="autoSubFolderMode === 'OFF'" class="mdi mdi-folder-off"></i>
             <i *ngIf="autoSubFolderMode === 'NOON'" class="mdi mdi-weather-sunny text-yellow-600"></i>
             <i *ngIf="autoSubFolderMode === 'MIDNIGHT'" class="mdi mdi-weather-night text-blue-600"></i>
-            <span style="display: contents">{{ savePath }}</span>
+            <span style="display: contents">{{ savePath || capturesPath }}</span>
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm" style="min-height: 25px;">
             <i class="mdi mdi-information text-blue-600"></i>

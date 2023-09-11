@@ -5,9 +5,10 @@ import com.fasterxml.jackson.databind.SerializerProvider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.json.ToJson
 import org.springframework.stereotype.Component
+import java.nio.file.Path
 
 @Component
-class CameraToJson : ToJson<Camera> {
+class CameraToJson(private val capturesPath: Path) : ToJson<Camera> {
 
     override val type = Camera::class.java
 
@@ -63,6 +64,7 @@ class CameraToJson : ToJson<Camera> {
         gen.writeBooleanField("pulseGuiding", value.pulseGuiding)
         gen.writeBooleanField("hasThermometer", value.hasThermometer)
         gen.writeNumberField("temperature", value.temperature)
+        gen.writeObjectField("capturesPath", Path.of("$capturesPath", value.name))
         gen.writeEndObject()
     }
 }

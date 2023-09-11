@@ -60,6 +60,7 @@ export interface Camera extends GuideOutput, Thermometer {
     hasGuiderHead: boolean
     pixelSizeX: number
     pixelSizeY: number
+    capturesPath: string
 }
 
 export interface Parkable {
