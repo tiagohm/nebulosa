@@ -364,6 +364,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.maxHeight = this.camera.maxHeight
             this.height = Math.max(this.minHeight, Math.min(this.height, this.maxHeight))
             this.frameFormats = this.camera.frameFormats
+            if (!this.frameFormat) this.frameFormat = this.frameFormats[0]
             this.gainMin = this.camera.gainMin
             this.gainMax = this.camera.gainMax
             this.offsetMin = this.camera.offsetMin
