@@ -157,7 +157,7 @@ data class CameraExposureTasklet(
     private fun save(inputStream: InputStream) {
         val savePath = if (saveInMemory) {
             savePath
-        } else if (!isLoop && autoSave) {
+        } else if (autoSave) {
             val now = LocalDateTime.now()
             val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), frameType)
             Path.of("$savePath", fileName)
