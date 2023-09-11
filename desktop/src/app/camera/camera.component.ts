@@ -42,8 +42,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         {
             icon: 'mdi mdi-folder',
             label: 'Save path...',
-            command: async () => {
-                const path = await this.electron.sendSync('OPEN_DIRECTORY')
+            command: () => {
+                const defaultPath = this.savePath || this.capturesPath
+                const path = this.electron.openDirectory({ defaultPath })
 
                 if (path) {
                     this.savePath = path

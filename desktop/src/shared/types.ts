@@ -199,6 +199,10 @@ export interface OpenWindow<T> extends OpenWindowOptions {
     params?: T
 }
 
+export interface OpenDirectory {
+    defaultPath?: string
+}
+
 export interface GuideCaptureEvent {
     camera: Camera
 }

@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core'
 import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
-import { INDIEventType, InternalEventType, MainEventType, Mount } from '../types'
+import { INDIEventType, InternalEventType, MainEventType, Mount, OpenDirectory } from '../types'
 
 @Injectable({ providedIn: 'root' })
 export class ElectronService {
@@ -55,6 +55,10 @@ export class ElectronService {
     on(channel: INDIEventType | InternalEventType | 'PARAMS_CHANGED',
         listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) {
         return this.ipcRenderer.on(channel, listener)
+    }
+
+    openDirectory(data?: OpenDirectory): string | false {
+        return this.sendSync('OPEN_DIRECTORY', data)
     }
 
     selectedMount(): Mount | undefined {

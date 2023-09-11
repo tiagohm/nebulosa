@@ -5,6 +5,7 @@ import * as path from 'path'
 import { Camera, FilterWheel, Focuser, INDI_EVENT_TYPES, INTERNAL_EVENT_TYPES, Mount, OpenWindow } from './types'
 
 import { WebSocket } from 'ws'
+import { OpenDirectory } from '../src/shared/types'
 Object.assign(global, { WebSocket })
 
 let homeWindow: BrowserWindow | null = null
@@ -280,9 +281,10 @@ try {
         event.returnValue = !value.canceled && value.filePath
     })
 
-    ipcMain.on('OPEN_DIRECTORY', async (event) => {
+    ipcMain.on('OPEN_DIRECTORY', async (event, data?: OpenDirectory) => {
         const value = await dialog.showOpenDialog(homeWindow!, {
             properties: ['openDirectory'],
+            defaultPath: data?.defaultPath,
         })
 
         event.returnValue = !value.canceled && value.filePaths[0]
