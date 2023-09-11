@@ -9,21 +9,24 @@
         </div>
         <div class="col-2">
             <p-button *ngIf="connected" [disabled]="!camera || capturing" (onClick)="connect()" icon="mdi mdi-close"
-                      styleClass="p-button-danger" />
+                      styleClass="p-button-danger" pTooltip="Disconnect" tooltipPosition="bottom" />
             <p-button *ngIf="!connected" [disabled]="!camera || capturing" (onClick)="connect()" icon="mdi mdi-connection"
-                      styleClass="p-button-info" />
+                      styleClass="p-button-info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
         <div class="col-2 flex justify-content-center">
             <p-button [disabled]="!camera || capturing" icon="mdi mdi-lg mdi-dots-vertical" (click)="cameraDialogMenu.show()"
                       styleClass="p-button-rounded p-button-text" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center gap-1">
-            <i *ngIf="autoSave" class="mdi mdi-content-save"></i>
-            <i *ngIf="!autoSave" class="mdi mdi-content-save-off"></i>
-            <i *ngIf="autoSubFolderMode === 'OFF'" class="mdi mdi-folder-off"></i>
-            <i *ngIf="autoSubFolderMode === 'NOON'" class="mdi mdi-weather-sunny text-yellow-600"></i>
-            <i *ngIf="autoSubFolderMode === 'MIDNIGHT'" class="mdi mdi-weather-night text-blue-600"></i>
-            <span style="display: contents">{{ savePath || capturesPath }}</span>
+            <i *ngIf="autoSave" class="mdi mdi-content-save" pTooltip="Auto save: ON" tooltipPosition="bottom"></i>
+            <i *ngIf="!autoSave" class="mdi mdi-content-save-off" pTooltip="Auto save: OFF" tooltipPosition="bottom"></i>
+            <i *ngIf="autoSubFolderMode === 'OFF'" class="mdi mdi-folder-off" pTooltip="Auto sub folder: OFF" tooltipPosition="bottom"></i>
+            <i *ngIf="autoSubFolderMode === 'NOON'" class="mdi mdi-weather-sunny text-yellow-600" pTooltip="Auto sub folder: NOON" tooltipPosition="bottom"></i>
+            <i *ngIf="autoSubFolderMode === 'MIDNIGHT'" class="mdi mdi-weather-night text-blue-600" pTooltip="Auto sub folder: MIDNIGHT" tooltipPosition="bottom"></i>
+            <span *ngIf="camera" style="padding-top: 1px; padding-bottom: 1px; min-height: 17px;" class="flex align-items-center gap-2 bg-gray-800 border-round-2xl px-3">
+                {{ savePath || capturesPath }}
+                <i *ngIf="savePath" class="mdi mdi-close cursor-pointer" pTooltip="Reset" tooltipPosition="bottom" (click)="resetSavePath()"></i>
+            </span>
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm" style="min-height: 25px;">
             <i class="mdi mdi-information text-blue-600"></i>
@@ -84,7 +87,7 @@
                     <label>Temperature ({{ temperature | number: '1.1-1' }}°C)</label>
                 </span>
                 <p-button [disabled]="!connected || !canSetTemperature || capturing" (onClick)="applySetpointTemperature()" icon="mdi mdi-check"
-                          styleClass="p-button-success" />
+                          styleClass="p-button-success" pTooltip="Apply" tooltipPosition="bottom" />
             </div>
         </div>
     </div>
@@ -174,7 +177,7 @@
         </div>
         <div class="col-3 flex pt-3 flex-row align-items-center justify-content-center">
             <p-button [disabled]="!connected || !subFrame || capturing" icon="mdi mdi-fullscreen" (onClick)="fullsize()"
-                      styleClass="p-button-info" />
+                      styleClass="p-button-info" pTooltip="Full size" tooltipPosition="bottom" />
         </div>
         <div class="col-3">
             <span class="p-float-label">

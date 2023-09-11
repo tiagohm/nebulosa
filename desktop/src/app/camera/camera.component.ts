@@ -377,6 +377,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    resetSavePath() {
+        this.savePath = ''
+        this.preference.set(`camera.${this.camera!.name}.savePath`, this.savePath)
+    }
+
     private loadPreference() {
         if (this.camera) {
             this.autoSave = this.preference.get(`camera.${this.camera.name}.autoSave`, false)

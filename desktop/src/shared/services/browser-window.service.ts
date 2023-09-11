@@ -27,7 +27,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'camera', path: 'camera', icon: options.icon || 'camera',
-            width: options.width || 400, height: options.height || 469,
+            width: options.width || 400, height: options.height || 471,
         })
     }
 
