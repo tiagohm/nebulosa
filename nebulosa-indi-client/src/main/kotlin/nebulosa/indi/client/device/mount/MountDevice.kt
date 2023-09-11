@@ -286,23 +286,23 @@ internal open class MountDevice(
         }
     }
 
-    override fun moveNorth(enable: Boolean) {
-        if (enable) sendNewSwitch("TELESCOPE_MOTION_NS", "MOTION_NORTH" to true, "MOTION_SOUTH" to false)
+    override fun moveNorth(enabled: Boolean) {
+        if (enabled) sendNewSwitch("TELESCOPE_MOTION_NS", "MOTION_NORTH" to true, "MOTION_SOUTH" to false)
         else sendNewSwitch("TELESCOPE_MOTION_NS", "MOTION_NORTH" to false)
     }
 
-    override fun moveSouth(enable: Boolean) {
-        if (enable) sendNewSwitch("TELESCOPE_MOTION_NS", "MOTION_NORTH" to false, "MOTION_SOUTH" to true)
+    override fun moveSouth(enabled: Boolean) {
+        if (enabled) sendNewSwitch("TELESCOPE_MOTION_NS", "MOTION_NORTH" to false, "MOTION_SOUTH" to true)
         else sendNewSwitch("TELESCOPE_MOTION_NS", "MOTION_SOUTH" to false)
     }
 
-    override fun moveWest(enable: Boolean) {
-        if (enable) sendNewSwitch("TELESCOPE_MOTION_WE", "MOTION_WEST" to true, "MOTION_EAST" to false)
+    override fun moveWest(enabled: Boolean) {
+        if (enabled) sendNewSwitch("TELESCOPE_MOTION_WE", "MOTION_WEST" to true, "MOTION_EAST" to false)
         else sendNewSwitch("TELESCOPE_MOTION_WE", "MOTION_WEST" to false)
     }
 
-    override fun moveEast(enable: Boolean) {
-        if (enable) sendNewSwitch("TELESCOPE_MOTION_WE", "MOTION_WEST" to false, "MOTION_EAST" to true)
+    override fun moveEast(enabled: Boolean) {
+        if (enabled) sendNewSwitch("TELESCOPE_MOTION_WE", "MOTION_WEST" to false, "MOTION_EAST" to true)
         else sendNewSwitch("TELESCOPE_MOTION_WE", "MOTION_EAST" to false)
     }
 

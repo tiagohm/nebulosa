@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
 import {
-    BodyPosition, Calibration, Camera, CameraStartCapture, ComputedCoordinates, Constellation, DeepSkyObject, Device,
-    FilterWheel, Focuser, GuideOutput, GuidingChart, GuidingStar, HipsSurvey,
+    BodyPosition, Calibration, Camera, CameraStartCapture, ComputedLocation, Constellation, DeepSkyObject, Device,
+    FilterWheel, Focuser, GuideDirection, GuideOutput, GuidingChart, GuidingStar, HipsSurvey,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
     Mount, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
     SkyObjectType, SlewRate, Star, TrackMode, Twilight
@@ -61,7 +61,7 @@ export class ApiService {
     }
 
     cameraStartCapture(camera: Camera, value: CameraStartCapture) {
-        return this.http.putAsQueryParams<void>(`cameras/${camera.name}/capture/start`, value)
+        return this.http.putBodyAsQueryParams<void>(`cameras/${camera.name}/capture/start`, value)
     }
 
     cameraAbortCapture(camera: Camera) {
@@ -70,99 +70,90 @@ export class ApiService {
 
     // MOUNT
 
-    attachedMounts() {
-        return this.http.get<Mount[]>(`attachedMounts`)
+    mounts() {
+        return this.http.get<Mount[]>(`mounts`)
     }
 
     mount(name: string) {
-        return this.http.get<Mount>(`mount?name=${name}`)
+        return this.http.get<Mount>(`mounts/${name}`)
     }
 
     mountConnect(mount: Mount) {
-        return this.http.post<void>(`mountConnect?name=${mount.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/connect`)
     }
 
     mountDisconnect(mount: Mount) {
-        return this.http.post<void>(`mountDisconnect?name=${mount.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/disconnect`)
     }
 
-    mountTracking(mount: Mount, enable: boolean) {
-        return this.http.post<void>(`mountTracking?name=${mount.name}&enable=${enable}`)
+    mountTracking(mount: Mount, enabled: boolean) {
+        return this.http.put<void>(`mounts/${mount.name}/tracking?enabled=${enabled}`)
     }
 
     mountSync(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
-        return this.http.post<void>(`mountSync?name=${mount.name}&rightAscension=${rightAscension}&declination=${declination}&j2000=${j2000}`)
+        const query = this.http.mountQueryParamsFromRecord({ rightAscension, declination, j2000 })
+        return this.http.put<void>(`mounts/${mount.name}/sync?${query}`)
     }
 
     mountSlewTo(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
-        return this.http.post<void>(`mountSlewTo?name=${mount.name}&rightAscension=${rightAscension}&declination=${declination}&j2000=${j2000}`)
+        const query = this.http.mountQueryParamsFromRecord({ rightAscension, declination, j2000 })
+        return this.http.put<void>(`mounts/${mount.name}/slew-to?${query}`)
     }
 
     mountGoTo(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
-        return this.http.post<void>(`mountGoTo?name=${mount.name}&rightAscension=${rightAscension}&declination=${declination}&j2000=${j2000}`)
+        const query = this.http.mountQueryParamsFromRecord({ rightAscension, declination, j2000 })
+        return this.http.put<void>(`mounts/${mount.name}/goto?${query}`)
     }
 
     mountPark(mount: Mount) {
-        return this.http.post<void>(`mountPark?name=${mount.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/park`)
     }
 
     mountUnpark(mount: Mount) {
-        return this.http.post<void>(`mountUnpark?name=${mount.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/unpark`)
     }
 
     mountHome(mount: Mount) {
-        return this.http.post<void>(`mountHome?name=${mount.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/home`)
     }
 
     mountAbort(mount: Mount) {
-        return this.http.post<void>(`mountAbort?name=${mount.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/abort`)
     }
 
     mountTrackMode(mount: Mount, mode: TrackMode) {
-        return this.http.post<void>(`mountTrackMode?name=${mount.name}&mode=${mode}`)
+        return this.http.put<void>(`mounts/${mount.name}/track-mode?mode=${mode}`)
     }
 
     mountSlewRate(mount: Mount, rate: SlewRate) {
-        return this.http.post<void>(`mountSlewRate?name=${mount.name}&rate=${rate.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/slew-rate?rate=${rate.name}`)
     }
 
-    mountMoveNorth(mount: Mount, enable: boolean) {
-        return this.http.post<void>(`mountMoveNorth?name=${mount.name}&enable=${enable}`)
+    mountMove(mount: Mount, direction: GuideDirection, enabled: boolean) {
+        return this.http.put<void>(`mounts/${mount.name}/move?direction=${direction}&enabled=${enabled}`)
     }
 
-    mountMoveSouth(mount: Mount, enable: boolean) {
-        return this.http.post<void>(`mountMoveSouth?name=${mount.name}&enable=${enable}`)
-    }
-
-    mountMoveEast(mount: Mount, enable: boolean) {
-        return this.http.post<void>(`mountMoveEast?name=${mount.name}&enable=${enable}`)
-    }
-
-    mountMoveWest(mount: Mount, enable: boolean) {
-        return this.http.post<void>(`mountMoveWest?name=${mount.name}&enable=${enable}`)
-    }
-
-    mountComputeCoordinates(mount: Mount, j2000: boolean, rightAscension?: string, declination?: string,
-        equatorial: boolean = true, horizontal: boolean = true, meridian: boolean = false,
+    mountComputeLocation(mount: Mount, j2000: boolean, rightAscension: string, declination: string,
+        equatorial: boolean = true, horizontal: boolean = true, meridianAt: boolean = false,
     ) {
-        return this.http.get<ComputedCoordinates>(`mountComputeCoordinates?name=${mount.name}&rightAscension=${rightAscension || ''}&declination=${declination || ''}` +
-            `&j2000=${j2000}&equatorial=${equatorial}&horizontal=${horizontal}&meridian=${meridian}`)
+        const query = this.http.mountQueryParamsFromRecord({ rightAscension, declination, j2000, equatorial, horizontal, meridianAt })
+        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location?${query}`)
     }
 
     mountZenithLocation(mount: Mount) {
-        return this.http.get<ComputedCoordinates>(`mountZenithLocation?name=${mount.name}`)
+        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/zenith`)
     }
 
     mountNorthCelestialPoleLocation(mount: Mount) {
-        return this.http.get<ComputedCoordinates>(`mountNorthCelestialPoleLocation?name=${mount.name}`)
+        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/celestial-pole/north`)
     }
 
     mountSouthCelestialPoleLocation(mount: Mount) {
-        return this.http.get<ComputedCoordinates>(`mountSouthCelestialPoleLocation?name=${mount.name}`)
+        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/celestial-pole/south`)
     }
 
     mountGalacticCenterLocation(mount: Mount) {
-        return this.http.get<ComputedCoordinates>(`mountGalacticCenterLocation?name=${mount.name}`)
+        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/galactic-center`)
     }
 
     attachedFocusers() {

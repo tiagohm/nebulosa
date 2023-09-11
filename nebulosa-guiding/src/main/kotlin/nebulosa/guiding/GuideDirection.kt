@@ -1,7 +1,6 @@
 package nebulosa.guiding
 
 enum class GuideDirection {
-    NONE,
     UP_NORTH, // DEC+
     DOWN_SOUTH, // DEC-
     LEFT_WEST, // RA+
@@ -13,6 +12,5 @@ enum class GuideDirection {
             DOWN_SOUTH -> UP_NORTH
             LEFT_WEST -> RIGHT_EAST
             RIGHT_EAST -> LEFT_WEST
-            NONE -> NONE
         }
 }

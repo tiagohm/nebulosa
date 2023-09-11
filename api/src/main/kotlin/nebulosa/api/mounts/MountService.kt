@@ -1,9 +1,9 @@
 package nebulosa.api.mounts
 
 import jakarta.annotation.PostConstruct
-import nebulosa.api.data.responses.ComputedCoordinateResponse
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
+import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
 import nebulosa.indi.device.mount.SlewRate
@@ -97,20 +97,29 @@ class MountService(private val eventBus: EventBus) {
         mount.slewRate(rate)
     }
 
-    fun moveNorth(mount: Mount, enable: Boolean) {
-        mount.moveNorth(enable)
+    fun move(mount: Mount, direction: GuideDirection, enabled: Boolean) {
+        when (direction) {
+            GuideDirection.UP_NORTH -> moveNorth(mount, enabled)
+            GuideDirection.DOWN_SOUTH -> moveSouth(mount, enabled)
+            GuideDirection.LEFT_WEST -> moveWest(mount, enabled)
+            GuideDirection.RIGHT_EAST -> moveEast(mount, enabled)
+        }
     }
 
-    fun moveSouth(mount: Mount, enable: Boolean) {
-        mount.moveSouth(enable)
+    fun moveNorth(mount: Mount, enabled: Boolean) {
+        mount.moveNorth(enabled)
     }
 
-    fun moveWest(mount: Mount, enable: Boolean) {
-        mount.moveWest(enable)
+    fun moveSouth(mount: Mount, enabled: Boolean) {
+        mount.moveSouth(enabled)
     }
 
-    fun moveEast(mount: Mount, enable: Boolean) {
-        mount.moveEast(enable)
+    fun moveWest(mount: Mount, enabled: Boolean) {
+        mount.moveWest(enabled)
+    }
+
+    fun moveEast(mount: Mount, enabled: Boolean) {
+        mount.moveEast(enabled)
     }
 
     fun park(mount: Mount) {
@@ -139,72 +148,90 @@ class MountService(private val eventBus: EventBus) {
         return site[mount]!!.lstAt(currentTime)
     }
 
-    fun computeCoordinates(
+    fun computeZenithLocation(mount: Mount): ComputedLocation {
+        return computeLocation(
+            mount, computeLST(mount), mount.latitude,
+            j2000 = false, equatorial = true, horizontal = true, meridianAt = false,
+        )
+    }
+
+    fun computeNorthCelestialPoleLocation(mount: Mount): ComputedLocation {
+        return computeCelestialPoleLocation(mount, false)
+    }
+
+    fun computeSouthCelestialPoleLocation(mount: Mount): ComputedLocation {
+        return computeCelestialPoleLocation(mount, true)
+    }
+
+    fun computeCelestialPoleLocation(mount: Mount, south: Boolean): ComputedLocation {
+        return computeLocation(
+            mount, computeLST(mount), if (south) -Angle.QUARTER else Angle.QUARTER,
+            j2000 = false, equatorial = true, horizontal = true, meridianAt = false,
+        )
+    }
+
+    fun computeGalacticCenterLocation(mount: Mount): ComputedLocation {
+        return computeLocation(
+            mount, GALACTIC_CENTER_RA, GALACTIC_CENTER_DEC,
+            j2000 = true, equatorial = true, horizontal = true, meridianAt = false,
+        )
+    }
+
+    fun computeLocation(
         mount: Mount,
         rightAscension: Angle = mount.rightAscension, declination: Angle = mount.declination,
-        j2000: Boolean = false,
-        equatorial: Boolean = true, horizontal: Boolean = true, meridian: Boolean = true,
-    ): ComputedCoordinateResponse {
+        j2000: Boolean = false, equatorial: Boolean = true, horizontal: Boolean = true, meridianAt: Boolean = true,
+    ): ComputedLocation {
+        val computedLocation = ComputedLocation()
+
         val center = site[mount]!!
         val time = currentTime
         val epoch = if (j2000) null else time
 
         val icrf = ICRF.equatorial(rightAscension, declination, time = time, epoch = epoch, center = center)
-        val constellation = Constellation.find(icrf)
-
-        var rightAscensionJNOW = ""
-        var declinationJNOW = ""
-        var rightAscensionJ2000 = ""
-        var declinationJ2000 = ""
-        var azimuth = ""
-        var altitude = ""
+        computedLocation.constellation = Constellation.find(icrf)
 
         if (j2000) {
             if (equatorial) {
                 val raDec = icrf.equatorialAtDate()
-                rightAscensionJNOW = raDec.longitude.normalized.format(AngleFormatter.HMS)
-                declinationJNOW = raDec.latitude.format(AngleFormatter.SIGNED_DMS)
+                computedLocation.rightAscension = raDec.longitude.normalized.format(AngleFormatter.HMS)
+                computedLocation.declination = raDec.latitude.format(AngleFormatter.SIGNED_DMS)
             }
 
-            rightAscensionJ2000 = rightAscension.format(AngleFormatter.HMS)
-            declinationJ2000 = declination.format(AngleFormatter.SIGNED_DMS)
+            computedLocation.rightAscensionJ2000 = rightAscension.format(AngleFormatter.HMS)
+            computedLocation.declinationJ2000 = declination.format(AngleFormatter.SIGNED_DMS)
         } else {
             if (equatorial) {
                 val raDec = icrf.equatorialJ2000()
-                rightAscensionJ2000 = raDec.longitude.normalized.format(AngleFormatter.HMS)
-                declinationJ2000 = raDec.latitude.format(AngleFormatter.SIGNED_DMS)
+                computedLocation.rightAscensionJ2000 = raDec.longitude.normalized.format(AngleFormatter.HMS)
+                computedLocation.declinationJ2000 = raDec.latitude.format(AngleFormatter.SIGNED_DMS)
             }
 
-            rightAscensionJNOW = rightAscension.format(AngleFormatter.HMS)
-            declinationJNOW = declination.format(AngleFormatter.SIGNED_DMS)
+            computedLocation.rightAscension = rightAscension.format(AngleFormatter.HMS)
+            computedLocation.declination = declination.format(AngleFormatter.SIGNED_DMS)
         }
 
         if (horizontal) {
             val altAz = icrf.horizontal()
-            azimuth = altAz.longitude.normalized.format(AngleFormatter.SIGNED_DMS)
-            altitude = altAz.latitude.format(AngleFormatter.SIGNED_DMS)
+            computedLocation.azimuth = altAz.longitude.normalized.format(AngleFormatter.SIGNED_DMS)
+            computedLocation.altitude = altAz.latitude.format(AngleFormatter.SIGNED_DMS)
         }
 
-        var meridianAt = ""
-        var timeLeftToMeridianFlip = ""
-        var lst = ""
-
-        if (meridian) {
-            computeTimeLeftToMeridianFlip(rightAscension, computeLST(mount).also { lst = it.format(LST_FORMAT) })
-                .also { timeLeftToMeridianFlip = it.format(LST_FORMAT) }
-                .also { meridianAt = LocalDateTime.now().plusSeconds((it.hours * 3600.0).toLong()).format(MERIDIAN_TIME_FORMAT) }
+        if (meridianAt) {
+            computeTimeLeftToMeridianFlip(rightAscension, computeLST(mount).also { computedLocation.lst = it.format(LST_FORMAT) })
+                .also { computedLocation.timeLeftToMeridianFlip = it.format(LST_FORMAT) }
+                .also { computedLocation.meridianAt = LocalDateTime.now().plusSeconds((it.hours * 3600.0).toLong()).format(MERIDIAN_TIME_FORMAT) }
         }
 
-        return ComputedCoordinateResponse(
-            rightAscensionJNOW, declinationJNOW, rightAscensionJ2000, declinationJ2000,
-            azimuth, altitude,
-            constellation, lst, meridianAt, timeLeftToMeridianFlip,
-        )
+        return computedLocation
     }
 
     companion object {
 
         private const val SIDEREAL_TIME_DIFF = 0.06552777 * PI / 12.0
+
+        @JvmStatic private val GALACTIC_CENTER_RA = Angle.from("17 45 40.04", true)
+        @JvmStatic private val GALACTIC_CENTER_DEC = Angle.from("-29 00 28.1")
 
         @JvmStatic private val MERIDIAN_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
         @JvmStatic private val LST_FORMAT = AngleFormatter.Builder()

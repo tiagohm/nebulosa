@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 import java.nio.file.Path
 
 @Component
-class CameraToJson(private val capturesPath: Path) : ToJson<Camera> {
+class CameraConverter(private val capturesPath: Path) : ToJson<Camera> {
 
     override val type = Camera::class.java
 

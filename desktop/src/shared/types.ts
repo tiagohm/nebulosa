@@ -420,7 +420,7 @@ export interface Calibration extends EquatorialCoordinate {
     radius: number
 }
 
-export interface ComputedCoordinates extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
+export interface ComputedLocation extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
     constellation: Constellation
     meridianAt: string
     timeLeftToMeridianFlip: string
@@ -443,8 +443,8 @@ export interface GuideStats {
     // starMass: number
     raDuration: number
     decDuration: number
-    raDirection: GuideDirection
-    decDirection: GuideDirection
+    raDirection?: GuideDirection
+    decDirection?: GuideDirection
     rmsRA: number
     rmsDEC: number
     peakRA: number
@@ -745,8 +745,7 @@ export type TargetCoordinateType = 'J2000' | 'JNOW'
 
 export type TrackMode = 'SIDEREAL' | ' LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'
 
-export type GuideDirection = 'NONE' |
-    'UP_NORTH' | // DEC+
+export type GuideDirection = 'UP_NORTH' | // DEC+
     'DOWN_SOUTH' | // DEC-
     'LEFT_WEST' | // RA+
     'RIGHT_EAST' // RA-

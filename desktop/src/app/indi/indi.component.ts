@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
@@ -72,7 +72,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
         this.devices = [
             ...await this.api.cameras(),
-            ...await this.api.attachedMounts(),
+            ...await this.api.mounts(),
             ...await this.api.attachedFocusers(),
             ...await this.api.attachedWheels(),
         ]
