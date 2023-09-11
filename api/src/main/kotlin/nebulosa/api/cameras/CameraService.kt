@@ -12,7 +12,7 @@ import kotlin.time.Duration
 
 @Service
 class CameraService(
-    private val capturesDirectory: Path,
+    private val capturesPath: Path,
     private val cameraCaptureExecutor: CameraCaptureExecutor,
 ) {
 
@@ -56,7 +56,7 @@ class CameraService(
 
         val savePath = savePath
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
-            ?: Path.of("$capturesDirectory", camera.name)
+            ?: Path.of("$capturesPath", camera.name)
 
         cameraCaptureExecutor.execute(
             camera,

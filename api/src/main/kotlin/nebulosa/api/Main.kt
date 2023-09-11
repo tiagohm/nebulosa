@@ -14,7 +14,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 
 fun initAppDirectory(): Path? {
-    val appDirectory = when (SystemInfo.getCurrentPlatform()) {
+    val appPath = when (SystemInfo.getCurrentPlatform()) {
         PlatformEnum.LINUX -> {
             val userHomeDir = Path.of(System.getProperty("user.home"))
             Path.of("$userHomeDir", ".nebulosa")
@@ -26,11 +26,11 @@ fun initAppDirectory(): Path? {
         else -> return null
     }
 
-    appDirectory.createDirectories()
+    appPath.createDirectories()
 
-    System.setProperty("app.dir", "$appDirectory")
+    System.setProperty("app.dir", "$appPath")
 
-    return appDirectory
+    return appPath
 }
 
 private fun Path.clearLogIfPastDays(days: Long = 7L) {

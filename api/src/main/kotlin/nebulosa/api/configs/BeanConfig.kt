@@ -41,19 +41,19 @@ import kotlin.io.path.createDirectories
 class BeanConfig {
 
     @Bean
-    fun appDirectory(): Path = Path.of(System.getProperty("app.dir"))
+    fun appPath(): Path = Path.of(System.getProperty("app.dir"))
 
     @Bean
-    fun dataDirectory(appDirectory: Path): Path = Path.of("$appDirectory", "data").createDirectories()
+    fun dataPath(appPath: Path): Path = Path.of("$appPath", "data").createDirectories()
 
     @Bean
-    fun logsDirectory(appDirectory: Path): Path = Path.of("$appDirectory", "logs").createDirectories()
+    fun logsPath(appPath: Path): Path = Path.of("$appPath", "logs").createDirectories()
 
     @Bean
-    fun capturesDirectory(appDirectory: Path): Path = Path.of("$appDirectory", "captures").createDirectories()
+    fun capturesPath(appPath: Path): Path = Path.of("$appPath", "captures").createDirectories()
 
     @Bean
-    fun cacheDirectory(appDirectory: Path): Path = Path.of("$appDirectory", "cache").createDirectories()
+    fun cachePath(appPath: Path): Path = Path.of("$appPath", "cache").createDirectories()
 
     @Bean
     @Primary
@@ -76,7 +76,7 @@ class BeanConfig {
     fun connectionPool() = ConnectionPool(32, 5L, TimeUnit.MINUTES)
 
     @Bean
-    fun cache(cacheDirectory: Path) = Cache(cacheDirectory.toFile(), MAX_CACHE_SIZE)
+    fun cache(cachePath: Path) = Cache(cachePath.toFile(), MAX_CACHE_SIZE)
 
     @Bean
     fun okHttpClient(connectionPool: ConnectionPool, cache: Cache) = OkHttpClient.Builder()
@@ -90,8 +90,8 @@ class BeanConfig {
         .build()
 
     @Bean
-    fun boxStore(dataDirectory: Path) = MyObjectBox.builder()
-        .directory(dataDirectory.toFile())
+    fun boxStore(dataPath: Path) = MyObjectBox.builder()
+        .directory(dataPath.toFile())
         .build()!!
 
     @Bean

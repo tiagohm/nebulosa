@@ -15,7 +15,7 @@ import kotlin.io.path.outputStream
 
 @Component
 class IERSLoader(
-    private val dataDirectory: Path,
+    private val dataPath: Path,
     private val okHttpClient: OkHttpClient,
     private val systemExecutorService: ExecutorService,
 ) : Runnable {
@@ -26,7 +26,7 @@ class IERSLoader(
     }
 
     override fun run() {
-        val finals2000A = Path.of("$dataDirectory", "finals2000A.all")
+        val finals2000A = Path.of("$dataPath", "finals2000A.all")
 
         finals2000A.download()
 
