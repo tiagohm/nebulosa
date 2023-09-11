@@ -40,7 +40,7 @@ class CameraCaptureExecutor(
     fun execute(
         camera: Camera,
         exposureTime: Duration = Duration.ZERO,
-        exposureAmount: Int = 1, // 0 = looping
+        exposureAmount: Int = 1,
         exposureDelay: Duration = Duration.ZERO,
         x: Int = camera.minX, y: Int = camera.minY,
         width: Int = camera.maxWidth, height: Int = camera.maxHeight,
@@ -48,8 +48,7 @@ class CameraCaptureExecutor(
         frameType: FrameType = FrameType.LIGHT,
         binX: Int = camera.binX, binY: Int = binX,
         gain: Int = camera.gain, offset: Int = camera.offset,
-        autoSave: Boolean = false,
-        savePath: Path? = null,
+        autoSave: Boolean = false, savePath: Path? = null,
     ): JobExecution {
         if (isCapturing(camera)) {
             throw IllegalStateException("A Camera Exposure job is already running. camera=${camera.name}")

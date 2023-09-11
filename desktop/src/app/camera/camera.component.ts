@@ -235,7 +235,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     async ngAfterContentInit() {
-        this.cameras = await this.api.attachedCameras()
+        this.cameras = await this.api.cameras()
     }
 
     @HostListener('window:unload')

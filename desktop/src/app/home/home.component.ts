@@ -147,7 +147,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         this.host = this.preference.get('home.host', 'localhost')
         this.port = this.preference.get('home.port', 7624)
 
-        this.cameras = await this.api.attachedCameras()
+        this.cameras = await this.api.cameras()
         this.mounts = await this.api.attachedMounts()
         this.focusers = await this.api.attachedFocusers()
         this.wheels = await this.api.attachedWheels()

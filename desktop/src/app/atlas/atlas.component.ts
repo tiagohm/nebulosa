@@ -709,7 +709,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
             if (this.activeTab === 0) {
                 this.name = 'Sun'
                 this.tags = []
-                this.imageOfSun.nativeElement.src = `${this.api.baseUri}/imageOfSun`
+                this.imageOfSun.nativeElement.src = `${this.api.baseUrl}/imageOfSun`
                 const bodyPosition = await this.api.positionOfSun(this.location!, this.dateTime)
                 Object.assign(this.bodyPosition, bodyPosition)
             }

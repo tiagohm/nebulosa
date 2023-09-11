@@ -1,13 +1,14 @@
 package nebulosa.api.cameras
 
+import nebulosa.api.data.enums.AutoSubFolderMode
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.camera.FrameType
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
-import kotlin.time.Duration.Companion.microseconds
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration
 
 @Service
 class CameraService(
@@ -31,24 +32,37 @@ class CameraService(
         camera.temperature(temperature)
     }
 
-    fun cooler(camera: Camera, enable: Boolean) {
-        camera.cooler(enable)
+    fun cooler(camera: Camera, enabled: Boolean) {
+        camera.cooler(enabled)
     }
 
     @Synchronized
-    fun startCapture(camera: Camera, startCapture: CameraStartCaptureRequest) {
+    fun startCapture(
+        camera: Camera,
+        exposureTime: Duration = Duration.ZERO,
+        exposureAmount: Int = 1,
+        exposureDelay: Duration = Duration.ZERO,
+        x: Int = camera.minX, y: Int = camera.minY,
+        width: Int = camera.maxWidth, height: Int = camera.maxHeight,
+        frameFormat: String? = null,
+        frameType: FrameType = FrameType.LIGHT,
+        binX: Int = camera.binX, binY: Int = binX,
+        gain: Int = camera.gain, offset: Int = camera.offset,
+        autoSave: Boolean = false, savePath: Path? = null,
+        autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.OFF,
+    ) {
         if (isCapturing(camera)) return
 
-        val savePath = startCapture.savePath
+        val savePath = savePath
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
             ?: Path.of("$capturesDirectory", camera.name)
 
         cameraCaptureExecutor.execute(
             camera,
-            startCapture.exposureInMicroseconds.microseconds, startCapture.exposureAmount, startCapture.exposureDelayInSeconds.seconds,
-            startCapture.x, startCapture.y, startCapture.width, startCapture.height,
-            startCapture.frameFormat, startCapture.frameType, startCapture.binX, startCapture.binY,
-            startCapture.gain, startCapture.offset, startCapture.autoSave, startCapture.autoSubFolderMode.pathFor(savePath).createDirectories(),
+            exposureTime, exposureAmount, exposureDelay,
+            x, y, width, height,
+            frameFormat, frameType, binX, binY,
+            gain, offset, autoSave, autoSubFolderMode.pathFor(savePath).createDirectories(),
         )
     }
 

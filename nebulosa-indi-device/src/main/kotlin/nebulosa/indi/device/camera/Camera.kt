@@ -1,15 +1,12 @@
 package nebulosa.indi.device.camera
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.SerializerProvider
 import nebulosa.imaging.algorithms.CfaPattern
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.indi.protocol.PropertyState
-import nebulosa.json.HasJson
 import kotlin.time.Duration
 
-interface Camera : GuideOutput, Thermometer, HasJson {
+interface Camera : GuideOutput, Thermometer {
 
     val exposuring: Boolean
 
@@ -99,9 +96,9 @@ interface Camera : GuideOutput, Thermometer, HasJson {
 
     val pixelSizeY: Double
 
-    fun cooler(enable: Boolean)
+    fun cooler(enabled: Boolean)
 
-    fun dewHeater(enable: Boolean)
+    fun dewHeater(enabled: Boolean)
 
     fun temperature(value: Double)
 
@@ -120,61 +117,6 @@ interface Camera : GuideOutput, Thermometer, HasJson {
     fun startCapture(exposureTime: Duration)
 
     fun abortCapture()
-
-    override fun writeToJson(gen: JsonGenerator, provider: SerializerProvider) {
-        gen.writeStartObject()
-        gen.writeStringField("name", name)
-        gen.writeBooleanField("connected", connected)
-        gen.writeBooleanField("exposuring", exposuring)
-        gen.writeBooleanField("hasCoolerControl", hasCoolerControl)
-        gen.writeNumberField("coolerPower", coolerPower)
-        gen.writeBooleanField("cooler", cooler)
-        gen.writeBooleanField("hasDewHeater", hasDewHeater)
-        gen.writeBooleanField("dewHeater", dewHeater)
-        gen.writeObjectField("frameFormats", frameFormats)
-        gen.writeBooleanField("canAbort", canAbort)
-        gen.writeNumberField("cfaOffsetX", cfaOffsetX)
-        gen.writeNumberField("cfaOffsetY", cfaOffsetY)
-        gen.writeStringField("cfaType", cfaType.name)
-        gen.writeNumberField("exposureMin", exposureMin.inWholeMicroseconds)
-        gen.writeNumberField("exposureMax", exposureMax.inWholeMicroseconds)
-        gen.writeStringField("exposureState", exposureState.name)
-        gen.writeNumberField("exposureTime", exposureTime.inWholeMicroseconds)
-        gen.writeBooleanField("hasCooler", hasCooler)
-        gen.writeBooleanField("canSetTemperature", canSetTemperature)
-        gen.writeBooleanField("canSubFrame", canSubFrame)
-        gen.writeNumberField("x", x)
-        gen.writeNumberField("minX", minX)
-        gen.writeNumberField("maxX", maxX)
-        gen.writeNumberField("y", y)
-        gen.writeNumberField("minY", minY)
-        gen.writeNumberField("maxY", maxY)
-        gen.writeNumberField("width", width)
-        gen.writeNumberField("minWidth", minWidth)
-        gen.writeNumberField("maxWidth", maxWidth)
-        gen.writeNumberField("height", height)
-        gen.writeNumberField("minHeight", minHeight)
-        gen.writeNumberField("maxHeight", maxHeight)
-        gen.writeBooleanField("canBin", canBin)
-        gen.writeNumberField("maxBinX", maxBinX)
-        gen.writeNumberField("maxBinY", maxBinY)
-        gen.writeNumberField("binX", binX)
-        gen.writeNumberField("binY", binY)
-        gen.writeNumberField("gain", gain)
-        gen.writeNumberField("gainMin", gainMin)
-        gen.writeNumberField("gainMax", gainMax)
-        gen.writeNumberField("offset", offset)
-        gen.writeNumberField("offsetMin", offsetMin)
-        gen.writeNumberField("offsetMax", offsetMax)
-        gen.writeBooleanField("hasGuiderHead", hasGuiderHead)
-        gen.writeNumberField("pixelSizeX", pixelSizeX)
-        gen.writeNumberField("pixelSizeY", pixelSizeY)
-        gen.writeBooleanField("canPulseGuide", canPulseGuide)
-        gen.writeBooleanField("pulseGuiding", pulseGuiding)
-        gen.writeBooleanField("hasThermometer", hasThermometer)
-        gen.writeNumberField("temperature", temperature)
-        gen.writeEndObject()
-    }
 
     companion object {
 

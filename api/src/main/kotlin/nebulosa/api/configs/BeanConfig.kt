@@ -11,6 +11,8 @@ import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
 import nebulosa.json.HasJsonModule
+import nebulosa.json.JsonModule
+import nebulosa.json.ToJson
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
 import okhttp3.Cache
@@ -59,10 +61,12 @@ class BeanConfig {
     fun objectMapper(
         @Qualifier("serializer") serializers: List<StdSerializer<*>>,
         @Qualifier("deserializer") deserializers: List<StdDeserializer<*>>,
+        serializers2: List<ToJson<*>>,
     ) = ObjectMapper()
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
         .registerModule(HasJsonModule())
+        .registerModule(JsonModule(serializers2, emptyList()))
         .registerModule(SimpleModule().apply {
             serializers.forEach(::addSerializer)
             deserializers.forEach { addDeserializer(it.handledType() as Class<Any>, it) }

@@ -102,7 +102,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     async ngAfterViewInit() {
-        this.cameras = await this.api.attachedCameras()
+        this.cameras = await this.api.cameras()
         this.mounts = await this.api.attachedMounts()
         this.guideOutputs = await this.api.attachedGuideOutputs()
     }
