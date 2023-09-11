@@ -23,17 +23,19 @@ data class DelayTasklet(
 
         var remainingTime = delayTimeInMilliseconds
 
-        while (!aborted.get() && remainingTime > 0L) {
-            val waitTime = min(remainingTime, DELAY_INTERVAL)
+        if (remainingTime > 0L) {
+            while (!aborted.get() && remainingTime > 0L) {
+                val waitTime = min(remainingTime, DELAY_INTERVAL)
 
-            if (waitTime > 0) {
-                listener?.onDelayElapsed(remainingTime.milliseconds, delayTime, waitTime.milliseconds)
-                Thread.sleep(waitTime)
-                remainingTime -= waitTime
+                if (waitTime > 0) {
+                    listener?.onDelayElapsed(remainingTime.milliseconds, delayTime, waitTime.milliseconds)
+                    Thread.sleep(waitTime)
+                    remainingTime -= waitTime
+                }
             }
-        }
 
-        listener?.onDelayElapsed(Duration.ZERO, delayTime, Duration.ZERO)
+            listener?.onDelayElapsed(Duration.ZERO, delayTime, Duration.ZERO)
+        }
 
         return RepeatStatus.FINISHED
     }
