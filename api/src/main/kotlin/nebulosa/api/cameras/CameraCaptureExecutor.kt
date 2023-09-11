@@ -27,7 +27,7 @@ import kotlin.time.Duration
 class CameraCaptureExecutor(
     private val jobRepository: JobRepository,
     private val jobOperator: JobOperator,
-    private val cameraJobLauncher: JobLauncher,
+    private val asyncJobLauncher: JobLauncher,
     private val platformTransactionManager: PlatformTransactionManager,
     private val jobRegistry: JobRegistry,
     private val messageService: MessageService,
@@ -97,7 +97,7 @@ class CameraCaptureExecutor(
                 .build()
         }
 
-        return cameraJobLauncher
+        return asyncJobLauncher
             .run(cameraCaptureJob, JobParameters())
             .also { runningJobs[camera.name] = cameraCaptureJob to it }
             .also { jobRegistry.register(ReferenceJobFactory(cameraCaptureJob)) }

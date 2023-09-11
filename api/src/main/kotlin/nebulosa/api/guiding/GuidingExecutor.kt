@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicReference
 class GuidingExecutor(
     private val jobRepository: JobRepository,
     private val jobOperator: JobOperator,
-    private val guiderJobLauncher: JobLauncher,
+    private val asyncJobLauncher: JobLauncher,
     private val platformTransactionManager: PlatformTransactionManager,
     private val jobRegistry: JobRegistry,
     private val guideCalibrationRepository: GuideCalibrationRepository,
@@ -188,7 +188,7 @@ class GuidingExecutor(
             .listener(guidingTasklet)
             .build()
 
-        guiderJobLauncher.run(job, JobParameters())
+        asyncJobLauncher.run(job, JobParameters())
             .also { runningJob.set(job to it) }
             .also { jobRegistry.register(ReferenceJobFactory(job)) }
     }

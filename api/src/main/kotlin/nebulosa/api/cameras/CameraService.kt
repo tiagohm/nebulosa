@@ -37,6 +37,7 @@ class CameraService(
     }
 
     @Synchronized
+    @Suppress("NAME_SHADOWING")
     fun startCapture(
         camera: Camera,
         exposureTime: Duration = Duration.ZERO,

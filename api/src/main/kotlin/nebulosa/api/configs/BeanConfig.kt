@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.api.data.entities.MyObjectBox
-import nebulosa.api.sequencer.executor.ExecutorServiceTaskExecutor
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
@@ -27,6 +26,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
+import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.web.servlet.config.annotation.CorsRegistry
@@ -107,12 +107,6 @@ class BeanConfig {
     fun hips2FitsService(okHttpClient: OkHttpClient) = Hips2FitsService(okHttpClient = okHttpClient)
 
     @Bean
-    fun cameraExecutorService(): ExecutorService = Executors.newFixedThreadPool(1, DaemonThreadFactory)
-
-    @Bean
-    fun guiderExecutorService(): ExecutorService = Executors.newFixedThreadPool(1, DaemonThreadFactory)
-
-    @Bean
     fun systemExecutorService(): ExecutorService =
         Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory)
 
@@ -127,21 +121,11 @@ class BeanConfig {
         .installDefaultEventBus()!!
 
     @Bean
-    fun cameraJobLauncher(jobRepository: JobRepository, cameraExecutorService: ExecutorService): JobLauncher {
+    @Primary
+    fun asyncJobLauncher(jobRepository: JobRepository): JobLauncher {
         val jobLauncher = TaskExecutorJobLauncher()
         jobLauncher.setJobRepository(jobRepository)
-        val taskExecutor = ExecutorServiceTaskExecutor(cameraExecutorService)
-        jobLauncher.setTaskExecutor(taskExecutor)
-        jobLauncher.afterPropertiesSet()
-        return jobLauncher
-    }
-
-    @Bean
-    fun guiderJobLauncher(jobRepository: JobRepository, guiderExecutorService: ExecutorService): JobLauncher {
-        val jobLauncher = TaskExecutorJobLauncher()
-        jobLauncher.setJobRepository(jobRepository)
-        val taskExecutor = ExecutorServiceTaskExecutor(guiderExecutorService)
-        jobLauncher.setTaskExecutor(taskExecutor)
+        jobLauncher.setTaskExecutor(SimpleAsyncTaskExecutor(DaemonThreadFactory))
         jobLauncher.afterPropertiesSet()
         return jobLauncher
     }
