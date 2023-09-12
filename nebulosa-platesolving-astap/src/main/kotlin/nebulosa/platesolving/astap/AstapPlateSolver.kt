@@ -2,6 +2,7 @@ package nebulosa.platesolving.astap
 
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.deg
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
@@ -78,12 +79,12 @@ class AstapPlateSolver(private val solverPath: String) : PlateSolver {
                 val ctype2 = ini.getProperty("CTYPE2", "DEC--TAN")
                 val crpix1 = ini.getProperty("CRPIX1").toDouble()
                 val crpix2 = ini.getProperty("CRPIX2").toDouble()
-                val crval1 = Angle.from(ini.getProperty("CRVAL1"))
-                val crval2 = Angle.from(ini.getProperty("CRVAL2"))
-                val cdelt1 = Angle.from(ini.getProperty("CDELT1"))
-                val cdelt2 = Angle.from(ini.getProperty("CDELT2"))
-                val crota1 = Angle.from(ini.getProperty("CROTA1"))
-                val crota2 = Angle.from(ini.getProperty("CROTA2"))
+                val crval1 = ini.getProperty("CRVAL1").deg
+                val crval2 = ini.getProperty("CRVAL2").deg
+                val cdelt1 = ini.getProperty("CDELT1").deg
+                val cdelt2 = ini.getProperty("CDELT2").deg
+                val crota1 = ini.getProperty("CROTA1").deg
+                val crota2 = ini.getProperty("CROTA2").deg
                 val cd11 = ini.getProperty("CD1_1").toDouble()
                 val cd12 = ini.getProperty("CD1_2").toDouble()
                 val cd21 = ini.getProperty("CD2_1").toDouble()

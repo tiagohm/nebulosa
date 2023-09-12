@@ -10,7 +10,8 @@ import nebulosa.api.data.responses.CalibrationResponse
 import nebulosa.api.data.responses.ImageAnnotationResponse
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
-import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Angle.Companion.hours
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -87,7 +88,7 @@ class ImageController(
     ): CalibrationResponse {
         return imageService.solveImage(
             ImageToken.of(path), type, blind,
-            Angle.from(centerRA, true), Angle.from(centerDEC), Angle.from(radius),
+            centerRA.hours, centerDEC.deg, radius.deg,
             downsampleFactor, pathOrUrl, apiKey,
         )
     }

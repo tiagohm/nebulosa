@@ -22,6 +22,8 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.AngleFormatter
 import nebulosa.math.Distance
@@ -147,8 +149,8 @@ class ImageService(
             CompletableFuture.runAsync {
                 val image = cachedImages[token] ?: return@runAsync
                 val dateTime = image.header.getStringValue(FitsKeywords.DATE_OBS)?.ifBlank { null } ?: return@runAsync
-                val latitude = Angle.from(image.header.getStringValue(FitsKeywords.SITELAT)).takeIf(Angle::valid) ?: return@runAsync
-                val longitude = Angle.from(image.header.getStringValue(FitsKeywords.SITELONG)).takeIf(Angle::valid) ?: return@runAsync
+                val latitude = image.header.getStringValue(FitsKeywords.SITELAT).deg.takeIf(Angle::valid) ?: return@runAsync
+                val longitude = image.header.getStringValue(FitsKeywords.SITELONG).deg.takeIf(Angle::valid) ?: return@runAsync
 
                 val data = smallBodyDatabaseService.identify(
                     LocalDateTime.parse(dateTime), latitude, longitude, Distance.ZERO,
@@ -163,8 +165,8 @@ class ImageService(
                     val distance = it[5].toDouble()
 
                     if (distance <= radiusInSeconds) {
-                        val rightAscension = Angle.from(it[1], true).takeIf(Angle::valid) ?: return@forEach
-                        val declination = Angle.from(it[2]).takeIf(Angle::valid) ?: return@forEach
+                        val rightAscension = it[1].hours.takeIf(Angle::valid) ?: return@forEach
+                        val declination = it[2].deg.takeIf(Angle::valid) ?: return@forEach
                         val (x, y) = wcs.worldToPixel(rightAscension, declination)
                         val minorPlanet = ImageAnnotationResponse.MinorPlanet(it[0], it[1], it[2], it[6])
                         val annotation = ImageAnnotationResponse(x, y, minorPlanet = minorPlanet)

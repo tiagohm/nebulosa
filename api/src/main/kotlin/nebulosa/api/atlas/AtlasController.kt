@@ -19,8 +19,8 @@ import nebulosa.api.repositories.StarRepository
 import nebulosa.api.utils.noSeconds
 import nebulosa.api.utils.orNow
 import nebulosa.api.utils.plus
-import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Angle.Companion.hours
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObjectType
 import org.springframework.format.annotation.DateTimeFormat
@@ -217,8 +217,7 @@ class AtlasController(
         @RequestParam(required = false) type: SkyObjectType?,
     ): List<StarEntity> {
         return atlasService.searchStar(
-            text,
-            Angle.from(rightAscension, true), Angle.from(declination), radius.deg,
+            text, rightAscension.hours, declination.deg, radius.deg,
             constellation, magnitudeMin, magnitudeMax, type,
         )
     }
@@ -235,8 +234,7 @@ class AtlasController(
         @RequestParam(required = false) type: SkyObjectType?,
     ): List<DeepSkyObjectEntity> {
         return atlasService.searchDSO(
-            text,
-            Angle.from(rightAscension, true), Angle.from(declination), radius.deg,
+            text, rightAscension.hours, declination.deg, radius.deg,
             constellation, magnitudeMin, magnitudeMax, type,
         )
     }

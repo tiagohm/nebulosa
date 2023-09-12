@@ -273,6 +273,18 @@ value class Angle(val value: Double) {
             get() = (this * PI / 12.0).rad
 
         /**
+         * Creates [Angle] from hours.
+         */
+        inline val String?.hours
+            get() = from(this, true)
+
+        /**
+         * Creates [Angle] from degrees.
+         */
+        inline val String?.deg
+            get() = from(this, false)
+
+        /**
          * Creates the [Angle] from [hour], [minute] and [second].
          */
         @JvmStatic

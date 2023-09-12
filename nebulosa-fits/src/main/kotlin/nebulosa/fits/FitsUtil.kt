@@ -31,14 +31,22 @@ inline fun Header.naxis(n: Int) = getIntValue(FitsKeywords.NAXISn.n(n))
 inline fun Header.clone() = Header(makeData())
 
 val Header.ra
-    get() = Angle.from(getStringValue(FitsKeywords.RA), true, false).takeIf { it.valid }
-        ?: Angle.from(getStringValue(FitsKeywords.OBJCTRA), true).takeIf { it.valid }
-        ?: getDoubleValue(FitsKeywords.CRVAL1, Double.NaN).let { if (it.isFinite()) it.deg else null }
+    get() = Angle.from(
+        getStringValue(FitsKeywords.RA), isHours = true, decimalIsHours = false,
+        defaultValue = Angle.from(
+            getStringValue(FitsKeywords.OBJCTRA), true,
+            defaultValue = getDoubleValue(FitsKeywords.CRVAL1, Double.NaN).deg
+        )
+    )
 
 val Header.dec
-    get() = Angle.from(getStringValue(FitsKeywords.DEC)).takeIf { it.valid }
-        ?: Angle.from(getStringValue(FitsKeywords.OBJCTDEC)).takeIf { it.valid }
-        ?: getDoubleValue(FitsKeywords.CRVAL2, Double.NaN).let { if (it.isFinite()) it.deg else null }
+    get() = Angle.from(
+        getStringValue(FitsKeywords.DEC),
+        defaultValue = Angle.from(
+            getStringValue(FitsKeywords.OBJCTDEC),
+            defaultValue = getDoubleValue(FitsKeywords.CRVAL2, Double.NaN).deg
+        )
+    )
 
 val FITS_RA_ANGLE_FORMATTER = AngleFormatter.HMS.newBuilder()
     .secondsDecimalPlaces(2)

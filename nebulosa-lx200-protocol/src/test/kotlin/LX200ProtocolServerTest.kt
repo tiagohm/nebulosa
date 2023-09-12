@@ -1,6 +1,8 @@
 import nebulosa.lx200.protocol.LX200MountHandler
 import nebulosa.lx200.protocol.LX200ProtocolServer
 import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Angle.Companion.hours
 import java.time.OffsetDateTime
 
 class LX200ProtocolServerTest {
@@ -18,9 +20,9 @@ class LX200ProtocolServerTest {
             Thread.currentThread().join()
         }
 
-        override var rightAscensionJ2000 = Angle.from("05 15 07", true)
+        override var rightAscensionJ2000 = "05 15 07".hours
 
-        override var declinationJ2000 = Angle.from("25 26 03")
+        override var declinationJ2000 = "25 26 03".deg
 
         override val latitude = Angle.ZERO
 

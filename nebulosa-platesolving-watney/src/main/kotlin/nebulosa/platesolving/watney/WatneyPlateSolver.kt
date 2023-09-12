@@ -2,6 +2,7 @@ package nebulosa.platesolving.watney
 
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.deg
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
@@ -96,19 +97,19 @@ class WatneyPlateSolver(private val solverPath: String) : PlateSolver {
                 val ctype2 = "DEC--TAN"
                 val crpix1 = parameters["fits_crpix1"]!!.toDouble()
                 val crpix2 = parameters["fits_crpix2"]!!.toDouble()
-                val crval1 = Angle.from(parameters["fits_crval1"])
-                val crval2 = Angle.from(parameters["fits_crval2"])
-                val cdelt1 = Angle.from(parameters["fits_cdelt1"])
-                val cdelt2 = Angle.from(parameters["fits_cdelt2"])
-                val crota1 = Angle.from(parameters["fits_crota1"])
-                val crota2 = Angle.from(parameters["fits_crota2"])
+                val crval1 = parameters["fits_crval1"].deg
+                val crval2 = parameters["fits_crval2"].deg
+                val cdelt1 = parameters["fits_cdelt1"].deg
+                val cdelt2 = parameters["fits_cdelt2"].deg
+                val crota1 = parameters["fits_crota1"].deg
+                val crota2 = parameters["fits_crota2"].deg
                 val cd11 = parameters["fits_cd1_1"]!!.toDouble()
                 val cd12 = parameters["fits_cd1_2"]!!.toDouble()
                 val cd21 = parameters["fits_cd2_1"]!!.toDouble()
                 val cd22 = parameters["fits_cd2_2"]!!.toDouble()
 
-                val width = Angle.from(parameters["fieldWidth"])
-                val height = Angle.from(parameters["fieldHeight"])
+                val width = parameters["fieldWidth"].deg
+                val height = parameters["fieldHeight"].deg
 
                 val calibration = Calibration(
                     true,

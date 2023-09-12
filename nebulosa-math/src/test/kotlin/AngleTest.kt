@@ -74,33 +74,33 @@ class AngleTest : StringSpec() {
             (5.0.rad % 5.0.rad).value shouldBeExactly 0.0
         }
         "parse decimal coordinates" {
-            Angle.from("23.5634453").degrees shouldBe 23.5634453
-            Angle.from("23.5634453", isHours = true).degrees shouldBe 353.4516795
+            "23.5634453".deg.degrees shouldBe 23.5634453
+            "23.5634453".hours.degrees shouldBe 353.4516795
         }
         "parse sexagesimal coordinates" {
-            Angle.from("23 33 48.40308").degrees shouldBe 23.5634453
-            Angle.from("23h 33 48.40308", isHours = true).degrees shouldBe 353.4516795
-            Angle.from("23 33m 48.40308").degrees shouldBe 23.5634453
-            Angle.from("23 33 48.40308s").degrees shouldBe 23.5634453
-            Angle.from("23h 33m 48.40308", isHours = true).degrees shouldBe 353.4516795
-            Angle.from("23 33m 48.40308s").degrees shouldBe 23.5634453
-            Angle.from("23h 33m 48.40308s", isHours = true).degrees shouldBe 353.4516795
-            Angle.from("-23° 33m 48.40308s").degrees shouldBe -23.5634453
-            Angle.from("  -23   33m   48.40308s  ").degrees shouldBe -23.5634453
-            Angle.from("-23 33.806718m").degrees shouldBe -23.5634453
-            Angle.from("+23").degrees shouldBe 23.0
-            Angle.from("-23").degrees shouldBe -23.0
-            Angle.from("23h33m48.40308s", isHours = true).degrees shouldBe 353.4516795
-            Angle.from("23h33m 48.40308\"", isHours = true).degrees shouldBe 353.4516795
-            Angle.from("23h33'48.40308\"", isHours = true).degrees shouldBe 353.4516795
-            Angle.from("-23°33'48.40308\"", isHours = true).degrees shouldBe -353.4516795
-            Angle.from("-23°33'48.40308s 67.99").degrees shouldBe -23.5634453
-            Angle.from("- 23°33'48.40308s 67.99").degrees shouldBe -23.5634453
-            Angle.from("").valid.shouldBeFalse()
-            Angle.from("kkk").valid.shouldBeFalse()
+            "23 33 48.40308".deg.degrees shouldBe 23.5634453
+            "23h 33 48.40308".hours.degrees shouldBe 353.4516795
+            "23 33m 48.40308".deg.degrees shouldBe 23.5634453
+            "23 33 48.40308s".deg.degrees shouldBe 23.5634453
+            "23h 33m 48.40308".hours.degrees shouldBe 353.4516795
+            "23 33m 48.40308s".deg.degrees shouldBe 23.5634453
+            "23h 33m 48.40308s".hours.degrees shouldBe 353.4516795
+            "-23° 33m 48.40308s".deg.degrees shouldBe -23.5634453
+            "  -23   33m   48.40308s  ".deg.degrees shouldBe -23.5634453
+            "-23 33.806718m".deg.degrees shouldBe -23.5634453
+            "+23".deg.degrees shouldBe 23.0
+            "-23".deg.degrees shouldBe -23.0
+            "23h33m48.40308s".hours.degrees shouldBe 353.4516795
+            "23h33m 48.40308\"".hours.degrees shouldBe 353.4516795
+            "23h33'48.40308\"".hours.degrees shouldBe 353.4516795
+            "-23°33'48.40308\"".hours.degrees shouldBe -353.4516795
+            "-23°33'48.40308s 67.99".deg.degrees shouldBe -23.5634453
+            "- 23°33'48.40308s 67.99".deg.degrees shouldBe -23.5634453
+            "".deg.valid.shouldBeFalse()
+            "kkk".deg.valid.shouldBeFalse()
         }
         "format" {
-            val angle = Angle.from("12h 30 1", true)
+            val angle = "12h 30 1".hours
 
             angle.hours shouldBe (12.5003 plusOrMinus 1e-4)
 
@@ -143,7 +143,7 @@ class AngleTest : StringSpec() {
                 .build()
                 .format(angle) shouldBe "12h30m"
 
-            val negativeAngle = Angle.from("-43 00 45")
+            val negativeAngle = "-43 00 45".deg
 
             AngleFormatter.Builder()
                 .degreesFormat("%02d")
@@ -178,14 +178,14 @@ class AngleTest : StringSpec() {
                 .format(Angle.CIRCLE) shouldBe "00h00m00.0s"
         }
         "bug on round seconds" {
-            Angle.from("23h59m60.0s", true)
+            "23h59m60.0s".hours
                 .format(AngleFormatter.HMS) shouldBe "00h00m00.0s"
 
             AngleFormatter.HMS
                 .format(Angle(6.283182643402501)) shouldBe "23h59m59.9s"
         }
         "bug on parse Unicode negative sign U+2212" {
-            Angle.from("−29 00 28.1").degrees shouldBe -29.007805555555557
+            "−29 00 28.1".deg.degrees shouldBe -29.007805555555557
         }
     }
 }

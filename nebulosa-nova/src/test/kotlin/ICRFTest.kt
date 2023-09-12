@@ -2,8 +2,8 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.io.resource
-import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Distance.Companion.m
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
@@ -35,8 +35,8 @@ class ICRFTest : StringSpec() {
         }
         "horizontal" {
             // Sirius.
-            val ra = Angle.from("06 45 08.91728", isHours = true)
-            val dec = Angle.from("-16 42 58.0171")
+            val ra = "06 45 08.91728".hours
+            val dec = "-16 42 58.0171".deg
 
             val latitude = (-23.547500000000003).deg
             val longitude = (-46.63610833333333).deg

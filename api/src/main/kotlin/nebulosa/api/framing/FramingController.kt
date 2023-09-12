@@ -7,8 +7,8 @@ import jakarta.validation.constraints.Positive
 import nebulosa.api.data.enums.HipsSurveyType
 import nebulosa.api.image.ImageService
 import nebulosa.hips2fits.HipsSurvey
-import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Angle.Companion.hours
 import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -36,9 +36,6 @@ class FramingController(
         @RequestParam(required = false, defaultValue = "0.0") rotation: Double,
         @RequestParam(required = false, defaultValue = "CDS_P_DSS2_COLOR") hipsSurvey: HipsSurveyType,
     ): Path {
-        return imageService.frame(
-            Angle.from(rightAscension, true), Angle.from(declination),
-            width, height, fov.deg, rotation.deg, hipsSurvey,
-        )
+        return imageService.frame(rightAscension.hours, declination.deg, width, height, fov.deg, rotation.deg, hipsSurvey)
     }
 }

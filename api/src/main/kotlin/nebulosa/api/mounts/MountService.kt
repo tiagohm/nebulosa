@@ -9,6 +9,8 @@ import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
 import nebulosa.indi.device.mount.SlewRate
 import nebulosa.indi.device.mount.TrackMode
 import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.AngleFormatter
 import nebulosa.math.Distance
 import nebulosa.nova.astrometry.Constellation
@@ -230,8 +232,8 @@ class MountService(private val eventBus: EventBus) {
 
         private const val SIDEREAL_TIME_DIFF = 0.06552777 * PI / 12.0
 
-        @JvmStatic private val GALACTIC_CENTER_RA = Angle.from("17 45 40.04", true)
-        @JvmStatic private val GALACTIC_CENTER_DEC = Angle.from("-29 00 28.1")
+        @JvmStatic private val GALACTIC_CENTER_RA = "17 45 40.04".hours
+        @JvmStatic private val GALACTIC_CENTER_DEC = "-29 00 28.1".deg
 
         @JvmStatic private val MERIDIAN_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
         @JvmStatic private val LST_FORMAT = AngleFormatter.Builder()

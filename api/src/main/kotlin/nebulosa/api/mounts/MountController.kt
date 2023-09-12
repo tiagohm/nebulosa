@@ -6,7 +6,8 @@ import nebulosa.api.connection.ConnectionService
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.TrackMode
-import nebulosa.math.Angle
+import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Distance.Companion.m
 import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.*
@@ -57,7 +58,7 @@ class MountController(
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
     ) {
-        mountService.sync(mount(mountName), Angle.from(rightAscension, true), Angle.from(declination), j2000)
+        mountService.sync(mount(mountName), rightAscension.hours, declination.deg, j2000)
     }
 
     @PutMapping("{mountName}/slew-to")
@@ -67,7 +68,7 @@ class MountController(
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
     ) {
-        mountService.slewTo(mount(mountName), Angle.from(rightAscension, true), Angle.from(declination), j2000)
+        mountService.slewTo(mount(mountName), rightAscension.hours, declination.deg, j2000)
     }
 
     @PutMapping("{mountName}/goto")
@@ -77,7 +78,7 @@ class MountController(
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
     ) {
-        mountService.goTo(mount(mountName), Angle.from(rightAscension, true), Angle.from(declination), j2000)
+        mountService.goTo(mount(mountName), rightAscension.hours, declination.deg, j2000)
     }
 
     @PutMapping("{mountName}/home")
@@ -133,7 +134,7 @@ class MountController(
         @RequestParam @Valid @NotBlank latitude: String,
         @RequestParam(required = false, defaultValue = "0.0") elevation: Double,
     ) {
-        mountService.coordinates(mount(mountName), Angle.from(longitude), Angle.from(latitude), elevation.m)
+        mountService.coordinates(mount(mountName), longitude.deg, latitude.deg, elevation.m)
     }
 
     @PutMapping("{mountName}/datetime")
@@ -179,8 +180,7 @@ class MountController(
     ): ComputedLocation {
         val mount = mount(mountName)
         return mountService.computeLocation(
-            mount,
-            Angle.from(rightAscension, true), Angle.from(declination),
+            mount, rightAscension.hours, declination.deg,
             j2000, equatorial, horizontal, meridianAt,
         )
     }
