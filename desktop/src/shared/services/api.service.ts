@@ -7,7 +7,7 @@ import {
     Mount, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
     SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
-import { HttpService } from './api/http.service'
+import { HttpService } from './http.service'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -156,40 +156,42 @@ export class ApiService {
         return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/galactic-center`)
     }
 
-    attachedFocusers() {
-        return this.http.get<Focuser[]>(`attachedFocusers`)
+    // FOCUSER
+
+    focusers() {
+        return this.http.get<Focuser[]>(`focusers`)
     }
 
     focuser(name: string) {
-        return this.http.get<Focuser>(`focuser?name=${name}`)
+        return this.http.get<Focuser>(`focusers/${name}`)
     }
 
     focuserConnect(focuser: Focuser) {
-        return this.http.post<void>(`focuserConnect?name=${focuser.name}`)
+        return this.http.put<void>(`focusers/${focuser.name}/connect`)
     }
 
     focuserDisconnect(focuser: Focuser) {
-        return this.http.post<void>(`focuserDisconnect?name=${focuser.name}`)
+        return this.http.put<void>(`focusers/${focuser.name}/disconnect`)
     }
 
     focuserMoveIn(focuser: Focuser, steps: number) {
-        return this.http.post<void>(`focuserMoveIn?name=${focuser.name}&steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.name}/move-in?steps=${steps}`)
     }
 
     focuserMoveOut(focuser: Focuser, steps: number) {
-        return this.http.post<void>(`focuserMoveOut?name=${focuser.name}&steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.name}/move-out?steps=${steps}`)
     }
 
     focuserMoveTo(focuser: Focuser, steps: number) {
-        return this.http.post<void>(`focuserMoveTo?name=${focuser.name}&steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.name}/move-to?steps=${steps}`)
     }
 
     focuserAbort(focuser: Focuser) {
-        return this.http.post<void>(`focuserAbort?name=${focuser.name}`)
+        return this.http.put<void>(`focusers/${focuser.name}/abort`)
     }
 
-    focuserSyncTo(focuser: Focuser, steps: number) {
-        return this.http.post<void>(`focuserSyncTo?name=${focuser.name}&steps=${steps}`)
+    focuserSync(focuser: Focuser, steps: number) {
+        return this.http.put<void>(`focusers/${focuser.name}/sync?steps=${steps}`)
     }
 
     attachedWheels() {

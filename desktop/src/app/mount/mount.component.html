@@ -2,20 +2,22 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-8">
             <span class="p-float-label">
-                <p-dropdown [options]="mounts" [(ngModel)]="mount" optionLabel="name" (ngModelChange)="mountChanged()"
+                <p-dropdown [disabled]="slewing || parking" [options]="mounts" [(ngModel)]="mount" optionLabel="name" (ngModelChange)="mountChanged()"
                             styleClass="border-0" emptyMessage="No mount found" />
                 <label>Mount</label>
             </span>
         </div>
         <div class="col-2">
             <p-button *ngIf="connected" [disabled]="!mount || slewing || parking" (onClick)="connect()" icon="mdi mdi-close"
-                      styleClass="p-button-danger" />
+                      styleClass="p-button-danger" pTooltip="Disconnect" tooltipPosition="bottom" />
             <p-button *ngIf="!connected" [disabled]="!mount || slewing || parking" (onClick)="connect()" icon="mdi mdi-connection"
-                      styleClass="p-button-info" />
+                      styleClass="p-button-info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
             <i class="mdi mdi-information text-blue-600"></i>
-            <span style="display: contents">{{ parking ? 'parking' : (parked ? 'parked' : (slewing ? 'slewing' : 'idle')) }}</span>
+            <span style="display: contents">
+                {{ parking ? 'parking' : (parked ? 'parked' : (slewing ? 'slewing' : (tracking ? 'tracking' : 'idle'))) }}
+            </span>
         </div>
     </div>
     <div class="grid pt-2">
@@ -171,11 +173,11 @@
                 </div>
                 <div class="col-6 flex flex-row gap-2 justify-content-center align-items-center">
                     <p-button *ngIf="!parked" [disabled]="!connected || !canPark || slewing || parking" icon="mdi mdi-stop" (onClick)="park()"
-                              pTooltip="Park" tooltipPosition="top" styleClass="p-button-danger p-button-text" />
+                              pTooltip="Park" tooltipPosition="bottom" styleClass="p-button-danger p-button-text" />
                     <p-button *ngIf="parked" [disabled]="!connected || !canPark || slewing" icon="mdi mdi-play" (onClick)="unpark()" pTooltip="Unpark"
-                              tooltipPosition="top" styleClass="p-button-success p-button-text" />
+                              tooltipPosition="bottom" styleClass="p-button-success p-button-text" />
                     <p-button [disabled]="!connected || !canHome || slewing || parking" icon="mdi mdi-home" (onClick)="home()" pTooltip="Home"
-                              tooltipPosition="top" styleClass="p-button-info p-button-text" />
+                              tooltipPosition="bottom" styleClass="p-button-info p-button-text" />
                 </div>
                 <div class="col-6">
                     <span class="p-float-label">

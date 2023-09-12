@@ -149,7 +149,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
         this.cameras = await this.api.cameras()
         this.mounts = await this.api.mounts()
-        this.focusers = await this.api.attachedFocusers()
+        this.focusers = await this.api.focusers()
         this.wheels = await this.api.attachedWheels()
 
         if (this.cameras.length > 0) {

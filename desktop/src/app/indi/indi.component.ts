@@ -73,7 +73,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
         this.devices = [
             ...await this.api.cameras(),
             ...await this.api.mounts(),
-            ...await this.api.attachedFocusers(),
+            ...await this.api.focusers(),
             ...await this.api.attachedWheels(),
         ]
     }

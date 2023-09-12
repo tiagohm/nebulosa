@@ -1,82 +1,72 @@
 package nebulosa.api.focusers
 
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.focuser.Focuser
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
+@RequestMapping("focusers")
 class FocuserController(
     private val connectionService: ConnectionService,
     private val focuserService: FocuserService,
 ) {
 
-    @GetMapping("attachedFocusers")
-    fun attachedFocusers(): List<Focuser> {
+    @GetMapping
+    fun focusers(): List<Focuser> {
         return connectionService.focusers()
     }
 
-    @GetMapping("focuser")
-    fun focuser(@RequestParam @Valid @NotBlank name: String): Focuser {
-        return requireNotNull(connectionService.focuser(name))
+    @GetMapping("{focuserName}")
+    fun focuser(@PathVariable focuserName: String): Focuser {
+        return requireNotNull(connectionService.focuser(focuserName))
     }
 
-    @PostMapping("focuserConnect")
-    fun connect(@RequestParam @Valid @NotBlank name: String) {
-        val focuser = requireNotNull(connectionService.focuser(name))
-        focuserService.connect(focuser)
+    @PutMapping("{focuserName}/connect")
+    fun connect(@PathVariable focuserName: String) {
+        focuserService.connect(focuser(focuserName))
     }
 
-    @PostMapping("focuserDisconnect")
-    fun disconnect(@RequestParam @Valid @NotBlank name: String) {
-        val focuser = requireNotNull(connectionService.focuser(name))
-        focuserService.disconnect(focuser)
+    @PutMapping("{focuserName}/disconnect")
+    fun disconnect(@PathVariable focuserName: String) {
+        focuserService.disconnect(focuser(focuserName))
     }
 
-    @PostMapping("focuserMoveIn")
+    @PutMapping("{focuserName}/move-in")
     fun moveIn(
-        @RequestParam @Valid @NotBlank name: String,
+        @PathVariable focuserName: String,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        val focuser = requireNotNull(connectionService.focuser(name))
-        focuserService.moveIn(focuser, steps)
+        focuserService.moveIn(focuser(focuserName), steps)
     }
 
-    @PostMapping("focuserMoveOut")
+    @PutMapping("{focuserName}/move-out")
     fun moveOut(
-        @RequestParam @Valid @NotBlank name: String,
+        @PathVariable focuserName: String,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        val focuser = requireNotNull(connectionService.focuser(name))
-        focuserService.moveOut(focuser, steps)
+        focuserService.moveOut(focuser(focuserName), steps)
     }
 
-    @PostMapping("focuserMoveTo")
+    @PutMapping("{focuserName}/move-to")
     fun moveTo(
-        @RequestParam @Valid @NotBlank name: String,
+        @PathVariable focuserName: String,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        val focuser = requireNotNull(connectionService.focuser(name))
-        focuserService.moveTo(focuser, steps)
+        focuserService.moveTo(focuser(focuserName), steps)
     }
 
-    @PostMapping("focuserAbort")
-    fun abort(@RequestParam @Valid @NotBlank name: String) {
-        val focuser = requireNotNull(connectionService.focuser(name))
-        focuserService.abort(focuser)
+    @PutMapping("{focuserName}/abort")
+    fun abort(@PathVariable focuserName: String) {
+        focuserService.abort(focuser(focuserName))
     }
 
-    @PostMapping("focuserSyncTo")
-    fun syncTo(
-        @RequestParam @Valid @NotBlank name: String,
+    @PutMapping("{focuserName}/sync")
+    fun sync(
+        @PathVariable focuserName: String,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        val focuser = requireNotNull(connectionService.focuser(name))
-        focuserService.syncTo(focuser, steps)
+        focuserService.sync(focuser(focuserName), steps)
     }
 }

@@ -52,7 +52,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     async ngAfterViewInit() {
-        this.focusers = await this.api.attachedFocusers()
+        this.focusers = await this.api.focusers()
     }
 
     @HostListener('window:unload')
@@ -101,8 +101,8 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         this.savePreference()
     }
 
-    syncTo() {
-        this.api.focuserSyncTo(this.focuser!, this.stepsAbsolute)
+    sync() {
+        this.api.focuserSync(this.focuser!, this.stepsAbsolute)
         this.savePreference()
     }
 
