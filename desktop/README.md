@@ -45,3 +45,7 @@ The complete integrated solution for all of your astronomical imaging needs.
 ## INDI
 
 ![](indi.png)
+
+## Donation
+
+[![](src/assets/images/donate-with-paypal-blue.svg)](https://www.paypal.com/donate/?hosted_button_id=U8TGGJTKSZUCA)
