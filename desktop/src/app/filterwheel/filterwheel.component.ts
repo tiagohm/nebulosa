@@ -58,7 +58,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     async ngAfterContentInit() {
-        this.wheels = await this.api.attachedWheels()
+        this.wheels = await this.api.wheels()
     }
 
     @HostListener('window:unload')
@@ -108,7 +108,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         filter.name = filter.newName
 
         this.preference.set(`wheel.${this.wheel!.name}.filterName.${filter.position}`, filter.name)
-        this.api.wheelSyncNames(this.wheel!, this.filters.map(e => e.name))
+        this.api.wheelSync(this.wheel!, this.filters.map(e => e.name))
         this.electron.send('WHEEL_RENAMED', this.wheel)
 
         filter.editing = false

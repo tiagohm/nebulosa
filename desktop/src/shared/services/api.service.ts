@@ -194,28 +194,30 @@ export class ApiService {
         return this.http.put<void>(`focusers/${focuser.name}/sync?steps=${steps}`)
     }
 
-    attachedWheels() {
-        return this.http.get<FilterWheel[]>(`attachedWheels`)
+    // FILTER WHEEL
+
+    wheels() {
+        return this.http.get<FilterWheel[]>(`wheels`)
     }
 
     wheel(name: string) {
-        return this.http.get<FilterWheel>(`wheel?name=${name}`)
+        return this.http.get<FilterWheel>(`wheels/${name}`)
     }
 
     wheelConnect(wheel: FilterWheel) {
-        return this.http.post<void>(`wheelConnect?name=${wheel.name}`)
+        return this.http.post<void>(`wheels/${wheel.name}/connect`)
     }
 
     wheelDisconnect(wheel: FilterWheel) {
-        return this.http.post<void>(`wheelDisconnect?name=${wheel.name}`)
+        return this.http.post<void>(`wheels/${wheel.name}/disconnect`)
     }
 
     wheelMoveTo(wheel: FilterWheel, position: number) {
-        return this.http.post<void>(`wheelMoveTo?name=${wheel.name}&position=${position}`)
+        return this.http.post<void>(`wheels/${wheel.name}/move-to?position=${position}`)
     }
 
-    wheelSyncNames(wheel: FilterWheel, filterNames: string[]) {
-        return this.http.post<void>(`wheelSyncNames?name=${wheel.name}&filterNames=${filterNames.join(',')}`)
+    wheelSync(wheel: FilterWheel, names: string[]) {
+        return this.http.post<void>(`wheels/${wheel.name}/sync?names=${names.join(',')}`)
     }
 
     attachedGuideOutputs() {

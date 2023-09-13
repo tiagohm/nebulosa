@@ -150,7 +150,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         this.cameras = await this.api.cameras()
         this.mounts = await this.api.mounts()
         this.focusers = await this.api.focusers()
-        this.wheels = await this.api.attachedWheels()
+        this.wheels = await this.api.wheels()
 
         if (this.cameras.length > 0) {
             this.electron.send('CAMERA_CHANGED', this.cameras[0])
