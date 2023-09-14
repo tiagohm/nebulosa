@@ -1,18 +1,17 @@
 package nebulosa.api.tasklets.delay
 
+import nebulosa.api.sequencer.AbstractSequenceTasklet
+import org.springframework.batch.core.JobExecution
+import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.StepContribution
 import org.springframework.batch.core.scope.context.ChunkContext
-import org.springframework.batch.core.step.tasklet.StoppableTasklet
 import org.springframework.batch.repeat.RepeatStatus
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-data class DelayTasklet(
-    private val duration: Duration,
-    private val listener: DelayListener? = null,
-) : StoppableTasklet {
+data class DelayTasklet(private val duration: Duration) : AbstractSequenceTasklet<DelayElapsed>(), JobExecutionListener {
 
     private val aborted = AtomicBoolean()
 
@@ -28,16 +27,20 @@ data class DelayTasklet(
                 val waitTime = min(remainingTime, DELAY_INTERVAL)
 
                 if (waitTime > 0) {
-                    listener?.onDelayElapsed(remainingTime.milliseconds, delayTime, waitTime.milliseconds)
+                    onNext(DelayElapsed(remainingTime.milliseconds, delayTime, waitTime.milliseconds))
                     Thread.sleep(waitTime)
                     remainingTime -= waitTime
                 }
             }
 
-            listener?.onDelayElapsed(Duration.ZERO, delayTime, Duration.ZERO)
+            onNext(DelayElapsed(Duration.ZERO, delayTime, Duration.ZERO))
         }
 
         return RepeatStatus.FINISHED
+    }
+
+    override fun afterJob(jobExecution: JobExecution) {
+        close()
     }
 
     override fun stop() {

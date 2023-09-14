@@ -155,15 +155,6 @@ export interface CameraStartCapture {
 
 export interface CameraCaptureEvent {
     camera: Camera
-}
-
-export interface CameraExposureDelayElapsed extends CameraCaptureEvent {
-    waitProgress: number
-    waitRemainingTime: number
-    waitTime: number
-}
-
-export interface CameraExposureUpdated extends CameraCaptureEvent {
     exposureAmount: number
     exposureCount: number
     exposureTime: number
@@ -172,16 +163,13 @@ export interface CameraExposureUpdated extends CameraCaptureEvent {
     captureRemainingTime: number
     captureProgress: number
     captureTime: number
-    looping: boolean
-    elapsedTime: number
-}
-
-export interface CameraExposureStarted extends CameraCaptureEvent {
-    exposureCount: number
-}
-
-export interface CameraExposureFinished extends CameraCaptureEvent {
-    path: string
+    captureInLoop: boolean
+    captureIsWaiting: boolean
+    captureElapsedTime: number
+    waitProgress: number
+    waitRemainingTime: number
+    waitTime: number
+    savePath?: string
 }
 
 export interface OpenWindowOptions {
@@ -772,5 +760,3 @@ export const SATELLITE_GROUP_TYPES = [
 export type SatelliteGroupType = (typeof SATELLITE_GROUP_TYPES)[number]
 
 export type ListeningEventType = 'INDI' | 'GUIDING' | 'CAMERA' | 'MOUNT'
-
-export type CameraCaptureStatus = 'IDLE' | 'CAPTURING' | 'WAITING'

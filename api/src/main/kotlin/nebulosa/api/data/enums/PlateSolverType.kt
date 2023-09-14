@@ -1,4 +1,4 @@
-package nebulosa.api.data.enums;
+package nebulosa.api.data.enums
 
 enum class PlateSolverType {
     ASTROMETRY_NET_LOCAL,

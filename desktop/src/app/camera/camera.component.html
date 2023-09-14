@@ -21,9 +21,12 @@
             <i *ngIf="autoSave" class="mdi mdi-content-save" pTooltip="Auto save: ON" tooltipPosition="bottom"></i>
             <i *ngIf="!autoSave" class="mdi mdi-content-save-off" pTooltip="Auto save: OFF" tooltipPosition="bottom"></i>
             <i *ngIf="autoSubFolderMode === 'OFF'" class="mdi mdi-folder-off" pTooltip="Auto sub folder: OFF" tooltipPosition="bottom"></i>
-            <i *ngIf="autoSubFolderMode === 'NOON'" class="mdi mdi-weather-sunny text-yellow-600" pTooltip="Auto sub folder: NOON" tooltipPosition="bottom"></i>
-            <i *ngIf="autoSubFolderMode === 'MIDNIGHT'" class="mdi mdi-weather-night text-blue-600" pTooltip="Auto sub folder: MIDNIGHT" tooltipPosition="bottom"></i>
-            <span *ngIf="camera" style="padding-top: 1px; padding-bottom: 1px; min-height: 17px;" class="flex align-items-center gap-2 bg-gray-800 border-round-2xl px-3">
+            <i *ngIf="autoSubFolderMode === 'NOON'" class="mdi mdi-weather-sunny text-yellow-600" pTooltip="Auto sub folder: NOON"
+               tooltipPosition="bottom"></i>
+            <i *ngIf="autoSubFolderMode === 'MIDNIGHT'" class="mdi mdi-weather-night text-blue-600" pTooltip="Auto sub folder: MIDNIGHT"
+               tooltipPosition="bottom"></i>
+            <span *ngIf="camera" style="padding-top: 1px; padding-bottom: 1px; min-height: 17px;"
+                  class="flex align-items-center gap-2 bg-gray-800 border-round-2xl px-3">
                 {{ savePath || capturesPath }}
                 <i *ngIf="savePath" class="mdi mdi-close cursor-pointer" pTooltip="Reset" tooltipPosition="bottom" (click)="resetSavePath()"></i>
             </span>
@@ -32,12 +35,12 @@
             <i class="mdi mdi-information text-blue-600"></i>
             <span style="min-width: 44px" class="text-left mr-2">{{ waiting ? 'waiting' : capturing ? 'capturing' : 'idle' }}</span>
             <ng-container *ngIf="capturing && cameraCapture">
-                <ng-container *ngIf="!cameraCapture.looping">
+                <ng-container *ngIf="!cameraCapture.captureInLoop">
                     <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 46px">
                         {{ cameraCapture.exposureCount }} of {{ cameraCapture.exposureAmount }}
                     </span>
                 </ng-container>
-                <ng-container *ngIf="cameraCapture.looping">
+                <ng-container *ngIf="cameraCapture.captureInLoop">
                     <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 34px">
                         {{ cameraCapture.exposureCount }}
                     </span>
@@ -48,7 +51,7 @@
                 <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 40px">
                     {{ cameraCapture.exposureProgress | percent:'1.1-1' }}
                 </span>
-                <ng-container *ngIf="!cameraCapture.looping">
+                <ng-container *ngIf="!cameraCapture.captureInLoop">
                     <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
                         {{ cameraCapture.captureRemainingTime | exposureTime }}
                     </span>
@@ -56,15 +59,15 @@
                         {{ cameraCapture.captureProgress | percent:'1.1-1' }}
                     </span>
                 </ng-container>
-                <ng-container *ngIf="cameraCapture.looping">
+                <ng-container *ngIf="cameraCapture.captureInLoop">
                     <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
-                        {{ cameraCapture.elapsedTime | exposureTime }}
+                        {{ cameraCapture.captureElapsedTime | exposureTime }}
                     </span>
                 </ng-container>
             </ng-container>
-            <ng-container *ngIf="waiting && cameraCaptureDelay">
+            <ng-container *ngIf="waiting && cameraCapture">
                 <span class="bg-purple-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
-                    {{ cameraCaptureDelay.waitRemainingTime | exposureTime }}
+                    {{ cameraCapture.waitRemainingTime | exposureTime }}
                 </span>
             </ng-container>
         </div>

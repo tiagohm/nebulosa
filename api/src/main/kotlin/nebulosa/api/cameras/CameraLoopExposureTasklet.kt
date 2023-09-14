@@ -1,5 +1,6 @@
 package nebulosa.api.cameras
 
+import nebulosa.api.sequencer.AbstractSequenceTasklet
 import nebulosa.api.tasklets.delay.DelayTasklet
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
@@ -7,7 +8,6 @@ import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.StepContribution
 import org.springframework.batch.core.scope.context.ChunkContext
-import org.springframework.batch.core.step.tasklet.StoppableTasklet
 import org.springframework.batch.repeat.RepeatStatus
 import java.nio.file.Path
 import kotlin.time.Duration
@@ -24,8 +24,7 @@ data class CameraLoopExposureTasklet(
     private val gain: Int = camera.gain, private val offset: Int = camera.offset,
     private val autoSave: Boolean = false,
     private val savePath: Path? = null,
-    private val listener: CameraCaptureListener? = null,
-) : StoppableTasklet, JobExecutionListener {
+) : AbstractSequenceTasklet<CameraCaptureEvent>(), JobExecutionListener {
 
     private val exposureTasklet = CameraExposureTasklet(
         camera,
@@ -33,10 +32,15 @@ data class CameraLoopExposureTasklet(
         x, y, width, height,
         frameFormat, frameType,
         binX, binY, gain, offset,
-        autoSave, savePath, listener,
+        autoSave, savePath,
     )
 
-    private val delayTasklet = DelayTasklet(exposureDelay, exposureTasklet)
+    private val delayTasklet = DelayTasklet(exposureDelay)
+
+    init {
+        exposureTasklet.subscribe(this)
+        delayTasklet.subscribe(exposureTasklet)
+    }
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
         exposureTasklet.execute(contribution, chunkContext)
@@ -51,9 +55,11 @@ data class CameraLoopExposureTasklet(
 
     override fun beforeJob(jobExecution: JobExecution) {
         exposureTasklet.beforeJob(jobExecution)
+        delayTasklet.beforeJob(jobExecution)
     }
 
     override fun afterJob(jobExecution: JobExecution) {
         exposureTasklet.afterJob(jobExecution)
+        delayTasklet.afterJob(jobExecution)
     }
 }

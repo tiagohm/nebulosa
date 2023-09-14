@@ -12,7 +12,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Calibration, Camera, CameraExposureFinished, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, GuideExposureFinished, GuideTrackingBox,
+    Calibration, Camera, CameraCaptureEvent, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, GuideExposureFinished, GuideTrackingBox,
     ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
     ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS,
     Star
@@ -287,14 +287,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         title.setTitle('Image')
 
-        electron.on('CAMERA_EXPOSURE_FINISHED', async (_, data: CameraExposureFinished) => {
+        electron.on('CAMERA_EXPOSURE_FINISHED', async (_, data: CameraCaptureEvent) => {
             if (data.camera.name === this.imageParams.camera?.name) {
                 await this.closeImage()
 
                 ngZone.run(() => {
                     this.guiding = false
                     this.annotations = []
-                    this.imageParams.path = data.path
+                    this.imageParams.path = data.savePath
                     this.loadImage()
                 })
             }

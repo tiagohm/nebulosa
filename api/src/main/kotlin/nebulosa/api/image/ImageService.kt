@@ -106,8 +106,8 @@ class ImageService(
             stretchParams.shadow,
             stretchParams.highlight,
             stretchParams.midtone,
-            transformedImage.header.ra?.format(AngleFormatter.HMS),
-            transformedImage.header.dec?.format(AngleFormatter.SIGNED_DMS),
+            transformedImage.header.ra.format(AngleFormatter.HMS),
+            transformedImage.header.dec.format(AngleFormatter.SIGNED_DMS),
             token in calibrations,
             transformedImage.header.iterator().asSequence()
                 .filter { it.key.isNotBlank() && !it.value.isNullOrBlank() }

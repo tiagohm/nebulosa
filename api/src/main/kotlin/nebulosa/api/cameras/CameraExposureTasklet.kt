@@ -1,6 +1,22 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.tasklets.delay.DelayListener
+import io.reactivex.rxjava3.functions.Consumer
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_ELAPSED_TIME
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_IN_LOOP
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_IS_WAITING
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_PROGRESS
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_REMAINING_TIME
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_TIME
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.EXPOSURE_AMOUNT
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.EXPOSURE_COUNT
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.EXPOSURE_PROGRESS
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.EXPOSURE_REMAINING_TIME
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.EXPOSURE_TIME
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_PROGRESS
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_REMAINING_TIME
+import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_TIME
+import nebulosa.api.sequencer.AbstractSequenceTasklet
+import nebulosa.api.tasklets.delay.DelayElapsed
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.*
@@ -12,8 +28,8 @@ import org.greenrobot.eventbus.ThreadMode
 import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.StepContribution
+import org.springframework.batch.core.StepExecution
 import org.springframework.batch.core.scope.context.ChunkContext
-import org.springframework.batch.core.step.tasklet.StoppableTasklet
 import org.springframework.batch.repeat.RepeatStatus
 import java.io.InputStream
 import java.nio.file.Path
@@ -38,9 +54,8 @@ data class CameraExposureTasklet(
     private val gain: Int = camera.gain, private val offset: Int = camera.offset,
     private val autoSave: Boolean = false,
     private val savePath: Path? = null,
-    private val listener: CameraCaptureListener? = null,
     private val saveInMemory: Boolean = false,
-) : StoppableTasklet, JobExecutionListener, DelayListener {
+) : AbstractSequenceTasklet<CameraCaptureEvent>(), JobExecutionListener, Consumer<DelayElapsed> {
 
     private val latch = CountUpDownLatch()
     private val aborted = AtomicBoolean()
@@ -48,6 +63,7 @@ data class CameraExposureTasklet(
     @Volatile private var exposureCount = 0
     @Volatile private var captureElapsedTime = 0L
     @Volatile private var exposureElapsedTime = 0L
+    @Volatile private var stepExecution: StepExecution? = null
 
     private val isLoop = exposureAmount <= 0
     private val captureTime = if (isLoop) Duration.ZERO else exposureTime * exposureAmount + exposureDelay * (exposureAmount - 1)
@@ -57,7 +73,7 @@ data class CameraExposureTasklet(
         if (event.device === camera) {
             when (event) {
                 is CameraFrameCaptured -> {
-                    save(event.fits)
+                    save(event.fits, stepExecution!!)
                     latch.countDown()
                 }
                 is CameraExposureAborted,
@@ -67,14 +83,12 @@ data class CameraExposureTasklet(
                     aborted.set(true)
                 }
                 is CameraExposureProgressChanged -> {
-                    if (listener != null) {
-                        val exposureRemainingTime = event.device.exposureTime
-                        val exposureElapsedTime = exposureTime - exposureRemainingTime
-                        this.exposureElapsedTime = exposureElapsedTime.inWholeMicroseconds
+                    val exposureRemainingTime = event.device.exposureTime
+                    val exposureElapsedTime = exposureTime - exposureRemainingTime
+                    this.exposureElapsedTime = exposureElapsedTime.inWholeMicroseconds
 
-                        val exposureProgress = exposureElapsedTime / exposureTime
-                        onCameraExposureUpdated(exposureRemainingTime, exposureProgress)
-                    }
+                    val exposureProgress = exposureElapsedTime / exposureTime
+                    onCameraExposureUpdated(exposureRemainingTime, exposureProgress)
                 }
             }
         }
@@ -83,18 +97,20 @@ data class CameraExposureTasklet(
     override fun beforeJob(jobExecution: JobExecution) {
         camera.enableBlob()
         EventBus.getDefault().register(this)
-        listener?.onCameraCaptureStarted(camera)
+        jobExecution.executionContext.put(CAPTURE_IN_LOOP, isLoop)
+        onNext(CameraCaptureStarted(camera, jobExecution))
         captureElapsedTime = 0L
     }
 
     override fun afterJob(jobExecution: JobExecution) {
         camera.disableBlob()
         EventBus.getDefault().unregister(this)
-        listener?.onCameraCaptureFinished(camera)
+        onNext(CameraCaptureFinished(camera, jobExecution))
+        close()
     }
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
-        executeCapture()
+        executeCapture(contribution)
         return RepeatStatus.FINISHED
     }
 
@@ -106,23 +122,38 @@ data class CameraExposureTasklet(
         latch.reset()
     }
 
-    override fun onDelayElapsed(remainingTime: Duration, delayTime: Duration, waitTime: Duration) {
-        if (listener != null) {
-            captureElapsedTime += waitTime.inWholeMicroseconds
-            val waitProgress = if (remainingTime > Duration.ZERO) 1.0 - delayTime / remainingTime else 1.0
-            listener.onCameraExposureDelayElapsed(camera, waitProgress, remainingTime, delayTime)
-            onCameraExposureUpdated(Duration.ZERO, 1.0)
+    override fun accept(event: DelayElapsed) {
+        captureElapsedTime += event.waitTime.inWholeMicroseconds
+        val waitProgress = if (event.remainingTime > Duration.ZERO) 1.0 - event.delayTime / event.remainingTime else 1.0
+
+        with(stepExecution!!.executionContext) {
+            putDouble(WAIT_PROGRESS, waitProgress)
+            putLong(WAIT_REMAINING_TIME, event.remainingTime.inWholeMicroseconds)
+            putLong(WAIT_TIME, event.waitTime.inWholeMicroseconds)
+            put(CAPTURE_IS_WAITING, true)
         }
+
+        onNext(CameraExposureDelayElapsed(camera, stepExecution!!))
+        onCameraExposureUpdated(Duration.ZERO, 1.0)
     }
 
-    private fun executeCapture() {
+    private fun executeCapture(contribution: StepContribution) {
+        stepExecution = contribution.stepExecution
+
         if (camera.connected && !aborted.get()) {
             synchronized(camera) {
                 latch.countUp()
 
                 exposureCount++
 
-                listener?.onCameraExposureStarted(camera, exposureCount)
+                with(contribution.stepExecution.executionContext) {
+                    putInt(EXPOSURE_COUNT, exposureCount)
+                    putInt(EXPOSURE_AMOUNT, exposureAmount)
+                    put(CAPTURE_IN_LOOP, isLoop)
+                    put(CAPTURE_IS_WAITING, false)
+                }
+
+                onNext(CameraExposureStarted(camera, stepExecution!!))
 
                 camera.frame(x, y, width, height)
                 camera.frameType(frameType)
@@ -144,17 +175,15 @@ data class CameraExposureTasklet(
 
                 latch.await()
 
-                if (listener != null) {
-                    exposureElapsedTime = 0L
-                    captureElapsedTime += exposureTime.inWholeMicroseconds
-                }
+                exposureElapsedTime = 0L
+                captureElapsedTime += exposureTime.inWholeMicroseconds
 
                 LOG.info("camera exposure finished")
             }
         }
     }
 
-    private fun save(inputStream: InputStream) {
+    private fun save(inputStream: InputStream, stepExecution: StepExecution) {
         val savePath = if (saveInMemory) {
             savePath
         } else if (autoSave) {
@@ -169,13 +198,14 @@ data class CameraExposureTasklet(
         try {
             if (saveInMemory) {
                 val image = Image.openFITS(inputStream)
-                listener?.onCameraExposureFinished(camera, image, savePath)
+                onNext(CameraExposureFinished(camera, stepExecution, image, savePath))
             } else {
                 LOG.info("saving FITS at $savePath...")
 
                 savePath!!.createParentDirectories()
                 inputStream.transferAndClose(savePath.outputStream())
-                listener?.onCameraExposureFinished(camera, null, savePath)
+
+                onNext(CameraExposureFinished(camera, stepExecution, null, savePath))
             }
         } catch (e: Throwable) {
             LOG.error("failed to save FITS", e)
@@ -193,13 +223,17 @@ data class CameraExposureTasklet(
             captureProgress = (captureTime - captureRemainingTime) / captureTime
         }
 
-        listener!!.onCameraExposureUpdated(
-            camera,
-            exposureAmount, exposureCount,
-            exposureTime, exposureRemainingTime, exposureProgress,
-            captureTime, captureRemainingTime, captureProgress,
-            isLoop, elapsedTime,
-        )
+        with(stepExecution!!.executionContext) {
+            putLong(EXPOSURE_TIME, exposureTime.inWholeMicroseconds)
+            putLong(EXPOSURE_REMAINING_TIME, exposureRemainingTime.inWholeMicroseconds)
+            putDouble(EXPOSURE_PROGRESS, exposureProgress)
+            putLong(CAPTURE_TIME, captureTime.inWholeMicroseconds)
+            putLong(CAPTURE_REMAINING_TIME, captureRemainingTime.inWholeMicroseconds)
+            putDouble(CAPTURE_PROGRESS, captureProgress)
+            putLong(CAPTURE_ELAPSED_TIME, elapsedTime.inWholeMicroseconds)
+        }
+
+        onNext(CameraExposureUpdated(camera, stepExecution!!))
     }
 
     companion object {

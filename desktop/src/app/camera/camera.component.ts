@@ -6,8 +6,8 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    AutoSubFolderMode, Camera, CameraCaptureStatus, CameraExposureDelayElapsed, CameraExposureStarted,
-    CameraExposureUpdated, CameraStartCapture, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType
+    AutoSubFolderMode, Camera, CameraCaptureEvent,
+    CameraStartCapture, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType
 } from '../../shared/types'
 
 @Component({
@@ -129,9 +129,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     offset = 0
     offsetMin = 0
     offsetMax = 0
-    cameraCapture?: CameraExposureUpdated
-    cameraCaptureDelay?: CameraExposureDelayElapsed
-    cameraCaptureStatus: CameraCaptureStatus = 'IDLE'
+    cameraCapture?: CameraCaptureEvent
+    capturing = false
+    waiting = false
 
     readonly exposureModeOptions: ExposureMode[] = ['SINGLE', 'FIXED', 'LOOP']
     readonly frameTypeOptions: FrameType[] = ['LIGHT', 'DARK', 'FLAT', 'BIAS']
@@ -167,14 +167,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         }
     ]
 
-    get capturing() {
-        return this.cameraCaptureStatus === 'CAPTURING' || this.waiting
-    }
-
-    get waiting() {
-        return this.cameraCaptureStatus === 'WAITING'
-    }
-
     constructor(
         private title: Title,
         private api: ApiService,
@@ -196,15 +188,16 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.on('CAMERA_EXPOSURE_STARTED', (_, event: CameraExposureStarted) => {
+        electron.on('CAMERA_EXPOSURE_STARTED', (_, event: CameraCaptureEvent) => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
-                    this.cameraCaptureStatus = 'CAPTURING'
+                    this.capturing = true
+                    this.waiting = false
                 })
             }
         })
 
-        electron.on('CAMERA_EXPOSURE_UPDATED', (_, event: CameraExposureUpdated) => {
+        electron.on('CAMERA_EXPOSURE_UPDATED', (_, event: CameraCaptureEvent) => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
                     this.cameraCapture = event
@@ -212,19 +205,22 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.on('CAMERA_EXPOSURE_DELAY_ELAPSED', (_, event: CameraExposureDelayElapsed) => {
+        electron.on('CAMERA_EXPOSURE_DELAY_ELAPSED', (_, event: CameraCaptureEvent) => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
-                    this.cameraCaptureDelay = event
-                    this.cameraCaptureStatus = 'WAITING'
+                    this.cameraCapture!.waitProgress = event.waitProgress
+                    this.cameraCapture!.waitRemainingTime = event.waitRemainingTime
+                    this.cameraCapture!.waitTime = event.waitTime
+                    this.waiting = true
                 })
             }
         })
 
-        electron.on('CAMERA_CAPTURE_FINISHED', (_, camera: Camera) => {
-            if (camera.name === this.camera?.name) {
+        electron.on('CAMERA_CAPTURE_FINISHED', (_, event: CameraCaptureEvent) => {
+            if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
-                    this.cameraCaptureStatus = 'IDLE'
+                    this.capturing = false
+                    this.waiting = false
                 })
             }
         })

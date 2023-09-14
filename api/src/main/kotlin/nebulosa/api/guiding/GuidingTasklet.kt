@@ -1,6 +1,5 @@
 package nebulosa.api.guiding
 
-import nebulosa.api.cameras.CameraCaptureListener
 import nebulosa.api.cameras.CameraExposureTasklet
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.tasklets.delay.DelayTasklet
@@ -23,12 +22,11 @@ data class GuidingTasklet(
     private val camera: Camera,
     private val guider: Guider,
     private val startLooping: GuideStartLoopingRequest, // TODO: PASS ALL PARAMETERS HERE!
-    private val listener: CameraCaptureListener? = null,
-) : StoppableTasklet, CameraCaptureListener, JobExecutionListener {
+) : StoppableTasklet, JobExecutionListener {
 
     private val startCapture = CameraStartCaptureRequest()
 
-    private val cameraExposureTasklet = CameraExposureTasklet(camera, savePath = Path.of("@guiding"), listener = this, saveInMemory = true)
+    private val cameraExposureTasklet = CameraExposureTasklet(camera, savePath = Path.of("@guiding"), saveInMemory = true)
     private val delayTasklet = DelayTasklet(Duration.ZERO)
     private val guideImage = LinkedBlockingQueue<Image>()
 
@@ -66,12 +64,12 @@ data class GuidingTasklet(
         cameraExposureTasklet.afterJob(jobExecution)
     }
 
-    override fun onCameraExposureFinished(camera: Camera, image: Image?, path: Path?) {
-        if (image != null) {
-            guideImage.offer(image)
-            listener?.onCameraExposureFinished(camera, image, path)
-        }
-    }
+//    override fun onCameraExposureFinished(camera: Camera, image: Image?, path: Path?) {
+//        if (image != null) {
+//            guideImage.offer(image)
+//            listener?.onCameraExposureFinished(camera, image, path)
+//        }
+//    }
 
     companion object {
 
