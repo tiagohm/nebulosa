@@ -38,7 +38,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
-    kapt("org.springframework:spring-context-indexer:6.0.11")
+    kapt("org.springframework:spring-context-indexer:6.0.12")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     testImplementation(project(":nebulosa-skycatalog-hyg"))
