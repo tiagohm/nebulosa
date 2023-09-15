@@ -3,17 +3,15 @@ package nebulosa.api.connection
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.Range
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
+@RequestMapping("connection")
 class ConnectionController(
     private val connectionService: ConnectionService,
 ) {
 
-    @PostMapping("connect")
+    @PutMapping
     fun connect(
         @RequestParam @Valid @NotBlank host: String,
         @RequestParam @Valid @Range(min = 1, max = 65535) port: Int,
@@ -21,12 +19,12 @@ class ConnectionController(
         connectionService.connect(host, port)
     }
 
-    @PostMapping("disconnect")
+    @DeleteMapping
     fun disconnect() {
         connectionService.disconnect()
     }
 
-    @GetMapping("connectionStatus")
+    @GetMapping
     fun connectionStatus(): Boolean {
         return connectionService.connectionStatus()
     }

@@ -18,16 +18,19 @@ export class ApiService {
         return this.http.baseUrl
     }
 
+    // CONNECTION
+
     connect(host: string, port: number) {
-        return this.http.post<void>(`connect?host=${host}&port=${port}`)
+        const query = this.http.query({ host, port })
+        return this.http.put<void>(`connection?${query}`)
     }
 
     disconnect() {
-        return this.http.post<void>(`disconnect`)
+        return this.http.delete<void>(`connection`)
     }
 
     connectionStatus() {
-        return this.http.get<boolean>(`connectionStatus`)
+        return this.http.get<boolean>(`connection`)
     }
 
     // CAMERA.
@@ -91,17 +94,17 @@ export class ApiService {
     }
 
     mountSync(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
-        const query = this.http.mountQueryParamsFromRecord({ rightAscension, declination, j2000 })
+        const query = this.http.query({ rightAscension, declination, j2000 })
         return this.http.put<void>(`mounts/${mount.name}/sync?${query}`)
     }
 
     mountSlewTo(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
-        const query = this.http.mountQueryParamsFromRecord({ rightAscension, declination, j2000 })
+        const query = this.http.query({ rightAscension, declination, j2000 })
         return this.http.put<void>(`mounts/${mount.name}/slew-to?${query}`)
     }
 
     mountGoTo(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
-        const query = this.http.mountQueryParamsFromRecord({ rightAscension, declination, j2000 })
+        const query = this.http.query({ rightAscension, declination, j2000 })
         return this.http.put<void>(`mounts/${mount.name}/goto?${query}`)
     }
 
@@ -136,7 +139,7 @@ export class ApiService {
     mountComputeLocation(mount: Mount, j2000: boolean, rightAscension: string, declination: string,
         equatorial: boolean = true, horizontal: boolean = true, meridianAt: boolean = false,
     ) {
-        const query = this.http.mountQueryParamsFromRecord({ rightAscension, declination, j2000, equatorial, horizontal, meridianAt })
+        const query = this.http.query({ rightAscension, declination, j2000, equatorial, horizontal, meridianAt })
         return this.http.get<ComputedLocation>(`mounts/${mount.name}/location?${query}`)
     }
 

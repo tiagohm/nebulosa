@@ -24,7 +24,7 @@ export class HttpService {
     }
 
     postBodyAsQueryParams<T>(path: string, body: Record<string, any>) {
-        const query = this.mountQueryParamsFromRecord(body)
+        const query = this.query(body)
         return firstValueFrom(this.http.post<T>(`${this.baseUrl}/${path}?${query}`, null))
     }
 
@@ -37,7 +37,7 @@ export class HttpService {
     }
 
     putBodyAsQueryParams<T>(path: string, body: Record<string, any>) {
-        const query = this.mountQueryParamsFromRecord(body)
+        const query = this.query(body)
         return firstValueFrom(this.http.put<T>(`${this.baseUrl}/${path}?${query}`, null))
     }
 
@@ -45,7 +45,7 @@ export class HttpService {
         return firstValueFrom(this.http.delete<T>(`${this.baseUrl}/${path}`))
     }
 
-    mountQueryParamsFromRecord(data: Record<string, any>) {
+    query(data: Record<string, string | number | boolean>) {
         const query = []
 
         for (const key in data) {
