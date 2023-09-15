@@ -276,8 +276,10 @@ internal open class CameraDevice(
         }
     }
 
-    override fun frameFormat(format: String) {
-        sendNewSwitch("CCD_CAPTURE_FORMAT", format to true)
+    override fun frameFormat(format: String?) {
+        if (!format.isNullOrBlank()) {
+            sendNewSwitch("CCD_CAPTURE_FORMAT", format to true)
+        }
     }
 
     override fun frameType(type: FrameType) {

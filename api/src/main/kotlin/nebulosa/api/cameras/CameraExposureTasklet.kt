@@ -40,22 +40,10 @@ import kotlin.io.path.createParentDirectories
 import kotlin.io.path.outputStream
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.microseconds
+import kotlin.time.Duration.Companion.seconds
 
-data class CameraExposureTasklet(
-    private val camera: Camera,
-    private val exposureTime: Duration = Duration.ZERO,
-    private val exposureAmount: Int = 1, // 0 = looping
-    private val exposureDelay: Duration = Duration.ZERO,
-    private val x: Int = camera.minX, private val y: Int = camera.minY,
-    private val width: Int = camera.maxWidth, private val height: Int = camera.maxHeight,
-    private val frameFormat: String? = null,
-    private val frameType: FrameType = FrameType.LIGHT,
-    private val binX: Int = camera.binX, private val binY: Int = binX,
-    private val gain: Int = camera.gain, private val offset: Int = camera.offset,
-    private val autoSave: Boolean = false,
-    private val savePath: Path? = null,
-    private val saveInMemory: Boolean = false,
-) : AbstractSequenceTasklet<CameraCaptureEvent>(), JobExecutionListener, Consumer<DelayElapsed> {
+data class CameraExposureTasklet(private val request: CameraCaptureRequest) :
+    AbstractSequenceTasklet<CameraCaptureEvent>(), JobExecutionListener, Consumer<DelayElapsed> {
 
     private val latch = CountUpDownLatch()
     private val aborted = AtomicBoolean()
@@ -65,8 +53,11 @@ data class CameraExposureTasklet(
     @Volatile private var exposureElapsedTime = 0L
     @Volatile private var stepExecution: StepExecution? = null
 
-    private val isLoop = exposureAmount <= 0
-    private val captureTime = if (isLoop) Duration.ZERO else exposureTime * exposureAmount + exposureDelay * (exposureAmount - 1)
+    private val camera = requireNotNull(request.camera)
+    private val exposureTime = request.exposureInMicroseconds.microseconds
+    private val exposureDelay = request.exposureDelayInSeconds.seconds
+    private val captureTime = if (request.isLoop) Duration.ZERO
+    else exposureTime * request.exposureAmount + exposureDelay * (request.exposureAmount - 1)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onCameraEvent(event: CameraEvent) {
@@ -97,7 +88,7 @@ data class CameraExposureTasklet(
     override fun beforeJob(jobExecution: JobExecution) {
         camera.enableBlob()
         EventBus.getDefault().register(this)
-        jobExecution.executionContext.put(CAPTURE_IN_LOOP, isLoop)
+        jobExecution.executionContext.put(CAPTURE_IN_LOOP, request.isLoop)
         onNext(CameraCaptureStarted(camera, jobExecution))
         captureElapsedTime = 0L
     }
@@ -148,30 +139,22 @@ data class CameraExposureTasklet(
 
                 with(contribution.stepExecution.executionContext) {
                     putInt(EXPOSURE_COUNT, exposureCount)
-                    putInt(EXPOSURE_AMOUNT, exposureAmount)
-                    put(CAPTURE_IN_LOOP, isLoop)
+                    putInt(EXPOSURE_AMOUNT, request.exposureAmount)
+                    put(CAPTURE_IN_LOOP, request.isLoop)
                     put(CAPTURE_IS_WAITING, false)
                 }
 
                 onNext(CameraExposureStarted(camera, stepExecution!!))
 
-                camera.frame(x, y, width, height)
-                camera.frameType(frameType)
-                if (!frameFormat.isNullOrEmpty()) camera.frameFormat(frameFormat)
-                camera.bin(binX, binY)
-                camera.gain(gain)
-                camera.offset(offset)
+                camera.frame(request.x, request.y, request.width, request.height)
+                camera.frameType(request.frameType)
+                camera.frameFormat(request.frameFormat)
+                camera.bin(request.binX, request.binY)
+                camera.gain(request.gain)
+                camera.offset(request.offset)
                 camera.startCapture(exposureTime)
 
                 exposureElapsedTime = 0L
-
-                LOG.info(
-                    "starting camera exposure. camera={}, exposureTime={}, exposureAmount={}, exposureDelay={}, x={}, y={}, width={}, height={}," +
-                            " frameFormat={}, frameType={}, binX={}, binY={}, gain={}, offset={}, autoSave={}, savePath={}, saveInMemory={}",
-                    camera.name, exposureTime, exposureAmount,
-                    exposureDelay, x, y, width, height, frameFormat, frameType, binX, binY,
-                    gain, offset, autoSave, savePath, saveInMemory,
-                )
 
                 latch.await()
 
@@ -184,19 +167,19 @@ data class CameraExposureTasklet(
     }
 
     private fun save(inputStream: InputStream, stepExecution: StepExecution) {
-        val savePath = if (saveInMemory) {
-            savePath
-        } else if (autoSave) {
+        val savePath = if (request.saveInMemory) {
+            request.savePath
+        } else if (request.autoSave) {
             val now = LocalDateTime.now()
-            val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), frameType)
-            Path.of("$savePath", fileName)
+            val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), request.frameType)
+            Path.of("${request.savePath}", fileName)
         } else {
             val fileName = "%s.fits".format(camera.name)
-            Path.of("$savePath", fileName)
+            Path.of("${request.savePath}", fileName)
         }
 
         try {
-            if (saveInMemory) {
+            if (request.saveInMemory) {
                 val image = Image.openFITS(inputStream)
                 onNext(CameraExposureFinished(camera, stepExecution, image, savePath))
             } else {
@@ -218,7 +201,7 @@ data class CameraExposureTasklet(
         var captureRemainingTime = Duration.ZERO
         var captureProgress = 0.0
 
-        if (!isLoop) {
+        if (!request.isLoop) {
             captureRemainingTime = if (captureTime > elapsedTime) captureTime - elapsedTime else Duration.ZERO
             captureProgress = (captureTime - captureRemainingTime) / captureTime
         }

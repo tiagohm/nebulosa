@@ -21,12 +21,4 @@ data class SequenceJob(
 
     val isRunning
         get() = jobExecution.isRunning
-
-    companion object {
-
-        const val JOB_PROGRESS = "jobProgress"
-        const val JOB_ELAPSED_TIME = "jobElapsedTime"
-        const val STEP_PROGRESS = "stepProgress"
-        const val STEP_ELAPSED_TIME = "stepElapsedTime"
-    }
 }

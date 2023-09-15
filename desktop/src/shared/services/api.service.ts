@@ -61,7 +61,7 @@ export class ApiService {
     }
 
     cameraStartCapture(camera: Camera, value: CameraStartCapture) {
-        return this.http.putBodyAsQueryParams<void>(`cameras/${camera.name}/capture/start`, value)
+        return this.http.put<void>(`cameras/${camera.name}/capture/start`, value)
     }
 
     cameraAbortCapture(camera: Camera) {

@@ -1,55 +1,10 @@
 package nebulosa.api.cameras
 
 import nebulosa.indi.device.camera.Camera
-import org.springframework.batch.item.ExecutionContext
 
 sealed interface CameraCaptureEvent {
 
     val camera: Camera
-
-    val executionContext: ExecutionContext
-
-    val waitProgress
-        get() = executionContext.getDouble(WAIT_PROGRESS, 0.0)
-
-    val waitRemainingTime
-        get() = executionContext.getLong(WAIT_REMAINING_TIME, 0L)
-
-    val waitTime
-        get() = executionContext.getLong(WAIT_TIME, 0L)
-
-    val exposureAmount
-        get() = executionContext.getInt(EXPOSURE_AMOUNT, 0)
-
-    val exposureCount
-        get() = executionContext.getInt(EXPOSURE_COUNT, 0)
-
-    val exposureTime
-        get() = executionContext.getLong(EXPOSURE_TIME, 0L)
-
-    val exposureRemainingTime
-        get() = executionContext.getLong(EXPOSURE_REMAINING_TIME, 0L)
-
-    val exposureProgress
-        get() = executionContext.getDouble(EXPOSURE_PROGRESS, 0.0)
-
-    val captureTime
-        get() = executionContext.getLong(CAPTURE_TIME, 0L)
-
-    val captureRemainingTime
-        get() = executionContext.getLong(CAPTURE_REMAINING_TIME, 0L)
-
-    val captureProgress
-        get() = executionContext.getDouble(CAPTURE_PROGRESS, 0.0)
-
-    val captureInLoop
-        get() = executionContext.get(CAPTURE_IN_LOOP) == true
-
-    val captureIsWaiting
-        get() = executionContext.get(CAPTURE_IS_WAITING) == true
-
-    val captureElapsedTime
-        get() = executionContext.getLong(CAPTURE_ELAPSED_TIME, 0L)
 
     companion object {
 

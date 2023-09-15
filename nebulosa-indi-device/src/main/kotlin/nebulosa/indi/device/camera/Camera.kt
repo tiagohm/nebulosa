@@ -102,7 +102,7 @@ interface Camera : GuideOutput, Thermometer {
 
     fun temperature(value: Double)
 
-    fun frameFormat(format: String)
+    fun frameFormat(format: String?)
 
     fun frameType(type: FrameType)
 

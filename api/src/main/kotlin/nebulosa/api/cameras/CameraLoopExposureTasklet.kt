@@ -2,40 +2,18 @@ package nebulosa.api.cameras
 
 import nebulosa.api.sequencer.AbstractSequenceTasklet
 import nebulosa.api.tasklets.delay.DelayTasklet
-import nebulosa.indi.device.camera.Camera
-import nebulosa.indi.device.camera.FrameType
 import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.StepContribution
 import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.repeat.RepeatStatus
-import java.nio.file.Path
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
-data class CameraLoopExposureTasklet(
-    private val camera: Camera,
-    private val exposureTime: Duration = Duration.ZERO,
-    private val exposureDelay: Duration = Duration.ZERO,
-    private val x: Int = camera.minX, private val y: Int = camera.minY,
-    private val width: Int = camera.maxWidth, private val height: Int = camera.maxHeight,
-    private val frameFormat: String? = null,
-    private val frameType: FrameType = FrameType.LIGHT,
-    private val binX: Int = camera.binX, private val binY: Int = binX,
-    private val gain: Int = camera.gain, private val offset: Int = camera.offset,
-    private val autoSave: Boolean = false,
-    private val savePath: Path? = null,
-) : AbstractSequenceTasklet<CameraCaptureEvent>(), JobExecutionListener {
+data class CameraLoopExposureTasklet(private val request: CameraCaptureRequest) :
+    AbstractSequenceTasklet<CameraCaptureEvent>(), JobExecutionListener {
 
-    private val exposureTasklet = CameraExposureTasklet(
-        camera,
-        exposureTime, 0, exposureDelay,
-        x, y, width, height,
-        frameFormat, frameType,
-        binX, binY, gain, offset,
-        autoSave, savePath,
-    )
-
-    private val delayTasklet = DelayTasklet(exposureDelay)
+    private val exposureTasklet = CameraExposureTasklet(request)
+    private val delayTasklet = DelayTasklet(request.exposureDelayInSeconds.seconds)
 
     init {
         exposureTasklet.subscribe(this)

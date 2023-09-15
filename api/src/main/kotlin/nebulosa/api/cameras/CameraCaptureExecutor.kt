@@ -6,7 +6,6 @@ import nebulosa.api.services.MessageService
 import nebulosa.api.tasklets.delay.DelayTasklet
 import nebulosa.common.concurrency.Incrementer
 import nebulosa.indi.device.camera.Camera
-import nebulosa.indi.device.camera.FrameType
 import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobParametersBuilder
 import org.springframework.batch.core.configuration.JobRegistry
@@ -19,9 +18,8 @@ import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.core.step.tasklet.Tasklet
 import org.springframework.stereotype.Component
 import org.springframework.transaction.PlatformTransactionManager
-import java.nio.file.Path
 import java.util.*
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @Component
 class CameraCaptureExecutor(
@@ -31,39 +29,21 @@ class CameraCaptureExecutor(
     private val platformTransactionManager: PlatformTransactionManager,
     private val jobRegistry: JobRegistry,
     private val messageService: MessageService,
-) : SequenceJobExecutor {
+) : SequenceJobExecutor<CameraCaptureRequest> {
 
     private val runningSequenceJobs = LinkedList<SequenceJob>()
     private val executionIncrementer = Incrementer()
 
     @Synchronized
-    fun execute(
-        camera: Camera,
-        exposureTime: Duration = Duration.ZERO,
-        exposureAmount: Int = 1,
-        exposureDelay: Duration = Duration.ZERO,
-        x: Int = camera.minX, y: Int = camera.minY,
-        width: Int = camera.maxWidth, height: Int = camera.maxHeight,
-        frameFormat: String? = null,
-        frameType: FrameType = FrameType.LIGHT,
-        binX: Int = camera.binX, binY: Int = binX,
-        gain: Int = camera.gain, offset: Int = camera.offset,
-        autoSave: Boolean = false, savePath: Path? = null,
-    ): JobExecution {
+    override fun execute(data: CameraCaptureRequest): SequenceJob {
+        val camera = requireNotNull(data.camera)
+
         if (isCapturing(camera)) {
             throw IllegalStateException("A Camera Exposure job is already running. camera=${camera.name}")
         }
 
-        val cameraCaptureJob = if (exposureAmount <= 0) {
-            val cameraExposureTasklet = CameraLoopExposureTasklet(
-                camera,
-                exposureTime, exposureDelay,
-                x, y, width, height,
-                frameFormat, frameType,
-                binX, binY, gain, offset,
-                autoSave, savePath,
-            )
-
+        val cameraCaptureJob = if (data.isLoop) {
+            val cameraExposureTasklet = CameraLoopExposureTasklet(data)
             cameraExposureTasklet.subscribe(::onCameraCaptureEvent)
 
             JobBuilder("CameraCapture.Job.${executionIncrementer.increment()}", jobRepository)
@@ -71,24 +51,17 @@ class CameraCaptureExecutor(
                 .listener(cameraExposureTasklet)
                 .build()
         } else {
-            val cameraExposureTasklet = CameraExposureTasklet(
-                camera,
-                exposureTime, exposureAmount, exposureDelay,
-                x, y, width, height,
-                frameFormat, frameType,
-                binX, binY, gain, offset,
-                autoSave, savePath,
-            )
+            val cameraExposureTasklet = CameraExposureTasklet(data)
 
             cameraExposureTasklet.subscribe(::onCameraCaptureEvent)
 
-            val cameraDelayTasklet = DelayTasklet(exposureDelay)
+            val cameraDelayTasklet = DelayTasklet(data.exposureDelayInSeconds.seconds)
             cameraDelayTasklet.subscribe(cameraExposureTasklet)
 
             val jobBuilder = JobBuilder("CameraCapture.Job.${executionIncrementer.increment()}", jobRepository)
                 .start(cameraExposureStep(cameraExposureTasklet))
 
-            repeat(exposureAmount - 1) {
+            repeat(data.exposureAmount - 1) {
                 val cameraDelayStep = cameraDelayStep(cameraDelayTasklet)
                 val cameraExposureStep = cameraExposureStep(cameraExposureTasklet)
 
@@ -105,26 +78,27 @@ class CameraCaptureExecutor(
 
         val parameters = JobParametersBuilder()
             .addString("camera", camera.name)
-            .addString("exposureTime", "$exposureTime")
-            .addString("exposureAmount", "$exposureAmount")
-            .addString("exposureDelay", "$exposureDelay")
-            .addString("x", "$x")
-            .addString("y", "$y")
-            .addString("width", "$width")
-            .addString("height", "$height")
-            .addString("frameFormat", frameFormat ?: "")
-            .addString("frameType", "$frameType")
-            .addString("binX", "$binX")
-            .addString("binY", "$binY")
-            .addString("gain", "$gain")
-            .addString("offset", "$offset")
-            .addString("autoSave", "$autoSave")
-            .addString("savePath", "$savePath")
+            .addString("exposureTime", "${data.exposureInMicroseconds}")
+            .addString("exposureAmount", "${data.exposureAmount}")
+            .addString("exposureDelay", "${data.exposureDelayInSeconds}")
+            .addString("x", "${data.x}")
+            .addString("y", "${data.y}")
+            .addString("width", "${data.width}")
+            .addString("height", "${data.height}")
+            .addString("frameFormat", data.frameFormat ?: "")
+            .addString("frameType", "${data.frameType}")
+            .addString("binX", "${data.binX}")
+            .addString("binY", "${data.binY}")
+            .addString("gain", "${data.gain}")
+            .addString("offset", "${data.offset}")
+            .addString("autoSave", "${data.autoSave}")
+            .addString("savePath", "${data.savePath}")
             .toJobParameters()
 
         return asyncJobLauncher
             .run(cameraCaptureJob, parameters)
-            .also { runningSequenceJobs.add(SequenceJob(listOf(camera), cameraCaptureJob, it)) }
+            .let { SequenceJob(listOf(camera), cameraCaptureJob, it) }
+            .also { runningSequenceJobs.add(it) }
             .also { jobRegistry.register(ReferenceJobFactory(cameraCaptureJob)) }
     }
 

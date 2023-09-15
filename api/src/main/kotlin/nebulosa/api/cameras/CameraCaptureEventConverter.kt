@@ -16,6 +16,8 @@ import nebulosa.api.cameras.CameraCaptureEvent.Companion.EXPOSURE_TIME
 import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_PROGRESS
 import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_REMAINING_TIME
 import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_TIME
+import nebulosa.api.sequencer.SequenceJobEvent
+import nebulosa.api.sequencer.SequenceStepEvent
 import nebulosa.json.ToJson
 import org.springframework.stereotype.Component
 
@@ -29,22 +31,30 @@ class CameraCaptureEventConverter : ToJson<CameraCaptureEvent> {
 
         gen.writeObjectField("camera", value.camera)
 
-        gen.writeNumberField(WAIT_PROGRESS, value.waitProgress)
-        gen.writeNumberField(WAIT_REMAINING_TIME, value.waitRemainingTime)
-        gen.writeNumberField(WAIT_TIME, value.waitTime)
+        val executionContext = when (value) {
+            is SequenceStepEvent -> value.stepExecution.executionContext
+            is SequenceJobEvent -> value.jobExecution.executionContext
+            else -> null
+        }
 
-        gen.writeNumberField(EXPOSURE_AMOUNT, value.exposureAmount)
-        gen.writeNumberField(EXPOSURE_COUNT, value.exposureCount)
-        gen.writeNumberField(EXPOSURE_TIME, value.exposureTime)
-        gen.writeNumberField(EXPOSURE_REMAINING_TIME, value.exposureRemainingTime)
-        gen.writeNumberField(EXPOSURE_PROGRESS, value.exposureProgress)
+        if (executionContext != null) {
+            gen.writeNumberField(WAIT_PROGRESS, executionContext.getDouble(WAIT_PROGRESS, 0.0))
+            gen.writeNumberField(WAIT_REMAINING_TIME, executionContext.getLong(WAIT_REMAINING_TIME, 0L))
+            gen.writeNumberField(WAIT_TIME, executionContext.getLong(WAIT_TIME, 0L))
 
-        gen.writeNumberField(CAPTURE_TIME, value.captureTime)
-        gen.writeNumberField(CAPTURE_REMAINING_TIME, value.captureRemainingTime)
-        gen.writeNumberField(CAPTURE_PROGRESS, value.captureProgress)
-        gen.writeBooleanField(CAPTURE_IN_LOOP, value.captureInLoop)
-        gen.writeBooleanField(CAPTURE_IS_WAITING, value.captureIsWaiting)
-        gen.writeNumberField(CAPTURE_ELAPSED_TIME, value.captureElapsedTime)
+            gen.writeNumberField(EXPOSURE_AMOUNT, executionContext.getInt(EXPOSURE_AMOUNT, 0))
+            gen.writeNumberField(EXPOSURE_COUNT, executionContext.getInt(EXPOSURE_COUNT, 0))
+            gen.writeNumberField(EXPOSURE_TIME, executionContext.getLong(EXPOSURE_TIME, 0L))
+            gen.writeNumberField(EXPOSURE_REMAINING_TIME, executionContext.getLong(EXPOSURE_REMAINING_TIME, 0L))
+            gen.writeNumberField(EXPOSURE_PROGRESS, executionContext.getDouble(EXPOSURE_PROGRESS, 0.0))
+
+            gen.writeNumberField(CAPTURE_TIME, executionContext.getLong(CAPTURE_TIME, 0L))
+            gen.writeNumberField(CAPTURE_REMAINING_TIME, executionContext.getLong(CAPTURE_REMAINING_TIME, 0L))
+            gen.writeNumberField(CAPTURE_PROGRESS, executionContext.getDouble(CAPTURE_PROGRESS, 0.0))
+            gen.writeBooleanField(CAPTURE_IN_LOOP, executionContext.get(CAPTURE_IN_LOOP) == true)
+            gen.writeBooleanField(CAPTURE_IS_WAITING, executionContext.get(CAPTURE_IS_WAITING) == true)
+            gen.writeNumberField(CAPTURE_ELAPSED_TIME, executionContext.getLong(CAPTURE_ELAPSED_TIME, 0L))
+        }
 
         if (value is CameraExposureFinished && value.savePath != null) {
             gen.writeObjectField("savePath", value.savePath)
