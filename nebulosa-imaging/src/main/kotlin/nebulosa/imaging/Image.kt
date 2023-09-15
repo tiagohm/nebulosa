@@ -318,22 +318,25 @@ class Image(
 
         @JvmStatic
         fun open(
+            path: Path,
+            debayer: Boolean = true,
+            onlyHeaders: Boolean = false,
+        ) = open(path.toFile(), debayer, onlyHeaders)
+
+        @JvmStatic
+        fun open(
             file: File,
             debayer: Boolean = true,
             onlyHeaders: Boolean = false,
-        ): Image {
-            return ImageIO.read(file)?.let(::openImage)
-                ?: Fits(file).use { openFITS(it, debayer, onlyHeaders) }
-        }
+        ) = ImageIO.read(file)?.let(::openImage)
+            ?: Fits(file).use { openFITS(it, debayer, onlyHeaders) }
 
         @JvmStatic
         fun openFITS(
             inputStream: InputStream,
             debayer: Boolean = true,
             onlyHeaders: Boolean = false,
-        ): Image {
-            return Fits(inputStream).use { openFITS(it, debayer, onlyHeaders) }
-        }
+        ) = Fits(inputStream).use { openFITS(it, debayer, onlyHeaders) }
 
         @JvmStatic
         fun openImage(inputStream: InputStream): Image? {
@@ -423,11 +426,6 @@ class Image(
             return image
         }
 
-        /**
-         * Extended image file format support for the Java platform.
-         *
-         * @see <a href="https://github.com/haraldk/TwelveMonkeys">TwelveMonkeys: Additional plug-ins</a>
-         */
         @JvmStatic
         fun openImage(bufferedImage: BufferedImage): Image {
             val header = Header()

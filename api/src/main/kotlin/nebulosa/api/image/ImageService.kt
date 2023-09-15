@@ -70,7 +70,7 @@ class ImageService(
         output: HttpServletResponse,
     ) {
         val image = cachedImages[token]
-            ?: if (token is ImageToken.Saved) Image.open(token.path.toFile(), debayer).also { load(token, it) }
+            ?: if (token is ImageToken.Saved) Image.open(token.path, debayer).also { load(token, it) }
             else throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
         val manualStretch = shadow != 0f || highlight != 1f || midtone != 0.5f

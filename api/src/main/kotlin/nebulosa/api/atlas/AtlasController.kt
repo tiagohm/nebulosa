@@ -143,7 +143,7 @@ class AtlasController(
     fun altitudePointsOfSun(
         @RequestParam location: Long,
         @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @RequestParam(required = false, defaultValue = "5") @Valid @Min(1) stepSize: Int,
+        @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
     ): List<DoubleArray> {
         return atlasService.altitudePointsOfSun(locationRepository.withId(location)!!, date.orNow(), stepSize)
     }
@@ -152,7 +152,7 @@ class AtlasController(
     fun altitudePointsOfMoon(
         @RequestParam location: Long,
         @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @RequestParam(required = false, defaultValue = "5") stepSize: Int,
+        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
     ): List<DoubleArray> {
         return atlasService.altitudePointsOfMoon(locationRepository.withId(location)!!, date.orNow(), stepSize)
     }
@@ -162,7 +162,7 @@ class AtlasController(
         @RequestParam location: Long,
         @RequestParam @Valid @NotBlank code: String,
         @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @RequestParam(required = false, defaultValue = "5") stepSize: Int,
+        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
     ): List<DoubleArray> {
         return atlasService.altitudePointsOfPlanet(locationRepository.withId(location)!!, code, date.orNow(), stepSize)
     }
@@ -172,7 +172,7 @@ class AtlasController(
         @RequestParam location: Long,
         @RequestParam @Valid @Positive star: Long,
         @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @RequestParam(required = false, defaultValue = "5") stepSize: Int,
+        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
     ): List<DoubleArray> {
         return atlasService
             .altitudePointsOfStar(locationRepository.withId(location)!!, starRepository.withId(star)!!, date.orNow(), stepSize)
@@ -183,7 +183,7 @@ class AtlasController(
         @RequestParam location: Long,
         @RequestParam @Valid @Positive dso: Long,
         @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @RequestParam(required = false, defaultValue = "5") stepSize: Int,
+        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
     ): List<DoubleArray> {
         return atlasService
             .altitudePointsOfDSO(locationRepository.withId(location)!!, deepSkyObjectRepository.withId(dso)!!, date.orNow(), stepSize)

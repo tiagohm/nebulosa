@@ -367,27 +367,27 @@ export class ApiService {
 
     altitudePointsOfSun(location: Location, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.http.get<[number, number][]>(`altitudePointsOfSun?location=${location.id}&date=${date}&stepSize=5`)
+        return this.http.get<[number, number][]>(`altitudePointsOfSun?location=${location.id}&date=${date}&stepSize=1`)
     }
 
     altitudePointsOfMoon(location: Location, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.http.get<[number, number][]>(`altitudePointsOfMoon?location=${location.id}&date=${date}&stepSize=5`)
+        return this.http.get<[number, number][]>(`altitudePointsOfMoon?location=${location.id}&date=${date}&stepSize=1`)
     }
 
     altitudePointsOfPlanet(location: Location, code: string, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.http.get<[number, number][]>(`altitudePointsOfPlanet?location=${location.id}&code=${code}&date=${date}&stepSize=5`)
+        return this.http.get<[number, number][]>(`altitudePointsOfPlanet?location=${location.id}&code=${code}&date=${date}&stepSize=1`)
     }
 
     altitudePointsOfStar(location: Location, star: Star, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.http.get<[number, number][]>(`altitudePointsOfStar?location=${location.id}&star=${star.id}&date=${date}&stepSize=5`)
+        return this.http.get<[number, number][]>(`altitudePointsOfStar?location=${location.id}&star=${star.id}&date=${date}&stepSize=1`)
     }
 
     altitudePointsOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.http.get<[number, number][]>(`altitudePointsOfDSO?location=${location.id}&dso=${dso.id}&date=${date}&stepSize=5`)
+        return this.http.get<[number, number][]>(`altitudePointsOfDSO?location=${location.id}&dso=${dso.id}&date=${date}&stepSize=1`)
     }
 
     altitudePointsOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
