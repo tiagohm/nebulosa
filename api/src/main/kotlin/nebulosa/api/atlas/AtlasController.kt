@@ -14,6 +14,7 @@ import nebulosa.api.data.responses.SatelliteResponse
 import nebulosa.api.data.responses.TwilightResponse
 import nebulosa.api.repositories.DeepSkyObjectRepository
 import nebulosa.api.repositories.LocationRepository
+import nebulosa.api.repositories.SatelliteRepository
 import nebulosa.api.repositories.StarRepository
 import nebulosa.api.utils.noSeconds
 import nebulosa.api.utils.orNow
@@ -23,167 +24,108 @@ import nebulosa.math.Angle.Companion.hours
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObjectType
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 import java.time.LocalTime
 
 @RestController
+@RequestMapping("sky-atlas")
 class AtlasController(
     private val atlasService: AtlasService,
     private val locationRepository: LocationRepository,
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
+    private val satelliteRepository: SatelliteRepository,
 ) {
 
-    @GetMapping("imageOfSun")
+    @GetMapping("sun/image")
     fun imageOfSun(response: HttpServletResponse) {
         atlasService.imageOfSun(response)
     }
 
-    @GetMapping("positionOfSun")
+    @GetMapping("sun/position")
     fun positionOfSun(
-        @RequestParam location: Long,
+        @RequestParam @Valid @Positive location: Long,
         @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
         @DateTimeFormat(pattern = "HH:mm") @RequestParam(required = false) time: LocalTime?,
     ): BodyPositionResponse {
         return atlasService.positionOfSun(locationRepository.withId(location)!!, (date + time).noSeconds())
     }
 
-    @GetMapping("positionOfMoon")
-    fun positionOfMoon(
-        @RequestParam location: Long,
-        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @DateTimeFormat(pattern = "HH:mm") @RequestParam(required = false) time: LocalTime?,
-    ): BodyPositionResponse {
-        return atlasService.positionOfMoon(locationRepository.withId(location)!!, (date + time).noSeconds())
-    }
-
-    @GetMapping("positionOfPlanet")
-    fun positionOfPlanet(
-        @RequestParam location: Long,
-        @RequestParam @Valid @NotBlank code: String,
-        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @DateTimeFormat(pattern = "HH:mm") @RequestParam(required = false) time: LocalTime?,
-    ): BodyPositionResponse {
-        return atlasService.positionOfPlanet(locationRepository.withId(location)!!, code, (date + time).noSeconds())
-    }
-
-    @GetMapping("positionOfStar")
-    fun positionOfStar(
-        @RequestParam location: Long,
-        @RequestParam @Valid @Positive star: Long,
-        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @DateTimeFormat(pattern = "HH:mm") @RequestParam(required = false) time: LocalTime?,
-    ): BodyPositionResponse {
-        return atlasService.positionOfStar(locationRepository.withId(location)!!, starRepository.withId(star)!!, (date + time).noSeconds())
-    }
-
-    @GetMapping("positionOfDSO")
-    fun positionOfDSO(
-        @RequestParam location: Long,
-        @RequestParam @Valid @Positive dso: Long,
-        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @DateTimeFormat(pattern = "HH:mm") @RequestParam(required = false) time: LocalTime?,
-    ): BodyPositionResponse {
-        return atlasService.positionOfDSO(locationRepository.withId(location)!!, deepSkyObjectRepository.withId(dso)!!, (date + time).noSeconds())
-    }
-
-    @GetMapping("positionOfSatellite")
-    fun positionOfSatellite(
-        @RequestParam location: Long,
-        @RequestParam @Valid @NotBlank tle: String,
-        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @DateTimeFormat(pattern = "HH:mm") @RequestParam(required = false) time: LocalTime?,
-    ): BodyPositionResponse {
-        return atlasService.positionOfSatellite(locationRepository.withId(location)!!, tle, (date + time).noSeconds())
-    }
-
-    @GetMapping("searchSatellites")
-    fun searchSatellites(
-        @RequestParam(required = false, defaultValue = "") text: String,
-        @RequestParam(name = "group", required = false) groups: List<SatelliteGroupType>,
-    ): List<SatelliteResponse> {
-        return atlasService.searchSatellites(text, groups)
-    }
-
-    @GetMapping("twilight")
-    fun twilight(
-        @RequestParam location: Long,
-        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-    ): TwilightResponse {
-        return atlasService.twilight(locationRepository.withId(location)!!, date.orNow())
-    }
-
-    @GetMapping("altitudePointsOfSun")
+    @GetMapping("sun/altitude-points")
     fun altitudePointsOfSun(
-        @RequestParam location: Long,
+        @RequestParam @Valid @Positive location: Long,
         @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
         @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
     ): List<DoubleArray> {
         return atlasService.altitudePointsOfSun(locationRepository.withId(location)!!, date.orNow(), stepSize)
     }
 
-    @GetMapping("altitudePointsOfMoon")
+    @GetMapping("moon/position")
+    fun positionOfMoon(
+        @RequestParam @Valid @Positive location: Long,
+        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
+        @DateTimeFormat(pattern = "HH:mm") @RequestParam(required = false) time: LocalTime?,
+    ): BodyPositionResponse {
+        return atlasService.positionOfMoon(locationRepository.withId(location)!!, (date + time).noSeconds())
+    }
+
+    @GetMapping("moon/altitude-points")
     fun altitudePointsOfMoon(
-        @RequestParam location: Long,
+        @RequestParam @Valid @Positive location: Long,
         @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
     ): List<DoubleArray> {
         return atlasService.altitudePointsOfMoon(locationRepository.withId(location)!!, date.orNow(), stepSize)
     }
 
-    @GetMapping("altitudePointsOfPlanet")
+    @GetMapping("planets/{code}/position")
+    fun positionOfPlanet(
+        @PathVariable code: String,
+        @RequestParam @Valid @Positive location: Long,
+        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
+        @DateTimeFormat(pattern = "HH:mm") @RequestParam(required = false) time: LocalTime?,
+    ): BodyPositionResponse {
+        return atlasService.positionOfPlanet(locationRepository.withId(location)!!, code, (date + time).noSeconds())
+    }
+
+    @GetMapping("planets/{code}/altitude-points")
     fun altitudePointsOfPlanet(
-        @RequestParam location: Long,
-        @RequestParam @Valid @NotBlank code: String,
+        @PathVariable code: String,
+        @RequestParam @Valid @Positive location: Long,
         @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
     ): List<DoubleArray> {
         return atlasService.altitudePointsOfPlanet(locationRepository.withId(location)!!, code, date.orNow(), stepSize)
     }
 
-    @GetMapping("altitudePointsOfStar")
-    fun altitudePointsOfStar(
-        @RequestParam location: Long,
-        @RequestParam @Valid @Positive star: Long,
-        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ): List<DoubleArray> {
-        return atlasService
-            .altitudePointsOfStar(locationRepository.withId(location)!!, starRepository.withId(star)!!, date.orNow(), stepSize)
-    }
-
-    @GetMapping("altitudePointsOfDSO")
-    fun altitudePointsOfDSO(
-        @RequestParam location: Long,
-        @RequestParam @Valid @Positive dso: Long,
-        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ): List<DoubleArray> {
-        return atlasService
-            .altitudePointsOfDSO(locationRepository.withId(location)!!, deepSkyObjectRepository.withId(dso)!!, date.orNow(), stepSize)
-    }
-
-    @GetMapping("altitudePointsOfSatellite")
-    fun altitudePointsOfSatellite(
-        @RequestParam location: Long,
-        @RequestParam @Valid @NotBlank tle: String,
-        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
-        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ): List<DoubleArray> {
-        return atlasService
-            .altitudePointsOfSatellite(locationRepository.withId(location)!!, tle, date.orNow(), stepSize)
-    }
-
-    @GetMapping("searchMinorPlanet")
+    @GetMapping("minor-planets")
     fun searchMinorPlanet(@RequestParam @Valid @NotBlank text: String): MinorPlanetResponse {
         return atlasService.searchMinorPlanet(text)
     }
 
-    @GetMapping("searchStar")
+    @GetMapping("stars/{id}/position")
+    fun positionOfStar(
+        @PathVariable id: Long,
+        @RequestParam @Valid @Positive location: Long,
+        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
+        @DateTimeFormat(pattern = "HH:mm") @RequestParam(required = false) time: LocalTime?,
+    ): BodyPositionResponse {
+        return atlasService.positionOfStar(locationRepository.withId(location)!!, starRepository.withId(id)!!, (date + time).noSeconds())
+    }
+
+    @GetMapping("stars/{id}/altitude-points")
+    fun altitudePointsOfStar(
+        @PathVariable id: Long,
+        @RequestParam @Valid @Positive location: Long,
+        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
+        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
+    ): List<DoubleArray> {
+        return atlasService
+            .altitudePointsOfStar(locationRepository.withId(location)!!, starRepository.withId(id)!!, date.orNow(), stepSize)
+    }
+
+    @GetMapping("stars")
     fun searchStar(
         @RequestParam @Valid @NotBlank text: String,
         @RequestParam(required = false, defaultValue = "") rightAscension: String,
@@ -200,7 +142,28 @@ class AtlasController(
         )
     }
 
-    @GetMapping("searchDSO")
+    @GetMapping("dsos/{id}/position")
+    fun positionOfDSO(
+        @PathVariable id: Long,
+        @RequestParam @Valid @Positive location: Long,
+        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
+        @DateTimeFormat(pattern = "HH:mm") @RequestParam(required = false) time: LocalTime?,
+    ): BodyPositionResponse {
+        return atlasService.positionOfDSO(locationRepository.withId(location)!!, deepSkyObjectRepository.withId(id)!!, (date + time).noSeconds())
+    }
+
+    @GetMapping("dsos/{id}/altitude-points")
+    fun altitudePointsOfDSO(
+        @PathVariable id: Long,
+        @RequestParam @Valid @Positive location: Long,
+        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
+        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
+    ): List<DoubleArray> {
+        return atlasService
+            .altitudePointsOfDSO(locationRepository.withId(location)!!, deepSkyObjectRepository.withId(id)!!, date.orNow(), stepSize)
+    }
+
+    @GetMapping("dsos")
     fun searchDSO(
         @RequestParam @Valid @NotBlank text: String,
         @RequestParam(required = false, defaultValue = "") rightAscension: String,
@@ -215,5 +178,44 @@ class AtlasController(
             text, rightAscension.hours, declination.deg, radius.deg,
             constellation, magnitudeMin, magnitudeMax, type,
         )
+    }
+
+    @GetMapping("satellites/{id}/position")
+    fun positionOfSatellite(
+        @PathVariable id: Long,
+        @RequestParam @Valid @Positive location: Long,
+        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
+        @DateTimeFormat(pattern = "HH:mm") @RequestParam(required = false) time: LocalTime?,
+    ): BodyPositionResponse {
+        val tle = satelliteRepository.findById(id)!!.tle
+        return atlasService.positionOfSatellite(locationRepository.withId(location)!!, tle, (date + time).noSeconds())
+    }
+
+    @GetMapping("satellites/{id}/altitude-points")
+    fun altitudePointsOfSatellite(
+        @PathVariable id: Long,
+        @RequestParam @Valid @Positive location: Long,
+        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
+        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
+    ): List<DoubleArray> {
+        val tle = satelliteRepository.findById(id)!!.tle
+        return atlasService
+            .altitudePointsOfSatellite(locationRepository.withId(location)!!, tle, date.orNow(), stepSize)
+    }
+
+    @GetMapping("satellites")
+    fun searchSatellites(
+        @RequestParam(required = false, defaultValue = "") text: String,
+        @RequestParam(name = "group", required = false) groups: List<SatelliteGroupType>,
+    ): List<SatelliteResponse> {
+        return atlasService.searchSatellites(text, groups)
+    }
+
+    @GetMapping("twilight")
+    fun twilight(
+        @RequestParam @Valid @Positive location: Long,
+        @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(required = false) date: LocalDate?,
+    ): TwilightResponse {
+        return atlasService.twilight(locationRepository.withId(location)!!, date.orNow())
     }
 }

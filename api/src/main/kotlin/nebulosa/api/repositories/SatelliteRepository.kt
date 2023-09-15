@@ -17,7 +17,13 @@ class SatelliteRepository(
     private val okHttpClient: OkHttpClient,
 ) {
 
+    // TODO: Rename SatelliteResponse to SatelliteEntity and
+    // save into new H2 database (via file at app directory)
     private val data = HashMap<Long, SatelliteResponse>()
+
+    fun findById(id: Long): SatelliteResponse? {
+        return data[id]
+    }
 
     fun search(text: String = "", groups: List<SatelliteGroupType>): List<SatelliteResponse> {
         return data.values

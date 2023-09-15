@@ -2,6 +2,8 @@ import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
 
+export type QueryParamType = string | number | boolean | undefined | null | QueryParamType[]
+
 @Injectable({ providedIn: 'root' })
 export class HttpService {
 
@@ -45,17 +47,23 @@ export class HttpService {
         return firstValueFrom(this.http.delete<T>(`${this.baseUrl}/${path}`))
     }
 
-    query(data: Record<string, string | number | boolean>) {
-        const query = []
+    query(data: Record<string, QueryParamType>) {
+        const query: string[] = []
 
         for (const key in data) {
-            const value = data[key]
-
-            if (value !== undefined && value !== null) {
-                query.push(`${key}=${encodeURIComponent(value)}`)
-            }
+            this.addQuery(key, data[key], query)
         }
 
         return query.join('&')
+    }
+
+    private addQuery(key: string, value: QueryParamType, output: string[]) {
+        if (Array.isArray(value)) {
+            for (const item of value) {
+                this.addQuery(key, item, output)
+            }
+        } else if (value !== undefined && value !== null) {
+            output.push(`${key}=${encodeURIComponent(value)}`)
+        }
     }
 }

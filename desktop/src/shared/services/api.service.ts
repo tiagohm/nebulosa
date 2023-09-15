@@ -335,73 +335,54 @@ export class ApiService {
         return this.http.delete<void>(`locations/${location.id}`)
     }
 
+    // SKY ATLAS
+
     positionOfSun(location: Location, dateTime: Date) {
         const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        return this.http.get<BodyPosition>(`positionOfSun?location=${location.id}&date=${date}&time=${time}`)
-    }
-
-    positionOfMoon(location: Location, dateTime: Date) {
-        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        return this.http.get<BodyPosition>(`positionOfMoon?location=${location.id}&date=${date}&time=${time}`)
-    }
-
-    positionOfPlanet(location: Location, code: string, dateTime: Date) {
-        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        return this.http.get<BodyPosition>(`positionOfPlanet?location=${location.id}&code=${code}&date=${date}&time=${time}`)
-    }
-
-    positionOfStar(location: Location, star: Star, dateTime: Date) {
-        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        return this.http.get<BodyPosition>(`positionOfStar?location=${location.id}&star=${star.id}&date=${date}&time=${time}`)
-    }
-
-    positionOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
-        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        return this.http.get<BodyPosition>(`positionOfDSO?location=${location.id}&dso=${dso.id}&date=${date}&time=${time}`)
-    }
-
-    positionOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
-        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        return this.http.get<BodyPosition>(`positionOfSatellite?location=${location.id}&tle=${encodeURIComponent(satellite.tle)}&date=${date}&time=${time}`)
-    }
-
-    twilight(location: Location, dateTime: Date) {
-        const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.http.get<Twilight>(`twilight?location=${location.id}&date=${date}`)
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/sun/position?${query}`)
     }
 
     altitudePointsOfSun(location: Location, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.http.get<[number, number][]>(`altitudePointsOfSun?location=${location.id}&date=${date}&stepSize=1`)
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/sun/altitude-points?${query}`)
+    }
+
+    positionOfMoon(location: Location, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/moon/position?${query}`)
     }
 
     altitudePointsOfMoon(location: Location, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.http.get<[number, number][]>(`altitudePointsOfMoon?location=${location.id}&date=${date}&stepSize=1`)
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/moon/altitude-points?${query}`)
+    }
+
+    positionOfPlanet(location: Location, code: string, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/planets/${code}/position?${query}`)
     }
 
     altitudePointsOfPlanet(location: Location, code: string, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.http.get<[number, number][]>(`altitudePointsOfPlanet?location=${location.id}&code=${code}&date=${date}&stepSize=1`)
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/planets/${code}/altitude-points?${query}`)
+    }
+
+    positionOfStar(location: Location, star: Star, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/stars/${star.id}/position?${query}`)
     }
 
     altitudePointsOfStar(location: Location, star: Star, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.http.get<[number, number][]>(`altitudePointsOfStar?location=${location.id}&star=${star.id}&date=${date}&stepSize=1`)
-    }
-
-    altitudePointsOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
-        const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.http.get<[number, number][]>(`altitudePointsOfDSO?location=${location.id}&dso=${dso.id}&date=${date}&stepSize=1`)
-    }
-
-    altitudePointsOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
-        const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.http.get<[number, number][]>(`altitudePointsOfSatellite?location=${location.id}&tle=${encodeURIComponent(satellite.tle)}&date=${date}&stepSize=1`)
-    }
-
-    searchMinorPlanet(text: string) {
-        return this.http.get<MinorPlanet>(`searchMinorPlanet?text=${text}`)
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/stars/${star.id}/altitude-points?${query}`)
     }
 
     searchStar(text: string,
@@ -410,11 +391,20 @@ export class ApiService {
         magnitudeMin: number = -99, magnitudeMax: number = 99,
         type?: SkyObjectType,
     ) {
-        let q = ''
-        if (constellation) q += `&constellation=${constellation}`
-        if (type) q += `&type=${type}`
-        return this.http.get<Star[]>(`searchStar?text=${text}&rightAscension=${rightAscension}&declination=${declination}&radius=${radius}` +
-            `&magnitudeMin=${magnitudeMin}&magnitudeMax=${magnitudeMax}${q}`)
+        const query = this.http.query({ text, rightAscension, declination, radius, constellation, magnitudeMin, magnitudeMax, type })
+        return this.http.get<Star[]>(`sky-atlas/stars?${query}`)
+    }
+
+    positionOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/dsos/${dso.id}/position?${query}`)
+    }
+
+    altitudePointsOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/dsos/${dso.id}/altitude-points?${query}`)
     }
 
     searchDSO(text: string,
@@ -423,11 +413,35 @@ export class ApiService {
         magnitudeMin: number = -99, magnitudeMax: number = 99,
         type?: SkyObjectType,
     ) {
-        let q = ''
-        if (constellation) q += `&constellation=${constellation}`
-        if (type) q += `&type=${type}`
-        return this.http.get<DeepSkyObject[]>(`searchDSO?text=${text}&rightAscension=${rightAscension}&declination=${declination}&radius=${radius}` +
-            `&magnitudeMin=${magnitudeMin}&magnitudeMax=${magnitudeMax}${q}`)
+        const query = this.http.query({ text, rightAscension, declination, radius, constellation, magnitudeMin, magnitudeMax, type })
+        return this.http.get<DeepSkyObject[]>(`sky-atlas/dsos?${query}`)
+    }
+
+    positionOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/satellites/${satellite.id}/position?${query}`)
+    }
+
+    altitudePointsOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/satellites/${satellite.id}/altitude-points?${query}`)
+    }
+
+    searchSatellites(text: string = '', group: SatelliteGroupType[] = []) {
+        const query = this.http.query({ text, group })
+        return this.http.get<Satellite[]>(`sky-atlas/satellites?${query}`)
+    }
+
+    twilight(location: Location, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<Twilight>(`sky-atlas/twilight?${query}`)
+    }
+
+    searchMinorPlanet(text: string) {
+        return this.http.get<MinorPlanet>(`sky-atlas/minor-planets?text=${text}`)
     }
 
     annotationsOfImage(
@@ -462,10 +476,5 @@ export class ApiService {
 
     pointMountHere(mount: Mount, path: string, x: number, y: number, synchronized: boolean = true) {
         return this.http.post<void>(`pointMountHere?name=${mount.name}&path=${encodeURIComponent(path)}&x=${x}&y=${y}&synchronized=${synchronized}`)
-    }
-
-    searchSatellites(text: string = '', groups: SatelliteGroupType[] = []) {
-        const q = groups.map(e => `&group=${e}`).join('')
-        return this.http.get<Satellite[]>(`searchSatellites?text=${text}${q}`)
     }
 }
