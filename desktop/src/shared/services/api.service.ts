@@ -321,16 +321,18 @@ export class ApiService {
         return this.http.get<string[]>(`indiLog?name=${device.name}`)
     }
 
+    // LOCATION
+
     locations() {
         return this.http.get<Location[]>(`locations`)
     }
 
     saveLocation(location: Location) {
-        return this.http.put<Location>(`saveLocation?id=${location.id}`, location)
+        return this.http.put<Location>(`locations`, location)
     }
 
     deleteLocation(location: Location) {
-        return this.http.delete<void>(`deleteLocation?id=${location.id}`)
+        return this.http.delete<void>(`locations/${location.id}`)
     }
 
     positionOfSun(location: Location, dateTime: Date) {

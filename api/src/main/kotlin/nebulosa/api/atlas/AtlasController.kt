@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive
 import nebulosa.api.data.entities.DeepSkyObjectEntity
-import nebulosa.api.data.entities.LocationEntity
 import nebulosa.api.data.entities.StarEntity
 import nebulosa.api.data.enums.SatelliteGroupType
 import nebulosa.api.data.responses.BodyPositionResponse
@@ -24,7 +23,10 @@ import nebulosa.math.Angle.Companion.hours
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObjectType
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -35,30 +37,6 @@ class AtlasController(
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
 ) {
-
-    @GetMapping("locations")
-    fun location(): List<LocationEntity> {
-        return locationRepository.all()
-    }
-
-    @Synchronized
-    @PutMapping("saveLocation")
-    fun saveLocation(
-        @RequestParam(required = false, defaultValue = "0") id: Long,
-        @RequestBody @Valid body: LocationEntity,
-    ): LocationEntity {
-        val location = if (id > 0) locationRepository.withId(id) else null
-        locationRepository.save(body.copy(id = location?.id ?: 0L))
-        return body
-    }
-
-    @Synchronized
-    @DeleteMapping("deleteLocation")
-    fun deleteLocation(@RequestParam id: Long) {
-        if (locationRepository.size > 1) {
-            locationRepository.delete(id)
-        }
-    }
 
     @GetMapping("imageOfSun")
     fun imageOfSun(response: HttpServletResponse) {
