@@ -1,6 +1,6 @@
 package nebulosa.api.mounts
 
-import jakarta.annotation.PostConstruct
+import nebulosa.api.beans.Subscriber
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
 import nebulosa.guiding.GuideDirection
@@ -18,7 +18,6 @@ import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.time.UTC
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Service
@@ -27,7 +26,8 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
-class MountService(private val eventBus: EventBus) {
+@Subscriber
+class MountService {
 
     private val site = HashMap<Mount, GeographicPosition>(2)
 
@@ -44,11 +44,6 @@ class MountService(private val eventBus: EventBus) {
 
             return field
         }
-
-    @PostConstruct
-    private fun initialize() {
-        eventBus.register(this)
-    }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onMountGeographicCoordinateChanged(event: MountGeographicCoordinateChanged) {

@@ -7,4 +7,7 @@ import org.springframework.batch.core.JobExecution
 data class CameraCaptureFinished(
     override val camera: Camera,
     override val jobExecution: JobExecution,
-) : CameraCaptureEvent, SequenceJobEvent
+) : CameraCaptureEvent, SequenceJobEvent {
+
+    override val eventName = "CAMERA_CAPTURE_FINISHED"
+}

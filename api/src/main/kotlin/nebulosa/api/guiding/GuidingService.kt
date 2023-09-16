@@ -1,7 +1,5 @@
 package nebulosa.api.guiding
 
-import jakarta.annotation.PostConstruct
-import nebulosa.api.data.events.GuideExposureFinished
 import nebulosa.api.data.responses.GuidingChartResponse
 import nebulosa.api.data.responses.GuidingStarResponse
 import nebulosa.api.image.ImageService
@@ -9,31 +7,21 @@ import nebulosa.api.services.MessageService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Service
 import kotlin.math.hypot
 
 @Service
 class GuidingService(
     private val messageService: MessageService,
-    private val eventBus: EventBus,
     private val imageService: ImageService,
     private val guidingExecutor: GuidingExecutor,
 ) {
 
-    @PostConstruct
-    private fun initialize() {
-        eventBus.register(this)
-    }
-
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onGuideExposureFinished(event: GuideExposureFinished) {
-        imageService.load(event.task.token, event.image)
-        // guideImage.set(event.image)
-        sendGuideExposureFinished(event)
-    }
+    // fun onGuideExposureFinished(event: GuideExposureFinished) {
+    // imageService.load(event.task.token, event.image)
+    // guideImage.set(event.image)
+    // sendGuideExposureFinished(event)
+    // }
 
     fun connect(guideOutput: GuideOutput) {
         guideOutput.connect()
@@ -105,10 +93,6 @@ class GuidingService(
 
     fun deselectGuideStar() {
         guidingExecutor.deselectGuideStar()
-    }
-
-    fun sendGuideExposureFinished(event: GuideExposureFinished) {
-        messageService.sendMessage(GUIDE_EXPOSURE_FINISHED, event)
     }
 
     companion object {

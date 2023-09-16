@@ -1,13 +1,15 @@
 package nebulosa.api.cameras
 
+import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.sequencer.SequenceJob
 import nebulosa.api.sequencer.SequenceJobExecutor
+import nebulosa.api.sequencer.tasklets.delay.DelayTasklet
 import nebulosa.api.services.MessageService
-import nebulosa.api.tasklets.delay.DelayTasklet
 import nebulosa.common.concurrency.Incrementer
 import nebulosa.indi.device.camera.Camera
+import nebulosa.log.loggerFor
 import org.springframework.batch.core.JobExecution
-import org.springframework.batch.core.JobParametersBuilder
+import org.springframework.batch.core.JobParameters
 import org.springframework.batch.core.configuration.JobRegistry
 import org.springframework.batch.core.configuration.support.ReferenceJobFactory
 import org.springframework.batch.core.job.builder.JobBuilder
@@ -29,10 +31,10 @@ class CameraCaptureExecutor(
     private val platformTransactionManager: PlatformTransactionManager,
     private val jobRegistry: JobRegistry,
     private val messageService: MessageService,
-) : SequenceJobExecutor<CameraCaptureRequest> {
+    private val executionIncrementer: Incrementer,
+) : SequenceJobExecutor<CameraCaptureRequest>, Consumer<CameraCaptureEvent> {
 
     private val runningSequenceJobs = LinkedList<SequenceJob>()
-    private val executionIncrementer = Incrementer()
 
     @Synchronized
     override fun execute(data: CameraCaptureRequest): SequenceJob {
@@ -42,9 +44,11 @@ class CameraCaptureExecutor(
             throw IllegalStateException("A Camera Exposure job is already running. camera=${camera.name}")
         }
 
+        LOG.info("starting camera capture. data={}", data)
+
         val cameraCaptureJob = if (data.isLoop) {
             val cameraExposureTasklet = CameraLoopExposureTasklet(data)
-            cameraExposureTasklet.subscribe(::onCameraCaptureEvent)
+            cameraExposureTasklet.subscribe(this)
 
             JobBuilder("CameraCapture.Job.${executionIncrementer.increment()}", jobRepository)
                 .start(cameraExposureStep(cameraExposureTasklet))
@@ -52,22 +56,23 @@ class CameraCaptureExecutor(
                 .build()
         } else {
             val cameraExposureTasklet = CameraExposureTasklet(data)
-
-            cameraExposureTasklet.subscribe(::onCameraCaptureEvent)
-
-            val cameraDelayTasklet = DelayTasklet(data.exposureDelayInSeconds.seconds)
-            cameraDelayTasklet.subscribe(cameraExposureTasklet)
+            cameraExposureTasklet.subscribe(this)
 
             val jobBuilder = JobBuilder("CameraCapture.Job.${executionIncrementer.increment()}", jobRepository)
                 .start(cameraExposureStep(cameraExposureTasklet))
 
-            repeat(data.exposureAmount - 1) {
-                val cameraDelayStep = cameraDelayStep(cameraDelayTasklet)
-                val cameraExposureStep = cameraExposureStep(cameraExposureTasklet)
+            val hasDelay = data.exposureDelayInSeconds in 1L..60L
+            val cameraDelayTasklet = DelayTasklet(data.exposureDelayInSeconds.seconds)
+            cameraDelayTasklet.subscribe(cameraExposureTasklet)
 
-                jobBuilder
-                    .next(cameraDelayStep)
-                    .next(cameraExposureStep)
+            repeat(data.exposureAmount - 1) {
+                if (hasDelay) {
+                    val cameraDelayStep = cameraDelayStep(cameraDelayTasklet)
+                    jobBuilder.next(cameraDelayStep)
+                }
+
+                val cameraExposureStep = cameraExposureStep(cameraExposureTasklet)
+                jobBuilder.next(cameraExposureStep)
             }
 
             jobBuilder
@@ -76,29 +81,10 @@ class CameraCaptureExecutor(
                 .build()
         }
 
-        val parameters = JobParametersBuilder()
-            .addString("camera", camera.name)
-            .addString("exposureTime", "${data.exposureInMicroseconds}")
-            .addString("exposureAmount", "${data.exposureAmount}")
-            .addString("exposureDelay", "${data.exposureDelayInSeconds}")
-            .addString("x", "${data.x}")
-            .addString("y", "${data.y}")
-            .addString("width", "${data.width}")
-            .addString("height", "${data.height}")
-            .addString("frameFormat", data.frameFormat ?: "")
-            .addString("frameType", "${data.frameType}")
-            .addString("binX", "${data.binX}")
-            .addString("binY", "${data.binY}")
-            .addString("gain", "${data.gain}")
-            .addString("offset", "${data.offset}")
-            .addString("autoSave", "${data.autoSave}")
-            .addString("savePath", "${data.savePath}")
-            .toJobParameters()
-
         return asyncJobLauncher
-            .run(cameraCaptureJob, parameters)
+            .run(cameraCaptureJob, JobParameters())
             .let { SequenceJob(listOf(camera), cameraCaptureJob, it) }
-            .also { runningSequenceJobs.add(it) }
+            .also(runningSequenceJobs::add)
             .also { jobRegistry.register(ReferenceJobFactory(cameraCaptureJob)) }
     }
 
@@ -126,15 +112,8 @@ class CameraCaptureExecutor(
         return sequenceTaskFor(camera)?.jobExecution
     }
 
-    private fun onCameraCaptureEvent(event: CameraCaptureEvent) {
-        when (event) {
-            is CameraCaptureStarted -> messageService.sendMessage(CAMERA_CAPTURE_STARTED, event)
-            is CameraCaptureFinished -> messageService.sendMessage(CAMERA_CAPTURE_FINISHED, event)
-            is CameraExposureStarted -> messageService.sendMessage(CAMERA_EXPOSURE_STARTED, event)
-            is CameraExposureUpdated -> messageService.sendMessage(CAMERA_EXPOSURE_UPDATED, event)
-            is CameraExposureDelayElapsed -> messageService.sendMessage(CAMERA_EXPOSURE_DELAY_ELAPSED, event)
-            is CameraExposureFinished -> messageService.sendMessage(CAMERA_EXPOSURE_FINISHED, event)
-        }
+    override fun accept(event: CameraCaptureEvent) {
+        messageService.sendMessage(event)
     }
 
     override fun iterator(): Iterator<SequenceJob> {
@@ -143,11 +122,6 @@ class CameraCaptureExecutor(
 
     companion object {
 
-        const val CAMERA_CAPTURE_STARTED = "CAMERA_CAPTURE_STARTED"
-        const val CAMERA_CAPTURE_FINISHED = "CAMERA_CAPTURE_FINISHED"
-        const val CAMERA_EXPOSURE_STARTED = "CAMERA_EXPOSURE_STARTED"
-        const val CAMERA_EXPOSURE_UPDATED = "CAMERA_EXPOSURE_UPDATED"
-        const val CAMERA_EXPOSURE_DELAY_ELAPSED = "CAMERA_EXPOSURE_DELAY_ELAPSED"
-        const val CAMERA_EXPOSURE_FINISHED = "CAMERA_EXPOSURE_FINISHED"
+        @JvmStatic private val LOG = loggerFor<CameraCaptureExecutor>()
     }
 }

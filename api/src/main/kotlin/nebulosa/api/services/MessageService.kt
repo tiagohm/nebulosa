@@ -13,4 +13,8 @@ class MessageService(private val simpleMessageTemplate: SimpMessagingTemplate) {
     fun sendMessage(eventName: String, vararg attributes: Pair<String, Any>) {
         sendMessage(eventName, mapOf(*attributes))
     }
+
+    fun sendMessage(event: MessageEvent) {
+        sendMessage(event.eventName, event)
+    }
 }

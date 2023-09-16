@@ -11,4 +11,7 @@ data class CameraExposureFinished(
     override val stepExecution: StepExecution,
     val image: Image?,
     val savePath: Path?,
-) : CameraCaptureEvent, SequenceStepEvent
+) : CameraCaptureEvent, SequenceStepEvent {
+
+    override val eventName = "CAMERA_EXPOSURE_FINISHED"
+}

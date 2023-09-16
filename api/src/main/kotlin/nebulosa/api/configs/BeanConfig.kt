@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.api.data.entities.MyObjectBox
 import nebulosa.common.concurrency.DaemonThreadFactory
+import nebulosa.common.concurrency.Incrementer
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
 import nebulosa.json.HasJsonModule
@@ -129,6 +130,9 @@ class BeanConfig {
         jobLauncher.afterPropertiesSet()
         return jobLauncher
     }
+
+    @Bean
+    fun executionIncrementer() = Incrementer()
 
     @Bean
     fun webMvcConfigurer() = object : WebMvcConfigurer {

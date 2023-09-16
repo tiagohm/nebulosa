@@ -129,7 +129,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     offset = 0
     offsetMin = 0
     offsetMax = 0
-    cameraCapture?: CameraCaptureEvent
+    event?: CameraCaptureEvent
     capturing = false
     waiting = false
 
@@ -191,6 +191,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         electron.on('CAMERA_EXPOSURE_STARTED', (_, event: CameraCaptureEvent) => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
+                    this.event = event
                     this.capturing = true
                     this.waiting = false
                 })
@@ -200,18 +201,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         electron.on('CAMERA_EXPOSURE_UPDATED', (_, event: CameraCaptureEvent) => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
-                    this.cameraCapture = event
-                })
-            }
-        })
-
-        electron.on('CAMERA_EXPOSURE_DELAY_ELAPSED', (_, event: CameraCaptureEvent) => {
-            if (event.camera.name === this.camera?.name) {
-                ngZone.run(() => {
-                    this.cameraCapture!.waitProgress = event.waitProgress
-                    this.cameraCapture!.waitRemainingTime = event.waitRemainingTime
-                    this.cameraCapture!.waitTime = event.waitTime
-                    this.waiting = true
+                    this.event = event
+                    this.waiting = event.captureIsWaiting
                 })
             }
         })

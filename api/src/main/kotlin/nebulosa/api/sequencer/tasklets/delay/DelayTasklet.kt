@@ -1,6 +1,6 @@
-package nebulosa.api.tasklets.delay
+package nebulosa.api.sequencer.tasklets.delay
 
-import nebulosa.api.sequencer.AbstractSequenceTasklet
+import nebulosa.api.sequencer.SubjectSequenceTasklet
 import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.StepContribution
@@ -11,7 +11,7 @@ import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-data class DelayTasklet(private val duration: Duration) : AbstractSequenceTasklet<DelayElapsed>(), JobExecutionListener {
+data class DelayTasklet(private val duration: Duration) : SubjectSequenceTasklet<DelayElapsed>(), JobExecutionListener {
 
     private val aborted = AtomicBoolean()
 

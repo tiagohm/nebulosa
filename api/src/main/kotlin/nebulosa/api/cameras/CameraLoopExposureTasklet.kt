@@ -1,7 +1,7 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.sequencer.AbstractSequenceTasklet
-import nebulosa.api.tasklets.delay.DelayTasklet
+import nebulosa.api.sequencer.SubjectSequenceTasklet
+import nebulosa.api.sequencer.tasklets.delay.DelayTasklet
 import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.StepContribution
@@ -10,7 +10,7 @@ import org.springframework.batch.repeat.RepeatStatus
 import kotlin.time.Duration.Companion.seconds
 
 data class CameraLoopExposureTasklet(private val request: CameraCaptureRequest) :
-    AbstractSequenceTasklet<CameraCaptureEvent>(), JobExecutionListener {
+    SubjectSequenceTasklet<CameraCaptureEvent>(), JobExecutionListener {
 
     private val exposureTasklet = CameraExposureTasklet(request)
     private val delayTasklet = DelayTasklet(request.exposureDelayInSeconds.seconds)

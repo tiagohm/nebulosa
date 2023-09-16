@@ -2,7 +2,7 @@ package nebulosa.api.guiding
 
 import nebulosa.api.cameras.CameraCaptureRequest
 import nebulosa.api.cameras.CameraExposureTasklet
-import nebulosa.api.tasklets.delay.DelayTasklet
+import nebulosa.api.sequencer.tasklets.delay.DelayTasklet
 import nebulosa.guiding.Guider
 import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.Camera

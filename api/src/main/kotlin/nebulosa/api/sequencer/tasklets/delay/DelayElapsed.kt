@@ -1,4 +1,4 @@
-package nebulosa.api.tasklets.delay
+package nebulosa.api.sequencer.tasklets.delay
 
 import kotlin.time.Duration
 

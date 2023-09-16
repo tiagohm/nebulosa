@@ -4,34 +4,38 @@ import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.subjects.PublishSubject
+import io.reactivex.rxjava3.subjects.Subject
 import java.io.Closeable
 
-abstract class AbstractSequenceTasklet<T : Any> : SequenceTasklet<T>, Closeable {
+abstract class SubjectSequenceTasklet<T : Any>(@JvmField protected val subject: Subject<T>) : SequenceTasklet<T>, Closeable {
 
-    private val publisher = PublishSubject.create<T>()
+    constructor() : this(PublishSubject.create<T>())
 
     override fun subscribe(onNext: Consumer<in T>): Disposable {
-        return publisher.subscribe(onNext)
+        return subject.subscribe(onNext)
     }
 
     override fun subscribe(observer: Observer<in T>) {
-        return publisher.subscribe(observer)
+        return subject.subscribe(observer)
     }
 
     final override fun onSubscribe(disposable: Disposable) {
-        publisher.onSubscribe(disposable)
+        subject.onSubscribe(disposable)
     }
 
+    @Synchronized
     final override fun onNext(event: T) {
-        publisher.onNext(event)
+        subject.onNext(event)
     }
 
+    @Synchronized
     final override fun onError(e: Throwable) {
-        publisher.onError(e)
+        subject.onError(e)
     }
 
+    @Synchronized
     final override fun onComplete() {
-        publisher.onComplete()
+        subject.onComplete()
     }
 
     final override fun close() {

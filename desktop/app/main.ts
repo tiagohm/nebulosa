@@ -113,7 +113,7 @@ function createWindow(data: OpenWindow<any>) {
             contextIsolation: false,
             additionalArguments: [`--port=${apiPort}`],
             preload: path.join(__dirname, 'preload.js'),
-            devTools: serve,
+            devTools: false,
         },
     })
 

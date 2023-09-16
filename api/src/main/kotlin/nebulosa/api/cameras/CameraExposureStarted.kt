@@ -7,4 +7,7 @@ import org.springframework.batch.core.StepExecution
 data class CameraExposureStarted(
     override val camera: Camera,
     override val stepExecution: StepExecution,
-) : CameraCaptureEvent, SequenceStepEvent
+) : CameraCaptureEvent, SequenceStepEvent {
+
+    override val eventName = "CAMERA_EXPOSURE_STARTED"
+}
