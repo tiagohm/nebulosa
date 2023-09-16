@@ -1,11 +1,12 @@
-package nebulosa.api.configs
+package nebulosa.api.beans.configurations
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
-import nebulosa.api.data.entities.MyObjectBox
+import nebulosa.api.beans.DateAndTimeMethodArgumentResolver
+import nebulosa.api.beans.EntityByMethodArgumentResolver
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.concurrency.Incrementer
 import nebulosa.hips2fits.Hips2FitsService
@@ -30,6 +31,7 @@ import org.springframework.context.annotation.Primary
 import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
+import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.nio.file.Path
@@ -39,7 +41,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
 
 @Configuration
-class BeanConfig {
+class BeanConfiguration {
 
     @Bean
     fun appPath(): Path = Path.of(System.getProperty("app.dir"))
@@ -91,11 +93,6 @@ class BeanConfig {
         .build()
 
     @Bean
-    fun boxStore(dataPath: Path) = MyObjectBox.builder()
-        .directory(dataPath.toFile())
-        .build()!!
-
-    @Bean
     fun horizonsService(okHttpClient: OkHttpClient) = HorizonsService(okHttpClient = okHttpClient)
 
     @Bean
@@ -135,7 +132,10 @@ class BeanConfig {
     fun executionIncrementer() = Incrementer()
 
     @Bean
-    fun webMvcConfigurer() = object : WebMvcConfigurer {
+    fun webMvcConfigurer(
+        entityByMethodArgumentResolver: EntityByMethodArgumentResolver,
+        dateAndTimeMethodArgumentResolver: DateAndTimeMethodArgumentResolver,
+    ) = object : WebMvcConfigurer {
 
         override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
             converters.removeIf { it is StringHttpMessageConverter }
@@ -148,6 +148,11 @@ class BeanConfig {
                 .allowedMethods("*")
                 .allowedHeaders("*")
                 .exposedHeaders("X-Image-Info")
+        }
+
+        override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
+            resolvers.add(entityByMethodArgumentResolver)
+            resolvers.add(dateAndTimeMethodArgumentResolver)
         }
     }
 

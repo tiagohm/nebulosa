@@ -1,6 +1,6 @@
 package nebulosa.api.indi
 
-import nebulosa.api.beans.Subscriber
+import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.services.MessageService
 import nebulosa.indi.device.*
 import org.greenrobot.eventbus.Subscribe

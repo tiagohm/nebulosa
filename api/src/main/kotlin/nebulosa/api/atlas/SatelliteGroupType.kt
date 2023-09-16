@@ -1,4 +1,4 @@
-package nebulosa.api.data.enums
+package nebulosa.api.atlas
 
 enum class SatelliteGroupType(
     val group: String,
@@ -55,5 +55,13 @@ enum class SatelliteGroupType(
     MILITARY("military", "Miscellaneous Military"),
     RADAR("radar", "Radar Calibration"),
     CUBESAT("cubesat", "CubeSats"),
-    OTHER("other", "Other Satellites"),
+    OTHER("other", "Other Satellites");
+
+    companion object {
+
+        @JvmStatic
+        fun codeOf(entries: List<SatelliteGroupType>): Long {
+            return entries.fold(0L) { a, b -> a or (1L shl b.ordinal) }
+        }
+    }
 }

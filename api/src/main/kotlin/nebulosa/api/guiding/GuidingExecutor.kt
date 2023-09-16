@@ -1,10 +1,8 @@
 package nebulosa.api.guiding
 
 import jakarta.annotation.PostConstruct
-import nebulosa.api.data.entities.GuideCalibrationEntity
 import nebulosa.api.data.enums.DitherMode
 import nebulosa.api.data.enums.GuideAlgorithmType
-import nebulosa.api.repositories.GuideCalibrationRepository
 import nebulosa.api.services.MessageService
 import nebulosa.guiding.*
 import nebulosa.guiding.internal.*
@@ -214,7 +212,7 @@ class GuidingExecutor(
         if (!guideMount.get().connected || !guideOutput.get().connected) return
 
         val calibration = guideCalibrationRepository
-            .withCameraAndMountAndGuideOutput(guideCamera.get().name, guideMount.get().name, guideOutput.get().name)
+            .get(guideCamera.get(), guideMount.get(), guideOutput.get())
             ?.toGuideCalibration()
 
         if (forceCalibration || calibration == null) {

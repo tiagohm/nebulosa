@@ -54,6 +54,7 @@ private fun Path.clearLogIfPastDays(days: Long = 7L) {
 fun main(args: Array<String>) {
     with(initAppDirectory()) {
         Path.of("$this", "logs").createDirectories().clearLogIfPastDays()
+        Path.of("$this", "data").createDirectories().also { System.setProperty("DATA_PATH", "$it") }
     }
 
     // Sets default locale to en_US.

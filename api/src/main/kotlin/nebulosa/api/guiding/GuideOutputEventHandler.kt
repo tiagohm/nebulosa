@@ -2,7 +2,7 @@ package nebulosa.api.guiding
 
 import io.reactivex.rxjava3.subjects.PublishSubject
 import jakarta.annotation.PostConstruct
-import nebulosa.api.beans.Subscriber
+import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.services.MessageService
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.PropertyChangedEvent

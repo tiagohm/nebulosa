@@ -1,7 +1,7 @@
 package nebulosa.api.data.responses
 
-import nebulosa.api.data.entities.DeepSkyObjectEntity
-import nebulosa.api.data.entities.StarEntity
+import nebulosa.api.atlas.DeepSkyObjectEntity
+import nebulosa.api.atlas.StarEntity
 
 data class ImageAnnotationResponse(
     val x: Double,

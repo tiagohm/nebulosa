@@ -1,6 +1,6 @@
 import com.fasterxml.jackson.databind.ObjectMapper
-import nebulosa.api.data.entities.DeepSkyObjectEntity
-import nebulosa.api.data.entities.StarEntity
+import nebulosa.api.atlas.DeepSkyObjectEntity
+import nebulosa.api.atlas.StarEntity
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle.Companion.arcmin
@@ -31,8 +31,8 @@ import kotlin.math.min
 
 object SkyDatabaseGenerator {
 
-    @JvmStatic private val STAR_DATABASE_PATH = Path.of("api/src/main/resources/data/stars.json.gz")
-    @JvmStatic private val DSO_DATABASE_PATH = Path.of("api/src/main/resources/data/dsos.json.gz")
+    @JvmStatic private val STAR_DATABASE_PATH = Path.of("api/data/stars.json.gz")
+    @JvmStatic private val DSO_DATABASE_PATH = Path.of("api/data/dsos.json.gz")
 
     @JvmStatic
     fun main(args: Array<String>) {

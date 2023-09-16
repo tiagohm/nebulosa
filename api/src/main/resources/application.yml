@@ -9,13 +9,22 @@ server:
 
 spring:
   datasource:
-    url: jdbc:h2:mem:nebulosa
-    username: sa
+    url: jdbc:sqlite:file:${DATA_PATH}/nebulosa.db
+    username:
     password:
-    driverClassName: org.h2.Driver
+    driverClassName: org.sqlite.JDBC
 
   jpa:
-    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    show-sql: false
+    open-in-view: true
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 0
+    table: migrations
 
   batch:
     job:

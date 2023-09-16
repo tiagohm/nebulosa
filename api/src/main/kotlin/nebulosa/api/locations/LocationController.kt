@@ -1,8 +1,6 @@
 package nebulosa.api.locations
 
 import jakarta.validation.Valid
-import nebulosa.api.data.entities.LocationEntity
-import nebulosa.api.repositories.LocationRepository
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -13,7 +11,7 @@ class LocationController(
 
     @GetMapping
     fun location(): List<LocationEntity> {
-        return locationRepository.all()
+        return locationRepository.findAll()
     }
 
     @PutMapping
@@ -26,8 +24,8 @@ class LocationController(
     @Synchronized
     @DeleteMapping("{id}")
     fun deleteLocation(@PathVariable id: Long) {
-        if (id > 0L && locationRepository.size > 1) {
-            locationRepository.delete(id)
+        if (id > 0L && locationRepository.count() > 1) {
+            locationRepository.deleteById(id)
         }
     }
 }

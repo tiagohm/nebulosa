@@ -1,22 +1,12 @@
 package nebulosa.api.atlas
 
-import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
 import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
-import nebulosa.api.data.entities.AppPreferenceEntity
-import nebulosa.api.data.entities.DeepSkyObjectEntity
-import nebulosa.api.data.entities.LocationEntity
-import nebulosa.api.data.entities.StarEntity
-import nebulosa.api.data.enums.SatelliteGroupType
 import nebulosa.api.data.responses.BodyPositionResponse
 import nebulosa.api.data.responses.MinorPlanetResponse
-import nebulosa.api.data.responses.SatelliteResponse
 import nebulosa.api.data.responses.TwilightResponse
-import nebulosa.api.repositories.AppPreferenceRepository
-import nebulosa.api.repositories.DeepSkyObjectRepository
-import nebulosa.api.repositories.SatelliteRepository
-import nebulosa.api.repositories.StarRepository
+import nebulosa.api.locations.LocationEntity
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
 import nebulosa.math.Angle
@@ -33,8 +23,7 @@ import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.io.Resource
+import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -56,32 +45,14 @@ class AtlasService(
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
-    private val appPreferenceRepository: AppPreferenceRepository,
     private val satelliteRepository: SatelliteRepository,
     private val okHttpClient: OkHttpClient,
 ) {
-
-    @Value("classpath:data/dsos.json.gz")
-    private lateinit var dsoResource: Resource
-
-    @Value("classpath:data/stars.json.gz")
-    private lateinit var starResource: Resource
 
     private val positions = HashMap<LocationEntity, GeographicPosition>()
     private val stars = HashMap<Long, FixedStar>()
     private val dsos = HashMap<Long, FixedStar>()
     @Volatile private var sunImage = ByteArray(0)
-
-    @PostConstruct
-    private fun initialize() {
-        if (appPreferenceRepository.withKey("database.version")?.value != DATABASE_VERSION) {
-            starRepository.load(starResource)
-            deepSkyObjectRepository.load(dsoResource)
-
-            appPreferenceRepository
-                .save(AppPreferenceEntity(key = "database.version", value = DATABASE_VERSION))
-        }
-    }
 
     fun imageOfSun(output: HttpServletResponse) {
         output.contentType = "image/png"
@@ -110,8 +81,8 @@ class AtlasService(
             .copy(magnitude = dso.magnitude, constellation = dso.constellation, distance = dso.distance, distanceUnit = "ly")
     }
 
-    fun positionOfSatellite(location: LocationEntity, tle: String, dateTime: LocalDateTime): BodyPositionResponse {
-        return positionOfBody("TLE@$tle", location, dateTime)!!
+    fun positionOfSatellite(location: LocationEntity, satellite: SatelliteEntity, dateTime: LocalDateTime): BodyPositionResponse {
+        return positionOfBody("TLE@${satellite.tle}", location, dateTime)!!
     }
 
     private fun positionOfBody(target: Any, location: LocationEntity, dateTime: LocalDateTime): BodyPositionResponse? {
@@ -128,8 +99,8 @@ class AtlasService(
         else horizonsEphemerisProvider.compute(target, position, dateTime, zoneId)
     }
 
-    fun searchSatellites(text: String, groups: List<SatelliteGroupType>): List<SatelliteResponse> {
-        return satelliteRepository.search(text, groups)
+    fun searchSatellites(text: String, groups: List<SatelliteGroupType>): List<SatelliteEntity> {
+        return satelliteRepository.search(text.ifBlank { null }, groups, Pageable.ofSize(1000))
     }
 
     fun twilight(location: LocationEntity, date: LocalDate): TwilightResponse {
@@ -190,8 +161,8 @@ class AtlasService(
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfSatellite(location: LocationEntity, tle: String, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris("TLE@$tle", location, LocalDateTime.of(date, LocalTime.now()))
+    fun altitudePointsOfSatellite(location: LocationEntity, satellite: SatelliteEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
+        val ephemeris = bodyEphemeris("TLE@$${satellite.tle}", location, LocalDateTime.of(date, LocalTime.now()))
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 

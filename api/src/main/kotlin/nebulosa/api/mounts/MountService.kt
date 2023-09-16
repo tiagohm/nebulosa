@@ -1,6 +1,6 @@
 package nebulosa.api.mounts
 
-import nebulosa.api.beans.Subscriber
+import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
 import nebulosa.guiding.GuideDirection

@@ -1,4 +1,4 @@
-package nebulosa.api.beans
+package nebulosa.api.beans.annotations
 
 @Retention
 @Target(AnnotationTarget.CLASS)

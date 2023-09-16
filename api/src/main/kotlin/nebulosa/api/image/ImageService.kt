@@ -2,6 +2,8 @@ package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
+import nebulosa.api.atlas.DeepSkyObjectRepository
+import nebulosa.api.atlas.StarRepository
 import nebulosa.api.data.enums.HipsSurveyType
 import nebulosa.api.data.enums.PlateSolverType
 import nebulosa.api.data.responses.CalibrationResponse
@@ -9,8 +11,6 @@ import nebulosa.api.data.responses.FITSHeaderItemResponse
 import nebulosa.api.data.responses.ImageAnnotationResponse
 import nebulosa.api.data.responses.ImageInfoResponse
 import nebulosa.api.framing.FramingService
-import nebulosa.api.repositories.DeepSkyObjectRepository
-import nebulosa.api.repositories.StarRepository
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.fits.FitsKeywords
 import nebulosa.fits.dec
@@ -149,11 +149,11 @@ class ImageService(
             CompletableFuture.runAsync {
                 val image = cachedImages[token] ?: return@runAsync
                 val dateTime = image.header.getStringValue(FitsKeywords.DATE_OBS)?.ifBlank { null } ?: return@runAsync
-                val latitude = image.header.getStringValue(FitsKeywords.SITELAT).deg.takeIf(Angle::valid) ?: return@runAsync
-                val longitude = image.header.getStringValue(FitsKeywords.SITELONG).deg.takeIf(Angle::valid) ?: return@runAsync
+                // val latitude = image.header.getStringValue(FitsKeywords.SITELAT).deg.takeIf(Angle::valid) ?: return@runAsync
+                // val longitude = image.header.getStringValue(FitsKeywords.SITELONG).deg.takeIf(Angle::valid) ?: return@runAsync
 
                 val data = smallBodyDatabaseService.identify(
-                    LocalDateTime.parse(dateTime), latitude, longitude, Distance.ZERO,
+                    LocalDateTime.parse(dateTime), Angle.ZERO, Angle.ZERO, Distance.ZERO,
                     calibration.rightAscension, calibration.declination, calibration.radius,
                     minorPlanetMagLimit,
                 ).execute().body() ?: return@runAsync

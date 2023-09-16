@@ -6,7 +6,6 @@ plugins {
     id("io.spring.dependency-management") version "1.1.3"
     kotlin("plugin.spring")
     kotlin("kapt")
-    id("io.objectbox")
 }
 
 dependencies {
@@ -34,12 +33,15 @@ dependencies {
     implementation(libs.eventbus)
     implementation(libs.apache.codec)
     implementation(libs.rx)
-    implementation(libs.h2)
+    implementation(libs.sqlite)
+    implementation(libs.flyway)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-batch")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.hibernate.orm:hibernate-community-dialects")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     kapt("org.springframework:spring-context-indexer:6.0.12")

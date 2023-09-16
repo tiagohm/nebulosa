@@ -1,6 +1,6 @@
-package nebulosa.api.components.loaders
+package nebulosa.api.atlas
 
-import jakarta.annotation.PostConstruct
+import nebulosa.api.beans.annotations.ThreadedTask
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.time.IERS
@@ -9,21 +9,15 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.stereotype.Component
 import java.nio.file.Path
-import java.util.concurrent.ExecutorService
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
 @Component
-class IERSLoader(
+@ThreadedTask
+class IERSThreadedTask(
     private val dataPath: Path,
     private val okHttpClient: OkHttpClient,
-    private val systemExecutorService: ExecutorService,
 ) : Runnable {
-
-    @PostConstruct
-    private fun initialize() {
-        systemExecutorService.submit(this)
-    }
 
     override fun run() {
         val finals2000A = Path.of("$dataPath", "finals2000A.all")
@@ -55,6 +49,6 @@ class IERSLoader(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<IERSLoader>()
+        @JvmStatic private val LOG = loggerFor<IERSThreadedTask>()
     }
 }
