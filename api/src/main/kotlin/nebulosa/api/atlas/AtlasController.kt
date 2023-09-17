@@ -6,8 +6,6 @@ import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import nebulosa.api.beans.annotations.DateAndTime
 import nebulosa.api.beans.annotations.EntityBy
-import nebulosa.api.data.responses.MinorPlanetResponse
-import nebulosa.api.data.responses.TwilightResponse
 import nebulosa.api.locations.LocationEntity
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
@@ -81,7 +79,7 @@ class AtlasController(
     }
 
     @GetMapping("minor-planets")
-    fun searchMinorPlanet(@RequestParam @Valid @NotBlank text: String): MinorPlanetResponse {
+    fun searchMinorPlanet(@RequestParam @Valid @NotBlank text: String): MinorPlanet {
         return atlasService.searchMinorPlanet(text)
     }
 
@@ -188,7 +186,7 @@ class AtlasController(
     fun twilight(
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): TwilightResponse {
+    ): Twilight {
         return atlasService.twilight(location, dateTime.toLocalDate())
     }
 }

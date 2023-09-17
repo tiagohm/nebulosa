@@ -1,9 +1,8 @@
 package nebulosa.api.indi
 
-import nebulosa.api.data.enums.INDISendPropertyType
-import nebulosa.api.data.requests.INDISendPropertyRequest
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.PropertyVector
+import nebulosa.indi.protocol.PropertyType
 import org.springframework.stereotype.Service
 
 @Service("indiService")
@@ -19,20 +18,21 @@ class INDIService(
         return device.properties.values
     }
 
-    fun sendProperty(device: Device, vector: INDISendPropertyRequest) {
+    fun sendProperty(device: Device, vector: INDISendProperty) {
         when (vector.type) {
-            INDISendPropertyType.NUMBER -> {
+            PropertyType.NUMBER -> {
                 val elements = vector.items.map { it.name to "${it.value}".toDouble() }
                 device.sendNewNumber(vector.name, elements)
             }
-            INDISendPropertyType.SWITCH -> {
+            PropertyType.SWITCH -> {
                 val elements = vector.items.map { it.name to "${it.value}".toBooleanStrict() }
                 device.sendNewSwitch(vector.name, elements)
             }
-            INDISendPropertyType.TEXT -> {
+            PropertyType.TEXT -> {
                 val elements = vector.items.map { it.name to "${it.value}" }
                 device.sendNewText(vector.name, elements)
             }
+            else -> Unit
         }
     }
 }

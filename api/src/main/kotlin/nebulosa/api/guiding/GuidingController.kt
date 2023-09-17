@@ -46,7 +46,7 @@ class GuidingController(
         @RequestParam("camera") @Valid @NotBlank cameraName: String,
         @RequestParam("mount") @Valid @NotBlank mountName: String,
         @RequestParam("guideOutput") @Valid @NotBlank guideOutputName: String,
-        @RequestBody @Valid body: GuideStartLoopingRequest,
+        @RequestBody @Valid body: GuideStartLooping,
     ) {
         val camera = requireNotNull(connectionService.camera(cameraName))
         val mount = requireNotNull(connectionService.mount(mountName))

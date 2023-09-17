@@ -3,8 +3,6 @@ package nebulosa.api.atlas
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
 import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
-import nebulosa.api.data.responses.MinorPlanetResponse
-import nebulosa.api.data.responses.TwilightResponse
 import nebulosa.api.locations.LocationEntity
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
@@ -102,7 +100,7 @@ class AtlasService(
         return satelliteRepository.search(text.ifBlank { null }, groups, Pageable.ofSize(1000))
     }
 
-    fun twilight(location: LocationEntity, date: LocalDate): TwilightResponse {
+    fun twilight(location: LocationEntity, date: LocalDate): Twilight {
         val civilDusk = doubleArrayOf(0.0, 0.0)
         val nauticalDusk = doubleArrayOf(0.0, 0.0)
         val astronomicalDusk = doubleArrayOf(0.0, 0.0)
@@ -129,7 +127,7 @@ class AtlasService(
         civilDawn[0] = a[6] / 60.0
         civilDawn[1] = a[7] / 60.0
 
-        return TwilightResponse(
+        return Twilight(
             civilDusk, nauticalDusk, astronomicalDusk, night,
             astronomicalDawn, nauticalDawn, civilDawn,
         )
@@ -192,8 +190,8 @@ class AtlasService(
 
     fun searchMinorPlanet(text: String) = smallBodyDatabaseService
         .search(text).execute().body()
-        ?.let(MinorPlanetResponse::of)
-        ?: MinorPlanetResponse.EMPTY
+        ?.let(MinorPlanet::of)
+        ?: MinorPlanet.EMPTY
 
     fun searchStar(
         text: String,

@@ -2,18 +2,15 @@ package nebulosa.api.beans.configurations
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.api.beans.DateAndTimeMethodArgumentResolver
 import nebulosa.api.beans.EntityByMethodArgumentResolver
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.concurrency.Incrementer
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
-import nebulosa.json.HasJsonModule
-import nebulosa.json.JsonModule
-import nebulosa.json.ToJson
+import nebulosa.json.modules.FromJson
+import nebulosa.json.modules.JsonModule
+import nebulosa.json.modules.ToJson
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
 import okhttp3.Cache
@@ -60,20 +57,13 @@ class BeanConfiguration {
 
     @Bean
     @Primary
-    @Suppress("UNCHECKED_CAST")
     fun objectMapper(
-        @Qualifier("serializer") serializers: List<StdSerializer<*>>,
-        @Qualifier("deserializer") deserializers: List<StdDeserializer<*>>,
-        serializers2: List<ToJson<*>>,
+        @Qualifier("serializer") serializers: List<ToJson<*>>,
+        @Qualifier("deserializer") deserializers: List<FromJson<*>>,
     ) = ObjectMapper()
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-        .registerModule(HasJsonModule())
-        .registerModule(JsonModule(serializers2, emptyList()))
-        .registerModule(SimpleModule().apply {
-            serializers.forEach(::addSerializer)
-            deserializers.forEach { addDeserializer(it.handledType() as Class<Any>, it) }
-        })!!
+        .registerModule(JsonModule(serializers, deserializers))!!
 
     @Bean
     fun connectionPool() = ConnectionPool(32, 5L, TimeUnit.MINUTES)

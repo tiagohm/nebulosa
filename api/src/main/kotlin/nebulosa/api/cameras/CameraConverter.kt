@@ -3,7 +3,7 @@ package nebulosa.api.cameras
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import nebulosa.indi.device.camera.Camera
-import nebulosa.json.ToJson
+import nebulosa.json.modules.ToJson
 import org.springframework.stereotype.Component
 import java.nio.file.Path
 

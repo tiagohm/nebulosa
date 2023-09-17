@@ -1,4 +1,4 @@
-package nebulosa.api.data.enums
+package nebulosa.api.guiding
 
 enum class GuideAlgorithmType {
     IDENTITY,

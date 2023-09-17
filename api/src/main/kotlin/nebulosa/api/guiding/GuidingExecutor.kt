@@ -1,8 +1,6 @@
 package nebulosa.api.guiding
 
 import jakarta.annotation.PostConstruct
-import nebulosa.api.data.enums.DitherMode
-import nebulosa.api.data.enums.GuideAlgorithmType
 import nebulosa.api.services.MessageService
 import nebulosa.guiding.*
 import nebulosa.guiding.internal.*
@@ -143,7 +141,7 @@ class GuidingExecutor(
     @Synchronized
     fun startLooping(
         camera: Camera, mount: Mount, guideOutput: GuideOutput,
-        guideStartLooping: GuideStartLoopingRequest,
+        guideStartLooping: GuideStartLooping,
     ) {
         if (isLooping()) return
         if (!camera.connected) return

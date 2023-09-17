@@ -33,7 +33,7 @@ class GuidingService(
 
     fun startLooping(
         camera: Camera, mount: Mount, guideOutput: GuideOutput,
-        guideStartLooping: GuideStartLoopingRequest,
+        guideStartLooping: GuideStartLooping,
     ) {
         guidingExecutor.startLooping(camera, mount, guideOutput, guideStartLooping)
     }

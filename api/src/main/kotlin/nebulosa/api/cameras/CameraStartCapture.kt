@@ -3,13 +3,12 @@ package nebulosa.api.cameras
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
-import nebulosa.api.data.enums.AutoSubFolderMode
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
 import org.hibernate.validator.constraints.Range
 import java.nio.file.Path
 
-data class CameraCaptureRequest(
+data class CameraStartCapture(
     @JsonIgnore val camera: Camera? = null,
     @field:Positive val exposureInMicroseconds: Long = 0L,
     @field:Range(min = 0L, max = 1000L) val exposureAmount: Int = 1, // 0 = looping

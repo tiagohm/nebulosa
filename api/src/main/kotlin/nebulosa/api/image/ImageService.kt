@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.atlas.DeepSkyObjectRepository
 import nebulosa.api.atlas.StarRepository
-import nebulosa.api.data.enums.HipsSurveyType
-import nebulosa.api.data.enums.PlateSolverType
+import nebulosa.api.framing.HipsSurveyType
 import nebulosa.api.data.responses.CalibrationResponse
 import nebulosa.api.data.responses.FITSHeaderItemResponse
 import nebulosa.api.data.responses.ImageAnnotationResponse
@@ -276,9 +275,9 @@ class ImageService(
     }
 
     fun frame(
-        rightAscension: Angle, declination: Angle,
-        width: Int, height: Int, fov: Angle,
-        rotation: Angle = Angle.ZERO, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
+            rightAscension: Angle, declination: Angle,
+            width: Int, height: Int, fov: Angle,
+            rotation: Angle = Angle.ZERO, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
     ): Path {
         val (image, calibration) = framingService
             .frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!

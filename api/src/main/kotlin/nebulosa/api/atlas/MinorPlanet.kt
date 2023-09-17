@@ -1,8 +1,8 @@
-package nebulosa.api.data.responses
+package nebulosa.api.atlas
 
 import nebulosa.sbd.SmallBody
 
-data class MinorPlanetResponse(
+data class MinorPlanet(
     val found: Boolean = false,
     val name: String = "",
     val spkId: Int = -1,
@@ -37,10 +37,10 @@ data class MinorPlanetResponse(
 
     companion object {
 
-        @JvmStatic val EMPTY = MinorPlanetResponse()
+        @JvmStatic val EMPTY = MinorPlanet()
 
         @JvmStatic
-        fun of(body: SmallBody): MinorPlanetResponse {
+        fun of(body: SmallBody): MinorPlanet {
             if (body.orbit != null) {
                 val items = arrayListOf<OrbitalPhysicalParameter>()
 
@@ -54,13 +54,13 @@ data class MinorPlanetResponse(
                     }
                 }
 
-                return MinorPlanetResponse(
+                return MinorPlanet(
                     true, body.body!!.fullname, body.body!!.spkId, body.body!!.kind,
                     body.body!!.pha, body.body!!.neo, body.body?.type?.name ?: "", items,
                 )
             } else if (body.list != null) {
                 val searchItems = body.list!!.map { SearchItem(it.name, it.pdes) }
-                return MinorPlanetResponse(searchItems = searchItems)
+                return MinorPlanet(searchItems = searchItems)
             } else {
                 return EMPTY
             }

@@ -2,7 +2,7 @@ package nebulosa.api.sequencer
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
-import nebulosa.json.ToJson
+import nebulosa.json.modules.ToJson
 import org.springframework.stereotype.Component
 import java.time.ZoneOffset
 

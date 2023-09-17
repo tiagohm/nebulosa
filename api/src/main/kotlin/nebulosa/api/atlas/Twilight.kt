@@ -1,7 +1,7 @@
-package nebulosa.api.data.responses
+package nebulosa.api.atlas
 
 @Suppress("ArrayInDataClass")
-data class TwilightResponse(
+data class Twilight(
     val civilDusk: DoubleArray,
     val nauticalDusk: DoubleArray,
     val astronomicalDusk: DoubleArray,

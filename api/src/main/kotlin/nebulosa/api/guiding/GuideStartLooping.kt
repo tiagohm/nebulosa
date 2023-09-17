@@ -1,11 +1,9 @@
 package nebulosa.api.guiding
 
-import nebulosa.api.data.enums.DitherMode
-import nebulosa.api.data.enums.GuideAlgorithmType
 import nebulosa.guiding.DeclinationGuideMode
 import nebulosa.guiding.NoiseReductionMethod
 
-data class GuideStartLoopingRequest(
+data class GuideStartLooping(
     var searchRegion: Double = 15.0,
     var ditherMode: DitherMode = DitherMode.RANDOM,
     var ditherAmount: Double = 5.0,

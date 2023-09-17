@@ -1,4 +1,4 @@
-package nebulosa.api.data.enums
+package nebulosa.api.cameras
 
 import java.nio.file.Path
 import java.time.LocalDateTime

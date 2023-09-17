@@ -1,6 +1,5 @@
 package nebulosa.api.framing
 
-import nebulosa.api.data.enums.HipsSurveyType
 import nebulosa.fits.FitsKeywords
 import nebulosa.hips2fits.FormatOutputType
 import nebulosa.hips2fits.Hips2FitsService
@@ -18,9 +17,9 @@ import kotlin.math.abs
 class FramingService(private val hips2FitsService: Hips2FitsService) {
 
     fun frame(
-        rightAscension: Angle, declination: Angle,
-        width: Int, height: Int, fov: Angle,
-        rotation: Angle = Angle.ZERO, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
+            rightAscension: Angle, declination: Angle,
+            width: Int, height: Int, fov: Angle,
+            rotation: Angle = Angle.ZERO, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
     ): Pair<Image, Calibration>? {
         val data = hips2FitsService.query(
             hipsSurveyType.hipsSurvey,

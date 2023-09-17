@@ -1,4 +1,4 @@
-package nebulosa.api.data.enums
+package nebulosa.api.framing
 
 import nebulosa.hips2fits.HipsSurvey
 

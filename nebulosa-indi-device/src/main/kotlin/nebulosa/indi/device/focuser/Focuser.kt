@@ -1,12 +1,9 @@
 package nebulosa.indi.device.focuser
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.SerializerProvider
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.thermometer.Thermometer
-import nebulosa.json.HasJson
 
-interface Focuser : Device, Thermometer, HasJson {
+interface Focuser : Device, Thermometer {
 
     val moving: Boolean
 
@@ -39,25 +36,6 @@ interface Focuser : Device, Thermometer, HasJson {
     fun reverseFocus(enable: Boolean)
 
     fun syncFocusTo(steps: Int)
-
-    override fun writeToJson(gen: JsonGenerator, provider: SerializerProvider) {
-        gen.writeStartObject()
-        gen.writeStringField("name", name)
-        gen.writeBooleanField("connected", connected)
-        gen.writeBooleanField("moving", moving)
-        gen.writeNumberField("position", position)
-        gen.writeBooleanField("canAbsoluteMove", canAbsoluteMove)
-        gen.writeBooleanField("canRelativeMove", canRelativeMove)
-        gen.writeBooleanField("canAbort", canAbort)
-        gen.writeBooleanField("canReverse", canReverse)
-        gen.writeBooleanField("reverse", reverse)
-        gen.writeBooleanField("canSync", canSync)
-        gen.writeBooleanField("hasBacklash", hasBacklash)
-        gen.writeNumberField("maxPosition", maxPosition)
-        gen.writeBooleanField("hasThermometer", hasThermometer)
-        gen.writeNumberField("temperature", temperature)
-        gen.writeEndObject()
-    }
 
     companion object {
 

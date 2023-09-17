@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":nebulosa-horizons"))
     implementation(project(":nebulosa-imaging"))
     implementation(project(":nebulosa-indi-client"))
+    implementation(project(":nebulosa-json"))
     implementation(project(":nebulosa-lx200-protocol"))
     implementation(project(":nebulosa-nova"))
     implementation(project(":nebulosa-platesolving-astap"))

@@ -1,11 +1,8 @@
 package nebulosa.indi.device.filterwheel
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.SerializerProvider
 import nebulosa.indi.device.Device
-import nebulosa.json.HasJson
 
-interface FilterWheel : Device, HasJson {
+interface FilterWheel : Device {
 
     val count: Int
 
@@ -16,16 +13,6 @@ interface FilterWheel : Device, HasJson {
     fun moveTo(position: Int)
 
     fun syncNames(names: Iterable<String>)
-
-    override fun writeToJson(gen: JsonGenerator, provider: SerializerProvider) {
-        gen.writeStartObject()
-        gen.writeStringField("name", name)
-        gen.writeBooleanField("connected", connected)
-        gen.writeNumberField("count", count)
-        gen.writeNumberField("position", position)
-        gen.writeBooleanField("moving", moving)
-        gen.writeEndObject()
-    }
 
     companion object {
 

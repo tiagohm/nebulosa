@@ -58,7 +58,7 @@ class CameraController(
     @PutMapping("{camera}/capture/start")
     fun startCapture(
         @EntityBy camera: Camera,
-        @RequestBody body: CameraCaptureRequest,
+        @RequestBody body: CameraStartCapture,
     ) {
         cameraService.startCapture(camera, body)
     }

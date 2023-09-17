@@ -32,12 +32,12 @@ class CameraCaptureExecutor(
     private val jobRegistry: JobRegistry,
     private val messageService: MessageService,
     private val executionIncrementer: Incrementer,
-) : SequenceJobExecutor<CameraCaptureRequest>, Consumer<CameraCaptureEvent> {
+) : SequenceJobExecutor<CameraStartCapture>, Consumer<CameraCaptureEvent> {
 
     private val runningSequenceJobs = LinkedList<SequenceJob>()
 
     @Synchronized
-    override fun execute(data: CameraCaptureRequest): SequenceJob {
+    override fun execute(data: CameraStartCapture): SequenceJob {
         val camera = requireNotNull(data.camera)
 
         if (isCapturing(camera)) {
