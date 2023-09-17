@@ -7,11 +7,11 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { HipsSurvey } from '../../shared/types'
+import { Angle, HipsSurvey } from '../../shared/types'
 
 export interface FramingParams {
-    rightAscension: string
-    declination: string
+    rightAscension: Angle
+    declination: Angle
     width?: number
     height?: number
     fov?: number
@@ -25,8 +25,8 @@ export interface FramingParams {
 })
 export class FramingComponent implements AfterViewInit, OnDestroy {
 
-    rightAscension = '00h00m00s'
-    declination = `+000°00'00"`
+    rightAscension: Angle = '00h00m00s'
+    declination: Angle = `+000°00'00"`
     width = 1280
     height = 720
     fov = 1.0

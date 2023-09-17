@@ -1,9 +1,9 @@
-package nebulosa.api.data.responses
+package nebulosa.api.image
 
 import java.nio.file.Path
 
-data class ImageInfoResponse(
-    val path: Path?,
+data class ImageInfo(
+    val path: Path,
     val width: Int,
     val height: Int,
     val mono: Boolean,
@@ -13,5 +13,5 @@ data class ImageInfoResponse(
     val rightAscension: String?,
     val declination: String?,
     val calibrated: Boolean,
-    val headers: List<FITSHeaderItemResponse>,
+    val headers: List<ImageHeaderItem>,
 )

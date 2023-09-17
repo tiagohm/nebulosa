@@ -17,12 +17,12 @@ interface DeepSkyObjectRepository : JpaRepository<DeepSkyObjectEntity, Long> {
                 "(:constellation IS NULL OR dso.constellation = :constellation) AND " +
                 "(:type IS NULL OR dso.type = :type) AND " +
                 "(dso.magnitude BETWEEN :magnitudeMin AND :magnitudeMax) AND " +
-                "(:radius <= 0.0 OR acos(sin(dso.declination) * sin(:declination) + cos(dso.declination) * cos(:declination) * cos(dso.rightAscension - :rightAscension)) <= :radius) " +
+                "(:radius <= 0.0 OR acos(sin(dso.declinationJ2000) * sin(:declinationJ2000) + cos(dso.declinationJ2000) * cos(:declinationJ2000) * cos(dso.rightAscensionJ2000 - :rightAscensionJ2000)) <= :radius) " +
                 "ORDER BY dso.magnitude ASC"
     )
     fun search(
         text: String? = null,
-        rightAscension: Angle = Angle.ZERO, declination: Angle = Angle.ZERO, radius: Angle = Angle.ZERO,
+        rightAscensionJ2000: Angle = Angle.ZERO, declinationJ2000: Angle = Angle.ZERO, radius: Angle = Angle.ZERO,
         constellation: Constellation? = null,
         magnitudeMin: Double = -100.0, magnitudeMax: Double = 100.0,
         type: SkyObjectType? = null,

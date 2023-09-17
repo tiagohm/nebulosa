@@ -5,27 +5,22 @@ import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive
 import nebulosa.api.image.ImageService
-import nebulosa.hips2fits.HipsSurvey
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
 import org.hibernate.validator.constraints.Range
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.nio.file.Path
 
 @RestController
+@RequestMapping("framing")
 class FramingController(
     private val imageService: ImageService,
 ) {
 
-    @GetMapping("hipsSurveys")
-    fun hipsSurveys(): List<HipsSurvey> {
-        return HipsSurveyType.entries.map { it.hipsSurvey }
-    }
-
-    @PostMapping("frame")
+    @PutMapping
     fun frame(
             @RequestParam @Valid @NotBlank rightAscension: String,
             @RequestParam @Valid @NotBlank declination: String,

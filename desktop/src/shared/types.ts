@@ -1,5 +1,7 @@
 import { Point } from 'electron'
 
+export type Angle = string | number
+
 export interface Device {
     readonly name: string
     connected: boolean
@@ -80,18 +82,18 @@ export interface GPS extends Device {
 
 
 export interface EquatorialCoordinate {
-    rightAscension: string
-    declination: string
+    rightAscension: Angle
+    declination: Angle
 }
 
 export interface EquatorialCoordinateJ2000 {
-    rightAscensionJ2000: string
-    declinationJ2000: string
+    rightAscensionJ2000: Angle
+    declinationJ2000: Angle
 }
 
 export interface HorizontalCoordinate {
-    azimuth: string
-    altitude: string
+    azimuth: Angle
+    altitude: Angle
 }
 
 export interface Mount extends EquatorialCoordinate, GPS, GuideOutput, Parkable {
@@ -336,7 +338,7 @@ export interface OrbitalPhysicalParameter {
     value: string
 }
 
-export interface AstronomicalObject extends EquatorialCoordinate {
+export interface AstronomicalObject extends EquatorialCoordinateJ2000 {
     id: number
     names: string
     magnitude: number
@@ -400,7 +402,7 @@ export interface ImageAnnotation {
     dso?: DeepSkyObject
 }
 
-export interface Calibration extends EquatorialCoordinate {
+export interface ImageCalibrated extends EquatorialCoordinateJ2000 {
     orientation: number
     scale: number
     width: number

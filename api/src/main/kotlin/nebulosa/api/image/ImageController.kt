@@ -1,31 +1,23 @@
 package nebulosa.api.image
 
 import jakarta.servlet.http.HttpServletResponse
-import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.PositiveOrZero
-import nebulosa.api.connection.ConnectionService
-import nebulosa.api.data.responses.CalibrationResponse
 import nebulosa.api.data.responses.ImageAnnotationResponse
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
 
 @RestController
+@RequestMapping("image")
 class ImageController(
-    private val connectionService: ConnectionService,
     private val imageService: ImageService,
 ) {
 
-    @GetMapping("openImage")
+    @GetMapping
     fun openImage(
-        @RequestParam @Valid @NotBlank path: String,
+        @RequestParam path: Path,
         @RequestParam(required = false, defaultValue = "true") debayer: Boolean,
         @RequestParam(required = false, defaultValue = "false") autoStretch: Boolean,
         @RequestParam(required = false, defaultValue = "0.0") shadow: Float,
@@ -41,7 +33,7 @@ class ImageController(
         output: HttpServletResponse,
     ) {
         imageService.openImage(
-            ImageToken.of(path),
+            path,
             debayer, autoStretch, shadow, highlight, midtone,
             mirrorHorizontal, mirrorVertical, invert,
             scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode,
@@ -49,33 +41,30 @@ class ImageController(
         )
     }
 
-    @PostMapping("closeImage")
-    fun closeImage(@RequestParam @Valid @NotBlank path: String) {
-        return imageService.closeImage(ImageToken.of(path))
+    @DeleteMapping
+    fun closeImage(@RequestParam path: Path) {
+        return imageService.closeImage(path)
     }
 
-    @PostMapping("saveImageAs")
-    fun saveImageAs(
-        @RequestParam @Valid @NotBlank inputPath: String,
-        @RequestParam @Valid @NotBlank outputPath: String,
-    ) {
-        imageService.saveImageAs(Path.of(inputPath), Path.of(outputPath))
+    @PutMapping("save-as")
+    fun saveImageAs(@RequestParam inputPath: Path, @RequestParam outputPath: Path) {
+        imageService.saveImageAs(inputPath, outputPath)
     }
 
-    @GetMapping("annotationsOfImage")
+    @GetMapping("annotations")
     fun annotationsOfImage(
-        @RequestParam @Valid @NotBlank path: String,
+        @RequestParam path: Path,
         @RequestParam(required = false, defaultValue = "true") stars: Boolean,
         @RequestParam(required = false, defaultValue = "true") dsos: Boolean,
         @RequestParam(required = false, defaultValue = "false") minorPlanets: Boolean,
         @RequestParam(required = false, defaultValue = "12.0") minorPlanetMagLimit: Double,
     ): List<ImageAnnotationResponse> {
-        return imageService.annotations(ImageToken.of(path), stars, dsos, minorPlanets, minorPlanetMagLimit)
+        return imageService.annotations(path, stars, dsos, minorPlanets, minorPlanetMagLimit)
     }
 
-    @PostMapping("solveImage")
+    @PutMapping("solve")
     fun solveImage(
-        @RequestParam @Valid @NotBlank path: String,
+        @RequestParam path: Path,
         @RequestParam(required = false, defaultValue = "ASTROMETRY_NET_ONLINE") type: PlateSolverType,
         @RequestParam(required = false, defaultValue = "true") blind: Boolean,
         @RequestParam(required = false, defaultValue = "0.0") centerRA: String,
@@ -84,23 +73,11 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "1") downsampleFactor: Int,
         @RequestParam(required = false, defaultValue = "") pathOrUrl: String,
         @RequestParam(required = false, defaultValue = "") apiKey: String,
-    ): CalibrationResponse {
+    ): ImageCalibrated {
         return imageService.solveImage(
-            ImageToken.of(path), type, blind,
+            path, type, blind,
             centerRA.hours, centerDEC.deg, radius.deg,
             downsampleFactor, pathOrUrl, apiKey,
         )
-    }
-
-    @PostMapping("pointMountHere")
-    fun pointMountHere(
-        @RequestParam @Valid @NotBlank name: String,
-        @RequestParam @Valid @NotBlank path: String,
-        @RequestParam @Valid @PositiveOrZero x: Double,
-        @RequestParam @Valid @PositiveOrZero y: Double,
-        @RequestParam(required = false, defaultValue = "true") synchronized: Boolean,
-    ) {
-        val mount = requireNotNull(connectionService.mount(name))
-        imageService.pointMountHere(mount, ImageToken.of(path), x, y, synchronized)
     }
 }

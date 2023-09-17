@@ -2,6 +2,7 @@ package nebulosa.api.mounts
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.api.beans.annotations.DateAndTime
 import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.api.connection.ConnectionService
@@ -13,6 +14,7 @@ import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Distance.Companion.m
 import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.*
+import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -180,5 +182,16 @@ class MountController(
             mount, rightAscension.hours, declination.deg,
             j2000, equatorial, horizontal, meridianAt,
         )
+    }
+
+    @PutMapping("{mount}/point-here")
+    fun pointMountHere(
+        @EntityBy mount: Mount,
+        @RequestParam path: Path,
+        @RequestParam @Valid @PositiveOrZero x: Double,
+        @RequestParam @Valid @PositiveOrZero y: Double,
+        @RequestParam(required = false, defaultValue = "true") synchronized: Boolean,
+    ) {
+        mountService.pointMountHere(mount, path, x, y, synchronized)
     }
 }

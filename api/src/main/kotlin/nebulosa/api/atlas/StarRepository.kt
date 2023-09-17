@@ -17,12 +17,12 @@ interface StarRepository : JpaRepository<StarEntity, Long> {
                 "(:constellation IS NULL OR star.constellation = :constellation) AND " +
                 "(:type IS NULL OR star.type = :type) AND " +
                 "(star.magnitude BETWEEN :magnitudeMin AND :magnitudeMax) AND " +
-                "(:radius <= 0.0 OR acos(sin(star.declination) * sin(:declination) + cos(star.declination) * cos(:declination) * cos(star.rightAscension - :rightAscension)) <= :radius) " +
+                "(:radius <= 0.0 OR acos(sin(star.declinationJ2000) * sin(:declinationJ2000) + cos(star.declinationJ2000) * cos(:declinationJ2000) * cos(star.rightAscensionJ2000 - :rightAscensionJ2000)) <= :radius) " +
                 "ORDER BY star.magnitude ASC"
     )
     fun search(
         text: String? = null,
-        rightAscension: Angle = Angle.ZERO, declination: Angle = Angle.ZERO, radius: Angle = Angle.ZERO,
+        rightAscensionJ2000: Angle = Angle.ZERO, declinationJ2000: Angle = Angle.ZERO, radius: Angle = Angle.ZERO,
         constellation: Constellation? = null,
         magnitudeMin: Double = -100.0, magnitudeMax: Double = 100.0,
         type: SkyObjectType? = null,

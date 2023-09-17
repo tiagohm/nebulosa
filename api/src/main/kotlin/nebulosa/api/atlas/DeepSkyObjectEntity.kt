@@ -40,8 +40,8 @@ data class DeepSkyObjectEntity(
     @Column(name = "vdbh", columnDefinition = "TEXT") var vdbh: String? = null,
     @Column(name = "m_type", columnDefinition = "TEXT") var mType: String? = null,
     @Column(name = "magnitude", columnDefinition = "REAL") var magnitude: Double = Double.MAX_VALUE,
-    @Column(name = "right_ascension", columnDefinition = "REAL") var rightAscension: Double = 0.0,
-    @Column(name = "declination", columnDefinition = "REAL") var declination: Double = 0.0,
+    @Column(name = "right_ascension", columnDefinition = "REAL") var rightAscensionJ2000: Double = 0.0,
+    @Column(name = "declination", columnDefinition = "REAL") var declinationJ2000: Double = 0.0,
     @Column(name = "type", columnDefinition = "INT1") @Enumerated(EnumType.ORDINAL)
     var type: SkyObjectType = SkyObjectType.OBJECT_OF_UNKNOWN_NATURE,
     @Column(name = "redshift", columnDefinition = "REAL") var redshift: Double = 0.0,

@@ -1,13 +1,13 @@
-package nebulosa.api.data.responses
+package nebulosa.api.image
 
 import nebulosa.math.AngleFormatter
 import nebulosa.platesolving.Calibration
 
-data class CalibrationResponse(
+data class ImageCalibrated(
     val orientation: Double = 0.0,
     val scale: Double = 0.0,
-    val rightAscension: String = "",
-    val declination: String = "",
+    val rightAscensionJ2000: String = "",
+    val declinationJ2000: String = "",
     val width: Double = 0.0,
     val height: Double = 0.0,
     val radius: Double = 0.0,

@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
 import {
-    BodyPosition, Calibration, Camera, CameraStartCapture, ComputedLocation, Constellation, DeepSkyObject, Device,
+    Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, DeepSkyObject, Device,
     FilterWheel, Focuser, GuideDirection, GuideOutput, GuidingChart, GuidingStar, HipsSurvey,
-    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
+    INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
+    ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
     Mount, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
     SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
@@ -93,17 +94,17 @@ export class ApiService {
         return this.http.put<void>(`mounts/${mount.name}/tracking?enabled=${enabled}`)
     }
 
-    mountSync(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
+    mountSync(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
         const query = this.http.query({ rightAscension, declination, j2000 })
         return this.http.put<void>(`mounts/${mount.name}/sync?${query}`)
     }
 
-    mountSlewTo(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
+    mountSlewTo(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
         const query = this.http.query({ rightAscension, declination, j2000 })
         return this.http.put<void>(`mounts/${mount.name}/slew-to?${query}`)
     }
 
-    mountGoTo(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
+    mountGoTo(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
         const query = this.http.query({ rightAscension, declination, j2000 })
         return this.http.put<void>(`mounts/${mount.name}/goto?${query}`)
     }
@@ -136,7 +137,7 @@ export class ApiService {
         return this.http.put<void>(`mounts/${mount.name}/move?direction=${direction}&enabled=${enabled}`)
     }
 
-    mountComputeLocation(mount: Mount, j2000: boolean, rightAscension: string, declination: string,
+    mountComputeLocation(mount: Mount, j2000: boolean, rightAscension: Angle, declination: Angle,
         equatorial: boolean = true, horizontal: boolean = true, meridianAt: boolean = false,
     ) {
         const query = this.http.query({ rightAscension, declination, j2000, equatorial, horizontal, meridianAt })
@@ -157,6 +158,11 @@ export class ApiService {
 
     mountGalacticCenterLocation(mount: Mount) {
         return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/galactic-center`)
+    }
+
+    pointMountHere(mount: Mount, path: string, x: number, y: number, synchronized: boolean = true) {
+        const query = this.http.query({ path, x, y, synchronized })
+        return this.http.post<void>(`mounts/${mount.name}/point-here${query}`)
     }
 
     // FOCUSER
@@ -271,6 +277,8 @@ export class ApiService {
         return this.http.post<void>(`deselectGuideStar`)
     }
 
+    // IMAGE
+
     async openImage(
         path: string,
         debayer: boolean = false,
@@ -286,11 +294,8 @@ export class ApiService {
         scnrAmount: number = 0.5,
         scnrProtectionMode: SCNRProtectionMethod = 'AVERAGE_NEUTRAL',
     ) {
-        const query = `debayer=${debayer}&autoStretch=${autoStretch}&shadow=${shadow}&highlight=${highlight}&midtone=${midtone}` +
-            `&mirrorHorizontal=${mirrorHorizontal}&mirrorVertical=${mirrorVertical}&invert=${invert}` +
-            `&scnrEnabled=${scnrEnabled}&scnrChannel=${scnrChannel}&scnrAmount=${scnrAmount}&scnrProtectionMode=${scnrProtectionMode}`
-
-        const response = await this.http.getBlob(`openImage?path=${encodeURIComponent(path)}&${query}`)
+        const query = this.http.query({ path, debayer, autoStretch, shadow, highlight, midtone, mirrorHorizontal, mirrorVertical, invert, scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode })
+        const response = await this.http.getBlob(`image?${query}`)
 
         const info = JSON.parse(response.headers.get('X-Image-Info')!) as ImageInfo
 
@@ -298,7 +303,8 @@ export class ApiService {
     }
 
     closeImage(path: string) {
-        return this.http.post<void>(`closeImage?path=${encodeURIComponent(path)}`)
+        const query = this.http.query({ path })
+        return this.http.delete<void>(`image?${query}`)
     }
 
     indiProperties(device: Device) {
@@ -386,7 +392,7 @@ export class ApiService {
     }
 
     searchStar(text: string,
-        rightAscension: string, declination: string, radius: number,
+        rightAscension: Angle, declination: Angle, radius: Angle,
         constellation?: Constellation,
         magnitudeMin: number = -99, magnitudeMax: number = 99,
         type?: SkyObjectType,
@@ -408,7 +414,7 @@ export class ApiService {
     }
 
     searchDSO(text: string,
-        rightAscension: string, declination: string, radius: number,
+        rightAscension: Angle, declination: Angle, radius: Angle,
         constellation?: Constellation,
         magnitudeMin: number = -99, magnitudeMax: number = 99,
         type?: SkyObjectType,
@@ -441,7 +447,8 @@ export class ApiService {
     }
 
     searchMinorPlanet(text: string) {
-        return this.http.get<MinorPlanet>(`sky-atlas/minor-planets?text=${text}`)
+        const query = this.http.query({ text })
+        return this.http.get<MinorPlanet>(`sky-atlas/minor-planets?${query}`)
     }
 
     annotationsOfImage(
@@ -449,7 +456,8 @@ export class ApiService {
         stars: boolean = true, dsos: boolean = true, minorPlanets: boolean = false,
         minorPlanetMagLimit: number = 12.0,
     ) {
-        return this.http.get<ImageAnnotation[]>(`annotationsOfImage?path=${encodeURIComponent(path)}&stars=${stars}&dsos=${dsos}&minorPlanets=${minorPlanets}&minorPlanetMagLimit=${minorPlanetMagLimit}`)
+        const query = this.http.query({ path, stars, dsos, minorPlanets, minorPlanetMagLimit })
+        return this.http.get<ImageAnnotation[]>(`image/annotations?${query}`)
     }
 
     solveImage(
@@ -459,22 +467,22 @@ export class ApiService {
         downsampleFactor: number,
         pathOrUrl: string, apiKey: string,
     ) {
-        const query = this.http.query({path, type, blind, centerRA, centerDEC, radius, downsampleFactor, pathOrUrl, apiKey})
-        return this.http.post<Calibration>(`solveImage?${query}`)
+        const query = this.http.query({ path, type, blind, centerRA, centerDEC, radius, downsampleFactor, pathOrUrl, apiKey })
+        return this.http.put<ImageCalibrated>(`image/solve?${query}`)
     }
 
     saveImageAs(inputPath: string, outputPath: string) {
-        return this.http.post<void>(`saveImageAs?inputPath=${inputPath}&outputPath=${outputPath}`)
+        const query = this.http.query({ inputPath, outputPath })
+        return this.http.put<void>(`image/save-as?${query}`)
     }
 
-    frame(rightAscension: string, declination: string,
+    // FRAMING
+
+    frame(rightAscension: Angle, declination: Angle,
         width: number, height: number,
         fov: number, rotation: number, hipsSurvey: HipsSurvey,
     ) {
-        return this.http.post<string>(`frame?rightAscension=${rightAscension}&declination=${declination}&rotation=${rotation}&fov=${fov}&width=${width}&height=${height}&hipsSurvey=${hipsSurvey.type}`)
-    }
-
-    pointMountHere(mount: Mount, path: string, x: number, y: number, synchronized: boolean = true) {
-        return this.http.post<void>(`pointMountHere?name=${mount.name}&path=${encodeURIComponent(path)}&x=${x}&y=${y}&synchronized=${synchronized}`)
+        const query = this.http.query({ rightAscension, declination, width, height, fov, rotation, hipsSurvey: hipsSurvey.type })
+        return this.http.put<string>(`framing?${query}`)
     }
 }

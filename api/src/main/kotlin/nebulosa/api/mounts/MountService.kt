@@ -1,6 +1,7 @@
 package nebulosa.api.mounts
 
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.image.ImageBucket
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
 import nebulosa.guiding.GuideDirection
@@ -8,6 +9,7 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
 import nebulosa.indi.device.mount.SlewRate
 import nebulosa.indi.device.mount.TrackMode
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
@@ -18,16 +20,18 @@ import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.time.UTC
+import nebulosa.wcs.WCSTransform
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Service
+import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
 @Subscriber
-class MountService {
+class MountService(private val imageBucket: ImageBucket) {
 
     private val site = HashMap<Mount, GeographicPosition>(2)
 
@@ -223,6 +227,23 @@ class MountService {
         return computedLocation
     }
 
+    fun pointMountHere(mount: Mount, path: Path, x: Double, y: Double, synchronized: Boolean) {
+        val calibration = imageBucket[path]?.second ?: return
+        val wcs = WCSTransform(calibration)
+        val (rightAscension, declination) = wcs.pixelToWorld(x, y)
+
+        if (synchronized) {
+            goTo(mount, rightAscension, declination, true)
+        } else {
+            val icrf = ICRF.equatorial(calibration.rightAscension, calibration.declination)
+            val (calibratedRA, calibratedDEC) = icrf.equatorialAtDate()
+            val raOffset = calibratedRA - mount.rightAscension
+            val decOffset = calibratedDEC - mount.declination
+            LOG.info("pointing mount adjusted. ra={}, dec={}", raOffset.arcmin, decOffset.arcmin)
+            goTo(mount, rightAscension + raOffset, declination + decOffset, false)
+        }
+    }
+
     companion object {
 
         private const val SIDEREAL_TIME_DIFF = 0.06552777 * PI / 12.0
@@ -230,6 +251,7 @@ class MountService {
         @JvmStatic private val GALACTIC_CENTER_RA = "17 45 40.04".hours
         @JvmStatic private val GALACTIC_CENTER_DEC = "-29 00 28.1".deg
 
+        @JvmStatic private val LOG = loggerFor<MountService>()
         @JvmStatic private val MERIDIAN_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
         @JvmStatic private val LST_FORMAT = AngleFormatter.Builder()
             .hours()

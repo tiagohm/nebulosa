@@ -6,7 +6,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { ComputedLocation, Constellation, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode, Union } from '../../shared/types'
+import { Angle, ComputedLocation, Constellation, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode, Union } from '../../shared/types'
 
 @Component({
     selector: 'app-mount',
@@ -29,22 +29,22 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     canPark = false
     canHome = false
 
-    rightAscensionJ2000 = '00h00m00s'
-    declinationJ2000 = `00°00'00"`
-    rightAscension = '00h00m00s'
-    declination = `00°00'00"`
-    azimuth = `000°00'00"`
-    altitude = `+00°00'00"`
+    rightAscensionJ2000: Angle = '00h00m00s'
+    declinationJ2000: Angle = `00°00'00"`
+    rightAscension: Angle = '00h00m00s'
+    declination: Angle = `00°00'00"`
+    azimuth: Angle = `000°00'00"`
+    altitude: Angle = `+00°00'00"`
     lst = '00:00'
     constellation: Union<Constellation, '-'> = '-'
     timeLeftToMeridianFlip = '00:00'
     meridianAt = '00:00'
     pierSide: PierSide = 'NEITHER'
     targetCoordinateType: TargetCoordinateType = 'JNOW'
-    targetRightAscension = '00h00m00s'
-    targetDeclination = `00°00'00"`
-    targetAzimuth = `000°00'00"`
-    targetAltitude = `+00°00'00"`
+    targetRightAscension: Angle = '00h00m00s'
+    targetDeclination: Angle = `00°00'00"`
+    targetAzimuth: Angle = `000°00'00"`
+    targetAltitude: Angle = `+00°00'00"`
     targetConstellation: Union<Constellation, '-'> = '-'
     targetMeridianAt = '00:00'
 

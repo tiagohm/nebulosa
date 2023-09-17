@@ -12,10 +12,9 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Calibration, Camera, CameraCaptureEvent, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, GuideExposureFinished, GuideTrackingBox,
-    ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
-    ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS,
-    Star
+    Camera, CameraCaptureEvent, DeepSkyObject, EquatorialCoordinateJ2000, FITSHeaderItem, GuideExposureFinished, GuideTrackingBox,
+    ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
+    ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star
 } from '../../shared/types'
 
 export interface ImageParams {
@@ -78,7 +77,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     solverDownsampleFactor = 1
     solverPathOrUrl = ''
     solverApiKey = ''
-    solverCalibration?: Calibration
+    solverCalibration?: ImageCalibrated
 
     crossHair = false
     annotations: ImageAnnotation[] = []
@@ -531,26 +530,26 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    async mountSync(coordinate: EquatorialCoordinate) {
+    async mountSync(coordinate: EquatorialCoordinateJ2000) {
         const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
-        this.api.mountSync(mount, coordinate.rightAscension, coordinate.declination, true)
+        this.api.mountSync(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
     }
 
-    async mountGoTo(coordinate: EquatorialCoordinate) {
+    async mountGoTo(coordinate: EquatorialCoordinateJ2000) {
         const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
-        this.api.mountGoTo(mount, coordinate.rightAscension, coordinate.declination, true)
+        this.api.mountGoTo(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
     }
 
-    async mountSlew(coordinate: EquatorialCoordinate) {
+    async mountSlew(coordinate: EquatorialCoordinateJ2000) {
         const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
-        this.api.mountSlewTo(mount, coordinate.rightAscension, coordinate.declination, true)
+        this.api.mountSlewTo(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
     }
 
-    frame(coordinate: EquatorialCoordinate) {
-        this.browserWindow.openFraming({ rightAscension: coordinate.rightAscension, declination: coordinate.declination })
+    frame(coordinate: EquatorialCoordinateJ2000) {
+        this.browserWindow.openFraming({ rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000 })
     }
 
     imageLoaded() {

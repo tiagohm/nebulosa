@@ -165,14 +165,14 @@ class AtlasService(
 
     private fun fixedStarOf(star: StarEntity) = stars.getOrPut(star.id) {
         FixedStar(
-            star.rightAscension.rad, star.declination.rad,
+            star.rightAscensionJ2000.rad, star.declinationJ2000.rad,
             star.pmRA.rad, star.pmDEC.rad, star.parallax.mas, star.radialVelocity.kms
         )
     }
 
     private fun fixedStarOf(dso: DeepSkyObjectEntity) = dsos.getOrPut(dso.id) {
         FixedStar(
-            dso.rightAscension.rad, dso.declination.rad,
+            dso.rightAscensionJ2000.rad, dso.declinationJ2000.rad,
             dso.pmRA.rad, dso.pmDEC.rad, dso.parallax.mas, dso.radialVelocity.kms
         )
     }
