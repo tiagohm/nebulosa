@@ -7,6 +7,7 @@ import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
 import { INDIEventType, InternalEventType, MainEventType, Mount, OpenDirectory } from '../types'
+import { ApiService } from './api.service'
 
 @Injectable({ providedIn: 'root' })
 export class ElectronService {
@@ -16,7 +17,7 @@ export class ElectronService {
     childProcess!: typeof childProcess
     fs!: typeof fs
 
-    constructor() {
+    constructor(private api: ApiService) {
         if (this.isElectron) {
             this.ipcRenderer = (window as any).require('electron').ipcRenderer
             this.webFrame = (window as any).require('electron').webFrame
@@ -61,7 +62,9 @@ export class ElectronService {
         return this.sendSync('OPEN_DIRECTORY', data)
     }
 
-    selectedMount(): Mount | undefined {
-        return this.sendSync('SELECTED_MOUNT')
+    async selectedMount(): Promise<Mount | undefined> {
+        const mount: Mount | undefined = this.sendSync('SELECTED_MOUNT')
+        if (!mount) return undefined
+        return this.api.mount(mount.name)
     }
 }

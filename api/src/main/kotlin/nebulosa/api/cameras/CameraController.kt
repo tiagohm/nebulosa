@@ -1,6 +1,7 @@
 package nebulosa.api.cameras
 
 import jakarta.validation.Valid
+import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.camera.Camera
 import org.hibernate.validator.constraints.Range
@@ -18,53 +19,52 @@ class CameraController(
         return connectionService.cameras()
     }
 
-    @GetMapping("{cameraName}")
-    fun camera(@PathVariable cameraName: String): Camera {
-        return requireNotNull(connectionService.camera(cameraName))
+    @GetMapping("{camera}")
+    fun camera(@EntityBy camera: Camera): Camera {
+        return camera
     }
 
-    @PutMapping("{cameraName}/connect")
-    fun connect(@PathVariable cameraName: String) {
-        cameraService.connect(camera(cameraName))
+    @PutMapping("{camera}/connect")
+    fun connect(@EntityBy camera: Camera) {
+        cameraService.connect(camera)
     }
 
-    @PutMapping("{cameraName}/disconnect")
-    fun disconnect(@PathVariable cameraName: String) {
-        cameraService.disconnect(camera(cameraName))
+    @PutMapping("{camera}/disconnect")
+    fun disconnect(@EntityBy camera: Camera) {
+        cameraService.disconnect(camera)
     }
 
-    @GetMapping("{cameraName}/capturing")
-    fun isCapturing(@PathVariable cameraName: String): Boolean {
-        return cameraService.isCapturing(camera(cameraName))
+    @GetMapping("{camera}/capturing")
+    fun isCapturing(@EntityBy camera: Camera): Boolean {
+        return cameraService.isCapturing(camera)
     }
 
-    @PutMapping("{cameraName}/cooler")
+    @PutMapping("{camera}/cooler")
     fun cooler(
-        @PathVariable cameraName: String,
+        @EntityBy camera: Camera,
         @RequestParam enabled: Boolean,
     ) {
-        cameraService.cooler(camera(cameraName), enabled)
+        cameraService.cooler(camera, enabled)
     }
 
-    @PutMapping("{cameraName}/temperature/setpoint")
+    @PutMapping("{camera}/temperature/setpoint")
     fun setpointTemperature(
-        @PathVariable cameraName: String,
+        @EntityBy camera: Camera,
         @RequestParam @Valid @Range(min = -50, max = 50) temperature: Double,
     ) {
-        cameraService.setpointTemperature(camera(cameraName), temperature)
+        cameraService.setpointTemperature(camera, temperature)
     }
 
-    @PutMapping("{cameraName}/capture/start")
+    @PutMapping("{camera}/capture/start")
     fun startCapture(
-        @PathVariable cameraName: String,
+        @EntityBy camera: Camera,
         @RequestBody body: CameraCaptureRequest,
     ) {
-        val camera = camera(cameraName)
         cameraService.startCapture(camera, body)
     }
 
-    @PutMapping("{cameraName}/capture/abort")
-    fun abortCapture(@PathVariable cameraName: String) {
-        cameraService.abortCapture(camera(cameraName))
+    @PutMapping("{camera}/capture/abort")
+    fun abortCapture(@EntityBy camera: Camera) {
+        cameraService.abortCapture(camera)
     }
 }

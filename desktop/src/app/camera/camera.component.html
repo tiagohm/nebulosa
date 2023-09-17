@@ -26,7 +26,7 @@
             <i *ngIf="autoSubFolderMode === 'MIDNIGHT'" class="mdi mdi-weather-night text-blue-600" pTooltip="Auto sub folder: MIDNIGHT"
                tooltipPosition="bottom"></i>
             <span *ngIf="camera" style="padding-top: 1px; padding-bottom: 1px; min-height: 17px;"
-                  class="flex align-items-center gap-2 bg-gray-800 border-round-2xl px-3">
+                  class="flex align-items-center gap-2 bg-gray-800 border-round-2xl px-3 text-overflow-scroll">
                 {{ savePath || capturesPath }}
                 <i *ngIf="savePath" class="mdi mdi-close cursor-pointer" pTooltip="Reset" tooltipPosition="bottom" (click)="resetSavePath()"></i>
             </span>

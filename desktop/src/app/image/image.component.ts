@@ -118,8 +118,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Point mount here',
         icon: 'mdi mdi-telescope',
         disabled: true,
-        command: () => {
-            const mount = this.electron.selectedMount()
+        command: async () => {
+            const mount = await this.electron.selectedMount()
             if (!mount?.connected) return
             this.api.pointMountHere(mount, this.imageParams.path!, this.imageMouseX, this.imageMouseY, !this.solved)
         },
@@ -531,20 +531,20 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    mountSync(coordinate: EquatorialCoordinate) {
-        const mount = this.electron.selectedMount()
+    async mountSync(coordinate: EquatorialCoordinate) {
+        const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
         this.api.mountSync(mount, coordinate.rightAscension, coordinate.declination, true)
     }
 
-    mountGoTo(coordinate: EquatorialCoordinate) {
-        const mount = this.electron.selectedMount()
+    async mountGoTo(coordinate: EquatorialCoordinate) {
+        const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
         this.api.mountGoTo(mount, coordinate.rightAscension, coordinate.declination, true)
     }
 
-    mountSlew(coordinate: EquatorialCoordinate) {
-        const mount = this.electron.selectedMount()
+    async mountSlew(coordinate: EquatorialCoordinate) {
+        const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
         this.api.mountSlewTo(mount, coordinate.rightAscension, coordinate.declination, true)
     }

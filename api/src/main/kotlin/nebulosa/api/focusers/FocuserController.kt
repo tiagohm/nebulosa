@@ -2,6 +2,7 @@ package nebulosa.api.focusers
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.PositiveOrZero
+import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.focuser.Focuser
 import org.springframework.web.bind.annotation.*
@@ -18,55 +19,55 @@ class FocuserController(
         return connectionService.focusers()
     }
 
-    @GetMapping("{focuserName}")
-    fun focuser(@PathVariable focuserName: String): Focuser {
-        return requireNotNull(connectionService.focuser(focuserName))
+    @GetMapping("{focuser}")
+    fun focuser(@EntityBy focuser: Focuser): Focuser {
+        return focuser
     }
 
-    @PutMapping("{focuserName}/connect")
-    fun connect(@PathVariable focuserName: String) {
-        focuserService.connect(focuser(focuserName))
+    @PutMapping("{focuser}/connect")
+    fun connect(@EntityBy focuser: Focuser) {
+        focuserService.connect(focuser)
     }
 
-    @PutMapping("{focuserName}/disconnect")
-    fun disconnect(@PathVariable focuserName: String) {
-        focuserService.disconnect(focuser(focuserName))
+    @PutMapping("{focuser}/disconnect")
+    fun disconnect(@EntityBy focuser: Focuser) {
+        focuserService.disconnect(focuser)
     }
 
-    @PutMapping("{focuserName}/move-in")
+    @PutMapping("{focuser}/move-in")
     fun moveIn(
-        @PathVariable focuserName: String,
+        @EntityBy focuser: Focuser,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        focuserService.moveIn(focuser(focuserName), steps)
+        focuserService.moveIn(focuser, steps)
     }
 
-    @PutMapping("{focuserName}/move-out")
+    @PutMapping("{focuser}/move-out")
     fun moveOut(
-        @PathVariable focuserName: String,
+        @EntityBy focuser: Focuser,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        focuserService.moveOut(focuser(focuserName), steps)
+        focuserService.moveOut(focuser, steps)
     }
 
-    @PutMapping("{focuserName}/move-to")
+    @PutMapping("{focuser}/move-to")
     fun moveTo(
-        @PathVariable focuserName: String,
+        @EntityBy focuser: Focuser,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        focuserService.moveTo(focuser(focuserName), steps)
+        focuserService.moveTo(focuser, steps)
     }
 
-    @PutMapping("{focuserName}/abort")
-    fun abort(@PathVariable focuserName: String) {
-        focuserService.abort(focuser(focuserName))
+    @PutMapping("{focuser}/abort")
+    fun abort(@EntityBy focuser: Focuser) {
+        focuserService.abort(focuser)
     }
 
-    @PutMapping("{focuserName}/sync")
+    @PutMapping("{focuser}/sync")
     fun sync(
-        @PathVariable focuserName: String,
+        @EntityBy focuser: Focuser,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        focuserService.sync(focuser(focuserName), steps)
+        focuserService.sync(focuser, steps)
     }
 }

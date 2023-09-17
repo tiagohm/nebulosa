@@ -334,33 +334,36 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     private async update() {
         if (this.camera) {
             this.connected = this.camera.connected
-            this.cooler = this.camera.cooler
-            this.hasCooler = this.camera.hasCooler
-            this.coolerPower = this.camera.coolerPower
-            this.dewHeater = this.camera.dewHeater
-            this.temperature = this.camera.temperature
-            this.canSetTemperature = this.camera.canSetTemperature
-            this.minX = this.camera.minX
-            this.maxX = this.camera.maxX
-            this.x = Math.max(this.minX, Math.min(this.x, this.maxX))
-            this.minY = this.camera.minY
-            this.maxY = this.camera.maxY
-            this.y = Math.max(this.minY, Math.min(this.y, this.maxY))
-            this.minWidth = this.camera.minWidth
-            this.maxWidth = this.camera.maxWidth
-            this.width = Math.max(this.minWidth, Math.min(this.width, this.maxWidth))
-            this.minHeight = this.camera.minHeight
-            this.maxHeight = this.camera.maxHeight
-            this.height = Math.max(this.minHeight, Math.min(this.height, this.maxHeight))
-            this.frameFormats = this.camera.frameFormats
-            if (!this.frameFormat) this.frameFormat = this.frameFormats[0]
-            this.gainMin = this.camera.gainMin
-            this.gainMax = this.camera.gainMax
-            this.offsetMin = this.camera.offsetMin
-            this.offsetMax = this.camera.offsetMax
-            this.capturesPath = this.camera.capturesPath
 
-            this.updateExposureUnit(this.exposureTimeUnit)
+            if (this.connected) {
+                this.cooler = this.camera.cooler
+                this.hasCooler = this.camera.hasCooler
+                this.coolerPower = this.camera.coolerPower
+                this.dewHeater = this.camera.dewHeater
+                this.temperature = this.camera.temperature
+                this.canSetTemperature = this.camera.canSetTemperature
+                this.minX = this.camera.minX
+                this.maxX = this.camera.maxX
+                this.x = Math.max(this.minX, Math.min(this.x, this.maxX))
+                this.minY = this.camera.minY
+                this.maxY = this.camera.maxY
+                this.y = Math.max(this.minY, Math.min(this.y, this.maxY))
+                this.minWidth = this.camera.minWidth
+                this.maxWidth = this.camera.maxWidth
+                this.width = Math.max(this.minWidth, Math.min(this.width < 8 ? this.maxWidth : this.width, this.maxWidth))
+                this.minHeight = this.camera.minHeight
+                this.maxHeight = this.camera.maxHeight
+                this.height = Math.max(this.minHeight, Math.min(this.height < 8 ? this.maxHeight : this.width, this.maxHeight))
+                this.frameFormats = this.camera.frameFormats
+                if (!this.frameFormat) this.frameFormat = this.frameFormats[0]
+                this.gainMin = this.camera.gainMin
+                this.gainMax = this.camera.gainMax
+                this.offsetMin = this.camera.offsetMin
+                this.offsetMax = this.camera.offsetMax
+                this.capturesPath = this.camera.capturesPath
+
+                this.updateExposureUnit(this.exposureTimeUnit)
+            }
         }
     }
 

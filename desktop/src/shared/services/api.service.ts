@@ -208,19 +208,19 @@ export class ApiService {
     }
 
     wheelConnect(wheel: FilterWheel) {
-        return this.http.post<void>(`wheels/${wheel.name}/connect`)
+        return this.http.put<void>(`wheels/${wheel.name}/connect`)
     }
 
     wheelDisconnect(wheel: FilterWheel) {
-        return this.http.post<void>(`wheels/${wheel.name}/disconnect`)
+        return this.http.put<void>(`wheels/${wheel.name}/disconnect`)
     }
 
     wheelMoveTo(wheel: FilterWheel, position: number) {
-        return this.http.post<void>(`wheels/${wheel.name}/move-to?position=${position}`)
+        return this.http.put<void>(`wheels/${wheel.name}/move-to?position=${position}`)
     }
 
     wheelSync(wheel: FilterWheel, names: string[]) {
-        return this.http.post<void>(`wheels/${wheel.name}/sync?names=${names.join(',')}`)
+        return this.http.put<void>(`wheels/${wheel.name}/sync?names=${names.join(',')}`)
     }
 
     attachedGuideOutputs() {
@@ -454,13 +454,13 @@ export class ApiService {
 
     solveImage(
         path: string, type: PlateSolverType,
-        blind: Boolean,
+        blind: boolean,
         centerRA: string | number, centerDEC: string | number, radius: string | number,
         downsampleFactor: number,
         pathOrUrl: string, apiKey: string,
     ) {
-        return this.http.post<Calibration>(`solveImage?path=${encodeURIComponent(path)}&type=${type}&pathOrUrl=${pathOrUrl}&blind=${blind}` +
-            `&centerRA=${centerRA}&centerDEC=${centerDEC}&radius=${radius}&downsampleFactor=${downsampleFactor}&apiKey=${apiKey}`)
+        const query = this.http.query({path, type, blind, centerRA, centerDEC, radius, downsampleFactor, pathOrUrl, apiKey})
+        return this.http.post<Calibration>(`solveImage?${query}`)
     }
 
     saveImageAs(inputPath: string, outputPath: string) {

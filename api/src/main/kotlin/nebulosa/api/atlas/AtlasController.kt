@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import nebulosa.api.beans.annotations.DateAndTime
 import nebulosa.api.beans.annotations.EntityBy
-import nebulosa.api.data.responses.BodyPositionResponse
 import nebulosa.api.data.responses.MinorPlanetResponse
 import nebulosa.api.data.responses.TwilightResponse
 import nebulosa.api.locations.LocationEntity
@@ -32,7 +31,7 @@ class AtlasController(
     fun positionOfSun(
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): BodyPositionResponse {
+    ): BodyPosition {
         return atlasService.positionOfSun(location, dateTime)
     }
 
@@ -49,7 +48,7 @@ class AtlasController(
     fun positionOfMoon(
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): BodyPositionResponse {
+    ): BodyPosition {
         return atlasService.positionOfMoon(location, dateTime)
     }
 
@@ -67,7 +66,7 @@ class AtlasController(
         @PathVariable code: String,
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): BodyPositionResponse {
+    ): BodyPosition {
         return atlasService.positionOfPlanet(location, code, dateTime)
     }
 
@@ -91,7 +90,7 @@ class AtlasController(
         @EntityBy star: StarEntity,
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): BodyPositionResponse {
+    ): BodyPosition {
         return atlasService.positionOfStar(location, star, dateTime)
     }
 
@@ -122,12 +121,12 @@ class AtlasController(
         )
     }
 
-    @GetMapping("dsos/{id}/position")
+    @GetMapping("dsos/{dso}/position")
     fun positionOfDSO(
         @EntityBy dso: DeepSkyObjectEntity,
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): BodyPositionResponse {
+    ): BodyPosition {
         return atlasService.positionOfDSO(location, dso, dateTime)
     }
 
@@ -163,7 +162,7 @@ class AtlasController(
         @EntityBy satellite: SatelliteEntity,
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): BodyPositionResponse {
+    ): BodyPosition {
         return atlasService.positionOfSatellite(location, satellite, dateTime)
     }
 

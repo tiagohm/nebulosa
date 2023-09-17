@@ -1,8 +1,8 @@
 package nebulosa.api.wheels
 
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.PositiveOrZero
+import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.filterwheel.FilterWheel
 import org.springframework.web.bind.annotation.*
@@ -19,34 +19,34 @@ class WheelController(
         return connectionService.wheels()
     }
 
-    @GetMapping("{wheelName}")
-    fun wheel(@RequestParam @Valid @NotBlank wheelName: String): FilterWheel {
-        return requireNotNull(connectionService.wheel(wheelName))
+    @GetMapping("{wheel}")
+    fun wheel(@EntityBy wheel: FilterWheel): FilterWheel {
+        return wheel
     }
 
-    @PutMapping("{wheelName}/connect")
-    fun connect(@PathVariable wheelName: String) {
-        wheelService.connect(wheel(wheelName))
+    @PutMapping("{wheel}/connect")
+    fun connect(@EntityBy wheel: FilterWheel) {
+        wheelService.connect(wheel)
     }
 
-    @PutMapping("{wheelName}/disconnect")
-    fun disconnect(@PathVariable wheelName: String) {
-        wheelService.disconnect(wheel(wheelName))
+    @PutMapping("{wheel}/disconnect")
+    fun disconnect(@EntityBy wheel: FilterWheel) {
+        wheelService.disconnect(wheel)
     }
 
-    @PutMapping("{wheelName}/move-to")
+    @PutMapping("{wheel}/move-to")
     fun moveTo(
-        @PathVariable wheelName: String,
+        @EntityBy wheel: FilterWheel,
         @RequestParam @Valid @PositiveOrZero position: Int,
     ) {
-        wheelService.moveTo(wheel(wheelName), position)
+        wheelService.moveTo(wheel, position)
     }
 
-    @PutMapping("{wheelName}/sync")
+    @PutMapping("{wheel}/sync")
     fun sync(
-        @PathVariable wheelName: String,
+        @EntityBy wheel: FilterWheel,
         @RequestParam @Valid @PositiveOrZero names: String,
     ) {
-        wheelService.sync(wheel(wheelName), names.split(","))
+        wheelService.sync(wheel, names.split(","))
     }
 }

@@ -2,6 +2,8 @@ package nebulosa.api.mounts
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import nebulosa.api.beans.annotations.DateAndTime
+import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.api.connection.ConnectionService
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.Mount
@@ -11,8 +13,7 @@ import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.Distance.Companion.m
 import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.*
-import java.time.LocalDate
-import java.time.LocalTime
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -28,149 +29,146 @@ class MountController(
         return connectionService.mounts()
     }
 
-    @GetMapping("{mountName}")
-    fun mount(@PathVariable mountName: String): Mount {
-        return requireNotNull(connectionService.mount(mountName))
+    @GetMapping("{mount}")
+    fun mount(@EntityBy mount: Mount): Mount {
+        return mount
     }
 
-    @PutMapping("{mountName}/connect")
-    fun connect(@PathVariable mountName: String) {
-        mountService.connect(mount(mountName))
+    @PutMapping("{mount}/connect")
+    fun connect(@EntityBy mount: Mount) {
+        mountService.connect(mount)
     }
 
-    @PutMapping("{mountName}/disconnect")
-    fun disconnect(@PathVariable mountName: String) {
-        mountService.disconnect(mount(mountName))
+    @PutMapping("{mount}/disconnect")
+    fun disconnect(@EntityBy mount: Mount) {
+        mountService.disconnect(mount)
     }
 
-    @PutMapping("{mountName}/tracking")
+    @PutMapping("{mount}/tracking")
     fun tracking(
-        @PathVariable mountName: String,
+        @EntityBy mount: Mount,
         @RequestParam enabled: Boolean,
     ) {
-        mountService.tracking(mount(mountName), enabled)
+        mountService.tracking(mount, enabled)
     }
 
-    @PutMapping("{mountName}/sync")
+    @PutMapping("{mount}/sync")
     fun sync(
-        @PathVariable mountName: String,
+        @EntityBy mount: Mount,
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
     ) {
-        mountService.sync(mount(mountName), rightAscension.hours, declination.deg, j2000)
+        mountService.sync(mount, rightAscension.hours, declination.deg, j2000)
     }
 
-    @PutMapping("{mountName}/slew-to")
+    @PutMapping("{mount}/slew-to")
     fun slewTo(
-        @PathVariable mountName: String,
+        @EntityBy mount: Mount,
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
     ) {
-        mountService.slewTo(mount(mountName), rightAscension.hours, declination.deg, j2000)
+        mountService.slewTo(mount, rightAscension.hours, declination.deg, j2000)
     }
 
-    @PutMapping("{mountName}/goto")
+    @PutMapping("{mount}/goto")
     fun goTo(
-        @PathVariable mountName: String,
+        @EntityBy mount: Mount,
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
     ) {
-        mountService.goTo(mount(mountName), rightAscension.hours, declination.deg, j2000)
+        mountService.goTo(mount, rightAscension.hours, declination.deg, j2000)
     }
 
-    @PutMapping("{mountName}/home")
-    fun home(@PathVariable mountName: String) {
-        mountService.home(mount(mountName))
+    @PutMapping("{mount}/home")
+    fun home(@EntityBy mount: Mount) {
+        mountService.home(mount)
     }
 
-    @PutMapping("{mountName}/abort")
-    fun abort(@PathVariable mountName: String) {
-        mountService.abort(mount(mountName))
+    @PutMapping("{mount}/abort")
+    fun abort(@EntityBy mount: Mount) {
+        mountService.abort(mount)
     }
 
-    @PutMapping("{mountName}/track-mode")
+    @PutMapping("{mount}/track-mode")
     fun trackMode(
-        @PathVariable mountName: String,
+        @EntityBy mount: Mount,
         @RequestParam mode: TrackMode,
     ) {
-        mountService.trackMode(mount(mountName), mode)
+        mountService.trackMode(mount, mode)
     }
 
-    @PutMapping("{mountName}/slew-rate")
+    @PutMapping("{mount}/slew-rate")
     fun slewRate(
-        @PathVariable mountName: String,
+        @EntityBy mount: Mount,
         @RequestParam @Valid @NotBlank rate: String,
     ) {
-        val mount = mount(mountName)
         mountService.slewRate(mount, mount.slewRates.first { it.name == rate })
     }
 
-    @PutMapping("{mountName}/move")
+    @PutMapping("{mount}/move")
     fun move(
-        @PathVariable mountName: String,
+        @EntityBy mount: Mount,
         @RequestParam direction: GuideDirection,
         @RequestParam enabled: Boolean,
     ) {
-        mountService.move(mount(mountName), direction, enabled)
+        mountService.move(mount, direction, enabled)
     }
 
-    @PutMapping("{mountName}/park")
-    fun park(@PathVariable mountName: String) {
-        mountService.park(mount(mountName))
+    @PutMapping("{mount}/park")
+    fun park(@EntityBy mount: Mount) {
+        mountService.park(mount)
     }
 
-    @PutMapping("{mountName}/unpark")
-    fun unpark(@PathVariable mountName: String) {
-        mountService.unpark(mount(mountName))
+    @PutMapping("{mount}/unpark")
+    fun unpark(@EntityBy mount: Mount) {
+        mountService.unpark(mount)
     }
 
-    @PutMapping("{mountName}/coordinates")
+    @PutMapping("{mount}/coordinates")
     fun coordinates(
-        @PathVariable mountName: String,
+        @EntityBy mount: Mount,
         @RequestParam @Valid @NotBlank longitude: String,
         @RequestParam @Valid @NotBlank latitude: String,
         @RequestParam(required = false, defaultValue = "0.0") elevation: Double,
     ) {
-        mountService.coordinates(mount(mountName), longitude.deg, latitude.deg, elevation.m)
+        mountService.coordinates(mount, longitude.deg, latitude.deg, elevation.m)
     }
 
-    @PutMapping("{mountName}/datetime")
+    @PutMapping("{mount}/datetime")
     fun dateTime(
-        @PathVariable mountName: String,
-        @RequestParam date: LocalDate,
-        @RequestParam time: LocalTime,
+        @EntityBy mount: Mount,
+        @DateAndTime dateTime: LocalDateTime,
         @RequestParam @Valid @Range(min = -720, max = 720) offsetInMinutes: Int,
     ) {
-        val dateTime = OffsetDateTime.of(date, time, ZoneOffset.ofTotalSeconds(offsetInMinutes * 60))
-        mountService.dateTime(mount(mountName), dateTime)
+        mountService.dateTime(mount, OffsetDateTime.of(dateTime, ZoneOffset.ofTotalSeconds(offsetInMinutes * 60)))
     }
 
-    @GetMapping("{mountName}/location/zenith")
-    fun zenithLocation(@PathVariable mountName: String): ComputedLocation {
-        return mountService.computeZenithLocation(mount(mountName))
+    @GetMapping("{mount}/location/zenith")
+    fun zenithLocation(@EntityBy mount: Mount): ComputedLocation {
+        return mountService.computeZenithLocation(mount)
     }
 
-    @GetMapping("{mountName}/location/celestial-pole/north")
-    fun northCelestialPoleLocation(@PathVariable mountName: String): ComputedLocation {
-        return mountService.computeNorthCelestialPoleLocation(mount(mountName))
+    @GetMapping("{mount}/location/celestial-pole/north")
+    fun northCelestialPoleLocation(@EntityBy mount: Mount): ComputedLocation {
+        return mountService.computeNorthCelestialPoleLocation(mount)
     }
 
-    @GetMapping("{mountName}/location/celestial-pole/south")
-    fun southCelestialPoleLocation(@PathVariable mountName: String): ComputedLocation {
-        return mountService.computeSouthCelestialPoleLocation(mount(mountName))
+    @GetMapping("{mount}/location/celestial-pole/south")
+    fun southCelestialPoleLocation(@EntityBy mount: Mount): ComputedLocation {
+        return mountService.computeSouthCelestialPoleLocation(mount)
     }
 
-    @GetMapping("{mountName}/location/galactic-center")
-    fun galacticCenterLocation(@PathVariable mountName: String): ComputedLocation {
-        return mountService.computeGalacticCenterLocation(mount(mountName))
+    @GetMapping("{mount}/location/galactic-center")
+    fun galacticCenterLocation(@EntityBy mount: Mount): ComputedLocation {
+        return mountService.computeGalacticCenterLocation(mount)
     }
 
-    @GetMapping("{mountName}/location")
+    @GetMapping("{mount}/location")
     fun location(
-        @PathVariable mountName: String,
+        @EntityBy mount: Mount,
         @RequestParam rightAscension: String,
         @RequestParam declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
@@ -178,7 +176,6 @@ class MountController(
         @RequestParam(required = false, defaultValue = "true") horizontal: Boolean,
         @RequestParam(required = false, defaultValue = "true") meridianAt: Boolean,
     ): ComputedLocation {
-        val mount = mount(mountName)
         return mountService.computeLocation(
             mount, rightAscension.hours, declination.deg,
             j2000, equatorial, horizontal, meridianAt,

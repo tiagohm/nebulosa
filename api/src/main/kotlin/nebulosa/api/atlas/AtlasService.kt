@@ -3,7 +3,6 @@ package nebulosa.api.atlas
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
 import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
-import nebulosa.api.data.responses.BodyPositionResponse
 import nebulosa.api.data.responses.MinorPlanetResponse
 import nebulosa.api.data.responses.TwilightResponse
 import nebulosa.api.locations.LocationEntity
@@ -59,36 +58,36 @@ class AtlasService(
         output.outputStream.write(sunImage)
     }
 
-    fun positionOfSun(location: LocationEntity, dateTime: LocalDateTime): BodyPositionResponse {
+    fun positionOfSun(location: LocationEntity, dateTime: LocalDateTime): BodyPosition {
         return positionOfBody(SUN, location, dateTime)!!
     }
 
-    fun positionOfMoon(location: LocationEntity, dateTime: LocalDateTime): BodyPositionResponse {
+    fun positionOfMoon(location: LocationEntity, dateTime: LocalDateTime): BodyPosition {
         return positionOfBody(MOON, location, dateTime)!!
     }
 
-    fun positionOfPlanet(location: LocationEntity, code: String, dateTime: LocalDateTime): BodyPositionResponse {
+    fun positionOfPlanet(location: LocationEntity, code: String, dateTime: LocalDateTime): BodyPosition {
         return positionOfBody(code, location, dateTime)!!
     }
 
-    fun positionOfStar(location: LocationEntity, star: StarEntity, dateTime: LocalDateTime): BodyPositionResponse {
+    fun positionOfStar(location: LocationEntity, star: StarEntity, dateTime: LocalDateTime): BodyPosition {
         return positionOfBody(fixedStarOf(star), location, dateTime)!!
             .copy(magnitude = star.magnitude, constellation = star.constellation, distance = star.distance, distanceUnit = "ly")
     }
 
-    fun positionOfDSO(location: LocationEntity, dso: DeepSkyObjectEntity, dateTime: LocalDateTime): BodyPositionResponse {
+    fun positionOfDSO(location: LocationEntity, dso: DeepSkyObjectEntity, dateTime: LocalDateTime): BodyPosition {
         return positionOfBody(fixedStarOf(dso), location, dateTime)!!
             .copy(magnitude = dso.magnitude, constellation = dso.constellation, distance = dso.distance, distanceUnit = "ly")
     }
 
-    fun positionOfSatellite(location: LocationEntity, satellite: SatelliteEntity, dateTime: LocalDateTime): BodyPositionResponse {
+    fun positionOfSatellite(location: LocationEntity, satellite: SatelliteEntity, dateTime: LocalDateTime): BodyPosition {
         return positionOfBody("TLE@${satellite.tle}", location, dateTime)!!
     }
 
-    private fun positionOfBody(target: Any, location: LocationEntity, dateTime: LocalDateTime): BodyPositionResponse? {
+    private fun positionOfBody(target: Any, location: LocationEntity, dateTime: LocalDateTime): BodyPosition? {
         return bodyEphemeris(target, location, dateTime)
             .withLocationAndDateTime(location, dateTime)
-            ?.let(BodyPositionResponse::of)
+            ?.let(BodyPosition::of)
     }
 
     private fun bodyEphemeris(target: Any, location: LocationEntity, dateTime: LocalDateTime): List<HorizonsElement> {
@@ -240,8 +239,6 @@ class AtlasService(
     }
 
     companion object {
-
-        const val DATABASE_VERSION = "2023.07.09"
 
         private const val SUN_IMAGE_URL = "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_256_HMIIC.jpg"
 

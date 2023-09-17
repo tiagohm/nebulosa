@@ -18,7 +18,7 @@ export class BrowserWindowService {
     openMount(options: OpenWindowOptions = {}) {
         this.openWindow({
             ...options,
-            id: 'mount', path: 'mount', icon: options.icon || 'mount',
+            id: 'mount', path: 'mount', icon: options.icon || 'telescope',
             width: options.width || 400, height: options.height || 452,
         })
     }

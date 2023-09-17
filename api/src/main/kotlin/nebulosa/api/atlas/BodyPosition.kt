@@ -1,4 +1,4 @@
-package nebulosa.api.data.responses
+package nebulosa.api.atlas
 
 import nebulosa.constants.AU_KM
 import nebulosa.constants.SPEED_OF_LIGHT
@@ -9,7 +9,7 @@ import nebulosa.math.AngleFormatter
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
 
-data class BodyPositionResponse(
+data class BodyPosition(
     val rightAscensionJ2000: String,
     val declinationJ2000: String,
     val rightAscension: String,
@@ -28,7 +28,7 @@ data class BodyPositionResponse(
     companion object {
 
         @JvmStatic
-        fun of(element: HorizonsElement): BodyPositionResponse {
+        fun of(element: HorizonsElement): BodyPosition {
             val lightTime = element.asDouble(HorizonsQuantity.ONE_WAY_LIGHT_TIME)
             var distance = lightTime * (SPEED_OF_LIGHT * 0.06) // km
             var distanceUnit = "km"
@@ -40,7 +40,7 @@ data class BodyPositionResponse(
                 distanceUnit = "AU"
             }
 
-            return BodyPositionResponse(
+            return BodyPosition(
                 element.asDouble(HorizonsQuantity.ASTROMETRIC_RA).deg.format(AngleFormatter.HMS),
                 element.asDouble(HorizonsQuantity.ASTROMETRIC_DEC).deg.format(AngleFormatter.SIGNED_DMS),
                 element.asDouble(HorizonsQuantity.APPARENT_RA).deg.format(AngleFormatter.HMS),
