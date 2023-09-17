@@ -46,7 +46,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     kapt("org.springframework:spring-context-indexer:6.0.12")
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation(project(":nebulosa-skycatalog-hyg"))
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))

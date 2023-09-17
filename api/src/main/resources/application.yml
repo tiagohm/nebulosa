@@ -8,6 +8,9 @@ server:
     include-message: ALWAYS
 
 spring:
+  main:
+    lazy-initialization: true
+
   datasource:
     url: jdbc:sqlite:file:${DATA_PATH}/nebulosa.db
     username:
@@ -31,7 +34,3 @@ spring:
       enabled: false
     jdbc:
       initialize-schema: always
-
-  devtools:
-    livereload:
-      enabled: false
