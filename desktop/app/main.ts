@@ -113,7 +113,8 @@ function createWindow(data: OpenWindow<any>) {
             contextIsolation: false,
             additionalArguments: [`--port=${apiPort}`],
             preload: path.join(__dirname, 'preload.js'),
-            devTools: false,
+            devTools: serve,
+
         },
     })
 
@@ -121,7 +122,7 @@ function createWindow(data: OpenWindow<any>) {
 
     if (serve) {
         const debug = require('electron-debug')
-        debug()
+        debug({ showDevTools: false })
 
         require('electron-reloader')(module)
         window.loadURL(`http://localhost:4200/${data.path}?params=${params}`)
@@ -195,8 +196,6 @@ function startApp() {
 
             api.stdout.on('data', (data) => {
                 const text = `${data}`
-
-                console.info(text)
 
                 if (text) {
                     const regex = /server is started at port: (\d+)/i
