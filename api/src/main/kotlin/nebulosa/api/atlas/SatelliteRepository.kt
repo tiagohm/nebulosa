@@ -10,7 +10,7 @@ interface SatelliteRepository : JpaRepository<SatelliteEntity, Long> {
 
     @Query(
         "SELECT s.* FROM satellites s WHERE" +
-                " (:text IS NULL OR s.name LIKE :text OR CAST(s.id AS TEXT) LIKE :text) AND" +
+                " (:text IS NULL OR s.name LIKE CONCAT('%', :text, '%') OR CAST(s.id AS TEXT) = :text) AND" +
                 " (:groupType = 0 OR s.group_type & :groupType != 0)",
         nativeQuery = true,
     )
