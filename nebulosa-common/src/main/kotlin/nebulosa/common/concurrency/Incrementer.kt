@@ -1,10 +1,10 @@
 package nebulosa.common.concurrency
 
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
-class Incrementer(initialValue: Int = 0) : Number() {
+class Incrementer(initialValue: Long = 0L) : Number() {
 
-    private val incrementer = AtomicInteger(initialValue)
+    private val incrementer = AtomicLong(initialValue)
 
     fun increment() = incrementer.incrementAndGet()
 
@@ -12,15 +12,15 @@ class Incrementer(initialValue: Int = 0) : Number() {
 
     fun get() = incrementer.get()
 
-    override fun toByte() = toInt().toByte()
+    override fun toByte() = toLong().toByte()
 
-    override fun toDouble() = toInt().toDouble()
+    override fun toDouble() = toLong().toDouble()
 
-    override fun toFloat() = toInt().toFloat()
+    override fun toFloat() = toLong().toFloat()
 
-    override fun toInt() = get()
+    override fun toInt() = toLong().toInt()
 
-    override fun toLong() = toInt().toLong()
+    override fun toLong() = get()
 
-    override fun toShort() = toInt().toShort()
+    override fun toShort() = toLong().toShort()
 }
