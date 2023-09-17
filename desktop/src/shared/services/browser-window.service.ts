@@ -98,6 +98,6 @@ export class BrowserWindowService {
     }
 
     openAbout() {
-        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 320, height: 350, bringToFront: true })
+        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 470, height: 173, bringToFront: true })
     }
 }
