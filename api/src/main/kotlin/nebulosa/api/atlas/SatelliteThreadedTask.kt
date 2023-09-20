@@ -40,6 +40,8 @@ class SatelliteThreadedTask(
     }
 
     private fun updateTLEs(): Boolean {
+        satelliteRepository.deleteAllInBatch()
+
         val data = HashMap<Long, SatelliteEntity>(16384)
         val tasks = ArrayList<CompletableFuture<*>>(SatelliteGroupType.entries.size)
 
