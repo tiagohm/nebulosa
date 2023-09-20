@@ -17,8 +17,8 @@ class LocationController(
     @PutMapping
     @Synchronized
     fun saveLocation(@RequestBody @Valid body: LocationEntity): LocationEntity {
-        locationRepository.save(body)
-        return body
+        val id = if (body.id <= 0L) System.currentTimeMillis() else body.id
+        return locationRepository.save(body.copy(id = id))
     }
 
     @Synchronized
