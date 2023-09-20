@@ -10,6 +10,7 @@ import nebulosa.wcs.projection.ProjectionType
 import kotlin.math.abs
 import kotlin.math.sign
 
+@Deprecated("Replaced by LibWCS")
 class WCSTransform(@JvmField internal val header: Map<String, Any>) {
 
     private val cd: DoubleArray
