@@ -3,6 +3,7 @@ package nebulosa.api.atlas
 import jakarta.persistence.*
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObjectType
+import org.springframework.data.domain.Persistable
 
 @Entity
 @Table(name = "stars")
@@ -26,4 +27,9 @@ data class StarEntity(
     @Column(name = "pm_dec", columnDefinition = "REAL") var pmDEC: Double = 0.0,
     @Column(name = "constellation", columnDefinition = "INT1") @Enumerated(EnumType.ORDINAL)
     var constellation: Constellation = Constellation.AND,
-)
+) : Persistable<Long> {
+
+    override fun getId() = id
+
+    override fun isNew() = true
+}

@@ -29,6 +29,9 @@ class AtlasDatabaseThreadedTask(
         val databaseVersion = configRepository.text(DATABASE_VERSION_KEY)
 
         if (databaseVersion != DATABASE_VERSION) {
+            starsRepository.deleteAllInBatch()
+            deepSkyObjectRepository.deleteAllInBatch()
+
             readStarsAndLoad()
             readDSOsAndLoad()
 
