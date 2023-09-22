@@ -61,7 +61,7 @@
     "@angular/cli": "16.2.2",
     "@angular/compiler-cli": "16.2.5",
     "@types/leaflet": "1.9.4",
-    "@types/node": "20.6.1",
+    "@types/node": "20.6.3",
     "@types/uuid": "9.0.4",
     "electron": "26.2.1",
     "electron-builder": "24.6.4",
