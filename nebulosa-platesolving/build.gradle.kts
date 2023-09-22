@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     api(project(":nebulosa-math"))
+    api(project(":nebulosa-wcs"))
     testImplementation(project(":nebulosa-test"))
 }
 

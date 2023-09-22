@@ -229,18 +229,21 @@ class MountService(private val imageBucket: ImageBucket) {
 
     fun pointMountHere(mount: Mount, path: Path, x: Double, y: Double, synchronized: Boolean) {
         val calibration = imageBucket[path]?.second ?: return
-        val wcs = WCSTransform(calibration)
-        val (rightAscension, declination) = wcs.pixelToWorld(x, y)
 
-        if (synchronized) {
-            goTo(mount, rightAscension, declination, true)
-        } else {
-            val icrf = ICRF.equatorial(calibration.rightAscension, calibration.declination)
-            val (calibratedRA, calibratedDEC) = icrf.equatorialAtDate()
-            val raOffset = calibratedRA - mount.rightAscension
-            val decOffset = calibratedDEC - mount.declination
-            LOG.info("pointing mount adjusted. ra={}, dec={}", raOffset.arcmin, decOffset.arcmin)
-            goTo(mount, rightAscension + raOffset, declination + decOffset, false)
+        if (!calibration.isEmpty && calibration.solved) {
+            val wcs = WCSTransform(calibration)
+            val (rightAscension, declination) = wcs.use { it.pixToSky(x, y) }
+
+            if (synchronized) {
+                goTo(mount, rightAscension, declination, true)
+            } else {
+                val icrf = ICRF.equatorial(calibration.rightAscension, calibration.declination)
+                val (calibratedRA, calibratedDEC) = icrf.equatorialAtDate()
+                val raOffset = calibratedRA - mount.rightAscension
+                val decOffset = calibratedDEC - mount.declination
+                LOG.info("pointing mount adjusted. ra={}, dec={}", raOffset.arcmin, decOffset.arcmin)
+                goTo(mount, rightAscension + raOffset, declination + decOffset, false)
+            }
         }
     }
 

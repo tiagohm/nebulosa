@@ -7,6 +7,7 @@ import com.sun.jna.ptr.PointerByReference
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nom.tam.fits.Header
+import nom.tam.fits.header.IFitsHeader
 import java.io.Closeable
 
 class WCSTransform(header: Header) : Closeable {
@@ -103,7 +104,12 @@ class WCSTransform(header: Header) : Closeable {
             arrayOf("LONGPOLE", "LATPOLE", "RADESYS", "EQUINOX")
 
         @JvmStatic
-        private fun isKeywordValid(key: String): Boolean {
+        fun isKeywordValid(key: IFitsHeader): Boolean {
+            return isKeywordValid(key.key())
+        }
+
+        @JvmStatic
+        fun isKeywordValid(key: String): Boolean {
             return KEYWORDS_REGEX.any(key::matches)
                     || key in KEYWORDS
                     || SIP_KEYWORDS_REGEX.any(key::matches)

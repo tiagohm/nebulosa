@@ -26,6 +26,7 @@ import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
 import nebulosa.platesolving.watney.WatneyPlateSolver
 import nebulosa.sbd.SmallBodyDatabaseService
+import nebulosa.wcs.WCSException
 import nebulosa.wcs.WCSTransform
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -124,19 +125,25 @@ class ImageService(
     ): List<ImageAnnotationResponse> {
         val (image, calibration) = imageBucket[path] ?: return emptyList()
 
-        if (calibration == null || !calibration.hasWCS || calibration.radius.value <= 0.0) {
+        if (calibration == null || calibration.isEmpty || !calibration.solved) {
             return emptyList()
         }
 
-        val wcs = WCSTransform(calibration)
+        val wcs = try {
+            WCSTransform(calibration)
+        } catch (e: WCSException) {
+            LOG.error("unable to generate annotations for image. path={}", path)
+            return emptyList()
+        }
+
         val annotations = Vector<ImageAnnotationResponse>()
         val tasks = ArrayList<CompletableFuture<*>>()
 
         if (minorPlanets) {
             CompletableFuture.runAsync {
                 val dateTime = image.header.getStringValue(FitsKeywords.DATE_OBS)?.ifBlank { null } ?: return@runAsync
-                // val latitude = image.header.getStringValue(FitsKeywords.SITELAT).deg.takeIf(Angle::valid) ?: return@runAsync
-                // val longitude = image.header.getStringValue(FitsKeywords.SITELONG).deg.takeIf(Angle::valid) ?: return@runAsync
+
+                LOG.info("finding minor planet annotations. dateTime={}, calibration={}", dateTime, calibration)
 
                 val data = smallBodyDatabaseService.identify(
                     LocalDateTime.parse(dateTime), Angle.ZERO, Angle.ZERO, Distance.ZERO,
@@ -153,7 +160,7 @@ class ImageService(
                     if (distance <= radiusInSeconds) {
                         val rightAscension = it[1].hours.takeIf(Angle::valid) ?: return@forEach
                         val declination = it[2].deg.takeIf(Angle::valid) ?: return@forEach
-                        val (x, y) = wcs.worldToPixel(rightAscension, declination)
+                        val (x, y) = wcs.skyToPix(rightAscension, declination)
                         val minorPlanet = ImageAnnotationResponse.MinorPlanet(it[0], it[1], it[2], it[6])
                         val annotation = ImageAnnotationResponse(x, y, minorPlanet = minorPlanet)
                         annotations.add(annotation)
@@ -162,36 +169,42 @@ class ImageService(
                 }
 
                 LOG.info("Found {} minor planets", count)
-            }.also(tasks::add)
+            }.whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
         }
 
         if (stars) {
             CompletableFuture.runAsync {
+                LOG.info("finding star annotations. calibration={}", calibration)
+
                 starRepository
                     .search(rightAscensionJ2000 = calibration.rightAscension, declinationJ2000 = calibration.declination, radius = calibration.radius)
                     .also { LOG.info("Found {} stars", it.size) }
                     .forEach {
-                        val (x, y) = wcs.worldToPixel(it.rightAscensionJ2000.rad, it.declinationJ2000.rad)
+                        val (x, y) = wcs.skyToPix(it.rightAscensionJ2000.rad, it.declinationJ2000.rad)
                         val annotation = ImageAnnotationResponse(x, y, star = it)
                         annotations.add(annotation)
                     }
-            }.also(tasks::add)
+            }.whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
         }
 
         if (dsos) {
             CompletableFuture.runAsync {
+                LOG.info("finding DSO annotations. calibration={}", calibration)
+
                 deepSkyObjectRepository
                     .search(rightAscensionJ2000 = calibration.rightAscension, declinationJ2000 = calibration.declination, radius = calibration.radius)
                     .also { LOG.info("Found {} DSOs", it.size) }
                     .forEach {
-                        val (x, y) = wcs.worldToPixel(it.rightAscensionJ2000.rad, it.declinationJ2000.rad)
+                        val (x, y) = wcs.skyToPix(it.rightAscensionJ2000.rad, it.declinationJ2000.rad)
                         val annotation = ImageAnnotationResponse(x, y, dso = it)
                         annotations.add(annotation)
                     }
-            }.also(tasks::add)
+            }.whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
         }
 
         CompletableFuture.allOf(*tasks.toTypedArray()).join()
+
+        wcs.close()
 
         return annotations
     }

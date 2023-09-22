@@ -1,5 +1,6 @@
 package nebulosa.api.atlas
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import jakarta.persistence.*
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObjectType
@@ -14,8 +15,8 @@ data class StarEntity(
     @Column(name = "hip", columnDefinition = "INT4") var hip: Int = 0,
     @Column(name = "names", columnDefinition = "TEXT") var names: String = "",
     @Column(name = "magnitude", columnDefinition = "REAL") var magnitude: Double = Double.MAX_VALUE,
-    @Column(name = "right_ascension", columnDefinition = "REAL") var rightAscensionJ2000: Double = 0.0,
-    @Column(name = "declination", columnDefinition = "REAL") var declinationJ2000: Double = 0.0,
+    @Column(name = "right_ascension", columnDefinition = "REAL") @field:JsonAlias("rightAscension") var rightAscensionJ2000: Double = 0.0,
+    @Column(name = "declination", columnDefinition = "REAL") @field:JsonAlias("declination") var declinationJ2000: Double = 0.0,
     @Column(name = "type", columnDefinition = "INT1") @Enumerated(EnumType.ORDINAL)
     var type: SkyObjectType = SkyObjectType.OBJECT_OF_UNKNOWN_NATURE,
     @Column(name = "sp_type", columnDefinition = "TEXT") var spType: String? = null,
