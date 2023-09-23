@@ -87,7 +87,7 @@ class NovaAstrometryNetPlateSolver(
 
                 // LOG.info("astrometry.net solved. calibration={}", calibration)
 
-                return Calibration.EMPTY
+                return Calibration()
             }
 
             val timeEnd = System.currentTimeMillis()

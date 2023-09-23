@@ -1,230 +1,111 @@
 package nebulosa.wcs
 
-import nebulosa.constants.RAD2DEG
+import com.sun.jna.Pointer
+import com.sun.jna.ptr.DoubleByReference
+import com.sun.jna.ptr.IntByReference
+import com.sun.jna.ptr.PointerByReference
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.PairOfAngle
-import nebulosa.wcs.projection.AbstractProjection
-import nebulosa.wcs.projection.Projection
-import nebulosa.wcs.projection.ProjectionType
-import kotlin.math.abs
-import kotlin.math.sign
+import nom.tam.fits.Header
+import java.io.Closeable
 
-class WCSTransform(@JvmField internal val header: Map<String, Any>) {
+class WCSTransform(header: Header) : Closeable {
 
-    private val cd: DoubleArray
-    private val cdi: DoubleArray
-    private val projection: Projection
-
-    val lonpole = header.getDoubleValue("LONPOLE")
-        ?: header.getDoubleValue("PV1_3")
-        ?: Double.NaN
-
-    val latpole = header.getDoubleValue("LATPOLE")
-        ?: header.getDoubleValue("PV1_4")
-        ?: Double.NaN
-
-    val hasCd = "CD1_1" in header ||
-            "CDELT1" in header && "CROTA2" in header ||
-            "CDELT1" in header && "PC1_1" in header
-
-    val crpix1 = header.getDoubleValue("CRPIX1")!!
-
-    val crpix2 = header.getDoubleValue("CRPIX2")!!
+    private val wcs: Pointer
 
     init {
-        val ctype1 = header.getStringValue("CTYPE1")!!
-        val projectionType = ProjectionType.valueOf(ctype1.substring(ctype1.lastIndexOf('-') + 1, ctype1.length))
-        val cx = header.getStringValue("CUNIT1").convertCunitToDegrees()
-        val cy = header.getStringValue("CUNIT2").convertCunitToDegrees()
-        projection = createProjection(this, projectionType, cx, cy) as AbstractProjection
+        val headerIter = header.iterator()
+        val headerText = StringBuffer(2048)
+        var keyCount = 0
 
-        if (projectionType != ProjectionType.TPV) {
-            // Native longitude of the fiducial point.
-            if ("PV1_1" in header) {
-                projection.phi0 = header.getDoubleValue("PV1_1")!!.deg
-            }
-            // Native latitude of the fiducial pole.
-            if ("PV1_2" in header) {
-                projection.theta0 = header.getDoubleValue("PV1_2")!!.deg
+        while (headerIter.hasNext()) {
+            val card = headerIter.next()
+
+            if (isKeywordValid(card.key)) {
+                headerText.append("$card")
+                keyCount++
             }
         }
 
-        // Native longitude of the celestial pole.
-        if (lonpole.isFinite()) projection.phip = lonpole.deg
+        val nreject = IntByReference()
+        val nwcs = IntByReference()
+        val wcsRef = PointerByReference()
 
-        // Native latitude of the celestial pole.
-        if (latpole.isFinite()) projection.thetap = latpole.deg
+        val status = LibWCS.INSTANCE.wcspih("$headerText", keyCount, 0x000FFFFF, 0, nreject, nwcs, wcsRef)
 
-        cd = computeCdMatrix()
-        cdi = cd.inverseMatrix()
-    }
-
-    private fun computeCdMatrix(): DoubleArray {
-        return if (hasCd) {
-            doubleArrayOf(cd(1, 1), cd(1, 2), cd(2, 1), cd(2, 2))
+        if (status == 0 && wcsRef.value != null) {
+            wcs = wcsRef.value
         } else {
-            val a = header.getDoubleValue("CDELT1")!!
-            val b = header.getDoubleValue("CDELT2")!!
-            val c = header.getDoubleValue("CROTA2")?.deg ?: Angle.ZERO
-            computeCdFromCdelt(a, b, c)
+            throw WCSException("failed to initialize WCS from keywords", status)
         }
     }
 
-    private fun cd(i: Int, j: Int): Double {
-        return if ("CD1_1" in header) {
-            header.getDoubleValue("CD${i}_$j")!!
-        } else if ("CROTA2" in header) {
-            val a = header.getDoubleValue("CDELT1")!!
-            val b = header.getDoubleValue("CDELT2")!!
-            val c = header.getDoubleValue("CROTA2")!!.deg
-            val cd = computeCdFromCdelt(a, b, c)
-            cd[2 * i + j - 3]
-        } else if ("PC1_1" in header) {
-            val pc11 = header.getDoubleValue("PC1_1")!!
-            val pc12 = header.getDoubleValue("PC1_2")!!
-            val pc21 = header.getDoubleValue("PC2_1")!!
-            val pc22 = header.getDoubleValue("PC2_2")!!
-            val a = header.getDoubleValue("CDELT1")!!
-            val b = header.getDoubleValue("CDELT2")!!
-            val cd = pc2cd(pc11, pc12, pc21, pc22, a, b)
-            cd[2 * i + j - 3]
-        } else {
-            throw IllegalArgumentException("cd[$i,$j] not found")
+    fun pixToSky(x: Double, y: Double): WorldCoordinates {
+        val pixcrd = doubleArrayOf(x, y)
+        val imgcrd = doubleArrayOf(0.0, 0.0)
+        val phi = DoubleByReference(0.0)
+        val theta = DoubleByReference(0.0)
+        val world = DoubleArray(2) { Double.NaN }
+        val stat = IntArray(1)
+
+        val status = LibWCS.INSTANCE.wcsp2s(wcs, 1, 2, pixcrd, imgcrd, phi, theta, world, stat)
+
+        if (status != 0) {
+            throw WCSException("failed to transform pixel coordinates to world coordinates", status)
         }
+
+        return WorldCoordinates(world[0].deg, world[1].deg, phi.value.deg, theta.value.deg)
     }
 
-    private fun DoubleArray.inverseMatrix(): DoubleArray {
-        val det = (this[0] * this[3] - this[1] * this[2])
-        return doubleArrayOf(this[3] / det, -this[1] / det, -this[2] / det, this[0] / det)
+    fun skyToPix(rightAscension: Angle, declination: Angle): PixelCoordinates {
+        val world = doubleArrayOf(rightAscension.degrees, declination.degrees)
+        val imgcrd = doubleArrayOf(0.0, 0.0)
+        val phi = DoubleByReference(0.0)
+        val theta = DoubleByReference(0.0)
+        val pixcrd = DoubleArray(2) { Double.NaN }
+        val stat = IntArray(1)
+
+        val status = LibWCS.INSTANCE.wcss2p(wcs, 1, 2, world, phi, theta, imgcrd, pixcrd, stat)
+
+        if (status != 0) {
+            throw WCSException("failed to transform world coordinates to pixel coordinates", status)
+        }
+
+        return PixelCoordinates(pixcrd[0], pixcrd[1], phi.value.deg, theta.value.deg)
     }
 
-    fun pixelToWorld(x: Double, y: Double): PairOfAngle {
-        val cx = x - crpix1
-        val cy = y - crpix2
-        val v0 = cx * cd[0] + cy * cd[1]
-        val v1 = cx * cd[2] + cy * cd[3]
-        return projection.computeCelestialSphericalCoordinate(v0, v1)
-    }
-
-    fun worldToPixel(rightAscension: Angle, declination: Angle): DoubleArray {
-        val coord = projection.computeProjectionPlaneCoordinate(rightAscension, declination)
-        val v0 = coord[0] * cdi[0] + coord[1] * cdi[1]
-        val v1 = coord[0] * cdi[2] + coord[1] * cdi[3]
-        return doubleArrayOf(v0 + crpix1, v1 + crpix2)
-    }
-
-    fun inside(longitude: Angle, latitude: Angle): Boolean {
-        return projection.inside(longitude, latitude)
+    override fun close() {
+        LibWCS.INSTANCE.wcsfree(wcs)
     }
 
     companion object {
 
-        @JvmStatic
-        private fun String?.convertCunitToDegrees() = when (this) {
-            null -> 1.0
-            "arcmin" -> 1.0 / 60.0
-            "arcsec" -> 1.0 / 3600.0
-            "mas" -> 1.0 / 3600000.0
-            "rad" -> RAD2DEG
-            else -> 1.0
-        }
+        @JvmStatic private val CUNIT = "CUNIT[1-2]".toRegex()
+        @JvmStatic private val CTYPE = "CTYPE[1-2]".toRegex()
+        @JvmStatic private val CRPIX = "CRPIX[1-2]".toRegex()
+        @JvmStatic private val CRVAL = "CRVAL[1-2]".toRegex()
+        @JvmStatic private val PS = "PS\\d_\\d".toRegex()
+        @JvmStatic private val CD = "CD\\d_\\d".toRegex()
+        @JvmStatic private val CDELT = "CDELT[1-2]".toRegex()
+        @JvmStatic private val CROTA = "CROTA[1-2]".toRegex()
+        @JvmStatic private val SIP_ABP = "[AB]P?_\\d_\\d".toRegex()
+        @JvmStatic private val SIP_ABP_ORDER = "[AB]P?_ORDER".toRegex()
+        @JvmStatic private val SIP_AB_DMAX = "[AB]_DMAX".toRegex()
+
+        @JvmStatic private val KEYWORDS_REGEX =
+            arrayOf(CUNIT, CTYPE, CRPIX, CRVAL, PS, CD, CDELT, CROTA)
+
+        @JvmStatic private val SIP_KEYWORDS_REGEX =
+            arrayOf(SIP_ABP_ORDER, SIP_ABP, SIP_AB_DMAX)
+
+        @JvmStatic private val KEYWORDS =
+            arrayOf("LONGPOLE", "LATPOLE", "RADESYS", "EQUINOX")
 
         @JvmStatic
-        private fun computeCdFromCdelt(cdelt1: Double, cdelt2: Double, crota: Angle): DoubleArray {
-            val cos0 = crota.cos
-            val sin0 = crota.sin
-            val cd11 = cdelt1 * cos0
-            val cd12 = abs(cdelt2) * sign(cdelt1) * sin0
-            val cd21 = -abs(cdelt1) * sign(cdelt2) * sin0
-            val cd22 = cdelt2 * cos0
-            return doubleArrayOf(cd11, cd12, cd21, cd22)
-        }
-
-        @JvmStatic
-        private fun pc2cd(
-            pc11: Double, pc10: Double,
-            pc21: Double, pc22: Double,
-            cdelt1: Double, cdelt2: Double,
-        ) = doubleArrayOf(cdelt1 * pc11, cdelt2 * pc21, cdelt1 * pc10, cdelt2 * pc22)
-
-        @JvmStatic
-        private fun createProjection(
-            wcs: WCSTransform,
-            projectionType: ProjectionType,
-            cx: Double, cy: Double,
-        ): Projection {
-            return when (projectionType) {
-                ProjectionType.ZPN -> TODO()
-                ProjectionType.TPV -> TODO()
-                ProjectionType.BON -> TODO()
-                ProjectionType.CEA -> TODO()
-                ProjectionType.COD -> TODO()
-                ProjectionType.COE -> TODO()
-                ProjectionType.COO -> TODO()
-                ProjectionType.COP -> TODO()
-                ProjectionType.SZP -> TODO()
-                ProjectionType.NCP -> TODO()
-                else -> {
-                    createStandardProjectionWithParameters(wcs, projectionType, cx, cy)
-                        ?: createStandardProjection(wcs, projectionType, cx, cy)
-                        ?: throw NotImplementedError("$projectionType not implemented")
-                }
-            }
-        }
-
-        @JvmStatic
-        private fun createStandardProjectionWithParameters(
-            wcs: WCSTransform,
-            projectionType: ProjectionType,
-            cx: Double, cy: Double,
-        ): Projection? {
-            if ("PV2_1" !in wcs.header) {
-                return null
-            }
-
-            val pv21 = wcs.header.getDoubleValue("PV2_1")
-
-            return try {
-                if ("PV2_2" in wcs.header) {
-                    val pv22 = wcs.header.getDoubleValue("PV2_2")
-
-                    projectionType.type
-                        ?.getConstructor(Double::class.java, Double::class.java, Double::class.java, Double::class.java)
-                        ?.newInstance(wcs.header.getDoubleValue("CRVAL1")!! * cx, wcs.header.getDoubleValue("CRVAL2")!! * cy, pv21, pv22)
-                } else {
-                    projectionType.type
-                        ?.getConstructor(Double::class.java, Double::class.java, Double::class.java)
-                        ?.newInstance(wcs.header.getDoubleValue("CRVAL1")!! * cx, wcs.header.getDoubleValue("CRVAL2")!! * cy, pv21)
-                }
-            } catch (e: NoSuchMethodException) {
-                null
-            }
-        }
-
-        @JvmStatic
-        private fun createStandardProjection(
-            wcs: WCSTransform,
-            projectionType: ProjectionType,
-            cx: Double, cy: Double,
-        ): Projection? {
-            return try {
-                projectionType.type
-                    ?.getConstructor(Double::class.java, Double::class.java)
-                    ?.newInstance(wcs.header.getDoubleValue("CRVAL1")!! * cx, wcs.header.getDoubleValue("CRVAL2")!! * cy)
-            } catch (e: NoSuchMethodException) {
-                null
-            }
-        }
-
-        @JvmStatic
-        private fun Map<String, Any>.getStringValue(key: String) = this[key]?.toString()
-
-        @JvmStatic
-        private fun Map<String, Any>.getDoubleValue(key: String): Double? {
-            val value = this[key] ?: return null
-            return if (value is String) value.toDoubleOrNull()
-            else value as? Double
+        fun isKeywordValid(key: String): Boolean {
+            return KEYWORDS_REGEX.any(key::matches)
+                    || key in KEYWORDS
+                    || SIP_KEYWORDS_REGEX.any(key::matches)
         }
     }
 }

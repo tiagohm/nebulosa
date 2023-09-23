@@ -81,12 +81,10 @@ class LocalAstrometryNetPlateSolver(private val solverPath: String) : PlateSolve
 
         val buffer = process.inputReader()
 
-        var calibration = Calibration.EMPTY
+        var calibration = Calibration(false, Angle.ZERO, Angle.ZERO, Angle.ZERO, Angle.ZERO)
 
         val parseThread = thread {
             for (line in buffer.lines()) {
-                LOG.info(line)
-
                 calibration = calibration
                     .parseFieldCenter(line)
                     .parseFieldRotation(line)
@@ -96,6 +94,7 @@ class LocalAstrometryNetPlateSolver(private val solverPath: String) : PlateSolve
 
             // Populate WCS headers from calibration info.
             // TODO: calibration = calibration.copy()
+            // TODO: Mark calibration as solved.
 
             LOG.info("astrometry.net solved. calibration={}", calibration)
         }

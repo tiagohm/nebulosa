@@ -62,7 +62,7 @@ class AtlasDatabaseThreadedTask(
     private fun loadStars(inputStream: InputStream) {
         GZIPInputStream(inputStream)
             .use { objectMapper.readValue(it, object : TypeReference<List<StarEntity>>() {}) }
-            .let { starsRepository.saveAllAndFlush(it) }
+            .let(starsRepository::saveAllAndFlush)
             .also { LOG.info("Star database loaded. size={}", it.size) }
     }
 
@@ -89,7 +89,7 @@ class AtlasDatabaseThreadedTask(
     private fun loadDSOs(inputStream: InputStream) {
         GZIPInputStream(inputStream)
             .use { objectMapper.readValue(it, object : TypeReference<List<DeepSkyObjectEntity>>() {}) }
-            .let { deepSkyObjectRepository.saveAllAndFlush(it) }
+            .let(deepSkyObjectRepository::saveAllAndFlush)
             .also { LOG.info("DSO database loaded. size={}", it.size) }
     }
 
