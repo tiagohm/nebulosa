@@ -21,7 +21,6 @@ import org.greenrobot.eventbus.EventBus
 import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher
 import org.springframework.batch.core.repository.JobRepository
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -58,8 +57,8 @@ class BeanConfiguration {
     @Bean
     @Primary
     fun objectMapper(
-        @Qualifier("serializer") serializers: List<ToJson<*>>,
-        @Qualifier("deserializer") deserializers: List<FromJson<*>>,
+        serializers: List<ToJson<*>>,
+        deserializers: List<FromJson<*>>,
     ) = ObjectMapper()
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)

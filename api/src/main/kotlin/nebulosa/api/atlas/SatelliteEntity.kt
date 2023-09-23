@@ -20,7 +20,6 @@ data class SatelliteEntity(
     @get:JsonGetter val groups
         get() = SatelliteGroupType.entries.filter { groupType and (1L shl it.ordinal) != 0L }
 
-    @JsonIgnore
     override fun getId() = id
 
     @JsonIgnore
