@@ -27,7 +27,7 @@ class ImageBucket {
     fun open(path: Path, debayer: Boolean = true, calibration: Calibration? = null): Image {
         remove(path)
         val image = Image.open(path, debayer)
-        put(path, image, calibration)
+        put(path, image, calibration ?: Calibration.from(image.header))
         return image
     }
 

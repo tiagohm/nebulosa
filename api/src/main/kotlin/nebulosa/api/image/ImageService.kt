@@ -139,14 +139,17 @@ class ImageService(
         val annotations = Vector<ImageAnnotationResponse>()
         val tasks = ArrayList<CompletableFuture<*>>()
 
-        if (minorPlanets) {
-            CompletableFuture.runAsync {
-                val dateTime = image.header.getStringValue(FitsKeywords.DATE_OBS)?.ifBlank { null } ?: return@runAsync
+        val dateTime = image.header
+            .getStringValue(FitsKeywords.DATE_OBS)
+            ?.ifBlank { null }
+            ?.let(LocalDateTime::parse)
 
+        if (minorPlanets && dateTime != null) {
+            CompletableFuture.runAsync {
                 LOG.info("finding minor planet annotations. dateTime={}, calibration={}", dateTime, calibration)
 
                 val data = smallBodyDatabaseService.identify(
-                    LocalDateTime.parse(dateTime), Angle.ZERO, Angle.ZERO, Distance.ZERO,
+                    dateTime, Angle.ZERO, Angle.ZERO, Distance.ZERO,
                     calibration.rightAscension, calibration.declination, calibration.radius,
                     minorPlanetMagLimit,
                 ).execute().body() ?: return@runAsync
@@ -172,14 +175,18 @@ class ImageService(
             }.whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
         }
 
+        // val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
+
         if (stars) {
             CompletableFuture.runAsync {
-                LOG.info("finding star annotations. calibration={}", calibration)
+                LOG.info("finding star annotations. dateTime={}, calibration={}", dateTime, calibration)
 
                 starRepository
                     .search(rightAscensionJ2000 = calibration.rightAscension, declinationJ2000 = calibration.declination, radius = calibration.radius)
                     .also { LOG.info("Found {} stars", it.size) }
                     .forEach {
+                        // val fixedStar = FixedStar(it.rightAscensionJ2000.rad, it.declinationJ2000.rad, it.pmRA.rad, it.pmDEC.rad)
+                        // val (ra, dec) = barycentric.observe(fixedStar).equatorialJ2000()
                         val (x, y) = wcs.skyToPix(it.rightAscensionJ2000.rad, it.declinationJ2000.rad)
                         val annotation = ImageAnnotationResponse(x, y, star = it)
                         annotations.add(annotation)
@@ -189,12 +196,14 @@ class ImageService(
 
         if (dsos) {
             CompletableFuture.runAsync {
-                LOG.info("finding DSO annotations. calibration={}", calibration)
+                LOG.info("finding DSO annotations. dateTime={}, calibration={}", dateTime, calibration)
 
                 deepSkyObjectRepository
                     .search(rightAscensionJ2000 = calibration.rightAscension, declinationJ2000 = calibration.declination, radius = calibration.radius)
                     .also { LOG.info("Found {} DSOs", it.size) }
                     .forEach {
+                        // val fixedStar = FixedStar(it.rightAscensionJ2000.rad, it.declinationJ2000.rad, it.pmRA.rad, it.pmDEC.rad)
+                        // val (ra, dec) = barycentric.observe(fixedStar).equatorialJ2000()
                         val (x, y) = wcs.skyToPix(it.rightAscensionJ2000.rad, it.declinationJ2000.rad)
                         val annotation = ImageAnnotationResponse(x, y, dso = it)
                         annotations.add(annotation)

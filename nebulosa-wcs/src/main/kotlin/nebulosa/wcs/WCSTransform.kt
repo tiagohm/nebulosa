@@ -7,7 +7,6 @@ import com.sun.jna.ptr.PointerByReference
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nom.tam.fits.Header
-import nom.tam.fits.header.IFitsHeader
 import java.io.Closeable
 
 class WCSTransform(header: Header) : Closeable {
@@ -85,7 +84,6 @@ class WCSTransform(header: Header) : Closeable {
         @JvmStatic private val CTYPE = "CTYPE[1-2]".toRegex()
         @JvmStatic private val CRPIX = "CRPIX[1-2]".toRegex()
         @JvmStatic private val CRVAL = "CRVAL[1-2]".toRegex()
-        @JvmStatic private val PV = "PV\\d_\\d".toRegex()
         @JvmStatic private val PS = "PS\\d_\\d".toRegex()
         @JvmStatic private val CD = "CD\\d_\\d".toRegex()
         @JvmStatic private val CDELT = "CDELT[1-2]".toRegex()
@@ -95,18 +93,13 @@ class WCSTransform(header: Header) : Closeable {
         @JvmStatic private val SIP_AB_DMAX = "[AB]_DMAX".toRegex()
 
         @JvmStatic private val KEYWORDS_REGEX =
-            arrayOf(CUNIT, CTYPE, CRPIX, CRVAL, PV, PS, CD, CDELT, CROTA)
+            arrayOf(CUNIT, CTYPE, CRPIX, CRVAL, PS, CD, CDELT, CROTA)
 
         @JvmStatic private val SIP_KEYWORDS_REGEX =
             arrayOf(SIP_ABP_ORDER, SIP_ABP, SIP_AB_DMAX)
 
         @JvmStatic private val KEYWORDS =
             arrayOf("LONGPOLE", "LATPOLE", "RADESYS", "EQUINOX")
-
-        @JvmStatic
-        fun isKeywordValid(key: IFitsHeader): Boolean {
-            return isKeywordValid(key.key())
-        }
 
         @JvmStatic
         fun isKeywordValid(key: String): Boolean {
