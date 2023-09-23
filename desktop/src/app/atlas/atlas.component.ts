@@ -16,6 +16,7 @@ import {
     CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location,
     MinorPlanet, SATELLITE_GROUP_TYPES, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
 } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 Chart.register(zoomPlugin)
 
@@ -466,14 +467,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     ]
 
     constructor(
-        private title: Title,
+        private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private preference: PreferenceService,
         private dialog: DialogService,
     ) {
-        title.setTitle('Sky Atlas')
+        app.title = 'Sky Atlas'
 
         for (const item of SATELLITE_GROUP_TYPES) {
             const enabled = preference.get(`atlas.satellite.filter.${item}`, AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item))
@@ -709,7 +710,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
             this.dateTime.setMinutes(this.dateTimeMinute)
         }
 
-        this.title.setTitle(`Sky Atlas ・ ${this.location.name}`)
+        this.app.title = `Sky Atlas ・ ${this.location.name}`
 
         try {
             // Sun.

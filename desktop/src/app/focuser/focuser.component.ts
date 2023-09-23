@@ -1,9 +1,9 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { Title } from '@angular/platform-browser'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Focuser } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 @Component({
     selector: 'app-focuser',
@@ -33,13 +33,13 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     stepsAbsolute = 0
 
     constructor(
-        private title: Title,
+        private app: AppComponent,
         private api: ApiService,
         private electron: ElectronService,
         private preference: PreferenceService,
         ngZone: NgZone,
     ) {
-        title.setTitle('Focuser')
+        app.title = 'Focuser'
 
         electron.on('FOCUSER_UPDATED', (_, focuser: Focuser) => {
             if (focuser.name === this.focuser?.name) {
@@ -60,7 +60,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
 
     async focuserChanged() {
         if (this.focuser) {
-            this.title.setTitle(`Focuser ・ ${this.focuser.name}`)
+            this.app.title = `Focuser ・ ${this.focuser.name}`
 
             const focuser = await this.api.focuser(this.focuser.name)
             Object.assign(this.focuser, focuser)
@@ -69,7 +69,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
             this.update()
             this.savePreference()
         } else {
-            this.title.setTitle(`Focuser`)
+            this.app.title = 'Focuser'
         }
 
         this.electron.send('FOCUSER_CHANGED', this.focuser)

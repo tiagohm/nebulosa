@@ -5,6 +5,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 @Component({
     selector: 'app-home',
@@ -93,6 +94,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     }
 
     constructor(
+        app: AppComponent,
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private api: ApiService,
@@ -100,6 +102,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         private preference: PreferenceService,
         private ngZone: NgZone,
     ) {
+        app.title = 'Nebulosa'
+
         this.startListening<Camera>('CAMERA',
             (device) => {
                 return this.cameras.push(device)

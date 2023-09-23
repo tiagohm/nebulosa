@@ -93,19 +93,18 @@ function createWindow(data: OpenWindow<any>) {
         }
     }
 
-    const height = data.height ? Math.trunc(computeHeight(data.height)) : 384
+    const height = data.height ? Math.trunc(computeHeight(data.height)) : 420
 
     const resizable = data.resizable ?? false
     const icon = data.icon ?? 'nebulosa'
     const params = encodeURIComponent(JSON.stringify(data.params || {}))
 
     const window = new BrowserWindow({
-        x: size.width / 2 - width / 2,
-        y: size.height / 2 - height / 2,
+        title: 'Nebulosa',
+        frame: false,
         width, height,
         resizable: serve || resizable,
         autoHideMenuBar: true,
-        title: 'Nebulosa',
         icon: path.join(__dirname, serve ? `../src/assets/icons/${icon}.png` : `assets/icons/${icon}.png`),
         webPreferences: {
             nodeIntegration: true,
@@ -118,7 +117,7 @@ function createWindow(data: OpenWindow<any>) {
         },
     })
 
-    window.setContentSize(width, height)
+    window.center()
 
     if (serve) {
         const debug = require('electron-debug')
@@ -181,6 +180,12 @@ function createSplashScreen() {
     }
 
     splash.center()
+}
+
+function findWindowById(id: number) {
+    if (homeWindow?.id === id) return homeWindow
+    for (const [_, window] of secondaryWindows) if (window.id === id) return window
+    return undefined
 }
 
 function startApp() {
@@ -289,16 +294,49 @@ try {
         event.returnValue = !value.canceled && value.filePaths[0]
     })
 
-    ipcMain.on('CLOSE_WINDOW', (event, id: string) => {
-        for (const [key, value] of secondaryWindows) {
-            if (key === id) {
-                value.close()
-                event.returnValue = true
-                return
-            }
-        }
+    ipcMain.on('PIN_WINDOW', (event) => {
+        const window = findWindowById(event.sender.id)
+        window?.setAlwaysOnTop(true)
+        event.returnValue = !!window
+    })
 
-        event.returnValue = false
+    ipcMain.on('UNPIN_WINDOW', (event) => {
+        const window = findWindowById(event.sender.id)
+        window?.setAlwaysOnTop(false)
+        event.returnValue = !!window
+    })
+
+    ipcMain.on('MINIMIZE_WINDOW', (event) => {
+        const window = findWindowById(event.sender.id)
+        window?.minimize()
+        event.returnValue = !!window
+    })
+
+    ipcMain.on('MAXIMIZE_WINDOW', (event) => {
+        const window = findWindowById(event.sender.id)
+
+        if (window?.isMaximized()) window.unmaximize()
+        else window?.maximize()
+
+        event.returnValue = window?.isMaximized() ?? false
+    })
+
+    ipcMain.on('CLOSE_WINDOW', (event, id?: string) => {
+        if (id) {
+            for (const [key, value] of secondaryWindows) {
+                if (key === id) {
+                    value.close()
+                    event.returnValue = true
+                    return
+                }
+            }
+
+            event.returnValue = false
+        } else {
+            const window = findWindowById(event.sender.id)
+            window?.close()
+            event.returnValue = !!window
+        }
     })
 
     for (const item of INTERNAL_EVENT_TYPES) {

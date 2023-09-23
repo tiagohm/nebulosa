@@ -680,11 +680,12 @@ export const INDI_EVENT_TYPES = [
 
 export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]
 
-export const MAIN_EVENT_TYPES = [
+export const WINDOW_EVENT_TYPES = [
     'SAVE_FITS_AS', 'OPEN_FITS', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
-]
+    'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW'
+] as const
 
-export type MainEventType = (typeof MAIN_EVENT_TYPES)[number]
+export type WindowEventType = (typeof WINDOW_EVENT_TYPES)[number]
 
 export const INTERNAL_EVENT_TYPES = [
     'SELECTED_CAMERA', 'SELECTED_FOCUSER', 'SELECTED_WHEEL',

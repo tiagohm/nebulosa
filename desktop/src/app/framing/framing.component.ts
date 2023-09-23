@@ -1,5 +1,4 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import { MessageService } from 'primeng/api'
 import hipsSurveys from '../../assets/data/hipsSurveys.json'
@@ -8,6 +7,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Angle, HipsSurvey } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 export interface FramingParams {
     rightAscension: Angle
@@ -40,7 +40,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
     private frameId = ''
 
     constructor(
-        title: Title,
+        app: AppComponent,
         private route: ActivatedRoute,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
@@ -49,7 +49,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         private message: MessageService,
         ngZone: NgZone,
     ) {
-        title.setTitle('Framing')
+        app.title = 'Framing'
 
         this.loadPreference()
 

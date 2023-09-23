@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { Device, INDIDeviceMessage, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 export interface INDIParams {
     device?: Device
@@ -27,13 +27,13 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
     messages: string[] = []
 
     constructor(
-        title: Title,
+        app: AppComponent,
         private route: ActivatedRoute,
         private api: ApiService,
         electron: ElectronService,
         ngZone: NgZone,
     ) {
-        title.setTitle('INDI')
+        app.title = 'INDI'
 
         this.api.startListening('INDI')
 

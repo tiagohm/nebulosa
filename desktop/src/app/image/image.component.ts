@@ -1,5 +1,4 @@
 import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
-import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import { Interactable } from '@interactjs/types/index'
 import interact from 'interactjs'
@@ -16,6 +15,7 @@ import {
     ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
     ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star
 } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 export interface ImageParams {
     camera?: Camera
@@ -276,7 +276,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ]
 
     constructor(
-        private title: Title,
+        private app: AppComponent,
         private route: ActivatedRoute,
         private api: ApiService,
         private electron: ElectronService,
@@ -284,7 +284,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         private preference: PreferenceService,
         private ngZone: NgZone,
     ) {
-        title.setTitle('Image')
+        app.title = 'Image'
 
         electron.on('CAMERA_EXPOSURE_FINISHED', async (_, data: CameraCaptureEvent) => {
             if (data.camera.name === this.imageParams.camera?.name) {
@@ -418,11 +418,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
 
         if (this.imageParams.title) {
-            this.title.setTitle(`Image ・ ${this.imageParams.title}`)
+            this.app.title = `Image ・ ${this.imageParams.title}`
         } else if (this.imageParams.camera) {
-            this.title.setTitle(`Image ・ ${this.imageParams.camera.name}`)
+            this.app.title = `Image ・ ${this.imageParams.camera.name}`
         } else if (this.imageParams.path) {
-            this.title.setTitle(`Image ・ ${path.basename(this.imageParams.path)}`)
+            this.app.title = `Image ・ ${path.basename(this.imageParams.path)}`
         }
     }
 

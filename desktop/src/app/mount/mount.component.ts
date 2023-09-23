@@ -1,5 +1,4 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { Title } from '@angular/platform-browser'
 import { MenuItem } from 'primeng/api'
 import { Subject, Subscription, debounceTime, interval, throttleTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
@@ -7,6 +6,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Angle, ComputedLocation, Constellation, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode, Union } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 @Component({
     selector: 'app-mount',
@@ -139,14 +139,14 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     targetCoordinateOption = this.targetCoordinateOptions[0]
 
     constructor(
-        private title: Title,
+        private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private preference: PreferenceService,
         ngZone: NgZone,
     ) {
-        title.setTitle('Mount')
+        app.title = 'Mount'
 
         api.startListening('MOUNT')
 
@@ -188,7 +188,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     async mountChanged() {
         if (this.mount) {
-            this.title.setTitle(`Mount ・ ${this.mount!.name}`)
+            this.app.title = `Mount ・ ${this.mount!.name}`
 
             const mount = await this.api.mount(this.mount.name)
             Object.assign(this.mount, mount)
@@ -197,7 +197,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             this.update()
             this.savePreference()
         } else {
-            this.title.setTitle(`Mount`)
+            this.app.title = 'Mount'
         }
 
         this.electron.send('MOUNT_CHANGED', this.mount)

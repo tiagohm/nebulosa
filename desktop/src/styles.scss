@@ -136,6 +136,10 @@ i.mdi {
     }
 }
 
+.draggable-region {
+    -webkit-app-region: drag;
+}
+
 ::-webkit-scrollbar {
     width: 6px;
 }

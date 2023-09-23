@@ -1,5 +1,4 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { Title } from '@angular/platform-browser'
 import { MegaMenuItem, MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -9,6 +8,7 @@ import {
     AutoSubFolderMode, Camera, CameraCaptureEvent,
     CameraStartCapture, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType
 } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 @Component({
     selector: 'app-camera',
@@ -168,14 +168,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     ]
 
     constructor(
-        private title: Title,
+        private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private preference: PreferenceService,
         ngZone: NgZone,
     ) {
-        title.setTitle('Camera')
+        app.title = 'Camera'
 
         api.startListening('CAMERA')
 
@@ -235,7 +235,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     async cameraChanged() {
         if (this.camera) {
-            this.title.setTitle(`Camera ・ ${this.camera.name}`)
+            this.app.title = `Camera ・ ${this.camera.name}`
 
             const camera = await this.api.camera(this.camera.name)
             Object.assign(this.camera, camera)
@@ -244,7 +244,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.update()
             this.savePreference()
         } else {
-            this.title.setTitle(`Camera`)
+            this.app.title = 'Camera'
         }
 
         this.electron.send('CAMERA_CHANGED', this.camera)
