@@ -163,22 +163,22 @@ function createWindow(data: OpenWindow<any>) {
 }
 
 function createSplashScreen() {
-    splash = new BrowserWindow({
-        width: 512,
-        height: 512,
-        transparent: true,
-        frame: false,
-        alwaysOnTop: true,
-    })
+    if (!serve && splash === null) {
+        splash = new BrowserWindow({
+            width: 512,
+            height: 512,
+            transparent: true,
+            frame: false,
+            alwaysOnTop: true,
+            show: false,
+        })
 
-    if (serve) {
-        splash.loadURL(`http://localhost:4200/splash`)
-    } else {
-        const url = new URL(path.join('file:', __dirname, `index.html`) + '#/splash')
+        const url = new URL(path.join('file:', __dirname, 'assets', 'images', 'splash.png'))
         splash.loadURL(url.href)
-    }
 
-    splash.center()
+        splash.show()
+        splash.center()
+    }
 }
 
 function findWindowById(id: number) {
@@ -189,11 +189,11 @@ function findWindowById(id: number) {
 
 function startApp() {
     if (api === null) {
-        createSplashScreen()
-
         if (serve) {
             createMainWindow()
         } else {
+            createSplashScreen()
+
             const apiJar = path.join(process.resourcesPath, 'api.jar')
 
             api = spawn('java', ['-jar', apiJar])
