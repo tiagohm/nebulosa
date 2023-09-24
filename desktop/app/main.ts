@@ -113,7 +113,6 @@ function createWindow(data: OpenWindow<any>) {
             additionalArguments: [`--port=${apiPort}`],
             preload: path.join(__dirname, 'preload.js'),
             devTools: serve,
-
         },
     })
 
@@ -124,9 +123,9 @@ function createWindow(data: OpenWindow<any>) {
         debug({ showDevTools: false })
 
         require('electron-reloader')(module)
-        window.loadURL(`http://localhost:4200/${data.path}?params=${params}`)
+        window.loadURL(`http://localhost:4200/${data.path}?params=${params}&resizable=${resizable}`)
     } else {
-        const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${data.path}?params=${params}`)
+        const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${data.path}?params=${params}&resizable=${resizable}`)
         window.loadURL(url.href)
     }
 

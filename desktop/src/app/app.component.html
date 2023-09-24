@@ -3,7 +3,7 @@
     <p-button *ngIf="pinned" icon="mdi mdi-pin" (onClick)="pin()" styleClass="select-none cursor-pointer p-button-rounded p-button-text p-button-sm"></p-button>
     <p-button *ngIf="!pinned" icon="mdi mdi-pin-off" (onClick)="pin()" styleClass="select-none cursor-pointer p-button-rounded p-button-text p-button-sm"></p-button>
     <p-button icon="mdi mdi-window-minimize" (onClick)="minimize()" styleClass="select-none cursor-pointer p-button-rounded p-button-text p-button-sm"></p-button>
-    <p-button icon="mdi mdi-window-maximize" (onClick)="maximize()" styleClass="select-none cursor-pointer p-button-rounded p-button-text p-button-sm"></p-button>
+    <p-button [disabled]="!maximizable" icon="mdi mdi-window-maximize" (onClick)="maximize()" styleClass="select-none cursor-pointer p-button-rounded p-button-text p-button-sm"></p-button>
     <p-button icon="mdi mdi-window-close" (onClick)="close()" styleClass="select-none cursor-pointer p-button-rounded p-button-text p-button-sm mr-1"></p-button>
 </section>
 
