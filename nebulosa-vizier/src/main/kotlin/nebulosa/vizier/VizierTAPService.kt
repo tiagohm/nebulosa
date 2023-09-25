@@ -2,15 +2,11 @@ package nebulosa.vizier
 
 import de.siegmar.fastcsv.reader.NamedCsvReader
 import de.siegmar.fastcsv.reader.NamedCsvRow
+import nebulosa.retrofit.CSVRecordListConverterFactory
 import nebulosa.retrofit.RetrofitService
 import okhttp3.FormBody
-import okhttp3.ResponseBody
 import retrofit2.Call
-import retrofit2.Converter
-import retrofit2.Retrofit
 import retrofit2.create
-import java.io.InputStreamReader
-import java.lang.reflect.Type
 
 /**
  * VizieR provides the most complete library of published astronomical catalogues
@@ -23,7 +19,7 @@ import java.lang.reflect.Type
  */
 class VizierTAPService(url: String = "") : RetrofitService(url.ifBlank { URL }) {
 
-    override val converterFactory: List<Converter.Factory> = listOf(CSVRecordListConverterFactory)
+    override val converterFactory = listOf(CSVRecordListConverterFactory(CSV_READER))
 
     private val service by lazy { retrofit.create<VizierTAP>() }
 
@@ -36,25 +32,6 @@ class VizierTAPService(url: String = "") : RetrofitService(url.ifBlank { URL }) 
             .build()
 
         return service.query(body)
-    }
-
-    private object CSVRecordListConverter : Converter<ResponseBody, List<NamedCsvRow>> {
-
-        override fun convert(value: ResponseBody): List<NamedCsvRow> {
-            val charset = value.contentType()?.charset() ?: Charsets.UTF_8
-            return value.use { CSV_READER.build(InputStreamReader(value.byteStream(), charset)).toList() }
-        }
-    }
-
-    private object CSVRecordListConverterFactory : Converter.Factory() {
-
-        override fun responseBodyConverter(
-            type: Type,
-            annotations: Array<out Annotation>,
-            retrofit: Retrofit,
-        ): Converter<ResponseBody, *> {
-            return CSVRecordListConverter
-        }
     }
 
     companion object {

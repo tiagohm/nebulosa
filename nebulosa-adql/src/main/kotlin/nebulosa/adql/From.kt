@@ -15,4 +15,6 @@ data class From internal constructor(override val table: ADQLTable) : Table {
     constructor(from: From) : this(ADQLTable(from.table))
 
     fun alias(alias: String) = apply { table.alias = alias }
+
+    fun column(name: String) = Column(table.name, name)
 }

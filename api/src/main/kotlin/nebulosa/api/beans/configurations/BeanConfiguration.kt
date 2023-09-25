@@ -71,7 +71,7 @@ class BeanConfiguration {
     fun cache(cachePath: Path) = Cache(cachePath.toFile(), MAX_CACHE_SIZE)
 
     @Bean
-    fun okHttpClient(connectionPool: ConnectionPool, cache: Cache) = OkHttpClient.Builder()
+    fun httpClient(connectionPool: ConnectionPool, cache: Cache) = OkHttpClient.Builder()
         .connectionPool(connectionPool)
         .cache(cache)
         .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
@@ -82,16 +82,16 @@ class BeanConfiguration {
         .build()
 
     @Bean
-    fun horizonsService(okHttpClient: OkHttpClient) = HorizonsService(okHttpClient = okHttpClient)
+    fun horizonsService(httpClient: OkHttpClient) = HorizonsService(httpClient = httpClient)
 
     @Bean
-    fun simbadService(okHttpClient: OkHttpClient) = SimbadService(okHttpClient = okHttpClient)
+    fun simbadService(httpClient: OkHttpClient) = SimbadService(httpClient = httpClient)
 
     @Bean
-    fun smallBodyDatabaseService(okHttpClient: OkHttpClient) = SmallBodyDatabaseService(okHttpClient = okHttpClient)
+    fun smallBodyDatabaseService(httpClient: OkHttpClient) = SmallBodyDatabaseService(httpClient = httpClient)
 
     @Bean
-    fun hips2FitsService(okHttpClient: OkHttpClient) = Hips2FitsService(okHttpClient = okHttpClient)
+    fun hips2FitsService(httpClient: OkHttpClient) = Hips2FitsService(httpClient = httpClient)
 
     @Bean
     fun systemExecutorService(): ExecutorService =

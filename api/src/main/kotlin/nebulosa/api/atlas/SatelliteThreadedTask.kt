@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture
 @Component
 @ThreadedTask
 class SatelliteThreadedTask(
-    private val okHttpClient: OkHttpClient,
+    private val httpClient: OkHttpClient,
     private val configRepository: ConfigRepository,
     private val satelliteRepository: SatelliteRepository,
 ) : Runnable {
@@ -70,7 +70,7 @@ class SatelliteThreadedTask(
                 .url("https://celestrak.org/NORAD/elements/gp.php?GROUP=${group.group}&FORMAT=tle")
                 .build()
 
-            okHttpClient.newCall(request)
+            httpClient.newCall(request)
                 .execute().use {
                     if (it.isSuccessful) {
                         val lines = ArrayList<String>(3)

@@ -238,8 +238,16 @@ inline infix fun WhereConstraint.or(other: WhereConstraint): Or {
 
 // GEOMETRY
 
+inline infix fun Column.contains(other: Region): Contains {
+    return Contains(this, other)
+}
+
 inline infix fun Region.contains(other: Region): Contains {
     return Contains(this, other)
+}
+
+inline infix fun Column.notContains(other: Region): NotContains {
+    return NotContains(this, other)
 }
 
 inline infix fun Region.notContains(other: Region): NotContains {

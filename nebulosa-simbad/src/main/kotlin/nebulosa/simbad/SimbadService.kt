@@ -1,18 +1,15 @@
 package nebulosa.simbad
 
+import de.siegmar.fastcsv.reader.NamedCsvReader
+import de.siegmar.fastcsv.reader.NamedCsvRow
+import nebulosa.adql.Query
 import nebulosa.log.loggerFor
+import nebulosa.retrofit.CSVRecordListConverterFactory
 import nebulosa.retrofit.RetrofitService
-import nebulosa.skycatalog.SkyObject
-import nebulosa.skycatalog.SkyObjectType
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
-import okhttp3.ResponseBody
 import retrofit2.Call
-import retrofit2.Converter
-import retrofit2.Retrofit
 import retrofit2.create
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
 
 /**
  * @see <a href="https://simbad.u-strasbg.fr/simbad/tap/tapsearch.html">Tables</a>
@@ -21,175 +18,34 @@ import java.lang.reflect.Type
  */
 class SimbadService(
     url: String = "https://simbad.u-strasbg.fr/",
-    okHttpClient: OkHttpClient? = null,
-) : RetrofitService(url, okHttpClient) {
+    httpClient: OkHttpClient? = null,
+) : RetrofitService(url, httpClient) {
 
-    override val converterFactory: List<Converter.Factory> = listOf(SimbadObjectConverterFactory)
+    override val converterFactory = listOf(CSVRecordListConverterFactory(CSV_READER))
 
     private val service by lazy { retrofit.create<Simbad>() }
 
-    fun query(query: SimbadQuery): Call<List<SimbadObject>> {
-        return with(query.build()) {
-            val body = FormBody.Builder()
-                .add("request", "doQuery")
-                .add("lang", "adql")
-                .add("format", "tsv")
-                .add("query", this)
-                .build()
+    fun query(query: Query): Call<List<NamedCsvRow>> {
+        val body = FormBody.Builder()
+            .add("request", "doQuery")
+            .add("lang", "adql")
+            .add("format", "tsv")
+            .add("query", "$query")
+            .build()
 
-            LOG.info("query={}", this)
+        LOG.info("query={}", query)
 
-            service.query(body)
-        }
-    }
-
-    private object SimbadObjectConverter : Converter<ResponseBody, List<SimbadObject>> {
-
-        override fun convert(value: ResponseBody): List<SimbadObject> {
-            val res = arrayListOf<SimbadObject>()
-
-            value.use {
-                val lines = it.byteStream().bufferedReader().lines()
-
-                var first = true
-
-                for (line in lines) {
-                    if (line.isEmpty()) continue
-                    else if (!first) res.add(line.parse() ?: continue)
-                    else first = false
-                }
-            }
-
-            return res
-        }
-    }
-
-    private object SimbadObjectConverterFactory : Converter.Factory() {
-
-        override fun responseBodyConverter(
-            type: Type,
-            annotations: Array<out Annotation>,
-            retrofit: Retrofit,
-        ): Converter<ResponseBody, *>? {
-            if (type is ParameterizedType) {
-                val args = type.actualTypeArguments
-
-                when (type.rawType) {
-                    List::class.java -> when (args[0]) {
-                        SimbadObject::class.java -> return SimbadObjectConverter
-                    }
-                }
-            }
-
-            return null
-        }
+        return service.query(body)
     }
 
     companion object {
 
-        private const val OID = 0
-        private const val MAIN_ID = 1
-        private const val RA = 2
-        private const val DEC = 3
-        private const val PM_RA = 4
-        private const val PM_DEC = 5
-        private const val PLX = 6
-        private const val OTYPE = 7
-        private const val SPTYPE = 8
-        private const val MTYPE = 9
-        private const val MAJ_AXIS = 10
-        private const val MIN_AXIS = 11
-        private const val FLUX_U = 12
-        private const val FLUX_B = 13
-        private const val FLUX_V = 14
-        private const val FLUX_R = 15
-        private const val FLUX_I = 16
-        private const val FLUX_J = 17
-        private const val FLUX_H = 18
-        private const val FLUX_K = 19
-        private const val REDSHIFT = 20
-        private const val RADVEL = 21
-        private const val IDS = 22
-
-        @JvmStatic private val CATALOG_TYPES = CatalogType.values()
         @JvmStatic private val LOG = loggerFor<SimbadService>()
 
-        @JvmStatic private val MAIN_CATALOG_TYPES = arrayOf(
-            CatalogType.NAME, CatalogType.STAR,
-            CatalogType.HD, CatalogType.HIP,
-            CatalogType.M,
-            CatalogType.NGC, CatalogType.IC,
-            CatalogType.C, CatalogType.B,
-        )
-
-        private object NameComparator : Comparator<Name> {
-
-            override fun compare(a: Name, b: Name): Int {
-                val c = MAIN_CATALOG_TYPES.indexOf(a.type)
-                val d = MAIN_CATALOG_TYPES.indexOf(b.type)
-
-                return if (c == d) a.name.compareTo(b.name)
-                else if (c == -1) 1
-                else if (d == -1) -1
-                else c.compareTo(d)
-            }
-        }
-
-        @JvmStatic
-        private fun String.parse(): SimbadObject? {
-            val parts = split("\t")
-
-            require(parts.size == 23) { "invalid line: $this" }
-
-            val names = parts[IDS].replace("\"", "").names().ifEmpty { return null }
-            val id = parts[OID].toLong()
-            val name = parts[MAIN_ID].replace("\"", "").trim()
-            val ra = parts[RA].toDouble()
-            val dec = parts[DEC].toDouble()
-            val pmRA = parts[PM_RA].toDoubleOrNull() ?: 0.0
-            val pmDEC = parts[PM_DEC].toDoubleOrNull() ?: 0.0
-            val plx = parts[PLX].toDoubleOrNull() ?: 0.0
-            val type = SkyObjectType.of(parts[OTYPE].replace("\"", "").trim())!!
-            val spType = parts[SPTYPE].replace("\"", "").trim()
-            val mType = parts[MTYPE].replace("\"", "").trim()
-            val majorAxis = parts[MAJ_AXIS].toDoubleOrNull() ?: 0.0
-            val minorAxis = parts[MIN_AXIS].toDoubleOrNull() ?: 0.0
-            val u = parts[FLUX_U].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
-            val b = parts[FLUX_B].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
-            val v = parts[FLUX_V].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
-            val r = parts[FLUX_R].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
-            val i = parts[FLUX_I].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
-            val j = parts[FLUX_J].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
-            val h = parts[FLUX_H].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
-            val k = parts[FLUX_K].toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
-            val redshift = parts[REDSHIFT].toDoubleOrNull() ?: 0.0
-            val rv = parts[RADVEL].toDoubleOrNull() ?: 0.0
-
-            return SimbadObject(
-                id, name, type,
-                names,
-                ra, dec, pmRA, pmDEC,
-                plx, spType, mType,
-                majorAxis, minorAxis,
-                u, b, v, r, i, j, h, k,
-                redshift, rv,
-            )
-        }
-
-        @JvmStatic
-        fun String.names(): List<Name> {
-            val res = arrayListOf<Name>()
-
-            for (p in split("|")) {
-                a@ for (type in CATALOG_TYPES) {
-                    if (p.startsWith(type.prefix)) {
-                        res.add(Name(type, p.trim().substring(type.prefix.length).trim()))
-                        break@a
-                    }
-                }
-            }
-
-            return res.sortedWith(NameComparator)
-        }
+        @JvmStatic private val CSV_READER = NamedCsvReader.builder()
+            .fieldSeparator('\t')
+            .quoteCharacter('"')
+            .commentCharacter('#')
+            .skipComments(true)
     }
 }

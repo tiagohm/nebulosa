@@ -11,8 +11,8 @@ import retrofit2.create
  */
 class Hips2FitsService(
     url: String = MAIN_URL,
-    okHttpClient: OkHttpClient? = null,
-) : RetrofitService(url, okHttpClient) {
+    httpClient: OkHttpClient? = null,
+) : RetrofitService(url, httpClient) {
 
     private val service by lazy { retrofit.create<Hips2Fits>() }
 

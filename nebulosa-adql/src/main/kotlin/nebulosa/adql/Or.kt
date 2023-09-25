@@ -10,7 +10,5 @@ data class Or internal constructor(override val constraint: ADQLConstraint) : Wh
         contraints.forEach { logicalConstraint.add(it.constraint) }
     }
 
-    override fun not(): Or {
-        return Or(if (constraint is NotConstraint) constraint.constraint else NotConstraint(constraint))
-    }
+    override fun not() = NotOr(NotConstraint(constraint))
 }

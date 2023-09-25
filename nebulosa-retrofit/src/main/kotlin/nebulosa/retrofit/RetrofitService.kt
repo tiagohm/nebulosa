@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 
 abstract class RetrofitService(
     val url: String,
-    private val okHttpClient: OkHttpClient? = null,
+    private val httpClient: OkHttpClient? = null,
     private val objectMapper: ObjectMapper? = null,
 ) {
 
@@ -37,7 +37,7 @@ abstract class RetrofitService(
         builder.addConverterFactory(JacksonConverterFactory.create(mapper))
         callAdaptorFactory?.also(builder::addCallAdapterFactory)
 
-        with((okHttpClient ?: HTTP_CLIENT).newBuilder()) {
+        with((httpClient ?: HTTP_CLIENT).newBuilder()) {
             handleOkHttpClientBuilder(this)
             builder.client(build())
         }

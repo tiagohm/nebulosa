@@ -43,7 +43,7 @@ class AtlasService(
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val satelliteRepository: SatelliteRepository,
-    private val okHttpClient: OkHttpClient,
+    private val httpClient: OkHttpClient,
 ) {
 
     private val positions = HashMap<LocationEntity, GeographicPosition>()
@@ -225,7 +225,7 @@ class AtlasService(
             .url(SUN_IMAGE_URL)
             .build()
 
-        val image = okHttpClient.newCall(request)
+        val image = httpClient.newCall(request)
             .execute()
             .body
             .use { ImageIO.read(it.byteStream()) }

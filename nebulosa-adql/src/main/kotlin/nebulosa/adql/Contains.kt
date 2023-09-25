@@ -9,12 +9,13 @@ import adql.query.operand.function.geometry.GeometryFunction
 
 data class Contains internal constructor(override val constraint: ADQLConstraint) : WhereConstraint {
 
-    constructor(left: Region, right: Region) : this(
-        Comparison(
-            ContainsFunction(GeometryFunction.GeometryValue(left.operand), GeometryFunction.GeometryValue(right.operand)),
-            ComparisonOperator.EQUAL, NumericConstant(1L),
-        )
+    private constructor(left: GeometryFunction.GeometryValue<GeometryFunction>, right: GeometryFunction.GeometryValue<GeometryFunction>) : this(
+        Comparison(ContainsFunction(left, right), ComparisonOperator.EQUAL, NumericConstant(1L))
     )
+
+    constructor(left: Column, right: Region) : this(GeometryFunction.GeometryValue(left.operand), GeometryFunction.GeometryValue(right.operand))
+
+    constructor(left: Region, right: Region) : this(GeometryFunction.GeometryValue(left.operand), GeometryFunction.GeometryValue(right.operand))
 
     override operator fun not(): NotContains {
         val comparison = constraint as Comparison

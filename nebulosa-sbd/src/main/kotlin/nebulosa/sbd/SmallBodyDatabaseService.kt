@@ -14,8 +14,8 @@ import java.time.format.DateTimeFormatter
 
 class SmallBodyDatabaseService(
     url: String = "https://ssd-api.jpl.nasa.gov/",
-    okHttpClient: OkHttpClient? = null,
-) : RetrofitService(url, okHttpClient) {
+    httpClient: OkHttpClient? = null,
+) : RetrofitService(url, httpClient) {
 
     private val service by lazy { retrofit.create<SmallBodyDatabase>() }
 

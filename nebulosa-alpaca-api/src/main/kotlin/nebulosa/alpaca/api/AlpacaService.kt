@@ -12,8 +12,8 @@ import retrofit2.create
  */
 class AlpacaService(
     url: String,
-    okHttpClient: OkHttpClient? = null,
-) : RetrofitService(url, okHttpClient) {
+    httpClient: OkHttpClient? = null,
+) : RetrofitService(url, httpClient) {
 
     val management by lazy { retrofit.create<Management>() }
 

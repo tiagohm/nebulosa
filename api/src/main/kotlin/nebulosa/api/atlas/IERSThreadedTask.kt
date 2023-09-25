@@ -16,7 +16,7 @@ import kotlin.io.path.outputStream
 @ThreadedTask
 class IERSThreadedTask(
     private val dataPath: Path,
-    private val okHttpClient: OkHttpClient,
+    private val httpClient: OkHttpClient,
 ) : Runnable {
 
     override fun run() {
@@ -38,7 +38,7 @@ class IERSThreadedTask(
         try {
             LOG.info("downloading finals2000A.all")
 
-            okHttpClient.newCall(request).execute().use {
+            httpClient.newCall(request).execute().use {
                 it.body.byteStream().transferAndClose(outputStream())
                 LOG.info("finals2000A.all loaded")
             }

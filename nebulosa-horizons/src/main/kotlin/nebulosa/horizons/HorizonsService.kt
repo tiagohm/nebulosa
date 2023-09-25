@@ -16,8 +16,8 @@ import java.time.format.DateTimeFormatter
 
 class HorizonsService(
     url: String = "",
-    okHttpClient: OkHttpClient? = null,
-) : RetrofitService(url.ifBlank { URL }, okHttpClient) {
+    httpClient: OkHttpClient? = null,
+) : RetrofitService(url.ifBlank { URL }, httpClient) {
 
     override val converterFactory: List<Converter.Factory> = listOf(HorizonsEphemerisConverterFactory)
 

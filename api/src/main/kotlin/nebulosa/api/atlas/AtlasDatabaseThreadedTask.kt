@@ -21,7 +21,7 @@ class AtlasDatabaseThreadedTask(
     private val configRepository: ConfigRepository,
     private val starsRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
-    private val okHttpClient: OkHttpClient,
+    private val httpClient: OkHttpClient,
     private val dataPath: Path,
 ) : Runnable {
 
@@ -49,7 +49,7 @@ class AtlasDatabaseThreadedTask(
                 .url("https://github.com/tiagohm/nebulosa/raw/main/api/data/stars.json.gz")
                 .build()
 
-            okHttpClient.newCall(request)
+            httpClient.newCall(request)
                 .execute()
                 .use {
                     if (it.isSuccessful) {
@@ -76,7 +76,7 @@ class AtlasDatabaseThreadedTask(
                 .url("https://github.com/tiagohm/nebulosa/raw/main/api/data/dsos.json.gz")
                 .build()
 
-            okHttpClient.newCall(request)
+            httpClient.newCall(request)
                 .execute()
                 .use {
                     if (it.isSuccessful) {
