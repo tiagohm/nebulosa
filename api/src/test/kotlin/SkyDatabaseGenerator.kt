@@ -1,6 +1,7 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.siegmar.fastcsv.reader.NamedCsvRow
-import nebulosa.adql.*
+import nebulosa.common.concurrency.CountUpDownLatch
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.arcmin
 import nebulosa.math.Angle.Companion.deg
@@ -16,12 +17,13 @@ import nebulosa.skycatalog.SkyObjectType
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 import okhttp3.OkHttpClient
-import java.io.PrintStream
 import java.nio.file.Path
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.zip.GZIPOutputStream
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.outputStream
+import kotlin.math.min
 
 typealias CatalogNameProvider = Pair<Regex, MatchResult.() -> String>
 
@@ -30,27 +32,8 @@ object SkyDatabaseGenerator {
     @JvmStatic private val STAR_DATABASE_PATH = Path.of("api/data/stars.json.gz")
     @JvmStatic private val DSO_DATABASE_PATH = Path.of("api/data/dsos.json.gz")
     @JvmStatic private val IAU_CSN_PATH = Path.of("api/data/IAU-CSN.txt")
-    @JvmStatic private val LOG_PATH = Path.of("api/data/log.txt")
 
-    @JvmStatic private val BASIC_TABLE = From("basic").alias("b")
-    @JvmStatic private val IDS_TABLE = From("ids").alias("i")
-    @JvmStatic private val IDENT_TABLE = From("ident")
-    @JvmStatic private val OTYPES_TABLE = From("otypes").alias("o")
-    @JvmStatic private val FLUX_TABLE = From("allfluxes").alias("f")
-    @JvmStatic private val OID = BASIC_TABLE.column("oid")
-    @JvmStatic private val OTYPE = BASIC_TABLE.column("otype")
-    @JvmStatic private val SP_TYPE = BASIC_TABLE.column("sp_type")
-    @JvmStatic private val RA = BASIC_TABLE.column("ra")
-    @JvmStatic private val DEC = BASIC_TABLE.column("dec")
-    @JvmStatic private val PM_RA = BASIC_TABLE.column("pmra")
-    @JvmStatic private val PM_DEC = BASIC_TABLE.column("pmdec")
-    @JvmStatic private val PLX = BASIC_TABLE.column("plx_value")
-    @JvmStatic private val RAD_VEL = BASIC_TABLE.column("rvz_radvel")
-    @JvmStatic private val REDSHIFT = BASIC_TABLE.column("rvz_redshift")
-    @JvmStatic private val MAJOR_AXIS = BASIC_TABLE.column("galdim_majaxis")
-    @JvmStatic private val MINOR_AXIS = BASIC_TABLE.column("galdim_minaxis")
-    @JvmStatic private val ORIENT = BASIC_TABLE.column("galdim_angle")
-    @JvmStatic private val MAG = FLUX_TABLE.column("V")
+    @JvmStatic private val LOG = loggerFor<SkyDatabaseGenerator>()
 
     @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder()
         .connectTimeout(5L, TimeUnit.MINUTES)
@@ -85,7 +68,7 @@ object SkyDatabaseGenerator {
         "SH\\s+2-(\\d{1,3})".toRegex() to { "SH 2-" + groupValues[1] },
         "Ced\\s+(\\d{1,3})".toRegex() to { "Ced " + groupValues[1] },
         "UGC\\s+(\\d{1,5})".toRegex() to { "UGC " + groupValues[1] },
-        "APG\\s+(\\d{1,3})".toRegex() to { "APG " + groupValues[1] },
+        "APG\\s+(\\d{1,3})".toRegex() to { "Arp " + groupValues[1] },
         "HCG\\s+(\\d{1,3})".toRegex() to { "HCG " + groupValues[1] },
         "VV\\s+(\\d{1,4})".toRegex() to { "VV " + groupValues[1] },
         "VdBH\\s+(\\d{1,2})".toRegex() to { "VdBH " + groupValues[1] },
@@ -94,7 +77,7 @@ object SkyDatabaseGenerator {
         "Cl\\s+([\\w-]+)\\s+(\\d{1,5})".toRegex() to { groupValues[1] + " " + groupValues[2] },
     )
 
-    @JvmStatic private val DSO_CATALOG_TYPES_LIKE = mapOf(
+    @JvmStatic private val DSO_CATALOG_TYPES_LIKE = listOf(
         "M %" to Double.NaN,
         "NGC %" to Double.NaN,
         "IC %" to Double.NaN,
@@ -107,7 +90,7 @@ object SkyDatabaseGenerator {
         "SH %" to Double.NaN,
         "Ced %" to Double.NaN,
         "UGC %" to 16.0,
-        "APG %" to 16.0,
+        "APG %" to Double.NaN,
         "HCG %" to 16.0,
         "VV %" to 16.0,
         "VdBH %" to Double.NaN,
@@ -115,18 +98,18 @@ object SkyDatabaseGenerator {
         "NAME %" to Double.NaN,
     )
 
+    @JvmStatic private val NUMBER_OF_CPUS = Runtime.getRuntime().availableProcessors()
+    @JvmStatic private val EXECUTOR_SERVICE = Executors.newFixedThreadPool(NUMBER_OF_CPUS)
+
     @JvmStatic
     fun main(args: Array<String>) {
         val names = LinkedHashSet<String>(8)
-        var lastId = 0L
 
         val iauNames = ArrayList<String>(451)
         val iauNamesMagnitude = HashMap<String, Double>(451)
 
         val fetchStars = true
         val fetchDSOs = true
-
-        val logger = PrintStream(LOG_PATH.outputStream().buffered())
 
         IAU_CSN_PATH
             .bufferedReader()
@@ -166,57 +149,43 @@ object SkyDatabaseGenerator {
                 }
             }
 
-            if (splittedNames.isNotEmpty()) {
-                logger.println("unsupported names. [$lastId]: $splittedNames")
-            }
-
             return magnitude
         }
 
-        var join = LeftJoin(BASIC_TABLE, IDS_TABLE, arrayOf(OID equal IDS_TABLE.column("oidref")))
-        join = LeftJoin(join, FLUX_TABLE, arrayOf(OID equal FLUX_TABLE.column("oidref")))
-
-        val builder = QueryBuilder()
-        builder.add(OID greaterThan lastId)
-        builder.add(Limit(1000))
-        builder.add(join)
-        builder.addAll(arrayOf(OID, OTYPE, RA, DEC, PM_RA, PM_DEC, PLX, RAD_VEL, REDSHIFT, MAG))
-        builder.addAll(arrayOf(MAJOR_AXIS, MINOR_AXIS, ORIENT, SP_TYPE, IDS_TABLE.column("ids")))
-        builder.addAll(arrayOf(RA.isNotNull, DEC.isNotNull))
-        builder.add(SortBy(OID))
-        builder.add(Distinct)
-
-        builder.add(Ignored)
-        builder.add(Ignored)
-
-        val utc = UTC(TimeYMDHMS(2023, 9, 29, 12))
-        val json = HashMap<Long, Map<String, Any?>>(32000)
+        val currentTime = UTC(TimeYMDHMS(2023, 9, 29, 12))
+        val data = HashMap<Int, Map<String, Any?>>(32000)
         val skyObjectTypes = HashSet<SkyObjectType>(SkyObjectType.entries.size)
+
+        val maxOID = SIMBAD_SERVICE.query("SELECT max(b.oid) FROM basic b")
+            .execute().body()!![0].getField("MAX").toInt()
+
+        LOG.info("max oid: {}", maxOID)
 
         fun NamedCsvRow.makeSkyObject(
             isDSO: Boolean,
             provider: Iterable<CatalogNameProvider>,
-        ) {
-            lastId = getField("oid").toLong()
+            isStarDSO: Boolean = true,
+        ): Int {
+            val id = getField("oid").toInt()
 
-            if (lastId in json) return
+            if (id in data) return id
 
             val ids = getField("ids")
-            val magnitudeFromIAU = ids.names(provider)
+            val magnitudeFromIAU = ids.names(provider, !isDSO)
 
-            if (names.isEmpty()) {
-                logger.println("no supported names. [$lastId]: $ids")
-                return
-            }
+            if (names.isEmpty()) return id
 
             val type = SkyObjectType.parse(getField("otype"))
 
             if (type == null) {
-                logger.println("unknown type. ${getField("otype")}")
-                return
+                LOG.info("unknown type: {} {}", getField("otype"), getField("main_id"))
+                return id
             } else if (!isDSO && type.classification != ClassificationType.STAR) {
-                logger.println("unsupported star type. $type")
-                return
+                LOG.info("unsupported star type: {} {}", type, getField("main_id"))
+                return id
+            } else if (isDSO && !isStarDSO && type.classification == ClassificationType.STAR) {
+                LOG.info("unsupported DSO type: {} {}", type, getField("main_id"))
+                return id
             }
 
             skyObjectTypes.add(type)
@@ -232,121 +201,153 @@ object SkyDatabaseGenerator {
             val minAxis = getField("galdim_minaxis").toDoubleOrNull()?.arcmin ?: Angle.ZERO
             val orient = getField("galdim_angle").toDoubleOrNull()?.deg ?: Angle.ZERO
             val spType = getField("sp_type") ?: ""
-            val mag = getField("V").toDoubleOrNull() ?: magnitudeFromIAU
-            val constellation = utc.computeConstellation(ra, dec)
 
-            json[lastId] = mapOf(
-                "id" to lastId, "type" to type, "names" to names.joinToString("|"),
+            var mag = getField("V").toDoubleOrNull()
+                ?: getField("B").toDoubleOrNull()
+                ?: getField("U").toDoubleOrNull()
+                ?: magnitudeFromIAU
+
+            if (mag >= SkyObject.UNKNOWN_MAGNITUDE || !mag.isFinite()) {
+                mag = min(mag, getField("R").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+                mag = min(mag, getField("I").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+                mag = min(mag, getField("J").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+                mag = min(mag, getField("H").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+                mag = min(mag, getField("K").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+            }
+
+            val constellation = currentTime.computeConstellation(ra, dec)
+
+            data[id] = mapOf(
+                "id" to id, "type" to type, "names" to names.joinToString("|"),
                 "ra" to ra.value, "dec" to dec.value, "mag" to mag,
                 "pmRA" to pmRA.value, "pmDEC" to pmDEC.value,
                 "plx" to plx.value, "rv" to radVel.value, "redshift" to redshift,
                 "majAxis" to majAxis.value, "minAxis" to minAxis.value, "orient" to orient.value,
                 "spType" to spType, "const" to constellation,
             )
+
+            return id
         }
 
-        // STARS. ~23726 objects.
+        // STARS. ~23735 objects.
+
+        val stepSize = maxOID / NUMBER_OF_CPUS
 
         if (fetchStars) {
-            builder[2] = LeftJoin(join, OTYPES_TABLE, arrayOf(OID equal OTYPES_TABLE.column("oidref")))
+            val latch = CountUpDownLatch()
 
-            builder[builder.size - 2] = OTYPES_TABLE.column("otype") equal "*"
-            builder[builder.size - 1] = MAG lessOrEqual 7.4
+            for (i in 0 until maxOID step stepSize) {
+                latch.countUp()
 
-            while (true) {
-                val query = builder.build()
-                val rows = SIMBAD_SERVICE.query(query).execute().body()?.ifEmpty { null } ?: break
+                EXECUTOR_SERVICE.submit {
+                    var lastId = i
 
-                for (row in rows) {
-                    row.makeSkyObject(false, STAR_CATALOG_TYPES)
+                    while (true) {
+                        val idFetcher = StarIdFetcher(lastId, i + stepSize)
+                        val ids = idFetcher.fetch(SIMBAD_SERVICE)
+
+                        if (ids.isEmpty()) break
+
+                        val starFetcher = SkyObjectFetcher(ids)
+                        val rows = starFetcher.fetch(SIMBAD_SERVICE)
+
+                        LOG.info("rows. size={}", rows.size)
+
+                        if (rows.isEmpty()) {
+                            lastId = ids.last()
+                            continue
+                        }
+
+                        synchronized(data) {
+                            for (row in rows) {
+                                lastId = row.makeSkyObject(false, STAR_CATALOG_TYPES)
+                            }
+                        }
+                    }
+
+                    latch.countDown()
                 }
-
-                if (rows.size < 1000) break
-
-                builder[0] = OID greaterThan lastId
-
-                logger.flush()
             }
 
-            logger.println("remaining IAU names. size=${iauNames.size}: $iauNames")
-            logger.flush()
+            latch.await()
 
-            builder[0] = OID greaterThan 0L
-            builder[builder.size - 1] = IDENT_TABLE.column("id") includes iauNames
-            builder[2] = InnerJoin(join, IDENT_TABLE, arrayOf(OID equal IDENT_TABLE.column("oidref")))
+            LOG.info("remaining IAU names. size={}: {}", iauNames.size, iauNames)
 
-            val query = builder.build()
-            val rows = SIMBAD_SERVICE.query(query).execute().body()!!
+            // NAMED STARS. ~451 objects.
+
+            val starFetcher = SkyObjectFetcher(names = iauNames)
+            val rows = starFetcher.fetch(SIMBAD_SERVICE)
+
+            LOG.info("rows. size={}", rows.size)
 
             for (row in rows) {
                 row.makeSkyObject(false, STAR_CATALOG_TYPES)
             }
 
-            logger.println("remaining IAU names. size=${iauNames.size}, names=$iauNames")
+            LOG.info("remaining IAU names. size={}: {}", iauNames.size, iauNames)
 
-            logger.println("stars: ${json.size}")
-            logger.println("star types: $skyObjectTypes")
+            LOG.info("stars: {}", data.size)
+            LOG.info("star types: {}", skyObjectTypes)
 
             GZIPOutputStream(STAR_DATABASE_PATH.outputStream())
-                .use { MAPPER.writeValue(it, json.values) }
+                .use { MAPPER.writeValue(it, data.values) }
         }
 
-        logger.flush()
-
-        // DSOS. ~16343 objects.
+        // DSOS. ~28201 objects.
 
         if (fetchDSOs) {
-            json.clear()
+            data.clear()
             skyObjectTypes.clear()
 
-            builder[2] = join
+            val latch = CountUpDownLatch()
 
-            builder[builder.size - 2] = Ignored
-            builder[0] = OID greaterThan 0L
+            for (i in 0 until maxOID step stepSize) {
+                for (catalogType in DSO_CATALOG_TYPES_LIKE) {
+                    latch.countUp()
 
-            val idBuilder = QueryBuilder()
-            val oidRef = IDENT_TABLE.column("oidref")
-            val id = IDENT_TABLE.column("id")
-            idBuilder.add(Ignored)
-            idBuilder.add(oidRef)
-            idBuilder.add(Limit(200))
-            idBuilder.add(From(IDENT_TABLE))
-            idBuilder.add(SortBy(oidRef))
-            idBuilder.add(Distinct)
-            idBuilder.add(Ignored)
+                    EXECUTOR_SERVICE.submit {
+                        var lastId = i
 
-            for (catalogType in DSO_CATALOG_TYPES_LIKE) {
-                lastId = 0L
+                        while (true) {
+                            val idFetcher = DsoIdFetcher(catalogType.first, lastId, i + stepSize)
+                            val ids = idFetcher.fetch(SIMBAD_SERVICE)
 
-                while (true) {
-                    idBuilder[idBuilder.size - 1] = (oidRef greaterThan lastId) and (id like catalogType.key)
-                    var query = idBuilder.build()
-                    var rows = SIMBAD_SERVICE.query(query).execute().body()?.ifEmpty { null } ?: break
-                    val ids = IntArray(rows.size) { rows[it].getField("oidref").toInt() }
+                            if (ids.isEmpty()) break
 
-                    builder[builder.size - 2] = if (catalogType.value.isFinite()) (MAG lessOrEqual catalogType.value) else Ignored
-                    builder[builder.size - 1] = OID includes ids
+                            val dsoFetcher = SkyObjectFetcher(ids, magnitudeMax = catalogType.second)
+                            val rows = dsoFetcher.fetch(SIMBAD_SERVICE)
 
-                    query = builder.build()
-                    rows = SIMBAD_SERVICE.query(query).execute().body()?.ifEmpty { null } ?: break
+                            LOG.info("rows. size={}", rows.size)
 
-                    for (row in rows) {
-                        row.makeSkyObject(true, DSO_CATALOG_TYPES)
+                            if (rows.isEmpty()) {
+                                lastId = ids.last()
+                                continue
+                            }
+
+                            val isStarDSO = catalogType !== DSO_CATALOG_TYPES_LIKE.last()
+
+                            synchronized(data) {
+                                for (row in rows) {
+                                    lastId = row.makeSkyObject(true, DSO_CATALOG_TYPES, isStarDSO)
+                                }
+                            }
+                        }
+
+                        latch.countDown()
                     }
                 }
-
-                logger.flush()
             }
 
-            logger.println("dsos: ${json.size}")
-            logger.println("dso types: $skyObjectTypes")
+            latch.await()
+
+            LOG.info("dsos: {}", data.size)
+            LOG.info("dso types: {}", skyObjectTypes)
 
             GZIPOutputStream(DSO_DATABASE_PATH.outputStream())
-                .use { MAPPER.writeValue(it, json.values) }
-        }
+                .use { MAPPER.writeValue(it, data.values) }
 
-        logger.flush()
-        logger.close()
+            EXECUTOR_SERVICE.shutdown()
+        }
     }
 
     @JvmStatic

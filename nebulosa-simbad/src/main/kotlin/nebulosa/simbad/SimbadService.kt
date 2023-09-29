@@ -26,11 +26,15 @@ class SimbadService(
     private val service by lazy { retrofit.create<Simbad>() }
 
     fun query(query: Query): Call<List<NamedCsvRow>> {
+        return query("$query")
+    }
+
+    fun query(query: String): Call<List<NamedCsvRow>> {
         val body = FormBody.Builder()
             .add("request", "doQuery")
             .add("lang", "adql")
             .add("format", "tsv")
-            .add("query", "$query")
+            .add("query", query)
             .build()
 
         LOG.info("query={}", query)
