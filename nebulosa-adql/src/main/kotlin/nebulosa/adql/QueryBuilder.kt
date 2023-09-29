@@ -3,8 +3,9 @@ package nebulosa.adql
 import adql.query.ADQLQuery
 import adql.query.ClauseConstraints
 import adql.query.ClauseSelect
+import java.util.*
 
-class QueryBuilder : ArrayList<QueryClause>() {
+class QueryBuilder : LinkedList<QueryClause>() {
 
     fun build(): Query {
         val query = ADQLQuery()
