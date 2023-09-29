@@ -4,7 +4,7 @@ import nebulosa.simbad.SimbadService
 
 @Suppress("ArrayInDataClass")
 data class SkyObjectFetcher(
-    private val ids: IntArray = IntArray(0),
+    private val ids: LongArray = LongArray(0),
     private val names: List<String> = emptyList(),
     private val magnitudeMax: Double = Double.NaN,
 ) : Fetcher<List<NamedCsvRow>> {

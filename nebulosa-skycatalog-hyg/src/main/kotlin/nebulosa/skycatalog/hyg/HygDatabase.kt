@@ -29,8 +29,8 @@ class HygDatabase : SkyCatalog<Star>(118005) {
         val names = ArrayList<String>(7)
 
         for (record in reader) {
-            val id = record.getField("id").toInt()
-            if (id == 0) continue
+            val id = record.getField("id").toLong()
+            if (id == 0L) continue
             val hip = record.getField("hip").takeIf { it.isNotEmpty() }?.toInt() ?: 0
             val hd = record.getField("hd").takeIf { it.isNotEmpty() }?.toInt() ?: 0
             val hr = record.getField("hr").takeIf { it.isNotEmpty() }?.toInt() ?: 0
@@ -66,13 +66,10 @@ class HygDatabase : SkyCatalog<Star>(118005) {
 
             val star = Star(
                 id = id,
-                names = names.joinToString(NAME_SEPARATOR).trim(),
-                hr = hr,
-                hd = hd,
-                hip = hip,
+                name = names.joinToString(NAME_SEPARATOR).trim(),
                 magnitude = magnitude,
-                rightAscension = rightAscension,
-                declination = declination,
+                rightAscensionJ2000 = rightAscension,
+                declinationJ2000 = declination,
                 spType = spType,
                 radialVelocity = radialVelocity,
                 pmRA = pmRA,

@@ -18,7 +18,6 @@ import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.hours
-import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.AngleFormatter
 import nebulosa.math.Distance
 import nebulosa.platesolving.astap.AstapPlateSolver
@@ -187,7 +186,7 @@ class ImageService(
                     .forEach {
                         // val fixedStar = FixedStar(it.rightAscensionJ2000.rad, it.declinationJ2000.rad, it.pmRA.rad, it.pmDEC.rad)
                         // val (ra, dec) = barycentric.observe(fixedStar).equatorialJ2000()
-                        val (x, y) = wcs.skyToPix(it.rightAscensionJ2000.rad, it.declinationJ2000.rad)
+                        val (x, y) = wcs.skyToPix(it.rightAscensionJ2000, it.declinationJ2000)
                         val annotation = ImageAnnotationResponse(x, y, star = it)
                         annotations.add(annotation)
                     }
@@ -204,7 +203,7 @@ class ImageService(
                     .forEach {
                         // val fixedStar = FixedStar(it.rightAscensionJ2000.rad, it.declinationJ2000.rad, it.pmRA.rad, it.pmDEC.rad)
                         // val (ra, dec) = barycentric.observe(fixedStar).equatorialJ2000()
-                        val (x, y) = wcs.skyToPix(it.rightAscensionJ2000.rad, it.declinationJ2000.rad)
+                        val (x, y) = wcs.skyToPix(it.rightAscensionJ2000, it.declinationJ2000)
                         val annotation = ImageAnnotationResponse(x, y, dso = it)
                         annotations.add(annotation)
                     }

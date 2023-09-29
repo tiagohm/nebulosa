@@ -28,7 +28,7 @@ abstract class SkyCatalog<T : SkyObject>(estimatedSize: Int = 0) : Collection<T>
         // val isAround = cosAngle >= limitFOV.cos
 
         for (it in data) {
-            if (distance(it.rightAscension, it.declination) <= limitFOV.value) {
+            if (distance(it.rightAscensionJ2000, it.declinationJ2000) <= limitFOV.value) {
                 res.add(it)
             }
         }

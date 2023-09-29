@@ -295,6 +295,11 @@ inline infix fun Operand<*>.includes(other: IntArray): In {
     return this includes Array(other.size) { other[it].operand }
 }
 
+@JvmName("includesLongArray")
+inline infix fun Operand<*>.includes(other: LongArray): In {
+    return this includes Array(other.size) { other[it].operand }
+}
+
 // AND/OR
 
 @JvmName("and")

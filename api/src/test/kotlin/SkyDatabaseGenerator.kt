@@ -1,6 +1,8 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.siegmar.fastcsv.reader.NamedCsvRow
+import nebulosa.api.atlas.SkyObjectConverter
 import nebulosa.common.concurrency.CountUpDownLatch
+import nebulosa.json.modules.JsonModule
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.Angle.Companion.arcmin
@@ -8,12 +10,8 @@ import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.Angle.Companion.mas
 import nebulosa.math.Velocity
 import nebulosa.math.Velocity.Companion.kms
-import nebulosa.nova.astrometry.Constellation
-import nebulosa.nova.position.ICRF
 import nebulosa.simbad.SimbadService
-import nebulosa.skycatalog.ClassificationType
-import nebulosa.skycatalog.SkyObject
-import nebulosa.skycatalog.SkyObjectType
+import nebulosa.skycatalog.*
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 import okhttp3.OkHttpClient
@@ -26,6 +24,11 @@ import kotlin.io.path.outputStream
 import kotlin.math.min
 
 typealias CatalogNameProvider = Pair<Regex, MatchResult.() -> String>
+
+// TODO: Caldwell Catalog
+// TODO: Herschel Catalog
+// TODO: Bennett Catalog: https://www.docdb.net/tutorials/bennett_catalogue.php
+// TODO: Dunlop Catalog: https://www.docdb.net/tutorials/dunlop_catalogue.php
 
 object SkyDatabaseGenerator {
 
@@ -43,7 +46,10 @@ object SkyDatabaseGenerator {
         .build()
 
     @JvmStatic private val SIMBAD_SERVICE = SimbadService(httpClient = HTTP_CLIENT)
-    @JvmStatic private val MAPPER = ObjectMapper()
+
+    @JvmStatic private val MAPPER = ObjectMapper().apply {
+        registerModule(JsonModule(listOf(SkyObjectConverter()), emptyList()))
+    }
 
     @JvmStatic private val STAR_CATALOG_TYPES = listOf<CatalogNameProvider>(
         "NAME\\s+(.*)".toRegex() to { groupValues[1].trim() },
@@ -153,11 +159,11 @@ object SkyDatabaseGenerator {
         }
 
         val currentTime = UTC(TimeYMDHMS(2023, 9, 29, 12))
-        val data = HashMap<Int, Map<String, Any?>>(32000)
+        val data = HashMap<Long, SkyObject>(32000)
         val skyObjectTypes = HashSet<SkyObjectType>(SkyObjectType.entries.size)
 
         val maxOID = SIMBAD_SERVICE.query("SELECT max(b.oid) FROM basic b")
-            .execute().body()!![0].getField("MAX").toInt()
+            .execute().body()!![0].getField("MAX").toLong()
 
         LOG.info("max oid: {}", maxOID)
 
@@ -165,8 +171,8 @@ object SkyDatabaseGenerator {
             isDSO: Boolean,
             provider: Iterable<CatalogNameProvider>,
             isStarDSO: Boolean = true,
-        ): Int {
-            val id = getField("oid").toInt()
+        ): Long {
+            val id = getField("oid").toLong()
 
             if (id in data) return id
 
@@ -190,40 +196,45 @@ object SkyDatabaseGenerator {
 
             skyObjectTypes.add(type)
 
-            val ra = getField("ra").deg
-            val dec = getField("dec").deg
+            val rightAscensionJ2000 = getField("ra").deg
+            val declinationJ2000 = getField("dec").deg
             val pmRA = getField("pmra").toDoubleOrNull()?.mas ?: Angle.ZERO
             val pmDEC = getField("pmdec").toDoubleOrNull()?.mas ?: Angle.ZERO
-            val plx = getField("plx_value").toDoubleOrNull()?.mas ?: Angle.ZERO
-            val radVel = getField("rvz_radvel").toDoubleOrNull()?.kms ?: Velocity.ZERO
+            val parallax = getField("plx_value").toDoubleOrNull()?.mas ?: Angle.ZERO
+            val radialVelocity = getField("rvz_radvel").toDoubleOrNull()?.kms ?: Velocity.ZERO
             val redshift = getField("rvz_redshift").toDoubleOrNull() ?: 0.0
-            val majAxis = getField("galdim_majaxis").toDoubleOrNull()?.arcmin ?: Angle.ZERO
-            val minAxis = getField("galdim_minaxis").toDoubleOrNull()?.arcmin ?: Angle.ZERO
-            val orient = getField("galdim_angle").toDoubleOrNull()?.deg ?: Angle.ZERO
+            val majorAxis = getField("galdim_majaxis").toDoubleOrNull()?.arcmin ?: Angle.ZERO
+            val minorAxis = getField("galdim_minaxis").toDoubleOrNull()?.arcmin ?: Angle.ZERO
+            val orientation = getField("galdim_angle").toDoubleOrNull()?.deg ?: Angle.ZERO
             val spType = getField("sp_type") ?: ""
 
-            var mag = getField("V").toDoubleOrNull()
+            var magnitude = getField("V").toDoubleOrNull()
                 ?: getField("B").toDoubleOrNull()
                 ?: getField("U").toDoubleOrNull()
                 ?: magnitudeFromIAU
 
-            if (mag >= SkyObject.UNKNOWN_MAGNITUDE || !mag.isFinite()) {
-                mag = min(mag, getField("R").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
-                mag = min(mag, getField("I").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
-                mag = min(mag, getField("J").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
-                mag = min(mag, getField("H").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
-                mag = min(mag, getField("K").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+            if (magnitude >= SkyObject.UNKNOWN_MAGNITUDE || !magnitude.isFinite()) {
+                magnitude = min(magnitude, getField("R").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+                magnitude = min(magnitude, getField("I").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+                magnitude = min(magnitude, getField("J").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+                magnitude = min(magnitude, getField("H").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+                magnitude = min(magnitude, getField("K").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
             }
 
-            val constellation = currentTime.computeConstellation(ra, dec)
+            val constellation = SkyObject.computeConstellation(rightAscensionJ2000, declinationJ2000, currentTime)
 
-            data[id] = mapOf(
-                "id" to id, "type" to type, "names" to names.joinToString("|"),
-                "ra" to ra.value, "dec" to dec.value, "mag" to mag,
-                "pmRA" to pmRA.value, "pmDEC" to pmDEC.value,
-                "plx" to plx.value, "rv" to radVel.value, "redshift" to redshift,
-                "majAxis" to majAxis.value, "minAxis" to minAxis.value, "orient" to orient.value,
-                "spType" to spType, "const" to constellation,
+            data[id] = if (isDSO) DeepSkyObject(
+                id, names.joinToString("|"), magnitude,
+                rightAscensionJ2000, declinationJ2000,
+                type, majorAxis, minorAxis, orientation,
+                pmRA, pmDEC, parallax, radialVelocity, redshift,
+                constellation,
+            ) else Star(
+                id, names.joinToString("|"), magnitude,
+                rightAscensionJ2000, declinationJ2000,
+                type, spType, pmRA, pmDEC,
+                parallax, radialVelocity, redshift,
+                constellation,
             )
 
             return id
@@ -236,7 +247,7 @@ object SkyDatabaseGenerator {
         if (fetchStars) {
             val latch = CountUpDownLatch()
 
-            for (i in 0 until maxOID step stepSize) {
+            for (i in 0L until maxOID step stepSize) {
                 latch.countUp()
 
                 EXECUTOR_SERVICE.submit {
@@ -348,10 +359,5 @@ object SkyDatabaseGenerator {
 
             EXECUTOR_SERVICE.shutdown()
         }
-    }
-
-    @JvmStatic
-    private fun UTC.computeConstellation(rightAscension: Angle, declination: Angle): Constellation {
-        return Constellation.find(ICRF.equatorial(rightAscension, declination, time = this))
     }
 }

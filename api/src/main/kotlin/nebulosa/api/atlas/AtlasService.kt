@@ -7,13 +7,9 @@ import nebulosa.api.locations.LocationEntity
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.mas
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.math.Velocity.Companion.kms
 import nebulosa.nova.almanac.findDiscrete
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
-import nebulosa.nova.astrometry.FixedStar
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.SkyObject
@@ -47,8 +43,6 @@ class AtlasService(
 ) {
 
     private val positions = HashMap<LocationEntity, GeographicPosition>()
-    private val stars = HashMap<Long, FixedStar>()
-    private val dsos = HashMap<Long, FixedStar>()
     @Volatile private var sunImage = ByteArray(0)
 
     fun imageOfSun(output: HttpServletResponse) {
@@ -69,12 +63,12 @@ class AtlasService(
     }
 
     fun positionOfStar(location: LocationEntity, star: StarEntity, dateTime: LocalDateTime): BodyPosition {
-        return positionOfBody(fixedStarOf(star), location, dateTime)!!
+        return positionOfBody(star, location, dateTime)!!
             .copy(magnitude = star.magnitude, constellation = star.constellation, distance = star.distance, distanceUnit = "ly")
     }
 
     fun positionOfDSO(location: LocationEntity, dso: DeepSkyObjectEntity, dateTime: LocalDateTime): BodyPosition {
-        return positionOfBody(fixedStarOf(dso), location, dateTime)!!
+        return positionOfBody(dso, location, dateTime)!!
             .copy(magnitude = dso.magnitude, constellation = dso.constellation, distance = dso.distance, distanceUnit = "ly")
     }
 
@@ -149,32 +143,18 @@ class AtlasService(
     }
 
     fun altitudePointsOfStar(location: LocationEntity, star: StarEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(fixedStarOf(star), location, LocalDateTime.of(date, LocalTime.now()))
+        val ephemeris = bodyEphemeris(star, location, LocalDateTime.of(date, LocalTime.now()))
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
     fun altitudePointsOfDSO(location: LocationEntity, dso: DeepSkyObjectEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(fixedStarOf(dso), location, LocalDateTime.of(date, LocalTime.now()))
+        val ephemeris = bodyEphemeris(dso, location, LocalDateTime.of(date, LocalTime.now()))
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
     fun altitudePointsOfSatellite(location: LocationEntity, satellite: SatelliteEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
         val ephemeris = bodyEphemeris("TLE@$${satellite.tle}", location, LocalDateTime.of(date, LocalTime.now()))
         return altitudePointsOfBody(ephemeris, stepSize)
-    }
-
-    private fun fixedStarOf(star: StarEntity) = stars.getOrPut(star.id) {
-        FixedStar(
-            star.rightAscensionJ2000.rad, star.declinationJ2000.rad,
-            star.pmRA.rad, star.pmDEC.rad, star.parallax.mas, star.radialVelocity.kms
-        )
-    }
-
-    private fun fixedStarOf(dso: DeepSkyObjectEntity) = dsos.getOrPut(dso.id) {
-        FixedStar(
-            dso.rightAscensionJ2000.rad, dso.declinationJ2000.rad,
-            dso.pmRA.rad, dso.pmDEC.rad, dso.parallax.mas, dso.radialVelocity.kms
-        )
     }
 
     private fun altitudePointsOfBody(ephemeris: List<HorizonsElement>, stepSize: Int): List<DoubleArray> {

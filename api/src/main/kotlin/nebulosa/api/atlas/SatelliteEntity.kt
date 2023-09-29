@@ -17,8 +17,8 @@ data class SatelliteEntity(
     @JsonIgnore @Column(name = "group_type", columnDefinition = "INT8") var groupType: Long = 0L,
 ) : Persistable<Long> {
 
-    @get:JsonGetter val groups
-        get() = SatelliteGroupType.entries.filter { groupType and (1L shl it.ordinal) != 0L }
+    val groups
+        @JsonGetter get() = SatelliteGroupType.entries.filter { groupType and (1L shl it.ordinal) != 0L }
 
     override fun getId() = id
 
