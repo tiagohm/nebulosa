@@ -6,6 +6,8 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.Mean
 import nebulosa.imaging.algorithms.star.hfd.FindMode
 import nebulosa.log.loggerFor
+import nebulosa.math.cos
+import nebulosa.math.sin
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
@@ -605,7 +607,7 @@ class MultiStarGuider : InternalGuider {
 
                 val declination = mount.declination
 
-                if (declination.valid) {
+                if (declination.isFinite()) {
                     x *= declination.cos
                 }
 
@@ -1110,7 +1112,7 @@ class MultiStarGuider : InternalGuider {
         if (!mount.valid) return false
         val distance = mount.distance
         var mountTheta = mount.angle
-        if (abs(guideCalibrator.yAngleError.value) > PIOVERTWO) mountTheta = -mountTheta
+        if (abs(guideCalibrator.yAngleError) > PIOVERTWO) mountTheta = -mountTheta
         val xAngle = mountTheta + guideCalibrator.xAngle
         camera.set(xAngle.cos * distance, xAngle.sin * distance)
         return true

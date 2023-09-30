@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.SerializerProvider
 import nebulosa.indi.device.mount.Mount
 import nebulosa.json.modules.ToJson
 import nebulosa.math.AngleFormatter
+import nebulosa.math.format
+import nebulosa.math.toDegrees
+import nebulosa.math.toMeters
 import org.springframework.stereotype.Component
 import java.time.ZoneOffset
 
@@ -39,9 +42,9 @@ class MountConverter : ToJson<Mount> {
         gen.writeBooleanField("parking", value.parking)
         gen.writeBooleanField("parked", value.parked)
         gen.writeBooleanField("hasGPS", value.hasGPS)
-        gen.writeNumberField("longitude", value.longitude.degrees)
-        gen.writeNumberField("latitude", value.latitude.degrees)
-        gen.writeNumberField("elevation", value.elevation.meters)
+        gen.writeNumberField("longitude", value.longitude.toDegrees)
+        gen.writeNumberField("latitude", value.latitude.toDegrees)
+        gen.writeNumberField("elevation", value.elevation.toMeters)
         gen.writeNumberField("dateTime", value.dateTime.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli())
         gen.writeNumberField("offsetInMinutes", value.dateTime.offset.totalSeconds / 60)
         gen.writeEndObject()

@@ -6,7 +6,10 @@ import io.netty.handler.codec.ByteToMessageDecoder
 import nebulosa.constants.PI
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
-import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.normalized
+import nebulosa.math.rad
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
 
 internal class StellariumProtocolDecoder : ByteToMessageDecoder() {
 
@@ -24,7 +27,7 @@ internal class StellariumProtocolDecoder : ByteToMessageDecoder() {
         val rightAscension = (input.readIntLE() * (PI / 0x80000000)).rad.normalized
         val declination = (input.readIntLE() * (PI / 0x80000000)).rad
 
-        LOG.debug { "MessageGoto: ra=%f, dec=%f".format(rightAscension.hours, declination.degrees) }
+        LOG.debug { "MessageGoto: ra=%f, dec=%f".format(rightAscension.toHours, declination.toDegrees) }
 
         output.add(StellariumProtocolMessage.Goto(rightAscension, declination))
     }

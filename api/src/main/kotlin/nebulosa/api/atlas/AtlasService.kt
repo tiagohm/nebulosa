@@ -175,7 +175,7 @@ class AtlasService(
 
     fun searchStar(
         text: String,
-        rightAscension: Angle = Angle.ZERO, declination: Angle = Angle.ZERO, radius: Angle = Angle.ZERO,
+        rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
         constellation: Constellation? = null,
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
@@ -188,7 +188,7 @@ class AtlasService(
 
     fun searchDSO(
         text: String,
-        rightAscension: Angle = Angle.ZERO, declination: Angle = Angle.ZERO, radius: Angle = Angle.ZERO,
+        rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
         constellation: Constellation? = null,
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,

@@ -4,6 +4,8 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
 import nebulosa.netty.NettyServer
 import java.time.OffsetDateTime
 import java.util.concurrent.atomic.AtomicReference
@@ -21,16 +23,16 @@ class LX200ProtocolServer(
     private val mountHandler = AtomicReference<LX200MountHandler>()
 
     val rightAscension
-        get() = mountHandler.get()?.rightAscensionJ2000 ?: Angle.ZERO
+        get() = mountHandler.get()?.rightAscensionJ2000 ?: 0.0
 
     val declination
-        get() = mountHandler.get()?.declinationJ2000 ?: Angle.ZERO
+        get() = mountHandler.get()?.declinationJ2000 ?: 0.0
 
     val latitude
-        get() = mountHandler.get()?.latitude ?: Angle.ZERO
+        get() = mountHandler.get()?.latitude ?: 0.0
 
     val longitude
-        get() = mountHandler.get()?.longitude ?: Angle.ZERO
+        get() = mountHandler.get()?.longitude ?: 0.0
 
     val slewing
         get() = mountHandler.get()?.slewing ?: false
@@ -61,13 +63,13 @@ class LX200ProtocolServer(
 
     @Synchronized
     internal fun goTo(rightAscension: Angle, declination: Angle) {
-        LOG.info("going to. ra={}, dec={}", rightAscension.hours, declination.degrees)
+        LOG.info("going to. ra={}, dec={}", rightAscension.toHours, declination.toDegrees)
         mountHandler.get()?.goTo(rightAscension, declination)
     }
 
     @Synchronized
     internal fun syncTo(rightAscension: Angle, declination: Angle) {
-        LOG.info("syncing to. ra={}, dec={}", rightAscension.hours, declination.degrees)
+        LOG.info("syncing to. ra={}, dec={}", rightAscension.toHours, declination.toDegrees)
         mountHandler.get()?.syncTo(rightAscension, declination)
     }
 
@@ -103,7 +105,7 @@ class LX200ProtocolServer(
 
     @Synchronized
     internal fun coordinates(longitude: Angle, latitude: Angle) {
-        LOG.info("sending coordinates. longitude={}, latitude={}", longitude.degrees, latitude.degrees)
+        LOG.info("sending coordinates. longitude={}, latitude={}", longitude.toDegrees, latitude.toDegrees)
         mountHandler.get()?.coordinates(longitude, latitude)
     }
 

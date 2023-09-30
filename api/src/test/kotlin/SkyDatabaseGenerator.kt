@@ -1,15 +1,11 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.siegmar.fastcsv.reader.NamedCsvRow
-import nebulosa.api.atlas.SkyObjectConverter
 import nebulosa.common.concurrency.CountUpDownLatch
-import nebulosa.json.modules.JsonModule
 import nebulosa.log.loggerFor
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.arcmin
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.mas
-import nebulosa.math.Velocity
-import nebulosa.math.Velocity.Companion.kms
+import nebulosa.math.arcmin
+import nebulosa.math.deg
+import nebulosa.math.kms
+import nebulosa.math.mas
 import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.*
 import nebulosa.time.TimeYMDHMS
@@ -46,10 +42,7 @@ object SkyDatabaseGenerator {
         .build()
 
     @JvmStatic private val SIMBAD_SERVICE = SimbadService(httpClient = HTTP_CLIENT)
-
-    @JvmStatic private val MAPPER = ObjectMapper().apply {
-        registerModule(JsonModule(listOf(SkyObjectConverter()), emptyList()))
-    }
+    @JvmStatic private val MAPPER = ObjectMapper()
 
     @JvmStatic private val STAR_CATALOG_TYPES = listOf<CatalogNameProvider>(
         "NAME\\s+(.*)".toRegex() to { groupValues[1].trim() },
@@ -198,14 +191,14 @@ object SkyDatabaseGenerator {
 
             val rightAscensionJ2000 = getField("ra").deg
             val declinationJ2000 = getField("dec").deg
-            val pmRA = getField("pmra").toDoubleOrNull()?.mas ?: Angle.ZERO
-            val pmDEC = getField("pmdec").toDoubleOrNull()?.mas ?: Angle.ZERO
-            val parallax = getField("plx_value").toDoubleOrNull()?.mas ?: Angle.ZERO
-            val radialVelocity = getField("rvz_radvel").toDoubleOrNull()?.kms ?: Velocity.ZERO
+            val pmRA = getField("pmra").toDoubleOrNull()?.mas ?: 0.0
+            val pmDEC = getField("pmdec").toDoubleOrNull()?.mas ?: 0.0
+            val parallax = getField("plx_value").toDoubleOrNull()?.mas ?: 0.0
+            val radialVelocity = getField("rvz_radvel").toDoubleOrNull()?.kms ?: 0.0
             val redshift = getField("rvz_redshift").toDoubleOrNull() ?: 0.0
-            val majorAxis = getField("galdim_majaxis").toDoubleOrNull()?.arcmin ?: Angle.ZERO
-            val minorAxis = getField("galdim_minaxis").toDoubleOrNull()?.arcmin ?: Angle.ZERO
-            val orientation = getField("galdim_angle").toDoubleOrNull()?.deg ?: Angle.ZERO
+            val majorAxis = getField("galdim_majaxis").toDoubleOrNull()?.arcmin ?: 0.0
+            val minorAxis = getField("galdim_minaxis").toDoubleOrNull()?.arcmin ?: 0.0
+            val orientation = getField("galdim_angle").toDoubleOrNull()?.deg ?: 0.0
             val spType = getField("sp_type") ?: ""
 
             var magnitude = getField("V").toDoubleOrNull()

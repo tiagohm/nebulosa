@@ -12,11 +12,7 @@ import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
 import nebulosa.indi.protocol.*
 import nebulosa.log.loggerFor
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
-import nebulosa.math.Distance
-import nebulosa.math.Distance.Companion.m
+import nebulosa.math.*
 import nebulosa.nova.position.ICRF
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -43,16 +39,16 @@ internal open class MountDevice(
     override var pierSide = PierSide.NEITHER
     override var guideRateWE = 0.0 // TODO: Tratar para cada driver. iOptronV3 tem RA/DE. LX200 tem 1.0x, 0.8x, 0.6x, 0.4x.
     override var guideRateNS = 0.0
-    override var rightAscension = Angle.ZERO
-    override var declination = Angle.ZERO
+    override var rightAscension = 0.0
+    override var declination = 0.0
 
     override var canPulseGuide = false
     override var pulseGuiding = false
 
     override var hasGPS = false
-    override var longitude = Angle.ZERO
-    override var latitude = Angle.ZERO
-    override var elevation = Distance.ZERO
+    override var longitude = 0.0
+    override var latitude = 0.0
+    override var elevation = 0.0
     override var dateTime = OffsetDateTime.now()!!
 
     override fun handleMessage(message: INDIProtocol) {
@@ -208,7 +204,7 @@ internal open class MountDevice(
 
     override fun sync(ra: Angle, dec: Angle) {
         sendNewSwitch("ON_COORD_SET", "SYNC" to true)
-        sendNewNumber("EQUATORIAL_EOD_COORD", "RA" to ra.hours, "DEC" to dec.degrees)
+        sendNewNumber("EQUATORIAL_EOD_COORD", "RA" to ra.toHours, "DEC" to dec.toDegrees)
     }
 
     override fun syncJ2000(ra: Angle, dec: Angle) {
@@ -218,7 +214,7 @@ internal open class MountDevice(
 
     override fun slewTo(ra: Angle, dec: Angle) {
         sendNewSwitch("ON_COORD_SET", "SLEW" to true)
-        sendNewNumber("EQUATORIAL_EOD_COORD", "RA" to ra.hours, "DEC" to dec.degrees)
+        sendNewNumber("EQUATORIAL_EOD_COORD", "RA" to ra.toHours, "DEC" to dec.toDegrees)
     }
 
     override fun slewToJ2000(ra: Angle, dec: Angle) {
@@ -228,7 +224,7 @@ internal open class MountDevice(
 
     override fun goTo(ra: Angle, dec: Angle) {
         sendNewSwitch("ON_COORD_SET", "TRACK" to true)
-        sendNewNumber("EQUATORIAL_EOD_COORD", "RA" to ra.hours, "DEC" to dec.degrees)
+        sendNewNumber("EQUATORIAL_EOD_COORD", "RA" to ra.toHours, "DEC" to dec.toDegrees)
     }
 
     override fun goToJ2000(ra: Angle, dec: Angle) {
@@ -307,7 +303,7 @@ internal open class MountDevice(
     }
 
     override fun coordinates(longitude: Angle, latitude: Angle, elevation: Distance) {
-        sendNewNumber("GEOGRAPHIC_COORD", "LAT" to latitude.degrees, "LONG" to longitude.degrees, "ELEV" to elevation.meters)
+        sendNewNumber("GEOGRAPHIC_COORD", "LAT" to latitude.toDegrees, "LONG" to longitude.toDegrees, "ELEV" to elevation.toMeters)
     }
 
     override fun dateTime(dateTime: OffsetDateTime) {

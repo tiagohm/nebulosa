@@ -1,6 +1,6 @@
 package nebulosa.api.image
 
-import nebulosa.math.AngleFormatter
+import nebulosa.math.*
 import nebulosa.platesolving.Calibration
 
 data class ImageCalibrated(
@@ -14,11 +14,11 @@ data class ImageCalibrated(
 ) {
 
     constructor(calibration: Calibration) : this(
-        calibration.orientation.degrees,
-        calibration.scale.arcsec,
+        calibration.orientation.toDegrees,
+        calibration.scale.toArcsec,
         calibration.rightAscension.format(AngleFormatter.HMS),
         calibration.declination.format(AngleFormatter.SIGNED_DMS),
-        calibration.width.arcmin, calibration.height.arcmin,
-        calibration.radius.degrees,
+        calibration.width.toArcmin, calibration.height.toArcmin,
+        calibration.radius.toDegrees,
     )
 }

@@ -62,7 +62,7 @@ class Barycentric internal constructor(
     fun elongation(target: Body, center: Body): Double {
         val mLon = observe(target).latLon(Ecliptic).theta
         val sLon = observe(center).latLon(Ecliptic).phi
-        val angle = (mLon - sLon).value pmod TAU
+        val angle = (mLon - sLon) pmod TAU
         return angle / TAU
     }
 }

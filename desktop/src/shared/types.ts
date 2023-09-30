@@ -340,7 +340,7 @@ export interface OrbitalPhysicalParameter {
 
 export interface AstronomicalObject extends EquatorialCoordinateJ2000 {
     id: number
-    names: string
+    name: string
     magnitude: number
     type: SkyObjectType
     redshift: number

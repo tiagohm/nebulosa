@@ -8,9 +8,9 @@ import io.kotest.matchers.string.shouldStartWith
 import nebulosa.horizons.HorizonsQuantity
 import nebulosa.horizons.HorizonsService
 import nebulosa.io.source
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Distance.Companion.km
-import nebulosa.math.Distance.Companion.m
+import nebulosa.math.deg
+import nebulosa.math.km
+import nebulosa.math.m
 import nebulosa.nasa.daf.SourceDaf
 import nebulosa.nasa.spk.Spk
 import okio.ByteString.Companion.decodeBase64

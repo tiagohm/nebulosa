@@ -15,11 +15,7 @@ import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
-import nebulosa.math.AngleFormatter
-import nebulosa.math.Distance
+import nebulosa.math.*
 import nebulosa.platesolving.astap.AstapPlateSolver
 import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
@@ -148,20 +144,20 @@ class ImageService(
                 LOG.info("finding minor planet annotations. dateTime={}, calibration={}", dateTime, calibration)
 
                 val data = smallBodyDatabaseService.identify(
-                    dateTime, Angle.ZERO, Angle.ZERO, Distance.ZERO,
+                    dateTime, 0.0, 0.0, 0.0,
                     calibration.rightAscension, calibration.declination, calibration.radius,
                     minorPlanetMagLimit,
                 ).execute().body() ?: return@runAsync
 
-                val radiusInSeconds = calibration.radius.arcsec
+                val radiusInSeconds = calibration.radius.toArcsec
                 var count = 0
 
                 data.data.forEach {
                     val distance = it[5].toDouble()
 
                     if (distance <= radiusInSeconds) {
-                        val rightAscension = it[1].hours.takeIf(Angle::valid) ?: return@forEach
-                        val declination = it[2].deg.takeIf(Angle::valid) ?: return@forEach
+                        val rightAscension = it[1].hours.takeIf(Angle::isFinite) ?: return@forEach
+                        val declination = it[2].deg.takeIf(Angle::isFinite) ?: return@forEach
                         val (x, y) = wcs.skyToPix(rightAscension, declination)
                         val minorPlanet = ImageAnnotationResponse.MinorPlanet(it[0], it[1], it[2], it[6])
                         val annotation = ImageAnnotationResponse(x, y, minorPlanet = minorPlanet)
@@ -261,7 +257,7 @@ class ImageService(
     fun frame(
         rightAscension: Angle, declination: Angle,
         width: Int, height: Int, fov: Angle,
-        rotation: Angle = Angle.ZERO, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
+        rotation: Angle = 0.0, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
     ): Path {
         val (image, calibration) = framingService
             .frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!

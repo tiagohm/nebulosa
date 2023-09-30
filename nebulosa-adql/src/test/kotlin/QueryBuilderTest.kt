@@ -1,7 +1,7 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import nebulosa.adql.*
-import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.deg
 
 class QueryBuilderTest : StringSpec() {
 

@@ -4,8 +4,9 @@ import nebulosa.constants.AU_KM
 import nebulosa.constants.SPEED_OF_LIGHT
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
-import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.AngleFormatter
+import nebulosa.math.deg
+import nebulosa.math.format
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
 

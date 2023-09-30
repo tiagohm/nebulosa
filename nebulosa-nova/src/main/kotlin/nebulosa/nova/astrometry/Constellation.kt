@@ -2,6 +2,9 @@ package nebulosa.nova.astrometry
 
 import nebulosa.io.bufferedResource
 import nebulosa.io.readDoubleArrayLe
+import nebulosa.math.normalized
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
 import nebulosa.nova.position.ICRF
 import nebulosa.time.TT
 import nebulosa.time.TimeBesselianEpoch
@@ -471,8 +474,8 @@ enum class Constellation(
         @JvmStatic
         fun find(position: ICRF): Constellation {
             val (ra, dec) = position.equatorialAtEpoch(EPOCH)
-            val i = RA.binarySearch(ra.normalized.hours).let { if (it < 0) -it - 1 else it }
-            val j = DEC.binarySearch(dec.degrees).let { if (it < 0) -it - 1 else it }
+            val i = RA.binarySearch(ra.normalized.toHours).let { if (it < 0) -it - 1 else it }
+            val j = DEC.binarySearch(dec.toDegrees).let { if (it < 0) -it - 1 else it }
             val k = RA_TO_INDEX[i * 202 + j].toInt() and 0xFF
             return Constellation.entries[k]
         }

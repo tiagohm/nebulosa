@@ -5,8 +5,8 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotBlank
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Distance.Companion.m
+import nebulosa.math.deg
+import nebulosa.math.m
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import org.hibernate.validator.constraints.Range

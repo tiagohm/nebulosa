@@ -36,6 +36,8 @@ class AtlasDatabaseThreadedTask(
             readDSOsAndLoad()
 
             configRepository.save(DATABASE_VERSION_KEY, DATABASE_VERSION)
+        } else {
+            LOG.info("Star/DSO database is up to date")
         }
     }
 

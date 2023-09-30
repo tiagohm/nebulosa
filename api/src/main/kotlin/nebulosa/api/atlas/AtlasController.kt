@@ -7,8 +7,8 @@ import jakarta.validation.constraints.NotBlank
 import nebulosa.api.beans.annotations.DateAndTime
 import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.api.locations.LocationEntity
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
+import nebulosa.math.deg
+import nebulosa.math.hours
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObjectType
 import org.springframework.web.bind.annotation.*
@@ -112,12 +112,10 @@ class AtlasController(
         @RequestParam(required = false, defaultValue = "-99.0") magnitudeMin: Double,
         @RequestParam(required = false, defaultValue = "99.0") magnitudeMax: Double,
         @RequestParam(required = false) type: SkyObjectType?,
-    ): List<StarEntity> {
-        return atlasService.searchStar(
-            text, rightAscension.hours, declination.deg, radius.deg,
-            constellation, magnitudeMin, magnitudeMax, type,
-        )
-    }
+    ) = atlasService.searchStar(
+        text, rightAscension.hours, declination.deg, radius.deg,
+        constellation, magnitudeMin, magnitudeMax, type,
+    )
 
     @GetMapping("dsos/{dso}/position")
     fun positionOfDSO(
@@ -148,12 +146,10 @@ class AtlasController(
         @RequestParam(required = false, defaultValue = "-99.0") magnitudeMin: Double,
         @RequestParam(required = false, defaultValue = "99.0") magnitudeMax: Double,
         @RequestParam(required = false) type: SkyObjectType?,
-    ): List<DeepSkyObjectEntity> {
-        return atlasService.searchDSO(
-            text, rightAscension.hours, declination.deg, radius.deg,
-            constellation, magnitudeMin, magnitudeMax, type,
-        )
-    }
+    ) = atlasService.searchDSO(
+        text, rightAscension.hours, declination.deg, radius.deg,
+        constellation, magnitudeMin, magnitudeMax, type,
+    )
 
     @GetMapping("satellites/{satellite}/position")
     fun positionOfSatellite(

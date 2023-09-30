@@ -5,7 +5,8 @@ import com.sun.jna.ptr.DoubleByReference
 import com.sun.jna.ptr.IntByReference
 import com.sun.jna.ptr.PointerByReference
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.deg
+import nebulosa.math.toDegrees
 import nom.tam.fits.Header
 import java.io.Closeable
 
@@ -58,7 +59,7 @@ class WCSTransform(header: Header) : Closeable {
     }
 
     fun skyToPix(rightAscension: Angle, declination: Angle): PixelCoordinates {
-        val world = doubleArrayOf(rightAscension.degrees, declination.degrees)
+        val world = doubleArrayOf(rightAscension.toDegrees, declination.toDegrees)
         val imgcrd = doubleArrayOf(0.0, 0.0)
         val phi = DoubleByReference(0.0)
         val theta = DoubleByReference(0.0)

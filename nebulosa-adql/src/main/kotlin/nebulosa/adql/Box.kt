@@ -3,6 +3,7 @@ package nebulosa.adql
 import adql.query.operand.StringConstant
 import adql.query.operand.function.geometry.BoxFunction
 import nebulosa.math.Angle
+import nebulosa.math.toDegrees
 
 data class Box internal constructor(override val operand: BoxFunction) : Region {
 
@@ -10,14 +11,14 @@ data class Box internal constructor(override val operand: BoxFunction) : Region 
             : this(BoxFunction(StringConstant("ICRS"), x.operand, y.operand, width.operand, height.operand))
 
     constructor(x: Operand<*>, y: Angle, width: Angle, height: Angle = width)
-            : this(x, y.degrees.operand, width.degrees.operand, height.degrees.operand)
+            : this(x, y.toDegrees.operand, width.toDegrees.operand, height.toDegrees.operand)
 
     constructor(x: Operand<*>, y: Operand<*>, width: Angle, height: Angle = width)
-            : this(x, y, width.degrees.operand, height.degrees.operand)
+            : this(x, y, width.toDegrees.operand, height.toDegrees.operand)
 
     constructor(x: Operand<*>, y: Operand<*>, width: Operand<*>, height: Angle)
-            : this(x, y, width, height.degrees.operand)
+            : this(x, y, width, height.toDegrees.operand)
 
     constructor(x: Angle, y: Angle, width: Angle, height: Angle = width)
-            : this(x.degrees.operand, y.degrees.operand, width.degrees.operand, height.degrees.operand)
+            : this(x.toDegrees.operand, y.toDegrees.operand, width.toDegrees.operand, height.toDegrees.operand)
 }

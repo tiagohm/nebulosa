@@ -10,11 +10,7 @@ import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
 import nebulosa.indi.device.mount.SlewRate
 import nebulosa.indi.device.mount.TrackMode
 import nebulosa.log.loggerFor
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
-import nebulosa.math.AngleFormatter
-import nebulosa.math.Distance
+import nebulosa.math.*
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
@@ -133,8 +129,8 @@ class MountService(private val imageBucket: ImageBucket) {
 
     private fun computeTimeLeftToMeridianFlip(rightAscension: Angle, lst: Angle): Angle {
         val timeLeft = rightAscension - lst
-        return if (timeLeft.value < 0.0) timeLeft - SIDEREAL_TIME_DIFF * (timeLeft.normalized.value / TAU)
-        else timeLeft + SIDEREAL_TIME_DIFF * (timeLeft.value / TAU)
+        return if (timeLeft < 0.0) timeLeft - SIDEREAL_TIME_DIFF * (timeLeft.normalized / TAU)
+        else timeLeft + SIDEREAL_TIME_DIFF * (timeLeft / TAU)
     }
 
     fun coordinates(mount: Mount, longitude: Angle, latitude: Angle, elevation: Distance) {
@@ -166,7 +162,7 @@ class MountService(private val imageBucket: ImageBucket) {
 
     fun computeCelestialPoleLocation(mount: Mount, south: Boolean): ComputedLocation {
         return computeLocation(
-            mount, computeLST(mount), if (south) -Angle.QUARTER else Angle.QUARTER,
+            mount, computeLST(mount), if (south) -QUARTER else QUARTER,
             j2000 = false, equatorial = true, horizontal = true, meridianAt = false,
         )
     }
@@ -221,7 +217,7 @@ class MountService(private val imageBucket: ImageBucket) {
         if (meridianAt) {
             computeTimeLeftToMeridianFlip(rightAscension, computeLST(mount).also { computedLocation.lst = it.format(LST_FORMAT) })
                 .also { computedLocation.timeLeftToMeridianFlip = it.format(LST_FORMAT) }
-                .also { computedLocation.meridianAt = LocalDateTime.now().plusSeconds((it.hours * 3600.0).toLong()).format(MERIDIAN_TIME_FORMAT) }
+                .also { computedLocation.meridianAt = LocalDateTime.now().plusSeconds((it.toHours * 3600.0).toLong()).format(MERIDIAN_TIME_FORMAT) }
         }
 
         return computedLocation
@@ -241,7 +237,7 @@ class MountService(private val imageBucket: ImageBucket) {
                 val (calibratedRA, calibratedDEC) = icrf.equatorialAtDate()
                 val raOffset = calibratedRA - mount.rightAscension
                 val decOffset = calibratedDEC - mount.declination
-                LOG.info("pointing mount adjusted. ra={}, dec={}", raOffset.arcmin, decOffset.arcmin)
+                LOG.info("pointing mount adjusted. ra={}, dec={}", raOffset.toArcmin, decOffset.toArcmin)
                 goTo(mount, rightAscension + raOffset, declination + decOffset, false)
             }
         }

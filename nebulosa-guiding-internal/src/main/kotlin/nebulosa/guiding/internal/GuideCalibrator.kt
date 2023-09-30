@@ -4,8 +4,7 @@ import nebulosa.constants.PI
 import nebulosa.constants.PIOVERTWO
 import nebulosa.guiding.*
 import nebulosa.log.loggerFor
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.*
 import kotlin.math.*
 
 internal class GuideCalibrator(private val guider: MultiStarGuider) {
@@ -60,7 +59,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
     val decGuideParity
         get() = calibration.decGuideParity
 
-    var yAngleError = Angle.ZERO
+    var yAngleError = 0.0
         private set
 
     var calibrated = false
@@ -160,7 +159,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
         if (!calibrationStartingLocation.valid) {
             calibrationStartingLocation.set(currentLocation)
-            calibrationStartingCoords.set(guider.mount.rightAscension.hours, guider.mount.declination.degrees)
+            calibrationStartingCoords.set(guider.mount.rightAscension.toHours, guider.mount.declination.toDegrees)
         }
 
         var dx = calibrationStartingLocation.dX(currentLocation)
@@ -208,7 +207,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     )
 
                     if (calibrationStartingCoords.valid) {
-                        val endingCoords = Point(guider.mount.rightAscension.hours, guider.mount.declination.degrees, true)
+                        val endingCoords = Point(guider.mount.rightAscension.toHours, guider.mount.declination.toDegrees, true)
 
                         // True westward motion decreases RA.
                         val dra = endingCoords.x - calibrationStartingCoords.x
@@ -221,7 +220,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                     LOG.info(
                         "West calibration completed. steps={}, angle={}, rate={}, parity={}",
-                        calibrationSteps, calibration.xAngle.degrees, calibration.xRate * 1000.0, calibration.raGuideParity
+                        calibrationSteps, calibration.xAngle.toDegrees, calibration.xRate * 1000.0, calibration.raGuideParity
                     )
 
                     raSteps = calibrationSteps
@@ -286,7 +285,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                     calibrationState = CalibrationState.CLEAR_BACKLASH
                     blMarkerPoint.set(currentLocation)
-                    calibrationStartingCoords.set(guider.mount.rightAscension.hours, guider.mount.declination.degrees)
+                    calibrationStartingCoords.set(guider.mount.rightAscension.toHours, guider.mount.declination.toDegrees)
                     blExpectedBacklashStep = calibration.xRate * guider.calibrationStep * 0.6
 
                     val raSpeed = guider.mount.rightAscensionGuideRate
@@ -343,7 +342,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                             calibrationSteps++
 
                             blMarkerPoint.set(currentLocation)
-                            calibrationStartingCoords.set(guider.mount.rightAscension.hours, guider.mount.declination.degrees)
+                            calibrationStartingCoords.set(guider.mount.rightAscension.toHours, guider.mount.declination.toDegrees)
                             blLastCumDistance = blCumDelta
 
                             calibrationStatus(GuideDirection.UP_NORTH)
@@ -416,7 +415,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                         val ya = currentLocation.angle(calibrationStartingLocation)
                         val a1y = (a1 - ya).normalized - PI
                         val a2y = (a2 - ya).normalized - PI
-                        val yAngle = if (abs(a1y.value) < abs(a2y.value)) a1 else a2
+                        val yAngle = if (abs(a1y) < abs(a2y)) a1 else a2
                         val decDist = dist * (yAngle - calibration.yAngle).cos
                         val yRate = decDist / (calibrationSteps * guider.calibrationStep)
 
@@ -424,7 +423,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                         LOG.info(
                             "assuming orthogonal axes: measured Y angle={}, X angle={}, orthogonal={},{}, best = {}, dist = {}, decDist = {}",
-                            yAngle.degrees, calibration.xAngle.degrees, a1.degrees, a2.degrees, yAngle.degrees, dist, decDist,
+                            yAngle.toDegrees, calibration.xAngle.toDegrees, a1.toDegrees, a2.toDegrees, yAngle.toDegrees, dist, decDist,
                         )
                     } else {
                         val yAngle = currentLocation.angle(calibrationStartingLocation)
@@ -436,7 +435,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     decSteps = calibrationSteps
 
                     if (calibrationStartingCoords.valid) {
-                        val endingCoords = Point(guider.mount.rightAscension.hours, guider.mount.declination.degrees, true)
+                        val endingCoords = Point(guider.mount.rightAscension.toHours, guider.mount.declination.toDegrees, true)
 
                         // True Northward motion increases DEC.
                         val ddec = endingCoords.y - calibrationStartingCoords.y
@@ -449,7 +448,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                     LOG.info(
                         "North calibration completes with angle={} rate={} parity={}",
-                        calibration.yAngle.degrees, calibration.yRate * 1000.0, calibration.decGuideParity
+                        calibration.yAngle.toDegrees, calibration.yRate * 1000.0, calibration.decGuideParity
                     )
 
                     // For GO_SOUTH m_recenterRemaining contains the total remaining duration.
@@ -511,10 +510,10 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     val cosTheta = nudgeDirCosX * northDirCosX + nudgeDirCosY * northDirCosY
                     val theta = acos(cosTheta).rad
 
-                    LOG.info("nudge. theta={} deg", theta.degrees)
+                    LOG.info("nudge. theta={} deg", theta.toDegrees)
 
                     // We're going at least roughly in the right direction.
-                    if (abs(abs(theta.degrees) - 180.0) < 40.0) {
+                    if (abs(abs(theta.toDegrees) - 180.0) < 40.0) {
                         if (calibrationSteps <= MAX_NUDGES
                             && nudgeAmt > NUDGE_TOLERANCE
                             && nudgeAmt < distCrit + blDistanceMoved
@@ -558,7 +557,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     calibration = calibration.copy(
                         declination = guider.mount.declination,
                         pierSideAtEast = guider.mount.isPierSideAtEast,
-                        rotatorAngle = guider.rotator?.angle ?: Angle.ZERO,
+                        rotatorAngle = guider.rotator?.angle ?: 0.0,
                         binning = guider.camera.binning,
                     )
 
@@ -589,7 +588,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
         val binning = guider.camera.binning
         val pierSideAtEast = guider.mount.isPierSideAtEast
         val declination = guider.mount.declination
-        val rotatorAngle = guider.rotator?.angle ?: Angle.ZERO
+        val rotatorAngle = guider.rotator?.angle ?: 0.0
         var scaleAdjustment = 1.0
 
         if (calibration.binning != binning) {
@@ -617,8 +616,8 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
             flip()
         }
 
-        if (rotatorAngle.valid) {
-            if (!calibration.rotatorAngle.valid) {
+        if (rotatorAngle.isFinite()) {
+            if (!calibration.rotatorAngle.isFinite()) {
                 // we do not know the rotator position at calibration time so
                 // cannot automatically adjust calibration.
                 calibration = calibration.copy(rotatorAngle = rotatorAngle)
@@ -627,7 +626,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                 LOG.info(
                     "new rotator position {} deg, prev={} deg, delta={} deg",
-                    rotatorAngle.degrees, calibration.rotatorAngle.degrees, da.degrees,
+                    rotatorAngle.toDegrees, calibration.rotatorAngle.toDegrees, da.toDegrees,
                 )
 
                 val xAngle = (calibration.xAngle - da).normalized - PI

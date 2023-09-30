@@ -1,10 +1,7 @@
 package nebulosa.platesolving.astrometrynet
 
 import nebulosa.log.loggerFor
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.arcmin
-import nebulosa.math.Angle.Companion.arcsec
-import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.*
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import java.nio.file.Files
@@ -62,13 +59,13 @@ class LocalAstrometryNetPlateSolver(private val solverPath: String) : PlateSolve
 
         if (!blind) {
             args.add("--ra")
-            args.add("${centerRA.degrees}")
+            args.add("${centerRA.toDegrees}")
 
             args.add("--dec")
-            args.add("${centerDEC.degrees}")
+            args.add("${centerDEC.toDegrees}")
 
             args.add("--radius")
-            args.add("${radius.degrees}")
+            args.add("${radius.toDegrees}")
         }
 
         args.add("$path")
@@ -81,7 +78,7 @@ class LocalAstrometryNetPlateSolver(private val solverPath: String) : PlateSolve
 
         val buffer = process.inputReader()
 
-        var calibration = Calibration(false, Angle.ZERO, Angle.ZERO, Angle.ZERO, Angle.ZERO)
+        var calibration = Calibration(false, 0.0, 0.0, 0.0, 0.0)
 
         val parseThread = thread {
             for (line in buffer.lines()) {

@@ -34,7 +34,6 @@ CREATE INDEX IF NOT EXISTS stars_constellation_idx ON stars(constellation);
 CREATE TABLE IF NOT EXISTS dsos(
     id INT8 PRIMARY KEY,
     name TEXT,
-    m_type TEXT,
     magnitude REAL,
     right_ascension REAL,
     declination REAL,

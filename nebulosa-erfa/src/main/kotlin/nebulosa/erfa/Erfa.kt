@@ -7,13 +7,6 @@ import nebulosa.io.bufferedResource
 import nebulosa.io.readDoubleArrayLe
 import nebulosa.io.readDoubleLe
 import nebulosa.math.*
-import nebulosa.math.Angle.Companion.arcsec
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.mas
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.math.Distance.Companion.au
-import nebulosa.math.Distance.Companion.m
-import nebulosa.math.Velocity.Companion.auDay
 import okio.BufferedSource
 import kotlin.math.*
 import kotlin.math.PI
@@ -25,7 +18,7 @@ import kotlin.math.PI
  */
 fun eraP2s(x: Distance, y: Distance, z: Distance): SphericalCoordinate {
     val (theta, phi) = eraC2s(x, y, z)
-    val r = sqrt(x.value * x.value + y.value * y.value + z.value * z.value).au
+    val r = sqrt(x * x + y * y + z * z).au
     return SphericalCoordinate(theta, phi, r)
 }
 
@@ -35,9 +28,9 @@ fun eraP2s(x: Distance, y: Distance, z: Distance): SphericalCoordinate {
  * @return longitude angle (theta) and latitude angle (phi).
  */
 fun eraC2s(x: Distance, y: Distance, z: Distance): PairOfAngle {
-    val d2 = x.value * x.value + y.value * y.value
-    val theta = if (d2 == 0.0) 0.0 else atan2(y.value, x.value)
-    val phi = if (z.value == 0.0) 0.0 else atan2(z.value, sqrt(d2))
+    val d2 = x * x + y * y
+    val theta = if (d2 == 0.0) 0.0 else atan2(y, x)
+    val phi = if (z == 0.0) 0.0 else atan2(z, sqrt(d2))
     return PairOfAngle(theta.rad, phi.rad)
 }
 
@@ -54,7 +47,7 @@ fun eraC2s(x: Distance, y: Distance, z: Distance): PairOfAngle {
 fun eraAb(pnat: Vector3D, v: Vector3D, s: Distance, bm1: Double): Vector3D {
     val pdv = pnat.dot(v)
     val w1 = 1.0 + pdv / (1.0 + bm1)
-    val w2 = SCHWARZSCHILD_RADIUS_OF_THE_SUN / s.value
+    val w2 = SCHWARZSCHILD_RADIUS_OF_THE_SUN / s
     val p = DoubleArray(3)
 
     for (i in 0..2) {
@@ -106,7 +99,7 @@ fun eraAe2hd(az: Angle, alt: Angle, phi: Angle): PairOfAngle {
     val z = ca * ce * cp + se * sp
 
     val r = hypot(x, y)
-    val ha = if (r != 0.0) atan2(y, x).rad else Angle.ZERO
+    val ha = if (r != 0.0) atan2(y, x).rad else 0.0
     val dec = atan2(z, r).rad
 
     return PairOfAngle(ha, dec)
@@ -165,27 +158,27 @@ private val FAIRHEAD = bufferedResource("FAIRHEAD.dat") { readDoubleArrayLe(787 
 fun eraDtDb(
     tdb1: Double, tdb2: Double,
     ut: Double,
-    elong: Angle = Angle.ZERO, u: Distance = Distance.ZERO, v: Distance = Distance.ZERO,
+    elong: Angle = 0.0, u: Distance = 0.0, v: Distance = 0.0,
 ): Double {
     // Time since J2000.0 in Julian millennia.
     val t = (tdb1 - J2000 + tdb2) / DAYSPERJM
     // Convert UT to local solar time in radians.
-    val tsol = (ut pmod 1.0) * TAU + elong.value
+    val tsol = (ut pmod 1.0) * TAU + elong
     // Combine time argument (millennia) with deg/arcsec factor.
     val w = t / 3600.0
     // Sun Mean Meridian.
-    val elsun = (280.46645683 + 1296027711.03429 * w pmod 360.0).deg.value
+    val elsun = (280.46645683 + 1296027711.03429 * w pmod 360.0).deg
     // Sun Mean Anomaly.
-    val emsun = (357.52910918 + 1295965810.481 * w pmod 360.0).deg.value
+    val emsun = (357.52910918 + 1295965810.481 * w pmod 360.0).deg
     // Mean Elongation of Moon from Sun.
-    val d = (297.85019547 + 16029616012.090 * w pmod 360.0).deg.value
+    val d = (297.85019547 + 16029616012.090 * w pmod 360.0).deg
     // Mean Longitude of Jupiter.
-    val elj = (34.35151874 + 109306899.89453 * w pmod 360.0).deg.value
+    val elj = (34.35151874 + 109306899.89453 * w pmod 360.0).deg
     // Mean Longitude of Saturn.
-    val els = (50.07744430 + 44046398.47038 * w pmod 360.0).deg.value
+    val els = (50.07744430 + 44046398.47038 * w pmod 360.0).deg
     // TOPOCENTRIC TERMS: Moyer 1981 and Murray 1983.
-    val ukm = u.kilometers
-    val vkm = v.kilometers
+    val ukm = u.toKilometers
+    val vkm = v.toKilometers
     val wt =
         0.00029E-10 * ukm * sin(tsol + elsun - els) + 0.00100E-10 * ukm * sin(tsol - 2.0 * emsun) + 0.00133E-10 * ukm * sin(tsol - d) + 0.00133E-10 * ukm * sin(
             tsol + elsun - elj
@@ -238,8 +231,8 @@ fun eraDtDb(
  * Normalize [angle] into the range -[PI] <= a < +[PI].
  */
 fun eraAnpm(angle: Angle): Angle {
-    var w = angle.value % TAU
-    if (abs(w) >= PI) w -= if (angle.value >= 0.0) TAU else -TAU
+    var w = angle % TAU
+    if (abs(w) >= PI) w -= if (angle >= 0.0) TAU else -TAU
     return w.rad
 }
 
@@ -254,7 +247,7 @@ fun eraGc2Gde(
     radius: Distance, flattening: Double,
     x: Distance, y: Distance, z: Distance,
 ): SphericalCoordinate {
-    val aeps2 = radius.value * radius.value * 1e-32
+    val aeps2 = radius * radius * 1e-32
     val e2 = (2.0 - flattening) * flattening
 
     val e4t = e2 * e2 * 1.5
@@ -263,13 +256,13 @@ fun eraGc2Gde(
     assert(ec2 > 0.0)
 
     val ec = sqrt(ec2)
-    val b = radius.value * ec
+    val b = radius * ec
 
-    val p2 = x.value * x.value + y.value * y.value
+    val p2 = x * x + y * y
 
-    val elong = if (p2 > 0.0) atan2(y.value, x.value) else 0.0
+    val elong = if (p2 > 0.0) atan2(y, x) else 0.0
 
-    val absz = abs(z.value)
+    val absz = abs(z)
 
     val phi: Double
     val height: Double
@@ -280,8 +273,8 @@ fun eraGc2Gde(
         val p = sqrt(p2)
 
         // Normalization.
-        val s0 = absz / radius.value
-        val pn = p / radius.value
+        val s0 = absz / radius
+        val pn = p / radius
         val zc = ec * s0
 
         // Prepare Newton correction factors.
@@ -300,12 +293,12 @@ fun eraGc2Gde(
         val s1 = d0 * f0 - b0 * s0
         val cc = ec * (f0 * f0 - b0 * c0)
 
-        phi = z.value.sign * atan(s1 / cc)
+        phi = z.sign * atan(s1 / cc)
         val s12 = s1 * s1
         val cc2 = cc * cc
-        height = (p * cc + absz * s1 - radius.value * sqrt(ec2 * s12 + cc2)) / sqrt(s12 + cc2)
+        height = (p * cc + absz * s1 - radius * sqrt(ec2 * s12 + cc2)) / sqrt(s12 + cc2)
     } else {
-        phi = z.value.sign * PIOVERTWO
+        phi = z.sign * PIOVERTWO
         height = absz - b
     }
 
@@ -330,13 +323,13 @@ fun eraGd2Gce(
 
     assert(d > 0.0)
 
-    val ac = radius.value / sqrt(d)
+    val ac = radius / sqrt(d)
     val aS = w * ac
 
-    val r = (ac + height.value) * cp
+    val r = (ac + height) * cp
     val x = r * elong.cos
     val y = r * elong.sin
-    val z = (aS + height.value) * sp
+    val z = (aS + height) * sp
 
     return CartesianCoordinate(x.au, y.au, z.au)
 }
@@ -355,7 +348,7 @@ fun eraC2ixys(
 ): Matrix3D {
     // Obtain the spherical angles E and d.
     val r2 = x * x + y * y
-    val e = if (r2 > 0.0) atan2(y, x).rad else Angle.ZERO
+    val e = if (r2 > 0.0) atan2(y, x).rad else 0.0
     val d = atan(sqrt(r2 / (1.0 - r2))).rad
 
     return Matrix3D.rotateZ(e).rotateY(d).rotateZ(-(e + s))
@@ -398,7 +391,7 @@ fun eraPvtob(
 
     // Polar motion and TIO position.
     val rpm = eraPom00(xp, yp, sp)
-    val (x, y, z) = rpm.transposed * Vector3D(xyzm.x.meters, xyzm.y.meters, xyzm.z.meters)
+    val (x, y, z) = rpm.transposed * Vector3D(xyzm.x.toMeters, xyzm.y.toMeters, xyzm.z.toMeters)
 
     val s = theta.sin
     val c = theta.cos
@@ -451,20 +444,20 @@ fun eraApcs(
     val pmt = (tdb1 - J2000 + tdb2) / DAYSPERJY
 
     // Adjust Earth ephemeris to observer.
-    val dpx = px.value
+    val dpx = px
     val dvx = vx / AUDMS
-    val phx = ehpx.value + dpx
-    val vbx = ebvx.value + dvx
+    val phx = ehpx + dpx
+    val vbx = ebvx + dvx
 
-    val dpy = py.value
+    val dpy = py
     val dvy = vy / AUDMS
-    val vby = ebvy.value + dvy
-    val phy = ehpy.value + dpy
+    val vby = ebvy + dvy
+    val phy = ehpy + dpy
 
-    val dpz = pz.value
+    val dpz = pz
     val dvz = vz / AUDMS
-    val vbz = ebvz.value + dvz
-    val phz = ehpz.value + dpz
+    val vbz = ebvz + dvz
+    val phz = ehpz + dpz
 
     // Barycentric position of observer (au).
     val pbx = ebpx + dpx
@@ -549,14 +542,14 @@ fun eraApco(
     // Solve for local Earth rotation angle.
     val a = r[0, 0]
     val b = r[0, 1]
-    val eral = if (a != 0.0 || b != 0.0) atan2(b, a).rad else Angle.ZERO
+    val eral = if (a != 0.0 || b != 0.0) atan2(b, a).rad else 0.0
 
     // Solve for polar motion [X,Y] with respect to local meridian.
     val c = r[0, 2]
     val xpl = atan2(c, hypot(a, b)).rad
     val d = r[1, 2]
     val e = r[2, 2]
-    val ypl = if (d != 0.0 || e != 0.0) (-atan2(d, e)).rad else Angle.ZERO
+    val ypl = if (d != 0.0 || e != 0.0) (-atan2(d, e)).rad else 0.0
 
     // Adjusted longitude.
     val along = eraAnpm(eral - theta)
@@ -801,7 +794,7 @@ fun eraNut00a(tt1: Double, tt2: Double): PairOfAngle {
 
     // Summation of luni-solar nutation series (in reverse order).
     for (i in XLS.indices.reversed()) {
-        val arg = (XLS[i].nl * el.value + XLS[i].nlp * elp.value + XLS[i].nf * f.value + XLS[i].nd * d.value + XLS[i].nom * om.value).mod(TAU)
+        val arg = (XLS[i].nl * el + XLS[i].nlp * elp + XLS[i].nf * f + XLS[i].nd * d + XLS[i].nom * om).mod(TAU)
 
         val sarg = sin(arg)
         val carg = cos(arg)
@@ -844,10 +837,9 @@ fun eraNut00a(tt1: Double, tt2: Double): PairOfAngle {
     de = 0.0
 
     for (i in XPL.indices.reversed()) {
-        val arg =
-            (XPL[i].nl * al + XPL[i].nf * af + XPL[i].nd * ad + XPL[i].nom * aom + XPL[i].nme * alme.value + XPL[i].nve * alve.value + XPL[i].nea * alea.value + XPL[i].nma * alma.value + XPL[i].nju * alju.value + XPL[i].nsa * alsa.value + XPL[i].nur * alur.value + XPL[i].nne * alne + XPL[i].npa * apa.value).mod(
-                TAU
-            )
+        val arg = (XPL[i].nl * al + XPL[i].nf * af + XPL[i].nd * ad + XPL[i].nom * aom + XPL[i].nme * alme +
+                XPL[i].nve * alve + XPL[i].nea * alea + XPL[i].nma * alma + XPL[i].nju * alju +
+                XPL[i].nsa * alsa + XPL[i].nur * alur + XPL[i].nne * alne + XPL[i].npa * apa).mod(TAU)
 
         val sarg = sin(arg)
         val carg = cos(arg)
@@ -877,8 +869,8 @@ fun eraNut06a(tt1: Double, tt2: Double): PairOfAngle {
     val (dp, de) = eraNut00a(tt1, tt2)
 
     // Apply P03 adjustments (Wallace & Capitaine, 2006, Eqs.5).
-    val dpsi = dp.value + dp.value * (0.4697e-6 + fj2)
-    val deps = de.value + de.value * fj2
+    val dpsi = dp + dp * (0.4697e-6 + fj2)
+    val deps = de + de * fj2
 
     return PairOfAngle(dpsi.rad, deps.rad)
 }
@@ -1024,21 +1016,21 @@ fun eraS06(tt1: Double, tt2: Double, x: Double, y: Double): Angle {
     val fa = DoubleArray(8)
 
     // Mean anomaly of the Moon.
-    fa[0] = eraFal03(t).value
+    fa[0] = eraFal03(t)
     // Mean anomaly of the Sun.
-    fa[1] = eraFalp03(t).value
+    fa[1] = eraFalp03(t)
     // Mean longitude of the Moon minus that of the ascending node.
-    fa[2] = eraFaf03(t).value
+    fa[2] = eraFaf03(t)
     // Mean elongation of the Moon from the Sun.
-    fa[3] = eraFad03(t).value
+    fa[3] = eraFad03(t)
     // Mean longitude of the ascending node of the Moon.
-    fa[4] = eraFaom03(t).value
+    fa[4] = eraFaom03(t)
     // Mean longitude of Venus.
-    fa[5] = eraFave03(t).value
+    fa[5] = eraFave03(t)
     // Mean longitude of Earth.
-    fa[6] = eraFae03(t).value
+    fa[6] = eraFae03(t)
     // General precession in longitude.
-    fa[7] = eraFapa03(t).value
+    fa[7] = eraFapa03(t)
 
     // Evalutate s.
     val w = DoubleArray(6) { SP[it] }
@@ -1158,7 +1150,7 @@ fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): PairOfAngle {
 //    val era = era00(ut11, ut12)
 //
 //    val ref = if (frame.pressure > 0.0) eraRefco(frame.pressure, frame.temperature, frame.relativeHumidity, frame.obswl)
-//    else Angle.ZERO to Angle.ZERO
+//    else 0.0 to 0.0
 //
 //    // eraApco(time.whole, time.fraction)
 //}
@@ -1188,7 +1180,7 @@ fun eraApcg(
 ): AstrometryParameters {
     return eraApcs(
         tdb1, tdb2,
-        Distance.ZERO, Distance.ZERO, Distance.ZERO,
+        0.0, 0.0, 0.0,
         0.0, 0.0, 0.0,
         ebpx, ebpy, ebpz,
         ebvx, ebvy, ebvz,
@@ -1466,28 +1458,28 @@ fun eraEect00(tt1: Double, tt2: Double): Angle {
     val fa = DoubleArray(14)
 
     // Mean anomaly of the Moon.
-    fa[0] = eraFal03(t).value
+    fa[0] = eraFal03(t)
 
     // Mean anomaly of the Sun.
-    fa[1] = eraFalp03(t).value
+    fa[1] = eraFalp03(t)
 
     // Mean longitude of the Moon minus that of the ascending node.
-    fa[2] = eraFaf03(t).value
+    fa[2] = eraFaf03(t)
 
     // Mean elongation of the Moon from the Sun.
-    fa[3] = eraFad03(t).value
+    fa[3] = eraFad03(t)
 
     // Mean longitude of the ascending node of the Moon.
-    fa[4] = eraFaom03(t).value
+    fa[4] = eraFaom03(t)
 
     // Mean longitude of Venus.
-    fa[5] = eraFave03(t).value
+    fa[5] = eraFave03(t)
 
     // Mean longitude of Earth.
-    fa[6] = eraFae03(t).value
+    fa[6] = eraFae03(t)
 
     // General precession in longitude.
-    fa[7] = eraFapa03(t).value
+    fa[7] = eraFapa03(t)
 
     var s0 = 0.0
     var s1 = 0.0
@@ -1870,15 +1862,15 @@ fun eraNut00b(tt1: Double, tt2: Double): PairOfAngle {
     // Fundamental (Delaunay) arguments from Simon et al. (1994)
 
     // Mean anomaly of the Moon.
-    val el = (485868.249036 + 1717915923.2178 * t).mod(TURNAS).arcsec.value
+    val el = (485868.249036 + 1717915923.2178 * t).mod(TURNAS).arcsec
     // Mean anomaly of the Sun.
-    val elp = (1287104.79305 + 129596581.0481 * t).mod(TURNAS).arcsec.value
+    val elp = (1287104.79305 + 129596581.0481 * t).mod(TURNAS).arcsec
     // Mean argument of the latitude of the Moon.
-    val f = (335779.526232 + 1739527262.8478 * t).mod(TURNAS).arcsec.value
+    val f = (335779.526232 + 1739527262.8478 * t).mod(TURNAS).arcsec
     // Mean elongation of the Moon from the Sun.
-    val d = (1072260.70369 + 1602961601.2090 * t).mod(TURNAS).arcsec.value
+    val d = (1072260.70369 + 1602961601.2090 * t).mod(TURNAS).arcsec
     // Mean longitude of the ascending node of the Moon.
-    val om = (450160.398036 - 6962890.5431 * t).mod(TURNAS).arcsec.value
+    val om = (450160.398036 - 6962890.5431 * t).mod(TURNAS).arcsec
 
     var dp = 0.0
     var de = 0.0
@@ -2051,8 +2043,8 @@ typealias TangentPointDirectionCosines = DoubleArray
  * coordinates of the tangent point.
  */
 fun eraTpors(xi: Angle, eta: Angle, a: Angle, b: Angle): PairOfAngle? {
-    val xi2 = xi.value * xi.value
-    val r = sqrt(1.0 + xi2 + eta.value * eta.value)
+    val xi2 = xi * xi
+    val r = sqrt(1.0 + xi2 + eta * eta)
     val sb = b.sin
     val cb = b.cos
     val rsb = r * sb
@@ -2061,18 +2053,18 @@ fun eraTpors(xi: Angle, eta: Angle, a: Angle, b: Angle): PairOfAngle? {
 
     if (w2 >= 0.0) {
         var w = sqrt(w2)
-        var s = rsb - eta.value * w
-        var c = rsb * eta.value + w
-        if (xi.value == 0.0 && w == 0.0) w = 1.0
-        val a01 = (a - atan2(xi.value, w)).normalized
+        var s = rsb - eta * w
+        var c = rsb * eta + w
+        if (xi == 0.0 && w == 0.0) w = 1.0
+        val a01 = (a - atan2(xi, w)).normalized
         val b01 = atan2(s, c).rad
 
         if (abs(rsb) < 1.0) return PairOfAngle(a01, b01)
 
         w = -w
-        s = rsb - eta.value * w
-        c = rsb * eta.value + w
-        val a02 = (a - atan2(xi.value, w)).normalized
+        s = rsb - eta * w
+        c = rsb * eta + w
+        val a02 = (a - atan2(xi, w)).normalized
         val b02 = atan2(s, c).rad
 
         return PairOfAngle(a02, b02)
@@ -2091,8 +2083,8 @@ fun eraTporv(xi: Angle, eta: Angle, v: StarDirectionCosines): TangentPointDirect
     val y = v[1]
     val z = v[2]
     val rxy2 = x * x + y * y
-    val xi2 = xi.value * xi.value
-    val eta2p1 = eta.value * eta.value + 1.0
+    val xi2 = xi * xi
+    val eta2p1 = eta * eta + 1.0
     val r = sqrt(xi2 + eta2p1)
     val rsb = r * z
     val rcb = r * hypot(x, y)
@@ -2100,19 +2092,19 @@ fun eraTporv(xi: Angle, eta: Angle, v: StarDirectionCosines): TangentPointDirect
 
     if (w2 > 0.0) {
         var w = sqrt(w2)
-        var c = (rsb * eta.value + w) / (eta2p1 * sqrt(rxy2 * (w2 + xi2)))
+        var c = (rsb * eta + w) / (eta2p1 * sqrt(rxy2 * (w2 + xi2)))
 
-        val v00 = c * (x * w + y * xi.value)
-        val v01 = c * (y * w - x * xi.value)
-        val v02 = (rsb - eta.value * w) / eta2p1
+        val v00 = c * (x * w + y * xi)
+        val v01 = c * (y * w - x * xi)
+        val v02 = (rsb - eta * w) / eta2p1
 
         if (abs(rsb) < 1.0) return doubleArrayOf(v00, v01, v02)
 
         w = -w
-        c = (rsb * eta.value + w) / (eta2p1 * sqrt(rxy2 * (w2 + xi2)))
-        val v10 = c * (x * w + y * xi.value)
-        val v11 = c * (y * w - x * xi.value)
-        val v12 = (rsb - eta.value * w) / eta2p1
+        c = (rsb * eta + w) / (eta2p1 * sqrt(rxy2 * (w2 + xi2)))
+        val v10 = c * (x * w + y * xi)
+        val v11 = c * (y * w - x * xi)
+        val v12 = (rsb - eta * w) / eta2p1
 
         return doubleArrayOf(v10, v11, v12)
     } else {
@@ -2128,9 +2120,9 @@ fun eraTporv(xi: Angle, eta: Angle, v: StarDirectionCosines): TangentPointDirect
 fun eraTpsts(xi: Angle, eta: Angle, a0: Angle, b0: Angle): PairOfAngle {
     val sb0 = b0.sin
     val cb0 = b0.cos
-    val d = cb0 - eta.value * sb0
-    val a = (a0 + atan2(xi.value, d)).normalized
-    val b = atan2(sb0 + eta.value * cb0, hypot(xi.value, d)).rad
+    val d = cb0 - eta * sb0
+    val a = (a0 + atan2(xi, d)).normalized
+    val b = atan2(sb0 + eta * cb0, hypot(xi, d)).rad
     return PairOfAngle(a, b)
 }
 
@@ -2151,11 +2143,11 @@ fun eraTpstv(xi: Angle, eta: Angle, v: TangentPointDirectionCosines): StarDirect
         x = r
     }
 
-    val f = sqrt(1.0 + xi.value * xi.value + eta.value * eta.value)
+    val f = sqrt(1.0 + xi * xi + eta * eta)
 
-    val v0 = (x - (xi.value * y + eta.value * x * z) / r) / f
-    val v1 = (y + (xi.value * x - eta.value * y * z) / r) / f
-    val v2 = (z + eta.value * r) / f
+    val v0 = (x - (xi * y + eta * x * z) / r) / f
+    val v1 = (y + (xi * x - eta * y * z) / r) / f
+    val v2 = (z + eta * r) / f
 
     return doubleArrayOf(v0, v1, v2)
 }
@@ -2247,7 +2239,7 @@ fun eraPb06(tt1: Double, tt2: Double): EulerAngles {
         x = -x
     }
 
-    val z = if (x != 0.0 || y != 0.0) (-atan2(y, x)).rad else Angle.ZERO
+    val z = if (x != 0.0 || y != 0.0) (-atan2(y, x)).rad else 0.0
 
     // Derotate it out of the matrix.
     r = r.rotateZ(z)
@@ -2256,12 +2248,12 @@ fun eraPb06(tt1: Double, tt2: Double): EulerAngles {
     y = r[2]
     x = r[8]
 
-    val theta = if (x != 0.0 || y != 0.0) (-atan2(y, x)).rad else Angle.ZERO
+    val theta = if (x != 0.0 || y != 0.0) (-atan2(y, x)).rad else 0.0
 
     y = -r[3]
     x = r[4]
 
-    val zeta = if (x != 0.0 || y != 0.0) (-atan2(y, x)).rad else Angle.ZERO
+    val zeta = if (x != 0.0 || y != 0.0) (-atan2(y, x)).rad else 0.0
 
     return EulerAngles(zeta, z, theta)
 }

@@ -3,6 +3,7 @@ package nebulosa.adql
 import adql.query.operand.NumericConstant
 import adql.query.operand.function.geometry.PolygonFunction
 import nebulosa.math.PairOfAngle
+import nebulosa.math.toDegrees
 
 data class Polygon internal constructor(override val operand: PolygonFunction) : Region {
 
@@ -15,8 +16,8 @@ data class Polygon internal constructor(override val operand: PolygonFunction) :
             val res = ArrayList<NumericConstant>(size * 2)
 
             forEach {
-                res.add(NumericConstant(it.first.degrees))
-                res.add(NumericConstant(it.second.degrees))
+                res.add(NumericConstant(it.first.toDegrees))
+                res.add(NumericConstant(it.second.toDegrees))
             }
 
             return res

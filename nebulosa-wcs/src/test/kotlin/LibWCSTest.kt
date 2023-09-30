@@ -3,9 +3,10 @@ import io.kotest.core.test.TestScope
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.io.resource
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
 import nebulosa.math.AngleFormatter
+import nebulosa.math.deg
+import nebulosa.math.format
+import nebulosa.math.hours
 import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Fits
 import nom.tam.fits.Header
@@ -56,8 +57,8 @@ class LibWCSTest : StringSpec() {
             val y = parts[4].toDouble()
 
             val (rightAscension1, declination1) = transform.pixToSky(x, y)
-            rightAscension0.value shouldBe (rightAscension1.value plusOrMinus EPSILON)
-            declination0.value shouldBe (declination1.value plusOrMinus EPSILON)
+            rightAscension0 shouldBe (rightAscension1 plusOrMinus EPSILON)
+            declination0 shouldBe (declination1 plusOrMinus EPSILON)
         }
 
         transform.close()

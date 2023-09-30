@@ -1,7 +1,7 @@
 package nebulosa.skycatalog.sao
 
 import nebulosa.io.*
-import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.rad
 import nebulosa.nova.position.ICRF
 import nebulosa.skycatalog.SkyCatalog
 import nebulosa.skycatalog.Star

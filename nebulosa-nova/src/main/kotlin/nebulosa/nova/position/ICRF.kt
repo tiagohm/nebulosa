@@ -6,12 +6,6 @@ import nebulosa.erfa.CartesianCoordinate
 import nebulosa.erfa.PositionAndVelocity
 import nebulosa.erfa.SphericalCoordinate
 import nebulosa.math.*
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.math.Distance.Companion.au
-import nebulosa.math.Distance.Companion.km
-import nebulosa.math.Pressure.Companion.mbar
-import nebulosa.math.Temperature.Companion.celsius
-import nebulosa.math.Velocity.Companion.kms
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.ITRS
@@ -132,7 +126,7 @@ open class ICRF protected constructor(
      */
     fun horizontal(
         temperature: Temperature = 10.0.celsius,
-        pressure: Pressure = 1013.0.mbar,
+        pressure: Pressure = ONE_ATM,
     ): SphericalCoordinate {
         // TODO: Uncomment when implement apparent method.
         // require(this !is Astrometric) {
@@ -151,7 +145,7 @@ open class ICRF protected constructor(
         val (ha, delta) = hourAngle()
         val phi = (center as GeographicPosition).latitude
         // A rare condition! Object exactly in zenith, avoid undefined result.
-        return if (ha.value == 0.0 && (delta - phi).value == 0.0) Angle.ZERO
+        return if (ha == 0.0 && (delta - phi) == 0.0) 0.0
         else atan2(ha.sin, phi.tan * delta.cos - delta.sin * ha.cos).rad
     }
 
@@ -316,15 +310,14 @@ open class ICRF protected constructor(
          * they will be assumed to be ICRS (the modern replacement for J2000).
          */
         fun equatorial(
-            ra: Angle,
-            dec: Angle,
-            distance: Distance = Distance.GIGAPARSEC,
+            rightAscension: Angle, declination: Angle,
+            distance: Distance = ONE_GIGAPARSEC,
             time: InstantOfTime = UTC.now(),
             epoch: InstantOfTime? = null,
             center: Number = Int.MIN_VALUE,
             target: Number = Int.MIN_VALUE,
         ): ICRF {
-            val position = CartesianCoordinate.of(ra, dec, distance).vector
+            val position = CartesianCoordinate.of(rightAscension, declination, distance).vector
             return of(if (epoch != null) epoch.m.transposed * position else position, Vector3D.EMPTY, time, center, target)
         }
     }

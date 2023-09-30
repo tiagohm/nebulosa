@@ -13,7 +13,7 @@ interface DeepSkyObjectRepository : JpaRepository<DeepSkyObjectEntity, Long> {
 
     @Query(
         "SELECT dso FROM DeepSkyObjectEntity dso WHERE " +
-                "(:text IS NULL OR dso.names LIKE CONCAT('%', :text, '%')) AND " +
+                "(:text IS NULL OR dso.name LIKE CONCAT('%', :text, '%')) AND " +
                 "(:constellation IS NULL OR dso.constellation = :constellation) AND " +
                 "(:type IS NULL OR dso.type = :type) AND " +
                 "(dso.magnitude BETWEEN :magnitudeMin AND :magnitudeMax) AND " +
@@ -22,7 +22,7 @@ interface DeepSkyObjectRepository : JpaRepository<DeepSkyObjectEntity, Long> {
     )
     fun search(
         text: String? = null,
-        rightAscensionJ2000: Angle = Angle.ZERO, declinationJ2000: Angle = Angle.ZERO, radius: Angle = Angle.ZERO,
+        rightAscensionJ2000: Angle = 0.0, declinationJ2000: Angle = 0.0, radius: Angle = 0.0,
         constellation: Constellation? = null,
         magnitudeMin: Double = -100.0, magnitudeMax: Double = 100.0,
         type: SkyObjectType? = null,

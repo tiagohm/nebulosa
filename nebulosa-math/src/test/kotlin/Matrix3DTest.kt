@@ -4,10 +4,10 @@ import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.rad
 import nebulosa.math.Matrix3D
+import nebulosa.math.SEMICIRCLE
 import nebulosa.math.Vector3D
+import nebulosa.math.rad
 
 @Suppress("FloatingPointLiteralPrecision")
 class Matrix3DTest : StringSpec() {
@@ -59,8 +59,8 @@ class Matrix3DTest : StringSpec() {
             r[2, 2] shouldBeExactly 5.0
         }
         "chain rotation" {
-            val m0 = Matrix3D.IDENTITY.rotateZ(Angle.SEMICIRCLE).rotateX(-Angle.SEMICIRCLE).rotateY(Angle.SEMICIRCLE)
-            val m1 = Matrix3D.rotateZ(Angle.SEMICIRCLE).rotateX(-Angle.SEMICIRCLE).rotateY(Angle.SEMICIRCLE)
+            val m0 = Matrix3D.IDENTITY.rotateZ(SEMICIRCLE).rotateX(-SEMICIRCLE).rotateY(SEMICIRCLE)
+            val m1 = Matrix3D.rotateZ(SEMICIRCLE).rotateX(-SEMICIRCLE).rotateY(SEMICIRCLE)
             m0.matrix shouldBe m1.matrix
         }
         "plus matrix" {

@@ -7,14 +7,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import nebulosa.constants.TAU
 import nebulosa.erfa.*
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.math.Distance
-import nebulosa.math.Distance.Companion.au
-import nebulosa.math.Distance.Companion.km
-import nebulosa.math.Distance.Companion.m
-import nebulosa.math.Matrix3D
-import nebulosa.math.Vector3D
-import nebulosa.math.Velocity.Companion.auDay
+import nebulosa.math.*
 
 @Suppress("FloatingPointLiteralPrecision")
 class ErfaTest : StringSpec() {
@@ -85,49 +78,49 @@ class ErfaTest : StringSpec() {
         }
         "eraC2s" {
             val (theta, phi) = eraC2s(100.0.au, (-50.0).au, 25.0.au)
-            theta.value shouldBe (-0.4636476090008061162 plusOrMinus 1e-14)
-            phi.value shouldBe (0.2199879773954594463 plusOrMinus 1e-14)
+            theta shouldBe (-0.4636476090008061162 plusOrMinus 1e-14)
+            phi shouldBe (0.2199879773954594463 plusOrMinus 1e-14)
         }
         "eraP2s" {
             val (theta, phi, r) = eraP2s(100.0.au, (-50.0).au, 25.0.au)
-            theta.value shouldBe (-0.4636476090008061162 plusOrMinus 1e-12)
-            phi.value shouldBe (0.2199879773954594463 plusOrMinus 1e-12)
-            r.value shouldBe (114.5643923738960002 plusOrMinus 1e-9)
+            theta shouldBe (-0.4636476090008061162 plusOrMinus 1e-12)
+            phi shouldBe (0.2199879773954594463 plusOrMinus 1e-12)
+            r shouldBe (114.5643923738960002 plusOrMinus 1e-9)
         }
         "eraAnpm" {
-            eraAnpm((-4.0).rad).value shouldBe (2.283185307179586477 plusOrMinus 1e-12)
+            eraAnpm((-4.0).rad) shouldBe (2.283185307179586477 plusOrMinus 1e-12)
         }
         "eraGc2Gde" {
             val (e1, p1, h1) = eraGc2Gde(6378137.0.m, 1.0 / 298.257223563, 2e6.m, 3e6.m, 5.244e6.m)
-            e1.value shouldBe (0.9827937232473290680 plusOrMinus 1e-14)
-            p1.value shouldBe (0.97160184819075459 plusOrMinus 1e-14)
-            h1.meters shouldBe (331.4172461426059892 plusOrMinus 1e-8)
+            e1 shouldBe (0.9827937232473290680 plusOrMinus 1e-14)
+            p1 shouldBe (0.97160184819075459 plusOrMinus 1e-14)
+            h1.toMeters shouldBe (331.4172461426059892 plusOrMinus 1e-8)
 
             val (e2, p2, h2) = eraGc2Gde(6378137.0.m, 1.0 / 298.257222101, 2e6.m, 3e6.m, 5.244e6.m)
-            e2.value shouldBe (0.9827937232473290680 plusOrMinus 1e-14)
-            p2.value shouldBe (0.97160184820607853 plusOrMinus 1e-14)
-            h2.meters shouldBe (331.41731754844348 plusOrMinus 1e-8)
+            e2 shouldBe (0.9827937232473290680 plusOrMinus 1e-14)
+            p2 shouldBe (0.97160184820607853 plusOrMinus 1e-14)
+            h2.toMeters shouldBe (331.41731754844348 plusOrMinus 1e-8)
 
             val (e3, p3, h3) = eraGc2Gde(6378135.0.m, 1.0 / 298.26, 2e6.m, 3e6.m, 5.244e6.m)
-            e3.value shouldBe (0.9827937232473290680 plusOrMinus 1e-14)
-            p3.value shouldBe (0.9716018181101511937 plusOrMinus 1e-14)
-            h3.meters shouldBe (333.2770726130318123 plusOrMinus 1e-8)
+            e3 shouldBe (0.9827937232473290680 plusOrMinus 1e-14)
+            p3 shouldBe (0.9716018181101511937 plusOrMinus 1e-14)
+            h3.toMeters shouldBe (333.2770726130318123 plusOrMinus 1e-8)
         }
         "eraGd2Gc" {
             val (x1, y1, z1) = eraGd2Gce(6378137.0.m, 1.0 / 298.257223563, 3.1.rad, (-0.5).rad, 2500.0.m)
-            x1.meters shouldBe (-5599000.5577049947 plusOrMinus 1e-7)
-            y1.meters shouldBe (233011.67223479203 plusOrMinus 1e-7)
-            z1.meters shouldBe (-3040909.4706983363 plusOrMinus 1e-7)
+            x1.toMeters shouldBe (-5599000.5577049947 plusOrMinus 1e-7)
+            y1.toMeters shouldBe (233011.67223479203 plusOrMinus 1e-7)
+            z1.toMeters shouldBe (-3040909.4706983363 plusOrMinus 1e-7)
 
             val (x2, y2, z2) = eraGd2Gce(6378137.0.m, 1.0 / 298.257222101, 3.1.rad, (-0.5).rad, 2500.0.m)
-            x2.meters shouldBe (-5599000.5577260984 plusOrMinus 1e-7)
-            y2.meters shouldBe (233011.6722356702949 plusOrMinus 1e-7)
-            z2.meters shouldBe (-3040909.4706095476 plusOrMinus 1e-7)
+            x2.toMeters shouldBe (-5599000.5577260984 plusOrMinus 1e-7)
+            y2.toMeters shouldBe (233011.6722356702949 plusOrMinus 1e-7)
+            z2.toMeters shouldBe (-3040909.4706095476 plusOrMinus 1e-7)
 
             val (x3, y3, z3) = eraGd2Gce(6378135.0.m, 1.0 / 298.26, 3.1.rad, (-0.5).rad, 2500.0.m)
-            x3.meters shouldBe (-5598998.7626301490 plusOrMinus 1e-7)
-            y3.meters shouldBe (233011.5975297822211 plusOrMinus 1e-7)
-            z3.meters shouldBe (-3040908.6861467111 plusOrMinus 1e-7)
+            x3.toMeters shouldBe (-5598998.7626301490 plusOrMinus 1e-7)
+            y3.toMeters shouldBe (233011.5975297822211 plusOrMinus 1e-7)
+            z3.toMeters shouldBe (-3040908.6861467111 plusOrMinus 1e-7)
         }
         "eraC2ixys" {
             val m = eraC2ixys(0.5791308486706011000e-3, 0.4020579816732961219e-4, (-0.1220040848472271978e-7).rad)
@@ -164,13 +157,13 @@ class ErfaTest : StringSpec() {
             )
 
             astro.pmt shouldBe (13.25248468622587269 plusOrMinus 1e-11)
-            astro.eb.x.value shouldBe (-0.9741827110629881886 plusOrMinus 1e-12)
-            astro.eb.y.value shouldBe (-0.2115130190136415986 plusOrMinus 1e-12)
-            astro.eb.z.value shouldBe (-0.09179840186954412099 plusOrMinus 1e-12)
+            astro.eb.x shouldBe (-0.9741827110629881886 plusOrMinus 1e-12)
+            astro.eb.y shouldBe (-0.2115130190136415986 plusOrMinus 1e-12)
+            astro.eb.z shouldBe (-0.09179840186954412099 plusOrMinus 1e-12)
             astro.ehx shouldBe (-0.9736425571689454706 plusOrMinus 1e-12)
             astro.ehy shouldBe (-0.2092452125850435930 plusOrMinus 1e-12)
             astro.ehz shouldBe (-0.09075578152248299218 plusOrMinus 1e-12)
-            astro.em.value shouldBe (0.9998233241709796859 plusOrMinus 1e-12)
+            astro.em shouldBe (0.9998233241709796859 plusOrMinus 1e-12)
             astro.vx shouldBe (0.2078704993282685510e-4 plusOrMinus 1e-16)
             astro.vy shouldBe (-0.8955360106989405683e-4 plusOrMinus 1e-16)
             astro.vz shouldBe (-0.3863338994289409097e-4 plusOrMinus 1e-16)
@@ -190,13 +183,13 @@ class ErfaTest : StringSpec() {
             )
 
             astro.pmt shouldBe (13.25248468622587269 plusOrMinus 1e-11)
-            astro.eb.x.value shouldBe (-0.9741827110630322720 plusOrMinus 1e-12)
-            astro.eb.y.value shouldBe (-0.2115130190135344832 plusOrMinus 1e-12)
-            astro.eb.z.value shouldBe (-0.09179840186949532298 plusOrMinus 1e-12)
+            astro.eb.x shouldBe (-0.9741827110630322720 plusOrMinus 1e-12)
+            astro.eb.y shouldBe (-0.2115130190135344832 plusOrMinus 1e-12)
+            astro.eb.z shouldBe (-0.09179840186949532298 plusOrMinus 1e-12)
             astro.ehx shouldBe (-0.9736425571689739035 plusOrMinus 1e-12)
             astro.ehy shouldBe (-0.2092452125849330936 plusOrMinus 1e-12)
             astro.ehz shouldBe (-0.09075578152243272599 plusOrMinus 1e-12)
-            astro.em.value shouldBe (0.9998233241709957653 plusOrMinus 1e-12)
+            astro.em shouldBe (0.9998233241709957653 plusOrMinus 1e-12)
             astro.vx shouldBe (0.2078704992916728762e-4 plusOrMinus 1e-16)
             astro.vy shouldBe (-0.8955360107151952319e-4 plusOrMinus 1e-16)
             astro.vz shouldBe (-0.3863338994288951082e-4 plusOrMinus 1e-16)
@@ -210,61 +203,61 @@ class ErfaTest : StringSpec() {
             astro.bpn[0, 2] shouldBe (-0.1312227200895260194e-2 plusOrMinus 1e-12)
             astro.bpn[1, 2] shouldBe (0.2928082217872315680e-4 plusOrMinus 1e-12)
             astro.bpn[2, 2] shouldBe (0.9999991386008323373 plusOrMinus 1e-12)
-            astro.along.value shouldBe (-0.5278008060295995734 plusOrMinus 1e-12)
-            astro.xpl.value shouldBe (0.1133427418130752958e-5 plusOrMinus 1e-17)
-            astro.ypl.value shouldBe (0.1453347595780646207e-5 plusOrMinus 1e-17)
+            astro.along shouldBe (-0.5278008060295995734 plusOrMinus 1e-12)
+            astro.xpl shouldBe (0.1133427418130752958e-5 plusOrMinus 1e-17)
+            astro.ypl shouldBe (0.1453347595780646207e-5 plusOrMinus 1e-17)
             astro.sphi shouldBe (-0.9440115679003211329 plusOrMinus 1e-12)
             astro.cphi shouldBe (0.3299123514971474711 plusOrMinus 1e-12)
-            astro.eral.value shouldBe (2.617608903970400427 plusOrMinus 1e-12)
-            astro.refa.value shouldBe (0.2014187790000000000e-3 plusOrMinus 1e-17)
-            astro.refb.value shouldBe (-0.2361408310000000000e-6 plusOrMinus 1e-18)
+            astro.eral shouldBe (2.617608903970400427 plusOrMinus 1e-12)
+            astro.refa shouldBe (0.2014187790000000000e-3 plusOrMinus 1e-17)
+            astro.refb shouldBe (-0.2361408310000000000e-6 plusOrMinus 1e-18)
             astro.diurab shouldBeExactly 0.0
         }
         "eraSp00" {
-            eraSp00(2400000.5, 52541.0).value shouldBe (-0.6216698469981019309e-11 plusOrMinus 1e-12)
+            eraSp00(2400000.5, 52541.0) shouldBe (-0.6216698469981019309e-11 plusOrMinus 1e-12)
         }
         "eraObl06" {
-            eraObl06(2400000.5, 54388.0).value shouldBe (0.4090749229387258204 plusOrMinus 1e-14)
+            eraObl06(2400000.5, 54388.0) shouldBe (0.4090749229387258204 plusOrMinus 1e-14)
         }
         "eraPfw06" {
             val (gamb, phib, psib, epsa) = eraPfw06(2400000.5, 50123.9999)
-            gamb.value shouldBe (-0.2243387670997995690e-5 plusOrMinus 1e-16)
-            phib.value shouldBe (0.4091014602391312808 plusOrMinus 1e-12)
-            psib.value shouldBe (-0.9501954178013031895e-3 plusOrMinus 1e-14)
-            epsa.value shouldBe (0.4091014316587367491 plusOrMinus 1e-12)
+            gamb shouldBe (-0.2243387670997995690e-5 plusOrMinus 1e-16)
+            phib shouldBe (0.4091014602391312808 plusOrMinus 1e-12)
+            psib shouldBe (-0.9501954178013031895e-3 plusOrMinus 1e-14)
+            epsa shouldBe (0.4091014316587367491 plusOrMinus 1e-12)
         }
         "eraFal03" {
-            eraFal03(0.80).value shouldBe (5.132369751108684150 plusOrMinus 1e-12)
+            eraFal03(0.80) shouldBe (5.132369751108684150 plusOrMinus 1e-12)
         }
         "eraFaf03" {
-            eraFaf03(0.80).value shouldBe (0.2597711366745499518 plusOrMinus 1e-12)
+            eraFaf03(0.80) shouldBe (0.2597711366745499518 plusOrMinus 1e-12)
         }
         "eraFaom03" {
-            eraFaom03(0.80).value shouldBe (TAU - 5.973618440951302183 plusOrMinus 1e-12)
+            eraFaom03(0.80) shouldBe (TAU - 5.973618440951302183 plusOrMinus 1e-12)
         }
         "eraFapa03" {
-            eraFapa03(0.80).value shouldBe (0.1950884762240000000e-1 plusOrMinus 1e-12)
+            eraFapa03(0.80) shouldBe (0.1950884762240000000e-1 plusOrMinus 1e-12)
         }
         "eraFame03" {
-            eraFame03(0.80).value shouldBe (5.417338184297289661 plusOrMinus 1e-12)
+            eraFame03(0.80) shouldBe (5.417338184297289661 plusOrMinus 1e-12)
         }
         "eraFave03" {
-            eraFave03(0.80).value shouldBe (3.424900460533758000 plusOrMinus 1e-12)
+            eraFave03(0.80) shouldBe (3.424900460533758000 plusOrMinus 1e-12)
         }
         "eraFae03" {
-            eraFae03(0.80).value shouldBe (1.744713738913081846 plusOrMinus 1e-12)
+            eraFae03(0.80) shouldBe (1.744713738913081846 plusOrMinus 1e-12)
         }
         "eraFama03" {
-            eraFama03(0.80).value shouldBe (3.275506840277781492 plusOrMinus 1e-12)
+            eraFama03(0.80) shouldBe (3.275506840277781492 plusOrMinus 1e-12)
         }
         "eraFaju03" {
-            eraFaju03(0.80).value shouldBe (5.275711665202481138 plusOrMinus 1e-12)
+            eraFaju03(0.80) shouldBe (5.275711665202481138 plusOrMinus 1e-12)
         }
         "eraFasa03" {
-            eraFasa03(0.80).value shouldBe (5.371574539440827046 plusOrMinus 1e-12)
+            eraFasa03(0.80) shouldBe (5.371574539440827046 plusOrMinus 1e-12)
         }
         "eraFaur03" {
-            eraFaur03(0.80).value shouldBe (5.180636450180413523 plusOrMinus 1e-12)
+            eraFaur03(0.80) shouldBe (5.180636450180413523 plusOrMinus 1e-12)
         }
         "eraFw2m" {
             val m = eraFw2m((-0.2243387670997992368e-5).rad, 0.4091014602391312982.rad, (-0.9501954178013015092e-3).rad, 0.4091014316587367472.rad)
@@ -279,12 +272,12 @@ class ErfaTest : StringSpec() {
             m[2, 2] shouldBe (0.9999999285679971958 plusOrMinus 1e-12)
         }
         "era00" {
-            era00(2400000.0 + 54388.0, 0.5).value shouldBe (0.4022837240028158102 plusOrMinus 1e-12)
+            era00(2400000.0 + 54388.0, 0.5) shouldBe (0.4022837240028158102 plusOrMinus 1e-12)
         }
         "eraRefco" {
             val (refa, refb) = eraRefco(800.0, 10.0, 0.9, 0.4)
-            refa.value shouldBe (0.2264949956241415009e-3 plusOrMinus 1e-15)
-            refb.value shouldBe (-0.2598658261729343970e-6 plusOrMinus 1e-18)
+            refa shouldBe (0.2264949956241415009e-3 plusOrMinus 1e-15)
+            refb shouldBe (-0.2598658261729343970e-6 plusOrMinus 1e-18)
         }
         "eraApcg" {
             val astrom = eraApcg(
@@ -295,13 +288,13 @@ class ErfaTest : StringSpec() {
             )
 
             astrom.pmt shouldBe (12.65133794027378508 plusOrMinus 1e-11)
-            astrom.eb.x.value shouldBe (0.901310875 plusOrMinus 1e-12)
-            astrom.eb.y.value shouldBe (-0.417402664 plusOrMinus 1e-12)
-            astrom.eb.z.value shouldBe (-0.180982288 plusOrMinus 1e-12)
+            astrom.eb.x shouldBe (0.901310875 plusOrMinus 1e-12)
+            astrom.eb.y shouldBe (-0.417402664 plusOrMinus 1e-12)
+            astrom.eb.z shouldBe (-0.180982288 plusOrMinus 1e-12)
             astrom.ehx shouldBe (0.8940025429324143045 plusOrMinus 1e-12)
             astrom.ehy shouldBe (-0.4110930268679817955 plusOrMinus 1e-12)
             astrom.ehz shouldBe (-0.1782189004872870264 plusOrMinus 1e-12)
-            astrom.em.value shouldBe (1.010465295811013146 plusOrMinus 1e-12)
+            astrom.em shouldBe (1.010465295811013146 plusOrMinus 1e-12)
             astrom.vx shouldBe (0.4289638913597693554e-4 plusOrMinus 1e-16)
             astrom.vy shouldBe (0.8115034051581320575e-4 plusOrMinus 1e-16)
             astrom.vz shouldBe (0.3517555136380563427e-4 plusOrMinus 1e-16)
@@ -329,13 +322,13 @@ class ErfaTest : StringSpec() {
             val astrom = eraApcg13(2456165.5, 0.401182685)
 
             astrom.pmt shouldBe (12.65133794027378508 plusOrMinus 1e-11)
-            astrom.eb.x.value shouldBe (0.9013108747340644755 plusOrMinus 1e-12)
-            astrom.eb.y.value shouldBe (-0.4174026640406119957 plusOrMinus 1e-12)
-            astrom.eb.z.value shouldBe (-0.1809822877867817771 plusOrMinus 1e-12)
+            astrom.eb.x shouldBe (0.9013108747340644755 plusOrMinus 1e-12)
+            astrom.eb.y shouldBe (-0.4174026640406119957 plusOrMinus 1e-12)
+            astrom.eb.z shouldBe (-0.1809822877867817771 plusOrMinus 1e-12)
             astrom.ehx shouldBe (0.8940025429255499549 plusOrMinus 1e-12)
             astrom.ehy shouldBe (-0.4110930268331896318 plusOrMinus 1e-12)
             astrom.ehz shouldBe (-0.1782189006019749850 plusOrMinus 1e-12)
-            astrom.em.value shouldBe (1.010465295964664178 plusOrMinus 1e-12)
+            astrom.em shouldBe (1.010465295964664178 plusOrMinus 1e-12)
             astrom.vx shouldBe (0.4289638912941341125e-4 plusOrMinus 1e-16)
             astrom.vy shouldBe (0.8115034032405042132e-4 plusOrMinus 1e-16)
             astrom.vz shouldBe (0.3517555135536470279e-4 plusOrMinus 1e-16)
@@ -344,8 +337,8 @@ class ErfaTest : StringSpec() {
         "eraAe2hd" {
             val (ha, dec) = eraAe2hd(5.5.rad, 1.1.rad, 0.7.rad)
 
-            ha.value shouldBe (0.5933291115507309663 plusOrMinus 1E-14)
-            dec.value shouldBe (0.9613934761647817620 plusOrMinus 1E-14)
+            ha shouldBe (0.5933291115507309663 plusOrMinus 1E-14)
+            dec shouldBe (0.9613934761647817620 plusOrMinus 1E-14)
         }
         "eraTcbTdb" {
             val (whole, fraction) = eraTcbTdb(2453750.5, 0.893019599)
@@ -382,13 +375,13 @@ class ErfaTest : StringSpec() {
         }
         "eraNut00a" {
             val (psi, eps) = eraNut00a(2400000.5, 53736.0)
-            psi.value shouldBe (-0.9630909107115518431e-5 plusOrMinus 1e-13)
-            eps.value shouldBe (0.4063239174001678710e-4 plusOrMinus 1e-13)
+            psi shouldBe (-0.9630909107115518431e-5 plusOrMinus 1e-13)
+            eps shouldBe (0.4063239174001678710e-4 plusOrMinus 1e-13)
         }
         "eraNut06a" {
             val (psi, eps) = eraNut06a(2400000.5, 53736.0)
-            psi.value shouldBe (-0.9630912025820308797e-5 plusOrMinus 1e-13)
-            eps.value shouldBe (0.4063238496887249798e-4 plusOrMinus 1e-13)
+            psi shouldBe (-0.9630912025820308797e-5 plusOrMinus 1e-13)
+            eps shouldBe (0.4063238496887249798e-4 plusOrMinus 1e-13)
         }
         "eraPnm06a" {
             val rbpn = eraPnm06a(2400000.5, 50123.9999)
@@ -414,31 +407,31 @@ class ErfaTest : StringSpec() {
         }
         "eraEect00" {
             val eect = eraEect00(2400000.5, 53736.0)
-            eect.value shouldBe (0.2046085004885125264e-8 plusOrMinus 1e-20)
+            eect shouldBe (0.2046085004885125264e-8 plusOrMinus 1e-20)
         }
         "eraEra00" {
             val era00 = eraEra00(2454388.0, 0.5)
-            era00.value shouldBe (0.4022837240028158102 plusOrMinus 1e-12)
+            era00 shouldBe (0.4022837240028158102 plusOrMinus 1e-12)
         }
         "eraEe00" {
             val ee = eraEe00(2453736.0, 0.5, 0.4090789763356509900.rad, (-0.9630909107115582393e-5).rad)
-            ee.value shouldBe (-0.8834193235367965479e-5 plusOrMinus 1e-18)
+            ee shouldBe (-0.8834193235367965479e-5 plusOrMinus 1e-18)
         }
         "eraGmst00" {
             val theta = eraGmst00(2453736.0, 0.5, 2453736.0, 0.5)
-            theta.value shouldBe (1.754174972210740592 plusOrMinus 1e-12)
+            theta shouldBe (1.754174972210740592 plusOrMinus 1e-12)
         }
         "eraGmst06" {
             val theta = eraGmst06(2453736.0, 0.5, 2453736.0, 0.5)
-            theta.value shouldBe (1.754174971870091203 plusOrMinus 1e-12)
+            theta shouldBe (1.754174971870091203 plusOrMinus 1e-12)
         }
         "eraEe06a" {
             val ee = eraEe06a(2453736.0, 0.5)
-            ee.value shouldBe (-0.8834195072043790156e-5 plusOrMinus 1e-15)
+            ee shouldBe (-0.8834195072043790156e-5 plusOrMinus 1e-15)
         }
         "eraGst06a" {
             val theta = eraGst06a(2453736.0, 0.5, 2453736.0, 0.5)
-            theta.value shouldBe (1.754166137675019159 plusOrMinus 1e-12)
+            theta shouldBe (1.754166137675019159 plusOrMinus 1e-12)
         }
         "eraGst06" {
             val rnpb = Matrix3D(
@@ -448,15 +441,15 @@ class ErfaTest : StringSpec() {
             )
 
             val theta = eraGst06(2453736.0, 0.5, 2453736.0, 0.5, rnpb)
-            theta.value shouldBe (1.754166138018167568 plusOrMinus 1e-12)
+            theta shouldBe (1.754166138018167568 plusOrMinus 1e-12)
         }
         "eraS06" {
             val s = eraS06(2400000.5, 53736.0, 0.5791308486706011000e-3, 0.4020579816732961219e-4)
-            s.value shouldBe (-0.1220032213076463117e-7 plusOrMinus 1e-18)
+            s shouldBe (-0.1220032213076463117e-7 plusOrMinus 1e-18)
         }
         "eraS06a" {
             val s = eraS06a(2400000.5, 52541.0)
-            s.value shouldBe (-0.1340680437291812383e-7 plusOrMinus 1e-18)
+            s shouldBe (-0.1340680437291812383e-7 plusOrMinus 1e-18)
         }
         "eraEors" {
             val rnpb = Matrix3D(
@@ -466,37 +459,37 @@ class ErfaTest : StringSpec() {
             )
 
             val eo = eraEors(rnpb, (-0.1220040848472271978e-7).rad)
-            eo.value shouldBe (-0.1332882715130744606e-2 plusOrMinus 1e-14)
+            eo shouldBe (-0.1332882715130744606e-2 plusOrMinus 1e-14)
         }
         "eraGst00a" {
             val theta = eraGst00a(2453736.0, 0.5, 2453736.0, 0.5)
-            theta.value shouldBe (1.754166138018281369 plusOrMinus 1e-12)
+            theta shouldBe (1.754166138018281369 plusOrMinus 1e-12)
         }
         "eraGst00b" {
             val theta = eraGst00b(2453736.0, 0.5)
-            theta.value shouldBe (1.754166136510680589 plusOrMinus 1e-12)
+            theta shouldBe (1.754166136510680589 plusOrMinus 1e-12)
         }
         "eraEe00a" {
             val ee = eraEe00a(2453736.0, 0.5)
-            ee.value shouldBe (-0.8834192459222588227e-5 plusOrMinus 1e-18)
+            ee shouldBe (-0.8834192459222588227e-5 plusOrMinus 1e-18)
         }
         "eraEe00b" {
             val ee = eraEe00b(2453736.0, 0.5)
-            ee.value shouldBe (-0.8835700060003032831e-5 plusOrMinus 1e-18)
+            ee shouldBe (-0.8835700060003032831e-5 plusOrMinus 1e-18)
         }
         "eraPr00" {
             val (dpsipr, depspr) = eraPr00(2453736.0, 0.5)
-            dpsipr.value shouldBe (-0.8716465172668347629e-7 plusOrMinus 1e-22)
-            depspr.value shouldBe (-0.7342018386722813087e-8 plusOrMinus 1e-22)
+            dpsipr shouldBe (-0.8716465172668347629e-7 plusOrMinus 1e-22)
+            depspr shouldBe (-0.7342018386722813087e-8 plusOrMinus 1e-22)
         }
         "eraObl80" {
             val eps0 = eraObl80(2454388.0, 0.5)
-            eps0.value shouldBe (0.4090751347643816218 plusOrMinus 1e-14)
+            eps0 shouldBe (0.4090751347643816218 plusOrMinus 1e-14)
         }
         "eraNut00b" {
             val (dpsi, deps) = eraNut00b(2453736.0, 0.5)
-            dpsi.value shouldBe (-0.9632552291148362783e-5 plusOrMinus 1e-13)
-            deps.value shouldBe (0.4063197106621159367e-4 plusOrMinus 1e-13)
+            dpsi shouldBe (-0.9632552291148362783e-5 plusOrMinus 1e-13)
+            deps shouldBe (0.4063197106621159367e-4 plusOrMinus 1e-13)
         }
         "eraC2tcio" {
             val rc2i = Matrix3D(
@@ -552,22 +545,22 @@ class ErfaTest : StringSpec() {
         "eraP06e" {
             val e = eraP06e(2452541.0, 0.5)
 
-            e.eps0.value shouldBe (0.4090926006005828715 plusOrMinus 1e-14)
-            e.psia.value shouldBe (0.6664369630191613431e-3 plusOrMinus 1e-14)
-            e.oma.value shouldBe (0.4090925973783255982 plusOrMinus 1e-14)
-            e.bpa.value shouldBe (0.5561149371265209445e-6 plusOrMinus 1e-14)
-            e.bqa.value shouldBe (-0.6191517193290621270e-5 plusOrMinus 1e-14)
-            e.pia.value shouldBe (0.6216441751884382923e-5 plusOrMinus 1e-14)
-            e.bpia.value shouldBe (3.052014180023779882 plusOrMinus 1e-14)
-            e.epsa.value shouldBe (0.4090864054922431688 plusOrMinus 1e-14)
-            e.chia.value shouldBe (0.1387703379530915364e-5 plusOrMinus 1e-14)
-            e.za.value shouldBe (0.2921789846651790546e-3 plusOrMinus 1e-14)
-            e.zetaa.value shouldBe (0.3178773290332009310e-3 plusOrMinus 1e-14)
-            e.thetaa.value shouldBe (0.2650932701657497181e-3 plusOrMinus 1e-14)
-            e.pa.value shouldBe (0.6651637681381016288e-3 plusOrMinus 1e-14)
-            e.gam.value shouldBe (0.1398077115963754987e-5 plusOrMinus 1e-14)
-            e.phi.value shouldBe (0.4090864090837462602 plusOrMinus 1e-14)
-            e.psi.value shouldBe (0.6664464807480920325e-3 plusOrMinus 1e-14)
+            e.eps0 shouldBe (0.4090926006005828715 plusOrMinus 1e-14)
+            e.psia shouldBe (0.6664369630191613431e-3 plusOrMinus 1e-14)
+            e.oma shouldBe (0.4090925973783255982 plusOrMinus 1e-14)
+            e.bpa shouldBe (0.5561149371265209445e-6 plusOrMinus 1e-14)
+            e.bqa shouldBe (-0.6191517193290621270e-5 plusOrMinus 1e-14)
+            e.pia shouldBe (0.6216441751884382923e-5 plusOrMinus 1e-14)
+            e.bpia shouldBe (3.052014180023779882 plusOrMinus 1e-14)
+            e.epsa shouldBe (0.4090864054922431688 plusOrMinus 1e-14)
+            e.chia shouldBe (0.1387703379530915364e-5 plusOrMinus 1e-14)
+            e.za shouldBe (0.2921789846651790546e-3 plusOrMinus 1e-14)
+            e.zetaa shouldBe (0.3178773290332009310e-3 plusOrMinus 1e-14)
+            e.thetaa shouldBe (0.2650932701657497181e-3 plusOrMinus 1e-14)
+            e.pa shouldBe (0.6651637681381016288e-3 plusOrMinus 1e-14)
+            e.gam shouldBe (0.1398077115963754987e-5 plusOrMinus 1e-14)
+            e.phi shouldBe (0.4090864090837462602 plusOrMinus 1e-14)
+            e.psi shouldBe (0.6664464807480920325e-3 plusOrMinus 1e-14)
         }
         "eraNumat" {
             val rmatn = eraNumat(0.4090789763356509900.rad, (-0.9630909107115582393e-5).rad, 0.4063239174001678826e-4.rad)
@@ -625,18 +618,18 @@ class ErfaTest : StringSpec() {
         "eraTpors" {
             val (a, b) = eraTpors((-0.03).rad, 0.07.rad, 1.3.rad, 1.5.rad).shouldNotBeNull()
 
-            a.value shouldBe (4.004971075806584490 plusOrMinus 1e-13)
-            b.value shouldBe (1.565084088476417917 plusOrMinus 1e-13)
+            a shouldBe (4.004971075806584490 plusOrMinus 1e-13)
+            b shouldBe (1.565084088476417917 plusOrMinus 1e-13)
         }
         "eraTpsts" {
             val (ra, dec) = eraTpsts((-0.03).rad, 0.07.rad, 2.3.rad, 1.5.rad)
 
-            ra.value shouldBe (0.7596127167359629775 plusOrMinus 1e-14)
-            dec.value shouldBe (1.540864645109263028 plusOrMinus 1e-13)
+            ra shouldBe (0.7596127167359629775 plusOrMinus 1e-14)
+            dec shouldBe (1.540864645109263028 plusOrMinus 1e-13)
         }
         "eraTporv" {
-            val s = CartesianCoordinate.of(1.3.rad, 1.5.rad, Distance.ONE)
-            val v = doubleArrayOf(s.x.value, s.y.value, s.z.value)
+            val s = CartesianCoordinate.of(1.3.rad, 1.5.rad, 1.0.au)
+            val v = doubleArrayOf(s.x, s.y, s.z)
 
             val (a, b, c) = eraTporv((-0.03).rad, 0.07.rad, v).shouldNotBeNull()
 
@@ -645,8 +638,8 @@ class ErfaTest : StringSpec() {
             c shouldBe (0.9999836852110587012 plusOrMinus 1e-14)
         }
         "eraTpstv" {
-            val s = CartesianCoordinate.of(2.3.rad, 1.5.rad, Distance.ONE)
-            val v = doubleArrayOf(s.x.value, s.y.value, s.z.value)
+            val s = CartesianCoordinate.of(2.3.rad, 1.5.rad, 1.0.au)
+            val v = doubleArrayOf(s.x, s.y, s.z)
 
             val (a, b, c) = eraTpstv((-0.03).rad, 0.07.rad, v).shouldNotBeNull()
 
@@ -657,29 +650,29 @@ class ErfaTest : StringSpec() {
         "eraTpxes" {
             val (xi, eta, j) = eraTpxes(1.3.rad, 1.55.rad, 2.3.rad, 1.5.rad)
 
-            xi.value shouldBe (-0.01753200983236980595 plusOrMinus 1e-15)
-            eta.value shouldBe (0.05962940005778712891 plusOrMinus 1e-15)
+            xi shouldBe (-0.01753200983236980595 plusOrMinus 1e-15)
+            eta shouldBe (0.05962940005778712891 plusOrMinus 1e-15)
             j shouldBeExactly 0
         }
         "eraTpxev" {
-            val s = CartesianCoordinate.of(1.3.rad, 1.55.rad, Distance.ONE)
-            val v = doubleArrayOf(s.x.value, s.y.value, s.z.value)
+            val s = CartesianCoordinate.of(1.3.rad, 1.55.rad, 1.0.au)
+            val v = doubleArrayOf(s.x, s.y, s.z)
 
-            val s0 = CartesianCoordinate.of(2.3.rad, 1.5.rad, Distance.ONE)
-            val v0 = doubleArrayOf(s0.x.value, s0.y.value, s0.z.value)
+            val s0 = CartesianCoordinate.of(2.3.rad, 1.5.rad, 1.0.au)
+            val v0 = doubleArrayOf(s0.x, s0.y, s0.z)
 
             val (xi, eta, j) = eraTpxev(v, v0)
 
-            xi.value shouldBe (-0.01753200983236980595 plusOrMinus 1e-15)
-            eta.value shouldBe (0.05962940005778712891 plusOrMinus 1e-15)
+            xi shouldBe (-0.01753200983236980595 plusOrMinus 1e-15)
+            eta shouldBe (0.05962940005778712891 plusOrMinus 1e-15)
             j shouldBeExactly 0
         }
         "eraPb06" {
             val (zeta, z, theta) = eraPb06(2400000.5, 50123.9999)
 
-            zeta.value shouldBe (-0.5092634016326478238e-3 plusOrMinus 1e-12)
-            z.value shouldBe (-0.3602772060566044413e-3 plusOrMinus 1e-12)
-            theta.value shouldBe (-0.3779735537167811177e-3 plusOrMinus 1e-12)
+            zeta shouldBe (-0.5092634016326478238e-3 plusOrMinus 1e-12)
+            z shouldBe (-0.3602772060566044413e-3 plusOrMinus 1e-12)
+            theta shouldBe (-0.3779735537167811177e-3 plusOrMinus 1e-12)
         }
     }
 }

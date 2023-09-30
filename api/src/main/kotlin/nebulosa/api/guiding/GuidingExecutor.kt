@@ -93,10 +93,10 @@ class GuidingExecutor(
         get() = TODO("Not yet implemented")
 
     override val rightAscension
-        get() = guideMount.get()?.rightAscension ?: Angle.ZERO
+        get() = guideMount.get()?.rightAscension ?: 0.0
 
     override val declination
-        get() = guideMount.get()?.declination ?: Angle.ZERO
+        get() = guideMount.get()?.declination ?: 0.0
 
     override val rightAscensionGuideRate: Double
         get() = TODO("Not yet implemented")
@@ -136,7 +136,7 @@ class GuidingExecutor(
     }
 
     // TODO: Ajustar quando implementar o Rotator.
-    override val angle = Angle.ZERO
+    override val angle = 0.0
 
     @Synchronized
     fun startLooping(

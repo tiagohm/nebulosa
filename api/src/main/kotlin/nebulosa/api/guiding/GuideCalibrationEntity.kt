@@ -6,7 +6,7 @@ import nebulosa.guiding.GuideParity
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
-import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.rad
 
 @Entity
 @Table(name = "guide_calibrations")
@@ -43,8 +43,8 @@ data class GuideCalibrationEntity(
         ) = GuideCalibrationEntity(
             0L, camera.name, mount.name, guideOutput.name, System.currentTimeMillis(),
             calibration.xRate, calibration.yRate,
-            calibration.xAngle.value, calibration.yAngle.value,
-            calibration.declination.value, calibration.rotatorAngle.value,
+            calibration.xAngle, calibration.yAngle,
+            calibration.declination, calibration.rotatorAngle,
             calibration.binning, calibration.pierSideAtEast,
             calibration.raGuideParity, calibration.decGuideParity,
         )

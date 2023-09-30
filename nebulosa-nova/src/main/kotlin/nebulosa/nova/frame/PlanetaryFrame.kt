@@ -1,11 +1,7 @@
 package nebulosa.nova.frame
 
 import nebulosa.constants.DAYSEC
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.math.Distance
-import nebulosa.math.Matrix3D
-import nebulosa.math.TripleOfAngle
+import nebulosa.math.*
 import nebulosa.nasa.pck.PckSegment
 import nebulosa.nova.position.PlanetograhicPosition
 import nebulosa.time.InstantOfTime
@@ -88,6 +84,6 @@ data class PlanetaryFrame(
 
     fun latLon(
         latitude: Angle, longitude: Angle, radius: Distance,
-        elevation: Distance = Distance.ZERO,
+        elevation: Distance = 0.0,
     ) = PlanetograhicPosition(this, latitude, longitude, radius + elevation)
 }

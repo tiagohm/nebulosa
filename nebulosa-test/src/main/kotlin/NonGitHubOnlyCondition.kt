@@ -4,5 +4,7 @@ import kotlin.reflect.KClass
 
 class NonGitHubOnlyCondition : EnabledCondition {
 
-    override fun enabled(kclass: KClass<out Spec>) = System.getProperty("github", "false") == "false"
+    override fun enabled(kclass: KClass<out Spec>): Boolean {
+        return System.getProperty("github", "false") == "false"
+    }
 }

@@ -2,7 +2,7 @@ package nebulosa.guiding.internal
 
 import nebulosa.guiding.GuidePoint
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.rad
 import kotlin.math.atan2
 import kotlin.math.hypot
 
@@ -52,13 +52,13 @@ open class Point(
 
     override val angle
         get() = if (x != 0.0 || y != 0.0) atan2(y, x).rad
-        else Angle.ZERO
+        else 0.0
 
     override fun angle(point: GuidePoint): Angle {
         val dx = dX(point)
         val dy = dY(point)
         return if (dx != 0.0 || dy != 0.0) atan2(dy, dx).rad
-        else Angle.ZERO
+        else 0.0
     }
 
     internal open fun invalidate() {

@@ -1,9 +1,9 @@
 package nebulosa.skycatalog.stellarium
 
 import nebulosa.io.readDouble
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.mas
-import nebulosa.math.Angle.Companion.rad
+import nebulosa.math.deg
+import nebulosa.math.mas
+import nebulosa.math.rad
 import nebulosa.skycatalog.DeepSkyObject
 import nebulosa.skycatalog.SkyCatalog
 import nebulosa.skycatalog.SkyObject

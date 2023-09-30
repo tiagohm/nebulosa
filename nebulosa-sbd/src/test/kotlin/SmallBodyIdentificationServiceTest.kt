@@ -4,9 +4,9 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.nulls.shouldNotBeNull
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
-import nebulosa.math.Distance.Companion.km
+import nebulosa.math.deg
+import nebulosa.math.hours
+import nebulosa.math.km
 import nebulosa.sbd.SmallBodyDatabaseService
 import java.time.LocalDateTime
 

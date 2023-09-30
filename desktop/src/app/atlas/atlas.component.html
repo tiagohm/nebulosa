@@ -100,7 +100,7 @@
                              [pageLinks]="3" [showCurrentPageReport]="true" currentPageReportTemplate="{first}-{last} / {totalRecords}">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th style="width: 40%" pSortableColumn="names">Name <p-sortIcon field="names" /></th>
+                                <th style="width: 40%" pSortableColumn="name">Name <p-sortIcon field="name" /></th>
                                 <th style="width: 25%" pSortableColumn="type">Type <p-sortIcon field="type" /></th>
                                 <th style="width: 15%" pSortableColumn="magnitude">Mag. <p-sortIcon field="magnitude" /></th>
                                 <th style="width: 20%" pSortableColumn="constellation">Const. <p-sortIcon field="constellation" /></th>
@@ -108,7 +108,7 @@
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td class="text-sm">{{ item.names }}</td>
+                                <td class="text-sm">{{ item.name.replaceAll('|', ' · ') }}</td>
                                 <td class="text-sm">{{ item.type | enum }}</td>
                                 <td class="text-sm text-center">{{ item.magnitude < 99 ? item.magnitude.toFixed(1) : '-' }}</td>
                                 <td class="text-sm text-center">{{ item.constellation }}</td>
@@ -139,7 +139,7 @@
                              [pageLinks]="3" [showCurrentPageReport]="true" currentPageReportTemplate="{first}-{last} / {totalRecords}">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th style="width: 40%" pSortableColumn="names">Name <p-sortIcon field="names" /></th>
+                                <th style="width: 40%" pSortableColumn="name">Name <p-sortIcon field="name" /></th>
                                 <th style="width: 25%" pSortableColumn="type">Type <p-sortIcon field="type" /></th>
                                 <th style="width: 15%" pSortableColumn="magnitude">Mag. <p-sortIcon field="magnitude" /></th>
                                 <th style="width: 20%" pSortableColumn="constellation">Const. <p-sortIcon field="constellation" /></th>
@@ -147,7 +147,7 @@
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td class="text-sm">{{ item.names }}</td>
+                                <td class="text-sm">{{ item.name.replaceAll('|', ' · ') }}</td>
                                 <td class="text-sm">{{ item.type | enum }}</td>
                                 <td class="text-sm text-center">{{ item.magnitude < 99 ? item.magnitude.toFixed(1) : '-' }}</td>
                                 <td class="text-sm text-center">{{ item.constellation }}</td>
@@ -323,7 +323,8 @@
                         [showWeek]="true" [showButtonBar]="true" dateFormat="yy-mm-dd" inputStyleClass="p-inputtext-sm w-6rem" class="border-0" />
             <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeHour" [showButtons]="true" [min]="0" [max]="23"
                            class="w-fit" [format]="false"
-                           [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)" styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" />
+                           [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)" styleClass="p-inputtext-sm border-0"
+                           [style]="{width: '54px'}" />
             <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeMinute" [showButtons]="true" [min]="0" [max]="59"
                            class="w-fit"
                            [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)" styleClass="p-inputtext-sm border-0"
@@ -362,7 +363,8 @@
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="constellationOptions" [(ngModel)]="starFilter.constellation" appendTo="body" styleClass="border-0">
+                <p-dropdown [options]="constellationOptions" [(ngModel)]="starFilter.constellation" [filter]="true" appendTo="body"
+                            styleClass="border-0">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>
@@ -379,7 +381,7 @@
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="starTypeOptions" [(ngModel)]="starFilter.type" appendTo="body" styleClass="border-0">
+                <p-dropdown [options]="starTypeOptions" [(ngModel)]="starFilter.type" [filter]="true" appendTo="body" styleClass="border-0">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>
@@ -427,7 +429,8 @@
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="constellationOptions" [(ngModel)]="dsoFilter.constellation" appendTo="body" styleClass="border-0">
+                <p-dropdown [options]="constellationOptions" [(ngModel)]="dsoFilter.constellation" [filter]="true" appendTo="body"
+                            styleClass="border-0">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>
@@ -444,7 +447,7 @@
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="dsoTypeOptions" [(ngModel)]="dsoFilter.type" appendTo="body" styleClass="border-0">
+                <p-dropdown [options]="dsoTypeOptions" [(ngModel)]="dsoFilter.type" appendTo="body" [filter]="true" styleClass="border-0">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>

@@ -3,7 +3,8 @@ package nebulosa.platesolving.watney
 import nebulosa.fits.FitsKeywords
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.deg
+import nebulosa.math.toDegrees
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
@@ -44,13 +45,13 @@ class WatneyPlateSolver(private val solverPath: String) : PlateSolver {
             args.add("--manual")
 
             args.add("--ra")
-            args.add("${centerRA.degrees}")
+            args.add("${centerRA.toDegrees}")
 
             args.add("--dec")
-            args.add("${centerDEC.degrees}")
+            args.add("${centerDEC.toDegrees}")
 
             args.add("--field-radius")
-            args.add("${ceil(radius.degrees)}")
+            args.add("${ceil(radius.toDegrees)}")
         } else {
             args.add("--min-radius")
             args.add("0.25")

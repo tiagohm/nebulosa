@@ -5,9 +5,8 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
+import nebulosa.math.deg
+import nebulosa.math.hours
 import java.time.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -15,8 +14,8 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
 
     private val started = AtomicBoolean()
 
-    @Volatile private var rightAscension = Angle.ZERO
-    @Volatile private var declination = Angle.ZERO
+    @Volatile private var rightAscension = 0.0
+    @Volatile private var declination = 0.0
     @Volatile private var date = LocalDate.now()
     @Volatile private var time = LocalTime.now()
     @Volatile private var offset = ZoneId.systemDefault().rules.getOffset(Instant.now())

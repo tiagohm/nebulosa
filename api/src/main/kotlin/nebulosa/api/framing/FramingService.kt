@@ -15,7 +15,7 @@ class FramingService(private val hips2FitsService: Hips2FitsService) {
     fun frame(
         rightAscension: Angle, declination: Angle,
         width: Int, height: Int, fov: Angle,
-        rotation: Angle = Angle.ZERO,
+        rotation: Angle = 0.0,
         hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
     ): Pair<Image, Calibration?>? {
         val data = hips2FitsService.query(

@@ -9,9 +9,9 @@ import nebulosa.api.connection.ConnectionService
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.TrackMode
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
-import nebulosa.math.Distance.Companion.m
+import nebulosa.math.deg
+import nebulosa.math.hours
+import nebulosa.math.m
 import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path

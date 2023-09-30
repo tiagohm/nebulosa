@@ -1,8 +1,8 @@
 package nebulosa.fits
 
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
 import nebulosa.math.AngleFormatter
+import nebulosa.math.deg
 import nom.tam.fits.Fits
 import nom.tam.fits.Header
 import nom.tam.fits.ImageHDU
@@ -31,18 +31,18 @@ inline fun Header.naxis(n: Int) = getIntValue(FitsKeywords.NAXISn.n(n))
 inline fun Header.clone() = Header(makeData())
 
 val Header.ra
-    get() = Angle.from(
+    get() = Angle(
         getStringValue(FitsKeywords.RA), isHours = true, decimalIsHours = false,
-        defaultValue = Angle.from(
+        defaultValue = Angle(
             getStringValue(FitsKeywords.OBJCTRA), true,
             defaultValue = getDoubleValue(FitsKeywords.CRVAL1, Double.NaN).deg
         )
     )
 
 val Header.dec
-    get() = Angle.from(
+    get() = Angle(
         getStringValue(FitsKeywords.DEC),
-        defaultValue = Angle.from(
+        defaultValue = Angle(
             getStringValue(FitsKeywords.OBJCTDEC),
             defaultValue = getDoubleValue(FitsKeywords.CRVAL2, Double.NaN).deg
         )

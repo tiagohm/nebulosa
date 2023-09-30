@@ -2,6 +2,8 @@ package nebulosa.horizons
 
 import nebulosa.math.Angle
 import nebulosa.math.Distance
+import nebulosa.math.toDegrees
+import nebulosa.math.toKilometers
 import nebulosa.retrofit.RetrofitService
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
@@ -25,14 +27,14 @@ class HorizonsService(
 
     fun observer(
         command: String,
-        longitude: Angle, latitude: Angle, elevation: Distance = Distance.ZERO,
+        longitude: Angle, latitude: Angle, elevation: Distance = 0.0,
         startTime: LocalDateTime, endTime: LocalDateTime = startTime.plusDays(1L),
         stepSize: Duration = DEFAULT_STEP_SIZE,
         apparent: ApparentRefractionCorrection = ApparentRefractionCorrection.AIRLESS,
         extraPrecision: Boolean = false,
         vararg quantities: HorizonsQuantity = HorizonsQuantity.ENTRIES,
     ) = service.observer(
-        wrap(command), wrap("${longitude.degrees},${latitude.degrees},${elevation.kilometers}"),
+        wrap(command), wrap("${longitude.toDegrees},${latitude.toDegrees},${elevation.toKilometers}"),
         wrap(startTime), wrap(endTime), wrap("${stepSize.toMinutes()}m"),
         wrap(quantities.map { it.code }.toSortedSet().joinToString(",")),
         wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),
@@ -51,7 +53,7 @@ class HorizonsService(
         semiMajorAxis: String? = null,
         meanMotion: String? = null,
         absoluteMagnitude: String? = null,
-        longitude: Angle, latitude: Angle, elevation: Distance = Distance.ZERO,
+        longitude: Angle, latitude: Angle, elevation: Distance = 0.0,
         startTime: LocalDateTime, endTime: LocalDateTime = startTime.plusDays(1L),
         stepSize: Duration = DEFAULT_STEP_SIZE,
         apparent: ApparentRefractionCorrection = ApparentRefractionCorrection.AIRLESS,
@@ -62,7 +64,7 @@ class HorizonsService(
         wrapNull(perihelionJulianDayNumber), wrap(longitudeOfAscendingNode),
         wrap(argumentOfPerihelion), wrap(inclination), wrapNull(meanAnomaly),
         wrapNull(semiMajorAxis), wrapNull(meanMotion), wrapNull(absoluteMagnitude),
-        wrap("${longitude.degrees},${latitude.degrees},${elevation.kilometers}"),
+        wrap("${longitude.toDegrees},${latitude.toDegrees},${elevation.toKilometers}"),
         wrap(startTime), wrap(endTime), wrap("${stepSize.toMinutes()}m"),
         wrap(quantities.map { it.code }.toSortedSet().joinToString(",")),
         wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),
@@ -70,14 +72,14 @@ class HorizonsService(
 
     fun observerWithTLE(
         tle: String,
-        longitude: Angle, latitude: Angle, elevation: Distance = Distance.ZERO,
+        longitude: Angle, latitude: Angle, elevation: Distance = 0.0,
         startTime: LocalDateTime, endTime: LocalDateTime = startTime.plusDays(1L),
         stepSize: Duration = DEFAULT_STEP_SIZE,
         apparent: ApparentRefractionCorrection = ApparentRefractionCorrection.AIRLESS,
         extraPrecision: Boolean = false,
         vararg quantities: HorizonsQuantity = HorizonsQuantity.ENTRIES,
     ) = service.observerWithTLE(
-        wrap(tle), wrap("${longitude.degrees},${latitude.degrees},${elevation.kilometers}"),
+        wrap(tle), wrap("${longitude.toDegrees},${latitude.toDegrees},${elevation.toKilometers}"),
         wrap(startTime), wrap(endTime), wrap("${stepSize.toMinutes()}m"),
         wrap(quantities.map { it.code }.toSortedSet().joinToString(",")),
         wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),

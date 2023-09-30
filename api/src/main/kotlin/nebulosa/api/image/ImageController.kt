@@ -4,8 +4,8 @@ import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.data.responses.ImageAnnotationResponse
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
+import nebulosa.math.deg
+import nebulosa.math.hours
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
 

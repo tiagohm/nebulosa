@@ -1,6 +1,6 @@
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
+import nebulosa.math.deg
+import nebulosa.math.hours
 import nebulosa.stellarium.protocol.StellariumMountHandler
 import nebulosa.stellarium.protocol.StellariumProtocolServer
 import kotlin.concurrent.thread

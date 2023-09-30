@@ -4,9 +4,9 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import nebulosa.adql.*
-import nebulosa.math.Angle.Companion.arcmin
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
+import nebulosa.math.arcmin
+import nebulosa.math.deg
+import nebulosa.math.hours
 import nebulosa.simbad.SimbadService
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

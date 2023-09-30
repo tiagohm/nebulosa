@@ -1,12 +1,7 @@
 package nebulosa.nova.position
 
 import nebulosa.constants.TAU
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.math.Distance
-import nebulosa.math.Distance.Companion.au
-import nebulosa.math.Distance.Companion.m
-import nebulosa.math.Vector3D
+import nebulosa.math.*
 import nebulosa.nova.frame.ITRS
 import kotlin.math.*
 
@@ -32,7 +27,7 @@ data class Geoid(
      */
     fun latLon(
         longitude: Angle, latitude: Angle,
-        elevation: Distance = Distance.ZERO,
+        elevation: Distance = 0.0,
     ): GeographicPosition {
         val sinphi = latitude.sin
         val cosphi = latitude.cos
@@ -47,7 +42,7 @@ data class Geoid(
         val x = xy * longitude.cos
         val y = xy * longitude.sin
 
-        val itrs = Vector3D(y.value, x.value, (radiusZ * sinphi).value)
+        val itrs = Vector3D(y, x, (radiusZ * sinphi))
 
         return GeographicPosition(longitude, latitude, elevation, itrs, this)
     }
@@ -79,7 +74,7 @@ data class Geoid(
         val lon = (atan2(y, x) - PI) % TAU - PI
         var lat = atan2(z, r)
 
-        val a = radius.value
+        val a = radius
         val f = 1.0 / inverseFlattening
         val e2 = 2.0 * f - f * f
         var c = 1.0

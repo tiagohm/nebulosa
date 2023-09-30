@@ -1,11 +1,7 @@
 package nebulosa.skycatalog.hyg
 
 import de.siegmar.fastcsv.reader.NamedCsvReader
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
-import nebulosa.math.Angle.Companion.mas
-import nebulosa.math.Velocity.Companion.kms
+import nebulosa.math.*
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.ICRF
 import nebulosa.skycatalog.SkyCatalog

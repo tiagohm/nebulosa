@@ -1,8 +1,8 @@
 import nebulosa.lx200.protocol.LX200MountHandler
 import nebulosa.lx200.protocol.LX200ProtocolServer
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
+import nebulosa.math.deg
+import nebulosa.math.hours
 import java.time.OffsetDateTime
 
 class LX200ProtocolServerTest {
@@ -24,9 +24,9 @@ class LX200ProtocolServerTest {
 
         override var declinationJ2000 = "25 26 03".deg
 
-        override val latitude = Angle.ZERO
+        override val latitude = 0.0
 
-        override val longitude = Angle.ZERO
+        override val longitude = 0.0
 
         override var slewing = false
 

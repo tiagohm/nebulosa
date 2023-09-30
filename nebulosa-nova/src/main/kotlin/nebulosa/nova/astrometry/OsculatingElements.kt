@@ -2,12 +2,7 @@ package nebulosa.nova.astrometry
 
 import nebulosa.constants.MU_KM3_S2_TO_AU3_D2
 import nebulosa.constants.TAU
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.math.Distance
-import nebulosa.math.Distance.Companion.au
-import nebulosa.math.Matrix3D
-import nebulosa.math.Vector3D
+import nebulosa.math.*
 import nebulosa.nova.frame.InertialFrame
 import nebulosa.nova.position.ICRF
 import nebulosa.time.InstantOfTime
@@ -116,7 +111,7 @@ data class OsculatingElements(
     val timeOfPeriapsis: InstantOfTime
         get() {
             val m = meanAnomaly(eccentricAnomaly, eccentricity, false)
-            val tp = timeSincePeriapsis(m.value, meanMotionPerDay.value, trueAnomaly.value, semiLatusRectum.value, mu)
+            val tp = timeSincePeriapsis(m, meanMotionPerDay, trueAnomaly, semiLatusRectum, mu)
             return TDB(time.whole - tp, time.fraction)
         }
 
@@ -132,13 +127,13 @@ data class OsculatingElements(
         private fun nodeVector(h: Vector3D) = Vector3D(-h[1], h[0], 0.0).normalized
 
         @JvmStatic
-        private fun meanMotion(a: Distance, mu: Double) = sqrt(mu / abs(a.value).pow(3))
+        private fun meanMotion(a: Distance, mu: Double) = sqrt(mu / abs(a).pow(3))
 
         @JvmStatic
         private fun inclination(h: Vector3D) = h.angle(Vector3D.Z)
 
         @JvmStatic
-        private fun longitudeOfAscendingNode(i: Angle, h: Vector3D) = if (i.value == 0.0) i else atan2(h[0], -h[1]).rad.normalized
+        private fun longitudeOfAscendingNode(i: Angle, h: Vector3D) = if (i == 0.0) i else atan2(h[0], -h[1]).rad.normalized
 
         @JvmStatic
         private fun semiLatusRectum(h: Vector3D, mu: Double) = h.length.pow(2) / mu
@@ -154,7 +149,7 @@ data class OsculatingElements(
         }
 
         @JvmStatic
-        private fun period(a: Distance, mu: Double) = TAU * sqrt(a.value.pow(3) / mu)
+        private fun period(a: Distance, mu: Double) = TAU * sqrt(a.pow(3) / mu)
 
         @JvmStatic
         private fun periapsisDistance(p: Distance, e: Double) = if (e == 1.0) p / 2.0 else p * (1.0 - e) / (1.0 - e * e)
@@ -171,7 +166,7 @@ data class OsculatingElements(
         ): Angle {
             // Circular.
             val v = if (e.length < 1E-15) {
-                Angle.ZERO
+                0.0
             }
             // Equatorial and not circular.
             else if (n.length < 1E-15) {
@@ -217,8 +212,8 @@ data class OsculatingElements(
             e: Double,
         ): Double {
             return when {
-                e < 1.0 -> 2.0 * atan(sqrt((1.0 - e) / (1.0 + e)) * tan(v.value / 2.0))
-                e > 1.0 -> 2.0 * atanh(tan(v.value / 2.0) / sqrt((e + 1.0) / (e - 1.0)))
+                e < 1.0 -> 2.0 * atan(sqrt((1.0 - e) / (1.0 + e)) * tan(v / 2.0))
+                e > 1.0 -> 2.0 * atanh(tan(v / 2.0) / sqrt((e + 1.0) / (e - 1.0)))
                 else -> 0.0
             }
         }
@@ -233,7 +228,7 @@ data class OsculatingElements(
             return when {
                 e < 1.0 -> (E - e * sin(E)).rad.normalized
                 e > 1.0 -> (e * sinh(E) - E).rad.let { if (shift) it.normalized else it }
-                else -> Angle.ZERO
+                else -> 0.0
             }
         }
 

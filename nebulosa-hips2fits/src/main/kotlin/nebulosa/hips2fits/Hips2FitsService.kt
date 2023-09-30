@@ -1,7 +1,8 @@
 package nebulosa.hips2fits
 
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.deg
+import nebulosa.math.toDegrees
 import nebulosa.retrofit.RetrofitService
 import okhttp3.OkHttpClient
 import retrofit2.create
@@ -24,14 +25,14 @@ class Hips2FitsService(
         hips: HipsSurvey,
         ra: Angle, dec: Angle,
         width: Int = 1200, height: Int = 900,
-        rotation: Angle = Angle.ZERO,
+        rotation: Angle = 0.0,
         fov: Angle = 1.0.deg,
         projection: ProjectionType = ProjectionType.TAN,
         coordSystem: CoordinateFrameType = CoordinateFrameType.ICRS,
         format: FormatOutputType = FormatOutputType.FITS,
     ) = service.query(
-        hips.id, ra.degrees, dec.degrees, width, height, projection.name, fov.degrees,
-        coordSystem.name.lowercase(), rotation.degrees, format.name.lowercase(),
+        hips.id, ra.toDegrees, dec.toDegrees, width, height, projection.name, fov.toDegrees,
+        coordSystem.name.lowercase(), rotation.toDegrees, format.name.lowercase(),
     )
 
     companion object {

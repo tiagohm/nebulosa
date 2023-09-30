@@ -3,7 +3,8 @@ package nebulosa.adql
 import adql.query.operand.NumericConstant
 import adql.query.operand.function.geometry.PolygonFunction
 import nebulosa.io.resource
-import nebulosa.math.Angle.Companion.hours
+import nebulosa.math.hours
+import nebulosa.math.toDegrees
 
 class ConstellationBoundary internal constructor(override val operand: PolygonFunction) : Region {
 
@@ -18,7 +19,7 @@ class ConstellationBoundary internal constructor(override val operand: PolygonFu
                 if (line.isEmpty() || line.startsWith('#')) continue
 
                 val parts = line.split(" ")
-                val rightAscension = parts[0].hours.degrees
+                val rightAscension = parts[0].hours.toDegrees
                 val declination = parts[1].toDouble()
                 val name = parts[2].trim()
 
