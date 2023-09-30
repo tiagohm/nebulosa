@@ -8,9 +8,10 @@ import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.astrometry.FixedStar
 import nebulosa.nova.position.ICRF
+import nebulosa.skycatalog.DeepSkyObject
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
-import nebulosa.skycatalog.SpectralObject
+import nebulosa.skycatalog.SpectralSkyObject
 import nebulosa.time.InstantOfTime
 import org.springframework.data.domain.Persistable
 
@@ -35,7 +36,7 @@ data class StarEntity(
     @Column(name = "distance", columnDefinition = "REAL") var distance: Double = 0.0,
     @Column(name = "constellation", columnDefinition = "INT1") @Enumerated(EnumType.ORDINAL)
     override var constellation: Constellation = Constellation.AND,
-) : SkyObject, SpectralObject, Body, Persistable<Long> {
+) : DeepSkyObject, SpectralSkyObject, Body, Persistable<Long> {
 
     @delegate:Transient private val star by lazy { FixedStar(rightAscensionJ2000, declinationJ2000, pmRA, pmDEC, parallax, radialVelocity) }
 

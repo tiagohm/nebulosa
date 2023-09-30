@@ -342,6 +342,21 @@ export interface AstronomicalObject extends EquatorialCoordinateJ2000 {
     id: number
     name: string
     magnitude: number
+}
+
+export interface SpectralSkyObject {
+    spType: string
+}
+
+export interface Star extends DeepSkyObject, SpectralSkyObject { }
+
+export interface OrientedSkyObject {
+    majorAxis: number
+    minorAxis: number
+    orientation: number
+}
+
+export interface DeepSkyObject extends AstronomicalObject {
     type: SkyObjectType
     redshift: number
     parallax: number
@@ -352,54 +367,12 @@ export interface AstronomicalObject extends EquatorialCoordinateJ2000 {
     constellation: Constellation
 }
 
-export interface Star extends AstronomicalObject {
-    hd: number
-    hr: number
-    hip: number
-    spType: string
-}
-
-export interface DeepSkyObject extends AstronomicalObject {
-    m: number
-    ngc: number
-    ic: number
-    c: number
-    b: number
-    sh2: number
-    vdb: number
-    rcw: number
-    ldn: number
-    lbn: number
-    cr: number
-    mel: number
-    pgc: number
-    ugc: number
-    arp: number
-    vv: number
-    dwb: number
-    tr: number
-    st: number
-    ru: number
-    vdbha: number
-    ced: string
-    pk: string
-    png: string
-    snrg: string
-    aco: string
-    hcg: string
-    eso: string
-    vdbh: string
-    majorAxis: number
-    minorAxis: number
-    orientation: number
-    mtype: string
-}
-
 export interface ImageAnnotation {
     x: number
     y: number
     star?: Star
     dso?: DeepSkyObject
+    minorPlanet?: AstronomicalObject
 }
 
 export interface ImageCalibrated extends EquatorialCoordinateJ2000 {

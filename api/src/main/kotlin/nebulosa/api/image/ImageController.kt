@@ -1,7 +1,6 @@
 package nebulosa.api.image
 
 import jakarta.servlet.http.HttpServletResponse
-import nebulosa.api.data.responses.ImageAnnotationResponse
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.math.deg
@@ -58,7 +57,7 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "true") dsos: Boolean,
         @RequestParam(required = false, defaultValue = "false") minorPlanets: Boolean,
         @RequestParam(required = false, defaultValue = "12.0") minorPlanetMagLimit: Double,
-    ): List<ImageAnnotationResponse> {
+    ): List<ImageAnnotation> {
         return imageService.annotations(path, stars, dsos, minorPlanets, minorPlanetMagLimit)
     }
 

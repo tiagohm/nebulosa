@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.atlas.DeepSkyObjectRepository
 import nebulosa.api.atlas.StarRepository
-import nebulosa.api.data.responses.ImageAnnotationResponse
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
@@ -117,7 +116,7 @@ class ImageService(
         path: Path,
         stars: Boolean, dsos: Boolean, minorPlanets: Boolean,
         minorPlanetMagLimit: Double = 12.0,
-    ): List<ImageAnnotationResponse> {
+    ): List<ImageAnnotation> {
         val (image, calibration) = imageBucket[path] ?: return emptyList()
 
         if (calibration == null || calibration.isEmpty || !calibration.solved) {
@@ -131,7 +130,7 @@ class ImageService(
             return emptyList()
         }
 
-        val annotations = Vector<ImageAnnotationResponse>()
+        val annotations = Vector<ImageAnnotation>()
         val tasks = ArrayList<CompletableFuture<*>>()
 
         val dateTime = image.header
@@ -159,8 +158,8 @@ class ImageService(
                         val rightAscension = it[1].hours.takeIf(Angle::isFinite) ?: return@forEach
                         val declination = it[2].deg.takeIf(Angle::isFinite) ?: return@forEach
                         val (x, y) = wcs.skyToPix(rightAscension, declination)
-                        val minorPlanet = ImageAnnotationResponse.MinorPlanet(it[0], it[1], it[2], it[6])
-                        val annotation = ImageAnnotationResponse(x, y, minorPlanet = minorPlanet)
+                        val minorPlanet = ImageAnnotation.MinorPlanet(0L, it[0], rightAscension, declination, it[6].toDouble())
+                        val annotation = ImageAnnotation(x, y, minorPlanet = minorPlanet)
                         annotations.add(annotation)
                         count++
                     }
@@ -183,7 +182,7 @@ class ImageService(
                         // val fixedStar = FixedStar(it.rightAscensionJ2000.rad, it.declinationJ2000.rad, it.pmRA.rad, it.pmDEC.rad)
                         // val (ra, dec) = barycentric.observe(fixedStar).equatorialJ2000()
                         val (x, y) = wcs.skyToPix(it.rightAscensionJ2000, it.declinationJ2000)
-                        val annotation = ImageAnnotationResponse(x, y, star = it)
+                        val annotation = ImageAnnotation(x, y, star = it)
                         annotations.add(annotation)
                     }
             }.whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
@@ -200,7 +199,7 @@ class ImageService(
                         // val fixedStar = FixedStar(it.rightAscensionJ2000.rad, it.declinationJ2000.rad, it.pmRA.rad, it.pmDEC.rad)
                         // val (ra, dec) = barycentric.observe(fixedStar).equatorialJ2000()
                         val (x, y) = wcs.skyToPix(it.rightAscensionJ2000, it.declinationJ2000)
-                        val annotation = ImageAnnotationResponse(x, y, dso = it)
+                        val annotation = ImageAnnotation(x, y, dso = it)
                         annotations.add(annotation)
                     }
             }.whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)

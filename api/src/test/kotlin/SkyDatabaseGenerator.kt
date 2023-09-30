@@ -1,13 +1,14 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.siegmar.fastcsv.reader.NamedCsvRow
+import nebulosa.api.atlas.DeepSkyObjectEntity
+import nebulosa.api.atlas.StarEntity
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.log.loggerFor
-import nebulosa.math.arcmin
-import nebulosa.math.deg
-import nebulosa.math.kms
-import nebulosa.math.mas
+import nebulosa.math.*
 import nebulosa.simbad.SimbadService
-import nebulosa.skycatalog.*
+import nebulosa.skycatalog.ClassificationType
+import nebulosa.skycatalog.SkyObject
+import nebulosa.skycatalog.SkyObjectType
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 import okhttp3.OkHttpClient
@@ -193,7 +194,7 @@ object SkyDatabaseGenerator {
             val declinationJ2000 = getField("dec").deg
             val pmRA = getField("pmra").toDoubleOrNull()?.mas ?: 0.0
             val pmDEC = getField("pmdec").toDoubleOrNull()?.mas ?: 0.0
-            val parallax = getField("plx_value").toDoubleOrNull()?.mas ?: 0.0
+            val parallax = getField("plx_value").toDoubleOrNull() ?: 0.0
             val radialVelocity = getField("rvz_radvel").toDoubleOrNull()?.kms ?: 0.0
             val redshift = getField("rvz_redshift").toDoubleOrNull() ?: 0.0
             val majorAxis = getField("galdim_majaxis").toDoubleOrNull()?.arcmin ?: 0.0
@@ -214,20 +215,21 @@ object SkyDatabaseGenerator {
                 magnitude = min(magnitude, getField("K").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
             }
 
+            val distance = if (parallax > 0.0) (1000.0 * ONE_PARSEC) / parallax else 0.0
             val constellation = SkyObject.computeConstellation(rightAscensionJ2000, declinationJ2000, currentTime)
 
-            data[id] = if (isDSO) DeepSkyObject(
+            data[id] = if (isDSO) DeepSkyObjectEntity(
                 id, names.joinToString("|"), magnitude,
                 rightAscensionJ2000, declinationJ2000,
                 type, majorAxis, minorAxis, orientation,
-                pmRA, pmDEC, parallax, radialVelocity, redshift,
-                constellation,
-            ) else Star(
+                pmRA, pmDEC, parallax.mas, radialVelocity, redshift,
+                distance, constellation,
+            ) else StarEntity(
                 id, names.joinToString("|"), magnitude,
                 rightAscensionJ2000, declinationJ2000,
                 type, spType, pmRA, pmDEC,
-                parallax, radialVelocity, redshift,
-                constellation,
+                parallax.mas, radialVelocity, redshift,
+                distance, constellation,
             )
 
             return id

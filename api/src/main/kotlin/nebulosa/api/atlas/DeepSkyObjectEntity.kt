@@ -8,7 +8,8 @@ import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.astrometry.FixedStar
 import nebulosa.nova.position.ICRF
-import nebulosa.skycatalog.OrientedObject
+import nebulosa.skycatalog.DeepSkyObject
+import nebulosa.skycatalog.OrientedSkyObject
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import nebulosa.time.InstantOfTime
@@ -37,7 +38,7 @@ data class DeepSkyObjectEntity(
     @Column(name = "distance", columnDefinition = "REAL") var distance: Double = 0.0,
     @Column(name = "constellation", columnDefinition = "INT1") @Enumerated(EnumType.ORDINAL)
     override var constellation: Constellation = Constellation.AND,
-) : SkyObject, OrientedObject, Body, Persistable<Long> {
+) : DeepSkyObject, OrientedSkyObject, Body, Persistable<Long> {
 
     @delegate:Transient private val star by lazy { FixedStar(rightAscensionJ2000, declinationJ2000, pmRA, pmDEC, parallax, radialVelocity) }
 

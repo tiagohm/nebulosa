@@ -4,7 +4,6 @@ import nebulosa.io.readDouble
 import nebulosa.math.deg
 import nebulosa.math.mas
 import nebulosa.math.rad
-import nebulosa.skycatalog.DeepSkyObject
 import nebulosa.skycatalog.SkyCatalog
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObject.Companion.NAME_SEPARATOR
@@ -14,7 +13,7 @@ import okio.Source
 import okio.buffer
 import kotlin.math.min
 
-class Nebula : SkyCatalog<DeepSkyObject>(94661) {
+class Nebula : SkyCatalog<NebulaEntry>(94661) {
 
     fun load(
         source: Source,
@@ -114,13 +113,13 @@ class Nebula : SkyCatalog<DeepSkyObject>(94661) {
             if (ru > 0) "Ruprecht $ru".findNames()
             if (vdbha > 0) "VdBHA $vdbha".findNames()
 
-            val nebula = DeepSkyObject(
+            val nebula = NebulaEntry(
                 id,
                 names.joinToString(NAME_SEPARATOR).trim(),
-                min(mB, mV),
-                ra, dec, NebulaType.entries[type].type,
+                ra, dec, min(mB, mV),
+                NebulaType.entries[type].type,
                 majorAxis, minorAxis, orientation,
-                parallax, redshift = redshift,
+                parallax = parallax, redshift = redshift,
                 // distance * 3261.5637769,
                 constellation = SkyObject.computeConstellation(ra, dec, currentTime),
             )

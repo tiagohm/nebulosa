@@ -10,7 +10,7 @@ abstract class SkyCatalog<T : SkyObject>(estimatedSize: Int = 0) : Collection<T>
     private val data = ArrayList<T>(estimatedSize)
 
     fun searchBy(text: String): List<T> {
-        return data.stream().filter(SkyCatalogFilter(text)).toList()
+        return data.filter { it.name.contains(text, true) }
     }
 
     fun searchAround(rightAscension: Angle, declination: Angle, limitFOV: Angle): List<T> {

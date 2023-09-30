@@ -7,6 +7,7 @@ import nebulosa.api.locations.LocationEntity
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
 import nebulosa.math.Angle
+import nebulosa.math.toLightYears
 import nebulosa.nova.almanac.findDiscrete
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
@@ -64,12 +65,12 @@ class AtlasService(
 
     fun positionOfStar(location: LocationEntity, star: StarEntity, dateTime: LocalDateTime): BodyPosition {
         return positionOfBody(star, location, dateTime)!!
-            .copy(magnitude = star.magnitude, constellation = star.constellation, distance = star.distance, distanceUnit = "ly")
+            .copy(magnitude = star.magnitude, constellation = star.constellation, distance = star.distance.toLightYears, distanceUnit = "ly")
     }
 
     fun positionOfDSO(location: LocationEntity, dso: DeepSkyObjectEntity, dateTime: LocalDateTime): BodyPosition {
         return positionOfBody(dso, location, dateTime)!!
-            .copy(magnitude = dso.magnitude, constellation = dso.constellation, distance = dso.distance, distanceUnit = "ly")
+            .copy(magnitude = dso.magnitude, constellation = dso.constellation, distance = dso.distance.toLightYears, distanceUnit = "ly")
     }
 
     fun positionOfSatellite(location: LocationEntity, satellite: SatelliteEntity, dateTime: LocalDateTime): BodyPosition {

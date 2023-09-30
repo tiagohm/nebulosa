@@ -2,9 +2,9 @@ package nebulosa.skycatalog.sao
 
 import nebulosa.io.*
 import nebulosa.math.rad
+import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.ICRF
 import nebulosa.skycatalog.SkyCatalog
-import nebulosa.skycatalog.Star
 import nebulosa.time.TimeJD
 import okio.buffer
 import okio.source
@@ -12,7 +12,7 @@ import java.io.InputStream
 import java.nio.file.Path
 import kotlin.io.path.inputStream
 
-class SaoCatalog : SkyCatalog<Star>(258997) {
+class SaoCatalog : SkyCatalog<SaoEntry>(258997) {
 
     fun load(
         path: Path,
@@ -50,15 +50,13 @@ class SaoCatalog : SkyCatalog<Star>(258997) {
             val icrf = ICRF.equatorial(rightAscension, declination, time = TimeJD.J2000, epoch = TimeJD.B1950)
             val (rightAscensionJ2000, declinationJ2000) = icrf.equatorialAtDate()
 
-            val star = Star(
-                id = id,
-                name = "SAO $id",
-                rightAscensionJ2000 = rightAscensionJ2000,
-                declinationJ2000 = declinationJ2000,
-                spType = spType,
-                magnitude = magnitude,
-                pmRA = pmRA.rad,
-                pmDEC = pmDEC.rad,
+            val star = SaoEntry(
+                id, "SAO $id",
+                magnitude,
+                rightAscensionJ2000, declinationJ2000,
+                spType,
+                pmRA.rad, pmDEC.rad,
+                constellation = Constellation.find(icrf),
             )
 
             add(star)
