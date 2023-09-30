@@ -1,3 +1,4 @@
+import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.core.test.TestScope
 import io.kotest.matchers.doubles.plusOrMinus
@@ -5,20 +6,19 @@ import io.kotest.matchers.shouldBe
 import nebulosa.io.resource
 import nebulosa.math.AngleFormatter
 import nebulosa.math.deg
-import nebulosa.math.format
 import nebulosa.math.hours
 import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Fits
 import nom.tam.fits.Header
-import java.nio.file.Path
 import kotlin.random.Random
 
 // https://www.atnf.csiro.au/people/mcalabre/WCS/example_data.html
 
+@EnabledIf(NonGitHubOnlyCondition::class)
 class LibWCSTest : StringSpec() {
 
     private val pixToSky = ArrayList<IntArray>(192 * 8)
-    private val skyToPix = ArrayList<Array<String>>(192 * 8)
+    private val skyToPix = ArrayList<DoubleArray>(192 * 8)
 
     init {
         repeat(192 * 8) {
@@ -27,7 +27,7 @@ class LibWCSTest : StringSpec() {
             val ra = Random.nextDouble(18.0, 19.5).hours
             val dec = Random.nextDouble(59.0, 72.0).unaryMinus().deg
             pixToSky.add(intArrayOf(x, y))
-            skyToPix.add(arrayOf(ra.format(RA_FORMAT), dec.format(DEC_FORMAT)))
+            skyToPix.add(doubleArrayOf(ra, dec))
         }
 
         for (projection in PROJECTIONS) {
@@ -41,47 +41,30 @@ class LibWCSTest : StringSpec() {
     }
 
     private fun TestScope.pixToSky() {
-        val testName = testCase.name.testName.split(":")[1]
+        val testName = testCase.name.testName.split(":").last()
         val keywords = readHeaderFromFits(testName)
         val transform = WCSTransform(keywords)
 
-        val fitsPath = Path.of("src/test/resources/$testName.fits")
-        val pixels = Array(pixToSky.size * 2) { pixToSky[it / 2][it % 2].toString() }
-        val process = ProcessBuilder("xy2sky", "$fitsPath", *pixels).start()
-
-        for (line in process.inputStream.bufferedReader().lines()) {
-            val parts = line.replace("->", "").split(WHITESPACE_REGEX)
-            val rightAscension0 = parts[0].hours
-            val declination0 = parts[1].deg
-            val x = parts[3].toDouble()
-            val y = parts[4].toDouble()
-
-            val (rightAscension1, declination1) = transform.pixToSky(x, y)
-            rightAscension0 shouldBe (rightAscension1 plusOrMinus EPSILON)
-            declination0 shouldBe (declination1 plusOrMinus EPSILON)
+        for ((x0, y0) in pixToSky) {
+            val (rightAscension, declination) = transform.pixToSky(x0.toDouble(), y0.toDouble())
+            val (x1, y1) = transform.skyToPix(rightAscension, declination)
+            x1 shouldBe (x0.toDouble() plusOrMinus 1.0)
+            y1 shouldBe (y0.toDouble() plusOrMinus 1.0)
         }
 
         transform.close()
     }
 
     private fun TestScope.skyToPix() {
-        val testName = testCase.name.testName.split(":")[1]
+        val testName = testCase.name.testName.split(":").last()
         val keywords = readHeaderFromFits(testName)
         val transform = WCSTransform(keywords)
 
-        val fitsPath = Path.of("src/test/resources/$testName.fits")
-        val coords = Array(skyToPix.size * 2) { skyToPix[it / 2][it % 2] }
-        val process = ProcessBuilder("sky2xy", "$fitsPath", *coords).start()
-
-        for (line in process.inputStream.bufferedReader().lines()) {
-            val parts = line.replace("->", "").split(WHITESPACE_REGEX)
-            val rightAscension = parts[0].hours
-            val declination = parts[1].deg
-            val x0 = parts[3].toDouble()
-            val y0 = parts[4].toDouble()
-            val (x1, y1) = transform.skyToPix(rightAscension, declination)
-            x0 shouldBe (x1 plusOrMinus 0.1)
-            y0 shouldBe (y1 plusOrMinus 0.1)
+        for ((rightAscension0, declination0) in skyToPix) {
+            val (x, y) = transform.skyToPix(rightAscension0, declination0)
+            val (rightAscension1, declination1) = transform.pixToSky(x, y)
+            rightAscension1 shouldBe (rightAscension0 plusOrMinus EPSILON)
+            declination1 shouldBe (declination0 plusOrMinus EPSILON)
         }
 
         transform.close()
@@ -94,8 +77,6 @@ class LibWCSTest : StringSpec() {
     companion object {
 
         const val EPSILON = 1 / 3600000.0
-
-        @JvmStatic private val WHITESPACE_REGEX = "\\s+".toRegex()
 
         @JvmStatic private val PROJECTIONS = arrayOf(
             "AIR", "AIT", "ARC", "AZP", "BON", "CAR", "CEA",
