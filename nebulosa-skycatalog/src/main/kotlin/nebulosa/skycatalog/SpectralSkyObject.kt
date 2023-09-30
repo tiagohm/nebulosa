@@ -1,6 +1,6 @@
 package nebulosa.skycatalog
 
-interface SpectralSkyObject {
+interface SpectralSkyObject : SkyObject {
 
     val spType: String
 }

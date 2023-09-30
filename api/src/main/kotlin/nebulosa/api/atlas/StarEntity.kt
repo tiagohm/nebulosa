@@ -1,6 +1,7 @@
 package nebulosa.api.atlas
 
 import com.fasterxml.jackson.annotation.JsonAlias
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import nebulosa.math.Angle
 import nebulosa.math.Velocity
@@ -41,13 +42,14 @@ data class StarEntity(
     @delegate:Transient private val star by lazy { FixedStar(rightAscensionJ2000, declinationJ2000, pmRA, pmDEC, parallax, radialVelocity) }
 
     override val center
-        get() = 0
+        @JsonIgnore get() = 0
 
     override val target
-        get() = Int.MIN_VALUE
+        @JsonIgnore get() = Int.MIN_VALUE
 
     override fun getId() = id
 
+    @JsonIgnore
     override fun isNew() = true
 
     override fun observedAt(observer: ICRF) = star.observedAt(observer)

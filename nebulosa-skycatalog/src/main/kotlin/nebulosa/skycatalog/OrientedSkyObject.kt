@@ -2,7 +2,7 @@ package nebulosa.skycatalog
 
 import nebulosa.math.Angle
 
-interface OrientedSkyObject {
+interface OrientedSkyObject : SkyObject {
 
     val majorAxis: Angle
 
