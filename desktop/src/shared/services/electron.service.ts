@@ -6,7 +6,8 @@ import { Injectable } from '@angular/core'
 import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
-import { INDIEventType, InternalEventType, MainEventType, Mount } from '../types'
+import { INDIEventType, InternalEventType, Mount, OpenDirectory, WindowEventType } from '../types'
+import { ApiService } from './api.service'
 
 @Injectable({ providedIn: 'root' })
 export class ElectronService {
@@ -16,7 +17,7 @@ export class ElectronService {
     childProcess!: typeof childProcess
     fs!: typeof fs
 
-    constructor() {
+    constructor(private api: ApiService) {
         if (this.isElectron) {
             this.ipcRenderer = (window as any).require('electron').ipcRenderer
             this.webFrame = (window as any).require('electron').webFrame
@@ -44,11 +45,11 @@ export class ElectronService {
         return !!(window && window.process && window.process.type)
     }
 
-    send(channel: INDIEventType | InternalEventType | MainEventType, ...data: any[]) {
+    send(channel: INDIEventType | InternalEventType | WindowEventType, ...data: any[]) {
         this.ipcRenderer.send(channel, ...data)
     }
 
-    sendSync(channel: INDIEventType | InternalEventType | MainEventType, ...data: any[]) {
+    sendSync(channel: INDIEventType | InternalEventType | WindowEventType, ...data: any[]) {
         return this.ipcRenderer.sendSync(channel, ...data)
     }
 
@@ -57,7 +58,13 @@ export class ElectronService {
         return this.ipcRenderer.on(channel, listener)
     }
 
-    selectedMount(): Mount | undefined {
-        return this.sendSync('SELECTED_MOUNT')
+    openDirectory(data?: OpenDirectory): string | false {
+        return this.sendSync('OPEN_DIRECTORY', data)
+    }
+
+    async selectedMount(): Promise<Mount | undefined> {
+        const mount: Mount | undefined = this.sendSync('SELECTED_MOUNT')
+        if (!mount) return undefined
+        return this.api.mount(mount.name)
     }
 }

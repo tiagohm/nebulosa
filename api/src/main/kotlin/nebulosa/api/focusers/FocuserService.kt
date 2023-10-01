@@ -30,7 +30,7 @@ class FocuserService {
         focuser.abortFocus()
     }
 
-    fun syncTo(focuser: Focuser, steps: Int) {
+    fun sync(focuser: Focuser, steps: Int) {
         focuser.syncFocusTo(steps)
     }
 }

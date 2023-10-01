@@ -1,7 +1,6 @@
 package nebulosa.time
 
 import nebulosa.math.*
-import nebulosa.math.Angle.Companion.arcsec
 import java.io.InputStream
 import kotlin.math.max
 import kotlin.math.min
@@ -82,8 +81,8 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
     override fun pmXY(time: InstantOfTime): PairOfAngle {
         val xy = interpolate(time, this.time, pmX, pmY)
         if (xy[0].isNaN() && xy[1].isNaN()) return PairOfAngle.ZERO
-        val x = if (xy[0].isNaN()) Angle.ZERO else xy[0].arcsec
-        val y = if (xy[1].isNaN()) Angle.ZERO else xy[1].arcsec
+        val x = if (xy[0].isNaN()) 0.0 else xy[0].arcsec
+        val y = if (xy[1].isNaN()) 0.0 else xy[1].arcsec
         return PairOfAngle(x, y)
     }
 

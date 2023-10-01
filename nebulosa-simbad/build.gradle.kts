@@ -4,9 +4,10 @@ plugins {
 }
 
 dependencies {
-    api(project(":nebulosa-math"))
+    api(project(":nebulosa-adql"))
     api(project(":nebulosa-retrofit"))
     api(project(":nebulosa-skycatalog"))
+    api(libs.csv)
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }

@@ -54,7 +54,7 @@ internal class GuideGraph(
             }
         }
 
-        if (!guider.settling) {
+        if (!guider.isSettling) {
             val deltaTime = (System.currentTimeMillis() - timeBase).toDouble()
             noDitherRA.add(deltaTime, offset.mount.x, xDuration.toDouble())
             noDitherDEC.add(deltaTime, offset.mount.y, yDuration.toDouble())

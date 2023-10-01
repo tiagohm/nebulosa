@@ -12,6 +12,6 @@
   "private": true,
   "dependencies": {
     "@stomp/stompjs": "7.0.0",
-    "ws": "8.13.0"
+    "ws": "8.14.2"
   }
 }

@@ -4,6 +4,7 @@ import nebulosa.imaging.algorithms.CfaPattern
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.indi.protocol.PropertyState
+import kotlin.time.Duration
 
 interface Camera : GuideOutput, Thermometer {
 
@@ -29,13 +30,13 @@ interface Camera : GuideOutput, Thermometer {
 
     val cfaType: CfaPattern
 
-    val exposureMin: Long
+    val exposureMin: Duration
 
-    val exposureMax: Long
+    val exposureMax: Duration
 
     val exposureState: PropertyState
 
-    val exposure: Long
+    val exposureTime: Duration
 
     val hasCooler: Boolean
 
@@ -95,13 +96,13 @@ interface Camera : GuideOutput, Thermometer {
 
     val pixelSizeY: Double
 
-    fun cooler(enable: Boolean)
+    fun cooler(enabled: Boolean)
 
-    fun dewHeater(enable: Boolean)
+    fun dewHeater(enabled: Boolean)
 
     fun temperature(value: Double)
 
-    fun frameFormat(format: String)
+    fun frameFormat(format: String?)
 
     fun frameType(type: FrameType)
 
@@ -113,7 +114,7 @@ interface Camera : GuideOutput, Thermometer {
 
     fun offset(value: Int)
 
-    fun startCapture(exposureInMicros: Long)
+    fun startCapture(exposureTime: Duration)
 
     fun abortCapture()
 

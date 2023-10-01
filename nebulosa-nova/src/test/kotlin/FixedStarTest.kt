@@ -2,9 +2,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.io.resource
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.mas
-import nebulosa.math.Velocity.Companion.kms
+import nebulosa.math.*
 import nebulosa.nasa.daf.RemoteDaf
 import nebulosa.nasa.spk.Spk
 import nebulosa.nova.astrometry.FixedStar
@@ -37,9 +35,9 @@ class FixedStarTest : StringSpec() {
 
             val (ra, dec, dist) = astrometric.equatorialAtDate()
 
-            ra.normalized.hours shouldBe (3.0115471963487153 plusOrMinus 1e-8)
-            dec.degrees shouldBe (89.36032606627879 plusOrMinus 1e-8)
-            dist.value shouldBe (27355995.0433298 plusOrMinus 1e-6)
+            ra.normalized.toHours shouldBe (3.0115471963487153 plusOrMinus 1e-8)
+            dec.toDegrees shouldBe (89.36032606627879 plusOrMinus 1e-8)
+            dist shouldBe (27355995.0433298 plusOrMinus 1e-6)
         }
     }
 }

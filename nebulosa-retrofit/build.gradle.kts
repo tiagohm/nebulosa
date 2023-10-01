@@ -9,6 +9,7 @@ dependencies {
     api(libs.jackson)
     api(libs.okhttp)
     api(libs.okhttp.logging)
+    compileOnly(libs.csv)
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }

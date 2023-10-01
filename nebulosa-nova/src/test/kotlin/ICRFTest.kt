@@ -2,9 +2,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.io.resource
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Distance.Companion.m
+import nebulosa.math.*
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.time.IERS
@@ -23,20 +21,20 @@ class ICRFTest : StringSpec() {
             val ra = 2.15105.deg
             val dec = (-0.4493).deg
             val (raNow, decNow) = ICRF.equatorial(ra, dec, epoch = TimeJD(2459950.24436)).equatorialJ2000()
-            raNow.degrees shouldBe (1.85881 plusOrMinus 1e-2)
-            decNow.degrees shouldBe (-0.5762 plusOrMinus 1e-2)
+            raNow.toDegrees shouldBe (1.85881 plusOrMinus 1e-2)
+            decNow.toDegrees shouldBe (-0.5762 plusOrMinus 1e-2)
         }
         "equatorial J2000 to equatorial at date" {
             val ra = 1.85881.deg
             val dec = (-0.5762).deg
             val (raNow, decNow) = ICRF.equatorial(ra, dec).equatorialAtEpoch(TimeJD(2459950.24436))
-            raNow.degrees shouldBe (2.15105 plusOrMinus 1e-2)
-            decNow.degrees shouldBe (-0.4493 plusOrMinus 1e-2)
+            raNow.toDegrees shouldBe (2.15105 plusOrMinus 1e-2)
+            decNow.toDegrees shouldBe (-0.4493 plusOrMinus 1e-2)
         }
         "horizontal" {
             // Sirius.
-            val ra = Angle.from("06 45 08.91728", isHours = true)
-            val dec = Angle.from("-16 42 58.0171")
+            val ra = "06 45 08.91728".hours
+            val dec = "-16 42 58.0171".deg
 
             val latitude = (-23.547500000000003).deg
             val longitude = (-46.63610833333333).deg
@@ -47,8 +45,8 @@ class ICRFTest : StringSpec() {
 
             val icrf = ICRF.equatorial(ra, dec, time = time, center = site)
             val azAlt = icrf.horizontal()
-            azAlt.longitude.normalized.degrees shouldBe (90.778 plusOrMinus 1e-1)
-            azAlt.latitude.degrees shouldBe (44.3538 plusOrMinus 1e-1)
+            azAlt.longitude.normalized.toDegrees shouldBe (90.778 plusOrMinus 1e-1)
+            azAlt.latitude.toDegrees shouldBe (44.3538 plusOrMinus 1e-1)
         }
     }
 }

@@ -2,11 +2,10 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     kotlin("jvm")
-    id("org.springframework.boot") version "3.1.3"
+    id("org.springframework.boot") version "3.1.4"
     id("io.spring.dependency-management") version "1.1.3"
     kotlin("plugin.spring")
     kotlin("kapt")
-    id("io.objectbox")
 }
 
 dependencies {
@@ -17,6 +16,7 @@ dependencies {
     implementation(project(":nebulosa-horizons"))
     implementation(project(":nebulosa-imaging"))
     implementation(project(":nebulosa-indi-client"))
+    implementation(project(":nebulosa-json"))
     implementation(project(":nebulosa-lx200-protocol"))
     implementation(project(":nebulosa-nova"))
     implementation(project(":nebulosa-platesolving-astap"))
@@ -34,25 +34,27 @@ dependencies {
     implementation(libs.eventbus)
     implementation(libs.apache.codec)
     implementation(libs.rx)
+    // implementation(libs.sqlite)
+    runtimeOnly(files("$projectDir/libs/sqlite-jdbc-3.43.0.0.jar"))
+    implementation(libs.flyway)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
-    kapt("org.springframework:spring-context-indexer:6.0.11")
+    implementation("org.springframework.boot:spring-boot-starter-batch")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.hibernate.orm:hibernate-community-dialects")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    kapt("org.springframework:spring-context-indexer:6.0.12")
     testImplementation(project(":nebulosa-skycatalog-hyg"))
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))
-
-    if (project.hasProperty("openapi")) {
-        implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
-    }
 }
 
 tasks.withType<BootJar> {
-    archiveFileName.set("api.jar")
-    destinationDirectory.set(file("$rootDir/desktop"))
+    archiveFileName = "api.jar"
+    destinationDirectory = file("$rootDir/desktop")
 
     manifest {
         attributes["Start-Class"] = "nebulosa.api.MainKt"

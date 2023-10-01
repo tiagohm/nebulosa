@@ -2,10 +2,10 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeLessThan
 import io.kotest.matchers.shouldBe
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Distance.Companion.au
-import nebulosa.math.Distance.Companion.m
 import nebulosa.math.Vector3D
+import nebulosa.math.au
+import nebulosa.math.deg
+import nebulosa.math.m
 import nebulosa.nova.astrometry.Asteroid
 import nebulosa.nova.position.ICRF
 import nebulosa.time.TDB
@@ -49,9 +49,9 @@ class KeplerOrbitTest : StringSpec() {
             val s = r + sun - horizons
             val epsilon = 0.001.m
 
-            s[0] shouldBeLessThan epsilon.value
-            s[1] shouldBeLessThan epsilon.value
-            s[2] shouldBeLessThan epsilon.value
+            s[0] shouldBeLessThan epsilon
+            s[1] shouldBeLessThan epsilon
+            s[2] shouldBeLessThan epsilon
         }
     }
 }

@@ -1,29 +1,26 @@
 package nebulosa.erfa
 
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.math.Distance
-import nebulosa.math.Vector3D
+import nebulosa.math.*
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.hypot
 
 data class CartesianCoordinate(
-    val x: Distance,
-    val y: Distance,
-    val z: Distance,
+    val x: Distance = 0.0,
+    val y: Distance = 0.0,
+    val z: Distance = 0.0,
 ) {
 
     val spherical by lazy { SphericalCoordinate.of(x, y, z) }
 
-    val vector by lazy { Vector3D(x.value, y.value, z.value) }
+    val vector by lazy { Vector3D(x, y, z) }
 
     fun angularDistance(coordinate: CartesianCoordinate): Angle {
-        val dot = x.value * coordinate.x.value + y.value * coordinate.y.value + z.value * coordinate.z.value
-        val norm0 = hypot(x.value, y.value)
-        val norm1 = hypot(coordinate.x.value, coordinate.y.value)
+        val dot = x * coordinate.x + y * coordinate.y + z * coordinate.z
+        val norm0 = hypot(x, y)
+        val norm1 = hypot(coordinate.x, coordinate.y)
         val v = dot / (norm0 * norm1)
-        return if (abs(v) > 1.0) if (v < 0.0) Angle.SEMICIRCLE else Angle.ZERO
+        return if (abs(v) > 1.0) if (v < 0.0) SEMICIRCLE else 0.0
         else acos(v).rad
     }
 
@@ -51,7 +48,7 @@ data class CartesianCoordinate(
 
     companion object {
 
-        @JvmStatic val EMPTY = CartesianCoordinate(Distance.ZERO, Distance.ZERO, Distance.ZERO)
+        @JvmStatic val ZERO = CartesianCoordinate()
 
         /**
          * Given [theta] as longitude, [phi] as latitude and

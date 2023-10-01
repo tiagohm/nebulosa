@@ -6,10 +6,8 @@ import nebulosa.indi.device.gps.GPSTimeChanged
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
 import nebulosa.indi.protocol.TextVector
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Distance
-import nebulosa.math.Distance.Companion.m
+import nebulosa.math.deg
+import nebulosa.math.m
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -19,9 +17,9 @@ internal class GPSDevice(
 ) : AbstractDevice(handler, name), GPS {
 
     override val hasGPS = true
-    override var longitude = Angle.ZERO
-    override var latitude = Angle.ZERO
-    override var elevation = Distance.ZERO
+    override var longitude = 0.0
+    override var latitude = 0.0
+    override var elevation = 0.0
     override var dateTime = OffsetDateTime.MIN!!
 
     override fun handleMessage(message: INDIProtocol) {

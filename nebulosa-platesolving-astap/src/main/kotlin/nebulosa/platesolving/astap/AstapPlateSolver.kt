@@ -1,7 +1,11 @@
 package nebulosa.platesolving.astap
 
+import nebulosa.fits.FitsKeywords
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
+import nebulosa.math.deg
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
@@ -42,13 +46,13 @@ class AstapPlateSolver(private val solverPath: String) : PlateSolver {
 
         if (!blind) {
             args.add("-ra")
-            args.add("${centerRA.hours}")
+            args.add("${centerRA.toHours}")
 
             args.add("-spd")
-            args.add("${centerDEC.degrees + 90.0}")
+            args.add("${centerDEC.toDegrees + 90.0}")
 
             args.add("-r")
-            args.add("${ceil(radius.degrees)}")
+            args.add("${ceil(radius.toDegrees)}")
         } else {
             args.add("-r")
             args.add("180.0")
@@ -78,12 +82,12 @@ class AstapPlateSolver(private val solverPath: String) : PlateSolver {
                 val ctype2 = ini.getProperty("CTYPE2", "DEC--TAN")
                 val crpix1 = ini.getProperty("CRPIX1").toDouble()
                 val crpix2 = ini.getProperty("CRPIX2").toDouble()
-                val crval1 = Angle.from(ini.getProperty("CRVAL1"))
-                val crval2 = Angle.from(ini.getProperty("CRVAL2"))
-                val cdelt1 = Angle.from(ini.getProperty("CDELT1"))
-                val cdelt2 = Angle.from(ini.getProperty("CDELT2"))
-                val crota1 = Angle.from(ini.getProperty("CROTA1"))
-                val crota2 = Angle.from(ini.getProperty("CROTA2"))
+                val crval1 = ini.getProperty("CRVAL1").toDouble()
+                val crval2 = ini.getProperty("CRVAL2").toDouble()
+                val cdelt1 = ini.getProperty("CDELT1").toDouble()
+                val cdelt2 = ini.getProperty("CDELT2").toDouble()
+                val crota1 = ini.getProperty("CROTA1").toDouble()
+                val crota2 = ini.getProperty("CROTA2").toDouble()
                 val cd11 = ini.getProperty("CD1_1").toDouble()
                 val cd12 = ini.getProperty("CD1_2").toDouble()
                 val cd21 = ini.getProperty("CD2_1").toDouble()
@@ -93,13 +97,22 @@ class AstapPlateSolver(private val solverPath: String) : PlateSolver {
                 val width = cdelt1 * dimensions[0].trim().toDouble()
                 val height = cdelt2 * dimensions[1].trim().toDouble()
 
-                val calibration = Calibration(
-                    true,
-                    ctype1, ctype2, crpix1, crpix2,
-                    crval1, crval2, cdelt1, cdelt2, crota1, crota2,
-                    true, cd11, cd12, cd21, cd22,
-                    width = width, height = height,
-                )
+                val calibration = Calibration(true, crota2.deg, cdelt2.deg, crval1.deg, crval2.deg, width.deg, height.deg)
+
+                calibration.addValue(FitsKeywords.CTYPE1, ctype1)
+                calibration.addValue(FitsKeywords.CTYPE2, ctype2)
+                calibration.addValue(FitsKeywords.CRPIX1, crpix1)
+                calibration.addValue(FitsKeywords.CRPIX2, crpix2)
+                calibration.addValue(FitsKeywords.CRVAL1, crval1)
+                calibration.addValue(FitsKeywords.CRVAL2, crval2)
+                calibration.addValue(FitsKeywords.CDELT1, cdelt1)
+                calibration.addValue(FitsKeywords.CDELT2, cdelt2)
+                calibration.addValue(FitsKeywords.CROTA1, crota1)
+                calibration.addValue(FitsKeywords.CROTA2, crota2)
+                calibration.addValue(FitsKeywords.CD1_1, cd11)
+                calibration.addValue(FitsKeywords.CD1_2, cd12)
+                calibration.addValue(FitsKeywords.CD2_1, cd21)
+                calibration.addValue(FitsKeywords.CD2_2, cd22)
 
                 LOG.info("astap solved. calibration={}", calibration)
 
@@ -107,7 +120,7 @@ class AstapPlateSolver(private val solverPath: String) : PlateSolver {
             } else {
                 val message = ini.getProperty("ERROR")
                     ?: ini.getProperty("WARNING")
-                    ?: "Plate solving failed."
+                    ?: "plate solving failed"
                 throw PlateSolvingException(message)
             }
         } catch (e: InterruptedException) {
@@ -116,7 +129,7 @@ class AstapPlateSolver(private val solverPath: String) : PlateSolver {
             basePath.deleteRecursively()
         }
 
-        return Calibration.EMPTY
+        return Calibration()
     }
 
     companion object {

@@ -112,7 +112,7 @@ p-calendar.border-0 .p-calendar-w-btn {
 
 i.mdi {
     aspect-ratio: 1/1;
-    display: contents;
+    display: inline-block;
 }
 
 .p-dialog-content {
@@ -127,8 +127,17 @@ i.mdi {
 
 .p-menuitem {
     &.p-menuitem-checked {
-        background-color: var(--green-800);
+        background-color: #C5E1A5;
+
+        .p-menuitem-text,
+        .p-menuitem-icon {
+            color: #212121 !important;
+        }
     }
+}
+
+.draggable-region {
+    -webkit-app-region: drag;
 }
 
 ::-webkit-scrollbar {

@@ -63,13 +63,13 @@ interface Mount : GuideOutput, GPS, Parkable {
 
     fun slewRate(rate: SlewRate)
 
-    fun moveNorth(enable: Boolean)
+    fun moveNorth(enabled: Boolean)
 
-    fun moveSouth(enable: Boolean)
+    fun moveSouth(enabled: Boolean)
 
-    fun moveWest(enable: Boolean)
+    fun moveWest(enabled: Boolean)
 
-    fun moveEast(enable: Boolean)
+    fun moveEast(enabled: Boolean)
 
     fun coordinates(longitude: Angle, latitude: Angle, elevation: Distance)
 

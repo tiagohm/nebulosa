@@ -1,58 +1,52 @@
 package nebulosa.api.wheels
 
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.PositiveOrZero
+import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.filterwheel.FilterWheel
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
+@RequestMapping("wheels")
 class WheelController(
     private val connectionService: ConnectionService,
     private val wheelService: WheelService,
 ) {
 
-    @GetMapping("attachedWheels")
-    fun attachedWheels(): List<FilterWheel> {
+    @GetMapping
+    fun wheels(): List<FilterWheel> {
         return connectionService.wheels()
     }
 
-    @GetMapping("wheel")
-    fun wheel(@RequestParam @Valid @NotBlank name: String): FilterWheel {
-        return requireNotNull(connectionService.wheel(name))
+    @GetMapping("{wheel}")
+    fun wheel(@EntityBy wheel: FilterWheel): FilterWheel {
+        return wheel
     }
 
-    @PostMapping("wheelConnect")
-    fun connect(@RequestParam @Valid @NotBlank name: String) {
-        val wheel = requireNotNull(connectionService.wheel(name))
+    @PutMapping("{wheel}/connect")
+    fun connect(@EntityBy wheel: FilterWheel) {
         wheelService.connect(wheel)
     }
 
-    @PostMapping("wheelDisconnect")
-    fun disconnect(@RequestParam @Valid @NotBlank name: String) {
-        val wheel = requireNotNull(connectionService.wheel(name))
+    @PutMapping("{wheel}/disconnect")
+    fun disconnect(@EntityBy wheel: FilterWheel) {
         wheelService.disconnect(wheel)
     }
 
-    @PostMapping("wheelMoveTo")
+    @PutMapping("{wheel}/move-to")
     fun moveTo(
-        @RequestParam @Valid @NotBlank name: String,
+        @EntityBy wheel: FilterWheel,
         @RequestParam @Valid @PositiveOrZero position: Int,
     ) {
-        val wheel = requireNotNull(connectionService.wheel(name))
         wheelService.moveTo(wheel, position)
     }
 
-    @PostMapping("wheelSyncNames")
-    fun syncNames(
-        @RequestParam @Valid @NotBlank name: String,
-        @RequestParam @Valid @PositiveOrZero filterNames: String,
+    @PutMapping("{wheel}/sync")
+    fun sync(
+        @EntityBy wheel: FilterWheel,
+        @RequestParam @Valid @PositiveOrZero names: String,
     ) {
-        val wheel = requireNotNull(connectionService.wheel(name))
-        wheelService.syncNames(wheel, filterNames.split(","))
+        wheelService.sync(wheel, names.split(","))
     }
 }

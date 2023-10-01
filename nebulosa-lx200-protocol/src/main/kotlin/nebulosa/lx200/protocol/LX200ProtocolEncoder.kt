@@ -5,6 +5,8 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToByteEncoder
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
+import nebulosa.math.dms
+import nebulosa.math.hms
 import nebulosa.netty.writeAscii
 import java.time.format.DateTimeFormatter
 import java.util.*

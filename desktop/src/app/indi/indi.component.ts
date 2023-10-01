@@ -1,10 +1,10 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core'
-import { Title } from '@angular/platform-browser'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { Device, INDIDeviceMessage, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 export interface INDIParams {
     device?: Device
@@ -27,13 +27,13 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
     messages: string[] = []
 
     constructor(
-        title: Title,
+        app: AppComponent,
         private route: ActivatedRoute,
         private api: ApiService,
         electron: ElectronService,
         ngZone: NgZone,
     ) {
-        title.setTitle('INDI')
+        app.title = 'INDI'
 
         this.api.startListening('INDI')
 
@@ -56,7 +56,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('DEVICE_MESSAGE_RECEIVED', (_, data: INDIDeviceMessage) => {
-            if (this.device && data.device === this.device.name) {
+            if (this.device && data.device?.name === this.device.name) {
                 ngZone.run(() => {
                     this.messages.splice(0, 0, data.message)
                 })
@@ -71,10 +71,10 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
         })
 
         this.devices = [
-            ...await this.api.attachedCameras(),
-            ...await this.api.attachedMounts(),
-            ...await this.api.attachedFocusers(),
-            ...await this.api.attachedWheels(),
+            ...await this.api.cameras(),
+            ...await this.api.mounts(),
+            ...await this.api.focusers(),
+            ...await this.api.wheels(),
         ]
     }
 

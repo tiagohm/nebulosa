@@ -5,6 +5,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 @Component({
     selector: 'app-home',
@@ -93,6 +94,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     }
 
     constructor(
+        app: AppComponent,
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private api: ApiService,
@@ -100,6 +102,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         private preference: PreferenceService,
         private ngZone: NgZone,
     ) {
+        app.title = 'Nebulosa'
+
         this.startListening<Camera>('CAMERA',
             (device) => {
                 return this.cameras.push(device)
@@ -147,10 +151,10 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         this.host = this.preference.get('home.host', 'localhost')
         this.port = this.preference.get('home.port', 7624)
 
-        this.cameras = await this.api.attachedCameras()
-        this.mounts = await this.api.attachedMounts()
-        this.focusers = await this.api.attachedFocusers()
-        this.wheels = await this.api.attachedWheels()
+        this.cameras = await this.api.cameras()
+        this.mounts = await this.api.mounts()
+        this.focusers = await this.api.focusers()
+        this.wheels = await this.api.wheels()
 
         if (this.cameras.length > 0) {
             this.electron.send('CAMERA_CHANGED', this.cameras[0])

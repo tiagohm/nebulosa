@@ -5,9 +5,16 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.AbstractQueuedSynchronizer
 import kotlin.math.max
 
-class CountUpDownLatch : AtomicBoolean(true) {
+class CountUpDownLatch(initialCount: Int = 0) : AtomicBoolean(true) {
 
     private val sync = Sync(this)
+
+    init {
+        if (initialCount > 0) {
+            sync.count = initialCount
+            set(false)
+        }
+    }
 
     val count
         get() = sync.count
@@ -49,7 +56,9 @@ class CountUpDownLatch : AtomicBoolean(true) {
                 state = value
             }
 
-        override fun tryAcquireShared(acquires: Int) = if (state == acquires) 1 else -1
+        override fun tryAcquireShared(acquires: Int): Int {
+            return if (state == acquires) 1 else -1
+        }
 
         override fun tryReleaseShared(releases: Int): Boolean {
             while (true) {

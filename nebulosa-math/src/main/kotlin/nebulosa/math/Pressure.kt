@@ -1,117 +1,62 @@
+@file:Suppress("NOTHING_TO_INLINE", "FunctionName")
+
 package nebulosa.math
 
-import nebulosa.math.Temperature.Companion.celsius
 import kotlin.math.exp
 import kotlin.math.pow
 
 /**
- * Represents a pressure [value] in millibars.
+ * Represents a pressure value in millibars.
  */
-@JvmInline
-@Suppress("NOTHING_TO_INLINE")
-value class Pressure(val value: Double) {
+typealias Pressure = Double
 
-    /**
-     * Converts this pressure to pascal.
-     */
-    inline val pascal
-        get() = value * 100.0
+const val ONE_ATM: Pressure = 1013.25
 
-    /**
-     * Converts this pressure to atmosphere.
-     */
-    inline val atm
-        get() = value / 1013.25
+inline val Pressure.toPascal
+    get() = this * 100.0
 
-    inline operator fun plus(pressure: Pressure) = (value + pressure.value).mbar
+inline val Pressure.toAtm
+    get() = this / ONE_ATM
 
-    inline operator fun plus(pressure: Double) = (value + pressure).mbar
+inline fun Millibar(value: Double): Pressure = value
 
-    inline operator fun plus(pressure: Int) = (value + pressure).mbar
+inline fun Pascal(value: Double): Pressure = value.pascal
 
-    inline operator fun minus(pressure: Pressure) = (value - pressure.value).mbar
+inline fun ATM(value: Double): Pressure = value.atm
 
-    inline operator fun minus(pressure: Double) = (value - pressure).mbar
+inline val Double.mbar
+    get() = Millibar(this)
 
-    inline operator fun minus(pressure: Int) = (value - pressure).mbar
+inline val Int.mbar
+    get() = toDouble().mbar
 
-    inline operator fun times(pressure: Pressure) = (value * pressure.value).mbar
+inline val Double.pascal
+    get() = (this / 100.0).mbar
 
-    inline operator fun times(pressure: Double) = (value * pressure).mbar
+inline val Int.pascal
+    get() = toDouble().pascal
 
-    inline operator fun times(pressure: Int) = (value * pressure).mbar
+inline val Double.atm
+    get() = (this * ONE_ATM).mbar
 
-    inline operator fun div(pressure: Pressure) = value / pressure.value
+inline val Int.atm
+    get() = toDouble().atm
 
-    inline operator fun div(pressure: Double) = (value / pressure).mbar
+/**
+ * Converts this distance (altitude) to pressure at specified [temperature].
+ *
+ * https://www.mide.com/air-pressure-at-altitude-calculator
+ */
+fun Distance.pressure(temperature: Temperature = 10.0.celsius): Pressure {
+    val e = 9.80665 * 0.0289644 / (8.31432 * -0.0065)
+    val k = temperature.toKelvin
+    val m = toMeters
 
-    inline operator fun div(pressure: Int) = (value / pressure).mbar
-
-    inline operator fun rem(pressure: Pressure) = (value % pressure.value).mbar
-
-    inline operator fun rem(pressure: Double) = (value % pressure).mbar
-
-    inline operator fun rem(pressure: Int) = (value % pressure).mbar
-
-    inline operator fun unaryMinus() = (-value).mbar
-
-    companion object {
-
-        @JvmStatic val ZERO = Pressure(0.0)
-
-        /**
-         * Creates [Pressure] from millibar.
-         */
-        inline val Double.mbar
-            get() = Pressure(this)
-
-        /**
-         * Creates [Pressure] from millibar.
-         */
-        inline val Int.mbar
-            get() = Pressure(toDouble())
-
-        /**
-         * Creates [Pressure] from pascal.
-         */
-        inline val Double.pascal
-            get() = (this / 100.0).mbar
-
-        /**
-         * Creates [Pressure] from pascal.
-         */
-        inline val Int.pascal
-            get() = (this / 100.0).mbar
-
-        /**
-         * Creates [Pressure] from atmosphere.
-         */
-        inline val Double.atm
-            get() = (this * 1013.25).mbar
-
-        /**
-         * Creates [Pressure] from atmosphere.
-         */
-        inline val Int.atm
-            get() = (this * 1013.25).mbar
-
-        /**
-         * Converts this distance (altitude) to pressure at specified [temperature].
-         *
-         * https://www.mide.com/air-pressure-at-altitude-calculator
-         */
-        @JvmStatic
-        fun Distance.pressure(temperature: Temperature = 10.0.celsius): Pressure {
-            val e = 9.80665 * 0.0289644 / (8.31432 * -0.0065)
-            val k = temperature.kelvin
-
-            return if (meters < 11000) {
-                (1013.25 * (k / (k - 0.0065 * meters)).pow(e)).mbar
-            } else {
-                val a = 1013.25 * (k / (k + (-0.0065 * 11000.0))).pow(e)
-                val c = k + 11000 * -0.0065
-                (a * exp(-9.80665 * 0.0289644 * (meters - 11000.0) / (8.31432 * c))).mbar
-            }
-        }
+    return if (m < 11000) {
+        (ONE_ATM * (k / (k - 0.0065 * m)).pow(e)).mbar
+    } else {
+        val a = ONE_ATM * (k / (k + (-0.0065 * 11000.0))).pow(e)
+        val c = k + 11000 * -0.0065
+        (a * exp(-9.80665 * 0.0289644 * (m - 11000.0) / (8.31432 * c))).mbar
     }
 }

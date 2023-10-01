@@ -9,8 +9,8 @@ interface PlateSolver {
     fun solve(
         path: Path,
         blind: Boolean = true,
-        centerRA: Angle = Angle.ZERO, centerDEC: Angle = Angle.ZERO,
-        radius: Angle = Angle.ZERO,
+        centerRA: Angle = 0.0, centerDEC: Angle = 0.0,
+        radius: Angle = 0.0,
         downsampleFactor: Int = 2,
         timeout: Duration? = null,
     ): Calibration

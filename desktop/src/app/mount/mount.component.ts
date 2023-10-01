@@ -1,12 +1,12 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { Title } from '@angular/platform-browser'
 import { MenuItem } from 'primeng/api'
 import { Subject, Subscription, debounceTime, interval, throttleTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { ComputedCoordinates, Constellation, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode, Union } from '../../shared/types'
+import { Angle, ComputedLocation, Constellation, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode, Union } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 @Component({
     selector: 'app-mount',
@@ -29,22 +29,22 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     canPark = false
     canHome = false
 
-    rightAscensionJ2000 = '00h00m00s'
-    declinationJ2000 = `00°00'00"`
-    rightAscension = '00h00m00s'
-    declination = `00°00'00"`
-    azimuth = `000°00'00"`
-    altitude = `+00°00'00"`
+    rightAscensionJ2000: Angle = '00h00m00s'
+    declinationJ2000: Angle = `00°00'00"`
+    rightAscension: Angle = '00h00m00s'
+    declination: Angle = `00°00'00"`
+    azimuth: Angle = `000°00'00"`
+    altitude: Angle = `+00°00'00"`
     lst = '00:00'
     constellation: Union<Constellation, '-'> = '-'
     timeLeftToMeridianFlip = '00:00'
     meridianAt = '00:00'
     pierSide: PierSide = 'NEITHER'
     targetCoordinateType: TargetCoordinateType = 'JNOW'
-    targetRightAscension = '00h00m00s'
-    targetDeclination = `00°00'00"`
-    targetAzimuth = `000°00'00"`
-    targetAltitude = `+00°00'00"`
+    targetRightAscension: Angle = '00h00m00s'
+    targetDeclination: Angle = `00°00'00"`
+    targetAzimuth: Angle = `000°00'00"`
+    targetAltitude: Angle = `+00°00'00"`
     targetConstellation: Union<Constellation, '-'> = '-'
     targetMeridianAt = '00:00'
 
@@ -139,14 +139,14 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     targetCoordinateOption = this.targetCoordinateOptions[0]
 
     constructor(
-        private title: Title,
+        private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private preference: PreferenceService,
         ngZone: NgZone,
     ) {
-        title.setTitle('Mount')
+        app.title = 'Mount'
 
         api.startListening('MOUNT')
 
@@ -175,7 +175,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     async ngAfterContentInit() {
-        this.mounts = await this.api.attachedMounts()
+        this.mounts = await this.api.mounts()
     }
 
     @HostListener('window:unload')
@@ -188,7 +188,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     async mountChanged() {
         if (this.mount) {
-            this.title.setTitle(`Mount ・ ${this.mount!.name}`)
+            this.app.title = `Mount ・ ${this.mount!.name}`
 
             const mount = await this.api.mount(this.mount.name)
             Object.assign(this.mount, mount)
@@ -197,7 +197,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             this.update()
             this.savePreference()
         } else {
-            this.title.setTitle(`Mount`)
+            this.app.title = 'Mount'
         }
 
         this.electron.send('MOUNT_CHANGED', this.mount)
@@ -241,16 +241,16 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             if (this.moveToDirection[0] !== pressed) {
                 switch (direction[0]) {
                     case 'N':
-                        this.api.mountMoveNorth(this.mount!, pressed)
+                        this.api.mountMove(this.mount!, 'UP_NORTH', pressed)
                         break
                     case 'S':
-                        this.api.mountMoveSouth(this.mount!, pressed)
+                        this.api.mountMove(this.mount!, 'DOWN_SOUTH', pressed)
                         break
                     case 'W':
-                        this.api.mountMoveWest(this.mount!, pressed)
+                        this.api.mountMove(this.mount!, 'LEFT_WEST', pressed)
                         break
                     case 'E':
-                        this.api.mountMoveEast(this.mount!, pressed)
+                        this.api.mountMove(this.mount!, 'RIGHT_EAST', pressed)
                         break
                 }
 
@@ -260,10 +260,10 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             if (this.moveToDirection[1] !== pressed) {
                 switch (direction[1]) {
                     case 'W':
-                        this.api.mountMoveWest(this.mount!, pressed)
+                        this.api.mountMove(this.mount!, 'LEFT_WEST', pressed)
                         break
                     case 'E':
-                        this.api.mountMoveEast(this.mount!, pressed)
+                        this.api.mountMove(this.mount!, 'RIGHT_EAST', pressed)
                         break
                     default:
                         return
@@ -333,7 +333,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     private async computeCoordinates() {
         if (this.mount && this.mount.connected) {
-            const computedCoordinates = await this.api.mountComputeCoordinates(this.mount!, false, '', '', true, true, true)
+            const computedCoordinates = await this.api.mountComputeLocation(this.mount!, false, this.mount.rightAscension, this.mount.declination, true, true, true)
             this.rightAscensionJ2000 = computedCoordinates.rightAscensionJ2000
             this.declinationJ2000 = computedCoordinates.declinationJ2000
             this.azimuth = computedCoordinates.azimuth
@@ -347,7 +347,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     async computeTargetCoordinates() {
         if (this.mount && this.mount.connected) {
-            const computedCoordinates = await this.api.mountComputeCoordinates(this.mount!, this.targetCoordinateType === 'J2000',
+            const computedCoordinates = await this.api.mountComputeLocation(this.mount!, this.targetCoordinateType === 'J2000',
                 this.targetRightAscension, this.targetDeclination, true, true, true)
             this.targetAzimuth = computedCoordinates.azimuth
             this.targetAltitude = computedCoordinates.altitude
@@ -356,7 +356,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    private updateTargetCoordinate(coordinates: ComputedCoordinates) {
+    private updateTargetCoordinate(coordinates: ComputedLocation) {
         if (this.targetCoordinateType === 'J2000') {
             this.targetRightAscension = coordinates.rightAscensionJ2000
             this.targetDeclination = coordinates.declinationJ2000
@@ -378,7 +378,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     private savePreference() {
-        if (this.mount) {
+        if (this.mount && this.mount.connected) {
             this.preference.set(`mount.${this.mount.name}.targetCoordinateType`, this.targetCoordinateType)
             this.preference.set(`mount.${this.mount.name}.targetRightAscension`, this.targetRightAscension)
             this.preference.set(`mount.${this.mount.name}.targetDeclination`, this.targetDeclination)

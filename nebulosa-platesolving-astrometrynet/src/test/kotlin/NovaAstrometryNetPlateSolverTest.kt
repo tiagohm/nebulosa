@@ -4,7 +4,9 @@ import io.kotest.matchers.doubles.shouldBeExactly
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.io.resource
 import nebulosa.io.transferAndClose
-import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.deg
+import nebulosa.math.toArcsec
+import nebulosa.math.toDegrees
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
 import java.nio.file.Files
 import kotlin.io.path.outputStream
@@ -22,11 +24,11 @@ class NovaAstrometryNetPlateSolverTest : StringSpec() {
 
             val calibration = solver.solve(file, blind = false, centerRA = 290.0.deg, centerDEC = 11.0.deg, radius = 2.0.deg)
 
-            calibration.orientation.degrees shouldBeExactly 90.0397051079753
-            calibration.scale.arcsec shouldBeExactly 2.0675124414774606
-            calibration.radius.degrees shouldBeExactly 0.36561535148882157
-            calibration.rightAscension.degrees shouldBeExactly 290.237669307
-            calibration.declination.degrees shouldBeExactly 11.1397773954
+            calibration.orientation.toDegrees shouldBeExactly 90.0397051079753
+            calibration.scale.toArcsec shouldBeExactly 2.0675124414774606
+            calibration.radius.toDegrees shouldBeExactly 0.36561535148882157
+            calibration.rightAscension.toDegrees shouldBeExactly 290.237669307
+            calibration.declination.toDegrees shouldBeExactly 11.1397773954
         }
         "blind solve" {
             val service = NovaAstrometryNetService()
@@ -34,11 +36,11 @@ class NovaAstrometryNetPlateSolverTest : StringSpec() {
 
             val calibration = solver.solve(file, blind = true)
 
-            calibration.orientation.degrees shouldBeExactly 90.0397051079753
-            calibration.scale.arcsec shouldBeExactly 2.0675124414774606
-            calibration.radius.degrees shouldBeExactly 0.36561535148882157
-            calibration.rightAscension.degrees shouldBeExactly 290.237669307
-            calibration.declination.degrees shouldBeExactly 11.1397773954
+            calibration.orientation.toDegrees shouldBeExactly 90.0397051079753
+            calibration.scale.toArcsec shouldBeExactly 2.0675124414774606
+            calibration.radius.toDegrees shouldBeExactly 0.36561535148882157
+            calibration.rightAscension.toDegrees shouldBeExactly 290.237669307
+            calibration.declination.toDegrees shouldBeExactly 11.1397773954
         }
     }
 }

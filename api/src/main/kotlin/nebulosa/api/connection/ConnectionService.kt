@@ -49,7 +49,7 @@ class ConnectionService(
 
     @Synchronized
     fun disconnect() {
-        client?.close()
+        runCatching { client?.close() }
         client = null
     }
 

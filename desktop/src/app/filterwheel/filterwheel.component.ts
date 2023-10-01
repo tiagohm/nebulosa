@@ -1,10 +1,10 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { Title } from '@angular/platform-browser'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { FilterWheel } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 export interface FilterSlot {
     position: number
@@ -39,13 +39,13 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     constructor(
-        private title: Title,
+        private app: AppComponent,
         private api: ApiService,
         private electron: ElectronService,
         private preference: PreferenceService,
         ngZone: NgZone,
     ) {
-        title.setTitle('Filter Wheel')
+        app.title = 'Filter Wheel'
 
         electron.on('WHEEL_UPDATED', (_, wheel: FilterWheel) => {
             if (wheel.name === this.wheel?.name) {
@@ -58,7 +58,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     async ngAfterContentInit() {
-        this.wheels = await this.api.attachedWheels()
+        this.wheels = await this.api.wheels()
     }
 
     @HostListener('window:unload')
@@ -66,7 +66,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     async wheelChanged() {
         if (this.wheel) {
-            this.title.setTitle(`Filter Wheel ・ ${this.wheel.name}`)
+            this.app.title = `Filter Wheel ・ ${this.wheel.name}`
 
             const wheel = await this.api.wheel(this.wheel.name)
             Object.assign(this.wheel, wheel)
@@ -75,7 +75,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             this.update()
             this.savePreference()
         } else {
-            this.title.setTitle(`Filter Wheel`)
+            this.app.title = 'Filter Wheel'
         }
 
         this.electron.send('WHEEL_CHANGED', this.wheel)
@@ -108,7 +108,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         filter.name = filter.newName
 
         this.preference.set(`wheel.${this.wheel!.name}.filterName.${filter.position}`, filter.name)
-        this.api.wheelSyncNames(this.wheel!, this.filters.map(e => e.name))
+        this.api.wheelSync(this.wheel!, this.filters.map(e => e.name))
         this.electron.send('WHEEL_RENAMED', this.wheel)
 
         filter.editing = false
@@ -147,7 +147,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     private savePreference() {
-        if (this.wheel) {
+        if (this.wheel && this.wheel.connected) {
             const darkFilter = this.filters.find(e => e.dark)
             this.preference.set(`wheel.${this.wheel.name}.shutterPosition`, darkFilter?.position || 0)
         }

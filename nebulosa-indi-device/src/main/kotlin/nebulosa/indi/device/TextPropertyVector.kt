@@ -2,6 +2,7 @@ package nebulosa.indi.device
 
 import nebulosa.indi.protocol.PropertyPermission
 import nebulosa.indi.protocol.PropertyState
+import nebulosa.indi.protocol.PropertyType
 
 data class TextPropertyVector(
     override val device: Device,
@@ -12,6 +13,8 @@ data class TextPropertyVector(
     override var state: PropertyState,
     internal val properties: LinkedHashMap<String, TextProperty>,
 ) : PropertyVector<String, TextProperty>, Map<String, TextProperty> by properties {
+
+    override val type = PropertyType.TEXT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core'
-import { Title } from '@angular/platform-browser'
+import { AppComponent } from '../app.component'
 
 @Component({
     selector: 'app-about',
@@ -8,7 +8,7 @@ import { Title } from '@angular/platform-browser'
 })
 export class AboutComponent {
 
-    constructor(title: Title) {
-        title.setTitle('About')
+    constructor(app: AppComponent) {
+        app.title = 'About'
     }
 }

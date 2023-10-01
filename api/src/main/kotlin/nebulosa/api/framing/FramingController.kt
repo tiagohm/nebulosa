@@ -4,29 +4,23 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive
-import nebulosa.api.data.enums.HipsSurveyType
 import nebulosa.api.image.ImageService
-import nebulosa.hips2fits.HipsSurvey
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.deg
+import nebulosa.math.hours
 import org.hibernate.validator.constraints.Range
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.nio.file.Path
 
 @RestController
+@RequestMapping("framing")
 class FramingController(
     private val imageService: ImageService,
 ) {
 
-    @GetMapping("hipsSurveys")
-    fun hipsSurveys(): List<HipsSurvey> {
-        return HipsSurveyType.entries.map { it.hipsSurvey }
-    }
-
-    @PostMapping("frame")
+    @PutMapping
     fun frame(
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
@@ -36,9 +30,6 @@ class FramingController(
         @RequestParam(required = false, defaultValue = "0.0") rotation: Double,
         @RequestParam(required = false, defaultValue = "CDS_P_DSS2_COLOR") hipsSurvey: HipsSurveyType,
     ): Path {
-        return imageService.frame(
-            Angle.from(rightAscension, true), Angle.from(declination),
-            width, height, fov.deg, rotation.deg, hipsSurvey,
-        )
+        return imageService.frame(rightAscension.hours, declination.deg, width, height, fov.deg, rotation.deg, hipsSurvey)
     }
 }

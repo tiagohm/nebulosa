@@ -1,4 +1,6 @@
 import nebulosa.math.Angle
+import nebulosa.math.deg
+import nebulosa.math.hours
 import nebulosa.stellarium.protocol.StellariumMountHandler
 import nebulosa.stellarium.protocol.StellariumProtocolServer
 import kotlin.concurrent.thread
@@ -7,10 +9,10 @@ class StellariumProtocolServerTest {
 
     companion object : StellariumMountHandler {
 
-        override var rightAscension = Angle.from("05 15 07", true)
-        override var declination = Angle.from("25 26 03")
-        override var rightAscensionJ2000 = Angle.from("05 15 07", true)
-        override var declinationJ2000 = Angle.from("25 26 03")
+        override var rightAscension = "05 15 07".hours
+        override var declination = "25 26 03".deg
+        override var rightAscensionJ2000 = "05 15 07".hours
+        override var declinationJ2000 = "25 26 03".deg
 
         @JvmStatic
         fun main(args: Array<String>) {

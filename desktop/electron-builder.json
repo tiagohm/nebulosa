@@ -26,7 +26,7 @@
     ]
   },
   "portable": {
-    "splashImage": "dist/assets/images/splash.bmp"
+    "splashImage": "dist/assets/images/splash.png"
   },
   "mac": {
     "icon": "dist/assets/icons",

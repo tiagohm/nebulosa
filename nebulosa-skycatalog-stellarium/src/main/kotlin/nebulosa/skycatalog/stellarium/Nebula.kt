@@ -1,21 +1,19 @@
 package nebulosa.skycatalog.stellarium
 
 import nebulosa.io.readDouble
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.mas
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.nova.astrometry.Constellation
-import nebulosa.nova.position.ICRF
-import nebulosa.skycatalog.DeepSkyObject
+import nebulosa.math.deg
+import nebulosa.math.mas
+import nebulosa.math.rad
 import nebulosa.skycatalog.SkyCatalog
+import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObject.Companion.NAME_SEPARATOR
+import nebulosa.time.UTC
 import okio.BufferedSource
 import okio.Source
 import okio.buffer
 import kotlin.math.min
 
-class Nebula : SkyCatalog<DeepSkyObject>(94661) {
+class Nebula : SkyCatalog<NebulaEntry>(94661) {
 
     fun load(
         source: Source,
@@ -26,27 +24,27 @@ class Nebula : SkyCatalog<DeepSkyObject>(94661) {
         buffer.readString() // Version.
         buffer.readString() // Edition.
 
+        val currentTime = UTC.now()
         val namesMap = namesSource?.loadNames() ?: emptyMap()
-        val types = NebulaType.values()
         val names = ArrayList<String>(8)
 
         while (!buffer.exhausted()) {
-            val id = buffer.readInt()
+            val id = buffer.readInt().toLong()
             val ra = buffer.readDouble().rad
             val dec = buffer.readDouble().rad
             val mB = buffer.readDouble()
             val mV = buffer.readDouble()
             val type = (buffer.readInt() + 1) % 37
-            val mType = buffer.readString()
+            buffer.readString() // Morphological type
             val majorAxis = buffer.readDouble().deg
             val minorAxis = buffer.readDouble().deg
             val orientation = buffer.readInt().deg
             val redshift = buffer.readDouble()
-            buffer.readDouble() // redshiftError
+            buffer.readDouble() // Redshift error
             val parallax = buffer.readDouble().mas
-            buffer.readDouble().mas // parallaxError
-            val distance = buffer.readDouble()
-            buffer.readDouble() // distanceError
+            buffer.readDouble().mas // Parallax error
+            buffer.readDouble() // Distance
+            buffer.readDouble() // Distance error
             val ngc = buffer.readInt()
             val ic = buffer.readInt()
             val m = buffer.readInt()
@@ -88,58 +86,42 @@ class Nebula : SkyCatalog<DeepSkyObject>(94661) {
             if (ngc > 0) "NGC $ngc".findNames()
             if (ic > 0) "IC $ic".findNames()
             if (m > 0) "M $m".findNames()
-            if (mel > 0) "MEL $mel".findNames()
-            if (b > 0) "B $b".findNames()
-            if (c > 0) "C $c".findNames()
-            if (cr > 0) "CR $cr".findNames()
+            if (mel > 0) "Mellote $mel".findNames()
+            if (b > 0) "Barnard $b".findNames()
+            if (c > 0) "Caldwell $c".findNames()
+            if (cr > 0) "Collinder $cr".findNames()
             if (ced.isNotEmpty()) "CED $ced".findNames()
-            if (sh2 > 0) "SH2 $sh2".findNames()
+            if (sh2 > 0) "SH 2-$sh2".findNames()
             if (rcw > 0) "RCW $rcw".findNames()
             if (vdb > 0) "VDB $vdb".findNames()
             if (lbn > 0) "LBN $lbn".findNames()
             if (pgc > 0) "PGC $pgc".findNames()
             if (ugc > 0) "UGC $ugc".findNames()
-            if (arp > 0) "ARP $arp".findNames()
+            if (arp > 0) "Arp $arp".findNames()
             if (vv > 0) "VV $vv".findNames()
             if (pk.isNotEmpty()) "PK $pk".findNames()
             if (png.isNotEmpty()) "PNG $png".findNames()
-            if (aco.isNotEmpty()) "ACO $aco".findNames()
+            if (aco.isNotEmpty()) "Abell $aco".findNames()
             if (eso.isNotEmpty()) "ESO $eso".findNames()
             if (snrg.isNotEmpty()) "SNRG $snrg".findNames()
             if (dwb > 0) "DWB $dwb".findNames()
-            if (st > 0) "ST $st".findNames()
+            if (st > 0) "Stock $st".findNames()
             if (ldn > 0) "LDN $ldn".findNames()
             if (hcg.isNotEmpty()) "HCG $hcg".findNames()
-            if (vdbh.isNotEmpty()) "VDBH $vdbh".findNames()
-            if (tr > 0) "TR $tr".findNames()
-            if (ru > 0) "RU $ru".findNames()
-            if (vdbha > 0) "VDBHA $vdbha".findNames()
+            if (vdbh.isNotEmpty()) "VdBH $vdbh".findNames()
+            if (tr > 0) "Trumpler $tr".findNames()
+            if (ru > 0) "Ruprecht $ru".findNames()
+            if (vdbha > 0) "VdBHA $vdbha".findNames()
 
-            val nebula = DeepSkyObject(
+            val nebula = NebulaEntry(
                 id,
                 names.joinToString(NAME_SEPARATOR).trim(),
-                m = m, ngc = ngc, ic = ic,
-                c = c, b = b,
-                sh2 = sh2, vdb = vdb,
-                rcw = rcw, ldn = ldn, lbn = lbn,
-                cr = cr, mel = mel,
-                pgc = pgc, ugc = ugc,
-                arp = arp, vv = vv,
-                dwb = dwb,
-                tr = tr, st = st, ru = ru,
-                vdbha = vdbha, ced = ced,
-                pk = pk, png = png,
-                snrg = snrg, aco = aco,
-                hcg = hcg, eso = eso, vdbh = vdbh,
-                magnitude = min(mB, mV),
-                rightAscension = ra, declination = dec,
-                type = types[type].type, mType = mType,
-                majorAxis = majorAxis, minorAxis = minorAxis,
-                orientation = orientation,
-                redshift = redshift,
-                parallax = parallax,
-                distance = distance * 3261.5637769,
-                constellation = computeConstellation(ra, dec),
+                ra, dec, min(mB, mV),
+                NebulaType.entries[type].type,
+                majorAxis, minorAxis, orientation,
+                parallax = parallax, redshift = redshift,
+                // distance * 3261.5637769,
+                constellation = SkyObject.computeConstellation(ra, dec, currentTime),
             )
 
             add(nebula)
@@ -182,11 +164,6 @@ class Nebula : SkyCatalog<DeepSkyObject>(94661) {
             }
 
             return res
-        }
-
-        @JvmStatic
-        private fun computeConstellation(rightAscension: Angle, declination: Angle): Constellation {
-            return Constellation.find(ICRF.equatorial(rightAscension, declination))
         }
     }
 }
