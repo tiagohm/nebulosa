@@ -37,6 +37,7 @@ The complete integrated solution for all of your astronomical imaging needs.
 ## Image
 
 ![](image.png)
+![](image.2.png)
 
 ## Framing
 

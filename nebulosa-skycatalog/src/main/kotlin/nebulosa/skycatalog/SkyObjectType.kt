@@ -3,7 +3,7 @@ package nebulosa.skycatalog
 enum class SkyObjectType(
     val description: String,
     val classification: ClassificationType,
-    private vararg val codes: String,
+    vararg val codes: String,
 ) {
     ACTIVE_GALAXY_NUCLEUS("Active Galaxy Nucleus", ClassificationType.GALAXY, "AGN", "AG?"),
     ALPHA2_CVN_VARIABLE("alpha2 CVn Variable", ClassificationType.STAR, "a2*", "a2?"),

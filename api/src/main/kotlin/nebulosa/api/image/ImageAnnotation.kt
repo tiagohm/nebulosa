@@ -1,15 +1,14 @@
 package nebulosa.api.image
 
-import nebulosa.api.atlas.DeepSkyObjectEntity
-import nebulosa.api.atlas.StarEntity
 import nebulosa.math.Angle
+import nebulosa.skycatalog.DeepSkyObject
 import nebulosa.skycatalog.SkyObject
 
 data class ImageAnnotation(
     val x: Double,
     val y: Double,
-    val star: StarEntity? = null,
-    val dso: DeepSkyObjectEntity? = null,
+    val star: DeepSkyObject? = null,
+    val dso: DeepSkyObject? = null,
     val minorPlanet: SkyObject? = null,
 ) {
 

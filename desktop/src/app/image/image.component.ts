@@ -11,6 +11,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
+    AstronomicalObject,
     Camera, CameraCaptureEvent, DeepSkyObject, EquatorialCoordinateJ2000, FITSHeaderItem, GuideExposureFinished, GuideTrackingBox,
     ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
     ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star
@@ -83,7 +84,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     annotations: ImageAnnotation[] = []
     annotating = false
     showAnnotationInfoDialog = false
-    annotationInfo?: Star | DeepSkyObject
+    annotationInfo?: AstronomicalObject & Partial<Star & DeepSkyObject>
 
     showFITSHeadersDialog = false
     fitsHeaders: FITSHeaderItem[] = []
@@ -479,7 +480,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     showAnnotationInfo(annotation: ImageAnnotation) {
-        this.annotationInfo = annotation.star ?? annotation.dso
+        this.annotationInfo = annotation.star ?? annotation.dso ?? annotation.minorPlanet
         this.showAnnotationInfoDialog = true
     }
 

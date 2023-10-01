@@ -5,7 +5,7 @@ import nebulosa.math.cos
 import nebulosa.math.sin
 import kotlin.math.acos
 
-abstract class SkyCatalog<T : SkyObject>(estimatedSize: Int = 0) : Collection<T> {
+abstract class SkyCatalog<T : SkyObject>(protected val estimatedSize: Int = 0) : Collection<T> {
 
     private val data = ArrayList<T>(estimatedSize)
 

@@ -11,8 +11,10 @@
 
     <svg *ngIf="!mirrorHorizontal && !mirrorVertical" class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
         <g *ngFor="let a of annotations" (dblclick)="showAnnotationInfo(a)" class="pointer-events-auto cursor-pointer">
-            <circle [attr.cx]="a.x" [attr.cy]="a.y" r="4" stroke="#FDD835" stroke-width="1" fill="#FDD835"></circle>
-            <text [attr.x]="a.x" [attr.y]="a.y" fill="#00897B" style="font-size: 7px" class="select-none">{{ a.star?.name ?? a.dso?.name }}</text>
+            <circle [attr.cx]="a.x" [attr.cy]="a.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"></circle>
+            <text [attr.x]="a.x" [attr.y]="a.y" fill="#00897B" style="font-size: 5px" class="pointer-events-none select-none">{{ a.star?.name ??
+                a.dso?.name ??
+                a.minorPlanet?.name }}</text>
         </g>
     </svg>
 
@@ -33,7 +35,7 @@
 
 <p-contextMenu #menu [model]="menuItems" />
 
-<p-dialog header="Annotation" [draggable]="false" [(visible)]="showAnnotationDialog" [modal]="true" [style]="{width: '280px'}">
+<p-dialog header="Annotation" [draggable]="false" [(visible)]="showAnnotationDialog" [modal]="true" [style]="{width: '320px'}">
     <div class="grid">
         <div class="col-12 flex flex-column">
             <p-checkbox [(ngModel)]="annotateWithStars" class="py-1" [binary]="true" label="Annotate with stars" />
@@ -48,6 +50,13 @@
                     <label>Mag. Limit</label>
                 </span>
             </div>
+        </div>
+        <div class="col-12 text-sm">
+            <p>Star and DSO annotations made use of <a target="_blank" href="https://simbad.cds.unistra.fr/simbad/">SIMBAD Astronomical Database - CDS
+                    (Strasbourg)</a></p>
+            <p>Minor planets annotations made use of <a target="_blank" href="https://ssd-api.jpl.nasa.gov/doc/sb_ident.html">Small-Body
+                    Identification API</a>
+            </p>
         </div>
     </div>
     <ng-template pTemplate="footer">
@@ -77,26 +86,26 @@
                     <label>DEC (J2000)</label>
                 </span>
             </div>
-            <div class="col-6">
+            <div class="col-6" *ngIf="annotationInfo.magnitude">
                 <span class="p-float-label">
                     <input pInputText readonly type="text" value="{{ annotationInfo.magnitude < 99.0 ? annotationInfo.magnitude.toFixed(2) : '-' }}"
                            class="border-0 p-inputtext-sm" />
                     <label>Magnitude</label>
                 </span>
             </div>
-            <div class="col-6">
+            <div class="col-6" *ngIf="annotationInfo.constellation">
                 <span class="p-float-label">
                     <input pInputText readonly type="text" [value]="annotationInfo.constellation" class="border-0 p-inputtext-sm" />
                     <label>Constellation</label>
                 </span>
             </div>
-            <div class="col-6">
+            <div class="col-6" *ngIf="annotationInfo.type">
                 <span class="p-float-label">
                     <input pInputText readonly type="text" value="{{ annotationInfo.type | enum }}" class="border-0 p-inputtext-sm" />
                     <label>Type</label>
                 </span>
             </div>
-            <div class="col-6">
+            <div class="col-6" *ngIf="annotationInfo.distance">
                 <span class="p-float-label">
                     <input pInputText readonly type="text" value="{{ annotationInfo.distance <= 0 ? '-' : annotationInfo.distance }}"
                            class="border-0 p-inputtext-sm" />
@@ -104,6 +113,9 @@
                 </span>
             </div>
         </ng-container>
+        <div class="col-12 text-center text-sm" *ngIf="annotationInfo?.type">
+            <a target="_blank" href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + annotationInfo?.name }}">Simbad</a>
+        </div>
     </div>
     <ng-template pTemplate="footer">
         <div class="col-12 flex justify-content-center">

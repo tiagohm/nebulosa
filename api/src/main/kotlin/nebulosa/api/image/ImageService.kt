@@ -2,8 +2,6 @@ package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
-import nebulosa.api.atlas.DeepSkyObjectRepository
-import nebulosa.api.atlas.StarRepository
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
@@ -20,6 +18,10 @@ import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
 import nebulosa.platesolving.watney.WatneyPlateSolver
 import nebulosa.sbd.SmallBodyDatabaseService
+import nebulosa.simbad.SimbadService
+import nebulosa.simbad.SimbadSkyCatalog
+import nebulosa.skycatalog.ClassificationType
+import nebulosa.skycatalog.SkyObjectType
 import nebulosa.wcs.WCSException
 import nebulosa.wcs.WCSTransform
 import org.springframework.http.HttpStatus
@@ -38,10 +40,9 @@ import kotlin.io.path.outputStream
 @Service
 class ImageService(
     private val objectMapper: ObjectMapper,
-    private val starRepository: StarRepository,
-    private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val framingService: FramingService,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
+    private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
 ) {
 
@@ -137,6 +138,7 @@ class ImageService(
             .getStringValue(FitsKeywords.DATE_OBS)
             ?.ifBlank { null }
             ?.let(LocalDateTime::parse)
+            ?: LocalDateTime.now()
 
         if (minorPlanets && dateTime != null) {
             CompletableFuture.runAsync {
@@ -171,37 +173,36 @@ class ImageService(
 
         // val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
 
-        if (stars) {
+        if (stars || dsos) {
             CompletableFuture.runAsync {
                 LOG.info("finding star annotations. dateTime={}, calibration={}", dateTime, calibration)
 
-                starRepository
-                    .search(rightAscensionJ2000 = calibration.rightAscension, declinationJ2000 = calibration.declination, radius = calibration.radius)
-                    .also { LOG.info("Found {} stars", it.size) }
-                    .forEach {
-                        // val fixedStar = FixedStar(it.rightAscensionJ2000.rad, it.declinationJ2000.rad, it.pmRA.rad, it.pmDEC.rad)
-                        // val (ra, dec) = barycentric.observe(fixedStar).equatorialJ2000()
-                        val (x, y) = wcs.skyToPix(it.rightAscensionJ2000, it.declinationJ2000)
-                        val annotation = ImageAnnotation(x, y, star = it)
-                        annotations.add(annotation)
-                    }
-            }.whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
-        }
+                val catalog = SimbadSkyCatalog(simbadService)
 
-        if (dsos) {
-            CompletableFuture.runAsync {
-                LOG.info("finding DSO annotations. dateTime={}, calibration={}", dateTime, calibration)
+                val types = ArrayList<SkyObjectType>(4)
 
-                deepSkyObjectRepository
-                    .search(rightAscensionJ2000 = calibration.rightAscension, declinationJ2000 = calibration.declination, radius = calibration.radius)
-                    .also { LOG.info("Found {} DSOs", it.size) }
-                    .forEach {
-                        // val fixedStar = FixedStar(it.rightAscensionJ2000.rad, it.declinationJ2000.rad, it.pmRA.rad, it.pmDEC.rad)
-                        // val (ra, dec) = barycentric.observe(fixedStar).equatorialJ2000()
-                        val (x, y) = wcs.skyToPix(it.rightAscensionJ2000, it.declinationJ2000)
-                        val annotation = ImageAnnotation(x, y, dso = it)
-                        annotations.add(annotation)
-                    }
+                if (stars) {
+                    types.add(SkyObjectType.STAR)
+                }
+
+                if (dsos) {
+                    types.add(SkyObjectType.CLUSTER_OF_STARS)
+                    types.add(SkyObjectType.INTERSTELLAR_MEDIUM_OBJECT)
+                    types.add(SkyObjectType.GALAXY)
+                    types.add(SkyObjectType.CLUSTER_OF_GALAXIES)
+                    types.add(SkyObjectType.INTERACTING_GALAXIES)
+                }
+
+                catalog.search(calibration.rightAscension, calibration.declination, calibration.radius, types)
+
+                for (entry in catalog) {
+                    val (x, y) = wcs.skyToPix(entry.rightAscensionJ2000, entry.declinationJ2000)
+                    val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
+                    else ImageAnnotation(x, y, dso = entry)
+                    annotations.add(annotation)
+                }
+
+                LOG.info("Found {} stars/DSOs", catalog.size)
             }.whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
         }
 
