@@ -1,5 +1,4 @@
 import { AfterContentInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core'
-import { Title } from '@angular/platform-browser'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { CronJob } from 'cron'
@@ -16,6 +15,7 @@ import {
     CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location,
     MinorPlanet, SATELLITE_GROUP_TYPES, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
 } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 Chart.register(zoomPlugin)
 
@@ -129,31 +129,21 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     readonly starTypeOptions: Union<SkyObjectType, 'ALL'>[] = [
         'ALL',
-        'ALPHA2_CVN_VARIABLE', 'ASYMPTOTIC_GIANT_BRANCH_STAR',
-        'BETA_CEP_VARIABLE', 'BE_STAR', 'BLUE_STRAGGLER',
-        'BLUE_SUPERGIANT', 'BL_LAC', 'BY_DRA_VARIABLE',
-        'CARBON_STAR', 'CATACLYSMIC_BINARY', 'CEPHEID_VARIABLE',
-        'CHEMICALLY_PECULIAR_STAR', 'CLASSICAL_CEPHEID_VARIABLE',
-        'CLASSICAL_NOVA', 'COMPOSITE_OBJECT_BLEND',
-        'DELTA_SCT_VARIABLE', 'DOUBLE_OR_MULTIPLE_STAR',
-        'ECLIPSING_BINARY', 'ELLIPSOIDAL_VARIABLE',
-        'EMISSION_LINE_STAR', 'ERUPTIVE_VARIABLE',
-        'EVOLVED_SUPERGIANT', 'GAMMA_DOR_VARIABLE',
-        'HERBIG_AE_BE_STAR', 'HIGH_MASS_X_RAY_BINARY',
-        'HIGH_PROPER_MOTION_STAR', 'HIGH_VELOCITY_STAR',
-        'HORIZONTAL_BRANCH_STAR', 'HOT_SUBDWARF',
-        'IRREGULAR_VARIABLE', 'LONG_PERIOD_VARIABLE',
-        'LOW_MASS_STAR', 'LOW_MASS_X_RAY_BINARY',
-        'MAIN_SEQUENCE_STAR', 'MIRA_VARIABLE',
-        'OH_IR_STAR', 'ORION_VARIABLE', 'PLANETARY_NEBULA',
-        'POST_AGB_STAR', 'PULSATING_VARIABLE', 'RED_GIANT_BRANCH_STAR',
-        'RED_SUPERGIANT', 'ROTATING_VARIABLE', 'RR_LYRAE_VARIABLE',
-        'RS_CVN_VARIABLE', 'RV_TAURI_VARIABLE', 'R_CRB_VARIABLE',
-        'SPECTROSCOPIC_BINARY', 'STAR', 'SX_PHE_VARIABLE',
-        'SYMBIOTIC_STAR', 'S_STAR', 'TYPE_II_CEPHEID_VARIABLE',
-        'T_TAURI_STAR', 'VARIABLE_STAR', 'WHITE_DWARF',
-        'WOLF_RAYET', 'X_RAY_BINARY', 'YELLOW_SUPERGIANT',
-        'YOUNG_STELLAR_OBJECT',
+        'ALPHA2_CVN_VARIABLE', 'ASYMPTOTIC_GIANT_BRANCH_STAR', 'BETA_CEP_VARIABLE',
+        'BE_STAR', 'BLUE_STRAGGLER', 'BLUE_SUPERGIANT', 'BY_DRA_VARIABLE',
+        'CARBON_STAR', 'CEPHEID_VARIABLE', 'CHEMICALLY_PECULIAR_STAR',
+        'CLASSICAL_CEPHEID_VARIABLE', 'DELTA_SCT_VARIABLE', 'DOUBLE_OR_MULTIPLE_STAR',
+        'ECLIPSING_BINARY', 'ELLIPSOIDAL_VARIABLE', 'EMISSION_LINE_STAR',
+        'ERUPTIVE_VARIABLE', 'EVOLVED_SUPERGIANT', 'EXTRA_SOLAR_PLANET',
+        'GAMMA_DOR_VARIABLE', 'HERBIG_AE_BE_STAR', 'HIGH_MASS_X_RAY_BINARY',
+        'HIGH_PROPER_MOTION_STAR', 'HORIZONTAL_BRANCH_STAR', 'IRREGULAR_VARIABLE',
+        'LONG_PERIOD_VARIABLE', 'LOW_MASS_STAR', 'MAIN_SEQUENCE_STAR', 'MIRA_VARIABLE',
+        'OH_IR_STAR', 'ORION_VARIABLE', 'POST_AGB_STAR', 'PULSAR', 'PULSATING_VARIABLE',
+        'RED_GIANT_BRANCH_STAR', 'RED_SUPERGIANT', 'ROTATING_VARIABLE',
+        'RR_LYRAE_VARIABLE', 'RS_CVN_VARIABLE', 'RV_TAURI_VARIABLE', 'R_CRB_VARIABLE',
+        'SPECTROSCOPIC_BINARY', 'STAR', 'SX_PHE_VARIABLE', 'SYMBIOTIC_STAR', 'S_STAR',
+        'TYPE_II_CEPHEID_VARIABLE', 'T_TAURI_STAR', 'VARIABLE_STAR', 'WHITE_DWARF',
+        'WOLF_RAYET', 'X_RAY_BINARY', 'YELLOW_SUPERGIANT', 'YOUNG_STELLAR_OBJECT'
     ]
 
     dso?: DeepSkyObject
@@ -179,32 +169,42 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     readonly dsoTypeOptions: Union<SkyObjectType, 'ALL'>[] = [
         'ALL',
-        'ACTIVE_GALAXY_NUCLEUS', 'ASSOCIATION_OF_STARS',
-        'BLAZAR', 'BLUE_COMPACT_GALAXY', 'BL_LAC',
-        'BRIGHTEST_GALAXY_IN_A_CLUSTER_BCG', 'CARBON_STAR',
-        'CHEMICALLY_PECULIAR_STAR', 'CLUSTER_OF_GALAXIES',
-        'CLUSTER_OF_STARS', 'COMPACT_GROUP_OF_GALAXIES',
-        'COMPOSITE_OBJECT_BLEND', 'DARK_CLOUD_NEBULA',
-        'DOUBLE_OR_MULTIPLE_STAR', 'ECLIPSING_BINARY',
-        'EMISSION_LINE_GALAXY', 'EMISSION_LINE_STAR',
-        'EMISSION_OBJECT', 'ERUPTIVE_VARIABLE', 'GALAXY',
-        'GALAXY_IN_PAIR_OF_GALAXIES', 'GALAXY_TOWARDS_A_CLUSTER_OF_GALAXIES',
-        'GALAXY_TOWARDS_A_GROUP_OF_GALAXIES', 'GLOBULAR_CLUSTER',
+        'ACTIVE_GALAXY_NUCLEUS', 'ALPHA2_CVN_VARIABLE', 'ASSOCIATION_OF_STARS',
+        'BETA_CEP_VARIABLE', 'BE_STAR', 'BLACK_HOLE', 'BLAZAR', 'BLUE_COMPACT_GALAXY',
+        'BLUE_OBJECT', 'BLUE_SUPERGIANT', 'BL_LAC', 'BRIGHTEST_GALAXY_IN_A_CLUSTER_BCG',
+        'BUBBLE', 'CENTIMETRIC_RADIO_SOURCE', 'CLASSICAL_CEPHEID_VARIABLE',
+        'CLASSICAL_NOVA', 'CLOUD', 'CLUSTER_OF_GALAXIES', 'CLUSTER_OF_STARS',
+        'COMETARY_GLOBULE_PILLAR', 'COMPACT_GROUP_OF_GALAXIES', 'COMPOSITE_OBJECT_BLEND',
+        'DARK_CLOUD_NEBULA', 'DELTA_SCT_VARIABLE', 'DENSE_CORE',
+        'DOUBLE_OR_MULTIPLE_STAR', 'ECLIPSING_BINARY', 'EMISSION_LINE_GALAXY',
+        'EMISSION_LINE_STAR', 'EMISSION_OBJECT', 'EXTRA_SOLAR_PLANET',
+        'FAR_IR_SOURCE_30_M', 'GALAXY', 'GALAXY_IN_PAIR_OF_GALAXIES',
+        'GALAXY_TOWARDS_A_CLUSTER_OF_GALAXIES', 'GALAXY_TOWARDS_A_GROUP_OF_GALAXIES',
+        'GAMMA_RAY_BURST', 'GAMMA_RAY_SOURCE', 'GLOBULAR_CLUSTER',
+        'GLOBULE_LOW_MASS_DARK_CLOUD', 'GRAVITATIONALLY_LENSED_IMAGE',
+        'GRAVITATIONALLY_LENSED_IMAGE_OF_A_GALAXY',
+        'GRAVITATIONAL_LENS_SYSTEM_LENS_IMAGES', 'GRAVITATIONAL_WAVE_EVENT',
         'GROUP_OF_GALAXIES', 'HERBIG_AE_BE_STAR', 'HERBIG_HARO_OBJECT',
-        'HIGH_PROPER_MOTION_STAR', 'HII_GALAXY', 'HII_REGION',
+        'HIGH_PROPER_MOTION_STAR', 'HIGH_VELOCITY_CLOUD', 'HII_GALAXY', 'HII_REGION',
         'HI_21CM_SOURCE', 'INFRA_RED_SOURCE', 'INTERACTING_GALAXIES',
         'INTERSTELLAR_MEDIUM_OBJECT', 'INTERSTELLAR_SHELL',
         'LINER_TYPE_ACTIVE_GALAXY_NUCLEUS', 'LONG_PERIOD_VARIABLE',
-        'LOW_SURFACE_BRIGHTNESS_GALAXY', 'MOLECULAR_CLOUD',
-        'NEBULA', 'NOT_AN_OBJECT_ERROR_ARTEFACT',
-        'OBJECT_OF_UNKNOWN_NATURE', 'OPEN_CLUSTER',
-        'ORION_VARIABLE', 'PAIR_OF_GALAXIES', 'PART_OF_A_GALAXY',
-        'PLANETARY_NEBULA', 'QUASAR', 'RADIO_GALAXY',
-        'RADIO_SOURCE', 'REFLECTION_NEBULA', 'REGION_DEFINED_IN_THE_SKY',
-        'RR_LYRAE_VARIABLE', 'SEYFERT_1_GALAXY', 'SEYFERT_2_GALAXY',
-        'SEYFERT_GALAXY', 'SPECTROSCOPIC_BINARY', 'STAR',
-        'STARBURST_GALAXY', 'SUPERNOVA', 'SUPERNOVA_REMNANT',
-        'SYMBIOTIC_STAR', 'VARIABLE_STAR', 'YOUNG_STELLAR_OBJECT',
+        'LOW_SURFACE_BRIGHTNESS_GALAXY', 'MASER', 'MICRO_LENSING_EVENT',
+        'MID_IR_SOURCE_3_TO_30_M', 'MILLIMETRIC_RADIO_SOURCE', 'MIRA_VARIABLE',
+        'MOLECULAR_CLOUD', 'MOVING_GROUP', 'NEAR_IR_SOURCE_3_M', 'NEBULA',
+        'NOT_AN_OBJECT_ERROR_ARTEFACT', 'OBJECT_OF_UNKNOWN_NATURE', 'OPEN_CLUSTER',
+        'ORION_VARIABLE', 'PAIR_OF_GALAXIES', 'PART_OF_A_GALAXY', 'PART_OF_CLOUD',
+        'PLANETARY_NEBULA', 'POST_AGB_STAR', 'PROTO_CLUSTER_OF_GALAXIES', 'PULSAR',
+        'PULSATING_VARIABLE', 'QUASAR', 'RADIO_BURST', 'RADIO_GALAXY',
+        'RADIO_SOURCE', 'RED_GIANT_BRANCH_STAR', 'RED_SUPERGIANT',
+        'REFLECTION_NEBULA', 'REGION_DEFINED_IN_THE_SKY', 'RR_LYRAE_VARIABLE',
+        'SEYFERT_1_GALAXY', 'SEYFERT_2_GALAXY', 'SEYFERT_GALAXY',
+        'SPECTROSCOPIC_BINARY', 'STAR', 'STARBURST_GALAXY', 'STAR_FORMING_REGION',
+        'STELLAR_STREAM', 'SUB_MILLIMETRIC_SOURCE', 'SUPERCLUSTER_OF_GALAXIES',
+        'SUPERNOVA_REMNANT', 'TRANSIENT_EVENT', 'T_TAURI_STAR',
+        'ULTRA_LUMINOUS_X_RAY_SOURCE', 'UNDERDENSE_REGION_OF_THE_UNIVERSE',
+        'UV_EMISSION_SOURCE', 'VARIABLE_STAR', 'WHITE_DWARF', 'WOLF_RAYET',
+        'X_RAY_SOURCE', 'YELLOW_SUPERGIANT', 'YOUNG_STELLAR_OBJECT'
     ]
 
     readonly constellationOptions: Union<Constellation, 'ALL'>[] = ['ALL', ...CONSTELLATIONS]
@@ -466,14 +466,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     ]
 
     constructor(
-        private title: Title,
+        private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private preference: PreferenceService,
         private dialog: DialogService,
     ) {
-        title.setTitle('Sky Atlas')
+        app.title = 'Sky Atlas'
 
         for (const item of SATELLITE_GROUP_TYPES) {
             const enabled = preference.get(`atlas.satellite.filter.${item}`, AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item))
@@ -672,20 +672,20 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         }
     }
 
-    mountGoTo() {
-        const mount = this.electron.selectedMount()
+    async mountGoTo() {
+        const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
         this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
     }
 
-    mountSlew() {
-        const mount = this.electron.selectedMount()
+    async mountSlew() {
+        const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
         this.api.mountSlewTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
     }
 
-    mountSync() {
-        const mount = this.electron.selectedMount()
+    async mountSync() {
+        const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
         this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
     }
@@ -709,14 +709,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
             this.dateTime.setMinutes(this.dateTimeMinute)
         }
 
-        this.title.setTitle(`Sky Atlas ・ ${this.location.name}`)
+        this.app.title = `Sky Atlas ・ ${this.location.name}`
 
         try {
             // Sun.
             if (this.activeTab === 0) {
                 this.name = 'Sun'
                 this.tags = []
-                this.imageOfSun.nativeElement.src = `${this.api.baseUri}/imageOfSun`
+                this.imageOfSun.nativeElement.src = `${this.api.baseUrl}/sky-atlas/sun/image`
                 const bodyPosition = await this.api.positionOfSun(this.location!, this.dateTime)
                 Object.assign(this.bodyPosition, bodyPosition)
             }
@@ -765,7 +765,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.tags = []
 
                 if (this.star) {
-                    this.name = this.star.names
+                    this.name = this.star.name.replaceAll('|', ' · ')
                     const bodyPosition = await this.api.positionOfStar(this.location!, this.star, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
@@ -778,7 +778,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.tags = []
 
                 if (this.dso) {
-                    this.name = this.dso.names
+                    this.name = this.dso.name.replaceAll('|', ' · ')
                     const bodyPosition = await this.api.positionOfDSO(this.location!, this.dso, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {

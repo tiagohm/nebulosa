@@ -26,7 +26,7 @@ enum class HorizonsQuantity(
 
     companion object {
 
-        @JvmStatic internal val ENTRIES = values()
+        @JvmStatic internal val ENTRIES = entries.toTypedArray()
 
         @JvmStatic
         fun parse(text: String) = ENTRIES.firstOrNull { it.matches(text) }

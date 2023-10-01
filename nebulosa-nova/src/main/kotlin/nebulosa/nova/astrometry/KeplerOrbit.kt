@@ -2,11 +2,7 @@ package nebulosa.nova.astrometry
 
 import nebulosa.constants.TAU
 import nebulosa.erfa.PositionAndVelocity
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.math.Distance
-import nebulosa.math.Matrix3D
-import nebulosa.math.Vector3D
+import nebulosa.math.*
 import nebulosa.time.InstantOfTime
 import kotlin.math.*
 
@@ -127,7 +123,7 @@ data class KeplerOrbit(
                 val dM = m - (E - e * E.sin)
                 val dE = dM / (1 - e * E.cos)
                 E += dE
-                if (abs(dE.value) < 1e-14) break
+                if (abs(dE) < 1e-14) break
             }
 
             return E
@@ -139,7 +135,7 @@ data class KeplerOrbit(
          * Valid for hyperbolic orbits.
          */
         @JvmStatic
-        fun trueAnomalyHyperbolic(e: Double, E: Angle) = (2.0 * atan(sqrt((e + 1.0) / (e - 1.0)) * tanh(E.value / 2.0))).rad
+        fun trueAnomalyHyperbolic(e: Double, E: Angle) = (2.0 * atan(sqrt((e + 1.0) / (e - 1.0)) * tanh(E / 2.0))).rad
 
         /**
          * Computes true anomaly from eccentricity [e] and eccentric anomaly [E].
@@ -147,7 +143,7 @@ data class KeplerOrbit(
          * Valid for closed orbits.
          */
         @JvmStatic
-        fun trueAnomalyClosed(e: Double, E: Angle) = (2.0 * atan(sqrt((1.0 + e) / (1.0 - e)) * tan(E.value / 2.0))).rad
+        fun trueAnomalyClosed(e: Double, E: Angle) = (2.0 * atan(sqrt((1.0 + e) / (1.0 - e)) * tan(E / 2.0))).rad
 
         /**
          * Computes the true anomaly from semi-latus rectum [p], [mu], and mean anomaly [M].
@@ -161,9 +157,9 @@ data class KeplerOrbit(
             M: Angle,
         ): Angle {
             // From http://www.bogan.ca/orbits/kepler/orbteqtn.html
-            val dt = sqrt(2.0 * (p.value * p.value * p.value) / mu) * M.value
+            val dt = sqrt(2.0 * (p * p * p) / mu) * M
             val periapsis = p / 2.0
-            val a = 1.5 * sqrt(mu / (2.0 * (periapsis.value * periapsis.value * periapsis.value))) * dt
+            val a = 1.5 * sqrt(mu / (2.0 * (periapsis * periapsis * periapsis))) * dt
             val b = cbrt(a + (a * a + 1.0))
             return (2.0 * atan(b - 1.0 / b)).rad
         }
@@ -184,12 +180,12 @@ data class KeplerOrbit(
             mu: Double,
         ): PositionAndVelocity {
             // Checks that true anomaly is less than arccos(-1/e) for hyperbolic orbits.
-            if (e > 1 && v.value > acos(-1.0 / e)) {
+            if (e > 1 && v > acos(-1.0 / e)) {
                 throw IllegalArgumentException("if eccentricity is > 1, abs(true anomaly) cannot be more than acos(-1/e)")
             }
 
-            val r = p.value / (1 + e * v.cos)
-            val h = sqrt(p.value * mu)
+            val r = p / (1 + e * v.cos)
+            val h = sqrt(p * mu)
             val u = v + w
 
             val cosOm = om.cos
@@ -204,9 +200,9 @@ data class KeplerOrbit(
             val y = r * (sinOm * cosu + cosOm * sinu * cosi)
             val z = r * (sini * sinu)
 
-            val xDot = x * h * e / (r * p.value) * sinv - h / r * (cosOm * sinu + sinOm * cosu * cosi)
-            val yDot = y * h * e / (r * p.value) * sinv - h / r * (sinOm * sinu - cosOm * cosu * cosi)
-            val zDot = z * h * e / (r * p.value) * sinv + h / r * sini * cosu
+            val xDot = x * h * e / (r * p) * sinv - h / r * (cosOm * sinu + sinOm * cosu * cosi)
+            val yDot = y * h * e / (r * p) * sinv - h / r * (sinOm * sinu - cosOm * cosu * cosi)
+            val zDot = z * h * e / (r * p) * sinv + h / r * sini * cosu
 
             return PositionAndVelocity(Vector3D(x, y, z), Vector3D(xDot, yDot, zDot))
         }

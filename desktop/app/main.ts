@@ -5,6 +5,7 @@ import * as path from 'path'
 import { Camera, FilterWheel, Focuser, INDI_EVENT_TYPES, INTERNAL_EVENT_TYPES, Mount, OpenWindow } from './types'
 
 import { WebSocket } from 'ws'
+import { OpenDirectory } from '../src/shared/types'
 Object.assign(global, { WebSocket })
 
 let homeWindow: BrowserWindow | null = null
@@ -92,19 +93,18 @@ function createWindow(data: OpenWindow<any>) {
         }
     }
 
-    const height = data.height ? Math.trunc(computeHeight(data.height)) : 384
+    const height = data.height ? Math.trunc(computeHeight(data.height)) : 420
 
     const resizable = data.resizable ?? false
     const icon = data.icon ?? 'nebulosa'
     const params = encodeURIComponent(JSON.stringify(data.params || {}))
 
     const window = new BrowserWindow({
-        x: size.width / 2 - width / 2,
-        y: size.height / 2 - height / 2,
+        title: 'Nebulosa',
+        frame: false,
         width, height,
         resizable: serve || resizable,
         autoHideMenuBar: true,
-        title: 'Nebulosa',
         icon: path.join(__dirname, serve ? `../src/assets/icons/${icon}.png` : `assets/icons/${icon}.png`),
         webPreferences: {
             nodeIntegration: true,
@@ -116,16 +116,16 @@ function createWindow(data: OpenWindow<any>) {
         },
     })
 
-    window.setContentSize(width, height)
+    window.center()
 
     if (serve) {
         const debug = require('electron-debug')
-        debug()
+        debug({ showDevTools: false })
 
         require('electron-reloader')(module)
-        window.loadURL(`http://localhost:4200/${data.path}?params=${params}`)
+        window.loadURL(`http://localhost:4200/${data.path}?params=${params}&resizable=${resizable}`)
     } else {
-        const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${data.path}?params=${params}`)
+        const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${data.path}?params=${params}&resizable=${resizable}`)
         window.loadURL(url.href)
     }
 
@@ -163,39 +163,43 @@ function createWindow(data: OpenWindow<any>) {
 }
 
 function createSplashScreen() {
-    splash = new BrowserWindow({
-        width: 512,
-        height: 512,
-        transparent: true,
-        frame: false,
-        alwaysOnTop: true,
-    })
+    if (!serve && splash === null) {
+        splash = new BrowserWindow({
+            width: 512,
+            height: 512,
+            transparent: true,
+            frame: false,
+            alwaysOnTop: true,
+            show: false,
+        })
 
-    if (serve) {
-        splash.loadURL(`http://localhost:4200/splash`)
-    } else {
-        const url = new URL(path.join('file:', __dirname, `index.html`) + '#/splash')
+        const url = new URL(path.join('file:', __dirname, 'assets', 'images', 'splash.png'))
         splash.loadURL(url.href)
-    }
 
-    splash.center()
+        splash.show()
+        splash.center()
+    }
+}
+
+function findWindowById(id: number) {
+    if (homeWindow?.id === id) return homeWindow
+    for (const [_, window] of secondaryWindows) if (window.id === id) return window
+    return undefined
 }
 
 function startApp() {
     if (api === null) {
-        createSplashScreen()
-
         if (serve) {
             createMainWindow()
         } else {
+            createSplashScreen()
+
             const apiJar = path.join(process.resourcesPath, 'api.jar')
 
             api = spawn('java', ['-jar', apiJar])
 
             api.stdout.on('data', (data) => {
                 const text = `${data}`
-
-                console.info(text)
 
                 if (text) {
                     const regex = /server is started at port: (\d+)/i
@@ -280,24 +284,58 @@ try {
         event.returnValue = !value.canceled && value.filePath
     })
 
-    ipcMain.on('OPEN_DIRECTORY', async (event) => {
+    ipcMain.on('OPEN_DIRECTORY', async (event, data?: OpenDirectory) => {
         const value = await dialog.showOpenDialog(homeWindow!, {
             properties: ['openDirectory'],
+            defaultPath: data?.defaultPath,
         })
 
         event.returnValue = !value.canceled && value.filePaths[0]
     })
 
-    ipcMain.on('CLOSE_WINDOW', (event, id: string) => {
-        for (const [key, value] of secondaryWindows) {
-            if (key === id) {
-                value.close()
-                event.returnValue = true
-                return
-            }
-        }
+    ipcMain.on('PIN_WINDOW', (event) => {
+        const window = findWindowById(event.sender.id)
+        window?.setAlwaysOnTop(true)
+        event.returnValue = !!window
+    })
 
-        event.returnValue = false
+    ipcMain.on('UNPIN_WINDOW', (event) => {
+        const window = findWindowById(event.sender.id)
+        window?.setAlwaysOnTop(false)
+        event.returnValue = !!window
+    })
+
+    ipcMain.on('MINIMIZE_WINDOW', (event) => {
+        const window = findWindowById(event.sender.id)
+        window?.minimize()
+        event.returnValue = !!window
+    })
+
+    ipcMain.on('MAXIMIZE_WINDOW', (event) => {
+        const window = findWindowById(event.sender.id)
+
+        if (window?.isMaximized()) window.unmaximize()
+        else window?.maximize()
+
+        event.returnValue = window?.isMaximized() ?? false
+    })
+
+    ipcMain.on('CLOSE_WINDOW', (event, id?: string) => {
+        if (id) {
+            for (const [key, value] of secondaryWindows) {
+                if (key === id) {
+                    value.close()
+                    event.returnValue = true
+                    return
+                }
+            }
+
+            event.returnValue = false
+        } else {
+            const window = findWindowById(event.sender.id)
+            window?.close()
+            event.returnValue = !!window
+        }
     })
 
     for (const item of INTERNAL_EVENT_TYPES) {

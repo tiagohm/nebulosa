@@ -1,10 +1,6 @@
 package nebulosa.sbd
 
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.AngleFormatter
-import nebulosa.math.Distance
-import nebulosa.math.Distance.Companion.m
+import nebulosa.math.*
 import nebulosa.retrofit.RetrofitService
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -14,8 +10,8 @@ import java.time.format.DateTimeFormatter
 
 class SmallBodyDatabaseService(
     url: String = "https://ssd-api.jpl.nasa.gov/",
-    okHttpClient: OkHttpClient? = null,
-) : RetrofitService(url, okHttpClient) {
+    httpClient: OkHttpClient? = null,
+) : RetrofitService(url, httpClient) {
 
     private val service by lazy { retrofit.create<SmallBodyDatabase>() }
 
@@ -38,14 +34,14 @@ class SmallBodyDatabaseService(
     fun identify(
         dateTime: LocalDateTime,
         latitude: Angle, longitude: Angle, elevation: Distance = 0.m,
-        centerRA: Angle, centerDEC: Angle, fov: Angle = 1.0.deg,
+        centerRA: Angle, centerDEC: Angle, fov: Angle = DEFAULT_FOV,
         magLimit: Double = 12.0,
     ): Call<SmallBodyIdentified> {
-        val fovDeg = fov.degrees
+        val fovDeg = fov.toDegrees
 
         return service.identify(
             dateTime.format(DATE_TIME_FORMAT),
-            latitude.degrees, longitude.degrees, elevation.kilometers,
+            latitude.toDegrees, longitude.toDegrees, elevation.toKilometers,
             centerRA.format(RA_FORMAT), centerDEC.format(DEC_FORMAT), fovDeg, fovDeg,
             magLimit,
         )
@@ -53,6 +49,7 @@ class SmallBodyDatabaseService(
 
     companion object {
 
+        @JvmStatic private val DEFAULT_FOV = 1.0.deg
         @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss")
 
         @JvmStatic private val RA_FORMAT = AngleFormatter.Builder()

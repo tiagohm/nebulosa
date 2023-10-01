@@ -1,82 +1,73 @@
 package nebulosa.api.focusers
 
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.PositiveOrZero
+import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.focuser.Focuser
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
+@RequestMapping("focusers")
 class FocuserController(
     private val connectionService: ConnectionService,
     private val focuserService: FocuserService,
 ) {
 
-    @GetMapping("attachedFocusers")
-    fun attachedFocusers(): List<Focuser> {
+    @GetMapping
+    fun focusers(): List<Focuser> {
         return connectionService.focusers()
     }
 
-    @GetMapping("focuser")
-    fun focuser(@RequestParam @Valid @NotBlank name: String): Focuser {
-        return requireNotNull(connectionService.focuser(name))
+    @GetMapping("{focuser}")
+    fun focuser(@EntityBy focuser: Focuser): Focuser {
+        return focuser
     }
 
-    @PostMapping("focuserConnect")
-    fun connect(@RequestParam @Valid @NotBlank name: String) {
-        val focuser = requireNotNull(connectionService.focuser(name))
+    @PutMapping("{focuser}/connect")
+    fun connect(@EntityBy focuser: Focuser) {
         focuserService.connect(focuser)
     }
 
-    @PostMapping("focuserDisconnect")
-    fun disconnect(@RequestParam @Valid @NotBlank name: String) {
-        val focuser = requireNotNull(connectionService.focuser(name))
+    @PutMapping("{focuser}/disconnect")
+    fun disconnect(@EntityBy focuser: Focuser) {
         focuserService.disconnect(focuser)
     }
 
-    @PostMapping("focuserMoveIn")
+    @PutMapping("{focuser}/move-in")
     fun moveIn(
-        @RequestParam @Valid @NotBlank name: String,
+        @EntityBy focuser: Focuser,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        val focuser = requireNotNull(connectionService.focuser(name))
         focuserService.moveIn(focuser, steps)
     }
 
-    @PostMapping("focuserMoveOut")
+    @PutMapping("{focuser}/move-out")
     fun moveOut(
-        @RequestParam @Valid @NotBlank name: String,
+        @EntityBy focuser: Focuser,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        val focuser = requireNotNull(connectionService.focuser(name))
         focuserService.moveOut(focuser, steps)
     }
 
-    @PostMapping("focuserMoveTo")
+    @PutMapping("{focuser}/move-to")
     fun moveTo(
-        @RequestParam @Valid @NotBlank name: String,
+        @EntityBy focuser: Focuser,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        val focuser = requireNotNull(connectionService.focuser(name))
         focuserService.moveTo(focuser, steps)
     }
 
-    @PostMapping("focuserAbort")
-    fun abort(@RequestParam @Valid @NotBlank name: String) {
-        val focuser = requireNotNull(connectionService.focuser(name))
+    @PutMapping("{focuser}/abort")
+    fun abort(@EntityBy focuser: Focuser) {
         focuserService.abort(focuser)
     }
 
-    @PostMapping("focuserSyncTo")
-    fun syncTo(
-        @RequestParam @Valid @NotBlank name: String,
+    @PutMapping("{focuser}/sync")
+    fun sync(
+        @EntityBy focuser: Focuser,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
-        val focuser = requireNotNull(connectionService.focuser(name))
-        focuserService.syncTo(focuser, steps)
+        focuserService.sync(focuser, steps)
     }
 }

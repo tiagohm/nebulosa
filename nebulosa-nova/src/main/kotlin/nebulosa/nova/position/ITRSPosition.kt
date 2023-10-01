@@ -3,8 +3,8 @@ package nebulosa.nova.position
 import nebulosa.constants.ANGULAR_VELOCITY
 import nebulosa.constants.DAYSEC
 import nebulosa.erfa.PositionAndVelocity
-import nebulosa.math.Distance.Companion.au
 import nebulosa.math.Vector3D
+import nebulosa.math.au
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.frame.ITRS
 import nebulosa.time.InstantOfTime

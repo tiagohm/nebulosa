@@ -102,8 +102,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     async ngAfterViewInit() {
-        this.cameras = await this.api.attachedCameras()
-        this.mounts = await this.api.attachedMounts()
+        this.cameras = await this.api.cameras()
+        this.mounts = await this.api.mounts()
         this.guideOutputs = await this.api.attachedGuideOutputs()
     }
 
@@ -122,7 +122,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             this.update()
         }
 
-        this.electron.send('GUIDING_CAMERA_CHANGED', this.camera)
+        // this.electron.send('GUIDE_CAMERA_CHANGED', this.camera)
     }
 
     connectCamera() {
@@ -141,7 +141,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             this.update()
         }
 
-        this.electron.send('GUIDING_MOUNT_CHANGED', this.mount)
+        // this.electron.send('GUIDE_MOUNT_CHANGED', this.mount)
     }
 
     connectMount() {
@@ -160,7 +160,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             this.update()
         }
 
-        this.electron.send('GUIDING_OUTPUT_CHANGED', this.guideOutput)
+        this.electron.send('GUIDE_OUTPUT_CHANGED', this.guideOutput)
     }
 
     connectGuideOutput() {

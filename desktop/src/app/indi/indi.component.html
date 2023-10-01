@@ -1,4 +1,4 @@
-<div class="container p-4">
+<div class="container px-4 py-3">
     <div class="grid flex align-items-center">
         <div class="col-12 sm:col-4">
             <span class="p-float-label">
@@ -8,7 +8,7 @@
             </span>
         </div>
         <div class="col-12 sm:col-8 flex flex-row align-items-center gap-1">
-            <p-splitButton [label]="group" icon="mdi mdi-sitemap" (onClick)="changeGroup(group)" [model]="groups" [style]="{width: '240px'}" />
+            <p-splitButton [label]="group" icon="mdi mdi-sitemap" (onClick)="changeGroup(group)" [model]="groups" [style]="{width: '260px'}" />
             <p-button label="Log" icon="mdi mdi-post" (onClick)="showLog = true"
                       styleClass="p-button-{{ showLog ? '' : 'text' }} p-button-success" />
         </div>

@@ -5,6 +5,7 @@ import nebulosa.astrometrynet.nova.Session
 import nebulosa.astrometrynet.nova.Upload
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
+import nebulosa.math.toDegrees
 import nebulosa.platesolving.Calibration
 import nebulosa.platesolving.PlateSolver
 import nebulosa.platesolving.PlateSolvingException
@@ -40,8 +41,7 @@ class NovaAstrometryNetPlateSolver(
     override fun solve(
         path: Path,
         blind: Boolean,
-        centerRA: Angle, centerDEC: Angle,
-        radius: Angle,
+        centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int,
         timeout: Duration?,
     ): Calibration {
@@ -49,9 +49,9 @@ class NovaAstrometryNetPlateSolver(
 
         val upload = Upload(
             session = session!!.session,
-            centerRA = if (blind) null else centerRA.degrees,
-            centerDEC = if (blind) null else centerDEC.degrees,
-            radius = if (blind) null else radius.degrees,
+            centerRA = if (blind) null else centerRA.toDegrees,
+            centerDEC = if (blind) null else centerDEC.toDegrees,
+            radius = if (blind) null else radius.toDegrees,
             downsampleFactor = downsampleFactor,
         )
 
@@ -87,7 +87,7 @@ class NovaAstrometryNetPlateSolver(
 
                 // LOG.info("astrometry.net solved. calibration={}", calibration)
 
-                return Calibration.EMPTY
+                return Calibration()
             }
 
             val timeEnd = System.currentTimeMillis()

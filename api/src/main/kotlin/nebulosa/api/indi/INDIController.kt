@@ -3,7 +3,6 @@ package nebulosa.api.indi
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.data.requests.INDISendPropertyRequest
 import nebulosa.indi.device.PropertyVector
 import org.springframework.web.bind.annotation.*
 
@@ -22,7 +21,7 @@ class INDIController(
     @PostMapping("sendIndiProperty")
     fun sendProperty(
         @RequestParam @Valid @NotBlank name: String,
-        @RequestBody @Valid body: INDISendPropertyRequest,
+        @RequestBody @Valid body: INDISendProperty,
     ) {
         val device = requireNotNull(connectionService.device(name))
         return indiService.sendProperty(device, body)

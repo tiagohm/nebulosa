@@ -1,40 +1,23 @@
 package nebulosa.api.atlas
 
-import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
 import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
-import nebulosa.api.data.entities.AppPreferenceEntity
-import nebulosa.api.data.entities.DeepSkyObjectEntity
-import nebulosa.api.data.entities.LocationEntity
-import nebulosa.api.data.entities.StarEntity
-import nebulosa.api.data.enums.SatelliteGroupType
-import nebulosa.api.data.responses.BodyPositionResponse
-import nebulosa.api.data.responses.MinorPlanetResponse
-import nebulosa.api.data.responses.SatelliteResponse
-import nebulosa.api.data.responses.TwilightResponse
-import nebulosa.api.repositories.AppPreferenceRepository
-import nebulosa.api.repositories.DeepSkyObjectRepository
-import nebulosa.api.repositories.SatelliteRepository
-import nebulosa.api.repositories.StarRepository
+import nebulosa.api.locations.LocationEntity
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
 import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.mas
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.math.Velocity.Companion.kms
+import nebulosa.math.toLightYears
 import nebulosa.nova.almanac.findDiscrete
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
-import nebulosa.nova.astrometry.FixedStar
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.io.Resource
+import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -56,68 +39,48 @@ class AtlasService(
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
-    private val appPreferenceRepository: AppPreferenceRepository,
     private val satelliteRepository: SatelliteRepository,
-    private val okHttpClient: OkHttpClient,
+    private val httpClient: OkHttpClient,
 ) {
 
-    @Value("classpath:data/dsos.json.gz")
-    private lateinit var dsoResource: Resource
-
-    @Value("classpath:data/stars.json.gz")
-    private lateinit var starResource: Resource
-
     private val positions = HashMap<LocationEntity, GeographicPosition>()
-    private val stars = HashMap<Long, FixedStar>()
-    private val dsos = HashMap<Long, FixedStar>()
     @Volatile private var sunImage = ByteArray(0)
-
-    @PostConstruct
-    private fun initialize() {
-        if (appPreferenceRepository.withKey("database.version")?.value != DATABASE_VERSION) {
-            starRepository.load(starResource)
-            deepSkyObjectRepository.load(dsoResource)
-
-            appPreferenceRepository
-                .save(AppPreferenceEntity(key = "database.version", value = DATABASE_VERSION))
-        }
-    }
 
     fun imageOfSun(output: HttpServletResponse) {
         output.contentType = "image/png"
         output.outputStream.write(sunImage)
     }
 
-    fun positionOfSun(location: LocationEntity, dateTime: LocalDateTime): BodyPositionResponse {
+    fun positionOfSun(location: LocationEntity, dateTime: LocalDateTime): BodyPosition {
         return positionOfBody(SUN, location, dateTime)!!
     }
 
-    fun positionOfMoon(location: LocationEntity, dateTime: LocalDateTime): BodyPositionResponse {
+    fun positionOfMoon(location: LocationEntity, dateTime: LocalDateTime): BodyPosition {
         return positionOfBody(MOON, location, dateTime)!!
     }
 
-    fun positionOfPlanet(location: LocationEntity, code: String, dateTime: LocalDateTime): BodyPositionResponse {
+    fun positionOfPlanet(location: LocationEntity, code: String, dateTime: LocalDateTime): BodyPosition {
         return positionOfBody(code, location, dateTime)!!
     }
 
-    fun positionOfStar(location: LocationEntity, star: StarEntity, dateTime: LocalDateTime): BodyPositionResponse {
-        return positionOfBody(fixedStarOf(star), location, dateTime)!!
-            .copy(magnitude = star.magnitude, constellation = star.constellation, distance = star.distance, distanceUnit = "ly")
+    fun positionOfStar(location: LocationEntity, star: StarEntity, dateTime: LocalDateTime): BodyPosition {
+        return positionOfBody(star, location, dateTime)!!
+            .copy(magnitude = star.magnitude, constellation = star.constellation, distance = star.distance.toLightYears, distanceUnit = "ly")
     }
 
-    fun positionOfDSO(location: LocationEntity, dso: DeepSkyObjectEntity, dateTime: LocalDateTime): BodyPositionResponse {
-        return positionOfBody(fixedStarOf(dso), location, dateTime)!!
-            .copy(magnitude = dso.magnitude, constellation = dso.constellation, distance = dso.distance, distanceUnit = "ly")
+    fun positionOfDSO(location: LocationEntity, dso: DeepSkyObjectEntity, dateTime: LocalDateTime): BodyPosition {
+        return positionOfBody(dso, location, dateTime)!!
+            .copy(magnitude = dso.magnitude, constellation = dso.constellation, distance = dso.distance.toLightYears, distanceUnit = "ly")
     }
 
-    fun positionOfSatellite(location: LocationEntity, tle: String, dateTime: LocalDateTime): BodyPositionResponse {
-        return positionOfBody("TLE@$tle", location, dateTime)!!
+    fun positionOfSatellite(location: LocationEntity, satellite: SatelliteEntity, dateTime: LocalDateTime): BodyPosition {
+        return positionOfBody("TLE@${satellite.tle}", location, dateTime)!!
     }
 
-    private fun positionOfBody(target: Any, location: LocationEntity, dateTime: LocalDateTime): BodyPositionResponse? {
+    private fun positionOfBody(target: Any, location: LocationEntity, dateTime: LocalDateTime): BodyPosition? {
         return bodyEphemeris(target, location, dateTime)
             .withLocationAndDateTime(location, dateTime)
-            ?.let(BodyPositionResponse::of)
+            ?.let(BodyPosition::of)
     }
 
     private fun bodyEphemeris(target: Any, location: LocationEntity, dateTime: LocalDateTime): List<HorizonsElement> {
@@ -128,11 +91,11 @@ class AtlasService(
         else horizonsEphemerisProvider.compute(target, position, dateTime, zoneId)
     }
 
-    fun searchSatellites(text: String, groups: List<SatelliteGroupType>): List<SatelliteResponse> {
-        return satelliteRepository.search(text, groups)
+    fun searchSatellites(text: String, groups: List<SatelliteGroupType>): List<SatelliteEntity> {
+        return satelliteRepository.search(text.ifBlank { null }, groups, Pageable.ofSize(1000))
     }
 
-    fun twilight(location: LocationEntity, date: LocalDate): TwilightResponse {
+    fun twilight(location: LocationEntity, date: LocalDate): Twilight {
         val civilDusk = doubleArrayOf(0.0, 0.0)
         val nauticalDusk = doubleArrayOf(0.0, 0.0)
         val astronomicalDusk = doubleArrayOf(0.0, 0.0)
@@ -159,7 +122,7 @@ class AtlasService(
         civilDawn[0] = a[6] / 60.0
         civilDawn[1] = a[7] / 60.0
 
-        return TwilightResponse(
+        return Twilight(
             civilDusk, nauticalDusk, astronomicalDusk, night,
             astronomicalDawn, nauticalDawn, civilDawn,
         )
@@ -181,32 +144,18 @@ class AtlasService(
     }
 
     fun altitudePointsOfStar(location: LocationEntity, star: StarEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(fixedStarOf(star), location, LocalDateTime.of(date, LocalTime.now()))
+        val ephemeris = bodyEphemeris(star, location, LocalDateTime.of(date, LocalTime.now()))
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
     fun altitudePointsOfDSO(location: LocationEntity, dso: DeepSkyObjectEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(fixedStarOf(dso), location, LocalDateTime.of(date, LocalTime.now()))
+        val ephemeris = bodyEphemeris(dso, location, LocalDateTime.of(date, LocalTime.now()))
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfSatellite(location: LocationEntity, tle: String, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris("TLE@$tle", location, LocalDateTime.of(date, LocalTime.now()))
+    fun altitudePointsOfSatellite(location: LocationEntity, satellite: SatelliteEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
+        val ephemeris = bodyEphemeris("TLE@$${satellite.tle}", location, LocalDateTime.of(date, LocalTime.now()))
         return altitudePointsOfBody(ephemeris, stepSize)
-    }
-
-    private fun fixedStarOf(star: StarEntity) = stars.getOrPut(star.id) {
-        FixedStar(
-            star.rightAscension.rad, star.declination.rad,
-            star.pmRA.rad, star.pmDEC.rad, star.parallax.mas, star.radialVelocity.kms
-        )
-    }
-
-    private fun fixedStarOf(dso: DeepSkyObjectEntity) = dsos.getOrPut(dso.id) {
-        FixedStar(
-            dso.rightAscension.rad, dso.declination.rad,
-            dso.pmRA.rad, dso.pmDEC.rad, dso.parallax.mas, dso.radialVelocity.kms
-        )
     }
 
     private fun altitudePointsOfBody(ephemeris: List<HorizonsElement>, stepSize: Int): List<DoubleArray> {
@@ -222,12 +171,12 @@ class AtlasService(
 
     fun searchMinorPlanet(text: String) = smallBodyDatabaseService
         .search(text).execute().body()
-        ?.let(MinorPlanetResponse::of)
-        ?: MinorPlanetResponse.EMPTY
+        ?.let(MinorPlanet::of)
+        ?: MinorPlanet.EMPTY
 
     fun searchStar(
         text: String,
-        rightAscension: Angle = Angle.ZERO, declination: Angle = Angle.ZERO, radius: Angle = Angle.ZERO,
+        rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
         constellation: Constellation? = null,
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
@@ -240,7 +189,7 @@ class AtlasService(
 
     fun searchDSO(
         text: String,
-        rightAscension: Angle = Angle.ZERO, declination: Angle = Angle.ZERO, radius: Angle = Angle.ZERO,
+        rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
         constellation: Constellation? = null,
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
@@ -257,7 +206,7 @@ class AtlasService(
             .url(SUN_IMAGE_URL)
             .build()
 
-        val image = okHttpClient.newCall(request)
+        val image = httpClient.newCall(request)
             .execute()
             .body
             .use { ImageIO.read(it.byteStream()) }
@@ -269,8 +218,6 @@ class AtlasService(
     }
 
     companion object {
-
-        const val DATABASE_VERSION = "2023.07.09"
 
         private const val SUN_IMAGE_URL = "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_256_HMIIC.jpg"
 

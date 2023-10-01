@@ -4,6 +4,8 @@ sealed interface Vector<E : Element<*>> : List<E> {
 
     val state: PropertyState
 
+    val type: PropertyType
+
     val elements: MutableList<E>
 
     override val size

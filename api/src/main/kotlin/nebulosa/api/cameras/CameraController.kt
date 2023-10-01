@@ -1,68 +1,70 @@
 package nebulosa.api.cameras
 
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
+import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.data.requests.CameraStartCaptureRequest
 import nebulosa.indi.device.camera.Camera
 import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.*
 
 @RestController
+@RequestMapping("cameras")
 class CameraController(
     private val connectionService: ConnectionService,
     private val cameraService: CameraService,
 ) {
 
-    @GetMapping("attachedCameras")
-    fun attachedCameras(): List<Camera> {
+    @GetMapping
+    fun cameras(): List<Camera> {
         return connectionService.cameras()
     }
 
-    @GetMapping("camera")
-    fun camera(@RequestParam @Valid @NotBlank name: String): Camera {
-        return requireNotNull(connectionService.camera(name))
+    @GetMapping("{camera}")
+    fun camera(@EntityBy camera: Camera): Camera {
+        return camera
     }
 
-    @PostMapping("cameraConnect")
-    fun connect(@RequestParam @Valid @NotBlank name: String) {
-        val camera = requireNotNull(connectionService.camera(name))
+    @PutMapping("{camera}/connect")
+    fun connect(@EntityBy camera: Camera) {
         cameraService.connect(camera)
     }
 
-    @PostMapping("cameraDisconnect")
-    fun disconnect(@RequestParam @Valid @NotBlank name: String) {
-        val camera = requireNotNull(connectionService.camera(name))
+    @PutMapping("{camera}/disconnect")
+    fun disconnect(@EntityBy camera: Camera) {
         cameraService.disconnect(camera)
     }
 
-    @GetMapping("cameraIsCapturing")
-    fun isCapturing(@RequestParam @Valid @NotBlank name: String): Boolean {
-        val camera = requireNotNull(connectionService.camera(name))
+    @GetMapping("{camera}/capturing")
+    fun isCapturing(@EntityBy camera: Camera): Boolean {
         return cameraService.isCapturing(camera)
     }
 
-    @PostMapping("cameraSetpointTemperature")
-    fun setpointTemperature(@RequestParam @Valid @NotBlank name: String, @RequestParam @Valid @Range(min = -50, max = 50) temperature: Double) {
-        val camera = requireNotNull(connectionService.camera(name))
+    @PutMapping("{camera}/cooler")
+    fun cooler(
+        @EntityBy camera: Camera,
+        @RequestParam enabled: Boolean,
+    ) {
+        cameraService.cooler(camera, enabled)
+    }
+
+    @PutMapping("{camera}/temperature/setpoint")
+    fun setpointTemperature(
+        @EntityBy camera: Camera,
+        @RequestParam @Valid @Range(min = -50, max = 50) temperature: Double,
+    ) {
         cameraService.setpointTemperature(camera, temperature)
     }
 
-    @PostMapping("cameraCooler")
-    fun cooler(@RequestParam @Valid @NotBlank name: String, @RequestParam value: Boolean) {
-        val camera = requireNotNull(connectionService.camera(name))
-        cameraService.cooler(camera, value)
-    }
-
-    @PostMapping("cameraStartCapture")
-    fun startCapture(@RequestParam @Valid @NotBlank name: String, @RequestBody @Valid body: CameraStartCaptureRequest) {
-        val camera = requireNotNull(connectionService.camera(name))
+    @PutMapping("{camera}/capture/start")
+    fun startCapture(
+        @EntityBy camera: Camera,
+        @RequestBody body: CameraStartCapture,
+    ) {
         cameraService.startCapture(camera, body)
     }
 
-    @PostMapping("cameraAbortCapture")
-    fun abortCapture(@RequestParam @Valid @NotBlank name: String) {
-        val camera = requireNotNull(connectionService.camera(name))
+    @PutMapping("{camera}/capture/abort")
+    fun abortCapture(@EntityBy camera: Camera) {
         cameraService.abortCapture(camera)
     }
 }

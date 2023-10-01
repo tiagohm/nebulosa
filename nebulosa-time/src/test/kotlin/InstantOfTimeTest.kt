@@ -2,7 +2,10 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.math.Angle
+import nebulosa.math.deg
+import nebulosa.math.hours
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
 import nebulosa.time.TimeYMDHMS
 
 class InstantOfTimeTest : StringSpec() {
@@ -11,16 +14,16 @@ class InstantOfTimeTest : StringSpec() {
         // https://dc.zah.uni-heidelberg.de/apfs/times/q/form
 
         "gast" {
-            val angle = Angle.from("06 39 30.2996", isHours = true)
-            TimeYMDHMS(2023, 1, 30, 22).gast.hours shouldBe (angle.hours plusOrMinus 1e-8)
+            val angle = "06 39 30.2996".hours
+            TimeYMDHMS(2023, 1, 30, 22).gast.toHours shouldBe (angle.toHours plusOrMinus 1e-8)
         }
         "gmst" {
-            val angle = Angle.from("06 39 30.8663", isHours = true)
-            TimeYMDHMS(2023, 1, 30, 22).gmst.hours shouldBe (angle.hours plusOrMinus 1e-8)
+            val angle = "06 39 30.8663".hours
+            TimeYMDHMS(2023, 1, 30, 22).gmst.toHours shouldBe (angle.toHours plusOrMinus 1e-8)
         }
         "era" {
-            val angle = Angle.from("99 34 58.365")
-            TimeYMDHMS(2023, 1, 30, 22).era.degrees shouldBe (angle.degrees plusOrMinus 1e-6)
+            val angle = "99 34 58.365".deg
+            TimeYMDHMS(2023, 1, 30, 22).era.toDegrees shouldBe (angle.toDegrees plusOrMinus 1e-6)
         }
         "as datetime" {
             var ymdhms = TimeYMDHMS(2023, 1, 30, 22, 45, 33.5)

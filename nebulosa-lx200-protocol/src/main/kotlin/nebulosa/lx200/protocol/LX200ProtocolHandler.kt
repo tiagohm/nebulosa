@@ -5,7 +5,8 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
-import nebulosa.math.Angle
+import nebulosa.math.deg
+import nebulosa.math.hours
 import java.time.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -13,8 +14,8 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
 
     private val started = AtomicBoolean()
 
-    @Volatile private var rightAscension = Angle.ZERO
-    @Volatile private var declination = Angle.ZERO
+    @Volatile private var rightAscension = 0.0
+    @Volatile private var declination = 0.0
     @Volatile private var date = LocalDate.now()
     @Volatile private var time = LocalTime.now()
     @Volatile private var offset = ZoneId.systemDefault().rules.getOffset(Instant.now())
@@ -28,12 +29,12 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
     }
 
     private fun ChannelHandlerContext.updateRA(text: String) {
-        rightAscension = Angle.from(text, true)
+        rightAscension = text.hours
         writeAndFlush(LX200ProtocolMessage.Ok)
     }
 
     private fun ChannelHandlerContext.updateDEC(text: String) {
-        declination = Angle.from(text)
+        declination = text.deg
         writeAndFlush(LX200ProtocolMessage.Ok)
     }
 
@@ -88,12 +89,12 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
                     when {
                         command.startsWith("#:Sg") -> {
                             ctx.writeAndFlush(LX200ProtocolMessage.Ok)
-                            val longitude = -Angle.from(command.substring(4))
+                            val longitude = -command.substring(4).deg
                             server.coordinates(longitude, server.latitude)
                         }
                         command.startsWith("#:St") -> {
                             ctx.writeAndFlush(LX200ProtocolMessage.Ok)
-                            val latitude = Angle.from(command.substring(4))
+                            val latitude = command.substring(4).deg
                             server.coordinates(server.longitude, latitude)
                         }
                         command.startsWith("#:SL") -> {

@@ -4,8 +4,8 @@ plugins {
 }
 
 dependencies {
-    api(project(":nebulosa-retrofit"))
-    api(files("$projectDir/libs/adql1.5.jar"))
+    api(project(":nebulosa-math"))
+    implementation(files("$projectDir/libs/adql1.5.jar"))
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }

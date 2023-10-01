@@ -3,8 +3,8 @@ package nebulosa.nova.position
 import nebulosa.erfa.CartesianCoordinate
 import nebulosa.math.Angle
 import nebulosa.math.Distance
-import nebulosa.math.Distance.Companion.au
 import nebulosa.math.Vector3D
+import nebulosa.math.au
 import nebulosa.nova.frame.Frame
 import nebulosa.time.InstantOfTime
 

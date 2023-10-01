@@ -2,6 +2,8 @@ package nebulosa.api.atlas.ephemeris
 
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
+import nebulosa.math.normalized
+import nebulosa.math.toDegrees
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
@@ -38,12 +40,12 @@ class BodyEphemerisProvider : CachedEphemerisProvider<Body>() {
             val (raJ2000, decJ2000) = astrometric.equatorialJ2000()
 
             val element = HorizonsElement(time)
-            element[HorizonsQuantity.ASTROMETRIC_RA] = "${raJ2000.normalized.degrees}"
-            element[HorizonsQuantity.ASTROMETRIC_DEC] = "${decJ2000.degrees}"
-            element[HorizonsQuantity.APPARENT_RA] = "${ra.normalized.degrees}"
-            element[HorizonsQuantity.APPARENT_DEC] = "${dec.degrees}"
-            element[HorizonsQuantity.APPARENT_AZ] = "${az.normalized.degrees}"
-            element[HorizonsQuantity.APPARENT_ALT] = "${alt.degrees}"
+            element[HorizonsQuantity.ASTROMETRIC_RA] = "${raJ2000.normalized.toDegrees}"
+            element[HorizonsQuantity.ASTROMETRIC_DEC] = "${decJ2000.toDegrees}"
+            element[HorizonsQuantity.APPARENT_RA] = "${ra.normalized.toDegrees}"
+            element[HorizonsQuantity.APPARENT_DEC] = "${dec.toDegrees}"
+            element[HorizonsQuantity.APPARENT_AZ] = "${az.normalized.toDegrees}"
+            element[HorizonsQuantity.APPARENT_ALT] = "${alt.toDegrees}"
             res.add(element)
 
             time = time.plusMinutes(1L)

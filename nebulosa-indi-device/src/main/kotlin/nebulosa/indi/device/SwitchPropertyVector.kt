@@ -2,6 +2,7 @@ package nebulosa.indi.device
 
 import nebulosa.indi.protocol.PropertyPermission
 import nebulosa.indi.protocol.PropertyState
+import nebulosa.indi.protocol.PropertyType
 import nebulosa.indi.protocol.SwitchRule
 
 data class SwitchPropertyVector(
@@ -14,6 +15,8 @@ data class SwitchPropertyVector(
     override var state: PropertyState,
     internal val properties: LinkedHashMap<String, SwitchProperty>,
 ) : PropertyVector<Boolean, SwitchProperty>, Map<String, SwitchProperty> by properties {
+
+    override val type = PropertyType.SWITCH
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

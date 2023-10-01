@@ -2,11 +2,7 @@ package nebulosa.nova.position
 
 import nebulosa.constants.TAU
 import nebulosa.erfa.PositionAndVelocity
-import nebulosa.math.Angle
-import nebulosa.math.Angle.Companion.rad
-import nebulosa.math.Distance
-import nebulosa.math.Matrix3D
-import nebulosa.math.Vector3D
+import nebulosa.math.*
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.PlanetaryFrame
@@ -15,8 +11,7 @@ import nebulosa.time.InstantOfTime
 data class PlanetograhicPosition(
     val frame: PlanetaryFrame,
     val position: Vector3D,
-    val latitude: Angle,
-    val longitude: Angle,
+    val latitude: Angle, val longitude: Angle,
 ) : Body, Frame, Number() {
 
     override val center = frame.center
@@ -28,7 +23,7 @@ data class PlanetograhicPosition(
         latitude: Angle, longitude: Angle, distance: Distance,
     ) : this(
         frame,
-        Matrix3D.rotateZ(longitude).rotateY(-latitude) * Vector3D(distance.value),
+        Matrix3D.rotateZ(longitude).rotateY(-latitude) * Vector3D(distance),
         latitude, longitude,
     )
 
@@ -47,8 +42,8 @@ data class PlanetograhicPosition(
         // from position, to support situations where we were not
         // given a latitude and longitude.  If that is not feasible,
         // then at least cache the product of these first two matrices.
-        val m = Matrix3D.rotateY((TAU / 4.0 - latitude.value).rad)
-            .rotateZ((TAU / 2.0 - longitude.value).rad) *
+        val m = Matrix3D.rotateY((TAU / 4.0 - latitude).rad)
+            .rotateZ((TAU / 2.0 - longitude).rad) *
                 frame.rotationAt(time)
 
         // Turn clockwise into counterclockwise.

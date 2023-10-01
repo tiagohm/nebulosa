@@ -6,7 +6,7 @@
                 value="nebulosa.api.MainKt"/>
         <module name="nebulosa.api.main"/>
         <option name="PROGRAM_PARAMETERS"
-                value="--server.port=7000"/>
+                value="--server.port=7000 --spring.jpa.show-sql=true"/>
         <shortenClasspath name="NONE"/>
         <method v="2">
             <option name="Gradle.BeforeRunTask"
@@ -14,7 +14,7 @@
                     tasks="build"
                     externalProjectPath="$PROJECT_DIR$/api"
                     vmOptions=""
-                    scriptParameters="-Popenapi -x test"/>
+                    scriptParameters="-x test"/>
         </method>
     </configuration>
 </component>

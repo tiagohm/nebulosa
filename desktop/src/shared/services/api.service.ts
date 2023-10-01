@@ -1,302 +1,283 @@
-import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import moment from 'moment'
-import { firstValueFrom } from 'rxjs'
 import {
-    BodyPosition, Calibration, Camera, CameraStartCapture, ComputedCoordinates, Constellation, DeepSkyObject, Device,
-    FilterWheel, Focuser, GuideOutput, GuidingChart, GuidingStar, HipsSurvey,
-    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
-    Mount, Path, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
-    SavedCameraImage, SkyObjectType, SlewRate, Star, TrackMode, Twilight
+    Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, DeepSkyObject, Device,
+    FilterWheel, Focuser, GuideDirection, GuideOutput, GuidingChart, GuidingStar, HipsSurvey,
+    INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
+    ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
+    Mount, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
+    SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
+import { HttpService } from './http.service'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpService) { }
 
-    get baseUri() {
-        return `http://localhost:${window.apiPort}`
+    get baseUrl() {
+        return this.http.baseUrl
     }
 
-    private get<T>(url: string) {
-        return firstValueFrom(this.http.get<T>(`${this.baseUri}/${url}`))
-    }
-
-    private post<T>(url: string, body: any = null) {
-        return firstValueFrom(this.http.post<T>(`${this.baseUri}/${url}`, body))
-    }
-
-    private patch<T>(url: string, body: any = null) {
-        return firstValueFrom(this.http.patch<T>(`${this.baseUri}/${url}`, body))
-    }
-
-    private put<T>(url: string, body: any = null) {
-        return firstValueFrom(this.http.put<T>(`${this.baseUri}/${url}`, body))
-    }
-
-    private delete<T>(url: string) {
-        return firstValueFrom(this.http.delete<T>(`${this.baseUri}/${url}`))
-    }
+    // CONNECTION
 
     connect(host: string, port: number) {
-        return this.post<void>(`connect?host=${host}&port=${port}`)
+        const query = this.http.query({ host, port })
+        return this.http.put<void>(`connection?${query}`)
     }
 
     disconnect() {
-        return this.post<void>(`disconnect`)
+        return this.http.delete<void>(`connection`)
     }
 
     connectionStatus() {
-        return this.get<boolean>(`connectionStatus`)
+        return this.http.get<boolean>(`connection`)
     }
 
-    attachedCameras() {
-        return this.get<Camera[]>(`attachedCameras`)
+    // CAMERA.
+
+    cameras() {
+        return this.http.get<Camera[]>(`cameras`)
     }
 
     camera(name: string) {
-        return this.get<Camera>(`camera?name=${name}`)
+        return this.http.get<Camera>(`cameras/${name}`)
     }
 
     cameraConnect(camera: Camera) {
-        return this.post<void>(`cameraConnect?name=${camera.name}`)
+        return this.http.put<void>(`cameras/${camera.name}/connect`)
     }
 
     cameraDisconnect(camera: Camera) {
-        return this.post<void>(`cameraDisconnect?name=${camera.name}`)
+        return this.http.put<void>(`cameras/${camera.name}/disconnect`)
     }
 
     cameraIsCapturing(camera: Camera) {
-        return this.get<boolean>(`cameraIsCapturing?name=${camera.name}`)
+        return this.http.get<boolean>(`cameras/${camera.name}/capturing`)
     }
 
-    cameraCooler(camera: Camera, enable: boolean) {
-        return this.post<void>(`cameraCooler?name=${camera.name}&enable=${enable}`)
+    cameraCooler(camera: Camera, enabled: boolean) {
+        return this.http.put<void>(`cameras/${camera.name}/cooler?enabled=${enabled}`)
     }
 
     cameraSetpointTemperature(camera: Camera, temperature: number) {
-        return this.post<void>(`cameraSetpointTemperature?name=${camera.name}&temperature=${temperature}`)
+        return this.http.put<void>(`cameras/${camera.name}/temperature/setpoint?temperature=${temperature}`)
     }
 
     cameraStartCapture(camera: Camera, value: CameraStartCapture) {
-        return this.post<void>(`cameraStartCapture?name=${camera.name}`, value)
+        return this.http.put<void>(`cameras/${camera.name}/capture/start`, value)
     }
 
     cameraAbortCapture(camera: Camera) {
-        return this.post<void>(`cameraAbortCapture?name=${camera.name}`)
+        return this.http.put<void>(`cameras/${camera.name}/capture/abort`)
     }
 
-    imagesOfCamera(camera: Camera) {
-        return this.get<SavedCameraImage[]>(`imagesOfCamera?name=${camera.name}`)
-    }
+    // MOUNT
 
-    latestImageOfCamera(camera: Camera) {
-        return this.get<SavedCameraImage>(`latestImageOfCamera?name=${camera.name}`)
-    }
-
-    attachedMounts() {
-        return this.get<Mount[]>(`attachedMounts`)
+    mounts() {
+        return this.http.get<Mount[]>(`mounts`)
     }
 
     mount(name: string) {
-        return this.get<Mount>(`mount?name=${name}`)
+        return this.http.get<Mount>(`mounts/${name}`)
     }
 
     mountConnect(mount: Mount) {
-        return this.post<void>(`mountConnect?name=${mount.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/connect`)
     }
 
     mountDisconnect(mount: Mount) {
-        return this.post<void>(`mountDisconnect?name=${mount.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/disconnect`)
     }
 
-    mountTracking(mount: Mount, enable: boolean) {
-        return this.post<void>(`mountTracking?name=${mount.name}&enable=${enable}`)
+    mountTracking(mount: Mount, enabled: boolean) {
+        return this.http.put<void>(`mounts/${mount.name}/tracking?enabled=${enabled}`)
     }
 
-    mountSync(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
-        return this.post<void>(`mountSync?name=${mount.name}&rightAscension=${rightAscension}&declination=${declination}&j2000=${j2000}`)
+    mountSync(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
+        const query = this.http.query({ rightAscension, declination, j2000 })
+        return this.http.put<void>(`mounts/${mount.name}/sync?${query}`)
     }
 
-    mountSlewTo(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
-        return this.post<void>(`mountSlewTo?name=${mount.name}&rightAscension=${rightAscension}&declination=${declination}&j2000=${j2000}`)
+    mountSlewTo(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
+        const query = this.http.query({ rightAscension, declination, j2000 })
+        return this.http.put<void>(`mounts/${mount.name}/slew-to?${query}`)
     }
 
-    mountGoTo(mount: Mount, rightAscension: string, declination: string, j2000: boolean) {
-        return this.post<void>(`mountGoTo?name=${mount.name}&rightAscension=${rightAscension}&declination=${declination}&j2000=${j2000}`)
+    mountGoTo(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
+        const query = this.http.query({ rightAscension, declination, j2000 })
+        return this.http.put<void>(`mounts/${mount.name}/goto?${query}`)
     }
 
     mountPark(mount: Mount) {
-        return this.post<void>(`mountPark?name=${mount.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/park`)
     }
 
     mountUnpark(mount: Mount) {
-        return this.post<void>(`mountUnpark?name=${mount.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/unpark`)
     }
 
     mountHome(mount: Mount) {
-        return this.post<void>(`mountHome?name=${mount.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/home`)
     }
 
     mountAbort(mount: Mount) {
-        return this.post<void>(`mountAbort?name=${mount.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/abort`)
     }
 
     mountTrackMode(mount: Mount, mode: TrackMode) {
-        return this.post<void>(`mountTrackMode?name=${mount.name}&mode=${mode}`)
+        return this.http.put<void>(`mounts/${mount.name}/track-mode?mode=${mode}`)
     }
 
     mountSlewRate(mount: Mount, rate: SlewRate) {
-        return this.post<void>(`mountSlewRate?name=${mount.name}&rate=${rate.name}`)
+        return this.http.put<void>(`mounts/${mount.name}/slew-rate?rate=${rate.name}`)
     }
 
-    mountMoveNorth(mount: Mount, enable: boolean) {
-        return this.post<void>(`mountMoveNorth?name=${mount.name}&enable=${enable}`)
+    mountMove(mount: Mount, direction: GuideDirection, enabled: boolean) {
+        return this.http.put<void>(`mounts/${mount.name}/move?direction=${direction}&enabled=${enabled}`)
     }
 
-    mountMoveSouth(mount: Mount, enable: boolean) {
-        return this.post<void>(`mountMoveSouth?name=${mount.name}&enable=${enable}`)
-    }
-
-    mountMoveEast(mount: Mount, enable: boolean) {
-        return this.post<void>(`mountMoveEast?name=${mount.name}&enable=${enable}`)
-    }
-
-    mountMoveWest(mount: Mount, enable: boolean) {
-        return this.post<void>(`mountMoveWest?name=${mount.name}&enable=${enable}`)
-    }
-
-    mountComputeCoordinates(mount: Mount, j2000: boolean, rightAscension?: string, declination?: string,
-        equatorial: boolean = true, horizontal: boolean = true, meridian: boolean = false,
+    mountComputeLocation(mount: Mount, j2000: boolean, rightAscension: Angle, declination: Angle,
+        equatorial: boolean = true, horizontal: boolean = true, meridianAt: boolean = false,
     ) {
-        return this.get<ComputedCoordinates>(`mountComputeCoordinates?name=${mount.name}&rightAscension=${rightAscension || ''}&declination=${declination || ''}` +
-            `&j2000=${j2000}&equatorial=${equatorial}&horizontal=${horizontal}&meridian=${meridian}`)
+        const query = this.http.query({ rightAscension, declination, j2000, equatorial, horizontal, meridianAt })
+        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location?${query}`)
     }
 
     mountZenithLocation(mount: Mount) {
-        return this.get<ComputedCoordinates>(`mountZenithLocation?name=${mount.name}`)
+        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/zenith`)
     }
 
     mountNorthCelestialPoleLocation(mount: Mount) {
-        return this.get<ComputedCoordinates>(`mountNorthCelestialPoleLocation?name=${mount.name}`)
+        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/celestial-pole/north`)
     }
 
     mountSouthCelestialPoleLocation(mount: Mount) {
-        return this.get<ComputedCoordinates>(`mountSouthCelestialPoleLocation?name=${mount.name}`)
+        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/celestial-pole/south`)
     }
 
     mountGalacticCenterLocation(mount: Mount) {
-        return this.get<ComputedCoordinates>(`mountGalacticCenterLocation?name=${mount.name}`)
+        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/galactic-center`)
     }
 
-    attachedFocusers() {
-        return this.get<Focuser[]>(`attachedFocusers`)
+    pointMountHere(mount: Mount, path: string, x: number, y: number, synchronized: boolean = true) {
+        const query = this.http.query({ path, x, y, synchronized })
+        return this.http.post<void>(`mounts/${mount.name}/point-here${query}`)
+    }
+
+    // FOCUSER
+
+    focusers() {
+        return this.http.get<Focuser[]>(`focusers`)
     }
 
     focuser(name: string) {
-        return this.get<Focuser>(`focuser?name=${name}`)
+        return this.http.get<Focuser>(`focusers/${name}`)
     }
 
     focuserConnect(focuser: Focuser) {
-        return this.post<void>(`focuserConnect?name=${focuser.name}`)
+        return this.http.put<void>(`focusers/${focuser.name}/connect`)
     }
 
     focuserDisconnect(focuser: Focuser) {
-        return this.post<void>(`focuserDisconnect?name=${focuser.name}`)
+        return this.http.put<void>(`focusers/${focuser.name}/disconnect`)
     }
 
     focuserMoveIn(focuser: Focuser, steps: number) {
-        return this.post<void>(`focuserMoveIn?name=${focuser.name}&steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.name}/move-in?steps=${steps}`)
     }
 
     focuserMoveOut(focuser: Focuser, steps: number) {
-        return this.post<void>(`focuserMoveOut?name=${focuser.name}&steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.name}/move-out?steps=${steps}`)
     }
 
     focuserMoveTo(focuser: Focuser, steps: number) {
-        return this.post<void>(`focuserMoveTo?name=${focuser.name}&steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.name}/move-to?steps=${steps}`)
     }
 
     focuserAbort(focuser: Focuser) {
-        return this.post<void>(`focuserAbort?name=${focuser.name}`)
+        return this.http.put<void>(`focusers/${focuser.name}/abort`)
     }
 
-    focuserSyncTo(focuser: Focuser, steps: number) {
-        return this.post<void>(`focuserSyncTo?name=${focuser.name}&steps=${steps}`)
+    focuserSync(focuser: Focuser, steps: number) {
+        return this.http.put<void>(`focusers/${focuser.name}/sync?steps=${steps}`)
     }
 
-    attachedWheels() {
-        return this.get<FilterWheel[]>(`attachedWheels`)
+    // FILTER WHEEL
+
+    wheels() {
+        return this.http.get<FilterWheel[]>(`wheels`)
     }
 
     wheel(name: string) {
-        return this.get<FilterWheel>(`wheel?name=${name}`)
+        return this.http.get<FilterWheel>(`wheels/${name}`)
     }
 
     wheelConnect(wheel: FilterWheel) {
-        return this.post<void>(`wheelConnect?name=${wheel.name}`)
+        return this.http.put<void>(`wheels/${wheel.name}/connect`)
     }
 
     wheelDisconnect(wheel: FilterWheel) {
-        return this.post<void>(`wheelDisconnect?name=${wheel.name}`)
+        return this.http.put<void>(`wheels/${wheel.name}/disconnect`)
     }
 
     wheelMoveTo(wheel: FilterWheel, position: number) {
-        return this.post<void>(`wheelMoveTo?name=${wheel.name}&position=${position}`)
+        return this.http.put<void>(`wheels/${wheel.name}/move-to?position=${position}`)
     }
 
-    wheelSyncNames(wheel: FilterWheel, filterNames: string[]) {
-        return this.post<void>(`wheelSyncNames?name=${wheel.name}&filterNames=${filterNames.join(',')}`)
+    wheelSync(wheel: FilterWheel, names: string[]) {
+        return this.http.put<void>(`wheels/${wheel.name}/sync?names=${names.join(',')}`)
     }
 
     attachedGuideOutputs() {
-        return this.get<GuideOutput[]>(`attachedGuideOutputs`)
+        return this.http.get<GuideOutput[]>(`attachedGuideOutputs`)
     }
 
     guideOutput(name: string) {
-        return this.get<GuideOutput>(`guideOutput?name=${name}`)
+        return this.http.get<GuideOutput>(`guideOutput?name=${name}`)
     }
 
     guideOutputConnect(guideOutput: GuideOutput) {
-        return this.post<void>(`guideOutputConnect?name=${guideOutput.name}`)
+        return this.http.post<void>(`guideOutputConnect?name=${guideOutput.name}`)
     }
 
     guideOutputDisconnect(guideOutput: GuideOutput) {
-        return this.post<void>(`guideOutputDisconnect?name=${guideOutput.name}`)
+        return this.http.post<void>(`guideOutputDisconnect?name=${guideOutput.name}`)
     }
 
     startGuideLooping(camera: Camera, mount: Mount, guideOutput: GuideOutput) {
-        return this.post<void>(`startGuideLooping?camera=${camera.name}&mount=${mount.name}&guideOutput=${guideOutput.name}`)
+        return this.http.post<void>(`startGuideLooping?camera=${camera.name}&mount=${mount.name}&guideOutput=${guideOutput.name}`)
     }
 
     stopGuideLooping() {
-        return this.post<void>(`stopGuideLooping`)
+        return this.http.post<void>(`stopGuideLooping`)
     }
 
     startGuiding(forceCalibration: boolean = false) {
-        return this.post<void>(`startGuiding?forceCalibration=${forceCalibration}`)
+        return this.http.post<void>(`startGuiding?forceCalibration=${forceCalibration}`)
     }
 
     stopGuiding() {
-        return this.post<void>(`stopGuiding`)
+        return this.http.post<void>(`stopGuiding`)
     }
 
     guidingChart() {
-        return this.get<GuidingChart>(`guidingChart`)
+        return this.http.get<GuidingChart>(`guidingChart`)
     }
 
     guidingStar() {
-        return this.get<GuidingStar | null>(`guidingStar`)
+        return this.http.get<GuidingStar | null>(`guidingStar`)
     }
 
     selectGuideStar(x: number, y: number) {
-        return this.post<void>(`selectGuideStar?x=${x}&y=${y}`)
+        return this.http.post<void>(`selectGuideStar?x=${x}&y=${y}`)
     }
 
     deselectGuideStar() {
-        return this.post<void>(`deselectGuideStar`)
+        return this.http.post<void>(`deselectGuideStar`)
     }
+
+    // IMAGE
 
     async openImage(
         path: string,
@@ -313,13 +294,8 @@ export class ApiService {
         scnrAmount: number = 0.5,
         scnrProtectionMode: SCNRProtectionMethod = 'AVERAGE_NEUTRAL',
     ) {
-        const query = `debayer=${debayer}&autoStretch=${autoStretch}&shadow=${shadow}&highlight=${highlight}&midtone=${midtone}` +
-            `&mirrorHorizontal=${mirrorHorizontal}&mirrorVertical=${mirrorVertical}&invert=${invert}` +
-            `&scnrEnabled=${scnrEnabled}&scnrChannel=${scnrChannel}&scnrAmount=${scnrAmount}&scnrProtectionMode=${scnrProtectionMode}`
-        const response = await firstValueFrom(this.http.get(`${this.baseUri}/openImage?path=${encodeURIComponent(path)}&${query}`, {
-            observe: 'response',
-            responseType: 'blob'
-        }))
+        const query = this.http.query({ path, debayer, autoStretch, shadow, highlight, midtone, mirrorHorizontal, mirrorVertical, invert, scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode })
+        const response = await this.http.getBlob(`image?${query}`)
 
         const info = JSON.parse(response.headers.get('X-Image-Info')!) as ImageInfo
 
@@ -327,134 +303,152 @@ export class ApiService {
     }
 
     closeImage(path: string) {
-        return this.post<void>(`closeImage?path=${encodeURIComponent(path)}`)
+        const query = this.http.query({ path })
+        return this.http.delete<void>(`image?${query}`)
     }
 
     indiProperties(device: Device) {
-        return this.get<INDIProperty<any>[]>(`indiProperties?name=${device.name}`)
+        return this.http.get<INDIProperty<any>[]>(`indiProperties?name=${device.name}`)
     }
 
     sendIndiProperty(device: Device, property: INDISendProperty) {
-        return this.post<void>(`sendIndiProperty?name=${device.name}`, property)
+        return this.http.post<void>(`sendIndiProperty?name=${device.name}`, property)
     }
 
     startListening(eventType: ListeningEventType) {
-        return this.post<void>(`startListening?eventType=${eventType}`)
+        return this.http.post<void>(`startListening?eventType=${eventType}`)
     }
 
     stopListening(eventType: ListeningEventType) {
-        return this.post<void>(`stopListening?eventType=${eventType}`)
+        return this.http.post<void>(`stopListening?eventType=${eventType}`)
     }
 
     indiLog(device: Device) {
-        return this.get<string[]>(`indiLog?name=${device.name}`)
+        return this.http.get<string[]>(`indiLog?name=${device.name}`)
     }
 
+    // LOCATION
+
     locations() {
-        return this.get<Location[]>(`locations`)
+        return this.http.get<Location[]>(`locations`)
     }
 
     saveLocation(location: Location) {
-        return this.put<Location>(`saveLocation?id=${location.id}`, location)
+        return this.http.put<Location>(`locations`, location)
     }
 
     deleteLocation(location: Location) {
-        return this.delete<void>(`deleteLocation?id=${location.id}`)
+        return this.http.delete<void>(`locations/${location.id}`)
     }
+
+    // SKY ATLAS
 
     positionOfSun(location: Location, dateTime: Date) {
         const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        return this.get<BodyPosition>(`positionOfSun?location=${location.id}&date=${date}&time=${time}`)
-    }
-
-    positionOfMoon(location: Location, dateTime: Date) {
-        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        return this.get<BodyPosition>(`positionOfMoon?location=${location.id}&date=${date}&time=${time}`)
-    }
-
-    positionOfPlanet(location: Location, code: string, dateTime: Date) {
-        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        return this.get<BodyPosition>(`positionOfPlanet?location=${location.id}&code=${code}&date=${date}&time=${time}`)
-    }
-
-    positionOfStar(location: Location, star: Star, dateTime: Date) {
-        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        return this.get<BodyPosition>(`positionOfStar?location=${location.id}&star=${star.id}&date=${date}&time=${time}`)
-    }
-
-    positionOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
-        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        return this.get<BodyPosition>(`positionOfDSO?location=${location.id}&dso=${dso.id}&date=${date}&time=${time}`)
-    }
-
-    positionOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
-        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        return this.get<BodyPosition>(`positionOfSatellite?location=${location.id}&tle=${encodeURIComponent(satellite.tle)}&date=${date}&time=${time}`)
-    }
-
-    twilight(location: Location, dateTime: Date) {
-        const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.get<Twilight>(`twilight?location=${location.id}&date=${date}`)
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/sun/position?${query}`)
     }
 
     altitudePointsOfSun(location: Location, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.get<[number, number][]>(`altitudePointsOfSun?location=${location.id}&date=${date}&stepSize=1`)
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/sun/altitude-points?${query}`)
+    }
+
+    positionOfMoon(location: Location, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/moon/position?${query}`)
     }
 
     altitudePointsOfMoon(location: Location, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.get<[number, number][]>(`altitudePointsOfMoon?location=${location.id}&date=${date}&stepSize=1`)
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/moon/altitude-points?${query}`)
+    }
+
+    positionOfPlanet(location: Location, code: string, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/planets/${code}/position?${query}`)
     }
 
     altitudePointsOfPlanet(location: Location, code: string, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.get<[number, number][]>(`altitudePointsOfPlanet?location=${location.id}&code=${code}&date=${date}&stepSize=1`)
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/planets/${code}/altitude-points?${query}`)
+    }
+
+    positionOfStar(location: Location, star: Star, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/stars/${star.id}/position?${query}`)
     }
 
     altitudePointsOfStar(location: Location, star: Star, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.get<[number, number][]>(`altitudePointsOfStar?location=${location.id}&star=${star.id}&date=${date}&stepSize=1`)
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/stars/${star.id}/altitude-points?${query}`)
+    }
+
+    searchStar(text: string,
+        rightAscension: Angle, declination: Angle, radius: Angle,
+        constellation?: Constellation,
+        magnitudeMin: number = -99, magnitudeMax: number = 99,
+        type?: SkyObjectType,
+    ) {
+        const query = this.http.query({ text, rightAscension, declination, radius, constellation, magnitudeMin, magnitudeMax, type })
+        return this.http.get<Star[]>(`sky-atlas/stars?${query}`)
+    }
+
+    positionOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/dsos/${dso.id}/position?${query}`)
     }
 
     altitudePointsOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.get<[number, number][]>(`altitudePointsOfDSO?location=${location.id}&dso=${dso.id}&date=${date}&stepSize=1`)
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/dsos/${dso.id}/altitude-points?${query}`)
+    }
+
+    searchDSO(text: string,
+        rightAscension: Angle, declination: Angle, radius: Angle,
+        constellation?: Constellation,
+        magnitudeMin: number = -99, magnitudeMax: number = 99,
+        type?: SkyObjectType,
+    ) {
+        const query = this.http.query({ text, rightAscension, declination, radius, constellation, magnitudeMin, magnitudeMax, type })
+        return this.http.get<DeepSkyObject[]>(`sky-atlas/dsos?${query}`)
+    }
+
+    positionOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/satellites/${satellite.id}/position?${query}`)
     }
 
     altitudePointsOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
-        return this.get<[number, number][]>(`altitudePointsOfSatellite?location=${location.id}&tle=${encodeURIComponent(satellite.tle)}&date=${date}&stepSize=1`)
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/satellites/${satellite.id}/altitude-points?${query}`)
+    }
+
+    searchSatellites(text: string = '', group: SatelliteGroupType[] = []) {
+        const query = this.http.query({ text, group })
+        return this.http.get<Satellite[]>(`sky-atlas/satellites?${query}`)
+    }
+
+    twilight(location: Location, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<Twilight>(`sky-atlas/twilight?${query}`)
     }
 
     searchMinorPlanet(text: string) {
-        return this.get<MinorPlanet>(`searchMinorPlanet?text=${text}`)
-    }
-
-    searchStar(text: string,
-        rightAscension: string, declination: string, radius: number,
-        constellation?: Constellation,
-        magnitudeMin: number = -99, magnitudeMax: number = 99,
-        type?: SkyObjectType,
-    ) {
-        let q = ''
-        if (constellation) q += `&constellation=${constellation}`
-        if (type) q += `&type=${type}`
-        return this.get<Star[]>(`searchStar?text=${text}&rightAscension=${rightAscension}&declination=${declination}&radius=${radius}` +
-            `&magnitudeMin=${magnitudeMin}&magnitudeMax=${magnitudeMax}${q}`)
-    }
-
-    searchDSO(text: string,
-        rightAscension: string, declination: string, radius: number,
-        constellation?: Constellation,
-        magnitudeMin: number = -99, magnitudeMax: number = 99,
-        type?: SkyObjectType,
-    ) {
-        let q = ''
-        if (constellation) q += `&constellation=${constellation}`
-        if (type) q += `&type=${type}`
-        return this.get<DeepSkyObject[]>(`searchDSO?text=${text}&rightAscension=${rightAscension}&declination=${declination}&radius=${radius}` +
-            `&magnitudeMin=${magnitudeMin}&magnitudeMax=${magnitudeMax}${q}`)
+        const query = this.http.query({ text })
+        return this.http.get<MinorPlanet>(`sky-atlas/minor-planets?${query}`)
     }
 
     annotationsOfImage(
@@ -462,37 +456,33 @@ export class ApiService {
         stars: boolean = true, dsos: boolean = true, minorPlanets: boolean = false,
         minorPlanetMagLimit: number = 12.0,
     ) {
-        return this.get<ImageAnnotation[]>(`annotationsOfImage?path=${encodeURIComponent(path)}&stars=${stars}&dsos=${dsos}&minorPlanets=${minorPlanets}&minorPlanetMagLimit=${minorPlanetMagLimit}`)
+        const query = this.http.query({ path, stars, dsos, minorPlanets, minorPlanetMagLimit })
+        return this.http.get<ImageAnnotation[]>(`image/annotations?${query}`)
     }
 
     solveImage(
         path: string, type: PlateSolverType,
-        blind: Boolean,
+        blind: boolean,
         centerRA: string | number, centerDEC: string | number, radius: string | number,
         downsampleFactor: number,
         pathOrUrl: string, apiKey: string,
     ) {
-        return this.post<Calibration>(`solveImage?path=${encodeURIComponent(path)}&type=${type}&pathOrUrl=${pathOrUrl}&blind=${blind}` +
-            `&centerRA=${centerRA}&centerDEC=${centerDEC}&radius=${radius}&downsampleFactor=${downsampleFactor}&apiKey=${apiKey}`)
+        const query = this.http.query({ path, type, blind, centerRA, centerDEC, radius, downsampleFactor, pathOrUrl, apiKey })
+        return this.http.put<ImageCalibrated>(`image/solve?${query}`)
     }
 
     saveImageAs(inputPath: string, outputPath: string) {
-        return this.post<void>(`saveImageAs?inputPath=${inputPath}&outputPath=${outputPath}`)
+        const query = this.http.query({ inputPath, outputPath })
+        return this.http.put<void>(`image/save-as?${query}`)
     }
 
-    frame(rightAscension: string, declination: string,
+    // FRAMING
+
+    frame(rightAscension: Angle, declination: Angle,
         width: number, height: number,
         fov: number, rotation: number, hipsSurvey: HipsSurvey,
     ) {
-        return this.post<Path>(`frame?rightAscension=${rightAscension}&declination=${declination}&rotation=${rotation}&fov=${fov}&width=${width}&height=${height}&hipsSurvey=${hipsSurvey.type}`)
-    }
-
-    pointMountHere(mount: Mount, path: string, x: number, y: number, synchronized: boolean = true) {
-        return this.post<void>(`pointMountHere?name=${mount.name}&path=${encodeURIComponent(path)}&x=${x}&y=${y}&synchronized=${synchronized}`)
-    }
-
-    searchSatellites(text: string = '', groups: SatelliteGroupType[] = []) {
-        const q = groups.map(e => `&group=${e}`).join('')
-        return this.get<Satellite[]>(`searchSatellites?text=${text}${q}`)
+        const query = this.http.query({ rightAscension, declination, width, height, fov, rotation, hipsSurvey: hipsSurvey.type })
+        return this.http.put<string>(`framing?${query}`)
     }
 }

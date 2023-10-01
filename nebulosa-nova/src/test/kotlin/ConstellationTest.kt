@@ -1,8 +1,8 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import nebulosa.io.resource
-import nebulosa.math.Angle.Companion.deg
-import nebulosa.math.Angle.Companion.hours
+import nebulosa.math.deg
+import nebulosa.math.hours
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.ICRF
 

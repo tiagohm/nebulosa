@@ -5,7 +5,7 @@ import java.math.RoundingMode
 import java.util.*
 import kotlin.math.abs
 
-class AngleFormatter private constructor(
+data class AngleFormatter internal constructor(
     private val isHours: Boolean = false,
     private val hasSign: Boolean = true,
     private val hoursFormat: String = "%02d",

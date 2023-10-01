@@ -1,17 +1,17 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
+import { MessageService } from 'primeng/api'
 import hipsSurveys from '../../assets/data/hipsSurveys.json'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { HipsSurvey, Path } from '../../shared/types'
-import { MessageService } from 'primeng/api'
+import { Angle, HipsSurvey } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 export interface FramingParams {
-    rightAscension: string
-    declination: string
+    rightAscension: Angle
+    declination: Angle
     width?: number
     height?: number
     fov?: number
@@ -25,8 +25,8 @@ export interface FramingParams {
 })
 export class FramingComponent implements AfterViewInit, OnDestroy {
 
-    rightAscension = '00h00m00s'
-    declination = `+000°00'00"`
+    rightAscension: Angle = '00h00m00s'
+    declination: Angle = `+000°00'00"`
     width = 1280
     height = 720
     fov = 1.0
@@ -36,11 +36,11 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 
     loading = false
 
-    private framePath?: Path
+    private framePath?: string
     private frameId = ''
 
     constructor(
-        title: Title,
+        app: AppComponent,
         private route: ActivatedRoute,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
@@ -49,7 +49,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         private message: MessageService,
         ngZone: NgZone,
     ) {
-        title.setTitle('Framing')
+        app.title = 'Framing'
 
         this.loadPreference()
 
@@ -96,7 +96,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
             const title = `Framing ・ ${this.rightAscension} ・ ${this.declination}`
 
             this.framePath = path
-            this.frameId = await this.browserWindow.openImage(path.path, 'framing', 'FRAMING', title)
+            this.frameId = await this.browserWindow.openImage(path, 'framing', 'FRAMING', title)
 
             this.savePreference()
         } catch (e: any) {
@@ -130,7 +130,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 
     private async closeFrameImage() {
         if (this.framePath) {
-            await this.api.closeImage(this.framePath.path)
+            await this.api.closeImage(this.framePath)
         }
     }
 }

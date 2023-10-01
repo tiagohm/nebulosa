@@ -1,6 +1,6 @@
 # Icons by [FlatIcon](https://www.flaticon.com/)
 
-* https://www.flaticon.com/free-icon/nebula_2530885
+* https://www.flaticon.com/free-icon/galaxy_1534067
 * https://www.flaticon.com/free-icon/information_9195785
 * https://www.flaticon.com/free-icon/gps_856332
 * https://www.flaticon.com/free-icon/clock_3133110

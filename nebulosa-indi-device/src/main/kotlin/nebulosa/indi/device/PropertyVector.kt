@@ -2,6 +2,7 @@ package nebulosa.indi.device
 
 import nebulosa.indi.protocol.PropertyPermission
 import nebulosa.indi.protocol.PropertyState
+import nebulosa.indi.protocol.PropertyType
 
 sealed interface PropertyVector<T, P : Property<T>> : Map<String, P> {
 
@@ -16,4 +17,6 @@ sealed interface PropertyVector<T, P : Property<T>> : Map<String, P> {
     val perm: PropertyPermission
 
     val state: PropertyState
+
+    val type: PropertyType
 }

@@ -1,5 +1,4 @@
 import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
-import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import { Interactable } from '@interactjs/types/index'
 import interact from 'interactjs'
@@ -12,10 +11,12 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Calibration, Camera, DeepSkyObject, EquatorialCoordinate, FITSHeaderItem, GuideExposureFinished, GuideTrackingBox,
-    ImageAnnotation, ImageChannel, ImageInfo, ImageSource,
-    ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, SavedCameraImage, Star
+    AstronomicalObject,
+    Camera, CameraCaptureEvent, DeepSkyObject, EquatorialCoordinateJ2000, FITSHeaderItem, GuideExposureFinished, GuideTrackingBox,
+    ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
+    ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star
 } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 export interface ImageParams {
     camera?: Camera
@@ -77,13 +78,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     solverDownsampleFactor = 1
     solverPathOrUrl = ''
     solverApiKey = ''
-    solverCalibration?: Calibration
+    solverCalibration?: ImageCalibrated
 
     crossHair = false
     annotations: ImageAnnotation[] = []
     annotating = false
     showAnnotationInfoDialog = false
-    annotationInfo?: Star | DeepSkyObject
+    annotationInfo?: AstronomicalObject & Partial<Star & DeepSkyObject>
 
     showFITSHeadersDialog = false
     fitsHeaders: FITSHeaderItem[] = []
@@ -117,8 +118,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Point mount here',
         icon: 'mdi mdi-telescope',
         disabled: true,
-        command: () => {
-            const mount = this.electron.selectedMount()
+        command: async () => {
+            const mount = await this.electron.selectedMount()
             if (!mount?.connected) return
             this.api.pointMountHere(mount, this.imageParams.path!, this.imageMouseX, this.imageMouseY, !this.solved)
         },
@@ -276,7 +277,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ]
 
     constructor(
-        private title: Title,
+        private app: AppComponent,
         private route: ActivatedRoute,
         private api: ApiService,
         private electron: ElectronService,
@@ -284,23 +285,23 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         private preference: PreferenceService,
         private ngZone: NgZone,
     ) {
-        title.setTitle('Image')
+        app.title = 'Image'
 
-        electron.on('CAMERA_IMAGE_SAVED', async (_, data: SavedCameraImage) => {
-            if (data.camera === this.imageParams.camera?.name) {
+        electron.on('CAMERA_EXPOSURE_FINISHED', async (_, data: CameraCaptureEvent) => {
+            if (data.camera.name === this.imageParams.camera?.name) {
                 await this.closeImage()
 
                 ngZone.run(() => {
                     this.guiding = false
                     this.annotations = []
-                    this.imageParams.path = data.path
+                    this.imageParams.path = data.savePath
                     this.loadImage()
                 })
             }
         })
 
         electron.on('GUIDE_EXPOSURE_FINISHED', async (_, data: GuideExposureFinished) => {
-            if (data.camera === this.imageParams.camera?.name) {
+            if (data.camera.name === this.imageParams.camera?.name) {
                 await this.closeImage()
 
                 ngZone.run(() => {
@@ -415,21 +416,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private async loadImage() {
         if (this.imageParams.path) {
             await this.loadImageFromPath(this.imageParams.path)
-        } else if (this.imageParams.camera) {
-            try {
-                const savedImage = await this.api.latestImageOfCamera(this.imageParams.camera)
-                await this.loadImageFromPath(savedImage.path)
-            } catch (e) {
-                console.error(e)
-            }
         }
 
         if (this.imageParams.title) {
-            this.title.setTitle(`Image ・ ${this.imageParams.title}`)
+            this.app.title = `Image ・ ${this.imageParams.title}`
         } else if (this.imageParams.camera) {
-            this.title.setTitle(`Image ・ ${this.imageParams.camera.name}`)
+            this.app.title = `Image ・ ${this.imageParams.camera.name}`
         } else if (this.imageParams.path) {
-            this.title.setTitle(`Image ・ ${path.basename(this.imageParams.path)}`)
+            this.app.title = `Image ・ ${path.basename(this.imageParams.path)}`
         }
     }
 
@@ -486,7 +480,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     showAnnotationInfo(annotation: ImageAnnotation) {
-        this.annotationInfo = annotation.star ?? annotation.dso
+        this.annotationInfo = annotation.star ?? annotation.dso ?? annotation.minorPlanet
         this.showAnnotationInfoDialog = true
     }
 
@@ -537,26 +531,26 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    mountSync(coordinate: EquatorialCoordinate) {
-        const mount = this.electron.selectedMount()
+    async mountSync(coordinate: EquatorialCoordinateJ2000) {
+        const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
-        this.api.mountSync(mount, coordinate.rightAscension, coordinate.declination, true)
+        this.api.mountSync(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
     }
 
-    mountGoTo(coordinate: EquatorialCoordinate) {
-        const mount = this.electron.selectedMount()
+    async mountGoTo(coordinate: EquatorialCoordinateJ2000) {
+        const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
-        this.api.mountGoTo(mount, coordinate.rightAscension, coordinate.declination, true)
+        this.api.mountGoTo(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
     }
 
-    mountSlew(coordinate: EquatorialCoordinate) {
-        const mount = this.electron.selectedMount()
+    async mountSlew(coordinate: EquatorialCoordinateJ2000) {
+        const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
-        this.api.mountSlewTo(mount, coordinate.rightAscension, coordinate.declination, true)
+        this.api.mountSlewTo(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
     }
 
-    frame(coordinate: EquatorialCoordinate) {
-        this.browserWindow.openFraming({ rightAscension: coordinate.rightAscension, declination: coordinate.declination })
+    frame(coordinate: EquatorialCoordinateJ2000) {
+        this.browserWindow.openFraming({ rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000 })
     }
 
     imageLoaded() {

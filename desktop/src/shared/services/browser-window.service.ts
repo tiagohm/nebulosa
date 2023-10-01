@@ -18,8 +18,8 @@ export class BrowserWindowService {
     openMount(options: OpenWindowOptions = {}) {
         this.openWindow({
             ...options,
-            id: 'mount', path: 'mount', icon: options.icon || 'mount',
-            width: options.width || 400, height: options.height || 452,
+            id: 'mount', path: 'mount', icon: options.icon || 'telescope',
+            width: options.width || 400, height: options.height || 477,
         })
     }
 
@@ -27,7 +27,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'camera', path: 'camera', icon: options.icon || 'camera',
-            width: options.width || 400, height: options.height || 467,
+            width: options.width || 400, height: options.height || 502,
         })
     }
 
@@ -35,7 +35,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'focuser', path: 'focuser', icon: options.icon || 'focus',
-            width: options.width || 360, height: options.height || 193,
+            width: options.width || 360, height: options.height || 218,
         })
     }
 
@@ -43,7 +43,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'wheel', path: 'wheel', icon: options.icon || 'filter-wheel',
-            width: options.width || 320, height: options.height || 147,
+            width: options.width || 320, height: options.height || 171,
         })
     }
 
@@ -85,7 +85,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'atlas', path: 'atlas', icon: options.icon || 'atlas',
-            width: options.width || 450, height: options.height || 520,
+            width: options.width || 450, height: options.height || 555,
         })
     }
 
@@ -93,11 +93,11 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'framing', path: 'framing', icon: options.icon || 'framing',
-            width: options.width || 280, height: options.height || 297, params,
+            width: options.width || 280, height: options.height || 321, params,
         })
     }
 
     openAbout() {
-        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 348, height: 290, bringToFront: true })
+        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 470, height: 210, bringToFront: true })
     }
 }

@@ -8,7 +8,8 @@ import nebulosa.fits.naxis
 import nebulosa.fits.ra
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.hips2fits.HipsSurvey
-import nebulosa.math.Angle.Companion.deg
+import nebulosa.math.deg
+import nebulosa.math.toDegrees
 import nom.tam.fits.Fits
 import java.io.ByteArrayInputStream
 
@@ -23,8 +24,8 @@ class Hips2FitsServiceTest : StringSpec() {
             val hdu = fits.imageHDU(0)?.header.shouldNotBeNull()
             hdu.naxis(1) shouldBeExactly 1200
             hdu.naxis(2) shouldBeExactly 900
-            hdu.ra!!.degrees shouldBeExactly 201.36506337683
-            hdu.dec!!.degrees shouldBeExactly -43.01911250808
+            hdu.ra.toDegrees shouldBeExactly 201.36506337683
+            hdu.dec.toDegrees shouldBeExactly -43.01911250808
             fits.close()
         }
     }

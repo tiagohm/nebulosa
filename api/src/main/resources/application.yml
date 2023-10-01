@@ -6,3 +6,31 @@ server:
 
   error:
     include-message: ALWAYS
+
+spring:
+  main:
+    lazy-initialization: true
+
+  datasource:
+    url: jdbc:sqlite:file:${DATA_PATH}/nebulosa.db
+    username:
+    password:
+    driverClassName: org.sqlite.JDBC
+
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    show-sql: false
+    open-in-view: true
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 0
+    table: migrations
+
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: always

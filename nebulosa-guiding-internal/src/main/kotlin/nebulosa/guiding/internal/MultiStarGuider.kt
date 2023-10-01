@@ -1,55 +1,50 @@
 package nebulosa.guiding.internal
 
-import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.constants.PIOVERTWO
 import nebulosa.guiding.*
 import nebulosa.imaging.Image
+import nebulosa.imaging.algorithms.Mean
 import nebulosa.imaging.algorithms.star.hfd.FindMode
 import nebulosa.log.loggerFor
+import nebulosa.math.cos
+import nebulosa.math.sin
 import java.util.*
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.math.abs
-import kotlin.math.hypot
-import kotlin.math.min
-import kotlin.math.roundToInt
+import kotlin.math.*
 
 /**
  * It is responsible for dealing with new images as they arrive,
  * making move requests to a mount by passing the difference
  * between [currentPosition] and [lockPosition].
  */
-class MultiStarGuider(
-    @JvmField internal val device: GuideDevice,
-    private val executor: ExecutorService,
-) : Guider {
+class MultiStarGuider : InternalGuider {
 
     private data class MoveResult(
-        val status: Boolean,
-        val amountMoved: Int,
-        val limitReached: Boolean,
+        @JvmField val status: Boolean,
+        @JvmField val amountMoved: Int,
+        @JvmField val limitReached: Boolean,
     ) {
 
         companion object {
 
-            @JvmStatic val NONE = MoveResult(false, 0, true)
+            @JvmStatic val NONE = MoveResult(false, 0, false)
         }
     }
 
     private val guideStars = LinkedList<GuideStar>()
-    private var starsUsed = 0
-
     private val massChecker = MassChecker()
     private val primaryDistStats = DescriptiveStats()
     private val distanceChecker = DistanceChecker(this)
+    private val lockPositionShift = LockPositionShiftParams()
+    private val ditherRecenterDir = DoubleArray(2)
+    private val guideImageCounter = AtomicInteger(1)
+    private val guideImage = AtomicReference<Image>()
+    private val settler = Settler(this)
 
     internal val listeners = ArrayList<GuiderListener>(1)
 
-    var state = GuiderState.UNINITIALIZED
-        private set
-
+    private var starsUsed = 0
     private var starFoundTimestamp = 0L
     private var avgDistance = 0.0
     private var avgDistanceRA = 0.0
@@ -57,66 +52,32 @@ class MultiStarGuider(
     private var avgDistanceLongRA = 0.0
     private var avgDistanceCnt = 0
     private var avgDistanceNeedReset = false
-    private val lockPositionShift = LockPositionShiftParams()
     private var ditherRecenterStep = Point()
     private var ditherRecenterRemaining = Point()
-    private val ditherRecenterDir = DoubleArray(2)
     private var measurementMode = false
     private var lockPositionIsSticky = false
 
     var fastRecenterEnabled = false
 
-    private val frame = AtomicReference<Image>()
-
-    private val settler = Settler(this)
-
-    override val image: Image?
-        get() = frame.get()
-
-    val settling
-        get() = settler.settling
-
-    private val capturer = GuideCameraCapturer(this)
-
-    override var primaryStar = GuideStar(0.0, 0.0)
-        private set
-
-    override val lockPosition = ShiftPoint(Double.NaN, Double.NaN)
-
     private var stabilizing = false
     private var lockPositionMoved = false
-
     private var tolerateJumpsEnabled = false
     private var tolerateJumpsThreshold = 0.0
     private var maxStars = DEFAULT_MAX_STAR_COUNT
     private var stabilitySigmaX = DEFAULT_STABILITY_SIGMAX
-
     private var minStarHFD = 1.5
-
     private val guideCalibrator = GuideCalibrator(this)
     private val guideGraph = GuideGraph(this, 100)
-
-    override val stats: List<GuideStats>
-        get() = guideGraph
-
-    private val currentPosition
-        get() = primaryStar
-
     private var massChangeThresholdEnabled = false
-
-    internal var pauseType = PauseType.NONE
 
     var forceFullFrame = false
     var ignoreLostStarLooping = false
 
-    val isPaused
-        get() = pauseType != PauseType.NONE
-
-    val lockPositionShiftEnabled
-        get() = lockPositionShift.shiftEnabled
-
-    val currentErrorFrameCount
+    internal inline val currentErrorFrameCount
         get() = avgDistanceCnt
+
+    var state = GuiderState.UNINITIALIZED
+        private set
 
     var massChangeThreshold = 0.0
         set(value) {
@@ -124,7 +85,7 @@ class MultiStarGuider(
             field = value
         }
 
-    var multiStar = false
+    override var isMultiStar = false
         set(value) {
             val prevMultiStar = field
             field = value
@@ -145,8 +106,59 @@ class MultiStarGuider(
             if (!value) stabilizing = false
         }
 
-    override val searchRegion
-        get() = device.searchRegion
+    override var xGuideAlgorithm: GuideAlgorithm? = null
+
+    override var yGuideAlgorithm: GuideAlgorithm? = null
+
+    override lateinit var camera: GuidingCamera
+
+    override lateinit var mount: GuidingMount
+
+    override lateinit var pulse: GuidingPulse
+
+    override var rotator: GuidingRotator? = null
+
+    override var searchRegion = 15.0
+
+    override var dither: Dither = RandomDither()
+
+    override var ditherAmount = 5.0
+
+    override var ditherRAOnly = false
+
+    override var calibrationFlipRequiresDecFlip = false
+
+    override var assumeDECOrthogonalToRA = false
+
+    override var calibrationStep = 1000
+
+    override var calibrationDistance = 25
+
+    override var useDECCompensation = true
+
+    override var declinationGuideMode = DeclinationGuideMode.AUTO
+
+    override var maxDECDuration = 2500
+
+    override var maxRADuration = 2500
+
+    override var noiseReductionMethod = NoiseReductionMethod.NONE
+
+    override var isGuidingEnabled = true
+
+    override val lockPosition = ShiftPoint(Double.NaN, Double.NaN)
+
+    override var primaryStar = GuideStar(0.0, 0.0)
+        private set
+
+    override val isLockPositionShiftEnabled
+        get() = lockPositionShift.shiftEnabled
+
+    override val stats: List<GuideStats>
+        get() = guideGraph
+
+    override val isSettling
+        get() = settler.settling
 
     init {
         updateState(GuiderState.UNINITIALIZED)
@@ -168,23 +180,21 @@ class MultiStarGuider(
         guideCalibrator.load(calibration)
     }
 
-    fun pause(type: PauseType) {
-        LOG.info("pause. type={}", type)
-
-        if (type == PauseType.FULL && type != pauseType) {
-            LOG.info("resetting avg dist filter")
-            avgDistanceNeedReset = true
-        }
-
-        pauseType = type
+    override fun processImage(image: Image) {
+        updateGuide(
+            when (noiseReductionMethod) {
+                NoiseReductionMethod.MEAN -> image.transform(Mean)
+                NoiseReductionMethod.NONE -> image
+            }, guideImageCounter.getAndIncrement(), false
+        )
     }
 
     private fun lockPosition(position: Point): Boolean {
         if (!position.valid) return false
         if (position.x < 0.0) return false
-        if (position.x >= image!!.width) return false
+        if (position.x >= guideImage.get()!!.width) return false
         if (position.y < 0.0) return false
-        if (position.y >= image!!.height) return false
+        if (position.y >= guideImage.get()!!.height) return false
 
         if (!lockPosition.valid ||
             position.x != lockPosition.x ||
@@ -201,7 +211,7 @@ class MultiStarGuider(
 
         lockPosition.set(position)
 
-        if (multiStar) {
+        if (isMultiStar) {
             LOG.info("stabilizing after lock position change")
             lockPositionMoved = true
             stabilizing = true
@@ -211,12 +221,11 @@ class MultiStarGuider(
     }
 
     internal fun moveLockPosition(delta: Point): Boolean {
-        if (!delta.valid) return false
-        return moveLockPosition(delta.x, delta.y)
+        return delta.valid && moveLockPosition(delta.x, delta.y)
     }
 
     internal fun moveLockPosition(dx: Double, dy: Double): Boolean {
-        val image = image ?: return false
+        val image = guideImage.get() ?: return false
 
         var cameraDelta = Point()
         var mountDelta = Point()
@@ -314,7 +323,7 @@ class MultiStarGuider(
             }
             GuiderState.CALIBRATING -> {
                 if (!guideCalibrator.calibrated) {
-                    if (!guideCalibrator.beginCalibration(currentPosition)) {
+                    if (!guideCalibrator.beginCalibration(primaryStar)) {
                         nextState = GuiderState.UNINITIALIZED
                         LOG.error("begin calibration failed")
                     } else {
@@ -330,7 +339,7 @@ class MultiStarGuider(
                 if (lockPosition.valid && lockPositionIsSticky) {
                     LOG.info("keeping sticky lock position")
                 } else {
-                    lockPosition(currentPosition)
+                    lockPosition(primaryStar)
                 }
             }
             else -> Unit
@@ -346,8 +355,8 @@ class MultiStarGuider(
     }
 
     fun lockPositionToStarAtPosition(starPosHint: Point) {
-        if (currentPosition(image!!, starPosHint) && currentPosition.valid) {
-            lockPosition(currentPosition)
+        if (currentPosition(starPosHint) && primaryStar.valid) {
+            lockPosition(primaryStar)
         }
     }
 
@@ -439,12 +448,14 @@ class MultiStarGuider(
     }
 
     @Synchronized
-    internal fun updateGuide(frame: Image, frameNumber: Int, stopping: Boolean) {
-        this.frame.set(frame)
+    private fun updateGuide(image: Image, frameNumber: Int, stopping: Boolean) {
+        guideImage.set(image)
 
-        if (stopping) return stopGuiding()
+        if (stopping) {
+            return stopGuiding()
+        }
 
-        if (lockPositionShiftEnabled && isGuiding) {
+        if (isLockPositionShiftEnabled && isGuiding) {
             if (!shiftLockPosition()) {
                 listeners.forEach { it.onLockShiftLimitReached() }
                 enableLockPositionShift(false)
@@ -453,15 +464,15 @@ class MultiStarGuider(
 
         val offset = GuiderOffset(Point(), Point())
 
-        if (!updateCurrentPosition(frame, offset)) {
+        if (!updateCurrentPosition(image, offset)) {
             when (state) {
                 GuiderState.UNINITIALIZED,
                 GuiderState.SELECTING -> {
-                    listeners.forEach { it.onLooping(frame, frameNumber, null) }
+                    listeners.forEach { it.onLooping(image, frameNumber, null) }
                 }
                 GuiderState.SELECTED -> {
                     // We had a current position and lost it.
-                    listeners.forEach { it.onLooping(frame, frameNumber, null) }
+                    listeners.forEach { it.onLooping(image, frameNumber, null) }
 
                     if (!ignoreLostStarLooping) {
                         updateState(GuiderState.UNINITIALIZED)
@@ -474,12 +485,12 @@ class MultiStarGuider(
                 GuiderState.GUIDING -> {
                     listeners.forEach { it.onStarLost() }
                     // Allow guide algorithms to attempt dead reckoning.
-                    device.moveOffset(ZERO_OFFSET, DEDUCED_MOVE)
+                    moveOffset(ZERO_OFFSET, DEDUCED_MOVE)
                 }
                 else -> Unit
             }
         } else {
-            listeners.forEach { it.onLooping(frame, frameNumber, primaryStar) }
+            listeners.forEach { it.onLooping(image, frameNumber, primaryStar) }
 
             // we have a star selected, so re-enable subframes.
             if (forceFullFrame) {
@@ -487,86 +498,86 @@ class MultiStarGuider(
             }
 
             // Skipping frame - guider is paused.
-            if (isPaused) {
-                if (isGuiding) {
-                    // Allow guide algorithms to attempt dead reckoning.
-                    device.moveOffset(ZERO_OFFSET, DEDUCED_MOVE)
+            // if (isPaused) {
+            //     if (isGuiding) {
+            //         // Allow guide algorithms to attempt dead reckoning.
+            //         moveOffset(ZERO_OFFSET, DEDUCED_MOVE)
+            //     }
+            // } else {
+            when (state) {
+                GuiderState.SELECTING -> {
+                    lockPosition(primaryStar)
+                    listeners.forEach { it.onStarSelected(primaryStar) }
+                    updateState(GuiderState.SELECTED)
                 }
-            } else {
-                when (state) {
-                    GuiderState.SELECTING -> {
-                        lockPosition(currentPosition)
-                        listeners.forEach { it.onStarSelected(currentPosition) }
-                        updateState(GuiderState.SELECTED)
-                    }
-                    GuiderState.SELECTED -> {
-                        // StaticPaTool,PolarDriftTool -> UpdateState()
-                    }
-                    GuiderState.CALIBRATING -> {
-                        if (!guideCalibrator.calibrated) {
-                            if (!guideCalibrator.updateCalibrationState(currentPosition)) {
-                                updateState(GuiderState.UNINITIALIZED)
-                                LOG.error("calibration failed")
-                                return
-                            }
+                GuiderState.SELECTED -> {
+                    // StaticPaTool,PolarDriftTool -> UpdateState()
+                }
+                GuiderState.CALIBRATING -> {
+                    if (!guideCalibrator.calibrated) {
+                        if (!guideCalibrator.updateCalibrationState(primaryStar)) {
+                            updateState(GuiderState.UNINITIALIZED)
+                            LOG.error("calibration failed")
+                            return
+                        }
 
-                            if (guideCalibrator.calibrated) {
-                                updateState(GuiderState.CALIBRATED)
-                            }
-                        } else {
+                        if (guideCalibrator.calibrated) {
                             updateState(GuiderState.CALIBRATED)
                         }
-
-                        if (state == GuiderState.CALIBRATED) {
-                            updateState(GuiderState.GUIDING)
-
-                            // Camera angle is known, so ok to calculate shift rate camera coords.
-                            updateLockPositionShiftCameraCoords()
-                        }
+                    } else {
+                        updateState(GuiderState.CALIBRATED)
                     }
-                    GuiderState.CALIBRATED -> {
+
+                    if (state == GuiderState.CALIBRATED) {
                         updateState(GuiderState.GUIDING)
 
                         // Camera angle is known, so ok to calculate shift rate camera coords.
                         updateLockPositionShiftCameraCoords()
                     }
-                    GuiderState.GUIDING -> {
-                        if (ditherRecenterRemaining.valid) {
-                            // Fast recenter after dither taking large steps and bypassing guide algorithms.
-                            val step =
-                                Point(min(ditherRecenterRemaining.x, ditherRecenterStep.x), min(ditherRecenterRemaining.y, ditherRecenterStep.y))
-
-                            LOG.info(
-                                "dither recenter. remaining: x={}, y={}, step: x={}, y={}",
-                                ditherRecenterRemaining.x * ditherRecenterDir[0],
-                                ditherRecenterRemaining.y * ditherRecenterDir[1],
-                                step.x * ditherRecenterDir[0], step.y * ditherRecenterDir[1],
-                            )
-
-                            ditherRecenterRemaining -= step
-
-                            if (ditherRecenterRemaining.x < 0.5 && ditherRecenterRemaining.y < 0.5) {
-                                LOG.info("fast recenter is done")
-                                // Fast recenter is done.
-                                ditherRecenterRemaining.invalidate()
-                                // Reset distance tracker.
-                                avgDistanceNeedReset = true
-                            }
-
-                            offset.mount.set(step.x * ditherRecenterDir[0], step.y * ditherRecenterDir[1])
-                            transformMountCoordinatesToCameraCoordinates(offset.mount, offset.camera)
-                            device.moveOffset(offset, RECOVERY_MOVE)
-                            // Let guide algorithms know about the direct move.
-                            device.notifyDirectMove(offset.mount)
-                        } else if (measurementMode) {
-                            // GuidingAssistant::NotifyBacklashStep(CurrentPosition());
-                        } else {
-                            device.moveOffset(offset, GUIDE_STEP)
-                        }
-                    }
-                    else -> Unit
                 }
+                GuiderState.CALIBRATED -> {
+                    updateState(GuiderState.GUIDING)
+
+                    // Camera angle is known, so ok to calculate shift rate camera coords.
+                    updateLockPositionShiftCameraCoords()
+                }
+                GuiderState.GUIDING -> {
+                    if (ditherRecenterRemaining.valid) {
+                        // Fast recenter after dither taking large steps and bypassing guide algorithms.
+                        val step =
+                            Point(min(ditherRecenterRemaining.x, ditherRecenterStep.x), min(ditherRecenterRemaining.y, ditherRecenterStep.y))
+
+                        LOG.info(
+                            "dither recenter. remaining: x={}, y={}, step: x={}, y={}",
+                            ditherRecenterRemaining.x * ditherRecenterDir[0],
+                            ditherRecenterRemaining.y * ditherRecenterDir[1],
+                            step.x * ditherRecenterDir[0], step.y * ditherRecenterDir[1],
+                        )
+
+                        ditherRecenterRemaining -= step
+
+                        if (ditherRecenterRemaining.x < 0.5 && ditherRecenterRemaining.y < 0.5) {
+                            LOG.info("fast recenter is done")
+                            // Fast recenter is done.
+                            ditherRecenterRemaining.invalidate()
+                            // Reset distance tracker.
+                            avgDistanceNeedReset = true
+                        }
+
+                        offset.mount.set(step.x * ditherRecenterDir[0], step.y * ditherRecenterDir[1])
+                        transformMountCoordinatesToCameraCoordinates(offset.mount, offset.camera)
+                        moveOffset(offset, RECOVERY_MOVE)
+                        // Let guide algorithms know about the direct move.
+                        listeners.forEach { it.onNotifyDirectMove(offset.mount) }
+                    } else if (measurementMode) {
+                        // GuidingAssistant::NotifyBacklashStep(CurrentPosition());
+                    } else {
+                        moveOffset(offset, GUIDE_STEP)
+                    }
+                }
+                else -> Unit
             }
+            // }
         }
     }
 
@@ -594,9 +605,9 @@ class MultiStarGuider(
                     y = -y
                 }
 
-                val declination = device.mountDeclination
+                val declination = mount.declination
 
-                if (declination.valid) {
+                if (declination.isFinite()) {
                     x *= declination.cos
                 }
 
@@ -610,7 +621,7 @@ class MultiStarGuider(
 
         // Convert arc-seconds to pixels.
         if (lockPositionShift.shiftUnit == ShiftUnit.ARCSEC) {
-            rate.set(rate.x / device.cameraPixelScale, rate.y / device.cameraPixelScale)
+            rate.set(rate.x / camera.pixelScale, rate.y / camera.pixelScale)
         }
 
         // Per hour to per second.
@@ -631,12 +642,14 @@ class MultiStarGuider(
         tolerateJumpsThreshold = threshold
     }
 
-    private fun currentPosition(image: Image, position: Point): Boolean {
+    private fun currentPosition(position: Point): Boolean {
         require(position.valid) { "position is invalid" }
-        return currentPosition(image, position.x, position.y)
+        return currentPosition(position.x, position.y)
     }
 
-    private fun currentPosition(image: Image, x: Double, y: Double): Boolean {
+    private fun currentPosition(x: Double, y: Double): Boolean {
+        val image = guideImage.get() ?: return false
+
         require(x > 0.0 && x < image.width) { "invalid x value" }
         require(y > 0.0 && y < image.height) { "invalid y value" }
 
@@ -683,7 +696,7 @@ class MultiStarGuider(
         starsUsed = 1
 
         // Primary star is in position 0 of the list.
-        if (isGuiding && starCount > 1 && device.guidingEnabled && !settling) {
+        if (isGuiding && starCount > 1 && isGuidingEnabled && !isSettling) {
             var sumWeights = 1.0
             var sumX = origOffset.camera.x
             var sumY = origOffset.camera.y
@@ -831,10 +844,8 @@ class MultiStarGuider(
     }
 
     // Left Click.
-    override fun selectGuideStar(
-        x: Double, y: Double,
-    ): Boolean {
-        val image = image ?: return false
+    override fun selectGuideStar(x: Double, y: Double): Boolean {
+        val image = guideImage.get() ?: return false
 
         if (state > GuiderState.SELECTED) {
             LOG.warn("state > SELECTED. state={}", state)
@@ -848,9 +859,7 @@ class MultiStarGuider(
             return false
         }
 
-        return if (currentPosition(image, x, y)
-            && primaryStar.valid
-        ) {
+        return if (currentPosition(x, y) && primaryStar.valid) {
             lockPosition(primaryStar)
 
             clearSecondaryStars()
@@ -873,10 +882,7 @@ class MultiStarGuider(
         }
     }
 
-    private fun updateCurrentPosition(
-        image: Image,
-        offset: GuiderOffset,
-    ): Boolean {
+    private fun updateCurrentPosition(image: Image, offset: GuiderOffset): Boolean {
         if (!primaryStar.valid && primaryStar.x == 0.0 && primaryStar.y == 0.0) {
             LOG.warn("no star selected")
             return false
@@ -893,7 +899,7 @@ class MultiStarGuider(
         // check to see if it seems like the star we just found was the
         // same as the original star by comparing the mass.
         if (massChangeThresholdEnabled) {
-            massChecker.exposure(device.cameraExposureTime)
+            massChecker.exposure(camera.exposureTime)
 
             val checkedMass = massChecker.checkMass(newStar.mass, massChangeThreshold)
 
@@ -906,7 +912,7 @@ class MultiStarGuider(
         }
 
         var distance = if (lockPosition.valid) {
-            if (device.guidingRAOnly) {
+            if (isGuidingRAOnly) {
                 abs(newStar.x - lockPosition.x)
             } else {
                 newStar.distance(lockPosition)
@@ -915,11 +921,11 @@ class MultiStarGuider(
             0.0
         }
 
-        LOG.info("checking distance. dist={}, raOnly={}", distance, device.guidingRAOnly)
+        LOG.info("checking distance. dist={}, raOnly={}", distance, isGuidingRAOnly)
 
         val tolerance = if (tolerateJumpsEnabled) tolerateJumpsThreshold else Double.MAX_VALUE
 
-        if (!distanceChecker.checkDistance(distance, device.guidingRAOnly, tolerance)) {
+        if (!distanceChecker.checkDistance(distance, isGuidingRAOnly, tolerance)) {
             LOG.info("check distance error")
             return false
         }
@@ -932,7 +938,7 @@ class MultiStarGuider(
         if (lockPosition.valid) {
             offset.camera.set(primaryStar - lockPosition)
 
-            if (multiStar && starCount > 1) {
+            if (isMultiStar && starCount > 1) {
                 if (refineOffset(image, offset)) {
                     distance = hypot(offset.camera.x, offset.camera.y)
                     LOG.info("refined distance. dist={}", distance)
@@ -955,7 +961,7 @@ class MultiStarGuider(
     }
 
     private fun isValidLockPosition(point: Point): Boolean {
-        val image = image ?: return false
+        val image = guideImage.get() ?: return false
 
         val region = 1.0 + searchRegion
         return point.x >= region &&
@@ -965,7 +971,7 @@ class MultiStarGuider(
     }
 
     private fun isValidSecondaryStarPosition(point: Point): Boolean {
-        val image = image ?: return false
+        val image = guideImage.get() ?: return false
 
         return point.x >= 5.0 &&
                 point.x + 5.0 < image.width &&
@@ -974,20 +980,19 @@ class MultiStarGuider(
     }
 
     override fun dither() {
-        val amount = device.ditherAmount
-        val (dx, dy) = device.dither.get(amount, device.ditherRAOnly)
+        val (dx, dy) = dither.get(ditherAmount, ditherRAOnly)
 
         if (moveLockPosition(dx, dy)) {
-            LOG.info("dithered. size={}, ra={}, dec={}", amount, dx, dy)
+            LOG.info("dithered. size={}, ra={}, dec={}", ditherAmount, dx, dy)
         } else {
             LOG.error("unable to move lock position on dithering")
         }
     }
 
-    private fun GuideDevice.moveOffset(offset: GuiderOffset, moveOptions: List<MountMoveOption>): Boolean {
+    private fun moveOffset(offset: GuiderOffset, moveOptions: List<MountMoveOption>): Boolean {
         if (MountMoveOption.ALGORITHM_DEDUCE in moveOptions) {
-            val xDistance = xGuideAlgorithm.deduce()
-            val yDistance = yGuideAlgorithm.deduce()
+            val xDistance = xGuideAlgorithm?.deduce() ?: 0.0
+            val yDistance = yGuideAlgorithm?.deduce() ?: 0.0
 
             if (xDistance != 0.0 || yDistance != 0.0) {
                 LOG.info("deduced move. x={}, y={}", xDistance, yDistance)
@@ -1009,8 +1014,8 @@ class MultiStarGuider(
             //    m_backlashComp->TrackBLCResults(moveOptions, yDistance)
 
             if (MountMoveOption.ALGORITHM_RESULT in moveOptions) {
-                xDistance = xGuideAlgorithm.compute(xDistance)
-                yDistance = yGuideAlgorithm.compute(yDistance)
+                xDistance = xGuideAlgorithm?.compute(xDistance) ?: 0.0
+                yDistance = yGuideAlgorithm?.compute(yDistance) ?: 0.0
             }
 
             val xDirection = if (xDistance > 0.0) GuideDirection.LEFT_WEST else GuideDirection.RIGHT_EAST
@@ -1022,12 +1027,16 @@ class MultiStarGuider(
             val xResult = moveAxis(xDirection, requestedXAmount, moveOptions)
             val yResult = moveAxis(yDirection, requestedYAmount, moveOptions)
 
-            CompletableFuture.allOf(xResult, yResult).join()
+            val waitTime = max(xResult.amountMoved, yResult.amountMoved)
+
+            if (waitTime > 0) {
+                Thread.sleep(waitTime.toLong())
+            }
 
             // TODO: if (m_backlashComp)
             //     m_backlashComp->ApplyBacklashComp(moveOptions, yDistance, &requestedYAmount);
 
-            val stats = guideGraph.add(offset, xResult.get().amountMoved, yResult.get().amountMoved, xDirection, yDirection)
+            val stats = guideGraph.add(offset, xResult.amountMoved, yResult.amountMoved, xDirection, yDirection)
 
             listeners.forEach { it.onGuideStep(stats) }
         }
@@ -1035,13 +1044,10 @@ class MultiStarGuider(
         return true
     }
 
-    private fun GuideDevice.moveAxis(direction: GuideDirection, duration: Int, moveOptions: List<MountMoveOption>): CompletableFuture<MoveResult> {
-        val task = CompletableFuture<MoveResult>()
-
-        if (!guidingEnabled && MountMoveOption.MANUAL !in moveOptions) {
+    private fun moveAxis(direction: GuideDirection, duration: Int, moveOptions: List<MountMoveOption>): MoveResult {
+        if (!isGuidingEnabled && MountMoveOption.MANUAL !in moveOptions) {
             LOG.warn("guiding disabled")
-            task.complete(MoveResult.NONE)
-            return task
+            return MoveResult.NONE
         }
 
         var limitReached = false
@@ -1055,18 +1061,18 @@ class MultiStarGuider(
                 if (MountMoveOption.ALGORITHM_RESULT in moveOptions ||
                     MountMoveOption.ALGORITHM_DEDUCE in moveOptions
                 ) {
-                    if ((device.declinationGuideMode == DeclinationGuideMode.NONE) ||
-                        (direction == GuideDirection.DOWN_SOUTH && device.declinationGuideMode == DeclinationGuideMode.NORTH) ||
-                        (direction == GuideDirection.UP_NORTH && device.declinationGuideMode == DeclinationGuideMode.SOUTH)
+                    if ((declinationGuideMode == DeclinationGuideMode.NONE) ||
+                        (direction == GuideDirection.DOWN_SOUTH && declinationGuideMode == DeclinationGuideMode.NORTH) ||
+                        (direction == GuideDirection.UP_NORTH && declinationGuideMode == DeclinationGuideMode.SOUTH)
                     ) {
                         newDuration = 0
-                        LOG.info("duration set to 0. mode={}", device.declinationGuideMode)
+                        LOG.info("duration set to 0. mode={}", declinationGuideMode)
                     }
 
-                    if (newDuration > device.maxDECDuration) {
-                        newDuration = device.maxDECDuration
+                    if (newDuration > maxDECDuration) {
+                        newDuration = maxDECDuration
                         limitReached = true
-                        LOG.info("duration set to maxDeclinationDuration. duration={}", newDuration)
+                        LOG.info("duration set to maxDECDuration. duration={} ms", newDuration)
                     }
                 }
             }
@@ -1076,52 +1082,37 @@ class MultiStarGuider(
                 if (MountMoveOption.ALGORITHM_RESULT in moveOptions ||
                     MountMoveOption.ALGORITHM_DEDUCE in moveOptions
                 ) {
-                    if (newDuration > device.maxRADuration) {
-                        newDuration = device.maxRADuration
+                    if (newDuration > maxRADuration) {
+                        newDuration = maxRADuration
                         limitReached = true
-                        LOG.info("duration set to maxRightAscensionDuration. duration={}", newDuration)
+                        LOG.info("duration set to maxRADuration. duration={} ms", newDuration)
                     }
                 }
             }
             else -> Unit
         }
 
-        if (newDuration > 0) {
-            LOG.info("move axis. direction={}, duration={}", direction, newDuration)
-
-            executor.submit {
-                val status = guideDirection(direction, newDuration)
-                task.complete(MoveResult(status, newDuration, limitReached))
-            }
+        return if (newDuration > 0 && guideDirection(direction, newDuration)) {
+            LOG.info("move axis. direction={}, duration={} ms", direction, newDuration)
+            MoveResult(true, newDuration, limitReached)
         } else {
-            task.complete(MoveResult.NONE)
+            MoveResult.NONE
         }
-
-        return task
     }
 
-    internal fun guideDirection(direction: GuideDirection, duration: Int): Boolean {
-        val startedAt = System.currentTimeMillis()
-
-        val status = when (direction) {
-            GuideDirection.UP_NORTH -> device.guideNorth(duration)
-            GuideDirection.DOWN_SOUTH -> device.guideSouth(duration)
-            GuideDirection.LEFT_WEST -> device.guideWest(duration)
-            GuideDirection.RIGHT_EAST -> device.guideEast(duration)
-            else -> false
-        }
-
-        val elapsedTime = System.currentTimeMillis() - startedAt
-        Thread.sleep(duration - elapsedTime + 1L)
-
-        return status
+    internal fun guideDirection(direction: GuideDirection, duration: Int) = when (direction) {
+        GuideDirection.UP_NORTH -> pulse.guideNorth(duration)
+        GuideDirection.DOWN_SOUTH -> pulse.guideSouth(duration)
+        GuideDirection.LEFT_WEST -> pulse.guideWest(duration)
+        GuideDirection.RIGHT_EAST -> pulse.guideEast(duration)
+        else -> false
     }
 
     private fun transformMountCoordinatesToCameraCoordinates(mount: Point, camera: Point): Boolean {
         if (!mount.valid) return false
         val distance = mount.distance
         var mountTheta = mount.angle
-        if (abs(guideCalibrator.yAngleError.value) > PIOVERTWO) mountTheta = -mountTheta
+        if (abs(guideCalibrator.yAngleError) > PIOVERTWO) mountTheta = -mountTheta
         val xAngle = mountTheta + guideCalibrator.xAngle
         camera.set(xAngle.cos * distance, xAngle.sin * distance)
         return true
@@ -1137,21 +1128,6 @@ class MultiStarGuider(
         return true
     }
 
-    override val isLooping
-        get() = capturer.running
-
-    override fun startLooping() {
-        if (capturer.running) {
-            capturer.unpause()
-        } else {
-            CAPTURER_EXECUTOR_SERVICE.submit(capturer)
-        }
-    }
-
-    override fun stopLooping() {
-        capturer.pause()
-    }
-
     fun currentError(raOnly: Boolean): Double {
         return currentError(starFoundTimestamp, if (raOnly) avgDistanceRA else avgDistance)
     }
@@ -1165,7 +1141,6 @@ class MultiStarGuider(
     companion object {
 
         @JvmStatic private val LOG = loggerFor<MultiStarGuider>()
-        @JvmStatic private val CAPTURER_EXECUTOR_SERVICE = Executors.newSingleThreadExecutor(DaemonThreadFactory)
         @JvmStatic internal val ZERO_OFFSET = GuiderOffset(Point(), Point())
         @JvmStatic internal val GUIDE_STEP = listOf(MountMoveOption.ALGORITHM_RESULT, MountMoveOption.USE_BACKSLASH_COMPENSATION)
         @JvmStatic internal val DEDUCED_MOVE = listOf(MountMoveOption.ALGORITHM_DEDUCE, MountMoveOption.USE_BACKSLASH_COMPENSATION)

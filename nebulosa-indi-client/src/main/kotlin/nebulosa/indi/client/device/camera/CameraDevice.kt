@@ -8,6 +8,8 @@ import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.protocol.*
 import nebulosa.io.Base64InputStream
 import nebulosa.log.loggerFor
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.microseconds
 
 internal open class CameraDevice(
     handler: DeviceProtocolHandler,
@@ -25,10 +27,10 @@ internal open class CameraDevice(
     override var cfaOffsetX = 0
     override var cfaOffsetY = 0
     override var cfaType = CfaPattern.RGGB
-    override var exposureMin = 0L
-    override var exposureMax = 0L
+    override var exposureMin = Duration.ZERO
+    override var exposureMax = Duration.ZERO
     override var exposureState = PropertyState.IDLE
-    override var exposure = 0L
+    override var exposureTime = Duration.ZERO
     override var hasCooler = false
     override var canSetTemperature = false
     override var canSubFrame = false
@@ -116,8 +118,8 @@ internal open class CameraDevice(
                         val element = message["CCD_EXPOSURE_VALUE"]!!
 
                         if (element is DefNumber) {
-                            exposureMin = (element.min * 1000000.0).toLong()
-                            exposureMax = (element.max * 1000000.0).toLong()
+                            exposureMin = (element.min * 1000000.0).microseconds
+                            exposureMax = (element.max * 1000000.0).microseconds
                             handler.fireOnEventReceived(CameraExposureMinMaxChanged(this))
                         }
 
@@ -125,7 +127,7 @@ internal open class CameraDevice(
                         exposureState = message.state
 
                         if (exposureState == PropertyState.BUSY || exposureState == PropertyState.OK) {
-                            exposure = (element.value * 1000000.0).toLong()
+                            exposureTime = (element.value * 1000000.0).microseconds
 
                             handler.fireOnEventReceived(CameraExposureProgressChanged(this))
                         }
@@ -260,13 +262,13 @@ internal open class CameraDevice(
         super.handleMessage(message)
     }
 
-    override fun cooler(enable: Boolean) {
-        if (hasCoolerControl && cooler != enable) {
-            sendNewSwitch("CCD_COOLER", (if (enable) "COOLER_ON" else "COOLER_OFF") to true)
+    override fun cooler(enabled: Boolean) {
+        if (hasCoolerControl && cooler != enabled) {
+            sendNewSwitch("CCD_COOLER", (if (enabled) "COOLER_ON" else "COOLER_OFF") to true)
         }
     }
 
-    override fun dewHeater(enable: Boolean) = Unit
+    override fun dewHeater(enabled: Boolean) = Unit
 
     override fun temperature(value: Double) {
         if (canSetTemperature) {
@@ -274,8 +276,10 @@ internal open class CameraDevice(
         }
     }
 
-    override fun frameFormat(format: String) {
-        sendNewSwitch("CCD_CAPTURE_FORMAT", format to true)
+    override fun frameFormat(format: String?) {
+        if (!format.isNullOrBlank()) {
+            sendNewSwitch("CCD_CAPTURE_FORMAT", format to true)
+        }
     }
 
     override fun frameType(type: FrameType) {
@@ -299,8 +303,8 @@ internal open class CameraDevice(
 
     override fun offset(value: Int) = Unit
 
-    override fun startCapture(exposureInMicros: Long) {
-        val exposureInSeconds = exposureInMicros / 1000000.0
+    override fun startCapture(exposureTime: Duration) {
+        val exposureInSeconds = exposureTime.inWholeMicroseconds / 1000000.0
         sendNewNumber("CCD_EXPOSURE", "CCD_EXPOSURE_VALUE" to exposureInSeconds)
     }
 
@@ -348,25 +352,23 @@ internal open class CameraDevice(
         }
     }
 
-    override fun toString(): String {
-        return "Camera(name=$name, connected=$connected, exposuring=$exposuring," +
-                " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
-                " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
-                " frameFormats=$frameFormats, canAbort=$canAbort," +
-                " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
-                " exposureMin=$exposureMin, exposureMax=$exposureMax," +
-                " exposureState=$exposureState, exposure=$exposure," +
-                " hasCooler=$hasCooler, hasThermometer=$hasThermometer, canSetTemperature=$canSetTemperature," +
-                " temperature=$temperature, canSubFrame=$canSubFrame," +
-                " x=$x, minX=$minX, maxX=$maxX, y=$y, minY=$minY, maxY=$maxY," +
-                " width=$width, minWidth=$minWidth, maxWidth=$maxWidth, height=$height," +
-                " minHeight=$minHeight, maxHeight=$maxHeight," +
-                " canBin=$canBin, maxBinX=$maxBinX, maxBinY=$maxBinY," +
-                " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
-                " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
-                " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
-                " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
-    }
+    override fun toString() = "Camera(name=$name, connected=$connected, exposuring=$exposuring," +
+            " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
+            " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
+            " frameFormats=$frameFormats, canAbort=$canAbort," +
+            " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
+            " exposureMin=$exposureMin, exposureMax=$exposureMax," +
+            " exposureState=$exposureState, exposureTime=$exposureTime," +
+            " hasCooler=$hasCooler, hasThermometer=$hasThermometer, canSetTemperature=$canSetTemperature," +
+            " temperature=$temperature, canSubFrame=$canSubFrame," +
+            " x=$x, minX=$minX, maxX=$maxX, y=$y, minY=$minY, maxY=$maxY," +
+            " width=$width, minWidth=$minWidth, maxWidth=$maxWidth, height=$height," +
+            " minHeight=$minHeight, maxHeight=$maxHeight," +
+            " canBin=$canBin, maxBinX=$maxBinX, maxBinY=$maxBinY," +
+            " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
+            " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
+            " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
+            " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
 
     companion object {
 

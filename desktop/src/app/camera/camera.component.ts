@@ -1,14 +1,14 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { Title } from '@angular/platform-browser'
 import { MegaMenuItem, MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    AutoSubFolderMode, Camera, CameraCaptureFinished, CameraCaptureProgressChanged, CameraStartCapture,
-    ExposureMode, ExposureTimeUnit, FilterWheel, FrameType
+    AutoSubFolderMode, Camera, CameraCaptureEvent,
+    CameraStartCapture, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType
 } from '../../shared/types'
+import { AppComponent } from '../app.component'
 
 @Component({
     selector: 'app-camera',
@@ -23,6 +23,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     autoSave = false
     savePath = ''
+    capturesPath = ''
     autoSubFolderMode: AutoSubFolderMode = 'OFF'
 
     wheel?: FilterWheel
@@ -41,8 +42,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         {
             icon: 'mdi mdi-folder',
             label: 'Save path...',
-            command: async () => {
-                const path = await this.electron.sendSync('OPEN_DIRECTORY')
+            command: () => {
+                const defaultPath = this.savePath || this.capturesPath
+                const path = this.electron.openDirectory({ defaultPath })
 
                 if (path) {
                     this.savePath = path
@@ -127,8 +129,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     offset = 0
     offsetMin = 0
     offsetMax = 0
+    event?: CameraCaptureEvent
     capturing = false
-    exposureProgress?: CameraCaptureProgressChanged
+    waiting = false
 
     readonly exposureModeOptions: ExposureMode[] = ['SINGLE', 'FIXED', 'LOOP']
     readonly frameTypeOptions: FrameType[] = ['LIGHT', 'DARK', 'FLAT', 'BIAS']
@@ -165,14 +168,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     ]
 
     constructor(
-        private title: Title,
+        private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private preference: PreferenceService,
         ngZone: NgZone,
     ) {
-        title.setTitle('Camera')
+        app.title = 'Camera'
 
         api.startListening('CAMERA')
 
@@ -185,19 +188,30 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.on('CAMERA_CAPTURE_PROGRESS_CHANGED', (_, event: CameraCaptureProgressChanged) => {
-            if (event.camera === this.camera?.name) {
+        electron.on('CAMERA_EXPOSURE_STARTED', (_, event: CameraCaptureEvent) => {
+            if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
+                    this.event = event
                     this.capturing = true
-                    this.exposureProgress = event
+                    this.waiting = false
                 })
             }
         })
 
-        electron.on('CAMERA_CAPTURE_FINISHED', (_, event: CameraCaptureFinished) => {
-            if (event.camera === this.camera?.name) {
+        electron.on('CAMERA_EXPOSURE_UPDATED', (_, event: CameraCaptureEvent) => {
+            if (event.camera.name === this.camera?.name) {
+                ngZone.run(() => {
+                    this.event = event
+                    this.waiting = event.captureIsWaiting
+                })
+            }
+        })
+
+        electron.on('CAMERA_CAPTURE_FINISHED', (_, event: CameraCaptureEvent) => {
+            if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
                     this.capturing = false
+                    this.waiting = false
                 })
             }
         })
@@ -210,17 +224,18 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     async ngAfterContentInit() {
-        this.cameras = await this.api.attachedCameras()
+        this.cameras = await this.api.cameras()
     }
 
     @HostListener('window:unload')
     ngOnDestroy() {
         this.api.stopListening('CAMERA')
+        this.abortCapture()
     }
 
     async cameraChanged() {
         if (this.camera) {
-            this.title.setTitle(`Camera ・ ${this.camera.name}`)
+            this.app.title = `Camera ・ ${this.camera.name}`
 
             const camera = await this.api.camera(this.camera.name)
             Object.assign(this.camera, camera)
@@ -229,7 +244,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.update()
             this.savePreference()
         } else {
-            this.title.setTitle(`Camera`)
+            this.app.title = 'Camera'
         }
 
         this.electron.send('CAMERA_CHANGED', this.camera)
@@ -268,13 +283,12 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         const width = this.subFrame ? this.width : this.camera!.maxWidth
         const height = this.subFrame ? this.height : this.camera!.maxHeight
         const exposureFactor = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
-        const exposure = Math.trunc(this.exposureTime * 60000000 / exposureFactor)
-        const amount = this.exposureMode === 'LOOP' ? 2147483647 :
-            (this.exposureMode === 'FIXED' ? this.exposureCount : 1)
+        const exposureInMicroseconds = Math.trunc(this.exposureTime * 60000000 / exposureFactor)
+        const exposureAmount = this.exposureMode === 'LOOP' ? 0 : (this.exposureMode === 'FIXED' ? this.exposureCount : 1)
 
         const data: CameraStartCapture = {
-            exposure, amount,
-            delay: this.exposureDelay,
+            exposureInMicroseconds, exposureAmount,
+            exposureDelayInSeconds: this.exposureDelay,
             x, y, width, height,
             frameFormat: this.frameFormat,
             frameType: this.frameType,
@@ -286,8 +300,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             savePath: this.savePath,
             autoSubFolderMode: this.autoSubFolderMode,
         }
-
-        this.capturing = true
 
         await this.browserWindow.openCameraImage(this.camera!)
 
@@ -322,32 +334,42 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     private async update() {
         if (this.camera) {
             this.connected = this.camera.connected
-            this.cooler = this.camera.cooler
-            this.hasCooler = this.camera.hasCooler
-            this.coolerPower = this.camera.coolerPower
-            this.dewHeater = this.camera.dewHeater
-            this.temperature = this.camera.temperature
-            this.canSetTemperature = this.camera.canSetTemperature
-            this.minX = this.camera.minX
-            this.maxX = this.camera.maxX
-            this.x = Math.max(this.minX, Math.min(this.x, this.maxX))
-            this.minY = this.camera.minY
-            this.maxY = this.camera.maxY
-            this.y = Math.max(this.minY, Math.min(this.y, this.maxY))
-            this.minWidth = this.camera.minWidth
-            this.maxWidth = this.camera.maxWidth
-            this.width = Math.max(this.minWidth, Math.min(this.width, this.maxWidth))
-            this.minHeight = this.camera.minHeight
-            this.maxHeight = this.camera.maxHeight
-            this.height = Math.max(this.minHeight, Math.min(this.height, this.maxHeight))
-            this.frameFormats = this.camera.frameFormats
-            this.gainMin = this.camera.gainMin
-            this.gainMax = this.camera.gainMax
-            this.offsetMin = this.camera.offsetMin
-            this.offsetMax = this.camera.offsetMax
 
-            this.updateExposureUnit(this.exposureTimeUnit)
+            if (this.connected) {
+                this.cooler = this.camera.cooler
+                this.hasCooler = this.camera.hasCooler
+                this.coolerPower = this.camera.coolerPower
+                this.dewHeater = this.camera.dewHeater
+                this.temperature = this.camera.temperature
+                this.canSetTemperature = this.camera.canSetTemperature
+                this.minX = this.camera.minX
+                this.maxX = this.camera.maxX
+                this.x = Math.max(this.minX, Math.min(this.x, this.maxX))
+                this.minY = this.camera.minY
+                this.maxY = this.camera.maxY
+                this.y = Math.max(this.minY, Math.min(this.y, this.maxY))
+                this.minWidth = this.camera.minWidth
+                this.maxWidth = this.camera.maxWidth
+                this.width = Math.max(this.minWidth, Math.min(this.width < 8 ? this.maxWidth : this.width, this.maxWidth))
+                this.minHeight = this.camera.minHeight
+                this.maxHeight = this.camera.maxHeight
+                this.height = Math.max(this.minHeight, Math.min(this.height < 8 ? this.maxHeight : this.width, this.maxHeight))
+                this.frameFormats = this.camera.frameFormats
+                if (!this.frameFormat) this.frameFormat = this.frameFormats[0]
+                this.gainMin = this.camera.gainMin
+                this.gainMax = this.camera.gainMax
+                this.offsetMin = this.camera.offsetMin
+                this.offsetMax = this.camera.offsetMax
+                this.capturesPath = this.camera.capturesPath
+
+                this.updateExposureUnit(this.exposureTimeUnit)
+            }
         }
+    }
+
+    resetSavePath() {
+        this.savePath = ''
+        this.preference.set(`camera.${this.camera!.name}.savePath`, this.savePath)
     }
 
     private loadPreference() {
@@ -376,12 +398,12 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.frameType = this.preference.get(`camera.${this.camera.name}.frameType`, 'LIGHT')
             this.gain = this.preference.get(`camera.${this.camera.name}.gain`, 0)
             this.offset = this.preference.get(`camera.${this.camera.name}.offset`, 0)
-            this.frameFormat = this.preference.get(`camera.${this.camera.name}.frameFormat`, '')
+            this.frameFormat = this.preference.get(`camera.${this.camera.name}.frameFormat`, this.camera.frameFormats[0] || '')
         }
     }
 
     savePreference() {
-        if (this.camera) {
+        if (this.camera && this.camera.connected) {
             this.preference.set(`camera.${this.camera.name}.autoSave`, this.autoSave)
             this.preference.set(`camera.${this.camera.name}.savePath`, this.savePath)
             this.preference.set(`camera.${this.camera.name}.autoSubFolderMode`, this.autoSubFolderMode)

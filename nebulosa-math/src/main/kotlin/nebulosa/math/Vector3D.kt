@@ -2,7 +2,6 @@
 
 package nebulosa.math
 
-import nebulosa.math.Angle.Companion.rad
 import kotlin.math.asin
 import kotlin.math.atan2
 import kotlin.math.sqrt

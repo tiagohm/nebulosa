@@ -7,6 +7,8 @@ import nebulosa.constants.PI
 import nebulosa.erfa.eraAnpm
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
 
 class StellariumProtocolEncoder : MessageToByteEncoder<StellariumProtocolMessage>() {
 
@@ -27,11 +29,11 @@ class StellariumProtocolEncoder : MessageToByteEncoder<StellariumProtocolMessage
             writeShortLE(24) // LENGTH
             writeShortLE(0) // TYPE
             writeLongLE(System.currentTimeMillis() * 1000L) // TIME
-            writeIntLE((eraAnpm(message.rightAscension).value / PI * 0x80000000).toInt()) // RA
-            writeIntLE((message.declination.value / PI * 0x80000000).toInt()) // DEC
+            writeIntLE((eraAnpm(message.rightAscension) / PI * 0x80000000).toInt()) // RA
+            writeIntLE((message.declination / PI * 0x80000000).toInt()) // DEC
             writeIntLE(0) // STATUS=OK
 
-            LOG.debug { "MessageCurrentPosition: ra=%f, dec=%f".format(message.rightAscension.hours, message.declination.degrees) }
+            LOG.debug { "MessageCurrentPosition: ra=%f, dec=%f".format(message.rightAscension.toHours, message.declination.toDegrees) }
         }
     }
 }

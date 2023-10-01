@@ -1,5 +1,7 @@
 import { Point } from 'electron'
 
+export type Angle = string | number
+
 export interface Device {
     readonly name: string
     connected: boolean
@@ -30,7 +32,7 @@ export interface Camera extends GuideOutput, Thermometer {
     exposureMin: number
     exposureMax: number
     exposureState: PropertyState
-    exposure: number
+    exposureTime: number
     hasCooler: boolean
     canSetTemperature: boolean
     canSubFrame: boolean
@@ -60,6 +62,7 @@ export interface Camera extends GuideOutput, Thermometer {
     hasGuiderHead: boolean
     pixelSizeX: number
     pixelSizeY: number
+    capturesPath: string
 }
 
 export interface Parkable {
@@ -79,18 +82,18 @@ export interface GPS extends Device {
 
 
 export interface EquatorialCoordinate {
-    rightAscension: string
-    declination: string
+    rightAscension: Angle
+    declination: Angle
 }
 
 export interface EquatorialCoordinateJ2000 {
-    rightAscensionJ2000: string
-    declinationJ2000: string
+    rightAscensionJ2000: Angle
+    declinationJ2000: Angle
 }
 
 export interface HorizontalCoordinate {
-    azimuth: string
-    altitude: string
+    azimuth: Angle
+    altitude: Angle
 }
 
 export interface Mount extends EquatorialCoordinate, GPS, GuideOutput, Parkable {
@@ -134,9 +137,9 @@ export interface FilterWheel extends Device {
 }
 
 export interface CameraStartCapture {
-    exposure: number
-    amount: number
-    delay: number
+    exposureInMicroseconds: number
+    exposureAmount: number
+    exposureDelayInSeconds: number
     x: number
     y: number
     width: number
@@ -152,21 +155,23 @@ export interface CameraStartCapture {
     autoSubFolderMode: AutoSubFolderMode
 }
 
-export interface CameraCaptureProgressChanged {
-    camera: string
-    remainingAmount: number
-    frameRemainingTime: number
-    frameProgress: number
-    totalAmount: number
-    totalRemainingTime: number
-    totalProgress: number
-    totalExposureTime: number
-    indeterminate: boolean
-    elapsedTime: number
-}
-
-export interface CameraCaptureFinished {
-    camera: string
+export interface CameraCaptureEvent {
+    camera: Camera
+    exposureAmount: number
+    exposureCount: number
+    exposureTime: number
+    exposureRemainingTime: number
+    exposureProgress: number
+    captureRemainingTime: number
+    captureProgress: number
+    captureTime: number
+    captureInLoop: boolean
+    captureIsWaiting: boolean
+    captureElapsedTime: number
+    waitProgress: number
+    waitRemainingTime: number
+    waitTime: number
+    savePath?: string
 }
 
 export interface OpenWindowOptions {
@@ -184,21 +189,24 @@ export interface OpenWindow<T> extends OpenWindowOptions {
     params?: T
 }
 
-export interface SavedCameraImage {
-    camera: string
+export interface OpenDirectory {
+    defaultPath?: string
+}
+
+export interface GuideCaptureEvent {
+    camera: Camera
+}
+
+export interface GuideExposureFinished extends GuideCaptureEvent {
+    path: string
+}
+
+export interface ImageInfo {
+    camera: Camera
     path: string
     width: number
     height: number
     mono: boolean
-    savedAt: number
-}
-
-export interface GuideExposureFinished {
-    camera: string
-    path: string
-}
-
-export interface ImageInfo extends SavedCameraImage {
     stretchShadow: number
     stretchHighlight: number
     stretchMidtone: number
@@ -243,7 +251,7 @@ export interface INDISendPropertyItem {
 }
 
 export interface INDIDeviceMessage {
-    device?: string
+    device?: Device
     message: string
 }
 
@@ -330,10 +338,25 @@ export interface OrbitalPhysicalParameter {
     value: string
 }
 
-export interface AstronomicalObject extends EquatorialCoordinate {
+export interface AstronomicalObject extends EquatorialCoordinateJ2000 {
     id: number
-    names: string
+    name: string
     magnitude: number
+}
+
+export interface SpectralSkyObject {
+    spType: string
+}
+
+export interface Star extends DeepSkyObject, SpectralSkyObject { }
+
+export interface OrientedSkyObject {
+    majorAxis: number
+    minorAxis: number
+    orientation: number
+}
+
+export interface DeepSkyObject extends AstronomicalObject {
     type: SkyObjectType
     redshift: number
     parallax: number
@@ -344,56 +367,15 @@ export interface AstronomicalObject extends EquatorialCoordinate {
     constellation: Constellation
 }
 
-export interface Star extends AstronomicalObject {
-    hd: number
-    hr: number
-    hip: number
-    spType: string
-}
-
-export interface DeepSkyObject extends AstronomicalObject {
-    m: number
-    ngc: number
-    ic: number
-    c: number
-    b: number
-    sh2: number
-    vdb: number
-    rcw: number
-    ldn: number
-    lbn: number
-    cr: number
-    mel: number
-    pgc: number
-    ugc: number
-    arp: number
-    vv: number
-    dwb: number
-    tr: number
-    st: number
-    ru: number
-    vdbha: number
-    ced: string
-    pk: string
-    png: string
-    snrg: string
-    aco: string
-    hcg: string
-    eso: string
-    vdbh: string
-    majorAxis: number
-    minorAxis: number
-    orientation: number
-    mtype: string
-}
-
 export interface ImageAnnotation {
     x: number
     y: number
     star?: Star
     dso?: DeepSkyObject
+    minorPlanet?: AstronomicalObject
 }
-export interface Calibration extends EquatorialCoordinate {
+
+export interface ImageCalibrated extends EquatorialCoordinateJ2000 {
     orientation: number
     scale: number
     width: number
@@ -401,15 +383,11 @@ export interface Calibration extends EquatorialCoordinate {
     radius: number
 }
 
-export interface ComputedCoordinates extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
+export interface ComputedLocation extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
     constellation: Constellation
     meridianAt: string
     timeLeftToMeridianFlip: string
     lst: string
-}
-
-export interface Path {
-    path: string
 }
 
 export interface ImageStarSelected {
@@ -428,8 +406,8 @@ export interface GuideStats {
     // starMass: number
     raDuration: number
     decDuration: number
-    raDirection: GuideDirection
-    decDirection: GuideDirection
+    raDirection?: GuideDirection
+    decDirection?: GuideDirection
     rmsRA: number
     rmsDEC: number
     peakRA: number
@@ -659,10 +637,12 @@ export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
     'WATNEY'
 
 export const INDI_EVENT_TYPES = [
-    'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED',
-    'DEVICE_MESSAGE_RECEIVED', 'CAMERA_IMAGE_SAVED',
-    'CAMERA_UPDATED', 'CAMERA_CAPTURE_PROGRESS_CHANGED', 'CAMERA_CAPTURE_FINISHED',
-    'CAMERA_ATTACHED', 'CAMERA_DETACHED',
+    // Device.
+    'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED', 'DEVICE_MESSAGE_RECEIVED',
+    // Camera.
+    'CAMERA_UPDATED', 'CAMERA_ATTACHED', 'CAMERA_DETACHED',
+    'CAMERA_CAPTURE_STARTED', 'CAMERA_CAPTURE_FINISHED',
+    'CAMERA_EXPOSURE_UPDATED', 'CAMERA_EXPOSURE_STARTED', 'CAMERA_EXPOSURE_FINISHED',
     'MOUNT_UPDATED', 'MOUNT_ATTACHED', 'MOUNT_DETACHED',
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
     'WHEEL_UPDATED', 'WHEEL_ATTACHED', 'WHEEL_DETACHED',
@@ -673,11 +653,12 @@ export const INDI_EVENT_TYPES = [
 
 export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]
 
-export const MAIN_EVENT_TYPES = [
+export const WINDOW_EVENT_TYPES = [
     'SAVE_FITS_AS', 'OPEN_FITS', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
-]
+    'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW'
+] as const
 
-export type MainEventType = (typeof MAIN_EVENT_TYPES)[number]
+export type WindowEventType = (typeof WINDOW_EVENT_TYPES)[number]
 
 export const INTERNAL_EVENT_TYPES = [
     'SELECTED_CAMERA', 'SELECTED_FOCUSER', 'SELECTED_WHEEL',
@@ -728,8 +709,7 @@ export type TargetCoordinateType = 'J2000' | 'JNOW'
 
 export type TrackMode = 'SIDEREAL' | ' LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'
 
-export type GuideDirection = 'NONE' |
-    'UP_NORTH' | // DEC+
+export type GuideDirection = 'UP_NORTH' | // DEC+
     'DOWN_SOUTH' | // DEC-
     'LEFT_WEST' | // RA+
     'RIGHT_EAST' // RA-
