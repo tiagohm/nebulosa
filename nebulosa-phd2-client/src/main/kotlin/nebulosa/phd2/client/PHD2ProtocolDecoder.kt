@@ -56,11 +56,14 @@ class PHD2ProtocolDecoder(
             LOG.error("command not found. id={}", id)
         } else if (node.has("error")) {
             val message = node.get("error").get("message").textValue()
+            client.listeners.forEach { it.onCommandProcessed(command.command, null, message) }
             command.task.completeExceptionally(PHD2CommandFailedException(command.methodName, message))
         } else if (command.responseType != null) {
             val result = mapper.treeToValue(node.get("result"), command.responseType)
+            client.listeners.forEach { it.onCommandProcessed(command.command, result, null) }
             command.task.complete(result)
         } else {
+            client.listeners.forEach { it.onCommandProcessed(command.command, null, null) }
             command.task.complete(null)
         }
     }

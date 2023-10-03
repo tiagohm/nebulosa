@@ -10,6 +10,7 @@ import nebulosa.phd2.client.commands.CompletableCommand
 import nebulosa.phd2.client.commands.PHD2Command
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 class PHD2Client(
     override val host: String,
@@ -44,6 +45,7 @@ class PHD2Client(
         val id = UUID.randomUUID().toString()
         val completableCommand = CompletableCommand(command, task, id)
         commands[id] = completableCommand
+        task.whenComplete { _, _ -> commands.remove(id) }.orTimeout(30, TimeUnit.SECONDS)
         channel.get()?.channel()?.writeAndFlush(completableCommand)
         return task
     }

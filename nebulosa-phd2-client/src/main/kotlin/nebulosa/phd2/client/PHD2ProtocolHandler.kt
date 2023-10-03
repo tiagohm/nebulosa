@@ -8,7 +8,7 @@ class PHD2ProtocolHandler(private val client: PHD2Client) : ChannelInboundHandle
 
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
         val event = msg as PHD2Event
-        client.listeners.forEach { it.onEvent(event) }
+        client.listeners.forEach { it.onEventReceived(event) }
     }
 
     @Suppress("OVERRIDE_DEPRECATION")
