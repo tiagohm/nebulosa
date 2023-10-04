@@ -1,6 +1,6 @@
 package nebulosa.phd2.client.commands
 
-data class GetAlgorithmParam(val axis: String, val name: String) : PHD2Command<Any> {
+data class GetAlgorithmParam(val axis: GuideAxis, val name: String) : PHD2Command<Any> {
 
     override val methodName = "get_algo_param"
 

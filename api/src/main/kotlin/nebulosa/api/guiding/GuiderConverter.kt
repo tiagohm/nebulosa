@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import nebulosa.guiding.GuidePoint
 import nebulosa.guiding.Guider
-import nebulosa.json.modules.ToJson
+import nebulosa.json.ToJson
 import org.springframework.stereotype.Component
 
 @Component

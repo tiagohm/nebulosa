@@ -1,16 +1,16 @@
 package nebulosa.api.beans.configurations
 
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import nebulosa.api.beans.DateAndTimeMethodArgumentResolver
 import nebulosa.api.beans.EntityByMethodArgumentResolver
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.concurrency.Incrementer
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
-import nebulosa.json.modules.FromJson
-import nebulosa.json.modules.JsonModule
-import nebulosa.json.modules.ToJson
+import nebulosa.json.FromJson
+import nebulosa.json.SimpleJsonModule
+import nebulosa.json.ToJson
+import nebulosa.json.converters.PathConverter
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
 import okhttp3.Cache
@@ -21,6 +21,7 @@ import org.greenrobot.eventbus.EventBus
 import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher
 import org.springframework.batch.core.repository.JobRepository
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -55,14 +56,19 @@ class BeanConfiguration {
     fun cachePath(appPath: Path): Path = Path.of("$appPath", "cache").createDirectories()
 
     @Bean
-    @Primary
-    fun objectMapper(
+    fun simpleJsonModule(
         serializers: List<ToJson<*>>,
         deserializers: List<FromJson<*>>,
-    ) = ObjectMapper()
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-        .registerModule(JsonModule(serializers, deserializers))!!
+    ) = SimpleJsonModule()
+        .apply { serializers.forEach { addSerializer(it) } }
+        .apply { deserializers.forEach { addDeserializer(it) } }
+        .addConverter(PathConverter)
+
+    @Bean
+    fun jackson2ObjectMapperBuilderCustomizer() = Jackson2ObjectMapperBuilderCustomizer {
+        it.featuresToDisable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        it.featuresToEnable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    }
 
     @Bean
     fun connectionPool() = ConnectionPool(32, 5L, TimeUnit.MINUTES)

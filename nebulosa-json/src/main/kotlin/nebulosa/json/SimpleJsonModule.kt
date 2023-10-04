@@ -1,4 +1,4 @@
-package nebulosa.json.modules
+package nebulosa.json
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
@@ -8,27 +8,19 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 
-data class JsonModule(
-    private val serializers: Iterable<ToJson<*>>,
-    private val deserializers: Iterable<FromJson<*>>,
-) : SimpleModule() {
+class SimpleJsonModule : SimpleModule() {
 
-    init {
-        for (serializer in serializers) {
-            addToJson(serializer)
-        }
-
-        for (deserializer in deserializers) {
-            addFromJson(deserializer)
-        }
+    fun <T> addSerializer(serializer: ToJson<T>) = apply {
+        addSerializer(serializer.type, ToJsonSerializer(serializer))
     }
 
-    fun <T> addToJson(toJson: ToJson<T>) {
-        addSerializer(toJson.type, ToJsonSerializer(toJson))
+    fun <T> addDeserializer(deserializer: FromJson<T>) = apply {
+        addDeserializer(deserializer.type, FromJsonDeserializer(deserializer))
     }
 
-    fun <T> addFromJson(fromJson: FromJson<T>) {
-        addDeserializer(fromJson.type, FromJsonDeserializer(fromJson))
+    fun <T> addConverter(converter: T) where T : FromJson<*>, T : ToJson<*> = apply {
+        addSerializer(converter)
+        addDeserializer(converter)
     }
 
     private data class ToJsonSerializer<T>(private val serializer: ToJson<T>) : StdSerializer<T>(serializer.type) {

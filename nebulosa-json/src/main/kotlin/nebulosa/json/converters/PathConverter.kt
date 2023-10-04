@@ -1,16 +1,14 @@
-package nebulosa.api.beans.converters
+package nebulosa.json.converters
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.SerializerProvider
-import nebulosa.json.modules.FromJson
-import nebulosa.json.modules.ToJson
-import org.springframework.stereotype.Component
+import nebulosa.json.FromJson
+import nebulosa.json.ToJson
 import java.nio.file.Path
 
-@Component
-class PathConverter : ToJson<Path>, FromJson<Path> {
+object PathConverter : FromJson<Path>, ToJson<Path> {
 
     override val type = Path::class.java
 
