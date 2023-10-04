@@ -4,7 +4,7 @@ import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.image.ImageBucket
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
-import nebulosa.guiding.GuideDirection
+import nebulosa.guiding.internal.GuideDirection
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
 import nebulosa.indi.device.mount.SlewRate

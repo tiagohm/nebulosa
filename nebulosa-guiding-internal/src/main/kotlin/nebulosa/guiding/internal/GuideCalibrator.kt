@@ -2,7 +2,6 @@ package nebulosa.guiding.internal
 
 import nebulosa.constants.PI
 import nebulosa.constants.PIOVERTWO
-import nebulosa.guiding.*
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import kotlin.math.*

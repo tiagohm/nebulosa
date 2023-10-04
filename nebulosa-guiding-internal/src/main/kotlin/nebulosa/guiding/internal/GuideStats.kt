@@ -1,4 +1,4 @@
-package nebulosa.guiding
+package nebulosa.guiding.internal
 
 data class GuideStats(
     val timestamp: Long = 0L,

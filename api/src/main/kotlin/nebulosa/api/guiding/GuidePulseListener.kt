@@ -1,6 +1,6 @@
 package nebulosa.api.guiding
 
-import nebulosa.guiding.GuideDirection
+import nebulosa.guiding.internal.GuideDirection
 import nebulosa.indi.device.guide.GuideOutput
 import kotlin.time.Duration
 

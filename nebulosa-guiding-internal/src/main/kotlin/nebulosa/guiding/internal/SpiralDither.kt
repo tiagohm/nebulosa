@@ -1,7 +1,5 @@
 package nebulosa.guiding.internal
 
-import nebulosa.guiding.Dither
-
 class SpiralDither : Dither {
 
     private var prevRaOnly = false

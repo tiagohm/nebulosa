@@ -1,6 +1,6 @@
 package nebulosa.api.data.responses
 
-import nebulosa.guiding.GuideStats
+import nebulosa.guiding.internal.GuideStats
 
 data class GuidingChartResponse(
     val chart: List<GuideStats>,

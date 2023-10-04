@@ -2,7 +2,6 @@ package nebulosa.api.guiding
 
 import jakarta.annotation.PostConstruct
 import nebulosa.api.services.MessageService
-import nebulosa.guiding.*
 import nebulosa.guiding.internal.*
 import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.Camera
@@ -10,7 +9,6 @@ import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.PierSide
 import nebulosa.log.loggerFor
-import nebulosa.math.Angle
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobParameters

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.api.beans.annotations.DateAndTime
 import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.api.connection.ConnectionService
-import nebulosa.guiding.GuideDirection
+import nebulosa.guiding.internal.GuideDirection
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.TrackMode
 import nebulosa.math.deg

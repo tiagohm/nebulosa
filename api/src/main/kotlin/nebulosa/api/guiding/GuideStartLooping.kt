@@ -1,7 +1,7 @@
 package nebulosa.api.guiding
 
-import nebulosa.guiding.DeclinationGuideMode
-import nebulosa.guiding.NoiseReductionMethod
+import nebulosa.guiding.internal.DeclinationGuideMode
+import nebulosa.guiding.internal.NoiseReductionMethod
 
 data class GuideStartLooping(
     var searchRegion: Double = 15.0,

@@ -1,6 +1,5 @@
 package nebulosa.guiding.internal
 
-import nebulosa.guiding.GuideAxis
 import nebulosa.log.loggerFor
 import kotlin.math.abs
 import kotlin.math.sign

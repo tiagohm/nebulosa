@@ -1,9 +1,9 @@
 package nebulosa.api.guiding
 
-import nebulosa.api.cameras.CameraStartCapture
 import nebulosa.api.cameras.CameraExposureTasklet
+import nebulosa.api.cameras.CameraStartCapture
 import nebulosa.api.sequencer.tasklets.delay.DelayTasklet
-import nebulosa.guiding.Guider
+import nebulosa.guiding.internal.MultiStarGuider
 import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.Camera
 import nom.tam.fits.Header
@@ -20,7 +20,7 @@ import kotlin.time.Duration
 
 data class GuidingTasklet(
     private val camera: Camera,
-    private val guider: Guider,
+    private val guider: MultiStarGuider,
     private val startLooping: GuideStartLooping,
 ) : StoppableTasklet, JobExecutionListener {
 

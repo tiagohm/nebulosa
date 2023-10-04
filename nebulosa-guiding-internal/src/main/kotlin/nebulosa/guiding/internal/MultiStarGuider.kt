@@ -1,7 +1,6 @@
 package nebulosa.guiding.internal
 
 import nebulosa.constants.PIOVERTWO
-import nebulosa.guiding.*
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.Mean
 import nebulosa.imaging.algorithms.star.hfd.FindMode

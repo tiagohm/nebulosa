@@ -1,6 +1,5 @@
 package nebulosa.guiding.internal
 
-import nebulosa.guiding.StarPoint
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.star.hfd.FindMode
 import nebulosa.imaging.algorithms.star.hfd.FindResult

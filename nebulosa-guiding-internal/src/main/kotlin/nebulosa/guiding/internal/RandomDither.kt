@@ -1,6 +1,5 @@
 package nebulosa.guiding.internal
 
-import nebulosa.guiding.Dither
 import kotlin.random.Random
 
 class RandomDither(private val random: Random = Random.Default) : Dither {

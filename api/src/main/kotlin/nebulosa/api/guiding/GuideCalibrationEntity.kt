@@ -1,8 +1,8 @@
 package nebulosa.api.guiding
 
 import jakarta.persistence.*
-import nebulosa.guiding.GuideCalibration
-import nebulosa.guiding.GuideParity
+import nebulosa.guiding.internal.GuideCalibration
+import nebulosa.guiding.internal.GuideParity
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
