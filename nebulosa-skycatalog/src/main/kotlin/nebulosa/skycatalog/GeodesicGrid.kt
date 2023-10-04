@@ -7,7 +7,7 @@ class GeodesicGrid(val maxLevel: Int) {
 
     fun interface Traverser {
 
-        fun traverse(level: Int, index: Int, c0: Vector3D, c1: Vector3D, c2: Vector3D): Unit
+        fun traverse(level: Int, index: Int, c0: Vector3D, c1: Vector3D, c2: Vector3D)
     }
 
     val triangles: Array<Array<Triangle?>>
@@ -45,7 +45,7 @@ class GeodesicGrid(val maxLevel: Int) {
                     ICOSAHEDRON_CORNERS[corners[1]],
                     ICOSAHEDRON_CORNERS[corners[2]],
                     maxVisitLevel, traverser,
-                );
+                )
             }
         }
     }

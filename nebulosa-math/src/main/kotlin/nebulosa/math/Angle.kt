@@ -177,4 +177,4 @@ inline val String?.hours
     get() = Angle(this, true)
 
 inline val String?.deg
-    get() = Angle(this, false)
+    get() = Angle(this)

@@ -6,11 +6,11 @@ import java.time.LocalTime
 
 sealed interface LX200ProtocolMessage {
 
-    object Ack : LX200ProtocolMessage
+    data object Ack : LX200ProtocolMessage
 
-    object Ok : LX200ProtocolMessage
+    data object Ok : LX200ProtocolMessage
 
-    object Zero : LX200ProtocolMessage
+    data object Zero : LX200ProtocolMessage
 
     data class Text(val text: String) : LX200ProtocolMessage
 

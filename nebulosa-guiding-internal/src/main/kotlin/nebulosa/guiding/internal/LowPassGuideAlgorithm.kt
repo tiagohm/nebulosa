@@ -9,7 +9,7 @@ data class LowPassGuideAlgorithm(
     var slopeWeight: Double = DEFAULT_SLOPE_WEIGHT,
 ) : GuideAlgorithm {
 
-    private val axisStats = WindowedAxisStats(0)
+    private val axisStats = WindowedAxisStats()
     private var timeBase = 0
 
     init {
