@@ -1,5 +1,7 @@
 package nebulosa.guiding.internal
 
+import nebulosa.guiding.GuideDirection
+
 data class GuideStats(
     val timestamp: Long = 0L,
     val dx: Double = 0.0,

@@ -1,6 +1,7 @@
 package nebulosa.guiding.internal
 
 import nebulosa.constants.PIOVERTWO
+import nebulosa.guiding.GuideDirection
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.Mean
 import nebulosa.imaging.algorithms.star.hfd.FindMode
@@ -1017,10 +1018,10 @@ class MultiStarGuider : InternalGuider {
                 yDistance = yGuideAlgorithm?.compute(yDistance) ?: 0.0
             }
 
-            val xDirection = if (xDistance > 0.0) GuideDirection.LEFT_WEST else GuideDirection.RIGHT_EAST
+            val xDirection = if (xDistance > 0.0) GuideDirection.WEST else GuideDirection.EAST
             val requestedXAmount = abs(xDistance / guideCalibrator.xRate).roundToInt()
 
-            val yDirection = if (yDistance > 0.0) GuideDirection.DOWN_SOUTH else GuideDirection.UP_NORTH
+            val yDirection = if (yDistance > 0.0) GuideDirection.SOUTH else GuideDirection.NORTH
             val requestedYAmount = abs(yDistance / guideCalibrator.yRate).roundToInt()
 
             val xResult = moveAxis(xDirection, requestedXAmount, moveOptions)
@@ -1054,15 +1055,15 @@ class MultiStarGuider : InternalGuider {
         var newDuration = duration
 
         when (direction) {
-            GuideDirection.UP_NORTH,
-            GuideDirection.DOWN_SOUTH -> {
+            GuideDirection.NORTH,
+            GuideDirection.SOUTH -> {
                 // Enforce DEC guide mode and max duration for guide step (or deduced step) moves.
                 if (MountMoveOption.ALGORITHM_RESULT in moveOptions ||
                     MountMoveOption.ALGORITHM_DEDUCE in moveOptions
                 ) {
                     if ((declinationGuideMode == DeclinationGuideMode.NONE) ||
-                        (direction == GuideDirection.DOWN_SOUTH && declinationGuideMode == DeclinationGuideMode.NORTH) ||
-                        (direction == GuideDirection.UP_NORTH && declinationGuideMode == DeclinationGuideMode.SOUTH)
+                        (direction == GuideDirection.SOUTH && declinationGuideMode == DeclinationGuideMode.NORTH) ||
+                        (direction == GuideDirection.NORTH && declinationGuideMode == DeclinationGuideMode.SOUTH)
                     ) {
                         newDuration = 0
                         LOG.info("duration set to 0. mode={}", declinationGuideMode)
@@ -1075,8 +1076,8 @@ class MultiStarGuider : InternalGuider {
                     }
                 }
             }
-            GuideDirection.LEFT_WEST,
-            GuideDirection.RIGHT_EAST -> {
+            GuideDirection.WEST,
+            GuideDirection.EAST -> {
                 // Enforce RA guide mode and max duration for guide step (or deduced step) moves.
                 if (MountMoveOption.ALGORITHM_RESULT in moveOptions ||
                     MountMoveOption.ALGORITHM_DEDUCE in moveOptions
@@ -1100,10 +1101,10 @@ class MultiStarGuider : InternalGuider {
     }
 
     internal fun guideDirection(direction: GuideDirection, duration: Int) = when (direction) {
-        GuideDirection.UP_NORTH -> pulse.guideNorth(duration)
-        GuideDirection.DOWN_SOUTH -> pulse.guideSouth(duration)
-        GuideDirection.LEFT_WEST -> pulse.guideWest(duration)
-        GuideDirection.RIGHT_EAST -> pulse.guideEast(duration)
+        GuideDirection.NORTH -> pulse.guideNorth(duration)
+        GuideDirection.SOUTH -> pulse.guideSouth(duration)
+        GuideDirection.WEST -> pulse.guideWest(duration)
+        GuideDirection.EAST -> pulse.guideEast(duration)
         else -> false
     }
 

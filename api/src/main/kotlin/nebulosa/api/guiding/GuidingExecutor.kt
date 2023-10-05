@@ -2,6 +2,7 @@ package nebulosa.api.guiding
 
 import jakarta.annotation.PostConstruct
 import nebulosa.api.services.MessageService
+import nebulosa.guiding.GuideDirection
 import nebulosa.guiding.internal.*
 import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.Camera

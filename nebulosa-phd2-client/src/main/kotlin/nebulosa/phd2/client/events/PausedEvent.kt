@@ -1,3 +1,3 @@
 package nebulosa.phd2.client.events
 
-data object SettleBegin : PHD2Event
+data object PausedEvent : PHD2Event
