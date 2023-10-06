@@ -20,7 +20,7 @@ dependencyResolutionManagement {
             library("jackson-jsr310", "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
             library("retrofit", "com.squareup.retrofit2:retrofit:2.9.0")
             library("retrofit-jackson", "com.squareup.retrofit2:converter-jackson:2.9.0")
-            library("rx", "io.reactivex.rxjava3:rxjava:3.1.7")
+            library("rx", "io.reactivex.rxjava3:rxjava:3.1.8")
             library("logback", "ch.qos.logback:logback-classic:1.4.11")
             library("eventbus", "org.greenrobot:eventbus-java:3.3.1")
             library("netty-transport", "io.netty:netty-transport:4.1.99.Final")
