@@ -12,7 +12,7 @@ buildCache {
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("okio", "com.squareup.okio:okio:3.5.0")
+            library("okio", "com.squareup.okio:okio:3.6.0")
             library("okhttp", "com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
             library("okhttp-logging", "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
             library("fits", "gov.nasa.gsfc.heasarc:nom-tam-fits:1.18.1")
@@ -20,7 +20,7 @@ dependencyResolutionManagement {
             library("jackson-jsr310", "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
             library("retrofit", "com.squareup.retrofit2:retrofit:2.9.0")
             library("retrofit-jackson", "com.squareup.retrofit2:converter-jackson:2.9.0")
-            library("rx", "io.reactivex.rxjava3:rxjava:3.1.7")
+            library("rx", "io.reactivex.rxjava3:rxjava:3.1.8")
             library("logback", "ch.qos.logback:logback-classic:1.4.11")
             library("eventbus", "org.greenrobot:eventbus-java:3.3.1")
             library("netty-transport", "io.netty:netty-transport:4.1.99.Final")
@@ -33,7 +33,7 @@ dependencyResolutionManagement {
             library("oshi", "com.github.oshi:oshi-core:6.4.6")
             library("timeshape", "net.iakovlev:timeshape:2022g.17")
             library("sqlite", "org.xerial:sqlite-jdbc:3.43.0.0")
-            library("flyway", "org.flywaydb:flyway-core:9.22.1")
+            library("flyway", "org.flywaydb:flyway-core:9.22.2")
             library("jna", "net.java.dev.jna:jna:5.13.0")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.7.2")
             library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.7.2")
