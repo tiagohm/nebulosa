@@ -140,6 +140,10 @@ i.mdi {
     -webkit-app-region: drag;
 }
 
+.pixelated {
+    image-rendering: pixelated;
+}
+
 ::-webkit-scrollbar {
     width: 6px;
 }

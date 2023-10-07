@@ -4,7 +4,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, GuideOutput, GuideTrackingBox, Guider, ImageStarSelected, Mount } from '../../shared/types'
+import { GuideDirection, GuideOutput, GuideStar, GuideState, Guider } from '../../shared/types'
 
 @Component({
     selector: 'app-guider',
@@ -13,22 +13,41 @@ import { Camera, GuideOutput, GuideTrackingBox, Guider, ImageStarSelected, Mount
 })
 export class GuiderComponent implements AfterViewInit, OnDestroy {
 
-    cameras: Camera[] = []
-    camera?: Camera
-    cameraConnected = false
-
-    mounts: Mount[] = []
-    mount?: Mount
-    mountConnected = false
-
     guideOutputs: GuideOutput[] = []
     guideOutput?: GuideOutput
     guideOutputConnected = false
+    pulseGuiding = false
 
-    private guider?: Guider
-    looping = false
-    guiding = false
-    calibrating = false
+    guideNorthDuration = 1000
+    guideSouthDuration = 1000
+    guideWestDuration = 1000
+    guideEastDuration = 1000
+
+    phdConnected = false
+    phdHost = 'localhost'
+    phdPort = 4400
+    phdState: GuideState = 'STOPPED'
+    phdGuideStar?: GuideStar
+    phdMessage = ''
+
+    ditherPixels = 5
+    ditherRAOnly = false
+    settlePixels = 1.5
+    settleTime = 60
+    settleTimeout = 90
+    autoSelectStar = true
+
+    get stopped() {
+        return this.phdState === 'STOPPED'
+    }
+
+    get looping() {
+        return this.phdState === 'LOOPING'
+    }
+
+    get guiding() {
+        return this.phdState === 'GUIDING'
+    }
 
     constructor(
         title: Title,
@@ -41,115 +60,67 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         title.setTitle('Guider')
 
         api.startListening('GUIDING')
-        api.startListening('CAMERA')
-        api.startListening('MOUNT')
 
-        electron.on('CAMERA_UPDATED', (_, camera: Camera) => {
-            if (camera.name === this.camera?.name) {
+        electron.on('GUIDE_OUTPUT_UPDATED', (_, event: GuideOutput) => {
+            if (event.name === this.guideOutput?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.camera!, camera)
+                    Object.assign(this.guideOutput!, event)
                     this.update()
                 })
             }
         })
 
-        electron.on('MOUNT_UPDATED', (_, mount: Mount) => {
-            if (mount.name === this.mount?.name) {
-                ngZone.run(() => {
-                    Object.assign(this.mount!, mount)
-                    this.update()
-                })
-            }
-        })
-
-        electron.on('GUIDE_OUTPUT_UPDATED', (_, guideOutput: GuideOutput) => {
-            if (guideOutput.name === this.guideOutput?.name) {
-                ngZone.run(() => {
-                    Object.assign(this.guideOutput!, guideOutput)
-                    this.update()
-                })
-            }
-        })
-
-        electron.on('GUIDE_OUTPUT_ATTACHED', (_, guideOutput: GuideOutput) => {
+        electron.on('GUIDE_OUTPUT_ATTACHED', (_, event: GuideOutput) => {
             ngZone.run(() => {
-                this.guideOutputs.push(guideOutput)
+                this.guideOutputs.push(event)
             })
         })
 
-        electron.on('GUIDE_OUTPUT_DETACHED', (_, guideOutput: GuideOutput) => {
+        electron.on('GUIDE_OUTPUT_DETACHED', (_, event: GuideOutput) => {
             ngZone.run(() => {
-                const index = this.guideOutputs.findIndex(e => e.name === guideOutput.name)
+                const index = this.guideOutputs.findIndex(e => e.name === event.name)
                 if (index) this.guideOutputs.splice(index, 1)
             })
         })
 
-        electron.on('IMAGE_STAR_SELECTED', async (_, star: ImageStarSelected) => {
-            if (!this.guiding && star.camera.name === this.camera?.name) {
-                await this.api.selectGuideStar(star.x, star.y)
-            }
+        electron.on('GUIDER_CONNECTED', () => {
+            ngZone.run(() => {
+                this.phdConnected = true
+            })
         })
 
-        electron.on('GUIDE_LOCK_POSITION_CHANGED', (_, guider: Guider) => {
-            this.guider = guider
-
+        electron.on('GUIDER_DISCONNECTED', () => {
             ngZone.run(() => {
-                this.updateGuideState()
+                this.phdConnected = true
             })
+        })
 
-            this.drawTrackingBox()
+        electron.on('GUIDER_UPDATED', (_, event: Guider) => {
+            ngZone.run(() => {
+                this.phdState = event.state
+            })
+        })
+
+        electron.on('GUIDER_STEPPED', (_, event: GuideStar) => {
+            ngZone.run(() => {
+                this.phdGuideStar = event
+            })
+        })
+
+        electron.on('GUIDER_MESSAGE_RECEIVED', (_, event: { message: string }) => {
+            ngZone.run(() => {
+                this.phdMessage = event.message
+            })
         })
     }
 
     async ngAfterViewInit() {
-        this.cameras = await this.api.cameras()
-        this.mounts = await this.api.mounts()
-        this.guideOutputs = await this.api.attachedGuideOutputs()
+        this.guideOutputs = await this.api.guideOutputs()
     }
 
     @HostListener('window:unload')
     ngOnDestroy() {
         this.api.stopListening('GUIDING')
-        this.api.stopListening('CAMERA')
-        this.api.stopListening('MOUNT')
-    }
-
-    async cameraChanged() {
-        if (this.camera) {
-            const camera = await this.api.camera(this.camera.name)
-            Object.assign(this.camera, camera)
-
-            this.update()
-        }
-
-        // this.electron.send('GUIDE_CAMERA_CHANGED', this.camera)
-    }
-
-    connectCamera() {
-        if (this.cameraConnected) {
-            this.api.cameraDisconnect(this.camera!)
-        } else {
-            this.api.cameraConnect(this.camera!)
-        }
-    }
-
-    async mountChanged() {
-        if (this.mount) {
-            const mount = await this.api.mount(this.mount.name)
-            Object.assign(this.mount, mount)
-
-            this.update()
-        }
-
-        // this.electron.send('GUIDE_MOUNT_CHANGED', this.mount)
-    }
-
-    connectMount() {
-        if (this.mountConnected) {
-            this.api.mountDisconnect(this.mount!)
-        } else {
-            this.api.mountConnect(this.mount!)
-        }
     }
 
     async guideOutputChanged() {
@@ -171,40 +142,53 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    async openCameraImage() {
-        await this.browserWindow.openCameraImage(this.camera!)
+    guidePulseStart(...directions: GuideDirection[]) {
+        for (const direction of directions) {
+            switch (direction) {
+                case 'NORTH':
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideNorthDuration)
+                    break
+                case 'SOUTH':
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideSouthDuration)
+                    break
+                case 'WEST':
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideWestDuration)
+                    break
+                case 'EAST':
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideEastDuration)
+                    break
+            }
+        }
     }
 
-    async startLooping() {
-        await this.openCameraImage()
+    guidePulseStop() {
+        this.api.guideOutputPulse(this.guideOutput!, 'NORTH', 0)
+        this.api.guideOutputPulse(this.guideOutput!, 'SOUTH', 0)
+        this.api.guideOutputPulse(this.guideOutput!, 'WEST', 0)
+        this.api.guideOutputPulse(this.guideOutput!, 'EAST', 0)
+    }
 
-        this.api.startGuideLooping(this.camera!, this.mount!, this.guideOutput!)
+    connectPHD2() {
+        if (this.phdConnected) {
+            this.api.guidingDisconnect()
+        } else {
+            this.api.guidingConnect(this.phdHost, this.phdPort)
+        }
+    }
+
+    async guidingStart(event: MouseEvent) {
+        await this.api.guidingLoop(this.autoSelectStar)
+        await this.api.guidingStart(event.shiftKey)
+    }
+
+    guidingStop() {
+        this.api.guidingStop()
     }
 
     private update() {
-        if (this.camera) {
-            this.cameraConnected = this.camera.connected
-        }
-
-        if (this.mount) {
-            this.mountConnected = this.mount.connected
-        }
-
         if (this.guideOutput) {
             this.guideOutputConnected = this.guideOutput.connected
+            this.pulseGuiding = this.guideOutput.pulseGuiding
         }
-    }
-
-    private updateGuideState() {
-        if (this.guider) {
-            this.looping = this.guider.looping
-            this.calibrating = this.guider.calibrating
-            this.guiding = this.guider.guiding
-        }
-    }
-
-    private drawTrackingBox() {
-        const trackingBox = <GuideTrackingBox>{ camera: this.camera!, guider: this.guider! }
-        this.electron.send('DRAW_GUIDE_TRACKING_BOX', trackingBox)
     }
 }

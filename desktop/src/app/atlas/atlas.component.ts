@@ -13,7 +13,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
     CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location,
-    MinorPlanet, SATELLITE_GROUP_TYPES, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
+    MinorPlanet, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
 } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
@@ -475,7 +475,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     ) {
         app.title = 'Sky Atlas'
 
-        for (const item of SATELLITE_GROUP_TYPES) {
+        for (const item of SATELLITE_GROUPS) {
             const enabled = preference.get(`atlas.satellite.filter.${item}`, AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item))
             this.satelliteSearchGroup.set(item, enabled)
         }
@@ -604,11 +604,11 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         this.refreshing = true
 
         try {
-            for (const item of SATELLITE_GROUP_TYPES) {
+            for (const item of SATELLITE_GROUPS) {
                 this.preference.set(`atlas.satellite.filter.${item}`, this.satelliteSearchGroup.get(item))
             }
 
-            const groups = SATELLITE_GROUP_TYPES.filter(e => this.satelliteSearchGroup.get(e))
+            const groups = SATELLITE_GROUPS.filter(e => this.satelliteSearchGroup.get(e))
             this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText, groups)
         } finally {
             this.refreshing = false
@@ -616,7 +616,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     }
 
     resetSatelliteFilter() {
-        for (const item of SATELLITE_GROUP_TYPES) {
+        for (const item of SATELLITE_GROUPS) {
             const enabled = AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item)
             this.preference.set(`atlas.satellite.filter.${item}`, enabled)
             this.satelliteSearchGroup.set(item, enabled)
@@ -681,7 +681,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     async mountSlew() {
         const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
-        this.api.mountSlewTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        this.api.mountSlew(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
     }
 
     async mountSync() {

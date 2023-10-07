@@ -19,7 +19,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'mount', path: 'mount', icon: options.icon || 'telescope',
-            width: options.width || 400, height: options.height || 477,
+            width: options.width || 400, height: options.height || 469,
         })
     }
 
@@ -27,7 +27,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'camera', path: 'camera', icon: options.icon || 'camera',
-            width: options.width || 400, height: options.height || 502,
+            width: options.width || 400, height: options.height || 478,
         })
     }
 
@@ -35,7 +35,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'focuser', path: 'focuser', icon: options.icon || 'focus',
-            width: options.width || 360, height: options.height || 218,
+            width: options.width || 360, height: options.height || 203,
         })
     }
 
@@ -43,7 +43,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'wheel', path: 'wheel', icon: options.icon || 'filter-wheel',
-            width: options.width || 320, height: options.height || 171,
+            width: options.width || 280, height: options.height || 201,
         })
     }
 
@@ -51,7 +51,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'guider', path: 'guider', icon: options.icon || 'guider',
-            width: options.width || 720, height: options.height || 360,
+            width: options.width || 425, height: options.height || 405,
         })
     }
 
@@ -93,7 +93,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'framing', path: 'framing', icon: options.icon || 'framing',
-            width: options.width || 280, height: options.height || 321, params,
+            width: options.width || 280, height: options.height || 310, params,
         })
     }
 

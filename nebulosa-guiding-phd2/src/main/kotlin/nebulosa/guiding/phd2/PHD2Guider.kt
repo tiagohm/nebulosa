@@ -1,7 +1,10 @@
 package nebulosa.guiding.phd2
 
-import nebulosa.guiding.GuideListener
+import nebulosa.guiding.GuidePoint
+import nebulosa.guiding.GuideStar
 import nebulosa.guiding.Guider
+import nebulosa.guiding.GuiderListener
+import nebulosa.io.Base64OutputStream
 import nebulosa.log.loggerFor
 import nebulosa.math.arcsec
 import nebulosa.math.toArcsec
@@ -10,46 +13,72 @@ import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.commands.*
 import nebulosa.phd2.client.events.*
 import java.io.Closeable
+import java.time.Duration
+import javax.imageio.ImageIO
 import kotlin.math.min
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toKotlinDuration
 
 class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Closeable {
 
-    private val listeners = hashSetOf<GuideListener>()
-    @Volatile private var version = ""
-    @Volatile private var ditherDx = 0.0
-    @Volatile private var ditherDy = 0.0
+    private val dither = DoubleArray(2)
     @Volatile private var settling = false
     @Volatile private var pixelScale = 0.0
     @Volatile private var shiftRate = SiderealShiftTrackingRate.DISABLED
     @Volatile private var shiftEnabled = false
     @Volatile private var shiftRateAxis = ShiftAxesType.RADEC
+    @Volatile private var lockPosition = GuidePoint.ZERO
+    @Volatile private var starPosition = GuidePoint.ZERO
+    private val listeners = hashSetOf<GuiderListener>()
 
     override var state = State.STOPPED
         private set(value) {
-            val prevState = field
-            field = value
-
-            if (value != prevState) {
-                listeners.forEach { it.onStateChanged(value) }
+            if (value != field) {
+                field = value
+                listeners.forEach { it.onStateChange(value) }
             }
         }
+
+    override val isSettling
+        get() = settling
 
     init {
         client.registerListener(this)
     }
 
-    override fun registerGuideListener(listener: GuideListener) {
+    override var settlePixels = 1.5
+    override var settleTime = Duration.ofSeconds(10)!!
+    override var settleTimeout = Duration.ofSeconds(30)!!
+
+    override fun registerGuiderListener(listener: GuiderListener) {
         listeners.add(listener)
     }
 
-    override fun unregisterGuideListener(listener: GuideListener) {
+    override fun unregisterGuiderListener(listener: GuiderListener) {
         listeners.remove(listener)
     }
 
-    override var settlePixels = 1.5
-    override var settleTime = 10.seconds
-    override var settleTimeout = 30.seconds
+    private inline fun fireMessage(lazyMessage: () -> String) {
+        if (listeners.isNotEmpty()) {
+            val message = lazyMessage()
+            listeners.forEach { it.onMessage(message) }
+        }
+    }
+
+    override fun startLooping(autoSelectGuideStar: Boolean) {
+        val state = client.sendCommandSync(GetAppState)
+
+        if (state == State.STOPPED) {
+            if (autoSelectGuideStar) {
+                autoSelectGuideStar()
+            } else {
+                client.sendCommandSync(Loop)
+            }
+        } else if (state == State.LOOPING) {
+            if (autoSelectGuideStar) {
+                autoSelectGuideStar()
+            }
+        }
+    }
 
     override fun startGuiding(forceCalibration: Boolean, waitForSettle: Boolean) {
         val state = client.sendCommandSync(GetAppState)
@@ -65,7 +94,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
         }
 
         if (state == State.CALIBRATING) {
-            LOG.info("app is already calibrating. Waiting for calibration to finish")
+            LOG.info("app is already calibrating. waiting for calibration to finish")
             waitForCalibrationFinished()
         }
 
@@ -80,17 +109,15 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
                 waitForCalibrationFinished()
             }
 
-            val guidingHasBegun = waitForGuidingStarted()
+            waitForGuidingStarted()
 
-            if (guidingHasBegun) {
-                if (waitForSettle) {
-                    waitForSettling()
-                }
-
-                return
+            if (waitForSettle) {
+                waitForSettling()
             }
+
+            return
         } else {
-            LOG.warn("failed to select star")
+            fireMessage { "failed to select star" }
         }
 
         Thread.sleep(1000)
@@ -102,7 +129,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
         val state = client.sendCommandSync(GetAppState)
 
         if (state != State.GUIDING && state != State.CALIBRATING && state != State.LOST_LOCK) {
-            LOG.info("stop Guiding skipped, as the app is already in state {}", state)
+            fireMessage { "stop guiding skipped, as the app is already in state $state" }
             return
         }
 
@@ -114,7 +141,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
 
         if (state != State.LOOPING) {
             client.sendCommandSync(Loop)
-            Thread.sleep(5000)
+            waitForState(State.LOOPING)
         }
 
         // Wait for at least one exposure to finish.
@@ -135,7 +162,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
         if (state == State.GUIDING) {
             waitForSettling()
 
-            client.sendCommandSync(Dither(pixels, raOnly, settlePixels, settleTime, settleTimeout))
+            client.sendCommandSync(Dither(pixels, raOnly, settlePixels, settleTime.toKotlinDuration(), settleTimeout.toKotlinDuration()))
 
             settling = true
             waitForSettling()
@@ -150,23 +177,15 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
         }
     }
 
-    private fun waitForGuidingStarted(): Boolean {
-        val isGuiding = waitForState(State.GUIDING)
-        if (!isGuiding) return false
+    private fun waitForGuidingStarted() {
+        waitForState(State.GUIDING)
         settling = true
-        return true
     }
 
-    private fun waitForState(state: State): Boolean {
-        return try {
-            while (true) {
-                if (client.sendCommandSync(GetAppState) == state) break
-                Thread.sleep(1000)
-            }
-
-            true
-        } catch (e: Throwable) {
-            false
+    private fun waitForState(state: State) {
+        while (true) {
+            if (client.sendCommandSync(GetAppState) == state) break
+            Thread.sleep(1000)
         }
     }
 
@@ -185,8 +204,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
     private fun startGuide(forceCalibration: Boolean): Boolean {
         return try {
             waitForSettling()
-            val command = Guide(settlePixels, settleTime, settleTimeout, forceCalibration)
-            LOG.info("requesting to start guiding. command={}", command)
+            val command = Guide(settlePixels, settleTime.toKotlinDuration(), settleTimeout.toKotlinDuration(), forceCalibration)
             client.sendCommandSync(command)
             refreshShiftLockParams()
             true
@@ -218,7 +236,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
 
     private fun waitForSettling() {
         val startTime = System.currentTimeMillis()
-        val settleTimeout = min(30000L, settleTimeout.inWholeMilliseconds)
+        val settleTimeout = min(30000L, settleTimeout.toMillis())
 
         while (settling) {
             Thread.sleep(500)
@@ -267,57 +285,90 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
     }
 
     override fun onEventReceived(event: PHD2Event) {
+        LOG.info("event received: {}", event)
+
         when (event) {
             is AlertEvent -> Unit
             is AppStateEvent -> state = event.state
-            is CalibratingEvent -> Unit
-            is CalibrationCompleteEvent -> Unit
+            is CalibratingEvent -> {
+                fireMessage { "${event.state}. step=${event.step} ${event.direction} dx=${event.dx} dy=${event.dy}" }
+            }
+            is CalibrationCompleteEvent -> {
+                fireMessage { "calibration completed" }
+            }
             is CalibrationDataFlippedEvent -> Unit
-            is CalibrationFailedEvent -> Unit
-            ConfigurationChangeEvent -> client.sendCommandSync(GetPixelScale)
-            is GuideParamChangeEvent -> Unit
+            is CalibrationFailedEvent -> {
+                fireMessage { "calibration failed. ${event.reason}" }
+            }
+            ConfigurationChangeEvent -> client.sendCommand(GetPixelScale)
+            is GuideParamChangeEvent -> LOG.info("guide param changed: ${event.name} = ${event.value}")
             is GuideStepEvent -> {
                 state = State.GUIDING
-                listeners.forEach {
-                    it.onGuideStep(
-                        event.frame, event.time, event.raDistance, event.decDistance,
-                        event.raDirection, event.decDirection, event.raDuration, event.decDuration
-                    )
+
+                fireMessage { "frame=${event.frame} ra=${event.raDuration} ms ${event.raDirection} dec=${event.decDuration} ms ${event.decDirection}" }
+
+                if (listeners.isNotEmpty()) {
+                    client.sendCommand(GetStarImage(64))
+                        .whenComplete { image, e ->
+                            if (image != null) {
+                                val decodedImage = image.decodeImage()
+                                val imageBase64 = synchronized(STAR_IMAGE_OUTPUT_STREAM) {
+                                    ImageIO.write(decodedImage, "PNG", STAR_IMAGE_OUTPUT_STREAM)
+                                    "data:image/png;base64,${STAR_IMAGE_OUTPUT_STREAM.base64()}"
+                                }
+                                val guideStar = GuideStar(lockPosition, image.starPosition, imageBase64, event)
+                                listeners.forEach { it.onGuideStep(guideStar) }
+                            } else if (e != null) {
+                                LOG.error("failed to get star image", e)
+                            }
+                        }
                 }
             }
             is GuidingDitheredEvent -> {
-                ditherDx = event.dx
-                ditherDy = event.dy
+                dither[0] = event.dx
+                dither[1] = event.dy
+                fireMessage { "dithered. dx=${event.dx} dy=${event.dy}" }
             }
             GuidingStoppedEvent -> Unit
             LockPositionLostEvent -> {
                 state = State.LOST_LOCK
-                LOG.warn("lock position lost")
+                fireMessage { "lock position lost" }
             }
-            is LockPositionSetEvent -> LOG.info("lock position set. x={}, y={}", event.x, event.y)
+            is LockPositionSetEvent -> {
+                lockPosition = event
+                fireMessage { "lock position set. x=${event.x} y=${event.y}" }
+            }
             LockPositionShiftLimitReachedEvent -> restartForLostShiftLock()
-            is LoopingExposuresEvent -> state = State.LOOPING
+            is LoopingExposuresEvent -> {
+                state = State.LOOPING
+                fireMessage { "frame: ${event.frame}" }
+            }
             LoopingExposuresStoppedEvent -> state = State.STOPPED
             PausedEvent -> state = State.PAUSED
             ResumedEvent -> Unit
             SettleBeginEvent -> Unit
             is SettleDoneEvent -> {
                 settling = false
-                listeners.forEach { it.onSettleDone(event.error.isNotEmpty()) }
+                fireMessage { "settling done" }
             }
             is SettlingEvent -> {
                 settling = true
-                listeners.forEach { it.onSettlingStarted() }
-                LOG.info("settling started. event={}", event)
+                fireMessage { "settling started" }
             }
             is StarLostEvent -> {
                 state = State.LOST_LOCK
-                LOG.warn("star lost. status={}", event.status)
+                fireMessage { "star lost. status=${event.status}" }
             }
-            is StarSelectedEvent -> LOG.info("star selected. x={}, y={}", event.x, event.y)
-            is StartCalibrationEvent -> state = State.CALIBRATING
+            is StarSelectedEvent -> {
+                starPosition = event
+                fireMessage { "star selected. x=${event.x} y=${event.y}" }
+            }
+            is StartCalibrationEvent -> {
+                state = State.CALIBRATING
+                fireMessage { "calibration started" }
+            }
             StartGuidingEvent -> Unit
-            is VersionEvent -> version = event.version
+            is VersionEvent -> Unit
         }
     }
 
@@ -332,6 +383,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
     }
 
     override fun close() {
+        listeners.clear()
         client.unregisterListener(this)
         client.close()
     }
@@ -339,5 +391,6 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
     companion object {
 
         @JvmStatic private val LOG = loggerFor<PHD2Guider>()
+        @JvmStatic private val STAR_IMAGE_OUTPUT_STREAM = Base64OutputStream(32 * 1024)
     }
 }

@@ -10,8 +10,8 @@ data class CalibratingEvent(
     @field:JsonAlias("dist") val distance: Double = 0.0,
     @field:JsonAlias("dx") val dx: Double = 0.0,
     @field:JsonAlias("dy") val dy: Double = 0.0,
-    @field:JsonDeserialize(using = StarCoordinate.Deserializer::class)
-    @field:JsonAlias("pos") val position: StarCoordinate = StarCoordinate.EMPTY,
+    @field:JsonDeserialize(using = StarPosition.Deserializer::class)
+    @field:JsonAlias("pos") val position: StarPosition = StarPosition.ZERO,
     @field:JsonProperty("step") val step: Int = 0,
     @field:JsonAlias("State") val state: String = "",
 ) : PHD2Event

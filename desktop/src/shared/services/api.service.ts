@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core'
 import moment from 'moment'
 import {
     Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, DeepSkyObject, Device,
-    FilterWheel, Focuser, GuideDirection, GuideOutput, GuidingChart, GuidingStar, HipsSurvey,
+    FilterWheel, Focuser, GuideDirection, GuideOutput, HipsSurvey,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
     ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
     Mount, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
@@ -99,9 +99,9 @@ export class ApiService {
         return this.http.put<void>(`mounts/${mount.name}/sync?${query}`)
     }
 
-    mountSlewTo(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
+    mountSlew(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
         const query = this.http.query({ rightAscension, declination, j2000 })
-        return this.http.put<void>(`mounts/${mount.name}/slew-to?${query}`)
+        return this.http.put<void>(`mounts/${mount.name}/slew?${query}`)
     }
 
     mountGoTo(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
@@ -162,7 +162,7 @@ export class ApiService {
 
     pointMountHere(mount: Mount, path: string, x: number, y: number, synchronized: boolean = true) {
         const query = this.http.query({ path, x, y, synchronized })
-        return this.http.post<void>(`mounts/${mount.name}/point-here${query}`)
+        return this.http.post<void>(`mounts/${mount.name}/point-here?${query}`)
     }
 
     // FOCUSER
@@ -229,52 +229,52 @@ export class ApiService {
         return this.http.put<void>(`wheels/${wheel.name}/sync?names=${names.join(',')}`)
     }
 
-    attachedGuideOutputs() {
-        return this.http.get<GuideOutput[]>(`attachedGuideOutputs`)
+    // GUIDE OUTPUT
+
+    guideOutputs() {
+        return this.http.get<GuideOutput[]>(`guide-outputs`)
     }
 
     guideOutput(name: string) {
-        return this.http.get<GuideOutput>(`guideOutput?name=${name}`)
+        return this.http.get<GuideOutput>(`guide-outputs/${name}`)
     }
 
     guideOutputConnect(guideOutput: GuideOutput) {
-        return this.http.post<void>(`guideOutputConnect?name=${guideOutput.name}`)
+        return this.http.put<void>(`guide-outputs/${guideOutput.name}/connect`)
     }
 
     guideOutputDisconnect(guideOutput: GuideOutput) {
-        return this.http.post<void>(`guideOutputDisconnect?name=${guideOutput.name}`)
+        return this.http.put<void>(`guide-outputs/${guideOutput.name}/disconnect`)
     }
 
-    startGuideLooping(camera: Camera, mount: Mount, guideOutput: GuideOutput) {
-        return this.http.post<void>(`startGuideLooping?camera=${camera.name}&mount=${mount.name}&guideOutput=${guideOutput.name}`)
+    guideOutputPulse(guideOutput: GuideOutput, direction: GuideDirection, duration: number) {
+        const query = this.http.query({ direction, duration })
+        return this.http.put<void>(`guide-outputs/${guideOutput.name}/pulse?${query}`)
     }
 
-    stopGuideLooping() {
-        return this.http.post<void>(`stopGuideLooping`)
+    // GUIDING
+
+    guidingConnect(host: string = 'localhost', port: number = 4400) {
+        const query = this.http.query({ host, port })
+        return this.http.put<void>(`guiding/connect?${query}`)
     }
 
-    startGuiding(forceCalibration: boolean = false) {
-        return this.http.post<void>(`startGuiding?forceCalibration=${forceCalibration}`)
+    guidingDisconnect() {
+        return this.http.delete<void>(`guiding/disconnect`)
     }
 
-    stopGuiding() {
-        return this.http.post<void>(`stopGuiding`)
+    guidingLoop(autoSelectGuideStar: boolean = true) {
+        const query = this.http.query({ autoSelectGuideStar })
+        return this.http.put<void>(`guiding/loop?${query}`)
     }
 
-    guidingChart() {
-        return this.http.get<GuidingChart>(`guidingChart`)
+    guidingStart(forceCalibration: boolean = false) {
+        const query = this.http.query({ forceCalibration })
+        return this.http.put<void>(`guiding/start?${query}`)
     }
 
-    guidingStar() {
-        return this.http.get<GuidingStar | null>(`guidingStar`)
-    }
-
-    selectGuideStar(x: number, y: number) {
-        return this.http.post<void>(`selectGuideStar?x=${x}&y=${y}`)
-    }
-
-    deselectGuideStar() {
-        return this.http.post<void>(`deselectGuideStar`)
+    guidingStop() {
+        return this.http.delete<void>(`guiding/stop`)
     }
 
     // IMAGE

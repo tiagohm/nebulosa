@@ -10,24 +10,27 @@ import nebulosa.log.loggerFor
 import nebulosa.phd2.client.commands.CompletableCommand
 import nebulosa.phd2.client.commands.PHD2CommandFailedException
 import nebulosa.phd2.client.events.*
+import java.io.ByteArrayOutputStream
 
 class PHD2ProtocolDecoder(
     private val client: PHD2Client,
     private val mapper: ObjectMapper,
 ) : ByteToMessageDecoder() {
 
-    private val data = ByteArray(1024)
-    @Volatile private var dataIdx = 0
+    private val data = object : ByteArrayOutputStream(32 * 1024) {
+
+        fun readTree() = mapper.readTree(buf, 0, count)
+    }
 
     override fun decode(ctx: ChannelHandlerContext, buf: ByteBuf, out: MutableList<Any>) {
         for (i in 0 until buf.readableBytes()) {
             val b = buf.readByte()
 
-            data[dataIdx++] = b
+            data.write(b.toInt())
 
             if (b == 0x0A.toByte()) {
                 try {
-                    val eventTree = mapper.readTree(data, 0, dataIdx)
+                    val eventTree = data.readTree()
 
                     if (eventTree.has("jsonrpc")) {
                         processJsonRPC(eventTree)
@@ -37,7 +40,7 @@ class PHD2ProtocolDecoder(
                 } catch (e: Throwable) {
                     LOG.error("failed to process PHD2 message", e)
                 } finally {
-                    dataIdx = 0
+                    data.reset()
                 }
 
                 return

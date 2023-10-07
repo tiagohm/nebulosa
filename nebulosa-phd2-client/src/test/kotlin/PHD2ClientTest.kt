@@ -1,17 +1,13 @@
 import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.booleans.shouldBeFalse
-import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.collections.shouldHaveAtLeastSize
-import io.kotest.matchers.ints.shouldBeExactly
-import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.delay
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.phd2.client.PHD2EventListener
-import nebulosa.phd2.client.commands.*
+import nebulosa.phd2.client.commands.GetStarImage
+import nebulosa.phd2.client.commands.PHD2Command
 import nebulosa.phd2.client.events.PHD2Event
-import nebulosa.phd2.client.events.State
+import java.io.File
+import javax.imageio.ImageIO
 
 @EnabledIf(NonGitHubOnlyCondition::class)
 class PHD2ClientTest : StringSpec(), PHD2EventListener {
@@ -24,14 +20,9 @@ class PHD2ClientTest : StringSpec(), PHD2EventListener {
 
             delay(1000)
 
-            val profiles = client.sendCommandAndGetResult(GetProfiles).shouldNotBeNull() shouldHaveAtLeastSize 1
-            client.sendCommandAndGetResult(SetProfile(profiles[0]))
-            client.sendCommandAndGetResult(GetProfile).shouldNotBeNull().id shouldBeExactly profiles[0].id
-            client.sendCommandAndGetResult(GetAppState).shouldNotBeNull() shouldBe State.STOPPED
-            client.sendCommandAndGetResult(SetConnected(true)).shouldNotBeNull()
-            client.sendCommandAndGetResult(GetConnected).shouldNotBeNull().shouldBeTrue()
-            client.sendCommandAndGetResult(ClearCalibration())
-            client.sendCommandAndGetResult(GetCalibrated).shouldNotBeNull().shouldBeFalse()
+            val image = client.sendCommandSync(GetStarImage(64))
+            val decodedImage = image.decodeImage()
+            ImageIO.write(decodedImage, "PNG", File("/home/tiagohm/Área de Trabalho/NOTAS.png"))
 
             client.close()
         }

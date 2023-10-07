@@ -5,9 +5,6 @@ import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.firstOnSwitchOrNull
 import nebulosa.indi.device.gps.GPS
-import nebulosa.indi.device.gps.GPSDetached
-import nebulosa.indi.device.guide.GuideOutputAttached
-import nebulosa.indi.device.guide.GuideOutputDetached
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
 import nebulosa.indi.protocol.*
@@ -155,7 +152,7 @@ internal open class MountDevice(
                         if (!canPulseGuide && message is DefNumberVector) {
                             canPulseGuide = true
 
-                            handler.fireOnEventReceived(GuideOutputAttached(this))
+                            handler.registerGuideOutput(this)
 
                             LOG.info("guide output attached: {}", name)
                         }
@@ -317,13 +314,13 @@ internal open class MountDevice(
     override fun close() {
         if (canPulseGuide) {
             canPulseGuide = false
-            handler.fireOnEventReceived(GuideOutputDetached(this))
+            handler.unregisterGuideOutput(this)
             LOG.info("guide output detached: {}", name)
         }
 
         if (hasGPS) {
             hasGPS = false
-            handler.fireOnEventReceived(GPSDetached(this))
+            handler.unregisterGPS(this)
             LOG.info("GPS detached: {}", name)
         }
     }

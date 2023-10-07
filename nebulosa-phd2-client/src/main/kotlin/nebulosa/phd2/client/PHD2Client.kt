@@ -8,6 +8,7 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
 import nebulosa.json.SimpleJsonModule
 import nebulosa.json.converters.PathConverter
+import nebulosa.log.loggerFor
 import nebulosa.netty.NettyClient
 import nebulosa.phd2.client.commands.CompletableCommand
 import nebulosa.phd2.client.commands.PHD2Command
@@ -47,10 +48,16 @@ class PHD2Client(
     fun <T> sendCommand(command: PHD2Command<T>, timeout: Long = 30): CompletableFuture<T> {
         val task = CompletableFuture<T>()
         val id = UUID.randomUUID().toString()
+
         val completableCommand = CompletableCommand(command, task, id)
         commands[id] = completableCommand
         channel.get()?.channel()?.writeAndFlush(completableCommand)
-        return task.orTimeout(max(1L, timeout), TimeUnit.SECONDS).whenComplete { _, _ -> commands.remove(id) }
+
+        return task.orTimeout(max(1L, timeout), TimeUnit.SECONDS)
+            .whenComplete { _, e ->
+                if (e != null) LOG.error("Command error: $command", e)
+                commands.remove(id)
+            }
     }
 
     fun <T> sendCommandSync(command: PHD2Command<T>, timeout: Long = 30): T {
@@ -58,6 +65,8 @@ class PHD2Client(
     }
 
     companion object {
+
+        @JvmStatic private val LOG = loggerFor<PHD2Client>()
 
         private val MODULE = SimpleJsonModule()
 

@@ -34,7 +34,6 @@ abstract class NettyClient : Runnable, Closeable {
         b.group(masterGroup)
             .channel(NioSocketChannel::class.java)
             .handler(channelInitialzer)
-            .option(ChannelOption.SO_BACKLOG, 128)
             .option(ChannelOption.TCP_NODELAY, true)
 
         val future = b.connect(host, port).sync()

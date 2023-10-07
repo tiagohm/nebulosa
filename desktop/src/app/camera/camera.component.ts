@@ -179,10 +179,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
         api.startListening('CAMERA')
 
-        electron.on('CAMERA_UPDATED', (_, camera: Camera) => {
-            if (camera.name === this.camera?.name) {
+        electron.on('CAMERA_UPDATED', (_, event: Camera) => {
+            if (event.name === this.camera?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.camera!, camera)
+                    Object.assign(this.camera!, event)
                     this.update()
                 })
             }
@@ -216,9 +216,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.on('WHEEL_CHANGED', (_, wheel?: FilterWheel) => {
+        electron.on('WHEEL_CHANGED', (_, event?: FilterWheel) => {
             ngZone.run(() => {
-                this.wheel = wheel
+                this.wheel = event
             })
         })
     }
