@@ -1,10 +1,10 @@
 import { AfterContentInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
-import { CronJob } from 'cron'
 import { UIChart } from 'primeng/chart'
 import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
+import { EVERY_MINUTE_CRON_TIME } from '../../shared/constants'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
 import { oneDecimalPlaceFormatter, twoDigitsFormatter } from '../../shared/formatters'
 import { ApiService } from '../../shared/services/api.service'
@@ -454,12 +454,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         }
     }
 
-    private readonly cronJob = new CronJob('0 */1 * * * *', () => {
-        if (!this.useManualDateTime) {
-            this.refreshTab()
-        }
-    }, null, false)
-
     private static readonly DEFAULT_SATELLITE_FILTERS: SatelliteGroupType[] = [
         'AMATEUR', 'BEIDOU', 'GALILEO', 'GLO_OPS', 'GNSS', 'GPS_OPS',
         'ONEWEB', 'SCIENCE', 'STARLINK', 'STATIONS', 'VISUAL'
@@ -480,11 +474,17 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
             this.satelliteSearchGroup.set(item, enabled)
         }
 
+        electron.on('CRON_TICKED', () => {
+            if (!this.useManualDateTime) {
+                this.refreshTab()
+            }
+        })
+
         // TODO: Refresh graph and twilight if hours past 12 (noon)
     }
 
     ngOnInit() {
-        this.cronJob.start()
+        this.electron.registerCron(EVERY_MINUTE_CRON_TIME)
     }
 
     async ngAfterContentInit() {
@@ -511,7 +511,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        this.cronJob.stop()
+        this.electron.unregisterCron()
     }
 
     tabChanged() {
