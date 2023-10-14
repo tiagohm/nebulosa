@@ -96,6 +96,7 @@ internal data class Type21Segment(
     }
 
     private fun computeCoefficient(recordIndex: Int): Boolean {
+        if (recordIndex < 0) return false
         if (recordIndex in coefficients) return true
 
         val mdaRecord = spk.daf.read(

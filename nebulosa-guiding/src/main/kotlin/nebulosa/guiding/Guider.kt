@@ -1,77 +1,36 @@
 package nebulosa.guiding
 
-import nebulosa.imaging.Image
+import java.time.Duration
 
-interface Guider : Iterable<GuidePoint> {
+interface Guider {
 
-    val primaryStar: StarPoint
+    val state: GuideState
 
-    val lockPosition: GuidePoint
+    val pixelScale: Double
 
-    var searchRegion: Double
+    val isSettling: Boolean
 
-    var dither: Dither
+    var settlePixels: Double
 
-    var ditherAmount: Double
+    var settleTime: Duration
 
-    var ditherRAOnly: Boolean
+    var settleTimeout: Duration
 
-    var calibrationFlipRequiresDecFlip: Boolean
+    fun registerGuiderListener(listener: GuiderListener)
 
-    var assumeDECOrthogonalToRA: Boolean
+    fun unregisterGuiderListener(listener: GuiderListener)
 
-    var calibrationStep: Int
+    fun autoSelectGuideStar()
 
-    var calibrationDistance: Int
+    fun startLooping(autoSelectGuideStar: Boolean = true)
 
-    var useDECCompensation: Boolean
+    fun startGuiding(forceCalibration: Boolean = false, waitForSettle: Boolean = true)
 
-    var declinationGuideMode: DeclinationGuideMode
-
-    var maxDECDuration: Int
-
-    var maxRADuration: Int
-
-    val isGuidingRAOnly
-        get() = declinationGuideMode == DeclinationGuideMode.NONE
-
-    var noiseReductionMethod: NoiseReductionMethod
-
-    var isGuidingEnabled: Boolean
-
-    fun processImage(image: Image)
-
-    val stats: List<GuideStats>
-
-    fun autoSelect(): Boolean
-
-    fun selectGuideStar(x: Double, y: Double): Boolean
-
-    fun deselectGuideStar()
-
-    val isGuiding: Boolean
-
-    fun startGuiding()
-
-    fun stopGuiding()
-
-    fun reset(fullReset: Boolean)
-
-    val isCalibrating: Boolean
+    fun stopGuiding(force: Boolean = false)
 
     fun clearCalibration()
 
-    fun loadCalibration(calibration: GuideCalibration)
+    fun dither(pixels: Double, raOnly: Boolean = false)
 
-    fun dither()
-
-    fun registerListener(listener: GuiderListener)
-
-    fun unregisterListener(listener: GuiderListener)
-
-    var isMultiStar: Boolean
-
-    val isLockPositionShiftEnabled: Boolean
-
-    val isSettling: Boolean
+    fun waitForSettling()
 }

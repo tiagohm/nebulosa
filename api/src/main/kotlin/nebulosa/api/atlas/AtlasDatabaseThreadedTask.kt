@@ -97,7 +97,7 @@ class AtlasDatabaseThreadedTask(
 
     companion object {
 
-        const val DATABASE_VERSION = "2023.09.29"
+        const val DATABASE_VERSION = "2023.10.05"
         const val DATABASE_VERSION_KEY = "DATABASE_VERSION"
 
         @JvmStatic private val LOG = loggerFor<AtlasDatabaseThreadedTask>()

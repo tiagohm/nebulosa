@@ -54,7 +54,7 @@ class IERSA : IERS() {
     override lateinit var dut1: DoubleArray
         private set
 
-    override val columns = Column.values().toList()
+    override val columns = Column.entries
 
     override fun canUseThisLine(line: String) = line.trim().length > 17 && line[16] == 'I'
 

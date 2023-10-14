@@ -1,10 +1,10 @@
 import { AfterContentInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
-import { CronJob } from 'cron'
 import { UIChart } from 'primeng/chart'
 import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
+import { EVERY_MINUTE_CRON_TIME } from '../../shared/constants'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
 import { oneDecimalPlaceFormatter, twoDigitsFormatter } from '../../shared/formatters'
 import { ApiService } from '../../shared/services/api.service'
@@ -13,7 +13,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
     CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location,
-    MinorPlanet, SATELLITE_GROUP_TYPES, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
+    MinorPlanet, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
 } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
@@ -454,12 +454,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         }
     }
 
-    private readonly cronJob = new CronJob('0 */1 * * * *', () => {
-        if (!this.useManualDateTime) {
-            this.refreshTab()
-        }
-    }, null, false)
-
     private static readonly DEFAULT_SATELLITE_FILTERS: SatelliteGroupType[] = [
         'AMATEUR', 'BEIDOU', 'GALILEO', 'GLO_OPS', 'GNSS', 'GPS_OPS',
         'ONEWEB', 'SCIENCE', 'STARLINK', 'STATIONS', 'VISUAL'
@@ -475,16 +469,22 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     ) {
         app.title = 'Sky Atlas'
 
-        for (const item of SATELLITE_GROUP_TYPES) {
+        for (const item of SATELLITE_GROUPS) {
             const enabled = preference.get(`atlas.satellite.filter.${item}`, AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item))
             this.satelliteSearchGroup.set(item, enabled)
         }
+
+        electron.on('CRON_TICKED', () => {
+            if (!this.useManualDateTime) {
+                this.refreshTab()
+            }
+        })
 
         // TODO: Refresh graph and twilight if hours past 12 (noon)
     }
 
     ngOnInit() {
-        this.cronJob.start()
+        this.electron.registerCron(EVERY_MINUTE_CRON_TIME)
     }
 
     async ngAfterContentInit() {
@@ -511,7 +511,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        this.cronJob.stop()
+        this.electron.unregisterCron()
     }
 
     tabChanged() {
@@ -604,11 +604,11 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         this.refreshing = true
 
         try {
-            for (const item of SATELLITE_GROUP_TYPES) {
+            for (const item of SATELLITE_GROUPS) {
                 this.preference.set(`atlas.satellite.filter.${item}`, this.satelliteSearchGroup.get(item))
             }
 
-            const groups = SATELLITE_GROUP_TYPES.filter(e => this.satelliteSearchGroup.get(e))
+            const groups = SATELLITE_GROUPS.filter(e => this.satelliteSearchGroup.get(e))
             this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText, groups)
         } finally {
             this.refreshing = false
@@ -616,7 +616,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     }
 
     resetSatelliteFilter() {
-        for (const item of SATELLITE_GROUP_TYPES) {
+        for (const item of SATELLITE_GROUPS) {
             const enabled = AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item)
             this.preference.set(`atlas.satellite.filter.${item}`, enabled)
             this.satelliteSearchGroup.set(item, enabled)
@@ -681,7 +681,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     async mountSlew() {
         const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
-        this.api.mountSlewTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        this.api.mountSlew(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
     }
 
     async mountSync() {

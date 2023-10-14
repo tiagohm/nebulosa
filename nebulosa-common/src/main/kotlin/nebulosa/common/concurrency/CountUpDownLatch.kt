@@ -1,5 +1,6 @@
 package nebulosa.common.concurrency
 
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.AbstractQueuedSynchronizer
@@ -46,6 +47,10 @@ class CountUpDownLatch(initialCount: Int = 0) : AtomicBoolean(true) {
 
     fun await(timeout: Long, unit: TimeUnit, n: Int = 0): Boolean {
         return n >= 0 && sync.tryAcquireSharedNanos(n, unit.toNanos(timeout))
+    }
+
+    fun await(timeout: Duration, n: Int = 0): Boolean {
+        return n >= 0 && sync.tryAcquireSharedNanos(n, timeout.toNanos())
     }
 
     private class Sync(private val latch: AtomicBoolean) : AbstractQueuedSynchronizer() {

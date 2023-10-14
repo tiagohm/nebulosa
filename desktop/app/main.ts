@@ -4,16 +4,16 @@ import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
 import { Camera, FilterWheel, Focuser, INDI_EVENT_TYPES, INTERNAL_EVENT_TYPES, Mount, OpenWindow } from './types'
 
+import { CronJob } from 'cron'
 import { WebSocket } from 'ws'
 import { OpenDirectory } from '../src/shared/types'
 Object.assign(global, { WebSocket })
 
-let homeWindow: BrowserWindow | null = null
-const secondaryWindows = new Map<string, BrowserWindow>()
+const browserWindows = new Map<string, BrowserWindow>()
+const cronedWindows = new Map<BrowserWindow, CronJob<null, null>[]>()
 let api: ChildProcessWithoutNullStreams | null = null
 let apiPort = 7000
 let wsClient: Client
-let splash: BrowserWindow | null = null
 
 let selectedCamera: Camera
 let selectedMount: Mount
@@ -26,8 +26,9 @@ const serve = args.some(e => e === '--serve')
 app.commandLine.appendSwitch('disable-http-cache')
 
 function createMainWindow() {
-    splash?.close()
-    splash = null
+    const splashWindow = browserWindows.get('splash')
+    splashWindow?.close()
+    browserWindows.delete('splash')
 
     createWindow({ id: 'home', path: 'home' })
 
@@ -55,16 +56,14 @@ function createMainWindow() {
 }
 
 function createWindow(data: OpenWindow<any>) {
-    if (secondaryWindows.has(data.id)) {
-        const window = secondaryWindows.get(data.id)!
+    if (browserWindows.has(data.id)) {
+        const window = browserWindows.get(data.id)!
 
         if (data.params) {
             window.webContents.send('PARAMS_CHANGED', data.params)
         }
 
         return window
-    } else if (data.id === 'home' && homeWindow) {
-        return homeWindow
     }
 
     const size = screen.getPrimaryDisplay().workAreaSize
@@ -135,36 +134,38 @@ function createWindow(data: OpenWindow<any>) {
     })
 
     window.on('close', () => {
+        const homeWindow = browserWindows.get('home')
+
         if (window === homeWindow) {
-            for (const [_, value] of secondaryWindows) {
+            browserWindows.delete('home')
+
+            for (const [_, value] of browserWindows) {
                 value.close()
             }
 
-            homeWindow = null
+            browserWindows.clear()
 
             api?.kill(0)
         } else {
-            for (const [key, value] of secondaryWindows) {
+            for (const [key, value] of browserWindows) {
                 if (value === window) {
-                    secondaryWindows.delete(key)
+                    browserWindows.delete(key)
                     break
                 }
             }
         }
     })
 
-    if (data.id === 'home') {
-        homeWindow = window
-    } else {
-        secondaryWindows.set(data.id, window)
-    }
+    browserWindows.set(data.id, window)
 
     return window
 }
 
 function createSplashScreen() {
-    if (!serve && splash === null) {
-        splash = new BrowserWindow({
+    let splashWindow = browserWindows.get('splash')
+
+    if (!serve && splashWindow === null) {
+        splashWindow = new BrowserWindow({
             width: 512,
             height: 512,
             transparent: true,
@@ -174,16 +175,17 @@ function createSplashScreen() {
         })
 
         const url = new URL(path.join('file:', __dirname, 'assets', 'images', 'splash.png'))
-        splash.loadURL(url.href)
+        splashWindow.loadURL(url.href)
 
-        splash.show()
-        splash.center()
+        splashWindow.show()
+        splashWindow.center()
+
+        browserWindows.set('splash', splashWindow)
     }
 }
 
 function findWindowById(id: number) {
-    if (homeWindow?.id === id) return homeWindow
-    for (const [_, window] of secondaryWindows) if (window.id === id) return window
+    for (const [_, window] of browserWindows) if (window.id === id) return window
     return undefined
 }
 
@@ -236,13 +238,15 @@ try {
     })
 
     app.on('activate', () => {
-        if (homeWindow === null) {
+        const homeWindow = browserWindows.get('home')
+
+        if (!homeWindow) {
             startApp()
         }
     })
 
     ipcMain.handle('OPEN_WINDOW', async (_, data: OpenWindow<any>) => {
-        const newWindow = !secondaryWindows.has(data.id)
+        const newWindow = !browserWindows.has(data.id)
 
         const window = createWindow(data)
 
@@ -264,7 +268,8 @@ try {
     })
 
     ipcMain.on('OPEN_FITS', async (event) => {
-        const value = await dialog.showOpenDialog(homeWindow!, {
+        const ownerWindow = findWindowById(event.sender.id)
+        const value = await dialog.showOpenDialog(ownerWindow!, {
             filters: [{ name: 'FITS files', extensions: ['fits', 'fit'] }],
             properties: ['openFile'],
         })
@@ -273,7 +278,8 @@ try {
     })
 
     ipcMain.on('SAVE_FITS_AS', async (event) => {
-        const value = await dialog.showSaveDialog(homeWindow!, {
+        const ownerWindow = findWindowById(event.sender.id)
+        const value = await dialog.showSaveDialog(ownerWindow!, {
             filters: [
                 { name: 'FITS files', extensions: ['fits', 'fit'] },
                 { name: 'Image files', extensions: ['png', 'jpe?g'] },
@@ -285,7 +291,8 @@ try {
     })
 
     ipcMain.on('OPEN_DIRECTORY', async (event, data?: OpenDirectory) => {
-        const value = await dialog.showOpenDialog(homeWindow!, {
+        const ownerWindow = findWindowById(event.sender.id)
+        const value = await dialog.showOpenDialog(ownerWindow!, {
             properties: ['openDirectory'],
             defaultPath: data?.defaultPath,
         })
@@ -322,7 +329,7 @@ try {
 
     ipcMain.on('CLOSE_WINDOW', (event, id?: string) => {
         if (id) {
-            for (const [key, value] of secondaryWindows) {
+            for (const [key, value] of browserWindows) {
                 if (key === id) {
                     value.close()
                     event.returnValue = true
@@ -336,6 +343,32 @@ try {
             window?.close()
             event.returnValue = !!window
         }
+    })
+
+    ipcMain.on('REGISTER_CRON', async (event, cronTime: string) => {
+        const window = findWindowById(event.sender.id)
+
+        if (!window) return
+
+        const cronJobs = cronedWindows.get(window) ?? []
+        cronJobs.forEach(e => e.stop())
+        const cronJob = new CronJob(cronTime, () => window.webContents.send('CRON_TICKED', cronTime))
+        cronJobs.push(cronJob)
+        cronedWindows.set(window, cronJobs)
+
+        event.returnValue = true
+    })
+
+    ipcMain.on('UNREGISTER_CRON', async (event) => {
+        const window = findWindowById(event.sender.id)
+
+        if (!window) return
+
+        const cronJobs = cronedWindows.get(window)
+        cronJobs?.forEach(e => e.stop())
+        cronedWindows.delete(window)
+
+        event.returnValue = true
     })
 
     for (const item of INTERNAL_EVENT_TYPES) {
@@ -379,12 +412,12 @@ try {
 }
 
 function sendToAllWindows(channel: string, data: any, home: boolean = true) {
-    for (const [_, value] of secondaryWindows) {
-        value.webContents.send(channel, data)
-    }
+    const homeWindow = browserWindows.get('home')
 
-    if (home) {
-        homeWindow?.webContents?.send(channel, data)
+    for (const [_, window] of browserWindows) {
+        if (window !== homeWindow || home) {
+            window.webContents.send(channel, data)
+        }
     }
 
     if (serve) {

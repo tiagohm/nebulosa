@@ -1,7 +1,0 @@
-package nebulosa.phd2.client.event
-
-import com.fasterxml.jackson.annotation.JsonProperty
-
-data class CalibrationDataFlipped(
-    @field:JsonProperty("Mount") var mount: String = "",
-) : PHD2Event

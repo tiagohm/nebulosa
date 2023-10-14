@@ -150,10 +150,10 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
         api.startListening('MOUNT')
 
-        electron.on('MOUNT_UPDATED', (_, mount: Mount) => {
-            if (mount.name === this.mount?.name) {
+        electron.on('MOUNT_UPDATED', (_, event: Mount) => {
+            if (event.name === this.mount?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.mount!, mount)
+                    Object.assign(this.mount!, event)
                     this.update()
                 })
             }
@@ -217,7 +217,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     async slewTo() {
-        await this.api.mountSlewTo(this.mount!, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
+        await this.api.mountSlew(this.mount!, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
         this.savePreference()
     }
 
@@ -241,16 +241,16 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             if (this.moveToDirection[0] !== pressed) {
                 switch (direction[0]) {
                     case 'N':
-                        this.api.mountMove(this.mount!, 'UP_NORTH', pressed)
+                        this.api.mountMove(this.mount!, 'NORTH', pressed)
                         break
                     case 'S':
-                        this.api.mountMove(this.mount!, 'DOWN_SOUTH', pressed)
+                        this.api.mountMove(this.mount!, 'SOUTH', pressed)
                         break
                     case 'W':
-                        this.api.mountMove(this.mount!, 'LEFT_WEST', pressed)
+                        this.api.mountMove(this.mount!, 'WEST', pressed)
                         break
                     case 'E':
-                        this.api.mountMove(this.mount!, 'RIGHT_EAST', pressed)
+                        this.api.mountMove(this.mount!, 'EAST', pressed)
                         break
                 }
 
@@ -260,10 +260,10 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             if (this.moveToDirection[1] !== pressed) {
                 switch (direction[1]) {
                     case 'W':
-                        this.api.mountMove(this.mount!, 'LEFT_WEST', pressed)
+                        this.api.mountMove(this.mount!, 'WEST', pressed)
                         break
                     case 'E':
-                        this.api.mountMove(this.mount!, 'RIGHT_EAST', pressed)
+                        this.api.mountMove(this.mount!, 'EAST', pressed)
                         break
                     default:
                         return

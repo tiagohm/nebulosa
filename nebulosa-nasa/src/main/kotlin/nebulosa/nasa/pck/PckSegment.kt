@@ -1,4 +1,4 @@
-package nebulosa.nasa.pck;
+package nebulosa.nasa.pck
 
 import nebulosa.erfa.PositionAndVelocity
 import nebulosa.time.InstantOfTime

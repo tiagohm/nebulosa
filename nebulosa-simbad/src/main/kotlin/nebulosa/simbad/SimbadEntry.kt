@@ -1,4 +1,4 @@
-package nebulosa.simbad;
+package nebulosa.simbad
 
 import nebulosa.math.Angle
 import nebulosa.math.Distance

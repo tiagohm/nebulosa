@@ -1,91 +1,64 @@
 package nebulosa.api.guiding
 
-import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.PositiveOrZero
-import nebulosa.api.connection.ConnectionService
-import nebulosa.api.data.responses.GuidingChartResponse
-import nebulosa.api.data.responses.GuidingStarResponse
-import nebulosa.indi.device.guide.GuideOutput
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
-class GuidingController(
-    private val connectionService: ConnectionService,
-    private val guidingService: GuidingService,
-) {
+@RequestMapping("guiding")
+class GuidingController(private val guidingService: GuidingService) {
 
-    @GetMapping("attachedGuideOutputs")
-    fun guideOutputs(): List<GuideOutput> {
-        return connectionService.guideOutputs()
-    }
-
-    @GetMapping("guideOutput")
-    fun guideOutput(@RequestParam @Valid @NotBlank name: String): GuideOutput {
-        return requireNotNull(connectionService.guideOutput(name))
-    }
-
-    @PostMapping("guideOutputConnect")
-    fun connect(@RequestParam @Valid @NotBlank name: String) {
-        val guideOutput = requireNotNull(connectionService.guideOutput(name))
-        guidingService.connect(guideOutput)
-    }
-
-    @PostMapping("guideOutputDisconnect")
-    fun disconnect(@RequestParam @Valid @NotBlank name: String) {
-        val guideOutput = requireNotNull(connectionService.guideOutput(name))
-        guidingService.disconnect(guideOutput)
-    }
-
-    @PostMapping("guideLoopingStart")
-    fun startLooping(
-        @RequestParam("camera") @Valid @NotBlank cameraName: String,
-        @RequestParam("mount") @Valid @NotBlank mountName: String,
-        @RequestParam("guideOutput") @Valid @NotBlank guideOutputName: String,
-        @RequestBody @Valid body: GuideStartLooping,
+    @PutMapping("connect")
+    fun connect(
+        @RequestParam(required = false, defaultValue = "localhost") host: String,
+        @RequestParam(required = false, defaultValue = "4400") port: Int,
     ) {
-        val camera = requireNotNull(connectionService.camera(cameraName))
-        val mount = requireNotNull(connectionService.mount(mountName))
-        val guideOutput = requireNotNull(connectionService.guideOutput(guideOutputName))
-        guidingService.startLooping(camera, mount, guideOutput, body)
+        guidingService.connect(host, port)
     }
 
-    @PostMapping("guidingStart")
-    fun startGuiding(
-        @RequestParam(required = false, defaultValue = "false") forceCalibration: Boolean,
+    @DeleteMapping("disconnect")
+    fun disconnect() {
+        guidingService.disconnect()
+    }
+
+    @GetMapping("status")
+    fun status(): GuiderStatus {
+        return guidingService.status()
+    }
+
+    @GetMapping("history")
+    fun history(): List<HistoryStep> {
+        return guidingService.history()
+    }
+
+    @GetMapping("history/latest")
+    fun latestHistory(): HistoryStep? {
+        return guidingService.latestHistory()
+    }
+
+    @PutMapping("history/clear")
+    fun clearHistory() {
+        return guidingService.clearHistory()
+    }
+
+    @PutMapping("loop")
+    fun loop(@RequestParam(required = false, defaultValue = "true") autoSelectGuideStar: Boolean) {
+        guidingService.loop(autoSelectGuideStar)
+    }
+
+    @PutMapping("start")
+    fun start(@RequestParam(required = false, defaultValue = "false") forceCalibration: Boolean) {
+        guidingService.start(forceCalibration)
+    }
+
+    @PutMapping("dither")
+    fun dither(
+        @RequestParam pixels: Double,
+        @RequestParam(required = false, defaultValue = "false") raOnly: Boolean,
     ) {
-        guidingService.startGuiding(forceCalibration)
+        return guidingService.dither(pixels, raOnly)
     }
 
-    @PostMapping("guidingStop")
-    fun stopGuiding() {
+    @PutMapping("stop")
+    fun stop() {
         guidingService.stop()
-    }
-
-    @GetMapping("guidingChart")
-    fun guidingChart(): GuidingChartResponse {
-        return guidingService.guidingChart()
-    }
-
-    @GetMapping("guidingStar")
-    fun guidingStar(): GuidingStarResponse? {
-        return guidingService.guidingStar()
-    }
-
-    @PostMapping("selectGuideStar")
-    fun selectGuideStar(
-        @RequestParam @Valid @PositiveOrZero x: Double,
-        @RequestParam @Valid @PositiveOrZero y: Double,
-    ) {
-        guidingService.selectGuideStar(x, y)
-    }
-
-    @PostMapping("deselectGuideStar")
-    fun deselectGuideStar() {
-        guidingService.deselectGuideStar()
     }
 }

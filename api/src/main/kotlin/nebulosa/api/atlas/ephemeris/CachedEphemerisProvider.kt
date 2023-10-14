@@ -3,7 +3,6 @@ package nebulosa.api.atlas.ephemeris
 import nebulosa.horizons.HorizonsElement
 import nebulosa.log.loggerFor
 import nebulosa.nova.position.GeographicPosition
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset

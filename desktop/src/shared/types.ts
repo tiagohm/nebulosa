@@ -1,4 +1,3 @@
-import { Point } from 'electron'
 
 export type Angle = string | number
 
@@ -15,6 +14,53 @@ export interface Thermometer extends Device {
 export interface GuideOutput extends Device {
     canPulseGuide: boolean
     pulseGuiding: boolean
+}
+
+export interface GuiderStatus {
+    connected: boolean
+    state: GuideState
+    settling: boolean
+    pixelScale: number
+}
+
+export interface GuidePoint {
+    x: number
+    y: number
+}
+
+export interface GuideStep {
+    frame: number
+    starMass: number
+    snr: number
+    hfd: number
+    dx: number
+    dy: number
+    raDistance: number
+    decDistance: number
+    raDistanceGuide: number
+    decDistanceGuide: number
+    raDuration: number
+    raDirection: GuideDirection
+    decDuration: number
+    decDirection: GuideDirection
+    averageDistance: number
+}
+
+export interface HistoryStep {
+    id: number
+    rmsRA: number
+    rmsDEC: number
+    rmsTotal: number
+    guideStep?: GuideStep
+    ditherX: number
+    ditherY: number
+}
+
+export interface GuideStar {
+    lockPosition: GuidePoint
+    starPosition: GuidePoint
+    image: string
+    guideStep: GuideStep
 }
 
 export interface Camera extends GuideOutput, Thermometer {
@@ -390,67 +436,6 @@ export interface ComputedLocation extends EquatorialCoordinate, EquatorialCoordi
     lst: string
 }
 
-export interface ImageStarSelected {
-    camera: Camera
-    x: number
-    y: number
-}
-
-export interface GuideStats {
-    timestamp: number
-    dx: number
-    dy: number
-    ra: number
-    dec: number
-    // starSNR: number
-    // starMass: number
-    raDuration: number
-    decDuration: number
-    raDirection?: GuideDirection
-    decDirection?: GuideDirection
-    rmsRA: number
-    rmsDEC: number
-    peakRA: number
-    peakDEC: number
-}
-
-export interface GuidingChart {
-    chart: GuideStats[]
-    rmsRA: number
-    rmsDEC: number
-    rmsTotal: number
-}
-
-export interface GuidingStar {
-    image: string
-    lockPositionX: number
-    lockPositionY: number
-    primaryStarX: number
-    primaryStarY: number
-    peak: number
-    fwhm: number
-    hfd: number
-    snr: number
-}
-
-export interface GuideStar extends Point {
-    valid: boolean
-}
-
-export interface Guider {
-    lockPosition: GuideStar
-    primaryStar: GuideStar
-    searchRegion: number
-    looping: boolean
-    calibrating: boolean
-    guiding: boolean
-}
-
-export interface GuideTrackingBox {
-    camera: Camera
-    guider: Guider
-}
-
 export interface Satellite {
     id: number
     name: string
@@ -643,29 +628,33 @@ export const INDI_EVENT_TYPES = [
     'CAMERA_UPDATED', 'CAMERA_ATTACHED', 'CAMERA_DETACHED',
     'CAMERA_CAPTURE_STARTED', 'CAMERA_CAPTURE_FINISHED',
     'CAMERA_EXPOSURE_UPDATED', 'CAMERA_EXPOSURE_STARTED', 'CAMERA_EXPOSURE_FINISHED',
+    // Mount.
     'MOUNT_UPDATED', 'MOUNT_ATTACHED', 'MOUNT_DETACHED',
+    // Focuser.
     'FOCUSER_UPDATED', 'FOCUSER_ATTACHED', 'FOCUSER_DETACHED',
+    // Filter Wheel.
     'WHEEL_UPDATED', 'WHEEL_ATTACHED', 'WHEEL_DETACHED',
+    // Guide Output.
     'GUIDE_OUTPUT_ATTACHED', 'GUIDE_OUTPUT_DETACHED', 'GUIDE_OUTPUT_UPDATED',
-    'GUIDE_EXPOSURE_FINISHED', 'GUIDE_LOCK_POSITION_CHANGED',
-    'GUIDE_STAR_LOST', 'GUIDE_LOCK_POSITION_LOST',
+    // Guider.
+    'GUIDER_CONNECTED', 'GUIDER_DISCONNECTED', 'GUIDER_UPDATED', 'GUIDER_STEPPED',
+    'GUIDER_MESSAGE_RECEIVED',
 ] as const
 
 export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]
 
 export const WINDOW_EVENT_TYPES = [
     'SAVE_FITS_AS', 'OPEN_FITS', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
-    'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW'
+    'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW',
+    'REGISTER_CRON', 'UNREGISTER_CRON',
 ] as const
 
 export type WindowEventType = (typeof WINDOW_EVENT_TYPES)[number]
 
 export const INTERNAL_EVENT_TYPES = [
-    'SELECTED_CAMERA', 'SELECTED_FOCUSER', 'SELECTED_WHEEL',
-    'SELECTED_MOUNT',
+    'SELECTED_CAMERA', 'SELECTED_FOCUSER', 'SELECTED_WHEEL', 'SELECTED_MOUNT',
     'CAMERA_CHANGED', 'FOCUSER_CHANGED', 'MOUNT_CHANGED', 'WHEEL_CHANGED',
-    'WHEEL_RENAMED', 'IMAGE_STAR_SELECTED', 'GUIDE_OUTPUT_CHANGED',
-    'DRAW_GUIDE_TRACKING_BOX',
+    'WHEEL_RENAMED', 'GUIDE_OUTPUT_CHANGED', 'CRON_TICKED',
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
@@ -709,12 +698,12 @@ export type TargetCoordinateType = 'J2000' | 'JNOW'
 
 export type TrackMode = 'SIDEREAL' | ' LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'
 
-export type GuideDirection = 'UP_NORTH' | // DEC+
-    'DOWN_SOUTH' | // DEC-
-    'LEFT_WEST' | // RA+
-    'RIGHT_EAST' // RA-
+export type GuideDirection = 'NORTH' | // DEC+
+    'SOUTH' | // DEC-
+    'WEST' | // RA+
+    'EAST' // RA-
 
-export const SATELLITE_GROUP_TYPES = [
+export const SATELLITE_GROUPS = [
     'LAST_30_DAYS', 'STATIONS', 'VISUAL',
     'ACTIVE', 'ANALYST', 'COSMOS_1408_DEBRIS',
     'FENGYUN_1C_DEBRIS', 'IRIDIUM_33_DEBRIS',
@@ -733,6 +722,18 @@ export const SATELLITE_GROUP_TYPES = [
     'RADAR', 'CUBESAT', 'OTHER',
 ] as const
 
-export type SatelliteGroupType = (typeof SATELLITE_GROUP_TYPES)[number]
+export type SatelliteGroupType = (typeof SATELLITE_GROUPS)[number]
 
 export type ListeningEventType = 'INDI' | 'GUIDING' | 'CAMERA' | 'MOUNT'
+
+export const GUIDER_TYPES = ['PHD2'] as const
+
+export type GuiderType = (typeof GUIDER_TYPES)[number]
+
+export const GUIDE_STATES = [
+    'STOPPED', 'SELECTED', 'CALIBRATING',
+    'GUIDING', 'LOST_LOCK', 'PAUSED',
+    'LOOPING',
+] as const
+
+export type GuideState = (typeof GUIDE_STATES)[number]

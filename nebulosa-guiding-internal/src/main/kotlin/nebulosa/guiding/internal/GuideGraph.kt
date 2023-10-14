@@ -1,7 +1,6 @@
 package nebulosa.guiding.internal
 
 import nebulosa.guiding.GuideDirection
-import nebulosa.guiding.GuideStats
 import java.util.*
 import kotlin.math.max
 import kotlin.math.sqrt

@@ -207,15 +207,15 @@
                         <span class="p-float-label">
                             <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()"
                                         optionLabel="name" dataKey="id"
-                                        styleClass="border-0" emptyMessage="No location found" />
+                                        styleClass="p-inputtext-sm border-0" emptyMessage="No location found" />
                             <label>Location</label>
                         </span>
                     </div>
                     <div class="col-4 flex align-items-center gap-1">
-                        <p-button [disabled]="refreshing" (onClick)="addLocation()" icon="mdi mdi-plus" styleClass="p-button-success" />
-                        <p-button [disabled]="refreshing" (onClick)="editLocation()" icon="mdi mdi-pencil" styleClass="p-button-info" />
+                        <p-button [disabled]="refreshing" (onClick)="addLocation()" icon="mdi mdi-plus" styleClass="p-button-sm p-button-success" />
+                        <p-button [disabled]="refreshing" (onClick)="editLocation()" icon="mdi mdi-pencil" styleClass="p-button-sm p-button-info" />
                         <p-button [disabled]="refreshing || locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete"
-                                  styleClass="p-button-danger" />
+                                  styleClass="p-button-sm p-button-danger" />
                     </div>
                 </div>
             </p-tabPanel>

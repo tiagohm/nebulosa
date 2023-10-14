@@ -307,6 +307,13 @@ export class EnumPipe implements PipeTransform {
         'RADAR': 'Radar Calibration',
         'CUBESAT': 'CubeSats',
         'OTHER': 'Other',
+        'STOPPED': 'Stopped',
+        'SELECTED': 'Selected',
+        'CALIBRATING': 'Calibrating',
+        'GUIDING': 'Guiding',
+        'LOST_LOCK': 'Lost Lock',
+        'PAUSED': 'Paused',
+        'LOOPING': 'Looping',
     }
 
     transform(value: string) {

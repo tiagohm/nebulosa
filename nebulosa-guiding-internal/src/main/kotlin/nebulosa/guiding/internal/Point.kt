@@ -1,6 +1,5 @@
 package nebulosa.guiding.internal
 
-import nebulosa.guiding.GuidePoint
 import nebulosa.math.Angle
 import nebulosa.math.rad
 import kotlin.math.atan2

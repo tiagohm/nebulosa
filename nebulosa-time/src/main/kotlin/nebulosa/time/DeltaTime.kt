@@ -107,8 +107,4 @@ interface DeltaTime {
 
         override fun delta(time: InstantOfTime) = spline.compute((time.value - 1721045.0) / DAYSPERJY)
     }
-
-    companion object {
-
-    }
 }
