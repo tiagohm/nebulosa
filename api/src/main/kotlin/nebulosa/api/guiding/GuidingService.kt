@@ -10,65 +10,90 @@ import nebulosa.phd2.client.PHD2Client
 import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.commands.PHD2Command
 import nebulosa.phd2.client.events.PHD2Event
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.stereotype.Service
 
 @Service
 class GuidingService(
     private val messageService: MessageService,
-    private val beanFactory: ConfigurableListableBeanFactory,
+    private val phd2Client: PHD2Client,
 ) : PHD2EventListener, GuiderListener {
 
-    @Volatile private var client: PHD2Client? = null
-    @Volatile private var guider: PHD2Guider? = null
+    private val guider = PHD2Guider(phd2Client)
+    private val guideHistory = GuideStepHistory()
 
     @Synchronized
     fun connect(host: String, port: Int) {
-        if (client != null) return
+        if (phd2Client.isOpen) return
 
-        with(PHD2Client(host, port)) {
-            run()
-            registerListener(this@GuidingService)
-            guider = PHD2Guider(this)
-            guider!!.registerGuiderListener(this@GuidingService)
-            client = this
-            beanFactory.registerSingleton("guider", guider!!)
-            messageService.sendMessage(GUIDER_CONNECTED)
-        }
+        phd2Client.open(host, port)
+        phd2Client.registerListener(this)
+        guider.registerGuiderListener(this)
+        messageService.sendMessage(GUIDER_CONNECTED)
     }
 
     @PreDestroy
     @Synchronized
     fun disconnect() {
-        runCatching { guider?.close() }
-        guider = null
-        client?.unregisterListener(this)
-        client = null
-        beanFactory.destroyBean("guider")
+        runCatching { guider.close() }
+        phd2Client.unregisterListener(this)
         messageService.sendMessage(GUIDER_DISCONNECTED)
     }
 
+    fun status(): GuiderStatus {
+        return GuiderStatus(phd2Client.isOpen, guider.state, guider.isSettling, guider.pixelScale)
+    }
+
+    fun history(): List<HistoryStep> {
+        return guideHistory
+    }
+
+    fun latestHistory(): HistoryStep? {
+        return guideHistory.lastOrNull()
+    }
+
+    fun clearHistory() {
+        return guideHistory.clear()
+    }
+
     fun loop(autoSelectGuideStar: Boolean = true) {
-        guider?.startLooping(autoSelectGuideStar)
+        if (phd2Client.isOpen) {
+            guider.startLooping(autoSelectGuideStar)
+        }
     }
 
     fun start(forceCalibration: Boolean = false) {
-        guider?.startGuiding(forceCalibration)
+        if (phd2Client.isOpen) {
+            guider.startGuiding(forceCalibration)
+        }
+    }
+
+    fun dither(pixels: Double, raOnly: Boolean = false) {
+        if (phd2Client.isOpen) {
+            guider.dither(pixels, raOnly)
+        }
     }
 
     fun stop() {
-        guider?.stopGuiding()
+        if (phd2Client.isOpen) {
+            guider.stopGuiding(true)
+        }
     }
 
-    override fun onStateChange(state: GuideState) {
-        messageService.sendMessage(GUIDER_UPDATED, guider!!)
+    override fun onStateChanged(state: GuideState, pixelScale: Double) {
+        val status = GuiderStatus(phd2Client.isOpen, state, guider.isSettling, pixelScale)
+        messageService.sendMessage(GUIDER_UPDATED, status)
     }
 
-    override fun onGuideStep(guideStar: GuideStar) {
-        messageService.sendMessage(GUIDER_STEPPED, guideStar)
+    override fun onGuideStepped(guideStar: GuideStar) {
+        val payload = guideStar.guideStep?.let(guideHistory::addGuideStep) ?: guideStar
+        messageService.sendMessage(GUIDER_STEPPED, payload)
     }
 
-    override fun onMessage(message: String) {
+    override fun onDithered(dx: Double, dy: Double) {
+        guideHistory.addDither(dx, dy)
+    }
+
+    override fun onMessageReceived(message: String) {
         messageService.sendMessage(GUIDER_MESSAGE_RECEIVED, "message" to message)
     }
 

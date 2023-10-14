@@ -120,25 +120,25 @@
                     </div>
                 </div>
                 <p-tabView class="relative">
-                    <p-tabPanel header="Settings" leftIcon="mdi mdi-cog">
+                    <p-tabPanel leftIcon="mdi mdi-cog">
                         <div class="grid mt-1">
                             <div class="col-4">
                                 <span class="p-float-label">
                                     <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
                                                    styleClass="border-0 p-inputtext-sm w-full"
-                                                   [(ngModel)]="ditherPixels" [step]="1" />
+                                                   [(ngModel)]="phdDitherPixels" [step]="1" />
                                     <label>Dither (px)</label>
                                 </span>
                             </div>
                             <div class="col-3 flex flex-column justify-content-center text-center gap-2">
                                 <span class="text-sm text-gray-100">Dither in RA only</span>
-                                <p-inputSwitch [disabled]="!phdConnected || guiding" [(ngModel)]="ditherRAOnly" />
+                                <p-inputSwitch [disabled]="!phdConnected || guiding" [(ngModel)]="phdDitherRAOnly" />
                             </div>
                             <div class="col-5">
                                 <span class="p-float-label">
                                     <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
-                                                   styleClass="border-0 p-inputtext-sm w-full"
-                                                   [(ngModel)]="settlePixels" [step]="0.1" />
+                                                   styleClass="border-0 p-inputtext-sm w-full" locale="en"
+                                                   [(ngModel)]="phdSettlePixels" [step]="0.1" />
                                     <label>Settle tolerance (px)</label>
                                 </span>
                             </div>
@@ -146,7 +146,7 @@
                                 <span class="p-float-label">
                                     <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
                                                    styleClass="border-0 p-inputtext-sm w-full"
-                                                   [(ngModel)]="settleTime" [step]="1" />
+                                                   [(ngModel)]="phdSettleTime" [step]="1" />
                                     <label>Minimum settle time (ms)</label>
                                 </span>
                             </div>
@@ -154,34 +154,82 @@
                                 <span class="p-float-label">
                                     <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
                                                    styleClass="border-0 p-inputtext-sm w-full"
-                                                   [(ngModel)]="settleTimeout" [step]="1" />
+                                                   [(ngModel)]="phdSettleTimeout" [step]="1" />
                                     <label>Settle timeout (ms)</label>
                                 </span>
                             </div>
-                            <div class="col-3 flex flex-column justify-content-center text-center gap-2">
-                                <span class="text-sm text-gray-100">Auto-select star</span>
-                                <p-inputSwitch [disabled]="!phdConnected || guiding" [(ngModel)]="autoSelectStar" />
-                            </div>
                         </div>
                     </p-tabPanel>
-                    <p-tabPanel header="Chart" leftIcon="mdi mdi-chart-bell-curve">
-                        <div class="grid">
-                            <div class="col-6"></div>
-                            <div class="col-3 flex flex-column">
-                                <span>STAR MASS: {{ phdGuideStar?.step?.starMass ?? 0 }}</span>
-                                <span>HFD: {{ phdGuideStar?.step?.hfd ?? 0 }}</span>
-                                <span>SNR: {{ phdGuideStar?.step?.snr ?? 0 }}</span>
+                    <p-tabPanel leftIcon="mdi mdi-chart-bell-curve">
+                        <div class="grid mt-1">
+                            <div class="col-3">
+                                <span class="p-float-label">
+                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                                           value="{{ phdRmsRA.toFixed(2) + ' (' + (phdRmsRA * phdPixelScale).toFixed(2) + '\" )' }}" />
+                                    <label>RMS RA</label>
+                                </span>
                             </div>
-                            <div class="col-3 text-center">
-                                <img [src]="phdGuideStar?.image" class="pixelated" style="width: 64px; height: 64px">
+                            <div class="col-3">
+                                <span class="p-float-label">
+                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                                           value="{{ phdRmsDEC.toFixed(2) + ' (' + (phdRmsDEC * phdPixelScale).toFixed(2) + '\" )' }}" />
+                                    <label>RMS DEC</label>
+                                </span>
+                            </div>
+                            <div class="col-3">
+                                <span class="p-float-label">
+                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                                           value="{{ phdRmsTotal.toFixed(2) + ' (' + (phdRmsTotal * phdPixelScale).toFixed(2) + '\" )' }}" />
+                                    <label>RMS Total</label>
+                                </span>
+                            </div>
+                            <div class="col-3">
+                                <span class="p-float-label">
+                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="phdGuideStep?.starMass ?? 0" />
+                                    <label>Star mass</label>
+                                </span>
+                            </div>
+                            <div class="col-2">
+                                <span class="p-float-label">
+                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="phdGuideStep?.hfd ?? 0" />
+                                    <label>HFD</label>
+                                </span>
+                            </div>
+                            <div class="col-2">
+                                <span class="p-float-label">
+                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="phdGuideStep?.snr ?? 0" />
+                                    <label>SNR</label>
+                                </span>
+                            </div>
+                            <div class="col-4">
+                                <span class="p-float-label">
+                                    <p-dropdown [options]="plotModes" [(ngModel)]="plotMode" (ngModelChange)="plotModeChanged()"
+                                                styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" />
+                                    <label>Plot Mode</label>
+                                </span>
+                            </div>
+                            <div class="col-4">
+                                <span class="p-float-label">
+                                    <p-dropdown [options]="yAxisUnits" [(ngModel)]="yAxisUnit" (ngModelChange)="yAxisUnitChanged()"
+                                                styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" />
+                                    <label>Unit</label>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="grid">
+                            <div class="col-12">
+                                <p-chart #phdChart width="100%" height="140px" [data]="phdChartData" [responsive]="true"
+                                         [options]="phdChartOptions" />
                             </div>
                         </div>
                     </p-tabPanel>
                     <div class="grid mt-1 absolute right-0" style="top: -12px;">
                         <div class="col-12 flex align-items-center justify-content-center gap-1">
-                            <p-button [disabled]="!phdConnected || guiding || looping" label="Start" (onClick)="guidingStart($event)"
-                                      icon="mdi mdi-play" styleClass="p-button-success" />
-                            <p-button [disabled]="!phdConnected || stopped" label="Stop" (onClick)="guidingStop()" icon="mdi mdi-stop"
+                            <!-- <p-button [disabled]="!phdConnected || guiding || looping" label="Start" (onClick)="guidingStart($event)"
+                                      icon="mdi mdi-play" styleClass="p-button-success" /> -->
+                            <p-button [disabled]="!phdConnected" label="Clear" (onClick)="guidingClearHistory()"
+                                      icon="mdi mdi-broom" styleClass="p-button-info" />
+                            <p-button [disabled]="!phdConnected || !guiding" label="Stop" (onClick)="guidingStop()" icon="mdi mdi-stop"
                                       styleClass="p-button-danger" />
                         </div>
                     </div>

@@ -4,5 +4,5 @@ data class GuideStar(
     val lockPosition: GuidePoint = GuidePoint.ZERO,
     val starPosition: GuidePoint = GuidePoint.ZERO,
     val image: String = "",
-    val step: GuideStep? = null,
+    val guideStep: GuideStep? = null,
 )

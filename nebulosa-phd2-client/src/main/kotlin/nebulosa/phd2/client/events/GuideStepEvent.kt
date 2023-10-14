@@ -13,8 +13,6 @@ data class GuideStepEvent(
     @field:JsonProperty("dy") override val dy: Double = 0.0,
     @field:JsonAlias("RADistanceRaw") override val raDistance: Double = 0.0,
     @field:JsonAlias("DECDistanceRaw") override val decDistance: Double = 0.0,
-    @field:JsonAlias("RADistanceGuide") override val raDistanceGuide: Double = 0.0,
-    @field:JsonAlias("DECDistanceGuide") override val decDistanceGuide: Double = 0.0,
     @field:JsonAlias("RADuration") override val raDuration: Long = 0L,
     @field:JsonAlias("RADirection") override val raDirection: GuideDirection = GuideDirection.WEST,
     @field:JsonAlias("DECDuration") override val decDuration: Long = 0L,

@@ -51,7 +51,7 @@ export class BrowserWindowService {
         this.openWindow({
             ...options,
             id: 'guider', path: 'guider', icon: options.icon || 'guider',
-            width: options.width || 425, height: options.height || 405,
+            width: options.width || 425, height: options.height || 440,
         })
     }
 

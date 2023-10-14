@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core'
 import moment from 'moment'
 import {
     Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, DeepSkyObject, Device,
-    FilterWheel, Focuser, GuideDirection, GuideOutput, HipsSurvey,
+    FilterWheel, Focuser, GuideDirection, GuideOutput, GuiderStatus, HipsSurvey, HistoryStep,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
     ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
     Mount, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
@@ -263,6 +263,22 @@ export class ApiService {
         return this.http.delete<void>(`guiding/disconnect`)
     }
 
+    guidingStatus() {
+        return this.http.get<GuiderStatus>(`guiding/status`)
+    }
+
+    guidingHistory() {
+        return this.http.get<HistoryStep[]>(`guiding/history`)
+    }
+
+    guidingLatestHistory() {
+        return this.http.get<HistoryStep | null>(`guiding/history/latest`)
+    }
+
+    guidingClearHistory() {
+        return this.http.put<void>(`guiding/history/clear`)
+    }
+
     guidingLoop(autoSelectGuideStar: boolean = true) {
         const query = this.http.query({ autoSelectGuideStar })
         return this.http.put<void>(`guiding/loop?${query}`)
@@ -273,8 +289,13 @@ export class ApiService {
         return this.http.put<void>(`guiding/start?${query}`)
     }
 
+    guidingDither(pixels: number, raOnly: boolean = false) {
+        const query = this.http.query({ pixels, raOnly })
+        return this.http.put<void>(`guiding/dither?${query}`)
+    }
+
     guidingStop() {
-        return this.http.delete<void>(`guiding/stop`)
+        return this.http.put<void>(`guiding/stop`)
     }
 
     // IMAGE
@@ -463,7 +484,7 @@ export class ApiService {
     solveImage(
         path: string, type: PlateSolverType,
         blind: boolean,
-        centerRA: string | number, centerDEC: string | number, radius: string | number,
+        centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: number,
         pathOrUrl: string, apiKey: string,
     ) {

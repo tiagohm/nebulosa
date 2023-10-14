@@ -12,15 +12,13 @@ import nebulosa.log.loggerFor
 import nebulosa.netty.NettyClient
 import nebulosa.phd2.client.commands.CompletableCommand
 import nebulosa.phd2.client.commands.PHD2Command
+import nebulosa.phd2.client.events.GuideStateConverter
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
-class PHD2Client(
-    override val host: String,
-    override val port: Int = 4400,
-) : NettyClient() {
+class PHD2Client : NettyClient() {
 
     @JvmField internal val listeners = hashSetOf<PHD2EventListener>()
     @JvmField internal val commands = hashMapOf<String, CompletableCommand<*>>()
@@ -66,12 +64,15 @@ class PHD2Client(
 
     companion object {
 
+        const val DEFAULT_PORT = 4400
+
         @JvmStatic private val LOG = loggerFor<PHD2Client>()
 
         private val MODULE = SimpleJsonModule()
 
         init {
             MODULE.addDeserializer(PathConverter)
+            MODULE.addConverter(GuideStateConverter)
         }
 
         private val JSON_MAPPER = JsonMapper.builder()

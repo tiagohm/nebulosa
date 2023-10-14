@@ -18,10 +18,6 @@ interface GuideStep {
 
     val decDistance: Double
 
-    val raDistanceGuide: Double
-
-    val decDistanceGuide: Double
-
     val raDuration: Long
 
     val raDirection: GuideDirection

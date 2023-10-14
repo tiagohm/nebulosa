@@ -2,9 +2,11 @@ package nebulosa.guiding
 
 interface GuiderListener {
 
-    fun onStateChange(state: GuideState)
+    fun onStateChanged(state: GuideState, pixelScale: Double)
 
-    fun onGuideStep(guideStar: GuideStar)
+    fun onGuideStepped(guideStar: GuideStar)
 
-    fun onMessage(message: String)
+    fun onDithered(dx: Double, dy: Double)
+
+    fun onMessageReceived(message: String)
 }

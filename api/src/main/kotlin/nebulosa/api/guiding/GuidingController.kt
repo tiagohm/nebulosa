@@ -19,6 +19,26 @@ class GuidingController(private val guidingService: GuidingService) {
         guidingService.disconnect()
     }
 
+    @GetMapping("status")
+    fun status(): GuiderStatus {
+        return guidingService.status()
+    }
+
+    @GetMapping("history")
+    fun history(): List<HistoryStep> {
+        return guidingService.history()
+    }
+
+    @GetMapping("history/latest")
+    fun latestHistory(): HistoryStep? {
+        return guidingService.latestHistory()
+    }
+
+    @PutMapping("history/clear")
+    fun clearHistory() {
+        return guidingService.clearHistory()
+    }
+
     @PutMapping("loop")
     fun loop(@RequestParam(required = false, defaultValue = "true") autoSelectGuideStar: Boolean) {
         guidingService.loop(autoSelectGuideStar)
@@ -27,6 +47,14 @@ class GuidingController(private val guidingService: GuidingService) {
     @PutMapping("start")
     fun start(@RequestParam(required = false, defaultValue = "false") forceCalibration: Boolean) {
         guidingService.start(forceCalibration)
+    }
+
+    @PutMapping("dither")
+    fun dither(
+        @RequestParam pixels: Double,
+        @RequestParam(required = false, defaultValue = "false") raOnly: Boolean,
+    ) {
+        return guidingService.dither(pixels, raOnly)
     }
 
     @PutMapping("stop")

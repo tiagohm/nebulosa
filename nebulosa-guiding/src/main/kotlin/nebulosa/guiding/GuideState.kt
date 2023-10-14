@@ -1,6 +1,11 @@
 package nebulosa.guiding
 
-interface GuideState {
-
-    val name: String
+enum class GuideState {
+    STOPPED,
+    SELECTED,
+    CALIBRATING,
+    GUIDING,
+    LOST_LOCK,
+    PAUSED,
+    LOOPING,
 }

@@ -6,6 +6,8 @@ interface Guider {
 
     val state: GuideState
 
+    val pixelScale: Double
+
     val isSettling: Boolean
 
     var settlePixels: Double
@@ -24,9 +26,11 @@ interface Guider {
 
     fun startGuiding(forceCalibration: Boolean = false, waitForSettle: Boolean = true)
 
-    fun stopGuiding()
+    fun stopGuiding(force: Boolean = false)
 
     fun clearCalibration()
 
     fun dither(pixels: Double, raOnly: Boolean = false)
+
+    fun waitForSettling()
 }

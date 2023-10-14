@@ -16,12 +16,11 @@ export interface GuideOutput extends Device {
     pulseGuiding: boolean
 }
 
-export interface Guider {
+export interface GuiderStatus {
+    connected: boolean
     state: GuideState
     settling: boolean
-    settlePixels: number
-    settleTime: number
-    settleTimeout: number
+    pixelScale: number
 }
 
 export interface GuidePoint {
@@ -47,11 +46,21 @@ export interface GuideStep {
     averageDistance: number
 }
 
+export interface HistoryStep {
+    id: number
+    rmsRA: number
+    rmsDEC: number
+    rmsTotal: number
+    guideStep?: GuideStep
+    ditherX: number
+    ditherY: number
+}
+
 export interface GuideStar {
     lockPosition: GuidePoint
     starPosition: GuidePoint
     image: string
-    step: GuideStep
+    guideStep: GuideStep
 }
 
 export interface Camera extends GuideOutput, Thermometer {

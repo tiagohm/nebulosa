@@ -1,10 +1,16 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
+import { ChartData, ChartOptions } from 'chart.js'
+import { UIChart } from 'primeng/chart'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { GuideDirection, GuideOutput, GuideStar, GuideState, Guider } from '../../shared/types'
+import { GuideDirection, GuideOutput, GuideStar, GuideState, GuideStep, GuiderStatus, HistoryStep } from '../../shared/types'
+
+export type PlotMode = 'RA/DEC' | 'DX/DY'
+
+export type YAxisUnit = 'ARCSEC' | 'PIXEL'
 
 @Component({
     selector: 'app-guider',
@@ -27,15 +33,28 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     phdHost = 'localhost'
     phdPort = 4400
     phdState: GuideState = 'STOPPED'
-    phdGuideStar?: GuideStar
+    phdGuideStep?: GuideStep
     phdMessage = ''
 
-    ditherPixels = 5
-    ditherRAOnly = false
-    settlePixels = 1.5
-    settleTime = 60
-    settleTimeout = 90
-    autoSelectStar = true
+    phdDitherPixels = 5
+    phdDitherRAOnly = false
+    phdSettlePixels = 1.5
+    phdSettleTime = 60
+    phdSettleTimeout = 90
+    readonly phdGuideHistory: HistoryStep[] = []
+
+    phdPixelScale = 1.0
+    phdRmsRA = 0.0
+    phdRmsDEC = 0.0
+    phdRmsTotal = 0.0
+
+    readonly plotModes: PlotMode[] = ['RA/DEC', 'DX/DY']
+    plotMode: PlotMode = 'RA/DEC'
+    readonly yAxisUnits: YAxisUnit[] = ['ARCSEC', 'PIXEL']
+    yAxisUnit: YAxisUnit = 'ARCSEC'
+
+    @ViewChild('phdChart')
+    private readonly phdChart!: UIChart
 
     get stopped() {
         return this.phdState === 'STOPPED'
@@ -47,6 +66,140 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
 
     get guiding() {
         return this.phdState === 'GUIDING'
+    }
+
+    readonly phdChartData: ChartData = {
+        datasets: [
+            // RA.
+            {
+                type: 'line',
+                fill: false,
+                borderColor: 'red',
+                borderWidth: 0.5,
+                data: [],
+                pointRadius: 0,
+                pointHitRadius: 0,
+            },
+            // DEC.
+            {
+                type: 'line',
+                fill: false,
+                borderColor: 'blue',
+                borderWidth: 0.5,
+                data: [],
+                pointRadius: 0,
+                pointHitRadius: 0,
+            },
+            // RA.
+            {
+                type: 'bar',
+                backgroundColor: 'green',
+                data: [],
+            },
+            // DEC.
+            {
+                type: 'bar',
+                backgroundColor: 'green',
+                data: [],
+            },
+        ]
+    }
+
+    readonly phdChartOptions: ChartOptions = {
+        responsive: true,
+        aspectRatio: 1.8,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                displayColors: false,
+                intersect: false,
+                callbacks: {
+                    title: () => {
+                        return ''
+                    },
+                    label: (context) => {
+                        return context.parsed.y.toFixed(2)
+                    }
+                }
+            },
+            zoom: {
+                zoom: {
+                    wheel: {
+                        enabled: true,
+                    },
+                    pinch: {
+                        enabled: false,
+                    },
+                    mode: 'x',
+                    scaleMode: 'xy',
+                },
+                pan: {
+                    enabled: true,
+                    mode: 'xy',
+                },
+                limits: {
+                    x: {
+                        min: 0,
+                        max: 100,
+                    },
+                    y: {
+                        min: -16,
+                        max: 16,
+                    },
+                }
+            },
+        },
+        scales: {
+            y: {
+                stacked: true,
+                beginAtZero: false,
+                suggestedMin: -16,
+                suggestedMax: 16,
+                ticks: {
+                    autoSkip: false,
+                    count: 7,
+                    callback: (value) => {
+                        return (value as number).toFixed(1).padStart(5, ' ')
+                    }
+                },
+                border: {
+                    display: true,
+                    dash: [2, 4],
+                },
+                grid: {
+                    display: true,
+                    drawTicks: false,
+                    drawOnChartArea: true,
+                    color: '#212121',
+                }
+            },
+            x: {
+                stacked: true,
+                type: 'linear',
+                min: 0,
+                max: 100,
+                border: {
+                    display: true,
+                    dash: [2, 4],
+                },
+                ticks: {
+                    stepSize: 5.0,
+                    maxRotation: 0,
+                    minRotation: 0,
+                    callback: (value) => {
+                        return (value as number).toFixed(0)
+                    }
+                },
+                grid: {
+                    display: true,
+                    drawTicks: false,
+                    color: '#212121',
+                }
+            }
+        }
     }
 
     constructor(
@@ -91,19 +244,30 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
 
         electron.on('GUIDER_DISCONNECTED', () => {
             ngZone.run(() => {
-                this.phdConnected = true
+                this.phdConnected = false
             })
         })
 
-        electron.on('GUIDER_UPDATED', (_, event: Guider) => {
+        electron.on('GUIDER_UPDATED', (_, event: GuiderStatus) => {
             ngZone.run(() => {
-                this.phdState = event.state
+                this.processGuiderStatus(event)
             })
         })
 
-        electron.on('GUIDER_STEPPED', (_, event: GuideStar) => {
+        electron.on('GUIDER_STEPPED', (_, event: HistoryStep | GuideStar) => {
             ngZone.run(() => {
-                this.phdGuideStar = event
+                if ("id" in event) {
+                    if (this.phdGuideHistory.length >= 100) {
+                        this.phdGuideHistory.splice(0, 1)
+                    }
+
+                    this.phdGuideHistory.push(event)
+                    this.updateGuideHistoryChart()
+                }
+
+                if ("guideStep" in event && event.guideStep) {
+                    this.phdGuideStep = event.guideStep
+                }
             })
         })
 
@@ -116,11 +280,77 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
 
     async ngAfterViewInit() {
         this.guideOutputs = await this.api.guideOutputs()
+
+        const status = await this.api.guidingStatus()
+        this.processGuiderStatus(status)
+
+        const history = await this.api.guidingHistory()
+        this.phdGuideHistory.push(...history)
+        this.updateGuideHistoryChart()
     }
 
     @HostListener('window:unload')
     ngOnDestroy() {
         this.api.stopListening('GUIDING')
+    }
+
+    private processGuiderStatus(event: GuiderStatus) {
+        this.phdConnected = event.connected
+        this.phdState = event.state
+        this.phdPixelScale = event.pixelScale
+    }
+
+    plotModeChanged() {
+        this.updateGuideHistoryChart()
+    }
+
+    yAxisUnitChanged() {
+        this.updateGuideHistoryChart()
+    }
+
+    private updateGuideHistoryChart() {
+        if (this.phdGuideHistory.length > 0) {
+            const history = this.phdGuideHistory[this.phdGuideHistory.length - 1]
+            this.phdRmsTotal = history.rmsTotal
+            this.phdRmsDEC = history.rmsDEC
+            this.phdRmsRA = history.rmsRA
+        } else {
+            return
+        }
+
+        const startId = this.phdGuideHistory[0].id
+        const guideSteps = this.phdGuideHistory.filter(e => e.guideStep)
+        const scale = this.yAxisUnit === 'ARCSEC' ? this.phdPixelScale : 1.0
+
+        let maxDuration = 0
+
+        for (const step of guideSteps) {
+            maxDuration = Math.max(maxDuration, Math.abs(step.guideStep!.raDuration))
+            maxDuration = Math.max(maxDuration, Math.abs(step.guideStep!.decDuration))
+        }
+
+        const durationScale = maxDuration / 16.0
+
+        if (this.plotMode === 'RA/DEC') {
+            this.phdChartData.datasets[0].data = guideSteps
+                .map(e => [e.id - startId, e.guideStep!.raDistance * scale])
+            this.phdChartData.datasets[1].data = guideSteps
+                .map(e => [e.id - startId, e.guideStep!.decDistance * scale])
+        } else {
+            this.phdChartData.datasets[0].data = guideSteps
+                .map(e => [e.id - startId, e.guideStep!.dx * scale])
+            this.phdChartData.datasets[1].data = guideSteps
+                .map(e => [e.id - startId, e.guideStep!.dy * scale])
+        }
+
+        this.phdChartData.datasets[2].data = this.phdGuideHistory
+            // .map(e => (e.guideStep?.raDuration ?? 0) / durationScale)
+            .map(e => 12)
+        this.phdChartData.datasets[3].data = this.phdGuideHistory
+            // .map(e => (e.guideStep?.decDuration ?? 0) / durationScale)
+            .map(e => 8)
+
+        this.phdChart?.refresh()
     }
 
     async guideOutputChanged() {
@@ -177,8 +407,12 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     async guidingStart(event: MouseEvent) {
-        await this.api.guidingLoop(this.autoSelectStar)
+        await this.api.guidingLoop(true)
         await this.api.guidingStart(event.shiftKey)
+    }
+
+    guidingClearHistory() {
+        this.api.guidingClearHistory()
     }
 
     guidingStop() {

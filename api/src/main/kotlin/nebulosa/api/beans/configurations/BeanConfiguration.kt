@@ -11,6 +11,7 @@ import nebulosa.json.FromJson
 import nebulosa.json.SimpleJsonModule
 import nebulosa.json.ToJson
 import nebulosa.json.converters.PathConverter
+import nebulosa.phd2.client.PHD2Client
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
 import okhttp3.Cache
@@ -128,6 +129,9 @@ class BeanConfiguration {
 
     @Bean
     fun executionIncrementer() = Incrementer()
+
+    @Bean
+    fun phd2Client() = PHD2Client()
 
     @Bean
     fun webMvcConfigurer(
