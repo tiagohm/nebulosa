@@ -42,7 +42,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.microseconds
 import kotlin.time.Duration.Companion.seconds
 
-data class CameraExposureTasklet(private val request: CameraStartCapture) :
+data class CameraExposureTasklet(val request: CameraStartCapture) :
     SubjectSequenceTasklet<CameraCaptureEvent>(), JobExecutionListener, Consumer<DelayElapsed> {
 
     private val latch = CountUpDownLatch()
@@ -144,7 +144,10 @@ data class CameraExposureTasklet(private val request: CameraStartCapture) :
 
                 onNext(CameraExposureStarted(camera, stepExecution!!, this))
 
-                camera.frame(request.x, request.y, request.width, request.height)
+                if (request.width > 0 && request.height > 0) {
+                    camera.frame(request.x, request.y, request.width, request.height)
+                }
+
                 camera.frameType(request.frameType)
                 camera.frameFormat(request.frameFormat)
                 camera.bin(request.binX, request.binY)

@@ -36,17 +36,17 @@ class CameraCaptureExecutor(
     private val runningSequenceJobs = LinkedList<CameraSequenceJob>()
 
     @Synchronized
-    override fun execute(data: CameraStartCapture): CameraSequenceJob {
-        val camera = requireNotNull(data.camera)
+    override fun execute(request: CameraStartCapture): CameraSequenceJob {
+        val camera = requireNotNull(request.camera)
 
         if (isCapturing(camera)) {
             throw IllegalStateException("A Camera Exposure job is already running. camera=${camera.name}")
         }
 
-        LOG.info("starting camera capture. data={}", data)
+        LOG.info("starting camera capture. data={}", request)
 
-        val cameraCaptureJob = if (data.isLoop) {
-            val cameraExposureTasklet = CameraLoopExposureTasklet(data)
+        val cameraCaptureJob = if (request.isLoop) {
+            val cameraExposureTasklet = CameraLoopExposureTasklet(request)
             cameraExposureTasklet.subscribe(this)
 
             JobBuilder("CameraCapture.Job.${executionIncrementer.increment()}", jobRepository)
@@ -54,17 +54,17 @@ class CameraCaptureExecutor(
                 .listener(cameraExposureTasklet)
                 .build()
         } else {
-            val cameraExposureTasklet = CameraExposureTasklet(data)
+            val cameraExposureTasklet = CameraExposureTasklet(request)
             cameraExposureTasklet.subscribe(this)
 
             val jobBuilder = JobBuilder("CameraCapture.Job.${executionIncrementer.increment()}", jobRepository)
                 .start(cameraExposureStep(cameraExposureTasklet))
 
-            val hasDelay = data.exposureDelayInSeconds in 1L..60L
-            val cameraDelayTasklet = DelayTasklet(data.exposureDelayInSeconds.seconds)
+            val hasDelay = request.exposureDelayInSeconds in 1L..60L
+            val cameraDelayTasklet = DelayTasklet(request.exposureDelayInSeconds.seconds)
             cameraDelayTasklet.subscribe(cameraExposureTasklet)
 
-            repeat(data.exposureAmount - 1) {
+            repeat(request.exposureAmount - 1) {
                 if (hasDelay) {
                     val cameraDelayStep = cameraDelayStep(cameraDelayTasklet)
                     jobBuilder.next(cameraDelayStep)
@@ -82,7 +82,7 @@ class CameraCaptureExecutor(
 
         return asyncJobLauncher
             .run(cameraCaptureJob, JobParameters())
-            .let { CameraSequenceJob(camera, data, cameraCaptureJob, it) }
+            .let { CameraSequenceJob(camera, request, cameraCaptureJob, it) }
             .also(runningSequenceJobs::add)
             .also { jobRegistry.register(ReferenceJobFactory(cameraCaptureJob)) }
     }
@@ -99,7 +99,7 @@ class CameraCaptureExecutor(
 
     fun stop(camera: Camera) {
         val jobExecution = jobExecutionFor(camera) ?: return
-        jobOperator.stop(jobExecution.jobId)
+        jobOperator.stop(jobExecution.id)
     }
 
     fun isCapturing(camera: Camera): Boolean {

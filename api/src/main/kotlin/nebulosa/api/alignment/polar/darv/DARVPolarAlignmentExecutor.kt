@@ -53,19 +53,19 @@ class DARVPolarAlignmentExecutor(
     private val runningSequenceJobs = LinkedList<DARVSequenceJob>()
 
     @Synchronized
-    override fun execute(data: DARVStart): DARVSequenceJob {
-        val camera = requireNotNull(data.camera)
-        val guideOutput = requireNotNull(data.guideOutput)
+    override fun execute(request: DARVStart): DARVSequenceJob {
+        val camera = requireNotNull(request.camera)
+        val guideOutput = requireNotNull(request.guideOutput)
 
         if (isRunning(camera, guideOutput)) {
             throw IllegalStateException("DARV Polar Alignment job is already running")
         }
 
-        LOG.info("starting DARV polar alignment. data={}", data)
+        LOG.info("starting DARV polar alignment. data={}", request)
 
         val cameraStarCapture = CameraStartCapture(
             camera = camera,
-            exposureInMicroseconds = (data.exposureInSeconds + data.initialPauseInSeconds).seconds.inWholeMicroseconds,
+            exposureInMicroseconds = (request.exposureInSeconds + request.initialPauseInSeconds).seconds.inWholeMicroseconds,
             savePath = Path.of("$capturesPath", "${camera.name}-DARV.fits")
         )
 
@@ -80,11 +80,11 @@ class DARVPolarAlignmentExecutor(
             .start(cameraExposureStep)
             .build()
 
-        val guidePulseDuration = (data.exposureInSeconds / 2.0).seconds
-        val initialPulseDelayTasklet = DelayTasklet(data.initialPauseInSeconds.seconds)
+        val guidePulseDuration = (request.exposureInSeconds / 2.0).seconds
+        val initialPulseDelayTasklet = DelayTasklet(request.initialPauseInSeconds.seconds)
         initialPulseDelayTasklet.subscribe(this)
 
-        val direction = if (data.reversed) data.direction.reversed else data.direction
+        val direction = if (request.reversed) request.direction.reversed else request.direction
 
         val forwardGuidePulseTasklet = GuidePulseTasklet(guideOutput, direction, guidePulseDuration)
         forwardGuidePulseTasklet.subscribe(this)
@@ -109,7 +109,7 @@ class DARVPolarAlignmentExecutor(
 
         return jobLauncher
             .run(darvJob, JobParameters())
-            .let { DARVSequenceJob(camera, guideOutput, data, darvJob, it) }
+            .let { DARVSequenceJob(camera, guideOutput, request, darvJob, it) }
             .also(runningSequenceJobs::add)
             .also { jobRegistry.register(ReferenceJobFactory(darvJob)) }
     }
@@ -117,7 +117,7 @@ class DARVPolarAlignmentExecutor(
     @Synchronized
     fun stop(camera: Camera, guideOutput: GuideOutput) {
         val jobExecution = jobExecutionFor(camera, guideOutput) ?: return
-        jobOperator.stop(jobExecution.jobId)
+        jobOperator.stop(jobExecution.id)
     }
 
     @Suppress("NOTHING_TO_INLINE")

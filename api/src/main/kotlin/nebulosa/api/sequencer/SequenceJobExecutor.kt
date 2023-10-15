@@ -4,7 +4,7 @@ import nebulosa.indi.device.Device
 
 interface SequenceJobExecutor<in T, J : SequenceJob> : Iterable<J> {
 
-    fun execute(data: T): J
+    fun execute(request: T): J
 
     fun sequenceJobFor(vararg devices: Device): J? {
         fun find(task: J): Boolean {
