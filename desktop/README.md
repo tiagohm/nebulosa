@@ -47,6 +47,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](framing.png)
 
+## Alignment
+
+![](alignment.darv.png)
+
 ## INDI
 
 ![](indi.png)
