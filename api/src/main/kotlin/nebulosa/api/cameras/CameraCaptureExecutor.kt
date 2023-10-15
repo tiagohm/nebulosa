@@ -1,7 +1,6 @@
 package nebulosa.api.cameras
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.sequencer.SequenceJob
 import nebulosa.api.sequencer.SequenceJobExecutor
 import nebulosa.api.sequencer.tasklets.delay.DelayTasklet
 import nebulosa.api.services.MessageService
@@ -32,12 +31,12 @@ class CameraCaptureExecutor(
     private val jobRegistry: JobRegistry,
     private val messageService: MessageService,
     private val executionIncrementer: Incrementer,
-) : SequenceJobExecutor<CameraStartCapture>, Consumer<CameraCaptureEvent> {
+) : SequenceJobExecutor<CameraStartCapture, CameraSequenceJob>, Consumer<CameraCaptureEvent> {
 
-    private val runningSequenceJobs = LinkedList<SequenceJob>()
+    private val runningSequenceJobs = LinkedList<CameraSequenceJob>()
 
     @Synchronized
-    override fun execute(data: CameraStartCapture): SequenceJob {
+    override fun execute(data: CameraStartCapture): CameraSequenceJob {
         val camera = requireNotNull(data.camera)
 
         if (isCapturing(camera)) {
@@ -116,7 +115,7 @@ class CameraCaptureExecutor(
         messageService.sendMessage(event)
     }
 
-    override fun iterator(): Iterator<SequenceJob> {
+    override fun iterator(): Iterator<CameraSequenceJob> {
         return runningSequenceJobs.iterator()
     }
 

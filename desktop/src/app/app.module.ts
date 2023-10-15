@@ -40,6 +40,7 @@ import { EnvPipe } from '../shared/pipes/env.pipe'
 import { ExposureTimePipe } from '../shared/pipes/exposureTime.pipe'
 import { WinPipe } from '../shared/pipes/win.pipe'
 import { AboutComponent } from './about/about.component'
+import { AlignmentComponent } from './alignment/alignment.component'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { AtlasComponent } from './atlas/atlas.component'
@@ -72,6 +73,7 @@ import { MountComponent } from './mount/mount.component'
         MountComponent,
         GuiderComponent,
         DialogMenuComponent,
+        AlignmentComponent,
         LocationDialog,
         EnvPipe,
         WinPipe,

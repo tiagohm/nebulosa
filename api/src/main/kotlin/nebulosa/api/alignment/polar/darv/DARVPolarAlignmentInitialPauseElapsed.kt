@@ -7,12 +7,12 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 
 data class DARVPolarAlignmentInitialPauseElapsed(
-    val camera: Camera,
-    val guideOutput: GuideOutput,
+    override val camera: Camera,
+    override val guideOutput: GuideOutput,
     val pauseTime: Long,
     val remainingTime: Long,
     val progress: Double,
-) : MessageEvent {
+) : MessageEvent, DARVPolarAlignmentEvent {
 
     constructor(camera: Camera, guideOutput: GuideOutput, delay: DelayEvent) : this(
         camera, guideOutput, delay.waitTime.inWholeMicroseconds,

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core'
 import { RouterModule, Routes } from '@angular/router'
 import { APP_CONFIG } from '../environments/environment'
 import { AboutComponent } from './about/about.component'
+import { AlignmentComponent } from './alignment/alignment.component'
 import { AtlasComponent } from './atlas/atlas.component'
 import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
@@ -58,6 +59,10 @@ const routes: Routes = [
     {
         path: 'framing',
         component: FramingComponent,
+    },
+    {
+        path: 'alignment',
+        component: AlignmentComponent,
     },
     {
         path: 'about',

@@ -25,6 +25,9 @@ data class GuidePulseTasklet(
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
         val durationInMilliseconds = duration.inWholeMilliseconds
 
+        // Force stop in reversed direction.
+        pulseGuide(0, direction.reversed)
+
         if (pulseGuide(durationInMilliseconds.toInt())) {
             delayTasklet.execute(contribution, chunkContext)
         }
@@ -46,7 +49,7 @@ data class GuidePulseTasklet(
         }
     }
 
-    private fun pulseGuide(durationInMilliseconds: Int): Boolean {
+    private fun pulseGuide(durationInMilliseconds: Int, direction: GuideDirection = this.direction): Boolean {
         when (direction) {
             GuideDirection.NORTH -> guideOutput.guideNorth(durationInMilliseconds)
             GuideDirection.SOUTH -> guideOutput.guideSouth(durationInMilliseconds)

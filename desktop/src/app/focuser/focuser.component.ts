@@ -75,11 +75,11 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         this.electron.send('FOCUSER_CHANGED', this.focuser)
     }
 
-    async connect() {
+    connect() {
         if (this.connected) {
-            await this.api.focuserDisconnect(this.focuser!)
+            this.api.focuserDisconnect(this.focuser!)
         } else {
-            await this.api.focuserConnect(this.focuser!)
+            this.api.focuserConnect(this.focuser!)
         }
     }
 

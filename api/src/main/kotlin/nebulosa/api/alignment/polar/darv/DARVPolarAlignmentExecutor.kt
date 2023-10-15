@@ -1,10 +1,10 @@
 package nebulosa.api.alignment.polar.darv
 
 import io.reactivex.rxjava3.functions.Consumer
+import nebulosa.api.cameras.CameraCaptureEvent
 import nebulosa.api.cameras.CameraExposureTasklet
 import nebulosa.api.cameras.CameraStartCapture
 import nebulosa.api.guiding.*
-import nebulosa.api.sequencer.SequenceJob
 import nebulosa.api.sequencer.SequenceJobEvent
 import nebulosa.api.sequencer.SequenceJobExecutor
 import nebulosa.api.sequencer.SequenceTaskletEvent
@@ -17,6 +17,7 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.log.loggerFor
 import org.springframework.batch.core.JobExecution
+import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.JobParameters
 import org.springframework.batch.core.configuration.JobRegistry
 import org.springframework.batch.core.configuration.support.ReferenceJobFactory
@@ -30,6 +31,7 @@ import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.stereotype.Component
 import org.springframework.transaction.PlatformTransactionManager
+import java.nio.file.Path
 import java.util.*
 import kotlin.time.Duration.Companion.seconds
 
@@ -45,12 +47,13 @@ class DARVPolarAlignmentExecutor(
     private val jobRegistry: JobRegistry,
     private val messageService: MessageService,
     private val executionIncrementer: Incrementer,
-) : SequenceJobExecutor<DARVStart>, Consumer<SequenceTaskletEvent> {
+    private val capturesPath: Path,
+) : SequenceJobExecutor<DARVStart, DARVSequenceJob>, Consumer<SequenceTaskletEvent>, JobExecutionListener {
 
-    private val runningSequenceJobs = LinkedList<SequenceJob>()
+    private val runningSequenceJobs = LinkedList<DARVSequenceJob>()
 
     @Synchronized
-    override fun execute(data: DARVStart): SequenceJob {
+    override fun execute(data: DARVStart): DARVSequenceJob {
         val camera = requireNotNull(data.camera)
         val guideOutput = requireNotNull(data.guideOutput)
 
@@ -63,9 +66,11 @@ class DARVPolarAlignmentExecutor(
         val cameraStarCapture = CameraStartCapture(
             camera = camera,
             exposureInMicroseconds = (data.exposureInSeconds + data.initialPauseInSeconds).seconds.inWholeMicroseconds,
+            savePath = Path.of("$capturesPath", "${camera.name}-DARV.fits")
         )
 
         val cameraExposureTasklet = CameraExposureTasklet(cameraStarCapture)
+        cameraExposureTasklet.subscribe(this)
 
         val cameraExposureStep = StepBuilder("DARVPolarAlignment.Step.CameraExposure.${executionIncrementer.increment()}", jobRepository)
             .tasklet(cameraExposureTasklet, platformTransactionManager)
@@ -98,6 +103,7 @@ class DARVPolarAlignmentExecutor(
             .split(SimpleAsyncTaskExecutor(DaemonThreadFactory))
             .add(guidePulseFlow)
             .end()
+            .listener(this)
             .listener(cameraExposureTasklet)
             .build()
 
@@ -134,9 +140,12 @@ class DARVPolarAlignmentExecutor(
     }
 
     override fun accept(event: SequenceTaskletEvent) {
-        if (event !is SequenceJobEvent) return
+        if (event !is SequenceJobEvent) {
+            LOG.warn("unaccepted sequence task event: {}", event)
+            return
+        }
 
-        val (camera, guideOutput, data) = sequenceJobWithId(event.jobExecution.jobId) as? DARVSequenceJob ?: return
+        val (camera, guideOutput, data) = sequenceJobWithId(event.jobExecution.jobId) ?: return
 
         val messageEvent = when (event) {
             // Initial pulse event.
@@ -147,37 +156,43 @@ class DARVPolarAlignmentExecutor(
             is GuidePulseEvent -> {
                 val tasklet = event.tasklet as GuidePulseTasklet
                 val direction = tasklet.direction
-                val forward = tasklet.direction == data.direction
+                val forward = (tasklet.direction == data.direction) != data.reversed
 
                 when (event) {
                     is GuidePulseStarted -> {
-                        if (forward) DARVPolarAlignmentForwardElapsed(camera, guideOutput, direction, tasklet.duration.inWholeMicroseconds, 0.0)
-                        else DARVPolarAlignmentBackwardElapsed(camera, guideOutput, direction, tasklet.duration.inWholeMicroseconds, 0.0)
+                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, forward, direction, tasklet.duration.inWholeMicroseconds, 0.0)
                     }
                     is GuidePulseElapsed -> {
-                        if (forward) DARVPolarAlignmentForwardElapsed(camera, guideOutput, direction, event.remainingTime, event.progress)
-                        else DARVPolarAlignmentBackwardElapsed(camera, guideOutput, direction, event.remainingTime, event.progress)
+                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, forward, direction, event.remainingTime, event.progress)
                     }
                     is GuidePulseFinished -> {
-                        if (forward) DARVPolarAlignmentForwardElapsed(camera, guideOutput, direction, 0L, 1.0)
-                        else DARVPolarAlignmentBackwardElapsed(camera, guideOutput, direction, 0L, 1.0)
+                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, forward, direction, 0L, 1.0)
                     }
                 }
             }
+            is CameraCaptureEvent -> event
             else -> return
         }
 
         messageService.sendMessage(messageEvent)
     }
 
-    override fun iterator(): Iterator<SequenceJob> {
+    override fun beforeJob(jobExecution: JobExecution) {
+        val (camera, guideOutput) = sequenceJobWithId(jobExecution.jobId) ?: return
+        messageService.sendMessage(DARVPolarAlignmentStarted(camera, guideOutput))
+    }
+
+    override fun afterJob(jobExecution: JobExecution) {
+        val (camera, guideOutput) = sequenceJobWithId(jobExecution.jobId) ?: return
+        messageService.sendMessage(DARVPolarAlignmentFinished(camera, guideOutput))
+    }
+
+    override fun iterator(): Iterator<DARVSequenceJob> {
         return runningSequenceJobs.iterator()
     }
 
     companion object {
 
         @JvmStatic private val LOG = loggerFor<DARVPolarAlignmentExecutor>()
-
-        const val DARV_POLAR_ALIGNMENT_ELAPSED = "DARV_POLAR_ALIGNMENT_ELAPSED"
     }
 }
