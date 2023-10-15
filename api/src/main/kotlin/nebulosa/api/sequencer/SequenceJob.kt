@@ -4,11 +4,13 @@ import nebulosa.indi.device.Device
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.JobExecution
 
-data class SequenceJob(
-    val devices: List<Device>,
-    val job: Job,
-    val jobExecution: JobExecution,
-) {
+interface SequenceJob {
+
+    val devices: List<Device>
+
+    val job: Job
+
+    val jobExecution: JobExecution
 
     val jobId
         get() = jobExecution.jobId

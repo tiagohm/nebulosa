@@ -4,9 +4,9 @@ plugins {
 }
 
 dependencies {
+    api(project(":nebulosa-json"))
     api(libs.retrofit)
     api(libs.retrofit.jackson)
-    api(libs.jackson)
     api(libs.okhttp)
     api(libs.okhttp.logging)
     compileOnly(libs.csv)

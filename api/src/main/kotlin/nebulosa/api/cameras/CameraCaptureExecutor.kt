@@ -83,7 +83,7 @@ class CameraCaptureExecutor(
 
         return asyncJobLauncher
             .run(cameraCaptureJob, JobParameters())
-            .let { SequenceJob(listOf(camera), cameraCaptureJob, it) }
+            .let { CameraSequenceJob(camera, data, cameraCaptureJob, it) }
             .also(runningSequenceJobs::add)
             .also { jobRegistry.register(ReferenceJobFactory(cameraCaptureJob)) }
     }
@@ -104,12 +104,12 @@ class CameraCaptureExecutor(
     }
 
     fun isCapturing(camera: Camera): Boolean {
-        return sequenceTaskFor(camera)?.jobExecution?.isRunning ?: false
+        return sequenceJobFor(camera)?.jobExecution?.isRunning ?: false
     }
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun jobExecutionFor(camera: Camera): JobExecution? {
-        return sequenceTaskFor(camera)?.jobExecution
+        return sequenceJobFor(camera)?.jobExecution
     }
 
     override fun accept(event: CameraCaptureEvent) {

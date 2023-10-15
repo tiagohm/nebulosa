@@ -5,9 +5,11 @@ import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.subjects.PublishSubject
 import io.reactivex.rxjava3.subjects.Subject
+import nebulosa.log.debug
+import nebulosa.log.loggerFor
 import java.io.Closeable
 
-abstract class SubjectSequenceTasklet<T : Any>(@JvmField protected val subject: Subject<T>) : SequenceTasklet<T>, Closeable {
+abstract class SubjectSequenceTasklet<T : SequenceTaskletEvent>(@JvmField protected val subject: Subject<T>) : SequenceTasklet<T>, Closeable {
 
     constructor() : this(PublishSubject.create<T>())
 
@@ -25,6 +27,7 @@ abstract class SubjectSequenceTasklet<T : Any>(@JvmField protected val subject: 
 
     @Synchronized
     final override fun onNext(event: T) {
+        LOG.debug { "$event" }
         subject.onNext(event)
     }
 
@@ -40,5 +43,10 @@ abstract class SubjectSequenceTasklet<T : Any>(@JvmField protected val subject: 
 
     final override fun close() {
         onComplete()
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<SubjectSequenceTasklet<*>>()
     }
 }

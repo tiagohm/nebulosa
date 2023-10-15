@@ -6,7 +6,7 @@ interface SequenceJobExecutor<in T> : Iterable<SequenceJob> {
 
     fun execute(data: T): SequenceJob
 
-    fun sequenceTaskFor(vararg devices: Device): SequenceJob? {
+    fun sequenceJobFor(vararg devices: Device): SequenceJob? {
         fun find(task: SequenceJob): Boolean {
             for (i in devices.indices) {
                 if (i >= task.devices.size || task.devices[i].name != devices[i].name) {
@@ -18,5 +18,9 @@ interface SequenceJobExecutor<in T> : Iterable<SequenceJob> {
         }
 
         return findLast(::find)
+    }
+
+    fun sequenceJobWithId(jobId: Long): SequenceJob? {
+        return find { it.jobId == jobId }
     }
 }

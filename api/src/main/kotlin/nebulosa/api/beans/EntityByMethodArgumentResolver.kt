@@ -13,11 +13,13 @@ import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import org.springframework.core.MethodParameter
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
+import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.HandlerMapping
 
 @Component
@@ -39,12 +41,27 @@ class EntityByMethodArgumentResolver(
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?
     ): Any? {
+        val entityBy = parameter.getParameterAnnotation(EntityBy::class.java)!!
+        val parameterType = parameter.parameterType
         val parameterName = parameter.parameterName ?: "id"
         val parameterValue = webRequest.pathVariables()[parameterName]
             ?: webRequest.getParameter(parameterName)
-            ?: return null
+            ?: throw throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Parameter $parameterName is not mapped")
 
-        return when (parameter.parameterType) {
+        val entity = entityByParameterValue(parameterType, parameterValue)
+
+        if (entityBy.required && entity == null) {
+            val message = "Cannot found a ${parameterType.simpleName} entity with name [$parameterValue]"
+            throw throw ResponseStatusException(HttpStatus.NOT_FOUND, message)
+        }
+
+        return entity
+    }
+
+    private fun entityByParameterValue(parameterType: Class<*>, parameterValue: String?): Any? {
+        if (parameterValue.isNullOrBlank()) return null
+
+        return when (parameterType) {
             LocationEntity::class.java -> locationRepository.findByIdOrNull(parameterValue.toLong())
             StarEntity::class.java -> starRepository.findByIdOrNull(parameterValue.toLong())
             DeepSkyObjectEntity::class.java -> deepSkyObjectRepository.findByIdOrNull(parameterValue.toLong())
