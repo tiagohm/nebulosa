@@ -56,7 +56,7 @@
                     </div>
                     <div class="col-3">
                         <p-button [disabled]="minorPlanetSearchText.length < 3 || refreshing" (onClick)="searchMinorPlanet()" icon="mdi mdi-magnify"
-                                  styleClass="p-button-sm p-button-success" />
+                                  severity="success" size="small" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -90,8 +90,8 @@
                         </span>
                     </div>
                     <div class="col-3 flex align-items-center gap-1">
-                        <p-button [disabled]="refreshing" (onClick)="searchStar()" icon="mdi mdi-magnify" styleClass="p-button-sm p-button-info" />
-                        <p-button [disabled]="refreshing" (onClick)="showStarFilterDialog = true" icon="mdi mdi-filter" styleClass="p-button-sm" />
+                        <p-button [disabled]="refreshing" (onClick)="searchStar()" icon="mdi mdi-magnify" severity="info" size="small" />
+                        <p-button [disabled]="refreshing" (onClick)="showStarFilterDialog = true" icon="mdi mdi-filter" size="small" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -129,8 +129,8 @@
                         </span>
                     </div>
                     <div class="col-3 flex align-items-center gap-1">
-                        <p-button [disabled]="refreshing" (onClick)="searchDSO()" icon="mdi mdi-magnify" styleClass="p-button-sm p-button-info" />
-                        <p-button [disabled]="refreshing" (onClick)="showDSOFilterDialog = true" icon="mdi mdi-filter" styleClass="p-button-sm" />
+                        <p-button [disabled]="refreshing" (onClick)="searchDSO()" icon="mdi mdi-magnify" size="small" severity="info" />
+                        <p-button [disabled]="refreshing" (onClick)="showDSOFilterDialog = true" icon="mdi mdi-filter" size="small" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -169,9 +169,9 @@
                     </div>
                     <div class="col-3 flex align-items-center gap-1">
                         <p-button [disabled]="refreshing" (onClick)="searchSatellite()" icon="mdi mdi-magnify"
-                                  styleClass="p-button-sm p-button-info" />
+                                  size="small" severity="info" />
                         <p-button [disabled]="refreshing" (onClick)="showSatelliteFilterDialog = true" icon="mdi mdi-filter"
-                                  styleClass="p-button-sm" />
+                                  size="small" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -212,10 +212,10 @@
                         </span>
                     </div>
                     <div class="col-4 flex align-items-center gap-1">
-                        <p-button [disabled]="refreshing" (onClick)="addLocation()" icon="mdi mdi-plus" styleClass="p-button-sm p-button-success" />
-                        <p-button [disabled]="refreshing" (onClick)="editLocation()" icon="mdi mdi-pencil" styleClass="p-button-sm p-button-info" />
+                        <p-button [disabled]="refreshing" (onClick)="addLocation()" icon="mdi mdi-plus" size="small" severity="success" />
+                        <p-button [disabled]="refreshing" (onClick)="editLocation()" icon="mdi mdi-pencil" size="small" severity="info" />
                         <p-button [disabled]="refreshing || locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete"
-                                  styleClass="p-button-sm p-button-danger" />
+                                  size="small" severity="danger" />
                     </div>
                 </div>
             </p-tabPanel>
@@ -302,13 +302,12 @@
                     </div>
                 </div>
                 <div class="col-12 flex justify-content-center">
-                    <p-button [disabled]="refreshing" (onClick)="mountSync()" icon="mdi mdi-sync" label="Sync"
-                              styleClass="p-button-text p-button-info" />
-                    <p-button [disabled]="refreshing" (onClick)="mountGoTo()" icon="mdi mdi-telescope" label="Go To"
-                              styleClass="p-button-text p-button-success" />
-                    <p-button [disabled]="refreshing" (onClick)="mountSlew()" icon="mdi mdi-telescope" label="Slew"
-                              styleClass="p-button-text p-button-success" />
-                    <p-button [disabled]="refreshing" (onClick)="frame()" icon="mdi mdi-image" label="Frame" styleClass="p-button-text" />
+                    <p-button [disabled]="refreshing" [text]="true" severity="info" (onClick)="mountSync()" icon="mdi mdi-sync" label="Sync" />
+                    <p-button [disabled]="refreshing" [text]="true" severity="success" (onClick)="mountGoTo()" icon="mdi mdi-telescope"
+                              label="Go To" />
+                    <p-button [disabled]="refreshing" [text]="true" severity="success" (onClick)="mountSlew()" icon="mdi mdi-telescope"
+                              label="Slew" />
+                    <p-button [disabled]="refreshing" [text]="true" (onClick)="frame()" icon="mdi mdi-image" label="Frame" />
                 </div>
             </div>
         </p-tabPanel>
@@ -402,7 +401,7 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="refreshing" icon="mdi mdi-filter" label="Filter" (onClick)="filterStar()" styleClass="p-button-text" />
+        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" (onClick)="filterStar()" />
     </ng-template>
 </p-dialog>
 
@@ -468,7 +467,7 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="refreshing" icon="mdi mdi-filter" label="Filter" (onClick)="filterDSO()" styleClass="p-button-text" />
+        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" (onClick)="filterDSO()" />
     </ng-template>
 </p-dialog>
 
@@ -482,8 +481,7 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="refreshing" icon="mdi mdi-restore" label="Reset" (onClick)="resetSatelliteFilter()"
-                  styleClass="p-button-text p-button-danger" />
-        <p-button [disabled]="refreshing" icon="mdi mdi-filter" label="Filter" (onClick)="filterSatellite()" styleClass="p-button-text" />
+        <p-button [disabled]="refreshing" [text]="true" severity="danger" icon="mdi mdi-restore" label="Reset" (onClick)="resetSatelliteFilter()" />
+        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" (onClick)="filterSatellite()" />
     </ng-template>
 </p-dialog>

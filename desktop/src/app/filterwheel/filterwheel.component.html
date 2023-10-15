@@ -10,9 +10,9 @@
         </div>
         <div class="col-2 flex align-items-center gap-1">
             <p-button *ngIf="connected" [disabled]="!wheel || moving" (onClick)="connect()" icon="mdi mdi-close"
-                      styleClass="p-button-sm p-button-danger" />
+                      size="small" severity="danger" />
             <p-button *ngIf="!connected" [disabled]="!wheel || moving" (onClick)="connect()" icon="mdi mdi-connection"
-                      styleClass="p-button-sm p-button-info" />
+                      size="small" severity="info" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
             <i class="mdi mdi-information text-blue-600"></i>
@@ -28,7 +28,8 @@
         </div>
         <div class="col-12">
             <span class="p-float-label">
-                <p-dropdown [disabled]="moving" [options]="filters" [autoDisplayFirst]="false" [(ngModel)]="selectedFilter" styleClass="p-inputtext-sm border-0"
+                <p-dropdown [disabled]="moving" [options]="filters" [autoDisplayFirst]="false" [(ngModel)]="selectedFilter"
+                            styleClass="p-inputtext-sm border-0"
                             emptyMessage="No filter found" scrollHeight="128px">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex flex-row align-items-center justify-content-between">
@@ -47,11 +48,11 @@
                                 </ng-template>
                             </p-inplace>
                             <span class="flex flex-row align-items-center gap-2">
-                                <p-button *ngIf="!item.editing" icon="mdi mdi-pencil" (onClick)="filterItem.activate(); showFilterEdit(item, $event)"
-                                          pTooltip="Rename" tooltipPosition="bottom" styleClass="p-button-sm p-button-info p-button-text" />
-                                <p-button *ngIf="item.editing" [disabled]="!item.newName" icon="mdi mdi-check"
-                                          (onClick)="filterItem.deactivate(); applyFilterName(item, $event)"
-                                          styleClass="p-button-sm p-button-success p-button-text" />
+                                <p-button *ngIf="!item.editing" icon="mdi mdi-pencil" [text]="true" severity="info" size="small"
+                                          (onClick)="filterItem.activate(); showFilterEdit(item, $event)" pTooltip="Rename"
+                                          tooltipPosition="bottom" />
+                                <p-button *ngIf="item.editing" [disabled]="!item.newName" icon="mdi mdi-check" [text]="true" severity="success"
+                                          size="small" (onClick)="filterItem.deactivate(); applyFilterName(item, $event)" />
                                 <p-checkbox [(ngModel)]="item.dark" [binary]="true" pTooltip="Shutter" tooltipPosition="bottom"
                                             (onChange)="shutterToggled(item, $event)" />
                             </span>

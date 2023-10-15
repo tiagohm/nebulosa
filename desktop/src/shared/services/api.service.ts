@@ -289,9 +289,14 @@ export class ApiService {
         return this.http.put<void>(`guiding/start?${query}`)
     }
 
-    guidingDither(pixels: number, raOnly: boolean = false) {
-        const query = this.http.query({ pixels, raOnly })
+    guidingDither(amount: number, raOnly: boolean = false) {
+        const query = this.http.query({ amount, raOnly })
         return this.http.put<void>(`guiding/dither?${query}`)
+    }
+
+    guidingSettle(amount: number, time: number, timeout: number) {
+        const query = this.http.query({ amount, time, timeout })
+        return this.http.put<void>(`guiding/settle?${query}`)
     }
 
     guidingStop() {

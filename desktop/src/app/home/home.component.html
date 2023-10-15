@@ -15,8 +15,8 @@
             </span>
         </div>
         <div class="col-2 text-center pr-0">
-            <p-button *ngIf="connected" (onClick)="connect()" icon="mdi mdi-close" styleClass="p-button-danger" />
-            <p-button *ngIf="!connected" (onClick)="connect()" icon="mdi mdi-connection" styleClass="p-button-info" />
+            <p-button *ngIf="connected" (onClick)="connect()" icon="mdi mdi-close" severity="danger" />
+            <p-button *ngIf="!connected" (onClick)="connect()" icon="mdi mdi-connection" severity="info" />
         </div>
     </div>
     <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 75px);">

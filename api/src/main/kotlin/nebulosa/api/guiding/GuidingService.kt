@@ -11,6 +11,7 @@ import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.commands.PHD2Command
 import nebulosa.phd2.client.events.PHD2Event
 import org.springframework.stereotype.Service
+import kotlin.time.Duration
 
 @Service
 class GuidingService(
@@ -23,7 +24,7 @@ class GuidingService(
 
     @Synchronized
     fun connect(host: String, port: Int) {
-        if (phd2Client.isOpen) return
+        check(!phd2Client.isOpen)
 
         phd2Client.open(host, port)
         phd2Client.registerListener(this)
@@ -40,7 +41,8 @@ class GuidingService(
     }
 
     fun status(): GuiderStatus {
-        return GuiderStatus(phd2Client.isOpen, guider.state, guider.isSettling, guider.pixelScale)
+        return if (!phd2Client.isOpen) GuiderStatus.DISCONNECTED
+        else GuiderStatus(phd2Client.isOpen, guider.state, guider.isSettling, guider.pixelScale)
     }
 
     fun history(): List<HistoryStep> {
@@ -67,9 +69,15 @@ class GuidingService(
         }
     }
 
-    fun dither(pixels: Double, raOnly: Boolean = false) {
+    fun settle(settleAmount: Double?, settleTime: Duration?, settleTimeout: Duration?) {
+        if (settleAmount != null) guider.settleAmount = settleAmount
+        if (settleTime != null) guider.settleTime = settleTime
+        if (settleTimeout != null) guider.settleTimeout = settleTimeout
+    }
+
+    fun dither(amount: Double, raOnly: Boolean = false) {
         if (phd2Client.isOpen) {
-            guider.dither(pixels, raOnly)
+            guider.dither(amount, raOnly)
         }
     }
 

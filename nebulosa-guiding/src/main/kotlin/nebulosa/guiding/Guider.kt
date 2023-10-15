@@ -1,6 +1,7 @@
 package nebulosa.guiding
 
-import java.time.Duration
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 interface Guider {
 
@@ -10,7 +11,7 @@ interface Guider {
 
     val isSettling: Boolean
 
-    var settlePixels: Double
+    var settleAmount: Double
 
     var settleTime: Duration
 
@@ -30,7 +31,14 @@ interface Guider {
 
     fun clearCalibration()
 
-    fun dither(pixels: Double, raOnly: Boolean = false)
+    fun dither(amount: Double, raOnly: Boolean = false)
 
     fun waitForSettling()
+
+    companion object {
+
+        @JvmStatic val DEFAULT_SETTLE_AMOUNT = 1.5
+        @JvmStatic val DEFAULT_SETTLE_TIME = 10.seconds
+        @JvmStatic val DEFAULT_SETTLE_TIMEOUT = 30.seconds
+    }
 }
