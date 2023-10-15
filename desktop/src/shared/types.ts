@@ -443,6 +443,22 @@ export interface Satellite {
     groups: SatelliteGroupType[]
 }
 
+export interface DARVPolarAlignmentEvent {
+    camera: Camera
+    guideOutput: GuideOutput
+    remainingTime: number
+    progress: number
+}
+
+export interface DARVPolarAlignmentInitialPauseElapsed extends DARVPolarAlignmentEvent {
+    pauseTime: number
+}
+
+export interface DARVPolarAlignmentGuidePulseElapsed extends DARVPolarAlignmentEvent {
+    forward: boolean
+    direction: GuideDirection
+}
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',
@@ -639,6 +655,9 @@ export const INDI_EVENT_TYPES = [
     // Guider.
     'GUIDER_CONNECTED', 'GUIDER_DISCONNECTED', 'GUIDER_UPDATED', 'GUIDER_STEPPED',
     'GUIDER_MESSAGE_RECEIVED',
+    // Polar Alignment.
+    'DARV_POLAR_ALIGNMENT_STARTED', 'DARV_POLAR_ALIGNMENT_FINISHED',
+    'DARV_POLAR_ALIGNMENT_INITIAL_PAUSE_ELAPSED', 'DARV_POLAR_ALIGNMENT_GUIDE_PULSE_ELAPSED',
 ] as const
 
 export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]
@@ -703,6 +722,15 @@ export type GuideDirection = 'NORTH' | // DEC+
     'WEST' | // RA+
     'EAST' // RA-
 
+export function reverseGuideDirection(direction: GuideDirection): GuideDirection {
+    switch (direction) {
+        case 'NORTH': return 'SOUTH'
+        case 'SOUTH': return 'NORTH'
+        case 'WEST': return 'EAST'
+        case 'EAST': return 'WEST'
+    }
+}
+
 export const SATELLITE_GROUPS = [
     'LAST_30_DAYS', 'STATIONS', 'VISUAL',
     'ACTIVE', 'ANALYST', 'COSMOS_1408_DEBRIS',
@@ -737,3 +765,5 @@ export const GUIDE_STATES = [
 ] as const
 
 export type GuideState = (typeof GUIDE_STATES)[number]
+
+export type Hemisphere = 'NORTHERN' | 'SOUTHERN'

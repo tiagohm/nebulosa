@@ -81,11 +81,11 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         this.electron.send('WHEEL_CHANGED', this.wheel)
     }
 
-    async connect() {
+    connect() {
         if (this.connected) {
-            await this.api.wheelDisconnect(this.wheel!)
+            this.api.wheelDisconnect(this.wheel!)
         } else {
-            await this.api.wheelConnect(this.wheel!)
+            this.api.wheelConnect(this.wheel!)
         }
     }
 

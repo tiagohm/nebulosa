@@ -1,15 +1,14 @@
 package nebulosa.api.beans.configurations
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.module.kotlin.kotlinModule
 import nebulosa.api.beans.DateAndTimeMethodArgumentResolver
 import nebulosa.api.beans.EntityByMethodArgumentResolver
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.concurrency.Incrementer
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
-import nebulosa.json.FromJson
-import nebulosa.json.SimpleJsonModule
-import nebulosa.json.ToJson
+import nebulosa.json.*
 import nebulosa.json.converters.PathConverter
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.sbd.SmallBodyDatabaseService
@@ -57,10 +56,10 @@ class BeanConfiguration {
     fun cachePath(appPath: Path): Path = Path.of("$appPath", "cache").createDirectories()
 
     @Bean
-    fun simpleJsonModule(
+    fun kotlinModule(
         serializers: List<ToJson<*>>,
         deserializers: List<FromJson<*>>,
-    ) = SimpleJsonModule()
+    ) = kotlinModule()
         .apply { serializers.forEach { addSerializer(it) } }
         .apply { deserializers.forEach { addDeserializer(it) } }
         .addConverter(PathConverter)

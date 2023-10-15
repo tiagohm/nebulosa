@@ -1,7 +1,6 @@
 package nebulosa.api.cameras
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.sequencer.SequenceJob
 import nebulosa.api.sequencer.SequenceJobExecutor
 import nebulosa.api.sequencer.tasklets.delay.DelayTasklet
 import nebulosa.api.services.MessageService
@@ -32,22 +31,22 @@ class CameraCaptureExecutor(
     private val jobRegistry: JobRegistry,
     private val messageService: MessageService,
     private val executionIncrementer: Incrementer,
-) : SequenceJobExecutor<CameraStartCapture>, Consumer<CameraCaptureEvent> {
+) : SequenceJobExecutor<CameraStartCapture, CameraSequenceJob>, Consumer<CameraCaptureEvent> {
 
-    private val runningSequenceJobs = LinkedList<SequenceJob>()
+    private val runningSequenceJobs = LinkedList<CameraSequenceJob>()
 
     @Synchronized
-    override fun execute(data: CameraStartCapture): SequenceJob {
-        val camera = requireNotNull(data.camera)
+    override fun execute(request: CameraStartCapture): CameraSequenceJob {
+        val camera = requireNotNull(request.camera)
 
         if (isCapturing(camera)) {
             throw IllegalStateException("A Camera Exposure job is already running. camera=${camera.name}")
         }
 
-        LOG.info("starting camera capture. data={}", data)
+        LOG.info("starting camera capture. data={}", request)
 
-        val cameraCaptureJob = if (data.isLoop) {
-            val cameraExposureTasklet = CameraLoopExposureTasklet(data)
+        val cameraCaptureJob = if (request.isLoop) {
+            val cameraExposureTasklet = CameraLoopExposureTasklet(request)
             cameraExposureTasklet.subscribe(this)
 
             JobBuilder("CameraCapture.Job.${executionIncrementer.increment()}", jobRepository)
@@ -55,17 +54,17 @@ class CameraCaptureExecutor(
                 .listener(cameraExposureTasklet)
                 .build()
         } else {
-            val cameraExposureTasklet = CameraExposureTasklet(data)
+            val cameraExposureTasklet = CameraExposureTasklet(request)
             cameraExposureTasklet.subscribe(this)
 
             val jobBuilder = JobBuilder("CameraCapture.Job.${executionIncrementer.increment()}", jobRepository)
                 .start(cameraExposureStep(cameraExposureTasklet))
 
-            val hasDelay = data.exposureDelayInSeconds in 1L..60L
-            val cameraDelayTasklet = DelayTasklet(data.exposureDelayInSeconds.seconds)
+            val hasDelay = request.exposureDelayInSeconds in 1L..60L
+            val cameraDelayTasklet = DelayTasklet(request.exposureDelayInSeconds.seconds)
             cameraDelayTasklet.subscribe(cameraExposureTasklet)
 
-            repeat(data.exposureAmount - 1) {
+            repeat(request.exposureAmount - 1) {
                 if (hasDelay) {
                     val cameraDelayStep = cameraDelayStep(cameraDelayTasklet)
                     jobBuilder.next(cameraDelayStep)
@@ -83,7 +82,7 @@ class CameraCaptureExecutor(
 
         return asyncJobLauncher
             .run(cameraCaptureJob, JobParameters())
-            .let { SequenceJob(listOf(camera), cameraCaptureJob, it) }
+            .let { CameraSequenceJob(camera, request, cameraCaptureJob, it) }
             .also(runningSequenceJobs::add)
             .also { jobRegistry.register(ReferenceJobFactory(cameraCaptureJob)) }
     }
@@ -100,23 +99,23 @@ class CameraCaptureExecutor(
 
     fun stop(camera: Camera) {
         val jobExecution = jobExecutionFor(camera) ?: return
-        jobOperator.stop(jobExecution.jobId)
+        jobOperator.stop(jobExecution.id)
     }
 
     fun isCapturing(camera: Camera): Boolean {
-        return sequenceTaskFor(camera)?.jobExecution?.isRunning ?: false
+        return sequenceJobFor(camera)?.jobExecution?.isRunning ?: false
     }
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun jobExecutionFor(camera: Camera): JobExecution? {
-        return sequenceTaskFor(camera)?.jobExecution
+        return sequenceJobFor(camera)?.jobExecution
     }
 
     override fun accept(event: CameraCaptureEvent) {
         messageService.sendMessage(event)
     }
 
-    override fun iterator(): Iterator<SequenceJob> {
+    override fun iterator(): Iterator<CameraSequenceJob> {
         return runningSequenceJobs.iterator()
     }
 

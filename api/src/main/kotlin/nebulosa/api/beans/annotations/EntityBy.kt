@@ -2,4 +2,4 @@ package nebulosa.api.beans.annotations
 
 @Retention
 @Target(AnnotationTarget.VALUE_PARAMETER)
-annotation class EntityBy
+annotation class EntityBy(val required: Boolean = true)

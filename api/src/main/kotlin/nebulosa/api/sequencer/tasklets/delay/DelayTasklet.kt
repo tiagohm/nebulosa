@@ -16,7 +16,8 @@ data class DelayTasklet(private val duration: Duration) : SubjectSequenceTasklet
     private val aborted = AtomicBoolean()
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
-        val delayTimeInMilliseconds = contribution.stepExecution.executionContext
+        val stepExecution = contribution.stepExecution
+        val delayTimeInMilliseconds = stepExecution.executionContext
             .getLong(DELAY_TIME_NAME, duration.inWholeMilliseconds)
         val delayTime = delayTimeInMilliseconds.milliseconds
 
@@ -27,13 +28,13 @@ data class DelayTasklet(private val duration: Duration) : SubjectSequenceTasklet
                 val waitTime = min(remainingTime, DELAY_INTERVAL)
 
                 if (waitTime > 0) {
-                    onNext(DelayElapsed(remainingTime.milliseconds, delayTime, waitTime.milliseconds))
+                    onNext(DelayElapsed(remainingTime.milliseconds, delayTime, waitTime.milliseconds, stepExecution, this))
                     Thread.sleep(waitTime)
                     remainingTime -= waitTime
                 }
             }
 
-            onNext(DelayElapsed(Duration.ZERO, delayTime, Duration.ZERO))
+            onNext(DelayElapsed(Duration.ZERO, delayTime, Duration.ZERO, stepExecution, this))
         }
 
         return RepeatStatus.FINISHED

@@ -26,7 +26,7 @@ data class CameraStartCapture(
     val autoSave: Boolean = false,
     val savePath: Path? = null,
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.OFF,
-    @JsonIgnore val saveInMemory: Boolean = false,
+    @JsonIgnore val saveInMemory: Boolean = savePath == null,
 ) {
 
     inline val isLoop

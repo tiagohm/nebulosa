@@ -3,26 +3,19 @@ import io.kotest.core.spec.style.StringSpec
 import kotlinx.coroutines.delay
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.phd2.client.PHD2EventListener
-import nebulosa.phd2.client.commands.GetStarImage
 import nebulosa.phd2.client.commands.PHD2Command
 import nebulosa.phd2.client.events.PHD2Event
-import java.io.File
-import javax.imageio.ImageIO
 
 @EnabledIf(NonGitHubOnlyCondition::class)
 class PHD2ClientTest : StringSpec(), PHD2EventListener {
 
     init {
         "start" {
-            val client = PHD2Client("localhost")
+            val client = PHD2Client()
             client.registerListener(this@PHD2ClientTest)
-            client.run()
+            client.open("localhost", PHD2Client.DEFAULT_PORT)
 
             delay(1000)
-
-            val image = client.sendCommandSync(GetStarImage(64))
-            val decodedImage = image.decodeImage()
-            ImageIO.write(decodedImage, "PNG", File("/home/tiagohm/Área de Trabalho/NOTAS.png"))
 
             client.close()
         }

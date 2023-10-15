@@ -1,14 +1,23 @@
 package nebulosa.api.cameras
 
 import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializerProvider
+import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.camera.Camera
+import nebulosa.json.FromJson
 import nebulosa.json.ToJson
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import java.nio.file.Path
 
 @Component
-class CameraConverter(private val capturesPath: Path) : ToJson<Camera> {
+class CameraConverter(private val capturesPath: Path) : ToJson<Camera>, FromJson<Camera> {
+
+    @Autowired @Lazy private lateinit var connectionService: ConnectionService
 
     override val type = Camera::class.java
 
@@ -66,5 +75,16 @@ class CameraConverter(private val capturesPath: Path) : ToJson<Camera> {
         gen.writeNumberField("temperature", value.temperature)
         gen.writeObjectField("capturesPath", Path.of("$capturesPath", value.name))
         gen.writeEndObject()
+    }
+
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Camera? {
+        val node = p.codec.readTree<JsonNode>(p)
+
+        val name = if (node.has("camera")) node.get("camera").asText()
+        else if (node.has("device")) node.get("device").asText()
+        else return null
+
+        return if (name.isNullOrBlank()) null
+        else connectionService.camera(name)
     }
 }

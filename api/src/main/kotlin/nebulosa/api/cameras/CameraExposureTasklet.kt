@@ -42,7 +42,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.microseconds
 import kotlin.time.Duration.Companion.seconds
 
-data class CameraExposureTasklet(private val request: CameraStartCapture) :
+data class CameraExposureTasklet(val request: CameraStartCapture) :
     SubjectSequenceTasklet<CameraCaptureEvent>(), JobExecutionListener, Consumer<DelayElapsed> {
 
     private val latch = CountUpDownLatch()
@@ -89,14 +89,14 @@ data class CameraExposureTasklet(private val request: CameraStartCapture) :
         camera.enableBlob()
         EventBus.getDefault().register(this)
         jobExecution.executionContext.put(CAPTURE_IN_LOOP, request.isLoop)
-        onNext(CameraCaptureStarted(camera, jobExecution))
+        onNext(CameraCaptureStarted(camera, jobExecution, this))
         captureElapsedTime = 0L
     }
 
     override fun afterJob(jobExecution: JobExecution) {
         camera.disableBlob()
         EventBus.getDefault().unregister(this)
-        onNext(CameraCaptureFinished(camera, jobExecution))
+        onNext(CameraCaptureFinished(camera, jobExecution, this))
         close()
     }
 
@@ -115,10 +115,9 @@ data class CameraExposureTasklet(private val request: CameraStartCapture) :
 
     override fun accept(event: DelayElapsed) {
         captureElapsedTime += event.waitTime.inWholeMicroseconds
-        val waitProgress = if (event.remainingTime > Duration.ZERO) 1.0 - event.delayTime / event.remainingTime else 1.0
 
         with(stepExecution!!.executionContext) {
-            putDouble(WAIT_PROGRESS, waitProgress)
+            putDouble(WAIT_PROGRESS, event.progress)
             putLong(WAIT_REMAINING_TIME, event.remainingTime.inWholeMicroseconds)
             putLong(WAIT_TIME, event.waitTime.inWholeMicroseconds)
             put(CAPTURE_IS_WAITING, true)
@@ -143,9 +142,12 @@ data class CameraExposureTasklet(private val request: CameraStartCapture) :
                     put(CAPTURE_IS_WAITING, false)
                 }
 
-                onNext(CameraExposureStarted(camera, stepExecution!!))
+                onNext(CameraExposureStarted(camera, stepExecution!!, this))
 
-                camera.frame(request.x, request.y, request.width, request.height)
+                if (request.width > 0 && request.height > 0) {
+                    camera.frame(request.x, request.y, request.width, request.height)
+                }
+
                 camera.frameType(request.frameType)
                 camera.frameFormat(request.frameFormat)
                 camera.bin(request.binX, request.binY)
@@ -180,14 +182,14 @@ data class CameraExposureTasklet(private val request: CameraStartCapture) :
         try {
             if (request.saveInMemory) {
                 val image = Image.openFITS(inputStream)
-                onNext(CameraExposureFinished(camera, stepExecution, image, savePath))
+                onNext(CameraExposureFinished(camera, stepExecution, this, image, savePath))
             } else {
                 LOG.info("saving FITS at $savePath...")
 
                 savePath!!.createParentDirectories()
                 inputStream.transferAndClose(savePath.outputStream())
 
-                onNext(CameraExposureFinished(camera, stepExecution, null, savePath))
+                onNext(CameraExposureFinished(camera, stepExecution, this, null, savePath))
             }
         } catch (e: Throwable) {
             LOG.error("failed to save FITS", e)
@@ -215,7 +217,7 @@ data class CameraExposureTasklet(private val request: CameraStartCapture) :
             putLong(CAPTURE_ELAPSED_TIME, elapsedTime.inWholeMicroseconds)
         }
 
-        onNext(CameraExposureUpdated(camera, stepExecution!!))
+        onNext(CameraExposureUpdated(camera, stepExecution!!, this))
     }
 
     companion object {

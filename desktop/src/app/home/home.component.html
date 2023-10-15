@@ -78,7 +78,8 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasAlignment" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [disabled]="!connected || !hasAlignment" (onClick)="open('ALIGNMENT')"
+                      styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
                 <img src="assets/icons/star.png" />
                 <div class="mt-1 text-sm">Alignment</div>
             </p-button>
