@@ -127,11 +127,13 @@
                                 </span>
                             </div>
                         </div>
-                        <div class="grid">
+                        <div class="grid relative">
                             <div class="col-12">
                                 <p-chart #phdChart width="100%" height="140px" [data]="phdChartData" [responsive]="true"
                                          [options]="phdChartOptions" />
                             </div>
+                            <span class="absolute right-0 text-blue-500" style="top: 16px;">North</span>
+                            <span class="absolute right-0 text-red-500" style="bottom: 26px;">East</span>
                         </div>
                     </p-tabPanel>
                     <div class="grid mt-1 absolute" style="top: -12px; right: 10px">
