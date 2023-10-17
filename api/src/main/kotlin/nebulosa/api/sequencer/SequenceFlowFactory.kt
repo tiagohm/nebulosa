@@ -24,21 +24,21 @@ class SequenceFlowFactory(
     @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     fun cameraExposure(cameraExposureTasklet: CameraExposureTasklet): SimpleFlow {
         val step = sequenceStepFactory.cameraExposure(cameraExposureTasklet)
-        return FlowBuilder<SimpleFlow>("Flow.CameraExposure.${flowIncrementer.increment()}").next(step).end()
+        return FlowBuilder<SimpleFlow>("Flow.CameraExposure.${flowIncrementer.increment()}").start(step).end()
     }
 
     @Bean(name = ["delayFlow"], autowireCandidate = false)
     @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     fun delay(delayTasklet: DelayTasklet): SimpleFlow {
         val step = sequenceStepFactory.delay(delayTasklet)
-        return FlowBuilder<SimpleFlow>("Flow.Delay.${flowIncrementer.increment()}").next(step).end()
+        return FlowBuilder<SimpleFlow>("Flow.Delay.${flowIncrementer.increment()}").start(step).end()
     }
 
     @Bean(name = ["waitForSettleFlow"], autowireCandidate = false)
     @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     fun waitForSettle(waitForSettleTasklet: WaitForSettleTasklet): SimpleFlow {
         val step = sequenceStepFactory.waitForSettle(waitForSettleTasklet)
-        return FlowBuilder<SimpleFlow>("Flow.WaitForSettle.${flowIncrementer.increment()}").next(step).end()
+        return FlowBuilder<SimpleFlow>("Flow.WaitForSettle.${flowIncrementer.increment()}").start(step).end()
     }
 
     @Bean(name = ["guidePulseFlow"], autowireCandidate = false)
@@ -58,8 +58,9 @@ class SequenceFlowFactory(
     @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     fun delayAndWaitForSettle(cameraDelayTasklet: DelayTasklet, waitForSettleTasklet: WaitForSettleTasklet): SimpleFlow {
         return FlowBuilder<SimpleFlow>("Flow.DelayAndWaitForSettle.${flowIncrementer.increment()}")
+            .start(delay(cameraDelayTasklet))
             .split(simpleAsyncTaskExecutor)
-            .add(delay(cameraDelayTasklet), waitForSettle(waitForSettleTasklet))
+            .add(waitForSettle(waitForSettleTasklet))
             .end()
     }
 }

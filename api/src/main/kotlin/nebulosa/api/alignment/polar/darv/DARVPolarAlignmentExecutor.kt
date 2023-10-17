@@ -7,7 +7,6 @@ import nebulosa.api.guiding.*
 import nebulosa.api.sequencer.*
 import nebulosa.api.sequencer.tasklets.delay.DelayElapsed
 import nebulosa.api.services.MessageService
-import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.concurrency.Incrementer
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
@@ -41,6 +40,7 @@ class DARVPolarAlignmentExecutor(
     private val capturesPath: Path,
     private val sequenceFlowFactory: SequenceFlowFactory,
     private val sequenceTaskletFactory: SequenceTaskletFactory,
+    private val simpleAsyncTaskExecutor: SimpleAsyncTaskExecutor,
 ) : SequenceJobExecutor<DARVStart, DARVSequenceJob>, Consumer<SequenceTaskletEvent>, JobExecutionListener {
 
     private val runningSequenceJobs = LinkedList<DARVSequenceJob>()
@@ -84,7 +84,7 @@ class DARVPolarAlignmentExecutor(
 
         val darvJob = JobBuilder("DARVPolarAlignment.Job.${jobIncrementer.increment()}", jobRepository)
             .start(cameraExposureFlow)
-            .split(SimpleAsyncTaskExecutor(DaemonThreadFactory))
+            .split(simpleAsyncTaskExecutor)
             .add(guidePulseFlow)
             .end()
             .listener(this)
