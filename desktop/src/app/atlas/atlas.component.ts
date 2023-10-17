@@ -345,8 +345,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     readonly altitudeOptions: ChartOptions = {
         responsive: true,
-        aspectRatio: 1.8,
-        maintainAspectRatio: false,
         plugins: {
             legend: {
                 display: false,
@@ -406,8 +404,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         scales: {
             y: {
                 beginAtZero: true,
-                suggestedMin: 0,
-                suggestedMax: 90,
+                min: 0,
+                max: 90,
                 ticks: {
                     autoSkip: false,
                     count: 10,

@@ -97,6 +97,14 @@ export class BrowserWindowService {
         })
     }
 
+    openAlignment(options: OpenWindowOptions = {}) {
+        this.openWindow({
+            ...options,
+            id: 'alignment', path: 'alignment', icon: options.icon || 'star',
+            width: options.width || 470, height: options.height || 280,
+        })
+    }
+
     openAbout() {
         this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 470, height: 210, bringToFront: true })
     }

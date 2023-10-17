@@ -3,10 +3,12 @@ package nebulosa.phd2.client
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.MapperFeature
-import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.module.kotlin.jsonMapper
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
-import nebulosa.json.SimpleJsonModule
+import nebulosa.json.addConverter
+import nebulosa.json.addDeserializer
 import nebulosa.json.converters.PathConverter
 import nebulosa.log.loggerFor
 import nebulosa.netty.NettyClient
@@ -68,18 +70,18 @@ class PHD2Client : NettyClient() {
 
         @JvmStatic private val LOG = loggerFor<PHD2Client>()
 
-        private val MODULE = SimpleJsonModule()
+        private val MODULE = SimpleModule()
 
         init {
             MODULE.addDeserializer(PathConverter)
             MODULE.addConverter(GuideStateConverter)
         }
 
-        private val JSON_MAPPER = JsonMapper.builder()
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
-            .serializationInclusion(JsonInclude.Include.NON_NULL)
-            .addModule(MODULE)
-            .build()
+        private val JSON_MAPPER = jsonMapper {
+            disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+            serializationInclusion(JsonInclude.Include.NON_NULL)
+            addModule(MODULE)
+        }
     }
 }

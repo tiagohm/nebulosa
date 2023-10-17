@@ -64,8 +64,8 @@ export class ApiService {
         return this.http.put<void>(`cameras/${camera.name}/temperature/setpoint?temperature=${temperature}`)
     }
 
-    cameraStartCapture(camera: Camera, value: CameraStartCapture) {
-        return this.http.put<void>(`cameras/${camera.name}/capture/start`, value)
+    cameraStartCapture(camera: Camera, data: CameraStartCapture) {
+        return this.http.put<void>(`cameras/${camera.name}/capture/start`, data)
     }
 
     cameraAbortCapture(camera: Camera) {
@@ -289,9 +289,14 @@ export class ApiService {
         return this.http.put<void>(`guiding/start?${query}`)
     }
 
-    guidingDither(pixels: number, raOnly: boolean = false) {
-        const query = this.http.query({ pixels, raOnly })
+    guidingDither(amount: number, raOnly: boolean = false) {
+        const query = this.http.query({ amount, raOnly })
         return this.http.put<void>(`guiding/dither?${query}`)
+    }
+
+    guidingSettle(amount: number, time: number, timeout: number) {
+        const query = this.http.query({ amount, time, timeout })
+        return this.http.put<void>(`guiding/settle?${query}`)
     }
 
     guidingStop() {
@@ -505,5 +510,17 @@ export class ApiService {
     ) {
         const query = this.http.query({ rightAscension, declination, width, height, fov, rotation, hipsSurvey: hipsSurvey.type })
         return this.http.put<string>(`framing?${query}`)
+    }
+
+    // DARV
+
+    darvStart(camera: Camera, guideOutput: GuideOutput,
+        exposureInSeconds: number, initialPauseInSeconds: number, direction: GuideDirection, reversed: boolean = false) {
+        const data = { exposureInSeconds, initialPauseInSeconds, direction, reversed }
+        return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
+    }
+
+    darvStop(camera: Camera, guideOutput: GuideOutput) {
+        return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/stop`)
     }
 }

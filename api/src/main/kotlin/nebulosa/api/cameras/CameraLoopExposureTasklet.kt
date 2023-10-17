@@ -9,8 +9,8 @@ import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.repeat.RepeatStatus
 import kotlin.time.Duration.Companion.seconds
 
-data class CameraLoopExposureTasklet(private val request: CameraStartCapture) :
-    SubjectSequenceTasklet<CameraCaptureEvent>(), JobExecutionListener {
+data class CameraLoopExposureTasklet(override val request: CameraStartCaptureRequest) :
+    SubjectSequenceTasklet<CameraCaptureEvent>(), CameraStartCaptureTasklet, JobExecutionListener {
 
     private val exposureTasklet = CameraExposureTasklet(request)
     private val delayTasklet = DelayTasklet(request.exposureDelayInSeconds.seconds)

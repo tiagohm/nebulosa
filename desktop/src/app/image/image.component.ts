@@ -376,6 +376,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private loadImageFromParams(params: ImageParams) {
+        console.info('loading image from params: %s', params)
+
         this.imageParams = params
 
         if (params.source === 'FRAMING') {

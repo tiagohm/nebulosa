@@ -1,10 +1,16 @@
-<section id="titlebar" class="flex flex-row align-items-center justify-content-end gap-2 sticky" [style]="{ height: '42px', zIndex: '1000', backgroundColor }">
+<section id="titlebar" class="flex flex-row align-items-center justify-content-end gap-2 sticky"
+         [style]="{ height: '42px', zIndex: '1000', backgroundColor }">
     <span class="align-items-center draggable-region flex flex-1 font-bold justify-content-center min-h-full text-center">{{ title }}</span>
-    <p-button *ngIf="pinned" icon="mdi mdi-pin" (onClick)="pin()" styleClass="select-none cursor-pointer p-button-rounded p-button-text p-button-sm"></p-button>
-    <p-button *ngIf="!pinned" icon="mdi mdi-pin-off" (onClick)="pin()" styleClass="select-none cursor-pointer p-button-rounded p-button-text p-button-sm"></p-button>
-    <p-button icon="mdi mdi-window-minimize" (onClick)="minimize()" styleClass="select-none cursor-pointer p-button-rounded p-button-text p-button-sm"></p-button>
-    <p-button [disabled]="!maximizable" icon="mdi mdi-window-maximize" (onClick)="maximize()" styleClass="select-none cursor-pointer p-button-rounded p-button-text p-button-sm"></p-button>
-    <p-button icon="mdi mdi-window-close" (onClick)="close()" styleClass="select-none cursor-pointer p-button-rounded p-button-text p-button-sm mr-1"></p-button>
+    <p-button *ngIf="pinned" [text]="true" [rounded]="true" size="small" icon="mdi mdi-pin" (onClick)="pin()"
+              styleClass="select-none cursor-pointer"></p-button>
+    <p-button *ngIf="!pinned" [text]="true" [rounded]="true" size="small" icon="mdi mdi-pin-off" (onClick)="pin()"
+              styleClass="select-none cursor-pointer"></p-button>
+    <p-button [text]="true" [rounded]="true" size="small" icon="mdi mdi-window-minimize" (onClick)="minimize()"
+              styleClass="select-none cursor-pointer"></p-button>
+    <p-button [disabled]="!maximizable" [text]="true" [rounded]="true" size="small" icon="mdi mdi-window-maximize" (onClick)="maximize()"
+              styleClass="select-none cursor-pointer"></p-button>
+    <p-button [text]="true" [rounded]="true" size="small" icon="mdi mdi-window-close" (onClick)="close()"
+              styleClass="select-none cursor-pointer mr-1"></p-button>
 </section>
 
 <section id="main">

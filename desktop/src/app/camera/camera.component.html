@@ -9,13 +9,13 @@
         </div>
         <div class="col-2">
             <p-button *ngIf="connected" [disabled]="!camera || capturing" (onClick)="connect()" icon="mdi mdi-close"
-                      styleClass="p-button-sm p-button-danger" pTooltip="Disconnect" tooltipPosition="bottom" />
+                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
             <p-button *ngIf="!connected" [disabled]="!camera || capturing" (onClick)="connect()" icon="mdi mdi-connection"
-                      styleClass="p-button-sm p-button-info" pTooltip="Connect" tooltipPosition="bottom" />
+                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
         <div class="col-2 flex justify-content-center">
-            <p-button [disabled]="!camera || capturing" icon="mdi mdi-lg mdi-dots-vertical" (click)="cameraDialogMenu.show()"
-                      styleClass="p-button-rounded p-button-text" />
+            <p-button [disabled]="!camera || capturing" [text]="true" [rounded]="true" icon="mdi mdi-lg mdi-dots-vertical"
+                      (click)="cameraDialogMenu.show()" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center gap-1">
             <i *ngIf="autoSave" class="mdi mdi-content-save" pTooltip="Auto save: ON" tooltipPosition="bottom"></i>
@@ -86,11 +86,12 @@
                 <span class="p-float-label">
                     <p-inputNumber [disabled]="!connected || !canSetTemperature || capturing" [(ngModel)]="setpointTemperature" mode="decimal"
                                    [showButtons]="true" (ngModelChange)="savePreference()"
-                                   [step]="0.1" suffix="℃" [min]="-50" [max]="50" locale="en" styleClass="p-inputtext-sm border-0" [allowEmpty]="false" />
+                                   [step]="0.1" suffix="℃" [min]="-50" [max]="50" locale="en" styleClass="p-inputtext-sm border-0"
+                                   [allowEmpty]="false" />
                     <label>Temperature ({{ temperature | number: '1.1-1' }}°C)</label>
                 </span>
                 <p-button [disabled]="!connected || !canSetTemperature || capturing" (onClick)="applySetpointTemperature()" icon="mdi mdi-check"
-                          styleClass="p-button-success" pTooltip="Apply" tooltipPosition="bottom" />
+                          severity="sucsess" pTooltip="Apply" tooltipPosition="bottom" />
             </div>
         </div>
     </div>
@@ -110,7 +111,8 @@
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [disabled]="!connected || capturing" [options]="frameTypeOptions" [(ngModel)]="frameType" styleClass="p-inputtext-sm border-0"
+                <p-dropdown [disabled]="!connected || capturing" [options]="frameTypeOptions" [(ngModel)]="frameType"
+                            styleClass="p-inputtext-sm border-0"
                             (ngModelChange)="savePreference()" />
                 <label>Frame Type</label>
             </span>
@@ -119,13 +121,15 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-6">
             <span class="text-sm text-gray-100">Exposure Mode</span>
-            <p-selectButton [disabled]="!connected || capturing" [options]="exposureModeOptions" [(ngModel)]="exposureMode" styleClass="p-inputtext-sm border-0"
+            <p-selectButton [disabled]="!connected || capturing" [options]="exposureModeOptions" [(ngModel)]="exposureMode"
+                            styleClass="p-inputtext-sm border-0"
                             (ngModelChange)="savePreference()" />
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || exposureMode === 'SINGLE' || capturing" [(ngModel)]="exposureDelay" mode="decimal"
-                               [showButtons]="true" [step]="1" [min]="0" [max]="60" locale="en" styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
+                               [showButtons]="true" [step]="1" [min]="0" [max]="60" locale="en" styleClass="p-inputtext-sm border-0"
+                               [allowEmpty]="false"
                                (ngModelChange)="savePreference()" />
                 <label>Delay (s)</label>
             </span>
@@ -133,7 +137,8 @@
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || exposureMode !== 'FIXED' || capturing" [(ngModel)]="exposureCount" mode="decimal"
-                               [showButtons]="true" [step]="1.0" [min]="1" [max]="1000" locale="en" styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
+                               [showButtons]="true" [step]="1.0" [min]="1" [max]="1000" locale="en" styleClass="p-inputtext-sm border-0"
+                               [allowEmpty]="false"
                                (ngModelChange)="savePreference()" />
                 <label>Count</label>
             </span>
@@ -180,19 +185,21 @@
         </div>
         <div class="col-3 flex pt-3 flex-row align-items-center justify-content-center">
             <p-button [disabled]="!connected || !subFrame || capturing" icon="mdi mdi-fullscreen" (onClick)="fullsize()"
-                      styleClass="p-button-info" pTooltip="Full size" tooltipPosition="bottom" />
+                      severity="info" pTooltip="Full size" tooltipPosition="bottom" />
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || capturing" [(ngModel)]="binX" mode="decimal" [showButtons]="true"
-                               [step]="1.0" [min]="1" [max]="4" styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                               [step]="1.0" [min]="1" [max]="4" styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
+                               (ngModelChange)="savePreference()" />
                 <label>Bin X</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || capturing" [(ngModel)]="binY" mode="decimal" [showButtons]="true"
-                               [step]="1.0" [min]="1" [max]="4" styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                               [step]="1.0" [min]="1" [max]="4" styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
+                               (ngModelChange)="savePreference()" />
                 <label>Bin Y</label>
             </span>
         </div>
@@ -200,7 +207,8 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [disabled]="!connected || capturing" [options]="frameFormats" [(ngModel)]="frameFormat" styleClass="p-inputtext-sm border-0"
+                <p-dropdown [disabled]="!connected || capturing" [options]="frameFormats" [(ngModel)]="frameFormat"
+                            styleClass="p-inputtext-sm border-0"
                             (ngModelChange)="savePreference()" [autoDisplayFirst]="false" />
                 <label>Frame Format</label>
             </span>
@@ -225,9 +233,9 @@
     <div class="grid mt-1">
         <div class="col-12 flex align-items-center justify-content-center gap-1">
             <p-button [disabled]="!connected || capturing" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
-                      styleClass="p-button-success" />
+                      severity="sucsess" />
             <p-button [disabled]="!connected || !capturing" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
-                      styleClass="p-button-danger" />
+                      severity="danger" />
         </div>
     </div>
 </div>

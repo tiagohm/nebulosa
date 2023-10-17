@@ -27,7 +27,6 @@ dependencies {
     implementation(project(":nebulosa-wcs"))
     implementation(project(":nebulosa-log"))
     implementation(libs.csv)
-    implementation(libs.jackson)
     implementation(libs.okhttp)
     implementation(libs.oshi)
     implementation(libs.eventbus)

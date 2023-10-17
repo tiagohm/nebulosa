@@ -56,10 +56,11 @@ function createMainWindow() {
 }
 
 function createWindow(data: OpenWindow<any>) {
-    if (browserWindows.has(data.id)) {
-        const window = browserWindows.get(data.id)!
+    let window = browserWindows.get(data.id)
 
+    if (window) {
         if (data.params) {
+            console.info('params changed. id=%s, params=%s', data.id, data.params)
             window.webContents.send('PARAMS_CHANGED', data.params)
         }
 
@@ -98,7 +99,7 @@ function createWindow(data: OpenWindow<any>) {
     const icon = data.icon ?? 'nebulosa'
     const params = encodeURIComponent(JSON.stringify(data.params || {}))
 
-    const window = new BrowserWindow({
+    window = new BrowserWindow({
         title: 'Nebulosa',
         frame: false,
         width, height,

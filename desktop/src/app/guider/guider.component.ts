@@ -38,10 +38,11 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
 
     phdDitherPixels = 5
     phdDitherRAOnly = false
-    phdSettlePixels = 1.5
-    phdSettleTime = 60
-    phdSettleTimeout = 90
+    phdSettleAmount = 1.5
+    phdSettleTime = 10
+    phdSettleTimeout = 30
     readonly phdGuideHistory: HistoryStep[] = []
+    private phdDurationScale = 1.0
 
     phdPixelScale = 1.0
     phdRmsRA = 0.0
@@ -69,13 +70,14 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     readonly phdChartData: ChartData = {
+        labels: Array.from({ length: 100 }, (_, i) => `${i}`),
         datasets: [
             // RA.
             {
                 type: 'line',
                 fill: false,
-                borderColor: 'red',
-                borderWidth: 0.5,
+                borderColor: '#F44336',
+                borderWidth: 2,
                 data: [],
                 pointRadius: 0,
                 pointHitRadius: 0,
@@ -84,8 +86,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             {
                 type: 'line',
                 fill: false,
-                borderColor: 'blue',
-                borderWidth: 0.5,
+                borderColor: '#03A9F4',
+                borderWidth: 2,
                 data: [],
                 pointRadius: 0,
                 pointHitRadius: 0,
@@ -93,13 +95,13 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             // RA.
             {
                 type: 'bar',
-                backgroundColor: 'green',
+                backgroundColor: '#F4433630',
                 data: [],
             },
             // DEC.
             {
                 type: 'bar',
-                backgroundColor: 'green',
+                backgroundColor: '#03A9F430',
                 data: [],
             },
         ]
@@ -107,8 +109,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
 
     readonly phdChartOptions: ChartOptions = {
         responsive: true,
-        aspectRatio: 1.8,
-        maintainAspectRatio: false,
         plugins: {
             legend: {
                 display: false,
@@ -116,12 +116,24 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             tooltip: {
                 displayColors: false,
                 intersect: false,
+                filter: (item) => {
+                    return Math.abs(item.parsed.y) - 0.01 > 0.0
+                },
                 callbacks: {
                     title: () => {
                         return ''
                     },
                     label: (context) => {
-                        return context.parsed.y.toFixed(2)
+                        console.log(context)
+                        const barType = context.dataset.type === 'bar'
+                        const raType = context.datasetIndex === 0 || context.datasetIndex === 2
+                        const scale = barType ? this.phdDurationScale : 1.0
+                        const y = context.parsed.y * scale
+                        const prefix = raType ? 'RA: ' : 'DEC: '
+                        const barSuffix = ' ms'
+                        const lineSuffix = this.yAxisUnit === 'ARCSEC' ? '"' : 'px'
+                        const formattedY = prefix + (barType ? y.toFixed(0) + barSuffix : y.toFixed(2) + lineSuffix)
+                        return formattedY
                     }
                 }
             },
@@ -156,8 +168,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             y: {
                 stacked: true,
                 beginAtZero: false,
-                suggestedMin: -16,
-                suggestedMax: 16,
+                min: -16,
+                max: 16,
                 ticks: {
                     autoSkip: false,
                     count: 7,
@@ -178,7 +190,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             },
             x: {
                 stacked: true,
-                type: 'linear',
                 min: 0,
                 max: 100,
                 border: {
@@ -279,6 +290,10 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     async ngAfterViewInit() {
+        this.phdSettleAmount = this.preference.get('guiding.settleAmount', 1.5)
+        this.phdSettleTime = this.preference.get('guiding.settleTime', 10)
+        this.phdSettleTimeout = this.preference.get('guiding.settleTimeout', 30)
+
         this.guideOutputs = await this.api.guideOutputs()
 
         const status = await this.api.guidingStatus()
@@ -329,26 +344,28 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             maxDuration = Math.max(maxDuration, Math.abs(step.guideStep!.decDuration))
         }
 
-        const durationScale = maxDuration / 16.0
+        this.phdDurationScale = maxDuration / 16.0
 
         if (this.plotMode === 'RA/DEC') {
             this.phdChartData.datasets[0].data = guideSteps
-                .map(e => [e.id - startId, e.guideStep!.raDistance * scale])
+                .map(e => [e.id - startId, -e.guideStep!.raDistance * scale])
             this.phdChartData.datasets[1].data = guideSteps
                 .map(e => [e.id - startId, e.guideStep!.decDistance * scale])
         } else {
             this.phdChartData.datasets[0].data = guideSteps
-                .map(e => [e.id - startId, e.guideStep!.dx * scale])
+                .map(e => [e.id - startId, -e.guideStep!.dx * scale])
             this.phdChartData.datasets[1].data = guideSteps
                 .map(e => [e.id - startId, e.guideStep!.dy * scale])
         }
 
+        const durationScale = (direction?: GuideDirection) => {
+            return !direction || direction === 'NORTH' || direction === 'WEST' ? this.phdDurationScale : -this.phdDurationScale
+        }
+
         this.phdChartData.datasets[2].data = this.phdGuideHistory
-            // .map(e => (e.guideStep?.raDuration ?? 0) / durationScale)
-            .map(e => 12)
+            .map(e => (e.guideStep?.raDuration ?? 0) / durationScale(e.guideStep?.raDirection))
         this.phdChartData.datasets[3].data = this.phdGuideHistory
-            // .map(e => (e.guideStep?.decDuration ?? 0) / durationScale)
-            .map(e => 8)
+            .map(e => (e.guideStep?.decDuration ?? 0) / durationScale(e.guideStep?.decDirection))
 
         this.phdChart?.refresh()
     }
@@ -398,7 +415,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         this.api.guideOutputPulse(this.guideOutput!, 'EAST', 0)
     }
 
-    connectPHD2() {
+    guidingConnect() {
         if (this.phdConnected) {
             this.api.guidingDisconnect()
         } else {
@@ -411,7 +428,15 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         await this.api.guidingStart(event.shiftKey)
     }
 
+    async guidingSettleChanged() {
+        await this.api.guidingSettle(this.phdSettleAmount, this.phdSettleTime, this.phdSettleTimeout)
+        this.preference.set('guiding.settleAmount', this.phdSettleAmount)
+        this.preference.set('guiding.settleTime', this.phdSettleTime)
+        this.preference.set('guiding.settleTimeout', this.phdSettleTimeout)
+    }
+
     guidingClearHistory() {
+        this.phdGuideHistory.length = 0
         this.api.guidingClearHistory()
     }
 

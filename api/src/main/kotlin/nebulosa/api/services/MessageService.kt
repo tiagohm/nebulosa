@@ -1,6 +1,8 @@
 package nebulosa.api.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import nebulosa.log.debug
+import nebulosa.log.loggerFor
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 
@@ -11,6 +13,7 @@ class MessageService(
 ) {
 
     fun sendMessage(eventName: String, payload: Any) {
+        LOG.debug { "$eventName: $payload" }
         simpleMessageTemplate.convertAndSend(eventName, payload)
     }
 
@@ -22,5 +25,10 @@ class MessageService(
 
     fun sendMessage(event: MessageEvent) {
         sendMessage(event.eventName, event)
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<MessageService>()
     }
 }

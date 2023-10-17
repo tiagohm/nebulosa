@@ -2,7 +2,6 @@ package nebulosa.guiding.phd2
 
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.guiding.*
-import nebulosa.io.Base64OutputStream
 import nebulosa.log.loggerFor
 import nebulosa.math.arcsec
 import nebulosa.math.toArcsec
@@ -10,11 +9,9 @@ import nebulosa.phd2.client.PHD2Client
 import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.commands.*
 import nebulosa.phd2.client.events.*
-import java.io.Closeable
-import java.time.Duration
-import kotlin.time.toKotlinDuration
+import java.util.concurrent.TimeUnit
 
-class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Closeable {
+class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
 
     private val dither = DoubleArray(2)
     private val settling = CountUpDownLatch()
@@ -43,9 +40,9 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
         client.registerListener(this)
     }
 
-    override var settlePixels = 1.5
-    override var settleTime = Duration.ofSeconds(10)!!
-    override var settleTimeout = Duration.ofSeconds(30)!!
+    override var settleAmount = Guider.DEFAULT_SETTLE_AMOUNT
+    override var settleTime = Guider.DEFAULT_SETTLE_TIME
+    override var settleTimeout = Guider.DEFAULT_SETTLE_TIMEOUT
 
     override fun registerGuiderListener(listener: GuiderListener) {
         listeners.add(listener)
@@ -109,7 +106,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
             waitForGuidingStarted()
 
             if (waitForSettle) {
-                waitForSettling()
+                waitForSettle()
             }
 
             return
@@ -153,17 +150,17 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
         Thread.sleep(100)
     }
 
-    override fun dither(pixels: Double, raOnly: Boolean) {
+    override fun dither(amount: Double, raOnly: Boolean) {
         val state = client.sendCommandSync(GetAppState)
 
         if (state == GuideState.GUIDING) {
-            waitForSettling()
+            waitForSettle()
 
-            val dither = Dither(pixels, raOnly, settlePixels, settleTime.toKotlinDuration(), settleTimeout.toKotlinDuration())
+            val dither = Dither(amount, raOnly, settleAmount, settleTime, settleTimeout)
             client.sendCommandSync(dither)
 
             settling.countUp()
-            waitForSettling()
+            waitForSettle()
         }
     }
 
@@ -201,8 +198,8 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
 
     private fun startGuide(forceCalibration: Boolean): Boolean {
         return try {
-            waitForSettling()
-            val command = Guide(settlePixels, settleTime.toKotlinDuration(), settleTimeout.toKotlinDuration(), forceCalibration)
+            waitForSettle()
+            val command = Guide(settleAmount, settleTime, settleTimeout, forceCalibration)
             client.sendCommandSync(command)
             refreshShiftLockParams()
             true
@@ -232,11 +229,14 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
         }
     }
 
-    override fun waitForSettling() {
+    override fun waitForSettle() {
         try {
-            settling.await(settleTimeout)
+            settling.await(settleTimeout.inWholeNanoseconds, TimeUnit.NANOSECONDS)
         } catch (e: InterruptedException) {
             LOG.warn("PHD2 did not send SettleDone message in expected time")
+        } catch (e: Throwable) {
+            LOG.warn("an error occurrs while waiting for settle done", e)
+        } finally {
             settling.reset()
         }
     }
@@ -372,6 +372,5 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
     companion object {
 
         @JvmStatic private val LOG = loggerFor<PHD2Guider>()
-        @JvmStatic private val STAR_IMAGE_OUTPUT_STREAM = Base64OutputStream(32 * 1024)
     }
 }

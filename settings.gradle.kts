@@ -16,8 +16,9 @@ dependencyResolutionManagement {
             library("okhttp", "com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
             library("okhttp-logging", "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
             library("fits", "gov.nasa.gsfc.heasarc:nom-tam-fits:1.18.1")
-            library("jackson", "com.fasterxml.jackson.core:jackson-databind:2.15.3")
+            library("jackson-core", "com.fasterxml.jackson.core:jackson-databind:2.15.3")
             library("jackson-jsr310", "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.3")
+            library("jackson-kt", "com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3")
             library("retrofit", "com.squareup.retrofit2:retrofit:2.9.0")
             library("retrofit-jackson", "com.squareup.retrofit2:converter-jackson:2.9.0")
             library("rx", "io.reactivex.rxjava3:rxjava:3.1.8")
@@ -39,6 +40,7 @@ dependencyResolutionManagement {
             library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.7.2")
             bundle("kotest", listOf("kotest-assertions-core", "kotest-runner-junit5"))
             bundle("netty", listOf("netty-transport", "netty-codec"))
+            bundle("jackson", listOf("jackson-core", "jackson-jsr310", "jackson-kt"))
         }
     }
 }

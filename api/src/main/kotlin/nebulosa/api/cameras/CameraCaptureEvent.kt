@@ -1,9 +1,10 @@
 package nebulosa.api.cameras
 
+import nebulosa.api.sequencer.SequenceTaskletEvent
 import nebulosa.api.services.MessageEvent
 import nebulosa.indi.device.camera.Camera
 
-sealed interface CameraCaptureEvent : MessageEvent {
+sealed interface CameraCaptureEvent : MessageEvent, SequenceTaskletEvent {
 
     val camera: Camera
 

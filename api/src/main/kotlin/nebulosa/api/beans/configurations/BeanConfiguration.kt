@@ -1,15 +1,16 @@
 package nebulosa.api.beans.configurations
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.module.kotlin.kotlinModule
 import nebulosa.api.beans.DateAndTimeMethodArgumentResolver
 import nebulosa.api.beans.EntityByMethodArgumentResolver
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.concurrency.Incrementer
+import nebulosa.guiding.Guider
+import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
-import nebulosa.json.FromJson
-import nebulosa.json.SimpleJsonModule
-import nebulosa.json.ToJson
+import nebulosa.json.*
 import nebulosa.json.converters.PathConverter
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.sbd.SmallBodyDatabaseService
@@ -57,10 +58,10 @@ class BeanConfiguration {
     fun cachePath(appPath: Path): Path = Path.of("$appPath", "cache").createDirectories()
 
     @Bean
-    fun simpleJsonModule(
+    fun kotlinModule(
         serializers: List<ToJson<*>>,
         deserializers: List<FromJson<*>>,
-    ) = SimpleJsonModule()
+    ) = kotlinModule()
         .apply { serializers.forEach { addSerializer(it) } }
         .apply { deserializers.forEach { addDeserializer(it) } }
         .addConverter(PathConverter)
@@ -128,10 +129,22 @@ class BeanConfiguration {
     }
 
     @Bean
-    fun executionIncrementer() = Incrementer()
+    fun flowIncrementer() = Incrementer()
+
+    @Bean
+    fun stepIncrementer() = Incrementer()
+
+    @Bean
+    fun jobIncrementer() = Incrementer()
 
     @Bean
     fun phd2Client() = PHD2Client()
+
+    @Bean
+    fun phd2Guider(phd2Client: PHD2Client): Guider = PHD2Guider(phd2Client)
+
+    @Bean
+    fun simpleAsyncTaskExecutor() = SimpleAsyncTaskExecutor(DaemonThreadFactory)
 
     @Bean
     fun webMvcConfigurer(

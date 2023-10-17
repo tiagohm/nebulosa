@@ -218,6 +218,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'FRAMING':
                 this.browserWindow.openFraming(undefined, { bringToFront: true })
                 break
+            case 'ALIGNMENT':
+                this.browserWindow.openAlignment({ bringToFront: true })
+                break
             case 'INDI':
                 this.browserWindow.openINDI(undefined, { bringToFront: true })
                 break

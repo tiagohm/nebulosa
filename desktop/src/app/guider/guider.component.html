@@ -1,96 +1,6 @@
 <div class="grid px-4 py-3">
     <div class="col-12">
         <p-tabView>
-            <p-tabPanel header="Guide pulse" leftIcon="mdi mdi-pulse">
-                <div class="col-12 flex flex-row align-items-center gap-2">
-                    <span class="p-float-label w-full">
-                        <p-dropdown [options]="guideOutputs" [(ngModel)]="guideOutput" optionLabel="name" (ngModelChange)="guideOutputChanged()"
-                                    styleClass="p-inputtext-sm border-0" emptyMessage="No guide output found" />
-                        <label>Guide Output</label>
-                    </span>
-
-                    <p-button *ngIf="guideOutputConnected" [disabled]="!guideOutput || pulseGuiding" (onClick)="connectGuideOutput()"
-                              icon="mdi mdi-close" styleClass="p-button-sm p-button-danger" />
-                    <p-button *ngIf="!guideOutputConnected" [disabled]="!guideOutput || pulseGuiding" (onClick)="connectGuideOutput()"
-                              icon="mdi mdi-connection" styleClass="p-button-sm p-button-info" />
-                </div>
-                <div class="grid mt-2">
-                    <div class="col-4"></div>
-                    <div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
-                        <span class="p-float-label">
-                            <p-inputNumber [disabled]="!guideOutputConnected || pulseGuiding" [(ngModel)]="guideNorthDuration" [step]="1" [min]="1"
-                                           [max]="1800000" locale="en" styleClass="p-inputtext-sm border-0" [showButtons]="true" />
-                            <label>North (ms)</label>
-                        </span>
-                    </div>
-                    <div class="col-4"></div>
-                    <div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
-                        <span class="p-float-label">
-                            <p-inputNumber [disabled]="!guideOutputConnected || pulseGuiding" [(ngModel)]="guideWestDuration" [step]="1" [min]="1"
-                                           [max]="1800000" locale="en" styleClass="p-inputtext-sm border-0" [showButtons]="true" />
-                            <label>West (ms)</label>
-                        </span>
-                    </div>
-                    <div class="col-4">
-                        <div class="grid">
-                            <div class="col-4 flex align-items-center justify-content-center">
-                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('NORTH', 'WEST')"
-                                          icon="mdi mdi-lg mdi-arrow-top-left-thick" styleClass="p-button-text w-4rem" />
-                            </div>
-                            <div class="col-4 flex align-items-center justify-content-center">
-                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('NORTH')"
-                                          icon="mdi mdi-lg mdi-arrow-up-thick" styleClass="p-button-text w-4rem" />
-                            </div>
-                            <div class="col-4 flex align-items-center justify-content-center">
-                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('NORTH', 'EAST')"
-                                          icon="mdi mdi-lg mdi-arrow-top-right-thick" styleClass="p-button-text w-4rem" />
-                            </div>
-                            <div class="col-4 flex align-items-center justify-content-center">
-                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('WEST')"
-                                          icon="mdi mdi-lg mdi-arrow-left-thick" styleClass="p-button-text w-4rem" />
-                            </div>
-                            <div class="col-4 flex align-items-center justify-content-center">
-                                <p-button [disabled]="!guideOutputConnected || !pulseGuiding" (onClick)="guidePulseStop()"
-                                          icon="mdi mdi-lg mdi-close-circle" styleClass="p-button-text p-button-danger w-full" />
-                            </div>
-                            <div class="col-4 flex align-items-center justify-content-center">
-                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('EAST')"
-                                          icon="mdi mdi-lg mdi-arrow-right-thick" styleClass="p-button-text w-4rem" />
-                            </div>
-                            <div class="col-4 flex align-items-center justify-content-center">
-                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('SOUTH', 'WEST')"
-                                          icon="mdi mdi-lg mdi-arrow-bottom-left-thick" styleClass="p-button-text w-4rem" />
-                            </div>
-                            <div class="col-4 flex align-items-center justify-content-center">
-                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('SOUTH')"
-                                          icon="mdi mdi-lg mdi-arrow-down-thick" styleClass="p-button-text w-4rem" />
-                            </div>
-                            <div class="col-4 flex align-items-center justify-content-center">
-                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('SOUTH', 'EAST')"
-                                          icon="mdi mdi-lg mdi-arrow-bottom-right-thick" styleClass="p-button-text w-4rem" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
-                        <span class="p-float-label">
-                            <p-inputNumber [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('EAST')"
-                                           [(ngModel)]="guideEastDuration" [step]="1" [min]="1" [max]="1800000" locale="en"
-                                           styleClass="p-inputtext-sm border-0" [showButtons]="true" />
-                            <label>East (ms)</label>
-                        </span>
-                    </div>
-                    <div class="col-4"></div>
-                    <div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
-                        <span class="p-float-label">
-                            <p-inputNumber [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('SOUTH')"
-                                           [(ngModel)]="guideSouthDuration" [step]="1" [min]="1" [max]="1800000" locale="en"
-                                           styleClass="p-inputtext-sm border-0" [showButtons]="true" />
-                            <label>South (ms)</label>
-                        </span>
-                    </div>
-                    <div class="col-4"></div>
-                </div>
-            </p-tabPanel>
             <p-tabPanel header="PHD2" leftIcon="mdi mdi-target">
                 <div class="grid mt-1 flex justify-content-center align-items-center">
                     <div class="col-6 px-0">
@@ -108,8 +18,9 @@
                         </span>
                     </div>
                     <div class="col-2 text-center pr-0">
-                        <p-button *ngIf="phdConnected" (onClick)="connectPHD2()" icon="mdi mdi-close" styleClass="p-button-sm p-button-danger" />
-                        <p-button *ngIf="!phdConnected" (onClick)="connectPHD2()" icon="mdi mdi-connection" styleClass="p-button-sm p-button-info" />
+                        <p-button *ngIf="phdConnected" (onClick)="guidingConnect()" icon="mdi mdi-close" size="small" severity="danger" />
+                        <p-button *ngIf="!phdConnected" (onClick)="guidingConnect()" icon="mdi mdi-connection"
+                                  size="small" severity="info" />
                     </div>
                 </div>
                 <div class="grid">
@@ -137,25 +48,25 @@
                             <div class="col-5">
                                 <span class="p-float-label">
                                     <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
-                                                   styleClass="border-0 p-inputtext-sm w-full" locale="en"
-                                                   [(ngModel)]="phdSettlePixels" [step]="0.1" />
+                                                   styleClass="border-0 p-inputtext-sm w-full" locale="en" [min]="1" [max]="25"
+                                                   [(ngModel)]="phdSettleAmount" (ngModelChange)="guidingSettleChanged()" [step]="0.1" />
                                     <label>Settle tolerance (px)</label>
                                 </span>
                             </div>
                             <div class="col-6">
                                 <span class="p-float-label">
                                     <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
-                                                   styleClass="border-0 p-inputtext-sm w-full"
-                                                   [(ngModel)]="phdSettleTime" [step]="1" />
-                                    <label>Minimum settle time (ms)</label>
+                                                   styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="60"
+                                                   [(ngModel)]="phdSettleTime" (ngModelChange)="guidingSettleChanged()" [step]="1" />
+                                    <label>Minimum settle time (s)</label>
                                 </span>
                             </div>
                             <div class="col-6">
                                 <span class="p-float-label">
                                     <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
-                                                   styleClass="border-0 p-inputtext-sm w-full"
-                                                   [(ngModel)]="phdSettleTimeout" [step]="1" />
-                                    <label>Settle timeout (ms)</label>
+                                                   styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="60"
+                                                   [(ngModel)]="phdSettleTimeout" (ngModelChange)="guidingSettleChanged()" [step]="1" />
+                                    <label>Settle timeout (s)</label>
                                 </span>
                             </div>
                         </div>
@@ -216,24 +127,116 @@
                                 </span>
                             </div>
                         </div>
-                        <div class="grid">
+                        <div class="grid relative">
                             <div class="col-12">
                                 <p-chart #phdChart width="100%" height="140px" [data]="phdChartData" [responsive]="true"
                                          [options]="phdChartOptions" />
                             </div>
+                            <span class="absolute right-0 text-blue-500" style="top: 16px;">North</span>
+                            <span class="absolute right-0 text-red-500" style="bottom: 26px;">East</span>
                         </div>
                     </p-tabPanel>
-                    <div class="grid mt-1 absolute right-0" style="top: -12px;">
+                    <div class="grid mt-1 absolute" style="top: -12px; right: 10px">
                         <div class="col-12 flex align-items-center justify-content-center gap-1">
                             <!-- <p-button [disabled]="!phdConnected || guiding || looping" label="Start" (onClick)="guidingStart($event)"
-                                      icon="mdi mdi-play" styleClass="p-button-success" /> -->
-                            <p-button [disabled]="!phdConnected" label="Clear" (onClick)="guidingClearHistory()"
-                                      icon="mdi mdi-broom" styleClass="p-button-info" />
+                                      icon="mdi mdi-play" severity="success" /> -->
+                            <p-button [disabled]="!phdConnected" label="Clear" (onClick)="guidingClearHistory()" icon="mdi mdi-broom"
+                                      severity="info" />
                             <p-button [disabled]="!phdConnected || !guiding" label="Stop" (onClick)="guidingStop()" icon="mdi mdi-stop"
-                                      styleClass="p-button-danger" />
+                                      severity="danger" />
                         </div>
                     </div>
                 </p-tabView>
+            </p-tabPanel>
+            <p-tabPanel header="Guide pulse" leftIcon="mdi mdi-pulse">
+                <div class="col-12 flex flex-row align-items-center gap-2">
+                    <span class="p-float-label w-full">
+                        <p-dropdown [options]="guideOutputs" [(ngModel)]="guideOutput" optionLabel="name" (ngModelChange)="guideOutputChanged()"
+                                    styleClass="p-inputtext-sm border-0" emptyMessage="No guide output found" />
+                        <label>Guide Output</label>
+                    </span>
+
+                    <p-button *ngIf="guideOutputConnected" [disabled]="!guideOutput || pulseGuiding" (onClick)="connectGuideOutput()"
+                              icon="mdi mdi-close" size="small" severity="danger" />
+                    <p-button *ngIf="!guideOutputConnected" [disabled]="!guideOutput || pulseGuiding" (onClick)="connectGuideOutput()"
+                              icon="mdi mdi-connection" size="small" severity="info" />
+                </div>
+                <div class="grid mt-2">
+                    <div class="col-4"></div>
+                    <div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
+                        <span class="p-float-label">
+                            <p-inputNumber [disabled]="!guideOutputConnected || pulseGuiding" [(ngModel)]="guideNorthDuration" [step]="1" [min]="1"
+                                           [max]="1800000" locale="en" styleClass="p-inputtext-sm border-0" [showButtons]="true" />
+                            <label>North (ms)</label>
+                        </span>
+                    </div>
+                    <div class="col-4"></div>
+                    <div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
+                        <span class="p-float-label">
+                            <p-inputNumber [disabled]="!guideOutputConnected || pulseGuiding" [(ngModel)]="guideWestDuration" [step]="1" [min]="1"
+                                           [max]="1800000" locale="en" styleClass="p-inputtext-sm border-0" [showButtons]="true" />
+                            <label>West (ms)</label>
+                        </span>
+                    </div>
+                    <div class="col-4">
+                        <div class="grid">
+                            <div class="col-4 flex align-items-center justify-content-center">
+                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('NORTH', 'WEST')"
+                                          icon="mdi mdi-lg mdi-arrow-top-left-thick" [text]="true" styleClass="w-4rem" />
+                            </div>
+                            <div class="col-4 flex align-items-center justify-content-center">
+                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('NORTH')"
+                                          icon="mdi mdi-lg mdi-arrow-up-thick" [text]="true" styleClass="w-4rem" />
+                            </div>
+                            <div class="col-4 flex align-items-center justify-content-center">
+                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('NORTH', 'EAST')"
+                                          icon="mdi mdi-lg mdi-arrow-top-right-thick" [text]="true" styleClass="w-4rem" />
+                            </div>
+                            <div class="col-4 flex align-items-center justify-content-center">
+                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('WEST')"
+                                          icon="mdi mdi-lg mdi-arrow-left-thick" [text]="true" styleClass="w-4rem" />
+                            </div>
+                            <div class="col-4 flex align-items-center justify-content-center">
+                                <p-button [disabled]="!guideOutputConnected || !pulseGuiding" (onClick)="guidePulseStop()"
+                                          icon="mdi mdi-lg mdi-close-circle" [text]="true" severity="danger" styleClass="w-full" />
+                            </div>
+                            <div class="col-4 flex align-items-center justify-content-center">
+                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('EAST')"
+                                          icon="mdi mdi-lg mdi-arrow-right-thick" [text]="true" styleClass="w-4rem" />
+                            </div>
+                            <div class="col-4 flex align-items-center justify-content-center">
+                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('SOUTH', 'WEST')"
+                                          icon="mdi mdi-lg mdi-arrow-bottom-left-thick" [text]="true" styleClass="w-4rem" />
+                            </div>
+                            <div class="col-4 flex align-items-center justify-content-center">
+                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('SOUTH')"
+                                          icon="mdi mdi-lg mdi-arrow-down-thick" [text]="true" styleClass="w-4rem" />
+                            </div>
+                            <div class="col-4 flex align-items-center justify-content-center">
+                                <p-button [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('SOUTH', 'EAST')"
+                                          icon="mdi mdi-lg mdi-arrow-bottom-right-thick" [text]="true" styleClass="w-4rem" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
+                        <span class="p-float-label">
+                            <p-inputNumber [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('EAST')"
+                                           [(ngModel)]="guideEastDuration" [step]="1" [min]="1" [max]="1800000" locale="en"
+                                           styleClass="p-inputtext-sm border-0" [showButtons]="true" />
+                            <label>East (ms)</label>
+                        </span>
+                    </div>
+                    <div class="col-4"></div>
+                    <div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
+                        <span class="p-float-label">
+                            <p-inputNumber [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('SOUTH')"
+                                           [(ngModel)]="guideSouthDuration" [step]="1" [min]="1" [max]="1800000" locale="en"
+                                           styleClass="p-inputtext-sm border-0" [showButtons]="true" />
+                            <label>South (ms)</label>
+                        </span>
+                    </div>
+                    <div class="col-4"></div>
+                </div>
             </p-tabPanel>
         </p-tabView>
     </div>

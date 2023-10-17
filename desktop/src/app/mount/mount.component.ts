@@ -274,6 +274,10 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    abort() {
+        this.api.mountAbort(this.mount!)
+    }
+
     trackingToggled() {
         if (this.connected) {
             this.api.mountTracking(this.mount!, this.tracking)
