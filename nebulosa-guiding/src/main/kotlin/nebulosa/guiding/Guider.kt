@@ -1,9 +1,10 @@
 package nebulosa.guiding
 
+import java.io.Closeable
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-interface Guider {
+interface Guider : Closeable {
 
     val state: GuideState
 
@@ -33,7 +34,7 @@ interface Guider {
 
     fun dither(amount: Double, raOnly: Boolean = false)
 
-    fun waitForSettling()
+    fun waitForSettle()
 
     companion object {
 

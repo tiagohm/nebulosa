@@ -9,10 +9,9 @@ import nebulosa.phd2.client.PHD2Client
 import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.commands.*
 import nebulosa.phd2.client.events.*
-import java.io.Closeable
 import java.util.concurrent.TimeUnit
 
-class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Closeable {
+class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
 
     private val dither = DoubleArray(2)
     private val settling = CountUpDownLatch()
@@ -107,7 +106,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
             waitForGuidingStarted()
 
             if (waitForSettle) {
-                waitForSettling()
+                waitForSettle()
             }
 
             return
@@ -155,13 +154,13 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
         val state = client.sendCommandSync(GetAppState)
 
         if (state == GuideState.GUIDING) {
-            waitForSettling()
+            waitForSettle()
 
             val dither = Dither(amount, raOnly, settleAmount, settleTime, settleTimeout)
             client.sendCommandSync(dither)
 
             settling.countUp()
-            waitForSettling()
+            waitForSettle()
         }
     }
 
@@ -199,7 +198,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
 
     private fun startGuide(forceCalibration: Boolean): Boolean {
         return try {
-            waitForSettling()
+            waitForSettle()
             val command = Guide(settleAmount, settleTime, settleTimeout, forceCalibration)
             client.sendCommandSync(command)
             refreshShiftLockParams()
@@ -230,11 +229,14 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener, Cl
         }
     }
 
-    override fun waitForSettling() {
+    override fun waitForSettle() {
         try {
             settling.await(settleTimeout.inWholeNanoseconds, TimeUnit.NANOSECONDS)
         } catch (e: InterruptedException) {
             LOG.warn("PHD2 did not send SettleDone message in expected time")
+        } catch (e: Throwable) {
+            LOG.warn("an error occurrs while waiting for settle done", e)
+        } finally {
             settling.reset()
         }
     }

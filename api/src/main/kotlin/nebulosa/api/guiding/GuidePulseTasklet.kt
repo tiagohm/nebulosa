@@ -9,26 +9,24 @@ import nebulosa.indi.device.guide.GuideOutput
 import org.springframework.batch.core.StepContribution
 import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.repeat.RepeatStatus
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
-data class GuidePulseTasklet(
-    val guideOutput: GuideOutput,
-    val direction: GuideDirection, val duration: Duration,
-) : SubjectSequenceTasklet<GuidePulseEvent>(), Consumer<DelayElapsed> {
+data class GuidePulseTasklet(val request: GuidePulseRequest) : SubjectSequenceTasklet<GuidePulseEvent>(), Consumer<DelayElapsed> {
 
-    private val delayTasklet = DelayTasklet(duration)
+    private val delayTasklet = DelayTasklet(request.durationInMilliseconds.milliseconds)
 
     init {
         delayTasklet.subscribe(this)
     }
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
-        val durationInMilliseconds = duration.inWholeMilliseconds
+        val guideOutput = requireNotNull(request.guideOutput)
+        val durationInMilliseconds = request.durationInMilliseconds
 
         // Force stop in reversed direction.
-        pulseGuide(0, direction.reversed)
+        guideOutput.pulseGuide(0, request.direction.reversed)
 
-        if (pulseGuide(durationInMilliseconds.toInt())) {
+        if (guideOutput.pulseGuide(durationInMilliseconds.toInt(), request.direction)) {
             delayTasklet.execute(contribution, chunkContext)
         }
 
@@ -36,7 +34,7 @@ data class GuidePulseTasklet(
     }
 
     override fun stop() {
-        pulseGuide(0)
+        request.guideOutput?.pulseGuide(0, request.direction)
         delayTasklet.stop()
     }
 
@@ -45,19 +43,23 @@ data class GuidePulseTasklet(
         else if (event.isFinished) onNext(GuidePulseFinished(event.stepExecution, this))
         else {
             val remainingTime = event.remainingTime.inWholeMicroseconds
-            onNext(GuidePulseElapsed(remainingTime, event.progress, direction, event.stepExecution, this))
+            onNext(GuidePulseElapsed(remainingTime, event.progress, request.direction, event.stepExecution, this))
         }
     }
 
-    private fun pulseGuide(durationInMilliseconds: Int, direction: GuideDirection = this.direction): Boolean {
-        when (direction) {
-            GuideDirection.NORTH -> guideOutput.guideNorth(durationInMilliseconds)
-            GuideDirection.SOUTH -> guideOutput.guideSouth(durationInMilliseconds)
-            GuideDirection.WEST -> guideOutput.guideWest(durationInMilliseconds)
-            GuideDirection.EAST -> guideOutput.guideEast(durationInMilliseconds)
-            else -> return false
-        }
+    companion object {
 
-        return true
+        @JvmStatic
+        private fun GuideOutput.pulseGuide(durationInMilliseconds: Int, direction: GuideDirection): Boolean {
+            when (direction) {
+                GuideDirection.NORTH -> guideNorth(durationInMilliseconds)
+                GuideDirection.SOUTH -> guideSouth(durationInMilliseconds)
+                GuideDirection.WEST -> guideWest(durationInMilliseconds)
+                GuideDirection.EAST -> guideEast(durationInMilliseconds)
+                else -> return false
+            }
+
+            return true
+        }
     }
 }

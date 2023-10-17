@@ -2,11 +2,11 @@ package nebulosa.guiding
 
 interface GuiderListener {
 
-    fun onStateChanged(state: GuideState, pixelScale: Double)
+    fun onStateChanged(state: GuideState, pixelScale: Double) = Unit
 
-    fun onGuideStepped(guideStar: GuideStar)
+    fun onGuideStepped(guideStar: GuideStar) = Unit
 
-    fun onDithered(dx: Double, dy: Double)
+    fun onDithered(dx: Double, dy: Double) = Unit
 
-    fun onMessageReceived(message: String)
+    fun onMessageReceived(message: String) = Unit
 }

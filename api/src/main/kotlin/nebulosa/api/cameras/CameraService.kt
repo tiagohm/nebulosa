@@ -33,7 +33,7 @@ class CameraService(
     }
 
     @Synchronized
-    fun startCapture(camera: Camera, request: CameraStartCapture) {
+    fun startCapture(camera: Camera, request: CameraStartCaptureRequest) {
         if (isCapturing(camera)) return
 
         val savePath = request.savePath

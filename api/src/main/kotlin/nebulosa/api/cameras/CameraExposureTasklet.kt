@@ -42,8 +42,8 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.microseconds
 import kotlin.time.Duration.Companion.seconds
 
-data class CameraExposureTasklet(val request: CameraStartCapture) :
-    SubjectSequenceTasklet<CameraCaptureEvent>(), JobExecutionListener, Consumer<DelayElapsed> {
+data class CameraExposureTasklet(override val request: CameraStartCaptureRequest) :
+    SubjectSequenceTasklet<CameraCaptureEvent>(), CameraStartCaptureTasklet, JobExecutionListener, Consumer<DelayElapsed> {
 
     private val latch = CountUpDownLatch()
     private val aborted = AtomicBoolean()

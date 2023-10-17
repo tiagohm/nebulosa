@@ -4,8 +4,8 @@ import jakarta.annotation.PreDestroy
 import nebulosa.api.services.MessageService
 import nebulosa.guiding.GuideStar
 import nebulosa.guiding.GuideState
+import nebulosa.guiding.Guider
 import nebulosa.guiding.GuiderListener
-import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.commands.PHD2Command
@@ -17,9 +17,9 @@ import kotlin.time.Duration
 class GuidingService(
     private val messageService: MessageService,
     private val phd2Client: PHD2Client,
+    private val guider: Guider,
 ) : PHD2EventListener, GuiderListener {
 
-    private val guider = PHD2Guider(phd2Client)
     private val guideHistory = GuideStepHistory()
 
     @Synchronized

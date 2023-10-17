@@ -2,82 +2,43 @@ package nebulosa.api.cameras
 
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.sequencer.SequenceJobExecutor
-import nebulosa.api.sequencer.tasklets.delay.DelayTasklet
+import nebulosa.api.sequencer.SequenceJobFactory
 import nebulosa.api.services.MessageService
-import nebulosa.common.concurrency.Incrementer
 import nebulosa.indi.device.camera.Camera
 import nebulosa.log.loggerFor
 import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobParameters
 import org.springframework.batch.core.configuration.JobRegistry
 import org.springframework.batch.core.configuration.support.ReferenceJobFactory
-import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.batch.core.launch.JobOperator
-import org.springframework.batch.core.repository.JobRepository
-import org.springframework.batch.core.step.builder.StepBuilder
-import org.springframework.batch.core.step.tasklet.Tasklet
 import org.springframework.stereotype.Component
-import org.springframework.transaction.PlatformTransactionManager
 import java.util.*
-import kotlin.time.Duration.Companion.seconds
 
 @Component
 class CameraCaptureExecutor(
-    private val jobRepository: JobRepository,
     private val jobOperator: JobOperator,
     private val asyncJobLauncher: JobLauncher,
-    private val platformTransactionManager: PlatformTransactionManager,
     private val jobRegistry: JobRegistry,
     private val messageService: MessageService,
-    private val executionIncrementer: Incrementer,
-) : SequenceJobExecutor<CameraStartCapture, CameraSequenceJob>, Consumer<CameraCaptureEvent> {
+    private val sequenceJobFactory: SequenceJobFactory,
+) : SequenceJobExecutor<CameraStartCaptureRequest, CameraSequenceJob>, Consumer<CameraCaptureEvent> {
 
     private val runningSequenceJobs = LinkedList<CameraSequenceJob>()
 
     @Synchronized
-    override fun execute(request: CameraStartCapture): CameraSequenceJob {
+    override fun execute(request: CameraStartCaptureRequest): CameraSequenceJob {
         val camera = requireNotNull(request.camera)
 
-        if (isCapturing(camera)) {
-            throw IllegalStateException("A Camera Exposure job is already running. camera=${camera.name}")
-        }
+        check(!isCapturing(camera)) { "job is already running for camera: [${camera.name}]" }
+        check(camera.connected) { "camera is not connected" }
 
         LOG.info("starting camera capture. data={}", request)
 
         val cameraCaptureJob = if (request.isLoop) {
-            val cameraExposureTasklet = CameraLoopExposureTasklet(request)
-            cameraExposureTasklet.subscribe(this)
-
-            JobBuilder("CameraCapture.Job.${executionIncrementer.increment()}", jobRepository)
-                .start(cameraExposureStep(cameraExposureTasklet))
-                .listener(cameraExposureTasklet)
-                .build()
+            sequenceJobFactory.cameraLoopCapture(request, this)
         } else {
-            val cameraExposureTasklet = CameraExposureTasklet(request)
-            cameraExposureTasklet.subscribe(this)
-
-            val jobBuilder = JobBuilder("CameraCapture.Job.${executionIncrementer.increment()}", jobRepository)
-                .start(cameraExposureStep(cameraExposureTasklet))
-
-            val hasDelay = request.exposureDelayInSeconds in 1L..60L
-            val cameraDelayTasklet = DelayTasklet(request.exposureDelayInSeconds.seconds)
-            cameraDelayTasklet.subscribe(cameraExposureTasklet)
-
-            repeat(request.exposureAmount - 1) {
-                if (hasDelay) {
-                    val cameraDelayStep = cameraDelayStep(cameraDelayTasklet)
-                    jobBuilder.next(cameraDelayStep)
-                }
-
-                val cameraExposureStep = cameraExposureStep(cameraExposureTasklet)
-                jobBuilder.next(cameraExposureStep)
-            }
-
-            jobBuilder
-                .listener(cameraExposureTasklet)
-                .listener(cameraDelayTasklet)
-                .build()
+            sequenceJobFactory.cameraCapture(request, this)
         }
 
         return asyncJobLauncher
@@ -86,16 +47,6 @@ class CameraCaptureExecutor(
             .also(runningSequenceJobs::add)
             .also { jobRegistry.register(ReferenceJobFactory(cameraCaptureJob)) }
     }
-
-    private fun cameraDelayStep(tasklet: Tasklet) =
-        StepBuilder("CameraCapture.Step.Delay.${executionIncrementer.increment()}", jobRepository)
-            .tasklet(tasklet, platformTransactionManager)
-            .build()
-
-    private fun cameraExposureStep(tasklet: Tasklet) =
-        StepBuilder("CameraCapture.Step.Exposure.${executionIncrementer.increment()}", jobRepository)
-            .tasklet(tasklet, platformTransactionManager)
-            .build()
 
     fun stop(camera: Camera) {
         val jobExecution = jobExecutionFor(camera) ?: return

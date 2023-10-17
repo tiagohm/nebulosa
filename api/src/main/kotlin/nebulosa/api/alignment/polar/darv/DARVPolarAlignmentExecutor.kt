@@ -2,14 +2,10 @@ package nebulosa.api.alignment.polar.darv
 
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.cameras.CameraCaptureEvent
-import nebulosa.api.cameras.CameraExposureTasklet
-import nebulosa.api.cameras.CameraStartCapture
+import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.guiding.*
-import nebulosa.api.sequencer.SequenceJobEvent
-import nebulosa.api.sequencer.SequenceJobExecutor
-import nebulosa.api.sequencer.SequenceTaskletEvent
+import nebulosa.api.sequencer.*
 import nebulosa.api.sequencer.tasklets.delay.DelayElapsed
-import nebulosa.api.sequencer.tasklets.delay.DelayTasklet
 import nebulosa.api.services.MessageService
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.concurrency.Incrementer
@@ -21,16 +17,12 @@ import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.JobParameters
 import org.springframework.batch.core.configuration.JobRegistry
 import org.springframework.batch.core.configuration.support.ReferenceJobFactory
-import org.springframework.batch.core.job.builder.FlowBuilder
 import org.springframework.batch.core.job.builder.JobBuilder
-import org.springframework.batch.core.job.flow.support.SimpleFlow
 import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.batch.core.launch.JobOperator
 import org.springframework.batch.core.repository.JobRepository
-import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.stereotype.Component
-import org.springframework.transaction.PlatformTransactionManager
 import java.nio.file.Path
 import java.util.*
 import kotlin.time.Duration.Companion.seconds
@@ -43,11 +35,12 @@ class DARVPolarAlignmentExecutor(
     private val jobRepository: JobRepository,
     private val jobOperator: JobOperator,
     private val jobLauncher: JobLauncher,
-    private val platformTransactionManager: PlatformTransactionManager,
     private val jobRegistry: JobRegistry,
     private val messageService: MessageService,
-    private val executionIncrementer: Incrementer,
+    private val jobIncrementer: Incrementer,
     private val capturesPath: Path,
+    private val sequenceFlowFactory: SequenceFlowFactory,
+    private val sequenceTaskletFactory: SequenceTaskletFactory,
 ) : SequenceJobExecutor<DARVStart, DARVSequenceJob>, Consumer<SequenceTaskletEvent>, JobExecutionListener {
 
     private val runningSequenceJobs = LinkedList<DARVSequenceJob>()
@@ -63,42 +56,33 @@ class DARVPolarAlignmentExecutor(
 
         LOG.info("starting DARV polar alignment. data={}", request)
 
-        val cameraStarCapture = CameraStartCapture(
+        val cameraRequest = CameraStartCaptureRequest(
             camera = camera,
             exposureInMicroseconds = (request.exposureInSeconds + request.initialPauseInSeconds).seconds.inWholeMicroseconds,
             savePath = Path.of("$capturesPath", "${camera.name}-DARV.fits")
         )
 
-        val cameraExposureTasklet = CameraExposureTasklet(cameraStarCapture)
+        val cameraExposureTasklet = sequenceTaskletFactory.cameraExposure(cameraRequest)
         cameraExposureTasklet.subscribe(this)
+        val cameraExposureFlow = sequenceFlowFactory.cameraExposure(cameraExposureTasklet)
 
-        val cameraExposureStep = StepBuilder("DARVPolarAlignment.Step.CameraExposure.${executionIncrementer.increment()}", jobRepository)
-            .tasklet(cameraExposureTasklet, platformTransactionManager)
-            .build()
-
-        val cameraExposureFlow = FlowBuilder<SimpleFlow>("DARVPolarAlignment.Flow.CameraExposure.${executionIncrementer.increment()}")
-            .start(cameraExposureStep)
-            .build()
-
-        val guidePulseDuration = (request.exposureInSeconds / 2.0).seconds
-        val initialPulseDelayTasklet = DelayTasklet(request.initialPauseInSeconds.seconds)
-        initialPulseDelayTasklet.subscribe(this)
+        val guidePulseDuration = (request.exposureInSeconds / 2.0).seconds.inWholeMilliseconds
+        val initialPauseDelayTasklet = sequenceTaskletFactory.delay(request.initialPauseInSeconds.seconds)
+        initialPauseDelayTasklet.subscribe(this)
 
         val direction = if (request.reversed) request.direction.reversed else request.direction
 
-        val forwardGuidePulseTasklet = GuidePulseTasklet(guideOutput, direction, guidePulseDuration)
+        val forwardGuidePulseRequest = GuidePulseRequest(guideOutput, direction, guidePulseDuration)
+        val forwardGuidePulseTasklet = sequenceTaskletFactory.guidePulse(forwardGuidePulseRequest)
         forwardGuidePulseTasklet.subscribe(this)
 
-        val backwardGuidePulseTasklet = GuidePulseTasklet(guideOutput, direction.reversed, guidePulseDuration)
+        val backwardGuidePulseRequest = GuidePulseRequest(guideOutput, direction.reversed, guidePulseDuration)
+        val backwardGuidePulseTasklet = sequenceTaskletFactory.guidePulse(backwardGuidePulseRequest)
         backwardGuidePulseTasklet.subscribe(this)
 
-        val guidePulseFlow = FlowBuilder<SimpleFlow>("DARVPolarAlignment.Flow.GuidePulse.${executionIncrementer.increment()}")
-            .start(initialPulseStep(initialPulseDelayTasklet))
-            .next(guidePulseStep(forwardGuidePulseTasklet))
-            .next(guidePulseStep(backwardGuidePulseTasklet))
-            .build()
+        val guidePulseFlow = sequenceFlowFactory.guidePulse(initialPauseDelayTasklet, forwardGuidePulseTasklet, backwardGuidePulseTasklet)
 
-        val darvJob = JobBuilder("DARVPolarAlignment.Job.${executionIncrementer.increment()}", jobRepository)
+        val darvJob = JobBuilder("DARVPolarAlignment.Job.${jobIncrementer.increment()}", jobRepository)
             .start(cameraExposureFlow)
             .split(SimpleAsyncTaskExecutor(DaemonThreadFactory))
             .add(guidePulseFlow)
@@ -125,16 +109,6 @@ class DARVPolarAlignmentExecutor(
         return sequenceJobFor(camera, guideOutput)?.jobExecution
     }
 
-    private fun initialPulseStep(tasklet: DelayTasklet) =
-        StepBuilder("DARVPolarAlignment.Step.InitialPulseDelay.${executionIncrementer.increment()}", jobRepository)
-            .tasklet(tasklet, platformTransactionManager)
-            .build()
-
-    private fun guidePulseStep(tasklet: GuidePulseTasklet) =
-        StepBuilder("DARVPolarAlignment.Step.GuidePulse.${executionIncrementer.increment()}", jobRepository)
-            .tasklet(tasklet, platformTransactionManager)
-            .build()
-
     fun isRunning(camera: Camera, guideOutput: GuideOutput): Boolean {
         return sequenceJobFor(camera, guideOutput)?.jobExecution?.isRunning ?: false
     }
@@ -154,13 +128,13 @@ class DARVPolarAlignmentExecutor(
             }
             // Forward & backward guide pulse event.
             is GuidePulseEvent -> {
-                val tasklet = event.tasklet as GuidePulseTasklet
-                val direction = tasklet.direction
-                val forward = (tasklet.direction == data.direction) != data.reversed
+                val direction = event.tasklet.request.direction
+                val duration = event.tasklet.request.durationInMilliseconds
+                val forward = (direction == data.direction) != data.reversed
 
                 when (event) {
                     is GuidePulseStarted -> {
-                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, forward, direction, tasklet.duration.inWholeMicroseconds, 0.0)
+                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, forward, direction, duration, 0.0)
                     }
                     is GuidePulseElapsed -> {
                         DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, forward, direction, event.remainingTime, event.progress)

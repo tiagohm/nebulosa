@@ -6,6 +6,8 @@ import nebulosa.api.beans.DateAndTimeMethodArgumentResolver
 import nebulosa.api.beans.EntityByMethodArgumentResolver
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.concurrency.Incrementer
+import nebulosa.guiding.Guider
+import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
 import nebulosa.json.*
@@ -127,10 +129,22 @@ class BeanConfiguration {
     }
 
     @Bean
-    fun executionIncrementer() = Incrementer()
+    fun flowIncrementer() = Incrementer()
+
+    @Bean
+    fun stepIncrementer() = Incrementer()
+
+    @Bean
+    fun jobIncrementer() = Incrementer()
 
     @Bean
     fun phd2Client() = PHD2Client()
+
+    @Bean
+    fun phd2Guider(phd2Client: PHD2Client): Guider = PHD2Guider(phd2Client)
+
+    @Bean
+    fun simpleAsyncTaskExecutor() = SimpleAsyncTaskExecutor(DaemonThreadFactory)
 
     @Bean
     fun webMvcConfigurer(

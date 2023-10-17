@@ -7,7 +7,7 @@ import org.springframework.batch.core.JobExecution
 
 data class CameraSequenceJob(
     val camera: Camera,
-    val data: CameraStartCapture,
+    val data: CameraStartCaptureRequest,
     override val job: Job,
     override val jobExecution: JobExecution,
 ) : SequenceJob {
