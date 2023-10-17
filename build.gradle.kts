@@ -7,7 +7,7 @@ buildscript {
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10")
         classpath("org.jetbrains.kotlin:kotlin-allopen:1.9.10")
-        classpath("com.adarshr:gradle-test-logger-plugin:3.2.0")
+        classpath("com.adarshr:gradle-test-logger-plugin:4.0.0")
     }
 
     repositories {

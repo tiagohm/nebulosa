@@ -1,10 +1,13 @@
 import com.fasterxml.jackson.databind.ObjectMapper
+import de.siegmar.fastcsv.reader.NamedCsvReader
 import de.siegmar.fastcsv.reader.NamedCsvRow
 import nebulosa.api.atlas.DeepSkyObjectEntity
 import nebulosa.api.atlas.StarEntity
 import nebulosa.common.concurrency.CountUpDownLatch
+import nebulosa.io.resource
 import nebulosa.log.loggerFor
 import nebulosa.math.*
+import nebulosa.simbad.SimbadCatalogType
 import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.skycatalog.SkyObject
@@ -12,6 +15,7 @@ import nebulosa.skycatalog.SkyObjectType
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 import okhttp3.OkHttpClient
+import java.io.InputStreamReader
 import java.nio.file.Path
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -20,11 +24,9 @@ import kotlin.io.path.bufferedReader
 import kotlin.io.path.outputStream
 import kotlin.math.min
 
-typealias CatalogNameProvider = Pair<Regex, MatchResult.() -> String>
+typealias CatalogNameProvider = Pair<Regex, (String) -> String?>
 
-// TODO: Caldwell Catalog
 // TODO: Herschel Catalog
-// TODO: Bennett Catalog: https://www.docdb.net/tutorials/bennett_catalogue.php
 // TODO: Dunlop Catalog: https://www.docdb.net/tutorials/dunlop_catalogue.php
 
 object SkyDatabaseGenerator {
@@ -45,61 +47,40 @@ object SkyDatabaseGenerator {
     @JvmStatic private val SIMBAD_SERVICE = SimbadService(httpClient = HTTP_CLIENT)
     @JvmStatic private val MAPPER = ObjectMapper()
 
-    @JvmStatic private val STAR_CATALOG_TYPES = listOf<CatalogNameProvider>(
-        "NAME\\s+(.*)".toRegex() to { groupValues[1].trim() },
-        "\\*\\s+(.*)".toRegex() to { groupValues[1].trim() },
-        "HD\\s+(\\w*)".toRegex() to { "HD " + groupValues[1].uppercase() },
-        "HR\\s+(\\w*)".toRegex() to { "HR " + groupValues[1].uppercase() },
-        "HIP\\s+(\\w*)".toRegex() to { "HIP " + groupValues[1].uppercase() },
-        "NGC\\s+(\\w{1,5})".toRegex() to { "NGC " + groupValues[1].uppercase() },
-        "IC\\s+(\\w{1,5})".toRegex() to { "IC " + groupValues[1].uppercase() },
-    )
+    @JvmStatic private val STAR_CATALOG_TYPES: List<CatalogNameProvider> = SimbadCatalogType.entries
+        .filter { it.isStar }
+        .map { it.regex to it::match }
 
-    @JvmStatic private val DSO_CATALOG_TYPES = listOf<CatalogNameProvider>(
-        STAR_CATALOG_TYPES[0],
-        "NGC\\s+(\\d{1,4})".toRegex() to { "NGC " + groupValues[1] },
-        "IC\\s+(\\d{1,4})".toRegex() to { "IC " + groupValues[1] },
-        "GUM\\s+(\\d{1,4})".toRegex() to { "GUM " + groupValues[1] },
-        "M\\s+(\\d{1,3})".toRegex() to { "M " + groupValues[1] },
-        "Barnard\\s+(\\d{1,3})".toRegex() to { "Barnard " + groupValues[1] },
-        "LBN\\s+(\\d{1,4})".toRegex() to { "LBN " + groupValues[1] },
-        "LDN\\s+(\\d{1,4})".toRegex() to { "LDN " + groupValues[1] },
-        "RCW\\s+(\\d{1,4})".toRegex() to { "RCW " + groupValues[1] },
-        "SH\\s+2-(\\d{1,3})".toRegex() to { "SH 2-" + groupValues[1] },
-        "Ced\\s+(\\d{1,3})".toRegex() to { "Ced " + groupValues[1] },
-        "UGC\\s+(\\d{1,5})".toRegex() to { "UGC " + groupValues[1] },
-        "APG\\s+(\\d{1,3})".toRegex() to { "Arp " + groupValues[1] },
-        "HCG\\s+(\\d{1,3})".toRegex() to { "HCG " + groupValues[1] },
-        "VV\\s+(\\d{1,4})".toRegex() to { "VV " + groupValues[1] },
-        "VdBH\\s+(\\d{1,2})".toRegex() to { "VdBH " + groupValues[1] },
-        "DWB\\s+(\\d{1,3})".toRegex() to { "DWB " + groupValues[1] },
-        "LEDA\\s+(\\d{1,7})".toRegex() to { "LEDA " + groupValues[1] },
-        "Cl\\s+([\\w-]+)\\s+(\\d{1,5})".toRegex() to { groupValues[1] + " " + groupValues[2] },
-    )
-
-    @JvmStatic private val DSO_CATALOG_TYPES_LIKE = listOf(
-        "M %" to Double.NaN,
-        "NGC %" to Double.NaN,
-        "IC %" to Double.NaN,
-        "Cl %" to Double.NaN,
-        "Gum %" to Double.NaN,
-        "Barnard %" to Double.NaN,
-        "LBN %" to Double.NaN,
-        "LDN %" to Double.NaN,
-        "RCW %" to Double.NaN,
-        "SH %" to Double.NaN,
-        "Ced %" to Double.NaN,
-        "UGC %" to 16.0,
-        "APG %" to Double.NaN,
-        "HCG %" to 16.0,
-        "VV %" to 16.0,
-        "VdBH %" to Double.NaN,
-        "DWB %" to Double.NaN,
-        "NAME %" to Double.NaN,
-    )
+    @JvmStatic private val DSO_CATALOG_TYPES: List<CatalogNameProvider> = SimbadCatalogType.entries
+        .filter { it.isDSO }
+        .map { it.regex to it::match }
 
     @JvmStatic private val NUMBER_OF_CPUS = Runtime.getRuntime().availableProcessors()
     @JvmStatic private val EXECUTOR_SERVICE = Executors.newFixedThreadPool(NUMBER_OF_CPUS)
+
+    @JvmStatic private val CSV_READER = NamedCsvReader.builder()
+        .fieldSeparator(',')
+        .quoteCharacter('"')
+        .commentCharacter('#')
+        .skipComments(true)
+
+    @JvmStatic private val CALDWELL = resource("Caldwell.csv")!!
+        .use { stream ->
+            CSV_READER.build(InputStreamReader(stream, Charsets.UTF_8))
+                .associate { it.getField("NGC number").ifEmpty { it.getField("Common name") } to it.getField("Caldwell number") }
+        }
+
+    @JvmStatic private val BENNETT = resource("Bennett.csv")!!
+        .use { stream ->
+            CSV_READER.build(InputStreamReader(stream, Charsets.UTF_8))
+                .associate { it.getField("NGC") to it.getField("Bennett") }
+        }
+
+    @JvmStatic private val DUNLOP = resource("Dunlop.csv")!!
+        .use { stream ->
+            CSV_READER.build(InputStreamReader(stream, Charsets.UTF_8))
+                .associate { it.getField("NGC") to it.getField("Dunlop") }
+        }
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -137,14 +118,24 @@ object SkyDatabaseGenerator {
                 val namesIterator = splittedNames.iterator()
 
                 while (namesIterator.hasNext()) {
-                    val m = type.first.matchEntire(namesIterator.next()) ?: continue
-                    val name = type.second(m)
-                    names.add(name)
+                    val name = type.second(namesIterator.next()) ?: continue
                     namesIterator.remove()
 
-                    if (useIAU && type === STAR_CATALOG_TYPES[0] && name in iauNames) {
-                        iauNames.remove(name)
-                        magnitude = iauNamesMagnitude[name]!!
+                    if (names.add(name)) {
+                        if (name in CALDWELL) {
+                            names.add("Caldwell ${CALDWELL[name]}")
+                        }
+                        if (name in BENNETT) {
+                            names.add("Bennett ${BENNETT[name]}")
+                        }
+                        if (name in DUNLOP) {
+                            names.add("Dunlop ${DUNLOP[name]}")
+                        }
+
+                        if (useIAU && type === STAR_CATALOG_TYPES[0] && name in iauNames) {
+                            iauNames.remove(name)
+                            magnitude = iauNamesMagnitude[name]!!
+                        }
                     }
                 }
             }
@@ -152,7 +143,7 @@ object SkyDatabaseGenerator {
             return magnitude
         }
 
-        val currentTime = UTC(TimeYMDHMS(2023, 9, 29, 12))
+        val currentTime = UTC(TimeYMDHMS(2023, 10, 5, 12))
         val data = HashMap<Long, SkyObject>(32000)
         val skyObjectTypes = HashSet<SkyObjectType>(SkyObjectType.entries.size)
 
@@ -299,7 +290,7 @@ object SkyDatabaseGenerator {
                 .use { MAPPER.writeValue(it, data.values) }
         }
 
-        // DSOS. ~28201 objects.
+        // DSOS. ~30263 objects.
 
         if (fetchDSOs) {
             data.clear()
@@ -307,8 +298,20 @@ object SkyDatabaseGenerator {
 
             val latch = CountUpDownLatch()
 
+            val catalogTypes = listOf(
+                "M %" to Double.NaN, "NGC %" to Double.NaN,
+                "IC %" to Double.NaN, "Cl %" to Double.NaN,
+                "Gum %" to Double.NaN, "Barnard %" to Double.NaN,
+                "LBN %" to Double.NaN, "LDN %" to Double.NaN,
+                "RCW %" to Double.NaN, "SH %" to Double.NaN,
+                "Ced %" to Double.NaN, "UGC %" to 18.0,
+                "APG %" to Double.NaN, "HCG %" to 18.0,
+                "VV %" to 16.0, "VdBH %" to Double.NaN,
+                "DWB %" to Double.NaN, "NAME %" to Double.NaN,
+            )
+
             for (i in 0 until maxOID step stepSize) {
-                for (catalogType in DSO_CATALOG_TYPES_LIKE) {
+                for (catalogType in catalogTypes) {
                     latch.countUp()
 
                     EXECUTOR_SERVICE.submit {
@@ -330,7 +333,7 @@ object SkyDatabaseGenerator {
                                 continue
                             }
 
-                            val isStarDSO = catalogType !== DSO_CATALOG_TYPES_LIKE.last()
+                            val isStarDSO = catalogType !== catalogTypes.last()
 
                             synchronized(data) {
                                 for (row in rows) {

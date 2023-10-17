@@ -4,8 +4,9 @@ plugins {
 }
 
 dependencies {
-    api(project(":nebulosa-io"))
-    implementation(libs.jackson)
+    api(project(":nebulosa-netty"))
+    api(project(":nebulosa-json"))
+    api(project(":nebulosa-guiding"))
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }

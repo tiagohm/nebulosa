@@ -11,21 +11,17 @@ import nebulosa.log.loggerFor
 import java.io.Closeable
 import java.util.concurrent.atomic.AtomicReference
 
-abstract class NettyClient : Runnable, Closeable {
+abstract class NettyClient : Closeable {
 
     protected val channel = AtomicReference<ChannelFuture>()
 
-    abstract val host: String
-
-    abstract val port: Int
-
     protected abstract val channelInitialzer: ChannelInitializer<SocketChannel>
 
-    val running
+    val isOpen
         get() = channel.get() != null
 
-    final override fun run() {
-        require(!running) { "the server has already been started" }
+    fun open(host: String, port: Int) {
+        require(!isOpen) { "the server has already been started" }
 
         val masterGroup = NioEventLoopGroup()
 
@@ -34,7 +30,6 @@ abstract class NettyClient : Runnable, Closeable {
         b.group(masterGroup)
             .channel(NioSocketChannel::class.java)
             .handler(channelInitialzer)
-            .option(ChannelOption.SO_BACKLOG, 128)
             .option(ChannelOption.TCP_NODELAY, true)
 
         val future = b.connect(host, port).sync()

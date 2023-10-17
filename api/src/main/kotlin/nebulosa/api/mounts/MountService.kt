@@ -96,10 +96,10 @@ class MountService(private val imageBucket: ImageBucket) {
 
     fun move(mount: Mount, direction: GuideDirection, enabled: Boolean) {
         when (direction) {
-            GuideDirection.UP_NORTH -> moveNorth(mount, enabled)
-            GuideDirection.DOWN_SOUTH -> moveSouth(mount, enabled)
-            GuideDirection.LEFT_WEST -> moveWest(mount, enabled)
-            GuideDirection.RIGHT_EAST -> moveEast(mount, enabled)
+            GuideDirection.NORTH -> moveNorth(mount, enabled)
+            GuideDirection.SOUTH -> moveSouth(mount, enabled)
+            GuideDirection.WEST -> moveWest(mount, enabled)
+            GuideDirection.EAST -> moveEast(mount, enabled)
         }
     }
 

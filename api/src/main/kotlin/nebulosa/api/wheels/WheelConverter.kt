@@ -3,7 +3,7 @@ package nebulosa.api.wheels
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import nebulosa.indi.device.filterwheel.FilterWheel
-import nebulosa.json.modules.ToJson
+import nebulosa.json.ToJson
 import org.springframework.stereotype.Component
 
 @Component

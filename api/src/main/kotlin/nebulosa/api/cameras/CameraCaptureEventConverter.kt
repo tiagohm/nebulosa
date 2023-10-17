@@ -18,7 +18,7 @@ import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_REMAINING_TIME
 import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_TIME
 import nebulosa.api.sequencer.SequenceJobEvent
 import nebulosa.api.sequencer.SequenceStepEvent
-import nebulosa.json.modules.ToJson
+import nebulosa.json.ToJson
 import org.springframework.stereotype.Component
 
 @Component

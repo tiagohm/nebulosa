@@ -1,4 +1,3 @@
 package nebulosa.alignment
 
-interface StarAlignment {
-}
+interface StarAlignment

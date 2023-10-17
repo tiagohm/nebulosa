@@ -1,5 +1,6 @@
 <div class="inline-block relative">
-    <img #image (load)="imageLoaded()" (click)="imageClicked($event, false)" (contextmenu)="imageClicked($event, true)" class="select-none" />
+    <img #image (load)="imageLoaded()" (click)="imageClicked($event, false)" (contextmenu)="imageClicked($event, true)"
+         class="select-none pixelated" />
 
     <svg *ngIf="crossHair" class="absolute left-0 top-0 w-full h-full pointer-events-none">
         <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#E53935" stroke-width="3"></line>
@@ -16,15 +17,6 @@
                 a.dso?.name ??
                 a.minorPlanet?.name }}</text>
         </g>
-    </svg>
-
-    <svg *ngIf="guideTrackingBox" class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
-        <line x1="0" [attr.y1]="guideTrackingBox.guider.lockPosition.y" x2="100%" [attr.y2]="guideTrackingBox.guider.lockPosition.y" stroke="#E53935"
-              stroke-width="1"></line>
-        <line [attr.x1]="guideTrackingBox.guider.lockPosition.x" y1="0" [attr.x2]="guideTrackingBox.guider.lockPosition.x" y2="100%" stroke="#E53935"
-              stroke-width="1"></line>
-        <rect [attr.x]="guideTrackingBox.guider.primaryStar.x - 32" [attr.y]="guideTrackingBox.guider.primaryStar.y - 32" width="64" height="64"
-              [attr.stroke]="guideTrackingBox.guider.primaryStar.valid ? 'cyan' : 'red'" fill="transparent"></rect>
     </svg>
 
     <div #roi [class.hidden]="!roiInteractable" class="roi absolute left-0 top-0" data-x="0" data-y="0" (contextmenu)="imageClicked($event, true)"
@@ -60,7 +52,7 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="annotating" icon="mdi mdi-check" label="Annotate" (onClick)="annotateImage()" styleClass="p-button-text" />
+        <p-button [disabled]="annotating" icon="mdi mdi-check" label="Annotate" (onClick)="annotateImage()" [text]="true" />
     </ng-template>
 </p-dialog>
 
@@ -119,9 +111,9 @@
     </div>
     <ng-template pTemplate="footer">
         <div class="col-12 flex justify-content-center">
-            <p-button (onClick)="mountSync(annotationInfo!)" icon="mdi mdi-sync" label="Sync" styleClass="p-button-text p-button-info" />
-            <p-button (onClick)="mountGoTo(annotationInfo!)" icon="mdi mdi-telescope" label="Go To" styleClass="p-button-text p-button-success" />
-            <p-button (onClick)="mountSlew(annotationInfo!)" icon="mdi mdi-telescope" label="Slew" styleClass="p-button-text p-button-success" />
+            <p-button (onClick)="mountSync(annotationInfo!)" icon="mdi mdi-sync" label="Sync" [text]="true" severity="info" />
+            <p-button (onClick)="mountGoTo(annotationInfo!)" icon="mdi mdi-telescope" label="Go To" [text]="true" severity="success" />
+            <p-button (onClick)="mountSlew(annotationInfo!)" icon="mdi mdi-telescope" label="Slew" [text]="true" severity="success" />
         </div>
     </ng-template>
 </p-dialog>
@@ -221,17 +213,17 @@
         <div class="grid mb-2">
             <div class="col-12 flex justify-content-center">
                 <p-button [disabled]="solving || !solved" (onClick)="mountSync(solverCalibration!)" icon="mdi mdi-sync" label="Sync"
-                          styleClass="p-button-text p-button-info" />
+                          [text]="true" sevirity="info" />
                 <p-button [disabled]="solving || !solved" (onClick)="mountGoTo(solverCalibration!)" icon="mdi mdi-telescope" label="Go To"
-                          styleClass="p-button-text p-button-success" />
+                          [text]="true" sevirity="success" />
                 <p-button [disabled]="solving || !solved" (onClick)="mountSlew(solverCalibration!)" icon="mdi mdi-telescope" label="Slew"
-                          styleClass="p-button-text p-button-success" />
+                          [text]="true" sevirity="success" />
                 <p-button [disabled]="solving || !solved" (onClick)="frame(solverCalibration!)" icon="mdi mdi-image" label="Frame"
-                          styleClass="p-button-text" />
+                          [text]="true" />
             </div>
         </div>
 
-        <p-button [disabled]="!solverPathOrUrl || solving" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" styleClass="p-button-text" />
+        <p-button [disabled]="!solverPathOrUrl || solving" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true" />
     </ng-template>
 </p-dialog>
 
@@ -266,8 +258,8 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button icon="mdi mdi-restore" label="Reset" (onClick)="resetStretch()" styleClass="p-button-text p-button-danger" />
-        <p-button icon="mdi mdi-check" label="Stretch" (onClick)="stretchImage()" styleClass="p-button-text" />
+        <p-button icon="mdi mdi-restore" label="Reset" (onClick)="resetStretch()" [text]="true" severity="danger" />
+        <p-button icon="mdi mdi-check" label="Stretch" (onClick)="stretchImage()" [text]="true" />
     </ng-template>
 </p-dialog>
 
@@ -305,7 +297,7 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button icon="mdi mdi-check" label="Apply" (onClick)="scnrImage()" styleClass="p-button-text" />
+        <p-button icon="mdi mdi-check" label="Apply" (onClick)="scnrImage()" [text]="true" />
     </ng-template>
 </p-dialog>
 

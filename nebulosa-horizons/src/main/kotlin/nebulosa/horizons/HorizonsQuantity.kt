@@ -1,4 +1,4 @@
-package nebulosa.horizons;
+package nebulosa.horizons
 
 enum class HorizonsQuantity(
     @JvmField internal val code: Int,

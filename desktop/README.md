@@ -23,6 +23,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](filter-wheel.png)
 
+## Guiding
+
+![](guiding.png)
+
 ## Sky Atlas
 
 ![](atlas.1.png)
@@ -42,6 +46,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 ## Framing
 
 ![](framing.png)
+
+## Alignment
+
+![](alignment.darv.png)
 
 ## INDI
 

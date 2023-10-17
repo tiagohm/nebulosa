@@ -1,102 +1,120 @@
 package nebulosa.api.guiding
 
-import nebulosa.api.data.responses.GuidingChartResponse
-import nebulosa.api.data.responses.GuidingStarResponse
-import nebulosa.api.image.ImageService
+import jakarta.annotation.PreDestroy
 import nebulosa.api.services.MessageService
-import nebulosa.indi.device.camera.Camera
-import nebulosa.indi.device.guide.GuideOutput
-import nebulosa.indi.device.mount.Mount
+import nebulosa.guiding.GuideStar
+import nebulosa.guiding.GuideState
+import nebulosa.guiding.Guider
+import nebulosa.guiding.GuiderListener
+import nebulosa.phd2.client.PHD2Client
+import nebulosa.phd2.client.PHD2EventListener
+import nebulosa.phd2.client.commands.PHD2Command
+import nebulosa.phd2.client.events.PHD2Event
 import org.springframework.stereotype.Service
-import kotlin.math.hypot
+import kotlin.time.Duration
 
 @Service
 class GuidingService(
     private val messageService: MessageService,
-    private val imageService: ImageService,
-    private val guidingExecutor: GuidingExecutor,
-) {
+    private val phd2Client: PHD2Client,
+    private val guider: Guider,
+) : PHD2EventListener, GuiderListener {
 
-    // fun onGuideExposureFinished(event: GuideExposureFinished) {
-    // imageService.load(event.task.token, event.image)
-    // guideImage.set(event.image)
-    // sendGuideExposureFinished(event)
-    // }
+    private val guideHistory = GuideStepHistory()
 
-    fun connect(guideOutput: GuideOutput) {
-        guideOutput.connect()
+    @Synchronized
+    fun connect(host: String, port: Int) {
+        check(!phd2Client.isOpen)
+
+        phd2Client.open(host, port)
+        phd2Client.registerListener(this)
+        guider.registerGuiderListener(this)
+        messageService.sendMessage(GUIDER_CONNECTED)
     }
 
-    fun disconnect(guideOutput: GuideOutput) {
-        guideOutput.disconnect()
+    @PreDestroy
+    @Synchronized
+    fun disconnect() {
+        runCatching { guider.close() }
+        phd2Client.unregisterListener(this)
+        messageService.sendMessage(GUIDER_DISCONNECTED)
     }
 
-    fun startLooping(
-        camera: Camera, mount: Mount, guideOutput: GuideOutput,
-        guideStartLooping: GuideStartLooping,
-    ) {
-        guidingExecutor.startLooping(camera, mount, guideOutput, guideStartLooping)
+    fun status(): GuiderStatus {
+        return if (!phd2Client.isOpen) GuiderStatus.DISCONNECTED
+        else GuiderStatus(phd2Client.isOpen, guider.state, guider.isSettling, guider.pixelScale)
+    }
+
+    fun history(): List<HistoryStep> {
+        return guideHistory
+    }
+
+    fun latestHistory(): HistoryStep? {
+        return guideHistory.lastOrNull()
+    }
+
+    fun clearHistory() {
+        return guideHistory.clear()
+    }
+
+    fun loop(autoSelectGuideStar: Boolean = true) {
+        if (phd2Client.isOpen) {
+            guider.startLooping(autoSelectGuideStar)
+        }
+    }
+
+    fun start(forceCalibration: Boolean = false) {
+        if (phd2Client.isOpen) {
+            guider.startGuiding(forceCalibration)
+        }
+    }
+
+    fun settle(settleAmount: Double?, settleTime: Duration?, settleTimeout: Duration?) {
+        if (settleAmount != null) guider.settleAmount = settleAmount
+        if (settleTime != null) guider.settleTime = settleTime
+        if (settleTimeout != null) guider.settleTimeout = settleTimeout
+    }
+
+    fun dither(amount: Double, raOnly: Boolean = false) {
+        if (phd2Client.isOpen) {
+            guider.dither(amount, raOnly)
+        }
     }
 
     fun stop() {
-        guidingExecutor.stop()
+        if (phd2Client.isOpen) {
+            guider.stopGuiding(true)
+        }
     }
 
-    fun startGuiding(forceCalibration: Boolean) {
-        guidingExecutor.startGuiding(forceCalibration)
+    override fun onStateChanged(state: GuideState, pixelScale: Double) {
+        val status = GuiderStatus(phd2Client.isOpen, state, guider.isSettling, pixelScale)
+        messageService.sendMessage(GUIDER_UPDATED, status)
     }
 
-    fun guidingChart(): GuidingChartResponse {
-        val chart = guidingExecutor.stats
-        val stats = chart.lastOrNull()
-        val rmsTotal = if (stats == null) 0.0 else hypot(stats.rmsRA, stats.rmsDEC)
-        return GuidingChartResponse(chart, stats?.rmsRA ?: 0.0, stats?.rmsDEC ?: 0.0, rmsTotal)
+    override fun onGuideStepped(guideStar: GuideStar) {
+        val payload = guideStar.guideStep?.let(guideHistory::addGuideStep) ?: guideStar
+        messageService.sendMessage(GUIDER_STEPPED, payload)
     }
 
-    fun guidingStar(): GuidingStarResponse? {
-//        val image = guideImage.get() ?: return null
-//        val lockPosition = guidingExecutor.lockPosition
-//        val trackBoxSize = guidingExecutor.searchRegion * 2.0
-//
-//        return if (lockPosition.valid) {
-//            val size = min(trackBoxSize, 64.0)
-//
-//            val centerX = (lockPosition.x - size / 2).toInt()
-//            val centerY = (lockPosition.y - size / 2).toInt()
-//            val transformedImage = image.transform(SubFrame(centerX, centerY, size.toInt(), size.toInt()), AutoScreenTransformFunction)
-//
-//            val fwhm = FWHM(guidingExecutor.primaryStar)
-//            val computedFWHM = fwhm.compute(transformedImage)
-//
-//            val output = Base64OutputStream(128)
-//            ImageIO.write(transformedImage.transform(fwhm), "PNG", output)
-//
-//            GuidingStarResponse(
-//                "data:image/png;base64," + output.base64(),
-//                guidingExecutor.lockPosition.x, guidingExecutor.lockPosition.y,
-//                guidingExecutor.primaryStar.x, guidingExecutor.primaryStar.y,
-//                guidingExecutor.primaryStar.peak,
-//                computedFWHM,
-//                guidingExecutor.primaryStar.hfd,
-//                guidingExecutor.primaryStar.snr,
-//            )
-//        } else {
-//            null
-//        }
-
-        return null
+    override fun onDithered(dx: Double, dy: Double) {
+        guideHistory.addDither(dx, dy)
     }
 
-    fun selectGuideStar(x: Double, y: Double) {
-        guidingExecutor.selectGuideStar(x, y)
+    override fun onMessageReceived(message: String) {
+        messageService.sendMessage(GUIDER_MESSAGE_RECEIVED, "message" to message)
     }
 
-    fun deselectGuideStar() {
-        guidingExecutor.deselectGuideStar()
-    }
+    override fun onEventReceived(event: PHD2Event) {}
+
+    override fun <T> onCommandProcessed(command: PHD2Command<T>, result: T?, error: String?) {}
 
     companion object {
 
-        const val GUIDE_EXPOSURE_FINISHED = "GUIDE_EXPOSURE_FINISHED"
+        const val GUIDER_CONNECTED = "GUIDER_CONNECTED"
+        const val GUIDER_DISCONNECTED = "GUIDER_DISCONNECTED"
+        const val GUIDER_UPDATED = "GUIDER_UPDATED"
+        const val GUIDER_STEPPED = "GUIDER_STEPPED"
+        const val GUIDER_MESSAGE_RECEIVED = "GUIDER_MESSAGE_RECEIVED"
     }
 }

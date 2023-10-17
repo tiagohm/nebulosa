@@ -3,15 +3,15 @@
         <div class="col-8">
             <span class="p-float-label">
                 <p-dropdown [disabled]="moving" [options]="focusers" [(ngModel)]="focuser" optionLabel="name" (ngModelChange)="focuserChanged()"
-                            styleClass="border-0" emptyMessage="No focuser found" />
+                            styleClass="p-inputtext-sm border-0" emptyMessage="No focuser found" />
                 <label>Focuser</label>
             </span>
         </div>
         <div class="col-2">
             <p-button *ngIf="connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-close"
-                      styleClass="p-button-danger" pTooltip="Disconnect" tooltipPosition="bottom" />
+                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
             <p-button *ngIf="!connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-connection"
-                      styleClass="p-button-info" pTooltip="Connect" tooltipPosition="bottom" />
+                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
             <i class="mdi mdi-information text-blue-600"></i>
@@ -21,42 +21,42 @@
     <div class="grid">
         <div class="col-4">
             <span class="p-float-label">
-                <p-inputNumber [readonly]="true" styleClass="border-0 max-w-full" [(ngModel)]="position" locale="en" />
+                <p-inputNumber [readonly]="true" styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="position" locale="en" />
                 <label>Position</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <p-inputNumber [readonly]="true" [disabled]="!hasThermometer" styleClass="border-0 max-w-full" [(ngModel)]="temperature"
-                               locale="en" />
+                <p-inputNumber [readonly]="true" [disabled]="!hasThermometer" styleClass="p-inputtext-sm border-0 max-w-full"
+                               [(ngModel)]="temperature" locale="en" />
                 <label>Temperature (°C)</label>
             </span>
         </div>
         <div class="col-4 text-center">
-            <p-button [disabled]="!canRelativeMove || !moving" icon="mdi mdi-stop" styleClass="p-button-text p-button-danger" pTooltip="Abort"
-                      tooltipPosition="bottom" />
+            <p-button [disabled]="!canRelativeMove || !moving" icon="mdi mdi-stop" [text]="true" severity="danger" size="small"
+                      pTooltip="Abort" tooltipPosition="bottom" />
         </div>
         <div class="col-6 flex align-items-center gap-1">
             <p-button [disabled]="!canRelativeMove || moving || !stepsRelative" (onClick)="moveIn()" icon="mdi mdi-arrow-left-bold"
-                      styleClass="p-button-text" pTooltip="Move In" tooltipPosition="bottom" />
+                      [text]="true" size="small" pTooltip="Move In" tooltipPosition="bottom" />
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!canRelativeMove" [min]="0" [max]="maxPosition" [showButtons]="true" styleClass="border-0"
+                <p-inputNumber [disabled]="!canRelativeMove" [min]="0" [max]="maxPosition" [showButtons]="true" styleClass="p-inputtext-sm border-0"
                                [(ngModel)]="stepsRelative" [allowEmpty]="false" locale="en" />
                 <label>Relative</label>
             </span>
             <p-button [disabled]="!canRelativeMove || moving || !stepsRelative" (onClick)="moveOut()" icon="mdi mdi-arrow-right-bold"
-                      styleClass="p-button-text" pTooltip="Move Out" tooltipPosition="bottom" />
+                      [text]="true" size="small" pTooltip="Move Out" tooltipPosition="bottom" />
         </div>
         <div class="col-6 flex align-items-center gap-1">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!canAbsoluteMove" [min]="0" [max]="maxPosition" [showButtons]="true" styleClass="border-0 max-w-full"
-                               [(ngModel)]="stepsAbsolute" [allowEmpty]="false" locale="en" />
+                <p-inputNumber [disabled]="!canAbsoluteMove" [min]="0" [max]="maxPosition" [showButtons]="true"
+                               styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="stepsAbsolute" [allowEmpty]="false" locale="en" />
                 <label>Absolute</label>
             </span>
             <p-button [disabled]="!canAbsoluteMove || moving || stepsAbsolute === position" (onClick)="moveTo()" icon="mdi mdi-check"
-                      styleClass="p-button-text p-button-success" pTooltip="Move To" tooltipPosition="bottom" />
+                      [text]="true" severity="success" size="small" pTooltip="Move To" tooltipPosition="bottom" />
             <p-button [disabled]="!canSync || moving" (onClick)="sync()" icon="mdi mdi-sync"
-                      styleClass="p-button-text p-button-info" pTooltip="Sync" tooltipPosition="bottom" />
+                      [text]="true" severity="info" size="small" pTooltip="Sync" tooltipPosition="bottom" />
         </div>
     </div>
 </div>

@@ -136,8 +136,16 @@ i.mdi {
     }
 }
 
+.p-tabview .p-tabview-nav {
+    border: 0;
+}
+
 .draggable-region {
     -webkit-app-region: drag;
+}
+
+.pixelated {
+    image-rendering: pixelated;
 }
 
 ::-webkit-scrollbar {

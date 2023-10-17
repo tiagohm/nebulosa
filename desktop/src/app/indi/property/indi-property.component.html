@@ -6,8 +6,7 @@
     <div class="col-9">
         <div class="flex align-items-center gap-1" *ngIf="property.type === 'SWITCH' && property.rule === 'ONE_OF_MANY'">
             <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO' || disabled" [label]="item.label"
-                      (onClick)="sendSwitch(item)" icon="pi"
-                      styleClass="p-button-{{ item.value ? 'success' : 'danger' }}">
+                      (onClick)="sendSwitch(item)" icon="pi" [severity]="item.value ? 'success' : 'danger'">
                 <span [class.mdi-check]="item.value" [class.mdi-close]="!item.value" class="mdi"></span>
             </p-button>
         </div>
@@ -17,8 +16,7 @@
         </div>
         <div class="flex align-items-center gap-1" *ngIf="property.type === 'SWITCH' && property.rule === 'ANY_OF_MANY'">
             <p-button *ngFor="let item of property.items" [disabled]="property.perm === 'RO' || disabled" [label]="item.label"
-                      (onClick)="sendSwitch(item)" icon="pi"
-                      styleClass="p-button-{{ item.value ? 'success' : 'danger' }}">
+                      (onClick)="sendSwitch(item)" icon="pi" [severity]="item.value ? 'success' : 'danger'">
                 <span [class.mdi-check]="item.value" [class.mdi-close]="!item.value" class="mdi"></span>
             </p-button>
         </div>

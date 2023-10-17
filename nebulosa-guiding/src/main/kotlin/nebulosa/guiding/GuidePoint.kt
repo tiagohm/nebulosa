@@ -1,25 +1,16 @@
 package nebulosa.guiding
 
-import nebulosa.math.Angle
-import kotlin.math.hypot
-
 interface GuidePoint {
 
-    val x: Double
+    val x: Int
 
-    val y: Double
+    val y: Int
 
-    val valid: Boolean
+    companion object {
 
-    fun dX(point: GuidePoint): Double
-
-    fun dY(point: GuidePoint): Double
-
-    val distance: Double
-
-    fun distance(point: GuidePoint) = hypot(dX(point), dY(point))
-
-    val angle: Angle
-
-    fun angle(point: GuidePoint): Angle
+        @JvmStatic val ZERO = object : GuidePoint {
+            override val x = 0
+            override val y = 0
+        }
+    }
 }

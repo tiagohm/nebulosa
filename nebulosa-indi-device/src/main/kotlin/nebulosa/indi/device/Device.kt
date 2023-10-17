@@ -49,10 +49,10 @@ interface Device : INDIProtocolHandler, Closeable {
         vector.device = this.name
         vector.name = name
 
-        for (element in elements) {
+        for ((first, second) in elements) {
             val switch = OneSwitch()
-            switch.name = element.first
-            switch.value = element.second
+            switch.name = first
+            switch.value = second
             vector.elements.add(switch)
         }
 
@@ -74,10 +74,10 @@ interface Device : INDIProtocolHandler, Closeable {
         vector.device = this.name
         vector.name = name
 
-        for (element in elements) {
+        for ((first, second) in elements) {
             val switch = OneNumber()
-            switch.name = element.first
-            switch.value = element.second
+            switch.name = first
+            switch.value = second
             vector.elements.add(switch)
         }
 
@@ -99,10 +99,10 @@ interface Device : INDIProtocolHandler, Closeable {
         vector.device = this.name
         vector.name = name
 
-        for (element in elements) {
+        for ((first, second) in elements) {
             val switch = OneText()
-            switch.name = element.first
-            switch.value = element.second
+            switch.name = first
+            switch.value = second
             vector.elements.add(switch)
         }
 

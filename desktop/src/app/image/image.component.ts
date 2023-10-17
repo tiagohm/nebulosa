@@ -12,9 +12,9 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
     AstronomicalObject,
-    Camera, CameraCaptureEvent, DeepSkyObject, EquatorialCoordinateJ2000, FITSHeaderItem, GuideExposureFinished, GuideTrackingBox,
+    Camera, CameraCaptureEvent, DeepSkyObject, EquatorialCoordinateJ2000, FITSHeaderItem,
     ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
-    ImageStarSelected, PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star
+    PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star
 } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
@@ -101,9 +101,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     roiWidth = 128
     roiHeight = 128
     roiInteractable?: Interactable
-
-    guiding = false
-    guideTrackingBox?: GuideTrackingBox
 
     private readonly scnrMenuItem: MenuItem = {
         label: 'SCNR',
@@ -287,44 +284,22 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Image'
 
-        electron.on('CAMERA_EXPOSURE_FINISHED', async (_, data: CameraCaptureEvent) => {
-            if (data.camera.name === this.imageParams.camera?.name) {
+        electron.on('CAMERA_EXPOSURE_FINISHED', async (_, event: CameraCaptureEvent) => {
+            if (event.camera.name === this.imageParams.camera?.name) {
                 await this.closeImage()
 
                 ngZone.run(() => {
-                    this.guiding = false
                     this.annotations = []
-                    this.imageParams.path = data.savePath
+                    this.imageParams.path = event.savePath
                     this.loadImage()
                 })
             }
         })
 
-        electron.on('GUIDE_EXPOSURE_FINISHED', async (_, data: GuideExposureFinished) => {
-            if (data.camera.name === this.imageParams.camera?.name) {
-                await this.closeImage()
-
-                ngZone.run(() => {
-                    this.guiding = true
-                    this.annotations = []
-                    this.imageParams.path = data.path
-                    this.loadImage()
-                })
-            }
-        })
-
-        electron.on('PARAMS_CHANGED', async (_, data: ImageParams) => {
+        electron.on('PARAMS_CHANGED', async (_, event: ImageParams) => {
             await this.closeImage()
 
-            this.loadImageFromParams(data)
-        })
-
-        electron.on('DRAW_GUIDE_TRACKING_BOX', (_, data: GuideTrackingBox) => {
-            if (data.camera.name === this.imageParams.camera?.name) {
-                ngZone.run(() => {
-                    this.guideTrackingBox = data
-                })
-            }
+            this.loadImageFromParams(event)
         })
 
         this.solverPathOrUrl = this.preference.get('image.solver.pathOrUrl', '')
@@ -401,6 +376,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private loadImageFromParams(params: ImageParams) {
+        console.info('loading image from params: %s', params)
+
         this.imageParams = params
 
         if (params.source === 'FRAMING') {
@@ -462,9 +439,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         if (menu) {
             this.menu.show(event)
-        } else if (this.imageParams.camera) {
-            const event: ImageStarSelected = { camera: this.imageParams.camera, x: this.imageMouseX, y: this.imageMouseY }
-            this.electron.send('IMAGE_STAR_SELECTED', event)
         }
     }
 
@@ -546,7 +520,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     async mountSlew(coordinate: EquatorialCoordinateJ2000) {
         const mount = await this.electron.selectedMount()
         if (!mount?.connected) return
-        this.api.mountSlewTo(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
+        this.api.mountSlew(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
     }
 
     frame(coordinate: EquatorialCoordinateJ2000) {

@@ -1,7 +1,5 @@
 package nebulosa.guiding.internal
 
-import nebulosa.guiding.GuideAxis
-
 interface GuideAlgorithm {
 
     val axis: GuideAxis

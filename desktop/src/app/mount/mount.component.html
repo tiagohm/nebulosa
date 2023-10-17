@@ -3,15 +3,15 @@
         <div class="col-8">
             <span class="p-float-label">
                 <p-dropdown [disabled]="slewing || parking" [options]="mounts" [(ngModel)]="mount" optionLabel="name" (ngModelChange)="mountChanged()"
-                            styleClass="border-0" emptyMessage="No mount found" />
+                            styleClass="p-inputtext-sm border-0" emptyMessage="No mount found" />
                 <label>Mount</label>
             </span>
         </div>
         <div class="col-2">
             <p-button *ngIf="connected" [disabled]="!mount || slewing || parking" (onClick)="connect()" icon="mdi mdi-close"
-                      styleClass="p-button-danger" pTooltip="Disconnect" tooltipPosition="bottom" />
+                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
             <p-button *ngIf="!connected" [disabled]="!mount || slewing || parking" (onClick)="connect()" icon="mdi mdi-connection"
-                      styleClass="p-button-info" pTooltip="Connect" tooltipPosition="bottom" />
+                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
             <i class="mdi mdi-information text-blue-600"></i>
@@ -98,15 +98,15 @@
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input pInputText noDropdown [disabled]="!connected || slewing || parking" class="border-0 w-full"
+                <input pInputText noDropdown [disabled]="!connected || slewing || parking" class="p-inputtext-sm border-0 w-full"
                        [(ngModel)]="targetRightAscension" (ngModelChange)="computeTargetCoordinates()" />
                 <label>RA (h)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input pInputText noDropdown [disabled]="!connected || slewing || parking" class="border-0 w-full" [(ngModel)]="targetDeclination"
-                       (ngModelChange)="computeTargetCoordinates()" />
+                <input pInputText noDropdown [disabled]="!connected || slewing || parking" class="p-inputtext-sm border-0 w-full"
+                       [(ngModel)]="targetDeclination" (ngModelChange)="computeTargetCoordinates()" />
                 <label>DEC (°)</label>
             </span>
         </div>
@@ -140,8 +140,7 @@
                             icon="mdi mdi-arrow-left-thick" class="p-button-text"></button>
                 </div>
                 <div class="col-4">
-                    <button pButton [disabled]="!connected" icon="mdi mdi-close-circle"
-                            class="p-button-text p-button-danger"></button>
+                    <p-button [disabled]="!connected" icon="mdi mdi-close-circle" [text]="true" severity="danger" (onClick)="abort()" />
                 </div>
                 <div class="col-4">
                     <button pButton [disabled]="!connected || slewing || parking" (mousedown)="moveTo('E', true, $event)"
@@ -173,17 +172,17 @@
                 </div>
                 <div class="col-6 flex flex-row gap-2 justify-content-center align-items-center">
                     <p-button *ngIf="!parked" [disabled]="!connected || !canPark || slewing || parking" icon="mdi mdi-stop" (onClick)="park()"
-                              pTooltip="Park" tooltipPosition="bottom" styleClass="p-button-danger p-button-text" />
+                              pTooltip="Park" tooltipPosition="bottom" severity="danger" [text]="true" />
                     <p-button *ngIf="parked" [disabled]="!connected || !canPark || slewing" icon="mdi mdi-play" (onClick)="unpark()" pTooltip="Unpark"
-                              tooltipPosition="bottom" styleClass="p-button-success p-button-text" />
+                              tooltipPosition="bottom" severity="success" [text]="true" />
                     <p-button [disabled]="!connected || !canHome || slewing || parking" icon="mdi mdi-home" (onClick)="home()" pTooltip="Home"
-                              tooltipPosition="bottom" styleClass="p-button-info p-button-text" />
+                              tooltipPosition="bottom" severity="info" [text]="true" />
                 </div>
                 <div class="col-6">
                     <span class="p-float-label">
                         <p-dropdown [disabled]="!connected || slewing || parking" [options]="trackModes" [(ngModel)]="trackMode"
                                     (ngModelChange)="trackModeChanged()" [autoDisplayFirst]="false"
-                                    styleClass="border-0" emptyMessage="No mode found" />
+                                    styleClass="p-inputtext-sm border-0" emptyMessage="No mode found" />
                         <label>Tracking mode</label>
                     </span>
                 </div>
@@ -191,7 +190,7 @@
                     <span class="p-float-label">
                         <p-dropdown [disabled]="!connected || slewing || parking" [options]="slewRates" [(ngModel)]="slewRate"
                                     (ngModelChange)="slewRateChanged()" [autoDisplayFirst]="false"
-                                    styleClass="border-0" emptyMessage="No rate found" />
+                                    styleClass="p-inputtext-sm border-0" emptyMessage="No rate found" />
                         <label>Slew rate</label>
                     </span>
                 </div>

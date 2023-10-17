@@ -41,10 +41,10 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Focuser'
 
-        electron.on('FOCUSER_UPDATED', (_, focuser: Focuser) => {
-            if (focuser.name === this.focuser?.name) {
+        electron.on('FOCUSER_UPDATED', (_, event: Focuser) => {
+            if (event.name === this.focuser?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.focuser!, focuser)
+                    Object.assign(this.focuser!, event)
                     this.update()
                 })
             }
@@ -75,11 +75,11 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         this.electron.send('FOCUSER_CHANGED', this.focuser)
     }
 
-    async connect() {
+    connect() {
         if (this.connected) {
-            await this.api.focuserDisconnect(this.focuser!)
+            this.api.focuserDisconnect(this.focuser!)
         } else {
-            await this.api.focuserConnect(this.focuser!)
+            this.api.focuserConnect(this.focuser!)
         }
     }
 

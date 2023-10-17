@@ -79,6 +79,18 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
         handlers.forEach { it.onEventReceived(event) }
     }
 
+    internal fun registerGPS(device: GPS) {
+        gps[device.name] = device
+        fireOnEventReceived(GPSAttached(device))
+    }
+
+    internal fun unregisterGPS(device: GPS) {
+        if (device.name in gps) {
+            guideOutputs.remove(device.name)
+            fireOnEventReceived(GPSDetached(device))
+        }
+    }
+
     internal fun registerGuideOutput(device: GuideOutput) {
         guideOutputs[device.name] = device
         fireOnEventReceived(GuideOutputAttached(device))

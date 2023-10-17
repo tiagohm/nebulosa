@@ -2,7 +2,7 @@ package nebulosa.guiding.internal
 
 import nebulosa.constants.PI
 import nebulosa.constants.PIOVERTWO
-import nebulosa.guiding.*
+import nebulosa.guiding.GuideDirection
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import kotlin.math.*
@@ -191,9 +191,9 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                         LOG.info("West step {}, dist={}", calibrationSteps, dist)
 
-                        calibrationStatus(GuideDirection.LEFT_WEST)
+                        calibrationStatus(GuideDirection.WEST)
 
-                        guideDirection(GuideDirection.LEFT_WEST, guider.calibrationStep)
+                        guideDirection(GuideDirection.WEST, guider.calibrationStep)
 
                         break
                     }
@@ -249,13 +249,13 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                         LOG.info("East step {}, dist={}", calibrationSteps, dist)
 
-                        calibrationStatus(GuideDirection.RIGHT_EAST)
+                        calibrationStatus(GuideDirection.EAST)
 
                         recenterRemaining -= duration
                         calibrationSteps--
                         lastLocation.set(currentLocation)
 
-                        guideDirection(GuideDirection.RIGHT_EAST, duration)
+                        guideDirection(GuideDirection.EAST, duration)
 
                         break
                     }
@@ -310,9 +310,9 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     if (calibrationSteps == 0) {
                         // Get things moving with the first clearing pulse.
                         LOG.info("starting north clearing using pulse width of {}", guider.calibrationStep)
-                        guideDirection(GuideDirection.UP_NORTH, guider.calibrationStep)
+                        guideDirection(GuideDirection.NORTH, guider.calibrationStep)
                         calibrationSteps = 1
-                        calibrationStatus(GuideDirection.UP_NORTH)
+                        calibrationStatus(GuideDirection.NORTH)
                         break
                     }
 
@@ -337,7 +337,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                     if (blAcceptedMoves < BL_MIN_COUNT) {
                         if (calibrationSteps < blMaxClearingPulses && blCumDelta < distCrit) {
                             // Still have attempts left, haven't moved the star by 25 px yet.
-                            guideDirection(GuideDirection.UP_NORTH, guider.calibrationStep)
+                            guideDirection(GuideDirection.NORTH, guider.calibrationStep)
 
                             calibrationSteps++
 
@@ -345,7 +345,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                             calibrationStartingCoords.set(guider.mount.rightAscension.toHours, guider.mount.declination.toDegrees)
                             blLastCumDistance = blCumDelta
 
-                            calibrationStatus(GuideDirection.UP_NORTH)
+                            calibrationStatus(GuideDirection.NORTH)
 
                             LOG.info("last delta = {} px, cum distance = {}", blDelta, blCumDelta)
 
@@ -399,9 +399,9 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                         LOG.info("North step {}, dist={}", calibrationSteps, dist)
 
-                        calibrationStatus(GuideDirection.UP_NORTH)
+                        calibrationStatus(GuideDirection.NORTH)
 
-                        guideDirection(GuideDirection.UP_NORTH, guider.calibrationStep)
+                        guideDirection(GuideDirection.NORTH, guider.calibrationStep)
 
                         break
                     }
@@ -475,12 +475,12 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                         LOG.info("South step {}, dist={}", calibrationSteps, dist)
 
-                        calibrationStatus(GuideDirection.DOWN_SOUTH)
+                        calibrationStatus(GuideDirection.SOUTH)
 
                         recenterRemaining -= duration
                         calibrationSteps--
 
-                        guideDirection(GuideDirection.DOWN_SOUTH, duration)
+                        guideDirection(GuideDirection.SOUTH, duration)
 
                         break
                     }
@@ -535,9 +535,9 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
                                 calibrationSteps++
 
-                                calibrationStatus(GuideDirection.DOWN_SOUTH)
+                                calibrationStatus(GuideDirection.SOUTH)
 
-                                guideDirection(GuideDirection.DOWN_SOUTH, pulseAmt)
+                                guideDirection(GuideDirection.SOUTH, pulseAmt)
 
                                 break
                             }

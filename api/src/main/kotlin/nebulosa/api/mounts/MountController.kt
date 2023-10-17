@@ -64,8 +64,8 @@ class MountController(
         mountService.sync(mount, rightAscension.hours, declination.deg, j2000)
     }
 
-    @PutMapping("{mount}/slew-to")
-    fun slewTo(
+    @PutMapping("{mount}/slew")
+    fun slew(
         @EntityBy mount: Mount,
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,

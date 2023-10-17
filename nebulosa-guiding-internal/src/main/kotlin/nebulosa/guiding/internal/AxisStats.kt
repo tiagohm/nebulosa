@@ -169,8 +169,8 @@ internal open class AxisStats {
             var currentVariance = 0.0
 
             // Apply the linear fit to the data points and compute their resultant sigma.
-            for (entry in guidingEntries) {
-                val newValue = entry.starPos - (entry.deltaTime * slope + intercept)
+            for ((deltaTime, starPos) in guidingEntries) {
+                val newValue = starPos - (deltaTime * slope + intercept)
 
                 if (currentMean.isNaN()) {
                     currentMean = newValue

@@ -67,4 +67,12 @@ export class ElectronService {
         if (!mount) return undefined
         return this.api.mount(mount.name)
     }
+
+    registerCron(cronTime: string) {
+        return this.sendSync('REGISTER_CRON', cronTime)
+    }
+
+    unregisterCron() {
+        return this.sendSync('UNREGISTER_CRON')
+    }
 }

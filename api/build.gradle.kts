@@ -10,7 +10,6 @@ plugins {
 
 dependencies {
     implementation(project(":nebulosa-common"))
-    implementation(project(":nebulosa-guiding-internal"))
     implementation(project(":nebulosa-guiding-phd2"))
     implementation(project(":nebulosa-hips2fits"))
     implementation(project(":nebulosa-horizons"))
@@ -28,7 +27,6 @@ dependencies {
     implementation(project(":nebulosa-wcs"))
     implementation(project(":nebulosa-log"))
     implementation(libs.csv)
-    implementation(libs.jackson)
     implementation(libs.okhttp)
     implementation(libs.oshi)
     implementation(libs.eventbus)
@@ -46,7 +44,7 @@ dependencies {
     implementation("org.hibernate.orm:hibernate-community-dialects")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    kapt("org.springframework:spring-context-indexer:6.0.12")
+    kapt("org.springframework:spring-context-indexer:6.0.13")
     testImplementation(project(":nebulosa-skycatalog-hyg"))
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))
