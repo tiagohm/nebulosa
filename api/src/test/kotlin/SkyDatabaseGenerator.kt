@@ -17,6 +17,8 @@ import nebulosa.time.UTC
 import okhttp3.OkHttpClient
 import java.io.InputStreamReader
 import java.nio.file.Path
+import java.time.LocalDate
+import java.time.ZoneOffset
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.zip.GZIPOutputStream
@@ -25,9 +27,6 @@ import kotlin.io.path.outputStream
 import kotlin.math.min
 
 typealias CatalogNameProvider = Pair<Regex, (String) -> String?>
-
-// TODO: Herschel Catalog
-// TODO: Dunlop Catalog: https://www.docdb.net/tutorials/dunlop_catalogue.php
 
 object SkyDatabaseGenerator {
 
@@ -64,22 +63,28 @@ object SkyDatabaseGenerator {
         .commentCharacter('#')
         .skipComments(true)
 
-    @JvmStatic private val CALDWELL = resource("Caldwell.csv")!!
+    @JvmStatic private val CALDWELL = resource("caldwell_catalog.csv")!!
         .use { stream ->
             CSV_READER.build(InputStreamReader(stream, Charsets.UTF_8))
-                .associate { it.getField("NGC number").ifEmpty { it.getField("Common name") } to it.getField("Caldwell number") }
+                .associate { it.getField("NGC").ifEmpty { it.getField("Common name") } to it.getField("Caldwell") }
         }
 
-    @JvmStatic private val BENNETT = resource("Bennett.csv")!!
+    @JvmStatic private val BENNETT = resource("bennett_catalog.csv")!!
         .use { stream ->
             CSV_READER.build(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField("NGC") to it.getField("Bennett") }
         }
 
-    @JvmStatic private val DUNLOP = resource("Dunlop.csv")!!
+    @JvmStatic private val DUNLOP = resource("dunlop_catalog.csv")!!
         .use { stream ->
             CSV_READER.build(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField("NGC") to it.getField("Dunlop") }
+        }
+
+    @JvmStatic private val HERSHEL = resource("hershel_catalog.csv")!!
+        .use { stream ->
+            CSV_READER.build(InputStreamReader(stream, Charsets.UTF_8))
+                .associate { it.getField("NGC") to it.getField("Hershel") }
         }
 
     @JvmStatic
@@ -131,6 +136,9 @@ object SkyDatabaseGenerator {
                         if (name in DUNLOP) {
                             names.add("Dunlop ${DUNLOP[name]}")
                         }
+                        if (name in HERSHEL) {
+                            names.add("Hershel ${HERSHEL[name]}")
+                        }
 
                         if (useIAU && type === STAR_CATALOG_TYPES[0] && name in iauNames) {
                             iauNames.remove(name)
@@ -143,7 +151,8 @@ object SkyDatabaseGenerator {
             return magnitude
         }
 
-        val currentTime = UTC(TimeYMDHMS(2023, 10, 5, 12))
+        val now = LocalDate.now(ZoneOffset.UTC)
+        val currentTime = UTC(TimeYMDHMS(now.year, now.monthValue, now.dayOfMonth, 12))
         val data = HashMap<Long, SkyObject>(32000)
         val skyObjectTypes = HashSet<SkyObjectType>(SkyObjectType.entries.size)
 
@@ -210,13 +219,13 @@ object SkyDatabaseGenerator {
             val constellation = SkyObject.computeConstellation(rightAscensionJ2000, declinationJ2000, currentTime)
 
             data[id] = if (isDSO) DeepSkyObjectEntity(
-                id, names.joinToString("|"), magnitude,
+                id, names.joinToString("") { "[$it]" }, magnitude,
                 rightAscensionJ2000, declinationJ2000,
                 type, majorAxis, minorAxis, orientation,
                 pmRA, pmDEC, parallax.mas, radialVelocity, redshift,
                 distance, constellation,
             ) else StarEntity(
-                id, names.joinToString("|"), magnitude,
+                id, names.joinToString("") { "[$it]" }, magnitude,
                 rightAscensionJ2000, declinationJ2000,
                 type, spType, pmRA, pmDEC,
                 parallax.mas, radialVelocity, redshift,

@@ -29,6 +29,8 @@ class AtlasDatabaseThreadedTask(
         val databaseVersion = configRepository.text(DATABASE_VERSION_KEY)
 
         if (databaseVersion != DATABASE_VERSION) {
+            LOG.info("Star/DSO database is out of date. currentVersion={}, newVersion={}", databaseVersion, DATABASE_VERSION)
+
             starsRepository.deleteAllInBatch()
             deepSkyObjectRepository.deleteAllInBatch()
 
@@ -97,7 +99,7 @@ class AtlasDatabaseThreadedTask(
 
     companion object {
 
-        const val DATABASE_VERSION = "2023.10.05"
+        const val DATABASE_VERSION = "2023.10.18"
         const val DATABASE_VERSION_KEY = "DATABASE_VERSION"
 
         @JvmStatic private val LOG = loggerFor<AtlasDatabaseThreadedTask>()

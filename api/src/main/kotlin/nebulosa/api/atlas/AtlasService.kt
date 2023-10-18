@@ -181,10 +181,11 @@ class AtlasService(
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
     ) = starRepository.search(
-        text,
+        text.replace(INVALID_DSO_CHARS, "").replace("][", ""),
         rightAscension, declination, radius,
         constellation,
-        magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type
+        magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type,
+        Pageable.ofSize(5000),
     )
 
     fun searchDSO(
@@ -194,10 +195,11 @@ class AtlasService(
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
     ) = deepSkyObjectRepository.search(
-        text,
+        text.replace(INVALID_DSO_CHARS, "").replace("][", ""),
         rightAscension, declination, radius,
         constellation,
-        magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type
+        magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type,
+        Pageable.ofSize(5000),
     )
 
     @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
@@ -223,6 +225,8 @@ class AtlasService(
 
         private const val SUN = "10"
         private const val MOON = "301"
+
+        @JvmStatic private val INVALID_DSO_CHARS = Regex("[^\\w\\-\\s\\[\\].+]+")
 
         @JvmStatic
         private fun Double.clampMagnitude(): Double {
