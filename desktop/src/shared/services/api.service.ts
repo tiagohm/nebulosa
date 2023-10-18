@@ -427,6 +427,10 @@ export class ApiService {
         return this.http.get<Star[]>(`sky-atlas/stars?${query}`)
     }
 
+    starTypes() {
+        return this.http.get<SkyObjectType[]>(`sky-atlas/stars/types`)
+    }
+
     positionOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
         const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
         const query = this.http.query({ location: location.id, date, time })
@@ -447,6 +451,10 @@ export class ApiService {
     ) {
         const query = this.http.query({ text, rightAscension, declination, radius, constellation, magnitudeMin, magnitudeMax, type })
         return this.http.get<DeepSkyObject[]>(`sky-atlas/dsos?${query}`)
+    }
+
+    dsoTypes() {
+        return this.http.get<SkyObjectType[]>(`sky-atlas/dsos/types`)
     }
 
     positionOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {

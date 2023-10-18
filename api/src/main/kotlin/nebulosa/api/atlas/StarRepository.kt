@@ -29,4 +29,7 @@ interface StarRepository : JpaRepository<StarEntity, Long> {
         type: SkyObjectType? = null,
         pageable: Pageable = Pageable.unpaged(),
     ): List<StarEntity>
+
+    @Query("SELECT DISTINCT star.type FROM StarEntity star")
+    fun types(): List<SkyObjectType>
 }

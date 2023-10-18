@@ -46,6 +46,10 @@ class AtlasService(
     private val positions = HashMap<LocationEntity, GeographicPosition>()
     @Volatile private var sunImage = ByteArray(0)
 
+    val starTypes by lazy { starRepository.types() }
+
+    val dsoTypes by lazy { deepSkyObjectRepository.types() }
+
     fun imageOfSun(output: HttpServletResponse) {
         output.contentType = "image/png"
         output.outputStream.write(sunImage)

@@ -117,6 +117,11 @@ class AtlasController(
         constellation, magnitudeMin, magnitudeMax, type,
     )
 
+    @GetMapping("stars/types")
+    fun starTypes(): List<SkyObjectType> {
+        return atlasService.starTypes
+    }
+
     @GetMapping("dsos/{dso}/position")
     fun positionOfDSO(
         @EntityBy dso: DeepSkyObjectEntity,
@@ -150,6 +155,11 @@ class AtlasController(
         text, rightAscension.hours, declination.deg, radius.deg,
         constellation, magnitudeMin, magnitudeMax, type,
     )
+
+    @GetMapping("dsos/types")
+    fun dsoTypes(): List<SkyObjectType> {
+        return atlasService.dsoTypes
+    }
 
     @GetMapping("satellites/{satellite}/position")
     fun positionOfSatellite(

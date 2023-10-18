@@ -28,4 +28,7 @@ interface DeepSkyObjectRepository : JpaRepository<DeepSkyObjectEntity, Long> {
         type: SkyObjectType? = null,
         pageable: Pageable = Pageable.unpaged(),
     ): List<DeepSkyObjectEntity>
+
+    @Query("SELECT DISTINCT dso.type FROM DeepSkyObjectEntity dso")
+    fun types(): List<SkyObjectType>
 }
