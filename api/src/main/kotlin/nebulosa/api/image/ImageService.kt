@@ -267,7 +267,7 @@ class ImageService(
         val (image, calibration) = framingService
             .frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!
 
-        val path = Path.of(System.getProperty("java.io.tmpdir"), "framing")
+        val path = Path.of("@framing")
         imageBucket.put(path, image, calibration)
         return path
     }
