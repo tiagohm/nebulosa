@@ -24,13 +24,14 @@ open class SimbadSkyCatalog(
 
         val builder = QueryBuilder()
 
-        val join: Table = LeftJoin(BASIC_TABLE, FLUX_TABLE, arrayOf(OID equal FLUX_TABLE.column("oidref")))
+        var join: Table = LeftJoin(BASIC_TABLE, FLUX_TABLE, arrayOf(OID equal FLUX_TABLE.column("oidref")))
+        join = LeftJoin(join, IDS_TABLE, arrayOf(OID equal Column("i.oidref")))
 
         builder.add(Distinct)
         builder.add(Limit(max(1, min(limit, 10000))))
         builder.addAll(arrayOf(OID, MAIN_ID, OTYPE, RA, DEC, PM_RA, PM_DEC, PLX, RAD_VEL, REDSHIFT))
         builder.addAll(arrayOf(MAG_V, MAG_B, MAG_U, MAG_R, MAG_I, MAG_J, MAG_H, MAG_K))
-        builder.addAll(arrayOf(MAJOR_AXIS, MINOR_AXIS, ORIENT, SP_TYPE))
+        builder.addAll(arrayOf(MAJOR_AXIS, MINOR_AXIS, ORIENT, SP_TYPE, IDS_TABLE.column("ids")))
         builder.addAll(arrayOf(RA.isNotNull, DEC.isNotNull))
         builder.add(join)
         if (radius > 0.0) builder.add(SkyPoint(RA, DEC) contains Circle(rightAscension, declination, radius))
@@ -41,10 +42,21 @@ open class SimbadSkyCatalog(
     }
 
     protected fun search(query: Query) {
+        val rows = service.query(query).execute().body()
+        if (rows.isNullOrEmpty()) return
         val currentTime = UTC.now()
-        val rows = service.query(query).execute().body() ?: emptyList()
+
+        fun matchName(name: String): String? {
+            for (type in SimbadCatalogType.entries) {
+                return type.match(name) ?: continue
+            }
+
+            return null
+        }
 
         for (row in rows) {
+            val name = row.getField("ids").split("|").mapNotNull(::matchName).joinToString("|")
+            if (name.isEmpty()) continue
             val id = row.getField("oid").toLong()
             val type = SkyObjectType.parse(row.getField("otype"))!!
             val rightAscensionJ2000 = row.getField("ra").deg
@@ -58,7 +70,6 @@ open class SimbadSkyCatalog(
             val minorAxis = row.getField("galdim_minaxis").toDoubleOrNull()?.arcmin ?: 0.0
             val orientation = row.getField("galdim_angle").toDoubleOrNull()?.deg ?: 0.0
             val spType = row.getField("sp_type") ?: ""
-            val name = row.getField("main_id")
 
             var magnitude = row.getField("V").toDoubleOrNull()
                 ?: row.getField("B").toDoubleOrNull()
@@ -92,6 +103,7 @@ open class SimbadSkyCatalog(
 
         @JvmStatic private val BASIC_TABLE = From("basic").alias("b")
         @JvmStatic private val FLUX_TABLE = From("allfluxes").alias("f")
+        @JvmStatic private val IDS_TABLE = From("ids").alias("i")
         @JvmStatic private val OID = BASIC_TABLE.column("oid")
         @JvmStatic private val MAIN_ID = BASIC_TABLE.column("main_id")
         @JvmStatic private val OTYPE = BASIC_TABLE.column("otype")

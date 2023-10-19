@@ -37,7 +37,16 @@ enum class SimbadCatalogType(
         provider: MatchResult.() -> String,
     ) : this(regex.toRegex(), isStar, isDSO, provider)
 
-    fun matches(text: String) = regex.matches(text)
+    fun matches(name: String) = regex.matches(name)
 
-    fun match(text: String) = regex.matchEntire(text)?.let { provider(it) }
+    fun match(name: String) = regex.matchEntire(name)?.let { provider(it) }
+
+    companion object {
+
+        @JvmStatic
+        fun none(name: String) = entries.none { it.matches(name) }
+
+        @JvmStatic
+        fun any(name: String) = entries.any { it.matches(name) }
+    }
 }

@@ -18,7 +18,6 @@ import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
 import nebulosa.platesolving.watney.WatneyPlateSolver
 import nebulosa.sbd.SmallBodyDatabaseService
-import nebulosa.simbad.SimbadCatalogType
 import nebulosa.simbad.SimbadService
 import nebulosa.simbad.SimbadSkyCatalog
 import nebulosa.skycatalog.ClassificationType
@@ -197,10 +196,6 @@ class ImageService(
                 catalog.search(calibration.rightAscension, calibration.declination, calibration.radius, types)
 
                 for (entry in catalog) {
-                    if (SimbadCatalogType.entries.none { it.matches(entry.name) }) {
-                        continue
-                    }
-
                     val (x, y) = wcs.skyToPix(entry.rightAscensionJ2000, entry.declinationJ2000)
                     val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
                     else ImageAnnotation(x, y, dso = entry)
