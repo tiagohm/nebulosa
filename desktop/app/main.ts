@@ -233,6 +233,8 @@ try {
     app.on('ready', () => setTimeout(startApp, 400))
 
     app.on('window-all-closed', () => {
+        api?.kill(0)
+
         if (process.platform !== 'darwin') {
             app.quit()
         }
