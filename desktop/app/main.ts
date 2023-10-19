@@ -165,7 +165,7 @@ function createWindow(data: OpenWindow<any>) {
 function createSplashScreen() {
     let splashWindow = browserWindows.get('splash')
 
-    if (!serve && splashWindow === null) {
+    if (!serve && !splashWindow) {
         splashWindow = new BrowserWindow({
             width: 512,
             height: 512,
