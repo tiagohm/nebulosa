@@ -146,7 +146,7 @@ function createWindow(data: OpenWindow<any>) {
 
             browserWindows.clear()
 
-            api?.kill(0)
+            api?.kill()
         } else {
             for (const [key, value] of browserWindows) {
                 if (value === window) {
@@ -233,7 +233,7 @@ try {
     app.on('ready', () => setTimeout(startApp, 400))
 
     app.on('window-all-closed', () => {
-        api?.kill(0)
+        api?.kill()
 
         if (process.platform !== 'darwin') {
             app.quit()
