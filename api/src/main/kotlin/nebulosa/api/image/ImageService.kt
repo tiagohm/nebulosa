@@ -32,6 +32,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
 import javax.imageio.ImageIO
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -44,6 +45,7 @@ class ImageService(
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
     private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
+    private val systemExecutorService: ExecutorService,
 ) {
 
     @Synchronized
@@ -141,7 +143,7 @@ class ImageService(
             ?: LocalDateTime.now()
 
         if (minorPlanets && dateTime != null) {
-            CompletableFuture.runAsync {
+            CompletableFuture.runAsync({
                 LOG.info("finding minor planet annotations. dateTime={}, calibration={}", dateTime, calibration)
 
                 val data = smallBodyDatabaseService.identify(
@@ -168,13 +170,13 @@ class ImageService(
                 }
 
                 LOG.info("Found {} minor planets", count)
-            }.whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
+            }, systemExecutorService).whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
         }
 
         // val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
 
         if (stars || dsos) {
-            CompletableFuture.runAsync {
+            CompletableFuture.runAsync({
                 LOG.info("finding star annotations. dateTime={}, calibration={}", dateTime, calibration)
 
                 val catalog = SimbadSkyCatalog(simbadService)
@@ -203,7 +205,7 @@ class ImageService(
                 }
 
                 LOG.info("Found {} stars/DSOs", catalog.size)
-            }.whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
+            }, systemExecutorService).whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
         }
 
         CompletableFuture.allOf(*tasks.toTypedArray()).join()

@@ -3,7 +3,7 @@
 package nebulosa.erfa
 
 import nebulosa.constants.*
-import nebulosa.io.bufferedResource
+import nebulosa.io.lazyBufferedResource
 import nebulosa.io.readDoubleArrayLe
 import nebulosa.io.readDoubleLe
 import nebulosa.math.*
@@ -142,7 +142,7 @@ fun eraTtTcg(tt1: Double, tt2: Double): DoubleArray {
 
 // 787 sets of three coefficients.
 // amplitude (microseconds), frequency (radians per Julian millennium since J2000.0), phase (radians).
-private val FAIRHEAD = bufferedResource("FAIRHEAD.dat") { readDoubleArrayLe(787 * 3) }
+private val FAIRHEAD by lazyBufferedResource("FAIRHEAD.dat") { readDoubleArrayLe(787 * 3) }
 
 /**
  * An approximation to TDB-TT, the difference between barycentric
@@ -432,6 +432,7 @@ private const val CR = LIGHT_TIME_AU_S / DAYSEC
  * @param ehpy   Earth heliocentric position (au)
  * @param ehpz   Earth heliocentric position (au)
  */
+@Suppress("UnnecessaryVariable")
 fun eraApcs(
     tdb1: Double, tdb2: Double,
     px: Distance, py: Distance, pz: Distance,
@@ -762,8 +763,8 @@ private data class PlanetaryNut(
     }
 }
 
-private val XLS = bufferedResource("LUNISOLAR-NUT.dat") { (0 until 678).map { LuniSolarNut.from(this) } }
-private val XPL = bufferedResource("PLANETARY-NUT.dat") { (0 until 687).map { PlanetaryNut.from(this) } }
+private val XLS by lazyBufferedResource("LUNISOLAR-NUT.dat") { Array(678) { LuniSolarNut.from(this) } }
+private val XPL by lazyBufferedResource("PLANETARY-NUT.dat") { Array(687) { PlanetaryNut.from(this) } }
 
 /**
  * Nutation, IAU 2000A model (MHB2000 luni-solar and planetary nutation
@@ -792,15 +793,17 @@ fun eraNut00a(tt1: Double, tt2: Double): PairOfAngle {
     var dp = 0.0
     var de = 0.0
 
+    val xls = XLS
+
     // Summation of luni-solar nutation series (in reverse order).
-    for (i in XLS.indices.reversed()) {
-        val arg = (XLS[i].nl * el + XLS[i].nlp * elp + XLS[i].nf * f + XLS[i].nd * d + XLS[i].nom * om).mod(TAU)
+    for (i in xls.indices.reversed()) {
+        val arg = (xls[i].nl * el + xls[i].nlp * elp + xls[i].nf * f + xls[i].nd * d + xls[i].nom * om).mod(TAU)
 
         val sarg = sin(arg)
         val carg = cos(arg)
 
-        dp += (XLS[i].sp + XLS[i].spt * t) * sarg + XLS[i].cp * carg
-        de += (XLS[i].ce + XLS[i].cet * t) * carg + XLS[i].se * sarg
+        dp += (xls[i].sp + xls[i].spt * t) * sarg + xls[i].cp * carg
+        de += (xls[i].ce + xls[i].cet * t) * carg + xls[i].se * sarg
     }
 
     val dpls = dp
@@ -836,16 +839,18 @@ fun eraNut00a(tt1: Double, tt2: Double): PairOfAngle {
     dp = 0.0
     de = 0.0
 
-    for (i in XPL.indices.reversed()) {
-        val arg = (XPL[i].nl * al + XPL[i].nf * af + XPL[i].nd * ad + XPL[i].nom * aom + XPL[i].nme * alme +
-                XPL[i].nve * alve + XPL[i].nea * alea + XPL[i].nma * alma + XPL[i].nju * alju +
-                XPL[i].nsa * alsa + XPL[i].nur * alur + XPL[i].nne * alne + XPL[i].npa * apa).mod(TAU)
+    val xpl = XPL
+
+    for (i in xpl.indices.reversed()) {
+        val arg = (xpl[i].nl * al + xpl[i].nf * af + xpl[i].nd * ad + xpl[i].nom * aom + xpl[i].nme * alme +
+                xpl[i].nve * alve + xpl[i].nea * alea + xpl[i].nma * alma + xpl[i].nju * alju +
+                xpl[i].nsa * alsa + xpl[i].nur * alur + xpl[i].nne * alne + xpl[i].npa * apa).mod(TAU)
 
         val sarg = sin(arg)
         val carg = cos(arg)
 
-        dp += XPL[i].sp * sarg + XPL[i].cp * carg
-        de += XPL[i].se * sarg + XPL[i].ce * carg
+        dp += xpl[i].sp * sarg + xpl[i].cp * carg
+        de += xpl[i].se * sarg + xpl[i].ce * carg
     }
 
     val dpp = dp
@@ -1196,32 +1201,32 @@ private const val AM23 = -0.397776982902
 private const val AM32 = 0.397776982902
 private const val AM33 = 0.917482137087
 
-private val E0X = bufferedResource("E0X.dat") { readDoubleArrayLe(1503) }
-private val E0Y = bufferedResource("E0Y.dat") { readDoubleArrayLe(1503) }
-private val E0Z = bufferedResource("E0Z.dat") { readDoubleArrayLe(411) }
-private val E1X = bufferedResource("E1X.dat") { readDoubleArrayLe(237) }
-private val E1Y = bufferedResource("E1Y.dat") { readDoubleArrayLe(240) }
-private val E1Z = bufferedResource("E1Z.dat") { readDoubleArrayLe(36) }
-private val E2X = bufferedResource("E2X.dat") { readDoubleArrayLe(15) }
-private val E2Y = bufferedResource("E2Y.dat") { readDoubleArrayLe(15) }
-private val E2Z = bufferedResource("E2Z.dat") { readDoubleArrayLe(9) }
+private val E0X by lazyBufferedResource("E0X.dat") { readDoubleArrayLe(1503) }
+private val E0Y by lazyBufferedResource("E0Y.dat") { readDoubleArrayLe(1503) }
+private val E0Z by lazyBufferedResource("E0Z.dat") { readDoubleArrayLe(411) }
+private val E1X by lazyBufferedResource("E1X.dat") { readDoubleArrayLe(237) }
+private val E1Y by lazyBufferedResource("E1Y.dat") { readDoubleArrayLe(240) }
+private val E1Z by lazyBufferedResource("E1Z.dat") { readDoubleArrayLe(36) }
+private val E2X by lazyBufferedResource("E2X.dat") { readDoubleArrayLe(15) }
+private val E2Y by lazyBufferedResource("E2Y.dat") { readDoubleArrayLe(15) }
+private val E2Z by lazyBufferedResource("E2Z.dat") { readDoubleArrayLe(9) }
 
-private val S0X = bufferedResource("S0X.dat") { readDoubleArrayLe(636) }
-private val S0Y = bufferedResource("S0Y.dat") { readDoubleArrayLe(639) }
-private val S0Z = bufferedResource("S0Z.dat") { readDoubleArrayLe(207) }
-private val S1X = bufferedResource("S1X.dat") { readDoubleArrayLe(150) }
-private val S1Y = bufferedResource("S1Y.dat") { readDoubleArrayLe(150) }
-private val S1Z = bufferedResource("S1Z.dat") { readDoubleArrayLe(42) }
-private val S2X = bufferedResource("S2X.dat") { readDoubleArrayLe(27) }
-private val S2Y = bufferedResource("S2Y.dat") { readDoubleArrayLe(27) }
-private val S2Z = bufferedResource("S2Z.dat") { readDoubleArrayLe(6) }
+private val S0X by lazyBufferedResource("S0X.dat") { readDoubleArrayLe(636) }
+private val S0Y by lazyBufferedResource("S0Y.dat") { readDoubleArrayLe(639) }
+private val S0Z by lazyBufferedResource("S0Z.dat") { readDoubleArrayLe(207) }
+private val S1X by lazyBufferedResource("S1X.dat") { readDoubleArrayLe(150) }
+private val S1Y by lazyBufferedResource("S1Y.dat") { readDoubleArrayLe(150) }
+private val S1Z by lazyBufferedResource("S1Z.dat") { readDoubleArrayLe(42) }
+private val S2X by lazyBufferedResource("S2X.dat") { readDoubleArrayLe(27) }
+private val S2Y by lazyBufferedResource("S2Y.dat") { readDoubleArrayLe(27) }
+private val S2Z by lazyBufferedResource("S2Z.dat") { readDoubleArrayLe(6) }
 
-private val CE0 = arrayOf(E0X, E0Y, E0Z)
-private val CE1 = arrayOf(E1X, E1Y, E1Z)
-private val CE2 = arrayOf(E2X, E2Y, E2Z)
-private val CS0 = arrayOf(S0X, S0Y, S0Z)
-private val CS1 = arrayOf(S1X, S1Y, S1Z)
-private val CS2 = arrayOf(S2X, S2Y, S2Z)
+private val CE0 by lazy { arrayOf(E0X, E0Y, E0Z) }
+private val CE1 by lazy { arrayOf(E1X, E1Y, E1Z) }
+private val CE2 by lazy { arrayOf(E2X, E2Y, E2Z) }
+private val CS0 by lazy { arrayOf(S0X, S0Y, S0Z) }
+private val CS1 by lazy { arrayOf(S1X, S1Y, S1Z) }
+private val CS2 by lazy { arrayOf(S2X, S2Y, S2Z) }
 
 /**
  * Earth position and velocity, heliocentric and barycentric, with
@@ -1239,25 +1244,32 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndV
     val pb = DoubleArray(3)
     val vb = DoubleArray(3)
 
+    val ce0 = CE0
+    val ce1 = CE1
+    val ce2 = CE2
+    val cs0 = CS0
+    val cs1 = CS1
+    val cs2 = CS2
+
     for (i in 0..2) {
         var xyz = 0.0
         var xyzd = 0.0
 
         // Sun to Earth, T^0 terms.
-        for (k in CE0[i].indices step 3) {
-            val a = CE0[i][k]
-            val b = CE0[i][k + 1]
-            val c = CE0[i][k + 2]
+        for (k in ce0[i].indices step 3) {
+            val a = ce0[i][k]
+            val b = ce0[i][k + 1]
+            val c = ce0[i][k + 2]
             val p = b + c * t
             xyz += a * cos(p)
             xyzd -= a * c * sin(p)
         }
 
         // Sun to Earth, T^1 terms.
-        for (k in CE1[i].indices step 3) {
-            val a = CE1[i][k]
-            val b = CE1[i][k + 1]
-            val c = CE1[i][k + 2]
+        for (k in ce1[i].indices step 3) {
+            val a = ce1[i][k]
+            val b = ce1[i][k + 1]
+            val c = ce1[i][k + 2]
             val ct = c * t
             val p = b + ct
             val cp = cos(p)
@@ -1266,10 +1278,10 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndV
         }
 
         // Sun to Earth, T^2 terms.
-        for (k in CE2[i].indices step 3) {
-            val a = CE2[i][k]
-            val b = CE2[i][k + 1]
-            val c = CE2[i][k + 2]
+        for (k in ce2[i].indices step 3) {
+            val a = ce2[i][k]
+            val b = ce2[i][k + 1]
+            val c = ce2[i][k + 2]
             val ct = c * t
             val p = b + ct
             val cp = cos(p)
@@ -1282,20 +1294,20 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndV
         vh[i] = xyzd / DAYSPERJY
 
         // SSB to Sun, T^0 terms.
-        for (k in CS0[i].indices step 3) {
-            val a = CS0[i][k]
-            val b = CS0[i][k + 1]
-            val c = CS0[i][k + 2]
+        for (k in cs0[i].indices step 3) {
+            val a = cs0[i][k]
+            val b = cs0[i][k + 1]
+            val c = cs0[i][k + 2]
             val p = b + c * t
             xyz += a * cos(p)
             xyzd -= a * c * sin(p)
         }
 
         // SSB to Sun, T^1 terms.
-        for (k in CS1[i].indices step 3) {
-            val a = CS1[i][k]
-            val b = CS1[i][k + 1]
-            val c = CS1[i][k + 2]
+        for (k in cs1[i].indices step 3) {
+            val a = cs1[i][k]
+            val b = cs1[i][k + 1]
+            val c = cs1[i][k + 2]
             val ct = c * t
             val p = b + ct
             val cp = cos(p)
@@ -1304,10 +1316,10 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndV
         }
 
         // SSB to Sun, T^2 terms.
-        for (k in CS2[i].indices step 3) {
-            val a = CS2[i][k]
-            val b = CS2[i][k + 1]
-            val c = CS2[i][k + 2]
+        for (k in cs2[i].indices step 3) {
+            val a = cs2[i][k]
+            val b = cs2[i][k + 1]
+            val c = cs2[i][k + 2]
             val ct = c * t
             val p = b + ct
             val cp = cos(p)

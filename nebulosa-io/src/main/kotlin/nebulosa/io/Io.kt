@@ -1,4 +1,5 @@
 @file:JvmName("Io")
+@file:Suppress("NOTHING_TO_INLINE")
 
 package nebulosa.io
 
@@ -13,79 +14,63 @@ import java.util.*
 
 val EMPTY_BYTE_ARRAY = ByteArray(0)
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readUnsignedByte() = readByte().toInt() and 0xff
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readShort(order: ByteOrder) = if (order.isBigEndian) readShort() else readShortLe()
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readInt(order: ByteOrder) = if (order.isBigEndian) readInt() else readIntLe()
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readLong(order: ByteOrder) = if (order.isBigEndian) readLong() else readLongLe()
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readFloat(order: ByteOrder) = if (order.isBigEndian) readFloat() else readFloatLe()
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readDouble(order: ByteOrder) = if (order.isBigEndian) readDouble() else readDoubleLe()
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readFloat() = Float.fromBits(readInt())
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readFloatLe() = Float.fromBits(readIntLe())
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readDouble() = Double.fromBits(readLong())
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readDoubleLe() = Double.fromBits(readLongLe())
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readDoubleArray(size: Int) = DoubleArray(size) { readDouble() }
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readDoubleArrayLe(size: Int) = DoubleArray(size) { readDoubleLe() }
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readDoubleArray(size: Int, order: ByteOrder) = DoubleArray(size) { readDouble(order) }
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readAscii() = readString(Charsets.US_ASCII)
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readAscii(byteCount: Long) = readString(byteCount, Charsets.US_ASCII)
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readLatin1() = readString(Charsets.ISO_8859_1)
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSource.readLatin1(byteCount: Long) = readString(byteCount, Charsets.ISO_8859_1)
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSink.writeFloat(f: Float) = writeInt(f.toBits())
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSink.writeFloatLe(f: Float) = writeIntLe(f.toBits())
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSink.writeDouble(d: Double) = writeLong(d.toBits())
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun BufferedSink.writeDoubleLe(d: Double) = writeLongLe(d.toBits())
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun resource(name: String): InputStream? = Thread.currentThread().contextClassLoader.getResourceAsStream(name)
+inline fun ClassLoader.resource(name: String): InputStream? = getResourceAsStream(name)
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun resourceUrl(name: String): URL? = Thread.currentThread().contextClassLoader.getResource(name)
+inline fun resource(name: String): InputStream? = Thread.currentThread().contextClassLoader.resource(name)
 
-@Suppress("NOTHING_TO_INLINE")
+inline fun ClassLoader.resourceUrl(name: String): URL? = getResource(name)
+
+inline fun resourceUrl(name: String): URL? = Thread.currentThread().contextClassLoader.resourceUrl(name)
+
 inline fun bufferedResource(name: String) = resource(name)?.source()?.buffer()
 
+inline fun lazyBufferedResource(name: String) = lazy { bufferedResource(name) }
+
 inline fun <R> bufferedResource(name: String, block: BufferedSource.() -> R) = bufferedResource(name)!!.use(block)
+
+inline fun <R> lazyBufferedResource(name: String, crossinline block: BufferedSource.() -> R) = lazy { bufferedResource(name, block) }
 
 inline val Buffer.UnsafeCursor.remaining
     get() = end - start
@@ -130,11 +115,8 @@ fun File.seekableSink(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSink = RandomAccessFile(this, "rw").sink(timeout)
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun InputStream.transferAndCloseInput(output: OutputStream) = use { transferTo(output) }
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun InputStream.transferAndCloseOutput(output: OutputStream) = output.use { transferTo(it) }
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun InputStream.transferAndClose(output: OutputStream) = use { output.use { transferTo(it) } }
