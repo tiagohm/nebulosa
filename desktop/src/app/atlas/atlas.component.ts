@@ -1,6 +1,7 @@
 import { AfterContentInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
+import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
 import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
@@ -11,7 +12,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location,
+    Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location,
     MinorPlanet, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
 } from '../../shared/types'
 import { AppComponent } from '../app.component'
@@ -26,8 +27,8 @@ export interface PlanetItem {
 
 export interface SearchFilter {
     text: string
-    rightAscension: string
-    declination: string
+    rightAscension: Angle
+    declination: Angle
     radius: number
     constellation: Union<Constellation, 'ALL'>
     magnitude: [number, number]
@@ -399,6 +400,33 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     private static readonly DEFAULT_SATELLITE_FILTERS: SatelliteGroupType[] = [
         'AMATEUR', 'BEIDOU', 'GALILEO', 'GLO_OPS', 'GNSS', 'GPS_OPS',
         'ONEWEB', 'SCIENCE', 'STARLINK', 'STATIONS', 'VISUAL'
+    ]
+
+    readonly ephemerisMenuItems: MenuItem[] = [
+        {
+            icon: 'mdi mdi-magnify',
+            label: 'Find stars around this object',
+            command: () => {
+                this.starFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
+                this.starFilter.declination = this.bodyPosition.declinationJ2000
+                if (this.starFilter.radius <= 0) this.starFilter.radius = 1
+                this.tab = 4
+                // this.showStarFilterDialog = true
+                this.filterStar()
+            },
+        },
+        {
+            icon: 'mdi mdi-magnify',
+            label: 'Find DSOs around this object',
+            command: () => {
+                this.dsoFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
+                this.dsoFilter.declination = this.bodyPosition.declinationJ2000
+                if (this.dsoFilter.radius <= 0) this.dsoFilter.radius = 1
+                this.tab = 5
+                // this.showDSOFilterDialog = true
+                this.filterDSO()
+            },
+        },
     ]
 
     constructor(
