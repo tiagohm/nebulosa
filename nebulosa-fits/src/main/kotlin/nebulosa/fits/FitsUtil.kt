@@ -1,7 +1,6 @@
 package nebulosa.fits
 
 import nebulosa.math.Angle
-import nebulosa.math.AngleFormatter
 import nebulosa.math.deg
 import nom.tam.fits.Fits
 import nom.tam.fits.Header
@@ -48,13 +47,8 @@ val Header.dec
         )
     )
 
-val FITS_RA_ANGLE_FORMATTER = AngleFormatter.HMS.newBuilder()
-    .secondsDecimalPlaces(2)
-    .whitespaced()
-    .build()
+val Header.latitude
+    get() = getDoubleValue(FitsKeywords.SITELAT, getDoubleValue("LAT-OBS")).deg
 
-val FITS_DEC_ANGLE_FORMATTER = AngleFormatter.SIGNED_DMS.newBuilder()
-    .degreesFormat("%02d")
-    .secondsDecimalPlaces(2)
-    .whitespaced()
-    .build()
+val Header.longitude
+    get() = getDoubleValue(FitsKeywords.SITELONG, getDoubleValue("LONG-OBS")).deg

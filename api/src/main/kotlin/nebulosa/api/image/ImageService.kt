@@ -5,9 +5,7 @@ import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
-import nebulosa.fits.FitsKeywords
-import nebulosa.fits.dec
-import nebulosa.fits.ra
+import nebulosa.fits.*
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.io.transferAndClose
@@ -144,10 +142,16 @@ class ImageService(
 
         if (minorPlanets && dateTime != null) {
             CompletableFuture.runAsync({
-                LOG.info("finding minor planet annotations. dateTime={}, calibration={}", dateTime, calibration)
+                val latitude = image.header.latitude.let { if (it.isFinite()) it else 0.0 }
+                val longitude = image.header.longitude.let { if (it.isFinite()) it else 0.0 }
+
+                LOG.info(
+                    "finding minor planet annotations. dateTime={}, latitude={}, longitude={}, calibration={}",
+                    dateTime, latitude, longitude, calibration
+                )
 
                 val data = smallBodyDatabaseService.identify(
-                    dateTime, 0.0, 0.0, 0.0,
+                    dateTime, latitude, longitude, 0.0,
                     calibration.rightAscension, calibration.declination, calibration.radius,
                     minorPlanetMagLimit,
                 ).execute().body() ?: return@runAsync
