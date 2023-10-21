@@ -4,9 +4,8 @@ import zoomPlugin from 'chartjs-plugin-zoom'
 import { UIChart } from 'primeng/chart'
 import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
-import { EVERY_MINUTE_CRON_TIME } from '../../shared/constants'
+import { EVERY_MINUTE_CRON_TIME, ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
-import { oneDecimalPlaceFormatter, twoDigitsFormatter } from '../../shared/formatters'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -308,8 +307,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
                         const hours = (context.parsed.x + 12) % 24
                         const minutes = (hours - Math.trunc(hours)) * 60
-                        const a = twoDigitsFormatter.format(Math.trunc(hours))
-                        const b = twoDigitsFormatter.format(minutes)
+                        const a = TWO_DIGITS_FORMATTER.format(Math.trunc(hours))
+                        const b = TWO_DIGITS_FORMATTER.format(minutes)
 
                         if (context.datasetIndex <= 8) {
                             return `${a}:${b}`
@@ -355,7 +354,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     autoSkip: false,
                     count: 10,
                     callback: (value) => {
-                        return oneDecimalPlaceFormatter.format(value as number)
+                        return ONE_DECIMAL_PLACE_FORMATTER.format(value as number)
                     }
                 },
                 border: {
@@ -385,7 +384,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                         const hours = (value as number + 12) % 24
                         const h = Math.trunc(hours)
                         const m = Math.trunc((hours - h) * 60)
-                        return m === 0 ? `${twoDigitsFormatter.format(h)}` : ''
+                        return m === 0 ? `${TWO_DIGITS_FORMATTER.format(h)}` : ''
                     }
                 },
                 grid: {
