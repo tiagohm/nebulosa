@@ -104,7 +104,7 @@ class AtlasController(
 
     @GetMapping("stars")
     fun searchStar(
-        @RequestParam @Valid @NotBlank text: String,
+        @RequestParam(required = false, defaultValue = "") text: String,
         @RequestParam(required = false, defaultValue = "") rightAscension: String,
         @RequestParam(required = false, defaultValue = "") declination: String,
         @RequestParam(required = false, defaultValue = "0.0") radius: Double,
@@ -143,7 +143,7 @@ class AtlasController(
 
     @GetMapping("dsos")
     fun searchDSO(
-        @RequestParam @Valid @NotBlank text: String,
+        @RequestParam(required = false, defaultValue = "") text: String,
         @RequestParam(required = false, defaultValue = "") rightAscension: String,
         @RequestParam(required = false, defaultValue = "") declination: String,
         @RequestParam(required = false, defaultValue = "0.0") radius: Double,

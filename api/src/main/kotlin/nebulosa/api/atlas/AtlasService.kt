@@ -185,7 +185,7 @@ class AtlasService(
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
     ) = starRepository.search(
-        text.replace(INVALID_DSO_CHARS, "").replace("][", ""),
+        text.replace(INVALID_DSO_CHARS, "").replace("][", "").ifBlank { null },
         rightAscension, declination, radius,
         constellation,
         magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type,
@@ -199,7 +199,7 @@ class AtlasService(
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
     ) = deepSkyObjectRepository.search(
-        text.replace(INVALID_DSO_CHARS, "").replace("][", ""),
+        text.replace(INVALID_DSO_CHARS, "").replace("][", "").ifBlank { null },
         rightAscension, declination, radius,
         constellation,
         magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type,
