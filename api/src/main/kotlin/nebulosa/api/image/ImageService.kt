@@ -2,14 +2,16 @@ package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
+import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.fits.FitsKeywords
-import nebulosa.fits.dec
-import nebulosa.fits.ra
+import nebulosa.fits.declination
+import nebulosa.fits.rightAscension
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
+import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.math.*
@@ -42,6 +44,7 @@ import kotlin.io.path.outputStream
 class ImageService(
     private val objectMapper: ObjectMapper,
     private val framingService: FramingService,
+    private val calibrationFrameService: CalibrationFrameService,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
     private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
@@ -50,7 +53,7 @@ class ImageService(
 
     @Synchronized
     fun openImage(
-        path: Path, debayer: Boolean,
+        path: Path, camera: Camera?, debayer: Boolean = true, calibrate: Boolean = false,
         autoStretch: Boolean = false, shadow: Float = 0f, highlight: Float = 1f, midtone: Float = 0.5f,
         mirrorHorizontal: Boolean = false, mirrorVertical: Boolean = false, invert: Boolean = false,
         scnrEnabled: Boolean = false, scnrChannel: ImageChannel = ImageChannel.GREEN, scnrAmount: Float = 0.5f,
@@ -68,8 +71,16 @@ class ImageService(
 
         var transformedImage = if (shouldBeTransformed) image.clone() else image
 
-        if (mirrorHorizontal) transformedImage = HorizontalFlip.transform(transformedImage)
-        if (mirrorVertical) transformedImage = VerticalFlip.transform(transformedImage)
+        if (calibrate && camera != null) {
+            transformedImage = calibrationFrameService.calibrate(camera, transformedImage, transformedImage === image)
+        }
+
+        if (mirrorHorizontal) {
+            transformedImage = HorizontalFlip.transform(transformedImage)
+        }
+        if (mirrorVertical) {
+            transformedImage = VerticalFlip.transform(transformedImage)
+        }
 
         if (scnrEnabled) {
             transformedImage = SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode).transform(transformedImage)
@@ -82,18 +93,16 @@ class ImageService(
             transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
         }
 
-        if (invert) transformedImage = Invert.transform(transformedImage)
+        if (invert) {
+            transformedImage = Invert.transform(transformedImage)
+        }
 
         val info = ImageInfo(
             path,
-            transformedImage.width,
-            transformedImage.height,
-            transformedImage.mono,
-            stretchParams.shadow,
-            stretchParams.highlight,
-            stretchParams.midtone,
-            transformedImage.header.ra.format(AngleFormatter.HMS),
-            transformedImage.header.dec.format(AngleFormatter.SIGNED_DMS),
+            transformedImage.width, transformedImage.height, transformedImage.mono,
+            stretchParams.shadow, stretchParams.highlight, stretchParams.midtone,
+            transformedImage.header.rightAscension.format(AngleFormatter.HMS),
+            transformedImage.header.declination.format(AngleFormatter.SIGNED_DMS),
             imageBucket[path]?.second != null,
             transformedImage.header.iterator().asSequence()
                 .filter { it.key.isNotBlank() && !it.value.isNullOrBlank() }

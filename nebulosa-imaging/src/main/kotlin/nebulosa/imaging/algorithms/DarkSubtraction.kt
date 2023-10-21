@@ -6,7 +6,7 @@ import nebulosa.imaging.ImageChannel
 import kotlin.math.abs
 import kotlin.math.min
 
-class DarkCalibration(private val darkFrame: Image) : TransformAlgorithm {
+class DarkSubtraction(private val darkFrame: Image) : TransformAlgorithm {
 
     override fun transform(source: Image): Image {
         require(source.width == darkFrame.width) { "calibration image width does not match source width" }

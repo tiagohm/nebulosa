@@ -1,8 +1,10 @@
 package nebulosa.api.image
 
 import jakarta.servlet.http.HttpServletResponse
+import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
+import nebulosa.indi.device.camera.Camera
 import nebulosa.math.deg
 import nebulosa.math.hours
 import org.springframework.web.bind.annotation.*
@@ -17,7 +19,9 @@ class ImageController(
     @GetMapping
     fun openImage(
         @RequestParam path: Path,
+        @EntityBy(required = false) camera: Camera?,
         @RequestParam(required = false, defaultValue = "true") debayer: Boolean,
+        @RequestParam(required = false, defaultValue = "false") calibrate: Boolean,
         @RequestParam(required = false, defaultValue = "false") autoStretch: Boolean,
         @RequestParam(required = false, defaultValue = "0.0") shadow: Float,
         @RequestParam(required = false, defaultValue = "1.0") highlight: Float,
@@ -32,8 +36,8 @@ class ImageController(
         output: HttpServletResponse,
     ) {
         imageService.openImage(
-            path,
-            debayer, autoStretch, shadow, highlight, midtone,
+            path, camera,
+            debayer, calibrate, autoStretch, shadow, highlight, midtone,
             mirrorHorizontal, mirrorVertical, invert,
             scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode,
             output,

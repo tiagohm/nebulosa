@@ -10,8 +10,10 @@ import nebulosa.guiding.Guider
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
-import nebulosa.json.*
-import nebulosa.json.converters.PathConverter
+import nebulosa.json.FromJson
+import nebulosa.json.ToJson
+import nebulosa.json.addDeserializer
+import nebulosa.json.addSerializer
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
@@ -64,7 +66,6 @@ class BeanConfiguration {
     ) = kotlinModule()
         .apply { serializers.forEach { addSerializer(it) } }
         .apply { deserializers.forEach { addDeserializer(it) } }
-        .addConverter(PathConverter)
 
     @Bean
     fun jackson2ObjectMapperBuilderCustomizer() = Jackson2ObjectMapperBuilderCustomizer {

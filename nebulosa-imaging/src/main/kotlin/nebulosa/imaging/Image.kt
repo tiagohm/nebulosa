@@ -25,7 +25,7 @@ import kotlin.math.min
 @Suppress("NOTHING_TO_INLINE")
 class Image(
     width: Int, height: Int,
-    val header: Header,
+    header: Header,
     val mono: Boolean,
 ) : BufferedImage(colorModel(mono), raster(width, height, mono), false, null) {
 
@@ -36,6 +36,9 @@ class Image(
     @JvmField val r = buffer.r
     @JvmField val g = buffer.g
     @JvmField val b = buffer.b
+
+    var header = header
+        private set
 
     val indices = 0 until width * height
 
@@ -321,22 +324,25 @@ class Image(
             path: Path,
             debayer: Boolean = true,
             onlyHeaders: Boolean = false,
-        ) = open(path.toFile(), debayer, onlyHeaders)
+            output: Image? = null,
+        ) = open(path.toFile(), debayer, onlyHeaders, output)
 
         @JvmStatic
         fun open(
             file: File,
             debayer: Boolean = true,
             onlyHeaders: Boolean = false,
+            output: Image? = null,
         ) = ImageIO.read(file)?.let(::openImage)
-            ?: Fits(file).use { openFITS(it, debayer, onlyHeaders) }
+            ?: Fits(file).use { openFITS(it, debayer, onlyHeaders, output) }
 
         @JvmStatic
         fun openFITS(
             inputStream: InputStream,
             debayer: Boolean = true,
             onlyHeaders: Boolean = false,
-        ) = Fits(inputStream).use { openFITS(it, debayer, onlyHeaders) }
+            output: Image? = null,
+        ) = Fits(inputStream).use { openFITS(it, debayer, onlyHeaders, output) }
 
         @JvmStatic
         fun openImage(inputStream: InputStream): Image? {
@@ -349,6 +355,7 @@ class Image(
             fits: Fits,
             debayer: Boolean = true,
             onlyHeaders: Boolean = false,
+            output: Image? = null,
         ): Image {
             val hdu = requireNotNull(fits.imageHDU(0)) { "The FITS file not contains an image" }
 
@@ -359,11 +366,18 @@ class Image(
             val axes = hdu.axes
             val bitpix = hdu.bitpix
 
+            if (output != null) {
+                require(output.width == width) { "output width [${output.width}] dont match: [$width]" }
+                require(output.height == height) { "output height [${output.height}] dont match: [$height]" }
+                require(output.mono == mono) { "output mono [${output.mono}] dont match: [$mono]" }
+            }
+
             // TODO: DATA[i] = BZERO + BSCALE * DATA[i]
 
             header.addValue(FitsKeywords.BITPIX, Bitpix.VALUE_FOR_FLOAT)
 
-            val image = Image(width, height, header, mono)
+            val image = output ?: Image(width, height, header, mono)
+            image.header = header
 
             if (onlyHeaders) return image
 
@@ -427,12 +441,18 @@ class Image(
         }
 
         @JvmStatic
-        fun openImage(bufferedImage: BufferedImage): Image {
+        fun openImage(bufferedImage: BufferedImage, output: Image? = null): Image {
             val header = Header()
             val width = bufferedImage.width
             val height = bufferedImage.height
             val mono = bufferedImage.type == TYPE_BYTE_GRAY
                     || bufferedImage.type == TYPE_USHORT_GRAY
+
+            if (output != null) {
+                require(output.width == width) { "output width [${output.width}] dont match: [$width]" }
+                require(output.height == height) { "output height [${output.height}] dont match: [$height]" }
+                require(output.mono == mono) { "output mono [${output.mono}] dont match: [$mono]" }
+            }
 
             header.addValue(FitsKeywords.SIMPLE, true)
             header.addValue(FitsKeywords.BITPIX, Bitpix.VALUE_FOR_FLOAT)
@@ -444,7 +464,8 @@ class Image(
             header.addValue(FitsKeywords.BZERO, 0.0)
             header.addValue(FitsKeywords.EXTEND, true)
 
-            val image = Image(width, height, header, mono)
+            val image = output ?: Image(width, height, header, mono)
+            image.header = header
 
             var idx = 0
 

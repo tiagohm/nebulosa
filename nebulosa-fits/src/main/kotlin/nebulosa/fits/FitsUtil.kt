@@ -6,6 +6,7 @@ import nebulosa.math.deg
 import nom.tam.fits.Fits
 import nom.tam.fits.Header
 import nom.tam.fits.ImageHDU
+import kotlin.time.Duration.Companion.seconds
 
 fun Fits.imageHDU(n: Int): ImageHDU? {
     var index = 0
@@ -30,7 +31,7 @@ inline fun Header.naxis(n: Int) = getIntValue(FitsKeywords.NAXISn.n(n))
 @Suppress("NOTHING_TO_INLINE")
 inline fun Header.clone() = Header(makeData())
 
-val Header.ra
+val Header.rightAscension
     get() = Angle(
         getStringValue(FitsKeywords.RA), isHours = true, decimalIsHours = false,
         defaultValue = Angle(
@@ -39,7 +40,7 @@ val Header.ra
         )
     )
 
-val Header.dec
+val Header.declination
     get() = Angle(
         getStringValue(FitsKeywords.DEC),
         defaultValue = Angle(
@@ -47,6 +48,18 @@ val Header.dec
             defaultValue = getDoubleValue(FitsKeywords.CRVAL2, Double.NaN).deg
         )
     )
+
+val Header.binX
+    get() = getIntValue(FitsKeywords.XBINNING, 1)
+
+val Header.binY
+    get() = getIntValue(FitsKeywords.YBINNING, 1)
+
+val Header.exposureTime
+    get() = getDoubleValue(FitsKeywords.EXPTIME, getDoubleValue(FitsKeywords.EXPOSURE, 0.0)).seconds
+
+val Header.temperature
+    get() = getDoubleValue(FitsKeywords.CCDTEM, -272.15)
 
 val FITS_RA_ANGLE_FORMATTER = AngleFormatter.HMS.newBuilder()
     .secondsDecimalPlaces(2)

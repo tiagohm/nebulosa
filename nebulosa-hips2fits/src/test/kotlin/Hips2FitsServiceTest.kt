@@ -2,10 +2,10 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
-import nebulosa.fits.dec
+import nebulosa.fits.declination
 import nebulosa.fits.imageHDU
 import nebulosa.fits.naxis
-import nebulosa.fits.ra
+import nebulosa.fits.rightAscension
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.hips2fits.HipsSurvey
 import nebulosa.math.deg
@@ -24,8 +24,8 @@ class Hips2FitsServiceTest : StringSpec() {
             val hdu = fits.imageHDU(0)?.header.shouldNotBeNull()
             hdu.naxis(1) shouldBeExactly 1200
             hdu.naxis(2) shouldBeExactly 900
-            hdu.ra.toDegrees shouldBeExactly 201.36506337683
-            hdu.dec.toDegrees shouldBeExactly -43.01911250808
+            hdu.rightAscension.toDegrees shouldBeExactly 201.36506337683
+            hdu.declination.toDegrees shouldBeExactly -43.01911250808
             fits.close()
         }
     }
