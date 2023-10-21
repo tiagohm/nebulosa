@@ -7,6 +7,7 @@ dependencies {
     api(project(":nebulosa-math"))
     api(project(":nebulosa-io"))
     api(libs.fits)
+    implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }
 

@@ -1,6 +1,7 @@
 package nebulosa.fits
 
 import nom.tam.fits.header.*
+import nom.tam.fits.header.Standard
 import nom.tam.fits.header.extra.MaxImDLExt
 import nom.tam.fits.header.extra.NOAOExt
 import nom.tam.fits.header.extra.SBFitsExt
