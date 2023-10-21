@@ -16,7 +16,7 @@ import kotlin.io.path.inputStream
 
 @Component
 @ThreadedTask
-class AtlasDatabaseThreadedTask(
+class SkyAtlasUpdateTask(
     private val objectMapper: ObjectMapper,
     private val configRepository: ConfigRepository,
     private val starsRepository: StarRepository,
@@ -102,6 +102,6 @@ class AtlasDatabaseThreadedTask(
         const val DATABASE_VERSION = "2023.10.18"
         const val DATABASE_VERSION_KEY = "DATABASE_VERSION"
 
-        @JvmStatic private val LOG = loggerFor<AtlasDatabaseThreadedTask>()
+        @JvmStatic private val LOG = loggerFor<SkyAtlasUpdateTask>()
     }
 }
