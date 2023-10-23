@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router'
 import random from 'random'
 import { APP_CONFIG } from '../environments/environment'
 import { ElectronService } from '../shared/services/electron.service'
+import { PreferenceService } from '../shared/services/preference.service'
 
 @Component({
     selector: 'app-root',
@@ -23,6 +24,8 @@ export class AppComponent implements AfterViewInit {
     backgroundColor = AppComponent.BACKGROUND_COLORS[random.int(0, AppComponent.BACKGROUND_COLORS.length - 1)]
     subTitle = ''
 
+    private night!: Element
+
     get title() {
         return this.windowTitle.getTitle()
     }
@@ -35,6 +38,7 @@ export class AppComponent implements AfterViewInit {
         private windowTitle: Title,
         private route: ActivatedRoute,
         private electronService: ElectronService,
+        private preference: PreferenceService,
     ) {
         console.info('APP_CONFIG', APP_CONFIG)
 
@@ -49,6 +53,26 @@ export class AppComponent implements AfterViewInit {
         this.route.queryParams.subscribe(e => {
             this.maximizable = e.resizable === 'true'
         })
+
+        this.night = document.getElementsByTagName('night')[0]
+
+        const nightMode = this.preference.get('settings.nightMode', false)
+        this.nightMode(nightMode)
+    }
+
+    nightMode(enabled: boolean) {
+        if (enabled) {
+            this.night.classList.remove('hidden')
+            this.night.classList.add('block')
+        } else {
+            this.night.classList.remove('block')
+            this.night.classList.add('hidden')
+        }
+
+        this.preference.set('settings.nightMode', enabled)
+
+        // TODO: MAKE TITLEBAR RED IF NIGHT MODE IS ON
+        // TODO: NOTIFY ALL WINDOWS PREFERENCE_UPDATED(name, oldValue, newValue)
     }
 
     pin() {
