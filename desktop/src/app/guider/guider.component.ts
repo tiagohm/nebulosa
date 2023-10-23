@@ -243,7 +243,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         electron.on('GUIDE_OUTPUT_DETACHED', (_, event: GuideOutput) => {
             ngZone.run(() => {
                 const index = this.guideOutputs.findIndex(e => e.name === event.name)
-                if (index) this.guideOutputs.splice(index, 1)
+                if (index >= 0) this.guideOutputs.splice(index, 1)
             })
         })
 
