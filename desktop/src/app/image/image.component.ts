@@ -399,11 +399,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
 
         if (this.imageParams.title) {
-            this.app.title = `Image ・ ${this.imageParams.title}`
+            this.app.subTitle = this.imageParams.title
         } else if (this.imageParams.camera) {
-            this.app.title = `Image ・ ${this.imageParams.camera.name}`
+            this.app.subTitle = this.imageParams.camera.name
         } else if (this.imageParams.path) {
-            this.app.title = `Image ・ ${path.basename(this.imageParams.path)}`
+            this.app.subTitle = path.basename(this.imageParams.path)
+        } else {
+            this.app.subTitle = ''
         }
     }
 

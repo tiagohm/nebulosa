@@ -682,7 +682,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
             this.dateTime.setMinutes(this.dateTimeMinute)
         }
 
-        this.app.title = `Sky Atlas ・ ${this.location.name}`
+        this.app.subTitle = this.location.name
 
         try {
             // Sun.

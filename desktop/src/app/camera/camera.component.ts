@@ -235,7 +235,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     async cameraChanged() {
         if (this.camera) {
-            this.app.title = `Camera ・ ${this.camera.name}`
+            this.app.subTitle = this.camera.name
 
             const camera = await this.api.camera(this.camera.name)
             Object.assign(this.camera, camera)
@@ -244,7 +244,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.update()
             this.savePreference()
         } else {
-            this.app.title = 'Camera'
+            this.app.subTitle = ''
         }
 
         this.electron.send('CAMERA_CHANGED', this.camera)

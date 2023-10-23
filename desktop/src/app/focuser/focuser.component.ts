@@ -60,7 +60,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
 
     async focuserChanged() {
         if (this.focuser) {
-            this.app.title = `Focuser ・ ${this.focuser.name}`
+            this.app.subTitle = this.focuser.name
 
             const focuser = await this.api.focuser(this.focuser.name)
             Object.assign(this.focuser, focuser)
@@ -69,7 +69,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
             this.update()
             this.savePreference()
         } else {
-            this.app.title = 'Focuser'
+            this.app.subTitle = ''
         }
 
         this.electron.send('FOCUSER_CHANGED', this.focuser)

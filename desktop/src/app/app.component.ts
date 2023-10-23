@@ -21,6 +21,7 @@ export class AppComponent implements AfterViewInit {
     pinned = false
     maximizable = false
     backgroundColor = AppComponent.BACKGROUND_COLORS[random.int(0, AppComponent.BACKGROUND_COLORS.length - 1)]
+    subTitle = ''
 
     get title() {
         return this.windowTitle.getTitle()
