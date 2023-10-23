@@ -8,8 +8,7 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ## Camera
 
-![](camera.1.png)
-![](camera.2.png)
+![](camera.png)
 
 ## Mount
 
@@ -23,9 +22,9 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](filter-wheel.png)
 
-## Guiding
+## Guider
 
-![](guiding.png)
+![](guider.png)
 
 ## Sky Atlas
 
@@ -41,7 +40,6 @@ The complete integrated solution for all of your astronomical imaging needs.
 ## Image
 
 ![](image.png)
-![](image.2.png)
 
 ## Framing
 
