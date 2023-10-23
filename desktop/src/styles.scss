@@ -148,6 +148,14 @@ i.mdi {
     image-rendering: pixelated;
 }
 
+.cursor-crosshair {
+    cursor: crosshair !important;
+}
+
+.monospaced {
+    font-family: monospace !important;
+}
+
 ::-webkit-scrollbar {
     width: 6px;
 }

@@ -5,6 +5,7 @@ import nebulosa.math.deg
 import nom.tam.fits.Fits
 import nom.tam.fits.Header
 import nom.tam.fits.ImageHDU
+import java.time.LocalDateTime
 
 fun Fits.imageHDU(n: Int): ImageHDU? {
     var index = 0
@@ -52,3 +53,8 @@ val Header.latitude
 
 val Header.longitude
     get() = getDoubleValue(FitsKeywords.SITELONG, getDoubleValue("LONG-OBS")).deg
+
+val Header.observationDate
+    get() = getStringValue(FitsKeywords.DATE_OBS)
+        ?.ifBlank { null }
+        ?.let(LocalDateTime::parse)

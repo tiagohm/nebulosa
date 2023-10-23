@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
 import {
-    Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, DeepSkyObject, Device,
+    Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation, DeepSkyObject, Device,
     FilterWheel, Focuser, GuideDirection, GuideOutput, GuiderStatus, HipsSurvey, HistoryStep,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
     ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
@@ -508,6 +508,11 @@ export class ApiService {
     saveImageAs(inputPath: string, outputPath: string) {
         const query = this.http.query({ inputPath, outputPath })
         return this.http.put<void>(`image/save-as?${query}`)
+    }
+
+    coordinateInterpolation(path: string) {
+        const query = this.http.query({ path })
+        return this.http.get<CoordinateInterpolation | null>(`image/coordinate-interpolation?${query}`)
     }
 
     // FRAMING

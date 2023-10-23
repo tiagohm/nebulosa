@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.nio.file.Path
 import java.time.Duration
-import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
@@ -134,11 +133,7 @@ class ImageService(
         val annotations = Vector<ImageAnnotation>()
         val tasks = ArrayList<CompletableFuture<*>>()
 
-        val dateTime = image.header
-            .getStringValue(FitsKeywords.DATE_OBS)
-            ?.ifBlank { null }
-            ?.let(LocalDateTime::parse)
-            ?: LocalDateTime.now()
+        val dateTime = image.header.observationDate
 
         if (minorPlanets && dateTime != null) {
             CompletableFuture.runAsync({
@@ -273,8 +268,46 @@ class ImageService(
         return path
     }
 
+    fun coordinateInterpolation(path: Path): CoordinateInterpolation? {
+        val (image, calibration) = imageBucket[path] ?: return null
+
+        if (calibration == null || calibration.isEmpty || !calibration.solved) {
+            return null
+        }
+
+        val wcs = try {
+            WCSTransform(calibration)
+        } catch (e: WCSException) {
+            LOG.error("unable to generate annotations for image. path={}", path)
+            return null
+        }
+
+        val delta = COORDINATE_INTERPOLATION_DELTA
+        val width = image.width + (image.width % delta).let { if (it == 0) 0 else delta - it }
+        val xIter = 0..width step delta
+        val height = image.height + (image.height % delta).let { if (it == 0) 0 else delta - it }
+        val yIter = 0..height step delta
+
+        val md = DoubleArray(xIter.count() * yIter.count())
+        val ma = DoubleArray(md.size)
+        var count = 0
+
+        for (y in yIter) {
+            for (x in xIter) {
+                val (rightAscension, declination) = wcs.pixToSky(x.toDouble(), y.toDouble())
+                ma[count] = rightAscension.toDegrees
+                md[count] = declination.toDegrees
+                count++
+            }
+        }
+
+        return CoordinateInterpolation(ma, md, 0, 0, width, height, delta, image.header.observationDate)
+    }
+
     companion object {
 
         @JvmStatic private val LOG = loggerFor<ImageService>()
+
+        private const val COORDINATE_INTERPOLATION_DELTA = 24
     }
 }
