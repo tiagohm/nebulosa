@@ -1,7 +1,7 @@
 import { Angle } from '../types'
-import { angleStringify } from './angle-stringify'
+import { degreesToRadians, formatAngle } from './angle'
 import { BicubicSplineInterpolation } from './bicubic-interpolation'
-import { TimeRepresentation, degreesToRadians, longitudeDegreesConstrained, obliquity, rectangularEquatorialToEcliptic, rectangularEquatorialToGalactic, rectangularToSphericalDegreesConstrained, sphericalToRectangular } from './ephemeris'
+import { TimeRepresentation, longitudeDegreesConstrained, obliquity, rectangularEquatorialToEcliptic, rectangularEquatorialToGalactic, rectangularToSphericalDegreesConstrained, sphericalToRectangular } from './ephemeris'
 
 export interface InterpolatedCoordinate<T extends Angle> {
     alpha: T
@@ -11,6 +11,8 @@ export interface InterpolatedCoordinate<T extends Angle> {
     lambda?: T
     beta?: T
 }
+
+// https://cdn.astrobin.com/static/astrobin_apps_platesolving/js/CoordinateInterpolation.1733091e5e90.js
 
 export class CoordinateInterpolator {
 
@@ -88,18 +90,18 @@ export class CoordinateInterpolator {
         const q = this.interpolate(x, y, withGalactic, withEcliptic)
 
         const coordinate: InterpolatedCoordinate<string> = {
-            alpha: angleStringify(q.alpha / 15, 24, false, this.precision + 1, units),
-            delta: angleStringify(q.delta, 0, true, this.precision, units)
+            alpha: formatAngle(q.alpha / 15, 24, false, this.precision + 1, units),
+            delta: formatAngle(q.delta, 0, true, this.precision, units)
         }
 
         if (q.l !== undefined && q.b !== undefined) {
-            coordinate.l = angleStringify(q.l, 360, false, this.precision, units)
-            coordinate.b = angleStringify(q.b, 0, true, this.precision, units)
+            coordinate.l = formatAngle(q.l, 360, false, this.precision, units)
+            coordinate.b = formatAngle(q.b, 0, true, this.precision, units)
         }
 
         if (q.lambda !== undefined && q.beta !== undefined) {
-            coordinate.lambda = angleStringify(q.lambda, 360, false, this.precision, units)
-            coordinate.beta = angleStringify(q.beta, 0, true, this.precision, units)
+            coordinate.lambda = formatAngle(q.lambda, 360, false, this.precision, units)
+            coordinate.beta = formatAngle(q.beta, 0, true, this.precision, units)
         }
 
         return coordinate

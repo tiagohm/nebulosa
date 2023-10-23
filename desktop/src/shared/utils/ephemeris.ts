@@ -1,3 +1,5 @@
+import { degreesToRadians, radiansToDegrees } from './angle'
+
 export type TimeRepresentation = string | Date
 
 export interface JulianDate {
@@ -50,14 +52,6 @@ export function julianDate(t: TimeRepresentation): JulianDate {
 
 export function centuriesSinceJ2000(jd: JulianDate) {
     return (jd.jdi - 2451545 + jd.jdf) / 36525
-}
-
-export function radiansToDegrees(rad: number) {
-    return 57.2957795130823208767981548141051700441964 * rad
-}
-
-export function degreesToRadians(deg: number) {
-    return 0.0174532925199432957692369076848861272222 * deg
 }
 
 export const DELTA_AT = [[2436934.5, 1.4178180, 37300, 0.001296],

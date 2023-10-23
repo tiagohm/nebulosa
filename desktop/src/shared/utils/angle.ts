@@ -1,6 +1,14 @@
 export type AngleRange = 24 | 360 | 0
 
-export function angleStringify(angle: number, range: AngleRange, sign: boolean, precision: number = 0, units: boolean = true) {
+export function radiansToDegrees(rad: number) {
+    return 57.2957795130823208767981548141051700441964 * rad
+}
+
+export function degreesToRadians(deg: number) {
+    return 0.0174532925199432957692369076848861272222 * deg
+}
+
+export function formatAngle(angle: number, range: AngleRange, sign: boolean, precision: number = 0, units: boolean = true) {
     const d = decimalToSexagesimal(angle)
     let dd = d[1]
     let mm = d[2]
