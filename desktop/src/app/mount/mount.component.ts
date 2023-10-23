@@ -188,7 +188,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     async mountChanged() {
         if (this.mount) {
-            this.app.title = `Mount ・ ${this.mount!.name}`
+            this.app.subTitle = this.mount!.name
 
             const mount = await this.api.mount(this.mount.name)
             Object.assign(this.mount, mount)
@@ -197,7 +197,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             this.update()
             this.savePreference()
         } else {
-            this.app.title = 'Mount'
+            this.app.subTitle = ''
         }
 
         this.electron.send('MOUNT_CHANGED', this.mount)

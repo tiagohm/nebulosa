@@ -11,11 +11,11 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    AstronomicalObject,
-    Camera, CameraCaptureEvent, DeepSkyObject, EquatorialCoordinateJ2000, FITSHeaderItem,
+    Angle, AstronomicalObject, Camera, CameraCaptureEvent, DeepSkyObject, EquatorialCoordinateJ2000, FITSHeaderItem,
     ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
     PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star
 } from '../../shared/types'
+import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
 
 export interface ImageParams {
@@ -273,6 +273,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.pointMountHereMenuItem,
     ]
 
+    mouseCoordinate?: InterpolatedCoordinate<Angle> & Partial<{ x: number, y: number }>
+    private mouseCoordinateInterpolation?: CoordinateInterpolator
+
     constructor(
         private app: AppComponent,
         private route: ActivatedRoute,
@@ -396,11 +399,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
 
         if (this.imageParams.title) {
-            this.app.title = `Image ・ ${this.imageParams.title}`
+            this.app.subTitle = this.imageParams.title
         } else if (this.imageParams.camera) {
-            this.app.title = `Image ・ ${this.imageParams.camera.name}`
+            this.app.subTitle = this.imageParams.camera.name
         } else if (this.imageParams.path) {
-            this.app.title = `Image ・ ${path.basename(this.imageParams.path)}`
+            this.app.subTitle = path.basename(this.imageParams.path)
+        } else {
+            this.app.subTitle = ''
         }
     }
 
@@ -431,14 +436,24 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
         this.imageURL = window.URL.createObjectURL(blob)
         image.src = this.imageURL
+
+        this.retrieveCoordinateInterpolation()
     }
 
-    imageClicked(event: MouseEvent, menu: boolean) {
+    imageClicked(event: MouseEvent, contextMenu: boolean) {
         this.imageMouseX = event.offsetX
         this.imageMouseY = event.offsetY
 
-        if (menu) {
+        if (contextMenu) {
             this.menu.show(event)
+        }
+    }
+
+    imageMouseMoved(event: MouseEvent) {
+        if (!this.menu.visible()) {
+            this.mouseCoordinate = this.mouseCoordinateInterpolation?.interpolateAsText(event.offsetX, event.offsetY, true, true, false)
+            this.mouseCoordinate!.x = event.offsetX
+            this.mouseCoordinate!.y = event.offsetY
         }
     }
 
@@ -480,6 +495,21 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.loadImage()
     }
 
+    private async retrieveCoordinateInterpolation() {
+        const coordinate = await this.api.coordinateInterpolation(this.imageParams.path!)
+
+        if (coordinate) {
+            const { ma, md, x0, y0, x1, y1, delta } = coordinate
+            this.mouseCoordinateInterpolation = new CoordinateInterpolator(ma, md, x0, y0, x1, y1, delta)
+            this.mouseCoordinate = this.mouseCoordinateInterpolation.interpolateAsText(0, 0)
+            this.mouseCoordinate.x = 0
+            this.mouseCoordinate.y = 0
+        } else {
+            this.mouseCoordinateInterpolation = undefined
+            this.mouseCoordinate = undefined
+        }
+    }
+
     async solveImage() {
         this.solving = true
 
@@ -502,6 +532,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.pointMountHereMenuItem.disabled = true
         } finally {
             this.solving = false
+            this.retrieveCoordinateInterpolation()
         }
     }
 

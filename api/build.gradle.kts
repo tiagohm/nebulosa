@@ -2,7 +2,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     kotlin("jvm")
-    id("org.springframework.boot") version "3.1.4"
+    id("org.springframework.boot") version "3.1.5"
     id("io.spring.dependency-management") version "1.1.3"
     kotlin("plugin.spring")
     kotlin("kapt")
@@ -32,8 +32,7 @@ dependencies {
     implementation(libs.eventbus)
     implementation(libs.apache.codec)
     implementation(libs.rx)
-    // implementation(libs.sqlite)
-    runtimeOnly(files("$projectDir/libs/sqlite-jdbc-3.43.0.0.jar"))
+    implementation(libs.sqlite)
     implementation(libs.flyway)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")

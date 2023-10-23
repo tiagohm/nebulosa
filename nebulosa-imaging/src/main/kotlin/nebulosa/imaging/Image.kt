@@ -37,7 +37,8 @@ class Image(
     @JvmField val g = buffer.g
     @JvmField val b = buffer.b
 
-    val indices = 0 until width * height
+    val size = width * height
+    val indices = 0 until size
 
     inline fun indexAt(x: Int, y: Int): Int {
         return y * stride + x
@@ -221,7 +222,6 @@ class Image(
 
         val data = ImageData(header)
         val buffer = FloatArray(buffer.size)
-        val size = width * height
 
         r.copyInto(buffer, 0)
 

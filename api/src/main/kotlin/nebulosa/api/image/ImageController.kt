@@ -79,4 +79,9 @@ class ImageController(
             downsampleFactor, pathOrUrl, apiKey,
         )
     }
+
+    @GetMapping("coordinate-interpolation")
+    fun coordinateInterpolation(@RequestParam path: Path): CoordinateInterpolation? {
+        return imageService.coordinateInterpolation(path)
+    }
 }

@@ -104,7 +104,7 @@ class AtlasController(
 
     @GetMapping("stars")
     fun searchStar(
-        @RequestParam @Valid @NotBlank text: String,
+        @RequestParam(required = false, defaultValue = "") text: String,
         @RequestParam(required = false, defaultValue = "") rightAscension: String,
         @RequestParam(required = false, defaultValue = "") declination: String,
         @RequestParam(required = false, defaultValue = "0.0") radius: Double,
@@ -116,6 +116,11 @@ class AtlasController(
         text, rightAscension.hours, declination.deg, radius.deg,
         constellation, magnitudeMin, magnitudeMax, type,
     )
+
+    @GetMapping("stars/types")
+    fun starTypes(): List<SkyObjectType> {
+        return atlasService.starTypes
+    }
 
     @GetMapping("dsos/{dso}/position")
     fun positionOfDSO(
@@ -138,7 +143,7 @@ class AtlasController(
 
     @GetMapping("dsos")
     fun searchDSO(
-        @RequestParam @Valid @NotBlank text: String,
+        @RequestParam(required = false, defaultValue = "") text: String,
         @RequestParam(required = false, defaultValue = "") rightAscension: String,
         @RequestParam(required = false, defaultValue = "") declination: String,
         @RequestParam(required = false, defaultValue = "0.0") radius: Double,
@@ -150,6 +155,11 @@ class AtlasController(
         text, rightAscension.hours, declination.deg, radius.deg,
         constellation, magnitudeMin, magnitudeMax, type,
     )
+
+    @GetMapping("dsos/types")
+    fun dsoTypes(): List<SkyObjectType> {
+        return atlasService.dsoTypes
+    }
 
     @GetMapping("satellites/{satellite}/position")
     fun positionOfSatellite(

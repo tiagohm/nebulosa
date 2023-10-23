@@ -35,6 +35,7 @@ import { OpenStreetMapComponent } from '../shared/components/openstreetmap/opens
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
+import { AnglePipe } from '../shared/pipes/angle.pipe'
 import { EnumPipe } from '../shared/pipes/enum.pipe'
 import { EnvPipe } from '../shared/pipes/env.pipe'
 import { ExposureTimePipe } from '../shared/pipes/exposureTime.pipe'
@@ -79,6 +80,7 @@ import { MountComponent } from './mount/mount.component'
         WinPipe,
         EnumPipe,
         ExposureTimePipe,
+        AnglePipe,
         StopPropagationDirective,
         NoDropdownDirective,
     ],

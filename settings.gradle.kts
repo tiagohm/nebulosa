@@ -33,7 +33,7 @@ dependencyResolutionManagement {
             library("apache-collections", "org.apache.commons:commons-collections4:4.4")
             library("oshi", "com.github.oshi:oshi-core:6.4.6")
             library("timeshape", "net.iakovlev:timeshape:2022g.17")
-            library("sqlite", "org.xerial:sqlite-jdbc:3.43.0.0")
+            library("sqlite", "org.xerial:sqlite-jdbc:3.43.2.1")
             library("flyway", "org.flywaydb:flyway-core:9.22.3")
             library("jna", "net.java.dev.jna:jna:5.13.0")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.7.2")

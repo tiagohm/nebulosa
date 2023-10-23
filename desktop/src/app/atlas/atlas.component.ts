@@ -1,18 +1,18 @@
 import { AfterContentInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
+import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
 import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
-import { EVERY_MINUTE_CRON_TIME } from '../../shared/constants'
+import { EVERY_MINUTE_CRON_TIME, ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
-import { oneDecimalPlaceFormatter, twoDigitsFormatter } from '../../shared/formatters'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location,
+    Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location,
     MinorPlanet, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
 } from '../../shared/types'
 import { AppComponent } from '../app.component'
@@ -27,8 +27,8 @@ export interface PlanetItem {
 
 export interface SearchFilter {
     text: string
-    rightAscension: string
-    declination: string
+    rightAscension: Angle
+    declination: Angle
     radius: number
     constellation: Union<Constellation, 'ALL'>
     magnitude: [number, number]
@@ -127,24 +127,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         type: 'ALL',
     }
 
-    readonly starTypeOptions: Union<SkyObjectType, 'ALL'>[] = [
-        'ALL',
-        'ALPHA2_CVN_VARIABLE', 'ASYMPTOTIC_GIANT_BRANCH_STAR', 'BETA_CEP_VARIABLE',
-        'BE_STAR', 'BLUE_STRAGGLER', 'BLUE_SUPERGIANT', 'BY_DRA_VARIABLE',
-        'CARBON_STAR', 'CEPHEID_VARIABLE', 'CHEMICALLY_PECULIAR_STAR',
-        'CLASSICAL_CEPHEID_VARIABLE', 'DELTA_SCT_VARIABLE', 'DOUBLE_OR_MULTIPLE_STAR',
-        'ECLIPSING_BINARY', 'ELLIPSOIDAL_VARIABLE', 'EMISSION_LINE_STAR',
-        'ERUPTIVE_VARIABLE', 'EVOLVED_SUPERGIANT', 'EXTRA_SOLAR_PLANET',
-        'GAMMA_DOR_VARIABLE', 'HERBIG_AE_BE_STAR', 'HIGH_MASS_X_RAY_BINARY',
-        'HIGH_PROPER_MOTION_STAR', 'HORIZONTAL_BRANCH_STAR', 'IRREGULAR_VARIABLE',
-        'LONG_PERIOD_VARIABLE', 'LOW_MASS_STAR', 'MAIN_SEQUENCE_STAR', 'MIRA_VARIABLE',
-        'OH_IR_STAR', 'ORION_VARIABLE', 'POST_AGB_STAR', 'PULSAR', 'PULSATING_VARIABLE',
-        'RED_GIANT_BRANCH_STAR', 'RED_SUPERGIANT', 'ROTATING_VARIABLE',
-        'RR_LYRAE_VARIABLE', 'RS_CVN_VARIABLE', 'RV_TAURI_VARIABLE', 'R_CRB_VARIABLE',
-        'SPECTROSCOPIC_BINARY', 'STAR', 'SX_PHE_VARIABLE', 'SYMBIOTIC_STAR', 'S_STAR',
-        'TYPE_II_CEPHEID_VARIABLE', 'T_TAURI_STAR', 'VARIABLE_STAR', 'WHITE_DWARF',
-        'WOLF_RAYET', 'X_RAY_BINARY', 'YELLOW_SUPERGIANT', 'YOUNG_STELLAR_OBJECT'
-    ]
+    readonly starTypeOptions: Union<SkyObjectType, 'ALL'>[] = ['ALL']
 
     dso?: DeepSkyObject
     dsoItems: DeepSkyObject[] = []
@@ -167,45 +150,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         type: 'ALL',
     }
 
-    readonly dsoTypeOptions: Union<SkyObjectType, 'ALL'>[] = [
-        'ALL',
-        'ACTIVE_GALAXY_NUCLEUS', 'ALPHA2_CVN_VARIABLE', 'ASSOCIATION_OF_STARS',
-        'BETA_CEP_VARIABLE', 'BE_STAR', 'BLACK_HOLE', 'BLAZAR', 'BLUE_COMPACT_GALAXY',
-        'BLUE_OBJECT', 'BLUE_SUPERGIANT', 'BL_LAC', 'BRIGHTEST_GALAXY_IN_A_CLUSTER_BCG',
-        'BUBBLE', 'CENTIMETRIC_RADIO_SOURCE', 'CLASSICAL_CEPHEID_VARIABLE',
-        'CLASSICAL_NOVA', 'CLOUD', 'CLUSTER_OF_GALAXIES', 'CLUSTER_OF_STARS',
-        'COMETARY_GLOBULE_PILLAR', 'COMPACT_GROUP_OF_GALAXIES', 'COMPOSITE_OBJECT_BLEND',
-        'DARK_CLOUD_NEBULA', 'DELTA_SCT_VARIABLE', 'DENSE_CORE',
-        'DOUBLE_OR_MULTIPLE_STAR', 'ECLIPSING_BINARY', 'EMISSION_LINE_GALAXY',
-        'EMISSION_LINE_STAR', 'EMISSION_OBJECT', 'EXTRA_SOLAR_PLANET',
-        'FAR_IR_SOURCE_30_M', 'GALAXY', 'GALAXY_IN_PAIR_OF_GALAXIES',
-        'GALAXY_TOWARDS_A_CLUSTER_OF_GALAXIES', 'GALAXY_TOWARDS_A_GROUP_OF_GALAXIES',
-        'GAMMA_RAY_BURST', 'GAMMA_RAY_SOURCE', 'GLOBULAR_CLUSTER',
-        'GLOBULE_LOW_MASS_DARK_CLOUD', 'GRAVITATIONALLY_LENSED_IMAGE',
-        'GRAVITATIONALLY_LENSED_IMAGE_OF_A_GALAXY',
-        'GRAVITATIONAL_LENS_SYSTEM_LENS_IMAGES', 'GRAVITATIONAL_WAVE_EVENT',
-        'GROUP_OF_GALAXIES', 'HERBIG_AE_BE_STAR', 'HERBIG_HARO_OBJECT',
-        'HIGH_PROPER_MOTION_STAR', 'HIGH_VELOCITY_CLOUD', 'HII_GALAXY', 'HII_REGION',
-        'HI_21CM_SOURCE', 'INFRA_RED_SOURCE', 'INTERACTING_GALAXIES',
-        'INTERSTELLAR_MEDIUM_OBJECT', 'INTERSTELLAR_SHELL',
-        'LINER_TYPE_ACTIVE_GALAXY_NUCLEUS', 'LONG_PERIOD_VARIABLE',
-        'LOW_SURFACE_BRIGHTNESS_GALAXY', 'MASER', 'MICRO_LENSING_EVENT',
-        'MID_IR_SOURCE_3_TO_30_M', 'MILLIMETRIC_RADIO_SOURCE', 'MIRA_VARIABLE',
-        'MOLECULAR_CLOUD', 'MOVING_GROUP', 'NEAR_IR_SOURCE_3_M', 'NEBULA',
-        'NOT_AN_OBJECT_ERROR_ARTEFACT', 'OBJECT_OF_UNKNOWN_NATURE', 'OPEN_CLUSTER',
-        'ORION_VARIABLE', 'PAIR_OF_GALAXIES', 'PART_OF_A_GALAXY', 'PART_OF_CLOUD',
-        'PLANETARY_NEBULA', 'POST_AGB_STAR', 'PROTO_CLUSTER_OF_GALAXIES', 'PULSAR',
-        'PULSATING_VARIABLE', 'QUASAR', 'RADIO_BURST', 'RADIO_GALAXY',
-        'RADIO_SOURCE', 'RED_GIANT_BRANCH_STAR', 'RED_SUPERGIANT',
-        'REFLECTION_NEBULA', 'REGION_DEFINED_IN_THE_SKY', 'RR_LYRAE_VARIABLE',
-        'SEYFERT_1_GALAXY', 'SEYFERT_2_GALAXY', 'SEYFERT_GALAXY',
-        'SPECTROSCOPIC_BINARY', 'STAR', 'STARBURST_GALAXY', 'STAR_FORMING_REGION',
-        'STELLAR_STREAM', 'SUB_MILLIMETRIC_SOURCE', 'SUPERCLUSTER_OF_GALAXIES',
-        'SUPERNOVA_REMNANT', 'TRANSIENT_EVENT', 'T_TAURI_STAR',
-        'ULTRA_LUMINOUS_X_RAY_SOURCE', 'UNDERDENSE_REGION_OF_THE_UNIVERSE',
-        'UV_EMISSION_SOURCE', 'VARIABLE_STAR', 'WHITE_DWARF', 'WOLF_RAYET',
-        'X_RAY_SOURCE', 'YELLOW_SUPERGIANT', 'YOUNG_STELLAR_OBJECT'
-    ]
+    readonly dsoTypeOptions: Union<SkyObjectType, 'ALL'>[] = ['ALL']
 
     readonly constellationOptions: Union<Constellation, 'ALL'>[] = ['ALL', ...CONSTELLATIONS]
 
@@ -363,8 +308,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
                         const hours = (context.parsed.x + 12) % 24
                         const minutes = (hours - Math.trunc(hours)) * 60
-                        const a = twoDigitsFormatter.format(Math.trunc(hours))
-                        const b = twoDigitsFormatter.format(minutes)
+                        const a = TWO_DIGITS_FORMATTER.format(Math.trunc(hours))
+                        const b = TWO_DIGITS_FORMATTER.format(minutes)
 
                         if (context.datasetIndex <= 8) {
                             return `${a}:${b}`
@@ -410,7 +355,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     autoSkip: false,
                     count: 10,
                     callback: (value) => {
-                        return oneDecimalPlaceFormatter.format(value as number)
+                        return ONE_DECIMAL_PLACE_FORMATTER.format(value as number)
                     }
                 },
                 border: {
@@ -440,7 +385,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                         const hours = (value as number + 12) % 24
                         const h = Math.trunc(hours)
                         const m = Math.trunc((hours - h) * 60)
-                        return m === 0 ? `${twoDigitsFormatter.format(h)}` : ''
+                        return m === 0 ? `${TWO_DIGITS_FORMATTER.format(h)}` : ''
                     }
                 },
                 grid: {
@@ -455,6 +400,33 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     private static readonly DEFAULT_SATELLITE_FILTERS: SatelliteGroupType[] = [
         'AMATEUR', 'BEIDOU', 'GALILEO', 'GLO_OPS', 'GNSS', 'GPS_OPS',
         'ONEWEB', 'SCIENCE', 'STARLINK', 'STATIONS', 'VISUAL'
+    ]
+
+    readonly ephemerisMenuItems: MenuItem[] = [
+        {
+            icon: 'mdi mdi-magnify',
+            label: 'Find stars around this object',
+            command: () => {
+                this.starFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
+                this.starFilter.declination = this.bodyPosition.declinationJ2000
+                if (this.starFilter.radius <= 0) this.starFilter.radius = 1
+                this.tab = 4
+                // this.showStarFilterDialog = true
+                this.filterStar()
+            },
+        },
+        {
+            icon: 'mdi mdi-magnify',
+            label: 'Find DSOs around this object',
+            command: () => {
+                this.dsoFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
+                this.dsoFilter.declination = this.bodyPosition.declinationJ2000
+                if (this.dsoFilter.radius <= 0) this.dsoFilter.radius = 1
+                this.tab = 5
+                // this.showDSOFilterDialog = true
+                this.filterDSO()
+            },
+        },
     ]
 
     constructor(
@@ -481,8 +453,11 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         // TODO: Refresh graph and twilight if hours past 12 (noon)
     }
 
-    ngOnInit() {
+    async ngOnInit() {
         this.electron.registerCron(EVERY_MINUTE_CRON_TIME)
+
+        this.starTypeOptions.push(... await this.api.starTypes())
+        this.dsoTypeOptions.push(... await this.api.dsoTypes())
     }
 
     async ngAfterContentInit() {
@@ -707,7 +682,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
             this.dateTime.setMinutes(this.dateTimeMinute)
         }
 
-        this.app.title = `Sky Atlas ・ ${this.location.name}`
+        this.app.subTitle = this.location.name
 
         try {
             // Sun.

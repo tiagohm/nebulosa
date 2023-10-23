@@ -3,6 +3,8 @@ package nebulosa.api.atlas.ephemeris
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
 import nebulosa.horizons.HorizonsService
+import nebulosa.horizons.NonUniqueObjectException
+import nebulosa.log.loggerFor
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.sbd.SmallBody
 import org.springframework.stereotype.Service
@@ -44,7 +46,7 @@ class HorizonsEphemerisProvider(private val horizonsService: HorizonsService) : 
                         startTime, endTime,
                         extraPrecision = true,
                         quantities = QUANTITIES,
-                    )
+                    ).execute()
             }
             is String -> {
                 if (target.startsWith("TLE@")) {
@@ -55,23 +57,38 @@ class HorizonsEphemerisProvider(private val horizonsService: HorizonsService) : 
                             startTime, endTime,
                             extraPrecision = true,
                             quantities = QUANTITIES,
-                        )
+                        ).execute()
                 } else {
-                    horizonsService
-                        .observer(
-                            target,
-                            position.longitude, position.latitude, position.elevation,
-                            startTime, endTime,
-                            extraPrecision = true,
-                            quantities = QUANTITIES,
-                        )
+                    try {
+                        horizonsService
+                            .observer(
+                                target,
+                                position.longitude, position.latitude, position.elevation,
+                                startTime, endTime,
+                                extraPrecision = true,
+                                quantities = QUANTITIES,
+                            ).execute()
+                    } catch (e: NonUniqueObjectException) {
+                        LOG.warn("non unique object. target={}, matches={}", target, e.recordItems)
+
+                        horizonsService
+                            .observer(
+                                "$target;CAP;NOFRAG".replace(";;", ";"),
+                                position.longitude, position.latitude, position.elevation,
+                                startTime, endTime,
+                                extraPrecision = true,
+                                quantities = QUANTITIES,
+                            ).execute()
+                    }
                 }
             }
             else -> return emptyList()
-        }.execute().body() ?: emptyList()
+        }.body() ?: emptyList()
     }
 
     companion object {
+
+        @JvmStatic private val LOG = loggerFor<HorizonsEphemerisProvider>()
 
         @JvmStatic private val QUANTITIES = arrayOf(
             HorizonsQuantity.ASTROMETRIC_RA, HorizonsQuantity.ASTROMETRIC_DEC,

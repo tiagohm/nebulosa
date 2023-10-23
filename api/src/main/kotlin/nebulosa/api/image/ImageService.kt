@@ -5,9 +5,7 @@ import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
-import nebulosa.fits.FitsKeywords
-import nebulosa.fits.dec
-import nebulosa.fits.ra
+import nebulosa.fits.*
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
 import nebulosa.io.transferAndClose
@@ -18,7 +16,6 @@ import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
 import nebulosa.platesolving.watney.WatneyPlateSolver
 import nebulosa.sbd.SmallBodyDatabaseService
-import nebulosa.simbad.SimbadCatalogType
 import nebulosa.simbad.SimbadService
 import nebulosa.simbad.SimbadSkyCatalog
 import nebulosa.skycatalog.ClassificationType
@@ -30,9 +27,9 @@ import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.nio.file.Path
 import java.time.Duration
-import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
 import javax.imageio.ImageIO
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -45,6 +42,7 @@ class ImageService(
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
     private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
+    private val systemExecutorService: ExecutorService,
 ) {
 
     @Synchronized
@@ -135,18 +133,20 @@ class ImageService(
         val annotations = Vector<ImageAnnotation>()
         val tasks = ArrayList<CompletableFuture<*>>()
 
-        val dateTime = image.header
-            .getStringValue(FitsKeywords.DATE_OBS)
-            ?.ifBlank { null }
-            ?.let(LocalDateTime::parse)
-            ?: LocalDateTime.now()
+        val dateTime = image.header.observationDate
 
         if (minorPlanets && dateTime != null) {
-            CompletableFuture.runAsync {
-                LOG.info("finding minor planet annotations. dateTime={}, calibration={}", dateTime, calibration)
+            CompletableFuture.runAsync({
+                val latitude = image.header.latitude.let { if (it.isFinite()) it else 0.0 }
+                val longitude = image.header.longitude.let { if (it.isFinite()) it else 0.0 }
+
+                LOG.info(
+                    "finding minor planet annotations. dateTime={}, latitude={}, longitude={}, calibration={}",
+                    dateTime, latitude, longitude, calibration
+                )
 
                 val data = smallBodyDatabaseService.identify(
-                    dateTime, 0.0, 0.0, 0.0,
+                    dateTime, latitude, longitude, 0.0,
                     calibration.rightAscension, calibration.declination, calibration.radius,
                     minorPlanetMagLimit,
                 ).execute().body() ?: return@runAsync
@@ -169,13 +169,13 @@ class ImageService(
                 }
 
                 LOG.info("Found {} minor planets", count)
-            }.whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
+            }, systemExecutorService).whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
         }
 
         // val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
 
         if (stars || dsos) {
-            CompletableFuture.runAsync {
+            CompletableFuture.runAsync({
                 LOG.info("finding star annotations. dateTime={}, calibration={}", dateTime, calibration)
 
                 val catalog = SimbadSkyCatalog(simbadService)
@@ -197,10 +197,6 @@ class ImageService(
                 catalog.search(calibration.rightAscension, calibration.declination, calibration.radius, types)
 
                 for (entry in catalog) {
-                    if (SimbadCatalogType.entries.none { it.matches(entry.name) }) {
-                        continue
-                    }
-
                     val (x, y) = wcs.skyToPix(entry.rightAscensionJ2000, entry.declinationJ2000)
                     val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
                     else ImageAnnotation(x, y, dso = entry)
@@ -208,7 +204,7 @@ class ImageService(
                 }
 
                 LOG.info("Found {} stars/DSOs", catalog.size)
-            }.whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
+            }, systemExecutorService).whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
         }
 
         CompletableFuture.allOf(*tasks.toTypedArray()).join()
@@ -267,13 +263,51 @@ class ImageService(
         val (image, calibration) = framingService
             .frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!
 
-        val path = Path.of(System.getProperty("java.io.tmpdir"), "framing")
+        val path = Path.of("@framing")
         imageBucket.put(path, image, calibration)
         return path
+    }
+
+    fun coordinateInterpolation(path: Path): CoordinateInterpolation? {
+        val (image, calibration) = imageBucket[path] ?: return null
+
+        if (calibration == null || calibration.isEmpty || !calibration.solved) {
+            return null
+        }
+
+        val wcs = try {
+            WCSTransform(calibration)
+        } catch (e: WCSException) {
+            LOG.error("unable to generate annotations for image. path={}", path)
+            return null
+        }
+
+        val delta = COORDINATE_INTERPOLATION_DELTA
+        val width = image.width + (image.width % delta).let { if (it == 0) 0 else delta - it }
+        val xIter = 0..width step delta
+        val height = image.height + (image.height % delta).let { if (it == 0) 0 else delta - it }
+        val yIter = 0..height step delta
+
+        val md = DoubleArray(xIter.count() * yIter.count())
+        val ma = DoubleArray(md.size)
+        var count = 0
+
+        for (y in yIter) {
+            for (x in xIter) {
+                val (rightAscension, declination) = wcs.pixToSky(x.toDouble(), y.toDouble())
+                ma[count] = rightAscension.toDegrees
+                md[count] = declination.toDegrees
+                count++
+            }
+        }
+
+        return CoordinateInterpolation(ma, md, 0, 0, width, height, delta, image.header.observationDate)
     }
 
     companion object {
 
         @JvmStatic private val LOG = loggerFor<ImageService>()
+
+        private const val COORDINATE_INTERPOLATION_DELTA = 24
     }
 }

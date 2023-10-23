@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
 import {
-    Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, DeepSkyObject, Device,
+    Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation, DeepSkyObject, Device,
     FilterWheel, Focuser, GuideDirection, GuideOutput, GuiderStatus, HipsSurvey, HistoryStep,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
     ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
@@ -396,13 +396,13 @@ export class ApiService {
     positionOfPlanet(location: Location, code: string, dateTime: Date) {
         const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
         const query = this.http.query({ location: location.id, date, time })
-        return this.http.get<BodyPosition>(`sky-atlas/planets/${code}/position?${query}`)
+        return this.http.get<BodyPosition>(`sky-atlas/planets/${encodeURIComponent(code)}/position?${query}`)
     }
 
     altitudePointsOfPlanet(location: Location, code: string, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
         const query = this.http.query({ location: location.id, date })
-        return this.http.get<[number, number][]>(`sky-atlas/planets/${code}/altitude-points?${query}`)
+        return this.http.get<[number, number][]>(`sky-atlas/planets/${encodeURIComponent(code)}/altitude-points?${query}`)
     }
 
     positionOfStar(location: Location, star: Star, dateTime: Date) {
@@ -427,6 +427,10 @@ export class ApiService {
         return this.http.get<Star[]>(`sky-atlas/stars?${query}`)
     }
 
+    starTypes() {
+        return this.http.get<SkyObjectType[]>(`sky-atlas/stars/types`)
+    }
+
     positionOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
         const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
         const query = this.http.query({ location: location.id, date, time })
@@ -447,6 +451,10 @@ export class ApiService {
     ) {
         const query = this.http.query({ text, rightAscension, declination, radius, constellation, magnitudeMin, magnitudeMax, type })
         return this.http.get<DeepSkyObject[]>(`sky-atlas/dsos?${query}`)
+    }
+
+    dsoTypes() {
+        return this.http.get<SkyObjectType[]>(`sky-atlas/dsos/types`)
     }
 
     positionOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
@@ -500,6 +508,11 @@ export class ApiService {
     saveImageAs(inputPath: string, outputPath: string) {
         const query = this.http.query({ inputPath, outputPath })
         return this.http.put<void>(`image/save-as?${query}`)
+    }
+
+    coordinateInterpolation(path: string) {
+        const query = this.http.query({ path })
+        return this.http.get<CoordinateInterpolation | null>(`image/coordinate-interpolation?${query}`)
     }
 
     // FRAMING

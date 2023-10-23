@@ -146,7 +146,7 @@ function createWindow(data: OpenWindow<any>) {
 
             browserWindows.clear()
 
-            api?.kill(0)
+            api?.kill()
         } else {
             for (const [key, value] of browserWindows) {
                 if (value === window) {
@@ -165,7 +165,7 @@ function createWindow(data: OpenWindow<any>) {
 function createSplashScreen() {
     let splashWindow = browserWindows.get('splash')
 
-    if (!serve && splashWindow === null) {
+    if (!serve && !splashWindow) {
         splashWindow = new BrowserWindow({
             width: 512,
             height: 512,
@@ -233,6 +233,8 @@ try {
     app.on('ready', () => setTimeout(startApp, 400))
 
     app.on('window-all-closed', () => {
+        api?.kill()
+
         if (process.platform !== 'darwin') {
             app.quit()
         }

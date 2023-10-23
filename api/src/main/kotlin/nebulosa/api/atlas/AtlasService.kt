@@ -46,6 +46,10 @@ class AtlasService(
     private val positions = HashMap<LocationEntity, GeographicPosition>()
     @Volatile private var sunImage = ByteArray(0)
 
+    val starTypes by lazy { starRepository.types() }
+
+    val dsoTypes by lazy { deepSkyObjectRepository.types() }
+
     fun imageOfSun(output: HttpServletResponse) {
         output.contentType = "image/png"
         output.outputStream.write(sunImage)
@@ -154,7 +158,7 @@ class AtlasService(
     }
 
     fun altitudePointsOfSatellite(location: LocationEntity, satellite: SatelliteEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris("TLE@$${satellite.tle}", location, LocalDateTime.of(date, LocalTime.now()))
+        val ephemeris = bodyEphemeris("TLE@${satellite.tle}", location, LocalDateTime.of(date, LocalTime.now()))
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
@@ -181,10 +185,11 @@ class AtlasService(
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
     ) = starRepository.search(
-        text,
+        text.replace(INVALID_DSO_CHARS, "").replace("][", "").ifBlank { null },
         rightAscension, declination, radius,
         constellation,
-        magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type
+        magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type,
+        Pageable.ofSize(5000),
     )
 
     fun searchDSO(
@@ -194,10 +199,11 @@ class AtlasService(
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
     ) = deepSkyObjectRepository.search(
-        text,
+        text.replace(INVALID_DSO_CHARS, "").replace("][", "").ifBlank { null },
         rightAscension, declination, radius,
         constellation,
-        magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type
+        magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type,
+        Pageable.ofSize(5000),
     )
 
     @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
@@ -223,6 +229,8 @@ class AtlasService(
 
         private const val SUN = "10"
         private const val MOON = "301"
+
+        @JvmStatic private val INVALID_DSO_CHARS = Regex("[^\\w\\-\\s\\[\\].+]+")
 
         @JvmStatic
         private fun Double.clampMagnitude(): Double {

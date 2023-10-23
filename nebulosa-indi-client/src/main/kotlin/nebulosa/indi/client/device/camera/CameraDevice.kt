@@ -352,6 +352,32 @@ internal open class CameraDevice(
         }
     }
 
+    protected fun processGain(message: NumberVector<*>, element: NumberElement) {
+        if (message is DefNumberVector) {
+            gainMin = element.min.toInt()
+            gainMax = element.max.toInt()
+
+            handler.fireOnEventReceived(CameraGainMinMaxChanged(this))
+        }
+
+        gain = element.value.toInt()
+
+        handler.fireOnEventReceived(CameraGainChanged(this))
+    }
+
+    protected fun processOffset(message: NumberVector<*>, element: NumberElement) {
+        if (message is DefNumberVector) {
+            offsetMin = element.min.toInt()
+            offsetMax = element.max.toInt()
+
+            handler.fireOnEventReceived(CameraOffsetMinMaxChanged(this))
+        }
+
+        offset = element.value.toInt()
+
+        handler.fireOnEventReceived(CameraOffsetChanged(this))
+    }
+
     override fun toString() = "Camera(name=$name, connected=$connected, exposuring=$exposuring," +
             " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
             " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +

@@ -459,6 +459,17 @@ export interface DARVPolarAlignmentGuidePulseElapsed extends DARVPolarAlignmentE
     direction: GuideDirection
 }
 
+export interface CoordinateInterpolation {
+    ma: number[]
+    md: number[]
+    x0: number
+    y0: number
+    x1: number
+    y1: number
+    delta: number
+    date?: string
+}
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',
