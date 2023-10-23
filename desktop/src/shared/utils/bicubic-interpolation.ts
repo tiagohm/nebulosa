@@ -81,8 +81,8 @@ export class BicubicSplineInterpolation extends BicubicInterpolationBase {
     }
 
     private spline(p: number[], C: number[]) {
-        let f12 = p[1] * C[1] + p[2] * C[2]
-        let f03 = p[0] * C[0] + p[3] * C[3]
+        const f12 = p[1] * C[1] + p[2] * C[2]
+        const f03 = p[0] * C[0] + p[3] * C[3]
         return (-f03 < f12 * this.clamp) ? f12 + f03 : f12 / (C[1] + C[2])
     }
 }
