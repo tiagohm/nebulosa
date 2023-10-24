@@ -27,3 +27,4 @@
 * https://www.flaticon.com/free-icon/milky-way_1086076
 * https://www.flaticon.com/free-icon/satellite_1086093
 * https://www.flaticon.com/free-icon/schedule_3652191
+* https://www.flaticon.com/free-icon/search_10770011

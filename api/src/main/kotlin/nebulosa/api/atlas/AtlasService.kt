@@ -91,7 +91,7 @@ class AtlasService(
         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found simbad with id: [$id]")
         cachedSimbadEntries[target.id] = target
         return positionOfBody(target, location, dateTime)!!
-            .copy(magnitude = target.magnitude, constellation = target.constellation, distance = target.distance.toLightYears, distanceUnit = "ly")
+            .copy(magnitude = target.magnitude, constellation = target.constellation, distance = target.distance, distanceUnit = "ly")
     }
 
     fun positionOfSatellite(location: LocationEntity, satellite: SatelliteEntity, dateTime: LocalDateTime): BodyPosition {

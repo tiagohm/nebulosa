@@ -48,12 +48,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     private settingsTabActivated = false
 
     get tab() {
-        return this.settingsTabActivated ? 7 : this.activeTab
+        return this.settingsTabActivated ? 8 : this.activeTab
     }
 
     set tab(value: number) {
         this.settingsTabActivated = false
-        if (value === 7) this.settingsTabActivated = true
+        if (value === 8) this.settingsTabActivated = true
         else this.activeTab = value
     }
 
@@ -134,12 +134,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     dsoSearchText = ''
     showDSOFilterDialog = false
 
-    satellite?: Satellite
-    satelliteItems: Satellite[] = []
-    satelliteSearchText = ''
-    showSatelliteFilterDialog = false
-    readonly satelliteSearchGroup = new Map<SatelliteGroupType, boolean>()
-
     readonly dsoFilter: SearchFilter = {
         text: '',
         rightAscension: '00h00m00s',
@@ -152,9 +146,32 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     readonly dsoTypeOptions: Union<SkyObjectType, 'ALL'>[] = ['ALL']
 
+    simbad?: DeepSkyObject
+    simbadItems: DeepSkyObject[] = []
+    simbadSearchText = ''
+    showSimbadFilterDialog = false
+
+    readonly simbadFilter: SearchFilter = {
+        text: '',
+        rightAscension: '00h00m00s',
+        declination: `+000°00'00"`,
+        radius: 0,
+        constellation: 'ALL',
+        magnitude: [-30, 30],
+        type: 'ALL',
+    }
+
+    readonly simbadTypeOptions: Union<SkyObjectType, 'ALL'>[] = ['ALL']
+
     readonly constellationOptions: Union<Constellation, 'ALL'>[] = ['ALL', ...CONSTELLATIONS]
 
-    name? = 'Sun'
+    satellite?: Satellite
+    satelliteItems: Satellite[] = []
+    satelliteSearchText = ''
+    showSatelliteFilterDialog = false
+    readonly satelliteSearchGroup = new Map<SatelliteGroupType, boolean>()
+
+    name?= 'Sun'
     tags: { title: string, severity: string }[] = []
 
     @ViewChild('imageOfSun')
@@ -411,6 +428,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.starFilter.declination = this.bodyPosition.declinationJ2000
                 if (this.starFilter.radius <= 0) this.starFilter.radius = 1
                 this.tab = 4
+                this.tabChanged()
                 // this.showStarFilterDialog = true
                 this.filterStar()
             },
@@ -423,8 +441,22 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.dsoFilter.declination = this.bodyPosition.declinationJ2000
                 if (this.dsoFilter.radius <= 0) this.dsoFilter.radius = 1
                 this.tab = 5
+                this.tabChanged()
                 // this.showDSOFilterDialog = true
                 this.filterDSO()
+            },
+        },
+        {
+            icon: 'mdi mdi-magnify',
+            label: 'Find around this object on Simbad',
+            command: () => {
+                this.simbadFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
+                this.simbadFilter.declination = this.bodyPosition.declinationJ2000
+                if (this.simbadFilter.radius <= 0) this.simbadFilter.radius = 1
+                this.tab = 6
+                this.tabChanged()
+                // this.showSimbadFilterDialog = true
+                this.filterSimbad()
             },
         },
     ]
@@ -458,6 +490,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
         this.starTypeOptions.push(... await this.api.starTypes())
         this.dsoTypeOptions.push(... await this.api.dsoTypes())
+        this.simbadTypeOptions.push(... await this.api.simbadTypes())
     }
 
     async ngAfterContentInit() {
@@ -527,6 +560,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         this.refreshTab(false, true)
     }
 
+    simbadChanged() {
+        this.refreshTab(false, true)
+    }
+
     satelliteChanged() {
         this.refreshTab(false, true)
     }
@@ -571,6 +608,27 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     async filterDSO() {
         await this.searchDSO()
         this.showDSOFilterDialog = false
+    }
+
+    async searchSimbad() {
+        const constellation = this.simbadFilter.constellation === 'ALL' ? undefined : this.simbadFilter.constellation
+        const type = this.simbadFilter.type === 'ALL' ? undefined : this.simbadFilter.type
+
+        this.refreshing = true
+
+        try {
+            this.simbadItems = await this.api.searchSimbad(this.simbadSearchText,
+                this.simbadFilter.rightAscension, this.simbadFilter.declination, this.simbadFilter.radius,
+                constellation, this.simbadFilter.magnitude[0], this.simbadFilter.magnitude[1], type,
+            )
+        } finally {
+            this.refreshing = false
+        }
+    }
+
+    async filterSimbad() {
+        await this.searchSimbad()
+        this.showSimbadFilterDialog = false
     }
 
     async searchSatellite() {
@@ -738,7 +796,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.tags = []
 
                 if (this.star) {
-                    this.name = this.star.name.replaceAll('|', ' · ')
+                    this.name = this.star.name
                     const bodyPosition = await this.api.positionOfStar(this.location!, this.star, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
@@ -751,7 +809,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.tags = []
 
                 if (this.dso) {
-                    this.name = this.dso.name.replaceAll('|', ' · ')
+                    this.name = this.dso.name
                     const bodyPosition = await this.api.positionOfDSO(this.location!, this.dso, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
@@ -759,8 +817,21 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
-            // Satellite.
+            // Simbad.
             else if (this.activeTab === 6) {
+                this.tags = []
+
+                if (this.simbad) {
+                    this.name = this.simbad.name
+                    const bodyPosition = await this.api.positionOfSimbad(this.location!, this.simbad, this.dateTime)
+                    Object.assign(this.bodyPosition, bodyPosition)
+                } else {
+                    this.name = undefined
+                    Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
+                }
+            }
+            // Satellite.
+            else if (this.activeTab === 7) {
                 this.tags = []
 
                 if (this.satellite) {
@@ -845,8 +916,18 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.altitudeData.datasets[9].data = []
             }
         }
-        // Satellite.
+        // Simbad.
         else if (this.activeTab === 6) {
+            if (this.simbad) {
+                const points = await this.api.altitudePointsOfSimbad(this.location!, this.simbad, this.dateTime)
+                AtlasComponent.belowZeroPoints(points)
+                this.altitudeData.datasets[9].data = points
+            } else {
+                this.altitudeData.datasets[9].data = []
+            }
+        }
+        // Satellite.
+        else if (this.activeTab === 7) {
             if (this.satellite) {
                 const points = await this.api.altitudePointsOfSatellite(this.location!, this.satellite, this.dateTime)
                 AtlasComponent.belowZeroPoints(points)
