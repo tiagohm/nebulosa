@@ -504,10 +504,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         if (coordinate) {
             const { ma, md, x0, y0, x1, y1, delta } = coordinate
+            const x = Math.max(0, Math.min(this.mouseCoordinate?.x ?? 0, this.imageInfo!.width))
+            const y = Math.max(0, Math.min(this.mouseCoordinate?.y ?? 0, this.imageInfo!.height))
             this.mouseCoordinateInterpolation = new CoordinateInterpolator(ma, md, x0, y0, x1, y1, delta)
-            this.mouseCoordinate = this.mouseCoordinateInterpolation.interpolateAsText(0, 0)
-            this.mouseCoordinate.x = 0
-            this.mouseCoordinate.y = 0
+            this.mouseCoordinate = this.mouseCoordinateInterpolation.interpolateAsText(x, y)
+            this.mouseCoordinate.x = x
+            this.mouseCoordinate.y = y
         } else {
             this.mouseCoordinateInterpolation = undefined
             this.mouseCoordinate = undefined
