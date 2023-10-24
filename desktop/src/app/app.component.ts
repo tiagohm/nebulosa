@@ -19,12 +19,17 @@ export class AppComponent implements AfterViewInit {
         '#1B5E20', '#33691E', '#B71C1C',
     ]
 
+    private _backgroundColor = AppComponent.BACKGROUND_COLORS[random.int(0, AppComponent.BACKGROUND_COLORS.length - 1)]
+
     pinned = false
     maximizable = false
-    backgroundColor = AppComponent.BACKGROUND_COLORS[random.int(0, AppComponent.BACKGROUND_COLORS.length - 1)]
     subTitle = ''
 
-    private night!: Element
+    get backgroundColor() {
+        return this.isNightMode ? '#B71C1C' : this._backgroundColor
+    }
+
+    private night!: HTMLElement
 
     get title() {
         return this.windowTitle.getTitle()
@@ -54,24 +59,35 @@ export class AppComponent implements AfterViewInit {
             this.maximizable = e.resizable === 'true'
         })
 
-        this.night = document.getElementsByTagName('night')[0]
-
-        const nightMode = this.preference.get('settings.nightMode', false)
-        this.nightMode(nightMode)
+        this.night = document.getElementsByTagName('night')[0] as HTMLElement
+        this.updateNightMode(this.isNightMode)
     }
 
-    nightMode(enabled: boolean) {
+    get isNightMode() {
+        return this.preference.isNightMode
+    }
+
+    set isNightMode(enabled: boolean) {
         if (enabled) {
-            this.night.classList.remove('hidden')
-            this.night.classList.add('block')
+            this.night.classList.replace('hidden', 'block')
+            this.night.style.background = '#ff00003b'
         } else {
-            this.night.classList.remove('block')
-            this.night.classList.add('hidden')
+            this.night.style.background = 'transparent'
+            this.night.classList.replace('block', 'hidden')
         }
 
-        this.preference.set('settings.nightMode', enabled)
+        // TODO: UPDATE ONLY ON SETTINGS WINDOW
+        this.preference.isNightMode = enabled
+        this.updateNightMode(enabled)
+    }
 
-        // TODO: MAKE TITLEBAR RED IF NIGHT MODE IS ON
+    private updateNightMode(enabled: boolean) {
+        if (enabled) {
+            this.night.classList.replace('hidden', 'block')
+        } else {
+            this.night.classList.replace('block', 'hidden')
+        }
+
         // TODO: NOTIFY ALL WINDOWS PREFERENCE_UPDATED(name, oldValue, newValue)
     }
 

@@ -29,4 +29,12 @@ export class PreferenceService {
     get size() {
         return localStorage.length
     }
+
+    get isNightMode() {
+        return this.get('settings.nightMode', false)
+    }
+
+    set isNightMode(enabled: boolean) {
+        this.set('settings.nightMode', enabled)
+    }
 }
