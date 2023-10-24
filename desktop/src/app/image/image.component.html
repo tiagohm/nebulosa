@@ -1,6 +1,6 @@
 <div class="inline-block relative">
     <img #image (load)="imageLoaded()" (click)="imageClicked($event, false)" (contextmenu)="imageClicked($event, true)"
-         class="select-none pixelated" (mousemove)="imageMouseMoved($event)" [class.cursor-crosshair]="mouseCoordinate" />
+         class="select-none pixelated" (mousemove)="imageMouseMoved($event)" [class.cursor-crosshair]="isMouseCoordinateVisible" />
 
     <svg *ngIf="crossHair" class="absolute left-0 top-0 w-full h-full pointer-events-none">
         <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#E53935" stroke-width="3"></line>
@@ -323,7 +323,7 @@
     </div>
 </p-dialog>
 
-<div class="grid fixed coordinates monospaced" *ngIf="mouseCoordinate">
+<div class="grid fixed coordinates monospaced" *ngIf="mouseCoordinate && isMouseCoordinateVisible">
     <div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
     <div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
     <div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>

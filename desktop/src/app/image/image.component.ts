@@ -276,6 +276,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     mouseCoordinate?: InterpolatedCoordinate<Angle> & Partial<{ x: number, y: number }>
     private mouseCoordinateInterpolation?: CoordinateInterpolator
 
+    get isMouseCoordinateVisible() {
+        return !!this.mouseCoordinate && !this.mirrorHorizontal && !this.mirrorVertical
+    }
+
     constructor(
         private app: AppComponent,
         private route: ActivatedRoute,
