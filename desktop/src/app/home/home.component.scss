@@ -3,6 +3,10 @@ p-button ::ng-deep {
         min-height: 56px;
         max-height: 56px;
         display: flex;
+
+        img {
+            height: 32px;
+        }
     }
 }
 

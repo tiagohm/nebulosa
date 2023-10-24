@@ -35,6 +35,10 @@
             .p-tabview-nav-link {
                 display: flex;
                 justify-content: center;
+
+                img {
+                    height: 16px;
+                }
             }
         }
 
