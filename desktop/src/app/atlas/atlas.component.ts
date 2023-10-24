@@ -33,6 +33,7 @@ export interface SearchFilter {
     constellation: Union<Constellation, 'ALL'>
     magnitude: [number, number]
     type: Union<SkyObjectType, 'ALL'>
+    types: Union<SkyObjectType, 'ALL'>[]
 }
 
 @Component({
@@ -115,9 +116,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     star?: Star
     starItems: Star[] = []
     starSearchText = ''
-    showStarFilterDialog = false
 
-    readonly starFilter: SearchFilter = {
+    private readonly starFilter: SearchFilter = {
         text: '',
         rightAscension: '00h00m00s',
         declination: `+000°00'00"`,
@@ -125,16 +125,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         constellation: 'ALL',
         magnitude: [-30, 30],
         type: 'ALL',
+        types: ['ALL'],
     }
-
-    readonly starTypeOptions: Union<SkyObjectType, 'ALL'>[] = ['ALL']
 
     dso?: DeepSkyObject
     dsoItems: DeepSkyObject[] = []
     dsoSearchText = ''
-    showDSOFilterDialog = false
 
-    readonly dsoFilter: SearchFilter = {
+    private readonly dsoFilter: SearchFilter = {
         text: '',
         rightAscension: '00h00m00s',
         declination: `+000°00'00"`,
@@ -142,16 +140,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         constellation: 'ALL',
         magnitude: [-30, 30],
         type: 'ALL',
+        types: ['ALL'],
     }
-
-    readonly dsoTypeOptions: Union<SkyObjectType, 'ALL'>[] = ['ALL']
 
     simbad?: DeepSkyObject
     simbadItems: DeepSkyObject[] = []
     simbadSearchText = ''
-    showSimbadFilterDialog = false
 
-    readonly simbadFilter: SearchFilter = {
+    private readonly simbadFilter: SearchFilter = {
         text: '',
         rightAscension: '00h00m00s',
         declination: `+000°00'00"`,
@@ -159,10 +155,11 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         constellation: 'ALL',
         magnitude: [-30, 30],
         type: 'ALL',
+        types: ['ALL'],
     }
 
-    readonly simbadTypeOptions: Union<SkyObjectType, 'ALL'>[] = ['ALL']
-
+    showSkyObjectFilter = false
+    skyObjectFilter?: SearchFilter
     readonly constellationOptions: Union<Constellation, 'ALL'>[] = ['ALL', ...CONSTELLATIONS]
 
     satellite?: Satellite
@@ -427,10 +424,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.starFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
                 this.starFilter.declination = this.bodyPosition.declinationJ2000
                 if (this.starFilter.radius <= 0) this.starFilter.radius = 1
+                this.skyObjectFilter = this.starFilter
                 this.tab = 4
                 this.tabChanged()
-                // this.showStarFilterDialog = true
-                this.filterStar()
+                this.filterSkyObject()
             },
         },
         {
@@ -440,10 +437,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.dsoFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
                 this.dsoFilter.declination = this.bodyPosition.declinationJ2000
                 if (this.dsoFilter.radius <= 0) this.dsoFilter.radius = 1
+                this.skyObjectFilter = this.dsoFilter
                 this.tab = 5
                 this.tabChanged()
-                // this.showDSOFilterDialog = true
-                this.filterDSO()
+                this.filterSkyObject()
             },
         },
         {
@@ -453,10 +450,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.simbadFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
                 this.simbadFilter.declination = this.bodyPosition.declinationJ2000
                 if (this.simbadFilter.radius <= 0) this.simbadFilter.radius = 1
+                this.skyObjectFilter = this.simbadFilter
                 this.tab = 6
                 this.tabChanged()
-                // this.showSimbadFilterDialog = true
-                this.filterSimbad()
+                this.filterSkyObject()
             },
         },
     ]
@@ -488,9 +485,9 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     async ngOnInit() {
         this.electron.registerCron(EVERY_MINUTE_CRON_TIME)
 
-        this.starTypeOptions.push(... await this.api.starTypes())
-        this.dsoTypeOptions.push(... await this.api.dsoTypes())
-        this.simbadTypeOptions.push(... await this.api.simbadTypes())
+        this.starFilter.types.push(... await this.api.starTypes())
+        this.dsoFilter.types.push(... await this.api.dsoTypes())
+        this.simbadFilter.types.push(... await this.api.simbadTypes())
     }
 
     async ngAfterContentInit() {
@@ -568,6 +565,11 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         this.refreshTab(false, true)
     }
 
+    showStarFilterDialog() {
+        this.skyObjectFilter = this.starFilter
+        this.showSkyObjectFilter = true
+    }
+
     async searchStar() {
         const constellation = this.starFilter.constellation === 'ALL' ? undefined : this.starFilter.constellation
         const type = this.starFilter.type === 'ALL' ? undefined : this.starFilter.type
@@ -584,9 +586,9 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         }
     }
 
-    async filterStar() {
-        await this.searchStar()
-        this.showStarFilterDialog = false
+    showDSOFilterDialog() {
+        this.skyObjectFilter = this.dsoFilter
+        this.showSkyObjectFilter = true
     }
 
     async searchDSO() {
@@ -605,9 +607,9 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         }
     }
 
-    async filterDSO() {
-        await this.searchDSO()
-        this.showDSOFilterDialog = false
+    showSimbadFilterDialog() {
+        this.skyObjectFilter = this.simbadFilter
+        this.showSkyObjectFilter = true
     }
 
     async searchSimbad() {
@@ -626,9 +628,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         }
     }
 
-    async filterSimbad() {
-        await this.searchSimbad()
-        this.showSimbadFilterDialog = false
+    async filterSkyObject() {
+        if (this.skyObjectFilter === this.starFilter) await this.searchStar()
+        else if (this.skyObjectFilter === this.dsoFilter) await this.searchDSO()
+        else if (this.skyObjectFilter === this.simbadFilter) await this.searchSimbad()
+
+        this.showSkyObjectFilter = false
     }
 
     async searchSatellite() {

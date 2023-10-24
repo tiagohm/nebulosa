@@ -91,7 +91,7 @@
                     </div>
                     <div class="col-3 flex align-items-center gap-1">
                         <p-button [disabled]="refreshing" (onClick)="searchStar()" icon="mdi mdi-magnify" severity="info" size="small" />
-                        <p-button [disabled]="refreshing" (onClick)="showStarFilterDialog = true" icon="mdi mdi-filter" size="small" />
+                        <p-button [disabled]="refreshing" (onClick)="showStarFilterDialog()" icon="mdi mdi-filter" size="small" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -130,7 +130,7 @@
                     </div>
                     <div class="col-3 flex align-items-center gap-1">
                         <p-button [disabled]="refreshing" (onClick)="searchDSO()" icon="mdi mdi-magnify" size="small" severity="info" />
-                        <p-button [disabled]="refreshing" (onClick)="showDSOFilterDialog = true" icon="mdi mdi-filter" size="small" />
+                        <p-button [disabled]="refreshing" (onClick)="showDSOFilterDialog()" icon="mdi mdi-filter" size="small" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -169,7 +169,7 @@
                     </div>
                     <div class="col-3 flex align-items-center gap-1">
                         <p-button [disabled]="refreshing" (onClick)="searchSimbad()" icon="mdi mdi-magnify" size="small" severity="info" />
-                        <p-button [disabled]="refreshing" (onClick)="showSimbadFilterDialog = true" icon="mdi mdi-filter" size="small" />
+                        <p-button [disabled]="refreshing" (onClick)="showSimbadFilterDialog()" icon="mdi mdi-filter" size="small" />
                     </div>
                 </div>
                 <div class="grid flex align-items-center justify-content-center mt-2">
@@ -381,30 +381,30 @@
     </div>
 </p-dialog>
 
-<p-dialog header="Star Filter" [draggable]="false" [(visible)]="showStarFilterDialog" [modal]="true" [style]="{width: '80vw'}">
-    <div class="grid mt-2">
+<p-dialog header="Filter" [draggable]="false" [(visible)]="showSkyObjectFilter" [modal]="true" [style]="{width: '80vw'}">
+    <div class="grid mt-2" *ngIf="skyObjectFilter">
         <div class="col-4">
             <span class="p-float-label">
-                <input pInputText class="border-0 max-w-full" [value]="starFilter.rightAscension" />
+                <input pInputText class="border-0 w-full" [value]="skyObjectFilter.rightAscension" />
                 <label>RA (h)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input pInputText class="border-0 max-w-full" [value]="starFilter.declination" />
+                <input pInputText class="border-0 w-full" [value]="skyObjectFilter.declination" />
                 <label>DEC (°)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
                 <p-inputNumber [min]="0" [max]="90" class="w-full" [showButtons]="true" inputStyleClass="border-0 w-full"
-                               [(ngModel)]="starFilter.radius" />
+                               [(ngModel)]="skyObjectFilter.radius" />
                 <label>Radius (°)</label>
             </span>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="constellationOptions" [(ngModel)]="starFilter.constellation" [filter]="true" appendTo="body"
+                <p-dropdown [options]="constellationOptions" [(ngModel)]="skyObjectFilter.constellation" [filter]="true" appendTo="body"
                             styleClass="border-0">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
@@ -422,7 +422,7 @@
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="starTypeOptions" [(ngModel)]="starFilter.type" [filter]="true" appendTo="body" styleClass="border-0">
+                <p-dropdown [options]="skyObjectFilter.types" [(ngModel)]="skyObjectFilter.type" appendTo="body" [filter]="true" styleClass="border-0">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>
@@ -438,145 +438,12 @@
             </span>
         </div>
         <div class="col-12">
-            <p>Magnitude min: {{ starFilter.magnitude[0] }} max: {{ starFilter.magnitude[1] }}</p>
-            <p-slider class="mt-3" [min]="-30" [max]="30" styleClass="mx-2" [(ngModel)]="starFilter.magnitude" [range]="true" />
+            <p>Magnitude min: {{ skyObjectFilter.magnitude[0] }} max: {{ skyObjectFilter.magnitude[1] }}</p>
+            <p-slider class="mt-3" [min]="-30" [max]="30" styleClass="mx-2" [(ngModel)]="skyObjectFilter.magnitude" [range]="true" />
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" (onClick)="filterStar()" />
-    </ng-template>
-</p-dialog>
-
-<p-dialog header="DSO Filter" [draggable]="false" [(visible)]="showDSOFilterDialog" [modal]="true" [style]="{width: '80vw'}">
-    <div class="grid mt-2">
-        <div class="col-4">
-            <span class="p-float-label">
-                <input pInputText class="border-0 max-w-full" [value]="dsoFilter.rightAscension" />
-                <label>RA (h)</label>
-            </span>
-        </div>
-        <div class="col-4">
-            <span class="p-float-label">
-                <input pInputText class="border-0 max-w-full" [value]="dsoFilter.declination" />
-                <label>DEC (°)</label>
-            </span>
-        </div>
-        <div class="col-4">
-            <span class="p-float-label">
-                <p-inputNumber [min]="0" [max]="90" class="w-full" [showButtons]="true" inputStyleClass="border-0 w-full"
-                               [(ngModel)]="dsoFilter.radius" />
-                <label>Radius (°)</label>
-            </span>
-        </div>
-        <div class="col-6">
-            <span class="p-float-label">
-                <p-dropdown [options]="constellationOptions" [(ngModel)]="dsoFilter.constellation" [filter]="true" appendTo="body"
-                            styleClass="border-0">
-                    <ng-template let-item pTemplate="selectedItem">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                    <ng-template let-item pTemplate="item">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                </p-dropdown>
-                <label>Constellation</label>
-            </span>
-        </div>
-        <div class="col-6">
-            <span class="p-float-label">
-                <p-dropdown [options]="dsoTypeOptions" [(ngModel)]="dsoFilter.type" appendTo="body" [filter]="true" styleClass="border-0">
-                    <ng-template let-item pTemplate="selectedItem">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                    <ng-template let-item pTemplate="item">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                </p-dropdown>
-                <label>Type</label>
-            </span>
-        </div>
-        <div class="col-12">
-            <p>Magnitude min: {{ dsoFilter.magnitude[0] }} max: {{ dsoFilter.magnitude[1] }}</p>
-            <p-slider class="mt-3" [min]="-30" [max]="30" styleClass="mx-2" [(ngModel)]="dsoFilter.magnitude" [range]="true" />
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" (onClick)="filterDSO()" />
-    </ng-template>
-</p-dialog>
-
-
-<p-dialog header="Simbad Filter" [draggable]="false" [(visible)]="showSimbadFilterDialog" [modal]="true" [style]="{width: '80vw'}">
-    <div class="grid mt-2">
-        <div class="col-4">
-            <span class="p-float-label">
-                <input pInputText class="border-0 max-w-full" [value]="simbadFilter.rightAscension" />
-                <label>RA (h)</label>
-            </span>
-        </div>
-        <div class="col-4">
-            <span class="p-float-label">
-                <input pInputText class="border-0 max-w-full" [value]="simbadFilter.declination" />
-                <label>DEC (°)</label>
-            </span>
-        </div>
-        <div class="col-4">
-            <span class="p-float-label">
-                <p-inputNumber [min]="0" [max]="90" class="w-full" [showButtons]="true" inputStyleClass="border-0 w-full"
-                               [(ngModel)]="simbadFilter.radius" />
-                <label>Radius (°)</label>
-            </span>
-        </div>
-        <div class="col-6">
-            <span class="p-float-label">
-                <p-dropdown [options]="constellationOptions" [(ngModel)]="simbadFilter.constellation" [filter]="true" appendTo="body"
-                            styleClass="border-0">
-                    <ng-template let-item pTemplate="selectedItem">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                    <ng-template let-item pTemplate="item">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                </p-dropdown>
-                <label>Constellation</label>
-            </span>
-        </div>
-        <div class="col-6">
-            <span class="p-float-label">
-                <p-dropdown [options]="dsoTypeOptions" [(ngModel)]="simbadFilter.type" appendTo="body" [filter]="true" styleClass="border-0">
-                    <ng-template let-item pTemplate="selectedItem">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                    <ng-template let-item pTemplate="item">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                </p-dropdown>
-                <label>Type</label>
-            </span>
-        </div>
-        <div class="col-12">
-            <p>Magnitude min: {{ simbadFilter.magnitude[0] }} max: {{ simbadFilter.magnitude[1] }}</p>
-            <p-slider class="mt-3" [min]="-30" [max]="30" styleClass="mx-2" [(ngModel)]="simbadFilter.magnitude" [range]="true" />
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" (onClick)="filterSimbad()" />
+        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" (onClick)="filterSkyObject()" />
     </ng-template>
 </p-dialog>
 
