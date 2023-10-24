@@ -29,44 +29,34 @@ class AtlasController(
     fun positionOfSun(
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): BodyPosition {
-        return atlasService.positionOfSun(location, dateTime)
-    }
+    ) = atlasService.positionOfSun(location, dateTime)
 
     @GetMapping("sun/altitude-points")
     fun altitudePointsOfSun(
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
         @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
-    ): List<DoubleArray> {
-        return atlasService.altitudePointsOfSun(location, dateTime.toLocalDate(), stepSize)
-    }
+    ) = atlasService.altitudePointsOfSun(location, dateTime.toLocalDate(), stepSize)
 
     @GetMapping("moon/position")
     fun positionOfMoon(
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): BodyPosition {
-        return atlasService.positionOfMoon(location, dateTime)
-    }
+    ) = atlasService.positionOfMoon(location, dateTime)
 
     @GetMapping("moon/altitude-points")
     fun altitudePointsOfMoon(
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ): List<DoubleArray> {
-        return atlasService.altitudePointsOfMoon(location, dateTime.toLocalDate(), stepSize)
-    }
+    ) = atlasService.altitudePointsOfMoon(location, dateTime.toLocalDate(), stepSize)
 
     @GetMapping("planets/{code}/position")
     fun positionOfPlanet(
         @PathVariable code: String,
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): BodyPosition {
-        return atlasService.positionOfPlanet(location, code, dateTime)
-    }
+    ) = atlasService.positionOfPlanet(location, code, dateTime)
 
     @GetMapping("planets/{code}/altitude-points")
     fun altitudePointsOfPlanet(
@@ -74,23 +64,17 @@ class AtlasController(
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ): List<DoubleArray> {
-        return atlasService.altitudePointsOfPlanet(location, code, dateTime.toLocalDate(), stepSize)
-    }
+    ) = atlasService.altitudePointsOfPlanet(location, code, dateTime.toLocalDate(), stepSize)
 
     @GetMapping("minor-planets")
-    fun searchMinorPlanet(@RequestParam @Valid @NotBlank text: String): MinorPlanet {
-        return atlasService.searchMinorPlanet(text)
-    }
+    fun searchMinorPlanet(@RequestParam @Valid @NotBlank text: String) = atlasService.searchMinorPlanet(text)
 
     @GetMapping("stars/{star}/position")
     fun positionOfStar(
         @EntityBy star: StarEntity,
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): BodyPosition {
-        return atlasService.positionOfStar(location, star, dateTime)
-    }
+    ) = atlasService.positionOfStar(location, star, dateTime)
 
     @GetMapping("stars/{star}/altitude-points")
     fun altitudePointsOfStar(
@@ -98,9 +82,7 @@ class AtlasController(
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ): List<DoubleArray> {
-        return atlasService.altitudePointsOfStar(location, star, dateTime.toLocalDate(), stepSize)
-    }
+    ) = atlasService.altitudePointsOfStar(location, star, dateTime.toLocalDate(), stepSize)
 
     @GetMapping("stars")
     fun searchStar(
@@ -118,18 +100,14 @@ class AtlasController(
     )
 
     @GetMapping("stars/types")
-    fun starTypes(): List<SkyObjectType> {
-        return atlasService.starTypes
-    }
+    fun starTypes() = atlasService.starTypes
 
     @GetMapping("dsos/{dso}/position")
     fun positionOfDSO(
         @EntityBy dso: DeepSkyObjectEntity,
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): BodyPosition {
-        return atlasService.positionOfDSO(location, dso, dateTime)
-    }
+    ) = atlasService.positionOfDSO(location, dso, dateTime)
 
     @GetMapping("dsos/{dso}/altitude-points")
     fun altitudePointsOfDSO(
@@ -137,9 +115,7 @@ class AtlasController(
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ): List<DoubleArray> {
-        return atlasService.altitudePointsOfDSO(location, dso, dateTime.toLocalDate(), stepSize)
-    }
+    ) = atlasService.altitudePointsOfDSO(location, dso, dateTime.toLocalDate(), stepSize)
 
     @GetMapping("dsos")
     fun searchDSO(
@@ -157,18 +133,47 @@ class AtlasController(
     )
 
     @GetMapping("dsos/types")
-    fun dsoTypes(): List<SkyObjectType> {
-        return atlasService.dsoTypes
-    }
+    fun dsoTypes() = atlasService.dsoTypes
+
+    @GetMapping("simbad/{id}/position")
+    fun positionOfSimbad(
+        @PathVariable id: Long,
+        @EntityBy location: LocationEntity,
+        @DateAndTime dateTime: LocalDateTime,
+    ) = atlasService.positionOfSimbad(location, id, dateTime)
+
+    @GetMapping("simbad/{id}/altitude-points")
+    fun altitudePointsOfSimbad(
+        @PathVariable id: Long,
+        @EntityBy location: LocationEntity,
+        @DateAndTime dateTime: LocalDateTime,
+        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
+    ) = atlasService.altitudePointsOfSimbad(location, id, dateTime.toLocalDate(), stepSize)
+
+    @GetMapping("simbad")
+    fun searchSimbad(
+        @RequestParam(required = false, defaultValue = "") text: String,
+        @RequestParam(required = false, defaultValue = "") rightAscension: String,
+        @RequestParam(required = false, defaultValue = "") declination: String,
+        @RequestParam(required = false, defaultValue = "0.0") radius: Double,
+        @RequestParam(required = false) constellation: Constellation?,
+        @RequestParam(required = false, defaultValue = "-99.0") magnitudeMin: Double,
+        @RequestParam(required = false, defaultValue = "99.0") magnitudeMax: Double,
+        @RequestParam(required = false) type: SkyObjectType?,
+    ) = atlasService.searchSimbad(
+        text, rightAscension.hours, declination.deg, radius.deg,
+        constellation, magnitudeMin, magnitudeMax, type,
+    )
+
+    @GetMapping("simbad/types")
+    fun simbadTypes() = atlasService.simbadTypes
 
     @GetMapping("satellites/{satellite}/position")
     fun positionOfSatellite(
         @EntityBy satellite: SatelliteEntity,
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): BodyPosition {
-        return atlasService.positionOfSatellite(location, satellite, dateTime)
-    }
+    ) = atlasService.positionOfSatellite(location, satellite, dateTime)
 
     @GetMapping("satellites/{satellite}/altitude-points")
     fun altitudePointsOfSatellite(
@@ -176,23 +181,17 @@ class AtlasController(
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ): List<DoubleArray> {
-        return atlasService.altitudePointsOfSatellite(location, satellite, dateTime.toLocalDate(), stepSize)
-    }
+    ) = atlasService.altitudePointsOfSatellite(location, satellite, dateTime.toLocalDate(), stepSize)
 
     @GetMapping("satellites")
     fun searchSatellites(
         @RequestParam(required = false, defaultValue = "") text: String,
         @RequestParam(name = "group", required = false) groups: List<SatelliteGroupType>?,
-    ): List<SatelliteEntity> {
-        return atlasService.searchSatellites(text, groups ?: emptyList())
-    }
+    ) = atlasService.searchSatellites(text, groups ?: emptyList())
 
     @GetMapping("twilight")
     fun twilight(
         @EntityBy location: LocationEntity,
         @DateAndTime dateTime: LocalDateTime,
-    ): Twilight {
-        return atlasService.twilight(location, dateTime.toLocalDate())
-    }
+    ) = atlasService.twilight(location, dateTime.toLocalDate())
 }

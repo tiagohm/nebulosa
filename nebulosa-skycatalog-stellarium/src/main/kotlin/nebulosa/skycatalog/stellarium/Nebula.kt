@@ -19,6 +19,8 @@ class Nebula : SkyCatalog<NebulaEntry>(94661) {
         source: Source,
         namesSource: Source? = null,
     ) {
+        clear()
+
         val buffer = source.buffer()
 
         buffer.readString() // Version.

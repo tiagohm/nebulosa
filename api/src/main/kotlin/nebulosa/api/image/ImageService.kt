@@ -16,8 +16,8 @@ import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
 import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
 import nebulosa.platesolving.watney.WatneyPlateSolver
 import nebulosa.sbd.SmallBodyDatabaseService
+import nebulosa.simbad.SimbadSearch
 import nebulosa.simbad.SimbadService
-import nebulosa.simbad.SimbadSkyCatalog
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.skycatalog.SkyObjectType
 import nebulosa.wcs.WCSException
@@ -178,8 +178,6 @@ class ImageService(
             CompletableFuture.runAsync({
                 LOG.info("finding star annotations. dateTime={}, calibration={}", dateTime, calibration)
 
-                val catalog = SimbadSkyCatalog(simbadService)
-
                 val types = ArrayList<SkyObjectType>(4)
 
                 if (stars) {
@@ -194,7 +192,12 @@ class ImageService(
                     types.add(SkyObjectType.INTERACTING_GALAXIES)
                 }
 
-                catalog.search(calibration.rightAscension, calibration.declination, calibration.radius, types)
+                val search = SimbadSearch.Builder()
+                    .region(calibration.rightAscension, calibration.declination, calibration.radius)
+                    .types(types)
+                    .build()
+
+                val catalog = simbadService.search(search)
 
                 for (entry in catalog) {
                     val (x, y) = wcs.skyToPix(entry.rightAscensionJ2000, entry.declinationJ2000)
