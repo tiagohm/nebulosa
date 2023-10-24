@@ -344,12 +344,12 @@
                     </div>
                 </div>
                 <div class="col-12 flex justify-content-center">
-                    <p-button [disabled]="refreshing" [text]="true" severity="info" (onClick)="mountSync()" icon="mdi mdi-sync" label="Sync" />
-                    <p-button [disabled]="refreshing" [text]="true" severity="success" (onClick)="mountGoTo()" icon="mdi mdi-telescope"
+                    <p-button [disabled]="!name || refreshing" [text]="true" severity="info" (onClick)="mountSync()" icon="mdi mdi-sync" label="Sync" />
+                    <p-button [disabled]="!name || refreshing" [text]="true" severity="success" (onClick)="mountGoTo()" icon="mdi mdi-telescope"
                               label="Go To" />
-                    <p-button [disabled]="refreshing" [text]="true" severity="success" (onClick)="mountSlew()" icon="mdi mdi-telescope"
+                    <p-button [disabled]="!name || refreshing" [text]="true" severity="success" (onClick)="mountSlew()" icon="mdi mdi-telescope"
                               label="Slew" />
-                    <p-button [disabled]="refreshing" [text]="true" (onClick)="frame()" icon="mdi mdi-image" label="Frame" />
+                    <p-button [disabled]="!name || refreshing" [text]="true" (onClick)="frame()" icon="mdi mdi-image" label="Frame" />
                 </div>
             </div>
         </p-tabPanel>
