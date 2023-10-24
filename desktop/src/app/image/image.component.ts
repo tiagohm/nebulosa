@@ -306,7 +306,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         electron.on('PARAMS_CHANGED', async (_, event: ImageParams) => {
             await this.closeImage()
 
-            this.loadImageFromParams(event)
+            ngZone.run(() => {
+                this.loadImageFromParams(event)
+            })
         })
 
         this.solverPathOrUrl = this.preference.get('image.solver.pathOrUrl', '')
@@ -507,7 +509,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             const x = Math.max(0, Math.min(this.mouseCoordinate?.x ?? 0, this.imageInfo!.width))
             const y = Math.max(0, Math.min(this.mouseCoordinate?.y ?? 0, this.imageInfo!.height))
             this.mouseCoordinateInterpolation = new CoordinateInterpolator(ma, md, x0, y0, x1, y1, delta)
-            this.mouseCoordinate = this.mouseCoordinateInterpolation.interpolateAsText(x, y)
+            this.mouseCoordinate = this.mouseCoordinateInterpolation.interpolateAsText(x, y, true, true, false)
             this.mouseCoordinate.x = x
             this.mouseCoordinate.y = y
         } else {
