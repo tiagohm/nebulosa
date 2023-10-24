@@ -1,4 +1,4 @@
 <p-dialog [showHeader]="false" [resizable]="false" [(visible)]="visible" [modal]="true" [closeOnEscape]="true"
-          [dismissableMask]="true" [closable]="true" (onShow)="onShow()" (onHide)="hide()" [style]="{width: 'auto'}">
+          [dismissableMask]="true" [closable]="true" [draggable]="false" (onShow)="onShow()" (onHide)="hide()" [style]="{width: 'auto'}">
     <p-slideMenu *ngIf="visible" #slideMenu [model]="model" [viewportHeight]="viewportHeight" appendTo="body" />
 </p-dialog>

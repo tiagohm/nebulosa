@@ -224,7 +224,7 @@
 </div>
 <div class="grid px-2 relative">
     <div class="col-12 flex align-items-start justify-content-center gap-1" style="min-height: 32px;">
-        <span class="text-overflow-scroll">{{ name }}</span>
+        <span class="text-overflow-scroll">{{ name ?? '-' }}</span>
         <p-tag *ngFor="let tag of tags" [severity]="tag.severity" [value]="tag.title" />
     </div>
     <p-tabView [style]="{height: '258px', width: '100vw'}">
@@ -300,7 +300,7 @@
                             </span>
                         </div>
                         <div class="col-3 text-center">
-                            <p-button [text]="true" [rounded]="true" icon="mdi mdi-lg mdi-dots-vertical" (click)="ephemerisDialogMenu.show()" />
+                            <p-button [disabled]="!name || refreshing" [text]="true" [rounded]="true" icon="mdi mdi-lg mdi-dots-vertical" (click)="ephemerisDialogMenu.show()" />
                         </div>
                     </div>
                 </div>

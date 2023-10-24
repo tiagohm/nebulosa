@@ -154,7 +154,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     readonly constellationOptions: Union<Constellation, 'ALL'>[] = ['ALL', ...CONSTELLATIONS]
 
-    name = 'Sun'
+    name? = 'Sun'
     tags: { title: string, severity: string }[] = []
 
     @ViewChild('imageOfSun')
@@ -711,7 +711,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     const bodyPosition = await this.api.positionOfPlanet(this.location!, this.planet.code, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
-                    this.name = '-'
+                    this.name = undefined
                     Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
@@ -729,7 +729,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     const bodyPosition = await this.api.positionOfPlanet(this.location!, code, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
-                    this.name = '-'
+                    this.name = undefined
                     Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
@@ -742,7 +742,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     const bodyPosition = await this.api.positionOfStar(this.location!, this.star, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
-                    this.name = '-'
+                    this.name = undefined
                     Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
@@ -755,7 +755,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     const bodyPosition = await this.api.positionOfDSO(this.location!, this.dso, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
-                    this.name = '-'
+                    this.name = undefined
                     Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
@@ -768,7 +768,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     const bodyPosition = await this.api.positionOfSatellite(this.location!, this.satellite, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
-                    this.name = '-'
+                    this.name = undefined
                     Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
