@@ -10,17 +10,17 @@
         <circle cx="50%" cy="50%" r="32%" stroke="#E53935" stroke-width="3" fill="transparent"></circle>
     </svg>
 
-    <svg *ngIf="!mirrorHorizontal && !mirrorVertical" class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+    <svg *ngIf="!mirrorHorizontal && !mirrorVertical && annotationIsVisible"
+         class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
         <g *ngFor="let a of annotations" (dblclick)="showAnnotationInfo(a)" class="pointer-events-auto cursor-pointer">
             <circle [attr.cx]="a.x" [attr.cy]="a.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"></circle>
-            <text [attr.x]="a.x" [attr.y]="a.y" fill="#00897B" style="font-size: 5px" class="pointer-events-none select-none">{{ a.star?.name ??
-                a.dso?.name ??
-                a.minorPlanet?.name }}</text>
+            <text [attr.x]="a.x" [attr.y]="a.y" fill="#00897B" style="font-size: 5px" class="pointer-events-none select-none">
+                {{ a.star?.name ?? a.dso?.name ?? a.minorPlanet?.name }}
+            </text>
         </g>
     </svg>
 
-    <div #roi [class.hidden]="!roiInteractable" class="roi absolute left-0 top-0" data-x="0" data-y="0" (contextmenu)="imageClicked($event, true)"
-         (onmousewheel)="image.dispatchEvent($event)">
+    <div #roi [class.hidden]="!roiInteractable" class="roi absolute left-0 top-0" data-x="0" data-y="0" (contextmenu)="imageClicked($event, true)">
         <span class="absolute">X: {{ roiX }} Y: {{ roiY }} W: {{ roiWidth }} H: {{ roiHeight }}</span>
     </div>
 </div>
@@ -323,11 +323,14 @@
     </div>
 </p-dialog>
 
-<div class="grid fixed coordinates monospaced" *ngIf="mouseCoordinate && isMouseCoordinateVisible">
+<div class="grid fixed text-sm coordinates monospaced" *ngIf="mouseCoordinate && isMouseCoordinateVisible">
     <div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
     <div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
     <div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>
     <div class="col-6 m-0 p-0">δ: {{ mouseCoordinate.delta }}</div>
     <div class="col-6 m-0 p-0">l: {{ mouseCoordinate.l }}</div>
     <div class="col-6 m-0 p-0">b: {{ mouseCoordinate.b }}</div>
+    <div class="col-12 p-0 pt-1">
+        <p-checkbox [disabled]="!annotations.length" [binary]="true" [(ngModel)]="annotationIsVisible" label="Show annotation" />
+    </div>
 </div>

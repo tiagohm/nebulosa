@@ -45,6 +45,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     mirrorHorizontal = false
     mirrorVertical = false
     invert = false
+    annotationIsVisible = false
 
     readonly scnrChannelOptions: ImageChannel[] = ['NONE', 'RED', 'GREEN', 'BLUE']
     readonly scnrProtectionMethodOptions: SCNRProtectionMethod[] = [...SCNR_PROTECTION_METHODS]
@@ -456,10 +457,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     imageMouseMoved(event: MouseEvent) {
+        this.imageMouseMovedWithCoordinates(event.offsetX, event.offsetY)
+    }
+
+    imageMouseMovedWithCoordinates(x: number, y: number) {
         if (!this.menu.visible()) {
-            this.mouseCoordinate = this.mouseCoordinateInterpolation?.interpolateAsText(event.offsetX, event.offsetY, true, true, false)
-            this.mouseCoordinate!.x = event.offsetX
-            this.mouseCoordinate!.y = event.offsetY
+            this.mouseCoordinate = this.mouseCoordinateInterpolation?.interpolateAsText(x, y, true, true, false)
+            this.mouseCoordinate!.x = x
+            this.mouseCoordinate!.y = y
         }
     }
 
@@ -469,6 +474,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.annotations = await this.api.annotationsOfImage(this.imageParams.path!,
                 this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets, this.annotateWithMinorPlanetsMagLimit)
             this.showAnnotationDialog = false
+            this.annotationIsVisible = true
         } finally {
             this.annotating = false
         }
@@ -509,9 +515,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             const x = Math.max(0, Math.min(this.mouseCoordinate?.x ?? 0, this.imageInfo!.width))
             const y = Math.max(0, Math.min(this.mouseCoordinate?.y ?? 0, this.imageInfo!.height))
             this.mouseCoordinateInterpolation = new CoordinateInterpolator(ma, md, x0, y0, x1, y1, delta)
-            this.mouseCoordinate = this.mouseCoordinateInterpolation.interpolateAsText(x, y, true, true, false)
-            this.mouseCoordinate.x = x
-            this.mouseCoordinate.y = y
+            this.imageMouseMovedWithCoordinates(x, y)
         } else {
             this.mouseCoordinateInterpolation = undefined
             this.mouseCoordinate = undefined
