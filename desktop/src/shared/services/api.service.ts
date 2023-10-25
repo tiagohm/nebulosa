@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
 import {
-    Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, DeepSkyObject, Device,
+    Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation, DeepSkyObject, Device,
     FilterWheel, Focuser, GuideDirection, GuideOutput, GuiderStatus, HipsSurvey, HistoryStep,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
     ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
@@ -396,13 +396,13 @@ export class ApiService {
     positionOfPlanet(location: Location, code: string, dateTime: Date) {
         const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
         const query = this.http.query({ location: location.id, date, time })
-        return this.http.get<BodyPosition>(`sky-atlas/planets/${code}/position?${query}`)
+        return this.http.get<BodyPosition>(`sky-atlas/planets/${encodeURIComponent(code)}/position?${query}`)
     }
 
     altitudePointsOfPlanet(location: Location, code: string, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
         const query = this.http.query({ location: location.id, date })
-        return this.http.get<[number, number][]>(`sky-atlas/planets/${code}/altitude-points?${query}`)
+        return this.http.get<[number, number][]>(`sky-atlas/planets/${encodeURIComponent(code)}/altitude-points?${query}`)
     }
 
     positionOfStar(location: Location, star: Star, dateTime: Date) {
@@ -457,6 +457,32 @@ export class ApiService {
         return this.http.get<SkyObjectType[]>(`sky-atlas/dsos/types`)
     }
 
+    positionOfSimbad(location: Location, simbad: DeepSkyObject, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/simbad/${simbad.id}/position?${query}`)
+    }
+
+    altitudePointsOfSimbad(location: Location, simbad: DeepSkyObject, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/simbad/${simbad.id}/altitude-points?${query}`)
+    }
+
+    searchSimbad(text: string,
+        rightAscension: Angle, declination: Angle, radius: Angle,
+        constellation?: Constellation,
+        magnitudeMin: number = -99, magnitudeMax: number = 99,
+        type?: SkyObjectType,
+    ) {
+        const query = this.http.query({ text, rightAscension, declination, radius, constellation, magnitudeMin, magnitudeMax, type })
+        return this.http.get<DeepSkyObject[]>(`sky-atlas/simbad?${query}`)
+    }
+
+    simbadTypes() {
+        return this.http.get<SkyObjectType[]>(`sky-atlas/simbad/types`)
+    }
+
     positionOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
         const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
         const query = this.http.query({ location: location.id, date, time })
@@ -508,6 +534,11 @@ export class ApiService {
     saveImageAs(inputPath: string, outputPath: string) {
         const query = this.http.query({ inputPath, outputPath })
         return this.http.put<void>(`image/save-as?${query}`)
+    }
+
+    coordinateInterpolation(path: string) {
+        const query = this.http.query({ path })
+        return this.http.get<CoordinateInterpolation | null>(`image/coordinate-interpolation?${query}`)
     }
 
     // FRAMING

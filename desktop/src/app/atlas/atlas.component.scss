@@ -2,31 +2,54 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-}
 
-p-table ::ng-deep .p-datatable-wrapper {
-    max-height: 217px;
-    min-width: 100vw;
-}
+    p-table ::ng-deep .p-datatable-wrapper {
+        max-height: 217px;
+        min-width: 100vw;
+    }
 
-p-table.planet ::ng-deep .p-datatable-wrapper {
-    max-height: 217px;
-}
+    p-table.planet ::ng-deep .p-datatable-wrapper {
+        max-height: 217px;
+    }
 
-p-table.minorPlanet ::ng-deep .p-datatable-wrapper {
-    max-height: 169px;
-}
+    p-table.minorPlanet ::ng-deep .p-datatable-wrapper {
+        max-height: 169px;
+    }
 
-p-table.star ::ng-deep .p-datatable-wrapper {
-    max-height: 123px;
-}
+    p-table.star ::ng-deep .p-datatable-wrapper {
+        max-height: 123px;
+    }
 
-p-table.dso ::ng-deep .p-datatable-wrapper {
-    max-height: 123px;
-}
+    p-table.dso ::ng-deep .p-datatable-wrapper {
+        max-height: 123px;
+    }
 
-p-table.satellite ::ng-deep .p-datatable-wrapper {
-    max-height: 123px;
+    p-table.simbad ::ng-deep .p-datatable-wrapper {
+        max-height: 123px;
+    }
+
+    p-table.satellite ::ng-deep .p-datatable-wrapper {
+        max-height: 123px;
+    }
+
+    ::ng-deep {
+        .p-tabview .p-tabview-nav li {
+            width: 11.1111111% !important;
+
+            .p-tabview-nav-link {
+                display: flex;
+                justify-content: center;
+
+                img {
+                    height: 16px;
+                }
+            }
+        }
+
+        .p-tabview .p-tabview-left-icon {
+            margin-right: 0px;
+        }
+    }
 }
 
 .p-input-icon-left span.pi:first-of-type {

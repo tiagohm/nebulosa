@@ -38,17 +38,34 @@ data class HorizonsEphemeris(private val elements: MutableList<HorizonsElement>)
         internal fun parse(lines: Stream<String?>): HorizonsEphemeris {
             var start = false
             var first = false
+            var matchingSmallBodies = false
+            var multipleRecords = false
+            val multipleRecordItems = ArrayList<String>(1)
 
             val headerLine = arrayOfNulls<String>(4)
             val quantities = arrayListOf<HorizonsQuantity?>()
             val elements = ArrayList<HorizonsElement>(1441)
 
-            // TODO: Handle errors.
-
             for (line in lines) {
                 val trimmedLine = line?.trim() ?: break
 
                 if (trimmedLine.isEmpty()) continue
+
+                if (matchingSmallBodies) {
+                    if (multipleRecords) {
+                        if (trimmedLine.contains("enter record #", true)) {
+                            throw NonUniqueObjectException(multipleRecordItems)
+                        } else if (!trimmedLine.startsWith("-")) {
+                            multipleRecordItems.add(trimmedLine)
+                        }
+                    } else if (trimmedLine.contains("Record #", true)) {
+                        multipleRecords = true
+                    } else if (trimmedLine.contains("No matches found", true)) {
+                        throw NoMatchesFoundException
+                    }
+
+                    continue
+                }
 
                 headerLine[0] = headerLine[1]
                 headerLine[1] = headerLine[2]
@@ -57,6 +74,11 @@ data class HorizonsEphemeris(private val elements: MutableList<HorizonsElement>)
 
                 if (!start) {
                     start = trimmedLine.startsWith("\$\$SOE")
+
+                    if (!start && trimmedLine.contains("Matching small-bodies", true)) {
+                        matchingSmallBodies = true
+                    }
+
                     continue
                 }
 

@@ -86,6 +86,8 @@
                                       (onClick)="darvAltitude()" icon="mdi mdi-arrow-up-down-bold" severity="success" />
                             <p-button [disabled]="!cameraConnected || !guideOutputConnected || !darvInProgress" label="Abort" (onClick)="darvStop()"
                                       icon="mdi mdi-stop" severity="danger" />
+                            <p-button [disabled]="!cameraConnected" (onClick)="openCameraImage()" icon="mdi mdi-image" [text]="true" styleClass="ml-4"
+                                      pTooltip="Open camera's image" tooltipPosition="bottom" />
                         </div>
                     </div>
                 </p-tabPanel>

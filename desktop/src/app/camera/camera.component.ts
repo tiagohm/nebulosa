@@ -6,7 +6,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
     AutoSubFolderMode, Camera, CameraCaptureEvent,
-    CameraStartCapture, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType
+    CameraStartCapture, Dither, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType
 } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
@@ -27,6 +27,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     autoSubFolderMode: AutoSubFolderMode = 'OFF'
 
     wheel?: FilterWheel
+
+    showDitheringDialog = false
+    readonly dithering: Dither = {
+        enabled: false,
+        afterExposures: 1,
+        amount: 1.5,
+        raOnly: false,
+    }
 
     readonly cameraMenuItems: MenuItem[] = [
         {
@@ -87,6 +95,16 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                     },
                 },
             ],
+        },
+        {
+            separator: true,
+        },
+        {
+            icon: 'icomoon random-dither',
+            label: 'Dithering',
+            command: () => {
+                this.showDitheringDialog = true
+            },
         },
     ]
 
@@ -235,7 +253,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     async cameraChanged() {
         if (this.camera) {
-            this.app.title = `Camera ・ ${this.camera.name}`
+            this.app.subTitle = this.camera.name
 
             const camera = await this.api.camera(this.camera.name)
             Object.assign(this.camera, camera)
@@ -244,7 +262,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.update()
             this.savePreference()
         } else {
-            this.app.title = 'Camera'
+            this.app.subTitle = ''
         }
 
         this.electron.send('CAMERA_CHANGED', this.camera)
@@ -299,6 +317,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             autoSave: this.autoSave,
             savePath: this.savePath,
             autoSubFolderMode: this.autoSubFolderMode,
+            dither: this.dithering,
         }
 
         await this.browserWindow.openCameraImage(this.camera!)
@@ -399,6 +418,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.gain = this.preference.get(`camera.${this.camera.name}.gain`, 0)
             this.offset = this.preference.get(`camera.${this.camera.name}.offset`, 0)
             this.frameFormat = this.preference.get(`camera.${this.camera.name}.frameFormat`, this.camera.frameFormats[0] || '')
+
+            this.dithering.enabled = this.preference.get(`camera.${this.camera.name}.dithering.enabled`, false)
+            this.dithering.raOnly = this.preference.get(`camera.${this.camera.name}.dithering.raOnly`, false)
+            this.dithering.amount = this.preference.get(`camera.${this.camera.name}.dithering.amount`, 1.5)
+            this.dithering.afterExposures = this.preference.get(`camera.${this.camera.name}.dithering.afterExposures`, 1)
         }
     }
 
@@ -424,6 +448,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.preference.set(`camera.${this.camera.name}.gain`, this.gain)
             this.preference.set(`camera.${this.camera.name}.offset`, this.offset)
             this.preference.set(`camera.${this.camera.name}.frameFormat`, this.frameFormat)
+
+            this.preference.set(`camera.${this.camera.name}.dithering.enabled`, this.dithering.enabled)
+            this.preference.set(`camera.${this.camera.name}.dithering.raOnly`, this.dithering.raOnly)
+            this.preference.set(`camera.${this.camera.name}.dithering.amount`, this.dithering.amount)
+            this.preference.set(`camera.${this.camera.name}.dithering.afterExposures`, this.dithering.afterExposures)
         }
     }
 

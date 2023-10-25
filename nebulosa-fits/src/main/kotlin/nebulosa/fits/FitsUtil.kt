@@ -1,11 +1,11 @@
 package nebulosa.fits
 
 import nebulosa.math.Angle
-import nebulosa.math.AngleFormatter
 import nebulosa.math.deg
 import nom.tam.fits.Fits
 import nom.tam.fits.Header
 import nom.tam.fits.ImageHDU
+import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.seconds
 
 fun Fits.imageHDU(n: Int): ImageHDU? {
@@ -61,13 +61,13 @@ val Header.exposureTime
 val Header.temperature
     get() = getDoubleValue(FitsKeywords.CCDTEM, -272.15)
 
-val FITS_RA_ANGLE_FORMATTER = AngleFormatter.HMS.newBuilder()
-    .secondsDecimalPlaces(2)
-    .whitespaced()
-    .build()
+val Header.latitude
+    get() = getDoubleValue(FitsKeywords.SITELAT, getDoubleValue("LAT-OBS")).deg
 
-val FITS_DEC_ANGLE_FORMATTER = AngleFormatter.SIGNED_DMS.newBuilder()
-    .degreesFormat("%02d")
-    .secondsDecimalPlaces(2)
-    .whitespaced()
-    .build()
+val Header.longitude
+    get() = getDoubleValue(FitsKeywords.SITELONG, getDoubleValue("LONG-OBS")).deg
+
+val Header.observationDate
+    get() = getStringValue(FitsKeywords.DATE_OBS)
+        ?.ifBlank { null }
+        ?.let(LocalDateTime::parse)

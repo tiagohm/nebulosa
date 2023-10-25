@@ -13,14 +13,19 @@ import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.sbd.SmallBodyDatabaseService
+import nebulosa.simbad.SimbadEntry
+import nebulosa.simbad.SimbadSearch
+import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
@@ -40,15 +45,19 @@ class AtlasService(
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val satelliteRepository: SatelliteRepository,
+    private val simbadService: SimbadService,
     private val httpClient: OkHttpClient,
 ) {
 
     private val positions = HashMap<LocationEntity, GeographicPosition>()
+    private val cachedSimbadEntries = HashMap<Long, SimbadEntry>()
     @Volatile private var sunImage = ByteArray(0)
 
     val starTypes by lazy { starRepository.types() }
 
     val dsoTypes by lazy { deepSkyObjectRepository.types() }
+
+    val simbadTypes by lazy { SkyObjectType.entries }
 
     fun imageOfSun(output: HttpServletResponse) {
         output.contentType = "image/png"
@@ -75,6 +84,14 @@ class AtlasService(
     fun positionOfDSO(location: LocationEntity, dso: DeepSkyObjectEntity, dateTime: LocalDateTime): BodyPosition {
         return positionOfBody(dso, location, dateTime)!!
             .copy(magnitude = dso.magnitude, constellation = dso.constellation, distance = dso.distance.toLightYears, distanceUnit = "ly")
+    }
+
+    fun positionOfSimbad(location: LocationEntity, id: Long, dateTime: LocalDateTime): BodyPosition {
+        val target = cachedSimbadEntries[id] ?: simbadService.search(SimbadSearch(id)).firstOrNull()
+        ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found simbad with id: [$id]")
+        cachedSimbadEntries[target.id] = target
+        return positionOfBody(target, location, dateTime)!!
+            .copy(magnitude = target.magnitude, constellation = target.constellation, distance = target.distance, distanceUnit = "ly")
     }
 
     fun positionOfSatellite(location: LocationEntity, satellite: SatelliteEntity, dateTime: LocalDateTime): BodyPosition {
@@ -157,8 +174,16 @@ class AtlasService(
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
+    fun altitudePointsOfSimbad(location: LocationEntity, id: Long, date: LocalDate, stepSize: Int): List<DoubleArray> {
+        val target = cachedSimbadEntries[id] ?: simbadService.search(SimbadSearch(id)).firstOrNull()
+        ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found simbad with id: [$id]")
+        cachedSimbadEntries[target.id] = target
+        val ephemeris = bodyEphemeris(target, location, LocalDateTime.of(date, LocalTime.now()))
+        return altitudePointsOfBody(ephemeris, stepSize)
+    }
+
     fun altitudePointsOfSatellite(location: LocationEntity, satellite: SatelliteEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris("TLE@$${satellite.tle}", location, LocalDateTime.of(date, LocalTime.now()))
+        val ephemeris = bodyEphemeris("TLE@${satellite.tle}", location, LocalDateTime.of(date, LocalTime.now()))
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
@@ -185,7 +210,7 @@ class AtlasService(
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
     ) = starRepository.search(
-        text.replace(INVALID_DSO_CHARS, "").replace("][", ""),
+        text.replace(INVALID_DSO_CHARS, "").replace("][", "").ifBlank { null },
         rightAscension, declination, radius,
         constellation,
         magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type,
@@ -199,12 +224,21 @@ class AtlasService(
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
     ) = deepSkyObjectRepository.search(
-        text.replace(INVALID_DSO_CHARS, "").replace("][", ""),
+        text.replace(INVALID_DSO_CHARS, "").replace("][", "").ifBlank { null },
         rightAscension, declination, radius,
         constellation,
         magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type,
         Pageable.ofSize(5000),
     )
+
+    fun searchSimbad(
+        text: String? = null,
+        rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
+        constellation: Constellation? = null,
+        magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
+        type: SkyObjectType? = null,
+    ) = simbadService
+        .search(SimbadSearch(0, text, rightAscension, declination, radius, type?.let(::listOf) ?: emptyList(), magnitudeMin, magnitudeMax, 5000))
 
     @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
     private fun refreshImageOfSun() {

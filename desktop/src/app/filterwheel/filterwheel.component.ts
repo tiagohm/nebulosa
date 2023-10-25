@@ -66,7 +66,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     async wheelChanged() {
         if (this.wheel) {
-            this.app.title = `Filter Wheel ・ ${this.wheel.name}`
+            this.app.subTitle = this.wheel.name
 
             const wheel = await this.api.wheel(this.wheel.name)
             Object.assign(this.wheel, wheel)
@@ -75,7 +75,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             this.update()
             this.savePreference()
         } else {
-            this.app.title = 'Filter Wheel'
+            this.app.subTitle = ''
         }
 
         this.electron.send('WHEEL_CHANGED', this.wheel)

@@ -1,9 +1,6 @@
 package nebulosa.indi.client.device.camera
 
 import nebulosa.indi.client.device.DeviceProtocolHandler
-import nebulosa.indi.device.camera.CameraGainChanged
-import nebulosa.indi.device.camera.CameraGainMinMaxChanged
-import nebulosa.indi.protocol.DefNumberVector
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
 
@@ -17,32 +14,10 @@ internal class SimCamera(
             is NumberVector<*> -> {
                 when (message.name) {
                     "CCD_GAIN" -> {
-                        val element = message["GAIN"]!!
-
-                        if (message is DefNumberVector) {
-                            gainMin = element.min.toInt()
-                            gainMax = element.max.toInt()
-
-                            handler.fireOnEventReceived(CameraGainMinMaxChanged(this))
-                        }
-
-                        gain = element.value.toInt()
-
-                        handler.fireOnEventReceived(CameraGainChanged(this))
+                        processGain(message, message["GAIN"]!!)
                     }
                     "CCD_OFFSET" -> {
-                        val element = message["OFFSET"]!!
-
-                        if (message is DefNumberVector) {
-                            offsetMin = element.min.toInt()
-                            offsetMax = element.max.toInt()
-
-                            handler.fireOnEventReceived(CameraGainMinMaxChanged(this))
-                        }
-
-                        offset = element.value.toInt()
-
-                        handler.fireOnEventReceived(CameraGainChanged(this))
+                        processOffset(message, message["OFFSET"]!!)
                     }
                 }
             }

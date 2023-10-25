@@ -11,11 +11,11 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    AstronomicalObject,
-    Camera, CameraCaptureEvent, DeepSkyObject, EquatorialCoordinateJ2000, FITSHeaderItem,
+    Angle, AstronomicalObject, Camera, CameraCaptureEvent, DeepSkyObject, EquatorialCoordinateJ2000, FITSHeaderItem,
     ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
     PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star
 } from '../../shared/types'
+import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
 
 export interface ImageParams {
@@ -45,6 +45,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     mirrorHorizontal = false
     mirrorVertical = false
     invert = false
+    annotationIsVisible = false
 
     readonly scnrChannelOptions: ImageChannel[] = ['NONE', 'RED', 'GREEN', 'BLUE']
     readonly scnrProtectionMethodOptions: SCNRProtectionMethod[] = [...SCNR_PROTECTION_METHODS]
@@ -273,6 +274,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.pointMountHereMenuItem,
     ]
 
+    mouseCoordinate?: InterpolatedCoordinate<Angle> & Partial<{ x: number, y: number }>
+    private mouseCoordinateInterpolation?: CoordinateInterpolator
+
+    get isMouseCoordinateVisible() {
+        return !!this.mouseCoordinate && !this.mirrorHorizontal && !this.mirrorVertical
+    }
+
     constructor(
         private app: AppComponent,
         private route: ActivatedRoute,
@@ -299,7 +307,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         electron.on('PARAMS_CHANGED', async (_, event: ImageParams) => {
             await this.closeImage()
 
-            this.loadImageFromParams(event)
+            ngZone.run(() => {
+                this.loadImageFromParams(event)
+            })
         })
 
         this.solverPathOrUrl = this.preference.get('image.solver.pathOrUrl', '')
@@ -396,11 +406,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
 
         if (this.imageParams.title) {
-            this.app.title = `Image ・ ${this.imageParams.title}`
+            this.app.subTitle = this.imageParams.title
         } else if (this.imageParams.camera) {
-            this.app.title = `Image ・ ${this.imageParams.camera.name}`
+            this.app.subTitle = this.imageParams.camera.name
         } else if (this.imageParams.path) {
-            this.app.title = `Image ・ ${path.basename(this.imageParams.path)}`
+            this.app.subTitle = path.basename(this.imageParams.path)
+        } else {
+            this.app.subTitle = ''
         }
     }
 
@@ -431,14 +443,28 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
         this.imageURL = window.URL.createObjectURL(blob)
         image.src = this.imageURL
+
+        this.retrieveCoordinateInterpolation()
     }
 
-    imageClicked(event: MouseEvent, menu: boolean) {
+    imageClicked(event: MouseEvent, contextMenu: boolean) {
         this.imageMouseX = event.offsetX
         this.imageMouseY = event.offsetY
 
-        if (menu) {
+        if (contextMenu) {
             this.menu.show(event)
+        }
+    }
+
+    imageMouseMoved(event: MouseEvent) {
+        this.imageMouseMovedWithCoordinates(event.offsetX, event.offsetY)
+    }
+
+    imageMouseMovedWithCoordinates(x: number, y: number) {
+        if (!this.menu.visible()) {
+            this.mouseCoordinate = this.mouseCoordinateInterpolation?.interpolateAsText(x, y, true, true, false)
+            this.mouseCoordinate!.x = x
+            this.mouseCoordinate!.y = y
         }
     }
 
@@ -448,6 +474,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.annotations = await this.api.annotationsOfImage(this.imageParams.path!,
                 this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets, this.annotateWithMinorPlanetsMagLimit)
             this.showAnnotationDialog = false
+            this.annotationIsVisible = true
         } finally {
             this.annotating = false
         }
@@ -480,6 +507,21 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.loadImage()
     }
 
+    private async retrieveCoordinateInterpolation() {
+        const coordinate = await this.api.coordinateInterpolation(this.imageParams.path!)
+
+        if (coordinate) {
+            const { ma, md, x0, y0, x1, y1, delta } = coordinate
+            const x = Math.max(0, Math.min(this.mouseCoordinate?.x ?? 0, this.imageInfo!.width))
+            const y = Math.max(0, Math.min(this.mouseCoordinate?.y ?? 0, this.imageInfo!.height))
+            this.mouseCoordinateInterpolation = new CoordinateInterpolator(ma, md, x0, y0, x1, y1, delta)
+            this.imageMouseMovedWithCoordinates(x, y)
+        } else {
+            this.mouseCoordinateInterpolation = undefined
+            this.mouseCoordinate = undefined
+        }
+    }
+
     async solveImage() {
         this.solving = true
 
@@ -502,6 +544,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.pointMountHereMenuItem.disabled = true
         } finally {
             this.solving = false
+            this.retrieveCoordinateInterpolation()
         }
     }
 

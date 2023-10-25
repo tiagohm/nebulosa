@@ -1,6 +1,9 @@
 <section id="titlebar" class="flex flex-row align-items-center justify-content-end gap-2 sticky"
          [style]="{ height: '42px', zIndex: '1000', backgroundColor }">
-    <span class="align-items-center draggable-region flex flex-1 font-bold justify-content-center min-h-full text-center">{{ title }}</span>
+    <span class="align-items-center draggable-region flex flex-column flex-1 font-bold justify-content-center min-h-full text-center">
+        <div>{{ title }}</div>
+        <div class="text-xs text-gray-100 font-normal">{{ subTitle }}</div>
+    </span>
     <p-button *ngIf="pinned" [text]="true" [rounded]="true" size="small" icon="mdi mdi-pin" (onClick)="pin()"
               styleClass="select-none cursor-pointer"></p-button>
     <p-button *ngIf="!pinned" [text]="true" [rounded]="true" size="small" icon="mdi mdi-pin-off" (onClick)="pin()"

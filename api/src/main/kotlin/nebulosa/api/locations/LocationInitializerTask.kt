@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component
 
 @Component
 @ThreadedTask
-class LocationThreadedTask(private val locationRepository: LocationRepository) : Runnable {
+class LocationInitializerTask(private val locationRepository: LocationRepository) : Runnable {
 
     override fun run() {
         if (locationRepository.count() <= 0) {

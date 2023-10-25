@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture
 
 @Component
 @ThreadedTask
-class SatelliteThreadedTask(
+class SatelliteUpdateTask(
     private val httpClient: OkHttpClient,
     private val configRepository: ConfigRepository,
     private val satelliteRepository: SatelliteRepository,
@@ -104,6 +104,6 @@ class SatelliteThreadedTask(
         const val TLE_UPDATED_AT = "TLE_UPDATED_AT"
         const val UPDATE_INTERVAL = 1000L * 60 * 60 * 24 // 1 day
 
-        @JvmStatic private val LOG = loggerFor<SatelliteThreadedTask>()
+        @JvmStatic private val LOG = loggerFor<SatelliteUpdateTask>()
     }
 }

@@ -40,7 +40,8 @@ class Image(
     var header = header
         private set
 
-    val indices = 0 until width * height
+    val size = width * height
+    val indices = 0 until size
 
     inline fun indexAt(x: Int, y: Int): Int {
         return y * stride + x
@@ -224,7 +225,6 @@ class Image(
 
         val data = ImageData(header)
         val buffer = FloatArray(buffer.size)
-        val size = width * height
 
         r.copyInto(buffer, 0)
 

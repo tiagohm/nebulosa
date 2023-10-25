@@ -49,6 +49,19 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             }
         })
 
+        electron.on('GUIDE_OUTPUT_ATTACHED', (_, event: GuideOutput) => {
+            ngZone.run(() => {
+                this.guideOutputs.push(event)
+            })
+        })
+
+        electron.on('GUIDE_OUTPUT_DETACHED', (_, event: GuideOutput) => {
+            ngZone.run(() => {
+                const index = this.guideOutputs.findIndex(e => e.name === event.name)
+                if (index >= 0) this.guideOutputs.splice(index, 1)
+            })
+        })
+
         electron.on('GUIDE_OUTPUT_UPDATED', (_, event: GuideOutput) => {
             if (event.name === this.guideOutput?.name) {
                 ngZone.run(() => {
@@ -153,7 +166,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     private async darvStart(direction: GuideDirection) {
         // TODO: Horizonte leste e oeste tem um impacto no "reversed"?
         const reversed = this.darvHemisphere === 'SOUTHERN'
-        await this.browserWindow.openCameraImage(this.camera!)
+        await this.openCameraImage()
         await this.api.darvStart(this.camera!, this.guideOutput!, this.darvDrift, this.darvInitialPause, direction, reversed)
     }
 
@@ -167,6 +180,10 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
     darvStop() {
         this.api.darvStop(this.camera!, this.guideOutput!)
+    }
+
+    openCameraImage() {
+        return this.browserWindow.openCameraImage(this.camera!)
     }
 
     private async updateCamera() {

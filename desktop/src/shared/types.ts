@@ -182,6 +182,13 @@ export interface FilterWheel extends Device {
     moving: boolean
 }
 
+export interface Dither {
+    enabled: boolean
+    amount: number
+    raOnly: boolean
+    afterExposures: number
+}
+
 export interface CameraStartCapture {
     exposureInMicroseconds: number
     exposureAmount: number
@@ -199,6 +206,7 @@ export interface CameraStartCapture {
     autoSave: boolean
     savePath?: string
     autoSubFolderMode: AutoSubFolderMode
+    dither?: Dither
 }
 
 export interface CameraCaptureEvent {
@@ -457,6 +465,17 @@ export interface DARVPolarAlignmentInitialPauseElapsed extends DARVPolarAlignmen
 export interface DARVPolarAlignmentGuidePulseElapsed extends DARVPolarAlignmentEvent {
     forward: boolean
     direction: GuideDirection
+}
+
+export interface CoordinateInterpolation {
+    ma: number[]
+    md: number[]
+    x0: number
+    y0: number
+    x1: number
+    y1: number
+    delta: number
+    date?: string
 }
 
 export enum ExposureTimeUnit {

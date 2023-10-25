@@ -3,6 +3,7 @@ package nebulosa.indi.client.device
 import nebulosa.indi.client.device.AbstractDevice.Companion.create
 import nebulosa.indi.client.device.camera.AsiCamera
 import nebulosa.indi.client.device.camera.CameraDevice
+import nebulosa.indi.client.device.camera.SVBonyCamera
 import nebulosa.indi.client.device.camera.SimCamera
 import nebulosa.indi.client.device.mount.IoptronV3Mount
 import nebulosa.indi.client.device.mount.MountDevice
@@ -349,6 +350,8 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
         @JvmStatic private val CAMERAS = mapOf(
             "indi_asi_ccd" to AsiCamera::class.java,
             "indi_asi_single_ccd" to AsiCamera::class.java,
+            "indi_svbony_ccd" to SVBonyCamera::class.java,
+            "indi_sv305_ccd" to SVBonyCamera::class.java, // legacy name.
             "indi_simulator_ccd" to SimCamera::class.java,
             "indi_simulator_guide" to SimCamera::class.java,
         )

@@ -1,3 +1,4 @@
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
@@ -7,27 +8,41 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import nebulosa.horizons.HorizonsQuantity
 import nebulosa.horizons.HorizonsService
+import nebulosa.horizons.NoMatchesFoundException
+import nebulosa.horizons.NonUniqueObjectException
 import nebulosa.io.source
 import nebulosa.math.deg
 import nebulosa.math.km
 import nebulosa.math.m
 import nebulosa.nasa.daf.SourceDaf
 import nebulosa.nasa.spk.Spk
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import okio.ByteString.Companion.decodeBase64
 import java.time.Duration
 import java.time.LocalDateTime
+import java.util.concurrent.TimeUnit
 
 class HorizonsServiceTest : StringSpec() {
 
     init {
-        val service = HorizonsService()
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
+            .callTimeout(1, TimeUnit.MINUTES)
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .readTimeout(1, TimeUnit.MINUTES)
+            .build()
 
-        fun observe(command: String) = service
+        val service = HorizonsService(httpClient = httpClient)
+
+        fun observe(
+            command: String,
+            startDate: LocalDateTime = LocalDateTime.of(2022, 12, 25, 22, 0, 0),
+        ) = service
             .observer(
                 command,
                 138.73119026648095.deg, 35.36276754848444.deg, 3776.m,
-                LocalDateTime.of(2022, 12, 25, 22, 0, 0),
-                LocalDateTime.of(2022, 12, 25, 23, 0, 0),
+                startDate, startDate.plusDays(1L),
                 extraPrecision = true,
             ).execute()
             .body()
@@ -100,6 +115,15 @@ class HorizonsServiceTest : StringSpec() {
             val dateTime = LocalDateTime.of(2023, 3, 11, 0, 0, 0)
             ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_RA] shouldStartWith "344.45591"
             ephemeris[dateTime]!![HorizonsQuantity.ASTROMETRIC_DEC] shouldStartWith "14.43086"
+        }
+        "cap & nofrag" {
+            observe("DES=1000041;CAP;NOFRAG", LocalDateTime.now().minusDays(2L))
+        }
+        "non unique object" {
+            shouldThrow<NonUniqueObjectException> { observe("DES=1000041;") }.recordItems.shouldNotBeEmpty()
+        }
+        "no matches found" {
+            shouldThrow<NoMatchesFoundException> { observe("DES=1;CAP;NOFRAG") }
         }
     }
 }

@@ -33,7 +33,7 @@ data class SmallBody(
         @field:JsonProperty("pha") val pha: Boolean = false,
         @field:JsonProperty("neo") val neo: Boolean = false,
         @field:JsonProperty("kind") val kind: BodyKind = BodyKind.ASTEROID,
-        @field:JsonProperty("orbitId") @field:JsonAlias("orbit_id") val orbitId: Int = 0,
+        @field:JsonProperty("orbitId") @field:JsonAlias("orbit_id") val orbitId: String = "",
         @field:JsonProperty("prefix") val prefix: String? = null,
         @field:JsonProperty("spkId") @field:JsonAlias("spkid") val spkId: Int = 0,
         @field:JsonProperty("shortname") val shortname: String = "",
