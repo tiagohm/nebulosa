@@ -344,8 +344,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         const { scale } = this.panZoom!.getTransform()
 
-        var x = parseFloat(target.getAttribute('data-x')) || 0
-        var y = parseFloat(target.getAttribute('data-y')) || 0
+        let x = parseFloat(target.getAttribute('data-x')) || 0
+        let y = parseFloat(target.getAttribute('data-y')) || 0
 
         target.style.width = event.rect.width / scale + 'px'
         target.style.height = event.rect.height / scale + 'px'

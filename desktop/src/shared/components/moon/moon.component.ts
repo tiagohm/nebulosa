@@ -58,7 +58,7 @@ export class MoonComponent implements AfterViewInit, OnChanges {
         for (let a = 0; a < 180; a++) {
             const angle = (a - 90) * Math.PI / 180
             let x1 = Math.ceil(Math.cos(angle) * cx)
-            let y1 = Math.ceil(Math.sin(angle) * cy)
+            const y1 = Math.ceil(Math.sin(angle) * cy)
             const moonWidth = x1 * 2
             let x2 = Math.floor(moonWidth * this.illuminationRatio)
 
