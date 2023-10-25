@@ -17,7 +17,7 @@
 * https://www.flaticon.com/free-icon/rotate_3303063
 * https://www.flaticon.com/free-icon/location_4631354
 * https://www.flaticon.com/free-icon/rgb-print_7664547
-* https://www.flaticon.com/free-icon/setting_839374
+* https://www.flaticon.com/free-icon/cogwheel_3953226
 * https://www.flaticon.com/free-icon/target_10542035
 * https://www.flaticon.com/free-icon/contrast_439842
 * https://www.flaticon.com/free-icon/full-moon_9689786
@@ -28,3 +28,4 @@
 * https://www.flaticon.com/free-icon/satellite_1086093
 * https://www.flaticon.com/free-icon/schedule_3652191
 * https://www.flaticon.com/free-icon/search_10770011
+* https://thenounproject.com/icon/random-dither-4259782/

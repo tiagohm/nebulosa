@@ -170,3 +170,26 @@ i.mdi {
     border-radius: 10px;
     background-color: transparent;
 }
+
+@font-face {
+    font-family: 'icomoon';
+    src: url('assets/fonts/icomoon.ttf');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
+
+.icomoon {
+    font-family: 'icomoon' !important;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    &.random-dither:before {
+        content: "\e900";
+    }
+}

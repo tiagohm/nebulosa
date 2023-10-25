@@ -182,6 +182,13 @@ export interface FilterWheel extends Device {
     moving: boolean
 }
 
+export interface Dither {
+    enabled: boolean
+    amount: number
+    raOnly: boolean
+    afterExposures: number
+}
+
 export interface CameraStartCapture {
     exposureInMicroseconds: number
     exposureAmount: number
@@ -199,6 +206,7 @@ export interface CameraStartCapture {
     autoSave: boolean
     savePath?: string
     autoSubFolderMode: AutoSubFolderMode
+    dither?: Dither
 }
 
 export interface CameraCaptureEvent {

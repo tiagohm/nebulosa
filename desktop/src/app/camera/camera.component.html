@@ -14,7 +14,7 @@
                       size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
         <div class="col-2 flex justify-content-center">
-            <p-button [disabled]="!camera || capturing" [text]="true" [rounded]="true" icon="mdi mdi-lg mdi-dots-vertical"
+            <p-button [disabled]="!camera || !connected || capturing" [text]="true" [rounded]="true" icon="mdi mdi-lg mdi-dots-vertical"
                       (click)="cameraDialogMenu.show()" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center gap-1">
@@ -25,7 +25,7 @@
                tooltipPosition="bottom"></i>
             <i *ngIf="autoSubFolderMode === 'MIDNIGHT'" class="mdi mdi-weather-night text-blue-600" pTooltip="Auto sub folder: MIDNIGHT"
                tooltipPosition="bottom"></i>
-            <span *ngIf="camera" style="padding-top: 1px; padding-bottom: 1px; min-height: 17px;"
+            <span *ngIf="camera && (savePath || capturesPath)" style="padding-top: 1px; padding-bottom: 1px; min-height: 17px;"
                   class="flex align-items-center gap-2 bg-gray-800 border-round-2xl px-3 text-overflow-scroll">
                 {{ savePath || capturesPath }}
                 <i *ngIf="savePath" class="mdi mdi-close cursor-pointer" pTooltip="Reset" tooltipPosition="bottom" (click)="resetSavePath()"></i>
@@ -241,3 +241,33 @@
 </div>
 
 <dialogMenu #cameraDialogMenu [model]="cameraMenuItems" />
+
+<p-dialog header="Dithering" [draggable]="true" [(visible)]="showDitheringDialog" [modal]="true" [style]="{width: '80vw'}">
+    <div class="grid mt-2">
+        <div class="col-3 flex flex-column justify-content-center text-center gap-2">
+            <span class="text-sm text-gray-100">Enabled</span>
+            <p-inputSwitch [disabled]="!connected || capturing" [(ngModel)]="dithering.enabled" (ngModelChange)="savePreference()" />
+        </div>
+        <div class="col-5">
+            <span class="p-float-label">
+                <p-inputNumber [disabled]="!connected || capturing || !dithering.enabled" [showButtons]="true"
+                               styleClass="border-0 p-inputtext-sm w-full" [min]="0.1" [max]="60"
+                               [(ngModel)]="dithering.amount" [step]="0.1" locale="en" (ngModelChange)="savePreference()" />
+                <label>Dither (px)</label>
+            </span>
+        </div>
+        <div class="col-4 flex flex-column justify-content-center text-center gap-2">
+            <span class="text-sm text-gray-100">Dither in RA only</span>
+            <p-inputSwitch [disabled]="!connected || capturing || !dithering.enabled" [(ngModel)]="dithering.raOnly"
+                           (ngModelChange)="savePreference()" />
+        </div>
+        <div class="col-6">
+            <span class="p-float-label">
+                <p-inputNumber [disabled]="!connected || capturing || !dithering.enabled" [showButtons]="true"
+                               styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
+                               [(ngModel)]="dithering.afterExposures" [step]="1" (ngModelChange)="savePreference()" />
+                <label>After exposures</label>
+            </span>
+        </div>
+    </div>
+</p-dialog>
