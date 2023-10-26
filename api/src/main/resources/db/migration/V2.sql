@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS calibration_frames(
     bin_y INT1,
     path TEXT,
     enabled INT1
-)
+);
 
 CREATE INDEX IF NOT EXISTS calibration_frames_type_idx ON calibration_frames(type);
 CREATE INDEX IF NOT EXISTS calibration_frames_camera_idx ON calibration_frames(camera);

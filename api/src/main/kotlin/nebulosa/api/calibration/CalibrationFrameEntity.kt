@@ -9,8 +9,9 @@ import java.nio.file.Path
 @Table(name = "calibration_frames")
 data class CalibrationFrameEntity(
     @Id @Column(name = "id", columnDefinition = "INT8") var id: Long = 0L,
-    @Column(name = "type", columnDefinition = "INT1") var type: FrameType = FrameType.LIGHT,
+    @Enumerated(EnumType.ORDINAL) @Column(name = "type", columnDefinition = "INT1") var type: FrameType = FrameType.LIGHT,
     @Column(name = "camera", columnDefinition = "TEXT") var camera: String = "",
+    @Column(name = "filter", columnDefinition = "TEXT") var filter: String = "",
     @Column(name = "exposure_time", columnDefinition = "INT8") var exposureTime: Long = 0L,
     @Column(name = "temperature", columnDefinition = "REAL") var temperature: Double = 0.0,
     @Column(name = "width", columnDefinition = "INT4") var width: Int = 0,

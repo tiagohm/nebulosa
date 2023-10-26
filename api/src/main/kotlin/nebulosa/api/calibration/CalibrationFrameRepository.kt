@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query
 interface CalibrationFrameRepository : JpaRepository<CalibrationFrameEntity, Long> {
 
     @Query(
-        "SELECT frame FROM CalibrationFrameEntity frame WHERE frame.type = 'DARK' " +
+        "SELECT frame FROM CalibrationFrameEntity frame WHERE frame.type = 1 " +
                 "AND frame.enabled = TRUE AND frame.camera = :#{#camera.name} " +
                 "AND frame.width = :width AND frame.height = :height " +
                 "AND frame.binX = :bin AND frame.binY = :bin " +
@@ -16,7 +16,7 @@ interface CalibrationFrameRepository : JpaRepository<CalibrationFrameEntity, Lon
     fun darkFrames(camera: Camera, width: Int, height: Int, bin: Int, exposureTime: Long): List<CalibrationFrameEntity>
 
     @Query(
-        "SELECT frame FROM CalibrationFrameEntity frame WHERE frame.type = 'BIAS' " +
+        "SELECT frame FROM CalibrationFrameEntity frame WHERE frame.type = 3 " +
                 "AND frame.enabled = TRUE AND frame.camera = :#{#camera.name} " +
                 "AND frame.width = :width AND frame.height = :height " +
                 "AND frame.binX = :bin AND frame.binY = :bin "
@@ -24,7 +24,7 @@ interface CalibrationFrameRepository : JpaRepository<CalibrationFrameEntity, Lon
     fun biasFrames(camera: Camera, width: Int, height: Int, bin: Int): List<CalibrationFrameEntity>
 
     @Query(
-        "SELECT frame FROM CalibrationFrameEntity frame WHERE frame.type = 'FLAT' " +
+        "SELECT frame FROM CalibrationFrameEntity frame WHERE frame.type = 2 " +
                 "AND frame.enabled = TRUE AND frame.camera = :#{#camera.name} AND frame.filter = :filter " +
                 "AND frame.width = :width AND frame.height = :height " +
                 "AND frame.binX = :bin AND frame.binY = :bin "

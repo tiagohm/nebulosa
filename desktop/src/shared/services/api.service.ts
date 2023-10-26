@@ -307,6 +307,8 @@ export class ApiService {
 
     async openImage(
         path: string,
+        camera?: Camera,
+        calibrate: boolean = false,
         debayer: boolean = false,
         autoStretch: boolean = true,
         shadow: number = 0,
@@ -320,7 +322,7 @@ export class ApiService {
         scnrAmount: number = 0.5,
         scnrProtectionMode: SCNRProtectionMethod = 'AVERAGE_NEUTRAL',
     ) {
-        const query = this.http.query({ path, debayer, autoStretch, shadow, highlight, midtone, mirrorHorizontal, mirrorVertical, invert, scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode })
+        const query = this.http.query({ path, camera: camera?.name, calibrate, debayer, autoStretch, shadow, highlight, midtone, mirrorHorizontal, mirrorVertical, invert, scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode })
         const response = await this.http.getBlob(`image?${query}`)
 
         const info = JSON.parse(response.headers.get('X-Image-Info')!) as ImageInfo

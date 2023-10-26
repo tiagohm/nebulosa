@@ -42,6 +42,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private readonly menu!: ContextMenu
 
     debayer = true
+    calibrate = true
     mirrorHorizontal = false
     mirrorVertical = false
     invert = false
@@ -103,12 +104,40 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     roiHeight = 128
     roiInteractable?: Interactable
 
+    private readonly autoStretchMenuItem: MenuItem = {
+        id: 'auto-stretch-menuitem',
+        label: 'Auto stretch',
+        icon: 'mdi mdi-chart-histogram',
+        styleClass: 'p-menuitem-checked',
+        command: (e) => {
+            this.autoStretch = !this.autoStretch
+            this.checkMenuItem(e.item, this.autoStretch)
+
+            if (!this.autoStretch) {
+                this.resetStretch()
+            } else {
+                this.loadImage()
+            }
+        },
+    }
+
     private readonly scnrMenuItem: MenuItem = {
         label: 'SCNR',
         icon: 'mdi mdi-palette',
         disabled: true,
         command: () => {
             this.showSCNRDialog = true
+        },
+    }
+
+    private readonly calibrateMenuItem: MenuItem = {
+        label: 'Calibrate',
+        icon: 'mdi mdi-tools',
+        styleClass: 'p-menuitem-checked',
+        command: (e) => {
+            this.calibrate = !this.calibrate
+            this.checkMenuItem(e.item, this.calibrate)
+            this.loadImage()
         },
     }
 
@@ -161,22 +190,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 this.showStretchingDialog = true
             },
         },
-        {
-            id: 'auto-stretch-menuitem',
-            label: 'Auto stretch',
-            icon: 'mdi mdi-chart-histogram',
-            styleClass: 'p-menuitem-checked',
-            command: (e) => {
-                this.autoStretch = !this.autoStretch
-                this.checkMenuItem(e.item, this.autoStretch)
-
-                if (!this.autoStretch) {
-                    this.resetStretch()
-                } else {
-                    this.loadImage()
-                }
-            },
-        },
+        this.autoStretchMenuItem,
         this.scnrMenuItem,
         {
             label: 'Horizontal mirror',
@@ -205,6 +219,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 this.loadImage()
             },
         },
+        this.calibrateMenuItem,
         {
             separator: true,
         },
@@ -394,6 +409,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.disableAutoStretch()
         }
 
+        this.calibrateMenuItem.disabled = !params.camera
+
+        if (!params.camera) {
+            this.disableCalibrate()
+        }
+
         if (this.imageParams.path) {
             this.annotations = []
             this.loadImage()
@@ -419,7 +440,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private async loadImageFromPath(path: string) {
         const image = this.image.nativeElement
         const scnrEnabled = this.scnrChannel !== 'NONE'
-        const { info, blob } = await this.api.openImage(path, this.debayer, this.autoStretch,
+        const { info, blob } = await this.api.openImage(path, this.imageParams.camera, this.calibrate, this.debayer, this.autoStretch,
             this.stretchShadowhHighlight[0] / 65536, this.stretchShadowhHighlight[1] / 65536, this.stretchMidtone / 65536,
             this.mirrorHorizontal, this.mirrorVertical,
             this.invert, scnrEnabled, scnrEnabled ? this.scnrChannel : 'GREEN', this.scnrAmount, this.scnrProtectionMethod)
@@ -487,7 +508,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private disableAutoStretch() {
         this.autoStretch = false
-        this.checkMenuItem(this.menuItems[5], false)
+        this.checkMenuItem(this.autoStretchMenuItem, false)
+    }
+
+    private disableCalibrate() {
+        this.calibrate = false
+        this.checkMenuItem(this.calibrateMenuItem, false)
     }
 
     resetStretch() {

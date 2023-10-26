@@ -188,6 +188,7 @@ i.mdi {
     line-height: 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-size: 1.25rem;
 
     &.random-dither:before {
         content: "\e900";

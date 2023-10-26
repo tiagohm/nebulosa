@@ -39,7 +39,7 @@ class DarkSubtraction(private val darkFrame: Image) : TransformAlgorithm {
                 }
             }
 
-            source.header.addValue(FitsKeywords.PEDESTAL, pedestal)
+            source.header.addValue(FitsKeywords.PEDESTAL, -(pedestal * 65535).toInt())
         }
 
         return source
