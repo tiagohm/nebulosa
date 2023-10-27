@@ -1,3 +1,5 @@
+import { MenuItem } from 'primeng/api'
+import { InputSwitchOnChangeEvent } from 'primeng/inputswitch'
 
 export type Angle = string | number
 
@@ -476,6 +478,17 @@ export interface CoordinateInterpolation {
     y1: number
     delta: number
     date?: string
+}
+
+export interface CheckableMenuItem extends MenuItem {
+    checked: boolean
+}
+
+export interface ToggleableMenuItem extends MenuItem {
+    toggleable: boolean
+    toggled: boolean
+
+    toggle(event: InputSwitchOnChangeEvent): void
 }
 
 export enum ExposureTimeUnit {

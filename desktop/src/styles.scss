@@ -128,14 +128,10 @@ i.mdi {
     }
 }
 
-.p-menuitem {
+.p-menuitem-link {
     &.p-menuitem-checked {
         background-color: #C5E1A5;
-
-        .p-menuitem-text,
-        .p-menuitem-icon {
-            color: #212121 !important;
-        }
+        color: #212121 !important;
     }
 }
 
