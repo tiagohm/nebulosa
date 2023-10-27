@@ -102,10 +102,10 @@ export function longitudeDegreesConstrained(deg: number) {
 }
 
 export function sphericalToRectangular(s: SphericalRepresentation): RectangularRepresentation {
-    let slon = Math.sin(s.lon)
-    let clon = Math.cos(s.lon)
-    let slat = Math.sin(s.lat)
-    let clat = Math.cos(s.lat)
+    const slon = Math.sin(s.lon)
+    const clon = Math.cos(s.lon)
+    const slat = Math.sin(s.lat)
+    const clat = Math.cos(s.lat)
 
     return {
         x: clon * clat,
