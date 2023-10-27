@@ -40,6 +40,8 @@
     "@angular/platform-browser": "16.2.11",
     "@angular/platform-browser-dynamic": "16.2.11",
     "@angular/router": "16.2.11",
+    "@fontsource/roboto": "5.0.8",
+    "@mdi/font": "7.3.67",
     "chart.js": "4.4.0",
     "chartjs-plugin-zoom": "2.0.1",
     "interactjs": "1.10.19",
