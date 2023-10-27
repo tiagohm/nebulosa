@@ -36,8 +36,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     phdGuideStep?: GuideStep
     phdMessage = ''
 
-    phdDitherPixels = 5
-    phdDitherRAOnly = false
     phdSettleAmount = 1.5
     phdSettleTime = 10
     phdSettleTimeout = 30
@@ -290,9 +288,9 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     async ngAfterViewInit() {
-        this.phdSettleAmount = this.preference.get('guiding.settleAmount', 1.5)
-        this.phdSettleTime = this.preference.get('guiding.settleTime', 10)
-        this.phdSettleTimeout = this.preference.get('guiding.settleTimeout', 30)
+        this.phdSettleAmount = this.preference.get('guider.settleAmount', 1.5)
+        this.phdSettleTime = this.preference.get('guider.settleTime', 10)
+        this.phdSettleTimeout = this.preference.get('guider.settleTimeout', 30)
 
         this.guideOutputs = await this.api.guideOutputs()
 
@@ -428,11 +426,11 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         await this.api.guidingStart(event.shiftKey)
     }
 
-    async guidingSettleChanged() {
+    async settleChanged() {
         await this.api.guidingSettle(this.phdSettleAmount, this.phdSettleTime, this.phdSettleTimeout)
-        this.preference.set('guiding.settleAmount', this.phdSettleAmount)
-        this.preference.set('guiding.settleTime', this.phdSettleTime)
-        this.preference.set('guiding.settleTimeout', this.phdSettleTimeout)
+        this.preference.set('guider.settleAmount', this.phdSettleAmount)
+        this.preference.set('guider.settleTime', this.phdSettleTime)
+        this.preference.set('guider.settleTimeout', this.phdSettleTimeout)
     }
 
     guidingClearHistory() {
