@@ -195,10 +195,14 @@ class ImageService(
 
                 if (dsos) {
                     types.add(SkyObjectType.CLUSTER_OF_STARS)
-                    types.add(SkyObjectType.INTERSTELLAR_MEDIUM_OBJECT)
+                    types.add(SkyObjectType.ASSOCIATION_OF_STARS)
                     types.add(SkyObjectType.GALAXY)
+                    types.add(SkyObjectType.INTERSTELLAR_MEDIUM_OBJECT)
                     types.add(SkyObjectType.CLUSTER_OF_GALAXIES)
                     types.add(SkyObjectType.INTERACTING_GALAXIES)
+                    types.add(SkyObjectType.GROUP_OF_GALAXIES)
+                    types.add(SkyObjectType.SUPERCLUSTER_OF_GALAXIES)
+                    types.add(SkyObjectType.PAIR_OF_GALAXIES)
                 }
 
                 val search = SimbadSearch.Builder()
