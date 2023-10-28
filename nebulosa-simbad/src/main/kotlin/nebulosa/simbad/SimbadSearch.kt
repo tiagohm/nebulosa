@@ -1,6 +1,7 @@
 package nebulosa.simbad
 
 import nebulosa.math.Angle
+import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 
@@ -10,15 +11,16 @@ data class SimbadSearch(
     internal val rightAscension: Angle = 0.0,
     internal val declination: Angle = 0.0,
     internal val radius: Angle = 0.0,
-    internal val types: List<SkyObjectType> = emptyList(),
+    internal val types: List<SkyObjectType>? = null,
     internal val magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE,
     internal val magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
+    internal val constellation: Constellation? = null,
     internal val limit: Int = 1000,
 ) {
 
     private constructor(builder: Builder) : this(
         builder.id, builder.text, builder.rightAscension, builder.declination, builder.radius,
-        builder.types, builder.magnitudeMin, builder.magnitudeMax, builder.limit
+        builder.types, builder.magnitudeMin, builder.magnitudeMax, builder.constellation, builder.limit
     )
 
     class Builder {
@@ -31,6 +33,7 @@ data class SimbadSearch(
         internal val types: MutableList<SkyObjectType> = ArrayList()
         internal var magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE
         internal var magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE
+        internal var constellation: Constellation? = null
         internal var limit: Int = 1000
 
         fun id(id: Long) = apply { this.id = id }
@@ -57,6 +60,8 @@ data class SimbadSearch(
             this.magnitudeMin = range.start
             this.magnitudeMax = range.endInclusive
         }
+
+        fun constellation(constellation: Constellation?) = apply { this.constellation = constellation }
 
         fun limit(limit: Int) = apply { this.limit = limit }
 

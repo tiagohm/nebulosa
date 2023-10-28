@@ -238,7 +238,7 @@ class AtlasService(
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
     ) = simbadService
-        .search(SimbadSearch(0, text, rightAscension, declination, radius, type?.let(::listOf) ?: emptyList(), magnitudeMin, magnitudeMax, 5000))
+        .search(SimbadSearch(0, text, rightAscension, declination, radius, type?.let(::listOf), magnitudeMin, magnitudeMax, constellation, 5000))
 
     @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
     private fun refreshImageOfSun() {

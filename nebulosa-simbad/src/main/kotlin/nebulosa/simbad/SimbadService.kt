@@ -110,7 +110,7 @@ class SimbadService(
     }
 
     fun search(search: SimbadSearch): List<SimbadEntry> {
-        val (id, text, rightAscension, declination, radius, types, magnitudeMin, magnitudeMax, limit) = search
+        val (id, text, rightAscension, declination, radius, types, magnitudeMin, magnitudeMax, constellation, limit) = search
         val builder = QueryBuilder()
 
         var join: Table = LeftJoin(BASIC_TABLE, FLUX_TABLE, arrayOf(OID equal FLUX_TABLE.column("oidref")))
@@ -131,10 +131,11 @@ class SimbadService(
             }
 
             if (radius > 0.0) builder.add(SkyPoint(RA, DEC) contains Circle(rightAscension, declination, radius))
-            if (types.isNotEmpty()) builder.add(Or(types.map { OTYPE equal "${it.codes[0]}.." }))
+            if (!types.isNullOrEmpty()) builder.add(Or(types.map { OTYPE equal "${it.codes[0]}.." }))
             if (magnitudeMin > -30.0) builder.add((MAG_V greaterOrEqual magnitudeMin) or (MAG_B greaterOrEqual magnitudeMin))
             if (magnitudeMax < 30.0) builder.add((MAG_V lessOrEqual magnitudeMax) or (MAG_B lessOrEqual magnitudeMax))
             if (!text.isNullOrBlank()) builder.add(ID equal text.trim())
+            if (constellation != null) builder.add(SkyPoint(RA, DEC) contains ConstellationBoundary(constellation.name))
             builder.add(SortBy(OID))
         }
 
