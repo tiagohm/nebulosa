@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core'
 import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
-import { INDIEventType, InternalEventType, Mount, OpenDirectory, WindowEventType } from '../types'
+import { ApiEventType, InternalEventType, Mount, OpenDirectory } from '../types'
 import { ApiService } from './api.service'
 
 @Injectable({ providedIn: 'root' })
@@ -45,15 +45,15 @@ export class ElectronService {
         return !!(window && window.process && window.process.type)
     }
 
-    send(channel: INDIEventType | InternalEventType | WindowEventType, ...data: any[]) {
+    send(channel: ApiEventType | InternalEventType, ...data: any[]) {
         this.ipcRenderer.send(channel, ...data)
     }
 
-    sendSync(channel: INDIEventType | InternalEventType | WindowEventType, ...data: any[]) {
+    sendSync(channel: ApiEventType | InternalEventType, ...data: any[]) {
         return this.ipcRenderer.sendSync(channel, ...data)
     }
 
-    on(channel: INDIEventType | InternalEventType | 'PARAMS_CHANGED',
+    on(channel: ApiEventType | InternalEventType | 'PARAMS_CHANGED',
         listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) {
         return this.ipcRenderer.on(channel, listener)
     }

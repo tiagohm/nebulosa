@@ -493,6 +493,11 @@ export interface ToggleableMenuItem extends MenuItem {
     toggle(event: InputSwitchOnChangeEvent): void
 }
 
+export interface SkyAtlasUpdateFinished {
+    versionFrom?: string
+    versionTo: string
+}
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',
@@ -671,7 +676,7 @@ export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
     'ASTAP' |
     'WATNEY'
 
-export const INDI_EVENT_TYPES = [
+export const API_EVENT_TYPES = [
     // Device.
     'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED', 'DEVICE_MESSAGE_RECEIVED',
     // Camera.
@@ -691,22 +696,19 @@ export const INDI_EVENT_TYPES = [
     'GUIDER_MESSAGE_RECEIVED',
     // Polar Alignment.
     'DARV_POLAR_ALIGNMENT_STARTED', 'DARV_POLAR_ALIGNMENT_FINISHED', 'DARV_POLAR_ALIGNMENT_UPDATED',
+    // Misc.
+    'SKY_ATLAS_UPDATE_FINISHED',
 ] as const
 
-export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]
-
-export const WINDOW_EVENT_TYPES = [
-    'SAVE_FITS_AS', 'OPEN_FITS', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
-    'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW',
-    'REGISTER_CRON', 'UNREGISTER_CRON',
-] as const
-
-export type WindowEventType = (typeof WINDOW_EVENT_TYPES)[number]
+export type ApiEventType = (typeof API_EVENT_TYPES)[number]
 
 export const INTERNAL_EVENT_TYPES = [
+    'SAVE_FITS_AS', 'OPEN_FITS', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
+    'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW',
     'SELECTED_CAMERA', 'SELECTED_FOCUSER', 'SELECTED_WHEEL', 'SELECTED_MOUNT',
     'CAMERA_CHANGED', 'FOCUSER_CHANGED', 'MOUNT_CHANGED', 'WHEEL_CHANGED',
-    'WHEEL_RENAMED', 'GUIDE_OUTPUT_CHANGED', 'CRON_TICKED',
+    'WHEEL_RENAMED', 'GUIDE_OUTPUT_CHANGED',
+    'REGISTER_CRON', 'UNREGISTER_CRON', 'CRON_TICKED',
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]

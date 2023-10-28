@@ -38,7 +38,7 @@ import kotlin.math.hypot
 
 @Service
 @EnableScheduling
-class AtlasService(
+class SkyAtlasService(
     private val horizonsEphemerisProvider: HorizonsEphemerisProvider,
     private val bodyEphemerisProvider: BodyEphemerisProvider,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,

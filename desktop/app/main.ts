@@ -2,7 +2,7 @@ import { Client } from '@stomp/stompjs'
 import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { Camera, FilterWheel, Focuser, INDI_EVENT_TYPES, INTERNAL_EVENT_TYPES, Mount, OpenWindow } from './types'
+import { API_EVENT_TYPES, Camera, FilterWheel, Focuser, INTERNAL_EVENT_TYPES, Mount, OpenWindow } from './types'
 
 import { CronJob } from 'cron'
 import { WebSocket } from 'ws'
@@ -35,17 +35,13 @@ function createMainWindow() {
     wsClient = new Client({
         brokerURL: `ws://localhost:${apiPort}/ws`,
         onConnect: () => {
-            for (const item of INDI_EVENT_TYPES) {
+            for (const item of API_EVENT_TYPES) {
                 wsClient.subscribe(item, (message) => {
-                    const data = JSON.parse(message.body)
-
-                    if (serve) {
-                        console.info(item, message.body)
-                    }
-
-                    sendToAllWindows(item, data)
+                    sendToAllWindows(item, JSON.parse(message.body))
                 })
             }
+
+            wsClient.subscribe('END', () => {})
         },
         onDisconnect() {
             console.warn('Web Socket disconnected')
