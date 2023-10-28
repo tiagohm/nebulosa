@@ -23,7 +23,7 @@ import kotlin.math.min
  * @see <a href="http://simbad.u-strasbg.fr/guide/otypes.htx">Object types</a>
  */
 class SimbadService(
-    url: String = "https://simbad.u-strasbg.fr/",
+    url: String = MAIN_URL,
     httpClient: OkHttpClient? = null,
 ) : RetrofitService(url, httpClient) {
 
@@ -145,6 +145,9 @@ class SimbadService(
     }
 
     companion object {
+
+        const val MAIN_URL = "https://simbad.cds.unistra.fr/"
+        const val ALTERNATIVE_URL = "https://simbad.u-strasbg.fr/"
 
         @JvmStatic private val LOG = loggerFor<SimbadService>()
 
