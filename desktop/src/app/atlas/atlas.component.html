@@ -108,7 +108,7 @@
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td class="text-sm">{{ item.name }}</td>
+                                <td class="text-sm">{{ item | skyObject:'name' }}</td>
                                 <td class="text-sm">{{ item.type | enum }}</td>
                                 <td class="text-sm text-center">{{ item.magnitude < 99 ? item.magnitude.toFixed(1) : '-' }}</td>
                                 <td class="text-sm text-center">{{ item.constellation }}</td>
@@ -147,7 +147,7 @@
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td class="text-sm">{{ item.name }}</td>
+                                <td class="text-sm">{{ item | skyObject:'name' }}</td>
                                 <td class="text-sm">{{ item.type | enum }}</td>
                                 <td class="text-sm text-center">{{ item.magnitude < 99 ? item.magnitude.toFixed(1) : '-' }}</td>
                                 <td class="text-sm text-center">{{ item.constellation }}</td>
@@ -186,7 +186,7 @@
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td class="text-sm">{{ item.name }}</td>
+                                <td class="text-sm">{{ item | skyObject:'name' }}</td>
                                 <td class="text-sm">{{ item.type | enum }}</td>
                                 <td class="text-sm text-center">{{ item.magnitude < 99 ? item.magnitude.toFixed(1) : '-' }}</td>
                                 <td class="text-sm text-center">{{ item.constellation }}</td>
@@ -339,12 +339,14 @@
                             </span>
                         </div>
                         <div class="col-3 text-center">
-                            <p-button [disabled]="!name || refreshing" [text]="true" [rounded]="true" icon="mdi mdi-lg mdi-dots-vertical" (click)="ephemerisDialogMenu.show()" />
+                            <p-button [disabled]="!name || refreshing" [text]="true" [rounded]="true" icon="mdi mdi-lg mdi-dots-vertical"
+                                      (click)="ephemerisDialogMenu.show()" />
                         </div>
                     </div>
                 </div>
                 <div class="col-12 flex justify-content-center">
-                    <p-button [disabled]="!name || refreshing" [text]="true" severity="info" (onClick)="mountSync()" icon="mdi mdi-sync" label="Sync" />
+                    <p-button [disabled]="!name || refreshing" [text]="true" severity="info" (onClick)="mountSync()" icon="mdi mdi-sync"
+                              label="Sync" />
                     <p-button [disabled]="!name || refreshing" [text]="true" severity="success" (onClick)="mountGoTo()" icon="mdi mdi-telescope"
                               label="Go To" />
                     <p-button [disabled]="!name || refreshing" [text]="true" severity="success" (onClick)="mountSlew()" icon="mdi mdi-telescope"
@@ -422,7 +424,8 @@
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [options]="skyObjectFilter.types" [(ngModel)]="skyObjectFilter.type" appendTo="body" [filter]="true" styleClass="border-0">
+                <p-dropdown [options]="skyObjectFilter.types" [(ngModel)]="skyObjectFilter.type" appendTo="body" [filter]="true"
+                            styleClass="border-0">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>

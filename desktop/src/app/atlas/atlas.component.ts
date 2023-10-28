@@ -16,6 +16,7 @@ import {
     MinorPlanet, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
 } from '../../shared/types'
 import { AppComponent } from '../app.component'
+import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
 
 Chart.register(zoomPlugin)
 
@@ -465,6 +466,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         private electron: ElectronService,
         private preference: PreferenceService,
         private dialog: DialogService,
+        private skyObjectPipe: SkyObjectPipe,
     ) {
         app.title = 'Sky Atlas'
 
@@ -801,7 +803,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.tags = []
 
                 if (this.star) {
-                    this.name = this.star.name
+                    this.name = this.skyObjectPipe.transform(this.star, 'name')
                     const bodyPosition = await this.api.positionOfStar(this.location!, this.star, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
@@ -814,7 +816,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.tags = []
 
                 if (this.dso) {
-                    this.name = this.dso.name
+                    this.name = this.skyObjectPipe.transform(this.dso, 'name')
                     const bodyPosition = await this.api.positionOfDSO(this.location!, this.dso, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
@@ -827,7 +829,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.tags = []
 
                 if (this.simbad) {
-                    this.name = this.simbad.name
+                    this.name = this.skyObjectPipe.transform(this.simbad, 'name')
                     const bodyPosition = await this.api.positionOfSimbad(this.location!, this.simbad, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
