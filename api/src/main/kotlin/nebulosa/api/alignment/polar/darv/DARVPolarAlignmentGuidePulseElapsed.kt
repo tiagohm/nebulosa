@@ -9,11 +9,11 @@ import nebulosa.indi.device.guide.GuideOutput
 data class DARVPolarAlignmentGuidePulseElapsed(
     override val camera: Camera,
     override val guideOutput: GuideOutput,
-    val forward: Boolean,
+    override val state: DARVPolarAlignmentState,
     val direction: GuideDirection,
     val remainingTime: Long,
     val progress: Double,
 ) : MessageEvent, DARVPolarAlignmentEvent {
 
-    @JsonIgnore override val eventName = "DARV_POLAR_ALIGNMENT_GUIDE_PULSE_ELAPSED"
+    @JsonIgnore override val eventName = "DARV_POLAR_ALIGNMENT_UPDATED"
 }

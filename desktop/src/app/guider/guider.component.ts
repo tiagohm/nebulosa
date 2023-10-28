@@ -6,7 +6,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { GuideDirection, GuideOutput, GuideStar, GuideState, GuideStep, GuiderStatus, HistoryStep } from '../../shared/types'
+import { GuideDirection, GuideOutput, GuideState, GuideStep, Guider, HistoryStep } from '../../shared/types'
 
 export type PlotMode = 'RA/DEC' | 'DX/DY'
 
@@ -257,25 +257,25 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             })
         })
 
-        electron.on('GUIDER_UPDATED', (_, event: GuiderStatus) => {
+        electron.on('GUIDER_UPDATED', (_, event: Guider) => {
             ngZone.run(() => {
                 this.processGuiderStatus(event)
             })
         })
 
-        electron.on('GUIDER_STEPPED', (_, event: HistoryStep | GuideStar) => {
+        electron.on('GUIDER_STEPPED', (_, event: HistoryStep) => {
             ngZone.run(() => {
-                if ("id" in event) {
-                    if (this.phdGuideHistory.length >= 100) {
-                        this.phdGuideHistory.splice(0, 1)
-                    }
-
-                    this.phdGuideHistory.push(event)
-                    this.updateGuideHistoryChart()
+                if (this.phdGuideHistory.length >= 100) {
+                    this.phdGuideHistory.splice(0, this.phdGuideHistory.length - 99)
                 }
 
-                if ("guideStep" in event && event.guideStep) {
+                this.phdGuideHistory.push(event)
+                this.updateGuideHistoryChart()
+
+                if (event.guideStep) {
                     this.phdGuideStep = event.guideStep
+                } else {
+                    // Dithering.
                 }
             })
         })
@@ -307,7 +307,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         this.api.stopListening('GUIDING')
     }
 
-    private processGuiderStatus(event: GuiderStatus) {
+    private processGuiderStatus(event: Guider) {
         this.phdConnected = event.connected
         this.phdState = event.state
         this.phdPixelScale = event.pixelScale

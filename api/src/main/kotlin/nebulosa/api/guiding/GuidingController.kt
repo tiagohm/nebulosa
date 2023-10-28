@@ -23,13 +23,13 @@ class GuidingController(private val guidingService: GuidingService) {
     }
 
     @GetMapping("status")
-    fun status(): GuiderStatus {
+    fun status(): GuiderInfo {
         return guidingService.status()
     }
 
     @GetMapping("history")
-    fun history(): List<HistoryStep> {
-        return guidingService.history()
+    fun history(@RequestParam(required = false, defaultValue = "100") maxLength: Int): List<HistoryStep> {
+        return guidingService.history(maxLength)
     }
 
     @GetMapping("history/latest")

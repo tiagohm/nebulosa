@@ -130,17 +130,18 @@ class DARVPolarAlignmentExecutor(
             is GuidePulseEvent -> {
                 val direction = event.tasklet.request.direction
                 val duration = event.tasklet.request.durationInMilliseconds
-                val forward = (direction == data.direction) != data.reversed
+                val state = if ((direction == data.direction) != data.reversed) DARVPolarAlignmentState.FORWARD
+                else DARVPolarAlignmentState.BACKWARD
 
                 when (event) {
                     is GuidePulseStarted -> {
-                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, forward, direction, duration, 0.0)
+                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, state, direction, duration, 0.0)
                     }
                     is GuidePulseElapsed -> {
-                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, forward, direction, event.remainingTime, event.progress)
+                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, state, direction, event.remainingTime, event.progress)
                     }
                     is GuidePulseFinished -> {
-                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, forward, direction, 0L, 1.0)
+                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, state, direction, 0L, 1.0)
                     }
                 }
             }

@@ -8,4 +8,6 @@ sealed interface DARVPolarAlignmentEvent {
     val camera: Camera
 
     val guideOutput: GuideOutput
+
+    val state: DARVPolarAlignmentState
 }

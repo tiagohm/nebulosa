@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core'
 import moment from 'moment'
 import {
     Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation, DeepSkyObject, Device,
-    FilterWheel, Focuser, GuideDirection, GuideOutput, GuiderStatus, HipsSurvey, HistoryStep,
+    FilterWheel, Focuser, GuideDirection, GuideOutput, Guider, HipsSurvey, HistoryStep,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
     ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
     Mount, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
@@ -264,11 +264,12 @@ export class ApiService {
     }
 
     guidingStatus() {
-        return this.http.get<GuiderStatus>(`guiding/status`)
+        return this.http.get<Guider>(`guiding/status`)
     }
 
-    guidingHistory() {
-        return this.http.get<HistoryStep[]>(`guiding/history`)
+    guidingHistory(maxLength: number = 100) {
+        const query = this.http.query({ maxLength })
+        return this.http.get<HistoryStep[]>(`guiding/history?${query}`)
     }
 
     guidingLatestHistory() {

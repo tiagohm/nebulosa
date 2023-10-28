@@ -18,7 +18,7 @@ export interface GuideOutput extends Device {
     pulseGuiding: boolean
 }
 
-export interface GuiderStatus {
+export interface Guider {
     connected: boolean
     state: GuideState
     settling: boolean
@@ -458,15 +458,17 @@ export interface DARVPolarAlignmentEvent {
     guideOutput: GuideOutput
     remainingTime: number
     progress: number
+    state: DARVPolarAlignmentState
 }
 
 export interface DARVPolarAlignmentInitialPauseElapsed extends DARVPolarAlignmentEvent {
     pauseTime: number
+    state: 'INITIAL_PAUSE'
 }
 
 export interface DARVPolarAlignmentGuidePulseElapsed extends DARVPolarAlignmentEvent {
-    forward: boolean
     direction: GuideDirection
+    state: 'FORWARD' | 'BACKWARD'
 }
 
 export interface CoordinateInterpolation {
@@ -688,8 +690,7 @@ export const INDI_EVENT_TYPES = [
     'GUIDER_CONNECTED', 'GUIDER_DISCONNECTED', 'GUIDER_UPDATED', 'GUIDER_STEPPED',
     'GUIDER_MESSAGE_RECEIVED',
     // Polar Alignment.
-    'DARV_POLAR_ALIGNMENT_STARTED', 'DARV_POLAR_ALIGNMENT_FINISHED',
-    'DARV_POLAR_ALIGNMENT_INITIAL_PAUSE_ELAPSED', 'DARV_POLAR_ALIGNMENT_GUIDE_PULSE_ELAPSED',
+    'DARV_POLAR_ALIGNMENT_STARTED', 'DARV_POLAR_ALIGNMENT_FINISHED', 'DARV_POLAR_ALIGNMENT_UPDATED',
 ] as const
 
 export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]
@@ -799,3 +800,5 @@ export const GUIDE_STATES = [
 export type GuideState = (typeof GUIDE_STATES)[number]
 
 export type Hemisphere = 'NORTHERN' | 'SOUTHERN'
+
+export type DARVPolarAlignmentState = 'IDLE' | 'INITIAL_PAUSE' | 'FORWARD' | 'BACKWARD'

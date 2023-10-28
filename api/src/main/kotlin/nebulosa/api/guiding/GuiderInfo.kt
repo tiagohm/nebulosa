@@ -2,7 +2,7 @@ package nebulosa.api.guiding
 
 import nebulosa.guiding.GuideState
 
-data class GuiderStatus(
+data class GuiderInfo(
     val connected: Boolean = false,
     val state: GuideState = GuideState.STOPPED,
     val settling: Boolean = false,
@@ -11,6 +11,6 @@ data class GuiderStatus(
 
     companion object {
 
-        @JvmStatic val DISCONNECTED = GuiderStatus()
+        @JvmStatic val DISCONNECTED = GuiderInfo()
     }
 }

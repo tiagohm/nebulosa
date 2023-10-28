@@ -10,5 +10,7 @@ data class DARVPolarAlignmentFinished(
     override val guideOutput: GuideOutput,
 ) : MessageEvent, DARVPolarAlignmentEvent {
 
+    override val state = DARVPolarAlignmentState.IDLE
+
     @JsonIgnore override val eventName = "DARV_POLAR_ALIGNMENT_FINISHED"
 }

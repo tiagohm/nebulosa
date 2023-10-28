@@ -91,21 +91,16 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('DARV_POLAR_ALIGNMENT_INITIAL_PAUSE_ELAPSED', (_, event: DARVPolarAlignmentInitialPauseElapsed) => {
+        electron.on('DARV_POLAR_ALIGNMENT_UPDATED', (_, event: DARVPolarAlignmentInitialPauseElapsed | DARVPolarAlignmentGuidePulseElapsed) => {
             if (event.camera.name === this.camera?.name &&
                 event.guideOutput.name === this.guideOutput?.name) {
                 ngZone.run(() => {
-                    this.darvStatus = 'initial pause'
-                })
-            }
-        })
-
-        electron.on('DARV_POLAR_ALIGNMENT_GUIDE_PULSE_ELAPSED', (_, event: DARVPolarAlignmentGuidePulseElapsed) => {
-            if (event.camera.name === this.camera?.name &&
-                event.guideOutput.name === this.guideOutput?.name) {
-                ngZone.run(() => {
-                    this.darvDirection = event.direction
-                    this.darvStatus = event.forward ? 'forwarding' : 'backwarding'
+                    if (event.state === 'INITIAL_PAUSE') {
+                        this.darvStatus = 'initial pause'
+                    } else {
+                        this.darvDirection = event.direction
+                        this.darvStatus = event.state === 'FORWARD' ? 'forwarding' : 'backwarding'
+                    }
                 })
             }
         })

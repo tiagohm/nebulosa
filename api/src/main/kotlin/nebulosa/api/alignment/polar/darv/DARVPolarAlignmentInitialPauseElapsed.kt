@@ -19,5 +19,7 @@ data class DARVPolarAlignmentInitialPauseElapsed(
         delay.remainingTime.inWholeMicroseconds, delay.progress
     )
 
-    @JsonIgnore override val eventName = "DARV_POLAR_ALIGNMENT_INITIAL_PAUSE_ELAPSED"
+    override val state = DARVPolarAlignmentState.INITIAL_PAUSE
+
+    @JsonIgnore override val eventName = "DARV_POLAR_ALIGNMENT_UPDATED"
 }

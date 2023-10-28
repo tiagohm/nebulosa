@@ -7,10 +7,9 @@ import nebulosa.guiding.GuideState
 import nebulosa.guiding.Guider
 import nebulosa.guiding.GuiderListener
 import nebulosa.phd2.client.PHD2Client
-import nebulosa.phd2.client.PHD2EventListener
-import nebulosa.phd2.client.commands.PHD2Command
-import nebulosa.phd2.client.events.PHD2Event
 import org.springframework.stereotype.Service
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.time.Duration
 
 @Service
@@ -18,7 +17,7 @@ class GuidingService(
     private val messageService: MessageService,
     private val phd2Client: PHD2Client,
     private val guider: Guider,
-) : PHD2EventListener, GuiderListener {
+) : GuiderListener {
 
     private val guideHistory = GuideStepHistory()
 
@@ -27,7 +26,6 @@ class GuidingService(
         check(!phd2Client.isOpen)
 
         phd2Client.open(host, port)
-        phd2Client.registerListener(this)
         guider.registerGuiderListener(this)
         messageService.sendMessage(GUIDER_CONNECTED)
     }
@@ -36,17 +34,18 @@ class GuidingService(
     @Synchronized
     fun disconnect() {
         runCatching { guider.close() }
-        phd2Client.unregisterListener(this)
         messageService.sendMessage(GUIDER_DISCONNECTED)
     }
 
-    fun status(): GuiderStatus {
-        return if (!phd2Client.isOpen) GuiderStatus.DISCONNECTED
-        else GuiderStatus(phd2Client.isOpen, guider.state, guider.isSettling, guider.pixelScale)
+    fun status(): GuiderInfo {
+        return if (!phd2Client.isOpen) GuiderInfo.DISCONNECTED
+        else GuiderInfo(phd2Client.isOpen, guider.state, guider.isSettling, guider.pixelScale)
     }
 
-    fun history(): List<HistoryStep> {
-        return guideHistory
+    fun history(maxLength: Int = 100): List<HistoryStep> {
+        val startIndex = max(0, guideHistory.size - 100)
+        val endIndex = min(guideHistory.size, startIndex + maxLength)
+        return guideHistory.subList(startIndex, endIndex)
     }
 
     fun latestHistory(): HistoryStep? {
@@ -88,26 +87,23 @@ class GuidingService(
     }
 
     override fun onStateChanged(state: GuideState, pixelScale: Double) {
-        val status = GuiderStatus(phd2Client.isOpen, state, guider.isSettling, pixelScale)
+        val status = GuiderInfo(phd2Client.isOpen, state, guider.isSettling, pixelScale)
         messageService.sendMessage(GUIDER_UPDATED, status)
     }
 
     override fun onGuideStepped(guideStar: GuideStar) {
-        val payload = guideStar.guideStep?.let(guideHistory::addGuideStep) ?: guideStar
+        val payload = guideStar.guideStep.let(guideHistory::addGuideStep)
         messageService.sendMessage(GUIDER_STEPPED, payload)
     }
 
     override fun onDithered(dx: Double, dy: Double) {
-        guideHistory.addDither(dx, dy)
+        val payload = guideHistory.addDither(dx, dy)
+        messageService.sendMessage(GUIDER_STEPPED, payload)
     }
 
     override fun onMessageReceived(message: String) {
         messageService.sendMessage(GUIDER_MESSAGE_RECEIVED, "message" to message)
     }
-
-    override fun onEventReceived(event: PHD2Event) {}
-
-    override fun <T> onCommandProcessed(command: PHD2Command<T>, result: T?, error: String?) {}
 
     companion object {
 
