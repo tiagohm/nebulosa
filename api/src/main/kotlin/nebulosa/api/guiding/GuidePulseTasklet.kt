@@ -1,7 +1,7 @@
 package nebulosa.api.guiding
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.sequencer.SubjectSequenceTasklet
+import nebulosa.api.sequencer.PublishableSequenceTasklet
 import nebulosa.api.sequencer.tasklets.delay.DelayElapsed
 import nebulosa.api.sequencer.tasklets.delay.DelayTasklet
 import nebulosa.guiding.GuideDirection
@@ -11,7 +11,7 @@ import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.repeat.RepeatStatus
 import kotlin.time.Duration.Companion.milliseconds
 
-data class GuidePulseTasklet(val request: GuidePulseRequest) : SubjectSequenceTasklet<GuidePulseEvent>(), Consumer<DelayElapsed> {
+data class GuidePulseTasklet(val request: GuidePulseRequest) : PublishableSequenceTasklet<GuidePulseEvent>(), Consumer<DelayElapsed> {
 
     private val delayTasklet = DelayTasklet(request.durationInMilliseconds.milliseconds)
 

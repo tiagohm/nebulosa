@@ -15,7 +15,7 @@ import nebulosa.api.cameras.CameraCaptureEvent.Companion.EXPOSURE_TIME
 import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_PROGRESS
 import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_REMAINING_TIME
 import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_TIME
-import nebulosa.api.sequencer.SubjectSequenceTasklet
+import nebulosa.api.sequencer.PublishableSequenceTasklet
 import nebulosa.api.sequencer.tasklets.delay.DelayElapsed
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.imaging.Image
@@ -43,7 +43,7 @@ import kotlin.time.Duration.Companion.microseconds
 import kotlin.time.Duration.Companion.seconds
 
 data class CameraExposureTasklet(override val request: CameraStartCaptureRequest) :
-    SubjectSequenceTasklet<CameraCaptureEvent>(), CameraStartCaptureTasklet, JobExecutionListener, Consumer<DelayElapsed> {
+    PublishableSequenceTasklet<CameraCaptureEvent>(), CameraStartCaptureTasklet, JobExecutionListener, Consumer<DelayElapsed> {
 
     private val latch = CountUpDownLatch()
     private val aborted = AtomicBoolean()

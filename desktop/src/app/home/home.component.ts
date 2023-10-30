@@ -4,7 +4,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount, SkyAtlasUpdateFinished } from '../../shared/types'
+import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -70,8 +70,6 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         return this.hasCamera || this.hasMount || this.hasFocuser
             || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch
     }
-
-    skyAtlasReady = false
 
     private startListening<T extends Device>(
         type: 'CAMERA' | 'MOUNT' | 'FOCUSER' | 'WHEEL',
@@ -145,12 +143,6 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 return this.wheels.length
             },
         )
-
-        electron.on('SKY_ATLAS_UPDATE_FINISHED', (_, event: SkyAtlasUpdateFinished) => {
-            ngZone.run(() => {
-                this.skyAtlasReady = true
-            })
-        })
     }
 
     async ngAfterContentInit() {

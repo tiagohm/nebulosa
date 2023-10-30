@@ -9,7 +9,7 @@ import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import java.io.Closeable
 
-abstract class SubjectSequenceTasklet<T : SequenceTaskletEvent>(@JvmField protected val subject: Subject<T>) : SequenceTasklet<T>, Closeable {
+abstract class PublishableSequenceTasklet<T : SequenceTaskletEvent>(@JvmField protected val subject: Subject<T>) : SequenceTasklet<T>, Closeable {
 
     constructor() : this(PublishSubject.create<T>())
 
@@ -47,6 +47,6 @@ abstract class SubjectSequenceTasklet<T : SequenceTaskletEvent>(@JvmField protec
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<SubjectSequenceTasklet<*>>()
+        @JvmStatic private val LOG = loggerFor<PublishableSequenceTasklet<*>>()
     }
 }

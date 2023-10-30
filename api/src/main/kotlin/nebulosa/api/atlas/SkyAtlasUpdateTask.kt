@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import nebulosa.api.beans.annotations.ThreadedTask
 import nebulosa.api.configs.ConfigRepository
-import nebulosa.api.services.MessageService
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -24,7 +23,6 @@ class SkyAtlasUpdateTask(
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val httpClient: OkHttpClient,
     private val dataPath: Path,
-    private val messageService: MessageService,
 ) : Runnable {
 
     override fun run() {
@@ -43,8 +41,6 @@ class SkyAtlasUpdateTask(
         } else {
             LOG.info("Star/DSO database is up to date")
         }
-
-        messageService.sendMessage(SkyAtlasUpdateFinished(databaseVersion, DATABASE_VERSION))
     }
 
     private fun readStarsAndLoad() {

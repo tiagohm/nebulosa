@@ -107,9 +107,6 @@ class BeanConfiguration {
         Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory)
 
     @Bean
-    fun singleTaskExecutorService(): ExecutorService = Executors.newSingleThreadExecutor(DaemonThreadFactory)
-
-    @Bean
     fun eventBus(systemExecutorService: ExecutorService) = EventBus.builder()
         .sendNoSubscriberEvent(false)
         .sendSubscriberExceptionEvent(false)

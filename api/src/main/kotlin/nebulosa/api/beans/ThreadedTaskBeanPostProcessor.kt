@@ -8,14 +8,14 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 
 @Component
-class ThreadedTaskBeanPostProcessor(private val singleTaskExecutorService: ExecutorService) : BeanPostProcessor {
+class ThreadedTaskBeanPostProcessor(private val systemExecutorService: ExecutorService) : BeanPostProcessor {
 
     override fun postProcessAfterInitialization(bean: Any, beanName: String): Any {
         if (bean is Runnable && bean::class.java.isAnnotationPresent(ThreadedTask::class.java)) {
             LOG.info("threaded task scheduled. name={}", beanName)
 
             CompletableFuture
-                .runAsync(bean, singleTaskExecutorService)
+                .runAsync(bean, systemExecutorService)
                 .whenComplete { _, e -> e?.printStackTrace() ?: LOG.info("threaded task finished. name={}", beanName) }
         }
 

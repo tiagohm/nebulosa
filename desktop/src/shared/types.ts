@@ -696,8 +696,6 @@ export const API_EVENT_TYPES = [
     'GUIDER_MESSAGE_RECEIVED',
     // Polar Alignment.
     'DARV_POLAR_ALIGNMENT_STARTED', 'DARV_POLAR_ALIGNMENT_FINISHED', 'DARV_POLAR_ALIGNMENT_UPDATED',
-    // Misc.
-    'SKY_ATLAS_UPDATE_FINISHED',
 ] as const
 
 export type ApiEventType = (typeof API_EVENT_TYPES)[number]
