@@ -29,6 +29,7 @@ class CameraCaptureEventConverter : ToJson<CameraCaptureEvent> {
     override fun serialize(value: CameraCaptureEvent, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()
 
+        gen.writeStringField("eventName", value.eventName)
         gen.writeObjectField("camera", value.camera)
 
         val executionContext = when (value) {

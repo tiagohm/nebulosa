@@ -223,24 +223,24 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
 
         api.startListening('GUIDING')
 
-        electron.on('GUIDE_OUTPUT_UPDATED', (_, event: GuideOutput) => {
-            if (event.name === this.guideOutput?.name) {
+        electron.on('GUIDE_OUTPUT_UPDATED', event => {
+            if (event.device.name === this.guideOutput?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.guideOutput!, event)
+                    Object.assign(this.guideOutput!, event.device)
                     this.update()
                 })
             }
         })
 
-        electron.on('GUIDE_OUTPUT_ATTACHED', (_, event: GuideOutput) => {
+        electron.on('GUIDE_OUTPUT_ATTACHED', event => {
             ngZone.run(() => {
-                this.guideOutputs.push(event)
+                this.guideOutputs.push(event.device)
             })
         })
 
-        electron.on('GUIDE_OUTPUT_DETACHED', (_, event: GuideOutput) => {
+        electron.on('GUIDE_OUTPUT_DETACHED', event => {
             ngZone.run(() => {
-                const index = this.guideOutputs.findIndex(e => e.name === event.name)
+                const index = this.guideOutputs.findIndex(e => e.name === event.device.name)
                 if (index >= 0) this.guideOutputs.splice(index, 1)
             })
         })
@@ -257,32 +257,32 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             })
         })
 
-        electron.on('GUIDER_UPDATED', (_, event: Guider) => {
+        electron.on('GUIDER_UPDATED', event => {
             ngZone.run(() => {
-                this.processGuiderStatus(event)
+                this.processGuiderStatus(event.data)
             })
         })
 
-        electron.on('GUIDER_STEPPED', (_, event: HistoryStep) => {
+        electron.on('GUIDER_STEPPED', event => {
             ngZone.run(() => {
                 if (this.phdGuideHistory.length >= 100) {
                     this.phdGuideHistory.splice(0, this.phdGuideHistory.length - 99)
                 }
 
-                this.phdGuideHistory.push(event)
+                this.phdGuideHistory.push(event.data)
                 this.updateGuideHistoryChart()
 
-                if (event.guideStep) {
-                    this.phdGuideStep = event.guideStep
+                if (event.data.guideStep) {
+                    this.phdGuideStep = event.data.guideStep
                 } else {
                     // Dithering.
                 }
             })
         })
 
-        electron.on('GUIDER_MESSAGE_RECEIVED', (_, event: { message: string }) => {
+        electron.on('GUIDER_MESSAGE_RECEIVED', event => {
             ngZone.run(() => {
-                this.phdMessage = event.message
+                this.phdMessage = event.data
             })
         })
     }

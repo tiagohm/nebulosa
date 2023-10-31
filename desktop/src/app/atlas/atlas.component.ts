@@ -5,8 +5,10 @@ import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
 import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
-import { EVERY_MINUTE_CRON_TIME, ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
+import { Subscription, timer } from 'rxjs'
+import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
+import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -16,7 +18,6 @@ import {
     MinorPlanet, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
 } from '../../shared/types'
 import { AppComponent } from '../app.component'
-import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
 
 Chart.register(zoomPlugin)
 
@@ -459,6 +460,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         },
     ]
 
+    private refreshTimer?: Subscription
+
     constructor(
         private app: AppComponent,
         private api: ApiService,
@@ -475,17 +478,18 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
             this.satelliteSearchGroup.set(item, enabled)
         }
 
-        electron.on('CRON_TICKED', () => {
-            if (!this.useManualDateTime) {
-                this.refreshTab()
-            }
-        })
-
         // TODO: Refresh graph and twilight if hours past 12 (noon)
     }
 
     async ngOnInit() {
-        this.electron.registerCron(EVERY_MINUTE_CRON_TIME)
+        const now = new Date()
+        const initialDelay = 60 * 1000 - (now.getSeconds() * 1000 + now.getMilliseconds())
+        this.refreshTimer = timer(initialDelay, 60 * 1000)
+            .subscribe(() => {
+                if (!this.useManualDateTime) {
+                    this.refreshTab()
+                }
+            })
 
         this.starFilter.types.push(... await this.api.starTypes())
         this.dsoFilter.types.push(... await this.api.dsoTypes())
@@ -516,7 +520,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        this.electron.unregisterCron()
+        this.refreshTimer?.unsubscribe()
     }
 
     tabChanged() {

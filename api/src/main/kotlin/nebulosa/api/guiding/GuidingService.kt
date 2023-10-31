@@ -27,14 +27,14 @@ class GuidingService(
 
         phd2Client.open(host, port)
         guider.registerGuiderListener(this)
-        messageService.sendMessage(GUIDER_CONNECTED)
+        messageService.sendMessage(GuiderMessageEvent(GUIDER_CONNECTED))
     }
 
     @PreDestroy
     @Synchronized
     fun disconnect() {
         runCatching { guider.close() }
-        messageService.sendMessage(GUIDER_DISCONNECTED)
+        messageService.sendMessage(GuiderMessageEvent(GUIDER_DISCONNECTED))
     }
 
     fun status(): GuiderInfo {
@@ -88,21 +88,21 @@ class GuidingService(
 
     override fun onStateChanged(state: GuideState, pixelScale: Double) {
         val status = GuiderInfo(phd2Client.isOpen, state, guider.isSettling, pixelScale)
-        messageService.sendMessage(GUIDER_UPDATED, status)
+        messageService.sendMessage(GuiderMessageEvent(GUIDER_UPDATED, status))
     }
 
     override fun onGuideStepped(guideStar: GuideStar) {
         val payload = guideStar.guideStep.let(guideHistory::addGuideStep)
-        messageService.sendMessage(GUIDER_STEPPED, payload)
+        messageService.sendMessage(GuiderMessageEvent(GUIDER_STEPPED, payload))
     }
 
     override fun onDithered(dx: Double, dy: Double) {
         val payload = guideHistory.addDither(dx, dy)
-        messageService.sendMessage(GUIDER_STEPPED, payload)
+        messageService.sendMessage(GuiderMessageEvent(GUIDER_STEPPED, payload))
     }
 
     override fun onMessageReceived(message: String) {
-        messageService.sendMessage(GUIDER_MESSAGE_RECEIVED, "message" to message)
+        messageService.sendMessage(GuiderMessageEvent(GUIDER_MESSAGE_RECEIVED, message))
     }
 
     companion object {

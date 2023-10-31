@@ -47,10 +47,10 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     ) {
         app.title = 'Filter Wheel'
 
-        electron.on('WHEEL_UPDATED', (_, event: FilterWheel) => {
-            if (event.name === this.wheel?.name) {
+        electron.on('WHEEL_UPDATED', event => {
+            if (event.device.name === this.wheel?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.wheel!, event)
+                    Object.assign(this.wheel!, event.device)
                     this.update()
                 })
             }

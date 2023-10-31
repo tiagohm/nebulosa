@@ -3,7 +3,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, CameraCaptureEvent, DARVPolarAlignmentEvent, DARVPolarAlignmentGuidePulseElapsed, DARVPolarAlignmentInitialPauseElapsed, GuideDirection, GuideOutput, Hemisphere } from '../../shared/types'
+import { Camera, CameraCaptureEvent, GuideDirection, GuideOutput, Hemisphere } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -40,38 +40,38 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Alignment'
 
-        electron.on('CAMERA_UPDATED', (_, event: Camera) => {
-            if (event.name === this.camera?.name) {
+        electron.on('CAMERA_UPDATED', event => {
+            if (event.device.name === this.camera?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.camera!, event)
+                    Object.assign(this.camera!, event.device)
                     this.updateCamera()
                 })
             }
         })
 
-        electron.on('GUIDE_OUTPUT_ATTACHED', (_, event: GuideOutput) => {
+        electron.on('GUIDE_OUTPUT_ATTACHED', event => {
             ngZone.run(() => {
-                this.guideOutputs.push(event)
+                this.guideOutputs.push(event.device)
             })
         })
 
-        electron.on('GUIDE_OUTPUT_DETACHED', (_, event: GuideOutput) => {
+        electron.on('GUIDE_OUTPUT_DETACHED', event => {
             ngZone.run(() => {
-                const index = this.guideOutputs.findIndex(e => e.name === event.name)
+                const index = this.guideOutputs.findIndex(e => e.name === event.device.name)
                 if (index >= 0) this.guideOutputs.splice(index, 1)
             })
         })
 
-        electron.on('GUIDE_OUTPUT_UPDATED', (_, event: GuideOutput) => {
-            if (event.name === this.guideOutput?.name) {
+        electron.on('GUIDE_OUTPUT_UPDATED', event => {
+            if (event.device.name === this.guideOutput?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.guideOutput!, event)
+                    Object.assign(this.guideOutput!, event.device)
                     this.updateGuideOutput()
                 })
             }
         })
 
-        electron.on('DARV_POLAR_ALIGNMENT_STARTED', (_, event: DARVPolarAlignmentEvent) => {
+        electron.on('DARV_POLAR_ALIGNMENT_STARTED', event => {
             if (event.camera.name === this.camera?.name &&
                 event.guideOutput.name === this.guideOutput?.name) {
                 ngZone.run(() => {
@@ -80,7 +80,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('DARV_POLAR_ALIGNMENT_FINISHED', (_, event: DARVPolarAlignmentEvent) => {
+        electron.on('DARV_POLAR_ALIGNMENT_FINISHED', event => {
             if (event.camera.name === this.camera?.name &&
                 event.guideOutput.name === this.guideOutput?.name) {
                 ngZone.run(() => {
@@ -91,7 +91,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('DARV_POLAR_ALIGNMENT_UPDATED', (_, event: DARVPolarAlignmentInitialPauseElapsed | DARVPolarAlignmentGuidePulseElapsed) => {
+        electron.on('DARV_POLAR_ALIGNMENT_UPDATED', event => {
             if (event.camera.name === this.camera?.name &&
                 event.guideOutput.name === this.guideOutput?.name) {
                 ngZone.run(() => {
@@ -105,7 +105,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('CAMERA_EXPOSURE_UPDATED', (_, event: CameraCaptureEvent) => {
+        electron.on('CAMERA_EXPOSURE_UPDATED', event => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
                     this.darvCaptureEvent = event

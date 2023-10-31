@@ -1,6 +1,5 @@
 package nebulosa.api.alignment.polar.darv
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import nebulosa.api.sequencer.DelayEvent
 import nebulosa.api.services.MessageEvent
 import nebulosa.indi.device.camera.Camera
@@ -11,7 +10,7 @@ data class DARVPolarAlignmentInitialPauseElapsed(
     override val guideOutput: GuideOutput,
     val pauseTime: Long,
     val remainingTime: Long,
-    val progress: Double,
+    override val progress: Double,
 ) : MessageEvent, DARVPolarAlignmentEvent {
 
     constructor(camera: Camera, guideOutput: GuideOutput, delay: DelayEvent) : this(
@@ -21,5 +20,5 @@ data class DARVPolarAlignmentInitialPauseElapsed(
 
     override val state = DARVPolarAlignmentState.INITIAL_PAUSE
 
-    @JsonIgnore override val eventName = "DARV_POLAR_ALIGNMENT_UPDATED"
+    override val eventName = "DARV_POLAR_ALIGNMENT_UPDATED"
 }

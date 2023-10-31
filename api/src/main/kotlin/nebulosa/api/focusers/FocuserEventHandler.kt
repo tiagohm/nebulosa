@@ -36,16 +36,16 @@ class FocuserEventHandler(
                 throttler.onNext(event)
             }
             is FocuserAttached -> {
-                messageService.sendMessage(FOCUSER_ATTACHED, event.device)
+                messageService.sendMessage(FocuserMessageEvent(FOCUSER_ATTACHED, event.device))
             }
             is FocuserDetached -> {
-                messageService.sendMessage(FOCUSER_DETACHED, event.device)
+                messageService.sendMessage(FocuserMessageEvent(FOCUSER_DETACHED, event.device))
             }
         }
     }
 
     fun sendUpdate(device: Focuser) {
-        messageService.sendMessage(FOCUSER_UPDATED, device)
+        messageService.sendMessage(FocuserMessageEvent(FOCUSER_UPDATED, device))
     }
 
     companion object {

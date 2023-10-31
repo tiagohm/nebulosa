@@ -6,8 +6,51 @@ import { Injectable } from '@angular/core'
 import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
-import { ApiEventType, InternalEventType, Mount, OpenDirectory } from '../types'
+import {
+    ApiEventType, Camera, CameraCaptureEvent, DARVPolarAlignmentEvent, DARVPolarAlignmentGuidePulseElapsed,
+    DARVPolarAlignmentInitialPauseElapsed, DeviceMessageEvent, FilterWheel, Focuser, GuideOutput, Guider,
+    GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Mount, OpenDirectory
+} from '../types'
 import { ApiService } from './api.service'
+
+type EventMappedType = {
+    'DEVICE_PROPERTY_CHANGED': INDIMessageEvent
+    'DEVICE_PROPERTY_DELETED': INDIMessageEvent
+    'DEVICE_MESSAGE_RECEIVED': INDIMessageEvent
+    'CAMERA_UPDATED': DeviceMessageEvent<Camera>
+    'CAMERA_ATTACHED': DeviceMessageEvent<Camera>
+    'CAMERA_DETACHED': DeviceMessageEvent<Camera>
+    'CAMERA_CAPTURE_STARTED': CameraCaptureEvent
+    'CAMERA_CAPTURE_FINISHED': CameraCaptureEvent
+    'CAMERA_EXPOSURE_UPDATED': CameraCaptureEvent
+    'CAMERA_EXPOSURE_STARTED': CameraCaptureEvent
+    'CAMERA_EXPOSURE_FINISHED': CameraCaptureEvent
+    'MOUNT_UPDATED': DeviceMessageEvent<Mount>
+    'MOUNT_ATTACHED': DeviceMessageEvent<Mount>
+    'MOUNT_DETACHED': DeviceMessageEvent<Mount>
+    'FOCUSER_UPDATED': DeviceMessageEvent<Focuser>
+    'FOCUSER_ATTACHED': DeviceMessageEvent<Focuser>
+    'FOCUSER_DETACHED': DeviceMessageEvent<Focuser>
+    'WHEEL_UPDATED': DeviceMessageEvent<FilterWheel>
+    'WHEEL_ATTACHED': DeviceMessageEvent<FilterWheel>
+    'WHEEL_DETACHED': DeviceMessageEvent<FilterWheel>
+    'GUIDE_OUTPUT_UPDATED': DeviceMessageEvent<GuideOutput>
+    'GUIDE_OUTPUT_ATTACHED': DeviceMessageEvent<GuideOutput>
+    'GUIDE_OUTPUT_DETACHED': DeviceMessageEvent<GuideOutput>
+    'GUIDER_CONNECTED': GuiderMessageEvent<undefined>
+    'GUIDER_DISCONNECTED': GuiderMessageEvent<undefined>
+    'GUIDER_UPDATED': GuiderMessageEvent<Guider>
+    'GUIDER_STEPPED': GuiderMessageEvent<HistoryStep>
+    'GUIDER_MESSAGE_RECEIVED': GuiderMessageEvent<string>
+    'DARV_POLAR_ALIGNMENT_STARTED': DARVPolarAlignmentEvent
+    'DARV_POLAR_ALIGNMENT_FINISHED': DARVPolarAlignmentEvent
+    'DARV_POLAR_ALIGNMENT_UPDATED': DARVPolarAlignmentInitialPauseElapsed | DARVPolarAlignmentGuidePulseElapsed
+    'CAMERA_CHANGED': Camera | undefined
+    'FOCUSER_CHANGED': Focuser | undefined
+    'MOUNT_CHANGED': Mount | undefined
+    'WHEEL_CHANGED': FilterWheel | undefined
+    'PARAMS_CHANGED': any
+}
 
 @Injectable({ providedIn: 'root' })
 export class ElectronService {
@@ -53,9 +96,9 @@ export class ElectronService {
         return this.ipcRenderer.sendSync(channel, ...data)
     }
 
-    on(channel: ApiEventType | InternalEventType | 'PARAMS_CHANGED',
-        listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) {
-        return this.ipcRenderer.on(channel, listener)
+    on<K extends keyof EventMappedType>(channel: K, listener: (arg: EventMappedType[K]) => void) {
+        console.info('listening to channel: %s', channel)
+        this.ipcRenderer.on(channel, (_, arg) => listener(arg))
     }
 
     openDirectory(data?: OpenDirectory): string | false {
@@ -66,13 +109,5 @@ export class ElectronService {
         const mount: Mount | undefined = this.sendSync('SELECTED_MOUNT')
         if (!mount) return undefined
         return this.api.mount(mount.name)
-    }
-
-    registerCron(cronTime: string) {
-        return this.sendSync('REGISTER_CRON', cronTime)
-    }
-
-    unregisterCron() {
-        return this.sendSync('UNREGISTER_CRON')
     }
 }

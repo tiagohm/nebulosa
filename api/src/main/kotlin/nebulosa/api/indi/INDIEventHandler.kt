@@ -34,19 +34,19 @@ class INDIEventHandler(
 
     fun sendINDIPropertyChanged(event: DevicePropertyEvent) {
         if (canSendEvents) {
-            messageService.sendMessage(DEVICE_PROPERTY_CHANGED, event.property)
+            messageService.sendMessage(INDIMessageEvent(DEVICE_PROPERTY_CHANGED, event))
         }
     }
 
     fun sendINDIPropertyDeleted(event: DevicePropertyEvent) {
         if (canSendEvents) {
-            messageService.sendMessage(DEVICE_PROPERTY_DELETED, event.property)
+            messageService.sendMessage(INDIMessageEvent(DEVICE_PROPERTY_DELETED, event))
         }
     }
 
     fun sendINDIMessageReceived(event: DeviceMessageReceived) {
         if (canSendEvents) {
-            messageService.sendMessage(DEVICE_MESSAGE_RECEIVED, event)
+            messageService.sendMessage(INDIMessageEvent(DEVICE_MESSAGE_RECEIVED, event))
         }
     }
 

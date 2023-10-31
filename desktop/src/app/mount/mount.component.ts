@@ -150,10 +150,10 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
         api.startListening('MOUNT')
 
-        electron.on('MOUNT_UPDATED', (_, event: Mount) => {
-            if (event.name === this.mount?.name) {
+        electron.on('MOUNT_UPDATED', event => {
+            if (event.device.name === this.mount?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.mount!, event)
+                    Object.assign(this.mount!, event.device)
                     this.update()
                 })
             }

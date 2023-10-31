@@ -14,5 +14,5 @@ data class CameraExposureFinished(
     val image: Image?, val savePath: Path?,
 ) : CameraCaptureEvent, SequenceStepEvent {
 
-    @JsonIgnore override val eventName = "CAMERA_EXPOSURE_FINISHED"
+    override val eventName = "CAMERA_EXPOSURE_FINISHED"
 }

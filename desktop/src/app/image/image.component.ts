@@ -12,7 +12,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Angle, AstronomicalObject, Camera, CameraCaptureEvent, CheckableMenuItem, DeepSkyObject, EquatorialCoordinateJ2000, FITSHeaderItem,
+    Angle, AstronomicalObject, Camera, CheckableMenuItem, DeepSkyObject, EquatorialCoordinateJ2000, FITSHeaderItem,
     ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
     PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
 } from '../../shared/types'
@@ -331,7 +331,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Image'
 
-        electron.on('CAMERA_EXPOSURE_FINISHED', async (_, event: CameraCaptureEvent) => {
+        electron.on('CAMERA_EXPOSURE_FINISHED', async (event) => {
             if (event.camera.name === this.imageParams.camera?.name) {
                 await this.closeImage()
 
@@ -344,7 +344,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('PARAMS_CHANGED', async (_, event: ImageParams) => {
+        electron.on('PARAMS_CHANGED', async (event: ImageParams) => {
             await this.closeImage()
 
             ngZone.run(() => {

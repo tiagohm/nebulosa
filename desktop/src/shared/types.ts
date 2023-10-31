@@ -211,7 +211,7 @@ export interface CameraStartCapture {
     dither?: Dither
 }
 
-export interface CameraCaptureEvent {
+export interface CameraCaptureEvent extends MessageEvent {
     camera: Camera
     exposureAmount: number
     exposureCount: number
@@ -453,7 +453,7 @@ export interface Satellite {
     groups: SatelliteGroupType[]
 }
 
-export interface DARVPolarAlignmentEvent {
+export interface DARVPolarAlignmentEvent extends MessageEvent {
     camera: Camera
     guideOutput: GuideOutput
     remainingTime: number
@@ -493,9 +493,21 @@ export interface ToggleableMenuItem extends MenuItem {
     toggle(event: InputSwitchOnChangeEvent): void
 }
 
-export interface SkyAtlasUpdateFinished {
-    versionFrom?: string
-    versionTo: string
+export interface MessageEvent {
+    eventName: string
+}
+
+export interface DeviceMessageEvent<T extends Device> {
+    device: T
+}
+
+export interface INDIMessageEvent extends DeviceMessageEvent<Device> {
+    property?: INDIProperty<any>
+    message?: string
+}
+
+export interface GuiderMessageEvent<T> extends MessageEvent {
+    data: T
 }
 
 export enum ExposureTimeUnit {
@@ -706,7 +718,6 @@ export const INTERNAL_EVENT_TYPES = [
     'SELECTED_CAMERA', 'SELECTED_FOCUSER', 'SELECTED_WHEEL', 'SELECTED_MOUNT',
     'CAMERA_CHANGED', 'FOCUSER_CHANGED', 'MOUNT_CHANGED', 'WHEEL_CHANGED',
     'WHEEL_RENAMED', 'GUIDE_OUTPUT_CHANGED',
-    'REGISTER_CRON', 'UNREGISTER_CRON', 'CRON_TICKED',
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]

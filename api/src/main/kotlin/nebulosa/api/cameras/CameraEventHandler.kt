@@ -36,16 +36,16 @@ class CameraEventHandler(
                 throttler.onNext(event)
             }
             is CameraAttached -> {
-                messageService.sendMessage(CAMERA_ATTACHED, event.device)
+                messageService.sendMessage(CameraMessageEvent(CAMERA_ATTACHED, event.device))
             }
             is CameraDetached -> {
-                messageService.sendMessage(CAMERA_DETACHED, event.device)
+                messageService.sendMessage(CameraMessageEvent(CAMERA_DETACHED, event.device))
             }
         }
     }
 
     fun sendUpdate(device: Camera) {
-        messageService.sendMessage(CAMERA_UPDATED, device)
+        messageService.sendMessage(CameraMessageEvent(CAMERA_UPDATED, device))
     }
 
     companion object {

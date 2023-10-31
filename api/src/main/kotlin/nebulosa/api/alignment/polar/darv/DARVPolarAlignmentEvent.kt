@@ -10,4 +10,6 @@ sealed interface DARVPolarAlignmentEvent {
     val guideOutput: GuideOutput
 
     val state: DARVPolarAlignmentState
+
+    val progress: Double
 }

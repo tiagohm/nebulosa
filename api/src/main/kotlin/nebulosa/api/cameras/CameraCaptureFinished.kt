@@ -11,5 +11,5 @@ data class CameraCaptureFinished(
     @JsonIgnore override val tasklet: CameraExposureTasklet,
 ) : CameraCaptureEvent, SequenceJobEvent {
 
-    @JsonIgnore override val eventName = "CAMERA_CAPTURE_FINISHED"
+    override val eventName = "CAMERA_CAPTURE_FINISHED"
 }

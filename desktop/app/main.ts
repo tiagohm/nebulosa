@@ -2,15 +2,13 @@ import { Client } from '@stomp/stompjs'
 import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { API_EVENT_TYPES, Camera, FilterWheel, Focuser, INTERNAL_EVENT_TYPES, Mount, OpenWindow } from './types'
+import { Camera, FilterWheel, Focuser, INTERNAL_EVENT_TYPES, Mount, OpenWindow } from './types'
 
-import { CronJob } from 'cron'
 import { WebSocket } from 'ws'
 import { OpenDirectory } from '../src/shared/types'
 Object.assign(global, { WebSocket })
 
 const browserWindows = new Map<string, BrowserWindow>()
-const cronedWindows = new Map<BrowserWindow, CronJob<null, null>[]>()
 let api: ChildProcessWithoutNullStreams | null = null
 let apiPort = 7000
 let wsClient: Client
@@ -35,16 +33,26 @@ function createMainWindow() {
     wsClient = new Client({
         brokerURL: `ws://localhost:${apiPort}/ws`,
         onConnect: () => {
-            for (const item of API_EVENT_TYPES) {
-                wsClient.subscribe(item, (message) => {
-                    sendToAllWindows(item, JSON.parse(message.body))
-                })
-            }
+            wsClient.subscribe('NEBULOSA_EVENT', (message) => {
+                const messageBody = JSON.parse(message.body)
 
-            wsClient.subscribe('END', () => {})
+                if (messageBody.eventName) {
+                    sendToAllWindows(messageBody.eventName, messageBody)
+                } else {
+                    console.warn('invalid message', messageBody)
+                }
+            })
+
+            console.info('Web Socket connected')
         },
-        onDisconnect() {
+        onDisconnect: () => {
             console.warn('Web Socket disconnected')
+        },
+        onWebSocketClose: () => {
+            console.warn('Web Socket closed')
+        },
+        onWebSocketError: (e) => {
+            console.error('Web Socket error', e)
         },
     })
 
@@ -344,32 +352,6 @@ try {
         }
     })
 
-    ipcMain.on('REGISTER_CRON', async (event, cronTime: string) => {
-        const window = findWindowById(event.sender.id)
-
-        if (!window) return
-
-        const cronJobs = cronedWindows.get(window) ?? []
-        cronJobs.forEach(e => e.stop())
-        const cronJob = new CronJob(cronTime, () => window.webContents.send('CRON_TICKED', cronTime))
-        cronJobs.push(cronJob)
-        cronedWindows.set(window, cronJobs)
-
-        event.returnValue = true
-    })
-
-    ipcMain.on('UNREGISTER_CRON', async (event) => {
-        const window = findWindowById(event.sender.id)
-
-        if (!window) return
-
-        const cronJobs = cronedWindows.get(window)
-        cronJobs?.forEach(e => e.stop())
-        cronedWindows.delete(window)
-
-        event.returnValue = true
-    })
-
     for (const item of INTERNAL_EVENT_TYPES) {
         ipcMain.on(item, (event, data) => {
             switch (item) {
@@ -420,6 +402,6 @@ function sendToAllWindows(channel: string, data: any, home: boolean = true) {
     }
 
     if (serve) {
-        console.info(channel, data)
+        console.info(data)
     }
 }

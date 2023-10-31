@@ -197,16 +197,16 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
         api.startListening('CAMERA')
 
-        electron.on('CAMERA_UPDATED', (_, event: Camera) => {
-            if (event.name === this.camera?.name) {
+        electron.on('CAMERA_UPDATED', event => {
+            if (event.device.name === this.camera?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.camera!, event)
+                    Object.assign(this.camera!, event.device)
                     this.update()
                 })
             }
         })
 
-        electron.on('CAMERA_EXPOSURE_STARTED', (_, event: CameraCaptureEvent) => {
+        electron.on('CAMERA_EXPOSURE_STARTED', event => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
                     this.event = event
@@ -216,7 +216,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.on('CAMERA_EXPOSURE_UPDATED', (_, event: CameraCaptureEvent) => {
+        electron.on('CAMERA_EXPOSURE_UPDATED', event => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
                     this.event = event
@@ -225,7 +225,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.on('CAMERA_CAPTURE_FINISHED', (_, event: CameraCaptureEvent) => {
+        electron.on('CAMERA_CAPTURE_FINISHED', event => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
                     this.capturing = false
@@ -234,7 +234,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.on('WHEEL_CHANGED', (_, event?: FilterWheel) => {
+        electron.on('WHEEL_CHANGED', event => {
             ngZone.run(() => {
                 this.wheel = event
             })
@@ -379,10 +379,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 this.gainMax = this.camera.gainMax
                 this.offsetMin = this.camera.offsetMin
                 this.offsetMax = this.camera.offsetMax
-                this.capturesPath = this.camera.capturesPath
 
                 this.updateExposureUnit(this.exposureTimeUnit)
             }
+
+            this.capturesPath = this.camera.capturesPath
         }
     }
 

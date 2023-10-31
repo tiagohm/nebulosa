@@ -1,6 +1,5 @@
 package nebulosa.api.alignment.polar.darv
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import nebulosa.api.services.MessageEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
@@ -10,7 +9,9 @@ data class DARVPolarAlignmentFinished(
     override val guideOutput: GuideOutput,
 ) : MessageEvent, DARVPolarAlignmentEvent {
 
+    override val progress = 1.0
+
     override val state = DARVPolarAlignmentState.IDLE
 
-    @JsonIgnore override val eventName = "DARV_POLAR_ALIGNMENT_FINISHED"
+    override val eventName = "DARV_POLAR_ALIGNMENT_FINISHED"
 }

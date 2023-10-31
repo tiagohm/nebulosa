@@ -4,8 +4,15 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
+import { Camera, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
 import { AppComponent } from '../app.component'
+
+type MappedDevice = {
+    'CAMERA': Camera
+    'MOUNT': Mount
+    'FOCUSER': Focuser
+    'WHEEL': FilterWheel
+}
 
 @Component({
     selector: 'app-home',
@@ -71,22 +78,22 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch
     }
 
-    private startListening<T extends Device>(
-        type: 'CAMERA' | 'MOUNT' | 'FOCUSER' | 'WHEEL',
-        onAdd: (device: T) => number,
-        onRemove: (device: T) => number,
+    private startListening<K extends keyof MappedDevice>(
+        type: K,
+        onAdd: (device: MappedDevice[K]) => number,
+        onRemove: (device: MappedDevice[K]) => number,
     ) {
-        this.electron.on(`${type}_ATTACHED`, (_, device: T) => {
+        this.electron.on(`${type}_ATTACHED`, event => {
             this.ngZone.run(() => {
-                if (onAdd(device) === 1) {
-                    this.electron.send(`${type}_CHANGED`, device)
+                if (onAdd(event.device as any) === 1) {
+                    this.electron.send(`${type}_CHANGED`, event.device)
                 }
             })
         })
 
-        this.electron.on(`${type}_DETACHED`, (_, device: T) => {
+        this.electron.on(`${type}_DETACHED`, event => {
             this.ngZone.run(() => {
-                if (onRemove(device) === 0) {
+                if (onRemove(event.device as any) === 0) {
                     this.electron.send(`${type}_CHANGED`, undefined)
                 }
             })
@@ -104,7 +111,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     ) {
         app.title = 'Nebulosa'
 
-        this.startListening<Camera>('CAMERA',
+        this.startListening('CAMERA',
             (device) => {
                 return this.cameras.push(device)
             },
@@ -114,7 +121,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             },
         )
 
-        this.startListening<Mount>('MOUNT',
+        this.startListening('MOUNT',
             (device) => {
                 return this.mounts.push(device)
             },
@@ -124,7 +131,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             },
         )
 
-        this.startListening<Focuser>('FOCUSER',
+        this.startListening('FOCUSER',
             (device) => {
                 return this.focusers.push(device)
             },
@@ -134,7 +141,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             },
         )
 
-        this.startListening<FilterWheel>('WHEEL',
+        this.startListening('WHEEL',
             (device) => {
                 return this.wheels.push(device)
             },
