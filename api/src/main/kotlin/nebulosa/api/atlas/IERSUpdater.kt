@@ -14,7 +14,7 @@ import kotlin.io.path.outputStream
 
 @Component
 @ThreadedTask
-class IERSUpdateTask(
+class IERSUpdater(
     private val dataPath: Path,
     private val httpClient: OkHttpClient,
 ) : Runnable {
@@ -49,6 +49,6 @@ class IERSUpdateTask(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<IERSUpdateTask>()
+        @JvmStatic private val LOG = loggerFor<IERSUpdater>()
     }
 }

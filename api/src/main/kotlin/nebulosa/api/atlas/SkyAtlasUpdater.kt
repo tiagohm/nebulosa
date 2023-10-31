@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import nebulosa.api.beans.annotations.ThreadedTask
 import nebulosa.api.configs.ConfigRepository
+import nebulosa.api.services.MessageService
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -16,20 +17,26 @@ import kotlin.io.path.inputStream
 
 @Component
 @ThreadedTask
-class SkyAtlasUpdateTask(
+class SkyAtlasUpdater(
     private val objectMapper: ObjectMapper,
     private val configRepository: ConfigRepository,
     private val starsRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val httpClient: OkHttpClient,
     private val dataPath: Path,
+    private val satelliteUpdater: SatelliteUpdater,
+    private val messageService: MessageService,
 ) : Runnable {
 
     override fun run() {
+        satelliteUpdater.run()
+
         val databaseVersion = configRepository.text(DATABASE_VERSION_KEY)
 
         if (databaseVersion != DATABASE_VERSION) {
             LOG.info("Star/DSO database is out of date. currentVersion={}, newVersion={}", databaseVersion, DATABASE_VERSION)
+
+            messageService.sendMessage(SkyAtlasUpdateFinished("Star/DSO database is being updated."))
 
             starsRepository.deleteAllInBatch()
             deepSkyObjectRepository.deleteAllInBatch()
@@ -38,7 +45,11 @@ class SkyAtlasUpdateTask(
             readDSOsAndLoad()
 
             configRepository.save(DATABASE_VERSION_KEY, DATABASE_VERSION)
+
+            messageService.sendMessage(SkyAtlasUpdateFinished("Sky Atlas database was updated to version $DATABASE_VERSION."))
         } else {
+            messageService.sendMessage(SkyAtlasUpdateFinished("Sky Atlas database is up to date."))
+
             LOG.info("Star/DSO database is up to date")
         }
     }
@@ -102,6 +113,6 @@ class SkyAtlasUpdateTask(
         const val DATABASE_VERSION = "2023.10.18"
         const val DATABASE_VERSION_KEY = "DATABASE_VERSION"
 
-        @JvmStatic private val LOG = loggerFor<SkyAtlasUpdateTask>()
+        @JvmStatic private val LOG = loggerFor<SkyAtlasUpdater>()
     }
 }

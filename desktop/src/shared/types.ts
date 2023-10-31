@@ -510,6 +510,13 @@ export interface GuiderMessageEvent<T> extends MessageEvent {
     data: T
 }
 
+export interface NotificationEvent extends MessageEvent {
+    type: string
+    body: string
+    title?: string
+    silent: boolean
+}
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',
@@ -566,7 +573,7 @@ export type HomeWindowType = 'CAMERA' |
     'DOME' |
     'ROTATOR' |
     'SWITCH' |
-    'ATLAS' |
+    'SKY_ATLAS' |
     'ALIGNMENT' |
     'SEQUENCER' |
     'IMAGE' |
