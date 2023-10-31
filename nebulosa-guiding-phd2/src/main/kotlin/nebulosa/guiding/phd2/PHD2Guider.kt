@@ -40,8 +40,12 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
         client.registerListener(this)
     }
 
+    override val canDither = true
+
     override var settleAmount = Guider.DEFAULT_SETTLE_AMOUNT
+
     override var settleTime = Guider.DEFAULT_SETTLE_TIME
+
     override var settleTimeout = Guider.DEFAULT_SETTLE_TIMEOUT
 
     override fun registerGuiderListener(listener: GuiderListener) {

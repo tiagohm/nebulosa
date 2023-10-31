@@ -32,6 +32,8 @@ interface Guider : Closeable {
 
     fun clearCalibration()
 
+    val canDither: Boolean
+
     fun dither(amount: Double, raOnly: Boolean = false)
 
     fun waitForSettle()
