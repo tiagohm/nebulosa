@@ -4,12 +4,12 @@
     height: 100vh;
 
     p-table ::ng-deep .p-datatable-wrapper {
-        max-height: 217px;
+        max-height: 206px;
         min-width: 100vw;
     }
 
     p-table.planet ::ng-deep .p-datatable-wrapper {
-        max-height: 217px;
+        max-height: 206px;
     }
 
     p-table.minorPlanet ::ng-deep .p-datatable-wrapper {
@@ -33,15 +33,17 @@
     }
 
     ::ng-deep {
-        .p-tabview .p-tabview-nav li {
+        .main-tabs .p-tabview .p-tabview-nav li {
             width: 11.1111111% !important;
 
             .p-tabview-nav-link {
                 display: flex;
                 justify-content: center;
+                padding: 0px;
+                height: 100%;
 
                 img {
-                    height: 16px;
+                    height: 20px;
                 }
             }
         }

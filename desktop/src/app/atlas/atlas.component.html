@@ -1,26 +1,32 @@
 <div class="grid flex-1">
     <div class="col-12">
-        <p-tabView [(activeIndex)]="tab" (activeIndexChange)="tabChanged()">
+        <p-tabView [(activeIndex)]="tab" (activeIndexChange)="tabChanged()" class="main-tabs">
             <p-tabPanel header="Sun" [disabled]="refreshing">
                 <ng-template pTemplate="header">
-                    <img src="assets/icons/sun.png">
+                    <div class="p-3" pTooltip="Sun" tooltipPosition="bottom">
+                        <img src="assets/icons/sun.png">
+                    </div>
                 </ng-template>
-                <div class="grid flex flex-column align-items-center justify-content-center" style="height: 217px;">
+                <div class="grid flex flex-column align-items-center justify-content-center" style="height: 206px;">
                     <img #imageOfSun style="width: 191px">
                     <a class="text-sm" target="_blank" href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">SDO/HMI</a>
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Moon" [disabled]="refreshing">
                 <ng-template pTemplate="header">
-                    <img src="assets/icons/moon.png">
+                    <div class="p-3" pTooltip="Moon" tooltipPosition="bottom">
+                        <img src="assets/icons/moon.png">
+                    </div>
                 </ng-template>
-                <div class="grid flex align-items-center justify-content-center" style="height: 217px;">
+                <div class="grid flex align-items-center justify-content-center" style="height: 206px;">
                     <moon [width]="187" [height]="187" [illuminationRatio]="moonIlluminated" [waning]="moonWaning" />
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Planets" [disabled]="refreshing">
                 <ng-template pTemplate="header">
-                    <img src="assets/icons/jupiter.png">
+                    <div class="p-3" pTooltip="Planets" tooltipPosition="bottom">
+                        <img src="assets/icons/jupiter.png">
+                    </div>
                 </ng-template>
                 <div class="grid flex align-items-center justify-content-center">
                     <p-table [value]="planets" class="planet" [(selection)]="planet" (selectionChange)="planetChanged()" selectionMode="single"
@@ -43,7 +49,9 @@
             </p-tabPanel>
             <p-tabPanel header="Minor Planets" [disabled]="refreshing">
                 <ng-template pTemplate="header">
-                    <img src="assets/icons/asteroid.png">
+                    <div class="p-3" pTooltip="Minor planets" tooltipPosition="bottom">
+                        <img src="assets/icons/asteroid.png">
+                    </div>
                 </ng-template>
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
@@ -80,7 +88,9 @@
             </p-tabPanel>
             <p-tabPanel header="Stars" [disabled]="refreshing">
                 <ng-template pTemplate="header">
-                    <img src="assets/icons/stars.png">
+                    <div class="p-3" pTooltip="Stars" tooltipPosition="bottom">
+                        <img src="assets/icons/stars.png">
+                    </div>
                 </ng-template>
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
@@ -119,7 +129,9 @@
             </p-tabPanel>
             <p-tabPanel header="DSOs" [disabled]="refreshing">
                 <ng-template pTemplate="header">
-                    <img src="assets/icons/milky-way.png">
+                    <div class="p-3" pTooltip="DSOs" tooltipPosition="bottom">
+                        <img src="assets/icons/milky-way.png">
+                    </div>
                 </ng-template>
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
@@ -158,7 +170,9 @@
             </p-tabPanel>
             <p-tabPanel header="Simbad" [disabled]="refreshing">
                 <ng-template pTemplate="header">
-                    <img src="assets/icons/online-search.png">
+                    <div class="p-3" pTooltip="Simbad" tooltipPosition="bottom">
+                        <img src="assets/icons/online-search.png">
+                    </div>
                 </ng-template>
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
@@ -197,7 +211,9 @@
             </p-tabPanel>
             <p-tabPanel header="TLEs" [disabled]="refreshing">
                 <ng-template pTemplate="header">
-                    <img src="assets/icons/satellite.png">
+                    <div class="p-3" pTooltip="Satellite" tooltipPosition="bottom">
+                        <img src="assets/icons/satellite.png">
+                    </div>
                 </ng-template>
                 <div class="grid flex align-items-center justify-content-center">
                     <div class="col-9">
@@ -239,7 +255,9 @@
             </p-tabPanel>
             <p-tabPanel header="Settings" [disabled]="refreshing">
                 <ng-template pTemplate="header">
-                    <img src="assets/icons/settings.png">
+                    <div class="p-3" pTooltip="Settings" tooltipPosition="bottom">
+                        <img src="assets/icons/settings.png">
+                    </div>
                 </ng-template>
                 <div class="grid flex align-items-center p-2">
                     <div class="col-8">
