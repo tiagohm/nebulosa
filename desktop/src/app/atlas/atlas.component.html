@@ -211,7 +211,7 @@
             </p-tabPanel>
             <p-tabPanel header="TLEs" [disabled]="refreshing">
                 <ng-template pTemplate="header">
-                    <div class="p-3" pTooltip="Satellite" tooltipPosition="bottom">
+                    <div class="p-3" pTooltip="Satellites" tooltipPosition="bottom">
                         <img src="assets/icons/satellite.png">
                     </div>
                 </ng-template>
@@ -280,7 +280,7 @@
     </div>
 </div>
 <div class="grid px-2 relative">
-    <div class="col-12 flex align-items-start justify-content-center gap-1" style="min-height: 32px;">
+    <div class="col-12 flex align-items-start justify-content-center gap-1 py-0" style="height: 32px;">
         <span class="text-overflow-scroll">{{ name ?? '-' }}</span>
         <p-tag *ngFor="let tag of tags" [severity]="tag.severity" [value]="tag.title" />
     </div>
