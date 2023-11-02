@@ -1,6 +1,8 @@
 package nebulosa.api.beans.configurations
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import nebulosa.api.beans.DateAndTimeMethodArgumentResolver
 import nebulosa.api.beans.EntityByMethodArgumentResolver
@@ -10,10 +12,6 @@ import nebulosa.guiding.Guider
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
-import nebulosa.json.FromJson
-import nebulosa.json.ToJson
-import nebulosa.json.addDeserializer
-import nebulosa.json.addSerializer
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
@@ -60,12 +58,13 @@ class BeanConfiguration {
     fun cachePath(appPath: Path): Path = Path.of("$appPath", "cache").createDirectories()
 
     @Bean
+    @Suppress("UNCHECKED_CAST")
     fun kotlinModule(
-        serializers: List<ToJson<*>>,
-        deserializers: List<FromJson<*>>,
+        serializers: List<StdSerializer<*>>,
+        deserializers: List<StdDeserializer<*>>,
     ) = kotlinModule()
         .apply { serializers.forEach { addSerializer(it) } }
-        .apply { deserializers.forEach { addDeserializer(it) } }
+        .apply { deserializers.forEach { addDeserializer(it.handledType() as Class<Any>, it) } }
 
     @Bean
     fun jackson2ObjectMapperBuilderCustomizer() = Jackson2ObjectMapperBuilderCustomizer {

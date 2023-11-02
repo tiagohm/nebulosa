@@ -2,14 +2,12 @@ package nebulosa.api.sequencer
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
-import nebulosa.json.ToJson
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import org.springframework.stereotype.Component
 import java.time.ZoneOffset
 
 @Component
-class SequenceJobConverter : ToJson<SequenceJob> {
-
-    override val type = SequenceJob::class.java
+class SequenceJobSerializer : StdSerializer<SequenceJob>(SequenceJob::class.java) {
 
     override fun serialize(value: SequenceJob, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()

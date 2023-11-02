@@ -2,8 +2,8 @@ package nebulosa.api.mounts
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.indi.device.mount.Mount
-import nebulosa.json.ToJson
 import nebulosa.math.AngleFormatter
 import nebulosa.math.format
 import nebulosa.math.toDegrees
@@ -12,9 +12,7 @@ import org.springframework.stereotype.Component
 import java.time.ZoneOffset
 
 @Component
-class MountConverter : ToJson<Mount> {
-
-    override val type = Mount::class.java
+class MountSerializer : StdSerializer<Mount>(Mount::class.java) {
 
     override fun serialize(value: Mount, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()

@@ -2,14 +2,12 @@ package nebulosa.api.wheels
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.indi.device.filterwheel.FilterWheel
-import nebulosa.json.ToJson
 import org.springframework.stereotype.Component
 
 @Component
-class WheelConverter : ToJson<FilterWheel> {
-
-    override val type = FilterWheel::class.java
+class WheelSerializer : StdSerializer<FilterWheel>(FilterWheel::class.java) {
 
     override fun serialize(value: FilterWheel, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()

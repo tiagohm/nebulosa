@@ -1,7 +1,7 @@
 package nebulosa.api.calibration
 
 import jakarta.persistence.*
-import nebulosa.api.beans.converters.PathConverter
+import nebulosa.api.beans.converters.PathAttributeConverter
 import nebulosa.indi.device.camera.FrameType
 import java.nio.file.Path
 
@@ -18,7 +18,7 @@ data class CalibrationFrameEntity(
     @Column(name = "height", columnDefinition = "INT4") var height: Int = 0,
     @Column(name = "bin_x", columnDefinition = "INT1") var binX: Int = 0,
     @Column(name = "bin_y", columnDefinition = "INT1") var binY: Int = 0,
-    @Convert(converter = PathConverter::class)
+    @Convert(converter = PathAttributeConverter::class)
     @Column(name = "path", columnDefinition = "TEXT") var path: Path? = null,
     @Column(name = "enabled", columnDefinition = "INT1") var enabled: Boolean = true,
 )

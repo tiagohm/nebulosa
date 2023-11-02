@@ -2,14 +2,12 @@ package nebulosa.api.focusers
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.indi.device.focuser.Focuser
-import nebulosa.json.ToJson
 import org.springframework.stereotype.Component
 
 @Component
-class FocuserConverter : ToJson<Focuser> {
-
-    override val type = Focuser::class.java
+class FocuserSerializer : StdSerializer<Focuser>(Focuser::class.java) {
 
     override fun serialize(value: Focuser, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()

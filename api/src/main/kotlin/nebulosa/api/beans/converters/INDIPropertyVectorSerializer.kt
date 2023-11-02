@@ -2,15 +2,13 @@ package nebulosa.api.beans.converters
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.indi.device.PropertyVector
 import nebulosa.indi.device.SwitchPropertyVector
-import nebulosa.json.ToJson
 import org.springframework.stereotype.Component
 
 @Component
-class INDIPropertyVectorConverter : ToJson<PropertyVector<*, *>> {
-
-    override val type = PropertyVector::class.java
+class INDIPropertyVectorSerializer : StdSerializer<PropertyVector<*, *>>(PropertyVector::class.java) {
 
     override fun serialize(value: PropertyVector<*, *>, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()

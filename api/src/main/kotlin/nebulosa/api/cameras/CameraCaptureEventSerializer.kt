@@ -2,6 +2,7 @@ package nebulosa.api.cameras
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_ELAPSED_TIME
 import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_IN_LOOP
 import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_IS_WAITING
@@ -18,13 +19,10 @@ import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_REMAINING_TIME
 import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_TIME
 import nebulosa.api.sequencer.SequenceJobEvent
 import nebulosa.api.sequencer.SequenceStepEvent
-import nebulosa.json.ToJson
 import org.springframework.stereotype.Component
 
 @Component
-class CameraCaptureEventConverter : ToJson<CameraCaptureEvent> {
-
-    override val type = CameraCaptureEvent::class.java
+class CameraCaptureEventSerializer : StdSerializer<CameraCaptureEvent>(CameraCaptureEvent::class.java) {
 
     override fun serialize(value: CameraCaptureEvent, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()

@@ -1,22 +1,31 @@
 package nebulosa.api.atlas
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import nebulosa.api.beans.converters.DegreeMinuteSecondSerializer
+import nebulosa.api.beans.converters.HourMinuteSecondSerializer
+import nebulosa.api.beans.converters.SignedDegreeMinuteSecondSerializer
 import nebulosa.constants.AU_KM
 import nebulosa.constants.SPEED_OF_LIGHT
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
-import nebulosa.math.AngleFormatter
+import nebulosa.math.Angle
 import nebulosa.math.deg
-import nebulosa.math.format
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
 
 data class BodyPosition(
-    val rightAscensionJ2000: String,
-    val declinationJ2000: String,
-    val rightAscension: String,
-    val declination: String,
-    val azimuth: String,
-    val altitude: String,
+    @JsonSerialize(using = HourMinuteSecondSerializer::class)
+    val rightAscensionJ2000: Angle,
+    @JsonSerialize(using = SignedDegreeMinuteSecondSerializer::class)
+    val declinationJ2000: Angle,
+    @JsonSerialize(using = HourMinuteSecondSerializer::class)
+    val rightAscension: Angle,
+    @JsonSerialize(using = SignedDegreeMinuteSecondSerializer::class)
+    val declination: Angle,
+    @JsonSerialize(using = DegreeMinuteSecondSerializer::class)
+    val azimuth: Angle,
+    @JsonSerialize(using = SignedDegreeMinuteSecondSerializer::class)
+    val altitude: Angle,
     val magnitude: Double,
     val constellation: Constellation,
     val distance: Double,
@@ -42,12 +51,12 @@ data class BodyPosition(
             }
 
             return BodyPosition(
-                element.asDouble(HorizonsQuantity.ASTROMETRIC_RA).deg.format(AngleFormatter.HMS),
-                element.asDouble(HorizonsQuantity.ASTROMETRIC_DEC).deg.format(AngleFormatter.SIGNED_DMS),
-                element.asDouble(HorizonsQuantity.APPARENT_RA).deg.format(AngleFormatter.HMS),
-                element.asDouble(HorizonsQuantity.APPARENT_DEC).deg.format(AngleFormatter.SIGNED_DMS),
-                element.asDouble(HorizonsQuantity.APPARENT_AZ).deg.format(AngleFormatter.DMS),
-                element.asDouble(HorizonsQuantity.APPARENT_ALT).deg.format(AngleFormatter.SIGNED_DMS),
+                element.asDouble(HorizonsQuantity.ASTROMETRIC_RA).deg,
+                element.asDouble(HorizonsQuantity.ASTROMETRIC_DEC).deg,
+                element.asDouble(HorizonsQuantity.APPARENT_RA).deg,
+                element.asDouble(HorizonsQuantity.APPARENT_DEC).deg,
+                element.asDouble(HorizonsQuantity.APPARENT_AZ).deg,
+                element.asDouble(HorizonsQuantity.APPARENT_ALT).deg,
                 element.asDouble(HorizonsQuantity.VISUAL_MAGNITUDE, SkyObject.UNKNOWN_MAGNITUDE),
                 element.asEnum(HorizonsQuantity.CONSTELLATION, Constellation.AND),
                 distance, distanceUnit,
