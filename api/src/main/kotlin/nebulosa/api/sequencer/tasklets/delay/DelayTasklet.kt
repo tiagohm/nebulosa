@@ -1,6 +1,6 @@
 package nebulosa.api.sequencer.tasklets.delay
 
-import nebulosa.api.sequencer.PublishableSequenceTasklet
+import nebulosa.api.sequencer.PublishSequenceTasklet
 import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.StepContribution
@@ -11,30 +11,28 @@ import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-data class DelayTasklet(private val duration: Duration) : PublishableSequenceTasklet<DelayElapsed>(), JobExecutionListener {
+data class DelayTasklet(val duration: Duration) : PublishSequenceTasklet<DelayEvent>(), JobExecutionListener {
 
     private val aborted = AtomicBoolean()
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
         val stepExecution = contribution.stepExecution
-        val delayTimeInMilliseconds = stepExecution.executionContext
-            .getLong(DELAY_TIME_NAME, duration.inWholeMilliseconds)
-        val delayTime = delayTimeInMilliseconds.milliseconds
-
-        var remainingTime = delayTimeInMilliseconds
+        var remainingTime = duration.inWholeMilliseconds
 
         if (remainingTime > 0L) {
+            aborted.set(false)
+
             while (!aborted.get() && remainingTime > 0L) {
                 val waitTime = min(remainingTime, DELAY_INTERVAL)
 
                 if (waitTime > 0) {
-                    onNext(DelayElapsed(remainingTime.milliseconds, delayTime, waitTime.milliseconds, stepExecution, this))
+                    onNext(DelayElapsed(remainingTime.milliseconds, waitTime.milliseconds, stepExecution, this))
                     Thread.sleep(waitTime)
                     remainingTime -= waitTime
                 }
             }
 
-            onNext(DelayElapsed(Duration.ZERO, delayTime, Duration.ZERO, stepExecution, this))
+            onNext(DelayElapsed(Duration.ZERO, Duration.ZERO, stepExecution, this))
         }
 
         return RepeatStatus.FINISHED

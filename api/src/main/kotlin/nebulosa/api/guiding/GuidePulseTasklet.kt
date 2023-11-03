@@ -1,8 +1,8 @@
 package nebulosa.api.guiding
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.sequencer.PublishableSequenceTasklet
-import nebulosa.api.sequencer.tasklets.delay.DelayElapsed
+import nebulosa.api.sequencer.PublishSequenceTasklet
+import nebulosa.api.sequencer.tasklets.delay.DelayEvent
 import nebulosa.api.sequencer.tasklets.delay.DelayTasklet
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.guide.GuideOutput
@@ -11,7 +11,7 @@ import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.repeat.RepeatStatus
 import kotlin.time.Duration.Companion.milliseconds
 
-data class GuidePulseTasklet(val request: GuidePulseRequest) : PublishableSequenceTasklet<GuidePulseEvent>(), Consumer<DelayElapsed> {
+data class GuidePulseTasklet(val request: GuidePulseRequest) : PublishSequenceTasklet<GuidePulseEvent>(), Consumer<DelayEvent> {
 
     private val delayTasklet = DelayTasklet(request.durationInMilliseconds.milliseconds)
 
@@ -38,13 +38,12 @@ data class GuidePulseTasklet(val request: GuidePulseRequest) : PublishableSequen
         delayTasklet.stop()
     }
 
-    override fun accept(event: DelayElapsed) {
-        if (event.isStarted) onNext(GuidePulseStarted(event.stepExecution, this))
-        else if (event.isFinished) onNext(GuidePulseFinished(event.stepExecution, this))
-        else {
-            val remainingTime = event.remainingTime.inWholeMicroseconds
-            onNext(GuidePulseElapsed(remainingTime, event.progress, request.direction, event.stepExecution, this))
-        }
+    override fun accept(event: DelayEvent) {
+        val guidePulseEvent = if (event.isStarted) GuidePulseStarted(event.stepExecution, this)
+        else if (event.isFinished) GuidePulseFinished(event.stepExecution, this)
+        else GuidePulseElapsed(event.remainingTime, event.progress, request.direction, event.stepExecution, this)
+
+        onNext(guidePulseEvent)
     }
 
     companion object {

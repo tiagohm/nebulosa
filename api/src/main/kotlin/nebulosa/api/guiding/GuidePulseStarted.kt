@@ -8,5 +8,5 @@ data class GuidePulseStarted(
     @JsonIgnore override val tasklet: GuidePulseTasklet,
 ) : GuidePulseEvent {
 
-    override val eventName = "GUIDE_PULSE_STARTED"
+    override val progress = 0.0
 }

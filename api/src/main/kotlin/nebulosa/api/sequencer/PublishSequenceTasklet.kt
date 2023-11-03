@@ -1,5 +1,6 @@
 package nebulosa.api.sequencer
 
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Consumer
@@ -9,16 +10,18 @@ import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import java.io.Closeable
 
-abstract class PublishableSequenceTasklet<T : SequenceTaskletEvent>(@JvmField protected val subject: Subject<T>) : SequenceTasklet<T>, Closeable {
+abstract class PublishSequenceTasklet<T : SequenceTaskletEvent>(@JvmField protected val subject: Subject<T>) : SequenceTasklet<T>, Closeable {
 
     constructor() : this(PublishSubject.create<T>())
 
-    override fun subscribe(onNext: Consumer<in T>): Disposable {
-        return subject.subscribe(onNext)
+    protected open fun Observable<T>.transform() = this
+
+    final override fun subscribe(onNext: Consumer<in T>): Disposable {
+        return subject.transform().subscribe(onNext)
     }
 
-    override fun subscribe(observer: Observer<in T>) {
-        return subject.subscribe(observer)
+    final override fun subscribe(observer: Observer<in T>) {
+        return subject.transform().subscribe(observer)
     }
 
     final override fun onSubscribe(disposable: Disposable) {
@@ -47,6 +50,6 @@ abstract class PublishableSequenceTasklet<T : SequenceTaskletEvent>(@JvmField pr
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<PublishableSequenceTasklet<*>>()
+        @JvmStatic private val LOG = loggerFor<PublishSequenceTasklet<*>>()
     }
 }

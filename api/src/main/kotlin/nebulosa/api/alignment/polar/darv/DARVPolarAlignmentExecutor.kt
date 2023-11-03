@@ -1,9 +1,12 @@
 package nebulosa.api.alignment.polar.darv
 
 import io.reactivex.rxjava3.functions.Consumer
+import nebulosa.api.alignment.polar.darv.DARVPolarAlignmentState.BACKWARD
+import nebulosa.api.alignment.polar.darv.DARVPolarAlignmentState.FORWARD
 import nebulosa.api.cameras.CameraCaptureEvent
 import nebulosa.api.cameras.CameraStartCaptureRequest
-import nebulosa.api.guiding.*
+import nebulosa.api.guiding.GuidePulseEvent
+import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.sequencer.*
 import nebulosa.api.sequencer.tasklets.delay.DelayElapsed
 import nebulosa.api.services.MessageService
@@ -24,6 +27,7 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.stereotype.Component
 import java.nio.file.Path
 import java.util.*
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -123,27 +127,13 @@ class DARVPolarAlignmentExecutor(
 
         val messageEvent = when (event) {
             // Initial pulse event.
-            is DelayElapsed -> {
-                DARVPolarAlignmentInitialPauseElapsed(camera, guideOutput, event)
-            }
+            is DelayElapsed -> DARVPolarAlignmentInitialPauseElapsed(camera, guideOutput, event)
             // Forward & backward guide pulse event.
             is GuidePulseEvent -> {
                 val direction = event.tasklet.request.direction
-                val duration = event.tasklet.request.durationInMilliseconds
-                val state = if ((direction == data.direction) != data.reversed) DARVPolarAlignmentState.FORWARD
-                else DARVPolarAlignmentState.BACKWARD
-
-                when (event) {
-                    is GuidePulseStarted -> {
-                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, state, direction, duration, 0.0)
-                    }
-                    is GuidePulseElapsed -> {
-                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, state, direction, event.remainingTime, event.progress)
-                    }
-                    is GuidePulseFinished -> {
-                        DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, state, direction, 0L, 1.0)
-                    }
-                }
+                val duration = event.tasklet.request.durationInMilliseconds.milliseconds
+                val state = if ((direction == data.direction) != data.reversed) FORWARD else BACKWARD
+                DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, state, direction, duration, event.progress, event.jobExecution)
             }
             is CameraCaptureEvent -> event
             else -> return
@@ -154,12 +144,12 @@ class DARVPolarAlignmentExecutor(
 
     override fun beforeJob(jobExecution: JobExecution) {
         val (camera, guideOutput) = sequenceJobWithId(jobExecution.jobId) ?: return
-        messageService.sendMessage(DARVPolarAlignmentStarted(camera, guideOutput))
+        messageService.sendMessage(DARVPolarAlignmentStarted(camera, guideOutput, jobExecution))
     }
 
     override fun afterJob(jobExecution: JobExecution) {
         val (camera, guideOutput) = sequenceJobWithId(jobExecution.jobId) ?: return
-        messageService.sendMessage(DARVPolarAlignmentFinished(camera, guideOutput))
+        messageService.sendMessage(DARVPolarAlignmentFinished(camera, guideOutput, jobExecution))
     }
 
     override fun iterator(): Iterator<DARVSequenceJob> {
