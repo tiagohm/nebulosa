@@ -31,7 +31,7 @@ dependencyResolutionManagement {
             library("apache-lang3", "org.apache.commons:commons-lang3:3.13.0")
             library("apache-codec", "commons-codec:commons-codec:1.16.0")
             library("apache-collections", "org.apache.commons:commons-collections4:4.4")
-            library("oshi", "com.github.oshi:oshi-core:6.4.6")
+            library("oshi", "com.github.oshi:oshi-core:6.4.7")
             library("timeshape", "net.iakovlev:timeshape:2022g.17")
             library("sqlite", "org.xerial:sqlite-jdbc:3.43.2.1")
             library("flyway", "org.flywaydb:flyway-core:9.22.3")
