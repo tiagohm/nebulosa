@@ -192,9 +192,9 @@ export interface Dither {
 }
 
 export interface CameraStartCapture {
-    exposureInMicroseconds: number
+    exposureTime: number
     exposureAmount: number
-    exposureDelayInSeconds: number
+    exposureDelay: number
     x: number
     y: number
     width: number

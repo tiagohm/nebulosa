@@ -6,7 +6,7 @@ import nebulosa.api.services.MessageEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import org.springframework.batch.core.JobExecution
-import kotlin.time.Duration
+import java.time.Duration
 
 data class DARVPolarAlignmentInitialPauseElapsed(
     override val camera: Camera,

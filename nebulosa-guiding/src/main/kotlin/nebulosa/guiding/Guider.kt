@@ -1,8 +1,7 @@
 package nebulosa.guiding
 
 import java.io.Closeable
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
+import java.time.Duration
 
 interface Guider : Closeable {
 
@@ -41,7 +40,7 @@ interface Guider : Closeable {
     companion object {
 
         @JvmStatic val DEFAULT_SETTLE_AMOUNT = 1.5
-        @JvmStatic val DEFAULT_SETTLE_TIME = 10.seconds
-        @JvmStatic val DEFAULT_SETTLE_TIMEOUT = 30.seconds
+        @JvmStatic val DEFAULT_SETTLE_TIME = Duration.ofSeconds(10)!!
+        @JvmStatic val DEFAULT_SETTLE_TIMEOUT = Duration.ofSeconds(30)!!
     }
 }

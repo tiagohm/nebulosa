@@ -7,13 +7,12 @@ import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.StepContribution
 import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.repeat.RepeatStatus
-import kotlin.time.Duration.Companion.seconds
 
 data class CameraLoopExposureTasklet(override val request: CameraStartCaptureRequest) :
     PublishSequenceTasklet<CameraCaptureEvent>(), CameraStartCaptureTasklet, JobExecutionListener {
 
     private val exposureTasklet = CameraExposureTasklet(request)
-    private val delayTasklet = DelayTasklet(request.exposureDelayInSeconds.seconds)
+    private val delayTasklet = DelayTasklet(request.exposureDelay)
 
     init {
         exposureTasklet.subscribe(this)

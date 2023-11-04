@@ -4,7 +4,7 @@ import nebulosa.imaging.algorithms.CfaPattern
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.indi.protocol.PropertyState
-import kotlin.time.Duration
+import java.time.Duration
 
 interface Camera : GuideOutput, Thermometer {
 

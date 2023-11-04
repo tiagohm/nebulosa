@@ -5,6 +5,7 @@ import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.Camera
 import org.springframework.batch.core.StepExecution
 import java.nio.file.Path
+import java.time.Duration
 
 data class CameraExposureFinished(
     override val camera: Camera,
@@ -15,7 +16,7 @@ data class CameraExposureFinished(
     val savePath: Path?,
 ) : CameraExposureEvent {
 
-    override val remainingTime = 0L
+    override val remainingTime = Duration.ZERO!!
 
     override val progress = 1.0
 

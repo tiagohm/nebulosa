@@ -27,8 +27,6 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.stereotype.Component
 import java.nio.file.Path
 import java.util.*
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * @see <a href="https://www.cloudynights.com/articles/cat/articles/darv-drift-alignment-by-robert-vice-r2760">Reference</a>
@@ -62,7 +60,7 @@ class DARVPolarAlignmentExecutor(
 
         val cameraRequest = CameraStartCaptureRequest(
             camera = camera,
-            exposureInMicroseconds = (request.exposureInSeconds + request.initialPauseInSeconds).seconds.inWholeMicroseconds,
+            exposureTime = request.exposureTime + request.initialPause,
             savePath = Path.of("$capturesPath", "${camera.name}-DARV.fits")
         )
 
@@ -70,8 +68,8 @@ class DARVPolarAlignmentExecutor(
         cameraExposureTasklet.subscribe(this)
         val cameraExposureFlow = sequenceFlowFactory.cameraExposure(cameraExposureTasklet)
 
-        val guidePulseDuration = (request.exposureInSeconds / 2.0).seconds.inWholeMilliseconds
-        val initialPauseDelayTasklet = sequenceTaskletFactory.delay(request.initialPauseInSeconds.seconds)
+        val guidePulseDuration = request.exposureTime.dividedBy(2L)
+        val initialPauseDelayTasklet = sequenceTaskletFactory.delay(request.initialPause)
         initialPauseDelayTasklet.subscribe(this)
 
         val direction = if (request.reversed) request.direction.reversed else request.direction
@@ -131,7 +129,7 @@ class DARVPolarAlignmentExecutor(
             // Forward & backward guide pulse event.
             is GuidePulseEvent -> {
                 val direction = event.tasklet.request.direction
-                val duration = event.tasklet.request.durationInMilliseconds.milliseconds
+                val duration = event.tasklet.request.duration
                 val state = if ((direction == data.direction) != data.reversed) FORWARD else BACKWARD
                 DARVPolarAlignmentGuidePulseElapsed(camera, guideOutput, state, direction, duration, event.progress, event.jobExecution)
             }

@@ -8,9 +8,9 @@ import nebulosa.guiding.Guider
 import nebulosa.guiding.GuiderListener
 import nebulosa.phd2.client.PHD2Client
 import org.springframework.stereotype.Service
+import java.time.Duration
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.time.Duration
 
 @Service
 class GuidingService(

@@ -1,8 +1,9 @@
 package nebulosa.api.sequencer.tasklets.delay
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import nebulosa.api.sequencer.SequenceStepEvent
 import nebulosa.api.sequencer.SequenceTaskletEvent
-import kotlin.time.Duration
+import java.time.Duration
 
 sealed interface DelayEvent : SequenceStepEvent, SequenceTaskletEvent {
 
@@ -13,8 +14,8 @@ sealed interface DelayEvent : SequenceStepEvent, SequenceTaskletEvent {
     val waitDuration: Duration
 
     val isStarted
-        get() = remainingTime == tasklet.duration
+        @JsonIgnore get() = remainingTime == tasklet.duration
 
     val isFinished
-        get() = remainingTime == Duration.ZERO
+        @JsonIgnore get() = remainingTime == Duration.ZERO
 }

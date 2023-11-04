@@ -162,7 +162,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         // TODO: Horizonte leste e oeste tem um impacto no "reversed"?
         const reversed = this.darvHemisphere === 'SOUTHERN'
         await this.openCameraImage()
-        await this.api.darvStart(this.camera!, this.guideOutput!, this.darvDrift, this.darvInitialPause, direction, reversed)
+        await this.api.darvStart(this.camera!, this.guideOutput!, this.darvDrift * 1000000, this.darvInitialPause * 1000000, direction, reversed)
     }
 
     darvAzimuth() {

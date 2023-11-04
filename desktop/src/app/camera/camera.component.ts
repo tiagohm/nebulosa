@@ -301,12 +301,12 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         const width = this.subFrame ? this.width : this.camera!.maxWidth
         const height = this.subFrame ? this.height : this.camera!.maxHeight
         const exposureFactor = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
-        const exposureInMicroseconds = Math.trunc(this.exposureTime * 60000000 / exposureFactor)
+        const exposureTime = Math.trunc(this.exposureTime * 60000000 / exposureFactor)
         const exposureAmount = this.exposureMode === 'LOOP' ? 0 : (this.exposureMode === 'FIXED' ? this.exposureCount : 1)
 
         const data: CameraStartCapture = {
-            exposureInMicroseconds, exposureAmount,
-            exposureDelayInSeconds: this.exposureDelay,
+            exposureTime, exposureAmount,
+            exposureDelay: this.exposureDelay * 1000000,
             x, y, width, height,
             frameFormat: this.frameFormat,
             frameType: this.frameType,

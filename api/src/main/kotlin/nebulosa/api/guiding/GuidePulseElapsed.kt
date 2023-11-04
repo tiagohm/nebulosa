@@ -3,7 +3,7 @@ package nebulosa.api.guiding
 import com.fasterxml.jackson.annotation.JsonIgnore
 import nebulosa.guiding.GuideDirection
 import org.springframework.batch.core.StepExecution
-import kotlin.time.Duration
+import java.time.Duration
 
 data class GuidePulseElapsed(
     val remainingTime: Duration,

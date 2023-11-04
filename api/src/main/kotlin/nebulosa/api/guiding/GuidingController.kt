@@ -2,8 +2,10 @@ package nebulosa.api.guiding
 
 import jakarta.validation.Valid
 import org.hibernate.validator.constraints.Range
+import org.hibernate.validator.constraints.time.DurationMax
+import org.hibernate.validator.constraints.time.DurationMin
 import org.springframework.web.bind.annotation.*
-import kotlin.time.Duration.Companion.seconds
+import java.time.Duration
 
 @RestController
 @RequestMapping("guiding")
@@ -56,10 +58,10 @@ class GuidingController(private val guidingService: GuidingService) {
     @PutMapping("settle")
     fun settle(
         @RequestParam(required = false) @Valid @Range(min = 1, max = 25) amount: Double?,
-        @RequestParam(required = false) @Valid @Range(min = 1, max = 60) time: Long?,
-        @RequestParam(required = false) @Valid @Range(min = 1, max = 60) timeout: Long?,
+        @RequestParam(required = false) @Valid @DurationMin(seconds = 1) @DurationMax(seconds = 60) time: Duration?,
+        @RequestParam(required = false) @Valid @DurationMin(seconds = 1) @DurationMax(seconds = 60) timeout: Duration?,
     ) {
-        guidingService.settle(amount, time?.seconds, timeout?.seconds)
+        guidingService.settle(amount, time, timeout)
     }
 
     @PutMapping("dither")

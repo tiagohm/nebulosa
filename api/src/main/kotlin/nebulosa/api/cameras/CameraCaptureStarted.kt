@@ -3,7 +3,7 @@ package nebulosa.api.cameras
 import com.fasterxml.jackson.annotation.JsonIgnore
 import nebulosa.indi.device.camera.Camera
 import org.springframework.batch.core.JobExecution
-import kotlin.time.Duration
+import java.time.Duration
 
 data class CameraCaptureStarted(
     override val camera: Camera,

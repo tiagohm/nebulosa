@@ -1,6 +1,7 @@
 package nebulosa.api.cameras
 
 import nebulosa.api.sequencer.SequenceStepEvent
+import java.time.Duration
 
 sealed interface CameraExposureEvent : CameraCaptureEvent, SequenceStepEvent {
 
@@ -8,10 +9,10 @@ sealed interface CameraExposureEvent : CameraCaptureEvent, SequenceStepEvent {
 
     val exposureCount: Int
 
-    val remainingTime: Long
+    val remainingTime: Duration
 
     val exposureTime
-        get() = tasklet.request.exposureInMicroseconds
+        get() = tasklet.request.exposureTime
 
     val exposureAmount
         get() = tasklet.request.exposureAmount

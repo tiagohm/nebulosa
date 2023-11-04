@@ -391,16 +391,16 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         for (const direction of directions) {
             switch (direction) {
                 case 'NORTH':
-                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideNorthDuration)
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideNorthDuration * 1000)
                     break
                 case 'SOUTH':
-                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideSouthDuration)
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideSouthDuration * 1000)
                     break
                 case 'WEST':
-                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideWestDuration)
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideWestDuration * 1000)
                     break
                 case 'EAST':
-                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideEastDuration)
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideEastDuration * 1000)
                     break
             }
         }
@@ -427,7 +427,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     async settleChanged() {
-        await this.api.guidingSettle(this.phdSettleAmount, this.phdSettleTime, this.phdSettleTimeout)
+        await this.api.guidingSettle(this.phdSettleAmount, this.phdSettleTime * 1000000, this.phdSettleTimeout * 1000000)
         this.preference.set('guider.settleAmount', this.phdSettleAmount)
         this.preference.set('guider.settleTime', this.phdSettleTime)
         this.preference.set('guider.settleTimeout', this.phdSettleTimeout)

@@ -2,7 +2,7 @@ package nebulosa.api.sequencer.tasklets.delay
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.springframework.batch.core.StepExecution
-import kotlin.time.Duration
+import java.time.Duration
 
 data class DelayElapsed(
     override val remainingTime: Duration,
@@ -12,5 +12,6 @@ data class DelayElapsed(
 ) : DelayEvent {
 
     override val progress
-        get() = if (remainingTime > Duration.ZERO) 1.0 - tasklet.duration / remainingTime else 1.0
+        get() = if (remainingTime > Duration.ZERO) 1.0 - tasklet.duration.toNanos() / remainingTime.toNanos().toDouble()
+        else 1.0
 }
