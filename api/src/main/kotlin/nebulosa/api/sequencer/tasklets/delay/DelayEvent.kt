@@ -10,7 +10,7 @@ sealed interface DelayEvent : SequenceStepEvent, SequenceTaskletEvent {
 
     val remainingTime: Duration
 
-    val waitTime: Duration
+    val waitDuration: Duration
 
     val isStarted
         get() = remainingTime == tasklet.duration

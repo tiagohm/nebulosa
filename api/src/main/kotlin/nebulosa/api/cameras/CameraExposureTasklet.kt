@@ -1,22 +1,8 @@
 package nebulosa.api.cameras
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_ELAPSED_TIME
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_IN_LOOP
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_IS_WAITING
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_PROGRESS
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_REMAINING_TIME
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.CAPTURE_TIME
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.EXPOSURE_AMOUNT
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.EXPOSURE_COUNT
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.EXPOSURE_PROGRESS
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.EXPOSURE_REMAINING_TIME
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.EXPOSURE_TIME
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_PROGRESS
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_REMAINING_TIME
-import nebulosa.api.cameras.CameraCaptureEvent.Companion.WAIT_TIME
-import nebulosa.api.sequencer.PublishableSequenceTasklet
-import nebulosa.api.sequencer.tasklets.delay.DelayElapsed
+import nebulosa.api.sequencer.PublishSequenceTasklet
+import nebulosa.api.sequencer.tasklets.delay.DelayEvent
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.*
@@ -43,7 +29,7 @@ import kotlin.time.Duration.Companion.microseconds
 import kotlin.time.Duration.Companion.seconds
 
 data class CameraExposureTasklet(override val request: CameraStartCaptureRequest) :
-    PublishableSequenceTasklet<CameraCaptureEvent>(), CameraStartCaptureTasklet, JobExecutionListener, Consumer<DelayElapsed> {
+    PublishSequenceTasklet<CameraCaptureEvent>(), CameraStartCaptureTasklet, JobExecutionListener, Consumer<DelayEvent> {
 
     private val latch = CountUpDownLatch()
     private val aborted = AtomicBoolean()
@@ -56,7 +42,7 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
     private val camera = requireNotNull(request.camera)
     private val exposureTime = request.exposureInMicroseconds.microseconds
     private val exposureDelay = request.exposureDelayInSeconds.seconds
-    private val captureTime = if (request.isLoop) Duration.ZERO
+    private val totalTime = if (request.isLoop) Duration.ZERO
     else exposureTime * request.exposureAmount + exposureDelay * (request.exposureAmount - 1)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -88,8 +74,7 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
     override fun beforeJob(jobExecution: JobExecution) {
         camera.enableBlob()
         EventBus.getDefault().register(this)
-        jobExecution.executionContext.put(CAPTURE_IN_LOOP, request.isLoop)
-        onNext(CameraCaptureStarted(camera, jobExecution, this))
+        onNext(CameraCaptureStarted(camera, request.isLoop, totalTime, jobExecution, this))
         captureElapsedTime = 0L
     }
 
@@ -113,15 +98,15 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
         latch.reset()
     }
 
-    override fun accept(event: DelayElapsed) {
-        captureElapsedTime += event.waitTime.inWholeMicroseconds
+    override fun accept(event: DelayEvent) {
+        captureElapsedTime += event.waitDuration.inWholeMicroseconds
 
-        with(stepExecution!!.executionContext) {
-            putDouble(WAIT_PROGRESS, event.progress)
-            putLong(WAIT_REMAINING_TIME, event.remainingTime.inWholeMicroseconds)
-            putLong(WAIT_TIME, event.waitTime.inWholeMicroseconds)
-            put(CAPTURE_IS_WAITING, true)
-        }
+        onNext(
+            CameraCaptureIsWaiting(
+                camera, event.waitDuration.inWholeMicroseconds, event.remainingTime.inWholeMicroseconds,
+                event.progress, event.stepExecution, this
+            )
+        )
 
         onCameraExposureUpdated(Duration.ZERO, 1.0)
     }
@@ -135,14 +120,7 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
 
                 exposureCount++
 
-                with(contribution.stepExecution.executionContext) {
-                    putInt(EXPOSURE_COUNT, exposureCount)
-                    putInt(EXPOSURE_AMOUNT, request.exposureAmount)
-                    put(CAPTURE_IN_LOOP, request.isLoop)
-                    put(CAPTURE_IS_WAITING, false)
-                }
-
-                onNext(CameraExposureStarted(camera, stepExecution!!, this))
+                onNext(CameraExposureStarted(camera, exposureCount, stepExecution!!, this))
 
                 if (request.width > 0 && request.height > 0) {
                     camera.frame(request.x, request.y, request.width, request.height)
@@ -182,14 +160,14 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
         try {
             if (request.saveInMemory) {
                 val image = Image.openFITS(inputStream)
-                onNext(CameraExposureFinished(camera, stepExecution, this, image, savePath))
+                onNext(CameraExposureFinished(camera, exposureCount, stepExecution, this, image, savePath))
             } else {
                 LOG.info("saving FITS at $savePath...")
 
                 savePath!!.createParentDirectories()
                 inputStream.transferAndClose(savePath.outputStream())
 
-                onNext(CameraExposureFinished(camera, stepExecution, this, null, savePath))
+                onNext(CameraExposureFinished(camera, exposureCount, stepExecution, this, null, savePath))
             }
         } catch (e: Throwable) {
             LOG.error("failed to save FITS", e)
@@ -203,21 +181,25 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
         var captureProgress = 0.0
 
         if (!request.isLoop) {
-            captureRemainingTime = if (captureTime > elapsedTime) captureTime - elapsedTime else Duration.ZERO
-            captureProgress = (captureTime - captureRemainingTime) / captureTime
+            captureRemainingTime = if (totalTime > elapsedTime) totalTime - elapsedTime else Duration.ZERO
+            captureProgress = (totalTime - captureRemainingTime) / totalTime
         }
 
-        with(stepExecution!!.executionContext) {
-            putLong(EXPOSURE_TIME, exposureTime.inWholeMicroseconds)
-            putLong(EXPOSURE_REMAINING_TIME, exposureRemainingTime.inWholeMicroseconds)
-            putDouble(EXPOSURE_PROGRESS, exposureProgress)
-            putLong(CAPTURE_TIME, captureTime.inWholeMicroseconds)
-            putLong(CAPTURE_REMAINING_TIME, captureRemainingTime.inWholeMicroseconds)
-            putDouble(CAPTURE_PROGRESS, captureProgress)
-            putLong(CAPTURE_ELAPSED_TIME, elapsedTime.inWholeMicroseconds)
-        }
+        onNext(
+            CameraExposureElapsed(
+                camera, exposureCount,
+                exposureRemainingTime.inWholeMicroseconds, exposureProgress,
+                stepExecution!!, this
+            )
+        )
 
-        onNext(CameraExposureUpdated(camera, stepExecution!!, this))
+        onNext(
+            CameraCaptureElapsed(
+                camera, exposureCount,
+                captureRemainingTime.inWholeMicroseconds, captureProgress,
+                stepExecution!!, this
+            )
+        )
     }
 
     companion object {

@@ -5,11 +5,14 @@ import nebulosa.api.sequencer.SequenceStepEvent
 import nebulosa.indi.device.camera.Camera
 import org.springframework.batch.core.StepExecution
 
-data class CameraExposureUpdated(
+data class CameraCaptureIsWaiting(
     override val camera: Camera,
+    val waitDuration: Long,
+    val remainingTime: Long,
+    override val progress: Double,
     @JsonIgnore override val stepExecution: StepExecution,
     @JsonIgnore override val tasklet: CameraExposureTasklet,
 ) : CameraCaptureEvent, SequenceStepEvent {
 
-    override val eventName = "CAMERA_EXPOSURE_UPDATED"
+    override val eventName = "CAMERA_CAPTURE_WAITING"
 }

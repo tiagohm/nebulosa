@@ -6,7 +6,7 @@ import kotlin.time.Duration
 
 data class DelayElapsed(
     override val remainingTime: Duration,
-    override val waitTime: Duration,
+    override val waitDuration: Duration,
     @JsonIgnore override val stepExecution: StepExecution,
     @JsonIgnore override val tasklet: DelayTasklet,
 ) : DelayEvent {
