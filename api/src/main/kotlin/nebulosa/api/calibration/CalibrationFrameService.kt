@@ -16,6 +16,9 @@ import org.springframework.stereotype.Service
 import java.util.*
 import kotlin.math.abs
 
+// https://cdn.diffractionlimited.com/help/maximdl/Understanding_Calibration_Groups.htm
+// https://www.astropy.org/ccd-reduction-and-photometry-guide/v/dev/notebooks/00-00-Preface.html
+
 @Service
 class CalibrationFrameService(
     private val calibrationFrameRepository: CalibrationFrameRepository,
