@@ -213,20 +213,41 @@ export interface CameraStartCapture {
 
 export interface CameraCaptureEvent extends MessageEvent {
     camera: Camera
+    progress: number
+}
+
+export interface CameraCaptureStarted extends CameraCaptureEvent {
+    looping: boolean
+    exposureAmount: number
+    exposureTime: number
+    estimatedTime: number
+}
+
+export interface CameraCaptureFinished extends CameraCaptureEvent { }
+
+export interface CameraCaptureElapsed extends CameraCaptureEvent {
+    exposureCount: number
+    remainingTime: number
+    elapsedTime: number
+}
+
+export interface CameraCaptureIsWaiting extends CameraCaptureEvent {
+    waitDuration: number
+    remainingTime: number
+}
+
+export interface CameraExposureEvent extends CameraCaptureEvent {
     exposureAmount: number
     exposureCount: number
     exposureTime: number
-    exposureRemainingTime: number
-    exposureProgress: number
-    captureRemainingTime: number
-    captureProgress: number
-    captureTime: number
-    captureInLoop: boolean
-    captureIsWaiting: boolean
-    captureElapsedTime: number
-    waitProgress: number
-    waitRemainingTime: number
-    waitTime: number
+    remainingTime: number
+}
+
+export interface CameraExposureStarted extends CameraExposureEvent { }
+
+export interface CameraExposureElapsed extends CameraExposureEvent { }
+
+export interface CameraExposureFinished extends CameraExposureEvent {
     savePath?: string
 }
 

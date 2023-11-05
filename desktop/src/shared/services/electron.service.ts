@@ -7,7 +7,8 @@ import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
 import {
-    ApiEventType, Camera, CameraCaptureEvent, DARVPolarAlignmentEvent, DARVPolarAlignmentGuidePulseElapsed,
+    ApiEventType, Camera, CameraCaptureElapsed, CameraCaptureFinished, CameraCaptureIsWaiting, CameraCaptureStarted,
+    CameraExposureElapsed, CameraExposureFinished, CameraExposureStarted, DARVPolarAlignmentEvent, DARVPolarAlignmentGuidePulseElapsed,
     DARVPolarAlignmentInitialPauseElapsed, DeviceMessageEvent, FilterWheel, Focuser, GuideOutput, Guider,
     GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Mount, OpenDirectory
 } from '../types'
@@ -20,11 +21,13 @@ type EventMappedType = {
     'CAMERA_UPDATED': DeviceMessageEvent<Camera>
     'CAMERA_ATTACHED': DeviceMessageEvent<Camera>
     'CAMERA_DETACHED': DeviceMessageEvent<Camera>
-    'CAMERA_CAPTURE_STARTED': CameraCaptureEvent
-    'CAMERA_CAPTURE_FINISHED': CameraCaptureEvent
-    'CAMERA_EXPOSURE_UPDATED': CameraCaptureEvent
-    'CAMERA_EXPOSURE_STARTED': CameraCaptureEvent
-    'CAMERA_EXPOSURE_FINISHED': CameraCaptureEvent
+    'CAMERA_CAPTURE_STARTED': CameraCaptureStarted
+    'CAMERA_CAPTURE_FINISHED': CameraCaptureFinished
+    'CAMERA_CAPTURE_ELAPSED': CameraCaptureElapsed
+    'CAMERA_CAPTURE_WAITING': CameraCaptureIsWaiting
+    'CAMERA_EXPOSURE_ELAPSED': CameraExposureElapsed
+    'CAMERA_EXPOSURE_STARTED': CameraExposureStarted
+    'CAMERA_EXPOSURE_FINISHED': CameraExposureFinished
     'MOUNT_UPDATED': DeviceMessageEvent<Mount>
     'MOUNT_ATTACHED': DeviceMessageEvent<Mount>
     'MOUNT_DETACHED': DeviceMessageEvent<Mount>

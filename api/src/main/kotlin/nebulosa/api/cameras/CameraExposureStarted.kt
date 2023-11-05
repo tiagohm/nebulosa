@@ -12,7 +12,7 @@ data class CameraExposureStarted(
 ) : CameraExposureEvent {
 
     override val remainingTime
-        get() = exposureTime
+        get() = tasklet.request.exposureTime
 
     override val progress = 0.0
 

@@ -5,7 +5,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    AutoSubFolderMode, Camera, CameraCaptureEvent,
+    AutoSubFolderMode, Camera,
     CameraStartCapture, Dither, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType
 } from '../../shared/types'
 import { AppComponent } from '../app.component'
@@ -147,9 +147,29 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     offset = 0
     offsetMin = 0
     offsetMax = 0
-    event?: CameraCaptureEvent
+
     capturing = false
     waiting = false
+
+    readonly exposure = {
+        count: 0,
+        remainingTime: 0,
+        progress: 0,
+    }
+
+    readonly capture = {
+        looping: false,
+        amount: 0,
+        remainingTime: 0,
+        elapsedTime: 0,
+        progress: 0,
+    }
+
+    readonly wait = {
+        duration: 0,
+        remainingTime: 0,
+        progress: 0,
+    }
 
     readonly exposureModeOptions: ExposureMode[] = ['SINGLE', 'FIXED', 'LOOP']
     readonly frameTypeOptions: FrameType[] = ['LIGHT', 'DARK', 'FLAT', 'BIAS']
@@ -206,21 +226,38 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.on('CAMERA_EXPOSURE_STARTED', event => {
+        electron.on('CAMERA_CAPTURE_STARTED', event => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
-                    this.event = event
+                    this.capture.looping = event.looping
+                    this.capture.amount = event.exposureAmount
+                    this.capture.elapsedTime = 0
+                    this.capture.remainingTime = event.estimatedTime
+                    this.capture.progress = event.progress
                     this.capturing = true
                     this.waiting = false
                 })
             }
         })
 
-        electron.on('CAMERA_EXPOSURE_UPDATED', event => {
+        electron.on('CAMERA_CAPTURE_ELAPSED', event => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
-                    this.event = event
-                    this.waiting = event.captureIsWaiting
+                    this.capture.elapsedTime = event.elapsedTime
+                    this.capture.remainingTime = event.remainingTime
+                    this.capture.progress = event.progress
+                })
+            }
+        })
+
+        electron.on('CAMERA_CAPTURE_WAITING', event => {
+            if (event.camera.name === this.camera?.name) {
+                ngZone.run(() => {
+                    this.wait.duration = event.waitDuration
+                    this.wait.remainingTime = event.remainingTime
+                    this.wait.progress = event.progress
+                    this.capturing = false
+                    this.waiting = true
                 })
             }
         })
@@ -230,6 +267,37 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 ngZone.run(() => {
                     this.capturing = false
                     this.waiting = false
+                })
+            }
+        })
+
+        electron.on('CAMERA_EXPOSURE_STARTED', event => {
+            if (event.camera.name === this.camera?.name) {
+                ngZone.run(() => {
+                    this.exposure.remainingTime = event.remainingTime
+                    this.exposure.progress = event.progress
+                    this.exposure.count = event.exposureCount
+                    this.capturing = true
+                    this.waiting = false
+                })
+            }
+        })
+
+        electron.on('CAMERA_EXPOSURE_ELAPSED', event => {
+            if (event.camera.name === this.camera?.name) {
+                ngZone.run(() => {
+                    this.exposure.remainingTime = event.remainingTime
+                    this.exposure.progress = event.progress
+                    this.exposure.count = event.exposureCount
+                })
+            }
+        })
+
+        electron.on('CAMERA_EXPOSURE_FINISHED', event => {
+            if (event.camera.name === this.camera?.name) {
+                ngZone.run(() => {
+                    this.exposure.remainingTime = event.remainingTime
+                    this.exposure.progress = event.progress
                 })
             }
         })

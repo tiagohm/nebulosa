@@ -10,10 +10,4 @@ sealed interface CameraExposureEvent : CameraCaptureEvent, SequenceStepEvent {
     val exposureCount: Int
 
     val remainingTime: Duration
-
-    val exposureTime
-        get() = tasklet.request.exposureTime
-
-    val exposureAmount
-        get() = tasklet.request.exposureAmount
 }

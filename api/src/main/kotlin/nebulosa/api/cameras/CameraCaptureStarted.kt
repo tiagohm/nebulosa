@@ -7,11 +7,17 @@ import java.time.Duration
 
 data class CameraCaptureStarted(
     override val camera: Camera,
-    val isLoop: Boolean,
-    val totalTime: Duration,
+    val looping: Boolean,
+    val estimatedTime: Duration,
     @JsonIgnore override val jobExecution: JobExecution,
     @JsonIgnore override val tasklet: CameraExposureTasklet,
 ) : CameraCaptureEvent {
+
+    val exposureAmount
+        get() = tasklet.request.exposureAmount
+
+    val exposureTime
+        get() = tasklet.request.exposureTime
 
     override val progress = 0.0
 

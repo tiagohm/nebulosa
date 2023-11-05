@@ -12,6 +12,6 @@ data class DelayElapsed(
 ) : DelayEvent {
 
     override val progress
-        get() = if (remainingTime > Duration.ZERO) 1.0 - tasklet.duration.toNanos() / remainingTime.toNanos().toDouble()
+        get() = if (remainingTime > Duration.ZERO) (tasklet.duration.toNanos() - remainingTime.toNanos()) / tasklet.duration.toNanos().toDouble()
         else 1.0
 }

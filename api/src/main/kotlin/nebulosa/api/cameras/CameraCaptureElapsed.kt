@@ -11,6 +11,7 @@ data class CameraCaptureElapsed(
     val exposureCount: Int,
     val remainingTime: Duration,
     override val progress: Double,
+    val elapsedTime: Duration,
     @JsonIgnore override val stepExecution: StepExecution,
     @JsonIgnore override val tasklet: CameraExposureTasklet,
 ) : CameraCaptureEvent, SequenceStepEvent {

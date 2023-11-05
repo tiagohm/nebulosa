@@ -39,7 +39,8 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
     private val camera = requireNotNull(request.camera)
     private val exposureTime = request.exposureTime
     private val exposureDelay = request.exposureDelay
-    private val totalTime = if (request.isLoop) Duration.ZERO
+
+    private val estimatedTime = if (request.isLoop) Duration.ZERO
     else Duration.ofNanos(exposureTime.toNanos() * request.exposureAmount + exposureDelay.toNanos() * (request.exposureAmount - 1))
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -69,7 +70,7 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
     override fun beforeJob(jobExecution: JobExecution) {
         camera.enableBlob()
         EventBus.getDefault().register(this)
-        onNext(CameraCaptureStarted(camera, request.isLoop, totalTime, jobExecution, this))
+        onNext(CameraCaptureStarted(camera, request.isLoop, estimatedTime, jobExecution, this))
         captureElapsedTime = Duration.ZERO
     }
 
@@ -161,17 +162,17 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
     }
 
     private fun onCameraExposureElapsed(elapsedTime: Duration, remainingTime: Duration, progress: Double) {
+        val totalElapsedTime = captureElapsedTime + elapsedTime
         var captureRemainingTime = Duration.ZERO
         var captureProgress = 0.0
 
         if (!request.isLoop) {
-            val totalElapsedTime = captureElapsedTime + elapsedTime
-            captureRemainingTime = if (totalTime > totalElapsedTime) totalTime - totalElapsedTime else Duration.ZERO
-            captureProgress = (totalTime - captureRemainingTime).toNanos().toDouble() / totalTime.toNanos()
+            captureRemainingTime = if (estimatedTime > totalElapsedTime) estimatedTime - totalElapsedTime else Duration.ZERO
+            captureProgress = (estimatedTime - captureRemainingTime).toNanos().toDouble() / estimatedTime.toNanos()
         }
 
         onNext(CameraExposureElapsed(camera, exposureCount, remainingTime, progress, stepExecution!!, this))
-        onNext(CameraCaptureElapsed(camera, exposureCount, captureRemainingTime, captureProgress, stepExecution!!, this))
+        onNext(CameraCaptureElapsed(camera, exposureCount, captureRemainingTime, captureProgress, totalElapsedTime, stepExecution!!, this))
     }
 
     companion object {
