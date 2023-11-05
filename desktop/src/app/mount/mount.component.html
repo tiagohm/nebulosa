@@ -2,8 +2,9 @@
     <div class="grid flex align-items-center">
         <div class="col-8">
             <span class="p-float-label">
-                <p-dropdown [disabled]="slewing || parking" [options]="mounts" [(ngModel)]="mount" optionLabel="name" (ngModelChange)="mountChanged()"
-                            styleClass="p-inputtext-sm border-0" emptyMessage="No mount found" />
+                <p-dropdown [disabled]="slewing || parking" [options]="mounts" [ngModel]="mount" optionLabel="name"
+                            (ngModelChange)="$event && mountChanged($event)" styleClass="p-inputtext-sm border-0" emptyMessage="No mount found"
+                            [autoDisplayFirst]="false" />
                 <label>Mount</label>
             </span>
         </div>

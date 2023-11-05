@@ -15,7 +15,7 @@
     "ng": "ng",
     "copy:files": "node copyFiles.js",
     "start": "npm run copy:files && npm-run-all -p electron:serve ng:serve",
-    "ng:serve": "ng serve -c web --hmr",
+    "ng:serve": "ng serve -c web",
     "build": "npm run copy:files && npm run electron:serve-tsc && ng build --base-href ./",
     "build:dev": "npm run build -- -c dev",
     "build:prod": "npm run build -- -c production",

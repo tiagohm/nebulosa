@@ -1,6 +1,6 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { MenuItem } from 'primeng/api'
-import { Subject, Subscription, debounceTime, interval, throttleTime } from 'rxjs'
+import { Subject, Subscription, interval, throttleTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -170,23 +170,36 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             })
 
         this.computeCoordinateSubscriptions[2] = this.computeTargetCoordinatePublisher
-            .pipe(debounceTime(1000))
+            .pipe(throttleTime(1000))
             .subscribe(() => this.computeTargetCoordinates())
     }
 
     async ngAfterContentInit() {
         this.mounts = await this.api.mounts()
+
+        const name = this.preference.get<string | undefined>('mount.selected', undefined)
+        const mount = this.mounts.find((e) => e.name === name)
+
+        if (mount) {
+            this.mountChanged(mount)
+        }
     }
 
     @HostListener('window:unload')
     ngOnDestroy() {
+        this.abort()
+
         this.computeCoordinateSubscriptions
             .forEach(e => e.unsubscribe())
 
         this.api.stopListening('MOUNT')
     }
 
-    async mountChanged() {
+    async mountChanged(mount?: Mount) {
+        this.savePreference()
+
+        this.mount = mount
+
         if (this.mount) {
             this.app.subTitle = this.mount!.name
 
@@ -195,7 +208,8 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
             this.loadPreference()
             this.update()
-            this.savePreference()
+
+            this.preference.set('mount.selected', this.mount.name)
         } else {
             this.app.subTitle = ''
         }

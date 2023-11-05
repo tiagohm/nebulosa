@@ -2,9 +2,9 @@
     <div class="grid flex align-items-center">
         <div class="col-8">
             <span class="p-float-label">
-                <p-dropdown [disabled]="moving" [options]="wheels" [(ngModel)]="wheel" optionLabel="name"
-                            (ngModelChange)="wheelChanged()"
-                            styleClass="p-inputtext-sm border-0" emptyMessage="No filter wheel found" />
+                <p-dropdown [disabled]="moving" [options]="wheels" [ngModel]="wheel" optionLabel="name"
+                            (ngModelChange)="$event && wheelChanged($event)" styleClass="p-inputtext-sm border-0"
+                            emptyMessage="No filter wheel found" [autoDisplayFirst]="false" />
                 <label>Filter Wheel</label>
             </span>
         </div>
@@ -28,13 +28,12 @@
         </div>
         <div class="col-12">
             <span class="p-float-label">
-                <p-dropdown [disabled]="moving" [options]="filters" [autoDisplayFirst]="false" [(ngModel)]="selectedFilter"
-                            styleClass="p-inputtext-sm border-0"
-                            emptyMessage="No filter found" scrollHeight="128px">
-                    <ng-template let-item pTemplate="selectedItem">
+                <p-dropdown [disabled]="!connected || moving" [options]="filters" [autoDisplayFirst]="false" [(ngModel)]="selectedFilter"
+                            styleClass="p-inputtext-sm border-0" emptyMessage="No filter found" scrollHeight="128px">
+                    <ng-template pTemplate="selectedItem">
                         <div class="flex flex-row align-items-center justify-content-between">
-                            <span>{{ item.name }}</span>
-                            <i [class.invisible]="!item.dark" class="mdi mdi-camera-iris"></i>
+                            <span>{{ selectedFilter.name }}</span>
+                            <i [class.invisible]="!connected || !selectedFilter.dark" class="mdi mdi-camera-iris"></i>
                         </div>
                     </ng-template>
                     <ng-template let-item pTemplate="item">

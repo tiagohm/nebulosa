@@ -311,6 +311,13 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     async ngAfterContentInit() {
         this.cameras = await this.api.cameras()
+
+        const name = this.preference.get<string | undefined>('camera.selected', undefined)
+        const camera = this.cameras.find((e) => e.name === name)
+
+        if (camera) {
+            this.cameraChanged(camera)
+        }
     }
 
     @HostListener('window:unload')
@@ -319,7 +326,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         this.abortCapture()
     }
 
-    async cameraChanged() {
+    async cameraChanged(camera?: Camera) {
+        this.savePreference()
+
+        this.camera = camera
+
         if (this.camera) {
             this.app.subTitle = this.camera.name
 
@@ -328,7 +339,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
             this.loadPreference()
             this.update()
-            this.savePreference()
+
+            this.preference.set('camera.selected', this.camera.name)
         } else {
             this.app.subTitle = ''
         }

@@ -2,8 +2,8 @@
     <div class="grid flex align-items-center">
         <div class="col-8">
             <span class="p-float-label">
-                <p-dropdown [disabled]="moving" [options]="focusers" [(ngModel)]="focuser" optionLabel="name" (ngModelChange)="focuserChanged()"
-                            styleClass="p-inputtext-sm border-0" emptyMessage="No focuser found" />
+                <p-dropdown [disabled]="moving" [options]="focusers" [ngModel]="focuser" optionLabel="name" (ngModelChange)="$event && focuserChanged($event)"
+                            styleClass="p-inputtext-sm border-0" emptyMessage="No focuser found" [autoDisplayFirst]="false" />
                 <label>Focuser</label>
             </span>
         </div>

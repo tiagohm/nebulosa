@@ -59,12 +59,23 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     async ngAfterContentInit() {
         this.wheels = await this.api.wheels()
+
+        const name = this.preference.get<string | undefined>('wheel.selected', undefined)
+        const wheel = this.wheels.find((e) => e.name === name)
+
+        if (wheel) {
+            this.wheelChanged(wheel)
+        }
     }
 
     @HostListener('window:unload')
     ngOnDestroy() { }
 
-    async wheelChanged() {
+    async wheelChanged(wheel?: FilterWheel) {
+        this.savePreference()
+
+        this.wheel = wheel
+
         if (this.wheel) {
             this.app.subTitle = this.wheel.name
 
@@ -73,7 +84,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
             this.loadPreference()
             this.update()
-            this.savePreference()
+
+            this.preference.set('wheel.selected', this.wheel.name)
         } else {
             this.app.subTitle = ''
         }

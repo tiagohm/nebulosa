@@ -53,12 +53,25 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
 
     async ngAfterViewInit() {
         this.focusers = await this.api.focusers()
+
+        const name = this.preference.get<string | undefined>('focuser.selected', undefined)
+        const focuser = this.focusers.find((e) => e.name === name)
+
+        if (focuser) {
+            this.focuserChanged(focuser)
+        }
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() { }
+    ngOnDestroy() {
+        this.abort()
+    }
 
-    async focuserChanged() {
+    async focuserChanged(focuser?: Focuser) {
+        this.savePreference()
+
+        this.focuser = focuser
+
         if (this.focuser) {
             this.app.subTitle = this.focuser.name
 
@@ -67,7 +80,8 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
 
             this.loadPreference()
             this.update()
-            this.savePreference()
+
+            this.preference.set('focuser.selected', this.focuser.name)
         } else {
             this.app.subTitle = ''
         }
