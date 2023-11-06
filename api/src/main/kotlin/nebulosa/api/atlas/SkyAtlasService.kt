@@ -249,7 +249,7 @@ class SkyAtlasService(
         val image = httpClient.newCall(request)
             .execute()
             .body
-            .use { ImageIO.read(it.byteStream()) }
+            .use { ImageIO.read(it!!.byteStream()) }
             .removeBackground()
 
         val bytes = ByteArrayOutputStream(1024 * 128)

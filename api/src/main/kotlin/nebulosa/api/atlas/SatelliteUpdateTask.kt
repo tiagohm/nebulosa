@@ -75,7 +75,7 @@ class SatelliteUpdateTask(
                     if (it.isSuccessful) {
                         val lines = ArrayList<String>(3)
 
-                        for (line in it.body.byteStream().bufferedReader().lines()) {
+                        for (line in it.body!!.byteStream().bufferedReader().lines()) {
                             lines.add(line)
 
                             if (lines.size == 3) {

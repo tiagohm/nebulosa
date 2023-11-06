@@ -39,7 +39,7 @@ class IERSUpdateTask(
             LOG.info("downloading finals2000A.all")
 
             httpClient.newCall(request).execute().use {
-                it.body.byteStream().transferAndClose(outputStream())
+                it.body!!.byteStream().transferAndClose(outputStream())
                 LOG.info("finals2000A.all loaded")
             }
         } catch (e: Throwable) {

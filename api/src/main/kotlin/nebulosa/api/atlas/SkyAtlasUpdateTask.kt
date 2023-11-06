@@ -57,7 +57,7 @@ class SkyAtlasUpdateTask(
                 .execute()
                 .use {
                     if (it.isSuccessful) {
-                        loadStars(it.body.byteStream())
+                        loadStars(it.body!!.byteStream())
                     }
                 }
         }
@@ -84,7 +84,7 @@ class SkyAtlasUpdateTask(
                 .execute()
                 .use {
                     if (it.isSuccessful) {
-                        loadDSOs(it.body.byteStream())
+                        loadDSOs(it.body!!.byteStream())
                     }
                 }
         }

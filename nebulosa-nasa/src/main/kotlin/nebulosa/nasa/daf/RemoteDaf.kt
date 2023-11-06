@@ -9,19 +9,19 @@ import okio.ByteString.Companion.toByteString
 import okio.buffer
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.security.MessageDigest
 import kotlin.io.path.exists
 import kotlin.io.path.readBytes
 import kotlin.io.path.writeBytes
 
 class RemoteDaf(
-    val uri: String,
+    private val uri: String,
     private val cacheDirectory: Path? = null,
 ) : Daf() {
 
     override fun read() {
         val request = Request.Builder()
-            .head().url(uri)
+            .head()
+            .url(uri)
             .build()
 
         if (cacheDirectory == null) {
@@ -74,12 +74,13 @@ class RemoteDaf(
         cacheFilePath: Path? = null,
     ): SeekableSource {
         val request = Request.Builder()
-            .get().url(uri)
+            .get()
+            .url(uri)
             .addHeader("Range", "bytes=$start-$end")
             .build()
 
         return HTTP_CLIENT.newCall(request).execute().use {
-            val bytes = it.body.bytes()
+            val bytes = it.body!!.bytes()
             cacheFilePath?.writeBytes(bytes)
             bytes.source()
         }
@@ -90,6 +91,5 @@ class RemoteDaf(
     companion object {
 
         @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder().build()
-        @JvmStatic private val MD5 = MessageDigest.getInstance("MD5")!!
     }
 }
