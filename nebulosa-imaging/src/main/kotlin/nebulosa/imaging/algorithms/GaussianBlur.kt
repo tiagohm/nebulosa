@@ -20,29 +20,28 @@ class GaussianBlur(
         }
 
         @JvmStatic
-        fun kernel2D(sigmaSquared: Double, size: Int): Array<FloatArray> {
+        fun kernel2D(sigmaSquared: Double, size: Int): ConvolutionKernel {
             require(size > 2) { "size > 2: $size" }
             require(size % 2 == 1) { "size must be odd: $size" }
 
             val r = size / 2
 
-            val kernel = Array(size) { FloatArray(size) }
+            val kernel = FloatArray(size * size)
+            var i = 0
 
             for (y in -r..r) {
                 for (x in -r..r) {
-                    kernel[y + r][x + r] = gaussian2D(sigmaSquared, x, y).toFloat()
+                    kernel[i++] = gaussian2D(sigmaSquared, x, y).toFloat()
                 }
             }
 
-            val min = kernel[0][0]
+            val min = kernel[0]
 
-            for (i in kernel.indices) {
-                for (j in kernel.indices) {
-                    kernel[i][j] /= min
-                }
+            for (k in kernel.indices) {
+                kernel[k] /= min
             }
 
-            return kernel
+            return MatrixConvolutionKernel(kernel)
         }
     }
 }

@@ -1,5 +1,6 @@
 package nebulosa.imaging.algorithms
 
+import nebulosa.fits.FitsKeywords
 import nebulosa.fits.clone
 import nebulosa.imaging.Image
 import kotlin.math.max
@@ -15,6 +16,7 @@ class Grayscale(
         if (source.mono) return source
 
         val header = source.header.clone()
+        header.addValue(FitsKeywords.NAXIS, 2)
         header.deleteKey("NAXIS3")
         val result = Image(source.width, source.height, header, true)
 
