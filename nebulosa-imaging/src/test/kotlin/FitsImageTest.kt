@@ -2,6 +2,7 @@ import io.kotest.matchers.shouldBe
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
+import nebulosa.imaging.algorithms.star.detection.StarFinderKernel
 import nom.tam.fits.Fits
 import java.io.File
 import java.util.*
@@ -301,12 +302,18 @@ class FitsImageTest : AbstractImageTest() {
 
             // TODO: outputFile1.md5() shouldBe outputFile2.md5()
         }
-        "SubFrame" {
+        "sub frame" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
             val image = Image.openFITS(fits).transform(SubFrame(436, 387, 100, 100))
             val outputFile = File("src/test/resources/M51.8.Color.Subframe.png")
             ImageIO.write(image, "PNG", outputFile)
             outputFile.md5() shouldBe "2544479baa64a72c1ca8a384da68cb15"
+        }
+        "sigma clipping" {
+            val fits = Fits("src/test/resources/M51.8.Mono.fits")
+            val image = Image.openFITS(fits).transform(SigmaClip(), Convolution(StarFinderKernel(3.0)))
+            val outputFile = File("src/test/resources/M51.8.Mono.SigmaClip.png")
+            ImageIO.write(image, "PNG", outputFile)
         }
     }
 }

@@ -4,5 +4,5 @@ import nebulosa.imaging.Image
 
 interface StarDetector {
 
-    fun detectStars(image: Image)
+    fun detectStars(image: Image): List<DetectedImage>
 }

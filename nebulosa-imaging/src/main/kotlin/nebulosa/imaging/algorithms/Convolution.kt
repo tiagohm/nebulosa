@@ -4,7 +4,7 @@ import nebulosa.imaging.Image
 import kotlin.math.max
 import kotlin.math.min
 
-abstract class Convolution(
+open class Convolution(
     private val kernel: ConvolutionKernel,
     private val dynamicDivisorForEdges: Boolean = true,
 ) : TransformAlgorithm {
@@ -15,15 +15,18 @@ abstract class Convolution(
     ) : this(MatrixConvolutionKernel(kernel), dynamicDivisorForEdges)
 
     init {
-        require(kernel.size in 3..99) { "kernel size bust be in range [3..99]: ${kernel.size}" }
-        require(kernel.size % 2 == 1) { "kernel size must be odd: ${kernel.size}" }
+        require(kernel.xSize in 3..99) { "kernel size bust be in range [3..99]: ${kernel.xSize}" }
+        require(kernel.xSize % 2 == 1) { "kernel size must be odd: ${kernel.xSize}" }
+        require(kernel.ySize in 3..99) { "kernel size bust be in range [3..99]: ${kernel.ySize}" }
+        require(kernel.ySize % 2 == 1) { "kernel size must be odd: ${kernel.ySize}" }
     }
 
     override fun transform(source: Image): Image {
-        val radius = kernel.size / 2
-        val c = FloatArray(source.numberOfChannels)
+        val xRadius = kernel.xSize / 2
+        val yRadius = kernel.ySize / 2
 
-        val cache = Array(source.numberOfChannels) { Array(kernel.size) { FloatArray(source.width) } }
+        val c = FloatArray(source.numberOfChannels)
+        val cache = Array(source.numberOfChannels) { Array(kernel.xSize) { FloatArray(source.width) } }
 
         for (y in 0 until source.height) {
             for (x in 0 until source.width) {
@@ -32,19 +35,19 @@ abstract class Convolution(
 
                 c.fill(0f)
 
-                for (i in 0 until kernel.size) {
-                    val ir = i - radius
+                for (i in 0 until kernel.ySize) {
+                    val ir = i - yRadius
                     val a = y + ir
 
                     if (a < 0) continue
                     if (a >= source.height) break
 
-                    for (j in 0 until kernel.size) {
-                        val jr = j - radius
+                    for (j in 0 until kernel.xSize) {
+                        val jr = j - xRadius
                         val b = x + jr
 
                         if (b >= 0 && b < source.width) {
-                            val k = kernel[i * kernel.size + j]
+                            val k = kernel[j, i]
 
                             div += k
                             val index = a * source.stride + b
@@ -55,7 +58,7 @@ abstract class Convolution(
                     }
                 }
 
-                if (processedKernelSize == kernel.size * kernel.size) {
+                if (processedKernelSize == kernel.xSize * kernel.ySize) {
                     // All kernel elements are processed - we are not on the edge.
                     div = kernel.divisor
                 } else if (!dynamicDivisorForEdges) {
@@ -65,15 +68,15 @@ abstract class Convolution(
 
                 for (p in c.indices) c[p] /= div
 
-                val cacheIdx = y % kernel.size
+                val cacheIdx = y % kernel.ySize
                 for (p in c.indices) cache[p][cacheIdx][x] = max(0f, min(c[p], 1f))
             }
 
-            val r = y - radius
+            val r = y - yRadius
 
             if (r >= 0) {
                 val index = r * source.width
-                val k = r % kernel.size
+                val k = r % kernel.xSize
 
                 for (p in c.indices) {
                     cache[p][k].copyInto(source.data[p], index)
@@ -81,10 +84,10 @@ abstract class Convolution(
             }
         }
 
-        repeat(radius) {
+        repeat(yRadius) {
             val r = source.height - it - 1
             val index = r * source.width
-            val k = r % kernel.size
+            val k = r % kernel.xSize
 
             for (p in c.indices) {
                 cache[p][k].copyInto(source.data[p], index)

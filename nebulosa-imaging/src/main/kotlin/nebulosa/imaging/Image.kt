@@ -41,6 +41,7 @@ class Image(
         private set
 
     val size = width * height
+
     val indices = 0 until size
 
     inline fun indexAt(x: Int, y: Int): Int {

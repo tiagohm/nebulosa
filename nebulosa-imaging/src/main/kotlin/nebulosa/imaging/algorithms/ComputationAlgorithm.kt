@@ -16,7 +16,7 @@ fun interface ComputationAlgorithm<out T> {
         ): Int {
             var count = 0
 
-            for (i in 0 until width * height step sampleBy) {
+            for (i in indices step sampleBy) {
                 val pixel = when (channel) {
                     ImageChannel.GRAY -> readGray(i)
                     ImageChannel.RED -> readRed(i)
@@ -24,9 +24,10 @@ fun interface ComputationAlgorithm<out T> {
                     else -> readBlue(i)
                 }
 
-                computation(pixel)
-
-                count++
+                if (pixel >= 0.0 && pixel.isFinite()) {
+                    computation(pixel)
+                    count++
+                }
             }
 
             return count
