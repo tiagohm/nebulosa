@@ -1,6 +1,6 @@
 package nebulosa.imaging.algorithms.star.hfd
 
-import nebulosa.imaging.algorithms.star.detection.DetectedImage
+import nebulosa.imaging.algorithms.star.detection.DetectedStar
 
 data class ImageStar(
     override val x: Double,
@@ -10,4 +10,4 @@ data class ImageStar(
     override val hfd: Double = 0.0,
     override val peak: Double = 0.0,
     val result: FindResult = FindResult.ERROR,
-) : DetectedImage
+) : DetectedStar

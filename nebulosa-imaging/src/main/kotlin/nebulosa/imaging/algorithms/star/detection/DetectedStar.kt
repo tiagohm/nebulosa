@@ -1,6 +1,6 @@
 package nebulosa.imaging.algorithms.star.detection
 
-interface DetectedImage {
+interface DetectedStar {
 
     val x: Double
 

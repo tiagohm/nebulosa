@@ -14,7 +14,7 @@ data class SigmaClip(
     val maxIteration: Int = 5,
     val replaceRejectedPixels: Boolean = false,
     val rejectedPixelFillValue: Float = 0f,
-    val noStatistics: Boolean = false,
+    val noStatistics: Boolean = true,
 ) : TransformAlgorithm, ComputationAlgorithm<SigmaClip.Data> {
 
     enum class CenterMethod {
@@ -67,19 +67,13 @@ data class SigmaClip(
 
         val stats = if (noStatistics) Statistics.Data.EMPTY else Statistics(channel).compute(source)
 
-        if (replaceRejectedPixels) {
-            for (i in source.indices) {
-                val pixel = source.read(i, channel)
+        for (i in source.indices) {
+            val pixel = source.read(i, channel)
 
-                if (pixel < 0) {
+            if (pixel < 0) {
+                if (replaceRejectedPixels) {
                     source.write(i, channel, rejectedPixelFillValue)
-                }
-            }
-        } else {
-            for (i in source.indices) {
-                val pixel = source.read(i, channel)
-
-                if (pixel < 0) {
+                } else {
                     source.write(i, channel, -pixel)
                 }
             }

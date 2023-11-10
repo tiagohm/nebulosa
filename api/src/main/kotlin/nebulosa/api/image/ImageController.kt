@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
+import nebulosa.imaging.algorithms.star.detection.DetectedStar
 import nebulosa.indi.device.camera.Camera
 import nebulosa.math.deg
 import nebulosa.math.hours
@@ -87,5 +88,10 @@ class ImageController(
     @GetMapping("coordinate-interpolation")
     fun coordinateInterpolation(@RequestParam path: Path): CoordinateInterpolation? {
         return imageService.coordinateInterpolation(path)
+    }
+
+    @PutMapping("detect-stars")
+    fun detectStars(@RequestParam path: Path): Collection<DetectedStar> {
+        return imageService.detectStars(path)
     }
 }

@@ -62,7 +62,7 @@ class StarFinderKernel(
         for (i in circular.indices) {
             circular[i] = hypot(xx[i] - xc, yy[i] - yc)
             elliptical[i] = a * (xx[i] - xc).pow(2) + 2.0 * b * (xx[i] - xc) * (yy[i] - yc) + c * (yy[i] - yc).pow(2)
-            mask[i] = if (elliptical[i] <= f || circular[i] <= 2.0) 0 else 1
+            mask[i] = if (elliptical[i] <= f || circular[i] <= 2.0) 1 else 0
             // NOTE: the central (peak) pixel of Gaussian Kernel has a value of 1.
             gaussianKernelUnmasked[i] = exp(-elliptical[i])
             gaussianKernel[i] = gaussianKernelUnmasked[i] * mask[i]
@@ -70,13 +70,13 @@ class StarFinderKernel(
 
         npixels = mask.sum()
 
-        val gaussianKernelSum = gaussianKernel.sum()
-        val denom = gaussianKernel.sumOf { it * it } - gaussianKernelSum * gaussianKernelSum / npixels
-        val relerr = 1.0 / sqrt(denom)
-
         data = FloatArray(gaussianKernel.size) { gaussianKernel[it].toFloat() }
 
         if (normalize) {
+            val gaussianKernelSum = gaussianKernel.sum()
+            val denom = gaussianKernel.sumOf { it * it } - gaussianKernelSum * gaussianKernelSum / npixels
+            // val relerr = 1.0 / sqrt(denom)
+
             val factor = gaussianKernelSum / npixels
 
             for (i in data.indices) {

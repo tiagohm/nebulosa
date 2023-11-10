@@ -7,6 +7,8 @@ import java.nio.file.Path
 
 data object PathDeserializer : StdDeserializer<Path>(Path::class.java) {
 
+    private fun readResolve(): Any = PathDeserializer
+
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Path? {
         return p.valueAsString?.let(Path::of)
     }

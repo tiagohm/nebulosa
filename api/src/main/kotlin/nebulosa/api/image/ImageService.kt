@@ -9,6 +9,8 @@ import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.fits.*
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
+import nebulosa.imaging.algorithms.star.detection.DetectedStar
+import nebulosa.imaging.algorithms.star.detection.HFDStarDetector
 import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
@@ -318,6 +320,11 @@ class ImageService(
         }
 
         return CoordinateInterpolation(ma, md, 0, 0, width, height, delta, image.header.observationDate)
+    }
+
+    fun detectStars(path: Path): Collection<DetectedStar> {
+        val (image) = imageBucket[path] ?: return emptyList()
+        return HFDStarDetector().detectStars(image)
     }
 
     companion object {

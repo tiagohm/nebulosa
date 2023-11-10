@@ -2,12 +2,15 @@ package nebulosa.api.beans.configurations
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
+import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import nebulosa.api.beans.DateAndTimeMethodArgumentResolver
 import nebulosa.api.beans.EntityByMethodArgumentResolver
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.concurrency.Incrementer
+import nebulosa.common.json.PathDeserializer
+import nebulosa.common.json.PathSerializer
 import nebulosa.guiding.Guider
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
@@ -62,9 +65,11 @@ class BeanConfiguration {
     fun kotlinModule(
         serializers: List<StdSerializer<*>>,
         deserializers: List<StdDeserializer<*>>,
-    ) = kotlinModule()
+    ): SimpleModule = kotlinModule()
         .apply { serializers.forEach { addSerializer(it) } }
         .apply { deserializers.forEach { addDeserializer(it.handledType() as Class<Any>, it) } }
+        .addSerializer(PathSerializer)
+        .addDeserializer(Path::class.java, PathDeserializer)
 
     @Bean
     fun jackson2ObjectMapperBuilderCustomizer() = Jackson2ObjectMapperBuilderCustomizer {
