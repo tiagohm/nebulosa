@@ -4,10 +4,10 @@ import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.ProtectionMethod
-import nebulosa.imaging.algorithms.star.detection.DetectedStar
 import nebulosa.indi.device.camera.Camera
 import nebulosa.math.deg
 import nebulosa.math.hours
+import nebulosa.star.detection.DetectedStar
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
 
@@ -35,15 +35,13 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "0.5") scnrAmount: Float,
         @RequestParam(required = false, defaultValue = "AVERAGE_NEUTRAL") scnrProtectionMode: ProtectionMethod,
         output: HttpServletResponse,
-    ) {
-        imageService.openImage(
-            path, camera,
-            debayer, calibrate, autoStretch, shadow, highlight, midtone,
-            mirrorHorizontal, mirrorVertical, invert,
-            scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode,
-            output,
-        )
-    }
+    ) = imageService.openImage(
+        path, camera,
+        debayer, calibrate, autoStretch, shadow, highlight, midtone,
+        mirrorHorizontal, mirrorVertical, invert,
+        scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode,
+        output,
+    )
 
     @DeleteMapping
     fun closeImage(@RequestParam path: Path) {
@@ -62,9 +60,7 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "true") dsos: Boolean,
         @RequestParam(required = false, defaultValue = "false") minorPlanets: Boolean,
         @RequestParam(required = false, defaultValue = "12.0") minorPlanetMagLimit: Double,
-    ): List<ImageAnnotation> {
-        return imageService.annotations(path, stars, dsos, minorPlanets, minorPlanetMagLimit)
-    }
+    ) = imageService.annotations(path, stars, dsos, minorPlanets, minorPlanetMagLimit)
 
     @PutMapping("solve")
     fun solveImage(
@@ -77,13 +73,11 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "1") downsampleFactor: Int,
         @RequestParam(required = false, defaultValue = "") pathOrUrl: String,
         @RequestParam(required = false, defaultValue = "") apiKey: String,
-    ): ImageCalibrated {
-        return imageService.solveImage(
-            path, type, blind,
-            centerRA.hours, centerDEC.deg, radius.deg,
-            downsampleFactor, pathOrUrl, apiKey,
-        )
-    }
+    ) = imageService.solveImage(
+        path, type, blind,
+        centerRA.hours, centerDEC.deg, radius.deg,
+        downsampleFactor, pathOrUrl, apiKey,
+    )
 
     @GetMapping("coordinate-interpolation")
     fun coordinateInterpolation(@RequestParam path: Path): CoordinateInterpolation? {

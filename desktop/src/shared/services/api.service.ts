@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
 import {
-    Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation, DeepSkyObject, Device,
+    Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation, DeepSkyObject, DetectedStar, Device,
     FilterWheel, Focuser, GuideDirection, GuideOutput, Guider, HipsSurvey, HistoryStep,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
     ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
@@ -544,6 +544,11 @@ export class ApiService {
         return this.http.get<CoordinateInterpolation | null>(`image/coordinate-interpolation?${query}`)
     }
 
+    detectStars(path: string) {
+        const query = this.http.query({ path })
+        return this.http.put<DetectedStar[]>(`image/detect-stars?${query}`)
+    }
+
     // FRAMING
 
     frame(rightAscension: Angle, declination: Angle,
@@ -564,5 +569,27 @@ export class ApiService {
 
     darvStop(camera: Camera, guideOutput: GuideOutput) {
         return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/stop`)
+    }
+
+    // PREFERENCE
+
+    preferenceClear() {
+        return this.http.put<void>('preferences/clear')
+    }
+
+    preferenceDelete(key: string) {
+        return this.http.delete<void>(`preferences/${key}`)
+    }
+
+    preferenceGet<T>(key: string) {
+        return this.http.get<T>(`preferences/${key}`)
+    }
+
+    preferencePut(key: string, data: any) {
+        return this.http.put<void>(`preferences/${key}`, { data })
+    }
+
+    preferenceExists(key: string) {
+        return this.http.get<boolean>(`preferences/${key}/exists`)
     }
 }

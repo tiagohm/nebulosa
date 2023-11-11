@@ -12,7 +12,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Angle, AstronomicalObject, Camera, CheckableMenuItem, DeepSkyObject, EquatorialCoordinateJ2000, FITSHeaderItem,
+    Angle, AstronomicalObject, Camera, CheckableMenuItem, DeepSkyObject, DetectedStar, EquatorialCoordinateJ2000, FITSHeaderItem,
     ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
     PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
 } from '../../shared/types'
@@ -47,7 +47,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     mirrorHorizontal = false
     mirrorVertical = false
     invert = false
-    annotationIsVisible = false
 
     readonly scnrChannelOptions: ImageChannel[] = ['NONE', 'RED', 'GREEN', 'BLUE']
     readonly scnrProtectionMethodOptions: SCNRProtectionMethod[] = [...SCNR_PROTECTION_METHODS]
@@ -88,6 +87,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     annotating = false
     showAnnotationInfoDialog = false
     annotationInfo?: AstronomicalObject & Partial<Star & DeepSkyObject>
+    annotationIsVisible = false
+
+    detectedStars: DetectedStar[] = []
+    detectedStarsIsVisible = false
 
     showFITSHeadersDialog = false
     fitsHeaders: FITSHeaderItem[] = []
@@ -244,6 +247,24 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
+    private readonly detectStarsMenuItem: ToggleableMenuItem = {
+        label: 'Detect stars',
+        icon: 'mdi mdi-creation',
+        disabled: false,
+        toggleable: false,
+        toggled: false,
+        command: async () => {
+            this.detectedStars = await this.api.detectStars(this.imageParams.path!)
+            this.detectedStarsIsVisible = this.detectedStars.length > 0
+            this.detectStarsMenuItem.toggleable = this.detectedStarsIsVisible
+            this.detectStarsMenuItem.toggled = this.detectedStarsIsVisible
+        },
+        toggle: (event) => {
+            event.originalEvent.stopImmediatePropagation()
+            this.detectedStarsIsVisible = event.checked
+        },
+    }
+
     private readonly roiMenuItem: CheckableMenuItem = {
         label: 'ROI',
         icon: 'mdi mdi-select',
@@ -290,6 +311,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         items: [
             this.crosshairMenuItem,
             this.annotationMenuItem,
+            this.detectStarsMenuItem,
             this.roiMenuItem,
         ]
     }
@@ -336,8 +358,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 await this.closeImage()
 
                 ngZone.run(() => {
-                    this.annotations = []
-                    this.annotationMenuItem.toggleable = false
+                    this.clearOverlay()
                     this.imageParams.path = event.savePath
                     this.loadImage()
                 })
@@ -351,13 +372,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 this.loadImageFromParams(event)
             })
         })
-
-        this.solverPathOrUrl = this.preference.get('image.solver.pathOrUrl', '')
-        this.solverRadius = this.preference.get('image.solver.radius', 4)
-        this.solverDownsampleFactor = this.preference.get('image.solver.downsampleFactor', 1)
     }
 
-    ngAfterViewInit() {
+    async ngAfterViewInit() {
+        this.solverPathOrUrl = await this.preference.get('image.solver.pathOrUrl', '')
+        this.solverRadius = await this.preference.get('image.solver.radius', 4)
+        this.solverDownsampleFactor = await this.preference.get('image.solver.downsampleFactor', 1)
+
         this.route.queryParams.subscribe(e => {
             const params = JSON.parse(decodeURIComponent(e.params)) as ImageParams
             this.loadImageFromParams(params)
@@ -441,10 +462,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
 
         if (this.imageParams.path) {
-            this.annotations = []
-            this.annotationMenuItem.toggleable = false
+            this.clearOverlay()
             this.loadImage()
         }
+    }
+
+    private clearOverlay() {
+        this.annotations = []
+        this.annotationIsVisible = false
+        this.annotationMenuItem.toggleable = false
+
+        this.detectedStars = []
+        this.detectedStarsIsVisible = false
+        this.detectStarsMenuItem.toggleable = false
     }
 
     private async loadImage() {

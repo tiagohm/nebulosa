@@ -155,8 +155,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     async ngAfterContentInit() {
         this.updateConnection()
 
-        this.host = this.preference.get('home.host', 'localhost')
-        this.port = this.preference.get('home.port', 7624)
+        this.host = await this.preference.get('home.host', 'localhost')
+        this.port = await this.preference.get('home.port', 7624)
 
         this.cameras = await this.api.cameras()
         this.mounts = await this.api.mounts()

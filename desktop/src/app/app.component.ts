@@ -15,6 +15,7 @@ export class AppComponent implements AfterViewInit {
     pinned = false
     maximizable = false
     subTitle = ''
+    isNightMode = false
 
     get backgroundColor() {
         return this.isNightMode ? '#B71C1C' : '#002457'
@@ -45,20 +46,16 @@ export class AppComponent implements AfterViewInit {
         }
     }
 
-    ngAfterViewInit() {
+    async ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
             this.maximizable = e.resizable === 'true'
         })
 
         this.night = document.getElementsByTagName('night')[0] as HTMLElement
-        this.updateNightMode(this.isNightMode)
+        this.updateNightMode(await this.preference.get('settings.nightMode', false))
     }
 
-    get isNightMode() {
-        return this.preference.isNightMode
-    }
-
-    set isNightMode(enabled: boolean) {
+    private updateNightMode(enabled: boolean) {
         if (enabled) {
             this.night.classList.replace('hidden', 'block')
             this.night.style.background = '#ff00003b'
@@ -67,17 +64,8 @@ export class AppComponent implements AfterViewInit {
             this.night.classList.replace('block', 'hidden')
         }
 
-        // TODO: UPDATE ONLY ON SETTINGS WINDOW
-        this.preference.isNightMode = enabled
-        this.updateNightMode(enabled)
-    }
-
-    private updateNightMode(enabled: boolean) {
-        if (enabled) {
-            this.night.classList.replace('hidden', 'block')
-        } else {
-            this.night.classList.replace('block', 'hidden')
-        }
+        this.isNightMode = enabled
+        this.preference.set('settings.nightMode', this.isNightMode)
 
         // TODO: NOTIFY ALL WINDOWS PREFERENCE_UPDATED(name, oldValue, newValue)
     }

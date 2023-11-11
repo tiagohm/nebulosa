@@ -3,27 +3,27 @@ package nebulosa.api.image
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.calibration.CalibrationFrameService
+import nebulosa.api.preferences.PreferenceService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
+import nebulosa.astap.platesolving.AstapPlateSolver
+import nebulosa.astap.star.detection.AstapStarDetector
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
+import nebulosa.astrometrynet.platesolving.LocalAstrometryNetPlateSolver
+import nebulosa.astrometrynet.platesolving.NovaAstrometryNetPlateSolver
 import nebulosa.fits.*
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
-import nebulosa.imaging.algorithms.star.detection.DetectedStar
-import nebulosa.imaging.algorithms.star.detection.HFDStarDetector
 import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.math.*
-import nebulosa.platesolving.astap.AstapPlateSolver
-import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
-import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
-import nebulosa.platesolving.watney.WatneyPlateSolver
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadSearch
 import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.skycatalog.SkyObjectType
+import nebulosa.star.detection.DetectedStar
 import nebulosa.wcs.WCSException
 import nebulosa.wcs.WCSTransform
 import org.springframework.http.HttpStatus
@@ -48,6 +48,7 @@ class ImageService(
     private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
     private val systemExecutorService: ExecutorService,
+    private val preferenceService: PreferenceService,
 ) {
 
     @Synchronized
@@ -240,10 +241,9 @@ class ImageService(
         pathOrUrl: String, apiKey: String,
     ): ImageCalibrated {
         val solver = when (type) {
-            PlateSolverType.ASTROMETRY_NET_LOCAL -> LocalAstrometryNetPlateSolver(pathOrUrl)
+            PlateSolverType.ASTROMETRY_NET_LOCAL -> LocalAstrometryNetPlateSolver(Path.of(pathOrUrl))
             PlateSolverType.ASTROMETRY_NET_ONLINE -> NovaAstrometryNetPlateSolver(NovaAstrometryNetService(pathOrUrl), apiKey)
-            PlateSolverType.WATNEY -> WatneyPlateSolver(pathOrUrl)
-            PlateSolverType.ASTAP -> AstapPlateSolver(pathOrUrl)
+            PlateSolverType.ASTAP -> AstapPlateSolver(Path.of(pathOrUrl))
         }
 
         val calibration = solver.solve(
@@ -278,10 +278,8 @@ class ImageService(
         width: Int, height: Int, fov: Angle,
         rotation: Angle = 0.0, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
     ): Path {
-        val (image, calibration) = framingService
+        val (image, calibration, path) = framingService
             .frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!
-
-        val path = Path.of("@framing")
         imageBucket.put(path, image, calibration)
         return path
     }
@@ -323,8 +321,8 @@ class ImageService(
     }
 
     fun detectStars(path: Path): Collection<DetectedStar> {
-        val (image) = imageBucket[path] ?: return emptyList()
-        return HFDStarDetector().detectStars(image)
+        val astapPath = preferenceService.astapPath ?: return emptyList()
+        return AstapStarDetector(astapPath).detectStars(path)
     }
 
     companion object {

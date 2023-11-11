@@ -20,6 +20,16 @@
         </g>
     </svg>
 
+    <svg *ngIf="!mirrorHorizontal && !mirrorVertical && detectedStarsIsVisible"
+         class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+        <g *ngFor="let s of detectedStars" class="pointer-events-auto cursor-pointer">
+            <circle [attr.cx]="s.x" [attr.cy]="s.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"></circle>
+            <text [attr.x]="s.x" [attr.y]="s.y" fill="#00897B" style="font-size: 5px" class="pointer-events-none select-none">
+                {{ s.hfd.toFixed(1) }}
+            </text>
+        </g>
+    </svg>
+
     <div #roi [class.hidden]="!roiInteractable" class="roi absolute left-0 top-0" data-x="0" data-y="0" (contextmenu)="imageClicked($event, true)">
         <span class="absolute">X: {{ roiX }} Y: {{ roiY }} W: {{ roiWidth }} H: {{ roiHeight }}</span>
     </div>

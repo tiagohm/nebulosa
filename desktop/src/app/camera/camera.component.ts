@@ -312,7 +312,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     async ngAfterContentInit() {
         this.cameras = await this.api.cameras()
 
-        const name = this.preference.get<string | undefined>('camera.selected', undefined)
+        const name = await this.preference.get<string | undefined>('camera.selected', undefined)
         const camera = this.cameras.find((e) => e.name === name)
 
         if (camera) {
@@ -337,7 +337,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             const camera = await this.api.camera(this.camera.name)
             Object.assign(this.camera, camera)
 
-            this.loadPreference()
+            await this.loadPreference()
             this.update()
 
             this.preference.set('camera.selected', this.camera.name)
@@ -472,38 +472,38 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         this.preference.set(`camera.${this.camera!.name}.savePath`, this.savePath)
     }
 
-    private loadPreference() {
+    private async loadPreference() {
         if (this.camera) {
-            this.autoSave = this.preference.get(`camera.${this.camera.name}.autoSave`, false)
-            this.savePath = this.preference.get(`camera.${this.camera.name}.savePath`, '')
-            this.autoSubFolderMode = this.preference.get<AutoSubFolderMode>(`camera.${this.camera.name}.autoSubFolderMode`, 'OFF')
+            this.autoSave = await this.preference.get(`camera.${this.camera.name}.autoSave`, false)
+            this.savePath = await this.preference.get(`camera.${this.camera.name}.savePath`, '')
+            this.autoSubFolderMode = await this.preference.get<AutoSubFolderMode>(`camera.${this.camera.name}.autoSubFolderMode`, 'OFF')
 
             this.checkMenuItem(this.cameraMenuItems[0], this.autoSave)
             const menuIndex = this.autoSubFolderMode === 'OFF' ? 0 : (this.autoSubFolderMode === 'NOON' ? 1 : 2)
             this.checkMenu(this.cameraMenuItems[2].items!, this.cameraMenuItems[2].items![menuIndex], true)
 
-            this.setpointTemperature = this.preference.get(`camera.${this.camera.name}.setpointTemperature`, 0)
-            this.exposureTime = this.preference.get(`camera.${this.camera.name}.exposureTime`, this.camera.exposureMin)
-            this.exposureTimeUnit = this.preference.get(`camera.${this.camera.name}.exposureTimeUnit`, ExposureTimeUnit.MICROSECOND)
-            this.exposureMode = this.preference.get(`camera.${this.camera.name}.exposureMode`, 'SINGLE')
-            this.exposureDelay = this.preference.get(`camera.${this.camera.name}.exposureDelay`, 0)
-            this.exposureCount = this.preference.get(`camera.${this.camera.name}.exposureCount`, 1)
-            this.x = this.preference.get(`camera.${this.camera.name}.x`, this.camera.minX)
-            this.y = this.preference.get(`camera.${this.camera.name}.y`, this.camera.minY)
-            this.width = this.preference.get(`camera.${this.camera.name}.width`, this.camera.maxWidth)
-            this.height = this.preference.get(`camera.${this.camera.name}.height`, this.camera.maxHeight)
-            this.subFrame = this.preference.get(`camera.${this.camera.name}.subFrame`, false)
-            this.binX = this.preference.get(`camera.${this.camera.name}.binX`, 1)
-            this.binY = this.preference.get(`camera.${this.camera.name}.binY`, 1)
-            this.frameType = this.preference.get(`camera.${this.camera.name}.frameType`, 'LIGHT')
-            this.gain = this.preference.get(`camera.${this.camera.name}.gain`, 0)
-            this.offset = this.preference.get(`camera.${this.camera.name}.offset`, 0)
-            this.frameFormat = this.preference.get(`camera.${this.camera.name}.frameFormat`, this.camera.frameFormats[0] || '')
+            this.setpointTemperature = await this.preference.get(`camera.${this.camera.name}.setpointTemperature`, 0)
+            this.exposureTime = await this.preference.get(`camera.${this.camera.name}.exposureTime`, this.camera.exposureMin)
+            this.exposureTimeUnit = await this.preference.get(`camera.${this.camera.name}.exposureTimeUnit`, ExposureTimeUnit.MICROSECOND)
+            this.exposureMode = await this.preference.get(`camera.${this.camera.name}.exposureMode`, 'SINGLE')
+            this.exposureDelay = await this.preference.get(`camera.${this.camera.name}.exposureDelay`, 0)
+            this.exposureCount = await this.preference.get(`camera.${this.camera.name}.exposureCount`, 1)
+            this.x = await this.preference.get(`camera.${this.camera.name}.x`, this.camera.minX)
+            this.y = await this.preference.get(`camera.${this.camera.name}.y`, this.camera.minY)
+            this.width = await this.preference.get(`camera.${this.camera.name}.width`, this.camera.maxWidth)
+            this.height = await this.preference.get(`camera.${this.camera.name}.height`, this.camera.maxHeight)
+            this.subFrame = await this.preference.get(`camera.${this.camera.name}.subFrame`, false)
+            this.binX = await this.preference.get(`camera.${this.camera.name}.binX`, 1)
+            this.binY = await this.preference.get(`camera.${this.camera.name}.binY`, 1)
+            this.frameType = await this.preference.get(`camera.${this.camera.name}.frameType`, 'LIGHT')
+            this.gain = await this.preference.get(`camera.${this.camera.name}.gain`, 0)
+            this.offset = await this.preference.get(`camera.${this.camera.name}.offset`, 0)
+            this.frameFormat = await this.preference.get(`camera.${this.camera.name}.frameFormat`, this.camera.frameFormats[0] || '')
 
-            this.dithering.enabled = this.preference.get(`camera.${this.camera.name}.dithering.enabled`, false)
-            this.dithering.raOnly = this.preference.get(`camera.${this.camera.name}.dithering.raOnly`, false)
-            this.dithering.amount = this.preference.get(`camera.${this.camera.name}.dithering.amount`, 1.5)
-            this.dithering.afterExposures = this.preference.get(`camera.${this.camera.name}.dithering.afterExposures`, 1)
+            this.dithering.enabled = await this.preference.get(`camera.${this.camera.name}.dithering.enabled`, false)
+            this.dithering.raOnly = await this.preference.get(`camera.${this.camera.name}.dithering.raOnly`, false)
+            this.dithering.amount = await this.preference.get(`camera.${this.camera.name}.dithering.amount`, 1.5)
+            this.dithering.afterExposures = await this.preference.get(`camera.${this.camera.name}.dithering.afterExposures`, 1)
         }
     }
 

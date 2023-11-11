@@ -54,7 +54,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     async ngAfterViewInit() {
         this.focusers = await this.api.focusers()
 
-        const name = this.preference.get<string | undefined>('focuser.selected', undefined)
+        const name = await this.preference.get<string | undefined>('focuser.selected', undefined)
         const focuser = this.focusers.find((e) => e.name === name)
 
         if (focuser) {
@@ -78,7 +78,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
             const focuser = await this.api.focuser(this.focuser.name)
             Object.assign(this.focuser, focuser)
 
-            this.loadPreference()
+            await this.loadPreference()
             this.update()
 
             this.preference.set('focuser.selected', this.focuser.name)
@@ -144,10 +144,10 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         this.maxPosition = this.focuser.maxPosition
     }
 
-    private loadPreference() {
+    private async loadPreference() {
         if (this.focuser) {
-            this.stepsRelative = this.preference.get(`focuser.${this.focuser.name}.stepsRelative`, 0)
-            this.stepsAbsolute = this.preference.get(`focuser.${this.focuser.name}.stepsAbsolute`, 0)
+            this.stepsRelative = await this.preference.get(`focuser.${this.focuser.name}.stepsRelative`, 0)
+            this.stepsAbsolute = await this.preference.get(`focuser.${this.focuser.name}.stepsAbsolute`, 0)
         }
     }
 

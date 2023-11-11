@@ -177,7 +177,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     async ngAfterContentInit() {
         this.mounts = await this.api.mounts()
 
-        const name = this.preference.get<string | undefined>('mount.selected', undefined)
+        const name = await this.preference.get<string | undefined>('mount.selected', undefined)
         const mount = this.mounts.find((e) => e.name === name)
 
         if (mount) {
@@ -386,11 +386,11 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         this.computeTargetCoordinatePublisher.next()
     }
 
-    private loadPreference() {
+    private async loadPreference() {
         if (this.mount) {
-            this.targetCoordinateType = this.preference.get(`mount.${this.mount.name}.targetCoordinateType`, 'JNOW')
-            this.targetRightAscension = this.preference.get(`mount.${this.mount.name}.targetRightAscension`, '00h00m00s')
-            this.targetDeclination = this.preference.get(`mount.${this.mount.name}.targetDeclination`, `00°00'00"`)
+            this.targetCoordinateType = await this.preference.get(`mount.${this.mount.name}.targetCoordinateType`, 'JNOW')
+            this.targetRightAscension = await this.preference.get(`mount.${this.mount.name}.targetRightAscension`, '00h00m00s')
+            this.targetDeclination = await this.preference.get(`mount.${this.mount.name}.targetDeclination`, `00°00'00"`)
             this.computeTargetCoordinatePublisher.next()
         }
     }

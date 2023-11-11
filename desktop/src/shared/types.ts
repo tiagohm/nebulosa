@@ -503,6 +503,14 @@ export interface CoordinateInterpolation {
     date?: string
 }
 
+export interface DetectedStar {
+    x: number
+    y: number
+    snr: number
+    hfd: number
+    flux: number
+}
+
 export interface CheckableMenuItem extends MenuItem {
     checked: boolean
 }

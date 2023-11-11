@@ -288,9 +288,9 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     async ngAfterViewInit() {
-        this.phdSettleAmount = this.preference.get('guider.settleAmount', 1.5)
-        this.phdSettleTime = this.preference.get('guider.settleTime', 10)
-        this.phdSettleTimeout = this.preference.get('guider.settleTimeout', 30)
+        this.phdSettleAmount = await this.preference.get('guider.settleAmount', 1.5)
+        this.phdSettleTime = await this.preference.get('guider.settleTime', 10)
+        this.phdSettleTimeout = await this.preference.get('guider.settleTimeout', 30)
 
         this.guideOutputs = await this.api.guideOutputs()
 

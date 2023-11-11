@@ -60,7 +60,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     async ngAfterContentInit() {
         this.wheels = await this.api.wheels()
 
-        const name = this.preference.get<string | undefined>('wheel.selected', undefined)
+        const name = await this.preference.get<string | undefined>('wheel.selected', undefined)
         const wheel = this.wheels.find((e) => e.name === name)
 
         if (wheel) {
@@ -82,7 +82,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             const wheel = await this.api.wheel(this.wheel.name)
             Object.assign(this.wheel, wheel)
 
-            this.loadPreference()
+            await this.loadPreference()
             this.update()
 
             this.preference.set('wheel.selected', this.wheel.name)
@@ -142,18 +142,18 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             this.filters = new Array(this.wheel.count)
         }
 
-        const darkFilter = this.preference.get(`wheel.${this.wheel.name}.shutterPosition`, 0)
+        const darkFilter = await this.preference.get(`wheel.${this.wheel.name}.shutterPosition`, 0)
 
         for (let i = 1; i <= this.filters.length; i++) {
-            const name = this.preference.get(`wheel.${this.wheel.name}.filterName.${i}`, `Filter #${i}`)
+            const name = await this.preference.get(`wheel.${this.wheel.name}.filterName.${i}`, `Filter #${i}`)
             const filter = { position: i, name, editing: false, newName: name, dark: i === darkFilter }
             this.filters[i - 1] = filter
         }
     }
 
-    private loadPreference() {
+    private async loadPreference() {
         if (this.wheel) {
-            const darkFilter = this.preference.get(`wheel.${this.wheel.name}.shutterPosition`, 0)
+            const darkFilter = await this.preference.get(`wheel.${this.wheel.name}.shutterPosition`, 0)
             this.filters.forEach(e => e.dark = e.position === darkFilter)
         }
     }

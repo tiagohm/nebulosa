@@ -1,7 +1,7 @@
 package nebulosa.api.atlas
 
 import nebulosa.api.beans.annotations.ThreadedTask
-import nebulosa.api.configs.ConfigRepository
+import nebulosa.api.preferences.PreferenceService
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture
 @ThreadedTask
 class SatelliteUpdateTask(
     private val httpClient: OkHttpClient,
-    private val configRepository: ConfigRepository,
+    private val preferenceService: PreferenceService,
     private val satelliteRepository: SatelliteRepository,
 ) : Runnable {
 
@@ -21,7 +21,7 @@ class SatelliteUpdateTask(
     }
 
     private fun isOutOfDate(): Boolean {
-        val updatedAt = configRepository.long(TLE_UPDATED_AT) ?: 0L
+        val updatedAt = preferenceService.tleUpdatedAt
         return System.currentTimeMillis() - updatedAt >= UPDATE_INTERVAL
     }
 
@@ -30,7 +30,7 @@ class SatelliteUpdateTask(
             LOG.info("satellites is out of date")
 
             if (updateTLEs()) {
-                configRepository.save(TLE_UPDATED_AT, System.currentTimeMillis())
+                preferenceService.tleUpdatedAt = System.currentTimeMillis()
             } else {
                 LOG.warn("no satellites was updated")
             }
@@ -101,7 +101,6 @@ class SatelliteUpdateTask(
 
     companion object {
 
-        const val TLE_UPDATED_AT = "TLE_UPDATED_AT"
         const val UPDATE_INTERVAL = 1000L * 60 * 60 * 24 // 1 day
 
         @JvmStatic private val LOG = loggerFor<SatelliteUpdateTask>()

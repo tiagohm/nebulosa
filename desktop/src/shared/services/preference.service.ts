@@ -1,40 +1,29 @@
 import { Injectable } from '@angular/core'
+import { ApiService } from './api.service'
 
 @Injectable({ providedIn: 'root' })
 export class PreferenceService {
 
+    constructor(private api: ApiService) { }
+
     clear() {
-        localStorage.clear()
+        return this.api.preferenceClear()
     }
 
     delete(key: string) {
-        localStorage.removeItem(key)
-        return true
+        return this.api.preferenceDelete(key)
     }
 
-    get<T>(key: string, defaultValue: T) {
-        const value = localStorage.getItem(key) ?? undefined
-        return value !== undefined ? JSON.parse(value) as T : defaultValue
+    async get<T>(key: string, defaultValue: T) {
+        return await this.api.preferenceGet<T>(key) ?? defaultValue
     }
 
-    has(key: string): boolean {
-        return localStorage.getItem(key) !== null
+    has(key: string) {
+        return this.api.preferenceExists(key)
     }
 
     set(key: string, value: any) {
-        localStorage.setItem(key, JSON.stringify(value))
-        return this
-    }
-
-    get size() {
-        return localStorage.length
-    }
-
-    get isNightMode() {
-        return this.get('settings.nightMode', false)
-    }
-
-    set isNightMode(enabled: boolean) {
-        this.set('settings.nightMode', enabled)
+        if (value === null || value === undefined) return this.delete(key)
+        else return this.api.preferencePut(key, value)
     }
 }

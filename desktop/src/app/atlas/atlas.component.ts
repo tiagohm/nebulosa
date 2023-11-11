@@ -473,23 +473,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     ) {
         app.title = 'Sky Atlas'
 
-        for (const item of SATELLITE_GROUPS) {
-            const enabled = preference.get(`atlas.satellite.filter.${item}`, AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item))
-            this.satelliteSearchGroup.set(item, enabled)
-        }
-
         // TODO: Refresh graph and twilight if hours past 12 (noon)
     }
 
     async ngOnInit() {
-        const now = new Date()
-        const initialDelay = 60 * 1000 - (now.getSeconds() * 1000 + now.getMilliseconds())
-        this.refreshTimer = timer(initialDelay, 60 * 1000)
-            .subscribe(() => {
-                if (!this.useManualDateTime) {
-                    this.refreshTab()
-                }
-            })
+        for (const item of SATELLITE_GROUPS) {
+            const enabled = await this.preference.get(`atlas.satellite.filter.${item}`, AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item))
+            this.satelliteSearchGroup.set(item, enabled)
+        }
 
         this.starFilter.types.push(... await this.api.starTypes())
         this.dsoFilter.types.push(... await this.api.dsoTypes())
@@ -498,7 +489,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     async ngAfterContentInit() {
         const locations = await this.api.locations()
-        const location = this.preference.get('atlas.location', EMPTY_LOCATION)
+        const location = await this.preference.get('atlas.location', EMPTY_LOCATION)
         const index = locations.findIndex(e => e.id === location.id)
 
         if (index >= 1) {
@@ -508,6 +499,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         }
 
         this.locations = locations
+        this.location = this.locations[0]
 
         // const canvas = this.chart.getCanvas() as HTMLCanvasElement
         // const chart = this.chart.chart as Chart
@@ -516,6 +508,15 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         // const x = chart.scales['x'].getValueForPixel(event.offsetX)
         // const y = chart.scales['y'].getValueForPixel(event.offsetY)
         // }
+
+        const now = new Date()
+        const initialDelay = 60 * 1000 - (now.getSeconds() * 1000 + now.getMilliseconds())
+        this.refreshTimer = timer(initialDelay, 60 * 1000)
+            .subscribe(() => {
+                if (!this.useManualDateTime) {
+                    this.refreshTab()
+                }
+            })
     }
 
     @HostListener('window:unload')
@@ -740,6 +741,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         refreshTwilight: boolean = false,
         refreshChart: boolean = false,
     ) {
+        if (!this.location) return
+
         this.refreshing = true
 
         if (!this.useManualDateTime) {

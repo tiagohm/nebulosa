@@ -3,7 +3,7 @@ package nebulosa.api.atlas
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import nebulosa.api.beans.annotations.ThreadedTask
-import nebulosa.api.configs.ConfigRepository
+import nebulosa.api.preferences.PreferenceService
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -18,7 +18,7 @@ import kotlin.io.path.inputStream
 @ThreadedTask
 class SkyAtlasUpdateTask(
     private val objectMapper: ObjectMapper,
-    private val configRepository: ConfigRepository,
+    private val preferenceService: PreferenceService,
     private val starsRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val httpClient: OkHttpClient,
@@ -26,10 +26,10 @@ class SkyAtlasUpdateTask(
 ) : Runnable {
 
     override fun run() {
-        val databaseVersion = configRepository.text(DATABASE_VERSION_KEY)
+        val version = preferenceService.skyAtlasVersion
 
-        if (databaseVersion != DATABASE_VERSION) {
-            LOG.info("Star/DSO database is out of date. currentVersion={}, newVersion={}", databaseVersion, DATABASE_VERSION)
+        if (version != DATABASE_VERSION) {
+            LOG.info("Star/DSO database is out of date. currentVersion={}, newVersion={}", version, DATABASE_VERSION)
 
             starsRepository.deleteAllInBatch()
             deepSkyObjectRepository.deleteAllInBatch()
@@ -37,7 +37,7 @@ class SkyAtlasUpdateTask(
             readStarsAndLoad()
             readDSOsAndLoad()
 
-            configRepository.save(DATABASE_VERSION_KEY, DATABASE_VERSION)
+            preferenceService.skyAtlasVersion = DATABASE_VERSION
         } else {
             LOG.info("Star/DSO database is up to date")
         }
@@ -100,7 +100,6 @@ class SkyAtlasUpdateTask(
     companion object {
 
         const val DATABASE_VERSION = "2023.10.18"
-        const val DATABASE_VERSION_KEY = "DATABASE_VERSION"
 
         @JvmStatic private val LOG = loggerFor<SkyAtlasUpdateTask>()
     }
