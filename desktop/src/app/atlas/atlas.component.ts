@@ -716,21 +716,21 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     }
 
     async mountGoTo() {
-        const mount = await this.electron.selectedMount()
-        if (!mount?.connected) return
-        this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        // const mount = await this.electron.selectedMount()
+        // if (!mount?.connected) return
+        // this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
     }
 
     async mountSlew() {
-        const mount = await this.electron.selectedMount()
-        if (!mount?.connected) return
-        this.api.mountSlew(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        // const mount = await this.electron.selectedMount()
+        // if (!mount?.connected) return
+        // this.api.mountSlew(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
     }
 
     async mountSync() {
-        const mount = await this.electron.selectedMount()
-        if (!mount?.connected) return
-        this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        // const mount = await this.electron.selectedMount()
+        // if (!mount?.connected) return
+        // this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
     }
 
     frame() {

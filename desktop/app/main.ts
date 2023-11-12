@@ -2,7 +2,7 @@ import { Client } from '@stomp/stompjs'
 import { BrowserWindow, Menu, Notification, app, dialog, ipcMain, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { Camera, FilterWheel, Focuser, INTERNAL_EVENT_TYPES, MessageEvent, Mount, NotificationEvent, OpenDirectory, OpenWindow } from './types'
+import { INTERNAL_EVENT_TYPES, MessageEvent, NotificationEvent, OpenDirectory, OpenWindow } from './types'
 
 import { WebSocket } from 'ws'
 Object.assign(global, { WebSocket })
@@ -11,11 +11,6 @@ const browserWindows = new Map<string, BrowserWindow>()
 let api: ChildProcessWithoutNullStreams | null = null
 let apiPort = 7000
 let wsClient: Client
-
-let selectedCamera: Camera
-let selectedMount: Mount
-let selectedFocuser: Focuser
-let selectedWheel: FilterWheel
 
 const args = process.argv.slice(1)
 const serve = args.some(e => e === '--serve')
@@ -365,38 +360,8 @@ try {
 
     for (const item of INTERNAL_EVENT_TYPES) {
         ipcMain.on(item, (event, data) => {
-            switch (item) {
-                case 'CAMERA_CHANGED':
-                    selectedCamera = data
-                    break
-                case 'MOUNT_CHANGED':
-                    selectedMount = data
-                    break
-                case 'FOCUSER_CHANGED':
-                    selectedFocuser = data
-                    break
-                case 'WHEEL_CHANGED':
-                    selectedWheel = data
-                    break
-            }
-
-            switch (item) {
-                case 'SELECTED_CAMERA':
-                    event.returnValue = selectedCamera
-                    break
-                case 'SELECTED_MOUNT':
-                    event.returnValue = selectedMount
-                    break
-                case 'SELECTED_FOCUSER':
-                    event.returnValue = selectedFocuser
-                    break
-                case 'SELECTED_WHEEL':
-                    event.returnValue = selectedWheel
-                    break
-                default:
-                    sendToAllWindows(item, data)
-                    break
-            }
+            sendToAllWindows(item, data)
+            event.returnValue = true
         })
     }
 } catch (e) {

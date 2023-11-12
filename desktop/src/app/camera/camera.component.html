@@ -2,8 +2,7 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-8">
             <span class="p-float-label">
-                <p-dropdown [disabled]="capturing" [options]="cameras" [ngModel]="camera" optionLabel="name" (ngModelChange)="$event && cameraChanged($event)"
-                            styleClass="p-inputtext-sm border-0" emptyMessage="No camera found" [autoDisplayFirst]="false" />
+                <input type="text" pInputText [readonly]="true" [value]="camera?.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Camera</label>
             </span>
         </div>

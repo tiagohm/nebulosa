@@ -1,4 +1,5 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { Subject, Subscription, interval, throttleTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
@@ -15,9 +16,9 @@ import { AppComponent } from '../app.component'
 })
 export class MountComponent implements AfterContentInit, OnDestroy {
 
-    mounts: Mount[] = []
     mount?: Mount
     connected = false
+
     slewing = false
     parking = false
     parked = false
@@ -144,6 +145,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private preference: PreferenceService,
+        private route: ActivatedRoute,
         ngZone: NgZone,
     ) {
         app.title = 'Mount'
@@ -175,14 +177,10 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     async ngAfterContentInit() {
-        this.mounts = await this.api.mounts()
-
-        const name = await this.preference.get<string | undefined>('mount.selected', undefined)
-        const mount = this.mounts.find((e) => e.name === name)
-
-        if (mount) {
+        this.route.queryParams.subscribe(e => {
+            const mount = JSON.parse(decodeURIComponent(e.params)) as Mount
             this.mountChanged(mount)
-        }
+        })
     }
 
     @HostListener('window:unload')
@@ -196,8 +194,6 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     async mountChanged(mount?: Mount) {
-        this.savePreference()
-
         this.mount = mount
 
         if (this.mount) {
@@ -213,8 +209,6 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         } else {
             this.app.subTitle = ''
         }
-
-        this.electron.send('MOUNT_CHANGED', this.mount)
     }
 
     connect() {

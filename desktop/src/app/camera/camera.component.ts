@@ -1,4 +1,5 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { ActivatedRoute } from '@angular/router'
 import { MegaMenuItem, MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -17,7 +18,6 @@ import { AppComponent } from '../app.component'
 })
 export class CameraComponent implements AfterContentInit, OnDestroy {
 
-    cameras: Camera[] = []
     camera?: Camera
     connected = false
 
@@ -211,6 +211,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private preference: PreferenceService,
+        private route: ActivatedRoute,
         ngZone: NgZone,
     ) {
         app.title = 'Camera'
@@ -301,23 +302,13 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 })
             }
         })
-
-        electron.on('WHEEL_CHANGED', event => {
-            ngZone.run(() => {
-                this.wheel = event
-            })
-        })
     }
 
     async ngAfterContentInit() {
-        this.cameras = await this.api.cameras()
-
-        const name = await this.preference.get<string | undefined>('camera.selected', undefined)
-        const camera = this.cameras.find((e) => e.name === name)
-
-        if (camera) {
+        this.route.queryParams.subscribe(e => {
+            const camera = JSON.parse(decodeURIComponent(e.params)) as Camera
             this.cameraChanged(camera)
-        }
+        })
     }
 
     @HostListener('window:unload')
@@ -327,8 +318,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     async cameraChanged(camera?: Camera) {
-        this.savePreference()
-
         this.camera = camera
 
         if (this.camera) {
@@ -344,8 +333,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         } else {
             this.app.subTitle = ''
         }
-
-        this.electron.send('CAMERA_CHANGED', this.camera)
     }
 
     connect() {

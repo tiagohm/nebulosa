@@ -1,4 +1,5 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { ActivatedRoute } from '@angular/router'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -21,7 +22,6 @@ export interface FilterSlot {
 })
 export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
-    wheels: FilterWheel[] = []
     wheel?: FilterWheel
     connected = false
 
@@ -43,6 +43,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         private api: ApiService,
         private electron: ElectronService,
         private preference: PreferenceService,
+        private route: ActivatedRoute,
         ngZone: NgZone,
     ) {
         app.title = 'Filter Wheel'
@@ -58,22 +59,16 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     async ngAfterContentInit() {
-        this.wheels = await this.api.wheels()
-
-        const name = await this.preference.get<string | undefined>('wheel.selected', undefined)
-        const wheel = this.wheels.find((e) => e.name === name)
-
-        if (wheel) {
+        this.route.queryParams.subscribe(e => {
+            const wheel = JSON.parse(decodeURIComponent(e.params)) as FilterWheel
             this.wheelChanged(wheel)
-        }
+        })
     }
 
     @HostListener('window:unload')
     ngOnDestroy() { }
 
     async wheelChanged(wheel?: FilterWheel) {
-        this.savePreference()
-
         this.wheel = wheel
 
         if (this.wheel) {
@@ -89,8 +84,6 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         } else {
             this.app.subTitle = ''
         }
-
-        this.electron.send('WHEEL_CHANGED', this.wheel)
     }
 
     connect() {

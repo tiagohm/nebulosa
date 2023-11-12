@@ -2,9 +2,7 @@
     <div class="grid flex align-items-center">
         <div class="col-8">
             <span class="p-float-label">
-                <p-dropdown [disabled]="moving" [options]="wheels" [ngModel]="wheel" optionLabel="name"
-                            (ngModelChange)="$event && wheelChanged($event)" styleClass="p-inputtext-sm border-0"
-                            emptyMessage="No filter wheel found" [autoDisplayFirst]="false" />
+                <input type="text" pInputText [readonly]="true" [value]="wheel?.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Filter Wheel</label>
             </span>
         </div>

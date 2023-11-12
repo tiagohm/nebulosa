@@ -1,10 +1,11 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { MessageService } from 'primeng/api'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { MenuItem, MessageService } from 'primeng/api'
+import { DialogMenuComponent } from '../../shared/components/dialogmenu/dialogmenu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
+import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
 type MappedDevice = {
@@ -20,6 +21,9 @@ type MappedDevice = {
     styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements AfterContentInit, OnDestroy {
+
+    @ViewChild('devicesDialogMenu')
+    private readonly devicesDialogMenu!: DialogMenuComponent
 
     host = ''
     port = 7624
@@ -78,6 +82,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch
     }
 
+    readonly devicesMenuItems: MenuItem[] = []
+
     private startListening<K extends keyof MappedDevice>(
         type: K,
         onAdd: (device: MappedDevice[K]) => number,
@@ -85,17 +91,13 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     ) {
         this.electron.on(`${type}_ATTACHED`, event => {
             this.ngZone.run(() => {
-                if (onAdd(event.device as any) === 1) {
-                    this.electron.send(`${type}_CHANGED`, event.device)
-                }
+                onAdd(event.device as any)
             })
         })
 
         this.electron.on(`${type}_DETACHED`, event => {
             this.ngZone.run(() => {
-                if (onRemove(event.device as any) === 0) {
-                    this.electron.send(`${type}_CHANGED`, undefined)
-                }
+                onRemove(event.device as any)
             })
         })
     }
@@ -164,22 +166,6 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         this.mounts = await this.api.mounts()
         this.focusers = await this.api.focusers()
         this.wheels = await this.api.wheels()
-
-        if (this.cameras.length > 0) {
-            this.electron.send('CAMERA_CHANGED', this.cameras[0])
-        }
-
-        if (this.mounts.length > 0) {
-            this.electron.send('MOUNT_CHANGED', this.mounts[0])
-        }
-
-        if (this.focusers.length > 0) {
-            this.electron.send('FOCUSER_CHANGED', this.focusers[0])
-        }
-
-        if (this.wheels.length > 0) {
-            this.electron.send('WHEEL_CHANGED', this.wheels[0])
-        }
     }
 
     @HostListener('window:unload')
@@ -204,19 +190,60 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    async open(type: HomeWindowType) {
+    private openDevice<K extends keyof MappedDevice>(type: K) {
+        this.devicesMenuItems.length = 0
+
+        const devices: Device[] = type === 'CAMERA' ? this.cameras
+            : type === 'MOUNT' ? this.mounts
+                : type === 'FOCUSER' ? this.focusers
+                    : type === 'WHEEL' ? this.wheels
+                        : []
+
+        if (devices.length === 0) return
+        if (devices.length === 1) return this.openDeviceWindow(type, devices[0] as any)
+
+        for (const device of devices) {
+            this.devicesMenuItems.push({
+                icon: 'mdi mdi-connection',
+                label: device.name,
+                command: () => {
+                    this.openDeviceWindow(type, device as any)
+                }
+            })
+        }
+
+        this.devicesDialogMenu.show()
+    }
+
+    private openDeviceWindow<K extends keyof MappedDevice>(type: K, device: MappedDevice[K]) {
         switch (type) {
             case 'MOUNT':
-                this.browserWindow.openMount({ bringToFront: true })
+                this.browserWindow.openMount(device as Mount, { bringToFront: true })
                 break
             case 'CAMERA':
-                this.browserWindow.openCamera({ bringToFront: true })
+                this.browserWindow.openCamera(device as Camera, { bringToFront: true })
                 break
             case 'FOCUSER':
-                this.browserWindow.openFocuser({ bringToFront: true })
+                this.browserWindow.openFocuser(device as Focuser, { bringToFront: true })
                 break
             case 'WHEEL':
-                this.browserWindow.openWheel({ bringToFront: true })
+                this.browserWindow.openWheel(device as FilterWheel, { bringToFront: true })
+                break
+        }
+    }
+
+    private async openImage() {
+        const path = await this.electron.sendSync('OPEN_FITS')
+        if (path) this.browserWindow.openImage(path, undefined, 'PATH')
+    }
+
+    open(type: HomeWindowType) {
+        switch (type) {
+            case 'MOUNT':
+            case 'CAMERA':
+            case 'FOCUSER':
+            case 'WHEEL':
+                this.openDevice(type)
                 break
             case 'GUIDER':
                 this.browserWindow.openGuider({ bringToFront: true })
@@ -234,8 +261,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 this.browserWindow.openINDI(undefined, { bringToFront: true })
                 break
             case 'IMAGE':
-                const path = await this.electron.sendSync('OPEN_FITS')
-                if (path) this.browserWindow.openImage(path, undefined, 'PATH')
+                this.openImage()
                 break
             case 'ABOUT':
                 this.browserWindow.openAbout()

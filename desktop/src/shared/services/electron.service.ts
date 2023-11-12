@@ -48,10 +48,6 @@ type EventMappedType = {
     'DARV_POLAR_ALIGNMENT_STARTED': DARVPolarAlignmentEvent
     'DARV_POLAR_ALIGNMENT_FINISHED': DARVPolarAlignmentEvent
     'DARV_POLAR_ALIGNMENT_UPDATED': DARVPolarAlignmentInitialPauseElapsed | DARVPolarAlignmentGuidePulseElapsed
-    'CAMERA_CHANGED': Camera | undefined
-    'FOCUSER_CHANGED': Focuser | undefined
-    'MOUNT_CHANGED': Mount | undefined
-    'WHEEL_CHANGED': FilterWheel | undefined
     'PARAMS_CHANGED': any
     'SKY_ATLAS_UPDATE_FINISHED': NotificationEvent
 }
@@ -107,11 +103,5 @@ export class ElectronService {
 
     openDirectory(data?: OpenDirectory): string | false {
         return this.sendSync('OPEN_DIRECTORY', data)
-    }
-
-    async selectedMount(): Promise<Mount | undefined> {
-        const mount: Mount | undefined = this.sendSync('SELECTED_MOUNT')
-        if (!mount) return undefined
-        return this.api.mount(mount.name)
     }
 }

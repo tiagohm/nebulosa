@@ -216,9 +216,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-telescope',
         disabled: true,
         command: async () => {
-            const mount = await this.electron.selectedMount()
-            if (!mount?.connected) return
-            this.api.pointMountHere(mount, this.imageParams.path!, this.imageMouseX, this.imageMouseY, !this.solved)
+            // TODO: Show dialogMenu if > 1 and select mount
+            // const mount = await this.electron.selectedMount()
+            // if (!mount?.connected) return
+            // this.api.pointMountHere(mount, this.imageParams.path!, this.imageMouseX, this.imageMouseY, !this.solved)
         },
     }
 
@@ -633,21 +634,22 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     async mountSync(coordinate: EquatorialCoordinateJ2000) {
-        const mount = await this.electron.selectedMount()
-        if (!mount?.connected) return
-        this.api.mountSync(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
+        // TODO: Show dialogMenu if > 1 and select mount
+        // const mount = await this.electron.selectedMount()
+        // if (!mount?.connected) return
+        // this.api.mountSync(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
     }
 
     async mountGoTo(coordinate: EquatorialCoordinateJ2000) {
-        const mount = await this.electron.selectedMount()
-        if (!mount?.connected) return
-        this.api.mountGoTo(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
+        // const mount = await this.electron.selectedMount()
+        // if (!mount?.connected) return
+        // this.api.mountGoTo(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
     }
 
     async mountSlew(coordinate: EquatorialCoordinateJ2000) {
-        const mount = await this.electron.selectedMount()
-        if (!mount?.connected) return
-        this.api.mountSlew(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
+        // const mount = await this.electron.selectedMount()
+        // if (!mount?.connected) return
+        // this.api.mountSlew(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
     }
 
     frame(coordinate: EquatorialCoordinateJ2000) {

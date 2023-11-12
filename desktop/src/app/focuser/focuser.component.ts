@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { ActivatedRoute } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
@@ -12,7 +13,6 @@ import { AppComponent } from '../app.component'
 })
 export class FocuserComponent implements AfterViewInit, OnDestroy {
 
-    focusers: Focuser[] = []
     focuser?: Focuser
     connected = false
 
@@ -37,6 +37,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         private api: ApiService,
         private electron: ElectronService,
         private preference: PreferenceService,
+        private route: ActivatedRoute,
         ngZone: NgZone,
     ) {
         app.title = 'Focuser'
@@ -52,14 +53,10 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     async ngAfterViewInit() {
-        this.focusers = await this.api.focusers()
-
-        const name = await this.preference.get<string | undefined>('focuser.selected', undefined)
-        const focuser = this.focusers.find((e) => e.name === name)
-
-        if (focuser) {
+        this.route.queryParams.subscribe(e => {
+            const focuser = JSON.parse(decodeURIComponent(e.params)) as Focuser
             this.focuserChanged(focuser)
-        }
+        })
     }
 
     @HostListener('window:unload')
@@ -68,8 +65,6 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     async focuserChanged(focuser?: Focuser) {
-        this.savePreference()
-
         this.focuser = focuser
 
         if (this.focuser) {
@@ -85,8 +80,6 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         } else {
             this.app.subTitle = ''
         }
-
-        this.electron.send('FOCUSER_CHANGED', this.focuser)
     }
 
     connect() {
