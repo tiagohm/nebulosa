@@ -10,7 +10,7 @@ import {
     ApiEventType, Camera, CameraCaptureElapsed, CameraCaptureFinished, CameraCaptureIsWaiting, CameraCaptureStarted,
     CameraExposureElapsed, CameraExposureFinished, CameraExposureStarted, DARVPolarAlignmentEvent, DARVPolarAlignmentGuidePulseElapsed,
     DARVPolarAlignmentInitialPauseElapsed, DeviceMessageEvent, FilterWheel, Focuser, GuideOutput, Guider,
-    GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Mount, OpenDirectory
+    GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Mount, NotificationEvent, OpenDirectory
 } from '../types'
 import { ApiService } from './api.service'
 
@@ -53,6 +53,7 @@ type EventMappedType = {
     'MOUNT_CHANGED': Mount | undefined
     'WHEEL_CHANGED': FilterWheel | undefined
     'PARAMS_CHANGED': any
+    'SKY_ATLAS_UPDATE_FINISHED': NotificationEvent
 }
 
 @Injectable({ providedIn: 'root' })

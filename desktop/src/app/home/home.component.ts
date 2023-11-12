@@ -150,6 +150,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 return this.wheels.length
             },
         )
+
+        electron.on('SKY_ATLAS_UPDATE_FINISHED', () => this.open('SKY_ATLAS'))
     }
 
     async ngAfterContentInit() {
@@ -219,7 +221,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'GUIDER':
                 this.browserWindow.openGuider({ bringToFront: true })
                 break
-            case 'ATLAS':
+            case 'SKY_ATLAS':
                 this.browserWindow.openSkyAtlas({ bringToFront: true })
                 break
             case 'FRAMING':

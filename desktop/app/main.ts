@@ -1,11 +1,10 @@
 import { Client } from '@stomp/stompjs'
-import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from 'electron'
+import { BrowserWindow, Menu, Notification, app, dialog, ipcMain, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { Camera, FilterWheel, Focuser, INTERNAL_EVENT_TYPES, Mount, OpenWindow } from './types'
+import { Camera, FilterWheel, Focuser, INTERNAL_EVENT_TYPES, MessageEvent, Mount, NotificationEvent, OpenDirectory, OpenWindow } from './types'
 
 import { WebSocket } from 'ws'
-import { OpenDirectory } from '../src/shared/types'
 Object.assign(global, { WebSocket })
 
 const browserWindows = new Map<string, BrowserWindow>()
@@ -33,13 +32,17 @@ function createMainWindow() {
     wsClient = new Client({
         brokerURL: `ws://localhost:${apiPort}/ws`,
         onConnect: () => {
-            wsClient.subscribe('NEBULOSA_EVENT', (message) => {
-                const messageBody = JSON.parse(message.body)
+            wsClient.subscribe('NEBULOSA_EVENT', message => {
+                const event = JSON.parse(message.body) as MessageEvent
 
-                if (messageBody.eventName) {
-                    sendToAllWindows(messageBody.eventName, messageBody)
+                if (event.eventName) {
+                    if (event.eventName === 'NOTIFICATION') {
+                        showNotification(event as NotificationEvent)
+                    } else {
+                        sendToAllWindows(event.eventName, event)
+                    }
                 } else {
-                    console.warn('invalid message', messageBody)
+                    console.warn('invalid message event', event)
                 }
             })
 
@@ -187,6 +190,14 @@ function createSplashScreen() {
 
         browserWindows.set('splash', splashWindow)
     }
+}
+
+function showNotification(event: NotificationEvent) {
+    const icon = path.join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
+
+    new Notification({ ...event, icon })
+        .on('click', () => sendToAllWindows(event.type, event))
+        .show()
 }
 
 function findWindowById(id: number) {

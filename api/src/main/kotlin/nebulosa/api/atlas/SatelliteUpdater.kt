@@ -1,6 +1,5 @@
 package nebulosa.api.atlas
 
-import nebulosa.api.beans.annotations.ThreadedTask
 import nebulosa.api.preferences.PreferenceService
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
@@ -9,8 +8,7 @@ import org.springframework.stereotype.Component
 import java.util.concurrent.CompletableFuture
 
 @Component
-@ThreadedTask
-class SatelliteUpdateTask(
+class SatelliteUpdater(
     private val httpClient: OkHttpClient,
     private val preferenceService: PreferenceService,
     private val satelliteRepository: SatelliteRepository,
@@ -103,6 +101,6 @@ class SatelliteUpdateTask(
 
         const val UPDATE_INTERVAL = 1000L * 60 * 60 * 24 // 1 day
 
-        @JvmStatic private val LOG = loggerFor<SatelliteUpdateTask>()
+        @JvmStatic private val LOG = loggerFor<SatelliteUpdater>()
     }
 }
