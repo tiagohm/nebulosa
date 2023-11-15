@@ -36,16 +36,16 @@ class WheelEventHandler(
                 throttler.onNext(event)
             }
             is FilterWheelAttached -> {
-                messageService.sendMessage(WHEEL_ATTACHED, event.device)
+                messageService.sendMessage(WheelMessageEvent(WHEEL_ATTACHED, event.device))
             }
             is FilterWheelDetached -> {
-                messageService.sendMessage(WHEEL_DETACHED, event.device)
+                messageService.sendMessage(WheelMessageEvent(WHEEL_DETACHED, event.device))
             }
         }
     }
 
     fun sendUpdate(device: FilterWheel) {
-        messageService.sendMessage(WHEEL_UPDATED, device)
+        messageService.sendMessage(WheelMessageEvent(WHEEL_UPDATED, device))
     }
 
     companion object {

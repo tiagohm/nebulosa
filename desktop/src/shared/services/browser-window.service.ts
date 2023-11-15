@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { FramingParams } from '../../app/framing/framing.component'
 import { ImageParams } from '../../app/image/image.component'
 import { INDIParams } from '../../app/indi/indi.component'
-import { Camera, Device, ImageSource, OpenWindow, OpenWindowOptions } from '../types'
+import { Camera, Device, FilterWheel, Focuser, ImageSource, Mount, OpenWindow, OpenWindowOptions } from '../types'
 import { ElectronService } from './electron.service'
 
 @Injectable({ providedIn: 'root' })
@@ -15,35 +15,39 @@ export class BrowserWindowService {
         await this.electron.ipcRenderer.invoke('OPEN_WINDOW', data)
     }
 
-    openMount(options: OpenWindowOptions = {}) {
+    openMount(mount: Mount, options: OpenWindowOptions = {}) {
         this.openWindow({
             ...options,
-            id: 'mount', path: 'mount', icon: options.icon || 'telescope',
+            id: `mount.${mount.name}`, path: 'mount', icon: options.icon || 'telescope',
             width: options.width || 400, height: options.height || 469,
+            params: mount,
         })
     }
 
-    openCamera(options: OpenWindowOptions = {}) {
+    openCamera(camera: Camera, options: OpenWindowOptions = {}) {
         this.openWindow({
             ...options,
-            id: 'camera', path: 'camera', icon: options.icon || 'camera',
+            id: `camera.${camera.name}`, path: 'camera', icon: options.icon || 'camera',
             width: options.width || 400, height: options.height || 478,
+            params: camera,
         })
     }
 
-    openFocuser(options: OpenWindowOptions = {}) {
+    openFocuser(focuser: Focuser, options: OpenWindowOptions = {}) {
         this.openWindow({
             ...options,
-            id: 'focuser', path: 'focuser', icon: options.icon || 'focus',
+            id: `focuser.${focuser.name}`, path: 'focuser', icon: options.icon || 'focus',
             width: options.width || 360, height: options.height || 203,
+            params: focuser,
         })
     }
 
-    openWheel(options: OpenWindowOptions = {}) {
+    openWheel(wheel: FilterWheel, options: OpenWindowOptions = {}) {
         this.openWindow({
             ...options,
-            id: 'wheel', path: 'wheel', icon: options.icon || 'filter-wheel',
+            id: `wheel.${wheel.name}`, path: 'wheel', icon: options.icon || 'filter-wheel',
             width: options.width || 280, height: options.height || 201,
+            params: wheel,
         })
     }
 
@@ -106,6 +110,6 @@ export class BrowserWindowService {
     }
 
     openAbout() {
-        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 470, height: 210, bringToFront: true })
+        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 340, height: 243, bringToFront: true })
     }
 }

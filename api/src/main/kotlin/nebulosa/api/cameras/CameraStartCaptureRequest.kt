@@ -9,12 +9,13 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
 import org.hibernate.validator.constraints.Range
 import java.nio.file.Path
+import java.time.Duration
 
 data class CameraStartCaptureRequest(
     @JsonIgnore val camera: Camera? = null,
-    @field:Positive val exposureInMicroseconds: Long = 0L,
+    @field:Positive val exposureTime: Duration = Duration.ZERO,
     @field:Range(min = 0L, max = 1000L) val exposureAmount: Int = 1, // 0 = looping
-    @field:Range(min = 0L, max = 60L) val exposureDelayInSeconds: Long = 0L,
+    @field:Range(min = 0L, max = 60L) val exposureDelay: Duration = Duration.ZERO,
     @field:PositiveOrZero val x: Int = 0,
     @field:PositiveOrZero val y: Int = 0,
     @field:PositiveOrZero val width: Int = 0,

@@ -35,9 +35,11 @@ import { OpenStreetMapComponent } from '../shared/components/openstreetmap/opens
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
+import { AnglePipe } from '../shared/pipes/angle.pipe'
 import { EnumPipe } from '../shared/pipes/enum.pipe'
 import { EnvPipe } from '../shared/pipes/env.pipe'
 import { ExposureTimePipe } from '../shared/pipes/exposureTime.pipe'
+import { SkyObjectPipe } from '../shared/pipes/skyObject.pipe'
 import { WinPipe } from '../shared/pipes/win.pipe'
 import { AboutComponent } from './about/about.component'
 import { AlignmentComponent } from './alignment/alignment.component'
@@ -79,6 +81,8 @@ import { MountComponent } from './mount/mount.component'
         WinPipe,
         EnumPipe,
         ExposureTimePipe,
+        AnglePipe,
+        SkyObjectPipe,
         StopPropagationDirective,
         NoDropdownDirective,
     ],
@@ -120,6 +124,9 @@ import { MountComponent } from './mount/mount.component'
         EnvPipe,
         WinPipe,
         EnumPipe,
+        ExposureTimePipe,
+        AnglePipe,
+        SkyObjectPipe,
         {
             provide: LOCALE_ID,
             useValue: 'en-US',

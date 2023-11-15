@@ -1,3 +1,5 @@
+import { MenuItem } from 'primeng/api'
+import { InputSwitchOnChangeEvent } from 'primeng/inputswitch'
 
 export type Angle = string | number
 
@@ -16,7 +18,7 @@ export interface GuideOutput extends Device {
     pulseGuiding: boolean
 }
 
-export interface GuiderStatus {
+export interface Guider {
     connected: boolean
     state: GuideState
     settling: boolean
@@ -182,10 +184,17 @@ export interface FilterWheel extends Device {
     moving: boolean
 }
 
+export interface Dither {
+    enabled: boolean
+    amount: number
+    raOnly: boolean
+    afterExposures: number
+}
+
 export interface CameraStartCapture {
-    exposureInMicroseconds: number
+    exposureTime: number
     exposureAmount: number
-    exposureDelayInSeconds: number
+    exposureDelay: number
     x: number
     y: number
     width: number
@@ -199,24 +208,46 @@ export interface CameraStartCapture {
     autoSave: boolean
     savePath?: string
     autoSubFolderMode: AutoSubFolderMode
+    dither?: Dither
 }
 
-export interface CameraCaptureEvent {
+export interface CameraCaptureEvent extends MessageEvent {
     camera: Camera
+    progress: number
+}
+
+export interface CameraCaptureStarted extends CameraCaptureEvent {
+    looping: boolean
+    exposureAmount: number
+    exposureTime: number
+    estimatedTime: number
+}
+
+export interface CameraCaptureFinished extends CameraCaptureEvent { }
+
+export interface CameraCaptureElapsed extends CameraCaptureEvent {
+    exposureCount: number
+    remainingTime: number
+    elapsedTime: number
+}
+
+export interface CameraCaptureIsWaiting extends CameraCaptureEvent {
+    waitDuration: number
+    remainingTime: number
+}
+
+export interface CameraExposureEvent extends CameraCaptureEvent {
     exposureAmount: number
     exposureCount: number
     exposureTime: number
-    exposureRemainingTime: number
-    exposureProgress: number
-    captureRemainingTime: number
-    captureProgress: number
-    captureTime: number
-    captureInLoop: boolean
-    captureIsWaiting: boolean
-    captureElapsedTime: number
-    waitProgress: number
-    waitRemainingTime: number
-    waitTime: number
+    remainingTime: number
+}
+
+export interface CameraExposureStarted extends CameraExposureEvent { }
+
+export interface CameraExposureElapsed extends CameraExposureEvent { }
+
+export interface CameraExposureFinished extends CameraExposureEvent {
     savePath?: string
 }
 
@@ -443,20 +474,76 @@ export interface Satellite {
     groups: SatelliteGroupType[]
 }
 
-export interface DARVPolarAlignmentEvent {
+export interface DARVPolarAlignmentEvent extends MessageEvent {
     camera: Camera
     guideOutput: GuideOutput
     remainingTime: number
     progress: number
+    state: DARVPolarAlignmentState
 }
 
 export interface DARVPolarAlignmentInitialPauseElapsed extends DARVPolarAlignmentEvent {
     pauseTime: number
+    state: 'INITIAL_PAUSE'
 }
 
 export interface DARVPolarAlignmentGuidePulseElapsed extends DARVPolarAlignmentEvent {
-    forward: boolean
     direction: GuideDirection
+    state: 'FORWARD' | 'BACKWARD'
+}
+
+export interface CoordinateInterpolation {
+    ma: number[]
+    md: number[]
+    x0: number
+    y0: number
+    x1: number
+    y1: number
+    delta: number
+    date?: string
+}
+
+export interface DetectedStar {
+    x: number
+    y: number
+    snr: number
+    hfd: number
+    flux: number
+}
+
+export interface CheckableMenuItem extends MenuItem {
+    checked: boolean
+}
+
+export interface ToggleableMenuItem extends MenuItem {
+    toggleable: boolean
+    toggled: boolean
+
+    toggle(event: InputSwitchOnChangeEvent): void
+}
+
+export interface MessageEvent {
+    eventName: string
+}
+
+export interface DeviceMessageEvent<T extends Device> {
+    device: T
+}
+
+export interface INDIMessageEvent extends DeviceMessageEvent<Device> {
+    property?: INDIProperty<any>
+    message?: string
+}
+
+export interface GuiderMessageEvent<T> extends MessageEvent {
+    data: T
+}
+
+export interface NotificationEvent extends MessageEvent {
+    type: string
+    body: string
+    title?: string
+    silent: boolean
 }
 
 export enum ExposureTimeUnit {
@@ -515,7 +602,7 @@ export type HomeWindowType = 'CAMERA' |
     'DOME' |
     'ROTATOR' |
     'SWITCH' |
-    'ATLAS' |
+    'SKY_ATLAS' |
     'ALIGNMENT' |
     'SEQUENCER' |
     'IMAGE' |
@@ -637,7 +724,7 @@ export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
     'ASTAP' |
     'WATNEY'
 
-export const INDI_EVENT_TYPES = [
+export const API_EVENT_TYPES = [
     // Device.
     'DEVICE_PROPERTY_CHANGED', 'DEVICE_PROPERTY_DELETED', 'DEVICE_MESSAGE_RECEIVED',
     // Camera.
@@ -656,24 +743,15 @@ export const INDI_EVENT_TYPES = [
     'GUIDER_CONNECTED', 'GUIDER_DISCONNECTED', 'GUIDER_UPDATED', 'GUIDER_STEPPED',
     'GUIDER_MESSAGE_RECEIVED',
     // Polar Alignment.
-    'DARV_POLAR_ALIGNMENT_STARTED', 'DARV_POLAR_ALIGNMENT_FINISHED',
-    'DARV_POLAR_ALIGNMENT_INITIAL_PAUSE_ELAPSED', 'DARV_POLAR_ALIGNMENT_GUIDE_PULSE_ELAPSED',
+    'DARV_POLAR_ALIGNMENT_STARTED', 'DARV_POLAR_ALIGNMENT_FINISHED', 'DARV_POLAR_ALIGNMENT_UPDATED',
 ] as const
 
-export type INDIEventType = (typeof INDI_EVENT_TYPES)[number]
-
-export const WINDOW_EVENT_TYPES = [
-    'SAVE_FITS_AS', 'OPEN_FITS', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
-    'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW',
-    'REGISTER_CRON', 'UNREGISTER_CRON',
-] as const
-
-export type WindowEventType = (typeof WINDOW_EVENT_TYPES)[number]
+export type ApiEventType = (typeof API_EVENT_TYPES)[number]
 
 export const INTERNAL_EVENT_TYPES = [
-    'SELECTED_CAMERA', 'SELECTED_FOCUSER', 'SELECTED_WHEEL', 'SELECTED_MOUNT',
-    'CAMERA_CHANGED', 'FOCUSER_CHANGED', 'MOUNT_CHANGED', 'WHEEL_CHANGED',
-    'WHEEL_RENAMED', 'GUIDE_OUTPUT_CHANGED', 'CRON_TICKED',
+    'SAVE_FITS_AS', 'OPEN_FITS', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
+    'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW',
+    'WHEEL_RENAMED', 'GUIDE_OUTPUT_CHANGED',
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
@@ -767,3 +845,5 @@ export const GUIDE_STATES = [
 export type GuideState = (typeof GUIDE_STATES)[number]
 
 export type Hemisphere = 'NORTHERN' | 'SOUTHERN'
+
+export type DARVPolarAlignmentState = 'IDLE' | 'INITIAL_PAUSE' | 'FORWARD' | 'BACKWARD'

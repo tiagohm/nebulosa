@@ -3,18 +3,19 @@ package nebulosa.phd2.client
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.MapperFeature
-import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jsonMapper
+import com.fasterxml.jackson.module.kotlin.kotlinModule
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
-import nebulosa.json.addConverter
-import nebulosa.json.addDeserializer
-import nebulosa.json.converters.PathConverter
+import nebulosa.common.json.PathDeserializer
+import nebulosa.guiding.GuideState
 import nebulosa.log.loggerFor
 import nebulosa.netty.NettyClient
 import nebulosa.phd2.client.commands.CompletableCommand
 import nebulosa.phd2.client.commands.PHD2Command
-import nebulosa.phd2.client.events.GuideStateConverter
+import nebulosa.phd2.client.events.GuideStateDeserializer
+import nebulosa.phd2.client.events.GuideStateSerializer
+import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -70,14 +71,13 @@ class PHD2Client : NettyClient() {
 
         @JvmStatic private val LOG = loggerFor<PHD2Client>()
 
-        private val MODULE = SimpleModule()
-
-        init {
-            MODULE.addDeserializer(PathConverter)
-            MODULE.addConverter(GuideStateConverter)
+        @JvmStatic private val MODULE = kotlinModule().also {
+            it.addDeserializer(Path::class.java, PathDeserializer)
+            it.addDeserializer(GuideState::class.java, GuideStateDeserializer)
+            it.addSerializer(GuideStateSerializer)
         }
 
-        private val JSON_MAPPER = jsonMapper {
+        @JvmStatic private val JSON_MAPPER = jsonMapper {
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
             serializationInclusion(JsonInclude.Include.NON_NULL)

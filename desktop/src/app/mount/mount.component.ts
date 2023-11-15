@@ -1,6 +1,7 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
-import { Subject, Subscription, debounceTime, interval, throttleTime } from 'rxjs'
+import { Subject, Subscription, interval, throttleTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -15,9 +16,9 @@ import { AppComponent } from '../app.component'
 })
 export class MountComponent implements AfterContentInit, OnDestroy {
 
-    mounts: Mount[] = []
     mount?: Mount
     connected = false
+
     slewing = false
     parking = false
     parked = false
@@ -144,16 +145,17 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private preference: PreferenceService,
+        private route: ActivatedRoute,
         ngZone: NgZone,
     ) {
         app.title = 'Mount'
 
         api.startListening('MOUNT')
 
-        electron.on('MOUNT_UPDATED', (_, event: Mount) => {
-            if (event.name === this.mount?.name) {
+        electron.on('MOUNT_UPDATED', event => {
+            if (event.device.name === this.mount?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.mount!, event)
+                    Object.assign(this.mount!, event.device)
                     this.update()
                 })
             }
@@ -170,37 +172,43 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             })
 
         this.computeCoordinateSubscriptions[2] = this.computeTargetCoordinatePublisher
-            .pipe(debounceTime(1000))
+            .pipe(throttleTime(1000))
             .subscribe(() => this.computeTargetCoordinates())
     }
 
     async ngAfterContentInit() {
-        this.mounts = await this.api.mounts()
+        this.route.queryParams.subscribe(e => {
+            const mount = JSON.parse(decodeURIComponent(e.params)) as Mount
+            this.mountChanged(mount)
+        })
     }
 
     @HostListener('window:unload')
     ngOnDestroy() {
+        this.abort()
+
         this.computeCoordinateSubscriptions
             .forEach(e => e.unsubscribe())
 
         this.api.stopListening('MOUNT')
     }
 
-    async mountChanged() {
+    async mountChanged(mount?: Mount) {
+        this.mount = mount
+
         if (this.mount) {
-            this.app.title = `Mount ・ ${this.mount!.name}`
+            this.app.subTitle = this.mount!.name
 
             const mount = await this.api.mount(this.mount.name)
             Object.assign(this.mount, mount)
 
             this.loadPreference()
             this.update()
-            this.savePreference()
-        } else {
-            this.app.title = 'Mount'
-        }
 
-        this.electron.send('MOUNT_CHANGED', this.mount)
+            this.preference.set('mount.selected', this.mount.name)
+        } else {
+            this.app.subTitle = ''
+        }
     }
 
     connect() {
@@ -372,11 +380,11 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         this.computeTargetCoordinatePublisher.next()
     }
 
-    private loadPreference() {
+    private async loadPreference() {
         if (this.mount) {
-            this.targetCoordinateType = this.preference.get(`mount.${this.mount.name}.targetCoordinateType`, 'JNOW')
-            this.targetRightAscension = this.preference.get(`mount.${this.mount.name}.targetRightAscension`, '00h00m00s')
-            this.targetDeclination = this.preference.get(`mount.${this.mount.name}.targetDeclination`, `00°00'00"`)
+            this.targetCoordinateType = await this.preference.get(`mount.${this.mount.name}.targetCoordinateType`, 'JNOW')
+            this.targetRightAscension = await this.preference.get(`mount.${this.mount.name}.targetRightAscension`, '00h00m00s')
+            this.targetDeclination = await this.preference.get(`mount.${this.mount.name}.targetDeclination`, `00°00'00"`)
             this.computeTargetCoordinatePublisher.next()
         }
     }

@@ -2,31 +2,56 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-}
 
-p-table ::ng-deep .p-datatable-wrapper {
-    max-height: 217px;
-    min-width: 100vw;
-}
+    p-table ::ng-deep .p-datatable-wrapper {
+        max-height: 206px;
+        min-width: 100vw;
+    }
 
-p-table.planet ::ng-deep .p-datatable-wrapper {
-    max-height: 217px;
-}
+    p-table.planet ::ng-deep .p-datatable-wrapper {
+        max-height: 206px;
+    }
 
-p-table.minorPlanet ::ng-deep .p-datatable-wrapper {
-    max-height: 169px;
-}
+    p-table.minorPlanet ::ng-deep .p-datatable-wrapper {
+        max-height: 161px;
+    }
 
-p-table.star ::ng-deep .p-datatable-wrapper {
-    max-height: 123px;
-}
+    p-table.star ::ng-deep .p-datatable-wrapper {
+        max-height: 114px;
+    }
 
-p-table.dso ::ng-deep .p-datatable-wrapper {
-    max-height: 123px;
-}
+    p-table.dso ::ng-deep .p-datatable-wrapper {
+        max-height: 114px;
+    }
 
-p-table.satellite ::ng-deep .p-datatable-wrapper {
-    max-height: 123px;
+    p-table.simbad ::ng-deep .p-datatable-wrapper {
+        max-height: 114px;
+    }
+
+    p-table.satellite ::ng-deep .p-datatable-wrapper {
+        max-height: 114px;
+    }
+
+    ::ng-deep {
+        .main-tabs .p-tabview .p-tabview-nav li {
+            width: 11.1111111% !important;
+
+            .p-tabview-nav-link {
+                display: flex;
+                justify-content: center;
+                padding: 0px;
+                height: 100%;
+
+                img {
+                    height: 20px;
+                }
+            }
+        }
+
+        .p-tabview .p-tabview-left-icon {
+            margin-right: 0px;
+        }
+    }
 }
 
 .p-input-icon-left span.pi:first-of-type {

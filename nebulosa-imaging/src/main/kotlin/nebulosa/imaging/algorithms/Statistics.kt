@@ -16,7 +16,6 @@ data class Statistics(
     private val noDeviation: Boolean = false,
 ) : ComputationAlgorithm<Statistics.Data> {
 
-    @Suppress("ArrayInDataClass")
     data class Data(
         val count: Int = 0,
         val maxCount: Int = 0,
@@ -28,7 +27,6 @@ data class Statistics(
         val avgDev: Float = 0f,
         val minimum: Float = 0f,
         val maximum: Float = 0f,
-        val data: IntArray = IntArray(0),
     ) : ClosedFloatingPointRange<Float> {
 
         override val start
@@ -60,7 +58,7 @@ data class Statistics(
         var variance = 0f
 
         val count = source.sampling(channel, sampleBy) {
-            val value = (it * 65535f).toInt()
+            val value = (it * 65535).toInt()
 
             data[value]++
 
@@ -70,6 +68,8 @@ data class Statistics(
             sum += it
             if (!noSumOfSquares) sumOfSquares += it * it
         }
+
+        check(count >= 1) { "invalid source. count < 1: $count" }
 
         val mean = sum / count
         val median = if (noMedian) 0f else Median.compute(data, count / 2)
@@ -93,6 +93,6 @@ data class Statistics(
             avgDev /= count
         }
 
-        return Data(count, maxCount, mean, sumOfSquares, median, variance, stdDev, avgDev, minimum, maximum, data)
+        return Data(count, maxCount, mean, sumOfSquares, median, variance, stdDev, avgDev, minimum, maximum)
     }
 }

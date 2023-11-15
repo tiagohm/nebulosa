@@ -2,24 +2,28 @@ package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
+import nebulosa.api.calibration.CalibrationFrameService
+import nebulosa.api.preferences.PreferenceService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
+import nebulosa.astap.platesolving.AstapPlateSolver
+import nebulosa.astap.star.detection.AstapStarDetector
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
+import nebulosa.astrometrynet.platesolving.LocalAstrometryNetPlateSolver
+import nebulosa.astrometrynet.platesolving.NovaAstrometryNetPlateSolver
 import nebulosa.fits.*
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*
+import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.math.*
-import nebulosa.platesolving.astap.AstapPlateSolver
-import nebulosa.platesolving.astrometrynet.LocalAstrometryNetPlateSolver
-import nebulosa.platesolving.astrometrynet.NovaAstrometryNetPlateSolver
-import nebulosa.platesolving.watney.WatneyPlateSolver
 import nebulosa.sbd.SmallBodyDatabaseService
+import nebulosa.simbad.SimbadSearch
 import nebulosa.simbad.SimbadService
-import nebulosa.simbad.SimbadSkyCatalog
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.skycatalog.SkyObjectType
+import nebulosa.star.detection.DetectedStar
 import nebulosa.wcs.WCSException
 import nebulosa.wcs.WCSTransform
 import org.springframework.http.HttpStatus
@@ -27,7 +31,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.nio.file.Path
 import java.time.Duration
-import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
@@ -40,15 +43,17 @@ import kotlin.io.path.outputStream
 class ImageService(
     private val objectMapper: ObjectMapper,
     private val framingService: FramingService,
+    private val calibrationFrameService: CalibrationFrameService,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
     private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
     private val systemExecutorService: ExecutorService,
+    private val preferenceService: PreferenceService,
 ) {
 
     @Synchronized
     fun openImage(
-        path: Path, debayer: Boolean,
+        path: Path, camera: Camera?, debayer: Boolean = true, calibrate: Boolean = false,
         autoStretch: Boolean = false, shadow: Float = 0f, highlight: Float = 1f, midtone: Float = 0.5f,
         mirrorHorizontal: Boolean = false, mirrorVertical: Boolean = false, invert: Boolean = false,
         scnrEnabled: Boolean = false, scnrChannel: ImageChannel = ImageChannel.GREEN, scnrAmount: Float = 0.5f,
@@ -66,8 +71,16 @@ class ImageService(
 
         var transformedImage = if (shouldBeTransformed) image.clone() else image
 
-        if (mirrorHorizontal) transformedImage = HorizontalFlip.transform(transformedImage)
-        if (mirrorVertical) transformedImage = VerticalFlip.transform(transformedImage)
+        if (calibrate && camera != null) {
+            transformedImage = calibrationFrameService.calibrate(camera, transformedImage, transformedImage === image)
+        }
+
+        if (mirrorHorizontal) {
+            transformedImage = HorizontalFlip.transform(transformedImage)
+        }
+        if (mirrorVertical) {
+            transformedImage = VerticalFlip.transform(transformedImage)
+        }
 
         if (scnrEnabled) {
             transformedImage = SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode).transform(transformedImage)
@@ -80,18 +93,16 @@ class ImageService(
             transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
         }
 
-        if (invert) transformedImage = Invert.transform(transformedImage)
+        if (invert) {
+            transformedImage = Invert.transform(transformedImage)
+        }
 
         val info = ImageInfo(
             path,
-            transformedImage.width,
-            transformedImage.height,
-            transformedImage.mono,
-            stretchParams.shadow,
-            stretchParams.highlight,
-            stretchParams.midtone,
-            transformedImage.header.ra.format(AngleFormatter.HMS),
-            transformedImage.header.dec.format(AngleFormatter.SIGNED_DMS),
+            transformedImage.width, transformedImage.height, transformedImage.mono,
+            stretchParams.shadow, stretchParams.highlight, stretchParams.midtone,
+            transformedImage.header.rightAscension.format(AngleFormatter.HMS),
+            transformedImage.header.declination.format(AngleFormatter.SIGNED_DMS),
             imageBucket[path]?.second != null,
             transformedImage.header.iterator().asSequence()
                 .filter { it.key.isNotBlank() && !it.value.isNullOrBlank() }
@@ -134,11 +145,7 @@ class ImageService(
         val annotations = Vector<ImageAnnotation>()
         val tasks = ArrayList<CompletableFuture<*>>()
 
-        val dateTime = image.header
-            .getStringValue(FitsKeywords.DATE_OBS)
-            ?.ifBlank { null }
-            ?.let(LocalDateTime::parse)
-            ?: LocalDateTime.now()
+        val dateTime = image.header.observationDate
 
         if (minorPlanets && dateTime != null) {
             CompletableFuture.runAsync({
@@ -183,8 +190,6 @@ class ImageService(
             CompletableFuture.runAsync({
                 LOG.info("finding star annotations. dateTime={}, calibration={}", dateTime, calibration)
 
-                val catalog = SimbadSkyCatalog(simbadService)
-
                 val types = ArrayList<SkyObjectType>(4)
 
                 if (stars) {
@@ -193,13 +198,22 @@ class ImageService(
 
                 if (dsos) {
                     types.add(SkyObjectType.CLUSTER_OF_STARS)
-                    types.add(SkyObjectType.INTERSTELLAR_MEDIUM_OBJECT)
+                    types.add(SkyObjectType.ASSOCIATION_OF_STARS)
                     types.add(SkyObjectType.GALAXY)
+                    types.add(SkyObjectType.INTERSTELLAR_MEDIUM_OBJECT)
                     types.add(SkyObjectType.CLUSTER_OF_GALAXIES)
                     types.add(SkyObjectType.INTERACTING_GALAXIES)
+                    types.add(SkyObjectType.GROUP_OF_GALAXIES)
+                    types.add(SkyObjectType.SUPERCLUSTER_OF_GALAXIES)
+                    types.add(SkyObjectType.PAIR_OF_GALAXIES)
                 }
 
-                catalog.search(calibration.rightAscension, calibration.declination, calibration.radius, types)
+                val search = SimbadSearch.Builder()
+                    .region(calibration.rightAscension, calibration.declination, calibration.radius)
+                    .types(types)
+                    .build()
+
+                val catalog = simbadService.search(search)
 
                 for (entry in catalog) {
                     val (x, y) = wcs.skyToPix(entry.rightAscensionJ2000, entry.declinationJ2000)
@@ -227,10 +241,9 @@ class ImageService(
         pathOrUrl: String, apiKey: String,
     ): ImageCalibrated {
         val solver = when (type) {
-            PlateSolverType.ASTROMETRY_NET_LOCAL -> LocalAstrometryNetPlateSolver(pathOrUrl)
+            PlateSolverType.ASTROMETRY_NET_LOCAL -> LocalAstrometryNetPlateSolver(Path.of(pathOrUrl))
             PlateSolverType.ASTROMETRY_NET_ONLINE -> NovaAstrometryNetPlateSolver(NovaAstrometryNetService(pathOrUrl), apiKey)
-            PlateSolverType.WATNEY -> WatneyPlateSolver(pathOrUrl)
-            PlateSolverType.ASTAP -> AstapPlateSolver(pathOrUrl)
+            PlateSolverType.ASTAP -> AstapPlateSolver(Path.of(pathOrUrl))
         }
 
         val calibration = solver.solve(
@@ -265,16 +278,57 @@ class ImageService(
         width: Int, height: Int, fov: Angle,
         rotation: Angle = 0.0, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
     ): Path {
-        val (image, calibration) = framingService
+        val (image, calibration, path) = framingService
             .frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!
-
-        val path = Path.of("@framing")
         imageBucket.put(path, image, calibration)
         return path
+    }
+
+    fun coordinateInterpolation(path: Path): CoordinateInterpolation? {
+        val (image, calibration) = imageBucket[path] ?: return null
+
+        if (calibration == null || calibration.isEmpty || !calibration.solved) {
+            return null
+        }
+
+        val wcs = try {
+            WCSTransform(calibration)
+        } catch (e: WCSException) {
+            LOG.error("unable to generate annotations for image. path={}", path)
+            return null
+        }
+
+        val delta = COORDINATE_INTERPOLATION_DELTA
+        val width = image.width + (image.width % delta).let { if (it == 0) 0 else delta - it }
+        val xIter = 0..width step delta
+        val height = image.height + (image.height % delta).let { if (it == 0) 0 else delta - it }
+        val yIter = 0..height step delta
+
+        val md = DoubleArray(xIter.count() * yIter.count())
+        val ma = DoubleArray(md.size)
+        var count = 0
+
+        for (y in yIter) {
+            for (x in xIter) {
+                val (rightAscension, declination) = wcs.pixToSky(x.toDouble(), y.toDouble())
+                ma[count] = rightAscension.toDegrees
+                md[count] = declination.toDegrees
+                count++
+            }
+        }
+
+        return CoordinateInterpolation(ma, md, 0, 0, width, height, delta, image.header.observationDate)
+    }
+
+    fun detectStars(path: Path): Collection<DetectedStar> {
+        val astapPath = preferenceService.astapPath ?: return emptyList()
+        return AstapStarDetector(astapPath).detectStars(path)
     }
 
     companion object {
 
         @JvmStatic private val LOG = loggerFor<ImageService>()
+
+        private const val COORDINATE_INTERPOLATION_DELTA = 24
     }
 }

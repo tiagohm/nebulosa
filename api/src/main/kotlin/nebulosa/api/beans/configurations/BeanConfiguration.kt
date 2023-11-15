@@ -1,17 +1,20 @@
 package nebulosa.api.beans.configurations
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import nebulosa.api.beans.DateAndTimeMethodArgumentResolver
 import nebulosa.api.beans.EntityByMethodArgumentResolver
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.concurrency.Incrementer
+import nebulosa.common.json.PathDeserializer
+import nebulosa.common.json.PathSerializer
 import nebulosa.guiding.Guider
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
-import nebulosa.json.*
-import nebulosa.json.converters.PathConverter
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
@@ -58,13 +61,15 @@ class BeanConfiguration {
     fun cachePath(appPath: Path): Path = Path.of("$appPath", "cache").createDirectories()
 
     @Bean
+    @Suppress("UNCHECKED_CAST")
     fun kotlinModule(
-        serializers: List<ToJson<*>>,
-        deserializers: List<FromJson<*>>,
-    ) = kotlinModule()
+        serializers: List<StdSerializer<*>>,
+        deserializers: List<StdDeserializer<*>>,
+    ): SimpleModule = kotlinModule()
         .apply { serializers.forEach { addSerializer(it) } }
-        .apply { deserializers.forEach { addDeserializer(it) } }
-        .addConverter(PathConverter)
+        .apply { deserializers.forEach { addDeserializer(it.handledType() as Class<Any>, it) } }
+        .addSerializer(PathSerializer)
+        .addDeserializer(Path::class.java, PathDeserializer)
 
     @Bean
     fun jackson2ObjectMapperBuilderCustomizer() = Jackson2ObjectMapperBuilderCustomizer {
@@ -104,9 +109,6 @@ class BeanConfiguration {
     @Bean
     fun systemExecutorService(): ExecutorService =
         Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory)
-
-    @Bean
-    fun singleTaskExecutorService(): ExecutorService = Executors.newSingleThreadExecutor(DaemonThreadFactory)
 
     @Bean
     fun eventBus(systemExecutorService: ExecutorService) = EventBus.builder()

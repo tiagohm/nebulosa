@@ -1,24 +1,16 @@
 import { Client } from '@stomp/stompjs'
-import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from 'electron'
+import { BrowserWindow, Menu, Notification, app, dialog, ipcMain, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { Camera, FilterWheel, Focuser, INDI_EVENT_TYPES, INTERNAL_EVENT_TYPES, Mount, OpenWindow } from './types'
+import { INTERNAL_EVENT_TYPES, MessageEvent, NotificationEvent, OpenDirectory, OpenWindow } from './types'
 
-import { CronJob } from 'cron'
 import { WebSocket } from 'ws'
-import { OpenDirectory } from '../src/shared/types'
 Object.assign(global, { WebSocket })
 
 const browserWindows = new Map<string, BrowserWindow>()
-const cronedWindows = new Map<BrowserWindow, CronJob<null, null>[]>()
 let api: ChildProcessWithoutNullStreams | null = null
 let apiPort = 7000
 let wsClient: Client
-
-let selectedCamera: Camera
-let selectedMount: Mount
-let selectedFocuser: Focuser
-let selectedWheel: FilterWheel
 
 const args = process.argv.slice(1)
 const serve = args.some(e => e === '--serve')
@@ -35,20 +27,30 @@ function createMainWindow() {
     wsClient = new Client({
         brokerURL: `ws://localhost:${apiPort}/ws`,
         onConnect: () => {
-            for (const item of INDI_EVENT_TYPES) {
-                wsClient.subscribe(item, (message) => {
-                    const data = JSON.parse(message.body)
+            wsClient.subscribe('NEBULOSA_EVENT', message => {
+                const event = JSON.parse(message.body) as MessageEvent
 
-                    if (serve) {
-                        console.info(item, message.body)
+                if (event.eventName) {
+                    if (event.eventName === 'NOTIFICATION') {
+                        showNotification(event as NotificationEvent)
+                    } else {
+                        sendToAllWindows(event.eventName, event)
                     }
+                } else {
+                    console.warn('invalid message event', event)
+                }
+            })
 
-                    sendToAllWindows(item, data)
-                })
-            }
+            console.info('Web Socket connected')
         },
-        onDisconnect() {
+        onDisconnect: () => {
             console.warn('Web Socket disconnected')
+        },
+        onWebSocketClose: () => {
+            console.warn('Web Socket closed')
+        },
+        onWebSocketError: (e) => {
+            console.error('Web Socket error', e)
         },
     })
 
@@ -183,6 +185,14 @@ function createSplashScreen() {
 
         browserWindows.set('splash', splashWindow)
     }
+}
+
+function showNotification(event: NotificationEvent) {
+    const icon = path.join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
+
+    new Notification({ ...event, icon })
+        .on('click', () => sendToAllWindows(event.type, event))
+        .show()
 }
 
 function findWindowById(id: number) {
@@ -348,66 +358,10 @@ try {
         }
     })
 
-    ipcMain.on('REGISTER_CRON', async (event, cronTime: string) => {
-        const window = findWindowById(event.sender.id)
-
-        if (!window) return
-
-        const cronJobs = cronedWindows.get(window) ?? []
-        cronJobs.forEach(e => e.stop())
-        const cronJob = new CronJob(cronTime, () => window.webContents.send('CRON_TICKED', cronTime))
-        cronJobs.push(cronJob)
-        cronedWindows.set(window, cronJobs)
-
-        event.returnValue = true
-    })
-
-    ipcMain.on('UNREGISTER_CRON', async (event) => {
-        const window = findWindowById(event.sender.id)
-
-        if (!window) return
-
-        const cronJobs = cronedWindows.get(window)
-        cronJobs?.forEach(e => e.stop())
-        cronedWindows.delete(window)
-
-        event.returnValue = true
-    })
-
     for (const item of INTERNAL_EVENT_TYPES) {
         ipcMain.on(item, (event, data) => {
-            switch (item) {
-                case 'CAMERA_CHANGED':
-                    selectedCamera = data
-                    break
-                case 'MOUNT_CHANGED':
-                    selectedMount = data
-                    break
-                case 'FOCUSER_CHANGED':
-                    selectedFocuser = data
-                    break
-                case 'WHEEL_CHANGED':
-                    selectedWheel = data
-                    break
-            }
-
-            switch (item) {
-                case 'SELECTED_CAMERA':
-                    event.returnValue = selectedCamera
-                    break
-                case 'SELECTED_MOUNT':
-                    event.returnValue = selectedMount
-                    break
-                case 'SELECTED_FOCUSER':
-                    event.returnValue = selectedFocuser
-                    break
-                case 'SELECTED_WHEEL':
-                    event.returnValue = selectedWheel
-                    break
-                default:
-                    sendToAllWindows(item, data)
-                    break
-            }
+            sendToAllWindows(item, data)
+            event.returnValue = true
         })
     }
 } catch (e) {
@@ -424,6 +378,6 @@ function sendToAllWindows(channel: string, data: any, home: boolean = true) {
     }
 
     if (serve) {
-        console.info(channel, data)
+        console.info(data)
     }
 }

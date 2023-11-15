@@ -1,3 +1,6 @@
+@import "@fontsource/roboto";
+@import "@mdi/font/scss/materialdesignicons.scss";
+
 html,
 body {
     height: 100%;
@@ -7,7 +10,7 @@ body {
 
 body {
     margin: 0;
-    font-family: var(--font-family);
+    font-family: "Roboto";
 }
 
 .invisible {
@@ -125,15 +128,15 @@ i.mdi {
     }
 }
 
-.p-menuitem {
+.p-menuitem-link {
     &.p-menuitem-checked {
         background-color: #C5E1A5;
-
-        .p-menuitem-text,
-        .p-menuitem-icon {
-            color: #212121 !important;
-        }
+        color: #212121 !important;
     }
+}
+
+.p-contextmenu {
+    min-width: 181px;
 }
 
 .p-tabview .p-tabview-nav {
@@ -146,6 +149,14 @@ i.mdi {
 
 .pixelated {
     image-rendering: pixelated;
+}
+
+.cursor-crosshair {
+    cursor: crosshair !important;
+}
+
+.monospaced {
+    font-family: monospace !important;
 }
 
 ::-webkit-scrollbar {
@@ -161,4 +172,28 @@ i.mdi {
 ::-webkit-scrollbar-track {
     border-radius: 10px;
     background-color: transparent;
+}
+
+@font-face {
+    font-family: 'icomoon';
+    src: url('assets/fonts/icomoon.ttf');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
+
+.icomoon {
+    font-family: 'icomoon' !important;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 1.25rem;
+
+    &.random-dither:before {
+        content: "\e900";
+    }
 }

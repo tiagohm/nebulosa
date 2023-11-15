@@ -3,7 +3,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, CameraCaptureEvent, DARVPolarAlignmentEvent, DARVPolarAlignmentGuidePulseElapsed, DARVPolarAlignmentInitialPauseElapsed, GuideDirection, GuideOutput, Hemisphere } from '../../shared/types'
+import { Camera, DARVPolarAlignmentState, GuideDirection, GuideOutput, Hemisphere, Union } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -26,9 +26,13 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     darvInProgress = false
     readonly darvHemispheres: Hemisphere[] = ['NORTHERN', 'SOUTHERN']
     darvHemisphere: Hemisphere = 'NORTHERN'
-    darvCaptureEvent?: CameraCaptureEvent
     darvDirection?: GuideDirection
-    darvStatus = 'idle'
+    darvStatus: Union<DARVPolarAlignmentState, 'IDLE'> = 'IDLE'
+
+    readonly darvCapture = {
+        remainingTime: 0,
+        progress: 0,
+    }
 
     constructor(
         app: AppComponent,
@@ -40,25 +44,38 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Alignment'
 
-        electron.on('CAMERA_UPDATED', (_, event: Camera) => {
-            if (event.name === this.camera?.name) {
+        electron.on('CAMERA_UPDATED', event => {
+            if (event.device.name === this.camera?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.camera!, event)
+                    Object.assign(this.camera!, event.device)
                     this.updateCamera()
                 })
             }
         })
 
-        electron.on('GUIDE_OUTPUT_UPDATED', (_, event: GuideOutput) => {
-            if (event.name === this.guideOutput?.name) {
+        electron.on('GUIDE_OUTPUT_ATTACHED', event => {
+            ngZone.run(() => {
+                this.guideOutputs.push(event.device)
+            })
+        })
+
+        electron.on('GUIDE_OUTPUT_DETACHED', event => {
+            ngZone.run(() => {
+                const index = this.guideOutputs.findIndex(e => e.name === event.device.name)
+                if (index >= 0) this.guideOutputs.splice(index, 1)
+            })
+        })
+
+        electron.on('GUIDE_OUTPUT_UPDATED', event => {
+            if (event.device.name === this.guideOutput?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.guideOutput!, event)
+                    Object.assign(this.guideOutput!, event.device)
                     this.updateGuideOutput()
                 })
             }
         })
 
-        electron.on('DARV_POLAR_ALIGNMENT_STARTED', (_, event: DARVPolarAlignmentEvent) => {
+        electron.on('DARV_POLAR_ALIGNMENT_STARTED', event => {
             if (event.camera.name === this.camera?.name &&
                 event.guideOutput.name === this.guideOutput?.name) {
                 ngZone.run(() => {
@@ -67,40 +84,35 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('DARV_POLAR_ALIGNMENT_FINISHED', (_, event: DARVPolarAlignmentEvent) => {
+        electron.on('DARV_POLAR_ALIGNMENT_FINISHED', event => {
             if (event.camera.name === this.camera?.name &&
                 event.guideOutput.name === this.guideOutput?.name) {
                 ngZone.run(() => {
                     this.darvInProgress = false
-                    this.darvStatus = 'idle'
+                    this.darvStatus = 'IDLE'
                     this.darvDirection = undefined
                 })
             }
         })
 
-        electron.on('DARV_POLAR_ALIGNMENT_INITIAL_PAUSE_ELAPSED', (_, event: DARVPolarAlignmentInitialPauseElapsed) => {
+        electron.on('DARV_POLAR_ALIGNMENT_UPDATED', event => {
             if (event.camera.name === this.camera?.name &&
                 event.guideOutput.name === this.guideOutput?.name) {
                 ngZone.run(() => {
-                    this.darvStatus = 'initial pause'
+                    this.darvStatus = event.state
+
+                    if (event.state !== 'INITIAL_PAUSE') {
+                        this.darvDirection = event.direction
+                    }
                 })
             }
         })
 
-        electron.on('DARV_POLAR_ALIGNMENT_GUIDE_PULSE_ELAPSED', (_, event: DARVPolarAlignmentGuidePulseElapsed) => {
-            if (event.camera.name === this.camera?.name &&
-                event.guideOutput.name === this.guideOutput?.name) {
-                ngZone.run(() => {
-                    this.darvDirection = event.direction
-                    this.darvStatus = event.forward ? 'forwarding' : 'backwarding'
-                })
-            }
-        })
-
-        electron.on('CAMERA_EXPOSURE_UPDATED', (_, event: CameraCaptureEvent) => {
+        electron.on('CAMERA_EXPOSURE_ELAPSED', event => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
-                    this.darvCaptureEvent = event
+                    this.darvCapture.remainingTime = event.remainingTime
+                    this.darvCapture.progress = event.progress
                 })
             }
         })
@@ -153,8 +165,8 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     private async darvStart(direction: GuideDirection) {
         // TODO: Horizonte leste e oeste tem um impacto no "reversed"?
         const reversed = this.darvHemisphere === 'SOUTHERN'
-        await this.browserWindow.openCameraImage(this.camera!)
-        await this.api.darvStart(this.camera!, this.guideOutput!, this.darvDrift, this.darvInitialPause, direction, reversed)
+        await this.openCameraImage()
+        await this.api.darvStart(this.camera!, this.guideOutput!, this.darvDrift * 1000000, this.darvInitialPause * 1000000, direction, reversed)
     }
 
     darvAzimuth() {
@@ -167,6 +179,10 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
     darvStop() {
         this.api.darvStop(this.camera!, this.guideOutput!)
+    }
+
+    openCameraImage() {
+        return this.browserWindow.openCameraImage(this.camera!)
     }
 
     private async updateCamera() {

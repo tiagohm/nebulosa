@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
 import {
-    Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, DeepSkyObject, Device,
-    FilterWheel, Focuser, GuideDirection, GuideOutput, GuiderStatus, HipsSurvey, HistoryStep,
+    Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation, DeepSkyObject, DetectedStar, Device,
+    FilterWheel, Focuser, GuideDirection, GuideOutput, Guider, HipsSurvey, HistoryStep,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
     ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
     Mount, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
@@ -264,11 +264,12 @@ export class ApiService {
     }
 
     guidingStatus() {
-        return this.http.get<GuiderStatus>(`guiding/status`)
+        return this.http.get<Guider>(`guiding/status`)
     }
 
-    guidingHistory() {
-        return this.http.get<HistoryStep[]>(`guiding/history`)
+    guidingHistory(maxLength: number = 100) {
+        const query = this.http.query({ maxLength })
+        return this.http.get<HistoryStep[]>(`guiding/history?${query}`)
     }
 
     guidingLatestHistory() {
@@ -307,6 +308,8 @@ export class ApiService {
 
     async openImage(
         path: string,
+        camera?: Camera,
+        calibrate: boolean = false,
         debayer: boolean = false,
         autoStretch: boolean = true,
         shadow: number = 0,
@@ -320,7 +323,7 @@ export class ApiService {
         scnrAmount: number = 0.5,
         scnrProtectionMode: SCNRProtectionMethod = 'AVERAGE_NEUTRAL',
     ) {
-        const query = this.http.query({ path, debayer, autoStretch, shadow, highlight, midtone, mirrorHorizontal, mirrorVertical, invert, scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode })
+        const query = this.http.query({ path, camera: camera?.name, calibrate, debayer, autoStretch, shadow, highlight, midtone, mirrorHorizontal, mirrorVertical, invert, scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode })
         const response = await this.http.getBlob(`image?${query}`)
 
         const info = JSON.parse(response.headers.get('X-Image-Info')!) as ImageInfo
@@ -396,13 +399,13 @@ export class ApiService {
     positionOfPlanet(location: Location, code: string, dateTime: Date) {
         const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
         const query = this.http.query({ location: location.id, date, time })
-        return this.http.get<BodyPosition>(`sky-atlas/planets/${code}/position?${query}`)
+        return this.http.get<BodyPosition>(`sky-atlas/planets/${encodeURIComponent(code)}/position?${query}`)
     }
 
     altitudePointsOfPlanet(location: Location, code: string, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
         const query = this.http.query({ location: location.id, date })
-        return this.http.get<[number, number][]>(`sky-atlas/planets/${code}/altitude-points?${query}`)
+        return this.http.get<[number, number][]>(`sky-atlas/planets/${encodeURIComponent(code)}/altitude-points?${query}`)
     }
 
     positionOfStar(location: Location, star: Star, dateTime: Date) {
@@ -455,6 +458,32 @@ export class ApiService {
 
     dsoTypes() {
         return this.http.get<SkyObjectType[]>(`sky-atlas/dsos/types`)
+    }
+
+    positionOfSimbad(location: Location, simbad: DeepSkyObject, dateTime: Date) {
+        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
+        const query = this.http.query({ location: location.id, date, time })
+        return this.http.get<BodyPosition>(`sky-atlas/simbad/${simbad.id}/position?${query}`)
+    }
+
+    altitudePointsOfSimbad(location: Location, simbad: DeepSkyObject, dateTime: Date) {
+        const date = moment(dateTime).format('YYYY-MM-DD')
+        const query = this.http.query({ location: location.id, date })
+        return this.http.get<[number, number][]>(`sky-atlas/simbad/${simbad.id}/altitude-points?${query}`)
+    }
+
+    searchSimbad(text: string,
+        rightAscension: Angle, declination: Angle, radius: Angle,
+        constellation?: Constellation,
+        magnitudeMin: number = -99, magnitudeMax: number = 99,
+        type?: SkyObjectType,
+    ) {
+        const query = this.http.query({ text, rightAscension, declination, radius, constellation, magnitudeMin, magnitudeMax, type })
+        return this.http.get<DeepSkyObject[]>(`sky-atlas/simbad?${query}`)
+    }
+
+    simbadTypes() {
+        return this.http.get<SkyObjectType[]>(`sky-atlas/simbad/types`)
     }
 
     positionOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
@@ -510,6 +539,16 @@ export class ApiService {
         return this.http.put<void>(`image/save-as?${query}`)
     }
 
+    coordinateInterpolation(path: string) {
+        const query = this.http.query({ path })
+        return this.http.get<CoordinateInterpolation | null>(`image/coordinate-interpolation?${query}`)
+    }
+
+    detectStars(path: string) {
+        const query = this.http.query({ path })
+        return this.http.put<DetectedStar[]>(`image/detect-stars?${query}`)
+    }
+
     // FRAMING
 
     frame(rightAscension: Angle, declination: Angle,
@@ -523,12 +562,34 @@ export class ApiService {
     // DARV
 
     darvStart(camera: Camera, guideOutput: GuideOutput,
-        exposureInSeconds: number, initialPauseInSeconds: number, direction: GuideDirection, reversed: boolean = false) {
-        const data = { exposureInSeconds, initialPauseInSeconds, direction, reversed }
+        exposureTime: number, initialPause: number, direction: GuideDirection, reversed: boolean = false) {
+        const data = { exposureTime, initialPause, direction, reversed }
         return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
     }
 
     darvStop(camera: Camera, guideOutput: GuideOutput) {
         return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/stop`)
+    }
+
+    // PREFERENCE
+
+    preferenceClear() {
+        return this.http.put<void>('preferences/clear')
+    }
+
+    preferenceDelete(key: string) {
+        return this.http.delete<void>(`preferences/${key}`)
+    }
+
+    preferenceGet<T>(key: string) {
+        return this.http.get<T>(`preferences/${key}`)
+    }
+
+    preferencePut(key: string, data: any) {
+        return this.http.put<void>(`preferences/${key}`, { data })
+    }
+
+    preferenceExists(key: string) {
+        return this.http.get<boolean>(`preferences/${key}/exists`)
     }
 }

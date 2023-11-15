@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS configs(
+CREATE TABLE IF NOT EXISTS preferences(
     key TEXT PRIMARY KEY,
     value TEXT
 );

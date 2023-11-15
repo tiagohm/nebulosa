@@ -13,7 +13,7 @@ class Median(
         val buffer = IntArray(65536)
 
         val length = source.sampling(channel, sampleBy) {
-            val value = (it * 65535f).toInt()
+            val value = (it * 65535).toInt()
             buffer[value]++
         }
 

@@ -149,7 +149,7 @@ class FitsImageTest : AbstractImageTest() {
             val image = fits.transform(AutoScreenTransformFunction)
             val outputFile = File("src/test/resources/M51.8.Color.AutoSTF.png")
             ImageIO.write(image, "PNG", outputFile)
-            outputFile.md5() shouldBe "16fac8bab0f883fa0c0c10d0652eea34"
+            outputFile.md5() shouldBe "37d8c4369fe6c1735fd78a0ed1631571"
         }
         "CCD Simulator - Stretch" {
             val fits = Fits("src/test/resources/CCD Simulator.Gray.fits")
@@ -234,7 +234,7 @@ class FitsImageTest : AbstractImageTest() {
             val image = Image.openFITS(fits).transform(GaussianBlur(sigma = 5.0, size = 9))
             val outputFile = File("src/test/resources/Flower.GaussianBlur.png")
             ImageIO.write(image, "PNG", outputFile)
-            outputFile.md5() shouldBe "bc43543e671a1201f71f5619a2e56463"
+            outputFile.md5() shouldBe "f960e785da80401b11c75a3154643555"
         }
         "Edges" {
             val fits = Fits("src/test/resources/Flower.fits")
@@ -301,7 +301,7 @@ class FitsImageTest : AbstractImageTest() {
 
             // TODO: outputFile1.md5() shouldBe outputFile2.md5()
         }
-        "SubFrame" {
+        "sub frame" {
             val fits = Fits("src/test/resources/M51.8.Color.fits")
             val image = Image.openFITS(fits).transform(SubFrame(436, 387, 100, 100))
             val outputFile = File("src/test/resources/M51.8.Color.Subframe.png")
