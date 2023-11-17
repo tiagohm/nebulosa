@@ -5,6 +5,7 @@ import nebulosa.phd2.client.PHD2Client
 import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.commands.PHD2Command
 import nebulosa.phd2.client.events.PHD2Event
+import nebulosa.test.NonGitHubOnlyCondition
 
 @EnabledIf(NonGitHubOnlyCondition::class)
 class PHD2ClientTest : StringSpec(), PHD2EventListener {

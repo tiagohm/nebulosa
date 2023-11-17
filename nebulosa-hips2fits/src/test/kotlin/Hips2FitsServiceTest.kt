@@ -3,7 +3,6 @@ import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import nebulosa.fits.declination
-import nebulosa.fits.imageHDU
 import nebulosa.fits.naxis
 import nebulosa.fits.rightAscension
 import nebulosa.hips2fits.Hips2FitsService

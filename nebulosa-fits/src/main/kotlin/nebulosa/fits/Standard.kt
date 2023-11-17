@@ -26,7 +26,7 @@ enum class Standard : FitsHeader {
      * Columns 1-8 contain ASCII blanks. This keyword has no associated value. Columns 9-80 may contain any ASCII text.
      * Any number of card images with blank keyword fields may appear in a key.
      */
-    BLANKS("        ", HduType.ANY, ValueType.NONE, null),
+    BLANKS("        ", HduType.ANY, ValueType.NONE, ""),
 
     /**
      * This keyword may be used only in the primary key. It shall appear within the first 36 card images of the FITS
@@ -78,7 +78,7 @@ enum class Standard : FitsHeader {
      * This keyword shall have no associated value; columns 9-80 may contain any ASCII text. Any number of COMMENT card
      * images may appear in a key.
      */
-    COMMENT(HduType.ANY, ValueType.NONE, null),
+    COMMENT(HduType.ANY, ValueType.NONE, ""),
 
     /**
      * The CONTINUE keyword, when followed by spaces in columns 9 and 10 of the card image and a character string
@@ -136,7 +136,6 @@ enum class Standard : FitsHeader {
      * 'yy/mm/dd' and may be used only for dates from 1900 through 1999. the new Y2K compliant date format is
      * 'yyyy-mm-dd' or 'yyyy-mm-ddTHH:MM:SS[.sss]'.
      */
-
     DATE(HduType.ANY, ValueType.STRING, "date of file creation"),
 
     /**
@@ -149,7 +148,7 @@ enum class Standard : FitsHeader {
     /**
      * This keyword has no associated value. Columns 9-80 shall be filled with ASCII blanks.
      */
-    END(HduType.ANY, ValueType.NONE, null),
+    END(HduType.ANY, ValueType.NONE, ""),
 
     /**
      * The value field shall contain a floating point number giving the equinox in years for the celestial coordinate
@@ -157,7 +156,7 @@ enum class Standard : FitsHeader {
      * EPOCH keyword and thus it shall not be used in FITS files created after the adoption of the standard; rather, the
      * EQUINOX keyword shall be used.
      */
-    @Deprecated("use EQUINOX in stead")
+    @Deprecated("use EQUINOX instead")
     EPOCH(HduType.ANY, ValueType.REAL, "equinox of celestial coordinate system"),
 
     /**
@@ -422,15 +421,314 @@ enum class Standard : FitsHeader {
      * for an extension key and must not appear in the primary key. For an extension that is not a standard extension,
      * the type name must not be the same as that of a standard extension.
      */
-    XTENSION(HduType.EXTENSION, ValueType.STRING, "marks beginning of new HDU");
+    XTENSION(HduType.EXTENSION, ValueType.STRING, "marks beginning of new HDU"),
+
+    // FITS keywords that have been widely used within the astronomical community.
+    // These are the Keywords that describe the observation.
+
+    /**
+     * The value field shall contain a floating point number giving the air mass during the observation by a ground
+     * based telescope. The value of the airmass is often approximated by the secant of the elevation angle and has a
+     * value of 1.0 at the zenith and increases towards the horizon. This value is assumed to correspond to the start of
+     * the observation unless another interpretation is clearly explained in the comment field.
+     */
+    AIRMASS(HduType.ANY, ValueType.REAL, "air mass"),
+
+    /**
+     * The value field gives the declination of the observation. It may be expressed either as a floating point number
+     * in units of decimal degrees, or as a character string in 'dd:mm:ss.sss' format where the decimal point and number
+     * of fractional digits are optional. The coordinate reference frame is given by the RADECSYS keyword, and the
+     * coordinate epoch is given by the EQUINOX keyword. Example: -47.25944 or '-47:15:34.00'.
+     */
+    DEC(HduType.ANY, ValueType.STRING, "declination of the observed object"),
+
+    /**
+     * The value field shall contain a floating point number giving the nominal declination of the pointing direction in
+     * units of decimal degrees. The coordinate reference frame is given by the RADECSYS keyword, and the coordinate
+     * epoch is given by the EQUINOX keyword. The precise definition of this keyword is instrument-specific, but
+     * typically the nominal direction corresponds to the direction to which the instrument was requested to point. The
+     * DEC_PNT keyword should be used to give the actual pointed direction.
+     */
+    DEC_NOM(HduType.ANY, ValueType.REAL, "nominal declination of the observation"),
+
+    /**
+     * The value field shall contain a floating point number giving the declination of the observed object in units of
+     * decimal degrees. The coordinate reference frame is given by the RADECSYS keyword, and the coordinate epoch is
+     * given by the EQUINOX keyword.
+     */
+    DEC_OBJ(HduType.ANY, ValueType.REAL, "declination of the observed object"),
+
+    /**
+     * The value field shall contain a floating point number giving the declination of the pointing direction in units
+     * of decimal degrees. The coordinate reference frame is given by the RADECSYS keyword, and the coordinate epoch is
+     * given by the EQUINOX keyword. The precise definition of this keyword is instrument-specific, but typically the
+     * pointed direction corresponds to the optical axis of the instrument. This keyword gives a mean value in cases
+     * where the pointing axis was not fixed during the entire observation.
+     */
+    DEC_PNT(HduType.ANY, ValueType.REAL, "declination of the pointed direction of the instrument"),
+
+    /**
+     * The value field shall contain a floating point number giving the declination of the space craft (or telescope
+     * platform) X axis during the observation in decimal degrees. The coordinate reference frame is given by the
+     * RADECSYS keyword, and the coordinate epoch is given by the EQUINOX keyword. This keyword gives a mean value in
+     * cases where the axis was not fixed during the entire observation.
+     */
+    DEC_SCX(HduType.ANY, ValueType.REAL, "declination of the X spacecraft axis"),
+
+    /**
+     * The value field shall contain a floating point number giving the declination of the space craft (or telescope
+     * platform) Z axis during the observation in decimal degrees. The coordinate reference frame is given by the
+     * RADECSYS keyword, and the coordinate epoch is given by the EQUINOX keyword. This keyword gives a mean value in
+     * cases where the axis was not fixed during the entire observation.
+     */
+    DEC_SCZ(HduType.ANY, ValueType.REAL, "declination of the Z spacecraft axis"),
+
+    /**
+     * The value field shall contain a floating point number giving the geographic latitude from which the observation
+     * was made in units of degrees.
+     */
+    LATITUDE(HduType.ANY, ValueType.REAL, "geographic latitude of the observation"),
+
+    /**
+     * The value field shall contain a floating point number giving the angle between the direction of the observation
+     * (e.g., the optical axis of the telescope or the position of the target) and the moon, measured in degrees.
+     */
+    MOONANGL(HduType.ANY, ValueType.REAL, "angle between the observation and the moon"),
+
+    /**
+     * The value field shall contain a character string giving a name for the observed object that conforms to the IAU
+     * astronomical object naming conventions. The value of this keyword is more strictly constrained than for the
+     * standard OBJECT keyword which in practice has often been used to record other ancillary information about the
+     * observation (e.g. filter, exposure time, weather conditions, etc.).
+     */
+    OBJNAME(HduType.ANY, ValueType.STRING, "AU name of observed object"),
+
+    /**
+     * The value field shall contain a character string which uniquely identifies the dataset contained in the FITS
+     * file. This is typically a sequence number that can contain a mixture of numerical and character values. Example:
+     * '10315-01-01-30A'
+     */
+    OBS_ID(HduType.ANY, ValueType.STRING, "unique observation ID"),
+
+    /**
+     * The value field shall contain a floating point number giving the position angle of the y axis of the detector
+     * projected on the sky, in degrees east of north. This keyword is synonymous with the CROTA2 WCS keyword.
+     */
+    ORIENTAT(HduType.IMAGE, ValueType.REAL, "position angle of image y axis (deg. E of N)"),
+
+    /**
+     * The value field shall contain a floating point number giving the position angle of the relevant aspect of
+     * telescope pointing axis and/or instrument on the sky in units of degrees east of north. It commonly applies to
+     * the orientation of a slit mask.
+     */
+    PA_PNT(HduType.ANY, ValueType.REAL, "position angle of the pointing"),
+
+    /**
+     * The value field gives the Right Ascension of the observation. It may be expressed either as a floating point
+     * number in units of decimal degrees, or as a character string in 'HH:MM:SS.sss' format where the decimal point and
+     * number of fractional digits are optional. The coordinate reference frame is given by the RADECSYS keyword, and
+     * the coordinate epoch is given by the EQUINOX keyword. Example: 180.6904 or '12:02:45.7'.
+     */
+    RA(HduType.ANY, ValueType.STRING, "R.A. of the observation"),
+
+    /**
+     * The value field shall contain a floating point number giving the nominal Right Ascension of the pointing
+     * direction in units of decimal degrees. The coordinate reference frame is given by the RADECSYS keyword, and the
+     * coordinate epoch is given by the EQUINOX keyword. The precise definition of this keyword is instrument-specific,
+     * but typically the nominal direction corresponds to the direction to which the instrument was requested to point.
+     * The RA_PNT keyword should be used to give the actual pointed direction.
+     */
+    RA_NOM(HduType.ANY, ValueType.REAL, "nominal R.A. of the observation"),
+
+    /**
+     * The value field shall contain a floating point number giving the Right Ascension of the observed object in units
+     * of decimal degrees. The coordinate reference frame is given by the RADECSYS keyword, and the coordinate epoch is
+     * given by the EQUINOX keyword.
+     */
+    RA_OBJ(HduType.ANY, ValueType.REAL, "R.A. of the observed object"),
+
+    /**
+     * The value field shall contain a floating point number giving the Right Ascension of the pointing direction in
+     * units of decimal degrees. The coordinate reference frame is given by the RADECSYS keyword, and the coordinate
+     * epoch is given by the EQUINOX keyword. The precise definition of this keyword is instrument-specific, but
+     * typically the pointed direction corresponds to the optical axis of the instrument. This keyword gives a mean
+     * value in cases where the pointing axis was not fixed during the entire observation.
+     */
+    RA_PNT(HduType.ANY, ValueType.REAL, "R.A. of the pointed direction of the instrument"),
+
+    /**
+     * The value field shall contain a floating point number giving the Right Ascension of the space craft (or telescope
+     * platform) X axis during the observation in decimal degrees. The coordinate reference frame is given by the
+     * RADECSYS keyword, and the coordinate epoch is given by the EQUINOX keyword. This keyword gives a mean value in
+     * cases where the axis was not fixed during the entire observation.
+     */
+    RA_SCX(HduType.ANY, ValueType.REAL, "R.A. of the X spacecraft axis"),
+
+    /**
+     * The value field shall contain a floating point number giving the Right Ascension of the space craft (or telescope
+     * platform) Y axis during the observation in decimal degrees. The coordinate reference frame is given by the
+     * RADECSYS keyword, and the coordinate epoch is given by the EQUINOX keyword. This keyword gives a mean value in
+     * cases where the axis was not fixed during the entire observation.
+     */
+    RA_SCY(HduType.ANY, ValueType.REAL, "R.A. of the Y spacecraft axis"),
+
+    /**
+     * The value field shall contain a floating point number giving the Right Ascension of the space craft (or telescope
+     * platform) Z axis during the observation in decimal degrees. The coordinate reference frame is given by the
+     * RADECSYS keyword, and the coordinate epoch is given by the EQUINOX keyword. This keyword gives a mean value in
+     * cases where the axis was not fixed during the entire observation.
+     */
+    RA_SCZ(HduType.ANY, ValueType.REAL, "R.A. of the Z spacecraft axis"),
+
+    /**
+     * The value field shall contain a floating point number giving the angle between the direction of the observation
+     * (e.g., the optical axis of the telescope or the position of the target) and the sun, measured in degrees.
+     */
+    SUNANGLE(HduType.ANY, ValueType.REAL, "angle between the observation and the sun"),
+
+    // FITS keywords that have been widely used within the astronomical community.
+    // These are the Keywords that describe the instrument that took the data.
+
+    /**
+     * The value field shall contain a character string which gives the name of the instrumental aperture though which
+     * the observation was made. This keyword is typically used in instruments which have a selection of apertures which
+     * restrict the field of view of the detector.
+     */
+    APERTURE(HduType.ANY, ValueType.STRING, "name of field of view aperture"),
+
+    /**
+     * The value field shall contain a character string which identifies the configuration or mode of the pre-processing
+     * software that operated on the raw instrumental data to generate the data that is recorded in the FITS file.
+     * Example: some X-ray satellite data may be recorded in 'BRIGHT', 'FAINT', or 'FAST' data mode.
+     */
+    DATAMODE(HduType.ANY, ValueType.STRING, "pre-processor data mode"),
+
+    /**
+     * The value field shall contain a character string giving the name of the detector within the instrument that was
+     * used to make the observation. Example: 'CCD1'
+     */
+    DETNAM(HduType.ANY, ValueType.STRING, "name of the detector used to make the observation"),
+
+    /**
+     * The value field shall contain a character string which gives the name of the filter that was used during the
+     * observation to select or modify the radiation that was transmitted to the detector. More than 1 filter may be
+     * listed by using the FILTERn indexed keyword. The value 'none' or 'NONE' indicates that no filter was used.
+     */
+    FILTER(HduType.ANY, ValueType.STRING, "name of filter used during the observation"),
+
+    /**
+     * The value field of this indexed keyword shall contain a character string which gives the name of one of multiple
+     * filters that were used during the observation to select or modify the radiation that was transmitted to the
+     * detector. The value 'none' or 'NONE' indicates that no filter was used.
+     */
+    FILTERn(HduType.ANY, ValueType.STRING, "name of filters used during the observation"),
+
+    /**
+     * The value field shall contain a character string which gives the name of the defraction grating that was used
+     * during the observation. More than 1 grating may be listed by using the GRATINGn indexed keyword. The value 'none'
+     * or 'NONE' indicates that no grating was used.
+     */
+    GRATING(HduType.ANY, ValueType.STRING, "name of the grating used during the observation."),
+
+    /**
+     * The value field of this indexed keyword shall contain a character string which gives the name of one of multiple
+     * defraction gratings that were used during the observation. The value 'none' or 'NONE' indicates that no grating
+     * was used.
+     */
+    GRATINGn(HduType.ANY, ValueType.STRING, "name of gratings used during the observation."),
+
+    /**
+     * The value field shall contain a character string which gives the observing mode of the observation. This is used
+     * in cases where the instrument or detector can be configured to operate in different modes which significantly
+     * affect the resulting data. Examples: 'SLEW', 'RASTER', or 'POINTING'
+     */
+    OBS_MODE(HduType.ANY, ValueType.STRING, "instrumental mode of the observation"),
+
+    /**
+     * The value field shall contain an integer giving the data value at which the detector becomes saturated. This
+     * keyword value may differ from the maximum value implied by the BITPIX in that more bits may be allocated in the
+     * FITS pixel values than the detector can accommodate.
+     */
+    SATURATE(HduType.ANY, ValueType.INTEGER, "Data value at which saturation occurs"),
+
+    // FITS keywords that have been widely used within the astronomical community.
+    // These are the Keywords that describe the observation.
+
+    /**
+     * The value field shall contain a character string that gives the date on which the observation ended. This keyword
+     * has the same format, and is used in conjunction with, the standard DATA-OBS keyword that gives the starting date
+     * of the observation. These 2 keywords may give either the calendar date using the 'yyyy-mm-dd' format, or may give
+     * the full date and time using the 'yyyy-mm-ddThh:mm:ss.sss' format.
+     */
+    DATE_END("DATE-END", HduType.ANY, ValueType.STRING, "date of the end of observation"),
+
+    /**
+     * The value field shall contain a floating point number giving the difference between the stop and start times of
+     * the observation in units of seconds. This keyword is synonymous with the TELAPSE keyword.
+     */
+    ELAPTIME(HduType.ANY, ValueType.REAL, "elapsed time of the observation"),
+
+    /**
+     * The value field shall contain a floating point number giving the exposure time of the observation in units of
+     * seconds. The exact definition of 'exposure time' is mission dependent and may, for example, include corrections
+     * for shutter open and close duration, detector dead time, vignetting, or other effects. This keyword is synonymous
+     * with the EXPTIME keyword.
+     */
+    EXPOSURE(HduType.ANY, ValueType.REAL, "exposure time"),
+
+    /**
+     * The value field shall contain a floating point number giving the exposure time of the observation in units of
+     * seconds. The exact definition of 'exposure time' is mission dependent and may, for example, include corrections
+     * for shutter open and close duration, detector dead time, vignetting, or other effects. This keyword is synonymous
+     * with the EXPOSURE keyword.
+     */
+    EXPTIME(HduType.ANY, ValueType.REAL, "exposure time"),
+
+    /**
+     * The value field shall contain a floating point number giving the total integrated exposure time in units of
+     * seconds corrected for detector 'dead time' effects which reduce the net efficiency of the detector. The ratio of
+     * LIVETIME/ONTIME gives the mean dead time correction during the observation, which lies in the range 0.0 to 1.0.
+     */
+    LIVETIME(HduType.ANY, ValueType.REAL, "exposure time after deadtime correction"),
+
+    /**
+     * The value field shall contain a floating point number giving the total integrated exposure time of the
+     * observation in units of seconds. ONTIME may be less than TELAPSE if there were intevals during the observation in
+     * which the target was not observed (e.g., the shutter was closed, or the detector power was turned off).
+     */
+    ONTIME(HduType.ANY, ValueType.REAL, "integration time during the observation"),
+
+    /**
+     * The value field shall contain a floating point number giving the difference between the stop and start times of
+     * the observation in units of seconds. This keyword is synonymous with the ELAPTIME keyword.
+     */
+    TELAPSE(HduType.ANY, ValueType.REAL, "elapsed time of the observation"),
+
+    /**
+     * The value field shall contain a character string that gives the time at which the observation ended. This keyword
+     * is used in conjunction with the DATE-END keyword to give the ending time of the observation; the DATE-END keyword
+     * gives the ending calendar date, with format 'yyyy-mm-dd', and TIME-END gives the time within that day using the
+     * format 'hh:mm:ss.sss...'. This keyword should not be used if the time is included directly as part of the
+     * DATE-END keyword value with the format 'yyyy-mm-ddThh:mm:ss.sss'.
+     */
+    TIME_END("TIME-END", HduType.ANY, ValueType.STRING, "time at the end of the observation"),
+
+    /**
+     * The value field shall contain a character string that gives the time at which the observation started. This
+     * keyword is used in conjunction with the standard DATE-OBS keyword to give the starting time of the observation;
+     * the DATE-OBS keyword gives the starting calendar date, with format 'yyyy-mm-dd', and TIME-OBS gives the time
+     * within that day using the format 'hh:mm:ss.sss...'. This keyword should not be used if the time is included
+     * directly as part of the DATE-OBS keyword value with the format 'yyyy-mm-ddThh:mm:ss.sss'.
+     */
+    TIME_OBS("TIME-OBS", HduType.ANY, ValueType.STRING, "time at the start of the observation");
 
     private val header: FitsHeader
 
-    constructor(name: String, hduType: HduType, valueType: ValueType, comment: String?) {
+    constructor(name: String, hduType: HduType, valueType: ValueType, comment: String) {
         header = FitsHeaderImpl(name, hduType, valueType, comment)
     }
 
-    constructor(hduType: HduType, valueType: ValueType, comment: String?) {
+    constructor(hduType: HduType, valueType: ValueType, comment: String) {
         header = FitsHeaderImpl(name, hduType, valueType, comment)
     }
 
@@ -453,5 +751,20 @@ enum class Standard : FitsHeader {
         @JvmStatic val NAXIS1 = NAXISn.n(1)
         @JvmStatic val NAXIS2 = NAXISn.n(2)
         @JvmStatic val NAXIS3 = NAXISn.n(3)
+
+        @JvmStatic val CTYPE1 = CTYPEn.n(1)
+        @JvmStatic val CTYPE2 = CTYPEn.n(2)
+
+        @JvmStatic val CRPIX1 = CRPIXn.n(1)
+        @JvmStatic val CRPIX2 = CRPIXn.n(2)
+
+        @JvmStatic val CRVAL1 = CRVALn.n(1)
+        @JvmStatic val CRVAL2 = CRVALn.n(2)
+
+        @JvmStatic val CDELT1 = CDELTn.n(1)
+        @JvmStatic val CDELT2 = CDELTn.n(2)
+
+        @JvmStatic val CROTA1 = CROTAn.n(1)
+        @JvmStatic val CROTA2 = CROTAn.n(2)
     }
 }

@@ -103,7 +103,7 @@ fun RandomAccessFile.source(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSource = RandomAccessFileSource(this, timeout)
 
-fun File.seekableSource(
+fun File.source(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSource = RandomAccessFile(this, "r").source(timeout)
 
@@ -111,7 +111,7 @@ fun RandomAccessFile.sink(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSink = RandomAccessFileSink(this, timeout)
 
-fun File.seekableSink(
+fun File.sink(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSink = RandomAccessFile(this, "rw").sink(timeout)
 

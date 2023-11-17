@@ -2,7 +2,6 @@ package nebulosa.nasa.daf
 
 import nebulosa.io.SeekableSource
 import nebulosa.io.readDoubleArray
-import nebulosa.io.seekableSource
 import nebulosa.io.source
 import okio.Buffer
 import java.io.Closeable
@@ -10,7 +9,7 @@ import java.io.File
 
 class SourceDaf(private val source: SeekableSource) : Daf(), Closeable by source {
 
-    constructor(file: File) : this(file.seekableSource())
+    constructor(file: File) : this(file.source())
 
     override fun read(start: Int, end: Int): DoubleArray {
         source.seek(8L * (start - 1))

@@ -1,12 +1,12 @@
 package nebulosa.imaging.algorithms
 
-import nebulosa.fits.FitsKeywords
+import nebulosa.fits.Standard
 import nebulosa.fits.clone
 import nebulosa.imaging.Image
 
 class SubFrame(
     private val x: Int, private val y: Int,
-    private val width: Int, private val height: Int
+    private val width: Int, private val height: Int,
 ) : TransformAlgorithm {
 
     init {
@@ -21,8 +21,8 @@ class SubFrame(
         require(y + height <= source.height) { "subframe.height < source.height: ${y + height} > ${source.height}" }
 
         val header = source.header.clone()
-        header.addValue(FitsKeywords.NAXISn.n(1), width)
-        header.addValue(FitsKeywords.NAXISn.n(2), height)
+        header.add(Standard.NAXIS1, width)
+        header.add(Standard.NAXIS2, height)
         val subframe = Image(width, height, header, source.mono)
 
         var index = 0

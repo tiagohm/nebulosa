@@ -1,15 +1,12 @@
 package nebulosa.fits
 
 import nebulosa.log.loggerFor
-import nom.tam.fits.FitsFactory
-import nom.tam.fits.header.NonStandard
-import nom.tam.util.ComplexValue
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.*
 import kotlin.math.min
 
-internal class HeaderCardParser(private val line: String) {
+internal class HeaderCardParser(private val line: CharSequence) {
 
     private var parsePos = 0
 
@@ -57,11 +54,12 @@ internal class HeaderCardParser(private val line: String) {
         key = stem
         parsePos = endStem
 
-        // If not using HIERARCH, then be very resilient, and return whatever key the first 8 chars make...
+        // If not using HIERARCH, then be very resilient,
+        // and return whatever key the first 8 chars make...
 
         // If the line does not have an '=', can only be a simple key
         // If it's not a HIERARCH keyword, then return the simple key.
-        if (!FitsFactory.getUseHierarch() || iEq < 0 || stem != NonStandard.HIERARCH.key()) {
+        if (iEq < 0 || stem != NonStandard.HIERARCH.key) {
             return
         }
 
@@ -79,15 +77,14 @@ internal class HeaderCardParser(private val line: String) {
         }
         key = builder.toString()
 
-        if (NonStandard.HIERARCH.key() == key) {
+        if (NonStandard.HIERARCH.key == key) {
             // The key is only HIERARCH, without a hierarchical keyword after it...
             LOG.warn("HIERARCH base keyword without HIERARCH-style long key after it.")
             return
         }
 
-        if (!FitsFactory.getHierarchFormater().isCaseSensitive) {
-            key = key.uppercase()
-        }
+        // Case insensitive.
+        key = key.uppercase()
     }
 
     private fun skipSpaces(): Boolean {
@@ -145,7 +142,7 @@ internal class HeaderCardParser(private val line: String) {
 
             if (parsePos > HeaderCard.MAX_KEYWORD_LENGTH) {
                 // equal sign = after the 9th char -- only supported with hierarch keys...
-                if (!key.startsWith(NonStandard.HIERARCH.key() + ".")) {
+                if (!key.startsWith(NonStandard.HIERARCH.key + ".")) {
                     LOG.warn("[$key] possibly misplaced '=' (after byte 9).")
                     // It's not a HIERARCH key
                     return
@@ -231,13 +228,13 @@ internal class HeaderCardParser(private val line: String) {
     private fun getInferredValueType(key: String, value: String): Class<*> {
         if (value.isEmpty()) {
             LOG.warn("[$key] null non-string value (defaulted to Boolean.class).")
-            return Boolean::class.java
+            return Boolean::class.javaPrimitiveType!!
         }
 
         val trimmedValue = value.trim().uppercase()
 
         if ("T" == trimmedValue || "F" == trimmedValue) {
-            return Boolean::class.java
+            return Boolean::class.javaPrimitiveType!!
         }
         if (INT_REGEX.matches(trimmedValue)) {
             return getIntegerType(trimmedValue)
@@ -270,12 +267,12 @@ internal class HeaderCardParser(private val line: String) {
             val decimals = big.scale()
 
             if (decimals <= 7) {
-                return if (hasD) Double::class.java
-                else Float::class.java
+                return if (hasD) Double::class.javaPrimitiveType!!
+                else Float::class.javaPrimitiveType!!
             }
 
-            return if (decimals <= 16) Double::class.java
-            else BigDecimal::class.java
+            return if (decimals <= 16) Double::class.javaPrimitiveType!!
+            else BigDecimal::class.javaPrimitiveType!!
         }
 
         // Now non-zero values...
@@ -283,19 +280,20 @@ internal class HeaderCardParser(private val line: String) {
 
         val f = big.toFloat()
         if ((decimals <= 7) && f != 0.0f && f.isFinite()) {
-            return if (hasD) Double::class.java else Float::class.java
+            return if (hasD) Double::class.javaPrimitiveType!!
+            else Float::class.javaPrimitiveType!!
         }
 
         val d = big.toDouble()
 
-        return if ((decimals <= 16) && d != 0.0 && d.isFinite()) Double::class.java
+        return if ((decimals <= 16) && d != 0.0 && d.isFinite()) Double::class.javaPrimitiveType!!
         else BigDecimal::class.java
     }
 
     private fun getIntegerType(value: String): Class<out Number> {
         val bits = BigInteger(value).bitLength()
-        return if (bits < 32) Int::class.java
-        else return if (bits < 64) Long::class.java
+        return if (bits < 32) Int::class.javaPrimitiveType!!
+        else return if (bits < 64) Long::class.javaPrimitiveType!!
         else BigInteger::class.java
     }
 

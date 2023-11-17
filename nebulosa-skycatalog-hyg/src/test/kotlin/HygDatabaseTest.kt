@@ -4,6 +4,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import nebulosa.io.resource
 import nebulosa.skycatalog.hyg.HygDatabase
+import nebulosa.test.NonGitHubOnlyCondition
 
 @EnabledIf(NonGitHubOnlyCondition::class)
 class HygDatabaseTest : StringSpec() {

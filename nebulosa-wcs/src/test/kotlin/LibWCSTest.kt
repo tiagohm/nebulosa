@@ -7,6 +7,7 @@ import nebulosa.io.resource
 import nebulosa.math.AngleFormatter
 import nebulosa.math.deg
 import nebulosa.math.hours
+import nebulosa.test.NonGitHubOnlyCondition
 import nebulosa.wcs.WCSTransform
 import nom.tam.fits.Fits
 import nom.tam.fits.Header

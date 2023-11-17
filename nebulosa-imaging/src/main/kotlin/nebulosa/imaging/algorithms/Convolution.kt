@@ -26,7 +26,7 @@ open class Convolution(
         val yRadius = kernel.ySize / 2
 
         val c = FloatArray(source.numberOfChannels)
-        val cache = Array(source.numberOfChannels) { Array(kernel.xSize) { FloatArray(source.width) } }
+        val cache = Array(source.numberOfChannels) { Array(kernel.ySize) { FloatArray(source.width) } }
 
         for (y in 0 until source.height) {
             for (x in 0 until source.width) {
@@ -76,7 +76,7 @@ open class Convolution(
 
             if (r >= 0) {
                 val index = r * source.width
-                val k = r % kernel.xSize
+                val k = r % kernel.ySize
 
                 for (p in c.indices) {
                     cache[p][k].copyInto(source.data[p], index)
@@ -87,7 +87,7 @@ open class Convolution(
         repeat(yRadius) {
             val r = source.height - it - 1
             val index = r * source.width
-            val k = r % kernel.xSize
+            val k = r % kernel.ySize
 
             for (p in c.indices) {
                 cache[p][k].copyInto(source.data[p], index)

@@ -1,3 +1,5 @@
+package nebulosa.test
+
 import io.kotest.core.annotation.EnabledCondition
 import io.kotest.core.spec.Spec
 import kotlin.reflect.KClass

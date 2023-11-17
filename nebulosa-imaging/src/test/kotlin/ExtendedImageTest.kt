@@ -1,7 +1,7 @@
 import io.kotest.core.annotation.Ignored
 import io.kotest.matchers.ints.shouldBeExactly
+import nebulosa.fits.Fits
 import nebulosa.imaging.Image
-import nom.tam.fits.Fits
 import java.io.File
 import javax.imageio.ImageIO
 
@@ -12,12 +12,14 @@ class ExtendedImageTest : AbstractImageTest() {
     init {
         beforeSpec {
             var fits = Fits("src/test/resources/M51.8.Mono.fits")
+            fits.read()
             var image = Image.openFITS(fits)
             ImageIO.write(image, "JPEG", File("src/test/resources/M51.8.Mono.Extended.jpg"))
             ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Mono.Extended.png"))
             ImageIO.write(image, "BMP", File("src/test/resources/M51.8.Mono.Extended.bmp"))
 
             fits = Fits("src/test/resources/M51.8.Color.fits")
+            fits.read()
             image = Image.openFITS(fits)
             ImageIO.write(image, "JPEG", File("src/test/resources/M51.8.Color.Extended.jpg"))
             ImageIO.write(image, "PNG", File("src/test/resources/M51.8.Color.Extended.png"))
@@ -25,52 +27,52 @@ class ExtendedImageTest : AbstractImageTest() {
         }
 
         "jpeg mono" {
-            val inputFile = File("src/test/resources/M51.8.Mono.Extended.jpg")
-            val image = Image.open(inputFile)
-            val outputFile = File("src/test/resources/M51.8.Mono.Extended-V2.jpg")
-            ImageIO.write(image, "JPEG", outputFile)
+            val input = File("src/test/resources/M51.8.Mono.Extended.jpg")
+            val image = Image.openImage(ImageIO.read(input))
+            val output = File("src/test/resources/M51.8.Mono.Extended-V2.jpg")
+            ImageIO.write(image, "JPEG", output)
 
-            compareSomePixels(inputFile, outputFile)
+            compareSomePixels(input, output)
         }
         "jpeg color" {
-            val inputFile = File("src/test/resources/M51.8.Color.Extended.jpg")
-            val image = Image.open(inputFile)
-            val outputFile = File("src/test/resources/M51.8.Color.Extended-V2.jpg")
-            ImageIO.write(image, "JPEG", outputFile)
+            val input = File("src/test/resources/M51.8.Color.Extended.jpg")
+            val image = Image.openImage(ImageIO.read(input))
+            val output = File("src/test/resources/M51.8.Color.Extended-V2.jpg")
+            ImageIO.write(image, "JPEG", output)
 
-            compareSomePixels(inputFile, outputFile)
+            compareSomePixels(input, output)
         }
         "png mono" {
-            val inputFile = File("src/test/resources/M51.8.Mono.Extended.png")
-            val image = Image.open(inputFile)
-            val outputFile = File("src/test/resources/M51.8.Mono.Extended-V2.png")
-            ImageIO.write(image, "JPEG", outputFile)
+            val input = File("src/test/resources/M51.8.Mono.Extended.png")
+            val image = Image.openImage(ImageIO.read(input))
+            val output = File("src/test/resources/M51.8.Mono.Extended-V2.png")
+            ImageIO.write(image, "JPEG", output)
 
-            compareSomePixels(inputFile, outputFile)
+            compareSomePixels(input, output)
         }
         "png color" {
-            val inputFile = File("src/test/resources/M51.8.Color.Extended.png")
-            val image = Image.open(inputFile)
-            val outputFile = File("src/test/resources/M51.8.Color.Extended-V2.png")
-            ImageIO.write(image, "JPEG", outputFile)
+            val input = File("src/test/resources/M51.8.Color.Extended.png")
+            val image = Image.openImage(ImageIO.read(input))
+            val output = File("src/test/resources/M51.8.Color.Extended-V2.png")
+            ImageIO.write(image, "JPEG", output)
 
-            compareSomePixels(inputFile, outputFile)
+            compareSomePixels(input, output)
         }
         "bmp mono" {
-            val inputFile = File("src/test/resources/M51.8.Mono.Extended.bmp")
-            val image = Image.open(inputFile)
-            val outputFile = File("src/test/resources/M51.8.Mono.Extended-V2.bmp")
-            ImageIO.write(image, "JPEG", outputFile)
+            val input = File("src/test/resources/M51.8.Mono.Extended.bmp")
+            val image = Image.openImage(ImageIO.read(input))
+            val output = File("src/test/resources/M51.8.Mono.Extended-V2.bmp")
+            ImageIO.write(image, "JPEG", output)
 
-            compareSomePixels(inputFile, outputFile)
+            compareSomePixels(input, output)
         }
         "bmp color" {
-            val inputFile = File("src/test/resources/M51.8.Color.Extended.bmp")
-            val image = Image.open(inputFile)
-            val outputFile = File("src/test/resources/M51.8.Color.Extended-V2.bmp")
-            ImageIO.write(image, "JPEG", outputFile)
+            val input = File("src/test/resources/M51.8.Color.Extended.bmp")
+            val image = Image.openImage(ImageIO.read(input))
+            val output = File("src/test/resources/M51.8.Color.Extended-V2.bmp")
+            ImageIO.write(image, "JPEG", output)
 
-            compareSomePixels(inputFile, outputFile)
+            compareSomePixels(input, output)
         }
     }
 

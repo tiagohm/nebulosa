@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     api(project(":nebulosa-io"))
+    compileOnly(project(":nebulosa-fits"))
     api(libs.bundles.kotest)
 }
 

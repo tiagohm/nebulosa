@@ -4,7 +4,7 @@ data class FitsHeaderImpl(
     override val key: String,
     override val hduType: HduType,
     override val valueType: ValueType,
-    override val comment: String? = null,
+    override val comment: String = "",
 ) : FitsHeader {
 
     override fun n(vararg numbers: Int): FitsHeader {

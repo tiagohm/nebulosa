@@ -1,6 +1,6 @@
 package nebulosa.fits
 
-enum class NonStandard(hduType: HduType, valueType: ValueType, comment: String?) : FitsHeader {
+enum class NonStandard(hduType: HduType, valueType: ValueType, comment: String) : FitsHeader {
     /**
      * The HIERARCH keyword, when followed by spaces in columns 9 and 10 of the FITS card image, indicates that the ESO
      * HIERARCH keyword convention should be used to interpret the name and value of the keyword. The HIERARCH keyword

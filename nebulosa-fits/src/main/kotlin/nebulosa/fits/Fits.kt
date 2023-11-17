@@ -1,19 +1,53 @@
 package nebulosa.fits
 
-import okio.BufferedSource
 import okio.Sink
-import okio.Source
-import okio.buffer
+import java.io.Closeable
+import java.io.EOFException
+import java.io.File
+import java.io.RandomAccessFile
+import java.nio.file.Path
 
-class Fits : FitsReader, FitsWriter {
+class Fits private constructor(
+    path: Path,
+    private val hdus: ArrayList<Hdu<*>>,
+) : File("$path"), List<Hdu<*>> by hdus, Closeable {
 
-    override fun read(source: Source): Hdu? {
-        val buffered = if (source is BufferedSource) source else source.buffer()
+    constructor(path: Path) : this(path, ArrayList(4))
 
-        return null
+    constructor(path: String) : this(Path.of(path))
+
+    private val randomAccessFile = RandomAccessFile(this, "r")
+
+    private fun readHdu(): Hdu<*>? {
+        return try {
+            return FitsIO.read(randomAccessFile.channel).also(::add)
+        } catch (ignored: EOFException) {
+            null
+        }
     }
 
-    override fun write(sink: Sink, hdu: Hdu) {
-        TODO("Not yet implemented")
+    fun read() {
+        randomAccessFile.channel.position(0L)
+        hdus.clear()
+
+        while (true) {
+            readHdu() ?: break
+        }
+    }
+
+    fun add(hdu: Hdu<*>) {
+        hdus.add(hdu)
+    }
+
+    fun remove(hdu: Hdu<*>): Boolean {
+        return hdus.remove(hdu)
+    }
+
+    fun writeTo(outputStream: Sink) {
+        hdus.forEach { FitsIO.write(outputStream, it) }
+    }
+
+    override fun close() {
+        randomAccessFile.close()
     }
 }

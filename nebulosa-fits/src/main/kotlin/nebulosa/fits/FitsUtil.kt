@@ -2,72 +2,51 @@ package nebulosa.fits
 
 import nebulosa.math.Angle
 import nebulosa.math.deg
-import nom.tam.fits.Fits
-import nom.tam.fits.Header
-import nom.tam.fits.ImageHDU
 import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.seconds
 
-fun Fits.imageHDU(n: Int): ImageHDU? {
-    var index = 0
+@Suppress("NOTHING_TO_INLINE")
+inline fun Header.clone() = Header(this)
 
-    for (i in 0..255) {
-        val hdu = getHDU(i) ?: break
-
-        if (hdu is ImageHDU && index++ == n) {
-            return hdu
-        }
-    }
-
-    return null
-}
+inline val Header.naxis
+    get() = getInt(Standard.NAXIS, -1)
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun Header.naxis() = getIntValue(FitsKeywords.NAXIS, -1)
-
-@Suppress("NOTHING_TO_INLINE")
-inline fun Header.naxis(n: Int) = getIntValue(FitsKeywords.NAXISn.n(n))
-
-@Suppress("NOTHING_TO_INLINE")
-inline fun Header.clone() = Header(makeData())
+inline fun Header.naxis(n: Int) = getInt(Standard.NAXISn.n(n), 0)
 
 val Header.rightAscension
-    get() = Angle(
-        getStringValue(FitsKeywords.RA), isHours = true, decimalIsHours = false,
-        defaultValue = Angle(
-            getStringValue(FitsKeywords.OBJCTRA), true,
-            defaultValue = getDoubleValue(FitsKeywords.CRVAL1, Double.NaN).deg
-        )
-    )
+    get() = Angle(getString(Standard.RA, ""), isHours = true, decimalIsHours = false)
+        .takeIf { it.isFinite() }
+        ?.let { Angle(getString(SBFitsExt.OBJCTRA, ""), true) }
+        ?.takeIf { it.isFinite() }
+        ?: getDouble(NOAOExt.CRVAL1, Double.NaN).deg
 
 val Header.declination
-    get() = Angle(
-        getStringValue(FitsKeywords.DEC),
-        defaultValue = Angle(
-            getStringValue(FitsKeywords.OBJCTDEC),
-            defaultValue = getDoubleValue(FitsKeywords.CRVAL2, Double.NaN).deg
-        )
-    )
+    get() = Angle(getString(Standard.DEC, ""))
+        .takeIf { it.isFinite() }
+        ?.let { Angle(getString(SBFitsExt.OBJCTDEC, "")) }
+        ?.takeIf { it.isFinite() }
+        ?: getDouble(NOAOExt.CRVAL2, Double.NaN).deg
 
 val Header.binX
-    get() = getIntValue(FitsKeywords.XBINNING, 1)
+    get() = getInt(SBFitsExt.XBINNING, 1)
 
 val Header.binY
-    get() = getIntValue(FitsKeywords.YBINNING, 1)
+    get() = getInt(SBFitsExt.YBINNING, 1)
 
 val Header.exposureTime
-    get() = getDoubleValue(FitsKeywords.EXPTIME, getDoubleValue(FitsKeywords.EXPOSURE, 0.0)).seconds
+    get() = getDouble(Standard.EXPTIME, getDouble(Standard.EXPOSURE, 0.0)).seconds
 
 val Header.temperature
-    get() = getDoubleValue(FitsKeywords.CCDTEM, -272.15)
+    get() = getDouble(NOAOExt.CCDTEM, -272.15)
 
 val Header.latitude
-    get() = getDoubleValue(FitsKeywords.SITELAT, getDoubleValue("LAT-OBS")).deg
+    get() = getDouble(SBFitsExt.SITELAT, getDouble("LAT-OBS", Double.NaN)).deg
 
 val Header.longitude
-    get() = getDoubleValue(FitsKeywords.SITELONG, getDoubleValue("LONG-OBS")).deg
+    get() = getDouble(SBFitsExt.SITELONG, getDouble("LONG-OBS", Double.NaN)).deg
 
 val Header.observationDate
-    get() = getStringValue(FitsKeywords.DATE_OBS)
-        ?.ifBlank { null }
+    get() = getString(Standard.DATE_OBS, "")
+        .ifBlank { null }
         ?.let(LocalDateTime::parse)

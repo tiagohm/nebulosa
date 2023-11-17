@@ -1,7 +1,8 @@
 package nebulosa.astap.platesolving
 
 import nebulosa.common.process.ProcessExecutor
-import nebulosa.fits.FitsKeywords
+import nebulosa.fits.NOAOExt
+import nebulosa.fits.Standard
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.deg
@@ -85,20 +86,20 @@ class AstapPlateSolver(path: Path) : PlateSolver {
 
                 val calibration = Calibration(true, crota2.deg, cdelt2.deg, crval1.deg, crval2.deg, width.deg, height.deg)
 
-                calibration.addValue(FitsKeywords.CTYPE1, ctype1)
-                calibration.addValue(FitsKeywords.CTYPE2, ctype2)
-                calibration.addValue(FitsKeywords.CRPIX1, crpix1)
-                calibration.addValue(FitsKeywords.CRPIX2, crpix2)
-                calibration.addValue(FitsKeywords.CRVAL1, crval1)
-                calibration.addValue(FitsKeywords.CRVAL2, crval2)
-                calibration.addValue(FitsKeywords.CDELT1, cdelt1)
-                calibration.addValue(FitsKeywords.CDELT2, cdelt2)
-                calibration.addValue(FitsKeywords.CROTA1, crota1)
-                calibration.addValue(FitsKeywords.CROTA2, crota2)
-                calibration.addValue(FitsKeywords.CD1_1, cd11)
-                calibration.addValue(FitsKeywords.CD1_2, cd12)
-                calibration.addValue(FitsKeywords.CD2_1, cd21)
-                calibration.addValue(FitsKeywords.CD2_2, cd22)
+                calibration.add(Standard.CTYPE1, ctype1)
+                calibration.add(Standard.CTYPE2, ctype2)
+                calibration.add(Standard.CRPIX1, crpix1)
+                calibration.add(Standard.CRPIX2, crpix2)
+                calibration.add(Standard.CRVAL1, crval1)
+                calibration.add(Standard.CRVAL2, crval2)
+                calibration.add(Standard.CDELT1, cdelt1)
+                calibration.add(Standard.CDELT2, cdelt2)
+                calibration.add(Standard.CROTA1, crota1)
+                calibration.add(Standard.CROTA2, crota2)
+                calibration.add(NOAOExt.CD1_1, cd11)
+                calibration.add(NOAOExt.CD1_2, cd12)
+                calibration.add(NOAOExt.CD2_1, cd21)
+                calibration.add(NOAOExt.CD2_2, cd22)
 
                 LOG.info("astap solved. calibration={}", calibration)
 

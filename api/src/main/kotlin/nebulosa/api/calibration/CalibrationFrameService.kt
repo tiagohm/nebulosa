@@ -1,6 +1,5 @@
 package nebulosa.api.calibration
 
-import nebulosa.fits.FitsKeywords
 import nebulosa.fits.binX
 import nebulosa.fits.exposureTime
 import nebulosa.fits.temperature

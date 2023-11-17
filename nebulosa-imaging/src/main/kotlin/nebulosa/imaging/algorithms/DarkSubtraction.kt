@@ -1,6 +1,6 @@
 package nebulosa.imaging.algorithms
 
-import nebulosa.fits.FitsKeywords
+import nebulosa.fits.SBFitsExt
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import kotlin.math.abs
@@ -39,7 +39,7 @@ class DarkSubtraction(private val darkFrame: Image) : TransformAlgorithm {
                 }
             }
 
-            source.header.addValue(FitsKeywords.PEDESTAL, -(pedestal * 65535).toInt())
+            source.header.add(SBFitsExt.PEDESTAL, -(pedestal * 65535).toInt())
         }
 
         return source

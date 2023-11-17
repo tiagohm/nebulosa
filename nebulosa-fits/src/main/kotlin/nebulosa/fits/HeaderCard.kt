@@ -1,61 +1,47 @@
 package nebulosa.fits
 
-import nom.tam.util.ComplexValue
-import okio.BufferedSource
+import nebulosa.log.loggerFor
+import java.io.Serializable
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.nio.ByteBuffer
 
-class HeaderCard {
+data class HeaderCard(
+    override val key: String, override val value: String,
+    val comment: String, val type: Class<*>,
+) : Serializable, Map.Entry<String, String> {
 
-    var key = ""
-        private set
+    internal constructor(parsed: HeaderCardParser) : this(
+        parsed.key, parsed.value, parsed.comment, parsed.type
+    )
 
-    var value = ""
-        private set
-
-    var comment = ""
-        private set
-
-    var type: Class<*> = Nothing::class.java
-        private set
-
-    internal constructor(parsed: HeaderCardParser) {
-        key = parsed.key
-        value = parsed.value
-        comment = parsed.comment
-        type = parsed.type
-    }
-
-    constructor(source: BufferedSource) : this(HeaderCardParser(source.readString(80, Charsets.US_ASCII)))
-
-    val isCommentStyleCard
+    val isCommentStyle
         get() = type === Nothing::class.java
 
     val isKeyValuePair
-        get() = !isCommentStyleCard && key.isNotEmpty()
+        get() = !isCommentStyle && key.isNotEmpty()
 
     val isBooleanType
-        get() = Boolean::class.java.isAssignableFrom(type)
+        get() = BOOLEAN_TYPES.any { it === type }
 
     val isStringType
-        get() = String::class.java.isAssignableFrom(type)
+        get() = type === String::class.javaObjectType
 
     val isDecimalType
-        get() = Float::class.java.isAssignableFrom(type)
-                || Double::class.java.isAssignableFrom(type)
+        get() = DECIMAL_TYPES.any { it === type }
                 || BigDecimal::class.java.isAssignableFrom(type)
 
     val isIntegerType
-        get() = isNumericType && !isDecimalType
+        get() = INTEGET_TYPES.any { it === type }
 
     val isNumericType
-        get() = Number::class.java.isAssignableFrom(type)
+        get() = isDecimalType || isIntegerType
 
     val isBlank
-        get() = if (!isCommentStyleCard || key.isNotEmpty()) false else comment.isEmpty()
+        get() = if (!isCommentStyle || key.isNotBlank()) false else comment.isBlank()
 
     private fun getBooleanValue(defaultValue: Boolean): Boolean {
-        return if ("T" == value) true else if ("F" == value) false else defaultValue
+        return if (value == "T") true else if (value == "F") false else defaultValue
     }
 
     inline fun <reified T> getValue(defaultValue: T): T {
@@ -70,29 +56,34 @@ class HeaderCard {
         } else if (isBooleanType) {
             asType.cast(getBooleanValue(defaultValue as Boolean))
         } else if (ComplexValue::class.java.isAssignableFrom(asType)) {
-            asType.cast(ComplexValue(value))
+            asType.cast(ComplexValue.parse(value))
         } else if (isNumericType) {
             try {
                 val decimal = BigDecimal(value.uppercase().replace('D', 'E'))
 
-                if (Byte::class.java.isAssignableFrom(asType)) {
+                if (Byte::class.javaObjectType.isAssignableFrom(asType)) {
                     asType.cast(decimal.toByte())
-                } else if (Short::class.java.isAssignableFrom(asType)) {
+                } else if (Short::class.javaObjectType.isAssignableFrom(asType)) {
                     asType.cast(decimal.toShort())
-                } else if (Int::class.java.isAssignableFrom(asType)) {
+                } else if (Int::class.javaObjectType.isAssignableFrom(asType)) {
                     asType.cast(decimal.toInt())
-                } else if (Long::class.java.isAssignableFrom(asType)) {
+                } else if (Long::class.javaObjectType.isAssignableFrom(asType)) {
                     asType.cast(decimal.toLong())
-                } else if (Float::class.java.isAssignableFrom(asType)) {
+                } else if (Float::class.javaObjectType.isAssignableFrom(asType)) {
                     asType.cast(decimal.toFloat())
-                } else if (Double::class.java.isAssignableFrom(asType)) {
+                } else if (Double::class.javaObjectType.isAssignableFrom(asType)) {
                     asType.cast(decimal.toDouble())
-                } else if (BigInteger::class.java.isAssignableFrom(asType)) {
+                } else if (BigInteger::class.javaObjectType.isAssignableFrom(asType)) {
                     asType.cast(decimal.toBigInteger())
+                } else if (String::class.javaObjectType.isAssignableFrom(asType)) {
+                    asType.cast(decimal.toString())
+                } else if (Boolean::class.javaObjectType.isAssignableFrom(asType)) {
+                    asType.cast(decimal.toBigInteger().compareTo(BigInteger.ZERO) != 0)
                 } else {
                     asType.cast(decimal)
                 }
             } catch (e: NumberFormatException) {
+                LOG.error("failed to parse numeric value", e)
                 defaultValue
             }
         } else {
@@ -100,31 +91,9 @@ class HeaderCard {
         }
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as HeaderCard
-
-        if (key != other.key) return false
-        if (value != other.value) return false
-        if (comment != other.comment) return false
-        if (type != other.type) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = key.hashCode()
-        result = 31 * result + value.hashCode()
-        result = 31 * result + comment.hashCode()
-        result = 31 * result + type.hashCode()
-        return result
-    }
-
-    override fun toString() = "HeaderCard(key='$key', value='$value', comment='$comment', type=$type)"
-
     companion object {
+
+        @JvmStatic private val LOG = loggerFor<HeaderCard>()
 
         const val FITS_HEADER_CARD_SIZE = 80
         const val MAX_KEYWORD_LENGTH = 8
@@ -139,5 +108,61 @@ class HeaderCard {
         const val MIN_VALID_CHAR = 0x20.toChar()
         const val MAX_VALID_CHAR = 0x7e.toChar()
         const val EMPTY_KEY = ""
+
+        @JvmStatic private val BOOLEAN_TYPES = arrayOf(
+            Boolean::class.javaPrimitiveType!!, Boolean::class.javaObjectType,
+        )
+
+        @JvmStatic private val DECIMAL_TYPES = arrayOf(
+            Float::class.javaPrimitiveType!!, Double::class.javaPrimitiveType!!,
+            Float::class.javaObjectType, Double::class.javaObjectType,
+        )
+
+        @JvmStatic private val INTEGET_TYPES = arrayOf(
+            Byte::class.javaPrimitiveType!!, Short::class.javaPrimitiveType!!,
+            Int::class.javaPrimitiveType!!, Long::class.javaPrimitiveType!!,
+            Byte::class.javaObjectType, Short::class.javaObjectType,
+            Int::class.javaObjectType, Long::class.javaObjectType,
+        )
+
+        @JvmStatic
+        fun from(source: ByteBuffer): HeaderCard {
+            return from(Charsets.US_ASCII.decode(source))
+        }
+
+        @JvmStatic
+        fun from(source: CharSequence): HeaderCard {
+            return HeaderCard(HeaderCardParser(source))
+        }
+
+        @JvmStatic
+        fun create(header: FitsHeader, value: Boolean): HeaderCard {
+            return HeaderCard(header.key, if (value) "T" else "F", header.comment, Boolean::class.javaPrimitiveType!!)
+        }
+
+        @JvmStatic
+        fun create(header: FitsHeader, value: Int): HeaderCard {
+            return HeaderCard(header.key, "$value", header.comment, Int::class.javaPrimitiveType!!)
+        }
+
+        @JvmStatic
+        fun create(header: FitsHeader, value: Long): HeaderCard {
+            return HeaderCard(header.key, "$value", header.comment, Long::class.javaPrimitiveType!!)
+        }
+
+        @JvmStatic
+        fun create(header: FitsHeader, value: Float): HeaderCard {
+            return HeaderCard(header.key, "$value", header.comment, Float::class.javaPrimitiveType!!)
+        }
+
+        @JvmStatic
+        fun create(header: FitsHeader, value: Double): HeaderCard {
+            return HeaderCard(header.key, "$value", header.comment, Double::class.javaPrimitiveType!!)
+        }
+
+        @JvmStatic
+        fun create(header: FitsHeader, value: String): HeaderCard {
+            return HeaderCard(header.key, value, header.comment, String::class.javaObjectType)
+        }
     }
 }

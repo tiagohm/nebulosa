@@ -1,48 +1,37 @@
 package nebulosa.imaging
 
-import nebulosa.fits.FitsKeywords
-import nebulosa.fits.imageHDU
-import nebulosa.fits.naxis
+import nebulosa.fits.*
 import nebulosa.imaging.algorithms.*
-import nom.tam.fits.Fits
-import nom.tam.fits.Header
-import nom.tam.fits.ImageData
-import nom.tam.fits.ImageHDU
-import nom.tam.fits.header.Bitpix
-import nom.tam.util.FitsOutputStream
 import java.awt.color.ColorSpace
 import java.awt.image.*
-import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
-import java.nio.FloatBuffer
-import java.nio.file.Path
-import javax.imageio.ImageIO
-import kotlin.io.path.outputStream
 import kotlin.math.max
 import kotlin.math.min
 
 @Suppress("NOTHING_TO_INLINE")
 class Image(
     width: Int, height: Int,
-    header: Header,
-    val mono: Boolean,
+    val header: Header, val mono: Boolean,
 ) : BufferedImage(colorModel(mono), raster(width, height, mono), false, null) {
 
     @JvmField val numberOfChannels = if (mono) 1 else 3
     @JvmField val stride = width
     @JvmField val buffer = raster.dataBuffer as Float8bitsDataBuffer
-    @JvmField val data = buffer.data
-    @JvmField val r = buffer.r
-    @JvmField val g = buffer.g
-    @JvmField val b = buffer.b
+    @JvmField val size = width * height
 
-    var header = header
-        private set
+    inline val data
+        get() = buffer.data
 
-    val size = width * height
+    inline val r
+        get() = buffer.r
 
-    val indices = 0 until size
+    inline val g
+        get() = buffer.g
+
+    inline val b
+        get() = buffer.b
+
+    inline val indices
+        get() = 0 until size
 
     inline fun indexAt(x: Int, y: Int): Int {
         return y * stride + x
@@ -149,52 +138,37 @@ class Image(
         return readGray(indexAt(x, y))
     }
 
-    fun writeByteArray(channel: ImageChannel, data: Array<ByteArray>) {
+    fun writeImageData(channel: ImageChannel, data: ImageData) {
         var idx = 0
 
-        for (y in data.indices) {
-            for (x in 0 until data[y].size) {
-                write(idx++, channel, (data[y][x].toInt() and 0xff) / 255f)
+        when (data.bitpix) {
+            Bitpix.BYTE -> data.read {
+                while (it.hasRemaining()) {
+                    write(idx++, channel, (it.get().toInt() and 0xFF) / 255f)
+                }
             }
-        }
-    }
-
-    fun writeShortArray(channel: ImageChannel, data: Array<ShortArray>) {
-        var idx = 0
-
-        for (y in data.indices) {
-            for (x in 0 until data[y].size) {
-                write(idx++, channel, (data[y][x].toInt() + 32768) / 65535f)
+            Bitpix.SHORT -> data.read {
+                while (it.hasRemaining()) {
+                    write(idx++, channel, (it.getShort().toInt() + 32768) / 65535f)
+                }
             }
-        }
-    }
-
-    fun writeIntArray(channel: ImageChannel, data: Array<IntArray>) {
-        var idx = 0
-
-        for (y in data.indices) {
-            for (x in 0 until data[y].size) {
-                write(idx++, channel, ((data[y][x].toLong() + 2147483648) / 4294967295.0).toFloat())
+            Bitpix.INTEGER -> data.read {
+                while (it.hasRemaining()) {
+                    write(idx++, channel, ((it.getInt().toLong() + 2147483648) / 4294967295.0).toFloat())
+                }
             }
-        }
-    }
-
-    fun writeFloatArray(channel: ImageChannel, data: Array<FloatArray>) {
-        var idx = 0
-
-        for (y in data.indices) {
-            for (x in 0 until data[y].size) {
-                write(idx++, channel, data[y][x])
+            Bitpix.FLOAT -> data.read {
+                while (it.hasRemaining()) {
+                    write(idx++, channel, it.getFloat())
+                }
             }
-        }
-    }
-
-    fun writeDoubleArray(channel: ImageChannel, data: Array<DoubleArray>) {
-        var idx = 0
-
-        for (y in data.indices) {
-            for (x in 0 until data[y].size) {
-                write(idx++, channel, data[y][x].toFloat())
+            Bitpix.DOUBLE -> data.read {
+                while (it.hasRemaining()) {
+                    write(idx++, channel, it.getDouble().toFloat())
+                }
+            }
+            Bitpix.LONG -> {
+                throw UnsupportedOperationException("BITPIX 64-bit integer is not supported")
             }
         }
     }
@@ -221,39 +195,9 @@ class Image(
         }
     }
 
-    fun fits(): Fits {
-        val fits = Fits()
-
-        val data = ImageData(header)
-        val buffer = FloatArray(buffer.size)
-
-        r.copyInto(buffer, 0)
-
-        if (!mono) {
-            g.copyInto(buffer, size)
-            b.copyInto(buffer, size * 2)
-        }
-
-        data.setBuffer(FloatBuffer.wrap(buffer))
-
-        val hdu = ImageHDU(header, data)
-
-        fits.addHDU(hdu)
-
-        return fits
-    }
-
-    fun writeAsFits(file: File) {
-        file.outputStream().use(::writeAsFits)
-    }
-
-    fun writeAsFits(path: Path) {
-        path.outputStream().use(::writeAsFits)
-    }
-
-    fun writeAsFits(outputStream: OutputStream) {
-        val fitsOutputStream = FitsOutputStream(outputStream)
-        fitsOutputStream.use { fos -> fits().use { it.write(fos) } }
+    fun hdu(): Hdu<ImageData> {
+        val data = Array(numberOfChannels) { FloatArrayImageData(width, height, this.data[it]) }
+        return ImageHdu(header, data)
     }
 
     /**
@@ -321,68 +265,27 @@ class Image(
         }
 
         @JvmStatic
-        fun open(
-            path: Path,
-            debayer: Boolean = true,
-            onlyHeaders: Boolean = false,
-            output: Image? = null,
-        ) = open(path.toFile(), debayer, onlyHeaders, output)
-
-        @JvmStatic
-        fun open(
-            file: File,
-            debayer: Boolean = true,
-            onlyHeaders: Boolean = false,
-            output: Image? = null,
-        ) = ImageIO.read(file)?.let(::openImage)
-            ?: Fits(file).use { openFITS(it, debayer, onlyHeaders, output) }
-
-        @JvmStatic
-        fun openFITS(
-            inputStream: InputStream,
-            debayer: Boolean = true,
-            onlyHeaders: Boolean = false,
-            output: Image? = null,
-        ) = Fits(inputStream).use { openFITS(it, debayer, onlyHeaders, output) }
-
-        @JvmStatic
-        fun openImage(inputStream: InputStream): Image? {
-            return ImageIO.read(inputStream)?.let(this::openImage)
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        @JvmStatic
         fun openFITS(
             fits: Fits,
             debayer: Boolean = true,
-            onlyHeaders: Boolean = false,
-            output: Image? = null,
-        ): Image {
-            val hdu = requireNotNull(fits.imageHDU(0)) { "The FITS file not contains an image" }
+        ) = openFITS(fits.filterIsInstance<ImageHdu>().first(), debayer)
 
+        @JvmStatic
+        fun openFITS(
+            hdu: ImageHdu,
+            debayer: Boolean = true,
+        ): Image {
             val header = hdu.header
             val width = header.naxis(1)
             val height = header.naxis(2)
             val mono = isMono(header) || !debayer
-            val axes = hdu.axes
-            val bitpix = hdu.bitpix
-
-            if (output != null) {
-                require(output.width == width) { "output width [${output.width}] dont match: [$width]" }
-                require(output.height == height) { "output height [${output.height}] dont match: [$height]" }
-                require(output.mono == mono) { "output mono [${output.mono}] dont match: [$mono]" }
-            }
+            val naxis = header.naxis
 
             // TODO: DATA[i] = BZERO + BSCALE * DATA[i]
 
-            header.addValue(FitsKeywords.BITPIX, Bitpix.VALUE_FOR_FLOAT)
+            val image = Image(width, height, header, mono)
 
-            val image = output ?: Image(width, height, header, mono)
-            image.header = header
-
-            if (onlyHeaders) return image
-
-            val pixels = hdu.kernel as Array<*>
+            val pixels = hdu.data
 
             fun rescaling() {
                 for (p in 0 until image.numberOfChannels) {
@@ -406,17 +309,9 @@ class Image(
             }
 
             // Mono.
-            if (axes.size == 2) {
-                val bayer = CfaPattern.of(hdu)
-
-                when (val numberType = bitpix.numberType) {
-                    Byte::class.java -> image.writeByteArray(ImageChannel.RED, pixels as Array<ByteArray>)
-                    Short::class.java -> image.writeShortArray(ImageChannel.RED, pixels as Array<ShortArray>)
-                    Int::class.java -> image.writeIntArray(ImageChannel.RED, pixels as Array<IntArray>)
-                    Float::class.java -> image.writeFloatArray(ImageChannel.RED, pixels as Array<FloatArray>)
-                    Double::class.java -> image.writeDoubleArray(ImageChannel.RED, pixels as Array<DoubleArray>)
-                    else -> throw IllegalStateException("invalid bitpix number type: $numberType")
-                }
+            if (naxis == 2) {
+                val bayer = CfaPattern.from(header)
+                image.writeImageData(ImageChannel.GRAY, pixels[0])
 
                 rescaling()
 
@@ -425,14 +320,7 @@ class Image(
                 }
             } else {
                 for (channel in ImageChannel.RGB) {
-                    when (val numberType = bitpix.numberType) {
-                        Byte::class.java -> image.writeByteArray(channel, pixels[channel.offset] as Array<ByteArray>)
-                        Short::class.java -> image.writeShortArray(channel, pixels[channel.offset] as Array<ShortArray>)
-                        Int::class.java -> image.writeIntArray(channel, pixels[channel.offset] as Array<IntArray>)
-                        Float::class.java -> image.writeFloatArray(channel, pixels[channel.offset] as Array<FloatArray>)
-                        Double::class.java -> image.writeDoubleArray(channel, pixels[channel.offset] as Array<DoubleArray>)
-                        else -> throw IllegalStateException("invalid bitpix number type: $numberType")
-                    }
+                    image.writeImageData(channel, pixels[channel.offset])
                 }
 
                 rescaling()
@@ -442,31 +330,24 @@ class Image(
         }
 
         @JvmStatic
-        fun openImage(bufferedImage: BufferedImage, output: Image? = null): Image {
+        fun openImage(bufferedImage: BufferedImage): Image {
             val header = Header()
             val width = bufferedImage.width
             val height = bufferedImage.height
             val mono = bufferedImage.type == TYPE_BYTE_GRAY
                     || bufferedImage.type == TYPE_USHORT_GRAY
 
-            if (output != null) {
-                require(output.width == width) { "output width [${output.width}] dont match: [$width]" }
-                require(output.height == height) { "output height [${output.height}] dont match: [$height]" }
-                require(output.mono == mono) { "output mono [${output.mono}] dont match: [$mono]" }
-            }
+            header.add(Standard.SIMPLE, true)
+            header.add(Standard.BITPIX, Bitpix.FLOAT.code)
+            header.add(Standard.NAXIS, if (mono) 2 else 3)
+            header.add(Standard.NAXISn.n(1), width)
+            header.add(Standard.NAXISn.n(2), height)
+            if (!mono) header.add(Standard.NAXISn.n(3), 3)
+            header.add(Standard.BSCALE, 1.0)
+            header.add(Standard.BZERO, 0.0)
+            header.add(Standard.EXTEND, true)
 
-            header.addValue(FitsKeywords.SIMPLE, true)
-            header.addValue(FitsKeywords.BITPIX, Bitpix.VALUE_FOR_FLOAT)
-            header.addValue(FitsKeywords.NAXIS, if (mono) 2 else 3)
-            header.addValue(FitsKeywords.NAXISn.n(1), width)
-            header.addValue(FitsKeywords.NAXISn.n(2), height)
-            if (!mono) header.addValue(FitsKeywords.NAXISn.n(3), 3)
-            header.addValue(FitsKeywords.BSCALE, 1.0)
-            header.addValue(FitsKeywords.BZERO, 0.0)
-            header.addValue(FitsKeywords.EXTEND, true)
-
-            val image = output ?: Image(width, height, header, mono)
-            image.header = header
+            val image = Image(width, height, header, mono)
 
             var idx = 0
 
@@ -490,7 +371,7 @@ class Image(
 
         @JvmStatic
         fun isMono(header: Header): Boolean {
-            return header.naxis() != 3 && !(header.naxis() == 2 && CfaPattern.of(header) != null)
+            return header.naxis != 3 && !(header.naxis == 2 && CfaPattern.from(header) != null)
         }
     }
 }

@@ -4,5 +4,5 @@ import okio.Sink
 
 interface FitsWriter {
 
-    fun write(sink: Sink, hdu: Hdu)
+    fun write(sink: Sink, hdu: Hdu<*>)
 }

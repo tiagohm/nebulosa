@@ -16,7 +16,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
         val file = createFile()
 
         "write" {
-            val sink = file.seekableSink()
+            val sink = file.sink()
 
             val buffer = sink.buffer()
             buffer.writeByte(0xab)
@@ -38,7 +38,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
             buffer.flush()
         }
         "read" {
-            val source = file.seekableSource()
+            val source = file.source()
 
             val buffer = source.buffer()
             buffer.readByte().toInt() and 0xff shouldBeExactly 0xab
@@ -61,7 +61,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
             buffer.exhausted().shouldBeTrue()
         }
         "seek and write" {
-            val sink = file.seekableSink()
+            val sink = file.sink()
             sink.seek(-1L)
 
             val buffer = sink.buffer()
@@ -69,7 +69,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
             buffer.flush()
         }
         "skip and read" {
-            val source = file.seekableSource()
+            val source = file.source()
             source.skip(78)
 
             val buffer = source.buffer()
@@ -78,7 +78,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
             buffer.exhausted().shouldBeTrue()
         }
         "seek and read" {
-            val source = file.seekableSource()
+            val source = file.source()
             source.seek(-1L)
 
             val buffer = source.buffer()
@@ -89,13 +89,13 @@ class BufferedRandomAccessFileTest : StringSpec() {
         "close emits buffered bytes" {
             file.writeBytes(EMPTY_BYTE_ARRAY)
 
-            val sink = file.seekableSink()
+            val sink = file.sink()
 
             sink.buffer().use {
                 it.writeByte(0x99)
             }
 
-            val source = file.seekableSource()
+            val source = file.source()
             val buffer = source.buffer()
             buffer.readByte().toInt() and 0xff shouldBeExactly 0x99
         }

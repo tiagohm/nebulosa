@@ -5,6 +5,7 @@ import nebulosa.io.resource
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.skycatalog.stellarium.Nebula
+import nebulosa.test.NonGitHubOnlyCondition
 import okio.gzip
 import okio.source
 

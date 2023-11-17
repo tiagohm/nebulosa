@@ -3,10 +3,10 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
+import nebulosa.fits.Fits
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.star.hfd.FindResult
 import nebulosa.imaging.algorithms.star.hfd.HalfFluxDiameter
-import nom.tam.fits.Fits
 
 class HFDTest : StringSpec() {
 

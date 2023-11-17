@@ -1,8 +1,8 @@
 package nebulosa.fits
 
-import okio.BufferedSource
+import java.nio.channels.SeekableByteChannel
 
 interface FitsElement {
 
-    fun read(source: BufferedSource)
+    fun read(source: SeekableByteChannel)
 }

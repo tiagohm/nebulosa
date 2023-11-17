@@ -1,7 +1,7 @@
 package nebulosa.fits
 
 enum class Compression(
-    hduType: HduType, valueType: ValueType, comment: String?,
+    hduType: HduType, valueType: ValueType, comment: String,
     val uncompressedKey: FitsHeader? = null,
 ) : FitsHeader {
     /**
