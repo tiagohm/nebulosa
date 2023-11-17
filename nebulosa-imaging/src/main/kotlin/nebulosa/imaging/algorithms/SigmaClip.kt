@@ -39,7 +39,7 @@ data class SigmaClip(
         var numberOfIterations = 0
 
         while (maxIteration <= 0 || numberOfIterations < maxIteration) {
-            val stats = Statistics(channel, noSumOfSquares = true, noMedian = centerMethod != CenterMethod.MEDIAN)
+            val stats = Statistics(channel, noMedian = centerMethod != CenterMethod.MEDIAN)
                 .compute(source)
 
             val center = if (centerMethod == CenterMethod.MEDIAN) stats.median else stats.mean

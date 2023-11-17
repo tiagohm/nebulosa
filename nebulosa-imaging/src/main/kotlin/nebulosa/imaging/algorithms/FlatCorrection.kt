@@ -13,7 +13,7 @@ class FlatCorrection(private val flatFrame: Image) : TransformAlgorithm {
 
         for (i in 0 until source.numberOfChannels) {
             val channel = ImageChannel.RGB[i]
-            val stats = source.compute(Statistics(channel, noSumOfSquares = true, noMedian = true, noDeviation = true))
+            val stats = source.compute(Statistics(channel, noMedian = true, noDeviation = true))
 
             for (k in 0 until size) {
                 val light = source.read(k, channel)

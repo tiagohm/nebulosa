@@ -373,5 +373,29 @@ class Image(
         fun isMono(header: Header): Boolean {
             return header.naxis != 3 && !(header.naxis == 2 && CfaPattern.from(header) != null)
         }
+
+        inline fun Image.forEach(
+            channel: ImageChannel = ImageChannel.GRAY,
+            stepSize: Int = 1,
+            computation: (Float) -> Unit,
+        ): Int {
+            var count = 0
+
+            for (i in indices step stepSize) {
+                val pixel = when (channel) {
+                    ImageChannel.GRAY -> readGray(i)
+                    ImageChannel.RED -> readRed(i)
+                    ImageChannel.GREEN -> readGreen(i)
+                    ImageChannel.BLUE -> readBlue(i)
+                }
+
+                if (pixel >= 0f && pixel.isFinite()) {
+                    computation(pixel)
+                    count++
+                }
+            }
+
+            return count
+        }
     }
 }

@@ -1,16 +1,14 @@
 package nebulosa.imaging.algorithms
 
-import kotlin.math.max
 import kotlin.math.sqrt
 
 open class MatrixConvolutionKernel(
     private val kernel: FloatArray,
-    override val xSize: Int = sqrt(kernel.size.toDouble()).toInt(),
-    override val ySize: Int = xSize,
+    override val width: Int = sqrt(kernel.size.toDouble()).toInt(),
+    override val height: Int = width,
 ) : ConvolutionKernel {
 
-    override val divisor
-        get() = max(1f, kernel.sum())
+    override val divisor = kernel.sum()
 
-    override fun get(index: Int) = kernel[index]
+    override fun get(x: Int, y: Int) = kernel[y * width + x]
 }

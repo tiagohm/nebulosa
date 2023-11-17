@@ -1,37 +1,44 @@
 package nebulosa.imaging.algorithms
 
 import nebulosa.imaging.Image
+import nebulosa.imaging.Image.Companion.forEach
 import nebulosa.imaging.ImageChannel
-import nebulosa.imaging.algorithms.ComputationAlgorithm.Companion.sampling
+import kotlin.math.max
+import kotlin.math.min
 
-class Median(
-    private val channel: ImageChannel = ImageChannel.GRAY,
-    private val sampleBy: Int = 1,
-) : ComputationAlgorithm<Float> {
+class Median(private val channel: ImageChannel = ImageChannel.GRAY) : ComputationAlgorithm<Float> {
 
     override fun compute(source: Image): Float {
-        val buffer = IntArray(65536)
+        val histogram = IntArray(65536)
 
-        val length = source.sampling(channel, sampleBy) {
-            val value = (it * 65535).toInt()
-            buffer[value]++
+        val totalCount = source.forEach(channel) {
+            val value = max(0, min((it * 65535).toInt(), 65535))
+            histogram[value]++
         }
 
-        return compute(buffer, length / 2)
+        return compute(histogram, totalCount / 2f)
     }
 
     companion object {
 
         @JvmStatic
-        internal fun compute(data: IntArray, length: Int): Float {
-            var amount = 0
+        fun compute(histogram: IntArray, percentileCount: Float): Float {
+            val percentileCountInt = percentileCount.toInt()
+            var cumulativeFrequency = 0
+            var lowerCumulativeFrequency = 0
             var c = 0
 
-            while (amount <= length && c < data.size) {
-                amount += data[c++]
+            while (cumulativeFrequency <= percentileCountInt && c < histogram.size) {
+                lowerCumulativeFrequency = cumulativeFrequency
+                cumulativeFrequency += histogram[c++]
             }
 
-            return (c - 1) / 65535f
+            val lowerBound = (c - 1) / 65535f
+            val upperBound = c / 65535f
+            val binWidth = upperBound - lowerBound
+            val percentage = (percentileCount - lowerCumulativeFrequency) / histogram[c - 1]
+
+            return lowerBound + percentage * binWidth
         }
     }
 }

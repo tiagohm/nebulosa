@@ -2,13 +2,11 @@ package nebulosa.imaging.algorithms
 
 interface ConvolutionKernel {
 
-    val xSize: Int
+    val width: Int
 
-    val ySize: Int
+    val height: Int
 
-    operator fun get(index: Int): Float
-
-    operator fun get(x: Int, y: Int) = get(y * xSize + x)
+    operator fun get(x: Int, y: Int): Float
 
     val divisor: Float
 }

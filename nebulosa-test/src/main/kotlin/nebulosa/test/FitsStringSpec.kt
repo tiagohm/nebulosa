@@ -7,45 +7,45 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
-@Suppress("LeakingThis")
+@Suppress("LeakingThis", "PropertyName")
 abstract class FitsStringSpec : StringSpec() {
 
-    @JvmField protected val m8bit = Fits("../nebulosa-test/src/main/resources/fits/Mono.8.fits")
-    @JvmField protected val m16bit = Fits("../nebulosa-test/src/main/resources/fits/Mono.16.fits")
-    @JvmField protected val m32bit = Fits("../nebulosa-test/src/main/resources/fits/Mono.32.fits")
-    @JvmField protected val mF32bit = Fits("../nebulosa-test/src/main/resources/fits/Mono.F32.fits")
-    @JvmField protected val mF64bit = Fits("../nebulosa-test/src/main/resources/fits/Mono.F64.fits")
-    @JvmField protected val c8bit = Fits("../nebulosa-test/src/main/resources/fits/Color.8.fits")
-    @JvmField protected val c16bit = Fits("../nebulosa-test/src/main/resources/fits/Color.16.fits")
-    @JvmField protected val c32bit = Fits("../nebulosa-test/src/main/resources/fits/Color.32.fits")
-    @JvmField protected val cF32bit = Fits("../nebulosa-test/src/main/resources/fits/Color.F32.fits")
-    @JvmField protected val cF64bit = Fits("../nebulosa-test/src/main/resources/fits/Color.F64.fits")
+    @JvmField protected val NGC3344_COLOR_8 = Fits("../nebulosa-test/src/main/resources/fits/NGC3344.Color.8.fits")
+    @JvmField protected val NGC3344_COLOR_16 = Fits("../nebulosa-test/src/main/resources/fits/NGC3344.Color.16.fits")
+    @JvmField protected val NGC3344_COLOR_32 = Fits("../nebulosa-test/src/main/resources/fits/NGC3344.Color.32.fits")
+    @JvmField protected val NGC3344_COLOR_F32 = Fits("../nebulosa-test/src/main/resources/fits/NGC3344.Color.F32.fits")
+    @JvmField protected val NGC3344_COLOR_F64 = Fits("../nebulosa-test/src/main/resources/fits/NGC3344.Color.F64.fits")
+    @JvmField protected val NGC3344_MONO_8 = Fits("../nebulosa-test/src/main/resources/fits/NGC3344.Mono.8.fits")
+    @JvmField protected val NGC3344_MONO_16 = Fits("../nebulosa-test/src/main/resources/fits/NGC3344.Mono.16.fits")
+    @JvmField protected val NGC3344_MONO_32 = Fits("../nebulosa-test/src/main/resources/fits/NGC3344.Mono.32.fits")
+    @JvmField protected val NGC3344_MONO_F32 = Fits("../nebulosa-test/src/main/resources/fits/NGC3344.Mono.F32.fits")
+    @JvmField protected val NGC3344_MONO_F64 = Fits("../nebulosa-test/src/main/resources/fits/NGC3344.Mono.F64.fits")
 
     init {
         beforeSpec {
-            m8bit.read()
-            m16bit.read()
-            m32bit.read()
-            mF32bit.read()
-            mF64bit.read()
-            c8bit.read()
-            c16bit.read()
-            c32bit.read()
-            cF32bit.read()
-            cF64bit.read()
+            NGC3344_COLOR_8.read()
+            NGC3344_COLOR_16.read()
+            NGC3344_COLOR_32.read()
+            NGC3344_COLOR_F32.read()
+            NGC3344_COLOR_F64.read()
+            NGC3344_MONO_8.read()
+            NGC3344_MONO_16.read()
+            NGC3344_MONO_32.read()
+            NGC3344_MONO_F32.read()
+            NGC3344_MONO_F64.read()
         }
 
         afterSpec {
-            m8bit.close()
-            m16bit.close()
-            m32bit.close()
-            mF32bit.close()
-            mF64bit.close()
-            c8bit.close()
-            c16bit.close()
-            c32bit.close()
-            cF32bit.close()
-            cF64bit.close()
+            NGC3344_COLOR_8.close()
+            NGC3344_COLOR_16.close()
+            NGC3344_COLOR_32.close()
+            NGC3344_COLOR_F32.close()
+            NGC3344_COLOR_F64.close()
+            NGC3344_MONO_8.close()
+            NGC3344_MONO_16.close()
+            NGC3344_MONO_32.close()
+            NGC3344_MONO_F32.close()
+            NGC3344_MONO_F64.close()
         }
     }
 
