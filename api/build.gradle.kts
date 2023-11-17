@@ -48,7 +48,7 @@ dependencies {
     implementation("org.hibernate.orm:hibernate-community-dialects")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    kapt("org.springframework:spring-context-indexer:6.0.13")
+    kapt("org.springframework:spring-context-indexer:6.1.0")
     testImplementation(project(":nebulosa-skycatalog-hyg"))
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))
