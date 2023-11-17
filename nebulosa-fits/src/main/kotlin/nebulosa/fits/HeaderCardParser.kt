@@ -1,6 +1,7 @@
 package nebulosa.fits
 
 import nebulosa.log.loggerFor
+import org.apache.commons.numbers.complex.Complex
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.*
@@ -243,7 +244,7 @@ internal class HeaderCardParser(private val line: CharSequence) {
             return getDecimalType(trimmedValue)
         }
         if (COMPLEX_REGEX.matches(trimmedValue)) {
-            return ComplexValue::class.java
+            return Complex::class.java
         }
 
         LOG.warn("[$key] unrecognised non-string value type '$trimmedValue'.")

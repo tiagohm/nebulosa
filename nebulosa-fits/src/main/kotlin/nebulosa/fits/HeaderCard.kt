@@ -1,6 +1,7 @@
 package nebulosa.fits
 
 import nebulosa.log.loggerFor
+import org.apache.commons.numbers.complex.Complex
 import java.io.Serializable
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -51,12 +52,12 @@ data class HeaderCard(
     fun <T> getValue(asType: Class<out T>, defaultValue: T): T {
         return if (isStringType) {
             asType.cast(value)
-        } else if (value.isEmpty()) {
+        } else if (value.isBlank()) {
             defaultValue
         } else if (isBooleanType) {
             asType.cast(getBooleanValue(defaultValue as Boolean))
-        } else if (ComplexValue::class.java.isAssignableFrom(asType)) {
-            asType.cast(ComplexValue.parse(value))
+        } else if (Complex::class.java.isAssignableFrom(asType)) {
+            asType.cast(Complex.parse(value.trim().uppercase().replace('D', 'E')))
         } else if (isNumericType) {
             try {
                 val decimal = BigDecimal(value.uppercase().replace('D', 'E'))
