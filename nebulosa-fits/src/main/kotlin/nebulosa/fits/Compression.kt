@@ -84,7 +84,7 @@ enum class Compression(
     ZMASKCMP(HduType.ANY, ValueType.STRING, ""),
 
     /**
-     * The following optional keyword is defined to store a verbatim copy of the the value and comment field of the
+     * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
      * corresponding keyword in the original uncompressed FITS image. These keywords can be used to reconstruct an
      * identical copy of the original FITS file when the image is uncompressed.preserves the original SIMPLE keyword.may
      * only be used if the original uncompressed image was contained in the primary array of the FITS file.
@@ -92,7 +92,7 @@ enum class Compression(
     ZSIMPLE(HduType.PRIMARY, ValueType.LOGICAL, "", Standard.SIMPLE),
 
     /**
-     * The following optional keyword is defined to store a verbatim copy of the the value and comment field of the
+     * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
      * corresponding keyword in the original uncompressed FITS image. These keywords can be used to reconstruct an
      * identical copy o f the original FITS file when the image is uncompressed.preserves the original XTENSION
      * keyword.may only be used if the original uncompressed image was contained in in IMAGE extension.
@@ -101,7 +101,7 @@ enum class Compression(
     ZTENSION(HduType.ANY, ValueType.STRING, "", Standard.XTENSION),
 
     /**
-     * The following optional keyword is defined to store a verbatim copy of the the value and comment field of the
+     * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
      * corresponding keyword in the original uncompressed FITS image. These keywords can be used to reconstruct an
      * identical copy of the original FITS file when the image is uncompressed.preserves the original EXTEND keyword.may
      * only be used if the original uncompressed image was contained in the primary array of the FITS file.
@@ -109,7 +109,7 @@ enum class Compression(
     ZEXTEND(HduType.PRIMARY, ValueType.LOGICAL, "", Standard.EXTEND),
 
     /**
-     * The following optional keyword is defined to store a verbatim copy of the the value and comment field of the
+     * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
      * corresponding keyword in the original uncompressed FITS image. These keywords can be used to reconstruct an
      * identical copy o f the original FITS file when the image is uncompressed.preserves the original BLOCKED
      * keyword.may only be used if the original uncompressed image was contained in the primary array of the FITS file,
@@ -118,7 +118,7 @@ enum class Compression(
     ZBLOCKED(HduType.PRIMARY, ValueType.LOGICAL, "", Standard.BLOCKED),
 
     /**
-     * The following optional keyword is defined to store a verbatim copy of the the value and comment field of the
+     * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
      * corresponding keyword in the original uncompressed FITS image. These keywords can be used to reconstruct an
      * identical copy o f the original FITS file when the image is uncompressed.preserves the original PCOUNT
      * keyword.may only be used if the original uncompressed image was contained in in IMAGE extension.
@@ -126,7 +126,7 @@ enum class Compression(
     ZPCOUNT(HduType.EXTENSION, ValueType.INTEGER, "", Standard.PCOUNT),
 
     /**
-     * The following optional keyword is defined to store a verbatim copy of the the value and comment field of the
+     * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
      * corresponding keyword in the original uncompressed FITS image. These keywords can be used to reconstruct an
      * identical copy o f the original FITS file when the image is uncompressed.preserves the original GCOUNT
      * keyword.may only be used if the original uncompressed image was contained in in IMAGE extension.
@@ -134,14 +134,14 @@ enum class Compression(
     ZGCOUNT(HduType.EXTENSION, ValueType.INTEGER, "", Standard.GCOUNT),
 
     /**
-     * The following optional keyword is defined to store a verbatim copy of the the value and comment field of the
+     * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
      * corresponding keyword in the original uncompressed FITS image. These keywords can be used to reconstruct an
      * identical copy o f the original FITS file when the image is uncompressed.preserves the original CHECKSUM keyword.
      */
     ZHECKSUM(HduType.ANY, ValueType.STRING, "", Checksum.CHECKSUM),
 
     /**
-     * The following optional keyword is defined to store a verbatim copy of the the value and comment field of the
+     * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
      * corresponding keyword in the original uncompressed FITS image. These keywords can be used to reconstruct an
      * identical copy o f the original FITS file when the image is uncompressed.preserves the original DATASUM
      */

@@ -6,11 +6,9 @@ class Debayer(private val pattern: CfaPattern = CfaPattern.GRGB) : TransformAlgo
 
     override fun transform(source: Image): Image {
         return if (source.mono) {
-            val newSource = Image(source.width, source.height, source.header, false)
-            source.r.copyInto(newSource.r)
-            transform(newSource)
+            process(source.color())
         } else {
-            process(source)
+            source
         }
     }
 

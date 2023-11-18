@@ -3,9 +3,9 @@ package nebulosa.api.image
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.calibration.CalibrationFrameService
-import nebulosa.api.preferences.PreferenceService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
+import nebulosa.api.preferences.PreferenceService
 import nebulosa.astap.platesolving.AstapPlateSolver
 import nebulosa.astap.star.detection.AstapStarDetector
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
@@ -105,8 +105,8 @@ class ImageService(
             transformedImage.header.declination.format(AngleFormatter.SIGNED_DMS),
             imageBucket[path]?.second != null,
             transformedImage.header.iterator().asSequence()
-                .filter { it.key.isNotBlank() && !it.value.isNullOrBlank() }
-                .map { ImageHeaderItem(it.key, it.value ?: "") }
+                .filter { it.key.isNotBlank() && it.value.isNotBlank() }
+                .map { ImageHeaderItem(it.key, it.value) }
                 .toList(),
         )
 
@@ -131,7 +131,7 @@ class ImageService(
     ): List<ImageAnnotation> {
         val (image, calibration) = imageBucket[path] ?: return emptyList()
 
-        if (calibration == null || calibration.isEmpty || !calibration.solved) {
+        if (calibration.isNullOrEmpty() || !calibration.solved) {
             return emptyList()
         }
 
@@ -287,7 +287,7 @@ class ImageService(
     fun coordinateInterpolation(path: Path): CoordinateInterpolation? {
         val (image, calibration) = imageBucket[path] ?: return null
 
-        if (calibration == null || calibration.isEmpty || !calibration.solved) {
+        if (calibration.isNullOrEmpty() || !calibration.solved) {
             return null
         }
 

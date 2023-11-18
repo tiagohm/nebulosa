@@ -29,7 +29,6 @@ data class CameraStartCaptureRequest(
     val autoSave: Boolean = false,
     val savePath: Path? = null,
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.OFF,
-    @JsonIgnore val saveInMemory: Boolean = savePath == null,
     @field:Valid val dither: DitherAfterExposureRequest = DitherAfterExposureRequest.DISABLED,
 ) {
 

@@ -1,5 +1,6 @@
 package nebulosa.api.image
 
+import nebulosa.fits.Fits
 import nebulosa.imaging.Image
 import nebulosa.platesolving.Calibration
 import org.springframework.stereotype.Component
@@ -26,7 +27,7 @@ class ImageBucket {
     @Synchronized
     fun open(path: Path, debayer: Boolean = true, calibration: Calibration? = null): Image {
         remove(path)
-        val image = Image.open(path, debayer)
+        val image = Fits(path).also(Fits::read).use { Image.open(it, debayer) }
         put(path, image, calibration ?: Calibration.from(image.header))
         return image
     }

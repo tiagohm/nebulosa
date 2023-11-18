@@ -1,27 +1,29 @@
 package nebulosa.api.framing
 
+import nebulosa.fits.Fits
 import nebulosa.hips2fits.FormatOutputType
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.imaging.Image
+import nebulosa.io.transferAndCloseOutput
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.platesolving.Calibration
 import org.springframework.stereotype.Service
-import java.io.ByteArrayInputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.writeBytes
+import kotlin.io.path.outputStream
 
 @Service
 class FramingService(private val hips2FitsService: Hips2FitsService) {
 
+    @Synchronized
     fun frame(
         rightAscension: Angle, declination: Angle,
         width: Int, height: Int, fov: Angle,
         rotation: Angle = 0.0,
         hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
     ): Triple<Image, Calibration?, Path>? {
-        val data = hips2FitsService.query(
+        val responseBody = hips2FitsService.query(
             hipsSurveyType.hipsSurvey,
             rightAscension, declination,
             width, height,
@@ -29,8 +31,8 @@ class FramingService(private val hips2FitsService: Hips2FitsService) {
             format = FormatOutputType.FITS,
         ).execute().body() ?: return null
 
-        DEFAULT_PATH.writeBytes(data)
-        val image = Image.open(ByteArrayInputStream(data))
+        responseBody.use { it.byteStream().transferAndCloseOutput(DEFAULT_PATH.outputStream()) }
+        val image = Fits(DEFAULT_PATH).also(Fits::read).use(Image::open)
         val calibration = Calibration.from(image.header)
         LOG.info("framing file loaded. calibration={}", calibration)
         return Triple(image, calibration, DEFAULT_PATH)

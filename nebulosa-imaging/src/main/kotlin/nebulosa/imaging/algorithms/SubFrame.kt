@@ -41,4 +41,17 @@ class SubFrame(
 
         return subframe
     }
+
+    companion object {
+
+        @JvmStatic
+        fun centered(x: Int, y: Int, width: Int, height: Int): SubFrame {
+            return SubFrame(x - width / 2, y - height / 2, width, height)
+        }
+
+        @JvmStatic
+        fun centered(x: Int, y: Int, radius: Int): SubFrame {
+            return SubFrame(x - radius, y - radius, radius * 2, radius * 2)
+        }
+    }
 }

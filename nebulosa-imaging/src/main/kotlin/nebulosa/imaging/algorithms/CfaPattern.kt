@@ -1,7 +1,7 @@
 package nebulosa.imaging.algorithms
 
 import nebulosa.fits.Header
-import nebulosa.fits.MaxImDLExt
+import nebulosa.fits.cfaPattern
 import nebulosa.imaging.ImageChannel
 
 enum class CfaPattern(private val pattern: Array<Array<ImageChannel>>) {
@@ -20,10 +20,7 @@ enum class CfaPattern(private val pattern: Array<Array<ImageChannel>>) {
 
         @JvmStatic
         fun from(header: Header): CfaPattern? {
-            return header.getString(MaxImDLExt.BAYERPAT, "")
-                .ifBlank { null }
-                ?.trim()
-                ?.let(CfaPattern::valueOf)
+            return header.cfaPattern?.let(CfaPattern::valueOf)
         }
     }
 }

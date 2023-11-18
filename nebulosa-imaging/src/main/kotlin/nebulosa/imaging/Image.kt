@@ -203,25 +203,14 @@ class Image(
     /**
      * Creates a new [Image] and returns a mono version of this image.
      */
-    fun mono(): Image {
+    fun mono(grayscale: Grayscale = Grayscale.BT709): Image {
         val image = Image(width, height, header.clone(), true)
 
         if (mono) {
             r.copyInto(image.r)
-        } else {
-            for (i in r.indices) {
-                image.r[i] = (r[i] + b[i] + g[i]) / 3f
-            }
         }
 
-        with(image.header) {
-            add(Standard.NAXIS, 2)
-            add(Standard.NAXIS1, width)
-            add(Standard.NAXIS2, height)
-            delete(Standard.NAXIS3)
-        }
-
-        return image
+        return grayscale.transform(image)
     }
 
     /**
@@ -248,6 +237,10 @@ class Image(
         }
 
         return image
+    }
+
+    fun load(fits: Fits, debayer: Boolean = true): Image {
+        return load(fits.filterIsInstance<ImageHdu>().first(), debayer)
     }
 
     fun load(hdu: ImageHdu, debayer: Boolean = true): Image {
@@ -334,7 +327,7 @@ class Image(
             // TODO: DATA[i] = BZERO + BSCALE * DATA[i]
 
             // Mono.
-            if (hdu.size == 2) {
+            if (hdu.size == 1) {
                 val bayer = CfaPattern.from(hdu.header)
                 image.writeImageData(ImageChannel.GRAY, pixels[0])
 
@@ -393,8 +386,13 @@ class Image(
         }
 
         @JvmStatic
+        fun canDebayer(hdu: ImageHdu): Boolean {
+            return CfaPattern.from(hdu.header) == null
+        }
+
+        @JvmStatic
         fun isMono(hdu: ImageHdu): Boolean {
-            return hdu.size < 3 && !(hdu.size == 2 && CfaPattern.from(hdu.header) != null)
+            return hdu.size == 1 && canDebayer(hdu)
         }
 
         inline fun Image.forEach(

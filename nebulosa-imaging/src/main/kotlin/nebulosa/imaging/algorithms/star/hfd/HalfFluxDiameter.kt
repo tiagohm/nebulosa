@@ -4,9 +4,8 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.ComputationAlgorithm
 import kotlin.math.*
 
-class HalfFluxDiameter(
-    val x: Double,
-    val y: Double,
+data class HalfFluxDiameter(
+    val x: Double, val y: Double,
     val searchRegion: Double = 15.0,
     val mode: FindMode = FindMode.CENTROID,
     val minHFD: Double = 1.5,
@@ -200,7 +199,8 @@ class HalfFluxDiameter(
             }
         }
 
-        // SNR estimate from: Measuring the Signal-to-Noise Ratio S/N of the CCD Image of a Star or Nebula, J.H.Simonetti, 2004 January 8
+        // SNR estimate from: Measuring the Signal-to-Noise Ratio S/N of the CCD Image of a Star
+        // or Nebula, J.H.Simonetti, 2004 January 8
         // http://www.phys.vt.edu/~jhs/phys3154/snr20040108.pdf
         var snr = if (n > 0) mass / sqrt(mass / 0.5f + sigma2Bg * n * (1f + 1f / nbg)) else 0.0
 
@@ -236,7 +236,7 @@ class HalfFluxDiameter(
 
         // maxADU not known, use the "flat-top" hueristic
         // even at saturation, the max values may vary a bit due to noise
-        // Call it saturated if the the top three values are within 32 parts per 65535 of max for 16-bit cameras,
+        // Call it saturated if the top three values are within 32 parts per 65535 of max for 16-bit cameras,
         // or within 1 part per 191 for 8-bit cameras
         // val d = max3[0] - max3[2]
 

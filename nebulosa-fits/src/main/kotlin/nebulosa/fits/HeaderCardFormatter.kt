@@ -95,7 +95,7 @@ object HeaderCardFormatter {
 
         val text = card.value
 
-        // The the remaining part of the string fits in the space with the
+        // The remaining part of the string fits in the space with the
         // quoted quotes, then it's easy...
         if (available >= text.length - from) {
             val escaped = text.substring(from).replace("'", "''")
@@ -269,7 +269,7 @@ object HeaderCardFormatter {
     private fun StringBuilder.realign(at: Int, from: Int, to: Int): Boolean {
         val spaces = to - from
         if (spaces > availableCharCount()) {
-            // No space left in card to align the the specified position.
+            // No space left in card to align the specified position.
             return false
         }
 

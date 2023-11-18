@@ -96,14 +96,14 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
             count++
 
             if (cards.isEmpty()) {
-                require(card.key == Standard.SIMPLE.key) { "[${card.key}] invalid keyword." }
+                require(isFirstCard(card.key)) { "Not a proper FITS header: ${card.key} at ${source.position - 80L} offset" }
             } else if (card.isBlank) {
                 continue
             } else if (card.key == Standard.END.key) {
                 break
             }
 
-            cards.add(card)
+            add(card)
         }
 
         val skipBytes = Hdu.computeRemainingBytesToSkip(count * 80L)
@@ -138,13 +138,15 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
 
     fun add(card: HeaderCard) {
         if (!card.isKeyValuePair) cards.add(card)
-        val index = cards.indexOfFirst { it.key == card.key }
-        if (index >= 0) cards[index] = card
-        else cards.add(card)
+        else {
+            val index = cards.indexOfFirst { it.key == card.key }
+            if (index >= 0) cards[index] = card
+            else cards.add(card)
+        }
     }
 
-    fun delete(key: FitsHeader) {
-        cards.removeIf { it.key == key.key }
+    fun delete(key: FitsHeader): Boolean {
+        return cards.removeIf { it.key == key.key }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -200,6 +202,11 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
             LOG.warn("[${key.key}] with unexpected value type. Expected $type, got ${key.valueType}")
 
             return false
+        }
+
+        @JvmStatic
+        fun isFirstCard(key: String): Boolean {
+            return Standard.SIMPLE.key == key || Standard.XTENSION.key == key
         }
     }
 }

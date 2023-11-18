@@ -4,7 +4,6 @@ import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.sequencer.PublishSequenceTasklet
 import nebulosa.api.sequencer.tasklets.delay.DelayEvent
 import nebulosa.common.concurrency.CountUpDownLatch
-import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.*
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
@@ -131,10 +130,8 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
         }
     }
 
-    private fun save(inputStream: InputStream, stepExecution: StepExecution) {
-        val savePath = if (request.saveInMemory) {
-            request.savePath
-        } else if (request.autoSave) {
+    private fun save(stream: InputStream, stepExecution: StepExecution) {
+        val savePath = if (request.autoSave) {
             val now = LocalDateTime.now()
             val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), request.frameType)
             Path.of("${request.savePath}", fileName)
@@ -144,17 +141,12 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
         }
 
         try {
-            if (request.saveInMemory) {
-                val image = Image.open(inputStream)
-                onNext(CameraExposureFinished(camera, exposureCount, stepExecution, this, image, savePath))
-            } else {
-                LOG.info("saving FITS at $savePath...")
+            LOG.info("saving FITS at $savePath...")
 
-                savePath!!.createParentDirectories()
-                inputStream.transferAndClose(savePath.outputStream())
+            savePath.createParentDirectories()
+            stream.transferAndClose(savePath.outputStream())
 
-                onNext(CameraExposureFinished(camera, exposureCount, stepExecution, this, null, savePath))
-            }
+            onNext(CameraExposureFinished(camera, exposureCount, stepExecution, this, savePath))
         } catch (e: Throwable) {
             LOG.error("failed to save FITS", e)
             aborted.set(true)

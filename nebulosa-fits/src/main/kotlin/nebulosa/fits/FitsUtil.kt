@@ -50,3 +50,6 @@ val Header.observationDate
     get() = getString(Standard.DATE_OBS, "")
         .ifBlank { null }
         ?.let(LocalDateTime::parse)
+
+val Header.cfaPattern
+    get() = getString(MaxImDLExt.BAYERPAT, "").ifBlank { null }?.trim()

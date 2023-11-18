@@ -29,19 +29,19 @@ class CalibrationFrameService(
             var calibrationImage = Image(transformedImage.width, transformedImage.height, Header(), transformedImage.mono)
 
             if (biasFrame != null) {
-                calibrationImage = Fits(biasFrame.path!!).also(Fits::read).filterIsInstance<ImageHdu>().first().let(calibrationImage::load)
+                calibrationImage = Fits(biasFrame.path!!).also(Fits::read).use(calibrationImage::load)
                 transformedImage = transformedImage.transform(BiasSubtraction(calibrationImage))
                 LOG.info("bias calibrated. frame={}", biasFrame)
             }
 
             if (darkFrame != null) {
-                calibrationImage = Fits(darkFrame.path!!).also(Fits::read).filterIsInstance<ImageHdu>().first().let(calibrationImage::load)
+                calibrationImage = Fits(darkFrame.path!!).also(Fits::read).use(calibrationImage::load)
                 transformedImage = transformedImage.transform(DarkSubtraction(calibrationImage))
                 LOG.info("dark calibrated. frame={}", darkFrame)
             }
 
             if (flatFrame != null) {
-                calibrationImage = Fits(flatFrame.path!!).also(Fits::read).filterIsInstance<ImageHdu>().first().let(calibrationImage::load)
+                calibrationImage = Fits(flatFrame.path!!).also(Fits::read).use(calibrationImage::load)
                 transformedImage = transformedImage.transform(FlatCorrection(calibrationImage))
                 LOG.info("flat calibrated. frame={}", flatFrame)
             }

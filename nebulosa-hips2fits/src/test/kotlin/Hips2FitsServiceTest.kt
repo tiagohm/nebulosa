@@ -15,8 +15,11 @@ class Hips2FitsServiceTest : StringSpec() {
         val service = Hips2FitsService()
 
         "query" {
-            val bytes = service.query(HipsSurvey("CDS/P/DSS2/red"), 201.36506337683.deg, (-43.01911250808).deg).execute().body().shouldNotBeNull()
-            val fits = Fits(bytes.source())
+            val responseBody = service.query(HipsSurvey("CDS/P/DSS2/red"), 201.36506337683.deg, (-43.01911250808).deg)
+                .execute()
+                .body()
+                .shouldNotBeNull()
+            val fits = responseBody.use { Fits(it.bytes().source()) }
             fits.read()
             val hdu = fits.filterIsInstance<ImageHdu>().first().header
             hdu.naxis(1) shouldBeExactly 1200
