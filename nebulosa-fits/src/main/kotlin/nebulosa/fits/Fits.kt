@@ -1,35 +1,35 @@
 package nebulosa.fits
 
+import nebulosa.io.SeekableSource
+import nebulosa.io.seekableSource
 import okio.Sink
 import java.io.Closeable
 import java.io.EOFException
 import java.io.File
-import java.io.RandomAccessFile
 import java.nio.file.Path
 
 class Fits private constructor(
-    path: Path,
+    val source: SeekableSource,
     private val hdus: ArrayList<Hdu<*>>,
-) : File("$path"), List<Hdu<*>> by hdus, Closeable {
+) : List<Hdu<*>> by hdus, Closeable {
 
-    constructor(path: Path) : this(path, ArrayList(4))
+    constructor(source: SeekableSource) : this(source, ArrayList(4))
 
-    constructor(path: String) : this(Path.of(path))
+    constructor(path: File) : this(path.seekableSource())
 
-    private val randomAccessFile = RandomAccessFile(this, "r")
+    constructor(path: Path) : this(path.toFile())
 
-    private fun readHdu(): Hdu<*>? {
+    constructor(path: String) : this(File(path))
+
+    fun readHdu(): Hdu<*>? {
         return try {
-            return FitsIO.read(randomAccessFile.channel).also(::add)
+            return FitsIO.read(source).also(::add)
         } catch (ignored: EOFException) {
             null
         }
     }
 
     fun read() {
-        randomAccessFile.channel.position(0L)
-        hdus.clear()
-
         while (true) {
             readHdu() ?: break
         }
@@ -43,11 +43,15 @@ class Fits private constructor(
         return hdus.remove(hdu)
     }
 
-    fun writeTo(outputStream: Sink) {
-        hdus.forEach { FitsIO.write(outputStream, it) }
+    fun clear() {
+        hdus.clear()
+    }
+
+    fun writeTo(sink: Sink) {
+        hdus.forEach { FitsIO.write(sink, it) }
     }
 
     override fun close() {
-        randomAccessFile.close()
+        source.close()
     }
 }

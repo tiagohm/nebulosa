@@ -103,7 +103,7 @@ fun RandomAccessFile.source(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSource = RandomAccessFileSource(this, timeout)
 
-fun File.source(
+fun File.seekableSource(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSource = RandomAccessFile(this, "r").source(timeout)
 

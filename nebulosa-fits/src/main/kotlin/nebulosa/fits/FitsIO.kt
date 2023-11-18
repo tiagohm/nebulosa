@@ -1,12 +1,12 @@
 package nebulosa.fits
 
+import nebulosa.io.SeekableSource
 import okio.Sink
 import java.io.IOException
-import java.nio.channels.SeekableByteChannel
 
 object FitsIO : FitsReader, FitsWriter {
 
-    override fun read(source: SeekableByteChannel): Hdu<*> {
+    override fun read(source: SeekableSource): Hdu<*> {
         val header = Header.from(source)
 
         val hdu = when {

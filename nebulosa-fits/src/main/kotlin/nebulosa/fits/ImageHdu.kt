@@ -1,6 +1,6 @@
 package nebulosa.fits
 
-import java.nio.channels.SeekableByteChannel
+import nebulosa.io.SeekableSource
 
 data class ImageHdu(
     override var header: Header,
@@ -13,15 +13,15 @@ data class ImageHdu(
 
     val bitpix = Bitpix.from(header)
 
-    override fun read(source: SeekableByteChannel) {
+    override fun read(source: SeekableSource) {
         val imageSize = (width * height * bitpix.byteSize).toLong()
-        var position = source.position()
+        var position = source.position
 
         val n = header.getInt(Standard.NAXIS3, 1)
-        data = Array(n) { SeekableByteChannelImageData(source, position, width, height, bitpix).also { position += imageSize } }
+        data = Array(n) { SeekableSourceImageData(source, position, width, height, bitpix).also { position += imageSize } }
 
         val skipBytes = Hdu.computeRemainingBytesToSkip(imageSize * size)
-        if (skipBytes > 0L) source.position(position + skipBytes)
+        if (skipBytes > 0L) source.seek(position + skipBytes)
     }
 
     override fun equals(other: Any?): Boolean {

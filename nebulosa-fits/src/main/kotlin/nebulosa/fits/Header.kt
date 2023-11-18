@@ -1,10 +1,10 @@
 package nebulosa.fits
 
+import nebulosa.io.SeekableSource
 import nebulosa.log.loggerFor
+import okio.Buffer
 import java.io.EOFException
 import java.io.Serializable
-import java.nio.ByteBuffer
-import java.nio.channels.SeekableByteChannel
 import java.util.*
 
 open class Header internal constructor(private val cards: LinkedList<HeaderCard>) : FitsElement, Collection<HeaderCard> by cards, Serializable {
@@ -81,18 +81,18 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
         return getString(key.key, defaultValue)
     }
 
-    final override fun read(source: SeekableByteChannel) {
+    final override fun read(source: SeekableSource) {
         clear()
 
         var count = 0
-        val lineBuffer = ByteBuffer.allocate(80)
+        val buffer = Buffer()
 
         while (true) {
-            lineBuffer.clear()
-            if (source.read(lineBuffer) != 80) throw EOFException()
-            lineBuffer.flip()
-            val card = HeaderCard.from(lineBuffer)
+            buffer.clear()
 
+            if (source.read(buffer, 80L) != 80L) throw EOFException()
+
+            val card = HeaderCard.from(buffer)
             count++
 
             if (cards.isEmpty()) {
@@ -107,7 +107,9 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
         }
 
         val skipBytes = Hdu.computeRemainingBytesToSkip(count * 80L)
-        if (skipBytes > 0L) source.position(source.position() + skipBytes)
+        if (skipBytes > 0L) source.skip(skipBytes)
+
+        buffer.clear()
     }
 
     fun add(key: FitsHeader, value: Boolean): HeaderCard {
@@ -167,7 +169,7 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
         @JvmStatic private val LOG = loggerFor<Header>()
 
         @JvmStatic
-        fun from(source: SeekableByteChannel): Header {
+        fun from(source: SeekableSource): Header {
             val header = Header()
             header.read(source)
             return header

@@ -1,8 +1,8 @@
 package nebulosa.fits
 
-import java.nio.channels.SeekableByteChannel
+import nebulosa.io.SeekableSource
 
 interface FitsElement {
 
-    fun read(source: SeekableByteChannel)
+    fun read(source: SeekableSource)
 }

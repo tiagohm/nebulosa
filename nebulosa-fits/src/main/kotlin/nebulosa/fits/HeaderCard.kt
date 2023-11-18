@@ -1,11 +1,11 @@
 package nebulosa.fits
 
 import nebulosa.log.loggerFor
+import okio.Buffer
 import org.apache.commons.numbers.complex.Complex
 import java.io.Serializable
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.nio.ByteBuffer
 
 data class HeaderCard(
     override val key: String, override val value: String,
@@ -127,8 +127,8 @@ data class HeaderCard(
         )
 
         @JvmStatic
-        fun from(source: ByteBuffer): HeaderCard {
-            return from(Charsets.US_ASCII.decode(source))
+        fun from(source: Buffer): HeaderCard {
+            return from(source.readString(80L, Charsets.US_ASCII))
         }
 
         @JvmStatic

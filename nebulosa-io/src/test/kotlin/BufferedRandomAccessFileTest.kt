@@ -38,7 +38,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
             buffer.flush()
         }
         "read" {
-            val source = file.source()
+            val source = file.seekableSource()
 
             val buffer = source.buffer()
             buffer.readByte().toInt() and 0xff shouldBeExactly 0xab
@@ -69,7 +69,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
             buffer.flush()
         }
         "skip and read" {
-            val source = file.source()
+            val source = file.seekableSource()
             source.skip(78)
 
             val buffer = source.buffer()
@@ -78,7 +78,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
             buffer.exhausted().shouldBeTrue()
         }
         "seek and read" {
-            val source = file.source()
+            val source = file.seekableSource()
             source.seek(-1L)
 
             val buffer = source.buffer()
@@ -95,7 +95,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
                 it.writeByte(0x99)
             }
 
-            val source = file.source()
+            val source = file.seekableSource()
             val buffer = source.buffer()
             buffer.readByte().toInt() and 0xff shouldBeExactly 0x99
         }

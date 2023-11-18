@@ -1,8 +1,8 @@
 package nebulosa.fits
 
-import java.nio.channels.SeekableByteChannel
+import nebulosa.io.SeekableSource
 
 interface FitsReader {
 
-    fun read(source: SeekableByteChannel): Hdu<*>?
+    fun read(source: SeekableSource): Hdu<*>?
 }
