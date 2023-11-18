@@ -6,6 +6,7 @@ import org.apache.commons.numbers.complex.Complex
 import java.io.Serializable
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.math.max
 
 data class HeaderCard(
     override val key: String, override val value: String,
@@ -40,6 +41,9 @@ data class HeaderCard(
 
     val isBlank
         get() = if (!isCommentStyle || key.isNotBlank()) false else comment.isBlank()
+
+    val hasHierarchKey
+        get() = isHierarchKey(key)
 
     private fun getBooleanValue(defaultValue: Boolean): Boolean {
         return if (value == "T") true else if (value == "F") false else defaultValue
@@ -92,6 +96,10 @@ data class HeaderCard(
         }
     }
 
+    fun format(): String {
+        return HeaderCardFormatter.format(this)
+    }
+
     companion object {
 
         @JvmStatic private val LOG = loggerFor<HeaderCard>()
@@ -108,7 +116,7 @@ data class HeaderCard(
         const val MAX_LONG_STRING_CONTINUE_OVERHEAD = 3
         const val MIN_VALID_CHAR = 0x20.toChar()
         const val MAX_VALID_CHAR = 0x7e.toChar()
-        const val EMPTY_KEY = ""
+        const val HIERARCH_WITH_DOT = "HIERARCH."
 
         @JvmStatic private val BOOLEAN_TYPES = arrayOf(
             Boolean::class.javaPrimitiveType!!, Boolean::class.javaObjectType,
@@ -164,6 +172,39 @@ data class HeaderCard(
         @JvmStatic
         fun create(header: FitsHeader, value: String): HeaderCard {
             return HeaderCard(header.key, value, header.comment, String::class.javaObjectType)
+        }
+
+        @JvmStatic
+        internal fun isHierarchKey(key: String): Boolean {
+            return key.uppercase().startsWith(HIERARCH_WITH_DOT)
+        }
+
+        @JvmStatic
+        fun isValidChar(c: Char): Boolean {
+            return c in MIN_VALID_CHAR..MAX_VALID_CHAR
+        }
+
+        @JvmStatic
+        fun sanitize(input: CharSequence): String {
+            val data = CharArray(input.length)
+
+            for (i in input.indices) {
+                val char = input[i]
+                data[i] = if (isValidChar(char)) char else '?'
+            }
+
+            return data.concatToString()
+        }
+
+        @JvmStatic
+        private fun spaceForValue(key: String): Int {
+            return if (key.length > MAX_KEYWORD_LENGTH) {
+                // HierarchFormater.extraSpaceRequired = 1
+                FITS_HEADER_CARD_SIZE - (max(key.length, MAX_KEYWORD_LENGTH) + 1)
+            } else {
+                // DEFAULT_SKIP_BLANK_AFTER_ASSIGN = false, so AssignLength = 2.
+                FITS_HEADER_CARD_SIZE - (max(key.length, MAX_KEYWORD_LENGTH) + 2)
+            }
         }
     }
 }

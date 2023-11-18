@@ -166,7 +166,17 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
 
     companion object {
 
+        const val DEFAULT_COMMENT_ALIGN = 30
+        const val MIN_COMMENT_ALIGN = 20
+        const val MAX_COMMENT_ALIGN = 70
+
         @JvmStatic private val LOG = loggerFor<Header>()
+
+        var commentAlignPosition = DEFAULT_COMMENT_ALIGN
+            set(value) {
+                require(value in MIN_COMMENT_ALIGN..MAX_COMMENT_ALIGN)
+                field = value
+            }
 
         @JvmStatic
         fun from(source: SeekableSource): Header {

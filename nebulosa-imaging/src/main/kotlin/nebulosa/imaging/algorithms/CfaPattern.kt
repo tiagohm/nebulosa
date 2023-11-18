@@ -21,7 +21,9 @@ enum class CfaPattern(private val pattern: Array<Array<ImageChannel>>) {
         @JvmStatic
         fun from(header: Header): CfaPattern? {
             return header.getString(MaxImDLExt.BAYERPAT, "")
-                .ifBlank { null }?.trim()?.let(CfaPattern::valueOf)
+                .ifBlank { null }
+                ?.trim()
+                ?.let(CfaPattern::valueOf)
         }
     }
 }

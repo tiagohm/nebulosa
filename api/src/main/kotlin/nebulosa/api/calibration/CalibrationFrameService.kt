@@ -1,16 +1,12 @@
 package nebulosa.api.calibration
 
-import nebulosa.fits.binX
-import nebulosa.fits.exposureTime
-import nebulosa.fits.temperature
+import nebulosa.fits.*
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.BiasSubtraction
 import nebulosa.imaging.algorithms.DarkSubtraction
 import nebulosa.imaging.algorithms.FlatCorrection
 import nebulosa.indi.device.camera.Camera
 import nebulosa.log.loggerFor
-import nom.tam.fits.Fits
-import nom.tam.fits.Header
 import org.springframework.stereotype.Service
 import java.util.*
 import kotlin.math.abs
@@ -33,19 +29,19 @@ class CalibrationFrameService(
             var calibrationImage = Image(transformedImage.width, transformedImage.height, Header(), transformedImage.mono)
 
             if (biasFrame != null) {
-                calibrationImage = Fits(biasFrame.path!!.toFile()).use { Image.openFITS(it, output = calibrationImage) }
+                calibrationImage = Fits(biasFrame.path!!).also(Fits::read).filterIsInstance<ImageHdu>().first().let(calibrationImage::load)
                 transformedImage = transformedImage.transform(BiasSubtraction(calibrationImage))
                 LOG.info("bias calibrated. frame={}", biasFrame)
             }
 
             if (darkFrame != null) {
-                calibrationImage = Fits(darkFrame.path!!.toFile()).use { Image.openFITS(it, output = calibrationImage) }
+                calibrationImage = Fits(darkFrame.path!!).also(Fits::read).filterIsInstance<ImageHdu>().first().let(calibrationImage::load)
                 transformedImage = transformedImage.transform(DarkSubtraction(calibrationImage))
                 LOG.info("dark calibrated. frame={}", darkFrame)
             }
 
             if (flatFrame != null) {
-                calibrationImage = Fits(flatFrame.path!!.toFile()).use { Image.openFITS(it, output = calibrationImage) }
+                calibrationImage = Fits(flatFrame.path!!).also(Fits::read).filterIsInstance<ImageHdu>().first().let(calibrationImage::load)
                 transformedImage = transformedImage.transform(FlatCorrection(calibrationImage))
                 LOG.info("flat calibrated. frame={}", flatFrame)
             }
@@ -84,7 +80,8 @@ class CalibrationFrameService(
     }
 
     fun findBestFlatFrames(camera: Camera, image: Image): List<CalibrationFrameEntity> {
-        val filter = image.header.getStringValue(FitsKeywords.FILTER)?.trim()?.ifBlank { null }
+        val filter = image.header.getString(Standard.FILTER, "")
+            .trim().ifBlank { null }
             ?: return emptyList()
 
         return calibrationFrameRepository

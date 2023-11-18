@@ -12,11 +12,11 @@ class ComputationAlgorithmTest : FitsStringSpec() {
 
     init {
         "mono:median absolute deviation" {
-            val mImage = Image.openFITS(NGC3344_MONO_F32)
+            val mImage = Image.open(NGC3344_MONO_F32)
             mImage.compute(MedianAbsoluteDeviation()) shouldBe (0.0862f plusOrMinus 1e-4f)
         }
         "mono:statistics" {
-            val mImage = Image.openFITS(NGC3344_MONO_F32)
+            val mImage = Image.open(NGC3344_MONO_F32)
             val statistics = mImage.compute(Statistics())
 
             statistics.count shouldBeExactly 65536
@@ -31,13 +31,13 @@ class ComputationAlgorithmTest : FitsStringSpec() {
             statistics.maximum shouldBeExactly 1f
         }
         "color:median absolute deviation" {
-            val cImage = Image.openFITS(NGC3344_COLOR_F32)
+            val cImage = Image.open(NGC3344_COLOR_F32)
             cImage.compute(MedianAbsoluteDeviation(channel = ImageChannel.RED)) shouldBe (0.0823f plusOrMinus 1e-4f)
             cImage.compute(MedianAbsoluteDeviation(channel = ImageChannel.GREEN)) shouldBe (0.0745f plusOrMinus 1e-4f)
             cImage.compute(MedianAbsoluteDeviation(channel = ImageChannel.BLUE)) shouldBe (0.0705f plusOrMinus 1e-4f)
         }
         "color:statistics" {
-            val cImage = Image.openFITS(NGC3344_COLOR_F32)
+            val cImage = Image.open(NGC3344_COLOR_F32)
 
             with(ImageChannel.RED) {
                 val statistics = cImage.compute(Statistics(this))

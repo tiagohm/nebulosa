@@ -30,7 +30,7 @@ class FramingService(private val hips2FitsService: Hips2FitsService) {
         ).execute().body() ?: return null
 
         DEFAULT_PATH.writeBytes(data)
-        val image = Image.openFITS(ByteArrayInputStream(data))
+        val image = Image.open(ByteArrayInputStream(data))
         val calibration = Calibration.from(image.header)
         LOG.info("framing file loaded. calibration={}", calibration)
         return Triple(image, calibration, DEFAULT_PATH)

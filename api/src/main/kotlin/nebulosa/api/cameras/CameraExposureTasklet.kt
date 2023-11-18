@@ -145,7 +145,7 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
 
         try {
             if (request.saveInMemory) {
-                val image = Image.openFITS(inputStream)
+                val image = Image.open(inputStream)
                 onNext(CameraExposureFinished(camera, exposureCount, stepExecution, this, image, savePath))
             } else {
                 LOG.info("saving FITS at $savePath...")

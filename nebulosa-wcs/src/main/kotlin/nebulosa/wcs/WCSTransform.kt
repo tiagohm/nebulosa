@@ -4,10 +4,10 @@ import com.sun.jna.Pointer
 import com.sun.jna.ptr.DoubleByReference
 import com.sun.jna.ptr.IntByReference
 import com.sun.jna.ptr.PointerByReference
+import nebulosa.fits.Header
 import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.math.toDegrees
-import nom.tam.fits.Header
 import java.io.Closeable
 
 class WCSTransform(header: Header) : Closeable {
@@ -23,7 +23,7 @@ class WCSTransform(header: Header) : Closeable {
             val card = headerIter.next()
 
             if (isKeywordValid(card.key)) {
-                headerText.append("$card")
+                headerText.append(card.format())
                 keyCount++
             }
         }

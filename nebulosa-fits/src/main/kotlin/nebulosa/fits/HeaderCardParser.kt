@@ -108,7 +108,7 @@ internal class HeaderCardParser(private val line: CharSequence) {
         }
 
         // if no value, then everything is comment from here on...
-        if (value.isEmpty()) {
+        if (value.isNotEmpty()) {
             if (line[parsePos] == '/') {
                 // Skip the '/' itself, the comment is whatever is after it.
                 parsePos++

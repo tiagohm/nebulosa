@@ -204,7 +204,7 @@ class Image(
      * Creates a new [Image] and returns a mono version of this image.
      */
     fun mono(): Image {
-        val image = Image(width, height, header, true)
+        val image = Image(width, height, header.clone(), true)
 
         if (mono) {
             r.copyInto(image.r)
@@ -214,6 +214,13 @@ class Image(
             }
         }
 
+        with(image.header) {
+            add(Standard.NAXIS, 2)
+            add(Standard.NAXIS1, width)
+            add(Standard.NAXIS2, height)
+            delete(Standard.NAXIS3)
+        }
+
         return image
     }
 
@@ -221,8 +228,7 @@ class Image(
      * Creates a new [Image] and returns a RGB version of this image.
      */
     fun color(): Image {
-        // TODO: Clone header and set RGB info.
-        val image = Image(width, height, header, false)
+        val image = Image(width, height, header.clone(), false)
 
         if (mono) {
             r.copyInto(image.r)
@@ -234,7 +240,26 @@ class Image(
             b.copyInto(image.b)
         }
 
+        with(image.header) {
+            add(Standard.NAXIS, 3)
+            add(Standard.NAXIS1, width)
+            add(Standard.NAXIS2, height)
+            add(Standard.NAXIS3, 3)
+        }
+
         return image
+    }
+
+    fun load(hdu: ImageHdu, debayer: Boolean = true): Image {
+        require(hdu.width == width) { "width does not match. $width != ${hdu.width}" }
+        require(hdu.height == height) { "height does not match. $height != ${hdu.height}" }
+
+        val mono = isMono(hdu) || !debayer
+        require(mono == this.mono) { "color format does not match" }
+
+        load(this, hdu, debayer)
+
+        return this
     }
 
     fun clone() = if (mono) mono() else color()
@@ -265,26 +290,24 @@ class Image(
         }
 
         @JvmStatic
-        fun openFITS(
+        fun open(
             fits: Fits,
             debayer: Boolean = true,
-        ) = openFITS(fits.filterIsInstance<ImageHdu>().first(), debayer)
+        ) = open(fits.filterIsInstance<ImageHdu>().first(), debayer)
 
         @JvmStatic
-        fun openFITS(
+        fun open(
             hdu: ImageHdu,
             debayer: Boolean = true,
         ): Image {
-            val header = hdu.header
-            val width = header.naxis(1)
-            val height = header.naxis(2)
-            val mono = isMono(header) || !debayer
-            val naxis = header.naxis
+            val mono = isMono(hdu) || !debayer
+            val image = Image(hdu.width, hdu.height, hdu.header, mono)
+            load(image, hdu, debayer)
+            return image
+        }
 
-            // TODO: DATA[i] = BZERO + BSCALE * DATA[i]
-
-            val image = Image(width, height, header, mono)
-
+        @JvmStatic
+        private fun load(image: Image, hdu: ImageHdu, debayer: Boolean) {
             val pixels = hdu.data
 
             fun rescaling() {
@@ -308,9 +331,11 @@ class Image(
                 }
             }
 
+            // TODO: DATA[i] = BZERO + BSCALE * DATA[i]
+
             // Mono.
-            if (naxis == 2) {
-                val bayer = CfaPattern.from(header)
+            if (hdu.size == 2) {
+                val bayer = CfaPattern.from(hdu.header)
                 image.writeImageData(ImageChannel.GRAY, pixels[0])
 
                 rescaling()
@@ -325,12 +350,10 @@ class Image(
 
                 rescaling()
             }
-
-            return image
         }
 
         @JvmStatic
-        fun openImage(bufferedImage: BufferedImage): Image {
+        fun open(bufferedImage: BufferedImage): Image {
             val header = Header()
             val width = bufferedImage.width
             val height = bufferedImage.height
@@ -370,8 +393,8 @@ class Image(
         }
 
         @JvmStatic
-        fun isMono(header: Header): Boolean {
-            return header.naxis != 3 && !(header.naxis == 2 && CfaPattern.from(header) != null)
+        fun isMono(hdu: ImageHdu): Boolean {
+            return hdu.size < 3 && !(hdu.size == 2 && CfaPattern.from(hdu.header) != null)
         }
 
         inline fun Image.forEach(
