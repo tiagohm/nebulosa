@@ -3,7 +3,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 plugins {
     kotlin("jvm")
     id("org.springframework.boot") version "3.1.5"
-    id("io.spring.dependency-management") version "1.1.3"
+    id("io.spring.dependency-management") version "1.1.4"
     kotlin("plugin.spring")
     kotlin("kapt")
 }
@@ -46,7 +46,7 @@ dependencies {
     implementation("org.hibernate.orm:hibernate-community-dialects")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    kapt("org.springframework:spring-context-indexer:6.0.13")
+    kapt("org.springframework:spring-context-indexer:6.1.0")
     testImplementation(project(":nebulosa-test"))
 }
 
