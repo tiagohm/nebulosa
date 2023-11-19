@@ -6,11 +6,11 @@ import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.api.preferences.PreferenceService
-import nebulosa.astap.platesolving.AstapPlateSolver
+import nebulosa.astap.plate.solving.AstapPlateSolver
 import nebulosa.astap.star.detection.AstapStarDetector
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
-import nebulosa.astrometrynet.platesolving.LocalAstrometryNetPlateSolver
-import nebulosa.astrometrynet.platesolving.NovaAstrometryNetPlateSolver
+import nebulosa.astrometrynet.plate.solving.LocalAstrometryNetPlateSolver
+import nebulosa.astrometrynet.plate.solving.NovaAstrometryNetPlateSolver
 import nebulosa.fits.*
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.*

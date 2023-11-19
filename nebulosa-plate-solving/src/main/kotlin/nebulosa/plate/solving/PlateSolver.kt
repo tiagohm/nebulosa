@@ -1,4 +1,4 @@
-package nebulosa.platesolving
+package nebulosa.plate.solving
 
 import nebulosa.math.Angle
 import java.nio.file.Path
@@ -13,5 +13,5 @@ interface PlateSolver {
         radius: Angle = 0.0,
         downsampleFactor: Int = 2,
         timeout: Duration? = null,
-    ): Calibration
+    ): PlateSolution
 }

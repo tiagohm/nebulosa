@@ -1,4 +1,4 @@
-package nebulosa.astap.platesolving
+package nebulosa.astap.plate.solving
 
 import nebulosa.common.process.ProcessExecutor
 import nebulosa.fits.NOAOExt
@@ -8,9 +8,9 @@ import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.math.toDegrees
 import nebulosa.math.toHours
-import nebulosa.platesolving.Calibration
-import nebulosa.platesolving.PlateSolver
-import nebulosa.platesolving.PlateSolvingException
+import nebulosa.plate.solving.PlateSolution
+import nebulosa.plate.solving.PlateSolver
+import nebulosa.plate.solving.PlateSolvingException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -32,7 +32,7 @@ class AstapPlateSolver(path: Path) : PlateSolver {
         blind: Boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
-    ): Calibration {
+    ): PlateSolution {
         val arguments = mutableMapOf<String, Any?>()
 
         val basePath = Files.createTempDirectory("astap")
@@ -84,26 +84,26 @@ class AstapPlateSolver(path: Path) : PlateSolver {
                 val width = cdelt1 * dimensions[0].trim().toDouble()
                 val height = cdelt2 * dimensions[1].trim().toDouble()
 
-                val calibration = Calibration(true, crota2.deg, cdelt2.deg, crval1.deg, crval2.deg, width.deg, height.deg)
+                val solution = PlateSolution(true, crota2.deg, cdelt2.deg, crval1.deg, crval2.deg, width.deg, height.deg)
 
-                calibration.add(Standard.CTYPE1, ctype1)
-                calibration.add(Standard.CTYPE2, ctype2)
-                calibration.add(Standard.CRPIX1, crpix1)
-                calibration.add(Standard.CRPIX2, crpix2)
-                calibration.add(Standard.CRVAL1, crval1)
-                calibration.add(Standard.CRVAL2, crval2)
-                calibration.add(Standard.CDELT1, cdelt1)
-                calibration.add(Standard.CDELT2, cdelt2)
-                calibration.add(Standard.CROTA1, crota1)
-                calibration.add(Standard.CROTA2, crota2)
-                calibration.add(NOAOExt.CD1_1, cd11)
-                calibration.add(NOAOExt.CD1_2, cd12)
-                calibration.add(NOAOExt.CD2_1, cd21)
-                calibration.add(NOAOExt.CD2_2, cd22)
+                solution.add(Standard.CTYPE1, ctype1)
+                solution.add(Standard.CTYPE2, ctype2)
+                solution.add(Standard.CRPIX1, crpix1)
+                solution.add(Standard.CRPIX2, crpix2)
+                solution.add(Standard.CRVAL1, crval1)
+                solution.add(Standard.CRVAL2, crval2)
+                solution.add(Standard.CDELT1, cdelt1)
+                solution.add(Standard.CDELT2, cdelt2)
+                solution.add(Standard.CROTA1, crota1)
+                solution.add(Standard.CROTA2, crota2)
+                solution.add(NOAOExt.CD1_1, cd11)
+                solution.add(NOAOExt.CD1_2, cd12)
+                solution.add(NOAOExt.CD2_1, cd21)
+                solution.add(NOAOExt.CD2_2, cd22)
 
-                LOG.info("astap solved. calibration={}", calibration)
+                LOG.info("astap solved. calibration={}", solution)
 
-                return calibration
+                return solution
             } else {
                 val message = ini.getProperty("ERROR")
                     ?: ini.getProperty("WARNING")

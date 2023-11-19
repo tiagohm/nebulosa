@@ -7,7 +7,7 @@ import nebulosa.io.transferAndClose
 import nebulosa.math.deg
 import nebulosa.math.toArcsec
 import nebulosa.math.toDegrees
-import nebulosa.astrometrynet.platesolving.NovaAstrometryNetPlateSolver
+import nebulosa.astrometrynet.plate.solving.NovaAstrometryNetPlateSolver
 import java.nio.file.Files
 import kotlin.io.path.outputStream
 

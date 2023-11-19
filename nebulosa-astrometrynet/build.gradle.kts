@@ -6,7 +6,7 @@ plugins {
 dependencies {
     api(project(":nebulosa-math"))
     api(project(":nebulosa-common"))
-    api(project(":nebulosa-platesolving"))
+    api(project(":nebulosa-plate-solving"))
     api(project(":nebulosa-retrofit"))
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
