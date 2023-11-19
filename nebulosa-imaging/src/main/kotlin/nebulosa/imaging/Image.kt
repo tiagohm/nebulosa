@@ -387,12 +387,12 @@ class Image(
 
         @JvmStatic
         fun canDebayer(hdu: ImageHdu): Boolean {
-            return CfaPattern.from(hdu.header) == null
+            return hdu.header.cfaPattern != null
         }
 
         @JvmStatic
         fun isMono(hdu: ImageHdu): Boolean {
-            return hdu.size == 1 && canDebayer(hdu)
+            return hdu.size == 1 && !canDebayer(hdu)
         }
 
         inline fun Image.forEach(

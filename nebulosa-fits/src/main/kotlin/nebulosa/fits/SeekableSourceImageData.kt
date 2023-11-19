@@ -1,6 +1,7 @@
 package nebulosa.fits
 
 import nebulosa.io.Seekable
+import nebulosa.io.sink
 import okio.Buffer
 import okio.Source
 import java.nio.ByteBuffer
@@ -19,15 +20,19 @@ data class SeekableSourceImageData(
         val strideSizeInBytes = (width * bitpix.byteSize).toLong()
 
         val buffer = Buffer()
+        val data = ByteArray(strideSizeInBytes.toInt())
+        val sink = data.sink()
 
         synchronized(source) {
             source.seek(position)
 
             repeat(height) {
-                buffer.clear()
-                require(source.read(buffer, strideSizeInBytes) == strideSizeInBytes) { "unexpected end of file" }
-                val data = buffer.readByteArray()
+                sink.seek(0L)
+
+                buffer.transferFully(source, sink, strideSizeInBytes)
                 block(ByteBuffer.wrap(data))
+
+                buffer.clear()
             }
         }
     }
