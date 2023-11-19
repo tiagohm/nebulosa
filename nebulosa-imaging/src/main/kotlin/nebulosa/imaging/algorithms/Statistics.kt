@@ -14,6 +14,7 @@ data class Statistics(
     private val noDeviation: Boolean = false,
 ) : ComputationAlgorithm<Statistics.Data> {
 
+    @Suppress("ArrayInDataClass")
     data class Data(
         val count: Int = 0,
         val maxCount: Int = 0,
@@ -25,6 +26,7 @@ data class Statistics(
         val avgDev: Float = 0f,
         val minimum: Float = 0f,
         val maximum: Float = 0f,
+        val histogram: IntArray = IntArray(0),
     ) : ClosedFloatingPointRange<Float> {
 
         override val start
@@ -91,6 +93,14 @@ data class Statistics(
             avgDev /= totalCount
         }
 
-        return Data(totalCount, maxCount, mean, sumOfSquares, median, variance, stdDev, avgDev, minimum, maximum)
+        return Data(totalCount, maxCount, mean, sumOfSquares, median, variance, stdDev, avgDev, minimum, maximum, data)
+    }
+
+    companion object {
+
+        @JvmStatic val GRAY = Statistics()
+        @JvmStatic val RED = Statistics(ImageChannel.RED)
+        @JvmStatic val GREEN = Statistics(ImageChannel.GREEN)
+        @JvmStatic val BLUE = Statistics(ImageChannel.BLUE)
     }
 }

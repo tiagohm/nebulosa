@@ -12,22 +12,22 @@ import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.nameWithoutExtension
 
-class AstapStarDetector(path: Path) : StarDetector {
+class AstapStarDetector(path: Path) : StarDetector<Path> {
 
     private val executor = ProcessExecutor(path)
 
-    override fun detectStars(path: Path): Collection<DetectedStar> {
+    override fun detect(input: Path): List<DetectedStar> {
         val arguments = mutableMapOf<String, Any?>()
 
-        arguments["-f"] = path
+        arguments["-f"] = input
         arguments["-z"] = 2
         arguments["-extract"] = 0
 
-        val process = executor.execute(arguments, workingDir = path.parent)
+        val process = executor.execute(arguments, workingDir = input.parent)
 
         LOG.info("astap exited. code={}", process.exitValue())
 
-        val csvFile = Path.of("${path.parent}", path.nameWithoutExtension + ".csv")
+        val csvFile = Path.of("${input.parent}", input.nameWithoutExtension + ".csv")
 
         if (!csvFile.exists()) return emptyList()
 

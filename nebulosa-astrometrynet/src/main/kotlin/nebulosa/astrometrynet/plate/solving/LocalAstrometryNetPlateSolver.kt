@@ -15,16 +15,14 @@ import kotlin.io.path.deleteRecursively
 /**
  * @see <a href="http://astrometry.net/doc/readme.html">README</a>
  */
-class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver {
+class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver<Path> {
 
     private val executor = ProcessExecutor(path)
 
     override fun solve(
-        path: Path,
-        blind: Boolean,
+        input: Path, blind: Boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
-        downsampleFactor: Int,
-        timeout: Duration?,
+        downsampleFactor: Int, timeout: Duration?,
     ): PlateSolution {
         val arguments = mutableMapOf<String, Any?>()
 
@@ -49,9 +47,9 @@ class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver {
             arguments["--radius"] = radius.toDegrees
         }
 
-        arguments["$path"] = null
+        arguments["$input"] = null
 
-        val process = executor.execute(arguments, Duration.ZERO, path.parent)
+        val process = executor.execute(arguments, Duration.ZERO, input.parent)
 
         val buffer = process.inputReader()
 

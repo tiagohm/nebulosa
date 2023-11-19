@@ -23,12 +23,12 @@ import kotlin.math.ceil
 /**
  * @see <a href="https://www.hnsky.org/astap.htm#astap_command_line">README</a>
  */
-class AstapPlateSolver(path: Path) : PlateSolver {
+class AstapPlateSolver(path: Path) : PlateSolver<Path> {
 
     private val executor = ProcessExecutor(path)
 
     override fun solve(
-        path: Path,
+        input: Path,
         blind: Boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
@@ -50,12 +50,12 @@ class AstapPlateSolver(path: Path) : PlateSolver {
             arguments["-r"] = "180.0"
         }
 
-        arguments["-f"] = path
+        arguments["-f"] = input
 
         LOG.info("local solving. command={}", arguments)
 
         try {
-            val process = executor.execute(arguments, timeout ?: Duration.ofSeconds(300), path.parent)
+            val process = executor.execute(arguments, timeout ?: Duration.ofSeconds(300), input.parent)
 
             LOG.info("astap exited. code={}", process.exitValue())
 

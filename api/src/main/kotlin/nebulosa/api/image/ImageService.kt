@@ -7,7 +7,6 @@ import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.api.preferences.PreferenceService
 import nebulosa.astap.plate.solving.AstapPlateSolver
-import nebulosa.astap.star.detection.AstapStarDetector
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.plate.solving.LocalAstrometryNetPlateSolver
 import nebulosa.astrometrynet.plate.solving.NovaAstrometryNetPlateSolver
@@ -24,6 +23,7 @@ import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.skycatalog.SkyObjectType
 import nebulosa.star.detection.DetectedStar
+import nebulosa.watney.star.detection.WatneyStarDetector
 import nebulosa.wcs.WCSException
 import nebulosa.wcs.WCSTransform
 import org.springframework.http.HttpStatus
@@ -332,8 +332,8 @@ class ImageService(
     }
 
     fun detectStars(path: Path): Collection<DetectedStar> {
-        val astapPath = preferenceService.astapPath ?: return emptyList()
-        return AstapStarDetector(astapPath).detectStars(path)
+        val (image) = imageBucket[path] ?: return emptyList()
+        return WatneyStarDetector().detect(image)
     }
 
     companion object {

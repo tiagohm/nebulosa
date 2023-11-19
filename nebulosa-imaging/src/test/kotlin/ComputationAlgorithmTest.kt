@@ -17,7 +17,7 @@ class ComputationAlgorithmTest : FitsStringSpec() {
         }
         "mono:statistics" {
             val mImage = Image.open(NGC3344_MONO_F32)
-            val statistics = mImage.compute(Statistics())
+            val statistics = mImage.compute(Statistics.GRAY)
 
             statistics.count shouldBeExactly 65536
             statistics.maxCount shouldBeExactly 926
@@ -39,8 +39,8 @@ class ComputationAlgorithmTest : FitsStringSpec() {
         "color:statistics" {
             val cImage = Image.open(NGC3344_COLOR_F32)
 
-            with(ImageChannel.RED) {
-                val statistics = cImage.compute(Statistics(this))
+            run {
+                val statistics = cImage.compute(Statistics.RED)
 
                 statistics.count shouldBeExactly 65536
                 statistics.maxCount shouldBeExactly 1027
@@ -54,8 +54,8 @@ class ComputationAlgorithmTest : FitsStringSpec() {
                 statistics.maximum shouldBeExactly 1f
             }
 
-            with(ImageChannel.GREEN) {
-                val statistics = cImage.compute(Statistics(this))
+            run {
+                val statistics = cImage.compute(Statistics.GREEN)
 
                 statistics.count shouldBeExactly 65536
                 statistics.maxCount shouldBeExactly 1181
@@ -69,8 +69,8 @@ class ComputationAlgorithmTest : FitsStringSpec() {
                 statistics.maximum shouldBeExactly 1f
             }
 
-            with(ImageChannel.BLUE) {
-                val statistics = cImage.compute(Statistics(this))
+            run {
+                val statistics = cImage.compute(Statistics.BLUE)
 
                 statistics.count shouldBeExactly 65536
                 statistics.maxCount shouldBeExactly 1234

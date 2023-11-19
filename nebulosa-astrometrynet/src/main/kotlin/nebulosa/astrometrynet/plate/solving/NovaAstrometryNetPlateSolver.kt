@@ -16,7 +16,7 @@ import kotlin.math.max
 class NovaAstrometryNetPlateSolver(
     private val service: NovaAstrometryNetService,
     private val apiKey: String = "",
-) : PlateSolver {
+) : PlateSolver<Path> {
 
     @Volatile private var session: Session? = null
     @Volatile private var lastSessionTime = 0L
@@ -39,11 +39,9 @@ class NovaAstrometryNetPlateSolver(
     }
 
     override fun solve(
-        path: Path,
-        blind: Boolean,
+        input: Path, blind: Boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
-        downsampleFactor: Int,
-        timeout: Duration?,
+        downsampleFactor: Int, timeout: Duration?,
     ): PlateSolution {
         renewSession()
 
@@ -55,7 +53,7 @@ class NovaAstrometryNetPlateSolver(
             downsampleFactor = downsampleFactor,
         )
 
-        val submission = service.uploadFromFile(path, upload).execute().body()
+        val submission = service.uploadFromFile(input, upload).execute().body()
             ?: throw PlateSolvingException("failed to submit the file")
 
         if (submission.status != "success") {
