@@ -375,8 +375,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
 
             this.update()
         }
-
-        this.electron.send('GUIDE_OUTPUT_CHANGED', this.guideOutput)
     }
 
     connectGuideOutput() {

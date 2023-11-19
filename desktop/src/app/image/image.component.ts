@@ -112,7 +112,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Save as...',
         icon: 'mdi mdi-content-save',
         command: async () => {
-            const path = await this.electron.sendSync('SAVE_FITS_AS')
+            const path = await this.electron.send('SAVE_FITS_AS')
             if (path) this.api.saveImageAs(this.imageParams.path!, path)
         },
     }

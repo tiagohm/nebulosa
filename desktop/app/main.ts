@@ -2,7 +2,7 @@ import { Client } from '@stomp/stompjs'
 import { BrowserWindow, Menu, Notification, app, dialog, ipcMain, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { INTERNAL_EVENT_TYPES, MessageEvent, NotificationEvent, OpenDirectory, OpenWindow } from './types'
+import { InternalEventType, MessageEvent, NotificationEvent, OpenDirectory, OpenWindow } from './types'
 
 import { WebSocket } from 'ws'
 Object.assign(global, { WebSocket })
@@ -280,17 +280,18 @@ try {
         })
     })
 
-    ipcMain.on('OPEN_FITS', async (event) => {
+    ipcMain.handle('OPEN_FITS', async (event) => {
         const ownerWindow = findWindowById(event.sender.id)
+
         const value = await dialog.showOpenDialog(ownerWindow!, {
             filters: [{ name: 'FITS files', extensions: ['fits', 'fit'] }],
             properties: ['openFile'],
         })
 
-        event.returnValue = !value.canceled && value.filePaths[0]
+        return !value.canceled && value.filePaths[0]
     })
 
-    ipcMain.on('SAVE_FITS_AS', async (event) => {
+    ipcMain.handle('SAVE_FITS_AS', async (event) => {
         const ownerWindow = findWindowById(event.sender.id)
         const value = await dialog.showSaveDialog(ownerWindow!, {
             filters: [
@@ -300,68 +301,69 @@ try {
             properties: ['createDirectory', 'showOverwriteConfirmation'],
         })
 
-        event.returnValue = !value.canceled && value.filePath
+        return !value.canceled && value.filePath
     })
 
-    ipcMain.on('OPEN_DIRECTORY', async (event, data?: OpenDirectory) => {
+    ipcMain.handle('OPEN_DIRECTORY', async (event, data?: OpenDirectory) => {
         const ownerWindow = findWindowById(event.sender.id)
         const value = await dialog.showOpenDialog(ownerWindow!, {
             properties: ['openDirectory'],
             defaultPath: data?.defaultPath,
         })
 
-        event.returnValue = !value.canceled && value.filePaths[0]
+        return !value.canceled && value.filePaths[0]
     })
 
-    ipcMain.on('PIN_WINDOW', (event) => {
+    ipcMain.handle('PIN_WINDOW', (event) => {
         const window = findWindowById(event.sender.id)
         window?.setAlwaysOnTop(true)
-        event.returnValue = !!window
+        return !!window
     })
 
-    ipcMain.on('UNPIN_WINDOW', (event) => {
+    ipcMain.handle('UNPIN_WINDOW', (event) => {
         const window = findWindowById(event.sender.id)
         window?.setAlwaysOnTop(false)
-        event.returnValue = !!window
+        return !!window
     })
 
-    ipcMain.on('MINIMIZE_WINDOW', (event) => {
+    ipcMain.handle('MINIMIZE_WINDOW', (event) => {
         const window = findWindowById(event.sender.id)
         window?.minimize()
-        event.returnValue = !!window
+        return !!window
     })
 
-    ipcMain.on('MAXIMIZE_WINDOW', (event) => {
+    ipcMain.handle('MAXIMIZE_WINDOW', (event) => {
         const window = findWindowById(event.sender.id)
 
         if (window?.isMaximized()) window.unmaximize()
         else window?.maximize()
 
-        event.returnValue = window?.isMaximized() ?? false
+        return window?.isMaximized() ?? false
     })
 
-    ipcMain.on('CLOSE_WINDOW', (event, id?: string) => {
+    ipcMain.handle('CLOSE_WINDOW', (event, id?: string) => {
         if (id) {
             for (const [key, value] of browserWindows) {
                 if (key === id) {
                     value.close()
-                    event.returnValue = true
-                    return
+                    return true
                 }
             }
 
-            event.returnValue = false
+            return false
         } else {
             const window = findWindowById(event.sender.id)
             window?.close()
-            event.returnValue = !!window
+            return !!window
         }
     })
 
-    for (const item of INTERNAL_EVENT_TYPES) {
-        ipcMain.on(item, (event, data) => {
+    const events: InternalEventType[] = ['WHEEL_RENAMED']
+
+    for (const item of events) {
+        ipcMain.handle(item, (_, data) => {
             sendToAllWindows(item, data)
-            event.returnValue = true
+            return true
         })
     }
 } catch (e) {

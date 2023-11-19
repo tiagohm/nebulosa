@@ -159,6 +159,21 @@ i.mdi {
     font-family: monospace !important;
 }
 
+#titlebar:before {
+    background: url(assets/icons/nebulosa-256.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    image-rendering: pixelated;
+    content: '';
+    width: 100%;
+    display: flex;
+    position: absolute;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.6;
+}
+
 ::-webkit-scrollbar {
     width: 6px;
 }

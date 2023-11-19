@@ -233,7 +233,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     }
 
     private async openImage() {
-        const path = await this.electron.sendSync('OPEN_FITS')
+        const path = await this.electron.send('OPEN_FITS')
         if (path) this.browserWindow.openImage(path, undefined, 'PATH')
     }
 

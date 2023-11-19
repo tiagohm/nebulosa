@@ -751,7 +751,7 @@ export type ApiEventType = (typeof API_EVENT_TYPES)[number]
 export const INTERNAL_EVENT_TYPES = [
     'SAVE_FITS_AS', 'OPEN_FITS', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
     'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW',
-    'WHEEL_RENAMED', 'GUIDE_OUTPUT_CHANGED',
+    'WHEEL_RENAMED',
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]

@@ -89,11 +89,7 @@ export class ElectronService {
     }
 
     send(channel: ApiEventType | InternalEventType, ...data: any[]) {
-        this.ipcRenderer.send(channel, ...data)
-    }
-
-    sendSync(channel: ApiEventType | InternalEventType, ...data: any[]) {
-        return this.ipcRenderer.sendSync(channel, ...data)
+        return this.ipcRenderer.invoke(channel, ...data)
     }
 
     on<K extends keyof EventMappedType>(channel: K, listener: (arg: EventMappedType[K]) => void) {
@@ -101,7 +97,7 @@ export class ElectronService {
         this.ipcRenderer.on(channel, (_, arg) => listener(arg))
     }
 
-    openDirectory(data?: OpenDirectory): string | false {
-        return this.sendSync('OPEN_DIRECTORY', data)
+    openDirectory(data?: OpenDirectory): Promise<string | false> {
+        return this.send('OPEN_DIRECTORY', data)
     }
 }
