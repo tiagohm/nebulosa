@@ -2,17 +2,18 @@ package nebulosa.imaging.algorithms
 
 import nebulosa.imaging.Image
 
-class Debayer(private val pattern: CfaPattern = CfaPattern.GRGB) : TransformAlgorithm {
+class Debayer(private var pattern: CfaPattern? = null) : TransformAlgorithm {
 
     override fun transform(source: Image): Image {
         return if (source.mono) {
             process(source.color())
         } else {
-            source
+            process(source)
         }
     }
 
     private fun process(source: Image): Image {
+        val pattern = requireNotNull(pattern ?: CfaPattern.from(source.header))
         val cache = Array(2) { FloatArray(source.width) }
 
         val width = source.width
