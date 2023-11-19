@@ -37,7 +37,7 @@ class Hips2FitsService(
 
     companion object {
 
-        const val MAIN_URL = "https://alasky.u-strasbg.fr/"
-        const val MIRROR_URL = "https://alaskybis.u-strasbg.fr/"
+        const val MAIN_URL = "https://alasky.cds.unistra.fr/"
+        const val ALTERNATIVE_URL = "https://alasky.u-strasbg.fr/"
     }
 }

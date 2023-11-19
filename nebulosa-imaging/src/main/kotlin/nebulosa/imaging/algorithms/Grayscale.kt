@@ -1,5 +1,6 @@
 package nebulosa.imaging.algorithms
 
+import nebulosa.fits.Standard
 import nebulosa.fits.clone
 import nebulosa.imaging.Image
 import kotlin.math.max
@@ -15,12 +16,12 @@ class Grayscale(
         if (source.mono) return source
 
         val header = source.header.clone()
-        header.deleteKey("NAXIS3")
+        header.add(Standard.NAXIS, 2)
+        header.delete(Standard.NAXIS3)
         val result = Image(source.width, source.height, header, true)
 
         for (i in source.r.indices) {
-            val gray = max(0f, min(red * source.r[i] + green * source.g[i] + blue * source.b[i], 1f))
-            result.r[i] = gray
+            result.r[i] = max(0f, min(red * source.r[i] + green * source.g[i] + blue * source.b[i], 1f))
         }
 
         return result

@@ -6,8 +6,51 @@ import { Injectable } from '@angular/core'
 import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
-import { INDIEventType, InternalEventType, Mount, OpenDirectory, WindowEventType } from '../types'
+import {
+    ApiEventType, Camera, CameraCaptureElapsed, CameraCaptureFinished, CameraCaptureIsWaiting, CameraCaptureStarted,
+    CameraExposureElapsed, CameraExposureFinished, CameraExposureStarted, DARVPolarAlignmentEvent, DARVPolarAlignmentGuidePulseElapsed,
+    DARVPolarAlignmentInitialPauseElapsed, DeviceMessageEvent, FilterWheel, Focuser, GuideOutput, Guider,
+    GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Mount, NotificationEvent, OpenDirectory
+} from '../types'
 import { ApiService } from './api.service'
+
+type EventMappedType = {
+    'DEVICE_PROPERTY_CHANGED': INDIMessageEvent
+    'DEVICE_PROPERTY_DELETED': INDIMessageEvent
+    'DEVICE_MESSAGE_RECEIVED': INDIMessageEvent
+    'CAMERA_UPDATED': DeviceMessageEvent<Camera>
+    'CAMERA_ATTACHED': DeviceMessageEvent<Camera>
+    'CAMERA_DETACHED': DeviceMessageEvent<Camera>
+    'CAMERA_CAPTURE_STARTED': CameraCaptureStarted
+    'CAMERA_CAPTURE_FINISHED': CameraCaptureFinished
+    'CAMERA_CAPTURE_ELAPSED': CameraCaptureElapsed
+    'CAMERA_CAPTURE_WAITING': CameraCaptureIsWaiting
+    'CAMERA_EXPOSURE_ELAPSED': CameraExposureElapsed
+    'CAMERA_EXPOSURE_STARTED': CameraExposureStarted
+    'CAMERA_EXPOSURE_FINISHED': CameraExposureFinished
+    'MOUNT_UPDATED': DeviceMessageEvent<Mount>
+    'MOUNT_ATTACHED': DeviceMessageEvent<Mount>
+    'MOUNT_DETACHED': DeviceMessageEvent<Mount>
+    'FOCUSER_UPDATED': DeviceMessageEvent<Focuser>
+    'FOCUSER_ATTACHED': DeviceMessageEvent<Focuser>
+    'FOCUSER_DETACHED': DeviceMessageEvent<Focuser>
+    'WHEEL_UPDATED': DeviceMessageEvent<FilterWheel>
+    'WHEEL_ATTACHED': DeviceMessageEvent<FilterWheel>
+    'WHEEL_DETACHED': DeviceMessageEvent<FilterWheel>
+    'GUIDE_OUTPUT_UPDATED': DeviceMessageEvent<GuideOutput>
+    'GUIDE_OUTPUT_ATTACHED': DeviceMessageEvent<GuideOutput>
+    'GUIDE_OUTPUT_DETACHED': DeviceMessageEvent<GuideOutput>
+    'GUIDER_CONNECTED': GuiderMessageEvent<undefined>
+    'GUIDER_DISCONNECTED': GuiderMessageEvent<undefined>
+    'GUIDER_UPDATED': GuiderMessageEvent<Guider>
+    'GUIDER_STEPPED': GuiderMessageEvent<HistoryStep>
+    'GUIDER_MESSAGE_RECEIVED': GuiderMessageEvent<string>
+    'DARV_POLAR_ALIGNMENT_STARTED': DARVPolarAlignmentEvent
+    'DARV_POLAR_ALIGNMENT_FINISHED': DARVPolarAlignmentEvent
+    'DARV_POLAR_ALIGNMENT_UPDATED': DARVPolarAlignmentInitialPauseElapsed | DARVPolarAlignmentGuidePulseElapsed
+    'PARAMS_CHANGED': any
+    'SKY_ATLAS_UPDATE_FINISHED': NotificationEvent
+}
 
 @Injectable({ providedIn: 'root' })
 export class ElectronService {
@@ -45,34 +88,16 @@ export class ElectronService {
         return !!(window && window.process && window.process.type)
     }
 
-    send(channel: INDIEventType | InternalEventType | WindowEventType, ...data: any[]) {
-        this.ipcRenderer.send(channel, ...data)
+    send(channel: ApiEventType | InternalEventType, ...data: any[]) {
+        return this.ipcRenderer.invoke(channel, ...data)
     }
 
-    sendSync(channel: INDIEventType | InternalEventType | WindowEventType, ...data: any[]) {
-        return this.ipcRenderer.sendSync(channel, ...data)
+    on<K extends keyof EventMappedType>(channel: K, listener: (arg: EventMappedType[K]) => void) {
+        console.info('listening to channel: %s', channel)
+        this.ipcRenderer.on(channel, (_, arg) => listener(arg))
     }
 
-    on(channel: INDIEventType | InternalEventType | 'PARAMS_CHANGED',
-        listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) {
-        return this.ipcRenderer.on(channel, listener)
-    }
-
-    openDirectory(data?: OpenDirectory): string | false {
-        return this.sendSync('OPEN_DIRECTORY', data)
-    }
-
-    async selectedMount(): Promise<Mount | undefined> {
-        const mount: Mount | undefined = this.sendSync('SELECTED_MOUNT')
-        if (!mount) return undefined
-        return this.api.mount(mount.name)
-    }
-
-    registerCron(cronTime: string) {
-        return this.sendSync('REGISTER_CRON', cronTime)
-    }
-
-    unregisterCron() {
-        return this.sendSync('UNREGISTER_CRON')
+    openDirectory(data?: OpenDirectory): Promise<string | false> {
+        return this.send('OPEN_DIRECTORY', data)
     }
 }

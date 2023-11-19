@@ -4,16 +4,17 @@ import { Interactable } from '@interactjs/types/index'
 import interact from 'interactjs'
 import createPanZoom, { PanZoom } from 'panzoom'
 import * as path from 'path'
-import { MegaMenuItem, MenuItem } from 'primeng/api'
+import { MenuItem } from 'primeng/api'
 import { ContextMenu } from 'primeng/contextmenu'
+import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
-    Angle, AstronomicalObject, Camera, CameraCaptureEvent, DeepSkyObject, EquatorialCoordinateJ2000, FITSHeaderItem,
+    Angle, AstronomicalObject, Camera, CheckableMenuItem, DeepSkyObject, DetectedStar, EquatorialCoordinateJ2000, FITSHeaderItem,
     ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
-    PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star
+    PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
 } from '../../shared/types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
@@ -42,10 +43,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private readonly menu!: ContextMenu
 
     debayer = true
+    calibrate = true
     mirrorHorizontal = false
     mirrorVertical = false
     invert = false
-    annotationIsVisible = false
 
     readonly scnrChannelOptions: ImageChannel[] = ['NONE', 'RED', 'GREEN', 'BLUE']
     readonly scnrProtectionMethodOptions: SCNRProtectionMethod[] = [...SCNR_PROTECTION_METHODS]
@@ -86,6 +87,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     annotating = false
     showAnnotationInfoDialog = false
     annotationInfo?: AstronomicalObject & Partial<Star & DeepSkyObject>
+    annotationIsVisible = false
+
+    detectedStars: DetectedStar[] = []
+    detectedStarsIsVisible = false
 
     showFITSHeadersDialog = false
     fitsHeaders: FITSHeaderItem[] = []
@@ -103,6 +108,48 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     roiHeight = 128
     roiInteractable?: Interactable
 
+    private readonly saveAsMenuItem: MenuItem = {
+        label: 'Save as...',
+        icon: 'mdi mdi-content-save',
+        command: async () => {
+            const path = await this.electron.send('SAVE_FITS_AS')
+            if (path) this.api.saveImageAs(this.imageParams.path!, path)
+        },
+    }
+
+    private readonly plateSolveMenuItem: MenuItem = {
+        label: 'Plate Solve',
+        icon: 'mdi mdi-sigma',
+        command: () => {
+            this.showSolverDialog = true
+        },
+    }
+
+    private readonly stretchMenuItem: MenuItem = {
+        label: 'Stretch',
+        icon: 'mdi mdi-chart-histogram',
+        command: () => {
+            this.showStretchingDialog = true
+        },
+    }
+
+    private readonly autoStretchMenuItem: CheckableMenuItem = {
+        id: 'auto-stretch-menuitem',
+        label: 'Auto stretch',
+        icon: 'mdi mdi-chart-histogram',
+        checked: true,
+        command: () => {
+            this.autoStretch = !this.autoStretch
+            this.autoStretchMenuItem.checked = this.autoStretch
+
+            if (!this.autoStretch) {
+                this.resetStretch()
+            } else {
+                this.loadImage()
+            }
+        },
+    }
+
     private readonly scnrMenuItem: MenuItem = {
         label: 'SCNR',
         icon: 'mdi mdi-palette',
@@ -112,165 +159,180 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
+    private readonly horizontalMirrorMenuItem: CheckableMenuItem = {
+        label: 'Horizontal mirror',
+        icon: 'mdi mdi-flip-horizontal',
+        checked: false,
+        command: () => {
+            this.mirrorHorizontal = !this.mirrorHorizontal
+            this.horizontalMirrorMenuItem.checked = this.mirrorHorizontal
+            this.loadImage()
+        },
+    }
+
+    private readonly verticalMirrorMenuItem: CheckableMenuItem = {
+        label: 'Vertical mirror',
+        icon: 'mdi mdi-flip-vertical',
+        checked: false,
+        command: () => {
+            this.mirrorVertical = !this.mirrorVertical
+            this.verticalMirrorMenuItem.checked = this.mirrorVertical
+            this.loadImage()
+        },
+    }
+
+    private readonly invertMenuItem: CheckableMenuItem = {
+        label: 'Invert',
+        icon: 'mdi mdi-invert-colors',
+        checked: false,
+        command: () => {
+            this.invert = !this.invert
+            this.invertMenuItem.checked = this.invert
+            this.loadImage()
+        },
+    }
+
+    private readonly calibrateMenuItem: CheckableMenuItem = {
+        label: 'Calibrate',
+        icon: 'mdi mdi-tools',
+        checked: true,
+        command: () => {
+            this.calibrate = !this.calibrate
+            this.calibrateMenuItem.checked = this.calibrate
+            this.loadImage()
+        },
+    }
+
+    private readonly fitsHeaderMenuItem: MenuItem = {
+        icon: 'mdi mdi-list-box',
+        label: 'FITS Header',
+        command: () => {
+            this.showFITSHeadersDialog = true
+        },
+    }
+
     private readonly pointMountHereMenuItem: MenuItem = {
         label: 'Point mount here',
         icon: 'mdi mdi-telescope',
         disabled: true,
         command: async () => {
-            const mount = await this.electron.selectedMount()
-            if (!mount?.connected) return
-            this.api.pointMountHere(mount, this.imageParams.path!, this.imageMouseX, this.imageMouseY, !this.solved)
+            // TODO: Show dialogMenu if > 1 and select mount
+            // const mount = await this.electron.selectedMount()
+            // if (!mount?.connected) return
+            // this.api.pointMountHere(mount, this.imageParams.path!, this.imageMouseX, this.imageMouseY, !this.solved)
         },
     }
 
-    private readonly annotationMenuItem: MenuItem = {
+    private readonly crosshairMenuItem: CheckableMenuItem = {
+        label: 'Crosshair',
+        icon: 'mdi mdi-bullseye',
+        checked: false,
+        command: () => {
+            this.crossHair = !this.crossHair
+            this.crosshairMenuItem.checked = this.crossHair
+        },
+    }
+
+    private readonly annotationMenuItem: ToggleableMenuItem = {
         label: 'Annotation',
         icon: 'mdi mdi-format-color-text',
         disabled: true,
+        toggleable: true,
+        toggled: false,
         command: () => {
             this.showAnnotationDialog = true
         },
+        toggle: (event) => {
+            event.originalEvent.stopImmediatePropagation()
+            this.annotationIsVisible = event.checked
+        },
     }
 
-    readonly menuItems: MenuItem[] = [
-        {
-            label: 'Save as...',
-            icon: 'mdi mdi-content-save',
-            command: async () => {
-                const path = await this.electron.sendSync('SAVE_FITS_AS')
-                if (path) this.api.saveImageAs(this.imageParams.path!, path)
-            },
+    private readonly detectStarsMenuItem: ToggleableMenuItem = {
+        label: 'Detect stars',
+        icon: 'mdi mdi-creation',
+        disabled: false,
+        toggleable: false,
+        toggled: false,
+        command: async () => {
+            this.detectedStars = await this.api.detectStars(this.imageParams.path!)
+            this.detectedStarsIsVisible = this.detectedStars.length > 0
+            this.detectStarsMenuItem.toggleable = this.detectedStarsIsVisible
+            this.detectStarsMenuItem.toggled = this.detectedStarsIsVisible
         },
-        {
-            separator: true,
+        toggle: (event) => {
+            event.originalEvent.stopImmediatePropagation()
+            this.detectedStarsIsVisible = event.checked
         },
-        {
-            label: 'Plate Solve',
-            icon: 'mdi mdi-sigma',
-            command: () => {
-                this.showSolverDialog = true
-            },
-        },
-        {
-            separator: true,
-        },
-        {
-            label: 'Stretch',
-            icon: 'mdi mdi-chart-histogram',
-            command: () => {
-                this.showStretchingDialog = true
-            },
-        },
-        {
-            id: 'auto-stretch-menuitem',
-            label: 'Auto stretch',
-            icon: 'mdi mdi-chart-histogram',
-            styleClass: 'p-menuitem-checked',
-            command: (e) => {
-                this.autoStretch = !this.autoStretch
-                this.checkMenuItem(e.item, this.autoStretch)
+    }
 
-                if (!this.autoStretch) {
-                    this.resetStretch()
-                } else {
-                    this.loadImage()
-                }
-            },
+    private readonly roiMenuItem: CheckableMenuItem = {
+        label: 'ROI',
+        icon: 'mdi mdi-select',
+        checked: false,
+        command: () => {
+            if (this.roiInteractable) {
+                this.roiInteractable.unset()
+                this.roiInteractable = undefined
+            } else {
+                this.roiInteractable = interact(this.roi.nativeElement)
+                    .origin({ x: 0, y: 0 })
+                    .resizable({
+                        edges: { left: true, right: true, bottom: true, top: true },
+                        inertia: true,
+                        listeners: { move: (event: any) => this.roiResizableMove(event) },
+                        modifiers: [
+                            interact.modifiers.restrictEdges({
+                                outer: 'parent',
+                            }),
+                            interact.modifiers.restrictSize({
+                                min: { width: 8, height: 8 },
+                            })
+                        ],
+                    })
+                    .draggable({
+                        listeners: { move: (event: any) => this.roiDraggableMove(event) },
+                        inertia: true,
+                        modifiers: [
+                            interact.modifiers.restrictRect({
+                                restriction: 'parent',
+                                endOnly: true,
+                            }),
+                        ]
+                    })
+            }
+
+            this.roiMenuItem.checked = !!this.roiInteractable
         },
+    }
+
+    private readonly overlayMenuItem: MenuItem = {
+        label: 'Overlay',
+        icon: 'mdi mdi-layers',
+        items: [
+            this.crosshairMenuItem,
+            this.annotationMenuItem,
+            this.detectStarsMenuItem,
+            this.roiMenuItem,
+        ]
+    }
+
+    readonly contextMenuItems = [
+        this.saveAsMenuItem,
+        SEPARATOR_MENU_ITEM,
+        this.plateSolveMenuItem,
+        SEPARATOR_MENU_ITEM,
+        this.stretchMenuItem,
+        this.autoStretchMenuItem,
         this.scnrMenuItem,
-        {
-            label: 'Horizontal mirror',
-            icon: 'mdi mdi-flip-horizontal',
-            command: (e) => {
-                this.mirrorHorizontal = !this.mirrorHorizontal
-                this.checkMenuItem(e.item, this.mirrorHorizontal)
-                this.loadImage()
-            },
-        },
-        {
-            label: 'Vertical mirror',
-            icon: 'mdi mdi-flip-vertical',
-            command: (e) => {
-                this.mirrorVertical = !this.mirrorVertical
-                this.checkMenuItem(e.item, this.mirrorVertical)
-                this.loadImage()
-            },
-        },
-        {
-            label: 'Invert',
-            icon: 'mdi mdi-invert-colors',
-            command: (e) => {
-                this.invert = !this.invert
-                this.checkMenuItem(e.item, this.invert)
-                this.loadImage()
-            },
-        },
-        {
-            separator: true,
-        },
-        {
-            label: 'Overlay',
-            icon: 'mdi mdi-layer',
-            items: [
-                {
-                    label: 'Crosshair',
-                    icon: 'mdi mdi-bullseye',
-                    command: (e) => {
-                        this.crossHair = !this.crossHair
-                        this.checkMenuItem(e.item, this.crossHair)
-                    },
-                },
-                this.annotationMenuItem,
-                {
-                    label: 'ROI',
-                    icon: 'mdi mdi-select',
-                    command: (e) => {
-                        if (this.roiInteractable) {
-                            this.roiInteractable.unset()
-                            this.roiInteractable = undefined
-                        } else {
-                            this.roiInteractable = interact(this.roi.nativeElement)
-                                .origin({ x: 0, y: 0 })
-                                .resizable({
-                                    edges: { left: true, right: true, bottom: true, top: true },
-                                    inertia: true,
-                                    listeners: { move: (event: any) => this.roiResizableMove(event) },
-                                    modifiers: [
-                                        interact.modifiers.restrictEdges({
-                                            outer: 'parent',
-                                        }),
-                                        interact.modifiers.restrictSize({
-                                            min: { width: 8, height: 8 },
-                                        })
-                                    ],
-                                })
-                                .draggable({
-                                    listeners: { move: (event: any) => this.roiDraggableMove(event) },
-                                    inertia: true,
-                                    modifiers: [
-                                        interact.modifiers.restrictRect({
-                                            restriction: 'parent',
-                                            endOnly: true,
-                                        }),
-                                    ]
-                                })
-                        }
-
-                        this.checkMenuItem(e.item, !!this.roiInteractable)
-                    },
-                },
-            ]
-        },
-        {
-            icon: 'mdi mdi-list-box',
-            label: 'FITS Header',
-            command: () => {
-                this.showFITSHeadersDialog = true
-            },
-        },
-        {
-            separator: true,
-        },
+        this.horizontalMirrorMenuItem,
+        this.verticalMirrorMenuItem,
+        this.invertMenuItem,
+        this.calibrateMenuItem,
+        SEPARATOR_MENU_ITEM,
+        this.overlayMenuItem,
+        this.fitsHeaderMenuItem,
+        SEPARATOR_MENU_ITEM,
         this.pointMountHereMenuItem,
     ]
 
@@ -292,32 +354,32 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Image'
 
-        electron.on('CAMERA_EXPOSURE_FINISHED', async (_, event: CameraCaptureEvent) => {
+        electron.on('CAMERA_EXPOSURE_FINISHED', async (event) => {
             if (event.camera.name === this.imageParams.camera?.name) {
                 await this.closeImage()
 
                 ngZone.run(() => {
-                    this.annotations = []
+                    this.clearOverlay()
                     this.imageParams.path = event.savePath
                     this.loadImage()
                 })
             }
         })
 
-        electron.on('PARAMS_CHANGED', async (_, event: ImageParams) => {
+        electron.on('PARAMS_CHANGED', async (event: ImageParams) => {
             await this.closeImage()
 
             ngZone.run(() => {
                 this.loadImageFromParams(event)
             })
         })
-
-        this.solverPathOrUrl = this.preference.get('image.solver.pathOrUrl', '')
-        this.solverRadius = this.preference.get('image.solver.radius', 4)
-        this.solverDownsampleFactor = this.preference.get('image.solver.downsampleFactor', 1)
     }
 
-    ngAfterViewInit() {
+    async ngAfterViewInit() {
+        this.solverPathOrUrl = await this.preference.get('image.solver.pathOrUrl', '')
+        this.solverRadius = await this.preference.get('image.solver.radius', 4)
+        this.solverDownsampleFactor = await this.preference.get('image.solver.downsampleFactor', 1)
+
         this.route.queryParams.subscribe(e => {
             const params = JSON.parse(decodeURIComponent(e.params)) as ImageParams
             this.loadImageFromParams(params)
@@ -394,10 +456,26 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.disableAutoStretch()
         }
 
+        this.calibrateMenuItem.disabled = !params.camera
+
+        if (!params.camera) {
+            this.disableCalibrate()
+        }
+
         if (this.imageParams.path) {
-            this.annotations = []
+            this.clearOverlay()
             this.loadImage()
         }
+    }
+
+    private clearOverlay() {
+        this.annotations = []
+        this.annotationIsVisible = false
+        this.annotationMenuItem.toggleable = false
+
+        this.detectedStars = []
+        this.detectedStarsIsVisible = false
+        this.detectStarsMenuItem.toggleable = false
     }
 
     private async loadImage() {
@@ -419,7 +497,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private async loadImageFromPath(path: string) {
         const image = this.image.nativeElement
         const scnrEnabled = this.scnrChannel !== 'NONE'
-        const { info, blob } = await this.api.openImage(path, this.debayer, this.autoStretch,
+        const { info, blob } = await this.api.openImage(path, this.imageParams.camera, this.calibrate, this.debayer, this.autoStretch,
             this.stretchShadowhHighlight[0] / 65536, this.stretchShadowhHighlight[1] / 65536, this.stretchMidtone / 65536,
             this.mirrorHorizontal, this.mirrorVertical,
             this.invert, scnrEnabled, scnrEnabled ? this.scnrChannel : 'GREEN', this.scnrAmount, this.scnrProtectionMethod)
@@ -473,8 +551,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.annotating = true
             this.annotations = await this.api.annotationsOfImage(this.imageParams.path!,
                 this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets, this.annotateWithMinorPlanetsMagLimit)
-            this.showAnnotationDialog = false
             this.annotationIsVisible = true
+            this.annotationMenuItem.toggleable = this.annotations.length > 0
+            this.annotationMenuItem.toggled = this.annotationMenuItem.toggleable
+            this.showAnnotationDialog = false
         } finally {
             this.annotating = false
         }
@@ -487,7 +567,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private disableAutoStretch() {
         this.autoStretch = false
-        this.checkMenuItem(this.menuItems[5], false)
+        this.autoStretchMenuItem.checked = false
+    }
+
+    private disableCalibrate() {
+        this.calibrate = false
+        this.calibrateMenuItem.checked = false
     }
 
     resetStretch() {
@@ -549,21 +634,22 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     async mountSync(coordinate: EquatorialCoordinateJ2000) {
-        const mount = await this.electron.selectedMount()
-        if (!mount?.connected) return
-        this.api.mountSync(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
+        // TODO: Show dialogMenu if > 1 and select mount
+        // const mount = await this.electron.selectedMount()
+        // if (!mount?.connected) return
+        // this.api.mountSync(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
     }
 
     async mountGoTo(coordinate: EquatorialCoordinateJ2000) {
-        const mount = await this.electron.selectedMount()
-        if (!mount?.connected) return
-        this.api.mountGoTo(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
+        // const mount = await this.electron.selectedMount()
+        // if (!mount?.connected) return
+        // this.api.mountGoTo(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
     }
 
     async mountSlew(coordinate: EquatorialCoordinateJ2000) {
-        const mount = await this.electron.selectedMount()
-        if (!mount?.connected) return
-        this.api.mountSlew(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
+        // const mount = await this.electron.selectedMount()
+        // if (!mount?.connected) return
+        // this.api.mountSlew(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
     }
 
     frame(coordinate: EquatorialCoordinateJ2000) {
@@ -588,9 +674,5 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 },
             })
         }
-    }
-
-    private checkMenuItem(item?: MenuItem | MegaMenuItem, checked: boolean = true) {
-        item && (item.styleClass = checked ? 'p-menuitem-checked' : '')
     }
 }

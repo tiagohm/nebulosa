@@ -9,7 +9,6 @@ import nebulosa.phd2.client.PHD2Client
 import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.commands.*
 import nebulosa.phd2.client.events.*
-import java.util.concurrent.TimeUnit
 
 class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
 
@@ -40,8 +39,12 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
         client.registerListener(this)
     }
 
+    override val canDither = true
+
     override var settleAmount = Guider.DEFAULT_SETTLE_AMOUNT
+
     override var settleTime = Guider.DEFAULT_SETTLE_TIME
+
     override var settleTimeout = Guider.DEFAULT_SETTLE_TIMEOUT
 
     override fun registerGuiderListener(listener: GuiderListener) {
@@ -231,7 +234,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
 
     override fun waitForSettle() {
         try {
-            settling.await(settleTimeout.inWholeNanoseconds, TimeUnit.NANOSECONDS)
+            settling.await(settleTimeout)
         } catch (e: InterruptedException) {
             LOG.warn("PHD2 did not send SettleDone message in expected time")
         } catch (e: Throwable) {

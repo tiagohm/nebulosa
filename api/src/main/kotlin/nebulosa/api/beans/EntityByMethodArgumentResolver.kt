@@ -46,7 +46,6 @@ class EntityByMethodArgumentResolver(
         val parameterName = parameter.parameterName ?: "id"
         val parameterValue = webRequest.pathVariables()[parameterName]
             ?: webRequest.getParameter(parameterName)
-            ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Parameter $parameterName is not mapped")
 
         val entity = entityByParameterValue(parameterType, parameterValue)
 

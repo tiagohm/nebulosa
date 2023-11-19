@@ -16,7 +16,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
         val file = createFile()
 
         "write" {
-            val sink = file.seekableSink()
+            val sink = file.sink()
 
             val buffer = sink.buffer()
             buffer.writeByte(0xab)
@@ -61,7 +61,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
             buffer.exhausted().shouldBeTrue()
         }
         "seek and write" {
-            val sink = file.seekableSink()
+            val sink = file.sink()
             sink.seek(-1L)
 
             val buffer = sink.buffer()
@@ -89,7 +89,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
         "close emits buffered bytes" {
             file.writeBytes(EMPTY_BYTE_ARRAY)
 
-            val sink = file.seekableSink()
+            val sink = file.sink()
 
             sink.buffer().use {
                 it.writeByte(0x99)

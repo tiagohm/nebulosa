@@ -1,9 +1,8 @@
 package nebulosa.imaging.algorithms
 
-import nebulosa.fits.FitsKeywords
+import nebulosa.fits.Header
+import nebulosa.fits.cfaPattern
 import nebulosa.imaging.ImageChannel
-import nom.tam.fits.BasicHDU
-import nom.tam.fits.Header
 
 enum class CfaPattern(private val pattern: Array<Array<ImageChannel>>) {
     RGGB(arrayOf(arrayOf(ImageChannel.RED, ImageChannel.GREEN), arrayOf(ImageChannel.GREEN, ImageChannel.BLUE))),
@@ -20,13 +19,8 @@ enum class CfaPattern(private val pattern: Array<Array<ImageChannel>>) {
     companion object {
 
         @JvmStatic
-        fun of(hdu: BasicHDU<*>): CfaPattern? {
-            return of(hdu.header)
-        }
-
-        @JvmStatic
-        fun of(header: Header): CfaPattern? {
-            return header.getStringValue(FitsKeywords.BAYERPAT)?.trim()?.let(CfaPattern::valueOf)
+        fun from(header: Header): CfaPattern? {
+            return header.cfaPattern?.let(CfaPattern::valueOf)
         }
     }
 }

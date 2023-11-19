@@ -2,10 +2,8 @@ package nebulosa.imaging.algorithms.star.hfd
 
 import kotlin.math.sqrt
 
-class HalfFluxRadius(
-    private val cx: Double,
-    private val cy: Double,
-    private val mass: Double,
+data class HalfFluxRadius(
+    private val cx: Double, private val cy: Double, private val mass: Double,
     private val data: List<R2M>,
 ) {
 

@@ -8,6 +8,12 @@ p-button ::ng-deep {
             height: 32px;
         }
     }
+
+    &.p-disabled {
+        img {
+            filter: grayscale(1);
+        }
+    }
 }
 
 .grid::-webkit-scrollbar {

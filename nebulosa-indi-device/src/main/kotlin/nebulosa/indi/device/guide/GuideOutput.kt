@@ -1,6 +1,7 @@
 package nebulosa.indi.device.guide
 
 import nebulosa.indi.device.Device
+import java.time.Duration
 
 interface GuideOutput : Device {
 
@@ -8,11 +9,11 @@ interface GuideOutput : Device {
 
     val pulseGuiding: Boolean
 
-    fun guideNorth(duration: Int)
+    fun guideNorth(duration: Duration)
 
-    fun guideSouth(duration: Int)
+    fun guideSouth(duration: Duration)
 
-    fun guideEast(duration: Int)
+    fun guideEast(duration: Duration)
 
-    fun guideWest(duration: Int)
+    fun guideWest(duration: Duration)
 }

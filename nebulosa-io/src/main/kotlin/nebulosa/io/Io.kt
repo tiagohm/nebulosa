@@ -111,7 +111,7 @@ fun RandomAccessFile.sink(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSink = RandomAccessFileSink(this, timeout)
 
-fun File.seekableSink(
+fun File.sink(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSink = RandomAccessFile(this, "rw").sink(timeout)
 

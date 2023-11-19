@@ -226,7 +226,7 @@ class MountService(private val imageBucket: ImageBucket) {
     fun pointMountHere(mount: Mount, path: Path, x: Double, y: Double, synchronized: Boolean) {
         val calibration = imageBucket[path]?.second ?: return
 
-        if (!calibration.isEmpty && calibration.solved) {
+        if (calibration.isNotEmpty() && calibration.solved) {
             val wcs = WCSTransform(calibration)
             val (rightAscension, declination) = wcs.use { it.pixToSky(x, y) }
 

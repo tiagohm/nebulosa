@@ -8,21 +8,18 @@ import kotlin.math.min
 object AutoScreenTransformFunction : ComputationAlgorithm<ScreenTransformFunction.Parameters>, TransformAlgorithm {
 
     override fun compute(source: Image): ScreenTransformFunction.Parameters {
-        val size = source.width * source.height
-        val sampleBy = max(1, size / 500000)
-
         // Find the median sample.
-        val median = Median(sampleBy = sampleBy).compute(source)
+        val median = Median().compute(source)
         // Find the Median deviation: 1.4826 * median of abs(sample[i] - median).
-        val medianDeviation = MedianDeviation(median, sampleBy = sampleBy).compute(source)
+        val mad = MedianAbsoluteDeviation(median, normalized = true).compute(source)
         // Compute parameters.
         val upperHalf = median > 0.5
 
-        val shadow = if (upperHalf || medianDeviation == 0f) 0f
-        else min(1f, max(0f, (median - 2.8f * medianDeviation)))
+        val shadow = if (upperHalf || mad == 0f) 0f
+        else min(1f, max(0f, (median - 2.8f * mad)))
 
-        val highlight = if (!upperHalf || medianDeviation == 0f) 1f
-        else min(1f, max(0f, (median + 2.8f * medianDeviation)))
+        val highlight = if (!upperHalf || mad == 0f) 1f
+        else min(1f, max(0f, (median + 2.8f * mad)))
 
         val x = if (!upperHalf) median - shadow else 0.25f
         val m = if (!upperHalf) 0.25f else highlight - median

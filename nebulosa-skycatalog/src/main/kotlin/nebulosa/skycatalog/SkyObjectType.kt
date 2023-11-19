@@ -1,5 +1,7 @@
 package nebulosa.skycatalog
 
+// https://vizier.cds.unistra.fr/cgi-bin/OType
+
 enum class SkyObjectType(
     val description: String,
     val classification: ClassificationType,

@@ -1,7 +1,7 @@
 package nebulosa.phd2.client.commands
 
 import nebulosa.guiding.Guider
-import kotlin.time.Duration
+import java.time.Duration
 
 data class Guide(
     val settleAmount: Double = Guider.DEFAULT_SETTLE_AMOUNT,
@@ -20,8 +20,8 @@ data class Guide(
         "recalibrate" to recalibrate,
         "roi" to if (width > 0 && height > 0) listOf(x, y, width, height) else null,
         "settle" to mapOf(
-            "pixels" to settleAmount, "time" to settleTime.inWholeSeconds,
-            "timeout" to settleTimeout.inWholeSeconds,
+            "pixels" to settleAmount, "time" to settleTime.toSeconds(),
+            "timeout" to settleTimeout.toSeconds(),
         )
     )
 

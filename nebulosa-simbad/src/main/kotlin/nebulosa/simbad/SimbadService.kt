@@ -23,7 +23,7 @@ import kotlin.math.min
  * @see <a href="http://simbad.u-strasbg.fr/guide/otypes.htx">Object types</a>
  */
 class SimbadService(
-    url: String = "https://simbad.u-strasbg.fr/",
+    url: String = MAIN_URL,
     httpClient: OkHttpClient? = null,
 ) : RetrofitService(url, httpClient) {
 
@@ -110,7 +110,7 @@ class SimbadService(
     }
 
     fun search(search: SimbadSearch): List<SimbadEntry> {
-        val (id, text, rightAscension, declination, radius, types, magnitudeMin, magnitudeMax, limit) = search
+        val (id, text, rightAscension, declination, radius, types, magnitudeMin, magnitudeMax, constellation, limit) = search
         val builder = QueryBuilder()
 
         var join: Table = LeftJoin(BASIC_TABLE, FLUX_TABLE, arrayOf(OID equal FLUX_TABLE.column("oidref")))
@@ -130,11 +130,13 @@ class SimbadService(
                 join = LeftJoin(join, IDENT_TABLE, arrayOf(OID equal IDENT_TABLE.column("oidref")))
             }
 
+            builder.add(OID greaterThan search.lastID)
             if (radius > 0.0) builder.add(SkyPoint(RA, DEC) contains Circle(rightAscension, declination, radius))
-            if (types.isNotEmpty()) builder.add(Or(types.map { OTYPE equal "${it.codes[0]}.." }))
+            if (!types.isNullOrEmpty()) builder.add(Or(types.map { OTYPE equal "${it.codes[0]}.." }))
             if (magnitudeMin > -30.0) builder.add((MAG_V greaterOrEqual magnitudeMin) or (MAG_B greaterOrEqual magnitudeMin))
             if (magnitudeMax < 30.0) builder.add((MAG_V lessOrEqual magnitudeMax) or (MAG_B lessOrEqual magnitudeMax))
             if (!text.isNullOrBlank()) builder.add(ID equal text.trim())
+            if (constellation != null) builder.add(SkyPoint(RA, DEC) contains ConstellationBoundary(constellation.name))
             builder.add(SortBy(OID))
         }
 
@@ -144,6 +146,9 @@ class SimbadService(
     }
 
     companion object {
+
+        const val MAIN_URL = "https://simbad.cds.unistra.fr/"
+        const val ALTERNATIVE_URL = "https://simbad.u-strasbg.fr/"
 
         @JvmStatic private val LOG = loggerFor<SimbadService>()
 

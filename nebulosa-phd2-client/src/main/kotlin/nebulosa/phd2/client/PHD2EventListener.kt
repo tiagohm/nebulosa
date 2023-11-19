@@ -5,7 +5,7 @@ import nebulosa.phd2.client.events.PHD2Event
 
 interface PHD2EventListener {
 
-    fun onEventReceived(event: PHD2Event)
+    fun onEventReceived(event: PHD2Event) = Unit
 
-    fun <T> onCommandProcessed(command: PHD2Command<T>, result: T?, error: String?)
+    fun <T> onCommandProcessed(command: PHD2Command<T>, result: T?, error: String?) = Unit
 }

@@ -1,66 +1,68 @@
-import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
-import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import nebulosa.imaging.Image
+import nebulosa.imaging.algorithms.SubFrame
 import nebulosa.imaging.algorithms.star.hfd.FindResult
 import nebulosa.imaging.algorithms.star.hfd.HalfFluxDiameter
-import nom.tam.fits.Fits
+import nebulosa.test.FitsStringSpec
+import kotlin.math.roundToInt
 
-class HFDTest : StringSpec() {
+class HFDTest : FitsStringSpec() {
 
     init {
-        val image1 = Image.openFITS(Fits("src/test/resources/HFD.1.fits"))
-        val image2 = Image.openFITS(Fits("src/test/resources/HFD.2.fits"))
+        val image = Image.open(NGC3344_MONO_16)
 
         "ok" {
-            val hfd = HalfFluxDiameter(542.0, 974.0)
-            val star = hfd.compute(image1)
+            val hfd = HalfFluxDiameter(89.0, 138.0)
+            val star = hfd.compute(image)
 
             star.result shouldBe FindResult.OK
-            star.mass shouldBe (13840.811 plusOrMinus 1.0)
-            star.snr shouldBe (82.5 plusOrMinus 1.0)
-            star.hfd shouldBe (2.9 plusOrMinus 1.0)
-            star.peak shouldBe (1240.0 plusOrMinus 1.0)
-            star.x.toInt() shouldBeExactly 544
-            star.y.toInt() shouldBeExactly 974
+            star.mass shouldBe (990716.0 plusOrMinus 1.0)
+            star.snr shouldBe (39.9 plusOrMinus 0.1)
+            star.hfd shouldBe (4.85 plusOrMinus 0.1)
+            star.peak shouldBe (64250.0 plusOrMinus 1.0)
+            star.x.roundToInt() shouldBeExactly 89
+            star.y.roundToInt() shouldBeExactly 138
+
+            image.transform(SubFrame.centered(89, 138, 15)).save("hfd-ok")
         }
-        "faint star" {
-            val hfd = HalfFluxDiameter(981.0, 327.0)
-            val star = hfd.compute(image1)
+        "low hfd" {
+            val hfd = HalfFluxDiameter(234.0, 143.0, 7.0)
+            val star = hfd.compute(image)
 
-            star.result shouldBe FindResult.OK
-            star.mass shouldBe (113.0 plusOrMinus 1.0)
-            star.snr shouldBe (6.5 plusOrMinus 1.0)
-            star.hfd shouldBe (2.0 plusOrMinus 1.0)
-            star.peak shouldBe (22.0 plusOrMinus 1.0)
-            star.x.toInt() shouldBeExactly 980
-            star.y.toInt() shouldBeExactly 327
+            star.result shouldBe FindResult.LOWHFD
+            star.mass shouldBe (76195.4 plusOrMinus 1.0)
+            star.snr shouldBe (26.5 plusOrMinus 0.1)
+            star.hfd shouldBe (1.41 plusOrMinus 0.1)
+            star.peak shouldBe (37265.0 plusOrMinus 1.0)
+            star.x.roundToInt() shouldBeExactly 234
+            star.y.roundToInt() shouldBeExactly 143
+
+            image.transform(SubFrame.centered(234, 143, 7)).save("hfd-low-hfd")
         }
-        "unfocused star" {
-            val hfd = HalfFluxDiameter(303.0, 177.0)
-            val star = hfd.compute(image2)
+        "low snr" {
+            val hfd = HalfFluxDiameter(233.0, 14.0, 7.0)
+            val star = hfd.compute(image)
 
-            star.result shouldBe FindResult.OK
-            star.mass shouldBe (1260.0212 plusOrMinus 1.0)
-            star.snr shouldBe (17.8989 plusOrMinus 1.0)
-            star.hfd shouldBe (6.52 plusOrMinus 1.0)
-            star.peak shouldBe (71.0 plusOrMinus 1.0)
-            star.x.toInt() shouldBeExactly 305
-            star.y.toInt() shouldBeExactly 178
+            star.result shouldBe FindResult.LOWSNR
+            star.snr shouldBe (2.9 plusOrMinus 0.1)
+            star.hfd shouldBe (0.0 plusOrMinus 0.1)
+            star.peak shouldBe (20303.0 plusOrMinus 1.0)
+
+            image.transform(SubFrame.centered(233, 14, 7)).save("hfd-low-snr")
         }
         "low mass" {
-            val hfd = HalfFluxDiameter(827.0, 699.0)
-            val star = hfd.compute(image2)
+            val hfd = HalfFluxDiameter(97.0, 64.0, 3.0)
+            val star = hfd.compute(image)
 
             star.result shouldBe FindResult.LOWMASS
-            star.mass shouldBeExactly 0.0
-            star.snr shouldBeExactly 0.0
-            star.hfd shouldBeExactly 0.0
-            star.peak shouldBe (10.0 plusOrMinus 1e-8)
-            star.x.toInt() shouldBeExactly 827
-            star.y.toInt() shouldBeExactly 699
+            star.mass shouldBe (0.0 plusOrMinus 0.1)
+            star.snr shouldBe (0.0 plusOrMinus 0.1)
+            star.hfd shouldBe (0.0 plusOrMinus 0.1)
+            star.peak shouldBe (27242.0 plusOrMinus 1.0)
+
+            image.transform(SubFrame.centered(97, 64, 3)).save("hfd-low-mass")
         }
     }
 }

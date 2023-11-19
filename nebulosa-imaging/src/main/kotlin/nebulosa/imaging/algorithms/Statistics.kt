@@ -1,8 +1,8 @@
 package nebulosa.imaging.algorithms
 
 import nebulosa.imaging.Image
+import nebulosa.imaging.Image.Companion.forEach
 import nebulosa.imaging.ImageChannel
-import nebulosa.imaging.algorithms.ComputationAlgorithm.Companion.sampling
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -10,13 +10,10 @@ import kotlin.math.sqrt
 
 data class Statistics(
     private val channel: ImageChannel = ImageChannel.GRAY,
-    private val sampleBy: Int = 1,
-    private val noSumOfSquares: Boolean = false,
     private val noMedian: Boolean = false,
     private val noDeviation: Boolean = false,
 ) : ComputationAlgorithm<Statistics.Data> {
 
-    @Suppress("ArrayInDataClass")
     data class Data(
         val count: Int = 0,
         val maxCount: Int = 0,
@@ -28,7 +25,6 @@ data class Statistics(
         val avgDev: Float = 0f,
         val minimum: Float = 0f,
         val maximum: Float = 0f,
-        val data: IntArray = IntArray(0),
     ) : ClosedFloatingPointRange<Float> {
 
         override val start
@@ -59,8 +55,8 @@ data class Statistics(
         var sumOfSquares = 0f
         var variance = 0f
 
-        val count = source.sampling(channel, sampleBy) {
-            val value = (it * 65535f).toInt()
+        val totalCount = source.forEach(channel) {
+            val value = max(0, min((it * 65535).toInt(), 65535))
 
             data[value]++
 
@@ -68,18 +64,20 @@ data class Statistics(
             maximum = max(maximum, it)
             maxCount = max(maxCount, data[value])
             sum += it
-            if (!noSumOfSquares) sumOfSquares += it * it
+            sumOfSquares += it * it
         }
 
-        val mean = sum / count
-        val median = if (noMedian) 0f else Median.compute(data, count / 2)
+        check(totalCount >= 1) { "invalid source. count < 1: $totalCount" }
+
+        val mean = sum / totalCount
+        val median = if (noMedian && noDeviation) 0f else Median.compute(data, totalCount / 2f)
 
         var eps = 0f
         var stdDev = 0f
         var avgDev = 0f
 
         if (!noDeviation) {
-            source.sampling(channel, sampleBy) {
+            source.forEach(channel) {
                 val d = it - mean
                 variance += d * d
                 eps += d
@@ -87,12 +85,12 @@ data class Statistics(
                 avgDev += abs(it - median)
             }
 
-            variance = (variance - eps * eps / count) / (count - 1)
+            variance = (variance - eps * eps / totalCount) / (totalCount - 1)
             stdDev = sqrt(variance)
 
-            avgDev /= count
+            avgDev /= totalCount
         }
 
-        return Data(count, maxCount, mean, sumOfSquares, median, variance, stdDev, avgDev, minimum, maximum, data)
+        return Data(totalCount, maxCount, mean, sumOfSquares, median, variance, stdDev, avgDev, minimum, maximum)
     }
 }

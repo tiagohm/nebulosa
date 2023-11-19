@@ -5,4 +5,6 @@ import org.springframework.batch.core.JobExecution
 interface SequenceJobEvent {
 
     val jobExecution: JobExecution
+
+    val progress: Double
 }

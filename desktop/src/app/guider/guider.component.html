@@ -31,46 +31,6 @@
                     </div>
                 </div>
                 <p-tabView class="relative">
-                    <p-tabPanel leftIcon="mdi mdi-cog">
-                        <div class="grid mt-1">
-                            <div class="col-4">
-                                <span class="p-float-label">
-                                    <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
-                                                   styleClass="border-0 p-inputtext-sm w-full"
-                                                   [(ngModel)]="phdDitherPixels" [step]="1" />
-                                    <label>Dither (px)</label>
-                                </span>
-                            </div>
-                            <div class="col-3 flex flex-column justify-content-center text-center gap-2">
-                                <span class="text-sm text-gray-100">Dither in RA only</span>
-                                <p-inputSwitch [disabled]="!phdConnected || guiding" [(ngModel)]="phdDitherRAOnly" />
-                            </div>
-                            <div class="col-5">
-                                <span class="p-float-label">
-                                    <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
-                                                   styleClass="border-0 p-inputtext-sm w-full" locale="en" [min]="1" [max]="25"
-                                                   [(ngModel)]="phdSettleAmount" (ngModelChange)="guidingSettleChanged()" [step]="0.1" />
-                                    <label>Settle tolerance (px)</label>
-                                </span>
-                            </div>
-                            <div class="col-6">
-                                <span class="p-float-label">
-                                    <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
-                                                   styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="60"
-                                                   [(ngModel)]="phdSettleTime" (ngModelChange)="guidingSettleChanged()" [step]="1" />
-                                    <label>Minimum settle time (s)</label>
-                                </span>
-                            </div>
-                            <div class="col-6">
-                                <span class="p-float-label">
-                                    <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
-                                                   styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="60"
-                                                   [(ngModel)]="phdSettleTimeout" (ngModelChange)="guidingSettleChanged()" [step]="1" />
-                                    <label>Settle timeout (s)</label>
-                                </span>
-                            </div>
-                        </div>
-                    </p-tabPanel>
                     <p-tabPanel leftIcon="mdi mdi-chart-bell-curve">
                         <div class="grid mt-1">
                             <div class="col-3">
@@ -134,6 +94,34 @@
                             </div>
                             <span class="absolute right-0 text-blue-500" style="top: 16px;">North</span>
                             <span class="absolute right-0 text-red-500" style="bottom: 26px;">East</span>
+                        </div>
+                    </p-tabPanel>
+                    <p-tabPanel leftIcon="mdi mdi-cog">
+                        <div class="grid mt-1">
+                            <div class="col-5">
+                                <span class="p-float-label">
+                                    <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
+                                                   styleClass="border-0 p-inputtext-sm w-full" locale="en" [min]="1" [max]="25"
+                                                   [(ngModel)]="phdSettleAmount" (ngModelChange)="settleChanged()" [step]="0.1" />
+                                    <label>Settle tolerance (px)</label>
+                                </span>
+                            </div>
+                            <div class="col-6">
+                                <span class="p-float-label">
+                                    <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
+                                                   styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="60"
+                                                   [(ngModel)]="phdSettleTime" (ngModelChange)="settleChanged()" [step]="1" />
+                                    <label>Minimum settle time (s)</label>
+                                </span>
+                            </div>
+                            <div class="col-6">
+                                <span class="p-float-label">
+                                    <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
+                                                   styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="60"
+                                                   [(ngModel)]="phdSettleTimeout" (ngModelChange)="settleChanged()" [step]="1" />
+                                    <label>Settle timeout (s)</label>
+                                </span>
+                            </div>
                         </div>
                     </p-tabPanel>
                     <div class="grid mt-1 absolute" style="top: -12px; right: 10px">

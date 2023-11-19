@@ -51,14 +51,14 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Framing'
 
-        this.loadPreference()
-
-        electron.on('PARAMS_CHANGED', (_, event: FramingParams) => {
+        electron.on('PARAMS_CHANGED', (event: FramingParams) => {
             ngZone.run(() => this.frameFromParams(event))
         })
     }
 
     ngAfterViewInit() {
+        this.loadPreference()
+
         this.route.queryParams.subscribe(e => {
             const params = JSON.parse(decodeURIComponent(e.params)) as FramingParams
             this.frameFromParams(params)
@@ -68,7 +68,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
     @HostListener('window:unload')
     ngOnDestroy() {
         this.closeFrameImage()
-        this.electron.sendSync('CLOSE_WINDOW', this.frameId)
+        this.electron.send('CLOSE_WINDOW', this.frameId)
     }
 
     private frameFromParams(params: FramingParams) {
@@ -108,14 +108,14 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    private loadPreference() {
-        this.rightAscension = this.preference.get('framing.rightAscension', '00h00m00s')
-        this.declination = this.preference.get('framing.declination', `+000°00'00"`)
-        this.width = this.preference.get('framing.width', 1280)
-        this.height = this.preference.get('framing.height', 720)
-        this.fov = this.preference.get('framing.fov', 1)
-        this.rotation = this.preference.get('framing.rotation', 0)
-        this.hipsSurvey = this.preference.get('framing.hipsSurvey', this.hipsSurvey)
+    private async loadPreference() {
+        this.rightAscension = await this.preference.get('framing.rightAscension', '00h00m00s')
+        this.declination = await this.preference.get('framing.declination', `+000°00'00"`)
+        this.width = await this.preference.get('framing.width', 1280)
+        this.height = await this.preference.get('framing.height', 720)
+        this.fov = await this.preference.get('framing.fov', 1)
+        this.rotation = await this.preference.get('framing.rotation', 0)
+        this.hipsSurvey = await this.preference.get('framing.hipsSurvey', this.hipsSurvey)
     }
 
     private savePreference() {

@@ -7,6 +7,7 @@ import nebulosa.io.resource
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.skycatalog.sao.SaoCatalog
+import nebulosa.test.NonGitHubOnlyCondition
 
 @EnabledIf(NonGitHubOnlyCondition::class)
 class SaoCatalogTest : StringSpec() {

@@ -1,7 +1,13 @@
 :host {
     #titlebar {
-        ::ng-deep .mdi:before {
-            color: #000000
+        ::ng-deep {
+            .mdi:before {
+                color: #FFF
+            }
+
+            .p-disabled {
+                opacity: 0.3;
+            }
         }
     }
 }

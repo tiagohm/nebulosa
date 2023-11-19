@@ -2,8 +2,8 @@ package nebulosa.nasa.daf
 
 import nebulosa.io.SeekableSource
 import nebulosa.io.readDoubleArray
-import nebulosa.io.seekableSource
 import nebulosa.io.source
+import nebulosa.io.seekableSource
 import okio.Buffer
 import java.io.Closeable
 import java.io.File

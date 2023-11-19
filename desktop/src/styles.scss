@@ -1,3 +1,6 @@
+@import "@fontsource/roboto";
+@import "@mdi/font/scss/materialdesignicons.scss";
+
 html,
 body {
     height: 100%;
@@ -7,7 +10,7 @@ body {
 
 body {
     margin: 0;
-    font-family: var(--font-family);
+    font-family: "Roboto";
 }
 
 .invisible {
@@ -125,15 +128,15 @@ i.mdi {
     }
 }
 
-.p-menuitem {
+.p-menuitem-link {
     &.p-menuitem-checked {
         background-color: #C5E1A5;
-
-        .p-menuitem-text,
-        .p-menuitem-icon {
-            color: #212121 !important;
-        }
+        color: #212121 !important;
     }
+}
+
+.p-contextmenu {
+    min-width: 181px;
 }
 
 .p-tabview .p-tabview-nav {
@@ -154,6 +157,21 @@ i.mdi {
 
 .monospaced {
     font-family: monospace !important;
+}
+
+#titlebar:before {
+    background: url(assets/icons/nebulosa-256.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    image-rendering: pixelated;
+    content: '';
+    width: 100%;
+    display: flex;
+    position: absolute;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.6;
 }
 
 ::-webkit-scrollbar {
@@ -188,6 +206,7 @@ i.mdi {
     line-height: 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-size: 1.25rem;
 
     &.random-dither:before {
         content: "\e900";

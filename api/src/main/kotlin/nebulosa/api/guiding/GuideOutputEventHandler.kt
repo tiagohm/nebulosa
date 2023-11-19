@@ -39,17 +39,17 @@ class GuideOutputEventHandler(
                     throttler.onNext(event)
                 }
                 is GuideOutputAttached -> {
-                    messageService.sendMessage(GUIDE_OUTPUT_ATTACHED, event.device)
+                    messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_ATTACHED, event.device))
                 }
                 is GuideOutputDetached -> {
-                    messageService.sendMessage(GUIDE_OUTPUT_DETACHED, event.device)
+                    messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_DETACHED, event.device))
                 }
             }
         }
     }
 
     fun sendUpdate(device: GuideOutput) {
-        messageService.sendMessage(GUIDE_OUTPUT_UPDATED, device)
+        messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_UPDATED, device))
     }
 
     companion object {

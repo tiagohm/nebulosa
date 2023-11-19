@@ -6,7 +6,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { GuideDirection, GuideOutput, GuideStar, GuideState, GuideStep, GuiderStatus, HistoryStep } from '../../shared/types'
+import { GuideDirection, GuideOutput, GuideState, GuideStep, Guider, HistoryStep } from '../../shared/types'
 
 export type PlotMode = 'RA/DEC' | 'DX/DY'
 
@@ -36,8 +36,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     phdGuideStep?: GuideStep
     phdMessage = ''
 
-    phdDitherPixels = 5
-    phdDitherRAOnly = false
     phdSettleAmount = 1.5
     phdSettleTime = 10
     phdSettleTimeout = 30
@@ -225,24 +223,24 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
 
         api.startListening('GUIDING')
 
-        electron.on('GUIDE_OUTPUT_UPDATED', (_, event: GuideOutput) => {
-            if (event.name === this.guideOutput?.name) {
+        electron.on('GUIDE_OUTPUT_UPDATED', event => {
+            if (event.device.name === this.guideOutput?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.guideOutput!, event)
+                    Object.assign(this.guideOutput!, event.device)
                     this.update()
                 })
             }
         })
 
-        electron.on('GUIDE_OUTPUT_ATTACHED', (_, event: GuideOutput) => {
+        electron.on('GUIDE_OUTPUT_ATTACHED', event => {
             ngZone.run(() => {
-                this.guideOutputs.push(event)
+                this.guideOutputs.push(event.device)
             })
         })
 
-        electron.on('GUIDE_OUTPUT_DETACHED', (_, event: GuideOutput) => {
+        electron.on('GUIDE_OUTPUT_DETACHED', event => {
             ngZone.run(() => {
-                const index = this.guideOutputs.findIndex(e => e.name === event.name)
+                const index = this.guideOutputs.findIndex(e => e.name === event.device.name)
                 if (index >= 0) this.guideOutputs.splice(index, 1)
             })
         })
@@ -259,40 +257,40 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             })
         })
 
-        electron.on('GUIDER_UPDATED', (_, event: GuiderStatus) => {
+        electron.on('GUIDER_UPDATED', event => {
             ngZone.run(() => {
-                this.processGuiderStatus(event)
+                this.processGuiderStatus(event.data)
             })
         })
 
-        electron.on('GUIDER_STEPPED', (_, event: HistoryStep | GuideStar) => {
+        electron.on('GUIDER_STEPPED', event => {
             ngZone.run(() => {
-                if ("id" in event) {
-                    if (this.phdGuideHistory.length >= 100) {
-                        this.phdGuideHistory.splice(0, 1)
-                    }
-
-                    this.phdGuideHistory.push(event)
-                    this.updateGuideHistoryChart()
+                if (this.phdGuideHistory.length >= 100) {
+                    this.phdGuideHistory.splice(0, this.phdGuideHistory.length - 99)
                 }
 
-                if ("guideStep" in event && event.guideStep) {
-                    this.phdGuideStep = event.guideStep
+                this.phdGuideHistory.push(event.data)
+                this.updateGuideHistoryChart()
+
+                if (event.data.guideStep) {
+                    this.phdGuideStep = event.data.guideStep
+                } else {
+                    // Dithering.
                 }
             })
         })
 
-        electron.on('GUIDER_MESSAGE_RECEIVED', (_, event: { message: string }) => {
+        electron.on('GUIDER_MESSAGE_RECEIVED', event => {
             ngZone.run(() => {
-                this.phdMessage = event.message
+                this.phdMessage = event.data
             })
         })
     }
 
     async ngAfterViewInit() {
-        this.phdSettleAmount = this.preference.get('guiding.settleAmount', 1.5)
-        this.phdSettleTime = this.preference.get('guiding.settleTime', 10)
-        this.phdSettleTimeout = this.preference.get('guiding.settleTimeout', 30)
+        this.phdSettleAmount = await this.preference.get('guider.settleAmount', 1.5)
+        this.phdSettleTime = await this.preference.get('guider.settleTime', 10)
+        this.phdSettleTimeout = await this.preference.get('guider.settleTimeout', 30)
 
         this.guideOutputs = await this.api.guideOutputs()
 
@@ -309,7 +307,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         this.api.stopListening('GUIDING')
     }
 
-    private processGuiderStatus(event: GuiderStatus) {
+    private processGuiderStatus(event: Guider) {
         this.phdConnected = event.connected
         this.phdState = event.state
         this.phdPixelScale = event.pixelScale
@@ -377,8 +375,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
 
             this.update()
         }
-
-        this.electron.send('GUIDE_OUTPUT_CHANGED', this.guideOutput)
     }
 
     connectGuideOutput() {
@@ -393,16 +389,16 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         for (const direction of directions) {
             switch (direction) {
                 case 'NORTH':
-                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideNorthDuration)
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideNorthDuration * 1000)
                     break
                 case 'SOUTH':
-                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideSouthDuration)
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideSouthDuration * 1000)
                     break
                 case 'WEST':
-                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideWestDuration)
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideWestDuration * 1000)
                     break
                 case 'EAST':
-                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideEastDuration)
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideEastDuration * 1000)
                     break
             }
         }
@@ -428,11 +424,11 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         await this.api.guidingStart(event.shiftKey)
     }
 
-    async guidingSettleChanged() {
-        await this.api.guidingSettle(this.phdSettleAmount, this.phdSettleTime, this.phdSettleTimeout)
-        this.preference.set('guiding.settleAmount', this.phdSettleAmount)
-        this.preference.set('guiding.settleTime', this.phdSettleTime)
-        this.preference.set('guiding.settleTimeout', this.phdSettleTimeout)
+    async settleChanged() {
+        await this.api.guidingSettle(this.phdSettleAmount, this.phdSettleTime * 1000000, this.phdSettleTimeout * 1000000)
+        this.preference.set('guider.settleAmount', this.phdSettleAmount)
+        this.preference.set('guider.settleTime', this.phdSettleTime)
+        this.preference.set('guider.settleTimeout', this.phdSettleTimeout)
     }
 
     guidingClearHistory() {

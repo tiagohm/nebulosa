@@ -5,8 +5,10 @@ import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
 import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
-import { EVERY_MINUTE_CRON_TIME, ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
+import { Subscription, timer } from 'rxjs'
+import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
+import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -458,6 +460,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         },
     ]
 
+    private refreshTimer?: Subscription
+
     constructor(
         private app: AppComponent,
         private api: ApiService,
@@ -465,25 +469,18 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         private electron: ElectronService,
         private preference: PreferenceService,
         private dialog: DialogService,
+        private skyObjectPipe: SkyObjectPipe,
     ) {
         app.title = 'Sky Atlas'
-
-        for (const item of SATELLITE_GROUPS) {
-            const enabled = preference.get(`atlas.satellite.filter.${item}`, AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item))
-            this.satelliteSearchGroup.set(item, enabled)
-        }
-
-        electron.on('CRON_TICKED', () => {
-            if (!this.useManualDateTime) {
-                this.refreshTab()
-            }
-        })
 
         // TODO: Refresh graph and twilight if hours past 12 (noon)
     }
 
     async ngOnInit() {
-        this.electron.registerCron(EVERY_MINUTE_CRON_TIME)
+        for (const item of SATELLITE_GROUPS) {
+            const enabled = await this.preference.get(`atlas.satellite.filter.${item}`, AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item))
+            this.satelliteSearchGroup.set(item, enabled)
+        }
 
         this.starFilter.types.push(... await this.api.starTypes())
         this.dsoFilter.types.push(... await this.api.dsoTypes())
@@ -492,7 +489,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     async ngAfterContentInit() {
         const locations = await this.api.locations()
-        const location = this.preference.get('atlas.location', EMPTY_LOCATION)
+        const location = await this.preference.get('atlas.location', EMPTY_LOCATION)
         const index = locations.findIndex(e => e.id === location.id)
 
         if (index >= 1) {
@@ -502,6 +499,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         }
 
         this.locations = locations
+        this.location = this.locations[0]
 
         // const canvas = this.chart.getCanvas() as HTMLCanvasElement
         // const chart = this.chart.chart as Chart
@@ -510,11 +508,20 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         // const x = chart.scales['x'].getValueForPixel(event.offsetX)
         // const y = chart.scales['y'].getValueForPixel(event.offsetY)
         // }
+
+        const now = new Date()
+        const initialDelay = 60 * 1000 - (now.getSeconds() * 1000 + now.getMilliseconds())
+        this.refreshTimer = timer(initialDelay, 60 * 1000)
+            .subscribe(() => {
+                if (!this.useManualDateTime) {
+                    this.refreshTab()
+                }
+            })
     }
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        this.electron.unregisterCron()
+        this.refreshTimer?.unsubscribe()
     }
 
     tabChanged() {
@@ -709,21 +716,21 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     }
 
     async mountGoTo() {
-        const mount = await this.electron.selectedMount()
-        if (!mount?.connected) return
-        this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        // const mount = await this.electron.selectedMount()
+        // if (!mount?.connected) return
+        // this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
     }
 
     async mountSlew() {
-        const mount = await this.electron.selectedMount()
-        if (!mount?.connected) return
-        this.api.mountSlew(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        // const mount = await this.electron.selectedMount()
+        // if (!mount?.connected) return
+        // this.api.mountSlew(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
     }
 
     async mountSync() {
-        const mount = await this.electron.selectedMount()
-        if (!mount?.connected) return
-        this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        // const mount = await this.electron.selectedMount()
+        // if (!mount?.connected) return
+        // this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
     }
 
     frame() {
@@ -734,6 +741,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         refreshTwilight: boolean = false,
         refreshChart: boolean = false,
     ) {
+        if (!this.location) return
+
         this.refreshing = true
 
         if (!this.useManualDateTime) {
@@ -801,7 +810,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.tags = []
 
                 if (this.star) {
-                    this.name = this.star.name
+                    this.name = this.skyObjectPipe.transform(this.star, 'name')
                     const bodyPosition = await this.api.positionOfStar(this.location!, this.star, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
@@ -814,7 +823,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.tags = []
 
                 if (this.dso) {
-                    this.name = this.dso.name
+                    this.name = this.skyObjectPipe.transform(this.dso, 'name')
                     const bodyPosition = await this.api.positionOfDSO(this.location!, this.dso, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
@@ -827,7 +836,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.tags = []
 
                 if (this.simbad) {
-                    this.name = this.simbad.name
+                    this.name = this.skyObjectPipe.transform(this.simbad, 'name')
                     const bodyPosition = await this.api.positionOfSimbad(this.location!, this.simbad, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {

@@ -1,33 +1,51 @@
 package nebulosa.api.services
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import nebulosa.log.debug
 import nebulosa.log.loggerFor
+import org.springframework.context.event.EventListener
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
+import org.springframework.web.socket.messaging.SessionDisconnectEvent
+import org.springframework.web.socket.messaging.SessionSubscribeEvent
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.atomic.AtomicBoolean
 
 @Service
 class MessageService(
     private val simpleMessageTemplate: SimpMessagingTemplate,
-    private val objectMapper: ObjectMapper,
 ) {
 
-    fun sendMessage(eventName: String, payload: Any) {
-        LOG.debug { "$eventName: $payload" }
-        simpleMessageTemplate.convertAndSend(eventName, payload)
+    private val connected = AtomicBoolean()
+    private val messageQueue = LinkedBlockingQueue<MessageEvent>()
+
+    @EventListener
+    private fun handleSessionSubscribe(event: SessionSubscribeEvent) {
+        val destination = SimpMessageHeaderAccessor.wrap(event.message).destination ?: return
+
+        if (destination == EVENT_NAME && connected.compareAndSet(false, true)) {
+            while (messageQueue.isNotEmpty()) {
+                sendMessage(messageQueue.take())
+            }
+        }
     }
 
-    fun sendMessage(eventName: String, vararg attributes: Pair<String, Any?>) {
-        val payload = objectMapper.createObjectNode()
-        attributes.forEach { payload.putPOJO(it.first, it.second) }
-        sendMessage(eventName, payload)
+    @EventListener
+    private fun handleSessionDisconnect(event: SessionDisconnectEvent) {
+        connected.set(false)
     }
 
     fun sendMessage(event: MessageEvent) {
-        sendMessage(event.eventName, event)
+        if (connected.get()) {
+            simpleMessageTemplate.convertAndSend(EVENT_NAME, event)
+        } else {
+            LOG.warn("queueing message. event={}", event)
+            messageQueue.offer(event)
+        }
     }
 
     companion object {
+
+        const val EVENT_NAME = "NEBULOSA_EVENT"
 
         @JvmStatic private val LOG = loggerFor<MessageService>()
     }

@@ -1,8 +1,7 @@
 package nebulosa.api
 
+import com.sun.jna.Platform
 import org.springframework.boot.runApplication
-import oshi.PlatformEnum
-import oshi.SystemInfo
 import java.nio.file.Path
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -13,23 +12,15 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 
-fun initAppDirectory(): Path? {
-    val appPath = when (SystemInfo.getCurrentPlatform()) {
-        PlatformEnum.LINUX -> {
-            val userHomeDir = Path.of(System.getProperty("user.home"))
-            Path.of("$userHomeDir", ".nebulosa")
-        }
-        PlatformEnum.WINDOWS -> {
-            val documentsDir = FileSystemView.getFileSystemView().defaultDirectory.path
-            Path.of(documentsDir, "Nebulosa")
-        }
-        else -> return null
+fun initAppDirectory(): Path {
+    val appPath = when {
+        Platform.isLinux() -> Path.of(System.getProperty("user.home"), ".nebulosa")
+        Platform.isWindows() -> Path.of(FileSystemView.getFileSystemView().defaultDirectory.path, "Nebulosa")
+        else -> throw IllegalStateException("unsupported operating system")
     }
 
     appPath.createDirectories()
-
     System.setProperty("app.dir", "$appPath")
-
     return appPath
 }
 
