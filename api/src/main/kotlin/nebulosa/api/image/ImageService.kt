@@ -208,21 +208,32 @@ class ImageService(
                     types.add(SkyObjectType.PAIR_OF_GALAXIES)
                 }
 
-                val search = SimbadSearch.Builder()
-                    .region(calibration.rightAscension, calibration.declination, calibration.radius)
-                    .types(types)
-                    .build()
+                var lastID = 0L
+                var count = 0
 
-                val catalog = simbadService.search(search)
+                while (true) {
+                    val search = SimbadSearch.Builder()
+                        .region(calibration.rightAscension, calibration.declination, calibration.radius)
+                        .types(types)
+                        .limit(5000)
+                        .lastID(lastID)
+                        .build()
 
-                for (entry in catalog) {
-                    val (x, y) = wcs.skyToPix(entry.rightAscensionJ2000, entry.declinationJ2000)
-                    val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
-                    else ImageAnnotation(x, y, dso = entry)
-                    annotations.add(annotation)
+                    val catalog = simbadService.search(search)
+
+                    if (catalog.isEmpty()) break
+
+                    for (entry in catalog) {
+                        val (x, y) = wcs.skyToPix(entry.rightAscensionJ2000, entry.declinationJ2000)
+                        val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
+                        else ImageAnnotation(x, y, dso = entry)
+                        annotations.add(annotation)
+                        lastID = entry.id
+                        count++
+                    }
                 }
 
-                LOG.info("Found {} stars/DSOs", catalog.size)
+                LOG.info("Found {} stars/DSOs", count)
             }, systemExecutorService).whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
         }
 

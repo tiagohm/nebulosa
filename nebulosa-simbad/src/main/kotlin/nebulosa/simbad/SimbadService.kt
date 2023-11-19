@@ -130,6 +130,7 @@ class SimbadService(
                 join = LeftJoin(join, IDENT_TABLE, arrayOf(OID equal IDENT_TABLE.column("oidref")))
             }
 
+            builder.add(OID greaterThan search.lastID)
             if (radius > 0.0) builder.add(SkyPoint(RA, DEC) contains Circle(rightAscension, declination, radius))
             if (!types.isNullOrEmpty()) builder.add(Or(types.map { OTYPE equal "${it.codes[0]}.." }))
             if (magnitudeMin > -30.0) builder.add((MAG_V greaterOrEqual magnitudeMin) or (MAG_B greaterOrEqual magnitudeMin))
