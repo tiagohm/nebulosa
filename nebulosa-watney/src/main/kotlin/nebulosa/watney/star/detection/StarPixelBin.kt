@@ -11,16 +11,16 @@ class StarPixelBin {
 
     @JvmField internal val pixelRows = HashMap<Int, MutableList<StarPixel>>()
 
-    var left = 0
+    var left = Int.MAX_VALUE
         private set
 
-    var right = 0
+    var right = Int.MIN_VALUE
         private set
 
-    var top = 0
+    var top = Int.MAX_VALUE
         private set
 
-    var bottom = 0
+    var bottom = Int.MIN_VALUE
         private set
 
     val pixelCount

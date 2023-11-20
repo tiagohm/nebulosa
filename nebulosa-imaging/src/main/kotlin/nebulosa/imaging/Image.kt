@@ -134,6 +134,10 @@ class Image(
         return if (mono) r[index] else (r[index] + g[index] + b[index]) / 3f
     }
 
+    inline fun readGrayBT709(index: Int): Float {
+        return if (mono) r[index] else (r[index] * 0.2125f + g[index] * 0.7154f + b[index] * 0.0721f)
+    }
+
     inline fun readGray(x: Int, y: Int): Float {
         return readGray(indexAt(x, y))
     }

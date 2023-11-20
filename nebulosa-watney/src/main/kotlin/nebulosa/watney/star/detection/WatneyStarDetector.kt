@@ -8,7 +8,7 @@ import nebulosa.star.detection.StarDetector
 
 data class WatneyStarDetector(
     private val detectionFilter: StarDetectionFilter = DefaultStarDetectionFilter,
-    private val starDetectionBgOffset: Float = 9f,
+    private val starDetectionBgOffset: Float = 3f,
 ) : StarDetector<Image> {
 
     override fun detect(input: Image): List<DetectedStar> {
@@ -55,7 +55,7 @@ data class WatneyStarDetector(
         var lineIdx = image.indexAt(0, y)
 
         repeat(image.width) {
-            val pixel = image.readGray(lineIdx++)
+            val pixel = image.readGrayBT709(lineIdx++)
 
             if (pixel >= flatValue) {
                 if (currentBin == null) {

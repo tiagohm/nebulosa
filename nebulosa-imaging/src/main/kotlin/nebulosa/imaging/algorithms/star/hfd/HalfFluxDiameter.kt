@@ -22,7 +22,9 @@ data class HalfFluxDiameter(
         var startY = max((y - searchRegion).toInt(), minY)
         var endY = min((y + searchRegion).toInt(), maxY)
 
-        require(endX > startX && endY > startY) { "coordinates are invalid" }
+        if (endX <= startX || endY <= startY) {
+            return ImageStar(x, y)
+        }
 
         var peakX = 0
         var peakY = 0
