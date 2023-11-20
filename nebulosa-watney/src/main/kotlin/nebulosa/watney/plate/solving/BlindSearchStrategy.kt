@@ -1,7 +1,12 @@
 package nebulosa.watney.plate.solving
 
+import nebulosa.constants.TAU
 import nebulosa.math.deg
 import nebulosa.math.toDegrees
+import nebulosa.watney.plate.solving.BlindSearchStrategyOptions.DecSearchOrder.NORTH_FIRST
+import nebulosa.watney.plate.solving.BlindSearchStrategyOptions.DecSearchOrder.SOUTH_FIRST
+import nebulosa.watney.plate.solving.BlindSearchStrategyOptions.RaSearchOrder.EAST_FIRST
+import nebulosa.watney.plate.solving.BlindSearchStrategyOptions.RaSearchOrder.WEST_FIRST
 import kotlin.math.ceil
 import kotlin.math.cos
 
@@ -15,9 +20,9 @@ data class BlindSearchStrategy(private val options: BlindSearchStrategyOptions =
     }
 
     override fun searchQueue(): List<SearchRun> {
+        val searchRuns = ArrayList<SearchRun>()
         var radius = options.startRadius.toDegrees
         val minRadius = options.minRadius.toDegrees
-        val res = ArrayList<SearchRun>()
 
         while (radius >= minRadius) {
             // 4 iterations: positive and negative on east side,
@@ -40,18 +45,18 @@ data class BlindSearchStrategy(private val options: BlindSearchStrategyOptions =
                     val raOffset = n % 2 * 0.5 * raStep
 
                     // Adjust dec sign depending on which iteration we're on and what search ordering preference was used.
-                    val adjustedDEC = if (options.searchOrderDEC == BlindSearchStrategyOptions.DecSearchOrder.SOUTH_FIRST && decIteration < 2
-                        || options.searchOrderDEC == BlindSearchStrategyOptions.DecSearchOrder.NORTH_FIRST && decIteration >= 2
+                    val adjustedDEC = if (options.searchOrderDEC == SOUTH_FIRST && decIteration < 2
+                        || options.searchOrderDEC == NORTH_FIRST && decIteration >= 2
                     ) -declination else declination
 
-                    for (i in 0 until numberOfSearchCircles) {
-                        val ra = (raOffset + i * raStep) % 180.0 // is this % necessary?
+                    repeat(numberOfSearchCircles) {
+                        val ra = raOffset + it * raStep
 
-                        val adjustedRA = if (options.searchOrderRA == BlindSearchStrategyOptions.RaSearchOrder.WEST_FIRST && decIteration % 2 == 0
-                            || options.searchOrderRA == BlindSearchStrategyOptions.RaSearchOrder.EAST_FIRST && decIteration % 2 == 1
+                        val adjustedRA = if (options.searchOrderRA == WEST_FIRST && decIteration % 2 == 0
+                            || options.searchOrderRA == EAST_FIRST && decIteration % 2 == 1
                         ) ra + 180.0 else ra
 
-                        res.add(SearchRun(options.startRadius, adjustedRA.deg, adjustedDEC.deg, densityOffsets))
+                        searchRuns.add(SearchRun(options.startRadius, adjustedRA.deg, adjustedDEC.deg, densityOffsets))
                     }
 
                     declination += radius
@@ -62,6 +67,28 @@ data class BlindSearchStrategy(private val options: BlindSearchStrategyOptions =
             radius /= 2
         }
 
-        return res
+        return searchRuns
+    }
+
+    fun slice(slices: Int): List<SearchStrategy> {
+        val sliceStrategies = ArrayList<PartialBlindSearchStrategy>(slices)
+
+        repeat(slices) { sliceStrategies.add(PartialBlindSearchStrategy()) }
+
+        val raSliceWidth = TAU / slices
+
+        for (searchRun in searchQueue()) {
+            for (i in 0 until slices) {
+                val sectorStart = i * raSliceWidth
+                val sectorEnd = sectorStart + raSliceWidth
+
+                if (searchRun.centerRA in sectorStart..sectorEnd) {
+                    sliceStrategies[i].searchRuns.add(searchRun)
+                    break
+                }
+            }
+        }
+
+        return sliceStrategies
     }
 }

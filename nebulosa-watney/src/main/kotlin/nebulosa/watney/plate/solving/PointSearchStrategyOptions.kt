@@ -1,17 +1,15 @@
 package nebulosa.watney.plate.solving
 
-import nebulosa.constants.DEG2RAD
 import nebulosa.math.Angle
+import nebulosa.math.deg
 
 data class PointSearchStrategyOptions(
-    val radius: Angle = DEFAULT_RADIUS,
-    val maxNegativeDensityOffset: Int = 0,
-    val maxPositiveDensityOffset: Int = 0,
-) {
+    val radius: Angle = 2.deg,
+    override val maxNegativeDensityOffset: Int = 0,
+    override val maxPositiveDensityOffset: Int = 0,
+) : SearchStrategyOptions {
 
     companion object {
-
-        @JvmStatic val DEFAULT_RADIUS = 2 * DEG2RAD
 
         @JvmStatic val DEFAULT = PointSearchStrategyOptions()
     }
