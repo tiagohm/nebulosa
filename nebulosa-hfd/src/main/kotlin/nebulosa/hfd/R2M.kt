@@ -1,4 +1,4 @@
-package nebulosa.imaging.algorithms.star.hfd
+package nebulosa.hfd
 
 data class R2M(
     @JvmField val px: Double,

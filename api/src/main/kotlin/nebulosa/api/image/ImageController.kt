@@ -7,7 +7,6 @@ import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import nebulosa.math.deg
 import nebulosa.math.hours
-import nebulosa.star.detection.DetectedStar
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
 

@@ -20,6 +20,8 @@ data class PlateSolution(
 
     companion object {
 
+        @JvmStatic val NO_SOLUTION = PlateSolution()
+
         @JvmStatic
         fun from(header: Header): PlateSolution? {
             val crota2 = header.getDouble(Standard.CROTA2, 0.0).deg

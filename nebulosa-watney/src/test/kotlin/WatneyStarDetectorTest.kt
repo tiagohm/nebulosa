@@ -3,7 +3,7 @@ import io.kotest.matchers.shouldBe
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.Draw
 import nebulosa.imaging.algorithms.Mean
-import nebulosa.star.detection.DetectedStar
+import nebulosa.star.detection.ImageStar
 import nebulosa.test.FitsStringSpec
 import nebulosa.watney.star.detection.WatneyStarDetector
 import java.awt.Color
@@ -16,20 +16,25 @@ class WatneyStarDetectorTest : FitsStringSpec() {
         val detector = WatneyStarDetector()
 
         "detect stars" {
-            val image = Image.open(NGC3344_COLOR_32)
-            val stars = detector.detect(image.transform(Mean))
+            var image = Image.open(NGC3344_COLOR_32)
+            var stars = detector.detect(image.transform(Mean))
             stars shouldHaveSize 1
-            image.transform(DetectedStarsDraw(stars)).save("color-detected-stars").second shouldBe "bb237ce03f7cc9e44e69a5354b7a6fd1"
+            image.transform(DetectedStarsDraw(stars)).save("color-detected-stars-1").second shouldBe "bb237ce03f7cc9e44e69a5354b7a6fd1"
+
+            image = Image.open(M6707HH)
+            stars = detector.detect(image.transform(Mean))
+            stars shouldHaveSize 664
+            image.transform(DetectedStarsDraw(stars)).save("color-detected-stars-664").second shouldBe "afdba7f121467cced141898bd3b5b8dc"
         }
     }
 
-    private data class DetectedStarsDraw(private val stars: List<DetectedStar>) : Draw() {
+    private data class DetectedStarsDraw(private val stars: List<ImageStar>) : Draw() {
 
         override fun draw(source: Image, graphics: Graphics2D) {
             graphics.color = Color.YELLOW
 
-            for ((x, y) in stars) {
-                graphics.drawOval(x.roundToInt() - 4, y.roundToInt() - 4, 8, 8)
+            for (star in stars) {
+                graphics.drawOval(star.x.roundToInt() - 4, star.y.roundToInt() - 4, 8, 8)
             }
         }
     }

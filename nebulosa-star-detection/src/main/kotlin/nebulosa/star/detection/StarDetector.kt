@@ -2,5 +2,5 @@ package nebulosa.star.detection
 
 interface StarDetector<in T> {
 
-    fun detect(input: T): List<DetectedStar>
+    fun detect(input: T): List<ImageStar>
 }

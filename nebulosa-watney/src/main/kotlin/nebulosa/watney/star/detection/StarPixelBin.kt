@@ -57,7 +57,7 @@ class StarPixelBin {
     }
 
     // https://www.gaia.ac.uk/sites/default/files/resources/Calculating_Magnitudes.pdf
-    fun computeCenterPixelPosAndRelativeBrightness(): ImageStar {
+    fun computeCenterPixelPosAndRelativeBrightness(): DetectedStar {
         // Center coordinate in small stars is generally the brightest pixel in the bin.
         // When there are more pixels of the same or almost the same brightness, we will calculate
         // their center point.
@@ -70,13 +70,13 @@ class StarPixelBin {
 
         val starPixelHeight = bottom - top
         val starPixelWidth = right - left
-        val starSize = hypot(starPixelHeight.toFloat(), starPixelWidth.toFloat())
+        val starSize = hypot(starPixelHeight.toDouble(), starPixelWidth.toDouble())
 
         // With small stars just settle with the center of the canvas.
         if (pCount <= 9) {
-            val starPosY = top + 0.5f * (bottom - top)
-            val starPosX = left + 0.5f * (right - left)
-            return ImageStar(starPosX, starPosY, sortedPixels.last().value, starSize)
+            val starPosY = top + 0.5 * (bottom - top)
+            val starPosX = left + 0.5 * (right - left)
+            return DetectedStar(starPosX, starPosY, sortedPixels.last().value.toDouble(), starSize)
         }
 
         var l = Int.MAX_VALUE
@@ -94,10 +94,10 @@ class StarPixelBin {
             if (px.y > b) b = px.y
         }
 
-        val starPosY = t + 0.5f * (b - t)
-        val starPosX = l + 0.5f * (r - l)
+        val starPosY = t + 0.5 * (b - t)
+        val starPosX = l + 0.5 * (r - l)
 
-        return ImageStar(starPosX, starPosY, sortedPixels.last().value, starSize)
+        return DetectedStar(starPosX, starPosY, 0.0, sortedPixels.last().value.toDouble(), starSize)
     }
 
     override fun equals(other: Any?): Boolean {

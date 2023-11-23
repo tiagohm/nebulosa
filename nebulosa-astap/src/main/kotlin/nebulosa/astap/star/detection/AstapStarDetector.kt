@@ -3,7 +3,7 @@ package nebulosa.astap.star.detection
 import de.siegmar.fastcsv.reader.NamedCsvReader
 import nebulosa.common.process.ProcessExecutor
 import nebulosa.log.loggerFor
-import nebulosa.star.detection.DetectedStar
+import nebulosa.star.detection.ImageStar
 import nebulosa.star.detection.StarDetector
 import java.io.InputStreamReader
 import java.nio.file.Path
@@ -16,7 +16,7 @@ class AstapStarDetector(path: Path) : StarDetector<Path> {
 
     private val executor = ProcessExecutor(path)
 
-    override fun detect(input: Path): List<DetectedStar> {
+    override fun detect(input: Path): List<ImageStar> {
         val arguments = mutableMapOf<String, Any?>()
 
         arguments["-f"] = input
@@ -31,7 +31,7 @@ class AstapStarDetector(path: Path) : StarDetector<Path> {
 
         if (!csvFile.exists()) return emptyList()
 
-        val detectedStars = ArrayList<DetectedStar>(512)
+        val detectedStars = ArrayList<ImageStar>(512)
 
         try {
             csvFile.inputStream().use {

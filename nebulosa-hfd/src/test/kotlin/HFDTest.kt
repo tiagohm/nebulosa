@@ -1,10 +1,10 @@
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
+import nebulosa.hfd.FindResult
+import nebulosa.hfd.HalfFluxDiameter
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.SubFrame
-import nebulosa.imaging.algorithms.star.hfd.FindResult
-import nebulosa.imaging.algorithms.star.hfd.HalfFluxDiameter
 import nebulosa.test.FitsStringSpec
 import kotlin.math.roundToInt
 

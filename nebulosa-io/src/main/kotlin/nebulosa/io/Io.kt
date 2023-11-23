@@ -10,15 +10,30 @@ import java.io.OutputStream
 import java.io.RandomAccessFile
 import java.net.URL
 import java.nio.ByteBuffer
+import java.nio.file.Path
 import java.util.*
 
 val EMPTY_BYTE_ARRAY = ByteArray(0)
 
-inline fun BufferedSource.readUnsignedByte() = readByte().toInt() and 0xff
+inline fun BufferedSource.readSignedByte() = readByte().toInt()
+
+inline fun BufferedSource.readUnsignedByte() = readSignedByte() and 0xFF
 
 inline fun BufferedSource.readShort(order: ByteOrder) = if (order.isBigEndian) readShort() else readShortLe()
 
+inline fun BufferedSource.readUnsignedShort() = readShort().toInt() and 0xFFFF
+
+inline fun BufferedSource.readUnsignedShortLe() = readShortLe().toInt() and 0xFFFF
+
+inline fun BufferedSource.readUnsignedShort(order: ByteOrder) = readShort(order).toInt() and 0xFFFF
+
 inline fun BufferedSource.readInt(order: ByteOrder) = if (order.isBigEndian) readInt() else readIntLe()
+
+inline fun BufferedSource.readUnsignedInt() = readInt().toLong() and 0xFFFFFFFF
+
+inline fun BufferedSource.readUnsignedIntLe() = readIntLe().toLong() and 0xFFFFFFFF
+
+inline fun BufferedSource.readUnsignedInt(order: ByteOrder) = readInt(order).toLong() and 0xFFFFFFFF
 
 inline fun BufferedSource.readLong(order: ByteOrder) = if (order.isBigEndian) readLong() else readLongLe()
 
@@ -93,7 +108,6 @@ fun ByteBuffer.source(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSource = ByteBufferSource(this, offset, byteCount, timeout)
 
-
 fun Random.source(
     maxSize: Long = Long.MAX_VALUE,
     timeout: Timeout = Timeout.NONE,
@@ -107,16 +121,24 @@ fun File.seekableSource(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSource = RandomAccessFile(this, "r").source(timeout)
 
+inline fun Path.seekableSource(
+    timeout: Timeout = Timeout.NONE,
+) = toFile().seekableSource(timeout)
+
 fun RandomAccessFile.sink(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSink = RandomAccessFileSink(this, timeout)
 
-fun File.sink(
+inline fun File.seekableSink(
     timeout: Timeout = Timeout.NONE,
 ): SeekableSink = RandomAccessFile(this, "rw").sink(timeout)
 
+inline fun Path.seekableSink(
+    timeout: Timeout = Timeout.NONE,
+) = toFile().seekableSink(timeout)
+
 inline fun InputStream.transferAndCloseInput(output: OutputStream) = use { transferTo(output) }
 
-inline fun InputStream.transferAndCloseOutput(output: OutputStream) = output.use { transferTo(it) }
+inline fun InputStream.transferAndCloseOutput(output: OutputStream) = output.use(::transferTo)
 
-inline fun InputStream.transferAndClose(output: OutputStream) = use { output.use { transferTo(it) } }
+inline fun InputStream.transferAndClose(output: OutputStream) = use { output.use(::transferTo) }

@@ -2,12 +2,15 @@ package nebulosa.test
 
 import io.kotest.core.spec.style.StringSpec
 import nebulosa.fits.Fits
+import nebulosa.io.transferAndCloseOutput
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okio.ByteString.Companion.toByteString
 import java.awt.image.BufferedImage
 import java.nio.file.Path
+import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
-import kotlin.io.path.createParentDirectories
-import kotlin.io.path.readBytes
+import kotlin.io.path.*
 
 @Suppress("PropertyName")
 abstract class FitsStringSpec : StringSpec() {
@@ -22,6 +25,7 @@ abstract class FitsStringSpec : StringSpec() {
     protected val NGC3344_MONO_32 by lazy { Fits("$FITS_DIR/NGC3344.Mono.32.fits").also(Fits::read) }
     protected val NGC3344_MONO_F32 by lazy { Fits("$FITS_DIR/NGC3344.Mono.F32.fits").also(Fits::read) }
     protected val NGC3344_MONO_F64 by lazy { Fits("$FITS_DIR/NGC3344.Mono.F64.fits").also(Fits::read) }
+    protected val M6707HH by lazy { Fits(download("M6707HH.fits")).also(Fits::read) }
 
     protected fun BufferedImage.save(name: String): Pair<Path, String> {
         val path = Path.of("src", "test", "resources", "saved", "$name.png").createParentDirectories()
@@ -33,8 +37,36 @@ abstract class FitsStringSpec : StringSpec() {
         return readBytes().toByteString().md5().hex()
     }
 
+    internal fun download(name: String): Path {
+        val path = Path.of(System.getProperty("java.io.tmpdir"), name)
+
+        if (path.exists() && path.fileSize() > 0L) {
+            return path
+        }
+
+        val request = Request.Builder()
+            .get()
+            .url("https://www.astropy.org/astropy-data/photometry/$name")
+            .build()
+
+        val call = CLIENT.newCall(request)
+
+        call.execute().use {
+            it.body?.byteStream()?.transferAndCloseOutput(path.outputStream())
+        }
+
+        return path
+    }
+
     companion object {
 
         const val FITS_DIR = "../nebulosa-test/src/main/resources/fits"
+
+        @JvmStatic private val CLIENT = OkHttpClient.Builder()
+            .readTimeout(60L, TimeUnit.SECONDS)
+            .writeTimeout(60L, TimeUnit.SECONDS)
+            .connectTimeout(60L, TimeUnit.SECONDS)
+            .callTimeout(60L, TimeUnit.SECONDS)
+            .build()
     }
 }

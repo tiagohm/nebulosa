@@ -22,7 +22,6 @@ import nebulosa.simbad.SimbadSearch
 import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.skycatalog.SkyObjectType
-import nebulosa.star.detection.DetectedStar
 import nebulosa.watney.star.detection.WatneyStarDetector
 import nebulosa.wcs.WCSException
 import nebulosa.wcs.WCSTransform
