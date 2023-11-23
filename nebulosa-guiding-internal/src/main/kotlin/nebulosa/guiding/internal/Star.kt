@@ -1,9 +1,9 @@
 package nebulosa.guiding.internal
 
+import nebulosa.hfd.FindMode
+import nebulosa.hfd.FindResult
+import nebulosa.hfd.HalfFluxDiameter
 import nebulosa.imaging.Image
-import nebulosa.imaging.algorithms.star.hfd.FindMode
-import nebulosa.imaging.algorithms.star.hfd.FindResult
-import nebulosa.imaging.algorithms.star.hfd.HalfFluxDiameter
 
 /**
  * Represents a star.
@@ -34,8 +34,7 @@ open class Star : Point, StarPoint {
         baseX: Double = x, baseY: Double = y,
         mode: FindMode = FindMode.CENTROID, minHFD: Double = 1.5,
     ): Boolean {
-        val hfd = HalfFluxDiameter(baseX, baseY, searchRegion, mode, minHFD)
-        val star = hfd.compute(image)
+        val star = HalfFluxDiameter.compute(image, baseX, baseY, searchRegion, mode, minHFD)
         mass = star.mass
         snr = star.snr
         this.hfd = star.hfd

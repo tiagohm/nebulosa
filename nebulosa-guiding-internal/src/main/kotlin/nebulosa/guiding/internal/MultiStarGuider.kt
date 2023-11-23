@@ -2,9 +2,9 @@ package nebulosa.guiding.internal
 
 import nebulosa.constants.PIOVERTWO
 import nebulosa.guiding.GuideDirection
+import nebulosa.hfd.FindMode
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.Mean
-import nebulosa.imaging.algorithms.star.hfd.FindMode
 import nebulosa.log.loggerFor
 import nebulosa.math.cos
 import nebulosa.math.sin

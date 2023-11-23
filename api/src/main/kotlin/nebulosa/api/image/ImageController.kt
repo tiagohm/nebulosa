@@ -7,6 +7,7 @@ import nebulosa.imaging.algorithms.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import nebulosa.math.deg
 import nebulosa.math.hours
+import nebulosa.star.detection.ImageStar
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
 
@@ -84,7 +85,7 @@ class ImageController(
     }
 
     @PutMapping("detect-stars")
-    fun detectStars(@RequestParam path: Path): Collection<DetectedStar> {
+    fun detectStars(@RequestParam path: Path): List<ImageStar> {
         return imageService.detectStars(path)
     }
 }
