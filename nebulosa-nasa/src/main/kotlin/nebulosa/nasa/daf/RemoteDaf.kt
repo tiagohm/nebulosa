@@ -10,6 +10,7 @@ import okio.ByteString.Companion.toByteString
 import okio.buffer
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.exists
 import kotlin.io.path.readBytes
 import kotlin.io.path.writeBytes
@@ -17,6 +18,7 @@ import kotlin.io.path.writeBytes
 class RemoteDaf(
     private val uri: String,
     private val cacheDirectory: Path? = null,
+    private val httpClient: OkHttpClient? = null,
 ) : Daf() {
 
     override fun read() {
@@ -26,7 +28,7 @@ class RemoteDaf(
             .build()
 
         if (cacheDirectory == null) {
-            HTTP_CLIENT.newCall(request).execute().use {
+            (httpClient ?: HTTP_CLIENT).newCall(request).execute().use {
                 if (it.code != 200) {
                     throw IllegalArgumentException("The given URL is inaccessible: $uri")
                 }
@@ -93,6 +95,11 @@ class RemoteDaf(
 
     companion object {
 
-        @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder().build()
+        @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder()
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .readTimeout(1, TimeUnit.MINUTES)
+            .writeTimeout(1, TimeUnit.MINUTES)
+            .callTimeout(1, TimeUnit.MINUTES)
+            .build()
     }
 }
