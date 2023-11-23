@@ -1,4 +1,4 @@
-package nebulosa.hfd
+package nebulosa.imaging.hfd
 
 import kotlin.math.sqrt
 

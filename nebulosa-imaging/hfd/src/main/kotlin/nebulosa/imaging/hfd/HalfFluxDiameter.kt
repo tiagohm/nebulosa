@@ -1,4 +1,4 @@
-package nebulosa.hfd
+package nebulosa.imaging.hfd
 
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.ComputationAlgorithm

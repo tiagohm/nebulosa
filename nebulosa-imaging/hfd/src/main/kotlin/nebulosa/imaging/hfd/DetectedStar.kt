@@ -1,4 +1,4 @@
-package nebulosa.hfd
+package nebulosa.imaging.hfd
 
 import nebulosa.star.detection.ImageStar
 
