@@ -142,3 +142,18 @@ inline fun InputStream.transferAndCloseInput(output: OutputStream) = use { trans
 inline fun InputStream.transferAndCloseOutput(output: OutputStream) = output.use(::transferTo)
 
 inline fun InputStream.transferAndClose(output: OutputStream) = use { output.use(::transferTo) }
+
+inline fun Buffer.read(source: Source, byteCount: Long): Buffer {
+    source.read(this, byteCount)
+    return this
+}
+
+inline fun <T> Buffer.read(source: Source, byteCount: Long, block: (Buffer) -> T): T {
+    source.read(this, byteCount)
+
+    return try {
+        block(this)
+    } finally {
+        clear()
+    }
+}

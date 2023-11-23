@@ -5,6 +5,7 @@ import nebulosa.io.readDoubleArray
 import nebulosa.io.source
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okio.Buffer
 import okio.ByteString.Companion.toByteString
 import okio.buffer
 import java.nio.file.Path
@@ -45,10 +46,12 @@ class RemoteDaf(
         val startIndex = 8L * (start - 1)
         val length = 1 + end - start
         val endIndex = startIndex + length * 8L - 1L
-        return readSource(startIndex, endIndex).buffer().readDoubleArray(length, record.order)
+
+        return readSource(startIndex, endIndex).buffer()
+            .use { it.readDoubleArray(length, record.order) }
     }
 
-    override fun readRecord(index: Int): SeekableSource {
+    override fun Buffer.readRecord(index: Int): SeekableSource {
         val startIndex = (index - 1) * 1024L
         val endIndex = startIndex + 1023
         return readSource(startIndex, endIndex)

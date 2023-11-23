@@ -464,10 +464,10 @@ enum class Constellation(
         @JvmStatic private val EPOCH = TT(TimeBesselianEpoch.B1875)
 
         init {
-            with(bufferedResource("CONSTELLATIONS.dat")!!) {
-                RA = readDoubleArrayLe(235)
-                DEC = readDoubleArrayLe(199)
-                RA_TO_INDEX = readByteArray(202 * 236)
+            bufferedResource("CONSTELLATIONS.dat")!!.use {
+                RA = it.readDoubleArrayLe(235)
+                DEC = it.readDoubleArrayLe(199)
+                RA_TO_INDEX = it.readByteArray(202 * 236)
             }
         }
 

@@ -1,8 +1,8 @@
 package nebulosa.nasa.daf
 
 import nebulosa.io.*
+import okio.Buffer
 import okio.BufferedSource
-import okio.buffer
 import java.io.Closeable
 import java.io.IOException
 
@@ -18,54 +18,61 @@ abstract class Daf : Closeable {
     inline operator fun component2() = summaries
 
     open fun read() {
-        // File record.
-        val source = readRecord(1)
-        // Gets the file format.
-        val format = source.buffer().readAscii(8).uppercase()
+        val buffer = Buffer()
 
-        if (format == "NAIF/DAF") {
-            source.seek(0L)
-            record = source.buffer().parseFileRecord(false)
+        try {
+            // File record.
+            val source = buffer.readRecord(1)
+            // Gets the file format.
+            val format = buffer.read(source, 8L) { it.readAscii().uppercase() }
 
-            if (record.nd != 2) {
+            if (format == "NAIF/DAF") {
                 source.seek(0L)
-                record = source.buffer().parseFileRecord(true)
+                record = buffer.read(source, 88L) { it.parseFileRecord(false) }
 
                 if (record.nd != 2) {
-                    throw IOException("neither a big nor a little-endian scan of this file produces the expected ND=2")
+                    source.seek(0L)
+                    record = buffer.read(source, 88L) { it.parseFileRecord(true) }
+
+                    if (record.nd != 2) {
+                        throw IOException("neither a big nor a little-endian scan of this file produces the expected ND=2")
+                    }
                 }
+            } else if (format.startsWith("DAF/")) {
+                source.seek(699L)
+
+                val magic = buffer.read(source, FTPSTR.length.toLong()) { it.readLatin1() }
+
+                if (magic != FTPSTR) throw IOException("file has been damaged")
+
+                source.seek(88L)
+                val littleEndian = buffer.read(source, 8L) { it.readAscii().uppercase() == "LTL-IEEE" }
+
+                source.seek(0L)
+                record = buffer.read(source, 88L) { it.parseFileRecord(littleEndian) }
+            } else {
+                throw IOException("unsupported format: $format")
             }
-        } else if (format.startsWith("DAF/")) {
-            source.seek(699L)
-
-            val magic = source.buffer().readLatin1(FTPSTR.length.toLong())
-
-            if (magic != FTPSTR) throw IOException("file has been damaged")
-
-            source.seek(88L)
-            val littleEndian = source.buffer().readAscii(8).uppercase() == "LTL-IEEE"
-
-            source.seek(0L)
-            record = source.buffer().parseFileRecord(littleEndian)
-        } else {
-            throw IOException("unsupported format: $format")
+        } finally {
+            buffer.clear()
         }
     }
 
     abstract fun read(start: Int, end: Int): DoubleArray
 
-    protected abstract fun readRecord(index: Int): SeekableSource
+    protected abstract fun Buffer.readRecord(index: Int): SeekableSource
 
     val summaries: List<Summary> by lazy {
         val summaries = ArrayList<Summary>()
         var recordNumber = record.fward
 
+        val buffer = Buffer()
         val length = record.nd * 8L + record.ni * 4L
         val step = length - length % 8
 
         while (recordNumber != 0) {
-            val data = readRecord(recordNumber)
-            val sc = data.buffer().parseSummaryControlRecord()
+            val data = buffer.readRecord(recordNumber)
+            val sc = buffer.read(data, 24L) { it.parseSummaryControlRecord() }
             summaries.addAll(parseSummaries(recordNumber, sc.numberOfSummaries, data, step))
             recordNumber = sc.nextNumber
         }
@@ -82,15 +89,16 @@ abstract class Daf : Closeable {
     ): List<Summary> {
         val summaries = ArrayList<Summary>()
 
-        val nameData = readRecord(recordNumber + 1)
+        val buffer = Buffer()
+        val nameData = buffer.readRecord(recordNumber + 1)
+        val elementRecordSizeInBytes = record.nd * 8L + record.ni * 4L
 
         for (i in 0 until numberOfSummaries * step step step) {
             nameData.seek(i)
-            val name = nameData.buffer().readAscii(step).trim()
+            val name = buffer.read(nameData, step).use { it.readAscii().trim() }
 
             data.seek(24 + i)
-            val elements = data.buffer().parseElementRecords()
-
+            val elements = buffer.read(data, elementRecordSizeInBytes) { it.parseElementRecords() }
             summaries.add(Summary(name, elements.first, elements.second))
         }
 
