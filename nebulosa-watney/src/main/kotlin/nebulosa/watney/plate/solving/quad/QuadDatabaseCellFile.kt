@@ -42,7 +42,7 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
         }
 
         // Pre-allocate, so that we don't need to allocate later down the road.
-        val quadDataArray = DoubleArray(8)
+        val quadDataArray = FloatArray(8)
 
         repeat(subCellsInRangeLen) {
             val subCellIdx = subCellsInRangeIndexesArr[it]
@@ -78,7 +78,8 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
                     if (quad != null) {
                         matchingQuads.add(quad)
 
-                        val distanceTo = SphericalCoordinate.angularDistance(quad.midPointX, quad.midPointY, centerRA, centerDEC)
+                        val distanceTo =
+                            SphericalCoordinate.angularDistance(quad.midPointX.toDouble(), quad.midPointY.toDouble(), centerRA, centerDEC)
                         if (distanceTo < angularDistance) matchingQuadsWithinRange.add(quad)
                     }
                 }
@@ -93,11 +94,11 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
         // RATIOS, LARGEST_DIST, COORDS
         const val DATA_LENGTH = 6L + 4 + 4 * 2
 
-        private const val TEN_BITS = 1.0 / 1023
-        private const val NINE_BITS = 1.0 / 511
+        private const val TEN_BITS = 1f / 1023
+        private const val NINE_BITS = 1f / 511
 
         @JvmStatic
-        private fun bytesToQuadNew(source: Source, tentativeMatches: List<ImageStarQuad>?, quadDataArray: DoubleArray): StarQuad? {
+        private fun bytesToQuadNew(source: Source, tentativeMatches: List<ImageStarQuad>?, quadDataArray: FloatArray): StarQuad? {
             val buffer = Buffer()
             require(source.read(buffer, DATA_LENGTH) == DATA_LENGTH) { "unexpected end of file" }
             val ratios = buffer.readByteArray(6L)
@@ -112,9 +113,9 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
             var starQuad: StarQuad? = null
 
             if (tentativeMatches.isNullOrEmpty()) {
-                quadDataArray[5] = buffer.readFloat().toDouble() // LARGEST_DIST
-                quadDataArray[6] = buffer.readFloat().toDouble() // RA
-                quadDataArray[7] = buffer.readFloat().toDouble() // DEC
+                quadDataArray[5] = buffer.readFloat() // LARGEST_DIST
+                quadDataArray[6] = buffer.readFloat() // RA
+                quadDataArray[7] = buffer.readFloat() // DEC
                 starQuad = ImageStarQuad(quadDataArray.sliceArray(0..4), quadDataArray[5], quadDataArray[6], quadDataArray[7])
             } else {
                 for ((r) in tentativeMatches) {
@@ -124,9 +125,9 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
                         && abs(r[3] / quadDataArray[3] - 1.0) <= 0.011
                         && abs(r[4] / quadDataArray[4] - 1.0) <= 0.011
                     ) {
-                        quadDataArray[5] = buffer.readFloat().toDouble() // LARGEST_DIST
-                        quadDataArray[6] = buffer.readFloat().toDouble() // RA
-                        quadDataArray[7] = buffer.readFloat().toDouble() // DEC
+                        quadDataArray[5] = buffer.readFloat() // LARGEST_DIST
+                        quadDataArray[6] = buffer.readFloat() // RA
+                        quadDataArray[7] = buffer.readFloat() // DEC
                         starQuad = ImageStarQuad(quadDataArray.sliceArray(0..4), quadDataArray[5], quadDataArray[6], quadDataArray[7])
                         break
                     }

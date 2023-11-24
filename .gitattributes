@@ -10,6 +10,7 @@
 *.bsp           binary
 *.bpc           binary
 *.jar           binary
+*.fit           binary
 *.fits          binary
 *.ttf           binary
 *.xcf           binary

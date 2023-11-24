@@ -54,11 +54,9 @@ class WatneyPlateSolver(
                 val starsToUse = (starsFound.size * (1 - p * 0.05)).toInt()
                 val stars = starsFound.subList(0, starsToUse)
 
-                val starDistances = Array(stars.size) { DoubleArray(stars.size) }
+                val starDistances = Array(stars.size) { FloatArray(stars.size) }
 
                 for (i in stars.indices) {
-                    starDistances[i][i] = 0.0
-
                     for (j in i + 1 until stars.size) {
                         val dist = stars[i].distance(stars[j])
                         starDistances[i][j] = dist
@@ -71,11 +69,11 @@ class WatneyPlateSolver(
 
                     // Get 3 nearest.
                     val nearestIndices = intArrayOf(-1, -1, -1)
-                    val nearestDistances = DoubleArray(nearestIndices.size)
+                    val nearestDistances = FloatArray(nearestIndices.size)
 
                     for (n in 0..2) {
                         var index = 0
-                        var dist = Double.MAX_VALUE
+                        var dist = Float.MAX_VALUE
 
                         for (j in distancesToOthers.indices) {
                             if (distancesToOthers[j] < dist && distancesToOthers[j] > 0 && j != nearestIndices[0] && j != nearestIndices[1]) {
@@ -99,10 +97,10 @@ class WatneyPlateSolver(
                     sixDistances.sort()
                     val largestDistance = sixDistances.max()
 
-                    val ratios = DoubleArray(sixDistances.size - 1) { sixDistances[it] / largestDistance }
+                    val ratios = FloatArray(sixDistances.size - 1) { sixDistances[it] / largestDistance }
                     val quadStars = listOf(stars[i], stars[starIndexA], stars[starIndexB], stars[starIndexC])
 
-                    val quad = ImageStarQuad(ratios, largestDistance.toFloat().toDouble(), quadStars)
+                    val quad = ImageStarQuad(ratios, largestDistance, quadStars)
                     quads.add(quad)
                 }
 

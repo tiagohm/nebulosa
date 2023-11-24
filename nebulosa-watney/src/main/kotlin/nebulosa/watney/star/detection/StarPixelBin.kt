@@ -1,7 +1,7 @@
 package nebulosa.watney.star.detection
 
-import kotlin.math.ceil
 import kotlin.math.hypot
+import kotlin.math.roundToInt
 
 /**
  * A class representing a "bin" of star pixels, i.e. the list of a single star's pixels
@@ -64,19 +64,15 @@ class StarPixelBin {
 
         val pCount = pixelCount
 
-        val sortedPixels = pixelRows.values
-            .flatten()
-            .sortedBy { it.value }
-
         val starPixelHeight = bottom - top
         val starPixelWidth = right - left
         val starSize = hypot(starPixelHeight.toDouble(), starPixelWidth.toDouble())
 
         // With small stars just settle with the center of the canvas.
         if (pCount <= 9) {
-            val starPosY = top + 0.5 * (bottom - top)
-            val starPosX = left + 0.5 * (right - left)
-            return DetectedStar(starPosX, starPosY, sortedPixels.last().value.toDouble(), starSize)
+            val starPosY = top + 0.5f * (bottom - top)
+            val starPosX = left + 0.5f * (right - left)
+            return DetectedStar(starPosX.roundToInt(), starPosY.roundToInt(), starSize)
         }
 
         var l = Int.MAX_VALUE
@@ -84,20 +80,21 @@ class StarPixelBin {
         var t = Int.MAX_VALUE
         var b = Int.MIN_VALUE
 
-        // Select 50% of the pixels ordered by brightness and just settle with the center.
+        // Select 100% of the pixels ordered by brightness and just settle with the center.
         // Probably good enough approximation.
-        for (i in ceil(0.5 * sortedPixels.size).toInt() until sortedPixels.size) {
-            val px = sortedPixels[i]
-            if (px.x < l) l = px.x
-            if (px.x > r) r = px.x
-            if (px.y < t) t = px.y
-            if (px.y > b) b = px.y
+        for (row in pixelRows) {
+            for ((x, y) in row.value) {
+                if (x < l) l = x
+                if (x > r) r = x
+                if (y < t) t = y
+                if (y > b) b = y
+            }
         }
 
-        val starPosY = t + 0.5 * (b - t)
-        val starPosX = l + 0.5 * (r - l)
+        val starPosY = t + 0.5f * (b - t)
+        val starPosX = l + 0.5f * (r - l)
 
-        return DetectedStar(starPosX, starPosY, 0.0, sortedPixels.last().value.toDouble(), starSize)
+        return DetectedStar(starPosX.roundToInt(), starPosY.roundToInt(), starSize)
     }
 
     override fun equals(other: Any?): Boolean {

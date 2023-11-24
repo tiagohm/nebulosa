@@ -2,31 +2,29 @@ package nebulosa.imaging.hfd
 
 import kotlin.math.sqrt
 
-data class HalfFluxRadius(
-    private val cx: Double, private val cy: Double, private val mass: Double,
-    private val data: List<R2M>,
-) {
+data object HalfFluxRadius {
 
-    private val hfr = Array(data.size) {
-        val r2m = data[it]
-        val dx = r2m.px - cx
-        val dy = r2m.py - cy
-        val r2 = dx * dx + dy * dy
-        doubleArrayOf(r2m.m, r2)
-    }
-
-    init {
-        hfr.sortBy { it[1] }
-    }
-
-    fun compute(): Double {
+    fun compute(
+        cx: Float, cy: Float, mass: Float,
+        data: List<FloatArray>,
+    ): Float {
         // Hot pixel?
-        if (data.size <= 1) return 0.25
+        if (data.size <= 1) return 0.25f
 
-        var m0 = 0.0
-        var m1 = 0.0
-        var r20 = 0.0
-        var r21 = 0.0
+        val hfr = Array(data.size) {
+            val (px, py, m) = data[it]
+            val dx = px - cx
+            val dy = py - cy
+            val r2 = dx * dx + dy * dy
+            floatArrayOf(m, r2)
+        }
+
+        hfr.sortBy { it[1] }
+
+        var m0 = 0f
+        var m1 = 0f
+        var r20 = 0f
+        var r21 = 0f
 
         val halfm = 0.5f * mass
 
@@ -47,7 +45,7 @@ data class HalfFluxRadius(
             val s = (r1 - r0) / (m1 - m0)
             r0 + s * (halfm - m0)
         } else {
-            0.25
+            0.25f
         }
     }
 }
