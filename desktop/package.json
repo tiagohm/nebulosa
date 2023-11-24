@@ -62,7 +62,7 @@
     "@angular/cli": "17.0.1",
     "@angular/compiler-cli": "17.0.3",
     "@types/leaflet": "1.9.8",
-    "@types/node": "20.9.1",
+    "@types/node": "20.9.5",
     "@types/uuid": "9.0.7",
     "electron": "27.1.0",
     "electron-builder": "24.6.4",
