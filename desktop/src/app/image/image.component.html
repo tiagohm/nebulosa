@@ -235,11 +235,11 @@
         <div class="grid mb-2">
             <div class="col-12 flex justify-content-center">
                 <p-button [disabled]="solving || !solved" (onClick)="mountSync(solverCalibration!)" icon="mdi mdi-sync" label="Sync"
-                          [text]="true" sevirity="info" />
+                          [text]="true" severity="info" />
                 <p-button [disabled]="solving || !solved" (onClick)="mountGoTo(solverCalibration!)" icon="mdi mdi-telescope" label="Go To"
-                          [text]="true" sevirity="success" />
+                          [text]="true" severity="success" />
                 <p-button [disabled]="solving || !solved" (onClick)="mountSlew(solverCalibration!)" icon="mdi mdi-telescope" label="Slew"
-                          [text]="true" sevirity="success" />
+                          [text]="true" severity="success" />
                 <p-button [disabled]="solving || !solved" (onClick)="frame(solverCalibration!)" icon="mdi mdi-image" label="Frame"
                           [text]="true" />
             </div>
