@@ -22,4 +22,23 @@ data class ImageStarQuad(
     init {
         require(stars.size == 4) { "A quad has four stars" }
     }
+
+    class StarBasedEqualityKey(@JvmField val quad: ImageStarQuad) {
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is StarBasedEqualityKey) return false
+            if (quad === other.quad) return true
+            // Disallow a quad definition that has same pixel coords than another one (this is so that equations
+            // won't flip when we get two slightly different ra,dec coordinates representing the same pixel)
+            if (quad.midPointX == other.quad.midPointX && quad.midPointY == other.quad.midPointY) return true
+            return quad.stars.containsAll(other.quad.stars)
+        }
+
+        override fun hashCode(): Int {
+            return quad.stars[0].hashCode() xor quad.stars[1].hashCode() xor
+                    quad.stars[2].hashCode() xor quad.stars[3].hashCode() xor
+                    quad.midPointX.hashCode() xor quad.midPointY.hashCode()
+        }
+    }
 }

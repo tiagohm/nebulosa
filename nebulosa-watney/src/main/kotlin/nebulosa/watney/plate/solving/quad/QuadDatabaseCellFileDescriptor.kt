@@ -10,13 +10,16 @@ import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.watney.plate.solving.quad.QuadDatabase.Companion.FORMAT_ID
 import okio.BufferedSource
+import java.io.Closeable
 
 internal data class QuadDatabaseCellFileDescriptor(
     @JvmField val source: SeekableSource,
     @JvmField val bandIndex: Int,
     @JvmField val cellIndex: Int,
     @JvmField val passes: List<Pass>,
-) {
+) : Closeable by source {
+
+    @JvmField val id = SkySegmentSphere.Cell.cellId(bandIndex, cellIndex)
 
     data class SubCellInfo(
         @JvmField val centerRA: Angle, @JvmField val centerDEC: Angle,

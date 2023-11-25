@@ -32,11 +32,11 @@ data class NearbySearchStrategy(
         if (options.intermediateFieldRadiusSteps < 0 && radiiToTry.size > 1) {
             var currentRadius = options.maxFieldRadius.toDegrees
             val minRadius = options.minFieldRadius.toDegrees
-            val radii = mutableListOf(currentRadius)
+            val radii = ArrayList<Double>(8)
 
             while (currentRadius > minRadius) {
-                currentRadius *= 0.5
                 radii.add(currentRadius)
+                currentRadius *= 0.5
             }
 
             radii.add(minRadius)
@@ -46,11 +46,11 @@ data class NearbySearchStrategy(
             val stepSize = delta / (options.intermediateFieldRadiusSteps + 1)
             var currentRadius = options.maxFieldRadius.toDegrees
             val minRadius = options.minFieldRadius.toDegrees
-            val radii = mutableListOf(currentRadius)
+            val radii = ArrayList<Double>(8)
 
             while (currentRadius > minRadius) {
-                currentRadius -= stepSize
                 radii.add(currentRadius)
+                currentRadius -= stepSize
             }
 
             radii.add(minRadius)
@@ -58,8 +58,8 @@ data class NearbySearchStrategy(
         }
 
         var n = 0
-        val maxDEC = min((centerDEC + options.searchAreaRadius).toDegrees, 90.0)
-        val minDEC = max((centerDEC - options.searchAreaRadius).toDegrees, -90.0)
+        val maxDEC = min(centerDEC.toDegrees + options.searchAreaRadius.toDegrees, 90.0)
+        val minDEC = max(centerDEC.toDegrees - options.searchAreaRadius.toDegrees, -90.0)
 
         // All search runs, will be from largest radius to smallest, grouped by radius
         // and ordered in group by distance to our search center coordinate.

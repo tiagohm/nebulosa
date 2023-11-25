@@ -11,7 +11,6 @@ interface QuadDatabase {
         quadDensityOffsets: IntArray,
         numSubSets: Int, subSetIndex: Int,
         imageQuads: List<ImageStarQuad>,
-        solveContextId: String
     ): List<StarQuad>
 
     companion object {

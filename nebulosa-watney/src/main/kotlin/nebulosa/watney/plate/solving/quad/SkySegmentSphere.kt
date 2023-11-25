@@ -5,9 +5,11 @@ import nebulosa.math.Angle
 import nebulosa.math.deg
 import kotlin.math.abs
 
-object SkySegmentSphere {
+object SkySegmentSphere : Collection<SkySegmentSphere.Cell> {
 
     data class Cell(val bounds: CoordinateBounds, val bandIndex: Int, val cellIndex: Int) {
+
+        val id = cellId(bandIndex, cellIndex)
 
         val width
             get() = bounds.declination.let { SphericalCoordinate.angularDistance(bounds.left, it, bounds.right, it) }
@@ -36,6 +38,12 @@ object SkySegmentSphere {
             }
 
             return subCells.requireNoNulls()
+        }
+
+        companion object {
+
+            @JvmStatic
+            fun cellId(bandIndex: Int, cellIndex: Int) = "b%02dc%02d".format(bandIndex, cellIndex)
         }
     }
 
@@ -87,7 +95,36 @@ object SkySegmentSphere {
         cells.forEach { CELLS[it.bandIndex][it.cellIndex] = it }
     }
 
+    override val size
+        get() = CELLS.size
+
+    override fun contains(element: Cell): Boolean {
+        return CELLS.any { element in it }
+    }
+
+    override fun containsAll(elements: Collection<Cell>): Boolean {
+        return elements.all { it in this }
+    }
+
+    override fun isEmpty(): Boolean {
+        return CELLS.isEmpty()
+    }
+
+    override fun iterator(): Iterator<Cell> {
+        return CellIterator(CELLS)
+    }
+
     operator fun get(bandIndex: Int, cellIndex: Int) = CELLS[bandIndex][cellIndex]!!
+
+    fun withId(id: String): Cell? {
+        for (band in CELLS) {
+            for (cell in band) {
+                if (cell?.id == id) return cell
+            }
+        }
+
+        return null
+    }
 
     fun cellAt(location: CoordinateBounds): Cell {
         var latIndex = 0
@@ -101,5 +138,28 @@ object SkySegmentSphere {
 
         val cellIndex = (location.rightAscension / CELL_WIDTHS[latIndex]).toInt()
         return CELLS[latIndex][cellIndex]!!
+    }
+
+    @Suppress("ArrayInDataClass")
+    private data class CellIterator(private val cells: Array<Array<Cell?>>) : Iterator<Cell> {
+
+        @Volatile private var bandIndex = 0
+        @Volatile private var cellIndex = 0
+
+        override fun hasNext(): Boolean {
+            return bandIndex < cells.size && cellIndex < cells[bandIndex].size
+        }
+
+        override fun next(): Cell {
+            val cell = cells[bandIndex][cellIndex++]!!
+
+            if (cellIndex >= cells[bandIndex].size) {
+                cellIndex = 0
+                bandIndex++
+            }
+
+            return cell
+        }
+
     }
 }

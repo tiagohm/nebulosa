@@ -15,8 +15,14 @@ data class PlateSolution(
     val declination: Angle = 0.0, // CRVAL2
     val width: Angle = 0.0,
     val height: Angle = 0.0,
+    val parity: Parity = Parity.NORMAL,
     val radius: Angle = hypot(width, height).rad / 2.0,
 ) : Header() {
+
+    enum class Parity {
+        NORMAL,
+        FLIPPED,
+    }
 
     companion object {
 

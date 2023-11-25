@@ -6,11 +6,16 @@ import nebulosa.io.readUnsignedByte
 import nebulosa.watney.plate.solving.quad.QuadDatabase.Companion.INDEX_FORMAT_ID
 import nebulosa.watney.plate.solving.quad.QuadDatabase.Companion.INDEX_VERSION
 import okio.buffer
+import java.io.Closeable
 
 internal data class QuadDatabaseCellFileIndex(
     @JvmField val files: List<QuadDatabaseCellFile>,
     @JvmField val byteOrder: ByteOrder,
-) {
+) : Closeable {
+
+    override fun close() {
+        files.map { it.descriptor.source }.toSet().forEach(Closeable::close)
+    }
 
     companion object {
 

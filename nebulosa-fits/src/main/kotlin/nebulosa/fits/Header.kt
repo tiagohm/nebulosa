@@ -7,7 +7,8 @@ import java.io.EOFException
 import java.io.Serializable
 import java.util.*
 
-open class Header internal constructor(private val cards: LinkedList<HeaderCard>) : FitsElement, Collection<HeaderCard> by cards, Serializable {
+open class Header internal constructor(private val cards: LinkedList<HeaderCard>) :
+    FitsElement, ReadOnlyHeader, Collection<HeaderCard> by cards, Serializable {
 
     constructor() : this(LinkedList<HeaderCard>())
 
@@ -17,68 +18,6 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
 
     fun clear() {
         cards.clear()
-    }
-
-    operator fun contains(key: String): Boolean {
-        return cards.any { it.key == key }
-    }
-
-    operator fun contains(key: FitsHeader): Boolean {
-        return key.key in this
-    }
-
-    fun getBoolean(key: String, defaultValue: Boolean = false): Boolean {
-        val card = cards.firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
-
-    fun getBoolean(key: FitsHeader, defaultValue: Boolean = false): Boolean {
-        return getBoolean(key.key, defaultValue)
-    }
-
-    fun getInt(key: String, defaultValue: Int): Int {
-        val card = cards.firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
-
-    fun getInt(key: FitsHeader, defaultValue: Int): Int {
-        return getInt(key.key, defaultValue)
-    }
-
-    fun getLong(key: String, defaultValue: Long): Long {
-        val card = cards.firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
-
-    fun getLong(key: FitsHeader, defaultValue: Long): Long {
-        return getLong(key.key, defaultValue)
-    }
-
-    fun getFloat(key: String, defaultValue: Float): Float {
-        val card = cards.firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
-
-    fun getFloat(key: FitsHeader, defaultValue: Float): Float {
-        return getFloat(key.key, defaultValue)
-    }
-
-    fun getDouble(key: String, defaultValue: Double): Double {
-        val card = cards.firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
-
-    fun getDouble(key: FitsHeader, defaultValue: Double): Double {
-        return getDouble(key.key, defaultValue)
-    }
-
-    fun getString(key: String, defaultValue: String): String {
-        val card = cards.firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
-
-    fun getString(key: FitsHeader, defaultValue: String): String {
-        return getString(key.key, defaultValue)
     }
 
     final override fun read(source: SeekableSource) {

@@ -7,10 +7,12 @@ import nebulosa.plate.solving.PlateSolution
 import nebulosa.plate.solving.PlateSolver
 import nebulosa.star.detection.ImageStar
 import nebulosa.watney.plate.solving.quad.ImageStarQuad
+import nebulosa.watney.plate.solving.quad.QuadDatabase
+import nebulosa.watney.plate.solving.quad.StarQuad
 import nebulosa.watney.star.detection.WatneyStarDetector
 import java.time.Duration
 import java.util.*
-import kotlin.math.min
+import kotlin.math.*
 
 class WatneyPlateSolver(
     private val maxStars: Int = -1,
@@ -37,12 +39,24 @@ class WatneyPlateSolver(
         val searchQueue = strategy.searchQueue()
 
         val groupedSearchQueue = TreeMap<Double, MutableList<SearchRun>>(Collections.reverseOrder())
-        val runsByRadius = searchQueue.groupByTo(groupedSearchQueue) { it.radius.toDegrees }
+        val runsByRadius = searchQueue.groupByTo(groupedSearchQueue) { it.radius.toDegrees }.toList()
+
+        repeat(sampling) {
+            var continueSearching = true
+
+            repeat(groupedSearchQueue.size) { rg ->
+                for (searchRun in runsByRadius[rg].second) {
+
+                }
+            }
+        }
 
         return PlateSolution.NO_SOLUTION
     }
 
     companion object {
+
+        private const val MIN_MATCHES = 5
 
         @JvmStatic
         private fun formImageStarQuads(starsFound: List<ImageStar>): Pair<List<ImageStarQuad>, Int> {
@@ -105,45 +119,73 @@ class WatneyPlateSolver(
                 }
 
                 if (p == 0) {
-                    countInFirstPass = quads.distinctBy { StarQuadStarBasedEqualityKey(it) }.size
+                    countInFirstPass = quads.distinctBy { StarQuad.StarBasedEqualityKey(it) }.size
                 }
             }
 
-            val quadsArray = quads.distinctBy { ImageStarQuadStarBasedEqualityKey(it) }
+            val quadsArray = quads.distinctBy { ImageStarQuad.StarBasedEqualityKey(it) }
             return quadsArray to countInFirstPass
         }
+    }
 
-        private class StarQuadStarBasedEqualityKey(@JvmField val quad: ImageStarQuad) {
+    @JvmStatic
+    private fun trySolve(
+        image: Image, searchRun: SearchRun, countInFirstPass: Int,
+        quadDatabase: QuadDatabase, numSubSets: Int, subSetIndex: Int,
+        imageStarQuads: List<ImageStarQuad>,
+    ) {
+        // Quads per degree.
+        val searchFieldSize = searchRun.radius.toDegrees * 2
+        val a = atan(image.height.toDouble() / image.width)
+        val s1 = searchFieldSize * sin(a)
+        val s2 = searchFieldSize * cos(a)
+        val area = s1 * s2
+        val quadsPerSqDeg = countInFirstPass / area
 
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (other !is StarQuadStarBasedEqualityKey) return false
-                if (quad === other.quad) return true
-                return quad.stars.containsAll(other.quad.stars)
-            }
+        val imageDiameterInPixels = hypot(image.width.toDouble(), image.height.toDouble())
+        var pixelAngularSearchFieldSizeRatio = imageDiameterInPixels / searchFieldSize
 
-            override fun hashCode(): Int {
-                return quad.stars[0].hashCode() xor quad.stars[1].hashCode() xor
-                        quad.stars[2].hashCode() xor quad.stars[3].hashCode()
-            }
+        var databaseQuads = quadDatabase.quads(
+            searchRun.centerRA, searchRun.centerDEC, searchRun.radius, quadsPerSqDeg.toInt(),
+            searchRun.densityOffsets, numSubSets, subSetIndex, imageStarQuads
+        )
+
+        if (databaseQuads.size < MIN_MATCHES) {
+            return taskResult
         }
 
-        private class ImageStarQuadStarBasedEqualityKey(@JvmField val quad: ImageStarQuad) {
+        // Found enough matches; a likely hit. If this was a sampled run, spend the time to retrieve the full quad set without sampling
+        // as we're going to try for a solution.
+        if (numSubSets > 1) {
+            databaseQuads = quadDatabase.quads(
+                searchRun.centerRA, searchRun.centerDEC, searchRun.radius, quadsPerSqDeg.toInt(), searchRun.densityOffsets, 1, 0,
+                imageStarQuads
+            )
+        }
 
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (other !is StarQuadStarBasedEqualityKey) return false
-                if (quad === other.quad) return true
-                // Disallow a quad definition that has same pixel coords than another one (this is so that equations
-                // won't flip when we get two slightly different ra,dec coordinates representing the same pixel)
-                if (quad.midPointX == other.quad.midPointX && quad.midPointY == other.quad.midPointY) return true
-                return quad.stars.containsAll(other.quad.stars)
+        val matchingQuads = findMatches(pixelAngularSearchFieldSizeRatio, imageStarQuads, databaseQuads, 0.011, MIN_MATCHES)
+
+        if (matchingQuads.size >= MIN_MATCHES) {
+            val preliminarySolution = calculateSolution(image, matchingQuads, searchRun.centerRA, searchRun.centerDEC)
+
+            if (!isValidSolution(preliminarySolution)) {
+                return taskResult
             }
 
-            override fun hashCode(): Int {
-                return quad.stars[0].hashCode() xor quad.stars[1].hashCode() xor
-                        quad.stars[2].hashCode() xor quad.stars[3].hashCode() xor
-                        quad.midPointX.hashCode() xor quad.midPointY.hashCode()
+            // Probably off really badly, so don't accept it.
+            if (preliminarySolution.radius > 2 * searchRun.radius) {
+                return taskResult
+            }
+
+            pixelAngularSearchFieldSizeRatio = imageDiameterInPixels / preliminarySolution.radius * 2
+
+            val improvedSolution = performAccuracyImprovementForSolution(
+                image, preliminarySolution,
+                pixelAngularSearchFieldSizeRatio, quadDatabase, imageStarQuads, quadsPerSqDeg, MIN_MATCHES, searchRun.densityOffsets
+            )
+
+            if (!isValidSolution(improvedSolution.solution)) {
+                return taskResult
             }
         }
     }

@@ -8,13 +8,14 @@ import nebulosa.watney.plate.solving.quad.QuadDatabaseCellFileDescriptor.SubCell
 import okio.Buffer
 import okio.Source
 import okio.buffer
+import java.io.Closeable
 import kotlin.math.abs
 
 /**
  * A class that represents a single Cell file (a file that contains quads in
  * passes for specified RA,Dec bounds, a part of the quad database).
  */
-internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseCellFileDescriptor) {
+internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseCellFileDescriptor) : Closeable by descriptor {
 
     fun quads(
         centerRA: Angle, centerDEC: Angle, angularDistance: Double,
@@ -60,8 +61,9 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
 
             descriptor.source.buffer().use { b ->
                 val format = b.readUtf8(QuadDatabase.FORMAT_ID.length.toLong())
-                val versionNum = b.readInt()
-                println("$format $versionNum")
+                require(format == QuadDatabase.FORMAT_ID) { "invalid format. expected ${QuadDatabase.FORMAT_ID}, got $format" }
+                val version = b.readInt()
+                require(version == QuadDatabase.FORMAT_VERSION) { "invalid version. expected ${QuadDatabase.FORMAT_VERSION}, got $version" }
 
                 descriptor.source.seek(subCellsInRangeArr[it]!!.dataStartPos)
                 val subCellDataBytes = b.readByteArray(subCellsInRangeArr[it]!!.dataLengthInBytes).source()

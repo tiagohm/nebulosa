@@ -1,5 +1,6 @@
 import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.longs.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import nebulosa.io.ByteOrder
@@ -13,13 +14,19 @@ import java.nio.file.Path
 class QuadDatabaseTest : StringSpec() {
 
     init {
-        "index" {
+        "cell index file" {
             val source = Path.of("/home/tiagohm/Downloads/watneyqdb-00-07-20-v3/gaia2-00-07-20.qdbindex").seekableSource()
             val index = QuadDatabaseCellFileIndex.read(source)
+
             index.byteOrder shouldBe ByteOrder.LITTLE
+            index.files shouldHaveSize 406
             val totalSizeInBytes = index.files.sumOf { it.descriptor.passes.sumOf { it.dataBlockByteLength } }
             totalSizeInBytes shouldBeExactly 397360102 - (406 * 13) // 406 files, 13 bytes header
-            source.close()
+
+            index.close()
+        }
+        "cell file set" {
+
         }
     }
 }
