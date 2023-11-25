@@ -1,10 +1,9 @@
-package nebulosa.astap.star.detection
+package nebulosa.imaging.hfd
 
 import nebulosa.star.detection.ImageStar
 
-data class DetectedStar(
-    override val x: Int = 0,
-    override val y: Int = 0,
+data class Star(
+    override val x: Int, override val y: Int,
     override val hfd: Float = 0f,
     override val snr: Float = 0f,
     override val flux: Float = 0f,

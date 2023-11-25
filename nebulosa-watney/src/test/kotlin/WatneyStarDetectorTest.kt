@@ -18,18 +18,18 @@ class WatneyStarDetectorTest : FitsStringSpec() {
             var image = Image.open(NGC3344_COLOR_32)
             var stars = detector.detect(image.transform(Mean))
             stars shouldHaveSize 1
-            image.transform(DetectedStarsDraw(stars)).save("color-detected-stars-1")
+            image.transform(ImageStarsDraw(stars)).save("color-detected-stars-1")
                 .second shouldBe "bb237ce03f7cc9e44e69a5354b7a6fd1"
 
             image = Image.open(M6707HH)
             stars = detector.detect(image.transform(Mean))
             stars shouldHaveSize 636
-            image.transform(DetectedStarsDraw(stars)).save("color-detected-stars-664")
+            image.transform(ImageStarsDraw(stars)).save("color-detected-stars-664")
                 .second shouldBe "20d73a79ba5203244208e5876bbbc270"
         }
     }
 
-    private data class DetectedStarsDraw(private val stars: List<ImageStar>) : Draw() {
+    private data class ImageStarsDraw(private val stars: List<ImageStar>) : Draw() {
 
         override fun draw(source: Image, graphics: Graphics2D) {
             graphics.color = Color.YELLOW

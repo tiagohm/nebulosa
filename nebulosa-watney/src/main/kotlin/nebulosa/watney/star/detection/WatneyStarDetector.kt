@@ -13,7 +13,7 @@ data class WatneyStarDetector(
     private val minStarSize: Float = 4f,
 ) : StarDetector<Image> {
 
-    override fun detect(input: Image): List<DetectedStar> {
+    override fun detect(input: Image): List<Star> {
         val starBins = ArrayList<StarPixelBin>()
 
         val stats = Statistics().compute(input)
@@ -37,7 +37,7 @@ data class WatneyStarDetector(
             if (star.size < minStarSize) return@mapNotNull null
             val computedStar = HalfFluxDiameter.compute(input, star.x, star.y, (star.size / 2).roundToInt())
             if (computedStar.hfd < minHFD) null
-            else DetectedStar(computedStar.x, computedStar.y, star.size, computedStar.hfd, computedStar.snr, computedStar.flux)
+            else Star(computedStar.x, computedStar.y, star.size, computedStar.hfd, computedStar.snr, computedStar.flux)
         }
     }
 

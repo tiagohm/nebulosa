@@ -12,9 +12,9 @@ data class HalfFluxDiameter(
     val x: Int, val y: Int,
     val searchRegion: Int = 15,
     val mode: FindMode = FindMode.CENTROID,
-) : ComputationAlgorithm<DetectedStar> {
+) : ComputationAlgorithm<Star> {
 
-    override fun compute(source: Image): DetectedStar {
+    override fun compute(source: Image): Star {
         return compute(source, x, y, searchRegion, mode)
     }
 
@@ -31,7 +31,7 @@ data class HalfFluxDiameter(
             baseX: Int, baseY: Int,
             searchRegion: Int = 15,
             mode: FindMode = FindMode.CENTROID,
-        ): DetectedStar {
+        ): Star {
             val minX = 0
             val minY = 0
             val maxX = source.width - 1
@@ -43,7 +43,7 @@ data class HalfFluxDiameter(
             var endY = min((baseY + searchRegion), maxY)
 
             if (endX <= startX || endY <= startY) {
-                return DetectedStar(baseX, baseY)
+                return Star(baseX, baseY)
             }
 
             var peakX = 0
@@ -230,7 +230,7 @@ data class HalfFluxDiameter(
             }
 
             if (mass <= 0f) {
-                return DetectedStar(baseX, baseY)
+                return Star(baseX, baseY)
             }
 
             val newX = peakX + cx / mass
@@ -244,7 +244,7 @@ data class HalfFluxDiameter(
 
             val hfd = 2f * HalfFluxRadius.compute(newX, newY, mass, hfrvec)
 
-            return DetectedStar(newX.roundToInt(), newY.roundToInt(), hfd, snr, mass)
+            return Star(newX.roundToInt(), newY.roundToInt(), hfd, snr, mass)
         }
     }
 }

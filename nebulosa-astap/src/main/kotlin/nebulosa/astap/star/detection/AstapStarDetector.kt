@@ -38,7 +38,7 @@ class AstapStarDetector(path: Path) : StarDetector<Path> {
             csvFile.inputStream().use {
                 for (record in CSV_READER.build(InputStreamReader(it, Charsets.UTF_8))) {
                     detectedStars.add(
-                        DetectedStar(
+                        Star(
                             record.getField("x").toFloat().roundToInt(),
                             record.getField("y").toFloat().roundToInt(),
                             record.getField("hfd").toFloat(),
