@@ -239,12 +239,12 @@ data class HalfFluxDiameter(
             // SNR estimate from: Measuring the Signal-to-Noise Ratio S/N of the CCD Image of a Star
             // or Nebula, J.H.Simonetti, 2004 January 8
             // http://www.phys.vt.edu/~jhs/phys3154/snr20040108.pdf
-            val snr = if (n > 0) mass / sqrt(mass / 0.5f + sigma2Bg * n * (1f + 1f / nbg))
-            else 0f
+            val snr = if (n > 0) mass / sqrt(mass / 0.5 + sigma2Bg * n * (1.0 + 1.0 / nbg))
+            else 0.0
 
-            val hfd = 2f * HalfFluxRadius.compute(newX, newY, mass, hfrvec)
+            val hfd = 2.0 * HalfFluxRadius.compute(newX, newY, mass, hfrvec)
 
-            return Star(newX.roundToInt(), newY.roundToInt(), hfd, snr, mass)
+            return Star(newX.roundToInt(), newY.roundToInt(), hfd, snr, mass.toDouble())
         }
     }
 }

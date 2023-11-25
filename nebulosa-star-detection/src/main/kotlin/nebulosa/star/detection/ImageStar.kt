@@ -8,15 +8,15 @@ interface ImageStar {
 
     val y: Int
 
-    val hfd: Float
+    val hfd: Double
 
-    val snr: Float
+    val snr: Double
 
-    val flux: Float
+    val flux: Double
 
-    fun distance(star: ImageStar): Float {
+    fun distance(star: ImageStar): Double {
         val deltaX = x - star.x
         val deltaY = y - star.y
-        return sqrt((deltaX * deltaX + deltaY + deltaY).toFloat())
+        return sqrt((deltaX * deltaX + deltaY + deltaY).toDouble())
     }
 }

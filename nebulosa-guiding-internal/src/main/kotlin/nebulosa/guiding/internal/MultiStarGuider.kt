@@ -77,9 +77,9 @@ class MultiStarGuider : InternalGuider {
     var state = GuiderState.UNINITIALIZED
         private set
 
-    var massChangeThreshold = 0f
+    var massChangeThreshold = 0.0
         set(value) {
-            require(value >= 0f) { "massChangeThreshold < 0" }
+            require(value >= 0.0) { "massChangeThreshold < 0" }
             field = value
         }
 

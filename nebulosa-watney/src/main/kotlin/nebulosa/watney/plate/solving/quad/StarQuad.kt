@@ -10,22 +10,22 @@ interface StarQuad {
     /**
      * The quad ratios (between stars).
      */
-    val ratios: FloatArray
+    val ratios: DoubleArray
 
     /**
      * The largest distance (degrees or pixels).
      */
-    val largestDistance: Float
+    val largestDistance: Double
 
     /**
      * The X/RA mid point of the quad.
      */
-    val midPointX: Float
+    val midPointX: Double
 
     /**
      * The Y/DEC mid point of the quad.
      */
-    val midPointY: Float
+    val midPointY: Double
 
     /**
      * The stars that make up this quad.

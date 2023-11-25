@@ -41,9 +41,9 @@ class AstapStarDetector(path: Path) : StarDetector<Path> {
                         Star(
                             record.getField("x").toFloat().roundToInt(),
                             record.getField("y").toFloat().roundToInt(),
-                            record.getField("hfd").toFloat(),
-                            record.getField("snr").toFloat(),
-                            record.getField("flux").toFloat(),
+                            record.getField("hfd").toDouble(),
+                            record.getField("snr").toDouble(),
+                            record.getField("flux").toDouble(),
                         )
                     )
                 }

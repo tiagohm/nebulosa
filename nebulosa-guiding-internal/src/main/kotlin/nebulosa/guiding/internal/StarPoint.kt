@@ -2,11 +2,11 @@ package nebulosa.guiding.internal
 
 interface StarPoint : GuidePoint {
 
-    val flux: Float
+    val flux: Double
 
-    val snr: Float
+    val snr: Double
 
-    val hfd: Float
+    val hfd: Double
 
     val wasFound: Boolean
 }

@@ -29,7 +29,7 @@ fun isCellInSearchRadius(radius: Angle, centerRA: Angle, centerDEC: Angle, bound
             (radius - SphericalCoordinate.angularDistance(centerRA, centerDEC, cellNearestPointRA, cellNearestPointDEC)) > 0.0
 }
 
-fun angleDiff(a: Angle, b: Angle): Double {
+private fun angleDiff(a: Angle, b: Angle): Double {
     val diff = (a.toDegrees - b.toDegrees + 180) % 360 - 180
     return abs(if (diff < -180) diff + 360 else diff)
 }
