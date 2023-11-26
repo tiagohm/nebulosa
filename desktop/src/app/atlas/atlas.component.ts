@@ -517,6 +517,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                     this.refreshTab()
                 }
             })
+
+        if (initialDelay > 2500) {
+            this.refreshTab()
+        }
     }
 
     @HostListener('window:unload')
