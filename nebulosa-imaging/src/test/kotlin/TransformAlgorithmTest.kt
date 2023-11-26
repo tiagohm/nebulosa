@@ -5,7 +5,8 @@ import io.kotest.matchers.shouldBe
 import nebulosa.fits.Fits
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
-import nebulosa.imaging.algorithms.*
+import nebulosa.imaging.algorithms.transformation.*
+import nebulosa.imaging.algorithms.transformation.convolution.*
 import nebulosa.test.FitsStringSpec
 
 class TransformAlgorithmTest : FitsStringSpec() {

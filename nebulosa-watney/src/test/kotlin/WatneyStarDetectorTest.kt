@@ -1,8 +1,8 @@
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import nebulosa.imaging.Image
-import nebulosa.imaging.algorithms.Draw
-import nebulosa.imaging.algorithms.Mean
+import nebulosa.imaging.algorithms.transformation.Draw
+import nebulosa.imaging.algorithms.transformation.convolution.Mean
 import nebulosa.star.detection.ImageStar
 import nebulosa.test.FitsStringSpec
 import nebulosa.watney.star.detection.WatneyStarDetector

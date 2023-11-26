@@ -1,7 +1,12 @@
 package nebulosa.imaging
 
 import nebulosa.fits.*
-import nebulosa.imaging.algorithms.*
+import nebulosa.imaging.algorithms.ComputationAlgorithm
+import nebulosa.imaging.algorithms.TransformAlgorithm
+import nebulosa.imaging.algorithms.transform
+import nebulosa.imaging.algorithms.transformation.CfaPattern
+import nebulosa.imaging.algorithms.transformation.Debayer
+import nebulosa.imaging.algorithms.transformation.Grayscale
 import java.awt.color.ColorSpace
 import java.awt.image.*
 import kotlin.math.max

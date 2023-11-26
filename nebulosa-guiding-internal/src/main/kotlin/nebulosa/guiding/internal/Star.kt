@@ -1,8 +1,7 @@
 package nebulosa.guiding.internal
 
 import nebulosa.imaging.Image
-import nebulosa.imaging.hfd.FindMode
-import nebulosa.imaging.hfd.HalfFluxDiameter
+import nebulosa.imaging.algorithms.computation.hfd.HalfFluxDiameter
 import kotlin.math.roundToInt
 
 /**
@@ -26,7 +25,7 @@ open class Star : Point, StarPoint {
     internal fun find(
         image: Image, searchRegion: Int = 15,
         baseX: Double = x, baseY: Double = y,
-        mode: FindMode = FindMode.CENTROID,
+        mode: HalfFluxDiameter.Mode = HalfFluxDiameter.Mode.CENTROID,
     ): Boolean {
         val star = HalfFluxDiameter.compute(image, baseX.roundToInt(), baseY.roundToInt(), searchRegion, mode)
         flux = star.flux

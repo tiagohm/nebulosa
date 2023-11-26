@@ -3,7 +3,7 @@ package nebulosa.api.image
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.imaging.ImageChannel
-import nebulosa.imaging.algorithms.ProtectionMethod
+import nebulosa.imaging.algorithms.transformation.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import nebulosa.math.deg
 import nebulosa.math.hours

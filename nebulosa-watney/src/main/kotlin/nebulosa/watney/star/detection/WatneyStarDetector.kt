@@ -1,8 +1,8 @@
 package nebulosa.watney.star.detection
 
 import nebulosa.imaging.Image
-import nebulosa.imaging.algorithms.Statistics
-import nebulosa.imaging.hfd.HalfFluxDiameter
+import nebulosa.imaging.algorithms.computation.Statistics
+import nebulosa.imaging.algorithms.computation.hfd.HalfFluxDiameter
 import nebulosa.star.detection.StarDetector
 import kotlin.math.roundToInt
 

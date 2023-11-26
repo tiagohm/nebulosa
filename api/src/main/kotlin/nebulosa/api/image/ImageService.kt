@@ -12,7 +12,7 @@ import nebulosa.astrometrynet.plate.solving.LocalAstrometryNetPlateSolver
 import nebulosa.astrometrynet.plate.solving.NovaAstrometryNetPlateSolver
 import nebulosa.fits.*
 import nebulosa.imaging.ImageChannel
-import nebulosa.imaging.algorithms.*
+import nebulosa.imaging.algorithms.transformation.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
