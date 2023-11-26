@@ -1,7 +1,7 @@
 import io.kotest.matchers.floats.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.imaging.Image
-import nebulosa.imaging.algorithms.computation.hfd.HalfFluxDiameter
+import nebulosa.imaging.algorithms.computation.hfd.HFD
 import nebulosa.test.FitsStringSpec
 
 class HFDTest : FitsStringSpec() {
@@ -30,7 +30,7 @@ class HFDTest : FitsStringSpec() {
 
             for ((first, second) in starFocus) {
                 val focusImage = Image.open(first)
-                val star = focusImage.compute(HalfFluxDiameter(focusImage.width / 2, focusImage.height / 2, 50))
+                val star = focusImage.compute(HFD(focusImage.width / 2, focusImage.height / 2, 50))
                 star.hfd shouldBe (second[0] plusOrMinus 0.1f)
                 star.snr shouldBe (second[1] plusOrMinus 0.1f)
                 star.flux shouldBe (second[2] plusOrMinus 0.1f)

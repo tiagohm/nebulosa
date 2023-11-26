@@ -5,21 +5,30 @@ import nebulosa.imaging.algorithms.ComputationAlgorithm
 import kotlin.math.*
 
 /**
+ * Half Flux Diameter.
+ *
  * @see <a href="https://github.com/OpenPHDGuiding/phd2/blob/master/star.cpp">PHD2 Reference</a>
  * @see <a href="https://www.lost-infinity.com/night-sky-image-processing-part-6-measuring-the-half-flux-diameter-hfd-of-a-star-a-simple-c-implementation/">Measuring the Half Flux Diameter (HFD) of a star</a>
  */
-data class HalfFluxDiameter(
-    val x: Int, val y: Int,
-    val searchRegion: Int = 15,
-    val mode: Mode = Mode.CENTROID,
-) : ComputationAlgorithm<Star> {
+data class HFD(
+    private val x: Int, private val y: Int,
+    private val searchRegion: Int = 15,
+    private val mode: Mode = Mode.CENTROID,
+) : ComputationAlgorithm<HFD.ComputedStar> {
 
     enum class Mode {
         CENTROID,
         PEAK,
     }
 
-    override fun compute(source: Image): Star {
+    data class ComputedStar(
+        @JvmField val x: Int, @JvmField val y: Int,
+        @JvmField val hfd: Double = 0.0,
+        @JvmField val snr: Double = 0.0,
+        @JvmField val flux: Double = 0.0,
+    )
+
+    override fun compute(source: Image): ComputedStar {
         return compute(source, x, y, searchRegion, mode)
     }
 
@@ -36,7 +45,7 @@ data class HalfFluxDiameter(
             baseX: Int, baseY: Int,
             searchRegion: Int = 15,
             mode: Mode = Mode.CENTROID,
-        ): Star {
+        ): ComputedStar {
             val minX = 0
             val minY = 0
             val maxX = source.width - 1
@@ -48,7 +57,7 @@ data class HalfFluxDiameter(
             var endY = min((baseY + searchRegion), maxY)
 
             if (endX <= startX || endY <= startY) {
-                return Star(baseX, baseY)
+                return ComputedStar(baseX, baseY)
             }
 
             var peakX = 0
@@ -235,7 +244,7 @@ data class HalfFluxDiameter(
             }
 
             if (mass <= 0f) {
-                return Star(baseX, baseY)
+                return ComputedStar(baseX, baseY)
             }
 
             val newX = peakX + cx / mass
@@ -247,9 +256,9 @@ data class HalfFluxDiameter(
             val snr = if (n > 0) mass / sqrt(mass / 0.5 + sigma2Bg * n * (1.0 + 1.0 / nbg))
             else 0.0
 
-            val hfd = 2.0 * HalfFluxRadius.compute(newX, newY, mass, hfrvec)
+            val hfd = 2.0 * HFR.compute(newX, newY, mass, hfrvec)
 
-            return Star(newX.roundToInt(), newY.roundToInt(), hfd, snr, mass.toDouble())
+            return ComputedStar(newX.roundToInt(), newY.roundToInt(), hfd, snr, mass.toDouble())
         }
     }
 }

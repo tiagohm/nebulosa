@@ -2,7 +2,7 @@ package nebulosa.watney.star.detection
 
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.computation.Statistics
-import nebulosa.imaging.algorithms.computation.hfd.HalfFluxDiameter
+import nebulosa.imaging.algorithms.computation.hfd.HFD
 import nebulosa.star.detection.StarDetector
 import kotlin.math.roundToInt
 
@@ -35,7 +35,7 @@ data class WatneyStarDetector(
         return starBins.mapNotNull {
             val star = it.computeCenterPixelPosAndRelativeBrightness()
             if (star.size < minStarSize) return@mapNotNull null
-            val computedStar = HalfFluxDiameter.compute(input, star.x, star.y, (star.size / 2).roundToInt())
+            val computedStar = HFD.compute(input, star.x, star.y, (star.size / 2).roundToInt())
             if (computedStar.hfd < minHFD) null
             else Star(computedStar.x, computedStar.y, star.size, computedStar.hfd, computedStar.snr, computedStar.flux)
         }
