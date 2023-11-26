@@ -286,11 +286,11 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="SCNR" [draggable]="true" [(visible)]="showSCNRDialog" [modal]="false" [style]="{width: '280px'}"
+<p-dialog header="SCNR" [draggable]="true" [(visible)]="showSCNRDialog" [modal]="false" [style]="{width: '270px'}"
           class="pointer-events-none">
     <div class="grid px-2">
         <div class="col-12 flex align-items-center">
-            <p-selectButton styleClass="border-0" [options]="scnrChannelOptions" [(ngModel)]="scnrChannel" [multiple]="false" />
+            <p-selectButton class="w-full" styleClass="border-0" [options]="scnrChannelOptions" [(ngModel)]="scnrChannel" [multiple]="false" />
         </div>
         <div class="col-7 flex align-items-center">
             <span class="p-float-label w-full max-w-full">
@@ -312,8 +312,8 @@
         </div>
         <div class="col-5 flex align-items-center">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="scnrChannel === 'NONE'" [min]="0" [max]="1" [step]="0.1" [showButtons]="true" class="w-full"
-                               inputStyleClass="border-0 w-full" [minFractionDigits]="1"
+                <p-inputNumber [disabled]="scnrChannel === 'NONE' || !scnrProtectionMethod.endsWith('MASK')" [min]="0" [max]="1" [step]="0.1"
+                               [showButtons]="true" class="w-full" inputStyleClass="border-0 w-full" [minFractionDigits]="1"
                                [(ngModel)]="scnrAmount" locale="en" [allowEmpty]="false" />
                 <label>Amount</label>
             </span>
