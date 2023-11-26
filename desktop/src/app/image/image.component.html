@@ -37,14 +37,7 @@
 
 <p-contextMenu #menu [model]="contextMenuItems">
     <ng-template pTemplate="item" let-item>
-        <a [class.p-menuitem-checked]="item.checked" class="p-menuitem-link flex justify-content-between align-items-center">
-            <div class="flex justify-content-between align-items-center gap-2">
-                <i [class]="item.icon"></i> <span>{{ item.label }}</span>
-            </div>
-            <i *ngIf="item.items" class="mdi mdi-menu-right"></i>
-            <i *ngIf="item.checked" class="mdi mdi-check text-green-500 mr-1"></i>
-            <p-checkbox *ngIf="item.toggleable" [binary]="true" [(ngModel)]="item.toggled" (onChange)="item.toggle($event)" />
-        </a>
+        <p-menuItem [item]="item" />
     </ng-template>
 </p-contextMenu>
 

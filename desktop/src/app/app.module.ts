@@ -30,6 +30,7 @@ import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
 import { DialogMenuComponent } from '../shared/components/dialogmenu/dialogmenu.component'
+import { MenuItemComponent } from '../shared/components/menuitem/menuitem.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
 import { OpenStreetMapComponent } from '../shared/components/openstreetmap/openstreetmap.component'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
@@ -77,6 +78,7 @@ import { MountComponent } from './mount/mount.component'
         DialogMenuComponent,
         AlignmentComponent,
         LocationDialog,
+        MenuItemComponent,
         EnvPipe,
         WinPipe,
         EnumPipe,

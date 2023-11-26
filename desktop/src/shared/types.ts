@@ -1,5 +1,5 @@
 import { MenuItem } from 'primeng/api'
-import { InputSwitchOnChangeEvent } from 'primeng/inputswitch'
+import { CheckboxChangeEvent } from 'primeng/checkbox'
 
 export type Angle = string | number
 
@@ -519,7 +519,7 @@ export interface ToggleableMenuItem extends MenuItem {
     toggleable: boolean
     toggled: boolean
 
-    toggle(event: InputSwitchOnChangeEvent): void
+    toggle(event: CheckboxChangeEvent): void
 }
 
 export interface MessageEvent {
