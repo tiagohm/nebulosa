@@ -58,7 +58,8 @@
 
                 <span class="p-float-label">
                     <p-inputNumber [disabled]="!annotateWithMinorPlanets" [min]="-10" [max]="20" class="max-w-10rem w-full" [showButtons]="true"
-                                   inputStyleClass="border-0 w-full" [step]="0.1" [(ngModel)]="annotateWithMinorPlanetsMagLimit" />
+                                   inputStyleClass="border-0 w-full" [step]="0.1" [(ngModel)]="annotateWithMinorPlanetsMagLimit"
+                                   [minFractionDigits]="1" />
                     <label>Mag. Limit</label>
                 </span>
             </div>
@@ -312,7 +313,7 @@
         <div class="col-5 flex align-items-center">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="scnrChannel === 'NONE'" [min]="0" [max]="1" [step]="0.1" [showButtons]="true" class="w-full"
-                               inputStyleClass="border-0 w-full"
+                               inputStyleClass="border-0 w-full" [minFractionDigits]="1"
                                [(ngModel)]="scnrAmount" locale="en" [allowEmpty]="false" />
                 <label>Amount</label>
             </span>

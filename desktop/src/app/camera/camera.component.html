@@ -91,7 +91,7 @@
                     <p-inputNumber [disabled]="!connected || !canSetTemperature || capturing" [(ngModel)]="setpointTemperature" mode="decimal"
                                    [showButtons]="true" (ngModelChange)="savePreference()"
                                    [step]="0.1" suffix="℃" [min]="-50" [max]="50" locale="en" styleClass="p-inputtext-sm border-0"
-                                   [allowEmpty]="false" />
+                                   [allowEmpty]="false" [minFractionDigits]="1" />
                     <label>Temperature ({{ temperature | number: '1.1-1' }}°C)</label>
                 </span>
                 <p-button [disabled]="!connected || !canSetTemperature || capturing" (onClick)="applySetpointTemperature()" icon="mdi mdi-check"
@@ -256,7 +256,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || capturing || !dithering.enabled" [showButtons]="true"
                                styleClass="border-0 p-inputtext-sm w-full" [min]="0.1" [max]="60"
-                               [(ngModel)]="dithering.amount" [step]="0.1" locale="en" (ngModelChange)="savePreference()" />
+                               [(ngModel)]="dithering.amount" [step]="0.1" locale="en" [minFractionDigits]="1" (ngModelChange)="savePreference()" />
                 <label>Dither (px)</label>
             </span>
         </div>
