@@ -42,7 +42,8 @@
                 <i [class]="item.icon"></i> <span>{{ item.label }}</span>
             </div>
             <i *ngIf="item.items" class="mdi mdi-menu-right"></i>
-            <p-inputSwitch *ngIf="item.toggleable" [(ngModel)]="item.toggled" (onChange)="item.toggle($event)" />
+            <i *ngIf="item.checked" class="mdi mdi-check text-green-500 mr-1"></i>
+            <p-checkbox *ngIf="item.toggleable" [binary]="true" [(ngModel)]="item.toggled" (onChange)="item.toggle($event)" />
         </a>
     </ng-template>
 </p-contextMenu>
