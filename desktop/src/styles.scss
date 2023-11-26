@@ -148,6 +148,11 @@ i.mdi {
     -webkit-app-region: drag;
 }
 
+p-contextmenu *,
+.no-draggable-region {
+    -webkit-app-region: no-drag;
+}
+
 .pixelated {
     image-rendering: pixelated;
 }
