@@ -157,3 +157,24 @@ inline fun <T> Buffer.read(source: Source, byteCount: Long, block: (Buffer) -> T
         clear()
     }
 }
+
+fun Buffer.readFully(source: Source, byteCount: Long) {
+    var remainingCount = byteCount
+
+    while (remainingCount > 0L) {
+        val size = source.read(this, remainingCount)
+        require(size > 0) { "unexpected end of file" }
+        remainingCount -= size
+    }
+}
+
+fun Buffer.transferFully(source: Source, sink: Sink, byteCount: Long) {
+    var remainingCount = byteCount
+
+    while (remainingCount > 0L) {
+        val size = source.read(this, remainingCount)
+        require(size > 0) { "unexpected end of file" }
+        sink.write(this, size)
+        remainingCount -= size
+    }
+}

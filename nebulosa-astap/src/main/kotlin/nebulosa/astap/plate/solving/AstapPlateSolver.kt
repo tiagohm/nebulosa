@@ -29,7 +29,6 @@ class AstapPlateSolver(path: Path) : PlateSolver<Path> {
 
     override fun solve(
         input: Path,
-        blind: Boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
     ): PlateSolution {
@@ -42,7 +41,7 @@ class AstapPlateSolver(path: Path) : PlateSolver<Path> {
         arguments["-o"] = outFile
         arguments["-z"] = downsampleFactor
 
-        if (!blind) {
+        if (radius.toDegrees >= 0.1) {
             arguments["-ra"] = centerRA.toHours
             arguments["-spd"] = centerDEC.toDegrees + 90.0
             arguments["-r"] = ceil(radius.toDegrees)

@@ -74,8 +74,8 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "") pathOrUrl: String,
         @RequestParam(required = false, defaultValue = "") apiKey: String,
     ) = imageService.solveImage(
-        path, type, blind,
-        centerRA.hours, centerDEC.deg, radius.deg,
+        path, type,
+        centerRA.hours, centerDEC.deg, if (blind) 0.0 else radius.deg,
         downsampleFactor, pathOrUrl, apiKey,
     )
 

@@ -2,22 +2,23 @@ package nebulosa.watney.plate.solving.quad
 
 import nebulosa.erfa.SphericalCoordinate
 import nebulosa.io.ByteOrder
-import nebulosa.io.SeekableSource
 import nebulosa.io.readFloat
 import nebulosa.io.readInt
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.watney.plate.solving.quad.QuadDatabase.Companion.FORMAT_ID
 import okio.BufferedSource
-import java.io.Closeable
+import java.nio.file.Path
 
 internal data class QuadDatabaseCellFileDescriptor(
-    @JvmField val source: SeekableSource,
+    @JvmField val path: Path,
+    @JvmField val byteOrder: ByteOrder,
     @JvmField val bandIndex: Int,
     @JvmField val cellIndex: Int,
     @JvmField val passes: List<Pass>,
-) : Closeable by source {
+) {
 
     @JvmField val id = SkySegmentSphere.Cell.cellId(bandIndex, cellIndex)
 
@@ -39,12 +40,12 @@ internal data class QuadDatabaseCellFileDescriptor(
         @JvmStatic private val LOG = loggerFor<QuadDatabaseCellFileDescriptor>()
 
         @JvmStatic
-        fun read(source: SeekableSource, byteOrder: ByteOrder, buffer: BufferedSource): QuadDatabaseCellFileDescriptor {
+        fun read(buffer: BufferedSource, indexDirectory: Path, byteOrder: ByteOrder): QuadDatabaseCellFileDescriptor {
             val filename = buffer.readUtf8(buffer.readByte().toLong())
             val band = buffer.readInt(byteOrder)
             val cell = buffer.readInt(byteOrder)
             val passCount = buffer.readInt(byteOrder)
-            LOG.info("quad database index. filename={}, band={}, cell={}, passCount={}", filename, band, cell, passCount)
+            // LOG.debug { String.format("quad database index. filename=%s, band=%d, cell=%d, passCount=%d", filename, band, cell, passCount) }
             val cellReference = SkySegmentSphere[band, cell]
             val passes = ArrayList<Pass>(passCount)
 
@@ -94,7 +95,7 @@ internal data class QuadDatabaseCellFileDescriptor(
                 }
             }
 
-            return QuadDatabaseCellFileDescriptor(source, band, cell, passes)
+            return QuadDatabaseCellFileDescriptor(Path.of("$indexDirectory", filename), byteOrder, band, cell, passes)
         }
     }
 }

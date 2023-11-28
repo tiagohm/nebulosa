@@ -20,7 +20,7 @@ class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver<Path> {
     private val executor = ProcessExecutor(path)
 
     override fun solve(
-        input: Path, blind: Boolean,
+        input: Path,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
     ): PlateSolution {
@@ -41,7 +41,7 @@ class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver<Path> {
         arguments["--no-plots"] = null
         // args["--resort"] = null
 
-        if (!blind) {
+        if (radius.toDegrees >= 0.1) {
             arguments["--ra"] = centerRA.toDegrees
             arguments["--dec"] = centerDEC.toDegrees
             arguments["--radius"] = radius.toDegrees

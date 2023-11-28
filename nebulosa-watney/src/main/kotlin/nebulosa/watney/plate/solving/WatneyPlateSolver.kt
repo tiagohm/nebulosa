@@ -13,6 +13,7 @@ import nebulosa.plate.solving.Parity
 import nebulosa.plate.solving.PlateSolution
 import nebulosa.plate.solving.PlateSolver
 import nebulosa.star.detection.ImageStar
+import nebulosa.star.detection.StarDetector
 import nebulosa.watney.plate.solving.math.equatorialToStandardCoordinates
 import nebulosa.watney.plate.solving.math.lerp
 import nebulosa.watney.plate.solving.math.solveLeastSquares
@@ -28,20 +29,18 @@ import java.util.*
 import java.util.stream.IntStream
 import kotlin.math.*
 
-class WatneyPlateSolver(
+data class WatneyPlateSolver(
     private val quadDatabase: QuadDatabase,
-    private val maxStars: Int = -1,
+    private val starDetector: StarDetector<Image>? = null,
     private val numSubSets: Int = 4,
 ) : PlateSolver<Image> {
 
-    private val starDetector = WatneyStarDetector()
-
     override fun solve(
-        input: Image, blind: Boolean,
+        input: Image,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
     ): PlateSolution {
-        val stars = starDetector.detect(input)
+        val stars = (starDetector ?: DEFAULT_STAR_DETECTOR).detect(input)
 
         fun makeSuccessSolution(solution: ComputedPlateSolution): PlateSolution {
             return PlateSolution(
@@ -55,8 +54,10 @@ class WatneyPlateSolver(
 
         val (imageStarQuads, countInFirstPass) = formImageStarQuads(stars)
 
-        val strategy = if (radius > 0.0) NearbySearchStrategy(centerRA, centerDEC)
-        else BlindSearchStrategy()
+        val strategy = if (radius.toDegrees >= 0.1) {
+            val options = NearbySearchStrategyOptions(maxFieldRadius = radius)
+            NearbySearchStrategy(centerRA, centerDEC, options)
+        } else BlindSearchStrategy()
 
         val searchQueue = strategy.searchQueue()
 
@@ -82,11 +83,11 @@ class WatneyPlateSolver(
                 if (numSubSets == 1)
                     continue
 
-                val resultSet = getMatchedAndUnmatchedSearchRuns(serialSearches)
+                val (matchedResult) = getMatchedAndUnmatchedSearchRuns(serialSearches)
                 serialSearches.clear()
 
                 @Suppress("NestedLambdaShadowedImplicitParameter")
-                val potentialMatchQueue = resultSet.first.map { it.searchRun!! }
+                val potentialMatchQueue = matchedResult.map { it.searchRun!! }
 
                 // Remove all potentials so that we don't search them again in the next subset.
                 // They aren't a significant number, but every little bit helps.
@@ -113,6 +114,7 @@ class WatneyPlateSolver(
         private const val MIN_MATCHES = 5
 
         @JvmStatic private val LOG = loggerFor<WatneyPlateSolver>()
+        @JvmStatic private val DEFAULT_STAR_DETECTOR = WatneyStarDetector()
 
         @JvmStatic
         private fun formImageStarQuads(starsFound: List<ImageStar>): Pair<List<ImageStarQuad>, Int> {

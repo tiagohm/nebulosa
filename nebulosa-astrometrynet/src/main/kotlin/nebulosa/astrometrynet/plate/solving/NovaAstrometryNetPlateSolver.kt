@@ -39,11 +39,13 @@ class NovaAstrometryNetPlateSolver(
     }
 
     override fun solve(
-        input: Path, blind: Boolean,
+        input: Path,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
     ): PlateSolution {
         renewSession()
+
+        val blind = radius.toDegrees < 0.1
 
         val upload = Upload(
             session = session!!.session,

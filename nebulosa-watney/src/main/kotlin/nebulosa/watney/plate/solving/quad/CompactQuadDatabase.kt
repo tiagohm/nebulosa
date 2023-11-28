@@ -1,15 +1,13 @@
 package nebulosa.watney.plate.solving.quad
 
-import nebulosa.io.seekableSource
 import nebulosa.math.Angle
-import java.io.Closeable
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
 
-class CompactQuadDatabase(path: Path) : QuadDatabase, Closeable {
+data class CompactQuadDatabase(private val path: Path) : QuadDatabase {
 
     private val indexes = path.listDirectoryEntries("*.qdbindex")
-        .map { QuadDatabaseCellFileIndex.read(it.seekableSource()) }
+        .map(QuadDatabaseCellFileIndex::read)
     private val fileSets = QuadDatabaseCellFileSet.from(indexes)
 
     override fun quads(
@@ -25,6 +23,8 @@ class CompactQuadDatabase(path: Path) : QuadDatabase, Closeable {
                 cellsToInclude.add(cell.id)
             }
         }
+
+        if (cellsToInclude.isEmpty()) return emptyList()
 
         val sourceDataFileSets = ArrayList<QuadDatabaseCellFileSet>()
 
@@ -53,9 +53,5 @@ class CompactQuadDatabase(path: Path) : QuadDatabase, Closeable {
             .flatten()
             .flatten()
             .distinctBy { StarQuad.RatioBasedEqualityKey(it) }
-    }
-
-    override fun close() {
-        fileSets.forEach(Closeable::close)
     }
 }

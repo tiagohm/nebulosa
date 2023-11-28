@@ -43,7 +43,9 @@ object SkySegmentSphere : Collection<SkySegmentSphere.Cell> {
         companion object {
 
             @JvmStatic
-            fun cellId(bandIndex: Int, cellIndex: Int) = "b%02dc%02d".format(bandIndex, cellIndex)
+            fun cellId(bandIndex: Int, cellIndex: Int): String {
+                return "b%02dc%02d".format(bandIndex, cellIndex)
+            }
         }
     }
 
@@ -71,11 +73,10 @@ object SkySegmentSphere : Collection<SkySegmentSphere.Cell> {
     private val CELL_WIDTHS =
         intArrayOf(120, 40, 24, 18, 15, 12, 12, 10, 10, 10, 10, 12, 12, 15, 18, 24, 40, 120)
 
-    private val CELLS: Array<Array<Cell?>>
+    private val CELL_LIST = ArrayList<Cell>()
+    private val CELL_ARRAY: Array<Array<Cell?>>
 
     init {
-        val cells = ArrayList<Cell>()
-
         for (b in LATITUDE_BANDS.indices) {
             val band = LATITUDE_BANDS[b]
             val cellWidth = CELL_WIDTHS[b]
@@ -83,48 +84,38 @@ object SkySegmentSphere : Collection<SkySegmentSphere.Cell> {
             var c = 0
 
             while (raLeft < 360) {
-                val bounds = CoordinateBounds(raLeft.deg, (raLeft + cellWidth).deg, band[0].deg, band[1].deg)
+                val bounds = CoordinateBounds(raLeft.deg, (raLeft + cellWidth).deg, band[1].deg, band[0].deg)
                 val cell = Cell(bounds, b, c)
-                cells.add(cell)
+                CELL_LIST.add(cell)
                 raLeft += cellWidth
                 c++
             }
         }
 
-        CELLS = Array(cells.maxOf { it.bandIndex } + 1) { arrayOfNulls(cells.maxOf { it.cellIndex } + 1) }
-        cells.forEach { CELLS[it.bandIndex][it.cellIndex] = it }
+        CELL_ARRAY = Array(CELL_LIST.maxOf { it.bandIndex } + 1) { arrayOfNulls(CELL_LIST.maxOf { it.cellIndex } + 1) }
+        CELL_LIST.forEach { CELL_ARRAY[it.bandIndex][it.cellIndex] = it }
     }
 
     override val size
-        get() = CELLS.size
+        get() = CELL_LIST.size
 
     override fun contains(element: Cell): Boolean {
-        return CELLS.any { element in it }
+        return element in CELL_LIST
     }
 
     override fun containsAll(elements: Collection<Cell>): Boolean {
-        return elements.all { it in this }
+        return CELL_LIST.containsAll(elements)
     }
 
-    override fun isEmpty(): Boolean {
-        return CELLS.isEmpty()
-    }
+    override fun isEmpty() = CELL_LIST.isEmpty()
 
-    override fun iterator(): Iterator<Cell> {
-        return CellIterator(CELLS)
-    }
+    override fun iterator() = CELL_LIST.iterator()
 
-    operator fun get(bandIndex: Int, cellIndex: Int) = CELLS[bandIndex][cellIndex]!!
+    operator fun get(index: Int) = CELL_LIST[index]
 
-    fun withId(id: String): Cell? {
-        for (band in CELLS) {
-            for (cell in band) {
-                if (cell?.id == id) return cell
-            }
-        }
+    operator fun get(bandIndex: Int, cellIndex: Int) = CELL_ARRAY[bandIndex][cellIndex]!!
 
-        return null
-    }
+    fun withId(id: String) = CELL_LIST.find { it.id == id }
 
     fun cellAt(location: CoordinateBounds): Cell {
         var latIndex = 0
@@ -137,29 +128,6 @@ object SkySegmentSphere : Collection<SkySegmentSphere.Cell> {
         }
 
         val cellIndex = (location.rightAscension / CELL_WIDTHS[latIndex]).toInt()
-        return CELLS[latIndex][cellIndex]!!
-    }
-
-    @Suppress("ArrayInDataClass")
-    private data class CellIterator(private val cells: Array<Array<Cell?>>) : Iterator<Cell> {
-
-        @Volatile private var bandIndex = 0
-        @Volatile private var cellIndex = 0
-
-        override fun hasNext(): Boolean {
-            return bandIndex < cells.size && cellIndex < cells[bandIndex].size
-        }
-
-        override fun next(): Cell {
-            val cell = cells[bandIndex][cellIndex++]!!
-
-            if (cellIndex >= cells[bandIndex].size) {
-                cellIndex = 0
-                bandIndex++
-            }
-
-            return cell
-        }
-
+        return CELL_ARRAY[latIndex][cellIndex]!!
     }
 }

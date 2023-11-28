@@ -1,21 +1,17 @@
 package nebulosa.watney.plate.solving.quad
 
 import nebulosa.erfa.SphericalCoordinate
-import nebulosa.io.readFloat
-import nebulosa.io.source
+import nebulosa.io.*
 import nebulosa.math.Angle
 import nebulosa.watney.plate.solving.quad.QuadDatabaseCellFileDescriptor.SubCellInfo
 import okio.Buffer
-import okio.Source
-import okio.buffer
-import java.io.Closeable
 import kotlin.math.abs
 
 /**
  * A class that represents a single Cell file (a file that contains quads in
  * passes for specified RA,Dec bounds, a part of the quad database).
  */
-internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseCellFileDescriptor) : Closeable by descriptor {
+internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseCellFileDescriptor) {
 
     fun quads(
         centerRA: Angle, centerDEC: Angle, angularDistance: Double,
@@ -44,6 +40,16 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
 
         // Pre-allocate, so that we don't need to allocate later down the road.
         val quadDataArray = DoubleArray(8)
+        val source = descriptor.path.seekableSource()
+        val buffer = Buffer()
+
+        source.seek(0L)
+        source.read(buffer, QuadDatabase.FORMAT_ID.length + 4L)
+
+        val format = buffer.readUtf8(QuadDatabase.FORMAT_ID.length.toLong())
+        require(format == QuadDatabase.FORMAT_ID) { "invalid format. expected ${QuadDatabase.FORMAT_ID}, got $format" }
+        val version = buffer.readInt(descriptor.byteOrder)
+        require(version == QuadDatabase.FORMAT_VERSION) { "invalid version. expected ${QuadDatabase.FORMAT_VERSION}, got $version" }
 
         repeat(subCellsInRangeLen) {
             val subCellIdx = subCellsInRangeIndexesArr[it]
@@ -57,36 +63,32 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
             // Means we build and use the separate cache for non-sampled runs but that's fine.
             val samplingBeingUsed = numSubSets > 1
 
-            descriptor.source.seek(0L)
+            buffer.clear()
+            source.seek(subCellsInRangeArr[it]!!.dataStartPos)
+            buffer.readFully(source, subCellsInRangeArr[it]!!.dataLengthInBytes)
 
-            descriptor.source.buffer().use { b ->
-                val format = b.readUtf8(QuadDatabase.FORMAT_ID.length.toLong())
-                require(format == QuadDatabase.FORMAT_ID) { "invalid format. expected ${QuadDatabase.FORMAT_ID}, got $format" }
-                val version = b.readInt()
-                require(version == QuadDatabase.FORMAT_VERSION) { "invalid version. expected ${QuadDatabase.FORMAT_VERSION}, got $version" }
+            val quadCount = subCellsInRangeArr[it]!!.dataLengthInBytes / DATA_LENGTH
+            // We will split the quadCount to numSubSets, and pick the quads in our assigned (sampling) subset.
+            val quadCountPerSubSet = quadCount / numSubSets
+            val startIndex = quadCountPerSubSet * subSetIndex
+            val nextStartIndex = if (subSetIndex == numSubSets - 1) quadCount else startIndex + quadCountPerSubSet
 
-                descriptor.source.seek(subCellsInRangeArr[it]!!.dataStartPos)
-                val subCellDataBytes = b.readByteArray(subCellsInRangeArr[it]!!.dataLengthInBytes).source()
+            for (q in startIndex until nextStartIndex) {
+                val quad = bytesToQuadNew(buffer, descriptor.byteOrder, imageQuads, quadDataArray)
 
-                val quadCount = subCellsInRangeArr[it]!!.dataLengthInBytes / DATA_LENGTH
-                // We will split the quadCount to numSubSets, and pick the quads in our assigned (sampling) subset.
-                val quadCountPerSubSet = quadCount / numSubSets
-                val startIndex = quadCountPerSubSet * subSetIndex
-                val nextStartIndex = if (subSetIndex == numSubSets - 1) quadCount else startIndex + quadCountPerSubSet
+                if (quad != null) {
+                    matchingQuads.add(quad)
 
-                for (q in startIndex until nextStartIndex) {
-                    val quad = bytesToQuadNew(subCellDataBytes, imageQuads, quadDataArray)
-
-                    if (quad != null) {
-                        matchingQuads.add(quad)
-
-                        val distanceTo =
-                            SphericalCoordinate.angularDistance(quad.midPointX, quad.midPointY, centerRA, centerDEC)
-                        if (distanceTo < angularDistance) matchingQuadsWithinRange.add(quad)
-                    }
+                    val distanceTo = SphericalCoordinate
+                        .angularDistance(quad.midPointX, quad.midPointY, centerRA, centerDEC)
+                    if (distanceTo < angularDistance) matchingQuadsWithinRange.add(quad)
                 }
             }
+
+            buffer.clear()
         }
+
+        source.close()
 
         return matchingQuadsWithinRange
     }
@@ -100,9 +102,12 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
         private const val NINE_BITS = 1.0 / 511
 
         @JvmStatic
-        private fun bytesToQuadNew(source: Source, tentativeMatches: List<ImageStarQuad>?, quadDataArray: DoubleArray): StarQuad? {
-            val buffer = Buffer()
-            require(source.read(buffer, DATA_LENGTH) == DATA_LENGTH) { "unexpected end of file" }
+        private fun bytesToQuadNew(
+            buffer: Buffer,
+            byteOrder: ByteOrder,
+            tentativeMatches: List<ImageStarQuad>?,
+            quadDataArray: DoubleArray,
+        ): StarQuad? {
             val ratios = buffer.readByteArray(6L)
 
             // Ratios are packed; 3x 10 bit numbers, 2x 9 bit numbers.
@@ -115,11 +120,13 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
             var starQuad: StarQuad? = null
 
             if (tentativeMatches.isNullOrEmpty()) {
-                quadDataArray[5] = buffer.readFloat().toDouble() // LARGEST_DIST
-                quadDataArray[6] = buffer.readFloat().toDouble() // RA
-                quadDataArray[7] = buffer.readFloat().toDouble() // DEC
+                quadDataArray[5] = buffer.readFloat(byteOrder).toDouble() // LARGEST_DIST
+                quadDataArray[6] = buffer.readFloat(byteOrder).toDouble() // RA
+                quadDataArray[7] = buffer.readFloat(byteOrder).toDouble() // DEC
                 starQuad = ImageStarQuad(quadDataArray.sliceArray(0..4), quadDataArray[5], quadDataArray[6], quadDataArray[7])
             } else {
+                var skip = true
+
                 for ((r) in tentativeMatches) {
                     if (abs(r[0] / quadDataArray[0] - 1.0) <= 0.011
                         && abs(r[1] / quadDataArray[1] - 1.0) <= 0.011
@@ -127,16 +134,19 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
                         && abs(r[3] / quadDataArray[3] - 1.0) <= 0.011
                         && abs(r[4] / quadDataArray[4] - 1.0) <= 0.011
                     ) {
-                        quadDataArray[5] = buffer.readFloat().toDouble() // LARGEST_DIST
-                        quadDataArray[6] = buffer.readFloat().toDouble() // RA
-                        quadDataArray[7] = buffer.readFloat().toDouble() // DEC
+                        quadDataArray[5] = buffer.readFloat(byteOrder).toDouble() // LARGEST_DIST
+                        quadDataArray[6] = buffer.readFloat(byteOrder).toDouble() // RA
+                        quadDataArray[7] = buffer.readFloat(byteOrder).toDouble() // DEC
                         starQuad = ImageStarQuad(quadDataArray.sliceArray(0..4), quadDataArray[5], quadDataArray[6], quadDataArray[7])
+                        skip = false
                         break
                     }
                 }
-            }
 
-            buffer.clear()
+                if (skip) {
+                    buffer.skip(DATA_LENGTH - 6L)
+                }
+            }
 
             return starQuad
         }

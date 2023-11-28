@@ -1,16 +1,15 @@
 package nebulosa.watney.plate.solving.quad
 
 import nebulosa.math.Angle
-import java.io.Closeable
 import kotlin.math.abs
 
 /**
  * Class representing a set of Cell files. The quad database is split into cell files.
  */
-internal class QuadDatabaseCellFileSet(
+internal data class QuadDatabaseCellFileSet(
     @JvmField val id: String,
     @JvmField val files: List<QuadDatabaseCellFile>,
-) : Closeable {
+) {
 
     @JvmField val cell = SkySegmentSphere.withId(id)
     @JvmField val densities: List<CellFilePassDensity>
@@ -66,10 +65,6 @@ internal class QuadDatabaseCellFileSet(
 
         return files[chosenPassDensity.fileIndex]
             .quads(centerRA, centerDEC, angularDistance, chosenPassDensity.passIndex, numSubSets, subSetIndex, imageQuads)
-    }
-
-    override fun close() {
-        files.forEach(Closeable::close)
     }
 
     companion object {

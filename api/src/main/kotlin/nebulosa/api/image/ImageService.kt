@@ -244,9 +244,9 @@ class ImageService(
         return annotations
     }
 
+    @Synchronized
     fun solveImage(
         path: Path, type: PlateSolverType,
-        blind: Boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int,
         pathOrUrl: String, apiKey: String,
@@ -258,8 +258,7 @@ class ImageService(
         }
 
         val calibration = solver.solve(
-            path, blind,
-            centerRA, centerDEC, radius,
+            path, centerRA, centerDEC, radius,
             downsampleFactor, Duration.ofMinutes(2L),
         )
 
