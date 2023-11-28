@@ -1,66 +1,29 @@
 package nebulosa.fits
 
-interface ReadOnlyHeader : Collection<HeaderCard> {
+import nebulosa.io.SeekableSource
+import java.util.*
 
-    operator fun contains(key: String): Boolean {
-        return any { it.key == key }
-    }
+internal class ReadOnlyHeader : Header {
 
-    operator fun contains(key: FitsHeader): Boolean {
-        return key.key in this
-    }
+    constructor() : super(LinkedList<HeaderCard>())
 
-    fun getBoolean(key: String, defaultValue: Boolean = false): Boolean {
-        val card = firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
+    constructor(cards: Collection<HeaderCard>) : super(LinkedList(cards))
 
-    fun getBoolean(key: FitsHeader, defaultValue: Boolean = false): Boolean {
-        return getBoolean(key.key, defaultValue)
-    }
+    constructor(header: Header) : super(LinkedList(header.cards))
 
-    fun getInt(key: String, defaultValue: Int): Int {
-        val card = firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
+    override fun read(source: SeekableSource) = throw UnsupportedOperationException("Header is read-only")
 
-    fun getInt(key: FitsHeader, defaultValue: Int): Int {
-        return getInt(key.key, defaultValue)
-    }
+    override fun clear() = throw UnsupportedOperationException("Header is read-only")
 
-    fun getLong(key: String, defaultValue: Long): Long {
-        val card = firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
+    override fun add(key: FitsHeader, value: Boolean) = throw UnsupportedOperationException("Header is read-only")
 
-    fun getLong(key: FitsHeader, defaultValue: Long): Long {
-        return getLong(key.key, defaultValue)
-    }
+    override fun add(key: FitsHeader, value: Int) = throw UnsupportedOperationException("Header is read-only")
 
-    fun getFloat(key: String, defaultValue: Float): Float {
-        val card = firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
+    override fun add(key: FitsHeader, value: Double) = throw UnsupportedOperationException("Header is read-only")
 
-    fun getFloat(key: FitsHeader, defaultValue: Float): Float {
-        return getFloat(key.key, defaultValue)
-    }
+    override fun add(key: FitsHeader, value: String) = throw UnsupportedOperationException("Header is read-only")
 
-    fun getDouble(key: String, defaultValue: Double): Double {
-        val card = firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
+    override fun add(card: HeaderCard) = throw UnsupportedOperationException("Header is read-only")
 
-    fun getDouble(key: FitsHeader, defaultValue: Double): Double {
-        return getDouble(key.key, defaultValue)
-    }
-
-    fun getString(key: String, defaultValue: String): String {
-        val card = firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
-
-    fun getString(key: FitsHeader, defaultValue: String): String {
-        return getString(key.key, defaultValue)
-    }
+    override fun delete(key: FitsHeader) = throw UnsupportedOperationException("Header is read-only")
 }

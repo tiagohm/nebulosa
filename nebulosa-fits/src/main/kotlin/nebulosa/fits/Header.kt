@@ -7,8 +7,8 @@ import java.io.EOFException
 import java.io.Serializable
 import java.util.*
 
-open class Header internal constructor(private val cards: LinkedList<HeaderCard>) :
-    FitsElement, ReadOnlyHeader, Collection<HeaderCard> by cards, Serializable {
+open class Header internal constructor(@JvmField internal val cards: LinkedList<HeaderCard>) :
+    FitsElement, WritableHeader, ReadableHeader, Collection<HeaderCard> by cards, Serializable {
 
     constructor() : this(LinkedList<HeaderCard>())
 
@@ -16,11 +16,13 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
 
     constructor(header: Header) : this(LinkedList(header.cards))
 
-    fun clear() {
+    fun readOnly(): Header = ReadOnlyHeader(this)
+
+    override fun clear() {
         cards.clear()
     }
 
-    final override fun read(source: SeekableSource) {
+    override fun read(source: SeekableSource) {
         clear()
 
         var count = 0
@@ -51,7 +53,7 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
         buffer.clear()
     }
 
-    fun add(key: FitsHeader, value: Boolean): HeaderCard {
+    override fun add(key: FitsHeader, value: Boolean): HeaderCard {
         checkType(key, ValueType.LOGICAL)
         val card = HeaderCard.create(key, value)
         val index = cards.indexOfFirst { it.key == key.key }
@@ -60,22 +62,22 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
         return card
     }
 
-    fun add(key: FitsHeader, value: Int): HeaderCard {
+    override fun add(key: FitsHeader, value: Int): HeaderCard {
         checkType(key, ValueType.INTEGER)
         return HeaderCard.create(key, value).also(::add)
     }
 
-    fun add(key: FitsHeader, value: Double): HeaderCard {
+    override fun add(key: FitsHeader, value: Double): HeaderCard {
         checkType(key, ValueType.REAL)
         return HeaderCard.create(key, value).also(::add)
     }
 
-    fun add(key: FitsHeader, value: String): HeaderCard {
+    override fun add(key: FitsHeader, value: String): HeaderCard {
         checkType(key, ValueType.STRING)
         return HeaderCard.create(key, value).also(::add)
     }
 
-    fun add(card: HeaderCard) {
+    override fun add(card: HeaderCard) {
         if (!card.isKeyValuePair) cards.add(card)
         else {
             val index = cards.indexOfFirst { it.key == card.key }
@@ -84,7 +86,7 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
         }
     }
 
-    fun delete(key: FitsHeader): Boolean {
+    override fun delete(key: FitsHeader): Boolean {
         return cards.removeIf { it.key == key.key }
     }
 
@@ -106,6 +108,8 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
     }
 
     companion object {
+
+        @JvmStatic val EMPTY: Header = ReadOnlyHeader()
 
         const val DEFAULT_COMMENT_ALIGN = 30
         const val MIN_COMMENT_ALIGN = 20

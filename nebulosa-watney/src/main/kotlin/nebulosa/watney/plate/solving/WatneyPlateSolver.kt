@@ -1,12 +1,16 @@
 package nebulosa.watney.plate.solving
 
 import nebulosa.erfa.SphericalCoordinate
+import nebulosa.fits.Header
+import nebulosa.fits.NOAOExt
+import nebulosa.fits.Standard
 import nebulosa.imaging.Image
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
+import nebulosa.math.deg
 import nebulosa.math.toDegrees
+import nebulosa.plate.solving.Parity
 import nebulosa.plate.solving.PlateSolution
-import nebulosa.plate.solving.PlateSolution.Parity
 import nebulosa.plate.solving.PlateSolver
 import nebulosa.star.detection.ImageStar
 import nebulosa.watney.plate.solving.math.equatorialToStandardCoordinates
@@ -14,17 +18,20 @@ import nebulosa.watney.plate.solving.math.lerp
 import nebulosa.watney.plate.solving.math.solveLeastSquares
 import nebulosa.watney.plate.solving.math.standardToEquatorialCoordinates
 import nebulosa.watney.plate.solving.quad.ImageStarQuad
+import nebulosa.watney.plate.solving.quad.QuadDatabase
 import nebulosa.watney.plate.solving.quad.StarQuad
 import nebulosa.watney.plate.solving.quad.StarQuadMatch
 import nebulosa.watney.star.detection.WatneyStarDetector
+import org.apache.commons.collections4.bag.HashBag
 import java.time.Duration
 import java.util.*
+import java.util.stream.IntStream
 import kotlin.math.*
 
-
 class WatneyPlateSolver(
+    private val quadDatabase: QuadDatabase,
     private val maxStars: Int = -1,
-    private val sampling: Int = 4,
+    private val numSubSets: Int = 4,
 ) : PlateSolver<Image> {
 
     private val starDetector = WatneyStarDetector()
@@ -36,9 +43,16 @@ class WatneyPlateSolver(
     ): PlateSolution {
         val stars = starDetector.detect(input)
 
+        fun makeSuccessSolution(solution: ComputedPlateSolution): PlateSolution {
+            return PlateSolution(
+                true, solution.orientation, solution.pixelScale,
+                solution.centerRA, solution.centerDEC, solution.width, solution.height,
+                solution.parity, solution.radius,
+            )
+        }
+
         if (stars.isEmpty()) return PlateSolution.NO_SOLUTION
 
-        val maxStars = if (maxStars > 0) maxStars else min(stars.size / 3, 1000)
         val (imageStarQuads, countInFirstPass) = formImageStarQuads(stars)
 
         val strategy = if (radius > 0.0) NearbySearchStrategy(centerRA, centerDEC)
@@ -49,12 +63,44 @@ class WatneyPlateSolver(
         val groupedSearchQueue = TreeMap<Double, MutableList<SearchRun>>(Collections.reverseOrder())
         val runsByRadius = searchQueue.groupByTo(groupedSearchQueue) { it.radius.toDegrees }.toList()
 
-        repeat(sampling) {
-            var continueSearching = true
+        val serialSearches = ArrayList<SolveResult>()
 
-            repeat(groupedSearchQueue.size) { rg ->
+        repeat(numSubSets) {
+            for (rg in 0 until groupedSearchQueue.size) {
                 for (searchRun in runsByRadius[rg].second) {
+                    val solveResult = trySolve(input, searchRun, countInFirstPass, quadDatabase, numSubSets, it, imageStarQuads)
 
+                    serialSearches.add(solveResult)
+
+                    if (solveResult.success) {
+                        return makeSuccessSolution(solveResult.solution!!)
+                    }
+                }
+
+                // If only one subset aka no sampling, no need to check potential matches since they aren't potential as
+                // we're already using all database quads in our search.
+                if (numSubSets == 1)
+                    continue
+
+                val resultSet = getMatchedAndUnmatchedSearchRuns(serialSearches)
+                serialSearches.clear()
+
+                @Suppress("NestedLambdaShadowedImplicitParameter")
+                val potentialMatchQueue = resultSet.first.map { it.searchRun!! }
+
+                // Remove all potentials so that we don't search them again in the next subset.
+                // They aren't a significant number, but every little bit helps.
+                for (m in potentialMatchQueue.indices) {
+                    runsByRadius[rg].second.remove(potentialMatchQueue[m])
+                }
+
+                for (searchRun in potentialMatchQueue) {
+                    val solveResult = trySolve(input, searchRun, countInFirstPass, quadDatabase, 1, 0, imageStarQuads)
+
+                    if (solveResult.success) {
+                        LOG.info("A successful result was found!")
+                        return makeSuccessSolution(solveResult.solution!!)
+                    }
                 }
             }
         }
@@ -137,70 +183,102 @@ class WatneyPlateSolver(
             return quadsArray to countInFirstPass
         }
 
-        /*
         @JvmStatic
         private fun trySolve(
             image: Image, searchRun: SearchRun, countInFirstPass: Int,
             quadDatabase: QuadDatabase, numSubSets: Int, subSetIndex: Int,
             imageStarQuads: List<ImageStarQuad>,
-        ) {
+        ): SolveResult {
+            val solveResult = SolveResult()
+
             // Quads per degree.
             val searchFieldSize = searchRun.radius.toDegrees * 2
             val a = atan(image.height.toDouble() / image.width)
             val s1 = searchFieldSize * sin(a)
             val s2 = searchFieldSize * cos(a)
             val area = s1 * s2
-            val quadsPerSqDeg = countInFirstPass / area
+            val quadsPerSqDeg = (countInFirstPass / area).toInt()
 
             val imageDiameterInPixels = hypot(image.width.toDouble(), image.height.toDouble())
             var pixelAngularSearchFieldSizeRatio = imageDiameterInPixels / searchFieldSize
 
             var databaseQuads = quadDatabase.quads(
-                searchRun.centerRA, searchRun.centerDEC, searchRun.radius, quadsPerSqDeg.toInt(),
+                searchRun.centerRA, searchRun.centerDEC, searchRun.radius, quadsPerSqDeg,
                 searchRun.densityOffsets, numSubSets, subSetIndex, imageStarQuads
             )
 
+            solveResult.numPotentialMatches = databaseQuads.size
+
             if (databaseQuads.size < MIN_MATCHES) {
-                return taskResult
+                return solveResult
             }
 
             // Found enough matches; a likely hit. If this was a sampled run, spend the time to retrieve the full quad set without sampling
             // as we're going to try for a solution.
             if (numSubSets > 1) {
                 databaseQuads = quadDatabase.quads(
-                    searchRun.centerRA, searchRun.centerDEC, searchRun.radius, quadsPerSqDeg.toInt(), searchRun.densityOffsets, 1, 0,
+                    searchRun.centerRA, searchRun.centerDEC, searchRun.radius, quadsPerSqDeg, searchRun.densityOffsets, 1, 0,
                     imageStarQuads
                 )
             }
 
-            val matchingQuads = findMatches(pixelAngularSearchFieldSizeRatio, imageStarQuads, databaseQuads, 0.011, MIN_MATCHES)
+            val matchingQuads = findMatches(pixelAngularSearchFieldSizeRatio, imageStarQuads, databaseQuads.toMutableList(), 0.011, MIN_MATCHES)
 
             if (matchingQuads.size >= MIN_MATCHES) {
                 val preliminarySolution = calculateSolution(image, matchingQuads, searchRun.centerRA, searchRun.centerDEC)
 
-                if (!isValidSolution(preliminarySolution)) {
-                    return taskResult
+                if (!isValidSolution(preliminarySolution.first)) {
+                    return solveResult
                 }
 
                 // Probably off really badly, so don't accept it.
-                if (preliminarySolution.radius > 2 * searchRun.radius) {
-                    return taskResult
+                if (preliminarySolution.first.radius > 2 * searchRun.radius) {
+                    return solveResult
                 }
 
-                pixelAngularSearchFieldSizeRatio = imageDiameterInPixels / preliminarySolution.radius * 2
+                pixelAngularSearchFieldSizeRatio = imageDiameterInPixels / preliminarySolution.first.radius * 2
 
                 val improvedSolution = performAccuracyImprovementForSolution(
-                    image, preliminarySolution,
+                    image, preliminarySolution.first,
                     pixelAngularSearchFieldSizeRatio, quadDatabase, imageStarQuads,
                     quadsPerSqDeg, MIN_MATCHES, searchRun.densityOffsets
                 )
 
-                if (!isValidSolution(improvedSolution.solution)) {
-                    return taskResult
+                if (!isValidSolution(improvedSolution?.first)) {
+                    return solveResult
                 }
+
+                solveResult.success = true
+                solveResult.searchRun = searchRun
+                solveResult.matchedQuads = improvedSolution!!.second
+                solveResult.solution = improvedSolution.first
             }
+
+            return solveResult
         }
-        */
+
+        @JvmStatic
+        private fun isValidSolution(solution: ComputedPlateSolution?): Boolean {
+            return solution != null && solution.centerRA.isFinite() && solution.centerDEC.isFinite()
+                    && solution.orientation.isFinite() && solution.plateConstants.isValid
+        }
+
+        @JvmStatic
+        private fun performAccuracyImprovementForSolution(
+            image: Image, solution: ComputedPlateSolution,
+            pixelAngularSearchFieldSizeRatio: Double, quadDatabase: QuadDatabase,
+            imageStarQuads: List<ImageStarQuad>, quadsPerSqDeg: Int,
+            minMatches: Int, densityOffsets: IntArray,
+        ): Pair<ComputedPlateSolution, List<StarQuadMatch>>? {
+            // Include many, to improve the odds and to maximize match chances.
+            // var fullDensityOffsets = new[] {-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5};
+            // Actually, use given offsets. The result is likely going to be more accurate on large fields due to smaller chance of mismatches.
+            val databaseQuads = quadDatabase
+                .quads(solution.centerRA, solution.centerDEC, solution.radius, quadsPerSqDeg, densityOffsets, 1, 0, imageStarQuads)
+            val matchingQuads = findMatches(pixelAngularSearchFieldSizeRatio, imageStarQuads, databaseQuads.toMutableList(), 0.011, minMatches)
+            return if (matchingQuads.size >= minMatches) calculateSolution(image, matchingQuads, solution.centerRA, solution.centerDEC)
+            else null
+        }
 
         @JvmStatic
         private fun solvePlateConstants(matches: List<StarQuadMatch>, centerRA: Angle, centerDEC: Angle): PlateConstants {
@@ -216,15 +294,19 @@ class WatneyPlateSolver(
         }
 
         @JvmStatic
-        private fun calculateSolution(image: Image, matches: List<StarQuadMatch>, scopeCoordsRA: Angle, scopeCoordsDEC: Angle) {
+        private fun calculateSolution(
+            image: Image,
+            matches: List<StarQuadMatch>,
+            scopeCoordsRA: Angle,
+            scopeCoordsDEC: Angle
+        ): Pair<ComputedPlateSolution, List<StarQuadMatch>> {
             var pc = solvePlateConstants(matches, scopeCoordsRA, scopeCoordsDEC)
 
             // Filter out the matches further - there may still be mismatches that are distorting the solution.
             val acceptedMatches = reduceToBestMatches(matches, pc, scopeCoordsRA, scopeCoordsDEC)
             pc = solvePlateConstants(acceptedMatches, scopeCoordsRA, scopeCoordsDEC)
-            val newMatches = acceptedMatches
 
-            val pixelsPerDeg = calculatePixelsPerDegree(matches)
+            val pixelsPerDeg = calculatePixelsPerDegree(acceptedMatches)
             val fieldPixelDiameter = hypot(image.width.toDouble(), image.height.toDouble())
             val fieldPixelRadius = 0.5 * fieldPixelDiameter
             val fieldRadiusDeg = 0.5 * fieldPixelDiameter / pixelsPerDeg
@@ -281,6 +363,26 @@ class WatneyPlateSolver(
             val scopePxY = (-(-pc.a / pc.d * pc.f) + -pc.c) / (pc.b + -pc.a / pc.d * pc.e)
             val scopePxX = (-pc.b * scopePxY + (-pc.c)) / pc.a
             val parity = if (sign < 0) Parity.NORMAL else Parity.FLIPPED
+
+            val header = Header()
+            header.add(Standard.CDELT1, cdelt1)
+            header.add(Standard.CDELT2, cdelt2)
+            header.add(Standard.CROTA1, crota1.toDegrees)
+            header.add(Standard.CROTA2, crota2.toDegrees)
+            header.add(Standard.CRVAL1, scopeCoordsRA.toDegrees)
+            header.add(Standard.CRVAL2, scopeCoordsDEC.toDegrees)
+            header.add(Standard.CRPIX1, scopePxX)
+            header.add(Standard.CRPIX2, scopePxY)
+            header.add(NOAOExt.CD1_1, cd11)
+            header.add(NOAOExt.CD1_2, cd12)
+            header.add(NOAOExt.CD1_1, cd11)
+            header.add(NOAOExt.CD2_2, cd22)
+
+            return ComputedPlateSolution(
+                header, crota1, pixScale, scopeCoordsRA, scopeCoordsDEC,
+                fieldWidthDeg.deg, fieldHeightDeg.deg, fieldPixelRadius.deg,
+                parity, pc,
+            ) to acceptedMatches
         }
 
         @JvmStatic
@@ -306,6 +408,132 @@ class WatneyPlateSolver(
             }
 
             return pixelsPerDegree.average()
+        }
+
+        @JvmStatic
+        private fun getMatchedAndUnmatchedSearchRuns(results: List<SolveResult>): Pair<List<SolveResult>, List<SolveResult>> {
+            val withMatches = ArrayList<SolveResult>(results.size)
+            val withoutMatches = ArrayList<SolveResult>(results.size)
+
+            for (result in results) {
+                if (result.numPotentialMatches > 0) withMatches.add(result)
+                else withoutMatches.add(result)
+            }
+
+            withMatches.sortBy { it.numPotentialMatches }
+
+            return withMatches to withoutMatches
+        }
+
+        @JvmStatic
+        private fun findMatches(
+            pixelToAngleRatio: Double, imageQuads: List<ImageStarQuad>,
+            dbQuads: MutableList<StarQuad>,
+            threshold: Double, minMatches: Int,
+        ): List<StarQuadMatch> {
+            val matches = HashBag<StarQuadMatch>()
+
+            val batchSize = 5
+            val imageQuadBatches = ArrayList<Array<ImageStarQuad?>>(imageQuads.size / batchSize)
+            var batch = arrayOfNulls<ImageStarQuad>(batchSize)
+
+            for (i in imageQuads.indices) {
+                batch[i % batchSize] = imageQuads[i]
+
+                if ((i + 1) % batchSize == 0 || i == imageQuads.size - 1) {
+                    imageQuadBatches.add(batch)
+                    batch = arrayOfNulls(batchSize)
+                }
+            }
+
+            for (b in imageQuadBatches.indices) {
+                val dbQuadsFound = HashBag<StarQuad>()
+
+                IntStream.range(0, 5).parallel().forEach {
+                    val imageQuad = imageQuadBatches[b][it] ?: return@forEach
+
+                    for (j in dbQuads.indices) {
+                        val d1 = abs(imageQuad.ratios[0] / dbQuads[j].ratios[0] - 1.0)
+                        if (d1 > threshold) continue
+
+                        val d2 = abs(imageQuad.ratios[1] / dbQuads[j].ratios[1] - 1.0)
+                        if (d2 > threshold) continue
+
+                        val d3 = abs(imageQuad.ratios[2] / dbQuads[j].ratios[2] - 1.0)
+                        if (d3 > threshold) continue
+
+                        val d4 = abs(imageQuad.ratios[3] / dbQuads[j].ratios[3] - 1.0)
+                        if (d4 > threshold) continue
+
+                        val d5 = abs(imageQuad.ratios[4] / dbQuads[j].ratios[4] - 1.0)
+                        if (d5 > threshold) continue
+
+                        synchronized(matches) {
+                            matches.add(StarQuadMatch(dbQuads[j], imageQuad))
+                            dbQuadsFound.add(dbQuads[j])
+                        }
+
+                        // This is a must; we have observed remote possibility of duplicates.
+                        // And one pixel coordinate should match exactly one quad.
+                        break
+                    }
+                }
+
+                dbQuads.removeAll(dbQuadsFound)
+            }
+
+            if (matches.size < minMatches) return emptyList()
+
+            // Ratios' median absolute deviance shouldn't be off more than this,
+            // if it is, then we're probably having a wild set of mismatches.
+            val acceptedAbsoluteDev = pixelToAngleRatio * 0.01
+
+            val matchList = matches.toTypedArray()
+            matchList.sortBy { it.scaleRatio }
+            val midIndex = matchList.size / 2
+            val medianScaleRatio = if (matchList.size % 2 != 0) matchList[midIndex].scaleRatio
+            else (matchList[midIndex].scaleRatio + matchList[midIndex - 1].scaleRatio) / 2
+
+            val scaleRatioAbsoluteDeviances = DoubleArray(matchList.size) { abs(matchList[it].scaleRatio - medianScaleRatio) }
+            scaleRatioAbsoluteDeviances.sort()
+            val medianAbsoluteDevianceScaleRatio = if (scaleRatioAbsoluteDeviances.size % 2 != 0) scaleRatioAbsoluteDeviances[midIndex]
+            else (scaleRatioAbsoluteDeviances[midIndex] + scaleRatioAbsoluteDeviances[midIndex - 1]) / 2
+
+            // If the scale ratios are wildly random, this can't be a match.
+            if (medianAbsoluteDevianceScaleRatio > acceptedAbsoluteDev) return emptyList()
+
+            // Form bins of the matches, and calculate a weighted average using the bins.
+            // This is to make sure the mismatches (wild scale ratios) do not affect the
+            // average in an unreasonable manner.
+            val minScaleRatio = matchList.first().scaleRatio
+            val maxScaleRatio = matchList.last().scaleRatio
+            val numBins = 10
+            val binWidth = (maxScaleRatio - minScaleRatio) / numBins + 1
+            val weights = IntArray(numBins)
+            val indexWeights = IntArray(matchList.size)
+
+            for (i in matchList.indices) {
+                val w = ((matchList[i].scaleRatio - minScaleRatio) / binWidth).toInt()
+                weights[w]++
+                indexWeights[i] = w
+            }
+
+            var divider = 0.0
+            var total = 0.0
+
+            for (i in matchList.indices) {
+                val weight = weights[indexWeights[i]]
+                total += weight * matchList[i].scaleRatio
+                divider += weight
+            }
+
+            val weightedMean = total / divider
+
+            val differenceSquared = matches.sumOf { (it.scaleRatio - weightedMean).pow(2) }
+            val stdDev = sqrt(differenceSquared / matches.size)
+
+            return matches
+                .filter { abs(it.scaleRatio - weightedMean) < stdDev }
         }
 
         private fun reduceToBestMatches(

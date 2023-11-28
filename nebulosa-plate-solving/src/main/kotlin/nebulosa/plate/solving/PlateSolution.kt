@@ -19,11 +19,6 @@ data class PlateSolution(
     val radius: Angle = hypot(width, height).rad / 2.0,
 ) : Header() {
 
-    enum class Parity {
-        NORMAL,
-        FLIPPED,
-    }
-
     companion object {
 
         @JvmStatic val NO_SOLUTION = PlateSolution()
