@@ -3,6 +3,7 @@ package nebulosa.watney.plate.solving.quad
 import nebulosa.erfa.SphericalCoordinate
 import nebulosa.io.*
 import nebulosa.math.Angle
+import nebulosa.math.deg
 import nebulosa.watney.plate.solving.quad.QuadDatabaseCellFileDescriptor.SubCellInfo
 import okio.Buffer
 import kotlin.math.abs
@@ -16,7 +17,7 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
     fun quads(
         centerRA: Angle, centerDEC: Angle, angularDistance: Double,
         passIndex: Int, numSubSets: Int, subSetIndex: Int,
-        imageQuads: List<ImageStarQuad>,
+        imageQuads: List<StarQuad>,
     ): List<StarQuad> {
         // Quads that get a match, and are within search distance.
         val matchingQuadsWithinRange = ArrayList<StarQuad>()
@@ -79,15 +80,15 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
                 if (quad != null) {
                     matchingQuads.add(quad)
 
-                    val distanceTo = SphericalCoordinate
-                        .angularDistance(quad.midPointX, quad.midPointY, centerRA, centerDEC)
-                    if (distanceTo < angularDistance) matchingQuadsWithinRange.add(quad)
+                    val distanceTo = SphericalCoordinate.angularDistance(quad.midPointX, quad.midPointY, centerRA, centerDEC)
+                    if (distanceTo < angularDistance) {
+                        matchingQuadsWithinRange.add(quad)
+                    }
                 }
             }
-
-            buffer.clear()
         }
 
+        buffer.clear()
         source.close()
 
         return matchingQuadsWithinRange
@@ -105,39 +106,41 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
         private fun bytesToQuadNew(
             buffer: Buffer,
             byteOrder: ByteOrder,
-            tentativeMatches: List<ImageStarQuad>?,
+            tentativeMatches: List<StarQuad>?,
             quadDataArray: DoubleArray,
         ): StarQuad? {
             val ratios = buffer.readByteArray(6L)
 
             // Ratios are packed; 3x 10 bit numbers, 2x 9 bit numbers.
-            quadDataArray[0] = ((ratios[1].toInt() shl 8 and 0x3FF) + (ratios[0].toInt() and 0x3FF)) * TEN_BITS
-            quadDataArray[1] = ((ratios[2].toInt() and 0x0F shl 6 and 0x3FF) + (ratios[1].toInt() shr 2 and 0x3FF)) * TEN_BITS
-            quadDataArray[2] = ((ratios[3].toInt() and 0x3F shl 4 and 0x3FF) + (ratios[2].toInt() shr 4 and 0x3FF)) * TEN_BITS
-            quadDataArray[3] = ((ratios[4].toInt() and 0x7F shl 2 and 0x1FF) + (ratios[3].toInt() shr 6 and 0x1FF)) * NINE_BITS
-            quadDataArray[4] = ((ratios[5].toInt() shl 1 and 0x1FF) + (ratios[4].toInt() shr 7 and 0x1FF)) * NINE_BITS
+            quadDataArray[0] = ((ratios[1].toInt() and 0xFF shl 8 and 0x3FF) + (ratios[0].toInt() and 0xFF and 0x3FF)) * TEN_BITS
+            quadDataArray[1] = ((ratios[2].toInt() and 0x0F shl 6 and 0x3FF) + (ratios[1].toInt() and 0xFF shr 2 and 0x3FF)) * TEN_BITS
+            quadDataArray[2] = ((ratios[3].toInt() and 0x3F shl 4 and 0x3FF) + (ratios[2].toInt() and 0xFF shr 4 and 0x3FF)) * TEN_BITS
+            quadDataArray[3] = ((ratios[4].toInt() and 0x7F shl 2 and 0x1FF) + (ratios[3].toInt() and 0xFF shr 6 and 0x1FF)) * NINE_BITS
+            quadDataArray[4] = ((ratios[5].toInt() and 0xFF shl 1 and 0x1FF) + (ratios[4].toInt() and 0xFF shr 7 and 0x1FF)) * NINE_BITS
 
             var starQuad: StarQuad? = null
 
             if (tentativeMatches.isNullOrEmpty()) {
-                quadDataArray[5] = buffer.readFloat(byteOrder).toDouble() // LARGEST_DIST
-                quadDataArray[6] = buffer.readFloat(byteOrder).toDouble() // RA
-                quadDataArray[7] = buffer.readFloat(byteOrder).toDouble() // DEC
-                starQuad = ImageStarQuad(quadDataArray.sliceArray(0..4), quadDataArray[5], quadDataArray[6], quadDataArray[7])
+                quadDataArray[5] = buffer.readFloat(byteOrder).toDouble().deg // LARGEST_DIST
+                quadDataArray[6] = buffer.readFloat(byteOrder).toDouble().deg // RA
+                quadDataArray[7] = buffer.readFloat(byteOrder).toDouble().deg // DEC
+                starQuad = CellStarQuad(quadDataArray.sliceArray(0..4), quadDataArray[5], quadDataArray[6], quadDataArray[7])
             } else {
                 var skip = true
 
-                for ((r) in tentativeMatches) {
+                for (q in tentativeMatches.indices) {
+                    val r = tentativeMatches[q].ratios
+
                     if (abs(r[0] / quadDataArray[0] - 1.0) <= 0.011
                         && abs(r[1] / quadDataArray[1] - 1.0) <= 0.011
                         && abs(r[2] / quadDataArray[2] - 1.0) <= 0.011
                         && abs(r[3] / quadDataArray[3] - 1.0) <= 0.011
                         && abs(r[4] / quadDataArray[4] - 1.0) <= 0.011
                     ) {
-                        quadDataArray[5] = buffer.readFloat(byteOrder).toDouble() // LARGEST_DIST
-                        quadDataArray[6] = buffer.readFloat(byteOrder).toDouble() // RA
-                        quadDataArray[7] = buffer.readFloat(byteOrder).toDouble() // DEC
-                        starQuad = ImageStarQuad(quadDataArray.sliceArray(0..4), quadDataArray[5], quadDataArray[6], quadDataArray[7])
+                        quadDataArray[5] = buffer.readFloat(byteOrder).toDouble().deg // LARGEST_DIST
+                        quadDataArray[6] = buffer.readFloat(byteOrder).toDouble().deg // RA
+                        quadDataArray[7] = buffer.readFloat(byteOrder).toDouble().deg // DEC
+                        starQuad = CellStarQuad(quadDataArray.sliceArray(0..4), quadDataArray[5], quadDataArray[6], quadDataArray[7])
                         skip = false
                         break
                     }

@@ -17,6 +17,6 @@ interface ImageStar {
     fun distance(star: ImageStar): Double {
         val deltaX = x - star.x
         val deltaY = y - star.y
-        return sqrt((deltaX * deltaX + deltaY + deltaY).toDouble())
+        return sqrt((deltaX * deltaX + deltaY * deltaY).toDouble())
     }
 }

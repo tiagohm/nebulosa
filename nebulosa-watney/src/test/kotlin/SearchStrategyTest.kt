@@ -1,7 +1,9 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.maps.shouldContainKey
 import nebulosa.math.deg
 import nebulosa.math.hours
+import nebulosa.math.toDegrees
 import nebulosa.watney.plate.solving.BlindSearchStrategy
 import nebulosa.watney.plate.solving.BlindSearchStrategyOptions
 import nebulosa.watney.plate.solving.NearbySearchStrategy
@@ -14,14 +16,34 @@ class SearchStrategyTest : StringSpec() {
             var div = 128
             var i = 0
 
-            val searchRunsCount = intArrayOf(898184, 226556, 57644, 14916, 3964, 1096, 308, 76)
+            val searchRunSizes = intArrayOf(898184, 226556, 57644, 14916, 3964, 1096, 308, 76)
+            val searchRunSizesByRadius = listOf(
+                // @formatter:off
+                listOf(22.5 to 76, 11.25 to 232, 5.625 to 788, 2.8125 to 2868, 1.40625 to 10952, 0.703125 to 42728, 0.3515625 to 168912, 0.17578125 to 671628),
+                listOf(22.5 to 76, 11.25 to 232, 5.625 to 788, 2.8125 to 2868, 1.40625 to 10952, 0.703125 to 42728, 0.3515625 to 168912),
+                listOf(22.5 to 76, 11.25 to 232, 5.625 to 788, 2.8125 to 2868, 1.40625 to 10952, 0.703125 to 42728),
+                listOf(22.5 to 76, 11.25 to 232, 5.625 to 788, 2.8125 to 2868, 1.40625 to 10952),
+                listOf(22.5 to 76, 11.25 to 232, 5.625 to 788, 2.8125 to 2868),
+                listOf(22.5 to 76, 11.25 to 232, 5.625 to 788),
+                listOf(22.5 to 76, 11.25 to 232),
+                listOf(22.5 to 76),
+                // @formatter:on
+            )
 
             while (div >= 1) {
                 val options = BlindSearchStrategyOptions(minRadius = (22.5 / div).deg)
                 val strategy = BlindSearchStrategy(options)
                 val searchRuns = strategy.searchQueue()
-                searchRuns shouldHaveSize searchRunsCount[i++]
+                searchRuns shouldHaveSize searchRunSizes[i]
+                val groupedSearchRuns = searchRuns.groupBy { it.radius.toDegrees }
+
+                searchRunSizesByRadius[i].forEach {
+                    groupedSearchRuns shouldContainKey it.first
+                    groupedSearchRuns[it.first]!! shouldHaveSize it.second
+                }
+
                 div /= 2
+                i++
             }
         }
         "nearby" {

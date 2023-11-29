@@ -5,6 +5,7 @@ import nebulosa.fits.Header
 import nebulosa.fits.NOAOExt
 import nebulosa.fits.Standard
 import nebulosa.imaging.Image
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.deg
@@ -26,6 +27,7 @@ import nebulosa.watney.star.detection.WatneyStarDetector
 import org.apache.commons.collections4.bag.HashBag
 import java.time.Duration
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.IntStream
 import kotlin.math.*
 
@@ -41,6 +43,7 @@ data class WatneyPlateSolver(
         downsampleFactor: Int, timeout: Duration?,
     ): PlateSolution {
         val stars = (starDetector ?: DEFAULT_STAR_DETECTOR).detect(input)
+        LOG.debug { "detected ${stars.size} stars from the image" }
 
         fun makeSuccessSolution(solution: ComputedPlateSolution): PlateSolution {
             return PlateSolution(
@@ -53,11 +56,15 @@ data class WatneyPlateSolver(
         if (stars.isEmpty()) return PlateSolution.NO_SOLUTION
 
         val (imageStarQuads, countInFirstPass) = formImageStarQuads(stars)
+        LOG.debug { "formed ${imageStarQuads.size} quads from the chosen stars" }
 
         val strategy = if (radius.toDegrees >= 0.1) {
-            val options = NearbySearchStrategyOptions(maxFieldRadius = radius)
+            val options = NearbySearchStrategyOptions(maxFieldRadius = radius, maxNegativeDensityOffset = 2, maxPositiveDensityOffset = 2)
             NearbySearchStrategy(centerRA, centerDEC, options)
-        } else BlindSearchStrategy()
+        } else {
+            val options = BlindSearchStrategyOptions(maxNegativeDensityOffset = 2, maxPositiveDensityOffset = 2)
+            BlindSearchStrategy(options)
+        }
 
         val searchQueue = strategy.searchQueue()
 
@@ -65,11 +72,12 @@ data class WatneyPlateSolver(
         val runsByRadius = searchQueue.groupByTo(groupedSearchQueue) { it.radius.toDegrees }.toList()
 
         val serialSearches = ArrayList<SolveResult>()
+        val iteration = AtomicInteger(0)
 
         repeat(numSubSets) {
-            for (rg in 0 until groupedSearchQueue.size) {
+            for (rg in runsByRadius.indices) {
                 for (searchRun in runsByRadius[rg].second) {
-                    val solveResult = trySolve(input, searchRun, countInFirstPass, quadDatabase, numSubSets, it, imageStarQuads)
+                    val solveResult = trySolve(input, searchRun, countInFirstPass, quadDatabase, numSubSets, it, imageStarQuads, iteration)
 
                     serialSearches.add(solveResult)
 
@@ -95,11 +103,13 @@ data class WatneyPlateSolver(
                     runsByRadius[rg].second.remove(potentialMatchQueue[m])
                 }
 
+                LOG.debug { "continue searching, potential matches to try: ${potentialMatchQueue.size}" }
+
                 for (searchRun in potentialMatchQueue) {
-                    val solveResult = trySolve(input, searchRun, countInFirstPass, quadDatabase, 1, 0, imageStarQuads)
+                    val solveResult = trySolve(input, searchRun, countInFirstPass, quadDatabase, 1, 0, imageStarQuads, iteration)
 
                     if (solveResult.success) {
-                        LOG.info("A successful result was found!")
+                        LOG.info("a successful result was found!")
                         return makeSuccessSolution(solveResult.solution!!)
                     }
                 }
@@ -190,8 +200,9 @@ data class WatneyPlateSolver(
             image: Image, searchRun: SearchRun, countInFirstPass: Int,
             quadDatabase: QuadDatabase, numSubSets: Int, subSetIndex: Int,
             imageStarQuads: List<ImageStarQuad>,
+            iteration: AtomicInteger,
         ): SolveResult {
-            val solveResult = SolveResult()
+            val solveResult = SolveResult(searchRun = searchRun)
 
             // Quads per degree.
             val searchFieldSize = searchRun.radius.toDegrees * 2
@@ -210,6 +221,12 @@ data class WatneyPlateSolver(
             )
 
             solveResult.numPotentialMatches = databaseQuads.size
+
+            val iterationCount = iteration.getAndIncrement()
+
+            if (databaseQuads.isNotEmpty()) {
+                LOG.debug { "iteration $iterationCount $searchRun: ${databaseQuads.size} potential database matches" }
+            }
 
             if (databaseQuads.size < MIN_MATCHES) {
                 return solveResult
@@ -251,7 +268,6 @@ data class WatneyPlateSolver(
                 }
 
                 solveResult.success = true
-                solveResult.searchRun = searchRun
                 solveResult.matchedQuads = improvedSolution!!.second
                 solveResult.solution = improvedSolution.first
             }

@@ -55,8 +55,8 @@ interface StarQuad {
             if (quad === other.quad) return true
             if (quad.largestDistance != other.quad.largestDistance) return false
 
-            for (r in 0..4) {
-                if (quad.ratios[r] != other.quad.ratios[r]) return false
+            repeat(quad.ratios.size) {
+                if (quad.ratios[it] != other.quad.ratios[it]) return false
             }
 
             return true

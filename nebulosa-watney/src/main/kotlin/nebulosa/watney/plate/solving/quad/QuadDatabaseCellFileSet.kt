@@ -38,7 +38,7 @@ internal data class QuadDatabaseCellFileSet(
     fun quadsWithinRange(
         centerRA: Angle, centerDEC: Angle, angularDistance: Angle,
         quadsPerSqDegree: Int, passOffset: Int, numSubSets: Int, subSetIndex: Int,
-        imageQuads: List<ImageStarQuad>,
+        imageQuads: List<StarQuad>,
     ): List<StarQuad> {
         if (passOffset > densities.size || passOffset < -densities.size) {
             return emptyList()

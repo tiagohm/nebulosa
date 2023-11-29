@@ -12,7 +12,7 @@ import java.awt.Graphics2D
 class WatneyStarDetectorTest : FitsStringSpec() {
 
     init {
-        val detector = WatneyStarDetector()
+        val detector = WatneyStarDetector(computeHFD = true)
 
         "detect stars" {
             var image = Image.open(NGC3344_COLOR_32)
@@ -23,9 +23,9 @@ class WatneyStarDetectorTest : FitsStringSpec() {
 
             image = Image.open(M6707HH)
             stars = detector.detect(image.transform(Mean))
-            stars shouldHaveSize 636
-            image.transform(ImageStarsDraw(stars)).save("color-detected-stars-664")
-                .second shouldBe "20d73a79ba5203244208e5876bbbc270"
+            stars shouldHaveSize 870
+            image.transform(ImageStarsDraw(stars)).save("color-detected-stars-870")
+                .second shouldBe "004e4d2b4d9725c5367f6865986f6756"
         }
     }
 

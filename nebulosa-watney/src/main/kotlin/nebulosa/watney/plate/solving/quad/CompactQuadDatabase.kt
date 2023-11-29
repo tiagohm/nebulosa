@@ -14,7 +14,7 @@ data class CompactQuadDatabase(private val path: Path) : QuadDatabase {
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         quadsPerSqDegree: Int, quadDensityOffsets: IntArray,
         numSubSets: Int, subSetIndex: Int,
-        imageQuads: List<ImageStarQuad>,
+        imageQuads: List<StarQuad>,
     ): List<StarQuad> {
         val cellsToInclude = ArrayList<String>(SkySegmentSphere.size)
 
@@ -52,6 +52,8 @@ data class CompactQuadDatabase(private val path: Path) : QuadDatabase {
         return quadListByDensity
             .flatten()
             .flatten()
-            .distinctBy { StarQuad.RatioBasedEqualityKey(it) }
+            .takeIf { it.isNotEmpty() }
+            ?.distinctBy { StarQuad.RatioBasedEqualityKey(it) }
+            ?: emptyList()
     }
 }

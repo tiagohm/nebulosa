@@ -56,7 +56,7 @@ data class BlindSearchStrategy(private val options: BlindSearchStrategyOptions =
                             || options.searchOrderRA == EAST_FIRST && decIteration % 2 == 1
                         ) ra + 180.0 else ra
 
-                        searchRuns.add(SearchRun(options.startRadius, adjustedRA.deg, adjustedDEC.deg, densityOffsets))
+                        searchRuns.add(SearchRun(radius.deg, adjustedRA.deg, adjustedDEC.deg, densityOffsets))
                     }
 
                     declination += radius

@@ -10,7 +10,7 @@ interface QuadDatabase {
         quadsPerSqDegree: Int,
         quadDensityOffsets: IntArray,
         numSubSets: Int, subSetIndex: Int,
-        imageQuads: List<ImageStarQuad>,
+        imageQuads: List<StarQuad>,
     ): List<StarQuad>
 
     companion object {

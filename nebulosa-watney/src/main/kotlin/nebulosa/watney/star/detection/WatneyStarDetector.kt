@@ -9,8 +9,8 @@ import kotlin.math.roundToInt
 data class WatneyStarDetector(
     private val detectionFilter: StarDetectionFilter = DefaultStarDetectionFilter,
     private val starDetectionBgOffset: Float = 3f,
+    private val computeHFD: Boolean = false,
     private val minHFD: Float = 1.5f,
-    private val minStarSize: Float = 4f,
 ) : StarDetector<Image> {
 
     override fun detect(input: Image): List<Star> {
@@ -34,7 +34,7 @@ data class WatneyStarDetector(
 
         return starBins.mapNotNull {
             val star = it.computeCenterPixelPosAndRelativeBrightness()
-            if (star.size < minStarSize) return@mapNotNull null
+            if (!computeHFD) return@mapNotNull star
             val computedStar = HFD.compute(input, star.x, star.y, (star.size / 2).roundToInt())
             if (computedStar.hfd < minHFD) null
             else Star(computedStar.x, computedStar.y, star.size, computedStar.hfd, computedStar.snr, computedStar.flux)
