@@ -11,7 +11,6 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.nameWithoutExtension
-import kotlin.math.roundToInt
 
 class AstapStarDetector(path: Path) : StarDetector<Path> {
 
@@ -39,8 +38,8 @@ class AstapStarDetector(path: Path) : StarDetector<Path> {
                 for (record in CSV_READER.build(InputStreamReader(it, Charsets.UTF_8))) {
                     detectedStars.add(
                         Star(
-                            record.getField("x").toFloat().roundToInt(),
-                            record.getField("y").toFloat().roundToInt(),
+                            record.getField("x").toDouble(),
+                            record.getField("y").toDouble(),
                             record.getField("hfd").toDouble(),
                             record.getField("snr").toDouble(),
                             record.getField("flux").toDouble(),

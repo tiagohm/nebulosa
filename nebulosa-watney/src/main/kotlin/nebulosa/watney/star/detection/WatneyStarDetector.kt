@@ -35,9 +35,9 @@ data class WatneyStarDetector(
         return starBins.mapNotNull {
             val star = it.computeCenterPixelPosAndRelativeBrightness()
             if (!computeHFD) return@mapNotNull star
-            val computedStar = HFD.compute(input, star.x, star.y, (star.size / 2).roundToInt())
+            val computedStar = HFD.compute(input, star.x.roundToInt(), star.y.roundToInt(), (star.size / 2).roundToInt())
             if (computedStar.hfd < minHFD) null
-            else Star(computedStar.x, computedStar.y, star.size, computedStar.hfd, computedStar.snr, computedStar.flux)
+            else Star(computedStar.x.toDouble(), computedStar.y.toDouble(), star.size, computedStar.hfd, computedStar.snr, computedStar.flux)
         }
     }
 

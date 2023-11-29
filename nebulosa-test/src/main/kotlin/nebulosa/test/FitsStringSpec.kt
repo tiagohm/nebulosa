@@ -13,9 +13,9 @@ import javax.imageio.ImageIO
 import kotlin.io.path.*
 
 @Suppress("PropertyName")
-abstract class FitsStringSpec(parentLevel: Int = 1) : StringSpec() {
+abstract class FitsStringSpec : StringSpec() {
 
-    protected val FITS_DIR = "../".repeat(parentLevel) + "nebulosa-test/src/main/resources/fits"
+    protected val FITS_DIR = "../nebulosa-test/src/main/resources/fits"
 
     protected val NGC3344_COLOR_8 by lazy { Fits("$FITS_DIR/NGC3344.Color.8.fits").also(Fits::read) }
     protected val NGC3344_COLOR_16 by lazy { Fits("$FITS_DIR/NGC3344.Color.16.fits").also(Fits::read) }
@@ -27,7 +27,7 @@ abstract class FitsStringSpec(parentLevel: Int = 1) : StringSpec() {
     protected val NGC3344_MONO_32 by lazy { Fits("$FITS_DIR/NGC3344.Mono.32.fits").also(Fits::read) }
     protected val NGC3344_MONO_F32 by lazy { Fits("$FITS_DIR/NGC3344.Mono.F32.fits").also(Fits::read) }
     protected val NGC3344_MONO_F64 by lazy { Fits("$FITS_DIR/NGC3344.Mono.F64.fits").also(Fits::read) }
-    protected val M6707HH by lazy { Fits(download("M6707HH.fits")).also(Fits::read) }
+    protected val M6707HH by lazy { Fits(download("M6707HH.fits", ASTROPY_PHOTOMETRY_URL)).also(Fits::read) }
     protected val STAR_FOCUS_1 by lazy { Fits("$FITS_DIR/STAR_FOCUS_1.fits").also(Fits::read) }
     protected val STAR_FOCUS_2 by lazy { Fits("$FITS_DIR/STAR_FOCUS_2.fits").also(Fits::read) }
     protected val STAR_FOCUS_3 by lazy { Fits("$FITS_DIR/STAR_FOCUS_3.fits").also(Fits::read) }
@@ -52,11 +52,11 @@ abstract class FitsStringSpec(parentLevel: Int = 1) : StringSpec() {
         return path to path.md5()
     }
 
-    internal fun Path.md5(): String {
+    protected fun Path.md5(): String {
         return readBytes().toByteString().md5().hex()
     }
 
-    internal fun download(name: String): Path {
+    protected fun download(name: String, baseUrl: String): Path {
         val path = Path.of(System.getProperty("java.io.tmpdir"), name)
 
         if (path.exists() && path.fileSize() > 0L) {
@@ -65,10 +65,10 @@ abstract class FitsStringSpec(parentLevel: Int = 1) : StringSpec() {
 
         val request = Request.Builder()
             .get()
-            .url("https://www.astropy.org/astropy-data/photometry/$name")
+            .url("$baseUrl/$name")
             .build()
 
-        val call = CLIENT.newCall(request)
+        val call = HTTP_CLIENT.newCall(request)
 
         call.execute().use {
             it.body?.byteStream()?.transferAndCloseOutput(path.outputStream())
@@ -79,7 +79,9 @@ abstract class FitsStringSpec(parentLevel: Int = 1) : StringSpec() {
 
     companion object {
 
-        @JvmStatic private val CLIENT = OkHttpClient.Builder()
+        const val ASTROPY_PHOTOMETRY_URL = "https://www.astropy.org/astropy-data/photometry"
+
+        @JvmStatic val HTTP_CLIENT = OkHttpClient.Builder()
             .readTimeout(60L, TimeUnit.SECONDS)
             .writeTimeout(60L, TimeUnit.SECONDS)
             .connectTimeout(60L, TimeUnit.SECONDS)

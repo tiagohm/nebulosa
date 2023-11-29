@@ -66,6 +66,8 @@ data class WatneyPlateSolver(
             BlindSearchStrategy(options)
         }
 
+        LOG.debug { "strategy: $strategy" }
+
         val searchQueue = strategy.searchQueue()
 
         val groupedSearchQueue = TreeMap<Double, MutableList<SearchRun>>(Collections.reverseOrder())
@@ -127,7 +129,7 @@ data class WatneyPlateSolver(
         @JvmStatic private val DEFAULT_STAR_DETECTOR = WatneyStarDetector()
 
         @JvmStatic
-        private fun formImageStarQuads(starsFound: List<ImageStar>): Pair<List<ImageStarQuad>, Int> {
+        internal fun formImageStarQuads(starsFound: List<ImageStar>): Pair<List<ImageStarQuad>, Int> {
             val quads = ArrayList<ImageStarQuad>()
             var countInFirstPass = 0
 
@@ -215,6 +217,8 @@ data class WatneyPlateSolver(
             val imageDiameterInPixels = hypot(image.width.toDouble(), image.height.toDouble())
             var pixelAngularSearchFieldSizeRatio = imageDiameterInPixels / searchFieldSize
 
+            val iterationCount = iteration.getAndIncrement()
+
             var databaseQuads = quadDatabase.quads(
                 searchRun.centerRA, searchRun.centerDEC, searchRun.radius, quadsPerSqDeg,
                 searchRun.densityOffsets, numSubSets, subSetIndex, imageStarQuads
@@ -222,10 +226,8 @@ data class WatneyPlateSolver(
 
             solveResult.numPotentialMatches = databaseQuads.size
 
-            val iterationCount = iteration.getAndIncrement()
-
             if (databaseQuads.isNotEmpty()) {
-                LOG.debug { "iteration $iterationCount $searchRun: ${databaseQuads.size} potential database matches" }
+                LOG.debug { "iteration $iterationCount [${searchRun.centerRA.toDegrees}, ${searchRun.centerDEC.toDegrees}] (${searchRun.radius.toDegrees}): ${databaseQuads.size} potential database matches" }
             }
 
             if (databaseQuads.size < MIN_MATCHES) {

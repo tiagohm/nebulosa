@@ -8,6 +8,7 @@ import nebulosa.test.FitsStringSpec
 import nebulosa.watney.star.detection.WatneyStarDetector
 import java.awt.Color
 import java.awt.Graphics2D
+import kotlin.math.roundToInt
 
 class WatneyStarDetectorTest : FitsStringSpec() {
 
@@ -35,7 +36,7 @@ class WatneyStarDetectorTest : FitsStringSpec() {
             graphics.color = Color.YELLOW
 
             for (star in stars) {
-                graphics.drawOval(star.x - 4, star.y - 4, 8, 8)
+                graphics.drawOval(star.x.roundToInt() - 4, star.y.roundToInt() - 4, 8, 8)
             }
         }
     }

@@ -70,9 +70,9 @@ class StarPixelBin {
 
         // With small stars just settle with the center of the canvas.
         if (pCount <= 9) {
-            val starPosY = top + 0.5f * (bottom - top)
-            val starPosX = left + 0.5f * (right - left)
-            return Star(starPosX.roundToInt(), starPosY.roundToInt(), starSize)
+            val starPosY = top + 0.5 * (bottom - top)
+            val starPosX = left + 0.5 * (right - left)
+            return Star(starPosX, starPosY, starSize)
         }
 
         var l = Int.MAX_VALUE
@@ -91,10 +91,10 @@ class StarPixelBin {
             }
         }
 
-        val starPosY = t + 0.5f * (b - t)
-        val starPosX = l + 0.5f * (r - l)
+        val starPosY = t + 0.5 * (b - t)
+        val starPosX = l + 0.5 * (r - l)
 
-        return Star(starPosX.roundToInt(), starPosY.roundToInt(), starSize)
+        return Star(starPosX, starPosY, starSize)
     }
 
     override fun equals(other: Any?): Boolean {

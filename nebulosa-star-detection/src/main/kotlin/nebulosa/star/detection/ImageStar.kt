@@ -1,12 +1,12 @@
 package nebulosa.star.detection
 
-import kotlin.math.sqrt
+import kotlin.math.hypot
 
 interface ImageStar {
 
-    val x: Int
+    val x: Double
 
-    val y: Int
+    val y: Double
 
     val hfd: Double
 
@@ -15,8 +15,6 @@ interface ImageStar {
     val flux: Double
 
     fun distance(star: ImageStar): Double {
-        val deltaX = x - star.x
-        val deltaY = y - star.y
-        return sqrt((deltaX * deltaX + deltaY * deltaY).toDouble())
+        return hypot(x - star.x, y - star.y)
     }
 }
