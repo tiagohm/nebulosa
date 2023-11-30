@@ -228,8 +228,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private readonly annotationMenuItem: ToggleableMenuItem = {
-        label: 'Annotation',
-        icon: 'mdi mdi-format-color-text',
+        label: 'Annotate',
+        icon: 'mdi mdi-marker',
         disabled: true,
         toggleable: true,
         toggled: false,
