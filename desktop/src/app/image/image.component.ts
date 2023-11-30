@@ -62,7 +62,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     annotateWithMinorPlanets = false
     annotateWithMinorPlanetsMagLimit = 12.0
 
-    autoStretch = true
+    autoStretched = true
     showStretchingDialog = false
     stretchShadowhHighlight = [0, 65536]
     stretchMidtone = 32768
@@ -130,13 +130,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private readonly autoStretchMenuItem: CheckableMenuItem = {
         id: 'auto-stretch-menuitem',
         label: 'Auto stretch',
-        icon: 'mdi mdi-chart-histogram',
+        icon: 'mdi mdi-auto-fix',
         checked: true,
         command: () => {
-            this.autoStretch = !this.autoStretch
-            this.autoStretchMenuItem.checked = this.autoStretch
+            this.autoStretched = !this.autoStretched
+            this.autoStretchMenuItem.checked = this.autoStretched
 
-            if (!this.autoStretch) {
+            if (!this.autoStretched) {
                 this.resetStretch()
             } else {
                 this.loadImage()
@@ -489,7 +489,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private async loadImageFromPath(path: string) {
         const image = this.image.nativeElement
         const scnrEnabled = this.scnrChannel !== 'NONE'
-        const { info, blob } = await this.api.openImage(path, this.imageParams.camera, this.calibrate, this.debayer, this.autoStretch,
+        const { info, blob } = await this.api.openImage(path, this.imageParams.camera, this.calibrate, this.debayer, this.autoStretched,
             this.stretchShadowhHighlight[0] / 65536, this.stretchShadowhHighlight[1] / 65536, this.stretchMidtone / 65536,
             this.mirrorHorizontal, this.mirrorVertical,
             this.invert, scnrEnabled, scnrEnabled ? this.scnrChannel : 'GREEN', this.scnrAmount, this.scnrProtectionMethod)
@@ -500,7 +500,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         if (info.rightAscension) this.solverCenterRA = info.rightAscension
         if (info.declination) this.solverCenterDEC = info.declination
 
-        if (this.autoStretch) {
+        if (this.autoStretched) {
             this.stretchShadowhHighlight[0] = Math.trunc(info.stretchShadow * 65536)
             this.stretchShadowhHighlight[1] = Math.trunc(info.stretchHighlight * 65536)
             this.stretchMidtone = Math.trunc(info.stretchMidtone * 65536)
@@ -558,13 +558,20 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private disableAutoStretch() {
-        this.autoStretch = false
+        this.autoStretched = false
         this.autoStretchMenuItem.checked = false
     }
 
     private disableCalibrate() {
         this.calibrate = false
         this.calibrateMenuItem.checked = false
+    }
+
+    autoStretch() {
+        this.autoStretched = true
+        this.autoStretchMenuItem.checked = true
+
+        this.loadImage()
     }
 
     resetStretch() {
