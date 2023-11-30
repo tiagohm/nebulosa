@@ -10,11 +10,11 @@ internal class MassChecker {
     )
 
     data class CheckedMass(
-        val limit0: Double = 0.0,
-        val limit1: Double = 0.0,
-        val limit2: Double = 0.0,
-        val limit3: Double = 0.0,
-        val reject: Boolean = true,
+        @JvmField val limit0: Double = 0.0,
+        @JvmField val limit1: Double = 0.0,
+        @JvmField val limit2: Double = 0.0,
+        @JvmField val limit3: Double = 0.0,
+        @JvmField val reject: Boolean = true,
     ) {
 
         companion object {
@@ -49,14 +49,17 @@ internal class MassChecker {
             data.pop()
         }
 
-        data.add(Entry(now, mass))
+        val entry = Entry(now, mass)
+        // TODO: Verificar se o binarySearch está buscando corretamente!
+        val index = data.binarySearch { it.mass.compareTo(mass) }
+        if (index >= 0) data.add(index, entry)
+        else data.add(-index - 1, entry)
     }
 
     fun checkMass(mass: Double, threshold: Double = 0.5): CheckedMass {
         if (data.size < 5) return CheckedMass.EMPTY
 
-        val sortedData = data.sortedBy { it.mass }
-        val median = sortedData[sortedData.size / 2]
+        val median = data[data.size / 2]
 
         if (median.mass > highMass) highMass = median.mass
         if (median.mass < lowMass) lowMass = median.mass

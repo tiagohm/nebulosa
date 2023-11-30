@@ -7,7 +7,7 @@ import nebulosa.imaging.Image
 import nebulosa.io.transferAndCloseOutput
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
-import nebulosa.platesolving.Calibration
+import nebulosa.plate.solving.PlateSolution
 import org.springframework.stereotype.Service
 import java.nio.file.Files
 import java.nio.file.Path
@@ -22,7 +22,7 @@ class FramingService(private val hips2FitsService: Hips2FitsService) {
         width: Int, height: Int, fov: Angle,
         rotation: Angle = 0.0,
         hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
-    ): Triple<Image, Calibration?, Path>? {
+    ): Triple<Image, PlateSolution?, Path>? {
         val responseBody = hips2FitsService.query(
             hipsSurveyType.hipsSurvey,
             rightAscension, declination,
@@ -33,9 +33,9 @@ class FramingService(private val hips2FitsService: Hips2FitsService) {
 
         responseBody.use { it.byteStream().transferAndCloseOutput(DEFAULT_PATH.outputStream()) }
         val image = Fits(DEFAULT_PATH).also(Fits::read).use(Image::open)
-        val calibration = Calibration.from(image.header)
-        LOG.info("framing file loaded. calibration={}", calibration)
-        return Triple(image, calibration, DEFAULT_PATH)
+        val solution = PlateSolution.from(image.header)
+        LOG.info("framing file loaded. calibration={}", solution)
+        return Triple(image, solution, DEFAULT_PATH)
     }
 
     companion object {

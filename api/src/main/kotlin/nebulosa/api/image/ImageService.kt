@@ -6,14 +6,13 @@ import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.api.preferences.PreferenceService
-import nebulosa.astap.platesolving.AstapPlateSolver
-import nebulosa.astap.star.detection.AstapStarDetector
+import nebulosa.astap.plate.solving.AstapPlateSolver
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
-import nebulosa.astrometrynet.platesolving.LocalAstrometryNetPlateSolver
-import nebulosa.astrometrynet.platesolving.NovaAstrometryNetPlateSolver
+import nebulosa.astrometrynet.plate.solving.LocalAstrometryNetPlateSolver
+import nebulosa.astrometrynet.plate.solving.NovaAstrometryNetPlateSolver
 import nebulosa.fits.*
 import nebulosa.imaging.ImageChannel
-import nebulosa.imaging.algorithms.*
+import nebulosa.imaging.algorithms.transformation.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
@@ -23,7 +22,8 @@ import nebulosa.simbad.SimbadSearch
 import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.skycatalog.SkyObjectType
-import nebulosa.star.detection.DetectedStar
+import nebulosa.star.detection.ImageStar
+import nebulosa.watney.star.detection.WatneyStarDetector
 import nebulosa.wcs.WCSException
 import nebulosa.wcs.WCSTransform
 import org.springframework.http.HttpStatus
@@ -244,9 +244,9 @@ class ImageService(
         return annotations
     }
 
+    @Synchronized
     fun solveImage(
         path: Path, type: PlateSolverType,
-        blind: Boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int,
         pathOrUrl: String, apiKey: String,
@@ -258,8 +258,7 @@ class ImageService(
         }
 
         val calibration = solver.solve(
-            path, blind,
-            centerRA, centerDEC, radius,
+            path, centerRA, centerDEC, radius,
             downsampleFactor, Duration.ofMinutes(2L),
         )
 
@@ -331,9 +330,9 @@ class ImageService(
         return CoordinateInterpolation(ma, md, 0, 0, width, height, delta, image.header.observationDate)
     }
 
-    fun detectStars(path: Path): Collection<DetectedStar> {
-        val astapPath = preferenceService.astapPath ?: return emptyList()
-        return AstapStarDetector(astapPath).detectStars(path)
+    fun detectStars(path: Path): List<ImageStar> {
+        val (image) = imageBucket[path] ?: return emptyList()
+        return WatneyStarDetector().detect(image)
     }
 
     companion object {

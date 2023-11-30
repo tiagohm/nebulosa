@@ -7,7 +7,8 @@ import java.io.EOFException
 import java.io.Serializable
 import java.util.*
 
-open class Header internal constructor(private val cards: LinkedList<HeaderCard>) : FitsElement, Collection<HeaderCard> by cards, Serializable {
+open class Header internal constructor(@JvmField internal val cards: LinkedList<HeaderCard>) :
+    FitsElement, WritableHeader, ReadableHeader, Collection<HeaderCard> by cards, Serializable {
 
     constructor() : this(LinkedList<HeaderCard>())
 
@@ -15,73 +16,13 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
 
     constructor(header: Header) : this(LinkedList(header.cards))
 
-    fun clear() {
+    fun readOnly(): Header = ReadOnlyHeader(this)
+
+    override fun clear() {
         cards.clear()
     }
 
-    operator fun contains(key: String): Boolean {
-        return cards.any { it.key == key }
-    }
-
-    operator fun contains(key: FitsHeader): Boolean {
-        return key.key in this
-    }
-
-    fun getBoolean(key: String, defaultValue: Boolean = false): Boolean {
-        val card = cards.firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
-
-    fun getBoolean(key: FitsHeader, defaultValue: Boolean = false): Boolean {
-        return getBoolean(key.key, defaultValue)
-    }
-
-    fun getInt(key: String, defaultValue: Int): Int {
-        val card = cards.firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
-
-    fun getInt(key: FitsHeader, defaultValue: Int): Int {
-        return getInt(key.key, defaultValue)
-    }
-
-    fun getLong(key: String, defaultValue: Long): Long {
-        val card = cards.firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
-
-    fun getLong(key: FitsHeader, defaultValue: Long): Long {
-        return getLong(key.key, defaultValue)
-    }
-
-    fun getFloat(key: String, defaultValue: Float): Float {
-        val card = cards.firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
-
-    fun getFloat(key: FitsHeader, defaultValue: Float): Float {
-        return getFloat(key.key, defaultValue)
-    }
-
-    fun getDouble(key: String, defaultValue: Double): Double {
-        val card = cards.firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
-
-    fun getDouble(key: FitsHeader, defaultValue: Double): Double {
-        return getDouble(key.key, defaultValue)
-    }
-
-    fun getString(key: String, defaultValue: String): String {
-        val card = cards.firstOrNull { it.key == key } ?: return defaultValue
-        return card.getValue(defaultValue)
-    }
-
-    fun getString(key: FitsHeader, defaultValue: String): String {
-        return getString(key.key, defaultValue)
-    }
-
-    final override fun read(source: SeekableSource) {
+    override fun read(source: SeekableSource) {
         clear()
 
         var count = 0
@@ -112,7 +53,7 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
         buffer.clear()
     }
 
-    fun add(key: FitsHeader, value: Boolean): HeaderCard {
+    override fun add(key: FitsHeader, value: Boolean): HeaderCard {
         checkType(key, ValueType.LOGICAL)
         val card = HeaderCard.create(key, value)
         val index = cards.indexOfFirst { it.key == key.key }
@@ -121,22 +62,22 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
         return card
     }
 
-    fun add(key: FitsHeader, value: Int): HeaderCard {
+    override fun add(key: FitsHeader, value: Int): HeaderCard {
         checkType(key, ValueType.INTEGER)
         return HeaderCard.create(key, value).also(::add)
     }
 
-    fun add(key: FitsHeader, value: Double): HeaderCard {
+    override fun add(key: FitsHeader, value: Double): HeaderCard {
         checkType(key, ValueType.REAL)
         return HeaderCard.create(key, value).also(::add)
     }
 
-    fun add(key: FitsHeader, value: String): HeaderCard {
+    override fun add(key: FitsHeader, value: String): HeaderCard {
         checkType(key, ValueType.STRING)
         return HeaderCard.create(key, value).also(::add)
     }
 
-    fun add(card: HeaderCard) {
+    override fun add(card: HeaderCard) {
         if (!card.isKeyValuePair) cards.add(card)
         else {
             val index = cards.indexOfFirst { it.key == card.key }
@@ -145,7 +86,7 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
         }
     }
 
-    fun delete(key: FitsHeader): Boolean {
+    override fun delete(key: FitsHeader): Boolean {
         return cards.removeIf { it.key == key.key }
     }
 
@@ -167,6 +108,8 @@ open class Header internal constructor(private val cards: LinkedList<HeaderCard>
     }
 
     companion object {
+
+        @JvmStatic val EMPTY: Header = ReadOnlyHeader()
 
         const val DEFAULT_COMMENT_ALIGN = 30
         const val MIN_COMMENT_ALIGN = 20

@@ -243,7 +243,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.showAnnotationDialog = true
         },
         toggle: (event) => {
-            event.originalEvent.stopImmediatePropagation()
+            event.originalEvent?.stopImmediatePropagation()
             this.annotationIsVisible = event.checked
         },
     }
@@ -261,7 +261,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.detectStarsMenuItem.toggled = this.detectedStarsIsVisible
         },
         toggle: (event) => {
-            event.originalEvent.stopImmediatePropagation()
+            event.originalEvent?.stopImmediatePropagation()
             this.detectedStarsIsVisible = event.checked
         },
     }

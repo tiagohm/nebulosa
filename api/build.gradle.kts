@@ -2,7 +2,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     kotlin("jvm")
-    id("org.springframework.boot") version "3.1.5"
+    id("org.springframework.boot") version "3.2.0"
     id("io.spring.dependency-management") version "1.1.4"
     kotlin("plugin.spring")
     kotlin("kapt")
@@ -23,6 +23,7 @@ dependencies {
     implementation(project(":nebulosa-sbd"))
     implementation(project(":nebulosa-simbad"))
     implementation(project(":nebulosa-stellarium-protocol"))
+    implementation(project(":nebulosa-watney"))
     implementation(project(":nebulosa-wcs"))
     implementation(libs.apache.codec)
     implementation(libs.csv)
@@ -46,7 +47,7 @@ dependencies {
     implementation("org.hibernate.orm:hibernate-community-dialects")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    kapt("org.springframework:spring-context-indexer:6.1.0")
+    kapt("org.springframework:spring-context-indexer:6.1.1")
     testImplementation(project(":nebulosa-test"))
 }
 

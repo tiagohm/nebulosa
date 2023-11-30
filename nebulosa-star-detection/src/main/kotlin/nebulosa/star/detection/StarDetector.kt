@@ -1,8 +1,6 @@
 package nebulosa.star.detection
 
-import java.nio.file.Path
+interface StarDetector<in T> {
 
-interface StarDetector {
-
-    fun detectStars(path: Path): Collection<DetectedStar>
+    fun detect(input: T): List<ImageStar>
 }

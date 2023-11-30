@@ -6,6 +6,8 @@ body {
     height: 100%;
     overflow: hidden;
     font-size: 11.5px;
+    border: 1px solid #212121;
+    scroll-behavior: smooth;
 }
 
 body {
@@ -147,6 +149,11 @@ i.mdi {
     -webkit-app-region: drag;
 }
 
+p-contextmenu *,
+.no-draggable-region {
+    -webkit-app-region: no-drag;
+}
+
 .pixelated {
     image-rendering: pixelated;
 }
@@ -157,21 +164,6 @@ i.mdi {
 
 .monospaced {
     font-family: monospace !important;
-}
-
-#titlebar:before {
-    background: url(assets/icons/nebulosa-256.png);
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    image-rendering: pixelated;
-    content: '';
-    width: 100%;
-    display: flex;
-    position: absolute;
-    height: 100%;
-    z-index: 0;
-    opacity: 0.6;
 }
 
 ::-webkit-scrollbar {

@@ -18,7 +18,7 @@ export class AppComponent implements AfterViewInit {
     isNightMode = false
 
     get backgroundColor() {
-        return this.isNightMode ? '#B71C1C' : '#002457'
+        return this.isNightMode ? '#B71C1C' : '#212121'
     }
 
     private night!: HTMLElement

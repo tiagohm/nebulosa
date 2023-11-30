@@ -14,50 +14,48 @@
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
             <i class="mdi mdi-information text-blue-600"></i>
-            <span style="display: contents">{{ moving ? 'moving' : 'idle' }}</span>
+            <span class="mr-3">{{ moving ? 'moving' : 'idle' }}</span>
+            <p-tag *ngIf="connected && selectedFilter" [value]="selectedFilter.name" severity="info" />
         </div>
     </div>
     <div class="grid">
-        <div class="col-6">
-            <span class="p-float-label">
-                <p-inputNumber [readonly]="true" styleClass="p-inputtext-sm border-0 w-full" [(ngModel)]="position" locale="en" />
-                <label>Position</label>
-            </span>
-        </div>
-        <div class="col-12">
-            <span class="p-float-label">
-                <p-dropdown [disabled]="!connected || moving" [options]="filters" [autoDisplayFirst]="false" [(ngModel)]="selectedFilter"
-                            styleClass="p-inputtext-sm border-0" emptyMessage="No filter found" scrollHeight="128px">
-                    <ng-template pTemplate="selectedItem">
-                        <div class="flex flex-row align-items-center justify-content-between">
-                            <span>{{ selectedFilter.name }}</span>
-                            <i [class.invisible]="!connected || !selectedFilter.dark" class="mdi mdi-camera-iris"></i>
-                        </div>
-                    </ng-template>
-                    <ng-template let-item pTemplate="item">
-                        <div stopPropagation [spEnabled]="item.editing" class="flex flex-row align-items-center justify-content-between">
-                            <p-inplace #filterItem [preventClick]="true" [closable]="false" [active]="item.editing">
-                                <ng-template pTemplate="display">
-                                    <span>{{ item.name }}</span>
-                                </ng-template>
-                                <ng-template pTemplate="content">
-                                    <input type="text" [(ngModel)]="item.newName" pInputText [maxLength]="16" />
-                                </ng-template>
-                            </p-inplace>
-                            <span class="flex flex-row align-items-center gap-2">
-                                <p-button *ngIf="!item.editing" icon="mdi mdi-pencil" [text]="true" severity="info" size="small"
-                                          (onClick)="filterItem.activate(); showFilterEdit(item, $event)" pTooltip="Rename"
-                                          tooltipPosition="bottom" />
-                                <p-button *ngIf="item.editing" [disabled]="!item.newName" icon="mdi mdi-check" [text]="true" severity="success"
-                                          size="small" (onClick)="filterItem.deactivate(); applyFilterName(item, $event)" />
-                                <p-checkbox [(ngModel)]="item.dark" [binary]="true" pTooltip="Shutter" tooltipPosition="bottom"
-                                            (onChange)="shutterToggled(item, $event)" />
+        <div class="col-12 overflow-x-hidden overflow-y-auto" style="height: 143px; scroll-snap-type: y mandatory;">
+            @for (item of filters; track item.position) {
+            <div class="grid mr-1 mt-1 border-round" [class.surface-card]="item.expanded && item.position !== position"
+                 [class.bg-blue-900]="connected && item.position === position"
+                 style="min-height: 48px; scroll-snap-align: start; scroll-snap-stop: always;">
+                <div class="col-12 flex flex-column align-items-center justify-content-center p-1">
+                    <div class="align-items-center flex justify-content-between ng-star-inserted p-1 w-full">
+                        <span class="align-items-center flex gap-1">
+                            {{ item.name }}
+                            <i *ngIf="item.dark" class="mdi mdi-camera-iris"></i>
+                        </span>
+                        <span class="flex align-items-center justify-content-center gap-1">
+                            <p-button [disabled]="!connected || moving || item.position === position" label="Move" (onClick)="moveTo(item)" />
+                            <p-button [disabled]="!connected || moving" *ngIf="!item.expanded" [text]="true" [rounded]="true" icon="mdi mdi-plus"
+                                      (onClick)="item.expanded = true" />
+                            <p-button [disabled]="!connected || moving" *ngIf="item.expanded" [text]="true" [rounded]="true" icon="mdi mdi-minus"
+                                      (onClick)="item.expanded = false" />
+                        </span>
+                    </div>
+                    <div class="grid" *ngIf="item.expanded">
+                        <div class="col-8 flex align-items-center justify-content-center gap-1">
+                            <span class="p-float-label">
+                                <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="item.newName"
+                                       [maxLength]="16" />
+                                <label>New name</label>
                             </span>
+                            <p-button severity="success" [text]="true" icon="mdi mdi-check" styleClass="p-button-sm"
+                                      (onClick)="applyFilterName(item, $event)" />
                         </div>
-                    </ng-template>
-                </p-dropdown>
-                <label>Filter</label>
-            </span>
+                        <div class="col-4 flex flex-column align-items-center justify-content-center gap-1">
+                            <span>Dark</span>
+                            <p-checkbox [binary]="true" [ngModel]="item.dark" (onChange)="shutterToggled(item, $event)" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
         </div>
     </div>
 </div>

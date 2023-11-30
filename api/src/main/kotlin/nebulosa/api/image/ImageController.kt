@@ -3,11 +3,11 @@ package nebulosa.api.image
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.imaging.ImageChannel
-import nebulosa.imaging.algorithms.ProtectionMethod
+import nebulosa.imaging.algorithms.transformation.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import nebulosa.math.deg
 import nebulosa.math.hours
-import nebulosa.star.detection.DetectedStar
+import nebulosa.star.detection.ImageStar
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
 
@@ -74,8 +74,8 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "") pathOrUrl: String,
         @RequestParam(required = false, defaultValue = "") apiKey: String,
     ) = imageService.solveImage(
-        path, type, blind,
-        centerRA.hours, centerDEC.deg, radius.deg,
+        path, type,
+        centerRA.hours, centerDEC.deg, if (blind) 0.0 else radius.deg,
         downsampleFactor, pathOrUrl, apiKey,
     )
 
@@ -85,7 +85,7 @@ class ImageController(
     }
 
     @PutMapping("detect-stars")
-    fun detectStars(@RequestParam path: Path): Collection<DetectedStar> {
+    fun detectStars(@RequestParam path: Path): List<ImageStar> {
         return imageService.detectStars(path)
     }
 }
