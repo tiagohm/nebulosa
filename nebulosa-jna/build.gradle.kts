@@ -4,10 +4,9 @@ plugins {
 }
 
 dependencies {
-    api(project(":nebulosa-jna"))
-    api(project(":nebulosa-fits"))
-    implementation(project(":nebulosa-log"))
-    testImplementation(project(":nebulosa-io"))
+    api(project(":nebulosa-io"))
+    api(libs.jna)
+    api(libs.oshi)
     testImplementation(project(":nebulosa-test"))
 }
 
