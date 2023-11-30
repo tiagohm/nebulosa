@@ -65,19 +65,11 @@ class ImageController(
     @PutMapping("solve")
     fun solveImage(
         @RequestParam path: Path,
-        @RequestParam(required = false, defaultValue = "ASTROMETRY_NET_ONLINE") type: PlateSolverType,
         @RequestParam(required = false, defaultValue = "true") blind: Boolean,
         @RequestParam(required = false, defaultValue = "0.0") centerRA: String,
         @RequestParam(required = false, defaultValue = "0.0") centerDEC: String,
         @RequestParam(required = false, defaultValue = "8.0") radius: String,
-        @RequestParam(required = false, defaultValue = "1") downsampleFactor: Int,
-        @RequestParam(required = false, defaultValue = "") pathOrUrl: String,
-        @RequestParam(required = false, defaultValue = "") apiKey: String,
-    ) = imageService.solveImage(
-        path, type,
-        centerRA.hours, centerDEC.deg, if (blind) 0.0 else radius.deg,
-        downsampleFactor, pathOrUrl, apiKey,
-    )
+    ) = imageService.solveImage(path, centerRA.hours, centerDEC.deg, if (blind) 0.0 else radius.deg)
 
     @GetMapping("coordinate-interpolation")
     fun coordinateInterpolation(@RequestParam path: Path): CoordinateInterpolation? {

@@ -14,7 +14,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import {
     Angle, AstronomicalObject, Camera, CheckableMenuItem, DeepSkyObject, DetectedStar, EquatorialCoordinateJ2000, FITSHeaderItem,
     ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
-    PlateSolverType, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
+    SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
 } from '../../shared/types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
@@ -67,19 +67,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     stretchShadowhHighlight = [0, 65536]
     stretchMidtone = 32768
 
-    readonly solverTypeOptions: PlateSolverType[] = ['ASTAP']
-
     showSolverDialog = false
     solving = false
     solved = false
-    solverType: PlateSolverType = 'ASTAP'
     solverBlind = true
     solverCenterRA = ''
     solverCenterDEC = ''
     solverRadius = 4
-    solverDownsampleFactor = 1
-    solverPathOrUrl = ''
-    solverApiKey = ''
     solverCalibration?: ImageCalibrated
 
     crossHair = false
@@ -376,9 +370,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     async ngAfterViewInit() {
-        this.solverPathOrUrl = await this.preference.get('image.solver.pathOrUrl', '')
         this.solverRadius = await this.preference.get('image.solver.radius', 4)
-        this.solverDownsampleFactor = await this.preference.get('image.solver.downsampleFactor', 1)
 
         this.route.queryParams.subscribe(e => {
             const params = JSON.parse(decodeURIComponent(e.params)) as ImageParams
@@ -611,13 +603,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solving = true
 
         try {
-            this.solverCalibration = await this.api.solveImage(this.imageParams.path!, this.solverType, this.solverBlind,
-                this.solverCenterRA, this.solverCenterDEC, this.solverRadius, this.solverDownsampleFactor,
-                this.solverPathOrUrl, this.solverApiKey)
+            this.solverCalibration = await this.api.solveImage(this.imageParams.path!, this.solverBlind,
+                this.solverCenterRA, this.solverCenterDEC, this.solverRadius)
 
-            this.preference.set('image.solver.pathOrUrl', this.solverPathOrUrl)
             this.preference.set('image.solver.radius', this.solverRadius)
-            this.preference.set('image.solver.downsampleFactor', this.solverDownsampleFactor)
 
             this.solved = true
             this.annotationMenuItem.disabled = false

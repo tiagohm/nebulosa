@@ -135,54 +135,32 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Plate Solving" [draggable]="true" [(visible)]="showSolverDialog" [modal]="false" [style]="{width: '350px'}"
+<p-dialog header="Plate Solver" [draggable]="true" [(visible)]="showSolverDialog" [modal]="false" [style]="{width: '370px'}"
           class="pointer-events-none">
     <div class="grid pt-2">
-        <div class="col-8 flex align-items-center">
-            <span class="p-float-label w-full">
-                <p-dropdown [(ngModel)]="solverType" [options]="solverTypeOptions" appendTo="body" styleClass="border-0 w-full" />
-                <label>Solver</label>
-            </span>
-        </div>
-        <div class="col-4 flex flex-column align-items-center">
-            Blind <p-inputSwitch styleClass="mt-1" [(ngModel)]="solverBlind" />
-        </div>
         <div class="col-8">
-            <span class="p-float-label">
-                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverPathOrUrl" />
-                <label>Path/URL</label>
-            </span>
+            <div class="grid">
+                <div class="col-6">
+                    <span class="p-float-label">
+                        <input pInputText [disabled]="solverBlind" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterRA" />
+                        <label>Center RA (h)</label>
+                    </span>
+                </div>
+                <div class="col-6">
+                    <span class="p-float-label">
+                        <input pInputText [disabled]="solverBlind" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterDEC" />
+                        <label>Center DEC (°)</label>
+                    </span>
+                </div>
+            </div>
         </div>
-        <div class="col-4">
-            <span class="p-float-label" *ngIf="false">
-                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverApiKey" />
-                <label>API Key</label>
-            </span>
-        </div>
-        <div class="col-6">
+        <div class="col-4 flex flex-row align-items-center gap-2">
             <span class="p-float-label">
-                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterRA" />
-                <label>Center RA (h)</label>
-            </span>
-        </div>
-        <div class="col-6">
-            <span class="p-float-label">
-                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterDEC" />
-                <label>Center DEC (deg)</label>
-            </span>
-        </div>
-        <div class="col-6">
-            <span class="p-float-label">
-                <p-inputNumber [min]="1" [max]="180" styleClass="p-inputtext-sm border-0 w-full" [showButtons]="true" [(ngModel)]="solverRadius" />
+                <p-inputNumber [disabled]="solverBlind" [min]="1" [max]="180" styleClass="p-inputtext-sm border-0 w-full" [showButtons]="true"
+                               [(ngModel)]="solverRadius" />
                 <label>Radius (°)</label>
             </span>
-        </div>
-        <div class="col-6">
-            <span class="p-float-label">
-                <p-inputNumber [min]="1" [max]="8" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
-                               [showButtons]="true" [(ngModel)]="solverDownsampleFactor" />
-                <label>Downsample Factor</label>
-            </span>
+            <p-checkbox [binary]="true" pTooltip="Blind" tooltipPosition="bottom" [(ngModel)]="solverBlind" />
         </div>
     </div>
     <ng-template pTemplate="footer">
@@ -210,7 +188,7 @@
             <div class="col-4">
                 <span class="p-float-label">
                     <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.scale?.toFixed(4) ?? '0.0'" />
-                    <label>Scale ("/px)</label>
+                    <label>Scale (arcsec/px)</label>
                 </span>
             </div>
             <div class="col-4">
@@ -240,7 +218,7 @@
             </div>
         </div>
 
-        <p-button [disabled]="!solverPathOrUrl || solving" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true" />
+        <p-button [disabled]="solving" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true" />
     </ng-template>
 </p-dialog>
 

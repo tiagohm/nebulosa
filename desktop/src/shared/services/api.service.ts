@@ -5,7 +5,8 @@ import {
     FilterWheel, Focuser, GuideDirection, GuideOutput, Guider, HipsSurvey, HistoryStep,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
     ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
-    Mount, PlateSolverType, SCNRProtectionMethod, Satellite, SatelliteGroupType,
+    Mount,
+    SCNRProtectionMethod, Satellite, SatelliteGroupType,
     SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 import { HttpService } from './http.service'
@@ -524,13 +525,11 @@ export class ApiService {
     }
 
     solveImage(
-        path: string, type: PlateSolverType,
+        path: string,
         blind: boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
-        downsampleFactor: number,
-        pathOrUrl: string, apiKey: string,
     ) {
-        const query = this.http.query({ path, type, blind, centerRA, centerDEC, radius, downsampleFactor, pathOrUrl, apiKey })
+        const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
         return this.http.put<ImageCalibrated>(`image/solve?${query}`)
     }
 

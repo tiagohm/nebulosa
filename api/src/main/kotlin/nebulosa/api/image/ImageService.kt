@@ -5,11 +5,6 @@ import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
-import nebulosa.api.preferences.PreferenceService
-import nebulosa.astap.plate.solving.AstapPlateSolver
-import nebulosa.astrometrynet.nova.NovaAstrometryNetService
-import nebulosa.astrometrynet.plate.solving.LocalAstrometryNetPlateSolver
-import nebulosa.astrometrynet.plate.solving.NovaAstrometryNetPlateSolver
 import nebulosa.fits.*
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.transformation.*
@@ -30,7 +25,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.nio.file.Path
-import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
@@ -48,7 +42,7 @@ class ImageService(
     private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
     private val systemExecutorService: ExecutorService,
-    private val preferenceService: PreferenceService,
+    private val plateSolverService: PlateSolverService,
 ) {
 
     @Synchronized
@@ -246,24 +240,11 @@ class ImageService(
 
     @Synchronized
     fun solveImage(
-        path: Path, type: PlateSolverType,
+        path: Path,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
-        downsampleFactor: Int,
-        pathOrUrl: String, apiKey: String,
     ): ImageCalibrated {
-        val solver = when (type) {
-            PlateSolverType.ASTROMETRY_NET_LOCAL -> LocalAstrometryNetPlateSolver(Path.of(pathOrUrl))
-            PlateSolverType.ASTROMETRY_NET_ONLINE -> NovaAstrometryNetPlateSolver(NovaAstrometryNetService(pathOrUrl), apiKey)
-            PlateSolverType.ASTAP -> AstapPlateSolver(Path.of(pathOrUrl))
-        }
-
-        val calibration = solver.solve(
-            path, centerRA, centerDEC, radius,
-            downsampleFactor, Duration.ofMinutes(2L),
-        )
-
+        val calibration = plateSolverService.solve(path, centerRA, centerDEC, radius)
         imageBucket.put(path, calibration)
-
         return ImageCalibrated(calibration)
     }
 
