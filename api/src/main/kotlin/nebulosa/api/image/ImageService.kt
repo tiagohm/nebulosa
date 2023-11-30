@@ -313,12 +313,13 @@ class ImageService(
 
     fun detectStars(path: Path): List<ImageStar> {
         val (image) = imageBucket[path] ?: return emptyList()
-        return WatneyStarDetector().detect(image)
+        return WATNEY_STAR_DETECTOR.detect(image)
     }
 
     companion object {
 
         @JvmStatic private val LOG = loggerFor<ImageService>()
+        @JvmStatic private val WATNEY_STAR_DETECTOR = WatneyStarDetector(computeHFD = true)
 
         private const val COORDINATE_INTERPOLATION_DELTA = 24
     }
