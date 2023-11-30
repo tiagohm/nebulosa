@@ -5,7 +5,9 @@ plugins {
 
 dependencies {
     api(project(":nebulosa-io"))
-    compileOnly(project(":nebulosa-fits"))
+    api(project(":nebulosa-hips2fits"))
+    api(project(":nebulosa-fits"))
+    api(libs.okhttp)
     api(libs.bundles.kotest)
 }
 

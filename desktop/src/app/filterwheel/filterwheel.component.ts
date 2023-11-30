@@ -10,7 +10,7 @@ import { AppComponent } from '../app.component'
 export interface FilterSlot {
     position: number
     name: string
-    editing: boolean
+    expanded: boolean
     newName: string
     dark: boolean
 }
@@ -27,15 +27,10 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     moving = false
     position = 0
-
     filters: FilterSlot[] = []
 
     get selectedFilter() {
         return this.filters[this.position - 1]
-    }
-
-    set selectedFilter(value: FilterSlot) {
-        this.moveTo(value)
     }
 
     constructor(
@@ -94,13 +89,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    showFilterEdit(filter: FilterSlot, event: Event) {
-        filter.editing = true
-        event.stopImmediatePropagation()
-    }
-
     shutterToggled(filter: FilterSlot, event: CheckboxChangeEvent) {
-        this.filters.forEach(e => e.dark = e === filter ? e.dark : false)
+        this.filters.forEach(e => e.dark = e === filter)
         this.savePreference()
         event.originalEvent?.stopImmediatePropagation()
     }
@@ -116,7 +106,6 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         this.api.wheelSync(this.wheel!, this.filters.map(e => e.name))
         this.electron.send('WHEEL_RENAMED', this.wheel)
 
-        filter.editing = false
         event.stopImmediatePropagation()
     }
 
@@ -129,32 +118,39 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         this.moving = this.wheel.moving
         this.position = this.wheel.position
 
+        let filters: FilterSlot[] = []
+
         if (this.wheel.count <= 0) {
             this.filters = []
+            return
         } else if (this.wheel.count !== this.filters.length) {
-            this.filters = new Array(this.wheel.count)
+            filters = new Array(this.wheel.count)
+        } else {
+            filters = this.filters
         }
 
-        const darkFilter = await this.preference.get(`wheel.${this.wheel.name}.shutterPosition`, 0)
+        const shutterPosition = await this.preference.get(`wheel.${this.wheel.name}.shutterPosition`, 0)
 
-        for (let i = 1; i <= this.filters.length; i++) {
+        for (let i = 1; i <= filters.length; i++) {
             const name = await this.preference.get(`wheel.${this.wheel.name}.filterName.${i}`, `Filter #${i}`)
-            const filter = { position: i, name, editing: false, newName: name, dark: i === darkFilter }
-            this.filters[i - 1] = filter
+            const filter = { position: i, name, expanded: this.filters[i - 1]?.expanded ?? false, newName: name, dark: i === shutterPosition }
+            filters[i - 1] = filter
         }
+
+        this.filters = filters
     }
 
     private async loadPreference() {
         if (this.wheel) {
-            const darkFilter = await this.preference.get(`wheel.${this.wheel.name}.shutterPosition`, 0)
-            this.filters.forEach(e => e.dark = e.position === darkFilter)
+            const shutterPosition = await this.preference.get(`wheel.${this.wheel.name}.shutterPosition`, 0)
+            this.filters.forEach(e => e.dark = e.position === shutterPosition)
         }
     }
 
     private savePreference() {
         if (this.wheel && this.wheel.connected) {
-            const darkFilter = this.filters.find(e => e.dark)
-            this.preference.set(`wheel.${this.wheel.name}.shutterPosition`, darkFilter?.position || 0)
+            const dark = this.filters.find(e => e.dark)
+            this.preference.set(`wheel.${this.wheel.name}.shutterPosition`, dark?.position || 0)
         }
     }
 }

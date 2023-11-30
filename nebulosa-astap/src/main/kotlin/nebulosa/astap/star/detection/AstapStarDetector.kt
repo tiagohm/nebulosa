@@ -3,7 +3,7 @@ package nebulosa.astap.star.detection
 import de.siegmar.fastcsv.reader.NamedCsvReader
 import nebulosa.common.process.ProcessExecutor
 import nebulosa.log.loggerFor
-import nebulosa.star.detection.DetectedStar
+import nebulosa.star.detection.ImageStar
 import nebulosa.star.detection.StarDetector
 import java.io.InputStreamReader
 import java.nio.file.Path
@@ -12,32 +12,32 @@ import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.nameWithoutExtension
 
-class AstapStarDetector(path: Path) : StarDetector {
+class AstapStarDetector(path: Path) : StarDetector<Path> {
 
     private val executor = ProcessExecutor(path)
 
-    override fun detectStars(path: Path): Collection<DetectedStar> {
+    override fun detect(input: Path): List<ImageStar> {
         val arguments = mutableMapOf<String, Any?>()
 
-        arguments["-f"] = path
+        arguments["-f"] = input
         arguments["-z"] = 2
         arguments["-extract"] = 0
 
-        val process = executor.execute(arguments, workingDir = path.parent)
+        val process = executor.execute(arguments, workingDir = input.parent)
 
         LOG.info("astap exited. code={}", process.exitValue())
 
-        val csvFile = Path.of("${path.parent}", path.nameWithoutExtension + ".csv")
+        val csvFile = Path.of("${input.parent}", input.nameWithoutExtension + ".csv")
 
         if (!csvFile.exists()) return emptyList()
 
-        val detectedStars = ArrayList<DetectedStar>(512)
+        val detectedStars = ArrayList<ImageStar>(512)
 
         try {
             csvFile.inputStream().use {
                 for (record in CSV_READER.build(InputStreamReader(it, Charsets.UTF_8))) {
                     detectedStars.add(
-                        DetectedStar(
+                        Star(
                             record.getField("x").toDouble(),
                             record.getField("y").toDouble(),
                             record.getField("hfd").toDouble(),

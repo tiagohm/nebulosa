@@ -2,6 +2,9 @@ package nebulosa.erfa
 
 import nebulosa.math.Angle
 import nebulosa.math.Distance
+import kotlin.math.acos
+import kotlin.math.cos
+import kotlin.math.sin
 
 data class SphericalCoordinate(
     val theta: Angle,
@@ -16,6 +19,10 @@ data class SphericalCoordinate(
 
     inline val latitude
         get() = phi
+
+    fun angularDistance(coordinate: SphericalCoordinate): Angle {
+        return angularDistance(theta, phi, coordinate.theta, coordinate.phi)
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -43,5 +50,10 @@ data class SphericalCoordinate(
 
         @JvmStatic
         fun of(x: Distance, y: Distance, z: Distance) = eraP2s(x, y, z)
+
+        @JvmStatic
+        fun angularDistance(theta1: Angle, phi1: Angle, theta2: Angle, phi2: Angle): Angle {
+            return acos(sin(phi1) * sin(phi2) + cos(phi1) * cos(phi2) * cos(theta1 - theta2))
+        }
     }
 }

@@ -188,3 +188,6 @@ libobjectbox*.so
 libobjectbox*.dylib
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij,kotlin,java,gradle
+
+**/saved/*.png
+**/saved/*.jpg

@@ -6,60 +6,51 @@ import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.ICRF
 import nebulosa.skycatalog.SkyCatalog
 import nebulosa.time.TimeJD
+import okio.BufferedSource
+import okio.Source
 import okio.buffer
-import okio.source
-import java.io.InputStream
-import java.nio.file.Path
-import kotlin.io.path.inputStream
 
 class SaoCatalog : SkyCatalog<SaoEntry>(258997) {
 
-    fun load(
-        path: Path,
-        order: ByteOrder = ByteOrder.LITTLE,
-    ) {
-        path.inputStream().use { load(it, order) }
-    }
-
     @Suppress("UNUSED_VARIABLE")
     fun load(
-        inputStream: InputStream,
+        source: Source,
         order: ByteOrder = ByteOrder.LITTLE,
     ) {
         clear()
 
-        val buffer = inputStream.source().buffer()
+        (source as? BufferedSource ?: source.buffer()).use {
+            val subtract = it.readInt(order)
+            val firstStarNumber = it.readInt(order)
+            val numberOfStars = it.readInt(order)
+            val noStarIdIsPresent = it.readInt(order) == 0
+            val properMotionIsIncluded = it.readInt(order) == 1
+            val numberOfMagnitudes = it.readInt(order)
+            val numberOfBytesPerEntry = it.readInt(order)
+            var index = 1L
 
-        val subtract = buffer.readInt(order)
-        val firstStarNumber = buffer.readInt(order)
-        val numberOfStars = buffer.readInt(order)
-        val noStarIdIsPresent = buffer.readInt(order) == 0
-        val properMotionIsIncluded = buffer.readInt(order) == 1
-        val numberOfMagnitudes = buffer.readInt(order)
-        val numberOfBytesPerEntry = buffer.readInt(order)
-        var index = 1L
+            while (!it.exhausted()) {
+                val id = if (noStarIdIsPresent) index++ else it.readInt(order).toLong()
+                val rightAscension = it.readDouble(order).rad
+                val declination = it.readDouble(order).rad
+                val spType = it.readString(2, Charsets.US_ASCII).trim()
+                val magnitude = it.readShort(order) / 100.0
+                val pmRA = if (properMotionIsIncluded) it.readFloat(order) else 0f
+                val pmDEC = if (properMotionIsIncluded) it.readFloat(order) else 0f
+                val icrf = ICRF.equatorial(rightAscension, declination, time = TimeJD.J2000, epoch = TimeJD.B1950)
+                val (rightAscensionJ2000, declinationJ2000) = icrf.equatorialAtDate()
 
-        while (!buffer.exhausted()) {
-            val id = if (noStarIdIsPresent) index++ else buffer.readInt(order).toLong()
-            val rightAscension = buffer.readDouble(order).rad
-            val declination = buffer.readDouble(order).rad
-            val spType = buffer.readString(2, Charsets.US_ASCII).trim()
-            val magnitude = buffer.readShort(order) / 100.0
-            val pmRA = if (properMotionIsIncluded) buffer.readFloat(order) else 0f
-            val pmDEC = if (properMotionIsIncluded) buffer.readFloat(order) else 0f
-            val icrf = ICRF.equatorial(rightAscension, declination, time = TimeJD.J2000, epoch = TimeJD.B1950)
-            val (rightAscensionJ2000, declinationJ2000) = icrf.equatorialAtDate()
+                val star = SaoEntry(
+                    id, "SAO $id",
+                    magnitude,
+                    rightAscensionJ2000, declinationJ2000,
+                    spType,
+                    pmRA.rad, pmDEC.rad,
+                    constellation = Constellation.find(icrf),
+                )
 
-            val star = SaoEntry(
-                id, "SAO $id",
-                magnitude,
-                rightAscensionJ2000, declinationJ2000,
-                spType,
-                pmRA.rad, pmDEC.rad,
-                constellation = Constellation.find(icrf),
-            )
-
-            add(star)
+                add(star)
+            }
         }
     }
 }

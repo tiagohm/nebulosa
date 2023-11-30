@@ -5,10 +5,12 @@ import nebulosa.io.readDoubleArray
 import nebulosa.io.source
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okio.Buffer
 import okio.ByteString.Companion.toByteString
 import okio.buffer
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.exists
 import kotlin.io.path.readBytes
 import kotlin.io.path.writeBytes
@@ -16,6 +18,7 @@ import kotlin.io.path.writeBytes
 class RemoteDaf(
     private val uri: String,
     private val cacheDirectory: Path? = null,
+    private val httpClient: OkHttpClient? = null,
 ) : Daf() {
 
     override fun read() {
@@ -25,7 +28,7 @@ class RemoteDaf(
             .build()
 
         if (cacheDirectory == null) {
-            HTTP_CLIENT.newCall(request).execute().use {
+            (httpClient ?: HTTP_CLIENT).newCall(request).execute().use {
                 if (it.code != 200) {
                     throw IllegalArgumentException("The given URL is inaccessible: $uri")
                 }
@@ -45,10 +48,12 @@ class RemoteDaf(
         val startIndex = 8L * (start - 1)
         val length = 1 + end - start
         val endIndex = startIndex + length * 8L - 1L
-        return readSource(startIndex, endIndex).buffer().readDoubleArray(length, record.order)
+
+        return readSource(startIndex, endIndex).buffer()
+            .use { it.readDoubleArray(length, record.order) }
     }
 
-    override fun readRecord(index: Int): SeekableSource {
+    override fun Buffer.readRecord(index: Int): SeekableSource {
         val startIndex = (index - 1) * 1024L
         val endIndex = startIndex + 1023
         return readSource(startIndex, endIndex)
@@ -90,6 +95,11 @@ class RemoteDaf(
 
     companion object {
 
-        @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder().build()
+        @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder()
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .readTimeout(1, TimeUnit.MINUTES)
+            .writeTimeout(1, TimeUnit.MINUTES)
+            .callTimeout(1, TimeUnit.MINUTES)
+            .build()
     }
 }

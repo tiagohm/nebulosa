@@ -2,9 +2,9 @@ package nebulosa.api.calibration
 
 import nebulosa.fits.*
 import nebulosa.imaging.Image
-import nebulosa.imaging.algorithms.BiasSubtraction
-import nebulosa.imaging.algorithms.DarkSubtraction
-import nebulosa.imaging.algorithms.FlatCorrection
+import nebulosa.imaging.algorithms.transformation.correction.BiasSubtraction
+import nebulosa.imaging.algorithms.transformation.correction.DarkSubtraction
+import nebulosa.imaging.algorithms.transformation.correction.FlatCorrection
 import nebulosa.indi.device.camera.Camera
 import nebulosa.log.loggerFor
 import org.springframework.stereotype.Service

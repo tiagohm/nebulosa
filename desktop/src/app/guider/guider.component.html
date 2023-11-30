@@ -102,7 +102,8 @@
                                 <span class="p-float-label">
                                     <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
                                                    styleClass="border-0 p-inputtext-sm w-full" locale="en" [min]="1" [max]="25"
-                                                   [(ngModel)]="phdSettleAmount" (ngModelChange)="settleChanged()" [step]="0.1" />
+                                                   [(ngModel)]="phdSettleAmount" (ngModelChange)="settleChanged()" [step]="0.1"
+                                                   [minFractionDigits]="1" />
                                     <label>Settle tolerance (px)</label>
                                 </span>
                             </div>
