@@ -19,11 +19,11 @@
         </div>
     </div>
     <div class="grid">
-        <div class="col-12 overflow-x-hidden overflow-y-auto" style="height: 143px; scroll-snap-type: y mandatory;">
+        <p-scrollPanel [style]="{ width: '100%', height: '143px' }" class="w-full">
             @for (item of filters; track item.position) {
-            <div class="grid mr-1 mt-1 border-round" [class.surface-card]="item.expanded && item.position !== position"
-                 [class.bg-blue-900]="connected && item.position === position"
-                 style="min-height: 48px; scroll-snap-align: start; scroll-snap-stop: always;">
+            <div class="grid m-1 mr-2 border-round filter" [class.surface-card]="item.expanded && item.position !== position"
+                 [class.current]="connected && item.position === position"
+                 style="min-height: 44px;">
                 <div class="col-12 flex flex-column align-items-center justify-content-center p-1">
                     <div class="align-items-center flex justify-content-between ng-star-inserted p-1 w-full">
                         <span class="align-items-center flex gap-1">
@@ -32,30 +32,28 @@
                         </span>
                         <span class="flex align-items-center justify-content-center gap-1">
                             <p-button [disabled]="!connected || moving || item.position === position" label="Move" (onClick)="moveTo(item)" />
-                            <p-button [disabled]="!connected || moving" *ngIf="!item.expanded" [text]="true" [rounded]="true" icon="mdi mdi-plus"
-                                      (onClick)="item.expanded = true" />
-                            <p-button [disabled]="!connected || moving" *ngIf="item.expanded" [text]="true" [rounded]="true" icon="mdi mdi-minus"
-                                      (onClick)="item.expanded = false" />
+                            <p-button [disabled]="!connected || moving" [text]="true" [rounded]="true" icon="mdi mdi-pencil"
+                                      (onClick)="item.expanded = !item.expanded" />
                         </span>
                     </div>
-                    <div class="grid" *ngIf="item.expanded">
-                        <div class="col-8 flex align-items-center justify-content-center gap-1">
+                    <div class="flex flex-row w-full py-2 px-3 align-items-center justify-content-between" *ngIf="item.expanded">
+                        <div class="flex align-items-center justify-content-center gap-1">
                             <span class="p-float-label">
-                                <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="item.newName"
-                                       [maxLength]="16" />
+                                <input [disabled]="!connected || moving" type="text" pInputText class="p-inputtext-sm border-0 w-full"
+                                       [(ngModel)]="item.newName" [maxLength]="32" />
                                 <label>New name</label>
                             </span>
-                            <p-button severity="success" [text]="true" icon="mdi mdi-check" styleClass="p-button-sm"
-                                      (onClick)="applyFilterName(item, $event)" />
+                            <p-button [disabled]="!connected || moving" severity="success" [text]="true" icon="mdi mdi-check" styleClass="p-button-sm"
+                                      (onClick)="applyFilterName(item, $event)" pTooltip="Apply" tooltipPosition="bottom" />
                         </div>
-                        <div class="col-4 flex flex-column align-items-center justify-content-center gap-1">
-                            <span>Dark</span>
-                            <p-checkbox [binary]="true" [ngModel]="item.dark" (onChange)="shutterToggled(item, $event)" />
+                        <div class="flex flex-column align-items-center justify-content-center gap-1">
+                            <p-checkbox [disabled]="!connected || moving" [binary]="true" [ngModel]="item.dark" (onChange)="shutterToggled(item, $event)"
+                                        pTooltip="Shutter" tooltipPosition="bottom" />
                         </div>
                     </div>
                 </div>
             </div>
             }
-        </div>
+        </p-scrollPanel>
     </div>
 </div>
