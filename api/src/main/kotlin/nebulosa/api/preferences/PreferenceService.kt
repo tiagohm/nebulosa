@@ -1,10 +1,8 @@
 package nebulosa.api.preferences
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import nebulosa.api.image.PlateSolverType
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import java.nio.file.Path
 
 @Service
 class PreferenceService(
@@ -12,7 +10,7 @@ class PreferenceService(
     private val objectMapper: ObjectMapper,
 ) {
 
-    fun keys() = preferenceRepository.findAll().map { it.key }
+    fun keys() = preferenceRepository.keys()
 
     operator fun get(key: String) = preferenceRepository.findByIdOrNull(key)
 
@@ -57,18 +55,6 @@ class PreferenceService(
     @Synchronized
     fun delete(key: String) = preferenceRepository.deleteById(key)
 
-    final inline var astapPath
-        get() = getJSON<Path>(ASTAP_PATH)
-        set(value) = putJSON(ASTAP_PATH, value)
-
-    final inline var astrometryNetPath
-        get() = getJSON<Path>(ASTROMETRY_NEY_PATH)
-        set(value) = putJSON(ASTROMETRY_NEY_PATH, value)
-
-    final inline var plateSolverType
-        get() = getEnum<PlateSolverType>(PLATE_SOLVER_TYPE) ?: PlateSolverType.ASTAP
-        set(value) = putEnum(PLATE_SOLVER_TYPE, value)
-
     final inline var skyAtlasVersion
         get() = getText(SKY_ATLAS_VERSION)
         set(value) = putText(SKY_ATLAS_VERSION, value)
@@ -79,9 +65,6 @@ class PreferenceService(
 
     companion object {
 
-        const val ASTAP_PATH = "ASTAP_PATH"
-        const val ASTROMETRY_NEY_PATH = "ASTROMETRY_NEY_PATH"
-        const val PLATE_SOLVER_TYPE = "PLATE_SOLVER_TYPE"
         const val SKY_ATLAS_VERSION = "SKY_ATLAS_VERSION"
         const val SATELLITES_UPDATED_AT = "SATELLITES_UPDATED_AT"
     }

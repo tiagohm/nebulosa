@@ -499,6 +499,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         if (info.rightAscension) this.solverCenterRA = info.rightAscension
         if (info.declination) this.solverCenterDEC = info.declination
+        this.solverBlind = !this.solverCenterRA || !this.solverCenterDEC
 
         if (this.autoStretched) {
             this.stretchShadowhHighlight[0] = Math.trunc(info.stretchShadow * 65536)

@@ -109,6 +109,14 @@ export class BrowserWindowService {
         })
     }
 
+    openSettings(options: OpenWindowOptions = {}) {
+        this.openWindow({
+            ...options,
+            id: 'settings', path: 'settings', icon: options.icon || 'settings',
+            width: options.width || 360, height: options.height || 440,
+        })
+    }
+
     openAbout() {
         this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 340, height: 243, bringToFront: true })
     }

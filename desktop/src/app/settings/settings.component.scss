@@ -1,0 +1,17 @@
+:host {
+    ::ng-deep {
+        fieldset.p-fieldset {
+            background: #171717;
+            padding: 4px 4px;
+        }
+
+        .p-fieldset-legend {
+            background: #006dff;
+        }
+
+        .p-fieldset-content {
+            padding-top: 16px;
+            padding-bottom: 4px;
+        }
+    }
+}

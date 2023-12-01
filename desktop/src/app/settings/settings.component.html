@@ -1,0 +1,21 @@
+<div class="grid px-4 py-2 relative h-screen">
+    <p-fieldset legend="Plate Solver" [toggleable]="true" class="w-full mt-2" styleClass="border-0">
+        <div class="grid">
+            <div class="col-5">
+                <span class="p-float-label">
+                    <p-dropdown [options]="plateSolvers" [(ngModel)]="plateSolver.type" styleClass="p-inputtext-sm border-0" />
+                    <label>Type</label>
+                </span>
+            </div>
+            <div class="col-7">
+                <span class="p-float-label">
+                    <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="plateSolver.executablePath" />
+                    <label>Executable path</label>
+                </span>
+            </div>
+        </div>
+    </p-fieldset>
+    <div class="col-12 text-center fixed bottom-0 mb-2">
+        <p-button label="Save" icon="mdi mdi-content-save" severity="success" (onClick)="save()" />
+    </div>
+</div>

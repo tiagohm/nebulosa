@@ -19,7 +19,7 @@
             <p-button *ngIf="!connected" (onClick)="connect()" icon="mdi mdi-connection" severity="info" />
         </div>
     </div>
-    <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 75px);">
+    <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 112px);">
         <div class="col-4 p-1">
             <p-button [text]="true" [disabled]="!connected || !hasCamera" (onClick)="open('CAMERA')"
                       styleClass="open min-w-full w-full px-1 py-2 flex-column">
@@ -109,6 +109,12 @@
                       styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/indi.png" />
                 <div class="mt-1 text-sm">INDI</div>
+            </p-button>
+        </div>
+        <div class="col-4 p-1">
+            <p-button [text]="true" (onClick)="open('SETTINGS')" styleClass="open min-w-full w-full px-1 py-2 flex-column">
+                <img src="assets/icons/settings.png" />
+                <div class="mt-1 text-sm">Settings</div>
             </p-button>
         </div>
         <div class="col-4 p-1">

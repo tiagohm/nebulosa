@@ -13,6 +13,7 @@ import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { MountComponent } from './mount/mount.component'
+import { SettingsComponent } from './settings/settings.component'
 
 const routes: Routes = [
     {
@@ -63,6 +64,10 @@ const routes: Routes = [
     {
         path: 'alignment',
         component: AlignmentComponent,
+    },
+    {
+        path: 'settings',
+        component: SettingsComponent,
     },
     {
         path: 'about',

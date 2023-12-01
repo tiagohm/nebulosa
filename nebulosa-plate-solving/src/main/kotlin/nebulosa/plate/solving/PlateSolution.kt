@@ -29,14 +29,14 @@ data class PlateSolution(
 
         @JvmStatic
         fun from(header: Header): PlateSolution? {
-            val cd11 = header.getDouble(NOAOExt.CD1_1, Double.NaN)
-            val crota2 = header.getDouble(Standard.CROTA2, Double.NaN).takeIf(Double::isFinite)?.deg
-                ?: atan2(header.getDouble(NOAOExt.CD1_2, Double.NaN), cd11).rad
+            val cd11 = header.getDoubleOrNull(NOAOExt.CD1_1)
+            val cd12 = header.getDoubleOrNull(NOAOExt.CD1_2)
+            val crota2 = header.getDoubleOrNull(Standard.CROTA2)?.deg ?: if (cd11 != null && cd12 != null) atan2(cd12, cd11).rad else 0.0
             // https://danmoser.github.io/notes/gai_fits-imgs.html
-            val cdelt1 = header.getDouble(Standard.CDELT1, cd11).takeIf(Double::isFinite)?.deg ?: return null
-            val cdelt2 = header.getDouble(Standard.CDELT2, header.getDouble(NOAOExt.CD2_2, Double.NaN)).takeIf(Double::isFinite)?.deg ?: return null
-            val crval1 = header.getDouble(Standard.CRVAL1, Double.NaN).takeIf(Double::isFinite)?.deg ?: return null
-            val crval2 = header.getDouble(Standard.CRVAL2, Double.NaN).takeIf(Double::isFinite)?.deg ?: return null
+            val cdelt1 = header.getDouble(Standard.CDELT1, cd11 ?: 0.0).deg
+            val cdelt2 = header.getDoubleOrNull(Standard.CDELT2)?.deg ?: header.getDoubleOrNull(NOAOExt.CD2_2)?.deg ?: return null
+            val crval1 = header.getDoubleOrNull(Standard.CRVAL1)?.deg ?: return null
+            val crval2 = header.getDoubleOrNull(Standard.CRVAL2)?.deg ?: return null
             val width = header.getInt(Standard.NAXIS1, 0)
             val height = header.getInt(Standard.NAXIS2, 0)
 

@@ -14,15 +14,16 @@ class PlateSolverService(
     private val preferenceService: PreferenceService,
 ) {
 
+    @Synchronized
     fun solve(
         path: Path,
         centerRA: Angle = 0.0, centerDEC: Angle = 0.0, radius: Angle = 0.0,
     ): PlateSolution {
-        val type = preferenceService.plateSolverType
+        val settings = preferenceService.plateSolverSettings
 
-        val plateSolver = when (type) {
-            PlateSolverType.ASTAP -> AstapPlateSolver(preferenceService.astapPath!!)
-            PlateSolverType.ASTROMETRY_NET -> LocalAstrometryNetPlateSolver(preferenceService.astrometryNetPath!!)
+        val plateSolver = when (settings.type) {
+            PlateSolverType.ASTAP -> AstapPlateSolver(settings.executablePath!!)
+            PlateSolverType.ASTROMETRY_NET -> LocalAstrometryNetPlateSolver(settings.executablePath!!)
         }
 
         return plateSolver.solve(path, centerRA, centerDEC, radius, 2, DEFAULT_TIMEOUT)
@@ -30,6 +31,12 @@ class PlateSolverService(
 
     companion object {
 
+        const val PLATE_SOLVER_SETTINGS = "PLATE_SOLVER_SETTINGS"
+
         @JvmStatic private val DEFAULT_TIMEOUT = Duration.ofMinutes(5)
+
+        inline var PreferenceService.plateSolverSettings
+            get() = getJSON<PlateSolverSettings>(PLATE_SOLVER_SETTINGS) ?: PlateSolverSettings()
+            set(value) = run { putJSON(PLATE_SOLVER_SETTINGS, value) }
     }
 }

@@ -546,6 +546,12 @@ export interface NotificationEvent extends MessageEvent {
     silent: boolean
 }
 
+export interface PlateSolverSettings {
+    type?: PlateSolverType
+    executablePath?: string
+    downsampleFactor?: number
+}
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',
@@ -608,6 +614,7 @@ export type HomeWindowType = 'CAMERA' |
     'IMAGE' |
     'FRAMING' |
     'INDI' |
+    'SETTINGS' |
     'ABOUT'
 
 export const CONSTELLATIONS = [
@@ -719,10 +726,8 @@ export const SCNR_PROTECTION_METHODS = [
 
 export type SCNRProtectionMethod = (typeof SCNR_PROTECTION_METHODS)[number]
 
-export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
-    'ASTROMETRY_NET_ONLINE' |
-    'ASTAP' |
-    'WATNEY'
+export type PlateSolverType = 'ASTROMETRY_NET' |
+    'ASTAP'
 
 export const API_EVENT_TYPES = [
     // Device.

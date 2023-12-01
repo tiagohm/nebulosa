@@ -263,6 +263,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'IMAGE':
                 this.openImage()
                 break
+            case 'SETTINGS':
+                this.browserWindow.openSettings()
+                break
             case 'ABOUT':
                 this.browserWindow.openAbout()
                 break
