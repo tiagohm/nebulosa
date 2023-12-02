@@ -14,27 +14,30 @@ interface CalibrationFrameRepository : JpaRepository<CalibrationFrameEntity, Lon
     @Query(
         "SELECT frame FROM CalibrationFrameEntity frame WHERE frame.type = 1 " +
                 "AND frame.enabled = TRUE AND frame.camera = :#{#camera.name} " +
-                "AND frame.width = :width AND frame.height = :height " +
+                "AND frame.width = :width " +
+                "AND frame.height = :height " +
                 "AND frame.binX = :bin AND frame.binY = :bin " +
-                "AND frame.exposureTime = :exposureTime"
+                "AND (:exposureTime <= 0 OR frame.exposureTime = :exposureTime) " +
+                "AND (:gain < 0.0 OR frame.gain = :gain)"
     )
     @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
-    fun darkFrames(camera: Camera, width: Int, height: Int, bin: Int, exposureTime: Long): List<CalibrationFrameEntity>
+    fun darkFrames(camera: Camera, width: Int, height: Int, bin: Int, exposureTime: Long, gain: Double): List<CalibrationFrameEntity>
 
     @Query(
         "SELECT frame FROM CalibrationFrameEntity frame WHERE frame.type = 3 " +
                 "AND frame.enabled = TRUE AND frame.camera = :#{#camera.name} " +
                 "AND frame.width = :width AND frame.height = :height " +
-                "AND frame.binX = :bin AND frame.binY = :bin "
+                "AND frame.binX = :bin AND frame.binY = :bin " +
+                "AND (:gain < 0.0 OR frame.gain = :gain)"
     )
     @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
-    fun biasFrames(camera: Camera, width: Int, height: Int, bin: Int): List<CalibrationFrameEntity>
+    fun biasFrames(camera: Camera, width: Int, height: Int, bin: Int, gain: Double): List<CalibrationFrameEntity>
 
     @Query(
         "SELECT frame FROM CalibrationFrameEntity frame WHERE frame.type = 2 " +
                 "AND frame.enabled = TRUE AND frame.camera = :#{#camera.name} AND frame.filter = :filter " +
                 "AND frame.width = :width AND frame.height = :height " +
-                "AND frame.binX = :bin AND frame.binY = :bin "
+                "AND frame.binX = :bin AND frame.binY = :bin"
     )
     @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
     fun flatFrames(camera: Camera, filter: String, width: Int, height: Int, bin: Int): List<CalibrationFrameEntity>
