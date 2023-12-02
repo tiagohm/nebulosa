@@ -36,7 +36,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         raOnly: false,
     }
 
-    readonly cameraMenuItems: MenuItem[] = [
+    readonly cameraModel: MenuItem[] = [
         {
             icon: 'mdi mdi-content-save',
             label: 'Auto save all exposures',
@@ -71,7 +71,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                         this.autoSubFolderMode = 'OFF'
                         this.savePreference()
 
-                        this.checkMenu(this.cameraMenuItems[2].items!, e.item)
+                        this.checkMenu(this.cameraModel[2].items!, e.item)
                     },
                 },
                 {
@@ -81,7 +81,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                         this.autoSubFolderMode = 'NOON'
                         this.savePreference()
 
-                        this.checkMenu(this.cameraMenuItems[2].items!, e.item)
+                        this.checkMenu(this.cameraModel[2].items!, e.item)
                     },
                 },
                 {
@@ -91,7 +91,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                         this.autoSubFolderMode = 'MIDNIGHT'
                         this.savePreference()
 
-                        this.checkMenu(this.cameraMenuItems[2].items!, e.item)
+                        this.checkMenu(this.cameraModel[2].items!, e.item)
                     },
                 },
             ],
@@ -174,7 +174,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     readonly exposureModeOptions: ExposureMode[] = ['SINGLE', 'FIXED', 'LOOP']
     readonly frameTypeOptions: FrameType[] = ['LIGHT', 'DARK', 'FLAT', 'BIAS']
 
-    readonly exposureTimeUnitOptions: MenuItem[] = [
+    readonly exposureTimeUnitModel: MenuItem[] = [
         {
             label: 'Minute (m)',
             command: () => {
@@ -362,6 +362,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    openCameraImage() {
+        return this.browserWindow.openCameraImage(this.camera!)
+    }
+
     async startCapture() {
         const x = this.subFrame ? this.x : this.camera!.minX
         const y = this.subFrame ? this.y : this.camera!.minY
@@ -387,7 +391,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             dither: this.dithering,
         }
 
-        await this.browserWindow.openCameraImage(this.camera!)
+        await this.openCameraImage()
 
         this.api.cameraStartCapture(this.camera!, data)
     }
@@ -465,9 +469,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.savePath = await this.preference.get(`camera.${this.camera.name}.savePath`, '')
             this.autoSubFolderMode = await this.preference.get<AutoSubFolderMode>(`camera.${this.camera.name}.autoSubFolderMode`, 'OFF')
 
-            this.checkMenuItem(this.cameraMenuItems[0], this.autoSave)
+            this.checkMenuItem(this.cameraModel[0], this.autoSave)
             const menuIndex = this.autoSubFolderMode === 'OFF' ? 0 : (this.autoSubFolderMode === 'NOON' ? 1 : 2)
-            this.checkMenu(this.cameraMenuItems[2].items!, this.cameraMenuItems[2].items![menuIndex], true)
+            this.checkMenu(this.cameraModel[2].items!, this.cameraModel[2].items![menuIndex], true)
 
             this.setpointTemperature = await this.preference.get(`camera.${this.camera.name}.setpointTemperature`, 0)
             this.exposureTime = await this.preference.get(`camera.${this.camera.name}.exposureTime`, this.camera.exposureMin)

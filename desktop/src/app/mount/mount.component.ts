@@ -54,12 +54,12 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     private computeCoordinateSubscriptions: Subscription[] = []
     private readonly moveToDirection = [false, false]
 
-    readonly targetCoordinateOptions: MenuItem[] = [
+    readonly targetCoordinateModel: MenuItem[] = [
         {
             icon: 'mdi mdi-telescope',
             label: 'Go To',
             command: () => {
-                this.targetCoordinateOption = this.targetCoordinateOptions[0]
+                this.targetCoordinateOption = this.targetCoordinateModel[0]
                 this.goTo()
             },
         },
@@ -67,7 +67,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             icon: 'mdi mdi-telescope',
             label: 'Slew',
             command: () => {
-                this.targetCoordinateOption = this.targetCoordinateOptions[1]
+                this.targetCoordinateOption = this.targetCoordinateModel[1]
                 this.slewTo()
             },
         },
@@ -75,7 +75,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             icon: 'mdi mdi-sync',
             label: 'Sync',
             command: () => {
-                this.targetCoordinateOption = this.targetCoordinateOptions[2]
+                this.targetCoordinateOption = this.targetCoordinateModel[2]
                 this.sync()
             },
         },
@@ -137,7 +137,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         },
     ]
 
-    targetCoordinateOption = this.targetCoordinateOptions[0]
+    targetCoordinateOption = this.targetCoordinateModel[0]
 
     constructor(
         private app: AppComponent,
@@ -235,11 +235,11 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     targetCoordinateOptionClicked() {
-        if (this.targetCoordinateOption === this.targetCoordinateOptions[0]) {
+        if (this.targetCoordinateOption === this.targetCoordinateModel[0]) {
             this.goTo()
-        } else if (this.targetCoordinateOption === this.targetCoordinateOptions[1]) {
+        } else if (this.targetCoordinateOption === this.targetCoordinateModel[1]) {
             this.slewTo()
-        } else if (this.targetCoordinateOption === this.targetCoordinateOptions[2]) {
+        } else if (this.targetCoordinateOption === this.targetCoordinateModel[2]) {
             this.sync()
         }
     }

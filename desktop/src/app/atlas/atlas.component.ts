@@ -418,7 +418,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         'ONEWEB', 'SCIENCE', 'STARLINK', 'STATIONS', 'VISUAL'
     ]
 
-    readonly ephemerisMenuItems: MenuItem[] = [
+    readonly ephemerisModel: MenuItem[] = [
         {
             icon: 'mdi mdi-magnify',
             label: 'Find stars around this object',

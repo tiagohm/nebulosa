@@ -19,7 +19,7 @@
                     </div>
                 </ng-template>
                 <div class="grid flex align-items-center justify-content-center" style="height: 206px;">
-                    <moon [width]="187" [height]="187" [illuminationRatio]="moonIlluminated" [waning]="moonWaning" />
+                    <p-moon [width]="187" [height]="187" [illuminationRatio]="moonIlluminated" [waning]="moonWaning" />
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Planets" [disabled]="refreshing">
@@ -357,7 +357,7 @@
                         </div>
                         <div class="col-3 text-center">
                             <p-button [disabled]="!name || refreshing" [text]="true" [rounded]="true" icon="mdi mdi-lg mdi-dots-vertical"
-                                      (click)="ephemerisDialogMenu.show()" />
+                                      (click)="ephemerisMenu.show()" />
                         </div>
                     </div>
                 </div>
@@ -482,4 +482,4 @@
     </ng-template>
 </p-dialog>
 
-<dialogMenu #ephemerisDialogMenu [model]="ephemerisMenuItems" />
+<p-dialogMenu #ephemerisMenu [model]="ephemerisModel" />

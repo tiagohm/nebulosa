@@ -1,6 +1,6 @@
 <div class="container px-4 py-3">
     <div class="grid flex align-items-center">
-        <div class="col-8">
+        <div class="col-6">
             <span class="p-float-label">
                 <input type="text" pInputText [readonly]="true" [value]="mount?.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Mount</label>
@@ -68,7 +68,7 @@
                 <label>Constellation</label>
             </span>
         </div>
-        <div class="col-6">
+        <div class="col-3">
             <span class="p-float-label">
                 <input readonly pInputText class="p-inputtext-sm border-0 w-full" value="{{meridianAt}} (-{{ timeLeftToMeridianFlip }})" />
                 <label>Meridian at</label>
@@ -112,7 +112,7 @@
         <div class="col-4">
             <p-splitButton noDropdown [disabled]="!connected || slewing || parking" [label]="targetCoordinateOption.label"
                            [icon]="targetCoordinateOption.icon" styleClass="w-full" (onClick)="targetCoordinateOptionClicked()"
-                           (onDropdownClick)="targetDialogMenu.show()" />
+                           (onDropdownClick)="targetMenu.show()" />
         </div>
     </div>
     <div class="grid mt-1">
@@ -198,4 +198,4 @@
     </div>
 </div>
 
-<dialogMenu #targetDialogMenu [model]="targetCoordinateOptions" />
+<p-dialogMenu #targetMenu [model]="targetCoordinateModel" />

@@ -1,5 +1,6 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { MenuItem, MessageService } from 'primeng/api'
+import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
 import { DialogMenuComponent } from '../../shared/components/dialogmenu/dialogmenu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -22,8 +23,11 @@ type MappedDevice = {
 })
 export class HomeComponent implements AfterContentInit, OnDestroy {
 
-    @ViewChild('devicesDialogMenu')
-    private readonly devicesDialogMenu!: DialogMenuComponent
+    @ViewChild('deviceMenu')
+    private readonly deviceMenu!: DialogMenuComponent
+
+    @ViewChild('imageMenu')
+    private readonly imageMenu!: DeviceMenuComponent
 
     host = ''
     port = 7624
@@ -82,7 +86,17 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch
     }
 
-    readonly devicesMenuItems: MenuItem[] = []
+    readonly deviceModel: MenuItem[] = []
+
+    readonly imageModel: MenuItem[] = [
+        {
+            icon: 'mdi mdi-image-plus',
+            label: 'Open new image',
+            command: () => {
+                this.openImage(true)
+            }
+        }
+    ]
 
     private startListening<K extends keyof MappedDevice>(
         type: K,
@@ -191,7 +205,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     }
 
     private openDevice<K extends keyof MappedDevice>(type: K) {
-        this.devicesMenuItems.length = 0
+        this.deviceModel.length = 0
 
         const devices: Device[] = type === 'CAMERA' ? this.cameras
             : type === 'MOUNT' ? this.mounts
@@ -203,7 +217,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         if (devices.length === 1) return this.openDeviceWindow(type, devices[0] as any)
 
         for (const device of devices) {
-            this.devicesMenuItems.push({
+            this.deviceModel.push({
                 icon: 'mdi mdi-connection',
                 label: device.name,
                 command: () => {
@@ -212,7 +226,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             })
         }
 
-        this.devicesDialogMenu.show()
+        this.deviceMenu.show()
     }
 
     private openDeviceWindow<K extends keyof MappedDevice>(type: K, device: MappedDevice[K]) {
@@ -232,9 +246,20 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    private async openImage() {
-        const path = await this.electron.send('OPEN_FITS')
-        if (path) this.browserWindow.openImage({ path, source: 'PATH' })
+    private async openImage(force: boolean = false) {
+        if (force || this.cameras.length === 0) {
+            const path = await this.electron.send('OPEN_FITS')
+
+            if (path) {
+                this.browserWindow.openImage({ path, source: 'PATH' })
+            }
+        } else {
+            const camera = await this.imageMenu.show(this.cameras)
+
+            if (camera) {
+                this.browserWindow.openCameraImage(camera)
+            }
+        }
     }
 
     open(type: HomeWindowType) {

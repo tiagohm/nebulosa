@@ -31,6 +31,7 @@ import { TagModule } from 'primeng/tag'
 import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
+import { DeviceMenuComponent } from '../shared/components/devicemenu/devicemenu.component'
 import { DialogMenuComponent } from '../shared/components/dialogmenu/dialogmenu.component'
 import { MenuItemComponent } from '../shared/components/menuitem/menuitem.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
@@ -83,6 +84,7 @@ import { SettingsComponent } from './settings/settings.component'
         SettingsComponent,
         LocationDialog,
         MenuItemComponent,
+        DeviceMenuComponent,
         EnvPipe,
         WinPipe,
         EnumPipe,
