@@ -6,6 +6,7 @@ import { UIChart } from 'primeng/chart'
 import { DialogService } from 'primeng/dynamicdialog'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { Subscription, timer } from 'rxjs'
+import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
 import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
 import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
@@ -15,7 +16,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import {
     Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION, Location,
-    MinorPlanet, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
+    MinorPlanet, Mount, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
 } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
@@ -175,6 +176,9 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     @ViewChild('imageOfSun')
     private readonly imageOfSun!: ElementRef<HTMLImageElement>
+
+    @ViewChild('deviceMenu')
+    private readonly deviceMenu!: DeviceMenuComponent
 
     @ViewChild('chart')
     private readonly chart!: UIChart
@@ -720,21 +724,21 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     }
 
     async mountGoTo() {
-        // const mount = await this.electron.selectedMount()
-        // if (!mount?.connected) return
-        // this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        this.executeMount((mount) => {
+            this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        })
     }
 
     async mountSlew() {
-        // const mount = await this.electron.selectedMount()
-        // if (!mount?.connected) return
-        // this.api.mountSlew(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        this.executeMount((mount) => {
+            this.api.mountSlew(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        })
     }
 
     async mountSync() {
-        // const mount = await this.electron.selectedMount()
-        // if (!mount?.connected) return
-        // this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        this.executeMount((mount) => {
+            this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+        })
     }
 
     frame() {
@@ -966,5 +970,23 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 point[1] = NaN
             }
         }
+    }
+
+    private async executeMount(action: (mount: Mount) => void) {
+        const mounts = await this.api.mounts()
+
+        if (mounts.length === 1) {
+            action(mounts[0])
+            return true
+        } else if (mounts.length > 1) {
+            const mount = await this.deviceMenu.show(mounts)
+
+            if (mount && mount.connected) {
+                action(mount)
+                return true
+            }
+        }
+
+        return false
     }
 }

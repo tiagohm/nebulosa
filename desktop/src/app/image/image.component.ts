@@ -6,6 +6,7 @@ import createPanZoom, { PanZoom } from 'panzoom'
 import * as path from 'path'
 import { MenuItem } from 'primeng/api'
 import { ContextMenu } from 'primeng/contextmenu'
+import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -14,7 +15,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import {
     Angle, AstronomicalObject, Camera, CheckableMenuItem, DeepSkyObject, DetectedStar, EquatorialCoordinateJ2000, FITSHeaderItem,
     ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
-    SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
+    Mount, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
 } from '../../shared/types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
@@ -41,6 +42,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     @ViewChild('menu')
     private readonly menu!: ContextMenu
+
+    @ViewChild('deviceMenu')
+    private readonly deviceMenu!: DeviceMenuComponent
 
     debayer = true
     calibrate = true
@@ -209,11 +213,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Point mount here',
         icon: 'mdi mdi-telescope',
         disabled: true,
-        command: async () => {
-            // TODO: Show dialogMenu if > 1 and select mount
-            // const mount = await this.electron.selectedMount()
-            // if (!mount?.connected) return
-            // this.api.pointMountHere(mount, this.imageData.path!, this.imageMouseX, this.imageMouseY, !this.solved)
+        command: () => {
+            this.executeMount((mount) => {
+                this.api.pointMountHere(mount, this.imageData.path!, this.imageMouseX, this.imageMouseY, !this.solved)
+            })
         },
     }
 
@@ -628,23 +631,22 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    async mountSync(coordinate: EquatorialCoordinateJ2000) {
-        // TODO: Show dialogMenu if > 1 and select mount
-        // const mount = await this.electron.selectedMount()
-        // if (!mount?.connected) return
-        // this.api.mountSync(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
+    mountSync(coordinate: EquatorialCoordinateJ2000) {
+        this.executeMount((mount) => {
+            this.api.mountSync(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
+        })
     }
 
     async mountGoTo(coordinate: EquatorialCoordinateJ2000) {
-        // const mount = await this.electron.selectedMount()
-        // if (!mount?.connected) return
-        // this.api.mountGoTo(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
+        this.executeMount((mount) => {
+            this.api.mountGoTo(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
+        })
     }
 
     async mountSlew(coordinate: EquatorialCoordinateJ2000) {
-        // const mount = await this.electron.selectedMount()
-        // if (!mount?.connected) return
-        // this.api.mountSlew(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
+        this.executeMount((mount) => {
+            this.api.mountSlew(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
+        })
     }
 
     frame(coordinate: EquatorialCoordinateJ2000) {
@@ -669,5 +671,23 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 },
             })
         }
+    }
+
+    private async executeMount(action: (mount: Mount) => void) {
+        const mounts = await this.api.mounts()
+
+        if (mounts.length === 1) {
+            action(mounts[0])
+            return true
+        } else if (mounts.length > 1) {
+            const mount = await this.deviceMenu.show(mounts)
+
+            if (mount && mount.connected) {
+                action(mount)
+                return true
+            }
+        }
+
+        return false
     }
 }
