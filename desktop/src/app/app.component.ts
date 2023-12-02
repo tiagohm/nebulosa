@@ -1,6 +1,7 @@
 import { AfterViewInit, Component } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
+import { MenuItem } from 'primeng/api'
 import { APP_CONFIG } from '../environments/environment'
 import { ElectronService } from '../shared/services/electron.service'
 import { PreferenceService } from '../shared/services/preference.service'
@@ -15,10 +16,8 @@ export class AppComponent implements AfterViewInit {
     pinned = false
     maximizable = false
     subTitle = ''
-
-    get backgroundColor() {
-        return '#212121'
-    }
+    backgroundColor = '#212121'
+    extra: MenuItem[] = []
 
     get title() {
         return this.windowTitle.getTitle()

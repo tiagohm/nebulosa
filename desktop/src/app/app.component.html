@@ -4,6 +4,12 @@
         <div>{{ title }}</div>
         <div class="text-xs text-gray-100 font-normal">{{ subTitle }}</div>
     </span>
+
+    <p-button [text]="true" [rounded]="true" [icon]="e.icon" [disabled]="e.disabled" [pTooltip]="e.tooltip" tooltipPosition="bottom"
+              (onClick)="e.command?.({originalEvent: $event, item: e, index: i})" *ngFor="let e of extra; let i = index" />
+
+    <span *ngIf="extra.length" style="width: 16px;"></span>
+
     <p-button *ngIf="pinned" [text]="true" [rounded]="true" size="small" icon="mdi mdi-pin" (onClick)="pin()"
               styleClass="select-none cursor-pointer"></p-button>
     <p-button *ngIf="!pinned" [text]="true" [rounded]="true" size="small" icon="mdi mdi-pin-off" (onClick)="pin()"
