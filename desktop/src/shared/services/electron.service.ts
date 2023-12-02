@@ -48,7 +48,7 @@ type EventMappedType = {
     'DARV_POLAR_ALIGNMENT_STARTED': DARVPolarAlignmentEvent
     'DARV_POLAR_ALIGNMENT_FINISHED': DARVPolarAlignmentEvent
     'DARV_POLAR_ALIGNMENT_UPDATED': DARVPolarAlignmentInitialPauseElapsed | DARVPolarAlignmentGuidePulseElapsed
-    'PARAMS_CHANGED': any
+    'DATA_CHANGED': any
     'SKY_ATLAS_UPDATE_FINISHED': NotificationEvent
 }
 

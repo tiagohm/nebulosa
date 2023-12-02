@@ -6,7 +6,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
-export interface INDIParams {
+export interface INDIData {
     device?: Device
 }
 
@@ -66,8 +66,8 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
     async ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
-            const params = JSON.parse(decodeURIComponent(e.params)) as INDIParams
-            this.device = params.device
+            const data = JSON.parse(decodeURIComponent(e.data)) as INDIData
+            this.device = data.device
         })
 
         this.devices = [

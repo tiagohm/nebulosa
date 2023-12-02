@@ -306,7 +306,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     async ngAfterContentInit() {
         this.route.queryParams.subscribe(e => {
-            const camera = JSON.parse(decodeURIComponent(e.params)) as Camera
+            const camera = JSON.parse(decodeURIComponent(e.data)) as Camera
             this.cameraChanged(camera)
         })
     }

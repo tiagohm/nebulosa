@@ -251,20 +251,19 @@ export interface CameraExposureFinished extends CameraExposureEvent {
     savePath?: string
 }
 
-export interface OpenWindowOptions {
+export interface OpenWindow<T> {
+    id: string
+    path: string
     icon?: string
     resizable?: boolean
     width?: number | string
     height?: number | string
     bringToFront?: boolean
     requestFocus?: boolean
+    data: T
 }
 
-export interface OpenWindow<T> extends OpenWindowOptions {
-    id: string
-    path: string
-    params?: T
-}
+export type OpenWindowOptions<T> = Omit<OpenWindow<T>, 'id' | 'path'>
 
 export interface OpenDirectory {
     defaultPath?: string
@@ -397,11 +396,13 @@ export interface Twilight {
     civilDawn: number[]
 }
 
+export type MinorPlanetKind = 'ASTEROID' | 'COMET'
+
 export interface MinorPlanet {
     found: boolean
     name: string
     spkId: number
-    kind?: 'ASTEROID' | 'COMET'
+    kind?: MinorPlanetKind
     pha: boolean
     neo: boolean
     orbitType: string

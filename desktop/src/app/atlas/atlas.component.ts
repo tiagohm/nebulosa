@@ -738,7 +738,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     }
 
     frame() {
-        this.browserWindow.openFraming({ rightAscension: this.bodyPosition.rightAscensionJ2000, declination: this.bodyPosition.declinationJ2000 })
+        this.browserWindow.openFraming({ data: { rightAscension: this.bodyPosition.rightAscensionJ2000, declination: this.bodyPosition.declinationJ2000 } })
     }
 
     async refreshTab(

@@ -178,7 +178,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     async ngAfterContentInit() {
         this.route.queryParams.subscribe(e => {
-            const mount = JSON.parse(decodeURIComponent(e.params)) as Mount
+            const mount = JSON.parse(decodeURIComponent(e.data)) as Mount
             this.mountChanged(mount)
         })
     }

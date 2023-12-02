@@ -55,7 +55,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     async ngAfterContentInit() {
         this.route.queryParams.subscribe(e => {
-            const wheel = JSON.parse(decodeURIComponent(e.params)) as FilterWheel
+            const wheel = JSON.parse(decodeURIComponent(e.data)) as FilterWheel
             this.wheelChanged(wheel)
         })
     }

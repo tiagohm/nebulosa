@@ -54,7 +54,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
 
     async ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
-            const focuser = JSON.parse(decodeURIComponent(e.params)) as Focuser
+            const focuser = JSON.parse(decodeURIComponent(e.data)) as Focuser
             this.focuserChanged(focuser)
         })
     }

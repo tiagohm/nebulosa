@@ -9,7 +9,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { Angle, HipsSurvey } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
-export interface FramingParams {
+export interface FramingData {
     rightAscension: Angle
     declination: Angle
     width?: number
@@ -51,8 +51,8 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Framing'
 
-        electron.on('PARAMS_CHANGED', (event: FramingParams) => {
-            ngZone.run(() => this.frameFromParams(event))
+        electron.on('DATA_CHANGED', (event: FramingData) => {
+            ngZone.run(() => this.frameFromData(event))
         })
     }
 
@@ -60,8 +60,8 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         this.loadPreference()
 
         this.route.queryParams.subscribe(e => {
-            const params = JSON.parse(decodeURIComponent(e.params)) as FramingParams
-            this.frameFromParams(params)
+            const data = JSON.parse(decodeURIComponent(e.data)) as FramingData
+            this.frameFromData(data)
         })
     }
 
@@ -71,15 +71,15 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         this.electron.send('CLOSE_WINDOW', this.frameId)
     }
 
-    private frameFromParams(params: FramingParams) {
-        this.rightAscension = params.rightAscension ?? this.rightAscension
-        this.declination = params.declination ?? this.declination
-        this.width = params.width ?? this.width
-        this.height = params.height ?? this.height
-        this.fov = params.fov ?? this.fov
-        if (params.rotation === 0 || params.rotation) this.rotation = params.rotation
+    private frameFromData(data: FramingData) {
+        this.rightAscension = data.rightAscension ?? this.rightAscension
+        this.declination = data.declination ?? this.declination
+        this.width = data.width ?? this.width
+        this.height = data.height ?? this.height
+        this.fov = data.fov ?? this.fov
+        if (data.rotation === 0 || data.rotation) this.rotation = data.rotation
 
-        if (params.rightAscension && params.declination) {
+        if (data.rightAscension && data.declination) {
             this.frame()
         }
     }
@@ -96,7 +96,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
             const title = `Framing ・ ${this.rightAscension} ・ ${this.declination}`
 
             this.framePath = path
-            this.frameId = await this.browserWindow.openImage(path, 'framing', 'FRAMING', title)
+            this.frameId = await this.browserWindow.openImage({ id: 'framing', source: 'FRAMING', path, title })
 
             this.savePreference()
         } catch (e: any) {
