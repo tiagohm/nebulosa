@@ -95,8 +95,8 @@ export class BrowserWindowService {
 
     openSettings(options: Partial<OpenWindowOptions<undefined>> = {}) {
         options.icon ||= 'settings'
-        options.width ||= 360
-        options.height ||= 440
+        options.width ||= 480
+        options.height ||= 470
         this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined })
     }
 

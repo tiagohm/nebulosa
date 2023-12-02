@@ -20,6 +20,7 @@ data class LocationEntity(
     @field:Range(min = -180, max = 180) @Column(name = "longitude", columnDefinition = "REAL") var longitude: Double = 0.0, // deg.
     @field:Range(min = -1000, max = 10000) @Column(name = "elevation", columnDefinition = "REAL") var elevation: Double = 0.0, // m.
     @field:Range(min = -720, max = 720) @Column(name = "offset_in_minutes", columnDefinition = "INT2") var offsetInMinutes: Int = 0,
+    @Column(name = "selected", columnDefinition = "INT1") var selected: Boolean = false,
 ) {
 
     fun geographicPosition(): GeographicPosition {

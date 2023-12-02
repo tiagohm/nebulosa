@@ -338,15 +338,17 @@ export interface Location {
     longitude: number
     elevation: number
     offsetInMinutes: number
+    selected: boolean
 }
 
 export const EMPTY_LOCATION: Location = {
     id: 0,
-    name: 'Saint Helena',
-    latitude: -15.9755300,
-    longitude: -5.6987929,
-    elevation: 819,
+    name: '',
+    latitude: 0,
+    longitude: 0,
+    elevation: 0,
     offsetInMinutes: 0,
+    selected: false,
 }
 
 export interface BodyPosition extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
@@ -757,10 +759,16 @@ export type ApiEventType = (typeof API_EVENT_TYPES)[number]
 export const INTERNAL_EVENT_TYPES = [
     'SAVE_FITS_AS', 'OPEN_FITS', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
     'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW',
-    'WHEEL_RENAMED',
+    'WHEEL_RENAMED', 'LOCATION_CHANGED',
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
+
+export const NOTIFICATION_EVENT_TYPE = [
+    'SKY_ATLAS_UPDATE_FINISHED'
+] as const
+
+export type NotificationEventType = (typeof NOTIFICATION_EVENT_TYPE)[number]
 
 export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA'
 

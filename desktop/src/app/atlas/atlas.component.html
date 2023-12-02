@@ -253,28 +253,6 @@
                     </p-table>
                 </div>
             </p-tabPanel>
-            <p-tabPanel header="Settings" [disabled]="refreshing">
-                <ng-template pTemplate="header">
-                    <div class="p-3" pTooltip="Settings" tooltipPosition="bottom">
-                        <img src="assets/icons/settings.png">
-                    </div>
-                </ng-template>
-                <div class="grid flex align-items-center p-2">
-                    <div class="col-8">
-                        <span class="p-float-label">
-                            <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()"
-                                        optionLabel="name" dataKey="id" styleClass="p-inputtext-sm border-0" emptyMessage="No location found" />
-                            <label>Location</label>
-                        </span>
-                    </div>
-                    <div class="col-4 flex align-items-center gap-1">
-                        <p-button [disabled]="refreshing" (onClick)="addLocation()" icon="mdi mdi-plus" size="small" severity="success" />
-                        <p-button [disabled]="refreshing" (onClick)="editLocation()" icon="mdi mdi-pencil" size="small" severity="info" />
-                        <p-button [disabled]="refreshing || locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete"
-                                  size="small" severity="danger" />
-                    </div>
-                </div>
-            </p-tabPanel>
         </p-tabView>
     </div>
 </div>

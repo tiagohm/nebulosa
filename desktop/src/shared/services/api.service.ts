@@ -363,6 +363,14 @@ export class ApiService {
         return this.http.get<Location[]>(`locations`)
     }
 
+    location(id: number) {
+        return this.http.get<Location | undefined>(`locations/${id}`)
+    }
+
+    selectedLocation() {
+        return this.http.get<Location>(`locations/selected`)
+    }
+
     saveLocation(location: Location) {
         return this.http.put<Location>(`locations`, location)
     }

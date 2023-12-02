@@ -9,7 +9,7 @@ class LocationInitializer(private val locationRepository: LocationRepository) : 
 
     override fun run() {
         if (locationRepository.count() <= 0) {
-            val location = LocationEntity(System.currentTimeMillis(), "Saint Helena", -15.9755300, -5.6987929, 819.0)
+            val location = LocationEntity(1, "Null Island", 0.0, 0.0, 0.0, selected = true)
             locationRepository.saveAndFlush(location)
         }
     }

@@ -10,7 +10,7 @@ import {
     ApiEventType, Camera, CameraCaptureElapsed, CameraCaptureFinished, CameraCaptureIsWaiting, CameraCaptureStarted,
     CameraExposureElapsed, CameraExposureFinished, CameraExposureStarted, DARVPolarAlignmentEvent, DARVPolarAlignmentGuidePulseElapsed,
     DARVPolarAlignmentInitialPauseElapsed, DeviceMessageEvent, FilterWheel, Focuser, GuideOutput, Guider,
-    GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Mount, NotificationEvent, OpenDirectory
+    GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Location, Mount, NotificationEvent, NotificationEventType, OpenDirectory
 } from '../types'
 import { ApiService } from './api.service'
 
@@ -49,6 +49,7 @@ type EventMappedType = {
     'DARV_POLAR_ALIGNMENT_FINISHED': DARVPolarAlignmentEvent
     'DARV_POLAR_ALIGNMENT_UPDATED': DARVPolarAlignmentInitialPauseElapsed | DARVPolarAlignmentGuidePulseElapsed
     'DATA_CHANGED': any
+    'LOCATION_CHANGED': Location
     'SKY_ATLAS_UPDATE_FINISHED': NotificationEvent
 }
 
@@ -88,7 +89,7 @@ export class ElectronService {
         return !!(window && window.process && window.process.type)
     }
 
-    send(channel: ApiEventType | InternalEventType, ...data: any[]) {
+    send(channel: ApiEventType | InternalEventType | NotificationEventType, ...data: any[]) {
         return this.ipcRenderer.invoke(channel, ...data)
     }
 
