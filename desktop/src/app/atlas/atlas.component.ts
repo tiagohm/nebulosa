@@ -1,9 +1,10 @@
-import { AfterContentInit, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import { AfterContentInit, AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
+import { OverlayPanel } from 'primeng/overlaypanel'
 import { Subscription, timer } from 'rxjs'
 import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
 import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
@@ -14,7 +15,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import {
-    Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION,
+    Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION,
     Location, MinorPlanet, Mount, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
 } from '../../shared/types'
 import { AppComponent } from '../app.component'
@@ -43,7 +44,7 @@ export interface SearchFilter {
     templateUrl: './atlas.component.html',
     styleUrls: ['./atlas.component.scss'],
 })
-export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
+export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, OnDestroy {
 
     refreshing = false
 
@@ -173,6 +174,9 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
     @ViewChild('deviceMenu')
     private readonly deviceMenu!: DeviceMenuComponent
+
+    @ViewChild('calendarPanel')
+    private readonly calendarPanel!: OverlayPanel
 
     @ViewChild('chart')
     private readonly chart!: UIChart
@@ -472,6 +476,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     ) {
         app.title = 'Sky Atlas'
 
+        app.extra.push({
+            icon: 'mdi mdi-calendar',
+            tooltip: 'Date & time',
+            command: (e) => {
+                this.calendarPanel.toggle(e.originalEvent)
+            },
+        })
+
         electron.on('LOCATION_CHANGED', (event) => {
             ngZone.run(() => this.refreshTab(true, true, event))
         })
@@ -491,16 +503,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     }
 
     async ngAfterContentInit() {
-        const locations = await this.api.locations()
-        const location = await this.preference.get('atlas.location', EMPTY_LOCATION)
-        const index = locations.findIndex(e => e.id === location.id)
-
-        if (index >= 1) {
-            const temp = locations[0]
-            locations[0] = location
-            locations[index] = temp
-        }
-
         // const canvas = this.chart.getCanvas() as HTMLCanvasElement
         // const chart = this.chart.chart as Chart
 
@@ -520,6 +522,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
 
         if (initialDelay > 2500) {
             this.refreshTab()
+        }
+    }
+
+    ngAfterViewInit() {
+        this.calendarPanel.onOverlayClick = (e) => {
+            e.stopImmediatePropagation()
         }
     }
 

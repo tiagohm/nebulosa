@@ -21,6 +21,7 @@ import { InputSwitchModule } from 'primeng/inputswitch'
 import { InputTextModule } from 'primeng/inputtext'
 import { ListboxModule } from 'primeng/listbox'
 import { MenuModule } from 'primeng/menu'
+import { OverlayPanelModule } from 'primeng/overlaypanel'
 import { ScrollPanelModule } from 'primeng/scrollpanel'
 import { SelectButtonModule } from 'primeng/selectbutton'
 import { SlideMenuModule } from 'primeng/slidemenu'
@@ -129,6 +130,7 @@ import { SettingsComponent } from './settings/settings.component'
         FieldsetModule,
         ScrollPanelModule,
         ConfirmDialogModule,
+        OverlayPanelModule,
     ],
     providers: [
         MessageService,

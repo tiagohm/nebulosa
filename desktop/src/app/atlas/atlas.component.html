@@ -354,21 +354,6 @@
             <p-chart #chart width="100%" height="170px" [data]="altitudeData" [responsive]="true" [options]="altitudeOptions" />
         </p-tabPanel>
     </p-tabView>
-    <div class="col-8 flex flex-column align-items-start justify-content-center gap-2 absolute" style="right: 8px; top: 21px;">
-        <div class="flex flex-row gap-1 align-items-center justify-content-center">
-            <p-checkbox [binary]="true" [(ngModel)]="useManualDateTime" (ngModelChange)="useManualDateTimeChanged()" />
-            <p-calendar [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTime" (ngModelChange)="dateTimeChanged(true)" [showIcon]="true"
-                        [showWeek]="true" [showButtonBar]="true" dateFormat="yy-mm-dd" inputStyleClass="p-inputtext-sm w-6rem" class="border-0" />
-            <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeHour" [showButtons]="true" [min]="0" [max]="23"
-                           class="w-fit" [format]="false"
-                           [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)" styleClass="p-inputtext-sm border-0"
-                           [style]="{width: '54px'}" />
-            <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeMinute" [showButtons]="true" [min]="0" [max]="59"
-                           class="w-fit"
-                           [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)" styleClass="p-inputtext-sm border-0"
-                           [style]="{width: '54px'}" />
-        </div>
-    </div>
 </div>
 
 <p-dialog header="Minor Planets" [modal]="true" [(visible)]="showMinorPlanetChoiceDialog" [style]="{width: '80vw'}">
@@ -459,6 +444,28 @@
         <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" (onClick)="filterSatellite()" />
     </ng-template>
 </p-dialog>
+
+<p-overlayPanel #calendarPanel [style]="{width: 'calc(100% - 8px)', marginLeft: '4px'}" appendTo="body">
+    <ng-template pTemplate="content">
+        <div class="grid">
+            <div class="col-12 flex flex-row align-items-center justify-content-center gap-1">
+                <p-inputSwitch [disabled]="refreshing" [(ngModel)]="useManualDateTime" (ngModelChange)="useManualDateTimeChanged()" />
+            </div>
+            <div class="col-12">
+                <p-calendar [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTime" (ngModelChange)="dateTimeChanged(true)"
+                            [inline]="true" [showIcon]="true" [showWeek]="true" [showButtonBar]="false" dateFormat="yy-mm-dd" styleClass="w-full" />
+            </div>
+        </div>
+        <div class="col-12 flex align-items-center justify-content-center gap-2">
+            <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeHour" [showButtons]="true" [min]="0" [max]="23"
+                           class="w-fit" [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)"
+                           styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" />
+            <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeMinute" [showButtons]="true" [min]="0" [max]="59"
+                           class="w-fit" [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)"
+                           styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" />
+        </div>
+    </ng-template>
+</p-overlayPanel>
 
 <p-dialogMenu #ephemerisMenu [model]="ephemerisModel" />
 <p-deviceMenu #deviceMenu />
