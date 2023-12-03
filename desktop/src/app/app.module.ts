@@ -38,6 +38,7 @@ import { DialogMenuComponent } from '../shared/components/dialogmenu/dialogmenu.
 import { MenuItemComponent } from '../shared/components/menuitem/menuitem.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
 import { OpenStreetMapComponent } from '../shared/components/openstreetmap/openstreetmap.component'
+import { SkyMapComponent } from '../shared/components/skymap/skymap.component'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
@@ -87,6 +88,7 @@ import { SettingsComponent } from './settings/settings.component'
         LocationDialog,
         MenuItemComponent,
         DeviceMenuComponent,
+        SkyMapComponent,
         EnvPipe,
         WinPipe,
         EnumPipe,
