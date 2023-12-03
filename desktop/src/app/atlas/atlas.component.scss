@@ -70,6 +70,6 @@
 
     .p-overlaypanel:after,
     .p-overlaypanel:before {
-        left: calc(var(--overlayArrowLeft, 0) + 2rem) !important;
+        left: calc(var(--overlayArrowLeft, 0) + 2.1rem) !important;
     }
 }

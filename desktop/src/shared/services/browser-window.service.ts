@@ -75,7 +75,7 @@ export class BrowserWindowService {
     openSkyAtlas(options: Partial<OpenWindowOptions<undefined>> = {}) {
         options.icon ||= 'atlas'
         options.width ||= 450
-        options.height ||= 555
+        options.height ||= 523
         this.openWindow({ ...options, id: 'atlas', path: 'atlas', data: undefined })
     }
 
