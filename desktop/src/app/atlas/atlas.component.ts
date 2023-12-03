@@ -12,6 +12,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
+import { PrimeService } from '../../shared/services/prime.service'
 import {
     Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, EMPTY_LOCATION,
     Location, MinorPlanet, Mount, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
@@ -47,7 +48,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     refreshing = false
 
     private activeTab = 0
-    private lastLocation?: Location
 
     get tab() {
         return this.activeTab
@@ -467,6 +467,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
         electron: ElectronService,
         private preference: PreferenceService,
         private skyObjectPipe: SkyObjectPipe,
+        private prime: PrimeService,
         ngZone: NgZone,
     ) {
         app.title = 'Sky Atlas'
@@ -713,9 +714,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     ) {
         location ??= await this.api.selectedLocation()
 
-        const forceRefresh = location.id !== this.lastLocation?.id
-        this.lastLocation = location
-
         this.refreshing = true
 
         if (!this.useManualDateTime) {
@@ -831,7 +829,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 }
             }
 
-            if (forceRefresh || refreshTwilight) {
+            if (refreshTwilight) {
                 const twilight = await this.api.twilight(location!, this.dateTime)
                 this.altitudeData.datasets[0].data = [[0.0, 90], [twilight.civilDusk[0], 90]]
                 this.altitudeData.datasets[1].data = [[twilight.civilDusk[0], 90], [twilight.civilDusk[1], 90]]
@@ -845,7 +843,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
                 this.chart?.refresh()
             }
 
-            if (forceRefresh || refreshChart) {
+            if (refreshChart) {
                 await this.refreshChart(location)
             }
         } finally {
@@ -938,12 +936,16 @@ export class AtlasComponent implements OnInit, AfterContentInit, OnDestroy {
     }
 
     private async executeMount(action: (mount: Mount) => void) {
+        if (await this.prime.confirm('Are you sure that you want to proceed?')) {
+            return
+        }
+
         const mounts = await this.api.mounts()
 
         if (mounts.length === 1) {
             action(mounts[0])
             return true
-        } else if (mounts.length > 1) {
+        } else {
             const mount = await this.deviceMenu.show(mounts)
 
             if (mount && mount.connected) {

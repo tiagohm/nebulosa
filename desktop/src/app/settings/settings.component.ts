@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
-import { DialogService } from 'primeng/dynamicdialog'
 import { PLATE_SOLVER_SETTINGS } from '../../shared/constants'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
+import { PrimeService } from '../../shared/services/prime.service'
 import { EMPTY_LOCATION, Location, PlateSolverSettings, PlateSolverType } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
@@ -29,7 +29,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         private api: ApiService,
         private electron: ElectronService,
         private preference: PreferenceService,
-        private dialog: DialogService,
+        private prime: PrimeService,
     ) {
         app.title = 'Settings'
 
@@ -60,14 +60,12 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         this.showLocation(this.location)
     }
 
-    private showLocation(location: Location) {
-        const dialog = LocationDialog.show(this.dialog, location)
+    private async showLocation(location: Location) {
+        const result = await this.prime.open(LocationDialog, { header: 'Location', data: location })
 
-        dialog.onClose.subscribe((result?: Location) => {
-            if (result && !this.locations.includes(result)) {
-                this.locations.push(result)
-            }
-        })
+        if (result && !this.locations.includes(result)) {
+            this.locations.push(result)
+        }
     }
 
     private async loadLocation() {

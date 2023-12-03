@@ -29,7 +29,7 @@ export class DeviceMenuComponent {
         const model: MenuItem[] = []
 
         return new Promise<T | undefined>((resolve) => {
-            if (devices.length > 0 && !devices.find(e => e.connected)) {
+            if (devices.length <= 0 || !devices.find(e => e.connected)) {
                 resolve(undefined)
                 this.message.add({ severity: 'warn', detail: 'Please connect your equipment first!' })
                 return

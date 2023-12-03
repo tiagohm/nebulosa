@@ -12,6 +12,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
+import { PrimeService } from '../../shared/services/prime.service'
 import {
     Angle, AstronomicalObject, Camera, CheckableMenuItem, DeepSkyObject, DetectedStar, EquatorialCoordinateJ2000, FITSHeaderItem,
     ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
@@ -347,6 +348,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private preference: PreferenceService,
+        private prime: PrimeService,
         private ngZone: NgZone,
     ) {
         app.title = 'Image'
@@ -674,12 +676,16 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private async executeMount(action: (mount: Mount) => void) {
+        if (await this.prime.confirm('Are you sure that you want to proceed?')) {
+            return
+        }
+
         const mounts = await this.api.mounts()
 
         if (mounts.length === 1) {
             action(mounts[0])
             return true
-        } else if (mounts.length > 1) {
+        } else {
             const mount = await this.deviceMenu.show(mounts)
 
             if (mount && mount.connected) {

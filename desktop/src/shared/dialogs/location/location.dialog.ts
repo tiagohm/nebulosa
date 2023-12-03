@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ViewChild } from '@angular/core'
-import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import { OpenStreetMapComponent } from '../../components/openstreetmap/openstreetmap.component'
 import { Location } from '../../types'
 
@@ -18,7 +18,7 @@ export class LocationDialog implements AfterViewInit {
         private dialogRef: DynamicDialogRef,
         config: DynamicDialogConfig,
     ) {
-        this.location = config.data!.location
+        this.location = config.data!
     }
 
     ngAfterViewInit() {
@@ -27,21 +27,5 @@ export class LocationDialog implements AfterViewInit {
 
     save() {
         this.dialogRef.close(this.location)
-    }
-
-    static show(dialog: DialogService, location: Location) {
-        return dialog.open(LocationDialog, {
-            header: 'Location',
-            data: { location },
-            draggable: false,
-            resizable: false,
-            width: '80vw',
-            style: {
-                'max-width': '360px',
-            },
-            contentStyle: {
-                'overflow-y': 'hidden',
-            },
-        })
     }
 }

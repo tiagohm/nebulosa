@@ -4,11 +4,12 @@ import { LOCALE_ID, NgModule } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
-import { MessageService } from 'primeng/api'
+import { ConfirmationService, MessageService } from 'primeng/api'
 import { ButtonModule } from 'primeng/button'
 import { CalendarModule } from 'primeng/calendar'
 import { ChartModule } from 'primeng/chart'
 import { CheckboxModule } from 'primeng/checkbox'
+import { ConfirmDialogModule } from 'primeng/confirmdialog'
 import { ContextMenuModule } from 'primeng/contextmenu'
 import { DialogModule } from 'primeng/dialog'
 import { DropdownModule } from 'primeng/dropdown'
@@ -127,10 +128,12 @@ import { SettingsComponent } from './settings/settings.component'
         DynamicDialogModule,
         FieldsetModule,
         ScrollPanelModule,
+        ConfirmDialogModule,
     ],
     providers: [
         MessageService,
         DialogService,
+        ConfirmationService,
         EnvPipe,
         WinPipe,
         EnumPipe,
