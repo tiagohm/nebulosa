@@ -366,6 +366,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         return this.browserWindow.openCameraImage(this.camera!)
     }
 
+    openCameraCalibration() {
+        return this.browserWindow.openCalibration({ data: this.camera! })
+    }
+
     async startCapture() {
         const x = this.subFrame ? this.x : this.camera!.minX
         const y = this.subFrame ? this.y : this.camera!.minY

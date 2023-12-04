@@ -14,6 +14,12 @@ inline val Header.naxis
 @Suppress("NOTHING_TO_INLINE")
 inline fun Header.naxis(n: Int) = getInt(Standard.NAXISn.n(n), 0)
 
+inline val Header.width
+    get() = naxis(1)
+
+inline val Header.height
+    get() = naxis(2)
+
 val Header.rightAscension
     get() = Angle(getStringOrNull(Standard.RA), isHours = true, decimalIsHours = false)
         .takeIf { it.isFinite() }
@@ -32,7 +38,7 @@ inline val Header.binX
     get() = getInt(SBFitsExt.XBINNING, 1)
 
 inline val Header.binY
-    get() = getInt(SBFitsExt.YBINNING, 1)
+    get() = getIntOrNull(SBFitsExt.YBINNING) ?: binX
 
 val Header.exposureTime
     get() = (getDoubleOrNull(Standard.EXPTIME) ?: getDouble(Standard.EXPOSURE, 0.0)).seconds

@@ -5,7 +5,7 @@
         <div class="text-xs text-gray-100 font-normal">{{ subTitle }}</div>
     </span>
 
-    <p-button [text]="true" [rounded]="true" [icon]="e.icon" [disabled]="e.disabled" [pTooltip]="e.tooltip" tooltipPosition="bottom"
+    <p-button [text]="true" [rounded]="true" [icon]="e.icon" [disabled]="e.disabled" [pTooltip]="e.tooltip ?? e.label" tooltipPosition="bottom"
               (onClick)="e.command?.({originalEvent: $event, item: e, index: i})" size="small" *ngFor="let e of extra; let i = index" />
 
     <span *ngIf="extra.length" style="width: 16px;"></span>

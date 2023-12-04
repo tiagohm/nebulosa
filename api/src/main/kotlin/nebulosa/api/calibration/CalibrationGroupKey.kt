@@ -1,22 +1,24 @@
 package nebulosa.api.calibration
 
 import nebulosa.indi.device.camera.FrameType
+import kotlin.math.roundToInt
 
 data class CalibrationGroupKey(
-    val type: FrameType,
+    val type: FrameType, val filter: String?,
     val width: Int, val height: Int,
     val binX: Int, val binY: Int,
     val exposureTime: Long,
-    val gain: Double, val filter: String?,
+    val temperature: Int, val gain: Double,
 ) {
 
     companion object {
 
         @JvmStatic
         fun from(frame: CalibrationFrameEntity) = CalibrationGroupKey(
-            frame.type, frame.width, frame.height,
-            frame.binX, frame.binY, frame.exposureTime, frame.gain,
-            frame.filter?.ifBlank { null },
+            frame.type, frame.filter?.ifBlank { null },
+            frame.width, frame.height,
+            frame.binX, frame.binY, frame.exposureTime,
+            frame.temperature.roundToInt(), frame.gain,
         )
     }
 }

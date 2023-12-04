@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
 import {
-    Angle, BodyPosition, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation, DeepSkyObject, DetectedStar, Device,
+    Angle, BodyPosition, CalibrationFrame, CalibrationFrameGroup, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation, DeepSkyObject, DetectedStar, Device,
     FilterWheel, Focuser, GuideDirection, GuideOutput, Guider, HipsSurvey, HistoryStep,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
     ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
@@ -533,8 +533,7 @@ export class ApiService {
     }
 
     solveImage(
-        path: string,
-        blind: boolean,
+        path: string, blind: boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
     ) {
         const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
@@ -554,6 +553,17 @@ export class ApiService {
     detectStars(path: string) {
         const query = this.http.query({ path })
         return this.http.put<DetectedStar[]>(`image/detect-stars?${query}`)
+    }
+
+    // CALIBRATION
+
+    calibrationFrames(camera: Camera) {
+        return this.http.get<CalibrationFrameGroup[]>(`calibration-frames/${camera.name}`)
+    }
+
+    uploadCalibrationFrame(camera: Camera, path: string) {
+        const query = this.http.query({ path })
+        return this.http.put<CalibrationFrame[]>(`calibration-frames/${camera.name}?${query}`)
     }
 
     // FRAMING

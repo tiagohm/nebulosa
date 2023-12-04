@@ -19,7 +19,6 @@ data class CalibrationFrameEntity(
     @Column(name = "bin_x", columnDefinition = "INT1") var binX: Int = 0,
     @Column(name = "bin_y", columnDefinition = "INT1") var binY: Int = 0,
     @Column(name = "gain", columnDefinition = "REAL") var gain: Double = 0.0,
-    @Convert(converter = PathAttributeConverter::class)
-    @Column(name = "path", columnDefinition = "TEXT") var path: Path? = null,
+    @Column(name = "path", columnDefinition = "TEXT") var path: String? = null,
     @Column(name = "enabled", columnDefinition = "INT1") var enabled: Boolean = true,
 )

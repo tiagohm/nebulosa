@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core'
 import { v4 as uuidv4 } from 'uuid'
 import { FramingData } from '../../app/framing/framing.component'
 import { ImageData } from '../../app/image/image.component'
-import { INDIData } from '../../app/indi/indi.component'
-import { Camera, FilterWheel, Focuser, Mount, OpenWindow, OpenWindowOptions } from '../types'
+import { Camera, Device, FilterWheel, Focuser, Mount, OpenWindow, OpenWindowOptions } from '../types'
 import { ElectronService } from './electron.service'
 
 @Injectable({ providedIn: 'root' })
@@ -43,7 +42,7 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: `wheel.${options.data.name}`, path: 'wheel' })
     }
 
-    openGuider(options: Partial<OpenWindowOptions<undefined>> = {}) {
+    openGuider(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
         options.icon ||= 'guider'
         options.width ||= 425
         options.height ||= 440
@@ -64,15 +63,15 @@ export class BrowserWindowService {
         return id
     }
 
-    openINDI(options: Partial<OpenWindowOptions<INDIData>> = {}) {
+    openINDI(options: OpenWindowOptions<Device | undefined>) {
         options.icon ||= 'indi'
         options.width ||= 760
         options.height ||= 420
         options.resizable = true
-        this.openWindow({ ...options, id: 'indi', path: 'indi', data: undefined })
+        this.openWindow({ ...options, id: 'indi', path: 'indi' })
     }
 
-    openSkyAtlas(options: Partial<OpenWindowOptions<undefined>> = {}) {
+    openSkyAtlas(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
         options.icon ||= 'atlas'
         options.width ||= 450
         options.height ||= 523
@@ -86,18 +85,25 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'framing', path: 'framing' })
     }
 
-    openAlignment(options: Partial<OpenWindowOptions<undefined>> = {}) {
+    openAlignment(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
         options.icon ||= 'star'
         options.width ||= 470
         options.height ||= 280
         this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
     }
 
-    openSettings(options: Partial<OpenWindowOptions<undefined>> = {}) {
+    openSettings(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
         options.icon ||= 'settings'
         options.width ||= 480
         options.height ||= 470
         this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined })
+    }
+
+    openCalibration(options: OpenWindowOptions<Camera>) {
+        options.icon ||= 'stack'
+        options.width ||= 480
+        options.height ||= 470
+        this.openWindow({ ...options, id: 'calibration', path: 'calibration' })
     }
 
     openAbout() {

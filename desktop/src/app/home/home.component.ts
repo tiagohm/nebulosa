@@ -248,7 +248,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     private async openImage(force: boolean = false) {
         if (force || this.cameras.length === 0) {
-            const path = await this.electron.send('OPEN_FITS')
+            const path = await this.electron.openFITS()
 
             if (path) {
                 this.browserWindow.openImage({ path, source: 'PATH' })
@@ -283,7 +283,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 this.browserWindow.openAlignment({ bringToFront: true })
                 break
             case 'INDI':
-                this.browserWindow.openINDI({ bringToFront: true })
+                this.browserWindow.openINDI({ data: undefined, bringToFront: true })
                 break
             case 'IMAGE':
                 this.openImage()

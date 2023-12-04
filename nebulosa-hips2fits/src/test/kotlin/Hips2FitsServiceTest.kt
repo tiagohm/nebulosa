@@ -22,8 +22,8 @@ class Hips2FitsServiceTest : StringSpec() {
             val fits = responseBody.use { Fits(it.bytes().source()) }
             fits.read()
             val hdu = fits.filterIsInstance<ImageHdu>().first().header
-            hdu.naxis(1) shouldBeExactly 1200
-            hdu.naxis(2) shouldBeExactly 900
+            hdu.width shouldBeExactly 1200
+            hdu.height shouldBeExactly 900
             hdu.rightAscension.toDegrees shouldBeExactly 201.36506337683
             hdu.declination.toDegrees shouldBeExactly -43.01911250808
             fits.close()

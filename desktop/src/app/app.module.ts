@@ -52,6 +52,7 @@ import { AlignmentComponent } from './alignment/alignment.component'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { AtlasComponent } from './atlas/atlas.component'
+import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
 import { FocuserComponent } from './focuser/focuser.component'
@@ -87,6 +88,7 @@ import { SettingsComponent } from './settings/settings.component'
         LocationDialog,
         MenuItemComponent,
         DeviceMenuComponent,
+        CalibrationComponent,
         EnvPipe,
         WinPipe,
         EnumPipe,
