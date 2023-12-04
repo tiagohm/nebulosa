@@ -14,7 +14,6 @@ import { ContextMenuModule } from 'primeng/contextmenu'
 import { DialogModule } from 'primeng/dialog'
 import { DropdownModule } from 'primeng/dropdown'
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog'
-import { FieldsetModule } from 'primeng/fieldset'
 import { InplaceModule } from 'primeng/inplace'
 import { InputNumberModule } from 'primeng/inputnumber'
 import { InputSwitchModule } from 'primeng/inputswitch'
@@ -129,7 +128,6 @@ import { SettingsComponent } from './settings/settings.component'
         InplaceModule,
         SlideMenuModule,
         DynamicDialogModule,
-        FieldsetModule,
         ScrollPanelModule,
         ConfirmDialogModule,
         OverlayPanelModule,

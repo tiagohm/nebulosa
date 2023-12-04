@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
+import { MenuItem } from 'primeng/api'
 import { PLATE_SOLVER_SETTINGS } from '../../shared/constants'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
 import { ApiService } from '../../shared/services/api.service'
@@ -23,6 +24,19 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 
     readonly plateSolvers: PlateSolverType[] = ['ASTAP', 'ASTROMETRY_NET']
     readonly plateSolver: PlateSolverSettings = {}
+
+    readonly items: MenuItem[] = [
+        {
+            icon: 'mdi mdi-map-marker',
+            label: 'Location',
+        },
+        {
+            icon: 'mdi mdi-sigma',
+            label: 'Plate Solver',
+        },
+    ]
+
+    item = this.items[0]
 
     constructor(
         app: AppComponent,

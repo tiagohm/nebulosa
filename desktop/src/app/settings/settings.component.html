@@ -1,37 +1,44 @@
-<div class="grid pt-2 relative h-screen">
-    <p-tabView class="w-full" [(activeIndex)]="activeTab">
-        <p-tabPanel header="Location">
-            <div class="grid p-3">
-                <div class="col-5">
-                    <span class="p-float-label">
-                        <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()"
-                                    optionLabel="name" dataKey="id" styleClass="p-inputtext-sm border-0" emptyMessage="No location found" />
-                        <label>Location</label>
-                    </span>
+<div class="grid p-2 relative h-screen">
+    <div class="col-4 md:col-3 lg:col-2">
+        <p-listbox [options]="items" [(ngModel)]="item" [listStyle]="{ 'height': 'calc(100vh - 58px)', 'max-height': '100vh' }"
+                   styleClass="border-0" [style]="{ width: '100%' }">
+            <ng-template let-item pTemplate="item">
+                <div class="flex align-items-center gap-2">
+                    <i [class]="item.icon"></i>
+                    <span>{{ item.label }}</span>
                 </div>
-                <div class="col-4 flex align-items-center gap-1">
-                    <p-button (onClick)="addLocation()" icon="mdi mdi-plus" size="small" severity="success" />
-                    <p-button (onClick)="editLocation()" icon="mdi mdi-pencil" size="small" severity="info" />
-                    <p-button [disabled]="locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete"
-                              size="small" severity="danger" />
-                </div>
+            </ng-template>
+        </p-listbox>
+    </div>
+    <div class="col-8 md:col-9 lg:col-10">
+        <div *ngIf="item === items[0]" class="grid p-2">
+            <div class="col-8 md:col-6 lg:col-4">
+                <span class="p-float-label">
+                    <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()"
+                                optionLabel="name" dataKey="id" styleClass="p-inputtext-sm border-0" emptyMessage="No location found" />
+                    <label>Location</label>
+                </span>
             </div>
-        </p-tabPanel>
-        <p-tabPanel header="Plate Solver">
-            <div class="grid p-3">
-                <div class="col-5">
-                    <span class="p-float-label">
-                        <p-dropdown [options]="plateSolvers" [(ngModel)]="plateSolver.type" styleClass="p-inputtext-sm border-0" />
-                        <label>Type</label>
-                    </span>
-                </div>
-                <div class="col-6">
-                    <span class="p-float-label">
-                        <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="plateSolver.executablePath" />
-                        <label>Executable path</label>
-                    </span>
-                </div>
+            <div class="col-4 flex align-items-center gap-1">
+                <p-button (onClick)="addLocation()" icon="mdi mdi-plus" size="small" severity="success" />
+                <p-button (onClick)="editLocation()" icon="mdi mdi-pencil" size="small" severity="info" />
+                <p-button [disabled]="locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete"
+                          size="small" severity="danger" />
             </div>
-        </p-tabPanel>
-    </p-tabView>
+        </div>
+        <div *ngIf="item === items[1]" class="grid p-2">
+            <div class="col-5 md:col-4 lg:col-3">
+                <span class="p-float-label">
+                    <p-dropdown [options]="plateSolvers" [(ngModel)]="plateSolver.type" styleClass="p-inputtext-sm border-0" />
+                    <label>Type</label>
+                </span>
+            </div>
+            <div class="col-7">
+                <span class="p-float-label">
+                    <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="plateSolver.executablePath" />
+                    <label>Executable path</label>
+                </span>
+            </div>
+        </div>
+    </div>
 </div>

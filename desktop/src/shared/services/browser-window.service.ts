@@ -94,9 +94,9 @@ export class BrowserWindowService {
 
     openSettings(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
         options.icon ||= 'settings'
-        options.width ||= 480
-        options.height ||= 470
-        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined })
+        options.width ||= 580
+        options.height ||= 445
+        this.openWindow({ ...options, id: 'settings', path: 'settings', resizable: true, data: undefined })
     }
 
     openCalibration(options: OpenWindowOptions<Camera>) {
