@@ -5,7 +5,7 @@ import { DialogMenuComponent } from '../../shared/components/dialogmenu/dialogme
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
@@ -14,6 +14,11 @@ type MappedDevice = {
     'MOUNT': Mount
     'FOCUSER': Focuser
     'WHEEL': FilterWheel
+}
+
+export interface HomePreference {
+    host?: string
+    port?: number
 }
 
 @Component({
@@ -122,7 +127,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private api: ApiService,
         private message: MessageService,
-        private preference: PreferenceService,
+        private storage: LocalStorageService,
         private ngZone: NgZone,
     ) {
         app.title = 'Nebulosa'
@@ -173,8 +178,10 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     async ngAfterContentInit() {
         this.updateConnection()
 
-        this.host = await this.preference.get('home.host', 'localhost')
-        this.port = await this.preference.get('home.port', 7624)
+        const preference = this.storage.get<HomePreference>('home', {})
+
+        this.host = preference.host ?? 'localhost'
+        this.port = preference.port ?? 7624
 
         this.cameras = await this.api.cameras()
         this.mounts = await this.api.mounts()
@@ -192,8 +199,12 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             } else {
                 await this.api.connect(this.host || 'localhost', this.port)
 
-                this.preference.set('home.host', this.host)
-                this.preference.set('home.port', this.port)
+                const preference: HomePreference = {
+                    host: this.host,
+                    port: this.port,
+                }
+
+                this.storage.set('home', preference)
             }
         } catch (e) {
             console.error(e)

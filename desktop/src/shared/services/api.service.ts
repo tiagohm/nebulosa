@@ -5,9 +5,8 @@ import {
     FilterWheel, Focuser, GuideDirection, GuideOutput, Guider, HipsSurvey, HistoryStep,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
     ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
-    Mount,
-    SCNRProtectionMethod, Satellite, SatelliteGroupType,
-    SkyObjectType, SlewRate, Star, TrackMode, Twilight
+    Mount, PlateSolverOptions, SCNRProtectionMethod, Satellite, SatelliteGroupType,
+    SettleInfo, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 import { HttpService } from './http.service'
 
@@ -296,9 +295,12 @@ export class ApiService {
         return this.http.put<void>(`guiding/dither?${query}`)
     }
 
-    guidingSettle(amount: number, time: number, timeout: number) {
-        const query = this.http.query({ amount, time, timeout })
-        return this.http.put<void>(`guiding/settle?${query}`)
+    setGuidingSettle(settle: SettleInfo) {
+        return this.http.put<void>(`guiding/settle`, settle)
+    }
+
+    getGuidingSettle() {
+        return this.http.get<SettleInfo>(`guiding/settle`)
     }
 
     guidingStop() {
@@ -532,14 +534,6 @@ export class ApiService {
         return this.http.get<ImageAnnotation[]>(`image/annotations?${query}`)
     }
 
-    solveImage(
-        path: string, blind: boolean,
-        centerRA: Angle, centerDEC: Angle, radius: Angle,
-    ) {
-        const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
-        return this.http.put<ImageCalibrated>(`image/solve?${query}`)
-    }
-
     saveImageAs(inputPath: string, outputPath: string) {
         const query = this.http.query({ inputPath, outputPath })
         return this.http.put<void>(`image/save-as?${query}`)
@@ -588,25 +582,43 @@ export class ApiService {
         return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/stop`)
     }
 
+    // SOLVER
+
+    solveImage(
+        path: string, blind: boolean,
+        centerRA: Angle, centerDEC: Angle, radius: Angle,
+    ) {
+        const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
+        return this.http.put<ImageCalibrated>(`plate-solver?${query}`)
+    }
+
+    getPlateSolverSettings() {
+        return this.http.get<PlateSolverOptions>('plate-solver/settings')
+    }
+
+    setPlateSolverSettings(settings: PlateSolverOptions) {
+        return this.http.put<void>('plate-solver/settings', settings)
+    }
+
     // PREFERENCE
 
-    preferenceClear() {
+    clearPreferences() {
         return this.http.put<void>('preferences/clear')
     }
 
-    preferenceDelete(key: string) {
+    deletePreference(key: string) {
         return this.http.delete<void>(`preferences/${key}`)
     }
 
-    preferenceGet<T>(key: string) {
+    getPreference<T>(key: string) {
         return this.http.get<T>(`preferences/${key}`)
     }
 
-    preferencePut(key: string, data: any) {
+    setPreference(key: string, data: any) {
         return this.http.put<void>(`preferences/${key}`, { data })
     }
 
-    preferenceExists(key: string) {
+    hasPreference(key: string) {
         return this.http.get<boolean>(`preferences/${key}/exists`)
     }
 }

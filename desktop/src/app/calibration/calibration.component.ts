@@ -1,9 +1,7 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
-import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
 import { CalibrationFrameGroup, Camera } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
@@ -21,11 +19,8 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
     constructor(
         app: AppComponent,
         private api: ApiService,
-        private browserWindow: BrowserWindowService,
-        private electron: ElectronService,
-        private preference: PreferenceService,
+        electron: ElectronService,
         private route: ActivatedRoute,
-        ngZone: NgZone,
     ) {
         app.title = 'Calibration'
 

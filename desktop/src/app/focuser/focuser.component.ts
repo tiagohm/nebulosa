@@ -2,9 +2,14 @@ import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angu
 import { ActivatedRoute } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Focuser } from '../../shared/types'
 import { AppComponent } from '../app.component'
+
+export interface FocuserPreference {
+    stepsRelative?: number
+    stepsAbsolute?: number
+}
 
 @Component({
     selector: 'app-focuser',
@@ -36,7 +41,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         private app: AppComponent,
         private api: ApiService,
         private electron: ElectronService,
-        private preference: PreferenceService,
+        private storage: LocalStorageService,
         private route: ActivatedRoute,
         ngZone: NgZone,
     ) {
@@ -73,10 +78,8 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
             const focuser = await this.api.focuser(this.focuser.name)
             Object.assign(this.focuser, focuser)
 
-            await this.loadPreference()
+            this.loadPreference()
             this.update()
-
-            this.preference.set('focuser.selected', this.focuser.name)
         } else {
             this.app.subTitle = ''
         }
@@ -137,17 +140,22 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         this.maxPosition = this.focuser.maxPosition
     }
 
-    private async loadPreference() {
+    private loadPreference() {
         if (this.focuser) {
-            this.stepsRelative = await this.preference.get(`focuser.${this.focuser.name}.stepsRelative`, 0)
-            this.stepsAbsolute = await this.preference.get(`focuser.${this.focuser.name}.stepsAbsolute`, 0)
+            const preference = this.storage.get<FocuserPreference>(`focuser.${this.focuser.name}`, {})
+            this.stepsRelative = preference.stepsRelative ?? 100
+            this.stepsAbsolute = preference.stepsAbsolute ?? this.focuser.position
         }
     }
 
     private savePreference() {
         if (this.focuser && this.focuser.connected) {
-            this.preference.set(`focuser.${this.focuser.name}.stepsRelative`, this.stepsRelative)
-            this.preference.set(`focuser.${this.focuser.name}.stepsAbsolute`, this.stepsAbsolute)
+            const preference: FocuserPreference = {
+                stepsRelative: this.stepsRelative,
+                stepsAbsolute: this.stepsAbsolute,
+            }
+
+            this.storage.set(`focuser.${this.focuser.name}`, preference)
         }
     }
 }

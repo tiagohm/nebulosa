@@ -42,7 +42,6 @@ class ImageService(
     private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
     private val systemExecutorService: ExecutorService,
-    private val plateSolverService: PlateSolverService,
 ) {
 
     @Synchronized
@@ -236,16 +235,6 @@ class ImageService(
         wcs.close()
 
         return annotations
-    }
-
-    @Synchronized
-    fun solveImage(
-        path: Path,
-        centerRA: Angle, centerDEC: Angle, radius: Angle,
-    ): ImageCalibrated {
-        val calibration = plateSolverService.solve(path, centerRA, centerDEC, radius)
-        imageBucket.put(path, calibration)
-        return ImageCalibrated(calibration)
     }
 
     fun saveImageAs(inputPath: Path, outputPath: Path) {

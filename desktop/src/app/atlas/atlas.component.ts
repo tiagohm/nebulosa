@@ -13,7 +13,7 @@ import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import {
     Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION,
@@ -38,6 +38,10 @@ export interface SearchFilter {
     magnitude: [number, number]
     type: Union<SkyObjectType, 'ALL'>
     types: Union<SkyObjectType, 'ALL'>[]
+}
+
+export interface SkyAtlasPreference {
+    satellites?: { group: SatelliteGroupType, enabled: boolean }[]
 }
 
 @Component({
@@ -471,7 +475,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         electron: ElectronService,
-        private preference: PreferenceService,
+        private storage: LocalStorageService,
         private skyObjectPipe: SkyObjectPipe,
         private prime: PrimeService,
         ngZone: NgZone,
@@ -494,9 +498,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     }
 
     async ngOnInit() {
-        for (const item of SATELLITE_GROUPS) {
-            const enabled = await this.preference.get(`atlas.satellite.filter.${item}`, AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item))
-            this.satelliteSearchGroup.set(item, enabled)
+        const preference = this.storage.get<SkyAtlasPreference>('atlas', {})
+
+        for (const group of SATELLITE_GROUPS) {
+            const satellite = preference.satellites?.find(e => e.group === group)
+            const enabled = satellite?.enabled ?? AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(group)
+            this.satelliteSearchGroup.set(group, enabled)
         }
 
         this.starFilter.types.push(... await this.api.starTypes())
@@ -661,9 +668,13 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         this.refreshing = true
 
         try {
-            for (const item of SATELLITE_GROUPS) {
-                this.preference.set(`atlas.satellite.filter.${item}`, this.satelliteSearchGroup.get(item))
-            }
+            const preference = this.storage.get<SkyAtlasPreference>('atlas', {})
+
+            preference.satellites = SATELLITE_GROUPS.map(group => {
+                return { group, enabled: this.satelliteSearchGroup.get(group) ?? false }
+            })
+
+            this.storage.set('atlas', preference)
 
             const groups = SATELLITE_GROUPS.filter(e => this.satelliteSearchGroup.get(e))
             this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText, groups)
@@ -673,11 +684,17 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     }
 
     resetSatelliteFilter() {
-        for (const item of SATELLITE_GROUPS) {
-            const enabled = AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item)
-            this.preference.set(`atlas.satellite.filter.${item}`, enabled)
-            this.satelliteSearchGroup.set(item, enabled)
+        const preference = this.storage.get<SkyAtlasPreference>('atlas', {})
+
+        preference.satellites = []
+
+        for (const group of SATELLITE_GROUPS) {
+            const enabled = AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(group)
+            preference.satellites!.push({ group, enabled })
+            this.satelliteSearchGroup.set(group, enabled)
         }
+
+        this.storage.set('atlas', preference)
     }
 
     async filterSatellite() {

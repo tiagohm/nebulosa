@@ -463,6 +463,12 @@ export interface ImageCalibrated extends EquatorialCoordinateJ2000 {
     radius: number
 }
 
+export interface PlateSolverOptions {
+    type: PlateSolverType
+    executablePath: string
+    downsampleFactor: number
+}
+
 export interface ComputedLocation extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
     constellation: Constellation
     meridianAt: string
@@ -549,12 +555,6 @@ export interface NotificationEvent extends MessageEvent {
     silent: boolean
 }
 
-export interface PlateSolverSettings {
-    type?: PlateSolverType
-    executablePath?: string
-    downsampleFactor?: number
-}
-
 export interface CalibrationFrame {
     id: number
     type: FrameType
@@ -575,6 +575,12 @@ export interface CalibrationFrameGroup {
     id: number
     key: Omit<CalibrationFrame, 'id' | 'camera' | 'path' | 'enabled'>
     frames: CalibrationFrame[]
+}
+
+export interface SettleInfo {
+    amount: number
+    time: number
+    timeout: number
 }
 
 export enum ExposureTimeUnit {
@@ -883,3 +889,7 @@ export type GuideState = (typeof GUIDE_STATES)[number]
 export type Hemisphere = 'NORTHERN' | 'SOUTHERN'
 
 export type DARVPolarAlignmentState = 'IDLE' | 'INITIAL_PAUSE' | 'FORWARD' | 'BACKWARD'
+
+export type GuiderPlotMode = 'RA/DEC' | 'DX/DY'
+
+export type GuiderYAxisUnit = 'ARCSEC' | 'PIXEL'

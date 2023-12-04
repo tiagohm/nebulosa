@@ -11,7 +11,7 @@ import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import {
     Angle, AstronomicalObject, Camera, CheckableMenuItem, DeepSkyObject, DetectedStar, EquatorialCoordinateJ2000, FITSHeaderItem,
@@ -20,6 +20,10 @@ import {
 } from '../../shared/types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
+
+export interface ImagePreference {
+    solverRadius?: number
+}
 
 export interface ImageData {
     camera?: Camera
@@ -347,7 +351,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         private api: ApiService,
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
-        private preference: PreferenceService,
+        private storage: LocalStorageService,
         private prime: PrimeService,
         private ngZone: NgZone,
     ) {
@@ -373,8 +377,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         })
     }
 
-    async ngAfterViewInit() {
-        this.solverRadius = await this.preference.get('image.solver.radius', 4)
+    ngAfterViewInit() {
+        this.loadPreference()
 
         this.route.queryParams.subscribe(e => {
             const data = JSON.parse(decodeURIComponent(e.data)) as ImageData
@@ -477,6 +481,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
             await this.loadImageFromPath(this.imageData.path)
         }
+
+        this.loadPreference(this.imageData.camera)
 
         if (this.imageData.title) {
             this.app.subTitle = this.imageData.title
@@ -617,7 +623,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.solverCalibration = await this.api.solveImage(this.imageData.path!, this.solverBlind,
                 this.solverCenterRA, this.solverCenterDEC, this.solverRadius)
 
-            this.preference.set('image.solver.radius', this.solverRadius)
+            this.savePreference()
 
             this.solved = true
             this.annotationMenuItem.disabled = false
@@ -672,6 +678,30 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                     return e.target !== this.image.nativeElement
                 },
             })
+        }
+    }
+
+    private loadPreference(camera?: Camera) {
+        let preference: ImagePreference
+
+        if (camera) {
+            preference = this.storage.get<ImagePreference>(`image.${camera.name}`, {})
+        } else {
+            preference = this.storage.get<ImagePreference>('image', {})
+        }
+
+        this.solverRadius = preference.solverRadius ?? this.solverRadius
+    }
+
+    private savePreference() {
+        const preference: ImagePreference = {
+            solverRadius: this.solverRadius
+        }
+
+        if (this.imageData.camera) {
+            this.storage.set(`image.${this.imageData.camera.name}`, preference)
+        } else {
+            this.storage.set('image', preference)
         }
     }
 

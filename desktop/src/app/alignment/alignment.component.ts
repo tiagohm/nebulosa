@@ -2,7 +2,6 @@ import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angu
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
 import { Camera, DARVPolarAlignmentState, GuideDirection, GuideOutput, Hemisphere, Union } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
@@ -38,8 +37,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
-        private electron: ElectronService,
-        private preference: PreferenceService,
+        electron: ElectronService,
         ngZone: NgZone,
     ) {
         app.title = 'Alignment'

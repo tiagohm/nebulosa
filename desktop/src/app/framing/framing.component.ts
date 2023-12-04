@@ -5,9 +5,19 @@ import hipsSurveys from '../../assets/data/hipsSurveys.json'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Angle, HipsSurvey } from '../../shared/types'
 import { AppComponent } from '../app.component'
+
+export interface FramingPreference {
+    rightAscension?: Angle
+    declination?: Angle
+    width?: number
+    height?: number
+    fov?: number
+    rotation?: number
+    hipsSurvey?: HipsSurvey
+}
 
 export interface FramingData {
     rightAscension: Angle
@@ -45,7 +55,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
-        private preference: PreferenceService,
+        private storage: LocalStorageService,
         private message: MessageService,
         ngZone: NgZone,
     ) {
@@ -108,24 +118,30 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    private async loadPreference() {
-        this.rightAscension = await this.preference.get('framing.rightAscension', '00h00m00s')
-        this.declination = await this.preference.get('framing.declination', `+000°00'00"`)
-        this.width = await this.preference.get('framing.width', 1280)
-        this.height = await this.preference.get('framing.height', 720)
-        this.fov = await this.preference.get('framing.fov', 1)
-        this.rotation = await this.preference.get('framing.rotation', 0)
-        this.hipsSurvey = await this.preference.get('framing.hipsSurvey', this.hipsSurvey)
+    private loadPreference() {
+        const preference = this.storage.get<FramingPreference>('framing', {})
+
+        this.rightAscension = preference.rightAscension ?? '00h00m00s'
+        this.declination = preference.declination ?? `+00°00'00"`
+        this.width = preference.width ?? 1280
+        this.height = preference.height ?? 720
+        this.fov = preference.fov ?? 1
+        this.rotation = preference.rotation ?? 0
+        this.hipsSurvey ??= preference.hipsSurvey ?? this.hipsSurvey
     }
 
     private savePreference() {
-        this.preference.set('framing.rightAscension', this.rightAscension)
-        this.preference.set('framing.declination', this.declination)
-        this.preference.set('framing.width', this.width)
-        this.preference.set('framing.height', this.height)
-        this.preference.set('framing.fov', this.fov)
-        this.preference.set('framing.rotation', this.rotation)
-        this.preference.set('framing.hipsSurvey', this.hipsSurvey)
+        const preference: FramingPreference = {
+            rightAscension: this.rightAscension,
+            declination: this.declination,
+            width: this.width,
+            height: this.height,
+            fov: this.fov,
+            rotation: this.rotation,
+            hipsSurvey: this.hipsSurvey,
+        }
+
+        this.storage.set('framing', preference)
     }
 
     private async closeFrameImage() {

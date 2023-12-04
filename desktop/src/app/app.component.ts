@@ -4,7 +4,6 @@ import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { APP_CONFIG } from '../environments/environment'
 import { ElectronService } from '../shared/services/electron.service'
-import { PreferenceService } from '../shared/services/preference.service'
 
 @Component({
     selector: 'app-root',
@@ -30,12 +29,11 @@ export class AppComponent implements AfterViewInit {
     constructor(
         private windowTitle: Title,
         private route: ActivatedRoute,
-        private electronService: ElectronService,
-        private preference: PreferenceService,
+        private electron: ElectronService,
     ) {
         console.info('APP_CONFIG', APP_CONFIG)
 
-        if (electronService.isElectron) {
+        if (electron.isElectron) {
             console.info('Run in electron')
         } else {
             console.info('Run in browser')
@@ -50,19 +48,19 @@ export class AppComponent implements AfterViewInit {
 
     pin() {
         this.pinned = !this.pinned
-        if (this.pinned) this.electronService.send('PIN_WINDOW')
-        else this.electronService.send('UNPIN_WINDOW')
+        if (this.pinned) this.electron.send('PIN_WINDOW')
+        else this.electron.send('UNPIN_WINDOW')
     }
 
     minimize() {
-        this.electronService.send('MINIMIZE_WINDOW')
+        this.electron.send('MINIMIZE_WINDOW')
     }
 
     maximize() {
-        this.electronService.send('MAXIMIZE_WINDOW')
+        this.electron.send('MAXIMIZE_WINDOW')
     }
 
     close() {
-        this.electronService.send('CLOSE_WINDOW')
+        this.electron.send('CLOSE_WINDOW')
     }
 }
