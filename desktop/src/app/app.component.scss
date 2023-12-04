@@ -12,12 +12,6 @@
 
         .separator {
             width: 16px;
-
-            &:after {
-                content: '';
-                border-left: 1px dashed #3D3D3D;
-                height: 16px;
-            }
         }
     }
 }
