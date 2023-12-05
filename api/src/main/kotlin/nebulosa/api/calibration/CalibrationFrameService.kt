@@ -9,8 +9,13 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.log.loggerFor
 import org.springframework.stereotype.Service
+import java.nio.file.Path
 import java.util.*
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.listDirectoryEntries
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 // https://cdn.diffractionlimited.com/help/maximdl/Understanding_Calibration_Groups.htm
 // https://www.astropy.org/ccd-reduction-and-photometry-guide/v/dev/notebooks/00-00-Preface.html
@@ -53,15 +58,57 @@ class CalibrationFrameService(
         }
     }
 
-    fun groupedCalibrationFrames(): Map<CalibrationGroupKey, List<CalibrationFrameEntity>> {
-        val frames = calibrationFrameRepository.findAll()
-        return frames.groupBy { CalibrationGroupKey.from(it) }
+    fun groupedCalibrationFrames(camera: Camera): Map<CalibrationGroupKey, List<CalibrationFrameEntity>> {
+        val frames = calibrationFrameRepository.findAll(camera)
+        return frames.groupBy(CalibrationGroupKey::from)
+    }
+
+    fun upload(camera: Camera, path: Path): List<CalibrationFrameEntity> {
+        val files = if (path.isRegularFile() && path.isFits) listOf(path)
+        else if (path.isDirectory()) path.listDirectoryEntries("*.{fits,fit}").filter { it.isRegularFile() }
+        else return emptyList()
+
+        return upload(camera, files)
+    }
+
+    @Synchronized
+    fun upload(camera: Camera, files: List<Path>): List<CalibrationFrameEntity> {
+        val frames = ArrayList<CalibrationFrameEntity>(files.size)
+
+        for (file in files) {
+            calibrationFrameRepository.delete(camera, "$file")
+
+            try {
+                Fits(file).also(Fits::read).use { fits ->
+                    val (header) = fits.filterIsInstance<ImageHdu>().firstOrNull() ?: return@use
+                    val frameType = header.frameType?.takeIf { it != FrameType.LIGHT } ?: return@use
+
+                    val exposureTime = if (frameType == FrameType.DARK) header.exposureTimeInMicroseconds else 0L
+                    val temperature = if (frameType == FrameType.DARK) header.temperature else 999.0
+                    val gain = if (frameType != FrameType.FLAT) header.gain else 0.0
+                    val filter = if (frameType == FrameType.FLAT) header.filter else null
+
+                    val frame = CalibrationFrameEntity(
+                        System.currentTimeMillis(),
+                        frameType, camera.name, filter,
+                        exposureTime, temperature,
+                        header.width, header.height, header.binX, header.binY,
+                        gain, "$file",
+                    )
+
+                    calibrationFrameRepository.saveAndFlush(frame)
+                        .also(frames::add)
+                }
+            } catch (e: Throwable) {
+                LOG.error("cannot open FITS. path={}, message={}", file, e.message)
+            }
+        }
+
+        return frames
     }
 
     // exposureTime, temperature, width, height, binX, binY, gain.
-    fun findBestDarkFrames(camera: Camera, image: Image, temperatureTolerance: Double = 0.5): List<CalibrationFrameEntity> {
-        require(temperatureTolerance in 0.5..10.0) { "temperature tolerance must be between 0.5 and 10" }
-
+    fun findBestDarkFrames(camera: Camera, image: Image): List<CalibrationFrameEntity> {
         val header = image.header
         val temperature = header.temperature
 
@@ -72,7 +119,8 @@ class CalibrationFrameService(
 
         // Closest temperature.
         val groupedFrames = TreeMap<Int, MutableList<CalibrationFrameEntity>>()
-        frames.groupByTo(groupedFrames) { (abs(it.temperature - temperature) * temperatureTolerance * 100.0).toInt() }
+        frames.groupByTo(groupedFrames) { abs(it.temperature - temperature).roundToInt() }
+        // TODO: Dont use if temperature is out of tolerance range
         // TODO: Generate master from matched frames.
         return groupedFrames.firstEntry().value
     }
@@ -105,5 +153,8 @@ class CalibrationFrameService(
                 else if ("BIAS" in it) FrameType.BIAS
                 else null
             }
+
+        inline val Path.isFits
+            get() = "$this".let { it.endsWith(".fits") || it.endsWith(".fit") }
     }
 }

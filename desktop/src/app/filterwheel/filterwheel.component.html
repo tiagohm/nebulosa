@@ -18,42 +18,58 @@
             <p-tag *ngIf="connected && selectedFilter" [value]="selectedFilter.name" severity="info" />
         </div>
     </div>
-    <div class="grid">
-        <p-scrollPanel [style]="{ width: '100%', height: '143px' }" class="w-full">
-            @for (item of filters; track item.position) {
-            <div class="grid m-1 mr-2 border-round filter" [class.surface-card]="item.expanded && item.position !== position"
-                 [class.current]="connected && item.position === position"
-                 style="min-height: 44px;">
-                <div class="col-12 flex flex-column align-items-center justify-content-center p-1">
-                    <div class="align-items-center flex justify-content-between ng-star-inserted p-1 w-full">
-                        <span class="align-items-center flex gap-1">
-                            {{ item.name }}
-                            <i *ngIf="item.dark" class="mdi mdi-camera-iris"></i>
-                        </span>
-                        <span class="flex align-items-center justify-content-center gap-1">
-                            <p-button [disabled]="!connected || moving || item.position === position" label="Move" (onClick)="moveTo(item)" />
-                            <p-button [disabled]="!connected || moving" [text]="true" [rounded]="true" icon="mdi mdi-pencil"
-                                      (onClick)="item.expanded = !item.expanded" />
-                        </span>
-                    </div>
-                    <div class="flex flex-row w-full py-2 px-3 align-items-center justify-content-between" *ngIf="item.expanded">
-                        <div class="flex align-items-center justify-content-center gap-1">
-                            <span class="p-float-label">
-                                <input [disabled]="!connected || moving" type="text" pInputText class="p-inputtext-sm border-0 w-full"
-                                       [(ngModel)]="item.newName" [maxLength]="32" />
-                                <label>New name</label>
+    <div class="grid mt-2">
+        <div class="col-9">
+            <span class="p-float-label">
+                <p-dropdown [disabled]="!connected || moving" [options]="filters" [(ngModel)]="filter" styleClass="border-0"
+                            emptyMessage="No filter found">
+                    <ng-template let-item pTemplate="selectedItem">
+                        <div class="flex flex-column justify-content-center gap-1">
+                            <span class="flex align-items-center text-xs gap-1" style="min-height: 15px">
+                                <p-tag *ngIf="filter" value="#{{ filter.position }}" />
+                                <p-tag *ngIf="filter" value="OFFSET: {{ filter.offset }}" severity="success" />
+                                <i *ngIf="filter?.dark" class="mdi mdi-camera-iris"></i>
                             </span>
-                            <p-button [disabled]="!connected || moving" severity="success" [text]="true" icon="mdi mdi-check" styleClass="p-button-sm"
-                                      (onClick)="applyFilterName(item, $event)" pTooltip="Apply" tooltipPosition="bottom" />
+                            <span>{{ filter?.name }}</span>
                         </div>
-                        <div class="flex flex-column align-items-center justify-content-center gap-1">
-                            <p-checkbox [disabled]="!connected || moving" [binary]="true" [ngModel]="item.dark" (onChange)="shutterToggled(item, $event)"
-                                        pTooltip="Shutter" tooltipPosition="bottom" />
+                    </ng-template>
+                    <ng-template let-item pTemplate="item">
+                        <div class="flex flex-column justify-content-center gap-1">
+                            <span class="flex align-items-center text-xs gap-1" style="min-height: 15px">
+                                <p-tag value="#{{ item.position }}" />
+                                <p-tag value="OFFSET: {{ item.offset }}" severity="success" />
+                                <i *ngIf="item.dark" class="mdi mdi-camera-iris"></i>
+                            </span>
+                            <span>{{ item.name }}</span>
                         </div>
-                    </div>
-                </div>
-            </div>
-            }
-        </p-scrollPanel>
+                    </ng-template>
+                </p-dropdown>
+                <label>Filter</label>
+            </span>
+        </div>
+        <div class="col-3 flex align-items-center justify-content-center">
+            <p-button [disabled]="!connected || moving || filter?.position === position" label="Move" icon="mdi mdi-check"
+                      (onClick)="filter && moveTo(filter)" />
+        </div>
+    </div>
+    <div class="grid mt-2" *ngIf="filter">
+        <div class="col-7">
+            <span class="p-float-label">
+                <input pInputText [disabled]="!connected || moving" [(ngModel)]="filter.name" (ngModelChange)="filterNameChanged(filter)"
+                       class="border-0 w-full p-inputtext-sm">
+                <label>Name</label>
+            </span>
+        </div>
+        <div class="col-5">
+            <span class="p-float-label">
+                <p-inputNumber [disabled]="!connected || moving" [(ngModel)]="filter.offset" [min]="-1000000" [max]="1000000" [showButtons]="true"
+                               locale="en" styleClass="border-0 w-full p-inputtext-sm" />
+                <label>Focus offset</label>
+            </span>
+        </div>
+        <div class="col-12 flex flex-column justify-content-center gap-2">
+            <span class="text-sm">Shutter</span>
+            <p-inputSwitch [disabled]="!connected || moving" [ngModel]="filter.dark" (onChange)="shutterToggled(filter, $event)" />
+        </div>
     </div>
 </div>

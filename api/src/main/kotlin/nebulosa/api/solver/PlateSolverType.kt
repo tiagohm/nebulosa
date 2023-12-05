@@ -1,4 +1,4 @@
-package nebulosa.api.image
+package nebulosa.api.solver
 
 enum class PlateSolverType {
     ASTAP,

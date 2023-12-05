@@ -14,7 +14,6 @@ import { ContextMenuModule } from 'primeng/contextmenu'
 import { DialogModule } from 'primeng/dialog'
 import { DropdownModule } from 'primeng/dropdown'
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog'
-import { FieldsetModule } from 'primeng/fieldset'
 import { InplaceModule } from 'primeng/inplace'
 import { InputNumberModule } from 'primeng/inputnumber'
 import { InputSwitchModule } from 'primeng/inputswitch'
@@ -53,6 +52,7 @@ import { AlignmentComponent } from './alignment/alignment.component'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { AtlasComponent } from './atlas/atlas.component'
+import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
 import { FocuserComponent } from './focuser/focuser.component'
@@ -88,6 +88,7 @@ import { SettingsComponent } from './settings/settings.component'
         LocationDialog,
         MenuItemComponent,
         DeviceMenuComponent,
+        CalibrationComponent,
         SkyMapComponent,
         EnvPipe,
         WinPipe,
@@ -129,7 +130,6 @@ import { SettingsComponent } from './settings/settings.component'
         InplaceModule,
         SlideMenuModule,
         DynamicDialogModule,
-        FieldsetModule,
         ScrollPanelModule,
         ConfirmDialogModule,
         OverlayPanelModule,

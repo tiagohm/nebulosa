@@ -5,8 +5,6 @@ import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.transformation.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
-import nebulosa.math.deg
-import nebulosa.math.hours
 import nebulosa.star.detection.ImageStar
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
@@ -61,15 +59,6 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "false") minorPlanets: Boolean,
         @RequestParam(required = false, defaultValue = "12.0") minorPlanetMagLimit: Double,
     ) = imageService.annotations(path, stars, dsos, minorPlanets, minorPlanetMagLimit)
-
-    @PutMapping("solve")
-    fun solveImage(
-        @RequestParam path: Path,
-        @RequestParam(required = false, defaultValue = "true") blind: Boolean,
-        @RequestParam(required = false, defaultValue = "0.0") centerRA: String,
-        @RequestParam(required = false, defaultValue = "0.0") centerDEC: String,
-        @RequestParam(required = false, defaultValue = "8.0") radius: String,
-    ) = imageService.solveImage(path, centerRA.hours, centerDEC.deg, if (blind) 0.0 else radius.deg)
 
     @GetMapping("coordinate-interpolation")
     fun coordinateInterpolation(@RequestParam path: Path): CoordinateInterpolation? {

@@ -98,6 +98,10 @@ export class ElectronService {
         this.ipcRenderer.on(channel, (_, arg) => listener(arg))
     }
 
+    openFITS(): Promise<string | undefined> {
+        return this.send('OPEN_FITS')
+    }
+
     openDirectory(data?: OpenDirectory): Promise<string | false> {
         return this.send('OPEN_DIRECTORY', data)
     }

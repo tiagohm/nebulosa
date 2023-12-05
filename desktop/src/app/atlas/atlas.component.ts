@@ -1,6 +1,7 @@
 import { AfterContentInit, AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
+import moment from 'moment'
 import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
@@ -12,7 +13,7 @@ import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import {
     Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION,
@@ -37,6 +38,10 @@ export interface SearchFilter {
     magnitude: [number, number]
     type: Union<SkyObjectType, 'ALL'>
     types: Union<SkyObjectType, 'ALL'>[]
+}
+
+export interface SkyAtlasPreference {
+    satellites?: { group: SatelliteGroupType, enabled: boolean }[]
 }
 
 @Component({
@@ -463,13 +468,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     ]
 
     private refreshTimer?: Subscription
+    private refreshTabCount = 0
 
     constructor(
         private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         electron: ElectronService,
-        private preference: PreferenceService,
+        private storage: LocalStorageService,
         private skyObjectPipe: SkyObjectPipe,
         private prime: PrimeService,
         ngZone: NgZone,
@@ -492,9 +498,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     }
 
     async ngOnInit() {
-        for (const item of SATELLITE_GROUPS) {
-            const enabled = await this.preference.get(`atlas.satellite.filter.${item}`, AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item))
-            this.satelliteSearchGroup.set(item, enabled)
+        const preference = this.storage.get<SkyAtlasPreference>('atlas', {})
+
+        for (const group of SATELLITE_GROUPS) {
+            const satellite = preference.satellites?.find(e => e.group === group)
+            const enabled = satellite?.enabled ?? AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(group)
+            this.satelliteSearchGroup.set(group, enabled)
         }
 
         this.starFilter.types.push(... await this.api.starTypes())
@@ -521,7 +530,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             })
 
         if (initialDelay > 2500) {
-            this.refreshTab()
+            await this.refreshTab()
         }
     }
 
@@ -536,12 +545,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         this.refreshTimer?.unsubscribe()
     }
 
-    tabChanged() {
-        this.refreshTab(false, true)
+    async tabChanged() {
+        await this.refreshTab(false, true)
     }
 
-    planetChanged() {
-        this.refreshTab(false, true)
+    async planetChanged() {
+        await this.refreshTab(false, true)
     }
 
     async searchMinorPlanet() {
@@ -552,7 +561,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
             if (minorPlanet.found) {
                 this.minorPlanet = minorPlanet
-                this.refreshTab(false, true)
+                await this.refreshTab(false, true)
             } else {
                 this.minorPlanetChoiceItems = minorPlanet.searchItems
                 this.showMinorPlanetChoiceDialog = true
@@ -568,20 +577,20 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         this.showMinorPlanetChoiceDialog = false
     }
 
-    starChanged() {
-        this.refreshTab(false, true)
+    async starChanged() {
+        await this.refreshTab(false, true)
     }
 
-    dsoChanged() {
-        this.refreshTab(false, true)
+    async dsoChanged() {
+        await this.refreshTab(false, true)
     }
 
-    simbadChanged() {
-        this.refreshTab(false, true)
+    async simbadChanged() {
+        await this.refreshTab(false, true)
     }
 
-    satelliteChanged() {
-        this.refreshTab(false, true)
+    async satelliteChanged() {
+        await this.refreshTab(false, true)
     }
 
     showStarFilterDialog() {
@@ -659,9 +668,13 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         this.refreshing = true
 
         try {
-            for (const item of SATELLITE_GROUPS) {
-                this.preference.set(`atlas.satellite.filter.${item}`, this.satelliteSearchGroup.get(item))
-            }
+            const preference = this.storage.get<SkyAtlasPreference>('atlas', {})
+
+            preference.satellites = SATELLITE_GROUPS.map(group => {
+                return { group, enabled: this.satelliteSearchGroup.get(group) ?? false }
+            })
+
+            this.storage.set('atlas', preference)
 
             const groups = SATELLITE_GROUPS.filter(e => this.satelliteSearchGroup.get(e))
             this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText, groups)
@@ -671,11 +684,17 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     }
 
     resetSatelliteFilter() {
-        for (const item of SATELLITE_GROUPS) {
-            const enabled = AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(item)
-            this.preference.set(`atlas.satellite.filter.${item}`, enabled)
-            this.satelliteSearchGroup.set(item, enabled)
+        const preference = this.storage.get<SkyAtlasPreference>('atlas', {})
+
+        preference.satellites = []
+
+        for (const group of SATELLITE_GROUPS) {
+            const enabled = AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(group)
+            preference.satellites!.push({ group, enabled })
+            this.satelliteSearchGroup.set(group, enabled)
         }
+
+        this.storage.set('atlas', preference)
     }
 
     async filterSatellite() {
@@ -683,13 +702,13 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         this.showSatelliteFilterDialog = false
     }
 
-    dateTimeChanged(dateChanged: boolean) {
-        this.refreshTab(dateChanged, true)
+    async dateTimeChanged(dateChanged: boolean) {
+        await this.refreshTab(dateChanged, true)
     }
 
-    useManualDateTimeChanged() {
+    async useManualDateTimeChanged() {
         if (!this.useManualDateTime) {
-            this.refreshTab(true, true)
+            await this.refreshTab(true, true)
         }
     }
 
@@ -720,9 +739,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         refreshChart: boolean = false,
         location?: Location,
     ) {
+        if (this.refreshing) return
+
         location ??= await this.api.selectedLocation()
 
         this.refreshing = true
+        this.refreshTabCount++
 
         if (!this.useManualDateTime) {
             this.dateTime = new Date()
@@ -733,7 +755,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             this.dateTime.setMinutes(this.dateTimeMinute)
         }
 
-        this.app.subTitle = location.name
+        this.app.subTitle = `${location.name} · ${moment(this.dateTime).format('YYYY-MM-DD HH:mm')}`
 
         try {
             // Sun.
@@ -837,7 +859,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 }
             }
 
-            if (refreshTwilight) {
+            if (this.refreshTabCount === 1 || refreshTwilight) {
                 const twilight = await this.api.twilight(location!, this.dateTime)
                 this.altitudeData.datasets[0].data = [[0.0, 90], [twilight.civilDusk[0], 90]]
                 this.altitudeData.datasets[1].data = [[twilight.civilDusk[0], 90], [twilight.civilDusk[1], 90]]
@@ -851,7 +873,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 this.chart?.refresh()
             }
 
-            if (refreshChart) {
+            if (this.refreshTabCount === 1 || refreshChart) {
                 await this.refreshChart(location)
             }
         } finally {

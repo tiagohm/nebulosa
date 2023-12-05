@@ -1,8 +1,9 @@
 package nebulosa.api.calibration
 
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import nebulosa.api.beans.annotations.EntityBy
+import nebulosa.indi.device.camera.Camera
+import org.springframework.web.bind.annotation.*
+import java.nio.file.Path
 
 @RestController
 @RequestMapping("calibration-frames")
@@ -10,9 +11,15 @@ class CalibrationFrameController(
     private val calibrationFrameService: CalibrationFrameService,
 ) {
 
-    @GetMapping
-    fun groups(): List<CalibrationFrameGroup> {
-        val groupedFrames = calibrationFrameService.groupedCalibrationFrames()
-        return groupedFrames.map { CalibrationFrameGroup(it.key, it.value) }
+    @GetMapping("{camera}")
+    fun groups(@EntityBy camera: Camera): List<CalibrationFrameGroup> {
+        var id = 0
+        val groupedFrames = calibrationFrameService.groupedCalibrationFrames(camera)
+        return groupedFrames.map { CalibrationFrameGroup(id++, it.key, it.value) }
+    }
+
+    @PutMapping("{camera}")
+    fun upload(@EntityBy camera: Camera, @RequestParam path: Path): List<CalibrationFrameEntity> {
+        return calibrationFrameService.upload(camera, path)
     }
 }

@@ -9,5 +9,3 @@ export const ONE_DECIMAL_PLACE_FORMATTER = new Intl.NumberFormat('en-US', { mini
 export const SEPARATOR_MENU_ITEM: MenuItem = {
     separator: true,
 }
-
-export const PLATE_SOLVER_SETTINGS = 'PLATE_SOLVER_SETTINGS'

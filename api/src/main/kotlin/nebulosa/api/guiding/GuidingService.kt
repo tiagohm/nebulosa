@@ -1,6 +1,8 @@
 package nebulosa.api.guiding
 
+import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
+import nebulosa.api.preferences.PreferenceService
 import nebulosa.api.services.MessageService
 import nebulosa.guiding.GuideStar
 import nebulosa.guiding.GuideState
@@ -14,12 +16,27 @@ import kotlin.math.min
 
 @Service
 class GuidingService(
+    private val preferenceService: PreferenceService,
     private val messageService: MessageService,
     private val phd2Client: PHD2Client,
     private val guider: Guider,
 ) : GuiderListener {
 
     private val guideHistory = GuideStepHistory()
+
+    val settleAmount
+        get() = guider.settleAmount
+
+    val settleTime
+        get() = guider.settleTime
+
+    val settleTimeout
+        get() = guider.settleTimeout
+
+    @PostConstruct
+    private fun initialize() {
+        settle(preferenceService.getJSON<SettleInfo>("GUIDING.SETTLE") ?: SettleInfo.EMPTY)
+    }
 
     @Synchronized
     fun connect(host: String, port: Int) {
@@ -68,10 +85,16 @@ class GuidingService(
         }
     }
 
-    fun settle(settleAmount: Double?, settleTime: Duration?, settleTimeout: Duration?) {
-        if (settleAmount != null) guider.settleAmount = settleAmount
-        if (settleTime != null) guider.settleTime = settleTime
-        if (settleTimeout != null) guider.settleTimeout = settleTimeout
+    fun settle(settle: SettleInfo) {
+        guider.settleAmount = settle.amount
+        guider.settleTime = Duration.ofSeconds(settle.time)
+        guider.settleTimeout = Duration.ofSeconds(settle.timeout)
+
+        preferenceService.putJSON("GUIDING.SETTLE", settle)
+    }
+
+    fun settle(): SettleInfo {
+        return SettleInfo.from(guider)
     }
 
     fun dither(amount: Double, raOnly: Boolean = false) {

@@ -1,11 +1,10 @@
 import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
-import { PLATE_SOLVER_SETTINGS } from '../../shared/constants'
+import { MenuItem } from 'primeng/api'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { EMPTY_LOCATION, Location, PlateSolverSettings, PlateSolverType } from '../../shared/types'
+import { EMPTY_LOCATION, Location, PlateSolverOptions, PlateSolverType } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -22,13 +21,25 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     private deletedLocations: Location[] = []
 
     readonly plateSolvers: PlateSolverType[] = ['ASTAP', 'ASTROMETRY_NET']
-    readonly plateSolver: PlateSolverSettings = {}
+    plateSolver!: PlateSolverOptions
+
+    readonly items: MenuItem[] = [
+        {
+            icon: 'mdi mdi-map-marker',
+            label: 'Location',
+        },
+        {
+            icon: 'mdi mdi-sigma',
+            label: 'Plate Solver',
+        },
+    ]
+
+    item = this.items[0]
 
     constructor(
         app: AppComponent,
         private api: ApiService,
         private electron: ElectronService,
-        private preference: PreferenceService,
         private prime: PrimeService,
     ) {
         app.title = 'Settings'
@@ -43,8 +54,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     }
 
     async ngAfterViewInit() {
-        Object.assign(this.plateSolver, await this.preference.get(PLATE_SOLVER_SETTINGS, this.plateSolver))
-        if (!this.plateSolver.type) this.plateSolver.type = 'ASTAP'
+        this.plateSolver = await this.api.getPlateSolverSettings()
 
         this.loadLocation()
     }
@@ -109,6 +119,6 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         await this.loadLocation()
         this.electron.send('LOCATION_CHANGED', this.location)
 
-        this.preference.set(PLATE_SOLVER_SETTINGS, this.plateSolver)
+        this.api.setPlateSolverSettings(this.plateSolver)
     }
 }

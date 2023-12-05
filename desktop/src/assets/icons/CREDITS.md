@@ -28,4 +28,5 @@
 * https://www.flaticon.com/free-icon/satellite_1086093
 * https://www.flaticon.com/free-icon/schedule_3652191
 * https://www.flaticon.com/free-icon/search_10770011
-* https://thenounproject.com/icon/random-dither-4259782/
+* https://www.flaticon.com/free-icon/stack_3342239
+* https://thenounproject.com/icon/random-dither-4259782
