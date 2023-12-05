@@ -38,7 +38,7 @@ export class BrowserWindowService {
     openWheel(options: OpenWindowOptions<FilterWheel>) {
         options.icon ||= 'filter-wheel'
         options.width ||= 300
-        options.height ||= 263
+        options.height ||= 283
         this.openWindow({ ...options, id: `wheel.${options.data.name}`, path: 'wheel' })
     }
 

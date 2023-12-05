@@ -31,7 +31,7 @@
             <span *ngIf="camera && (savePath || capturesPath)" style="padding-top: 1px; padding-bottom: 1px; height: 15px;"
                   class="flex align-items-center gap-2 bg-gray-800 border-round-2xl px-3 text-overflow-scroll">
                 {{ savePath || capturesPath }}
-                <i *ngIf="savePath" class="mdi mdi-close cursor-pointer" pTooltip="Reset" tooltipPosition="bottom" (click)="resetSavePath()"></i>
+                <i *ngIf="savePath" class="mdi mdi-close cursor-pointer" pTooltip="Reset" tooltipPosition="bottom" (click)="clearSavePath()"></i>
             </span>
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm" style="min-height: 25px;">

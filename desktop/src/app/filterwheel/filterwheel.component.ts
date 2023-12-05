@@ -1,6 +1,7 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { CheckboxChangeEvent } from 'primeng/checkbox'
+import { InputSwitchChangeEvent } from 'primeng/inputswitch'
+import { Subject, Subscription, throttleTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
@@ -11,14 +12,14 @@ import { AppComponent } from '../app.component'
 export interface WheelPreference {
     shutterPosition?: number
     names?: string[]
+    offsets?: number[]
 }
 
-export interface FilterSlot {
+export interface Filter {
     position: number
     name: string
-    expanded: boolean
-    newName: string
     dark: boolean
+    offset: number
 }
 
 @Component({
@@ -33,11 +34,15 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     moving = false
     position = 0
-    filters: FilterSlot[] = []
+    filters: Filter[] = []
+    filter?: Filter
 
-    get selectedFilter() {
+    get selectedFilter(): Filter | undefined {
         return this.filters[this.position - 1]
     }
+
+    private readonly filterChangedPublisher = new Subject<Filter>()
+    private subscription?: Subscription
 
     constructor(
         private app: AppComponent,
@@ -58,6 +63,13 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                 })
             }
         })
+
+        this.subscription = this.filterChangedPublisher
+            .pipe(throttleTime(1500))
+            .subscribe((filter) => {
+                this.savePreference()
+                this.electron.send('WHEEL_RENAMED', { wheel: this.wheel!, filter })
+            })
     }
 
     async ngAfterContentInit() {
@@ -68,7 +80,9 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() { }
+    ngOnDestroy() {
+        this.subscription?.unsubscribe()
+    }
 
     async wheelChanged(wheel?: FilterWheel) {
         this.wheel = wheel
@@ -94,23 +108,23 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    shutterToggled(filter: FilterSlot, event: CheckboxChangeEvent) {
-        this.filters.forEach(e => e.dark = e === filter)
-        this.savePreference()
-        event.originalEvent?.stopImmediatePropagation()
-    }
-
-    moveTo(filter: FilterSlot) {
+    moveTo(filter: Filter) {
         this.api.wheelMoveTo(this.wheel!, filter.position)
     }
 
-    applyFilterName(filter: FilterSlot, event: Event) {
-        filter.name = filter.newName
+    shutterToggled(filter: Filter, event: InputSwitchChangeEvent) {
+        this.filters.forEach(e => e.dark = event.checked && e === filter)
+        this.filterChangedPublisher.next(filter)
+    }
 
-        this.savePreference()
-        this.electron.send('WHEEL_RENAMED', this.wheel)
+    filterNameChanged(filter: Filter) {
+        if (filter.name) {
+            this.filterChangedPublisher.next(filter)
+        }
+    }
 
-        event.stopImmediatePropagation()
+    focusOffsetChanged(filter: Filter) {
+        this.filterChangedPublisher.next(filter)
     }
 
     private async update() {
@@ -122,7 +136,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         this.moving = this.wheel.moving
         this.position = this.wheel.position
 
-        let filters: FilterSlot[] = []
+        let filters: Filter[] = []
 
         if (this.wheel.count <= 0) {
             this.filters = []
@@ -136,14 +150,15 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         const preference = this.storage.get<WheelPreference>(`wheel.${this.wheel.name}`, {})
 
         for (let position = 1; position <= filters.length; position++) {
-            const name = preference.names?.[position] ?? `Filter #${position}`
+            const name = preference.names?.[position - 1] ?? `Filter #${position}`
+            const offset = preference.offsets?.[position - 1] ?? 0
             const dark = position === preference.shutterPosition
-            const expanded = this.filters[position - 1]?.expanded ?? false
-            const filter = { position, name, expanded, newName: name, dark }
+            const filter = { position, name, dark, offset }
             filters[position - 1] = filter
         }
 
         this.filters = filters
+        this.filter = filters[this.position - 1] ?? filters[0]
     }
 
     private loadPreference() {
