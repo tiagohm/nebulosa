@@ -253,6 +253,18 @@
                     </p-table>
                 </div>
             </p-tabPanel>
+            <p-tabPanel header="Sky Map">
+                <ng-template pTemplate="header">
+                    <div class="p-3" pTooltip="Sky Map" tooltipPosition="bottom">
+                        <img src="assets/icons/atlas.png">
+                    </div>
+                </ng-template>
+                <div class="grid flex align-items-center justify-content-center">
+                    <div class="col-12">
+                        <p-skymap />
+                    </div>
+                </div>
+            </p-tabPanel>
         </p-tabView>
     </div>
 </div>
