@@ -8,6 +8,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
 import { AppComponent } from '../app.component'
+import path from 'path'
 
 type MappedDevice = {
     'CAMERA': Camera
@@ -259,10 +260,12 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     private async openImage(force: boolean = false) {
         if (force || this.cameras.length === 0) {
-            const path = await this.electron.openFITS()
+            const defaultPath = this.storage.get('home.image.directory', '')
+            const fitsPath = await this.electron.openFITS({ defaultPath })
 
-            if (path) {
-                this.browserWindow.openImage({ path, source: 'PATH' })
+            if (fitsPath) {
+                this.storage.set('home.image.directory', path.dirname(fitsPath))
+                this.browserWindow.openImage({ path: fitsPath, source: 'PATH' })
             }
         } else {
             const camera = await this.imageMenu.show(this.cameras)

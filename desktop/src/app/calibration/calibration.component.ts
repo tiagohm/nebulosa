@@ -1,8 +1,10 @@
 import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
+import path from 'path'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { CalibrationFrame, CalibrationFrameGroup, Camera } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
@@ -28,6 +30,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
         private api: ApiService,
         electron: ElectronService,
         private route: ActivatedRoute,
+        private storage: LocalStorageService,
     ) {
         app.title = 'Calibration'
 
@@ -35,10 +38,12 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
             icon: 'mdi mdi-image-plus',
             tooltip: 'Add file',
             command: async () => {
-                const path = await electron.openFITS()
+                const defaultPath = this.storage.get('calibration.directory', '')
+                const fitsPath = await electron.openFITS({ defaultPath })
 
-                if (path) {
-                    this.upload(path)
+                if (fitsPath) {
+                    this.storage.set('calibration.directory', path.dirname(fitsPath))
+                    this.upload(fitsPath)
                 }
             },
         })
@@ -47,10 +52,12 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
             icon: 'mdi mdi-folder-plus',
             tooltip: 'Add folder',
             command: async () => {
-                const path = await electron.openDirectory()
+                const defaultPath = this.storage.get('calibration.directory', '')
+                const dirPath = await electron.openDirectory({ defaultPath })
 
-                if (path) {
-                    this.upload(path)
+                if (dirPath) {
+                    this.storage.set('calibration.directory', dirPath)
+                    this.upload(dirPath)
                 }
             },
         })

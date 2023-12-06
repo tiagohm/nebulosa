@@ -10,7 +10,7 @@ import {
     ApiEventType, Camera, CameraCaptureElapsed, CameraCaptureFinished, CameraCaptureIsWaiting, CameraCaptureStarted,
     CameraExposureElapsed, CameraExposureFinished, CameraExposureStarted, DARVPolarAlignmentEvent, DARVPolarAlignmentGuidePulseElapsed,
     DARVPolarAlignmentInitialPauseElapsed, DeviceMessageEvent, FilterWheel, Focuser, GuideOutput, Guider,
-    GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Location, Mount, NotificationEvent, NotificationEventType, OpenDirectory
+    GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Location, Mount, NotificationEvent, NotificationEventType, OpenDirectory, OpenFile
 } from '../types'
 import { ApiService } from './api.service'
 
@@ -98,8 +98,12 @@ export class ElectronService {
         this.ipcRenderer.on(channel, (_, arg) => listener(arg))
     }
 
-    openFITS(): Promise<string | undefined> {
-        return this.send('OPEN_FITS')
+    openFile(data?: OpenFile): Promise<string | undefined> {
+        return this.send('OPEN_FILE', data)
+    }
+
+    openFITS(data?: OpenFile): Promise<string | undefined> {
+        return this.openFile({ ...data, filters: [{ name: 'FITS files', extensions: ['fits', 'fit'] }] })
     }
 
     openDirectory(data?: OpenDirectory): Promise<string | false> {
