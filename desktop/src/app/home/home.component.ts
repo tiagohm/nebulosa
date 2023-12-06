@@ -1,10 +1,11 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { MenuItem, MessageService } from 'primeng/api'
+import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
 import { DialogMenuComponent } from '../../shared/components/dialogmenu/dialogmenu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
@@ -15,6 +16,11 @@ type MappedDevice = {
     'WHEEL': FilterWheel
 }
 
+export interface HomePreference {
+    host?: string
+    port?: number
+}
+
 @Component({
     selector: 'app-home',
     templateUrl: './home.component.html',
@@ -22,8 +28,11 @@ type MappedDevice = {
 })
 export class HomeComponent implements AfterContentInit, OnDestroy {
 
-    @ViewChild('devicesDialogMenu')
-    private readonly devicesDialogMenu!: DialogMenuComponent
+    @ViewChild('deviceMenu')
+    private readonly deviceMenu!: DialogMenuComponent
+
+    @ViewChild('imageMenu')
+    private readonly imageMenu!: DeviceMenuComponent
 
     host = ''
     port = 7624
@@ -82,7 +91,17 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch
     }
 
-    readonly devicesMenuItems: MenuItem[] = []
+    readonly deviceModel: MenuItem[] = []
+
+    readonly imageModel: MenuItem[] = [
+        {
+            icon: 'mdi mdi-image-plus',
+            label: 'Open new image',
+            command: () => {
+                this.openImage(true)
+            }
+        }
+    ]
 
     private startListening<K extends keyof MappedDevice>(
         type: K,
@@ -108,7 +127,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private api: ApiService,
         private message: MessageService,
-        private preference: PreferenceService,
+        private storage: LocalStorageService,
         private ngZone: NgZone,
     ) {
         app.title = 'Nebulosa'
@@ -159,8 +178,10 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     async ngAfterContentInit() {
         this.updateConnection()
 
-        this.host = await this.preference.get('home.host', 'localhost')
-        this.port = await this.preference.get('home.port', 7624)
+        const preference = this.storage.get<HomePreference>('home', {})
+
+        this.host = preference.host ?? 'localhost'
+        this.port = preference.port ?? 7624
 
         this.cameras = await this.api.cameras()
         this.mounts = await this.api.mounts()
@@ -178,8 +199,12 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             } else {
                 await this.api.connect(this.host || 'localhost', this.port)
 
-                this.preference.set('home.host', this.host)
-                this.preference.set('home.port', this.port)
+                const preference: HomePreference = {
+                    host: this.host,
+                    port: this.port,
+                }
+
+                this.storage.set('home', preference)
             }
         } catch (e) {
             console.error(e)
@@ -191,7 +216,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     }
 
     private openDevice<K extends keyof MappedDevice>(type: K) {
-        this.devicesMenuItems.length = 0
+        this.deviceModel.length = 0
 
         const devices: Device[] = type === 'CAMERA' ? this.cameras
             : type === 'MOUNT' ? this.mounts
@@ -203,7 +228,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         if (devices.length === 1) return this.openDeviceWindow(type, devices[0] as any)
 
         for (const device of devices) {
-            this.devicesMenuItems.push({
+            this.deviceModel.push({
                 icon: 'mdi mdi-connection',
                 label: device.name,
                 command: () => {
@@ -212,29 +237,40 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             })
         }
 
-        this.devicesDialogMenu.show()
+        this.deviceMenu.show()
     }
 
     private openDeviceWindow<K extends keyof MappedDevice>(type: K, device: MappedDevice[K]) {
         switch (type) {
             case 'MOUNT':
-                this.browserWindow.openMount(device as Mount, { bringToFront: true })
+                this.browserWindow.openMount({ bringToFront: true, data: device as Mount })
                 break
             case 'CAMERA':
-                this.browserWindow.openCamera(device as Camera, { bringToFront: true })
+                this.browserWindow.openCamera({ bringToFront: true, data: device as Camera })
                 break
             case 'FOCUSER':
-                this.browserWindow.openFocuser(device as Focuser, { bringToFront: true })
+                this.browserWindow.openFocuser({ bringToFront: true, data: device as Focuser })
                 break
             case 'WHEEL':
-                this.browserWindow.openWheel(device as FilterWheel, { bringToFront: true })
+                this.browserWindow.openWheel({ bringToFront: true, data: device as FilterWheel })
                 break
         }
     }
 
-    private async openImage() {
-        const path = await this.electron.send('OPEN_FITS')
-        if (path) this.browserWindow.openImage(path, undefined, 'PATH')
+    private async openImage(force: boolean = false) {
+        if (force || this.cameras.length === 0) {
+            const path = await this.electron.openFITS()
+
+            if (path) {
+                this.browserWindow.openImage({ path, source: 'PATH' })
+            }
+        } else {
+            const camera = await this.imageMenu.show(this.cameras)
+
+            if (camera) {
+                this.browserWindow.openCameraImage(camera)
+            }
+        }
     }
 
     open(type: HomeWindowType) {
@@ -252,16 +288,19 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 this.browserWindow.openSkyAtlas({ bringToFront: true })
                 break
             case 'FRAMING':
-                this.browserWindow.openFraming(undefined, { bringToFront: true })
+                this.browserWindow.openFraming({ bringToFront: true, data: undefined })
                 break
             case 'ALIGNMENT':
                 this.browserWindow.openAlignment({ bringToFront: true })
                 break
             case 'INDI':
-                this.browserWindow.openINDI(undefined, { bringToFront: true })
+                this.browserWindow.openINDI({ data: undefined, bringToFront: true })
                 break
             case 'IMAGE':
                 this.openImage()
+                break
+            case 'SETTINGS':
+                this.browserWindow.openSettings()
                 break
             case 'ABOUT':
                 this.browserWindow.openAbout()

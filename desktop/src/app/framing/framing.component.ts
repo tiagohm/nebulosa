@@ -5,11 +5,21 @@ import hipsSurveys from '../../assets/data/hipsSurveys.json'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Angle, HipsSurvey } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
-export interface FramingParams {
+export interface FramingPreference {
+    rightAscension?: Angle
+    declination?: Angle
+    width?: number
+    height?: number
+    fov?: number
+    rotation?: number
+    hipsSurvey?: HipsSurvey
+}
+
+export interface FramingData {
     rightAscension: Angle
     declination: Angle
     width?: number
@@ -45,14 +55,14 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
-        private preference: PreferenceService,
+        private storage: LocalStorageService,
         private message: MessageService,
         ngZone: NgZone,
     ) {
         app.title = 'Framing'
 
-        electron.on('PARAMS_CHANGED', (event: FramingParams) => {
-            ngZone.run(() => this.frameFromParams(event))
+        electron.on('DATA_CHANGED', (event: FramingData) => {
+            ngZone.run(() => this.frameFromData(event))
         })
     }
 
@@ -60,8 +70,8 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         this.loadPreference()
 
         this.route.queryParams.subscribe(e => {
-            const params = JSON.parse(decodeURIComponent(e.params)) as FramingParams
-            this.frameFromParams(params)
+            const data = JSON.parse(decodeURIComponent(e.data)) as FramingData
+            this.frameFromData(data)
         })
     }
 
@@ -71,15 +81,15 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         this.electron.send('CLOSE_WINDOW', this.frameId)
     }
 
-    private frameFromParams(params: FramingParams) {
-        this.rightAscension = params.rightAscension ?? this.rightAscension
-        this.declination = params.declination ?? this.declination
-        this.width = params.width ?? this.width
-        this.height = params.height ?? this.height
-        this.fov = params.fov ?? this.fov
-        if (params.rotation === 0 || params.rotation) this.rotation = params.rotation
+    private frameFromData(data: FramingData) {
+        this.rightAscension = data.rightAscension ?? this.rightAscension
+        this.declination = data.declination ?? this.declination
+        this.width = data.width ?? this.width
+        this.height = data.height ?? this.height
+        this.fov = data.fov ?? this.fov
+        if (data.rotation === 0 || data.rotation) this.rotation = data.rotation
 
-        if (params.rightAscension && params.declination) {
+        if (data.rightAscension && data.declination) {
             this.frame()
         }
     }
@@ -96,7 +106,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
             const title = `Framing ・ ${this.rightAscension} ・ ${this.declination}`
 
             this.framePath = path
-            this.frameId = await this.browserWindow.openImage(path, 'framing', 'FRAMING', title)
+            this.frameId = await this.browserWindow.openImage({ id: 'framing', source: 'FRAMING', path, title })
 
             this.savePreference()
         } catch (e: any) {
@@ -108,24 +118,30 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    private async loadPreference() {
-        this.rightAscension = await this.preference.get('framing.rightAscension', '00h00m00s')
-        this.declination = await this.preference.get('framing.declination', `+000°00'00"`)
-        this.width = await this.preference.get('framing.width', 1280)
-        this.height = await this.preference.get('framing.height', 720)
-        this.fov = await this.preference.get('framing.fov', 1)
-        this.rotation = await this.preference.get('framing.rotation', 0)
-        this.hipsSurvey = await this.preference.get('framing.hipsSurvey', this.hipsSurvey)
+    private loadPreference() {
+        const preference = this.storage.get<FramingPreference>('framing', {})
+
+        this.rightAscension = preference.rightAscension ?? '00h00m00s'
+        this.declination = preference.declination ?? `+00°00'00"`
+        this.width = preference.width ?? 1280
+        this.height = preference.height ?? 720
+        this.fov = preference.fov ?? 1
+        this.rotation = preference.rotation ?? 0
+        this.hipsSurvey ??= preference.hipsSurvey ?? this.hipsSurvey
     }
 
     private savePreference() {
-        this.preference.set('framing.rightAscension', this.rightAscension)
-        this.preference.set('framing.declination', this.declination)
-        this.preference.set('framing.width', this.width)
-        this.preference.set('framing.height', this.height)
-        this.preference.set('framing.fov', this.fov)
-        this.preference.set('framing.rotation', this.rotation)
-        this.preference.set('framing.hipsSurvey', this.hipsSurvey)
+        const preference: FramingPreference = {
+            rightAscension: this.rightAscension,
+            declination: this.declination,
+            width: this.width,
+            height: this.height,
+            fov: this.fov,
+            rotation: this.rotation,
+            hipsSurvey: this.hipsSurvey,
+        }
+
+        this.storage.set('framing', preference)
     }
 
     private async closeFrameImage() {

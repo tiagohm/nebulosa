@@ -1,9 +1,15 @@
-<section id="titlebar" class="flex flex-row align-items-center justify-content-end gap-2 sticky"
+<section id="titlebar" class="flex flex-row align-items-center justify-content-end gap-2 sticky pr-1"
          [style]="{ height: '42px', zIndex: '1000', backgroundColor }">
     <span class="align-items-center draggable-region flex flex-column flex-1 font-bold justify-content-center min-h-full text-center">
         <div>{{ title }}</div>
         <div class="text-xs text-gray-100 font-normal">{{ subTitle }}</div>
     </span>
+
+    <p-button [text]="true" [rounded]="true" [icon]="e.icon" [disabled]="e.disabled" [pTooltip]="e.tooltip ?? e.label" tooltipPosition="bottom"
+              (onClick)="e.command?.({originalEvent: $event, item: e, index: i})" size="small" *ngFor="let e of extra; let i = index" />
+
+    <span class="separator flex justify-content-center" *ngIf="extra.length"></span>
+
     <p-button *ngIf="pinned" [text]="true" [rounded]="true" size="small" icon="mdi mdi-pin" (onClick)="pin()"
               styleClass="select-none cursor-pointer"></p-button>
     <p-button *ngIf="!pinned" [text]="true" [rounded]="true" size="small" icon="mdi mdi-pin-off" (onClick)="pin()"
@@ -21,3 +27,4 @@
 </section>
 
 <p-toast position="bottom-center" />
+<p-confirmDialog [style]="{ minWidth: '60vw', maxWidth: '320px' }" />

@@ -1,7 +1,12 @@
 package nebulosa.imaging
 
 import nebulosa.fits.*
-import nebulosa.imaging.algorithms.*
+import nebulosa.imaging.algorithms.ComputationAlgorithm
+import nebulosa.imaging.algorithms.TransformAlgorithm
+import nebulosa.imaging.algorithms.transform
+import nebulosa.imaging.algorithms.transformation.CfaPattern
+import nebulosa.imaging.algorithms.transformation.Debayer
+import nebulosa.imaging.algorithms.transformation.Grayscale
 import java.awt.color.ColorSpace
 import java.awt.image.*
 import kotlin.math.max
@@ -132,6 +137,10 @@ class Image(
 
     inline fun readGray(index: Int): Float {
         return if (mono) r[index] else (r[index] + g[index] + b[index]) / 3f
+    }
+
+    inline fun readGrayBT709(index: Int): Float {
+        return if (mono) r[index] else (r[index] * 0.2125f + g[index] * 0.7154f + b[index] * 0.0721f)
     }
 
     inline fun readGray(x: Int, y: Int): Float {

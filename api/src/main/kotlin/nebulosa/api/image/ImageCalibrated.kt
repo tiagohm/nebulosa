@@ -1,7 +1,7 @@
 package nebulosa.api.image
 
 import nebulosa.math.*
-import nebulosa.platesolving.Calibration
+import nebulosa.plate.solving.PlateSolution
 
 data class ImageCalibrated(
     val orientation: Double = 0.0,
@@ -13,12 +13,12 @@ data class ImageCalibrated(
     val radius: Double = 0.0,
 ) {
 
-    constructor(calibration: Calibration) : this(
-        calibration.orientation.toDegrees,
-        calibration.scale.toArcsec,
-        calibration.rightAscension.format(AngleFormatter.HMS),
-        calibration.declination.format(AngleFormatter.SIGNED_DMS),
-        calibration.width.toArcmin, calibration.height.toArcmin,
-        calibration.radius.toDegrees,
+    constructor(solution: PlateSolution) : this(
+        solution.orientation.toDegrees,
+        solution.scale.toArcsec,
+        solution.rightAscension.format(AngleFormatter.HMS),
+        solution.declination.format(AngleFormatter.SIGNED_DMS),
+        solution.width.toArcmin, solution.height.toArcmin,
+        solution.radius.toDegrees,
     )
 }

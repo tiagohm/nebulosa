@@ -14,42 +14,60 @@ inline val Header.naxis
 @Suppress("NOTHING_TO_INLINE")
 inline fun Header.naxis(n: Int) = getInt(Standard.NAXISn.n(n), 0)
 
+inline val Header.width
+    get() = naxis(1)
+
+inline val Header.height
+    get() = naxis(2)
+
 val Header.rightAscension
-    get() = Angle(getString(Standard.RA, ""), isHours = true, decimalIsHours = false)
+    get() = Angle(getStringOrNull(Standard.RA), isHours = true, decimalIsHours = false)
         .takeIf { it.isFinite() }
-        ?.let { Angle(getString(SBFitsExt.OBJCTRA, ""), true) }
+        ?.let { Angle(getStringOrNull(SBFitsExt.OBJCTRA), true) }
         ?.takeIf { it.isFinite() }
         ?: getDouble(NOAOExt.CRVAL1, Double.NaN).deg
 
 val Header.declination
-    get() = Angle(getString(Standard.DEC, ""))
+    get() = Angle(getStringOrNull(Standard.DEC))
         .takeIf { it.isFinite() }
-        ?.let { Angle(getString(SBFitsExt.OBJCTDEC, "")) }
+        ?.let { Angle(getStringOrNull(SBFitsExt.OBJCTDEC)) }
         ?.takeIf { it.isFinite() }
         ?: getDouble(NOAOExt.CRVAL2, Double.NaN).deg
 
-val Header.binX
+inline val Header.binX
     get() = getInt(SBFitsExt.XBINNING, 1)
 
-val Header.binY
-    get() = getInt(SBFitsExt.YBINNING, 1)
+inline val Header.binY
+    get() = getIntOrNull(SBFitsExt.YBINNING) ?: binX
 
 val Header.exposureTime
-    get() = getDouble(Standard.EXPTIME, getDouble(Standard.EXPOSURE, 0.0)).seconds
+    get() = (getDoubleOrNull(Standard.EXPTIME) ?: getDouble(Standard.EXPOSURE, 0.0)).seconds
 
-val Header.temperature
-    get() = getDouble(NOAOExt.CCDTEM, -272.15)
+inline val Header.exposureTimeInMicroseconds
+    get() = exposureTime.inWholeMicroseconds
+
+const val INVALID_TEMPERATURE = 999.0
+
+inline val Header.temperature
+    get() = getDouble(NOAOExt.CCDTEM, INVALID_TEMPERATURE)
+
+inline val Header.gain
+    get() = getDouble(NOAOExt.GAIN, 0.0)
 
 val Header.latitude
-    get() = getDouble(SBFitsExt.SITELAT, getDouble("LAT-OBS", Double.NaN)).deg
+    get() = (getDoubleOrNull(SBFitsExt.SITELAT) ?: getDouble("LAT-OBS", Double.NaN)).deg
 
 val Header.longitude
-    get() = getDouble(SBFitsExt.SITELONG, getDouble("LONG-OBS", Double.NaN)).deg
+    get() = (getDoubleOrNull(SBFitsExt.SITELONG) ?: getDouble("LONG-OBS", Double.NaN)).deg
 
 val Header.observationDate
-    get() = getString(Standard.DATE_OBS, "")
-        .ifBlank { null }
-        ?.let(LocalDateTime::parse)
+    get() = getStringOrNull(Standard.DATE_OBS)?.let(LocalDateTime::parse)
 
 val Header.cfaPattern
-    get() = getString(MaxImDLExt.BAYERPAT, "").ifBlank { null }?.trim()
+    get() = getStringOrNull(MaxImDLExt.BAYERPAT)?.ifBlank { null }?.trim()
+
+val Header.filter
+    get() = getStringOrNull(Standard.FILTER)?.ifBlank { null }?.trim()
+
+val Header.frame
+    get() = (getStringOrNull("FRAME") ?: getStringOrNull(SBFitsExt.IMAGETYP))?.ifBlank { null }

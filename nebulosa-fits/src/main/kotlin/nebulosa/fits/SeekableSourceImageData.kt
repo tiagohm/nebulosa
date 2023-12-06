@@ -2,6 +2,7 @@ package nebulosa.fits
 
 import nebulosa.io.Seekable
 import nebulosa.io.sink
+import nebulosa.io.transferFully
 import okio.Buffer
 import okio.Source
 import java.nio.ByteBuffer

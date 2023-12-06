@@ -3,7 +3,7 @@ import { MenuItem } from 'primeng/api'
 import { SlideMenu } from 'primeng/slidemenu'
 
 @Component({
-    selector: 'dialogMenu',
+    selector: 'p-dialogMenu',
     templateUrl: './dialogmenu.component.html',
     styleUrls: ['./dialogmenu.component.scss'],
 })
@@ -16,10 +16,10 @@ export class DialogMenuComponent {
     readonly visibleChange = new EventEmitter<boolean>()
 
     @Input()
-    readonly model: MenuItem[] = []
+    model: MenuItem[] = []
 
-    @ViewChild('slideMenu')
-    private readonly slideMenu!: SlideMenu
+    @ViewChild('menu')
+    private readonly menu!: SlideMenu
 
     viewportHeight = 33.25
 
@@ -34,12 +34,12 @@ export class DialogMenuComponent {
     }
 
     protected onShow() {
-        const onItemClick = this.slideMenu.onItemClick
+        const onItemClick = this.menu.onItemClick
 
-        this.slideMenu.onItemClick = (e) => {
+        this.menu.onItemClick = (e) => {
             const size = e.processedItem.items.length
             if (size) this.viewportHeight = 33.25 * (size + 1)
-            onItemClick.call(this.slideMenu, e)
+            onItemClick.call(this.menu, e)
             if (size === 0) this.hide()
         }
     }

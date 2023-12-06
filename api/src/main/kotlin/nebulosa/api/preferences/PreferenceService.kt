@@ -3,7 +3,6 @@ package nebulosa.api.preferences
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import java.nio.file.Path
 
 @Service
 class PreferenceService(
@@ -11,7 +10,7 @@ class PreferenceService(
     private val objectMapper: ObjectMapper,
 ) {
 
-    fun keys() = preferenceRepository.findAll().map { it.key }
+    fun keys() = preferenceRepository.keys()
 
     operator fun get(key: String) = preferenceRepository.findByIdOrNull(key)
 
@@ -28,6 +27,8 @@ class PreferenceService(
 
     fun getText(key: String) = getJSON(key, String::class.java)
 
+    final inline fun <reified T : Enum<T>> getEnum(key: String) = getText(key)?.takeIf { it.isNotBlank() }?.let { enumValueOf<T>(it) }
+
     fun getInt(key: String) = getJSON(key, Int::class.java)
 
     fun getLong(key: String) = getJSON(key, Long::class.java)
@@ -39,6 +40,8 @@ class PreferenceService(
     fun putBoolean(key: String, value: Boolean) = putJSON(key, value)
 
     fun putText(key: String, value: String?) = putJSON(key, value)
+
+    fun putEnum(key: String, value: Enum<*>) = putText(key, value.name)
 
     fun putInt(key: String, value: Int) = putJSON(key, value)
 
@@ -52,15 +55,17 @@ class PreferenceService(
     @Synchronized
     fun delete(key: String) = preferenceRepository.deleteById(key)
 
-    final inline var astapPath
-        get() = getJSON<Path>("astap.path")
-        set(value) = putJSON("astap.path", value)
-
     final inline var skyAtlasVersion
-        get() = getText("skyAtlas.version")
-        set(value) = putText("skyAtlas.version", value)
+        get() = getText(SKY_ATLAS_VERSION)
+        set(value) = putText(SKY_ATLAS_VERSION, value)
 
-    final inline var tleUpdatedAt
-        get() = getLong("satellites.updatedAt") ?: 0L
-        set(value) = putLong("satellites.updatedAt", value)
+    final inline var satellitesUpdatedAt
+        get() = getLong(SATELLITES_UPDATED_AT) ?: 0L
+        set(value) = putLong(SATELLITES_UPDATED_AT, value)
+
+    companion object {
+
+        const val SKY_ATLAS_VERSION = "SKY_ATLAS_VERSION"
+        const val SATELLITES_UPDATED_AT = "SATELLITES_UPDATED_AT"
+    }
 }

@@ -3,8 +3,7 @@ package nebulosa.guiding.internal
 import nebulosa.constants.PIOVERTWO
 import nebulosa.guiding.GuideDirection
 import nebulosa.imaging.Image
-import nebulosa.imaging.algorithms.Mean
-import nebulosa.imaging.algorithms.star.hfd.FindMode
+import nebulosa.imaging.algorithms.transformation.convolution.Mean
 import nebulosa.log.loggerFor
 import nebulosa.math.cos
 import nebulosa.math.sin
@@ -65,7 +64,6 @@ class MultiStarGuider : InternalGuider {
     private var tolerateJumpsThreshold = 0.0
     private var maxStars = DEFAULT_MAX_STAR_COUNT
     private var stabilitySigmaX = DEFAULT_STABILITY_SIGMAX
-    private var minStarHFD = 1.5
     private val guideCalibrator = GuideCalibrator(this)
     private val guideGraph = GuideGraph(this, 100)
     private var massChangeThresholdEnabled = false
@@ -118,7 +116,7 @@ class MultiStarGuider : InternalGuider {
 
     override var rotator: GuidingRotator? = null
 
-    override var searchRegion = 15.0
+    override var searchRegion = 15
 
     override var dither: Dither = RandomDither()
 
@@ -657,8 +655,7 @@ class MultiStarGuider : InternalGuider {
 
         LOG.info("current position. x={}, y={}", x, y)
 
-        return primaryStar
-            .find(image, searchRegion, x, y, FindMode.CENTROID, minStarHFD)
+        return primaryStar.find(image, searchRegion, x, y)
     }
 
     override fun autoSelect(): Boolean {
@@ -729,9 +726,9 @@ class MultiStarGuider : InternalGuider {
                                 val expectedLoc = primaryStar + star.offsetFromPrimary
 
                                 val found = if (isValidSecondaryStarPosition(expectedLoc)) {
-                                    star.find(image, searchRegion, expectedLoc.x, expectedLoc.y, FindMode.CENTROID, minStarHFD)
+                                    star.find(image, searchRegion, expectedLoc.x, expectedLoc.y)
                                 } else {
-                                    star.find(image, searchRegion, star.x, star.y, FindMode.CENTROID, minStarHFD)
+                                    star.find(image, searchRegion, star.x, star.y)
                                 }
 
                                 if (found) {
@@ -763,10 +760,10 @@ class MultiStarGuider : InternalGuider {
                     val found = if (star.wasLost) {
                         // Look for it based on its original offset from the primary star.
                         val expectedLoc = primaryStar + star.offsetFromPrimary
-                        star.find(image, searchRegion, expectedLoc.x, expectedLoc.y, FindMode.CENTROID, minStarHFD)
+                        star.find(image, searchRegion, expectedLoc.x, expectedLoc.y)
                     } else {
                         // Look for it where we last found it.
-                        star.find(image, searchRegion, star.x, star.y, FindMode.CENTROID, minStarHFD)
+                        star.find(image, searchRegion, star.x, star.y)
                     }
 
                     if (found) {
@@ -890,7 +887,7 @@ class MultiStarGuider : InternalGuider {
 
         val newStar = GuideStar(primaryStar)
 
-        if (!newStar.find(image, searchRegion, minHFD = minStarHFD)) {
+        if (!newStar.find(image, searchRegion)) {
             distanceChecker.activate()
             LOG.warn("new star not found. x={}, y={}", newStar.x, newStar.y)
             return false
@@ -901,10 +898,10 @@ class MultiStarGuider : InternalGuider {
         if (massChangeThresholdEnabled) {
             massChecker.exposure(camera.exposureTime)
 
-            val checkedMass = massChecker.checkMass(newStar.mass, massChangeThreshold)
+            val checkedMass = massChecker.checkMass(newStar.flux, massChangeThreshold)
 
             if (checkedMass.reject) {
-                massChecker.add(newStar.mass)
+                massChecker.add(newStar.flux)
                 distanceChecker.activate()
                 LOG.warn("mass changed. checkedMass={}", checkedMass)
                 return false
@@ -933,7 +930,7 @@ class MultiStarGuider : InternalGuider {
         primaryStar = newStar
         guideStars[0] = primaryStar
 
-        massChecker.add(newStar.mass)
+        massChecker.add(newStar.flux)
 
         if (lockPosition.valid) {
             offset.camera.set(primaryStar - lockPosition)

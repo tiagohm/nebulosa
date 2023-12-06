@@ -526,7 +526,7 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
                             if (decAmt * totalSouthAmt > 0.0) {
                                 // Sign doesn't matter now, we're always moving south.
                                 decAmt = abs(decAmt)
-                                decAmt = min(decAmt, guider.searchRegion)
+                                decAmt = min(decAmt, guider.searchRegion.toDouble())
                                 var pulseAmt = floor(decAmt / calibration.yRate).toInt()
                                 // Be conservative, use durations that pushed us north in the first place.
                                 if (pulseAmt > guider.calibrationStep) pulseAmt = guider.calibrationStep

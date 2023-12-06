@@ -1,9 +1,9 @@
 import { AfterViewInit, Component } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
+import { MenuItem } from 'primeng/api'
 import { APP_CONFIG } from '../environments/environment'
 import { ElectronService } from '../shared/services/electron.service'
-import { PreferenceService } from '../shared/services/preference.service'
 
 @Component({
     selector: 'app-root',
@@ -15,13 +15,8 @@ export class AppComponent implements AfterViewInit {
     pinned = false
     maximizable = false
     subTitle = ''
-    isNightMode = false
-
-    get backgroundColor() {
-        return this.isNightMode ? '#B71C1C' : '#002457'
-    }
-
-    private night!: HTMLElement
+    backgroundColor = '#212121'
+    extra: MenuItem[] = []
 
     get title() {
         return this.windowTitle.getTitle()
@@ -34,12 +29,11 @@ export class AppComponent implements AfterViewInit {
     constructor(
         private windowTitle: Title,
         private route: ActivatedRoute,
-        private electronService: ElectronService,
-        private preference: PreferenceService,
+        private electron: ElectronService,
     ) {
         console.info('APP_CONFIG', APP_CONFIG)
 
-        if (electronService.isElectron) {
+        if (electron.isElectron) {
             console.info('Run in electron')
         } else {
             console.info('Run in browser')
@@ -50,41 +44,23 @@ export class AppComponent implements AfterViewInit {
         this.route.queryParams.subscribe(e => {
             this.maximizable = e.resizable === 'true'
         })
-
-        this.night = document.getElementsByTagName('night')[0] as HTMLElement
-        this.updateNightMode(await this.preference.get('settings.nightMode', false))
-    }
-
-    private updateNightMode(enabled: boolean) {
-        if (enabled) {
-            this.night.classList.replace('hidden', 'block')
-            this.night.style.background = '#ff00003b'
-        } else {
-            this.night.style.background = 'transparent'
-            this.night.classList.replace('block', 'hidden')
-        }
-
-        this.isNightMode = enabled
-        this.preference.set('settings.nightMode', this.isNightMode)
-
-        // TODO: NOTIFY ALL WINDOWS PREFERENCE_UPDATED(name, oldValue, newValue)
     }
 
     pin() {
         this.pinned = !this.pinned
-        if (this.pinned) this.electronService.send('PIN_WINDOW')
-        else this.electronService.send('UNPIN_WINDOW')
+        if (this.pinned) this.electron.send('PIN_WINDOW')
+        else this.electron.send('UNPIN_WINDOW')
     }
 
     minimize() {
-        this.electronService.send('MINIMIZE_WINDOW')
+        this.electron.send('MINIMIZE_WINDOW')
     }
 
     maximize() {
-        this.electronService.send('MAXIMIZE_WINDOW')
+        this.electron.send('MAXIMIZE_WINDOW')
     }
 
     close() {
-        this.electronService.send('CLOSE_WINDOW')
+        this.electron.send('CLOSE_WINDOW')
     }
 }

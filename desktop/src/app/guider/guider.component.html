@@ -5,29 +5,29 @@
                 <div class="grid mt-1 flex justify-content-center align-items-center">
                     <div class="col-6 px-0">
                         <span class="p-float-label">
-                            <input [disabled]="phdConnected" type="text" pInputText class="border-0 p-inputtext-sm w-full" placeholder="localhost"
-                                   [(ngModel)]="phdHost" />
+                            <input [disabled]="connected" type="text" pInputText class="border-0 p-inputtext-sm w-full" placeholder="localhost"
+                                   [(ngModel)]="host" />
                             <label>Host</label>
                         </span>
                     </div>
                     <div class="col-4 pr-0">
                         <span class="p-float-label">
-                            <p-inputNumber [disabled]="phdConnected" [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full"
-                                           placeholder="7624" [(ngModel)]="phdPort" [format]="false" />
+                            <p-inputNumber [disabled]="connected" [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full"
+                                           placeholder="7624" [(ngModel)]="port" [format]="false" />
                             <label>Port</label>
                         </span>
                     </div>
                     <div class="col-2 text-center pr-0">
-                        <p-button *ngIf="phdConnected" (onClick)="guidingConnect()" icon="mdi mdi-close" size="small" severity="danger" />
-                        <p-button *ngIf="!phdConnected" (onClick)="guidingConnect()" icon="mdi mdi-connection"
+                        <p-button *ngIf="connected" (onClick)="guidingConnect()" icon="mdi mdi-close" size="small" severity="danger" />
+                        <p-button *ngIf="!connected" (onClick)="guidingConnect()" icon="mdi mdi-connection"
                                   size="small" severity="info" />
                     </div>
                 </div>
                 <div class="grid">
                     <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm" style="min-height: 25px;">
                         <i class="mdi mdi-information text-blue-600"></i>
-                        <span style="min-width: 44px" class="text-left mr-2">{{ phdState | enum | lowercase }}</span>
-                        <span class="text-left">{{ phdMessage }}</span>
+                        <span style="min-width: 44px" class="text-left mr-2">{{ guideState | enum | lowercase }}</span>
+                        <span class="text-left">{{ message }}</span>
                     </div>
                 </div>
                 <p-tabView class="relative">
@@ -36,39 +36,39 @@
                             <div class="col-3">
                                 <span class="p-float-label">
                                     <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                                           value="{{ phdRmsRA.toFixed(2) + ' (' + (phdRmsRA * phdPixelScale).toFixed(2) + '\" )' }}" />
+                                           value="{{ rmsRA.toFixed(2) + ' (' + (rmsRA * pixelScale).toFixed(2) + '\" )' }}" />
                                     <label>RMS RA</label>
                                 </span>
                             </div>
                             <div class="col-3">
                                 <span class="p-float-label">
                                     <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                                           value="{{ phdRmsDEC.toFixed(2) + ' (' + (phdRmsDEC * phdPixelScale).toFixed(2) + '\" )' }}" />
+                                           value="{{ rmsDEC.toFixed(2) + ' (' + (rmsDEC * pixelScale).toFixed(2) + '\" )' }}" />
                                     <label>RMS DEC</label>
                                 </span>
                             </div>
                             <div class="col-3">
                                 <span class="p-float-label">
                                     <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                                           value="{{ phdRmsTotal.toFixed(2) + ' (' + (phdRmsTotal * phdPixelScale).toFixed(2) + '\" )' }}" />
+                                           value="{{ rmsTotal.toFixed(2) + ' (' + (rmsTotal * pixelScale).toFixed(2) + '\" )' }}" />
                                     <label>RMS Total</label>
                                 </span>
                             </div>
                             <div class="col-3">
                                 <span class="p-float-label">
-                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="phdGuideStep?.starMass ?? 0" />
+                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="guideStep?.starMass ?? 0" />
                                     <label>Star mass</label>
                                 </span>
                             </div>
                             <div class="col-2">
                                 <span class="p-float-label">
-                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="phdGuideStep?.hfd ?? 0" />
+                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="guideStep?.hfd ?? 0" />
                                     <label>HFD</label>
                                 </span>
                             </div>
                             <div class="col-2">
                                 <span class="p-float-label">
-                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="phdGuideStep?.snr ?? 0" />
+                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="guideStep?.snr ?? 0" />
                                     <label>SNR</label>
                                 </span>
                             </div>
@@ -89,8 +89,8 @@
                         </div>
                         <div class="grid relative">
                             <div class="col-12">
-                                <p-chart #phdChart width="100%" height="140px" [data]="phdChartData" [responsive]="true"
-                                         [options]="phdChartOptions" />
+                                <p-chart #chart width="100%" height="140px" [data]="chartData" [responsive]="true"
+                                         [options]="chartOptions" />
                             </div>
                             <span class="absolute right-0 text-blue-500" style="top: 16px;">North</span>
                             <span class="absolute right-0 text-red-500" style="bottom: 26px;">East</span>
@@ -100,25 +100,26 @@
                         <div class="grid mt-1">
                             <div class="col-5">
                                 <span class="p-float-label">
-                                    <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
+                                    <p-inputNumber [disabled]="!connected || guiding" [showButtons]="true"
                                                    styleClass="border-0 p-inputtext-sm w-full" locale="en" [min]="1" [max]="25"
-                                                   [(ngModel)]="phdSettleAmount" (ngModelChange)="settleChanged()" [step]="0.1" />
+                                                   [(ngModel)]="settleAmount" (ngModelChange)="settleChanged()" [step]="0.1"
+                                                   [minFractionDigits]="1" />
                                     <label>Settle tolerance (px)</label>
                                 </span>
                             </div>
                             <div class="col-6">
                                 <span class="p-float-label">
-                                    <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
+                                    <p-inputNumber [disabled]="!connected || guiding" [showButtons]="true"
                                                    styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="60"
-                                                   [(ngModel)]="phdSettleTime" (ngModelChange)="settleChanged()" [step]="1" />
+                                                   [(ngModel)]="settleTime" (ngModelChange)="settleChanged()" [step]="1" />
                                     <label>Minimum settle time (s)</label>
                                 </span>
                             </div>
                             <div class="col-6">
                                 <span class="p-float-label">
-                                    <p-inputNumber [disabled]="!phdConnected || guiding" [showButtons]="true"
+                                    <p-inputNumber [disabled]="!connected || guiding" [showButtons]="true"
                                                    styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="60"
-                                                   [(ngModel)]="phdSettleTimeout" (ngModelChange)="settleChanged()" [step]="1" />
+                                                   [(ngModel)]="settleTimeout" (ngModelChange)="settleChanged()" [step]="1" />
                                     <label>Settle timeout (s)</label>
                                 </span>
                             </div>
@@ -126,11 +127,11 @@
                     </p-tabPanel>
                     <div class="grid mt-1 absolute" style="top: -12px; right: 10px">
                         <div class="col-12 flex align-items-center justify-content-center gap-1">
-                            <!-- <p-button [disabled]="!phdConnected || guiding || looping" label="Start" (onClick)="guidingStart($event)"
+                            <!-- <p-button [disabled]="!connected || guiding || looping" label="Start" (onClick)="guidingStart($event)"
                                       icon="mdi mdi-play" severity="success" /> -->
-                            <p-button [disabled]="!phdConnected" label="Clear" (onClick)="guidingClearHistory()" icon="mdi mdi-broom"
+                            <p-button [disabled]="!connected" label="Clear" (onClick)="guidingClearHistory()" icon="mdi mdi-broom"
                                       severity="info" />
-                            <p-button [disabled]="!phdConnected || !guiding" label="Stop" (onClick)="guidingStop()" icon="mdi mdi-stop"
+                            <p-button [disabled]="!connected || !guiding" label="Stop" (onClick)="guidingStop()" icon="mdi mdi-stop"
                                       severity="danger" />
                         </div>
                     </div>

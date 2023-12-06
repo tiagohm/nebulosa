@@ -1,18 +1,12 @@
 package nebulosa.wcs
 
 import com.sun.jna.Library
-import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.ptr.DoubleByReference
 import com.sun.jna.ptr.IntByReference
 import com.sun.jna.ptr.PointerByReference
-import nebulosa.io.resource
-import nebulosa.io.transferAndClose
-import oshi.PlatformEnum
-import oshi.SystemInfo
-import java.nio.file.Path
-import kotlin.io.path.exists
-import kotlin.io.path.outputStream
+import nebulosa.jna.LibraryProvider
+import nebulosa.jna.loadLibrary
 
 // https://www.atnf.csiro.au/people/mcalabre/WCS/index.html
 // https://www.atnf.csiro.au/people/mcalabre/WCS/Intro/WCS01.html
@@ -50,24 +44,10 @@ internal interface LibWCS : Library {
 
     fun wcsfree(wcs: Pointer): Int
 
-    companion object {
+    companion object : LibraryProvider {
 
-        internal val INSTANCE: LibWCS by lazy {
-            val name = when (val platform = SystemInfo.getCurrentPlatform()) {
-                PlatformEnum.LINUX -> "libwcs.so"
-                PlatformEnum.WINDOWS -> "libwcs.dll"
-                else -> throw IllegalStateException("unsupported platform: $platform")
-            }
+        override val libraryName = "libwcs"
 
-            val outputDir = System.getProperty("LIBWCS_DIR")?.ifBlank { null }
-                ?: System.getProperty("java.io.tmpdir")
-            val outputPath = Path.of(outputDir, name)
-
-            if (!outputPath.exists()) {
-                resource(name)!!.transferAndClose(outputPath.outputStream())
-            }
-
-            Native.load("$outputPath", LibWCS::class.java)
-        }
+        val INSTANCE by lazy { loadLibrary<LibWCS>() }
     }
 }

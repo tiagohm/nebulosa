@@ -22,7 +22,7 @@ function createMainWindow() {
     splashWindow?.close()
     browserWindows.delete('splash')
 
-    createWindow({ id: 'home', path: 'home' })
+    createWindow({ id: 'home', path: 'home', data: undefined })
 
     wsClient = new Client({
         brokerURL: `ws://localhost:${apiPort}/ws`,
@@ -57,13 +57,13 @@ function createMainWindow() {
     wsClient.activate()
 }
 
-function createWindow(data: OpenWindow<any>) {
-    let window = browserWindows.get(data.id)
+function createWindow(options: OpenWindow<any>) {
+    let window = browserWindows.get(options.id)
 
     if (window) {
-        if (data.params) {
-            console.info('params changed. id=%s, params=%s', data.id, data.params)
-            window.webContents.send('PARAMS_CHANGED', data.params)
+        if (options.data) {
+            console.info('window data changed. id=%s, data=%s', options.id, options.data)
+            window.webContents.send('DATA_CHANGED', options.data)
         }
 
         return window
@@ -81,7 +81,7 @@ function createWindow(data: OpenWindow<any>) {
         }
     }
 
-    const width = data.width ? Math.trunc(computeWidth(data.width)) : 320
+    const width = options.width ? Math.trunc(computeWidth(options.width)) : 320
 
     function computeHeight(value: number | string) {
         if (typeof value === 'number') {
@@ -95,11 +95,11 @@ function createWindow(data: OpenWindow<any>) {
         }
     }
 
-    const height = data.height ? Math.trunc(computeHeight(data.height)) : 420
+    const height = options.height ? Math.trunc(computeHeight(options.height)) : 420
 
-    const resizable = data.resizable ?? false
-    const icon = data.icon ?? 'nebulosa'
-    const params = encodeURIComponent(JSON.stringify(data.params || {}))
+    const resizable = options.resizable ?? false
+    const icon = options.icon ?? 'nebulosa'
+    const data = encodeURIComponent(JSON.stringify(options.data || {}))
 
     window = new BrowserWindow({
         title: 'Nebulosa',
@@ -125,9 +125,9 @@ function createWindow(data: OpenWindow<any>) {
         debug({ showDevTools: false })
 
         require('electron-reloader')(module)
-        window.loadURL(`http://localhost:4200/${data.path}?params=${params}&resizable=${resizable}`)
+        window.loadURL(`http://localhost:4200/${options.path}?data=${data}&resizable=${resizable}`)
     } else {
-        const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${data.path}?params=${params}&resizable=${resizable}`)
+        const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${options.path}?data=${data}&resizable=${resizable}`)
         window.loadURL(url.href)
     }
 
@@ -159,7 +159,7 @@ function createWindow(data: OpenWindow<any>) {
         }
     })
 
-    browserWindows.set(data.id, window)
+    browserWindows.set(options.id, window)
 
     return window
 }
@@ -358,7 +358,7 @@ try {
         }
     })
 
-    const events: InternalEventType[] = ['WHEEL_RENAMED']
+    const events: InternalEventType[] = ['WHEEL_RENAMED', 'LOCATION_CHANGED']
 
     for (const item of events) {
         ipcMain.handle(item, (_, data) => {

@@ -3,11 +3,9 @@ package nebulosa.api.image
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.imaging.ImageChannel
-import nebulosa.imaging.algorithms.ProtectionMethod
+import nebulosa.imaging.algorithms.transformation.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
-import nebulosa.math.deg
-import nebulosa.math.hours
-import nebulosa.star.detection.DetectedStar
+import nebulosa.star.detection.ImageStar
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
 
@@ -62,30 +60,13 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "12.0") minorPlanetMagLimit: Double,
     ) = imageService.annotations(path, stars, dsos, minorPlanets, minorPlanetMagLimit)
 
-    @PutMapping("solve")
-    fun solveImage(
-        @RequestParam path: Path,
-        @RequestParam(required = false, defaultValue = "ASTROMETRY_NET_ONLINE") type: PlateSolverType,
-        @RequestParam(required = false, defaultValue = "true") blind: Boolean,
-        @RequestParam(required = false, defaultValue = "0.0") centerRA: String,
-        @RequestParam(required = false, defaultValue = "0.0") centerDEC: String,
-        @RequestParam(required = false, defaultValue = "8.0") radius: String,
-        @RequestParam(required = false, defaultValue = "1") downsampleFactor: Int,
-        @RequestParam(required = false, defaultValue = "") pathOrUrl: String,
-        @RequestParam(required = false, defaultValue = "") apiKey: String,
-    ) = imageService.solveImage(
-        path, type, blind,
-        centerRA.hours, centerDEC.deg, radius.deg,
-        downsampleFactor, pathOrUrl, apiKey,
-    )
-
     @GetMapping("coordinate-interpolation")
     fun coordinateInterpolation(@RequestParam path: Path): CoordinateInterpolation? {
         return imageService.coordinateInterpolation(path)
     }
 
     @PutMapping("detect-stars")
-    fun detectStars(@RequestParam path: Path): Collection<DetectedStar> {
+    fun detectStars(@RequestParam path: Path): List<ImageStar> {
         return imageService.detectStars(path)
     }
 }

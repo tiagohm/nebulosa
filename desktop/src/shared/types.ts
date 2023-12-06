@@ -1,5 +1,5 @@
 import { MenuItem } from 'primeng/api'
-import { InputSwitchOnChangeEvent } from 'primeng/inputswitch'
+import { CheckboxChangeEvent } from 'primeng/checkbox'
 
 export type Angle = string | number
 
@@ -251,20 +251,19 @@ export interface CameraExposureFinished extends CameraExposureEvent {
     savePath?: string
 }
 
-export interface OpenWindowOptions {
+export interface OpenWindow<T> {
+    id: string
+    path: string
     icon?: string
     resizable?: boolean
     width?: number | string
     height?: number | string
     bringToFront?: boolean
     requestFocus?: boolean
+    data: T
 }
 
-export interface OpenWindow<T> extends OpenWindowOptions {
-    id: string
-    path: string
-    params?: T
-}
+export type OpenWindowOptions<T> = Omit<OpenWindow<T>, 'id' | 'path'>
 
 export interface OpenDirectory {
     defaultPath?: string
@@ -339,15 +338,17 @@ export interface Location {
     longitude: number
     elevation: number
     offsetInMinutes: number
+    selected: boolean
 }
 
 export const EMPTY_LOCATION: Location = {
     id: 0,
-    name: 'Saint Helena',
-    latitude: -15.9755300,
-    longitude: -5.6987929,
-    elevation: 819,
+    name: '',
+    latitude: 0,
+    longitude: 0,
+    elevation: 0,
     offsetInMinutes: 0,
+    selected: false,
 }
 
 export interface BodyPosition extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
@@ -397,11 +398,13 @@ export interface Twilight {
     civilDawn: number[]
 }
 
+export type MinorPlanetKind = 'ASTEROID' | 'COMET'
+
 export interface MinorPlanet {
     found: boolean
     name: string
     spkId: number
-    kind?: 'ASTEROID' | 'COMET'
+    kind?: MinorPlanetKind
     pha: boolean
     neo: boolean
     orbitType: string
@@ -458,6 +461,12 @@ export interface ImageCalibrated extends EquatorialCoordinateJ2000 {
     width: number
     height: number
     radius: number
+}
+
+export interface PlateSolverOptions {
+    type: PlateSolverType
+    executablePath: string
+    downsampleFactor: number
 }
 
 export interface ComputedLocation extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
@@ -519,7 +528,7 @@ export interface ToggleableMenuItem extends MenuItem {
     toggleable: boolean
     toggled: boolean
 
-    toggle(event: InputSwitchOnChangeEvent): void
+    toggle(event: CheckboxChangeEvent): void
 }
 
 export interface MessageEvent {
@@ -544,6 +553,34 @@ export interface NotificationEvent extends MessageEvent {
     body: string
     title?: string
     silent: boolean
+}
+
+export interface CalibrationFrame {
+    id: number
+    type: FrameType
+    camera: string
+    filter?: string
+    exposureTime: number
+    temperature: number
+    width: number
+    height: number
+    binX: number
+    binY: number
+    gain: number
+    path: string
+    enabled: boolean
+}
+
+export interface CalibrationFrameGroup {
+    id: number
+    key: Omit<CalibrationFrame, 'id' | 'camera' | 'path' | 'enabled'>
+    frames: CalibrationFrame[]
+}
+
+export interface SettleInfo {
+    amount: number
+    time: number
+    timeout: number
 }
 
 export enum ExposureTimeUnit {
@@ -608,6 +645,7 @@ export type HomeWindowType = 'CAMERA' |
     'IMAGE' |
     'FRAMING' |
     'INDI' |
+    'SETTINGS' |
     'ABOUT'
 
 export const CONSTELLATIONS = [
@@ -719,10 +757,8 @@ export const SCNR_PROTECTION_METHODS = [
 
 export type SCNRProtectionMethod = (typeof SCNR_PROTECTION_METHODS)[number]
 
-export type PlateSolverType = 'ASTROMETRY_NET_LOCAL' |
-    'ASTROMETRY_NET_ONLINE' |
-    'ASTAP' |
-    'WATNEY'
+export type PlateSolverType = 'ASTROMETRY_NET' |
+    'ASTAP'
 
 export const API_EVENT_TYPES = [
     // Device.
@@ -751,10 +787,16 @@ export type ApiEventType = (typeof API_EVENT_TYPES)[number]
 export const INTERNAL_EVENT_TYPES = [
     'SAVE_FITS_AS', 'OPEN_FITS', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
     'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW',
-    'WHEEL_RENAMED',
+    'WHEEL_RENAMED', 'LOCATION_CHANGED',
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
+
+export const NOTIFICATION_EVENT_TYPE = [
+    'SKY_ATLAS_UPDATE_FINISHED'
+] as const
+
+export type NotificationEventType = (typeof NOTIFICATION_EVENT_TYPE)[number]
 
 export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA'
 
@@ -847,3 +889,7 @@ export type GuideState = (typeof GUIDE_STATES)[number]
 export type Hemisphere = 'NORTHERN' | 'SOUTHERN'
 
 export type DARVPolarAlignmentState = 'IDLE' | 'INITIAL_PAUSE' | 'FORWARD' | 'BACKWARD'
+
+export type GuiderPlotMode = 'RA/DEC' | 'DX/DY'
+
+export type GuiderYAxisUnit = 'ARCSEC' | 'PIXEL'

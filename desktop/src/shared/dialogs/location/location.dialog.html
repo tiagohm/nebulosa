@@ -1,40 +1,40 @@
 <div class="grid">
     <div class="col-7 pt-3">
         <span class="p-float-label">
-            <input pInputText class="border-0 w-full" [(ngModel)]="location.name" />
+            <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="location.name" />
             <label>Name</label>
         </span>
     </div>
     <div class="col-5 pt-3">
         <span class="p-float-label">
-            <p-inputNumber locale="en" type="number" styleClass="border-0 w-full" [min]="-720" [max]="720"
+            <p-inputNumber locale="en" type="number" styleClass="p-inputtext-sm border-0 w-full" [min]="-720" [max]="720"
                            [(ngModel)]="location.offsetInMinutes" [showButtons]="true" [allowEmpty]="false" />
             <label>UTC Offset (min)</label>
         </span>
     </div>
     <div class="col-4 pt-3">
         <span class="p-float-label">
-            <p-inputNumber locale="en" styleClass="border-0 w-full" [min]="-90" [max]="90" [maxFractionDigits]="5"
+            <p-inputNumber locale="en" styleClass="p-inputtext-sm border-0 w-full" [min]="-90" [max]="90" [maxFractionDigits]="5"
                            [(ngModel)]="location.latitude" [allowEmpty]="false" />
             <label>Latitude</label>
         </span>
     </div>
     <div class="col-4 pt-3">
         <span class="p-float-label">
-            <p-inputNumber locale="en" styleClass="border-0 w-full" [min]="-180" [max]="180" [maxFractionDigits]="5"
+            <p-inputNumber locale="en" styleClass="p-inputtext-sm border-0 w-full" [min]="-180" [max]="180" [maxFractionDigits]="5"
                            [(ngModel)]="location.longitude" [allowEmpty]="false" />
             <label>Longitude</label>
         </span>
     </div>
     <div class="col-4 pt-3">
         <span class="p-float-label">
-            <p-inputNumber locale="en" type="number" styleClass="border-0 w-full" [min]="-1000" [max]="10000"
+            <p-inputNumber locale="en" type="number" styleClass="p-inputtext-sm border-0 w-full" [min]="-1000" [max]="10000"
                            [(ngModel)]="location.elevation" [showButtons]="true" [allowEmpty]="false" />
             <label>Elevation (m)</label>
         </span>
     </div>
     <div class=col-12>
-        <openstreetmap #map [(latitude)]="location.latitude" [(longitude)]="location.longitude" />
+        <p-openStreetMap #map [(latitude)]="location.latitude" [(longitude)]="location.longitude" />
     </div>
 </div>
 <div class="p-dialog-footer">

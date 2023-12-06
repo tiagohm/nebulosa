@@ -2,9 +2,11 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
+import nebulosa.fits.Fits
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
-import nebulosa.imaging.algorithms.*
+import nebulosa.imaging.algorithms.transformation.*
+import nebulosa.imaging.algorithms.transformation.convolution.*
 import nebulosa.test.FitsStringSpec
 
 class TransformAlgorithmTest : FitsStringSpec() {
@@ -263,6 +265,18 @@ class TransformAlgorithmTest : FitsStringSpec() {
             val mImage = Image.open(NGC3344_COLOR_32)
             val nImage = mImage.transform(Grayscale.Y)
             nImage.save("color-grayscale-y").second shouldBe "24dd4a7e0fa9e4be34c53c924a78a940"
+        }
+        "color:debayer" {
+            val fits = Fits("src/test/resources/Debayer.fits").also(Fits::read)
+            val mImage = Image.open(fits)
+            val nImage = mImage.transform(AutoScreenTransformFunction)
+            nImage.save("color-debayer").second shouldBe "86b5bdd67dfd6bbf5495afae4bf2bc04"
+        }
+        "color:no-debayer" {
+            val fits = Fits("src/test/resources/Debayer.fits").also(Fits::read)
+            val mImage = Image.open(fits, false)
+            val nImage = mImage.transform(AutoScreenTransformFunction)
+            nImage.save("color-no-debayer").second shouldBe "958ccea020deec1f0c075042a9ba37c3"
         }
     }
 }

@@ -6,6 +6,8 @@ body {
     height: 100%;
     overflow: hidden;
     font-size: 11.5px;
+    border: 1px solid #212121;
+    scroll-behavior: smooth;
 }
 
 body {
@@ -66,8 +68,9 @@ p-dropdown,
 
 .p-float-label label {
     border-radius: 4px;
-    padding: 2px 8px !important;
+    padding: 1.5px 6px !important;
     font-size: 9px !important;
+    font-weight: bold;
 }
 
 .p-inputwrapper,
@@ -87,6 +90,11 @@ p-dropdown,
 
 p-calendar.border-0 .p-calendar-w-btn {
     border: 0 !important;
+}
+
+.p-overlaypanel .p-overlaypanel-content {
+    padding-bottom: 10px;
+    padding-top: 10px;
 }
 
 .p-toast {
@@ -147,6 +155,12 @@ i.mdi {
     -webkit-app-region: drag;
 }
 
+p-contextmenu *,
+p-dropdown *,
+.no-draggable-region {
+    -webkit-app-region: no-drag;
+}
+
 .pixelated {
     image-rendering: pixelated;
 }
@@ -157,21 +171,6 @@ i.mdi {
 
 .monospaced {
     font-family: monospace !important;
-}
-
-#titlebar:before {
-    background: url(assets/icons/nebulosa-256.png);
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    image-rendering: pixelated;
-    content: '';
-    width: 100%;
-    display: flex;
-    position: absolute;
-    height: 100%;
-    z-index: 0;
-    opacity: 0.6;
 }
 
 ::-webkit-scrollbar {

@@ -1,6 +1,6 @@
 <div class="container px-4 py-3">
     <div class="grid py-1 flex align-items-center">
-        <div class="col-8">
+        <div class="col-6">
             <span class="p-float-label">
                 <input type="text" pInputText [readonly]="true" [value]="camera?.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Camera</label>
@@ -12,9 +12,13 @@
             <p-button *ngIf="!connected" [disabled]="!camera || capturing" (onClick)="connect()" icon="mdi mdi-connection"
                       size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
-        <div class="col-2 flex justify-content-center">
-            <p-button [disabled]="!camera || !connected || capturing" [text]="true" [rounded]="true" icon="mdi mdi-lg mdi-dots-vertical"
-                      (click)="cameraDialogMenu.show()" />
+        <div class="col-4 flex justify-content-end align-items-center gap-2">
+            <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-image-multiple" (click)="openCameraImage()"
+                      pTooltip="Image viewer" tooltipPosition="bottom" />
+            <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-wrench" (click)="openCameraCalibration()"
+                      pTooltip="Calibration" tooltipPosition="bottom" />
+            <p-button [disabled]="!camera || !connected || capturing" [text]="true" [rounded]="true" icon="mdi mdi-dots-vertical"
+                      (click)="cameraMenu.show()" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center gap-1">
             <i *ngIf="autoSave" class="mdi mdi-content-save" pTooltip="Auto save: ON" tooltipPosition="bottom"></i>
@@ -24,10 +28,10 @@
                tooltipPosition="bottom"></i>
             <i *ngIf="autoSubFolderMode === 'MIDNIGHT'" class="mdi mdi-weather-night text-blue-600" pTooltip="Auto sub folder: MIDNIGHT"
                tooltipPosition="bottom"></i>
-            <span *ngIf="camera && (savePath || capturesPath)" style="padding-top: 1px; padding-bottom: 1px; min-height: 17px;"
+            <span *ngIf="camera && (savePath || capturesPath)" style="padding-top: 1px; padding-bottom: 1px; height: 15px;"
                   class="flex align-items-center gap-2 bg-gray-800 border-round-2xl px-3 text-overflow-scroll">
                 {{ savePath || capturesPath }}
-                <i *ngIf="savePath" class="mdi mdi-close cursor-pointer" pTooltip="Reset" tooltipPosition="bottom" (click)="resetSavePath()"></i>
+                <i *ngIf="savePath" class="mdi mdi-close cursor-pointer" pTooltip="Reset" tooltipPosition="bottom" (click)="clearSavePath()"></i>
             </span>
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm" style="min-height: 25px;">
@@ -91,11 +95,11 @@
                     <p-inputNumber [disabled]="!connected || !canSetTemperature || capturing" [(ngModel)]="setpointTemperature" mode="decimal"
                                    [showButtons]="true" (ngModelChange)="savePreference()"
                                    [step]="0.1" suffix="℃" [min]="-50" [max]="50" locale="en" styleClass="p-inputtext-sm border-0"
-                                   [allowEmpty]="false" />
+                                   [allowEmpty]="false" [minFractionDigits]="1" />
                     <label>Temperature ({{ temperature | number: '1.1-1' }}°C)</label>
                 </span>
                 <p-button [disabled]="!connected || !canSetTemperature || capturing" (onClick)="applySetpointTemperature()" icon="mdi mdi-check"
-                          severity="sucsess" pTooltip="Apply" tooltipPosition="bottom" />
+                          styleClass="p-button-sm" severity="success" pTooltip="Apply" tooltipPosition="bottom" />
             </div>
         </div>
     </div>
@@ -108,7 +112,7 @@
                                    [allowEmpty]="false" (ngModelChange)="savePreference()" />
                     <label>Exposure Time</label>
                 </span>
-                <p-menu #exposureTimeMenu [model]="exposureTimeUnitOptions" [popup]="true" />
+                <p-menu #exposureTimeMenu [model]="exposureTimeUnitModel" [popup]="true" />
                 <button [disabled]="!connected || capturing" pButton type="button" (click)="exposureTimeMenu.toggle($event)"
                         [label]="exposureTimeUnit"></button>
             </div>
@@ -244,7 +248,7 @@
     </div>
 </div>
 
-<dialogMenu #cameraDialogMenu [model]="cameraMenuItems" />
+<p-dialogMenu #cameraMenu [model]="cameraModel" />
 
 <p-dialog header="Dithering" [draggable]="true" [(visible)]="showDitheringDialog" [modal]="true" [style]="{width: '80vw'}">
     <div class="grid mt-2">
@@ -256,7 +260,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!connected || capturing || !dithering.enabled" [showButtons]="true"
                                styleClass="border-0 p-inputtext-sm w-full" [min]="0.1" [max]="60"
-                               [(ngModel)]="dithering.amount" [step]="0.1" locale="en" (ngModelChange)="savePreference()" />
+                               [(ngModel)]="dithering.amount" [step]="0.1" locale="en" [minFractionDigits]="1" (ngModelChange)="savePreference()" />
                 <label>Dither (px)</label>
             </span>
         </div>

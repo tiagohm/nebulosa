@@ -5,9 +5,15 @@ import { Subject, Subscription, interval, throttleTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Angle, ComputedLocation, Constellation, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode, Union } from '../../shared/types'
 import { AppComponent } from '../app.component'
+
+export interface MountPreference {
+    targetCoordinateType?: TargetCoordinateType
+    targetRightAscension?: Angle
+    targetDeclination?: Angle
+}
 
 @Component({
     selector: 'app-mount',
@@ -54,12 +60,12 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     private computeCoordinateSubscriptions: Subscription[] = []
     private readonly moveToDirection = [false, false]
 
-    readonly targetCoordinateOptions: MenuItem[] = [
+    readonly targetCoordinateModel: MenuItem[] = [
         {
             icon: 'mdi mdi-telescope',
             label: 'Go To',
             command: () => {
-                this.targetCoordinateOption = this.targetCoordinateOptions[0]
+                this.targetCoordinateOption = this.targetCoordinateModel[0]
                 this.goTo()
             },
         },
@@ -67,7 +73,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             icon: 'mdi mdi-telescope',
             label: 'Slew',
             command: () => {
-                this.targetCoordinateOption = this.targetCoordinateOptions[1]
+                this.targetCoordinateOption = this.targetCoordinateModel[1]
                 this.slewTo()
             },
         },
@@ -75,7 +81,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             icon: 'mdi mdi-sync',
             label: 'Sync',
             command: () => {
-                this.targetCoordinateOption = this.targetCoordinateOptions[2]
+                this.targetCoordinateOption = this.targetCoordinateModel[2]
                 this.sync()
             },
         },
@@ -137,14 +143,14 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         },
     ]
 
-    targetCoordinateOption = this.targetCoordinateOptions[0]
+    targetCoordinateOption = this.targetCoordinateModel[0]
 
     constructor(
         private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
-        private preference: PreferenceService,
+        private storage: LocalStorageService,
         private route: ActivatedRoute,
         ngZone: NgZone,
     ) {
@@ -178,7 +184,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     async ngAfterContentInit() {
         this.route.queryParams.subscribe(e => {
-            const mount = JSON.parse(decodeURIComponent(e.params)) as Mount
+            const mount = JSON.parse(decodeURIComponent(e.data)) as Mount
             this.mountChanged(mount)
         })
     }
@@ -204,8 +210,6 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
             this.loadPreference()
             this.update()
-
-            this.preference.set('mount.selected', this.mount.name)
         } else {
             this.app.subTitle = ''
         }
@@ -235,11 +239,11 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     targetCoordinateOptionClicked() {
-        if (this.targetCoordinateOption === this.targetCoordinateOptions[0]) {
+        if (this.targetCoordinateOption === this.targetCoordinateModel[0]) {
             this.goTo()
-        } else if (this.targetCoordinateOption === this.targetCoordinateOptions[1]) {
+        } else if (this.targetCoordinateOption === this.targetCoordinateModel[1]) {
             this.slewTo()
-        } else if (this.targetCoordinateOption === this.targetCoordinateOptions[2]) {
+        } else if (this.targetCoordinateOption === this.targetCoordinateModel[2]) {
             this.sync()
         }
     }
@@ -380,20 +384,25 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         this.computeTargetCoordinatePublisher.next()
     }
 
-    private async loadPreference() {
+    private loadPreference() {
         if (this.mount) {
-            this.targetCoordinateType = await this.preference.get(`mount.${this.mount.name}.targetCoordinateType`, 'JNOW')
-            this.targetRightAscension = await this.preference.get(`mount.${this.mount.name}.targetRightAscension`, '00h00m00s')
-            this.targetDeclination = await this.preference.get(`mount.${this.mount.name}.targetDeclination`, `00°00'00"`)
+            const preference = this.storage.get<MountPreference>(`mount.${this.mount.name}`, {})
+            this.targetCoordinateType = preference.targetCoordinateType ?? 'JNOW'
+            this.targetRightAscension = preference.targetRightAscension ?? '00h00m00s'
+            this.targetDeclination = preference.targetDeclination ?? `00°00'00"`
             this.computeTargetCoordinatePublisher.next()
         }
     }
 
     private savePreference() {
         if (this.mount && this.mount.connected) {
-            this.preference.set(`mount.${this.mount.name}.targetCoordinateType`, this.targetCoordinateType)
-            this.preference.set(`mount.${this.mount.name}.targetRightAscension`, this.targetRightAscension)
-            this.preference.set(`mount.${this.mount.name}.targetDeclination`, this.targetDeclination)
+            const preference: MountPreference = {
+                targetCoordinateType: this.targetCoordinateType,
+                targetRightAscension: this.targetRightAscension,
+                targetDeclination: this.targetDeclination,
+            }
+
+            this.storage.set(`mount.${this.mount.name}`, preference)
         }
     }
 }

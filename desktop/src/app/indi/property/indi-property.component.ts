@@ -8,7 +8,7 @@ import { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendPropertyItem 
 })
 export class INDIPropertyComponent implements AfterContentInit, OnDestroy {
 
-    @Input()
+    @Input({ required: true })
     property!: INDIProperty<any>
 
     @Input()

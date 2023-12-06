@@ -19,7 +19,7 @@ class SatelliteUpdater(
     }
 
     private fun isOutOfDate(): Boolean {
-        val updatedAt = preferenceService.tleUpdatedAt
+        val updatedAt = preferenceService.satellitesUpdatedAt
         return System.currentTimeMillis() - updatedAt >= UPDATE_INTERVAL
     }
 
@@ -28,7 +28,7 @@ class SatelliteUpdater(
             LOG.info("satellites is out of date")
 
             if (updateTLEs()) {
-                preferenceService.tleUpdatedAt = System.currentTimeMillis()
+                preferenceService.satellitesUpdatedAt = System.currentTimeMillis()
             } else {
                 LOG.warn("no satellites was updated")
             }
