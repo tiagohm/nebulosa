@@ -22,4 +22,16 @@ class CalibrationFrameController(
     fun upload(@EntityBy camera: Camera, @RequestParam path: Path): List<CalibrationFrameEntity> {
         return calibrationFrameService.upload(camera, path)
     }
+
+    @PatchMapping("{id}")
+    fun edit(
+        @PathVariable id: Long,
+        @RequestParam(required = false) path: String? = "",
+        @RequestParam enabled: Boolean,
+    ) = calibrationFrameService.edit(id, path, enabled)
+
+    @DeleteMapping("{id}")
+    fun delete(@PathVariable id: Long) {
+        calibrationFrameService.delete(id)
+    }
 }

@@ -107,6 +107,18 @@ class CalibrationFrameService(
         return frames
     }
 
+    fun edit(id: Long, path: String?, enabled: Boolean): CalibrationFrameEntity {
+        return with(calibrationFrameRepository.findById(id).get()) {
+            if (!path.isNullOrBlank()) this.path = path
+            this.enabled = enabled
+            calibrationFrameRepository.saveAndFlush(this)
+        }
+    }
+
+    fun delete(id: Long) {
+        calibrationFrameRepository.deleteById(id)
+    }
+
     // exposureTime, temperature, width, height, binX, binY, gain.
     fun findBestDarkFrames(camera: Camera, image: Image): List<CalibrationFrameEntity> {
         val header = image.header

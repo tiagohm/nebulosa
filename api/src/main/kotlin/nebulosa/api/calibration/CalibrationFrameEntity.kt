@@ -1,9 +1,7 @@
 package nebulosa.api.calibration
 
 import jakarta.persistence.*
-import nebulosa.api.beans.converters.PathAttributeConverter
 import nebulosa.indi.device.camera.FrameType
-import java.nio.file.Path
 
 @Entity
 @Table(name = "calibration_frames")

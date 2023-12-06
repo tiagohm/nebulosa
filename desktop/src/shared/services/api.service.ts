@@ -560,6 +560,15 @@ export class ApiService {
         return this.http.put<CalibrationFrame[]>(`calibration-frames/${camera.name}?${query}`)
     }
 
+    editCalibrationFrame(frame: CalibrationFrame) {
+        const query = this.http.query({ path: frame.path, enabled: frame.enabled })
+        return this.http.patch<CalibrationFrame>(`calibration-frames/${frame.id}?${query}`)
+    }
+
+    deleteCalibrationFrame(frame: CalibrationFrame) {
+        return this.http.delete<void>(`calibration-frames/${frame.id}`)
+    }
+
     // FRAMING
 
     frame(rightAscension: Angle, declination: Angle,

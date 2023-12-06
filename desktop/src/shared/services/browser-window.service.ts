@@ -101,8 +101,8 @@ export class BrowserWindowService {
 
     openCalibration(options: OpenWindowOptions<Camera>) {
         options.icon ||= 'stack'
-        options.width ||= 480
-        options.height ||= 470
+        options.width ||= 510
+        options.height ||= 526
         this.openWindow({ ...options, id: 'calibration', path: 'calibration' })
     }
 

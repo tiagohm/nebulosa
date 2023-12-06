@@ -56,7 +56,7 @@
         <div class="col-7">
             <span class="p-float-label">
                 <input pInputText [disabled]="!connected || moving" [(ngModel)]="filter.name" (ngModelChange)="filterNameChanged(filter)"
-                       class="border-0 w-full p-inputtext-sm">
+                       [maxLength]="16" class="border-0 w-full p-inputtext-sm">
                 <label>Name</label>
             </span>
         </div>

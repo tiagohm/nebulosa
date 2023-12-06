@@ -13,10 +13,10 @@
                       size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
         <div class="col-4 flex justify-content-end align-items-center gap-2">
-            <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-eye" (click)="openCameraImage()"
-                      pTooltip="Open camera's image" tooltipPosition="bottom" />
-            <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-tune-variant" (click)="openCameraCalibration()"
-                      pTooltip="Open camera's calibration" tooltipPosition="bottom" />
+            <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-image-multiple" (click)="openCameraImage()"
+                      pTooltip="Image viewer" tooltipPosition="bottom" />
+            <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-wrench" (click)="openCameraCalibration()"
+                      pTooltip="Calibration" tooltipPosition="bottom" />
             <p-button [disabled]="!camera || !connected || capturing" [text]="true" [rounded]="true" icon="mdi mdi-dots-vertical"
                       (click)="cameraMenu.show()" />
         </div>
